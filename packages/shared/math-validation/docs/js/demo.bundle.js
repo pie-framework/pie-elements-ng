@@ -1982,24 +1982,78 @@ exports.subsets = subsets;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("./index");
+let opts = {};
+let flags = "";
+const params = window.location.search;
+const urlParams = new URLSearchParams(params);
+// atob()
+// // this metod is necessary in order to encode UTF-8 characters
+// const toBinary = (latex) => {
+//   const codeUnits = new Uint16Array(latex.length);
+//   for (let i = 0; i < codeUnits.length; i++) {
+//     codeUnits[i] = latex.charCodeAt(i);
+//   }
+//   return String.fromCharCode(...new Uint8Array(codeUnits.buffer));
+// };
 window.addEventListener("DOMContentLoaded", (event) => {
-    console.log("DOM fully loaded and parsed");
-    console.log(document.getElementById("equalityform"));
     const form = document.getElementById("equalityform");
-    console.log(form);
-    const me1 = document.getElementById("me1");
-    me1.value = "123";
+    const mode = document.getElementById("validation-type");
+    mode.value = urlParams.get("validation-type")
+        ? urlParams.get("validation-type")
+        : "";
+    const allowTzn = document.getElementById("tzn");
+    //@ts-ignore
+    allowTzn.value = urlParams.get("tzn") ? urlParams.get("tzn") : false;
+    const ignTrue = document.getElementById("ign");
+    //@ts-ignore
+    ignTrue.value = urlParams.get("ign") ? urlParams.get("ign") : false;
+    const exp1 = document.getElementById("me1");
+    exp1.value = urlParams.get("me1") ? urlParams.get("me1") : "";
+    const exp2 = document.getElementById("me2");
+    exp2.value = urlParams.get("me2") ? urlParams.get("me2") : "";
     form.addEventListener("submit", (e) => {
         e.preventDefault();
-        const formData = new FormData(form);
-        const text = formData.get("me1");
-        console.log(formData, "formdata");
-        console.log(text, "text");
-        const validationType = (document.getElementById("validation-type")).select();
+        const validationType = document.getElementById("validation-type").value;
+        if (validationType == "literal" || validationType == "symbolic") {
+            console.log(validationType, "validationType");
+            opts.mode = validationType;
+            console.log(opts.mode, "mode");
+        }
+        const tzn = document.getElementById("tzn")
+            .value;
+        const ignoreOrder = document.getElementById("ign").value;
+        if (opts.mode == "literal") {
+            opts.literal = {
+                allowTrailingZeros: false,
+                ignoreOrder: false,
+            };
+            console.log("tzn", tzn);
+            if (tzn) {
+                opts.literal.allowTrailingZeros = true;
+            }
+            console.log(ignoreOrder, "ign");
+            if (ignoreOrder) {
+                opts.literal.ignoreOrder = true;
+            }
+        }
         let firstExpression = document.getElementById("me1").value;
-        let secondExpression = document.getElementById("me1").value;
-        console.log("input value", validationType);
-        index_1.latexEqual(firstExpression, secondExpression, {});
+        let secondExpression = document.getElementById("me2").value;
+        const result = index_1.latexEqual(firstExpression, secondExpression, opts);
+        let message;
+        if (result) {
+            message = `The entered expressions validate each other in ${validationType} mode`;
+        }
+        else {
+            message = `The entered expressions does not validate each other in ${validationType} mode`;
+        }
+        console.log(firstExpression, "firstexpr");
+        console.log(secondExpression, "secondexpr");
+        console.log(result, "result");
+        let paragraph = document.createElement("p");
+        const node = document.createTextNode(message);
+        paragraph.appendChild(node);
+        const response = document.getElementById("result");
+        response.appendChild(paragraph);
     });
 });
 
