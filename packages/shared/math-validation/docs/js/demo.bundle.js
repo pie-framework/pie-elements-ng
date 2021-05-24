@@ -2049,6 +2049,11 @@ window.addEventListener("DOMContentLoaded", (event) => {
                 "&me2=" +
                 encodeURI(secondExpression);
         window.history.replaceState(null, null, flags);
+        if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add("was-validated");
         // reset flags
         flags = "?";
         const response = document.getElementById("response");
