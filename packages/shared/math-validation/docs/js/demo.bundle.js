@@ -1984,48 +1984,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("./index");
 let opts = {};
 let flags = "?";
-//const baseUrl = window.location.href;
 const params = window.location.search;
 const urlParams = new URLSearchParams(params);
-// this metod is necessary in order to encode UTF-8 characters
-const toBinary = (latex) => {
-    const codeUnits = new Uint16Array(latex.length);
-    for (let i = 0; i < codeUnits.length; i++) {
-        codeUnits[i] = latex.charCodeAt(i);
-    }
-    return String.fromCharCode(...new Uint8Array(codeUnits.buffer));
-};
-const fromBinary = (binary) => {
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < bytes.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-    }
-    return String.fromCharCode(...new Uint16Array(bytes.buffer));
-};
 window.addEventListener("DOMContentLoaded", (event) => {
     const form = document.getElementById("equalityform");
     const mode = document.getElementById("validation-type");
     mode.value = urlParams.get("validation-type")
-        ? atob(toBinary(urlParams.get("validation-type")))
+        ? decodeURI(urlParams.get("validation-type"))
         : "";
     const allowTzn = document.getElementById("tzn");
     // @ts-ignore
     allowTzn.checked = urlParams.get("tzn")
-        ? atob(toBinary(urlParams.get("tzn")))
+        ? decodeURI(urlParams.get("tzn"))
         : false;
     const ignTrue = document.getElementById("ign");
     // @ts-ignore
     ignTrue.checked = urlParams.get("ign")
-        ? atob(toBinary(urlParams.get("ign")))
+        ? decodeURI(urlParams.get("ign"))
         : false;
     const exp1 = document.getElementById("me1");
-    exp1.value = urlParams.get("me1") ? atob(toBinary(urlParams.get("me1"))) : "";
+    exp1.value = urlParams.get("me1") ? decodeURI(urlParams.get("me1")) : "";
     const exp2 = document.getElementById("me2");
-    exp2.value = urlParams.get("me2") ? atob(toBinary(urlParams.get("me2"))) : "";
+    exp2.value = urlParams.get("me2") ? decodeURI(urlParams.get("me2")) : "";
     form.addEventListener("submit", (e) => {
         e.preventDefault();
         const validationType = document.getElementById("validation-type").value;
-        flags += "validation-type=" + btoa(validationType);
+        flags += "validation-type=" + encodeURI(validationType);
         if (validationType == "literal" || validationType == "symbolic") {
             console.log(validationType, "validationType");
             opts.mode = validationType;
@@ -2041,14 +2025,15 @@ window.addEventListener("DOMContentLoaded", (event) => {
             };
             if (tzn) {
                 opts.literal.allowTrailingZeros = true;
-                flags += "&tzn=" + fromBinary(btoa(tzn.toString()));
+                flags += "&tzn=" + encodeURI(tzn.toString());
             }
             if (ignoreOrder) {
                 opts.literal.ignoreOrder = true;
-                flags += "&ign=" + fromBinary(btoa(ignoreOrder.toString()));
+                flags += "&ign=" + encodeURI(ignoreOrder.toString());
             }
         }
         const firstExpression = document.getElementById("me1").value;
+        console.log(firstExpression);
         const secondExpression = document.getElementById("me2").value;
         const result = index_1.latexEqual(firstExpression, secondExpression, opts);
         let message;
@@ -2060,9 +2045,9 @@ window.addEventListener("DOMContentLoaded", (event) => {
         }
         flags +=
             "&me1=" +
-                fromBinary(btoa(firstExpression)) +
+                encodeURI(firstExpression) +
                 "&me2=" +
-                fromBinary(btoa(secondExpression));
+                encodeURI(secondExpression);
         window.history.replaceState(null, null, flags);
         // reset flags
         flags = "?";
