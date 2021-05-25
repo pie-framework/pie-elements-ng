@@ -1987,54 +1987,55 @@ let flags = "?";
 const params = window.location.search;
 const urlParams = new URLSearchParams(params);
 window.addEventListener("DOMContentLoaded", (event) => {
-    const form = document.getElementById("equalityform");
+    const form = document.getElementById("equality-form");
     const mode = document.getElementById("validation-type");
     mode.value = urlParams.get("validation-type")
-        ? decodeURI(urlParams.get("validation-type"))
+        ? decodeURIComponent(urlParams.get("validation-type"))
         : "";
-    const allowTzn = document.getElementById("tzn");
+    const allowTraillingZeros = document.getElementById("trailling-zeros");
     // @ts-ignore
-    allowTzn.checked = urlParams.get("tzn")
-        ? decodeURI(urlParams.get("tzn"))
+    allowTraillingZeros.checked = urlParams.get("trailling-zeros")
+        ? decodeURIComponent(urlParams.get("trailling-zeros"))
         : false;
-    const ignTrue = document.getElementById("ign");
+    const ignoreOrderTrue = document.getElementById("ignore-order");
     // @ts-ignore
-    ignTrue.checked = urlParams.get("ign")
-        ? decodeURI(urlParams.get("ign"))
+    ignoreOrderTrue.checked = urlParams.get("ignore-order")
+        ? decodeURIComponent(urlParams.get("ignore-order"))
         : false;
-    const exp1 = document.getElementById("me1");
-    exp1.value = urlParams.get("me1") ? decodeURI(urlParams.get("me1")) : "";
-    const exp2 = document.getElementById("me2");
-    exp2.value = urlParams.get("me2") ? decodeURI(urlParams.get("me2")) : "";
+    const exppression1 = document.getElementById("math-expression1");
+    exppression1.value = urlParams.get("math-expression1")
+        ? decodeURIComponent(urlParams.get("math-expression1"))
+        : "";
+    const exppression2 = document.getElementById("math-expression2");
+    exppression2.value = urlParams.get("math-expression2")
+        ? decodeURIComponent(urlParams.get("math-expression2"))
+        : "";
     form.addEventListener("submit", (e) => {
         e.preventDefault();
         const validationType = document.getElementById("validation-type").value;
-        flags += "validation-type=" + encodeURI(validationType);
+        flags += "validation-type=" + encodeURIComponent(validationType);
         if (validationType == "literal" || validationType == "symbolic") {
-            console.log(validationType, "validationType");
             opts.mode = validationType;
-            console.log(opts.mode, "mode");
         }
-        const tzn = document.getElementById("tzn")
-            .checked;
-        const ignoreOrder = document.getElementById("ign").checked;
+        const trailingZeros = document.getElementById("trailling-zeros").checked;
+        const ignoreOrder = document.getElementById("ignore-order").checked;
         if (opts.mode == "literal") {
             opts.literal = {
                 allowTrailingZeros: false,
                 ignoreOrder: false,
             };
-            if (tzn) {
+            if (trailingZeros) {
                 opts.literal.allowTrailingZeros = true;
-                flags += "&tzn=" + encodeURI(tzn.toString());
+                flags +=
+                    "&trailling-zeros=" + encodeURIComponent(trailingZeros.toString());
             }
             if (ignoreOrder) {
                 opts.literal.ignoreOrder = true;
-                flags += "&ign=" + encodeURI(ignoreOrder.toString());
+                flags += "&ignore-order=" + encodeURIComponent(ignoreOrder.toString());
             }
         }
-        const firstExpression = document.getElementById("me1").value;
-        console.log(firstExpression);
-        const secondExpression = document.getElementById("me2").value;
+        const firstExpression = document.getElementById("math-expression1").value;
+        const secondExpression = document.getElementById("math-expression2").value;
         const result = index_1.latexEqual(firstExpression, secondExpression, opts);
         let message;
         if (result) {
@@ -2044,10 +2045,10 @@ window.addEventListener("DOMContentLoaded", (event) => {
             message = `The entered expressions does not validate each other in ${validationType} mode`;
         }
         flags +=
-            "&me1=" +
-                encodeURI(firstExpression) +
-                "&me2=" +
-                encodeURI(secondExpression);
+            "&math-expression1=" +
+                encodeURIComponent(firstExpression) +
+                "&math-expression2=" +
+                encodeURIComponent(secondExpression);
         window.history.replaceState(null, null, flags);
         if (form.checkValidity() === false) {
             event.preventDefault();
