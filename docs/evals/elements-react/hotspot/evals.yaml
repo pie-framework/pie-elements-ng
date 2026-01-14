@@ -1,0 +1,887 @@
+version: 1
+
+component:
+  element: "@pie-element/hotspot"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/hotspot"
+
+evals:
+  # ==========================================================================
+  # Basic Rendering
+  # ==========================================================================
+  - id: "hotspot-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates hotspot element renders correctly with image and interactive shapes"
+
+    notes:
+      - "Should display prompt, image with overlay shapes"
+      - "Shapes should be visible as semi-transparent overlays"
+      - "Canvas/Stage should render with correct dimensions"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+
+      - action: observe
+        target:
+          description: "Prompt text"
+          hint: 'text="Click on the red circle"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Canvas element rendered"
+          hint: 'canvas'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Main container"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+    spiritChecks:
+      - "Image loads completely without errors"
+      - "Hotspot shapes are visible as overlays"
+      - "Shapes have appropriate transparency"
+      - "Cursor changes to pointer on hover"
+
+  # ==========================================================================
+  # User Interactions - Single Shape Selection
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/single-selection"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates single shape selection in single-select mode"
+
+    notes:
+      - "Sample has multipleCorrect: false"
+      - "Only one shape can be selected at a time"
+      - "Circle at center (200, 150) with radius 50"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Center of red circle"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: observe
+        target:
+          description: "Session updated with selection"
+          hint: 'pre code'
+        expected:
+          contains: '"id"'
+
+    spiritChecks:
+      - "Shape changes color when selected"
+      - "Selection happens immediately on click"
+      - "Visual feedback is clear"
+
+  # ==========================================================================
+  # User Interactions - Multiple Shape Selection
+  # ==========================================================================
+  - id: "hotspot-react/default/multiple-selection"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates multiple shape selection when multipleCorrect enabled"
+
+    notes:
+      - "Sample has multipleCorrect: true"
+      - "Multiple shapes can be selected simultaneously"
+      - "Each click adds to answers array"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+
+      - action: clickAt
+        target:
+          description: "First shape"
+          hint: 'canvas'
+        coordinates:
+          x: 150
+          y: 100
+
+      - action: wait
+        timeout: 300
+
+      - action: clickAt
+        target:
+          description: "Second shape"
+          hint: 'canvas'
+        coordinates:
+          x: 250
+          y: 200
+
+      - action: wait
+        timeout: 300
+
+      - action: observe
+        target:
+          description: "Multiple selections in session"
+          hint: 'pre code'
+        expected:
+          contains: 'answers'
+
+  # ==========================================================================
+  # User Interactions - Shape Deselection
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/deselection"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates clicking selected shape deselects it"
+
+    notes:
+      - "Click shape once to select"
+      - "Click again to deselect"
+      - "Session answers should be empty after deselection"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Select circle"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: clickAt
+        target:
+          description: "Deselect circle"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: observe
+        target:
+          description: "Session shows empty answers"
+          hint: 'pre code'
+        expected:
+          contains: '[]'
+
+  # ==========================================================================
+  # User Interactions - Correct Answer
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/correct-answer"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates correct shape selection yields score of 1.0"
+
+    notes:
+      - "Circle marked as correct: true"
+      - "Should show correct feedback in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Click correct circle"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: click
+        target:
+          description: "Evaluate mode"
+          hint: 'input[name="mode"][value="evaluate"]'
+
+      - action: wait
+        timeout: 1000
+
+      - action: observe
+        target:
+          description: "Evaluation shows correct"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Checkmark icon appears on correct shape"
+      - "Shape shows correct state visually"
+
+  # ==========================================================================
+  # User Interactions - Incorrect Answer
+  # ==========================================================================
+  - id: "hotspot-react/default/incorrect-answer"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates incorrect shape selection yields score of 0.0"
+
+    notes:
+      - "Click on incorrect shape"
+      - "Should show incorrect feedback in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+
+      - action: clickAt
+        target:
+          description: "Click incorrect area"
+          hint: 'canvas'
+        coordinates:
+          x: 50
+          y: 50
+
+      - action: wait
+        timeout: 500
+
+      - action: click
+        target:
+          description: "Evaluate mode"
+          hint: 'input[name="mode"][value="evaluate"]'
+
+      - action: wait
+        timeout: 1000
+
+      - action: observe
+        target:
+          description: "Element renders in evaluate mode"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Red X icon appears on incorrect selection"
+      - "Correct shapes may be highlighted for instructor"
+
+  # ==========================================================================
+  # Scoring - Partial Credit
+  # ==========================================================================
+  - id: "hotspot-react/default/partial-credit"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates partial scoring when some correct and some incorrect selected"
+
+    notes:
+      - "Sample has partialScoring enabled"
+      - "Select mix of correct and incorrect shapes"
+      - "Score = (correct - incorrect) / total_correct"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+
+      - action: clickAt
+        target:
+          description: "Click correct shape 1"
+          hint: 'canvas'
+        coordinates:
+          x: 100
+          y: 100
+
+      - action: wait
+        timeout: 300
+
+      - action: clickAt
+        target:
+          description: "Click incorrect shape"
+          hint: 'canvas'
+        coordinates:
+          x: 300
+          y: 100
+
+      - action: wait
+        timeout: 300
+
+      - action: click
+        target:
+          description: "Evaluate mode"
+          hint: 'input[name="mode"][value="evaluate"]'
+
+      - action: wait
+        timeout: 1000
+
+      - action: observe
+        target:
+          description: "Partial credit shown"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Mixed feedback shows both correct and incorrect"
+      - "Partial credit percentage is visible"
+
+  # ==========================================================================
+  # Shape Types - Rectangle
+  # ==========================================================================
+  - id: "hotspot-react/default/rectangle-selection"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates rectangle shape selection works correctly"
+
+    notes:
+      - "Rectangle shapes use x, y, width, height"
+      - "Click detection based on bounding box"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+
+      - action: observe
+        target:
+          description: "Canvas rendered"
+          hint: 'canvas'
+        expected:
+          exists: true
+
+      - action: clickAt
+        target:
+          description: "Click rectangle area"
+          hint: 'canvas'
+        coordinates:
+          x: 100
+          y: 100
+
+      - action: wait
+        timeout: 500
+
+      - action: observe
+        target:
+          description: "Selection registered"
+          hint: 'pre code'
+        expected:
+          contains: 'answers'
+
+  # ==========================================================================
+  # Shape Types - Circle
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/circle-selection"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates circle shape selection with radius-based hit detection"
+
+    notes:
+      - "Circle shapes use x, y, radius"
+      - "Click detection based on distance from center"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Click center of circle"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: observe
+        target:
+          description: "Circle selected"
+          hint: 'pre code'
+        expected:
+          contains: '"id"'
+
+    spiritChecks:
+      - "Circle edge clicks register correctly"
+      - "Clicks outside radius don't select"
+
+  # ==========================================================================
+  # Modes - View Mode
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/view-mode"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates view mode displays selections without allowing changes"
+
+    notes:
+      - "Should show selected shapes"
+      - "Shapes should not respond to clicks"
+      - "Read-only display"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Select shape"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: click
+        target:
+          description: "View mode"
+          hint: 'input[name="mode"][value="view"]'
+
+      - action: wait
+        timeout: 1000
+
+      - action: observe
+        target:
+          description: "Element in view mode"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Selected shapes remain visible"
+      - "No interaction feedback on hover"
+      - "Cursor doesn't change to pointer"
+
+  # ==========================================================================
+  # Modes - Evaluate Mode with Correct Answer Toggle
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/evaluate-show-correct"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates evaluate mode with correct answer display"
+
+    notes:
+      - "Evaluate mode shows feedback icons"
+      - "Instructor can see correct answers highlighted"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Click correct shape"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: click
+        target:
+          description: "Evaluate mode"
+          hint: 'input[name="mode"][value="evaluate"]'
+
+      - action: click
+        target:
+          description: "Instructor role"
+          hint: 'input[name="role"][value="instructor"]'
+
+      - action: wait
+        timeout: 1000
+
+      - action: observe
+        target:
+          description: "Evaluation display"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Correct shapes marked with checkmark"
+      - "Instructor sees all correct answers"
+      - "Feedback is clear and unambiguous"
+
+  # ==========================================================================
+  # Configuration - Image Dimensions
+  # ==========================================================================
+  - id: "hotspot-react/default/image-dimensions"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates image and canvas render with correct dimensions"
+
+    notes:
+      - "Dimensions property controls canvas size"
+      - "Shapes positioned relative to dimensions"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+
+      - action: checkLayout
+        target:
+          description: "Canvas container"
+          hint: 'canvas'
+        expected:
+          boundingBox:
+            minWidth: 300
+            minHeight: 200
+
+    spiritChecks:
+      - "Image fills container appropriately"
+      - "Shapes align with image features"
+      - "No distortion or scaling issues"
+
+  # ==========================================================================
+  # Configuration - Custom Colors
+  # ==========================================================================
+  - id: "hotspot-react/default/custom-colors"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates custom color configuration applies correctly"
+
+    notes:
+      - "Sample defines custom hotspotColor, selectedHotspotColor"
+      - "Colors should be visible on shapes"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+
+      - action: observe
+        target:
+          description: "Canvas with shapes"
+          hint: 'canvas'
+        expected:
+          exists: true
+
+      - action: clickAt
+        target:
+          description: "Select shape to see color change"
+          hint: 'canvas'
+        coordinates:
+          x: 150
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+    spiritChecks:
+      - "Unselected shapes show hotspotColor"
+      - "Selected shapes show selectedHotspotColor"
+      - "Hover state shows hoverOutlineColor"
+      - "Colors have appropriate transparency"
+
+  # ==========================================================================
+  # Accessibility - Touch Support
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/touch-interaction"
+    sampleId: "simple-circle"
+    severity: "warn"
+
+    intent: "Validates touch/tap interactions work on mobile devices"
+
+    notes:
+      - "Konva supports both onClick and onTap"
+      - "Touch targets should be accessible"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Tap circle (simulated touch)"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: observe
+        target:
+          description: "Selection registered"
+          hint: 'pre code'
+        expected:
+          contains: '"id"'
+
+    spiritChecks:
+      - "Shapes respond to touch events"
+      - "No double-tap required"
+      - "Touch targets are large enough (44x44px minimum)"
+
+  # ==========================================================================
+  # Accessibility - Screen Reader Support
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/screen-reader"
+    sampleId: "simple-circle"
+    severity: "warn"
+
+    intent: "Validates basic accessibility features for screen readers"
+
+    notes:
+      - "Canvas elements have limited accessibility"
+      - "Prompt should be accessible"
+      - "Session state should be readable"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+    spiritChecks:
+      - "Prompt provides context for interaction"
+      - "Image has alt text"
+      - "Evaluate mode feedback is accessible"
+      - "Note: Canvas shapes may not be fully keyboard/SR accessible"
+
+  # ==========================================================================
+  # Error Handling - No Selection
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/no-selection"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates graceful handling when no shape selected"
+
+    notes:
+      - "User switches to evaluate without selecting"
+      - "Should show incomplete/incorrect state"
+      - "No JavaScript errors"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: click
+        target:
+          description: "Evaluate mode without selection"
+          hint: 'input[name="mode"][value="evaluate"]'
+
+      - action: wait
+        timeout: 1000
+
+      - action: observe
+        target:
+          description: "Element renders without error"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Empty selection handled gracefully"
+      - "No error messages or crashes"
+      - "Clear indication that answer is incorrect"
+
+  # ==========================================================================
+  # State Management - Mode Switching
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/mode-switching"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates smooth transitions between modes"
+
+    notes:
+      - "Should switch between gather, view, evaluate"
+      - "Selections should persist"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Select shape"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: click
+        target:
+          description: "View mode"
+          hint: 'input[name="mode"][value="view"]'
+
+      - action: wait
+        timeout: 500
+
+      - action: click
+        target:
+          description: "Evaluate mode"
+          hint: 'input[name="mode"][value="evaluate"]'
+
+      - action: wait
+        timeout: 500
+
+      - action: click
+        target:
+          description: "Back to gather"
+          hint: 'input[name="mode"][value="gather"]'
+
+      - action: wait
+        timeout: 500
+
+      - action: observe
+        target:
+          description: "Element stable"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+  # ==========================================================================
+  # State Management - Reset Functionality
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/reset"
+    sampleId: "simple-circle"
+    severity: "error"
+
+    intent: "Validates reset button clears selections"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: clickAt
+        target:
+          description: "Select shape"
+          hint: 'canvas'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: wait
+        timeout: 500
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: wait
+        timeout: 500
+
+      - action: observe
+        target:
+          description: "Session cleared"
+          hint: 'pre code'
+        expected:
+          contains: '[]'
+
+  # ==========================================================================
+  # Performance - Initial Load
+  # ==========================================================================
+  - id: "hotspot-react/default/load-performance"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates element loads and renders within acceptable time"
+
+    notes:
+      - "Target: < 2s to interactive"
+      - "Image and canvas should render quickly"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+
+      - action: wait
+        condition: "networkidle"
+
+      - action: observe
+        target:
+          description: "Element rendered"
+          hint: '#main-container'
+        expected:
+          exists: true
+
+  # ==========================================================================
+  # Style & Visual - Visual Regression Baseline
+  # ==========================================================================
+  - id: "hotspot-react/simple-circle/style-visual-regression"
+    sampleId: "simple-circle"
+    severity: "warn"
+
+    intent: "Creates visual regression baseline for gather mode"
+
+    notes:
+      - "Captures screenshot for future comparisons"
+      - "Helps detect unintended visual changes"
+
+    steps:
+      - action: navigate
+        path: "/hotspot"
+        params:
+          sampleId: "simple-circle"
+
+      - action: screenshot
+        target:
+          description: "Hotspot element in gather mode"
+          hint: '#main-container'
+        name: "hotspot-react-simple-circle-gather"
+
+    spiritChecks:
+      - "Image renders clearly"
+      - "Shapes are visible as overlays"
+      - "No layout shifts or visual glitches"

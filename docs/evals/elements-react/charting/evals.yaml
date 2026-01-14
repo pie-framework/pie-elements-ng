@@ -1,0 +1,584 @@
+version: 1
+
+component:
+  element: "@pie-element/charting"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/charting"
+
+evals:
+  - id: "charting-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates bar chart renders with interactive elements"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: observe
+        target:
+          description: "Prompt"
+          hint: 'text="bar chart showing"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Chart title"
+          hint: 'text="Favorite Fruits Survey"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "SVG chart canvas"
+          hint: 'svg'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Category labels"
+          hint: 'text="Apple"'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "charting-react/default/modify-value"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates changing bar value updates session"
+
+    notes:
+      - "Default sample has interactive: true for all bars"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: click
+        target:
+          description: "Apple bar or value input"
+          hint: 'input[aria-label*="Apple"], rect[data-label="Apple"]'
+
+      - action: type
+        target:
+          description: "Value input for Apple"
+          hint: 'input[aria-label*="Apple"]'
+        text: "5"
+        submit: true
+
+    expected:
+      session:
+        answer:
+          exists: true
+
+  - id: "charting-react/default/correct-values"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct chart values yield score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="Apple"]'
+        text: "5"
+        submit: true
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="Banana"]'
+        text: "3"
+        submit: true
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="Orange"]'
+        text: "7"
+        submit: true
+
+      - action: navigate
+        path: "/charting"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct"'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "charting-react/default/incorrect-values"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect chart values yield score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="Apple"]'
+        text: "1"
+        submit: true
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="Banana"]'
+        text: "2"
+        submit: true
+
+      - action: navigate
+        path: "/charting"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  - id: "charting-react/line-dot/correctness-indicators"
+    sampleId: "line-dot"
+    severity: "error"
+    intent: "Validates line chart shows correct/incorrect visual indicators"
+
+    notes:
+      - "line-dot sample shows temperature data with correctness markers"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+        params:
+          sampleId: "line-dot"
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="6 AM"]'
+        text: "60"
+        submit: true
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="12 PM"]'
+        text: "75"
+        submit: true
+
+      - action: navigate
+        path: "/charting"
+        params:
+          sampleId: "line-dot"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct indicator icon"
+          hint: '[data-correct="true"], svg[data-icon*="check"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Incorrect indicator icon"
+          hint: '[data-correct="false"], svg[data-icon*="times"]'
+        expected:
+          exists: true
+
+  - id: "charting-react/add-category/add-new"
+    sampleId: "add-category"
+    severity: "error"
+    intent: "Validates adding new category"
+
+    notes:
+      - "add-category sample has addCategoryEnabled: true"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+        params:
+          sampleId: "add-category"
+
+      - action: click
+        target:
+          description: "Add category button"
+          hint: 'button:has-text("Add"), button[aria-label*="Add"]'
+
+      - action: observe
+        target:
+          description: "New category added"
+          hint: 'text="New Item"'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          count: 2
+
+  - id: "charting-react/add-category/edit-label"
+    sampleId: "add-category"
+    severity: "error"
+    intent: "Validates editing category label"
+
+    notes:
+      - "add-category sample has editable: true for categories"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+        params:
+          sampleId: "add-category"
+
+      - action: click
+        target:
+          description: "Category label"
+          hint: 'text="Item A"'
+
+      - action: type
+        target:
+          description: "Label input"
+          hint: 'input[value="Item A"]'
+        text: "Modified"
+        submit: true
+
+      - action: observe
+        target:
+          description: "Updated label"
+          hint: 'text="Modified"'
+        expected:
+          exists: true
+
+  - id: "charting-react/add-category/delete-category"
+    sampleId: "add-category"
+    severity: "error"
+    intent: "Validates deleting category"
+
+    notes:
+      - "add-category sample has deletable: true"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+        params:
+          sampleId: "add-category"
+
+      - action: click
+        target:
+          description: "Add category"
+          hint: 'button:has-text("Add")'
+
+      - action: click
+        target:
+          description: "Delete button for new item"
+          hint: 'button[aria-label*="Delete"], button:has-text("Delete")'
+
+      - action: observe
+        target:
+          description: "Category removed"
+          hint: 'text="New Item"'
+        expected:
+          exists: false
+
+  - id: "charting-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables interactions"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="Apple"]'
+        text: "5"
+        submit: true
+
+      - action: navigate
+        path: "/charting"
+        params:
+          mode: "view"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Chart displays values"
+          hint: 'svg'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Inputs disabled"
+          hint: 'input:not([disabled])'
+        expected:
+          exists: false
+
+  - id: "charting-react/default/correct-answer-toggle"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates toggling between student and correct answer"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="Apple"]'
+        text: "1"
+        submit: true
+
+      - action: navigate
+        path: "/charting"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: click
+        target:
+          description: "Show correct answer toggle"
+          hint: 'button:has-text("Show Correct"), input[type="checkbox"]'
+
+      - action: observe
+        target:
+          description: "Correct values displayed"
+          hint: 'text="5", text="3", text="7"'
+        expected:
+          exists: true
+
+  - id: "charting-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rationale"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+        params:
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rationale"
+          hint: 'text="survey data"'
+        expected:
+          exists: true
+
+  - id: "charting-react/default/grid-rendering"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates grid lines render correctly"
+
+    notes:
+      - "range.step: 1 should create grid lines at 1-unit intervals"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: observe
+        target:
+          description: "Grid lines"
+          hint: 'line[stroke], .grid-line'
+        expected:
+          exists: true
+
+  - id: "charting-react/default/axis-labels"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates axis labels display correctly"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: observe
+        target:
+          description: "X-axis label"
+          hint: 'text="Type of Fruit"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Y-axis label"
+          hint: 'text="Number of Students"'
+        expected:
+          exists: true
+
+  - id: "charting-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: observe
+        target:
+          description: "Focusable inputs"
+          hint: 'input:not([disabled])'
+        expected:
+          exists: true
+
+  - id: "charting-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: checkStyle
+        target:
+          description: "Input elements"
+          hint: 'input, button'
+        expected:
+          minHeight: "44px"
+
+  - id: "charting-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "charting-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "charting-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: checkColorContrast
+        target:
+          description: "Chart text labels"
+          hint: 'text, label'
+        expected:
+          minRatio: 4.5
+
+  - id: "charting-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: screenshot
+        filename: "charting-default-baseline.png"
+
+  - id: "charting-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Handles empty chart data gracefully"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: navigate
+        path: "/charting"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Chart or feedback"
+          hint: 'svg, [data-feedback]'
+        expected:
+          exists: true
+
+  - id: "charting-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset clears chart values"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+
+      - action: type
+        target:
+          hint: 'input[aria-label*="Apple"]'
+        text: "5"
+        submit: true
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "Values reset to 0"
+          hint: 'input[value="0"]'
+        expected:
+          exists: true
+
+  - id: "charting-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/charting"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Chart rendered"
+          hint: 'svg'
+        expected:
+          exists: true

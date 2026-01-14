@@ -1,0 +1,27 @@
+{
+  "id": "rubric_demo",
+  "name": "Rubric Demo",
+  "config": {
+    "elements": {
+      "pp-pie-element-rubric": "@pie-element/rubric@latest"
+    },
+    "models": [
+      {
+        "id": "1",
+        "element": "pp-pie-element-rubric",
+        "points": [
+          "<div>nothing right</div>",
+          "<div>a teeny bit right</div>",
+          "<div>mostly right</div>",
+          "<div>bingo</div>"
+        ],
+        "sampleAnswers": [null, "<div>just right</div>", "<div>not left</div>", null],
+        "maxPoints": 3,
+        "excludeZero": false,
+        "excludeZeroEnabled": true,
+        "maxPointsEnabled": true
+      }
+    ],
+    "markup": "<pp-pie-element-rubric id='1'></pp-pie-element-rubric>"
+  }
+}

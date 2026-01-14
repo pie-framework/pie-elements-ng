@@ -1,0 +1,14 @@
+{
+  "id": "upload-single-1",
+  "element": "@pie-elements-ng/upload",
+  "prompt": "<p>Upload a single image file.</p>",
+  "promptEnabled": true,
+  "instructions": "Upload one image file (JPG, PNG, or GIF).",
+  "maxFiles": 1,
+  "minFiles": 1,
+  "maxFileSize": 2097152,
+  "acceptedTypes": ["image/*"],
+  "showPreview": true,
+  "allowReplace": true,
+  "rationaleEnabled": false
+}

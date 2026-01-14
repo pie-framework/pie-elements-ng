@@ -1,0 +1,240 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  width: 320px;
+  background: #f5f5f5;
+  border-right: 1px solid #ddd;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.sidebar h1 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.config-section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #ddd;
+}
+
+.config-section:last-child {
+  border-bottom: none;
+}
+
+.config-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #2c3e50;
+}
+
+.config-section h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.section-description {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+/* Version Selector Styles */
+.version-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.version-selector label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.version-select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: white;
+}
+
+/* Element Version Controls */
+.element-version-control {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.element-version-control h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.element-version-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Sample Items */
+.item-button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.item-button:hover {
+  background: #f0f0f0;
+  border-color: #999;
+}
+
+.item-button.active {
+  background: #e3f2fd;
+  border-color: #2196f3;
+  font-weight: 500;
+}
+
+/* Buttons */
+.primary-button,
+.secondary-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+
+.primary-button {
+  background: #2196f3;
+  color: white;
+}
+
+.primary-button:hover {
+  background: #1976d2;
+}
+
+.primary-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.secondary-button:hover {
+  background: #e0e0e0;
+}
+
+/* Status Display */
+.status-display {
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: "Courier New", monospace;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.status-message {
+  padding: 4px 0;
+  color: #666;
+}
+
+.status-message.error {
+  color: #d32f2f;
+}
+
+.status-message.success {
+  color: #388e3c;
+}
+
+/* Player Container */
+.player-container {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+  background: white;
+}
+
+#player-mount {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #666;
+}
+
+/* Error State */
+.error-message {
+  padding: 20px;
+  background: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 4px;
+  color: #c62828;
+}
+
+/* Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

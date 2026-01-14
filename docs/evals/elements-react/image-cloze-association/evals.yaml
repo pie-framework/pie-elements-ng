@@ -1,0 +1,608 @@
+version: 1
+
+component:
+  element: "@pie-element/image-cloze-association"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/image-cloze-association"
+
+evals:
+  - id: "image-cloze-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates image with response zones and draggable choices renders"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: observe
+        target:
+          description: "Prompt"
+          hint: 'text="Drag the animal names"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Image with zones"
+          hint: 'img, [alt]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Response zones"
+          hint: '[id*="response-container"], .drop-zone'
+        expected:
+          count: 3
+
+      - action: observe
+        target:
+          description: "Draggable choices"
+          hint: '[id*="possible-response"], [draggable="true"]'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "image-cloze-react/default/drag-to-zone"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates dragging choice to zone updates session"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          description: "Lion choice"
+          hint: '[id*="possible-response"]:has-text("Lion"), button:has-text("Lion")'
+        target:
+          description: "First zone"
+          hint: '[id*="response-container-0"]'
+
+      - action: observe
+        target:
+          description: "Lion in zone"
+          hint: 'text="Lion"'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answers:
+          exists: true
+
+  - id: "image-cloze-react/default/replace-answer"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates dragging new choice to filled zone replaces existing"
+
+    notes:
+      - "maxResponsePerZone: 1, so second drag should replace first"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Zebra")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: observe
+        target:
+          description: "Zebra replaced Lion"
+          hint: '[id*="response-container-0"]:has-text("Zebra")'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/default/remove-from-zone"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates dragging answer back to pool removes it from zone"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: drag
+        source:
+          description: "Lion from zone"
+          hint: '[id*="response-container-0"] button:has-text("Lion")'
+        target:
+          description: "Possible responses area"
+          hint: '#ica-board, [id*="possible-response"]'
+
+      - action: observe
+        target:
+          description: "Zone empty"
+          hint: '[id*="response-container-0"]:has-text("Lion")'
+        expected:
+          exists: false
+
+  - id: "image-cloze-react/default/correct-placement"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct placements yield score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Elephant")'
+        target:
+          hint: '[id*="response-container-1"]'
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Giraffe")'
+        target:
+          hint: '[id*="response-container-2"]'
+
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct"'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "image-cloze-react/default/incorrect-placement"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect placements yield score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Zebra")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-1"]'
+
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  - id: "image-cloze-react/default/partial-correct"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates partial correctness with some correct placements"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Zebra")'
+        target:
+          hint: '[id*="response-container-1"]'
+
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct indicator on first"
+          hint: '[data-correct="true"], .baseCorrect'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Incorrect indicator on second"
+          hint: '[data-correct="false"], .baseIncorrect'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/multiple/multiple-answers"
+    sampleId: "multiple-response"
+    severity: "error"
+    intent: "Validates placing multiple answers in single zone"
+
+    notes:
+      - "multiple-response sample has maxResponsePerZone: 2"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          sampleId: "multiple-response"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Red")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Circle")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: observe
+        target:
+          description: "Both answers in zone"
+          hint: '[id*="response-container-0"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answers:
+          count: 2
+
+  - id: "image-cloze-react/default/no-duplicate-responses"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates duplicateResponses:false removes choice from pool"
+
+    notes:
+      - "default sample has duplicateResponses: false"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: observe
+        target:
+          description: "Lion no longer in pool"
+          hint: '#ica-board button:has-text("Lion")'
+        expected:
+          exists: false
+
+  - id: "image-cloze-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables dragging"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "view"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Answers visible"
+          hint: 'text="Lion"'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/default/evaluate-correctness"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates evaluate mode shows correct/incorrect indicators"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Zebra")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Incorrect indicator"
+          hint: '.baseIncorrect, [data-correct="false"]'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/default/correct-answer-toggle"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates toggling between student and correct answer"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Zebra")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: click
+        target:
+          description: "Show correct answer toggle"
+          hint: 'button:has-text("Show Correct"), input[type="checkbox"]'
+
+      - action: observe
+        target:
+          description: "Correct answer displayed"
+          hint: 'text="Lion"'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rationale"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rationale"
+          hint: 'text="corresponding zone"'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/default/zone-highlighting"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates zones highlight on drag over"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: observe
+        target:
+          description: "Zone with dashed border"
+          hint: '.dashed, [style*="dashed"]'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: observe
+        target:
+          description: "Focusable choices"
+          hint: 'button, [tabindex="0"]'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: checkStyle
+        target:
+          description: "Choice buttons"
+          hint: 'button, [draggable]'
+        expected:
+          minHeight: "44px"
+
+  - id: "image-cloze-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "image-cloze-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "image-cloze-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: checkColorContrast
+        target:
+          description: "Choice text"
+          hint: 'button, [draggable]'
+        expected:
+          minRatio: 4.5
+
+  - id: "image-cloze-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: screenshot
+        filename: "image-cloze-default-baseline.png"
+
+  - id: "image-cloze-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Handles empty placements gracefully"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: navigate
+        path: "/image-cloze-association"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Feedback or zones"
+          hint: '[id*="response-container"], [data-feedback]'
+        expected:
+          exists: true
+
+  - id: "image-cloze-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset clears placements"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+
+      - action: drag
+        source:
+          hint: 'button:has-text("Lion")'
+        target:
+          hint: '[id*="response-container-0"]'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "Zone empty"
+          hint: '[id*="response-container-0"]:has-text("Lion")'
+        expected:
+          exists: false
+
+  - id: "image-cloze-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/image-cloze-association"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Element rendered"
+          hint: 'img, [draggable]'
+        expected:
+          exists: true

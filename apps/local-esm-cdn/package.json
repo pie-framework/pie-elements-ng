@@ -1,0 +1,9 @@
+{
+  "name": "@pie-apps/local-esm-cdn",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts"
+  }
+}

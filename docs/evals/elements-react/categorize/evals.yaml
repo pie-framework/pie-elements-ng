@@ -1,0 +1,782 @@
+version: 1
+
+component:
+  element: "@pie-element/categorize"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/categorize"
+
+evals:
+  # ====================
+  # Basic Rendering Tests
+  # ====================
+
+  - id: "categorize-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates categorize element renders correctly in gather mode with categories and choices"
+
+    notes:
+      - "Should display prompt, choices board, and category containers"
+      - "Drag-and-drop interaction enabled"
+      - "Uses @dnd-kit/core for drag operations"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: observe
+        target:
+          description: "Prompt text"
+          hint: 'text="Drag the numbers into the correct category"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Choices board with draggable items"
+          hint: '[data-testid="choices-board"], .choices-container'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Category containers"
+          hint: '[data-testid="category"], .category'
+        expected:
+          count: 2
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+    spiritChecks:
+      - "Categories are clearly labeled"
+      - "Choices are visually distinct and draggable"
+      - "Layout is clean and uncluttered"
+
+  # ====================
+  # Drag-and-Drop Interaction Tests
+  # ====================
+
+  - id: "categorize-react/default/drag-choice-to-category"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates dragging a choice from board to category updates session"
+
+    notes:
+      - "Dragging moves choice visually and updates session.answers"
+      - "Choice should appear in target category"
+      - "Session structure: [{category: 'id', choices: ['choice-id']}]"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: drag
+        source:
+          description: "Choice '3 + 7' from board"
+          hint: '[data-choice-id="3"]'
+        target:
+          description: "SUM = 10 category"
+          hint: '[data-category-id="sum-10"]'
+
+      - action: observe
+        target:
+          description: "Choice now in category"
+          hint: '[data-category-id="sum-10"] [data-choice-id="3"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answers:
+          arrayContains:
+            - category: "sum-10"
+              choices:
+                arrayContains: "3"
+
+    spiritChecks:
+      - "Drag feedback is smooth and responsive"
+      - "Choice visually moves to new location"
+
+  - id: "categorize-react/default/drag-between-categories"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates dragging choice from one category to another moves it correctly"
+
+    notes:
+      - "Choice should be removed from source category"
+      - "Choice should be added to target category"
+      - "Session updates to reflect new placement"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: drag
+        source:
+          description: "Choice '3 + 7'"
+          hint: '[data-choice-id="3"]'
+        target:
+          description: "SUM = 10 category"
+          hint: '[data-category-id="sum-10"]'
+
+      - action: wait
+        duration: 500
+
+      - action: drag
+        source:
+          description: "Choice '3 + 7' in SUM = 10"
+          hint: '[data-category-id="sum-10"] [data-choice-id="3"]'
+        target:
+          description: "SUM = 11 category"
+          hint: '[data-category-id="sum-11"]'
+
+      - action: observe
+        target:
+          description: "Choice now in SUM = 11"
+          hint: '[data-category-id="sum-11"] [data-choice-id="3"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Choice no longer in SUM = 10"
+          hint: '[data-category-id="sum-10"] [data-choice-id="3"]'
+        expected:
+          exists: false
+
+    spiritChecks:
+      - "Move operation is atomic (not copy)"
+      - "Visual feedback during drag is clear"
+
+  - id: "categorize-react/default/drag-back-to-board"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates dragging choice back to board removes it from category"
+
+    notes:
+      - "Dragging to choices board 'uncategorizes' the choice"
+      - "Session updates to remove choice from category"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: drag
+        source:
+          description: "Choice '3 + 7'"
+          hint: '[data-choice-id="3"]'
+        target:
+          description: "SUM = 10 category"
+          hint: '[data-category-id="sum-10"]'
+
+      - action: wait
+        duration: 500
+
+      - action: drag
+        source:
+          description: "Choice '3 + 7' in category"
+          hint: '[data-category-id="sum-10"] [data-choice-id="3"]'
+        target:
+          description: "Choices board"
+          hint: '[data-testid="choices-board"]'
+
+      - action: observe
+        target:
+          description: "Choice back on board"
+          hint: '[data-testid="choices-board"] [data-choice-id="3"]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Choice returns to original location"
+      - "Can be dragged again after returning"
+
+  # ====================
+  # Correctness & Scoring Tests
+  # ====================
+
+  - id: "categorize-react/default/correct-answer"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates correct categorization yields score of 1.0"
+
+    notes:
+      - "Correct: 3+7, 4+6, 5+5 in SUM=10; 4+7 in SUM=11"
+      - "All categories must match exactly"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "gather"
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="3"]'
+        target:
+          hint: '[data-category-id="sum-10"]'
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="4"]'
+        target:
+          hint: '[data-category-id="sum-10"]'
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="5"]'
+        target:
+          hint: '[data-category-id="sum-10"]'
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="6"]'
+        target:
+          hint: '[data-category-id="sum-11"]'
+
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct", [data-feedback="correct"]'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+    spiritChecks:
+      - "Categories show correct (green) styling"
+      - "Feedback message is positive"
+
+  - id: "categorize-react/default/incorrect-answer"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates incorrect categorization yields score of 0.0"
+
+    notes:
+      - "Placing choices in wrong categories"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="3"]'
+        target:
+          hint: '[data-category-id="sum-11"]'
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="6"]'
+        target:
+          hint: '[data-category-id="sum-10"]'
+
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Incorrect feedback"
+          hint: 'text="Incorrect", [data-feedback="incorrect"]'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+    spiritChecks:
+      - "Categories show incorrect (red) styling"
+
+  - id: "categorize-react/with-alternates/alternate-response"
+    sampleId: "with-alternates"
+    severity: "error"
+
+    intent: "Validates alternate correct responses are accepted"
+
+    notes:
+      - "Sample allows multiple valid answers for land animals"
+      - "Either dog+cat, just dog, or just cat in land category is correct"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "with-alternates"
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="dog"]'
+        target:
+          hint: '[data-category-id="land"]'
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="fish"]'
+        target:
+          hint: '[data-category-id="water"]'
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="frog"]'
+        target:
+          hint: '[data-category-id="both"]'
+
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "with-alternates"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback (alternate accepted)"
+          hint: 'text="Correct"'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+    spiritChecks:
+      - "Alternate responses are validated correctly"
+      - "System picks best matching response"
+
+  # ====================
+  # Mode Tests
+  # ====================
+
+  - id: "categorize-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates view mode disables drag-and-drop"
+
+    notes:
+      - "Categories should display but not accept drags"
+      - "Choices should not be draggable"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "view"
+
+      - action: observe
+        target:
+          description: "Categories visible"
+          hint: '[data-category-id="sum-10"]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Drag handles are hidden or disabled"
+      - "Visual indication of read-only mode"
+
+  - id: "categorize-react/default/evaluate-feedback"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates evaluate mode shows correct/incorrect visual feedback"
+
+    notes:
+      - "Categories with correct choices show success styling"
+      - "Categories with incorrect choices show error styling"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="3"]'
+        target:
+          hint: '[data-category-id="sum-11"]'
+
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Category with incorrect styling"
+          hint: '[data-category-id="sum-11"][data-correct="false"], [data-category-id="sum-11"].incorrect'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Visual feedback is immediate and clear"
+      - "Color coding follows standards (green/red)"
+
+  - id: "categorize-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates instructor role displays rationale in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rationale section"
+          hint: 'text="Group the math expressions"'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Rationale is visible only to instructor"
+      - "Content is clear and helpful"
+
+  # ====================
+  # Accessibility Tests
+  # ====================
+
+  - id: "categorize-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates keyboard accessibility for drag-and-drop"
+
+    notes:
+      - "Drag-and-drop should have keyboard alternative"
+      - "Focus management during interactions"
+      - "May require custom keyboard handlers"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: observe
+        target:
+          description: "Draggable choices"
+          hint: '[draggable="true"], [data-draggable]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Keyboard users can categorize items"
+      - "Clear instructions for keyboard interaction"
+      - "Tab order is logical"
+
+  - id: "categorize-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates touch target sizes meet WCAG 2.2 minimum (44x44px)"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: checkStyle
+        target:
+          description: "Draggable choice"
+          hint: '[data-choice-id]'
+        expected:
+          minWidth: "44px"
+          minHeight: "44px"
+
+    spiritChecks:
+      - "Choices are easy to grab on touch devices"
+      - "Drop zones are adequately sized"
+
+  - id: "categorize-react/default/axe-scan-gather"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates no accessibility violations in gather mode"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "categorize-react/default/axe-scan-evaluate"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates no accessibility violations in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  # ====================
+  # Style & Visual Tests
+  # ====================
+
+  - id: "categorize-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates sufficient color contrast for text"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: checkColorContrast
+        target:
+          description: "Category labels"
+          hint: '[data-category-id] p'
+        expected:
+          minRatio: 4.5
+
+      - action: checkColorContrast
+        target:
+          description: "Choice content"
+          hint: '[data-choice-id] p'
+        expected:
+          minRatio: 4.5
+
+  - id: "categorize-react/default/typography"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates font sizes meet readability standards"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: checkFont
+        target:
+          description: "Prompt text"
+          hint: 'p'
+        expected:
+          minSize: "14px"
+
+  - id: "categorize-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Captures visual regression baseline"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: screenshot
+        filename: "categorize-default-baseline.png"
+        fullPage: false
+
+    spiritChecks:
+      - "Layout is balanced and professional"
+      - "Drag affordances are clear"
+
+  # ====================
+  # Error Handling Tests
+  # ====================
+
+  - id: "categorize-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates graceful handling when no choices categorized"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Feedback indicator"
+          hint: '[data-feedback]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "No JavaScript errors"
+      - "Appropriate feedback for empty state"
+
+  - id: "categorize-react/default/mode-switching"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates smooth transitions between modes"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="3"]'
+        target:
+          hint: '[data-category-id="sum-10"]'
+
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "view"
+          preserveSession: true
+
+      - action: wait
+        duration: 500
+
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Element stable"
+          hint: '[data-category-id]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Session state persists across mode changes"
+      - "No visual glitches"
+
+  - id: "categorize-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates reset clears all categorizations"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+
+      - action: drag
+        source:
+          hint: '[data-choice-id="3"]'
+        target:
+          hint: '[data-category-id="sum-10"]'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "Choice back on board"
+          hint: '[data-testid="choices-board"] [data-choice-id="3"]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "All choices return to original positions"
+      - "Categories are emptied"
+
+  # ====================
+  # Performance Test
+  # ====================
+
+  - id: "categorize-react/default/load-time"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates element loads within acceptable time"
+
+    steps:
+      - action: navigate
+        path: "/categorize"
+        params:
+          sampleId: "default"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Element rendered"
+          hint: '[data-category-id]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Drag operations are smooth"
+      - "No lag during interactions"

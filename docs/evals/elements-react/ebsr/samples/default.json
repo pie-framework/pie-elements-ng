@@ -1,0 +1,107 @@
+{
+  "id": "ebsr_demo",
+  "name": "EBSR Demo",
+  "config": {
+    "elements": {
+      "pp-pie-element-ebsr": "@pie-element/ebsr@latest"
+    },
+    "models": [
+      {
+        "id": "1",
+        "element": "pp-pie-element-ebsr",
+        "partA": {
+          "choiceMode": "radio",
+          "choicePrefix": "numbers",
+          "choices": [
+            {
+              "value": "yellow",
+              "label": "Yellow",
+              "hideTick": false
+            },
+            {
+              "value": "green",
+              "label": "Green",
+              "hideTick": false
+            },
+            {
+              "correct": true,
+              "value": "blue",
+              "label": "Blue",
+              "hideTick": false
+            }
+          ],
+          "choicesLayout": "vertical",
+          "feedbackEnabled": false,
+          "gridColumns": 2,
+          "prompt": "What color is the sky?",
+          "promptEnabled": true,
+          "rationale": "",
+          "rationaleEnabled": true,
+          "spellCheckEnabled": true,
+          "studentInstructionsEnabled": true,
+          "teacherInstructionsEnabled": true,
+          "toolbarEditorPosition": "bottom",
+          "errors": {},
+          "partialScoring": true,
+          "showTeacherInstructions": false,
+          "alwaysShowCorrect": false,
+          "mode": "gather",
+          "disabled": true,
+          "animationsDisabled": true,
+          "lockChoiceOrder": true,
+          "keyMode": "numbers"
+        },
+        "partB": {
+          "choiceMode": "radio",
+          "choicePrefix": "numbers",
+          "choices": [
+            {
+              "value": "orange",
+              "label": "Orange",
+              "hideTick": false
+            },
+            {
+              "correct": true,
+              "value": "purple",
+              "label": "Purple",
+              "hideTick": false
+            },
+            {
+              "value": "pink",
+              "label": "Pink",
+              "hideTick": false
+            },
+            {
+              "value": "green",
+              "label": "Green",
+              "hideTick": false
+            }
+          ],
+          "choicesLayout": "vertical",
+          "feedbackEnabled": false,
+          "gridColumns": 2,
+          "prompt": "What color do you get when you mix Red with your answer in Part 1?",
+          "promptEnabled": true,
+          "rationale": "",
+          "rationaleEnabled": true,
+          "spellCheckEnabled": true,
+          "studentInstructionsEnabled": true,
+          "teacherInstructionsEnabled": true,
+          "toolbarEditorPosition": "bottom",
+          "errors": {},
+          "partialScoring": true,
+          "showTeacherInstructions": false,
+          "alwaysShowCorrect": false,
+          "mode": "gather",
+          "disabled": true,
+          "animationsDisabled": true,
+          "lockChoiceOrder": true,
+          "keyMode": "numbers"
+        },
+        "partLabels": true,
+        "partLabelType": "Letters"
+      }
+    ],
+    "markup": "<pp-pie-element-ebsr id='1'></pp-pie-element-ebsr>"
+  }
+}

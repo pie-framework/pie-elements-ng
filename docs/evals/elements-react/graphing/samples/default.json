@@ -1,0 +1,81 @@
+{
+  "id": "graphing_demo",
+  "name": "Graphing Demo",
+  "config": {
+    "elements": {
+      "pp-pie-element-graphing": "@pie-element/graphing@latest"
+    },
+    "models": [
+      {
+        "id": "1",
+        "element": "pp-pie-element-graphing",
+        "promptEnabled": true,
+        "domain": {
+          "min": -10,
+          "max": 10,
+          "step": 1,
+          "labelStep": 0
+        },
+        "range": {
+          "min": -10,
+          "max": 10,
+          "step": 1,
+          "labelStep": 0
+        },
+        "backgroundMarks": [
+          {
+            "type": "point",
+            "x": 2,
+            "y": 2
+          }
+        ],
+        "answers": {
+          "correctAnswer": {
+            "name": "Correct Answer",
+            "marks": []
+          }
+        },
+        "arrows": {
+          "left": true,
+          "right": true,
+          "up": true,
+          "down": true
+        },
+        "coordinatesOnHover": false,
+        "defaultGridConfiguration": 0,
+        "graph": {
+          "width": 500,
+          "height": 500
+        },
+        "includeAxes": true,
+        "labels": {},
+        "labelsEnabled": true,
+        "padding": true,
+        "prompt": "",
+        "rationale": "",
+        "rationaleEnabled": true,
+        "standardGrid": false,
+        "studentInstructionsEnabled": true,
+        "teacherInstructions": "",
+        "teacherInstructionsEnabled": true,
+        "title": "",
+        "titleEnabled": true,
+        "toolbarTools": [
+          "circle",
+          "line",
+          "label",
+          "parabola",
+          "point",
+          "polygon",
+          "ray",
+          "segment",
+          "sine",
+          "vector"
+        ],
+        "defaultTool": "circle",
+        "dimensionsEnabled": true
+      }
+    ],
+    "markup": "<pp-pie-element-graphing id='1'></pp-pie-element-graphing>"
+  }
+}

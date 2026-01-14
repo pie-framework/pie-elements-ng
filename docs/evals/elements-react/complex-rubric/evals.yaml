@@ -1,0 +1,363 @@
+version: 1
+
+component:
+  element: "@pie-element/complex-rubric"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/complex-rubric"
+
+evals:
+  - id: "complex-rubric-react/default/renders"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates simple rubric displays with point levels"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: observe
+        target:
+          description: "Rubric toggle button"
+          hint: 'button:has-text("Rubric"), [role="button"]:has-text("Rubric")'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Point level descriptions"
+          hint: 'text="Excellent understanding"'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "complex-rubric-react/default/toggle-visibility"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates rubric can be toggled visible/hidden"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: click
+        target:
+          description: "Rubric toggle"
+          hint: 'button:has-text("Hide Rubric"), #rubric-toggle'
+
+      - action: observe
+        target:
+          description: "Rubric hidden"
+          hint: 'button:has-text("Show Rubric")'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/point-levels"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates all point levels display"
+
+    notes:
+      - "default sample has 4 point levels (0-3)"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: observe
+        target:
+          description: "0 points level"
+          hint: 'text="0 PT"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "3 points level"
+          hint: 'text="3 PT"'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/sample-answers"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates sample answers display"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: observe
+        target:
+          description: "Sample answer"
+          hint: 'text="Fully correct and complete"'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/highest-first"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates points displayed in descending order"
+
+    notes:
+      - "Rubric displays highest points first (3, 2, 1, 0)"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: observe
+        target:
+          description: "Points in order"
+          hint: 'text="3 PT"'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/multi/multi-trait-renders"
+    sampleId: "multi-trait"
+    severity: "error"
+    intent: "Validates multi-trait rubric displays with multiple scales"
+
+    notes:
+      - "multi-trait sample has 2 scales: Problem Solving and Communication"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+        params:
+          sampleId: "multi-trait"
+
+      - action: observe
+        target:
+          description: "Problem Solving trait"
+          hint: 'text="Problem Solving"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Communication trait"
+          hint: 'text="Communication"'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/multi/scale-labels"
+    sampleId: "multi-trait"
+    severity: "error"
+    intent: "Validates scale point labels display"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+        params:
+          sampleId: "multi-trait"
+
+      - action: observe
+        target:
+          description: "Emerging label"
+          hint: 'text="Emerging"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Advanced label"
+          hint: 'text="Advanced"'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/instructor-view"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rubric content"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+        params:
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rubric visible"
+          hint: 'text="understanding"'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/student-view"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates student can view rubric if enabled"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+        params:
+          role: "student"
+
+      - action: observe
+        target:
+          description: "Rubric toggle available"
+          hint: 'button:has-text("Rubric")'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/keyboard-toggle"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility for toggle"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: observe
+        target:
+          description: "Focusable toggle"
+          hint: '[tabindex="0"]'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/aria-expanded"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates ARIA attributes on toggle"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: observe
+        target:
+          description: "ARIA-expanded attribute"
+          hint: '[aria-expanded]'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/semantic-structure"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates semantic HTML structure"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: observe
+        target:
+          description: "List structure"
+          hint: 'nav, ul, li'
+        expected:
+          exists: true
+
+  - id: "complex-rubric-react/default/axe-scan"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "complex-rubric-react/multi/axe-scan-multi"
+    sampleId: "multi-trait"
+    severity: "error"
+    intent: "No accessibility violations in multi-trait"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+        params:
+          sampleId: "multi-trait"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "complex-rubric-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: checkColorContrast
+        target:
+          description: "Rubric text"
+          hint: 'p, li, button'
+        expected:
+          minRatio: 4.5
+
+  - id: "complex-rubric-react/default/typography"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates typography sizing"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: checkFont
+        target:
+          description: "Rubric text"
+          hint: 'p, li'
+        expected:
+          minSize: "14px"
+
+  - id: "complex-rubric-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+
+      - action: screenshot
+        filename: "complex-rubric-default-baseline.png"
+
+  - id: "complex-rubric-react/multi/visual-regression-multi"
+    sampleId: "multi-trait"
+    severity: "warn"
+    intent: "Captures visual baseline for multi-trait"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+        params:
+          sampleId: "multi-trait"
+
+      - action: screenshot
+        filename: "complex-rubric-multi-baseline.png"
+
+  - id: "complex-rubric-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/complex-rubric"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Rubric rendered"
+          hint: 'button:has-text("Rubric")'
+        expected:
+          exists: true

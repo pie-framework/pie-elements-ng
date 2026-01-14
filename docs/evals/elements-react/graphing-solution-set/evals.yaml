@@ -1,0 +1,636 @@
+version: 1
+
+component:
+  element: "@pie-element/graphing-solution-set"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/graphing-solution-set"
+
+evals:
+  - id: "graphing-solution-set-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates graph canvas and toolbar render in gather mode"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: observe
+        target:
+          description: "Graph canvas"
+          hint: 'canvas, svg[role="img"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Toolbar with line controls"
+          hint: '.toolbar, [role="toolbar"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Prompt text"
+          hint: 'text="Graph the solution set"'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "graphing-solution-set-react/default/draw-line"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates drawing a line on the graph"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          description: "Graph canvas to start line"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Second point to complete line"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: observe
+        target:
+          description: "Line visible on graph"
+          hint: 'line, path[stroke]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        value:
+          marks:
+            exists: true
+
+  - id: "graphing-solution-set-react/default/line-type-dashed"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates setting line type to dashed"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          description: "Line type selector"
+          hint: 'select, [aria-label*="line"], button:has-text("Dashed")'
+
+      - action: observe
+        target:
+          description: "Dashed option"
+          hint: 'option[value="Dashed"], [aria-label*="Dashed"]'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/select-solution-region"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates selecting solution set region after drawing line"
+
+    notes:
+      - "Solution set can only be drawn after at least one line exists"
+      - "Clicking in a region creates a polygon marking the solution area"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          description: "Draw line point 1"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Draw line point 2"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Select solution region"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: observe
+        target:
+          description: "Solution region polygon"
+          hint: 'polygon, path[fill], [data-solution="true"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        value:
+          marks:
+            exists: true
+
+  - id: "graphing-solution-set-react/default/workflow-warning"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates warning when attempting to select solution before drawing line"
+
+    notes:
+      - "System enforces workflow: lines must be drawn before solution set"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          description: "Attempt to select solution region without line"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: observe
+        target:
+          description: "Warning dialog or message"
+          hint: '[role="alert"], .warning, text="draw"'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/correct-answer"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct line and solution set yields score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          description: "Point at (-10, -19)"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Point at (10, 21)"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Select upper region"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct indicator"
+          hint: 'text="Correct", [data-correct="true"]'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "graphing-solution-set-react/default/incorrect-line"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect line yields lower score"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          description: "Wrong point 1"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Wrong point 2"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Select region"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score:
+          lessThan: 1.0
+
+  - id: "graphing-solution-set-react/default/incorrect-solution-region"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates wrong solution region yields lower score"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          description: "Correct line point 1"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Correct line point 2"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Wrong region (below line instead of above)"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score:
+          lessThan: 1.0
+
+  - id: "graphing-solution-set-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables graph interactions"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          hint: 'canvas, svg[role="img"]'
+
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          mode: "view"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Graph disabled or readonly"
+          hint: '[disabled], [readonly], [aria-readonly="true"]'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/evaluate-feedback"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates evaluate mode shows correctness feedback"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          hint: 'canvas, svg[role="img"]'
+
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Feedback indicators"
+          hint: '[data-correct], .correct, .incorrect, text="Correct"'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rationale in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rationale text"
+          hint: 'text="solution set includes all points above"'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/teacher-instructions"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates teacher instructions visible to instructor"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Teacher instructions"
+          hint: 'text="Students should draw a dashed line"'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/graph-grid"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates graph grid and axes render correctly"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: observe
+        target:
+          description: "X-axis"
+          hint: 'text="x-axis", [aria-label*="x"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Y-axis"
+          hint: 'text="y-axis", [aria-label*="y"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Grid lines"
+          hint: 'line[stroke], .grid'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/coordinates-on-hover"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates coordinates display on hover"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: hover
+        target:
+          description: "Graph area"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: observe
+        target:
+          description: "Coordinate display"
+          hint: '.coordinates, [data-coordinates], text=","'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/delete-line"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates deleting a drawn line"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          description: "Draw line"
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Delete button"
+          hint: 'button:has-text("Delete"), [aria-label*="delete"]'
+
+      - action: observe
+        target:
+          description: "Line removed"
+          hint: 'line, path[stroke]'
+        expected:
+          exists: false
+
+  - id: "graphing-solution-set-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset clears all marks"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: click
+        target:
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          hint: 'canvas, svg[role="img"]'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "No marks on graph"
+          hint: 'line, polygon, path[stroke]'
+        expected:
+          exists: false
+
+  - id: "graphing-solution-set-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: observe
+        target:
+          description: "Focusable controls"
+          hint: 'button:not([disabled]), select:not([disabled])'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: checkStyle
+        target:
+          description: "Interactive buttons"
+          hint: 'button, [role="button"]'
+        expected:
+          minHeight: "44px"
+
+  - id: "graphing-solution-set-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in gather mode"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "graphing-solution-set-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "graphing-solution-set-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast for text elements"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: checkColorContrast
+        target:
+          description: "Labels and text"
+          hint: 'label, p, span, text'
+        expected:
+          minRatio: 4.5
+
+  - id: "graphing-solution-set-react/default/typography"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates minimum font size"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: checkFont
+        target:
+          description: "Body text"
+          hint: 'p, label, span'
+        expected:
+          minSize: "14px"
+
+  - id: "graphing-solution-set-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: screenshot
+        filename: "graphing-solution-set-default-baseline.png"
+
+  - id: "graphing-solution-set-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Handles empty submission gracefully"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+
+      - action: navigate
+        path: "/graphing-solution-set"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Graph still visible"
+          hint: 'canvas, svg[role="img"]'
+        expected:
+          exists: true
+
+  - id: "graphing-solution-set-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/graphing-solution-set"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Graph rendered"
+          hint: 'canvas, svg[role="img"]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Graph canvas renders smoothly without lag"
+      - "Line drawing is responsive to mouse/touch input"
+      - "Solution region selection provides immediate visual feedback"

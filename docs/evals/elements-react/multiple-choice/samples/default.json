@@ -1,0 +1,49 @@
+{
+  "id": "multiple_choice_demo",
+  "name": "Multiple Choice Demo",
+  "config": {
+    "markup": "<multiple-choice-element id=\"Q124\"></multiple-choice-element>",
+    "elements": {
+      "multiple-choice-element": "@pie-element/multiple-choice@latest"
+    },
+    "models": [
+      {
+        "id": "Q124",
+        "element": "multiple-choice-element",
+        "prompt": "What is the capital of France?",
+        "choicePrefix": "letters",
+        "scoringType": "auto",
+        "lockChoiceOrder": false,
+        "partialScoring": true,
+        "choices": [
+          {
+            "value": "A",
+            "label": "London",
+            "correct": false
+          },
+          {
+            "value": "B",
+            "label": "Paris",
+            "correct": true
+          },
+          {
+            "value": "C",
+            "label": "Berlin",
+            "correct": false
+          },
+          {
+            "value": "D",
+            "label": "Rome",
+            "correct": false
+          }
+        ],
+        "choiceMode": "radio",
+        "promptEnabled": true,
+        "rationaleEnabled": true,
+        "teacherInstructionsEnabled": true,
+        "studentInstructionsEnabled": true
+      }
+    ],
+    "id": ""
+  }
+}

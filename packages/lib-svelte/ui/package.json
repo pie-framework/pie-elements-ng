@@ -1,0 +1,54 @@
+{
+  "name": "@pie-elements-ng/lib-ui",
+  "version": "0.0.0",
+  "description": "Shared UI components for PIE elements",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./Prompt.svelte": "./src/Prompt.svelte",
+    "./Feedback.svelte": "./src/Feedback.svelte",
+    "./Rationale.svelte": "./src/Rationale.svelte",
+    "./LoadingSpinner.svelte": "./src/LoadingSpinner.svelte",
+    "./RichTextEditor.svelte": "./src/RichTextEditor.svelte",
+    "./math-utils": "./src/math-utils.ts",
+    "./sanitize": "./src/sanitize.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "dev": "echo 'No build needed for Svelte components'",
+    "build": "echo 'No build needed for Svelte components'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "echo 'Nothing to clean'"
+  },
+  "dependencies": {
+    "@pie-shared/types": "workspace:*",
+    "@tiptap/core": "^3.14.0",
+    "@tiptap/extension-blockquote": "^3.14.0",
+    "@tiptap/extension-heading": "^3.14.0",
+    "@tiptap/extension-image": "^3.14.0",
+    "@tiptap/extension-mathematics": "^3.14.0",
+    "@tiptap/extension-placeholder": "^3.14.0",
+    "@tiptap/extension-strike": "^3.14.0",
+    "@tiptap/extension-subscript": "^3.14.0",
+    "@tiptap/extension-superscript": "^3.14.0",
+    "@tiptap/extension-text-align": "^3.14.0",
+    "@tiptap/extension-underline": "^3.14.0",
+    "@tiptap/starter-kit": "^3.14.0",
+    "dompurify": "^3.2.5",
+    "katex": "^0.16.27"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/dompurify": "^3.2.0",
+    "svelte": "^5.43.8",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

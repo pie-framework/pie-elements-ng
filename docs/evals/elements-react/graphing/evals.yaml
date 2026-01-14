@@ -1,0 +1,631 @@
+version: 1
+
+component:
+  element: "@pie-element/graphing"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/graphing"
+
+evals:
+  # ====================
+  # Basic Rendering
+  # ====================
+
+  - id: "graphing-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates graphing element renders with coordinate plane and tools"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: observe
+        target:
+          description: "Graph SVG canvas"
+          hint: 'svg, [data-testid="graph-canvas"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Tool menu"
+          hint: '[data-testid="tool-menu"], .tool-menu'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+    spiritChecks:
+      - "Coordinate axes are clearly visible"
+      - "Grid lines are evenly spaced"
+      - "Tool buttons are clearly labeled"
+
+  # ====================
+  # Point Tool Tests
+  # ====================
+
+  - id: "graphing-react/default/plot-single-point"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates plotting a single point updates session"
+
+    notes:
+      - "Click on graph at coordinate (2, 3)"
+      - "Session should contain point mark with x=2, y=3"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: clickAt
+        target:
+          description: "Graph at coordinate (2, 3)"
+          hint: 'svg, [data-testid="graph-canvas"]'
+        coordinates:
+          x: 300
+          y: 200
+        notes:
+          - "Pixel coordinates map to graph coordinates via scale"
+
+      - action: observe
+        target:
+          description: "Point rendered on graph"
+          hint: 'circle[data-type="point"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          arrayContains:
+            - type: "point"
+
+    spiritChecks:
+      - "Point is visually distinct"
+      - "Point appears at clicked location"
+
+  - id: "graphing-react/default/correct-point"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct point placement yields score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+          mode: "gather"
+
+      - action: clickAt
+        target:
+          description: "Plot point at (2, 3)"
+          hint: 'svg'
+        coordinates:
+          x: 300
+          y: 200
+
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct", [data-correctness="correct"]'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "graphing-react/default/incorrect-point"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect point placement yields score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: clickAt
+        target:
+          hint: 'svg'
+        coordinates:
+          x: 200
+          y: 200
+
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  # ====================
+  # Line/Segment Tools
+  # ====================
+
+  - id: "graphing-react/line-segment/draw-segment"
+    sampleId: "line-segment"
+    severity: "error"
+    intent: "Validates drawing line segment with two clicks"
+
+    notes:
+      - "Segment tool requires two points: from and to"
+      - "First click sets 'from', second click sets 'to'"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "line-segment"
+
+      - action: clickAt
+        target:
+          description: "Start point (-2, -2)"
+          hint: 'svg'
+        coordinates:
+          x: 200
+          y: 300
+
+      - action: clickAt
+        target:
+          description: "End point (4, 4)"
+          hint: 'svg'
+        coordinates:
+          x: 400
+          y: 100
+
+      - action: observe
+        target:
+          description: "Line segment rendered"
+          hint: 'line[data-type="segment"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          arrayContains:
+            - type: "segment"
+
+    spiritChecks:
+      - "Segment connects both endpoints"
+      - "Building state shows preview during second click"
+
+  - id: "graphing-react/line-segment/correct-segment"
+    sampleId: "line-segment"
+    severity: "error"
+    intent: "Validates correct segment yields full score"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "line-segment"
+
+      - action: clickAt
+        target:
+          hint: 'svg'
+        coordinates:
+          x: 200
+          y: 300
+
+      - action: clickAt
+        target:
+          hint: 'svg'
+        coordinates:
+          x: 400
+          y: 100
+
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "line-segment"
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  # ====================
+  # Undo/Redo Tests
+  # ====================
+
+  - id: "graphing-react/default/undo-point"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates undo removes last plotted point"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: clickAt
+        target:
+          hint: 'svg'
+        coordinates:
+          x: 300
+          y: 200
+
+      - action: observe
+        target:
+          description: "Point exists"
+          hint: 'circle[data-type="point"]'
+        expected:
+          exists: true
+
+      - action: click
+        target:
+          description: "Undo button"
+          hint: 'button:has-text("Undo"), [aria-label*="Undo"]'
+
+      - action: observe
+        target:
+          description: "Point removed"
+          hint: 'circle[data-type="point"]'
+        expected:
+          exists: false
+
+    spiritChecks:
+      - "Undo button becomes disabled when no actions"
+
+  - id: "graphing-react/default/redo-point"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates redo restores undone point"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: clickAt
+        target:
+          hint: 'svg'
+        coordinates:
+          x: 300
+          y: 200
+
+      - action: click
+        target:
+          description: "Undo button"
+          hint: 'button:has-text("Undo")'
+
+      - action: click
+        target:
+          description: "Redo button"
+          hint: 'button:has-text("Redo"), [aria-label*="Redo"]'
+
+      - action: observe
+        target:
+          description: "Point restored"
+          hint: 'circle[data-type="point"]'
+        expected:
+          exists: true
+
+  # ====================
+  # Reset Test
+  # ====================
+
+  - id: "graphing-react/default/reset-clears-graph"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset button clears all marks"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: clickAt
+        target:
+          hint: 'svg'
+        coordinates:
+          x: 300
+          y: 200
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset"), button:has-text("Clear")'
+
+      - action: observe
+        target:
+          description: "No marks on graph"
+          hint: 'circle[data-type="point"]'
+        expected:
+          exists: false
+
+    expected:
+      session:
+        answer:
+          arrayLength: 0
+
+  # ====================
+  # Mode Tests
+  # ====================
+
+  - id: "graphing-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode displays marks without editing"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+          mode: "view"
+
+      - action: observe
+        target:
+          description: "Graph visible"
+          hint: 'svg'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Tool menu is hidden or disabled"
+      - "Clicking graph has no effect"
+
+  - id: "graphing-react/default/evaluate-correctness"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates evaluate mode shows correct/incorrect marks"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: clickAt
+        target:
+          hint: 'svg'
+        coordinates:
+          x: 250
+          y: 200
+
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Mark with incorrect styling"
+          hint: '[data-correctness="incorrect"], .incorrect'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Incorrect marks show red or error styling"
+      - "Icons (✗) indicate incorrectness"
+
+  - id: "graphing-react/default/instructor-correct-answer"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor can view correct answer overlay"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Show correct answer toggle"
+          hint: 'button:has-text("Show"), input[type="checkbox"]'
+        expected:
+          exists: true
+
+  # ====================
+  # Accessibility Tests
+  # ====================
+
+  - id: "graphing-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates keyboard navigation through tools"
+
+    notes:
+      - "Tab should move through tool buttons"
+      - "Enter/Space should select tool"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: observe
+        target:
+          description: "Tool buttons focusable"
+          hint: 'button[tabindex="0"]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Focus indicators are visible"
+      - "Tab order is logical"
+
+  - id: "graphing-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes meet WCAG 2.2 (44x44px)"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: checkStyle
+        target:
+          description: "Tool buttons"
+          hint: '[data-testid="tool-menu"] button'
+        expected:
+          minWidth: "44px"
+          minHeight: "44px"
+
+  - id: "graphing-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates no accessibility violations in gather mode"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "graphing-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates no accessibility violations in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  # ====================
+  # Style & Visual Tests
+  # ====================
+
+  - id: "graphing-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates sufficient color contrast for axes and labels"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: checkColorContrast
+        target:
+          description: "Axis labels"
+          hint: 'text, .axis-label'
+        expected:
+          minRatio: 4.5
+
+  - id: "graphing-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual regression baseline"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: screenshot
+        filename: "graphing-default-baseline.png"
+        fullPage: false
+
+    spiritChecks:
+      - "Graph is properly centered"
+      - "Axes are symmetric"
+
+  # ====================
+  # Error Handling
+  # ====================
+
+  - id: "graphing-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates graceful handling of empty graph submission"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Feedback indicator"
+          hint: '[data-feedback]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "No JavaScript errors"
+      - "Appropriate feedback for empty state"
+
+  - id: "graphing-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates graph loads within acceptable time"
+
+    steps:
+      - action: navigate
+        path: "/graphing"
+        params:
+          sampleId: "default"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Graph rendered"
+          hint: 'svg'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Tool interactions are responsive"
+      - "No lag when plotting marks"

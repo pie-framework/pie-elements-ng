@@ -1,0 +1,80 @@
+{
+  "id": "graphing_solution_set_demo",
+  "name": "Graphing Solution Set Demo",
+  "config": {
+    "elements": {
+      "pp-pie-element-graphing-solution-set": "@pie-element/graphing-solution-set@latest"
+    },
+    "models": [
+      {
+        "id": "1",
+        "element": "pp-pie-element-graphing-solution-set",
+        "answers": {
+          "correctAnswer": {
+            "name": "Correct Answer",
+            "marks": []
+          }
+        },
+        "arrows": {
+          "left": true,
+          "right": true,
+          "up": true,
+          "down": true
+        },
+        "marks": [],
+        "defaultGridConfiguration": 0,
+        "domain": {
+          "min": -10,
+          "max": 10,
+          "padding": 0,
+          "step": 1,
+          "labelStep": 1,
+          "axisLabel": "x"
+        },
+        "graph": {
+          "width": 480,
+          "height": 480
+        },
+        "gssLineData": {
+          "numberOfLines": 1,
+          "selectedTool": "lineA",
+          "sections": [],
+          "lineA": {
+            "lineType": "Solid"
+          }
+        },
+        "includeAxes": true,
+        "labels": {
+          "top": "top",
+          "left": "left",
+          "bottom": "bottom",
+          "right": "right"
+        },
+        "labelsEnabled": true,
+        "padding": true,
+        "prompt": "Prompt goes here",
+        "range": {
+          "min": -10,
+          "max": 10,
+          "padding": 0,
+          "step": 1,
+          "labelStep": 1,
+          "axisLabel": "y"
+        },
+        "rationale": "Rationale goes here",
+        "standardGrid": true,
+        "title": "Graph title",
+        "coordinatesOnHover": false,
+        "promptEnabled": true,
+        "rationaleEnabled": true,
+        "teacherInstructionsEnabled": true,
+        "studentInstructionsEnabled": true,
+        "rubricEnabled": false,
+        "language": "en_US",
+        "titleEnabled": true,
+        "dimensionsEnabled": true
+      }
+    ],
+    "markup": "<pp-pie-element-graphing-solution-set id='1'></pp-pie-element-graphing-solution-set>"
+  }
+}

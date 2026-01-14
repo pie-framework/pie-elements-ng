@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Upstream-copied packages (kept local, do not commit)
+packages/elements-react/
+packages/lib-react/
+
+# Local caches / tooling artifacts
+.cache/
+.playwright-mcp/
+
+# Build outputs
+dist/
+build/
+esm/
+.turbo/
+.svelte-kit/
+*.tsbuildinfo
+
+# Testing
+coverage/
+.playwright/
+test-results/
+playwright-report/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Changesets
+.changeset/*.md
+!.changeset/README.md
+
+# Upstream sync tracking (local only)
+.upstream-sync-history.json
+
+# ESM compatibility analysis (generated locally)
+esm-compatible-elements.json

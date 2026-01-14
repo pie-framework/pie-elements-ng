@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "paths": {
+      "@pie-element/multiple-choice/src/*": ["../../elements-react/multiple-choice/src/*"],
+      "@pie-element/multiple-choice/controller/src/*": [
+        "../../../../pie-elements/packages/multiple-choice/controller/src/*"
+      ]
+    }
+  },
+  "include": ["src/**/*"]
+}

@@ -1,0 +1,338 @@
+# PIE Elements NG Evaluation Template
+# Copy this file to your element directory and customize
+# See docs/evals/README.md for full documentation
+
+version: 1
+
+component:
+  element: "@pie-element/ELEMENT-NAME"  # e.g., @pie-element/multiple-choice
+  framework: "svelte"  # or "react"
+  tagName: "pie-ELEMENT-NAME"  # Optional: web component tag name
+
+examplesApp:
+  app: "@pie-demos/sveltekit"  # or @pie-examples/react
+  routeTemplate: "/demos/<tagName>"  # Route path in demos host
+
+evals:
+  # ============================================================================
+  # Basic Rendering
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/renders-correctly"
+    sampleId: "SAMPLE-NAME"  # Links to samples/SAMPLE-NAME.json
+    severity: "error"  # or "warn"
+
+    gradeBand: "3-6"  # Optional: grade level metadata
+    subject: "math"  # Optional: subject area
+
+    intent: "Validates that element renders correctly with default configuration"
+
+    notes:
+      - "Add implementation notes here"
+      - "Document any special conditions or setup"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-NAME"
+          mode: "gather"
+          role: "student"
+
+      - action: observe
+        target:
+          description: "Element root container"
+          hint: '.pie-element-root'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+    expected:
+      session:
+        # Define expected session state
+        initialized:
+          equals: true
+
+      outcome:
+        # Define expected outcome values
+        empty:
+          equals: true
+
+    spiritChecks:
+      - "Element displays promptly without layout shift"
+      - "Visual design is clean and grade-appropriate"
+      - "Instructions are clear and concise"
+
+  # ============================================================================
+  # User Interaction - Correct Answer
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/correct-answer"
+    sampleId: "SAMPLE-NAME"
+    severity: "error"
+
+    intent: "Validates correct answer selection yields expected score"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-NAME"
+          mode: "gather"
+
+      # Add interaction steps here
+      - action: click
+        target:
+          description: "Correct choice"
+          hint: 'input[value="CORRECT_VALUE"]'
+
+      - action: click
+        target:
+          description: "Submit button"
+          hint: 'button:has-text("Submit")'
+
+      - action: observe
+        target:
+          description: "Score display"
+          hint: '.score-display'
+        expected:
+          contains: "1"
+
+    expected:
+      session:
+        value:
+          equals: "CORRECT_VALUE"
+
+      outcome:
+        score:
+          equals: 1.0
+        empty:
+          equals: false
+
+  # ============================================================================
+  # User Interaction - Incorrect Answer
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/incorrect-answer"
+    sampleId: "SAMPLE-NAME"
+    severity: "error"
+
+    intent: "Validates incorrect answer yields score of 0"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-NAME"
+          mode: "gather"
+
+      - action: click
+        target:
+          description: "Incorrect choice"
+          hint: 'input[value="INCORRECT_VALUE"]'
+
+      - action: click
+        target:
+          description: "Submit button"
+          hint: 'button:has-text("Submit")'
+
+    expected:
+      session:
+        value:
+          equals: "INCORRECT_VALUE"
+
+      outcome:
+        score:
+          equals: 0.0
+
+  # ============================================================================
+  # Accessibility - Keyboard Navigation
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/keyboard-navigation"
+    sampleId: "SAMPLE-NAME"
+    severity: "error"
+
+    intent: "Validates full keyboard navigation support"
+
+    notes:
+      - "Must be navigable with Tab key"
+      - "Must be activatable with Enter/Space"
+      - "Focus indicators must be visible"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-NAME"
+          mode: "gather"
+
+      # Add keyboard interaction steps
+      # Use Playwright keyboard methods in test runner
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+    spiritChecks:
+      - "Tab order is logical and predictable"
+      - "Focus indicators are clearly visible"
+      - "No keyboard traps"
+
+  # ============================================================================
+  # View Mode
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/view-mode"
+    sampleId: "SAMPLE-NAME"
+    severity: "error"
+
+    intent: "Validates view mode displays answers without allowing changes"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-NAME"
+          mode: "view"
+          sessionValue: "ANSWER_VALUE"
+
+      - action: observe
+        target:
+          description: "Answer display"
+          hint: '.answer-display'
+        expected:
+          contains: "ANSWER_VALUE"
+
+      # Verify controls are disabled
+      - action: observe
+        target:
+          description: "Input controls"
+          hint: 'input'
+        expected:
+          exists: true
+
+  # ============================================================================
+  # Evaluate Mode
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/evaluate-mode"
+    sampleId: "SAMPLE-NAME"
+    severity: "error"
+
+    intent: "Validates evaluate mode shows correctness and feedback"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-NAME"
+          mode: "evaluate"
+          sessionValue: "CORRECT_VALUE"
+
+      - action: observe
+        target:
+          description: "Correctness indicator"
+          hint: '.correctness-indicator'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Score display"
+          hint: '.score-display'
+        expected:
+          contains: "1"
+
+  # ============================================================================
+  # Error Handling
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/empty-submission"
+    sampleId: "SAMPLE-NAME"
+    severity: "error"
+
+    intent: "Validates graceful handling of empty submission"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-NAME"
+          mode: "gather"
+
+      - action: click
+        target:
+          description: "Submit button"
+          hint: 'button:has-text("Submit")'
+
+      # May show validation message or allow empty submission
+      # Adjust based on element behavior
+
+    expected:
+      outcome:
+        empty:
+          equals: true
+
+  # ============================================================================
+  # Configuration Options
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/config-option"
+    sampleId: "SAMPLE-WITH-CONFIG"
+    severity: "warn"  # May start as warn until implemented
+
+    intent: "Validates specific configuration option applies correctly"
+
+    notes:
+      - "Document what configuration is being tested"
+      - "Link to relevant config documentation"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-WITH-CONFIG"
+          mode: "gather"
+
+      - action: observe
+        target:
+          description: "Element with config applied"
+          hint: '.pie-element'
+        expected:
+          exists: true
+
+      # Add assertions for config behavior
+
+  # ============================================================================
+  # Performance
+  # ============================================================================
+  - id: "ELEMENT/SAMPLE/load-performance"
+    sampleId: "SAMPLE-NAME"
+    severity: "warn"
+
+    intent: "Validates element loads and renders within acceptable time"
+
+    notes:
+      - "Target: < 2s to interactive"
+      - "Measure from navigation to first interaction ready"
+
+    steps:
+      - action: navigate
+        path: "/ELEMENT-NAME"
+        params:
+          sampleId: "SAMPLE-NAME"
+          mode: "gather"
+
+      - action: wait
+        condition: "networkidle"
+
+      # Performance assertions handled in test runner
+      # Can check timing metrics from Playwright
+
+  # ============================================================================
+  # Add more scenarios as needed:
+  # - Partial credit scoring
+  # - Multiple attempts
+  # - Instructor view
+  # - Responsive layout
+  # - Print mode
+  # - Localization
+  # ============================================================================

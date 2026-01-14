@@ -1,0 +1,299 @@
+version: 1
+
+component:
+  element: "@pie-element/placement-ordering"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/placement-ordering"
+
+evals:
+  - id: "placement-ordering-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates ordering list renders with draggable items"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: observe
+        target:
+          description: "Prompt"
+          hint: 'text="Arrange the planets"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Draggable items"
+          hint: '[draggable="true"]'
+        expected:
+          count: 4
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "placement-ordering-react/default/drag-to-reorder"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates dragging item reorders list"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: drag
+        source:
+          description: "Mars (4th item)"
+          hint: '[data-id="4"]'
+        target:
+          description: "Above Mercury (1st position)"
+          hint: '[data-id="1"]'
+
+      - action: observe
+        target:
+          description: "Mars now first"
+          hint: '[data-position="0"][data-id="4"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        value:
+          exists: true
+
+  - id: "placement-ordering-react/default/correct-order"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct order yields score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: navigate
+        path: "/placement-ordering"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct"'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "placement-ordering-react/default/incorrect-order"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect order yields score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: drag
+        source:
+          hint: '[data-id="4"]'
+        target:
+          hint: '[data-id="1"]'
+
+      - action: navigate
+        path: "/placement-ordering"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  - id: "placement-ordering-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables dragging"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+        params:
+          mode: "view"
+
+      - action: observe
+        target:
+          description: "Items visible"
+          hint: '[data-id]'
+        expected:
+          exists: true
+
+  - id: "placement-ordering-react/default/evaluate-feedback"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates evaluate shows correct/incorrect positions"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: drag
+        source:
+          hint: '[data-id="3"]'
+        target:
+          hint: '[data-id="1"]'
+
+      - action: navigate
+        path: "/placement-ordering"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Item with incorrect styling"
+          hint: '[data-correct="false"]'
+        expected:
+          exists: true
+
+  - id: "placement-ordering-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates keyboard accessibility"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: observe
+        target:
+          description: "Focusable items"
+          hint: '[draggable][tabindex="0"]'
+        expected:
+          exists: true
+
+  - id: "placement-ordering-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: checkStyle
+        target:
+          description: "Draggable items"
+          hint: '[draggable]'
+        expected:
+          minHeight: "44px"
+
+  - id: "placement-ordering-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "placement-ordering-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "placement-ordering-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: checkColorContrast
+        target:
+          description: "Item labels"
+          hint: '[data-id] p'
+        expected:
+          minRatio: 4.5
+
+  - id: "placement-ordering-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: screenshot
+        filename: "placement-ordering-default-baseline.png"
+
+  - id: "placement-ordering-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset restores original order"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+
+      - action: drag
+        source:
+          hint: '[data-id="4"]'
+        target:
+          hint: '[data-id="1"]'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "Original order restored"
+          hint: '[data-position="0"][data-id="1"]'
+        expected:
+          exists: true
+
+  - id: "placement-ordering-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/placement-ordering"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "List rendered"
+          hint: '[draggable]'
+        expected:
+          exists: true

@@ -1,0 +1,20 @@
+{
+  "name": "@pie-elements-ng/lib-a11y",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Accessibility utilities and helpers for PIE elements",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

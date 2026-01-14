@@ -1,0 +1,49 @@
+{
+  "name": "@pie-elements-ng/cli",
+  "version": "0.1.0",
+  "description": "CLI tools for managing PIE Elements NG",
+  "type": "module",
+  "bin": {
+    "pie-cli": "./bin/run.js"
+  },
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "node ./bin/dev.js",
+    "lint": "biome check ."
+  },
+  "dependencies": {
+    "@oclif/core": "^4.0.0",
+    "@oclif/plugin-help": "^6.2.0",
+    "es-module-lexer": "^1.7.0",
+    "glob": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "bun-types": "^1.3.5",
+    "typescript": "^5.9.3"
+  },
+  "oclif": {
+    "bin": "pie-cli",
+    "dirname": "pie-cli",
+    "commands": "./dist/commands",
+    "topicSeparator": ":",
+    "topics": {
+      "upstream": {
+        "description": "Manage synchronization with upstream pie-elements repository"
+      },
+      "packages": {
+        "description": "Generate and manage package configurations"
+      },
+      "verify": {
+        "description": "Verify builds and configurations"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

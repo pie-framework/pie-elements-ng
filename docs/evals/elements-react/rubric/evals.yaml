@@ -1,0 +1,342 @@
+version: 1
+
+component:
+  element: "@pie-element/rubric"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/rubric"
+
+evals:
+  - id: "rubric-react/default/renders"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates rubric displays with point levels"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: observe
+        target:
+          description: "Rubric toggle"
+          hint: 'button:has-text("Rubric"), [role="button"]:has-text("Rubric")'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Point descriptions"
+          hint: 'text="Excellent comprehensive understanding"'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "rubric-react/default/all-points-visible"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates all point levels display including zero"
+
+    notes:
+      - "default sample has excludeZero: false"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: observe
+        target:
+          description: "0 points"
+          hint: 'text="0 PT"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "1 point"
+          hint: 'text="1 PT"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "3 points"
+          hint: 'text="3 PT"'
+        expected:
+          exists: true
+
+  - id: "rubric-react/exclude/zero-excluded"
+    sampleId: "exclude-zero"
+    severity: "error"
+    intent: "Validates excludeZero hides 0 point level"
+
+    notes:
+      - "exclude-zero sample has excludeZero: true"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+        params:
+          sampleId: "exclude-zero"
+
+      - action: observe
+        target:
+          description: "0 points not shown"
+          hint: 'text="0 PT"'
+        expected:
+          exists: false
+
+      - action: observe
+        target:
+          description: "1 point shown"
+          hint: 'text="1 PT"'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/sample-answers"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates sample answers display"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: observe
+        target:
+          description: "Sample answer"
+          hint: 'text="Example of excellent answer"'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/toggle-visibility"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates rubric can be toggled"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: click
+        target:
+          description: "Toggle button"
+          hint: 'button:has-text("Hide Rubric"), #rubric-toggle'
+
+      - action: observe
+        target:
+          description: "Show label"
+          hint: 'button:has-text("Show Rubric")'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/descending-order"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates points display highest first"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: observe
+        target:
+          description: "Highest point first"
+          hint: 'text="3 PT"'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/keyboard-toggle"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: observe
+        target:
+          description: "Focusable toggle"
+          hint: '[tabindex="0"]'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/aria-attributes"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates ARIA attributes present"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: observe
+        target:
+          description: "ARIA-expanded"
+          hint: '[aria-expanded]'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/semantic-structure"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates semantic HTML"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: observe
+        target:
+          description: "List structure"
+          hint: 'nav, ul, li'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/instructor-view"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rubric"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+        params:
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rubric content"
+          hint: 'text="understanding"'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/student-access"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates student can access rubric"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+        params:
+          role: "student"
+
+      - action: observe
+        target:
+          description: "Toggle available"
+          hint: 'button:has-text("Rubric")'
+        expected:
+          exists: true
+
+  - id: "rubric-react/default/axe-scan"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "rubric-react/exclude/axe-scan-exclude"
+    sampleId: "exclude-zero"
+    severity: "error"
+    intent: "No accessibility violations with excludeZero"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+        params:
+          sampleId: "exclude-zero"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "rubric-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: checkColorContrast
+        target:
+          description: "Rubric text"
+          hint: 'p, li, button'
+        expected:
+          minRatio: 4.5
+
+  - id: "rubric-react/default/typography"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates typography sizing"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: checkFont
+        target:
+          description: "Text content"
+          hint: 'p, li'
+        expected:
+          minSize: "14px"
+
+  - id: "rubric-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+
+      - action: screenshot
+        filename: "rubric-default-baseline.png"
+
+  - id: "rubric-react/exclude/visual-regression-exclude"
+    sampleId: "exclude-zero"
+    severity: "warn"
+    intent: "Captures visual baseline with excludeZero"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+        params:
+          sampleId: "exclude-zero"
+
+      - action: screenshot
+        filename: "rubric-exclude-zero-baseline.png"
+
+  - id: "rubric-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/rubric"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Rubric rendered"
+          hint: 'button:has-text("Rubric")'
+        expected:
+          exists: true

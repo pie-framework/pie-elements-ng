@@ -1,0 +1,684 @@
+version: 1
+
+component:
+  element: "@pie-element/match-list"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/match-list"
+
+evals:
+  - id: "match-list-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates prompts and answer choices render in gather mode"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: observe
+        target:
+          description: "Prompt text"
+          hint: 'text="Match each country with its capital"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Prompt items"
+          hint: 'text="France", text="Spain", text="Italy", text="Germany"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Answer choices"
+          hint: 'text="Paris", text="Madrid", text="Rome", text="Berlin", text="London"'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "match-list-react/default/drag-answer"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates dragging answer to prompt slot updates session"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Paris choice"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "France slot"
+        endRef: '[data-droppable="true"], [data-prompt="p1"]'
+
+      - action: observe
+        target:
+          description: "Paris placed in France slot"
+          hint: '[data-prompt="p1"] text="Paris"'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        value:
+          p1:
+            exists: true
+
+  - id: "match-list-react/default/all-correct-matches"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates all correct matches yield score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Paris"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "France slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: drag
+        startElement: "Madrid"
+        startRef: '[draggable="true"]:has-text("Madrid")'
+        endElement: "Spain slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: drag
+        startElement: "Rome"
+        startRef: '[draggable="true"]:has-text("Rome")'
+        endElement: "Italy slot"
+        endRef: '[data-prompt="p3"]'
+
+      - action: drag
+        startElement: "Berlin"
+        startRef: '[draggable="true"]:has-text("Berlin")'
+        endElement: "Germany slot"
+        endRef: '[data-prompt="p4"]'
+
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct"'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "match-list-react/default/partial-correct"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates partial matches yield partial score"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Paris (correct)"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "France slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: drag
+        startElement: "Madrid (correct)"
+        startRef: '[draggable="true"]:has-text("Madrid")'
+        endElement: "Spain slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: drag
+        startElement: "London (incorrect)"
+        startRef: '[draggable="true"]:has-text("London")'
+        endElement: "Italy slot"
+        endRef: '[data-prompt="p3"]'
+
+      - action: drag
+        startElement: "Rome (wrong placement)"
+        startRef: '[draggable="true"]:has-text("Rome")'
+        endElement: "Germany slot"
+        endRef: '[data-prompt="p4"]'
+
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.5
+
+  - id: "match-list-react/default/all-incorrect"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates all incorrect matches yield score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Madrid (wrong for France)"
+        startRef: '[draggable="true"]:has-text("Madrid")'
+        endElement: "France slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: drag
+        startElement: "Paris (wrong for Spain)"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "Spain slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: drag
+        startElement: "Berlin (wrong for Italy)"
+        startRef: '[draggable="true"]:has-text("Berlin")'
+        endElement: "Italy slot"
+        endRef: '[data-prompt="p3"]'
+
+      - action: drag
+        startElement: "London (wrong for Germany)"
+        startRef: '[draggable="true"]:has-text("London")'
+        endElement: "Germany slot"
+        endRef: '[data-prompt="p4"]'
+
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  - id: "match-list-react/default/swap-answers"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates swapping answers when duplicates disabled"
+
+    notes:
+      - "When duplicates=false, dragging a placed answer to another slot swaps them"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Paris"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "France slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: drag
+        startElement: "Madrid"
+        startRef: '[draggable="true"]:has-text("Madrid")'
+        endElement: "Spain slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: drag
+        startElement: "Paris from France"
+        startRef: '[data-prompt="p1"] [draggable="true"]:has-text("Paris")'
+        endElement: "Spain slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: observe
+        target:
+          description: "Paris now in Spain slot"
+          hint: '[data-prompt="p2"] text="Paris"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Madrid moved to France slot"
+          hint: '[data-prompt="p1"] text="Madrid"'
+        expected:
+          exists: true
+
+  - id: "match-list-react/default/remove-answer"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates removing answer from slot"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Paris"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "France slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: click
+        target:
+          description: "Remove button"
+          hint: 'button:has-text("Remove"), [aria-label*="remove"]'
+
+      - action: observe
+        target:
+          description: "Paris removed from slot"
+          hint: '[data-prompt="p1"] text="Paris"'
+        expected:
+          exists: false
+
+  - id: "match-list-react/default/evaluate-feedback"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates evaluate mode shows correctness indicators"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Paris (correct)"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "France slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: drag
+        startElement: "London (incorrect)"
+        startRef: '[draggable="true"]:has-text("London")'
+        endElement: "Spain slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct indicator for Paris"
+          hint: '[data-correct="true"], .correct, [style*="green"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Incorrect indicator for London"
+          hint: '[data-correct="false"], .incorrect, [style*="red"]'
+        expected:
+          exists: true
+
+  - id: "match-list-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables dragging"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Paris"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "France slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "view"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "No draggable items"
+          hint: '[draggable="true"]'
+        expected:
+          exists: false
+
+  - id: "match-list-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rationale in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rationale text"
+          hint: 'text="France\'s capital is Paris"'
+        expected:
+          exists: true
+
+  - id: "match-list-react/default/teacher-instructions"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates teacher instructions visible to instructor"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+        params:
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Teacher instructions"
+          hint: 'text="Students should drag the correct capital"'
+        expected:
+          exists: true
+
+  - id: "match-list-react/default/show-correct"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates showing correct answer in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+
+      - action: click
+        target:
+          description: "Show correct answer toggle"
+          hint: 'button:has-text("Show Correct"), input[type="checkbox"]'
+
+      - action: observe
+        target:
+          description: "Correct matches visible"
+          hint: 'text="Paris", text="Madrid", text="Rome", text="Berlin"'
+        expected:
+          exists: true
+
+  - id: "match-list-react/duplicates/allows-duplicate-answers"
+    sampleId: "duplicates-allowed"
+    severity: "error"
+    intent: "Validates duplicates=true allows same answer multiple times"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+        params:
+          sampleId: "duplicates-allowed"
+
+      - action: drag
+        startElement: "Present Tense (first)"
+        startRef: '[draggable="true"]:has-text("Present")'
+        endElement: "First statement slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: drag
+        startElement: "Present Tense (second)"
+        startRef: '[draggable="true"]:has-text("Present")'
+        endElement: "Second statement slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: observe
+        target:
+          description: "Present Tense in both slots"
+          hint: '[data-prompt="p1"] text="Present"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Present Tense in second slot too"
+          hint: '[data-prompt="p2"] text="Present"'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        value:
+          p1:
+            exists: true
+          p2:
+            exists: true
+
+  - id: "match-list-react/duplicates/correct-with-duplicates"
+    sampleId: "duplicates-allowed"
+    severity: "error"
+    intent: "Validates correct matching with duplicate answers"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+        params:
+          sampleId: "duplicates-allowed"
+
+      - action: drag
+        startElement: "Present"
+        startRef: '[draggable="true"]:has-text("Present")'
+        endElement: "p1 slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: drag
+        startElement: "Present"
+        startRef: '[draggable="true"]:has-text("Present")'
+        endElement: "p2 slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: drag
+        startElement: "Past"
+        startRef: '[draggable="true"]:has-text("Past")'
+        endElement: "p3 slot"
+        endRef: '[data-prompt="p3"]'
+
+      - action: drag
+        startElement: "Future"
+        startRef: '[draggable="true"]:has-text("Future")'
+        endElement: "p4 slot"
+        endRef: '[data-prompt="p4"]'
+
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+          sampleId: "duplicates-allowed"
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "match-list-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset clears all matches"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: drag
+        startElement: "Paris"
+        startRef: '[draggable="true"]:has-text("Paris")'
+        endElement: "France slot"
+        endRef: '[data-prompt="p1"]'
+
+      - action: drag
+        startElement: "Madrid"
+        startRef: '[draggable="true"]:has-text("Madrid")'
+        endElement: "Spain slot"
+        endRef: '[data-prompt="p2"]'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "All slots empty"
+          hint: '[data-prompt] [draggable="true"]'
+        expected:
+          exists: false
+
+  - id: "match-list-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: observe
+        target:
+          description: "Focusable draggable items"
+          hint: '[draggable="true"][tabindex]'
+        expected:
+          exists: true
+
+  - id: "match-list-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: checkStyle
+        target:
+          description: "Draggable items"
+          hint: '[draggable="true"]'
+        expected:
+          minHeight: "44px"
+
+  - id: "match-list-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in gather mode"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "match-list-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "match-list-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast for text elements"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: checkColorContrast
+        target:
+          description: "Prompt and answer text"
+          hint: 'p, label, span'
+        expected:
+          minRatio: 4.5
+
+  - id: "match-list-react/default/typography"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates minimum font size"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: checkFont
+        target:
+          description: "Body text"
+          hint: 'p, label, span'
+        expected:
+          minSize: "14px"
+
+  - id: "match-list-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: screenshot
+        filename: "match-list-default-baseline.png"
+
+  - id: "match-list-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Handles empty submission gracefully"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+
+      - action: navigate
+        path: "/match-list"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Prompts still visible"
+          hint: 'text="France", text="Spain"'
+        expected:
+          exists: true
+
+  - id: "match-list-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/match-list"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Component rendered"
+          hint: 'text="Match each country"'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Drag-and-drop interactions are smooth and responsive"
+      - "Visual feedback during drag is clear and immediate"
+      - "Swapping answers (when duplicates disabled) works intuitively"

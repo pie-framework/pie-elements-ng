@@ -1,0 +1,49 @@
+{
+  "name": "@pie-elements-ng/multiple-choice",
+  "version": "0.0.0",
+  "description": "Multiple choice assessment element",
+  "type": "module",
+  "main": "./dist/element.js",
+  "types": "./dist/element/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/element/index.d.ts",
+      "default": "./dist/element.js"
+    },
+    "./controller": {
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller.js"
+    },
+    "./author": {
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@pie-shared/types": "workspace:*",
+    "@pie-shared/utils": "workspace:*",
+    "@pie-elements-ng/lib-ui": "workspace:*",
+    "@pie-framework/pie-player-events": "*"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.4",
+    "svelte": "^5.18.3",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0",
+    "vitest": "^3.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,546 @@
+version: 1
+
+component:
+  element: "@pie-element/fraction-model"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/fraction-model"
+
+evals:
+  - id: "fraction-model-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates bar fraction model renders with interactive parts"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: observe
+        target:
+          description: "Prompt"
+          hint: 'text="Shade 3/4"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Bar model chart"
+          hint: 'svg, .recharts-wrapper'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Interactive bars"
+          hint: 'rect, path'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "fraction-model-react/default/select-part"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates clicking bar part selects it"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: click
+        target:
+          description: "First bar segment"
+          hint: 'rect, path'
+
+      - action: observe
+        target:
+          description: "Part highlighted"
+          hint: '[fill*="60,73,150"], [fill*="rgb(60"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answers:
+          response:
+            exists: true
+
+  - id: "fraction-model-react/default/select-multiple-parts"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates selecting multiple parts in sequence"
+
+    notes:
+      - "Should select 3 parts to represent 3/4"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: click
+        target:
+          description: "First part"
+          hint: 'rect:nth-of-type(1), path:nth-of-type(1)'
+
+      - action: click
+        target:
+          description: "Second part"
+          hint: 'rect:nth-of-type(2), path:nth-of-type(2)'
+
+      - action: click
+        target:
+          description: "Third part"
+          hint: 'rect:nth-of-type(3), path:nth-of-type(3)'
+
+    expected:
+      session:
+        answers:
+          response:
+            count: 3
+
+  - id: "fraction-model-react/default/deselect-part"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates clicking selected part deselects it"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(1)'
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(1)'
+
+    expected:
+      session:
+        answers:
+          response:
+            exists: false
+
+  - id: "fraction-model-react/default/correct-selection"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct fraction selection yields score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(1), path:nth-of-type(1)'
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(2), path:nth-of-type(2)'
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(3), path:nth-of-type(3)'
+
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct"'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "fraction-model-react/default/incorrect-selection"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect fraction selection yields score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(1)'
+
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  - id: "fraction-model-react/pie/renders-pie-model"
+    sampleId: "pie-model"
+    severity: "error"
+    intent: "Validates pie chart model renders correctly"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          sampleId: "pie-model"
+
+      - action: observe
+        target:
+          description: "Pie chart"
+          hint: 'svg, .recharts-pie'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Pie slices"
+          hint: 'path[name], .recharts-pie-sector'
+        expected:
+          exists: true
+
+  - id: "fraction-model-react/pie/select-slice"
+    sampleId: "pie-model"
+    severity: "error"
+    intent: "Validates selecting pie slices"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          sampleId: "pie-model"
+
+      - action: click
+        target:
+          description: "First pie slice"
+          hint: 'path[name]:nth-of-type(1), .recharts-pie-sector:nth-of-type(1)'
+
+      - action: click
+        target:
+          description: "Second pie slice"
+          hint: 'path[name]:nth-of-type(2), .recharts-pie-sector:nth-of-type(2)'
+
+    expected:
+      session:
+        answers:
+          response:
+            count: 2
+
+  - id: "fraction-model-react/student-config/configure-models"
+    sampleId: "student-config"
+    severity: "error"
+    intent: "Validates student can configure number of models and parts"
+
+    notes:
+      - "student-config sample has allowedStudentConfig: true"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          sampleId: "student-config"
+
+      - action: observe
+        target:
+          description: "Number of models input"
+          hint: '#preview_number-of-models, input[type="number"]'
+        expected:
+          exists: true
+
+      - action: type
+        target:
+          description: "Number of models"
+          hint: '#preview_number-of-models'
+        text: "3"
+
+      - action: type
+        target:
+          description: "Parts per model"
+          hint: '#preview_parts-per-model'
+        text: "5"
+
+    expected:
+      session:
+        answers:
+          noOfModel: 3
+          partsPerModel: 5
+
+  - id: "fraction-model-react/student-config/limits-enforced"
+    sampleId: "student-config"
+    severity: "error"
+    intent: "Validates configuration limits enforced"
+
+    notes:
+      - "maxModelSelected: 5, so values > 5 should be clamped"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          sampleId: "student-config"
+
+      - action: type
+        target:
+          hint: '#preview_number-of-models'
+        text: "10"
+
+      - action: observe
+        target:
+          description: "Value clamped to max"
+          hint: 'input[value="5"]'
+        expected:
+          exists: true
+
+  - id: "fraction-model-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables interactions"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(1)'
+
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          mode: "view"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Selected parts visible"
+          hint: '[fill*="60,73,150"]'
+        expected:
+          exists: true
+
+  - id: "fraction-model-react/default/correct-answer-toggle"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates toggling between student and correct answer"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(1)'
+
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: click
+        target:
+          description: "Show correct answer toggle"
+          hint: 'button:has-text("Show Correct"), input[type="checkbox"]'
+
+      - action: observe
+        target:
+          description: "Correct parts highlighted"
+          hint: '[fill*="60,73,150"]'
+        expected:
+          count: 3
+
+  - id: "fraction-model-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rationale"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rationale"
+          hint: 'text="3 out of 4 equal parts"'
+        expected:
+          exists: true
+
+  - id: "fraction-model-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: observe
+        target:
+          description: "Focusable elements"
+          hint: 'rect, path, [tabindex]'
+        expected:
+          exists: true
+
+  - id: "fraction-model-react/default/hover-effect"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates hover provides visual feedback"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: hover
+        target:
+          description: "Bar segment"
+          hint: 'rect:nth-of-type(1), path:nth-of-type(1)'
+
+      - action: observe
+        target:
+          description: "Hover effect applied"
+          hint: '[fill*="rgba"], rect, path'
+        expected:
+          exists: true
+
+  - id: "fraction-model-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "fraction-model-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "fraction-model-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: checkColorContrast
+        target:
+          description: "Text labels"
+          hint: 'text, label'
+        expected:
+          minRatio: 4.5
+
+  - id: "fraction-model-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: screenshot
+        filename: "fraction-model-default-baseline.png"
+
+  - id: "fraction-model-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Handles empty selection gracefully"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: navigate
+        path: "/fraction-model"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Feedback or model"
+          hint: 'svg, [data-feedback]'
+        expected:
+          exists: true
+
+  - id: "fraction-model-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset clears selections"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(1)'
+
+      - action: click
+        target:
+          hint: 'rect:nth-of-type(2)'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "No selected parts"
+          hint: '[fill*="60,73,150"]'
+        expected:
+          exists: false
+
+  - id: "fraction-model-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/fraction-model"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Model rendered"
+          hint: 'svg'
+        expected:
+          exists: true

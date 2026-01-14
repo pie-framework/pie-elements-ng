@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESM Player Test App</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar for configuration -->
+    <aside class="sidebar">
+      <h1>ESM Player Test</h1>
+
+      <!-- Player Version Selection -->
+      <section class="config-section">
+        <h2>Player Version</h2>
+        <p class="section-description">Choose player source and version</p>
+
+        <div class="version-selector">
+          <label>
+            <input type="radio" name="player-source" value="npm">
+            NPM Published
+          </label>
+          <label for="player-version" class="sr-only">Player version</label>
+          <select id="player-version" class="version-select">
+            <option value="latest">latest</option>
+          </select>
+        </div>
+
+        <div class="version-selector">
+          <label>
+            <input type="radio" name="player-source" value="local" checked>
+            Local Build
+          </label>
+        </div>
+      </section>
+
+      <!-- Element Version Selection -->
+      <section class="config-section">
+        <h2>Element Versions</h2>
+        <p class="section-description">Configure versions for elements in the current item</p>
+        <div id="element-versions"></div>
+      </section>
+
+      <!-- Sample Items -->
+      <section class="config-section">
+        <h2>Sample Items</h2>
+        <div id="sample-items"></div>
+      </section>
+
+      <!-- Load Controls -->
+      <section class="config-section">
+        <button id="load-btn" class="primary-button">Load Player</button>
+        <button id="copy-url-btn" class="secondary-button">Copy Shareable URL</button>
+      </section>
+
+      <!-- Status Display -->
+      <section class="config-section">
+        <h3>Status</h3>
+        <div id="status" class="status-display"></div>
+      </section>
+    </aside>
+
+    <!-- Main player container -->
+    <main class="player-container">
+      <div id="player-mount"></div>
+    </main>
+  </div>
+
+  <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{
+  "id": "charting_demo",
+  "name": "Charting Demo",
+  "config": {
+    "elements": {
+      "pp-pie-element-charting": "@pie-element/charting@latest"
+    },
+    "models": [
+      {
+        "id": "1",
+        "element": "pp-pie-element-charting",
+        "promptEnabled": true,
+        "chartType": "bar",
+        "data": [
+          {
+            "label": "a",
+            "value": 1,
+            "interactive": true
+          },
+          {
+            "label": "b",
+            "value": 0,
+            "interactive": true
+          }
+        ],
+        "addCategoryEnabled": true,
+        "changeAddCategoryEnabled": false,
+        "changeEditableEnabled": false,
+        "changeInteractiveEnabled": false,
+        "correctAnswer": {
+          "data": [
+            {
+              "label": "a",
+              "value": 1
+            },
+            {
+              "label": "b",
+              "value": 0
+            }
+          ]
+        },
+        "domain": {},
+        "graph": {
+          "width": 480,
+          "height": 480
+        },
+        "prompt": "",
+        "range": {
+          "label": "",
+          "max": 1,
+          "min": 0,
+          "labelStep": 0.05,
+          "step": 0.05
+        },
+        "rationale": "",
+        "rationaleEnabled": true,
+        "scoringType": "all or nothing",
+        "studentInstructionsEnabled": true,
+        "studentNewCategoryDefaultLabel": "New Category",
+        "teacherInstructions": "",
+        "teacherInstructionsEnabled": true,
+        "title": ""
+      }
+    ],
+    "markup": "<pp-pie-element-charting id='1'></pp-pie-element-charting>"
+  }
+}

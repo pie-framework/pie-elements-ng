@@ -1,0 +1,96 @@
+{
+  "id": "categorize_demo",
+  "name": "Categorize Demo",
+  "config": {
+    "elements": {
+      "pp-pie-element-categorize": "@pie-element/categorize@latest"
+    },
+    "models": [
+      {
+        "id": "1",
+        "element": "pp-pie-element-categorize",
+        "promptEnabled": true,
+        "choices": [
+          {
+            "id": "0",
+            "content": "<div><span data-latex=\"\" data-raw=\"420\\text{ cm}=4.2\\text{ meters}\">420\\text{ cm}=4.2\\text{ meters}</span></div>",
+            "categoryCount": 0,
+            "correctResponseCount": 1
+          },
+          {
+            "id": "1",
+            "content": "<div><span data-latex=\"\" data-raw=\"3.4\\text{ kg}=340\\text{ g}\">3.4\\text{ kg}=340\\text{ g}</span></div>",
+            "categoryCount": 0,
+            "correctResponseCount": 1
+          },
+          {
+            "id": "2",
+            "content": "<div><span data-latex=\"\" data-raw=\"1\\text{,}800\\text{ mL}=180\\text{ L}\">1\\text{,}800\\text{ mL}=180\\text{ L}</span></div>",
+            "categoryCount": 0,
+            "correctResponseCount": 0
+          },
+          {
+            "id": "3",
+            "content": "<div><span data-latex=\"\" data-raw=\"3.5\\text{ meters}=350\\text{ cm}\">3.5\\text{ meters}=350\\text{ cm}</span></div>",
+            "categoryCount": 0,
+            "correctResponseCount": 1
+          },
+          {
+            "id": "4",
+            "content": "<div><span data-latex=\"\" data-raw=\"4\\text{,}800\\text{ g}=0.48\\text{ kg}\">4\\text{,}800\\text{ g}=0.48\\text{ kg}</span></div>",
+            "categoryCount": 0,
+            "correctResponseCount": 1
+          },
+          {
+            "id": "5",
+            "content": "<div><span data-latex=\"\" data-raw=\"250\\text{ mL}=0.25\\text{ L}\">250\\text{ mL}=0.25\\text{ L}</span></div>",
+            "categoryCount": 0,
+            "correctResponseCount": 0
+          }
+        ],
+        "categories": [
+          {
+            "id": "0",
+            "label": "<div>Equivalent</div>"
+          },
+          {
+            "id": "1",
+            "label": "<div><b>NOT </b>equivalent</div>"
+          }
+        ],
+        "rowLabels": ["<div></div>"],
+        "correctResponse": [
+          {
+            "category": "0",
+            "choices": ["0", "3"]
+          },
+          {
+            "category": "1",
+            "choices": ["4", "1"]
+          }
+        ],
+        "allowAlternateEnabled": true,
+        "allowMaxChoicesPerCategory": false,
+        "allowMultiplePlacementsEnabled": "Yes",
+        "alternates": [],
+        "categoriesPerRow": 2,
+        "choicesLabel": "",
+        "choicesPosition": "below",
+        "feedbackEnabled": false,
+        "lockChoiceOrder": true,
+        "maxAnswerChoices": 6,
+        "maxChoicesPerCategory": 0,
+        "partialScoring": true,
+        "rationaleEnabled": true,
+        "studentInstructionsEnabled": true,
+        "teacherInstructionsEnabled": true,
+        "toolbarEditorPosition": "bottom",
+        "minRowHeight": "80px",
+        "teacherInstructions": "<div></div>",
+        "prompt": "<div></div>",
+        "rationale": "<div></div>"
+      }
+    ],
+    "markup": "<pp-pie-element-categorize id='1'></pp-pie-element-categorize>"
+  }
+}

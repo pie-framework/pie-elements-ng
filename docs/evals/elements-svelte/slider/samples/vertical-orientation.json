@@ -1,0 +1,16 @@
+{
+  "id": "slider-vertical-1",
+  "element": "@pie-elements-ng/slider",
+  "prompt": "<p>Rate your understanding from 1 to 10.</p>",
+  "lowerBound": 1,
+  "upperBound": 10,
+  "step": 1,
+  "stepLabel": true,
+  "orientation": "vertical",
+  "reverse": false,
+  "correctResponse": 7,
+  "partialScoring": true,
+  "scoringTolerance": 2,
+  "promptEnabled": true,
+  "rationaleEnabled": false
+}

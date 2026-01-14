@@ -1,0 +1,527 @@
+version: 1
+
+component:
+  element: "@pie-element/select-text"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/select-text"
+
+evals:
+  - id: "select-text-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates text selection interface renders with selectable tokens"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: observe
+        target:
+          description: "Prompt"
+          hint: 'text="Select all the verbs"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Text content"
+          hint: 'text="The cat jumped"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Selectable tokens"
+          hint: '[data-token], .token, [role="button"]'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "select-text-react/default/select-token"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates clicking token adds it to selection"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          description: "Token 'jumped'"
+          hint: '[data-token*="jumped"], text="jumped"'
+
+      - action: observe
+        target:
+          description: "Token selected"
+          hint: '[data-selected="true"], .selected'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        selectedTokens:
+          exists: true
+
+  - id: "select-text-react/default/select-multiple"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates selecting multiple tokens"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="jumped"'
+
+      - action: click
+        target:
+          hint: 'text="ran"'
+
+      - action: observe
+        target:
+          description: "Multiple selected"
+          hint: '[data-selected="true"], .selected'
+        expected:
+          count: 2
+
+    expected:
+      session:
+        selectedTokens:
+          count: 2
+
+  - id: "select-text-react/default/deselect-token"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates clicking selected token deselects it"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="jumped"'
+
+      - action: click
+        target:
+          hint: 'text="jumped"'
+
+      - action: observe
+        target:
+          description: "No selections"
+          hint: '[data-selected="true"], .selected'
+        expected:
+          exists: false
+
+  - id: "select-text-react/default/correct-selection"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct selections yield score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="jumped"'
+
+      - action: click
+        target:
+          hint: 'text="ran"'
+
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct"'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "select-text-react/default/incorrect-selection"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect selections yield score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="cat"'
+
+      - action: click
+        target:
+          hint: 'text="dog"'
+
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  - id: "select-text-react/default/partial-score"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates partial scoring with some correct selections"
+
+    notes:
+      - "Sample has partialScoring: true"
+      - "Should award 0.5 score for 1 correct + 1 incorrect out of 2 total correct"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="jumped"'
+
+      - action: click
+        target:
+          hint: 'text="cat"'
+
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.5
+
+  - id: "select-text-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables selection"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="jumped"'
+
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "view"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Selected token visible"
+          hint: '[data-selected="true"]'
+        expected:
+          exists: true
+
+  - id: "select-text-react/default/evaluate-feedback"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates evaluate mode shows correct/incorrect indicators"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="cat"'
+
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Incorrect indicator"
+          hint: '[data-correct="false"], .incorrect, [data-incorrect]'
+        expected:
+          exists: true
+
+  - id: "select-text-react/default/correct-answer-toggle"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates toggling between student answer and correct answer"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="cat"'
+
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: click
+        target:
+          description: "Show correct answer toggle"
+          hint: 'button:has-text("Show Correct"), [data-toggle="correct-answer"]'
+
+      - action: observe
+        target:
+          description: "Correct tokens highlighted"
+          hint: '[data-correct="true"]'
+        expected:
+          count: 2
+
+  - id: "select-text-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rationale"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rationale"
+          hint: 'text="Verbs are action words"'
+        expected:
+          exists: true
+
+  - id: "select-text-react/sentence/max-selections"
+    sampleId: "sentence-mode"
+    severity: "error"
+    intent: "Validates maxSelections limit enforced"
+
+    notes:
+      - "sentence-mode sample has maxSelections: 2"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+        params:
+          sampleId: "sentence-mode"
+
+      - action: click
+        target:
+          hint: 'text="The weather is nice today"'
+
+      - action: click
+        target:
+          hint: 'text="We will go to the park"'
+
+      - action: observe
+        target:
+          description: "Two selections"
+          hint: '[data-selected="true"]'
+        expected:
+          count: 2
+
+  - id: "select-text-react/sentence/highlight-choices"
+    sampleId: "sentence-mode"
+    severity: "error"
+    intent: "Validates highlightChoices shows selectable areas"
+
+    notes:
+      - "sentence-mode sample has highlightChoices: true"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+        params:
+          sampleId: "sentence-mode"
+
+      - action: observe
+        target:
+          description: "Highlighted selectable tokens"
+          hint: '[data-selectable="true"], .selectable, [data-highlight]'
+        expected:
+          exists: true
+
+  - id: "select-text-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility for token selection"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: observe
+        target:
+          description: "Focusable tokens"
+          hint: '[tabindex="0"], [role="button"]'
+        expected:
+          exists: true
+
+  - id: "select-text-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: checkStyle
+        target:
+          description: "Token elements"
+          hint: '[data-token], .token'
+        expected:
+          minHeight: "44px"
+
+  - id: "select-text-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "select-text-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "select-text-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: checkColorContrast
+        target:
+          description: "Token text"
+          hint: '[data-token], .token'
+        expected:
+          minRatio: 4.5
+
+  - id: "select-text-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: screenshot
+        filename: "select-text-default-baseline.png"
+
+  - id: "select-text-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Handles empty selection gracefully"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: navigate
+        path: "/select-text"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Feedback or empty state"
+          hint: '[data-feedback], [data-empty]'
+        expected:
+          exists: true
+
+  - id: "select-text-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset clears selections"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+
+      - action: click
+        target:
+          hint: 'text="jumped"'
+
+      - action: click
+        target:
+          hint: 'text="ran"'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "No selections"
+          hint: '[data-selected="true"]'
+        expected:
+          exists: false
+
+  - id: "select-text-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/select-text"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Element rendered"
+          hint: '[data-token], .token'
+        expected:
+          exists: true

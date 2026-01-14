@@ -1,0 +1,18 @@
+{
+  "id": "fraction_model_demo",
+  "name": "Fraction Model Demo",
+  "config": {
+    "elements": {
+      "pp-pie-element-fraction-model": "@pie-element/fraction-model@latest"
+    },
+    "models": [
+      {
+        "id": "1",
+        "element": "pp-pie-element-fraction-model",
+        "title": "Title",
+        "question": "Custom question"
+      }
+    ],
+    "markup": "<pp-pie-element-fraction-model id='1'></pp-pie-element-fraction-model>"
+  }
+}

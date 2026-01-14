@@ -1,0 +1,368 @@
+version: 1
+
+component:
+  element: "@pie-element/passage"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/passage"
+
+evals:
+  - id: "passage-react/default/renders"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates passage displays with title, subtitle, author, and text"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+
+      - action: observe
+        target:
+          description: "Title"
+          hint: 'text="The Solar System"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Subtitle"
+          hint: 'text="An Overview"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Author"
+          hint: 'text="Dr. Jane Smith"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Passage text"
+          hint: 'text="The Solar System consists"'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "passage-react/default/teacher-instructions"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates teacher instructions display for instructor role"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        params:
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Teacher instructions"
+          hint: 'text="provides context"'
+        expected:
+          exists: true
+
+  - id: "passage-react/default/teacher-instructions-collapsible"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates teacher instructions are collapsible"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        params:
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Collapsible control"
+          hint: 'button:has-text("Teacher Instructions"), button:has-text("Show")'
+        expected:
+          exists: true
+
+  - id: "passage-react/multiple/renders-tabs"
+    sampleId: "multiple-tabs"
+    severity: "error"
+    intent: "Validates multiple passages render as tabs"
+
+    notes:
+      - "multiple-tabs sample has 3 passages"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        params:
+          sampleId: "multiple-tabs"
+
+      - action: observe
+        target:
+          description: "Tab buttons"
+          hint: 'button[role="tab"]'
+        expected:
+          count: 3
+
+      - action: observe
+        target:
+          description: "Introduction tab"
+          hint: 'button:has-text("Introduction")'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "The Process tab"
+          hint: 'button:has-text("The Process")'
+        expected:
+          exists: true
+
+  - id: "passage-react/multiple/tab-switching"
+    sampleId: "multiple-tabs"
+    severity: "error"
+    intent: "Validates clicking tabs switches content"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        params:
+          sampleId: "multiple-tabs"
+
+      - action: observe
+        target:
+          description: "First tab content visible"
+          hint: 'text="Understanding Photosynthesis"'
+        expected:
+          exists: true
+
+      - action: click
+        target:
+          description: "Second tab"
+          hint: 'button:has-text("The Process")'
+
+      - action: observe
+        target:
+          description: "Second tab content visible"
+          hint: 'text="How Photosynthesis Works"'
+        expected:
+          exists: true
+
+  - id: "passage-react/multiple/keyboard-tab-navigation"
+    sampleId: "multiple-tabs"
+    severity: "error"
+    intent: "Validates keyboard navigation between tabs"
+
+    notes:
+      - "Arrow keys should navigate between tabs"
+      - "Home/End keys should go to first/last tab"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        params:
+          sampleId: "multiple-tabs"
+
+      - action: observe
+        target:
+          description: "Tabs are focusable"
+          hint: 'button[role="tab"][tabindex]'
+        expected:
+          exists: true
+
+  - id: "passage-react/default/text-formatting"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates HTML text formatting renders correctly"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+
+      - action: observe
+        target:
+          description: "Paragraph elements"
+          hint: 'p'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Text content"
+          hint: 'text="eight planets"'
+        expected:
+          exists: true
+
+  - id: "passage-react/default/semantic-structure"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates semantic HTML structure"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+
+      - action: observe
+        target:
+          description: "Heading elements"
+          hint: 'h2'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Region role"
+          hint: '[role="region"]'
+        expected:
+          exists: true
+
+  - id: "passage-react/multiple/tab-panel-aria"
+    sampleId: "multiple-tabs"
+    severity: "error"
+    intent: "Validates ARIA attributes for tab panels"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        params:
+          sampleId: "multiple-tabs"
+
+      - action: observe
+        target:
+          description: "Tab panel"
+          hint: '[role="tabpanel"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Tab with aria-selected"
+          hint: '[role="tab"][aria-selected="true"]'
+        expected:
+          exists: true
+
+  - id: "passage-react/default/keyboard-accessibility"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates content is keyboard accessible"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+
+      - action: observe
+        target:
+          description: "Accessible content"
+          hint: '[role="region"]'
+        expected:
+          exists: true
+
+  - id: "passage-react/default/axe-scan"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "passage-react/multiple/axe-scan-tabs"
+    sampleId: "multiple-tabs"
+    severity: "error"
+    intent: "No accessibility violations with tabs"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        params:
+          sampleId: "multiple-tabs"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "passage-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+
+      - action: checkColorContrast
+        target:
+          description: "Passage text"
+          hint: 'p, div'
+        expected:
+          minRatio: 4.5
+
+  - id: "passage-react/default/typography"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates typography sizing"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+
+      - action: checkFont
+        target:
+          description: "Passage text"
+          hint: 'p'
+        expected:
+          minSize: "14px"
+
+  - id: "passage-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+
+      - action: screenshot
+        filename: "passage-default-baseline.png"
+
+  - id: "passage-react/multiple/visual-regression-tabs"
+    sampleId: "multiple-tabs"
+    severity: "warn"
+    intent: "Captures visual baseline with tabs"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        params:
+          sampleId: "multiple-tabs"
+
+      - action: screenshot
+        filename: "passage-tabs-baseline.png"
+
+  - id: "passage-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/passage"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Content rendered"
+          hint: 'text="The Solar System"'
+        expected:
+          exists: true

@@ -1,0 +1,511 @@
+version: 1
+
+component:
+  element: "@pie-element/ebsr"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/ebsr"
+
+evals:
+  - id: "ebsr-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates two-part question renders with both parts visible"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: observe
+        target:
+          description: "Part A prompt"
+          hint: 'text="Part A"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Part B prompt"
+          hint: 'text="Part B"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Part A choices"
+          hint: '#a input[type="radio"]'
+        expected:
+          count: 3
+
+      - action: observe
+        target:
+          description: "Part B choices"
+          hint: '#b input[type="radio"]'
+        expected:
+          count: 3
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "ebsr-react/default/select-part-a"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates selecting answer in Part A updates session"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          description: "Part A choice B"
+          hint: '#a input[type="radio"][value="b"]'
+
+      - action: observe
+        target:
+          description: "Part A choice checked"
+          hint: '#a input[type="radio"][value="b"]:checked'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        value:
+          partA:
+            exists: true
+
+  - id: "ebsr-react/default/select-part-b"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates selecting answer in Part B updates session"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          description: "Part B choice A"
+          hint: '#b input[type="radio"][value="a"]'
+
+      - action: observe
+        target:
+          description: "Part B choice checked"
+          hint: '#b input[type="radio"][value="a"]:checked'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        value:
+          partB:
+            exists: true
+
+  - id: "ebsr-react/default/both-parts-required"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates both parts must be answered for completion"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          hint: '#a input[type="radio"][value="b"]'
+
+      - action: click
+        target:
+          hint: '#b input[type="radio"][value="a"]'
+
+    expected:
+      session:
+        value:
+          partA:
+            value:
+              exists: true
+          partB:
+            value:
+              exists: true
+
+  - id: "ebsr-react/default/correct-both-parts"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct answers in both parts yield score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          description: "Part A correct (B)"
+          hint: '#a input[type="radio"][value="b"]'
+
+      - action: click
+        target:
+          description: "Part B correct (A)"
+          hint: '#b input[type="radio"][value="a"]'
+
+      - action: navigate
+        path: "/ebsr"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback"
+          hint: 'text="Correct"'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "ebsr-react/default/incorrect-part-a"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect Part A yields lower score"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          description: "Part A incorrect (A)"
+          hint: '#a input[type="radio"][value="a"]'
+
+      - action: click
+        target:
+          description: "Part B correct (A)"
+          hint: '#b input[type="radio"][value="a"]'
+
+      - action: navigate
+        path: "/ebsr"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.5
+
+  - id: "ebsr-react/default/incorrect-both-parts"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect answers in both parts yield score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          hint: '#a input[type="radio"][value="a"]'
+
+      - action: click
+        target:
+          hint: '#b input[type="radio"][value="b"]'
+
+      - action: navigate
+        path: "/ebsr"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  - id: "ebsr-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables interactions in both parts"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          hint: '#a input[type="radio"][value="b"]'
+
+      - action: click
+        target:
+          hint: '#b input[type="radio"][value="a"]'
+
+      - action: navigate
+        path: "/ebsr"
+        params:
+          mode: "view"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Part A disabled"
+          hint: '#a input[type="radio"]:disabled'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Part B disabled"
+          hint: '#b input[type="radio"]:disabled'
+        expected:
+          exists: true
+
+  - id: "ebsr-react/default/evaluate-feedback-both"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates evaluate mode shows feedback for both parts"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          hint: '#a input[type="radio"][value="a"]'
+
+      - action: click
+        target:
+          hint: '#b input[type="radio"][value="b"]'
+
+      - action: navigate
+        path: "/ebsr"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Incorrect indicators visible"
+          hint: '[data-correct="false"], .incorrect'
+        expected:
+          exists: true
+
+  - id: "ebsr-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor sees rationale for both parts"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+        params:
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Part A rationale"
+          hint: 'text="converting light to chemical energy"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Part B rationale"
+          hint: 'text="Chlorophyll capturing light"'
+        expected:
+          exists: true
+
+  - id: "ebsr-react/default/part-separation"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates parts are visually separated"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: observe
+        target:
+          description: "Part A container"
+          hint: '#a'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Part B container"
+          hint: '#b'
+        expected:
+          exists: true
+
+  - id: "ebsr-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates keyboard accessibility for both parts"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: observe
+        target:
+          description: "Focusable Part A radios"
+          hint: '#a input[type="radio"]:not([disabled])'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Focusable Part B radios"
+          hint: '#b input[type="radio"]:not([disabled])'
+        expected:
+          exists: true
+
+  - id: "ebsr-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: checkStyle
+        target:
+          description: "Radio button areas"
+          hint: 'label, input[type="radio"]'
+        expected:
+          minHeight: "44px"
+
+  - id: "ebsr-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "ebsr-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "ebsr-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates color contrast"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: checkColorContrast
+        target:
+          description: "Choice labels"
+          hint: 'label, p'
+        expected:
+          minRatio: 4.5
+
+  - id: "ebsr-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: screenshot
+        filename: "ebsr-default-baseline.png"
+
+  - id: "ebsr-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Handles incomplete submission gracefully"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          hint: '#a input[type="radio"][value="b"]'
+
+      - action: navigate
+        path: "/ebsr"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Parts visible"
+          hint: '#a, #b'
+        expected:
+          exists: true
+
+  - id: "ebsr-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset clears both parts"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+
+      - action: click
+        target:
+          hint: '#a input[type="radio"][value="b"]'
+
+      - action: click
+        target:
+          hint: '#b input[type="radio"][value="a"]'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "No selections"
+          hint: 'input[type="radio"]:checked'
+        expected:
+          exists: false
+
+  - id: "ebsr-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/ebsr"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Both parts rendered"
+          hint: '#a, #b'
+        expected:
+          exists: true

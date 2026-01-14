@@ -1,0 +1,1125 @@
+version: 1
+
+component:
+  element: "@pie-element/number-line"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/number-line"
+
+evals:
+  # ====================
+  # Basic Rendering Tests
+  # ====================
+
+  - id: "number-line-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates number line renders correctly in gather mode with all UI elements"
+
+    notes:
+      - "Number line element uses interactive SVG canvas for graph manipulation"
+      - "Should display point chooser bar, undo/clear buttons, and number line with ticks"
+      - "All available element types should be shown in the chooser"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: observe
+        target:
+          description: "Prompt text"
+          hint: 'text="Place points on the number line."'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Number line SVG canvas"
+          hint: '[data-testid="number-line-canvas"], svg'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Point chooser bar with element type buttons"
+          hint: '[data-testid="point-chooser"], [role="toolbar"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Undo button"
+          hint: 'button:has-text("Undo"), [aria-label*="Undo"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Clear all button"
+          hint: 'button:has-text("Clear"), [aria-label*="Clear"]'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+    spiritChecks:
+      - "Number line ticks are evenly spaced and clearly visible"
+      - "Domain labels (-5 and 5) are readable"
+      - "Element type icons in chooser are distinguishable"
+      - "All interactive elements have visual hover states"
+
+  # ====================
+  # Point Interaction Tests
+  # ====================
+
+  - id: "number-line-react/simple-points/add-single-point"
+    sampleId: "simple-points"
+    severity: "error"
+
+    intent: "Validates adding a single filled point to the number line"
+
+    notes:
+      - "Clicking on the number line adds a point at that position"
+      - "Position is automatically snapped to nearest tick interval"
+      - "Session should record the point with type and domainPosition"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "simple-points"
+
+      - action: click
+        target:
+          description: "Filled point (PF) button in chooser"
+          hint: '[data-testid="point-type-PF"], button[aria-label*="filled"], button[title*="Full"]'
+
+      - action: clickAt
+        target:
+          description: "Number line at position -2"
+          hint: 'svg, [data-testid="number-line-canvas"]'
+        coordinates:
+          x: 200
+          y: 150
+        notes:
+          - "Coordinate will be converted to domain position based on scale"
+          - "Position should snap to nearest tick (-2)"
+
+      - action: observe
+        target:
+          description: "Point rendered on number line at -2"
+          hint: 'circle[data-type="point"], circle[fill]:not([fill="none"])'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          arrayContains:
+            - type: "point"
+              pointType: "full"
+              domainPosition: -2
+
+    spiritChecks:
+      - "Point is visually centered on the -2 tick mark"
+      - "Point has clear filled appearance (solid color)"
+      - "Point is draggable (cursor changes on hover)"
+
+  - id: "number-line-react/simple-points/add-empty-point"
+    sampleId: "simple-points"
+    severity: "error"
+
+    intent: "Validates adding an empty (open circle) point to the number line"
+
+    notes:
+      - "Empty points are rendered as circles with stroke but no fill"
+      - "Useful for showing excluded endpoints in inequalities"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "simple-points"
+
+      - action: click
+        target:
+          description: "Empty point (PE) button in chooser"
+          hint: '[data-testid="point-type-PE"], button[aria-label*="empty"], button[title*="Empty"]'
+
+      - action: clickAt
+        target:
+          description: "Number line at position 3"
+          hint: 'svg, [data-testid="number-line-canvas"]'
+        coordinates:
+          x: 650
+          y: 150
+
+      - action: observe
+        target:
+          description: "Empty point rendered at 3"
+          hint: 'circle[fill="none"], circle[stroke]:not([fill])'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          arrayContains:
+            - type: "point"
+              pointType: "empty"
+              domainPosition: 3
+
+    spiritChecks:
+      - "Empty point has clear hollow appearance"
+      - "Stroke width is visible and matches filled points"
+
+  - id: "number-line-react/simple-points/correct-two-points"
+    sampleId: "simple-points"
+    severity: "error"
+
+    intent: "Validates correct answer with two points at -2 and 3 as specified in prompt"
+
+    notes:
+      - "Prompt says: Place two points at -2 and 3"
+      - "This tests both adding multiple points and correctness validation"
+      - "Order of points in session.answer should not matter"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "simple-points"
+          mode: "gather"
+          role: "student"
+
+      - action: click
+        target:
+          description: "Filled point (PF) button"
+          hint: '[data-testid="point-type-PF"], button[title*="Full"]'
+
+      - action: clickAt
+        target:
+          description: "Number line at -2"
+          hint: 'svg'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: clickAt
+        target:
+          description: "Number line at 3"
+          hint: 'svg'
+        coordinates:
+          x: 650
+          y: 150
+
+      - action: wait
+        duration: 500
+
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "simple-points"
+          mode: "evaluate"
+          role: "student"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Correct feedback indicator"
+          hint: 'text="Correct", [data-feedback="correct"], .correct-feedback'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+    spiritChecks:
+      - "Both points are highlighted with correct color (typically green)"
+      - "Feedback message clearly indicates success"
+
+  # ====================
+  # Line Segment Tests
+  # ====================
+
+  - id: "number-line-react/default/add-line-segment"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates adding a line segment with filled endpoints (LFF)"
+
+    notes:
+      - "Line segments have two endpoints and a connecting line"
+      - "LFF = Line Full-Full (both endpoints filled)"
+      - "Session stores left position and size (length)"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: click
+        target:
+          description: "Line Full-Full (LFF) button in chooser"
+          hint: '[data-testid="line-type-LFF"], button[title*="LFF"]'
+
+      - action: clickAt
+        target:
+          description: "Number line to place line from -3 to 2"
+          hint: 'svg'
+        coordinates:
+          x: 200
+          y: 150
+        notes:
+          - "First click sets the line, default length may vary"
+          - "User can drag endpoints to adjust"
+
+      - action: observe
+        target:
+          description: "Line segment rendered on number line"
+          hint: 'line[data-type="segment"], line[stroke-width]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Left endpoint (filled circle)"
+          hint: 'circle[data-endpoint="left"][fill]:not([fill="none"])'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Right endpoint (filled circle)"
+          hint: 'circle[data-endpoint="right"][fill]:not([fill="none"])'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          arrayContains:
+            - type: "line"
+              leftPoint: "full"
+              rightPoint: "full"
+
+    spiritChecks:
+      - "Line segment is clearly visible with solid stroke"
+      - "Both endpoints are filled circles"
+      - "Endpoints are draggable independently"
+
+  - id: "number-line-react/default/add-line-empty-full"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates line segment with empty left and filled right endpoint (LEF)"
+
+    notes:
+      - "LEF represents inequalities like -2 < x ≤ 3"
+      - "Tests mixed endpoint types"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: click
+        target:
+          description: "Line Empty-Full (LEF) button"
+          hint: '[data-testid="line-type-LEF"], button[title*="LEF"]'
+
+      - action: clickAt
+        target:
+          description: "Number line to place line"
+          hint: 'svg'
+        coordinates:
+          x: 250
+          y: 150
+
+      - action: observe
+        target:
+          description: "Line segment with mixed endpoints"
+          hint: 'line[data-type="segment"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          arrayContains:
+            - type: "line"
+              leftPoint: "empty"
+              rightPoint: "full"
+
+    spiritChecks:
+      - "Left endpoint is hollow (empty circle)"
+      - "Right endpoint is filled (solid circle)"
+      - "Visual distinction between endpoint types is clear"
+
+  # ====================
+  # Ray Tests
+  # ====================
+
+  - id: "number-line-react/default/add-ray-positive"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates adding a ray extending to the right with filled endpoint (RFP)"
+
+    notes:
+      - "RFP = Ray Full Positive (extends right from filled point)"
+      - "Represents inequalities like x ≥ 2"
+      - "Ray should extend to edge of visible canvas"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: click
+        target:
+          description: "Ray Full Positive (RFP) button"
+          hint: '[data-testid="ray-type-RFP"], button[title*="RFP"]'
+
+      - action: clickAt
+        target:
+          description: "Number line at position 0"
+          hint: 'svg'
+        coordinates:
+          x: 400
+          y: 150
+
+      - action: observe
+        target:
+          description: "Ray line extending right"
+          hint: 'line[data-type="ray"], line[data-direction="positive"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Ray endpoint (filled)"
+          hint: 'circle[data-type="ray-point"][fill]:not([fill="none"])'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          arrayContains:
+            - type: "ray"
+              pointType: "full"
+              direction: "positive"
+              domainPosition: 0
+
+    spiritChecks:
+      - "Ray extends to the right edge of the number line"
+      - "Arrow or line clearly indicates infinite extent"
+      - "Endpoint is positioned exactly at 0"
+
+  - id: "number-line-react/default/add-ray-negative-empty"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates ray extending left with empty endpoint (REN)"
+
+    notes:
+      - "REN = Ray Empty Negative (extends left from open point)"
+      - "Represents inequalities like x < -1"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: click
+        target:
+          description: "Ray Empty Negative (REN) button"
+          hint: '[data-testid="ray-type-REN"], button[title*="REN"]'
+
+      - action: clickAt
+        target:
+          description: "Number line at position -1"
+          hint: 'svg'
+        coordinates:
+          x: 280
+          y: 150
+
+      - action: observe
+        target:
+          description: "Ray extending left"
+          hint: 'line[data-direction="negative"]'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Empty endpoint"
+          hint: 'circle[fill="none"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        answer:
+          arrayContains:
+            - type: "ray"
+              pointType: "empty"
+              direction: "negative"
+
+    spiritChecks:
+      - "Ray extends to the left edge"
+      - "Endpoint is clearly hollow/empty"
+
+  # ====================
+  # Interaction Tests
+  # ====================
+
+  - id: "number-line-react/default/undo-element"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates undo functionality removes the last added element"
+
+    notes:
+      - "Undo should remove most recently added element from session"
+      - "Multiple undos should work in sequence"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: click
+        target:
+          description: "PF button"
+          hint: 'button[title*="Full point"]'
+
+      - action: clickAt
+        target:
+          description: "Add point at 1"
+          hint: 'svg'
+        coordinates:
+          x: 450
+          y: 150
+
+      - action: clickAt
+        target:
+          description: "Add point at 2"
+          hint: 'svg'
+        coordinates:
+          x: 480
+          y: 150
+
+      - action: observe
+        target:
+          description: "Two points visible"
+          hint: 'circle[data-type="point"]'
+        expected:
+          count: 2
+
+      - action: click
+        target:
+          description: "Undo button"
+          hint: 'button:has-text("Undo"), [aria-label*="Undo"]'
+
+      - action: observe
+        target:
+          description: "Only one point remains"
+          hint: 'circle[data-type="point"]'
+        expected:
+          count: 1
+
+    expected:
+      session:
+        answer:
+          arrayLength: 1
+
+    spiritChecks:
+      - "Last added element disappears smoothly"
+      - "Undo button becomes disabled when no elements remain"
+
+  - id: "number-line-react/default/clear-all"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates clear all functionality removes all elements"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: click
+        target:
+          description: "PF button"
+          hint: 'button[title*="Full"]'
+
+      - action: clickAt
+        target:
+          description: "Add point"
+          hint: 'svg'
+        coordinates:
+          x: 400
+          y: 150
+
+      - action: clickAt
+        target:
+          description: "Add another point"
+          hint: 'svg'
+        coordinates:
+          x: 450
+          y: 150
+
+      - action: click
+        target:
+          description: "Clear all button"
+          hint: 'button:has-text("Clear"), [aria-label*="Clear"]'
+
+      - action: observe
+        target:
+          description: "No elements on number line"
+          hint: 'circle[data-type="point"]'
+        expected:
+          exists: false
+
+    expected:
+      session:
+        answer:
+          arrayLength: 0
+
+    spiritChecks:
+      - "All elements disappear immediately"
+      - "Number line returns to initial empty state"
+
+  - id: "number-line-react/default/delete-selected"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates selecting and deleting specific elements"
+
+    notes:
+      - "Click element to select it (shows darker outline)"
+      - "Delete button removes selected elements only"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: click
+        target:
+          description: "PF button"
+          hint: 'button[title*="Full"]'
+
+      - action: clickAt
+        target:
+          description: "Add point at -2"
+          hint: 'svg'
+        coordinates:
+          x: 250
+          y: 150
+
+      - action: clickAt
+        target:
+          description: "Add point at 2"
+          hint: 'svg'
+        coordinates:
+          x: 550
+          y: 150
+
+      - action: click
+        target:
+          description: "Click first point to select it"
+          hint: 'circle[data-type="point"]'
+
+      - action: observe
+        target:
+          description: "Delete button appears/enabled"
+          hint: 'button:has-text("Delete"), [aria-label*="Delete"]:not([disabled])'
+        expected:
+          exists: true
+
+      - action: click
+        target:
+          description: "Delete button"
+          hint: 'button:has-text("Delete")'
+
+      - action: observe
+        target:
+          description: "Only one point remains"
+          hint: 'circle[data-type="point"]'
+        expected:
+          count: 1
+
+    expected:
+      session:
+        answer:
+          arrayLength: 1
+
+    spiritChecks:
+      - "Selected element has visual selection indicator"
+      - "Only selected elements are deleted"
+      - "Delete button is disabled when no selection"
+
+  # ====================
+  # Mode Tests
+  # ====================
+
+  - id: "number-line-react/default/view-mode-disabled"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates number line is disabled in view mode"
+
+    notes:
+      - "View mode shows the number line but prevents interaction"
+      - "All controls should be disabled or hidden"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+          mode: "view"
+
+      - action: observe
+        target:
+          description: "Number line canvas (still visible)"
+          hint: 'svg'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Point chooser disabled or hidden"
+          hint: '[data-testid="point-chooser"][disabled], [data-testid="point-chooser"][aria-disabled="true"]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Cursor shows not-allowed or default (not pointer)"
+      - "Clicking on number line has no effect"
+      - "Visual indication that element is read-only"
+
+  - id: "number-line-react/default/evaluate-mode-feedback"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates evaluate mode shows correct/incorrect visual feedback"
+
+    notes:
+      - "Elements should be color-coded: green for correct, red for incorrect"
+      - "Correct answer overlay toggle may be available"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+          mode: "gather"
+
+      - action: click
+        target:
+          description: "PF button"
+          hint: 'button[title*="Full"]'
+
+      - action: clickAt
+        target:
+          description: "Add incorrect point"
+          hint: 'svg'
+        coordinates:
+          x: 300
+          y: 150
+
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Incorrect feedback indicator"
+          hint: 'text="Incorrect", [data-feedback="incorrect"], .incorrect-feedback'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Element with incorrect color (red)"
+          hint: 'circle[stroke*="red"], circle[class*="incorrect"]'
+        expected:
+          exists: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+    spiritChecks:
+      - "Incorrect elements are clearly colored red"
+      - "Feedback message explains what was wrong"
+
+  - id: "number-line-react/default/instructor-role"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates instructor role can see correct answer overlay"
+
+    notes:
+      - "Instructor view should show toggle for correct answer"
+      - "Toggling should overlay correct answer on the graph"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Show correct answer toggle or button"
+          hint: 'button:has-text("Show"), input[type="checkbox"][aria-label*="correct"], [data-testid="show-correct"]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Correct answer overlay is visually distinct from student answer"
+      - "Toggle is clearly labeled"
+
+  # ====================
+  # Accessibility Tests
+  # ====================
+
+  - id: "number-line-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates keyboard navigation through element type chooser"
+
+    notes:
+      - "Tab should move through point chooser buttons"
+      - "Enter/Space should select element type"
+      - "Full keyboard support for graph interaction may be limited due to spatial nature"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: observe
+        target:
+          description: "Point chooser buttons are keyboard focusable"
+          hint: 'button[tabindex="0"], button:not([tabindex="-1"])'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "Focus indicators are clearly visible on all buttons"
+      - "Tab order is logical (chooser → undo → clear → graph)"
+      - "Keyboard users can at least select element types"
+
+  - id: "number-line-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates touch target sizes meet WCAG 2.2 minimum (44x44px)"
+
+    notes:
+      - "All interactive elements must be at least 44x44px"
+      - "Includes buttons in chooser, undo/clear, and elements on graph"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: checkStyle
+        target:
+          description: "Point chooser buttons"
+          hint: '[data-testid="point-chooser"] button, [role="toolbar"] button'
+        expected:
+          minWidth: "44px"
+          minHeight: "44px"
+
+      - action: checkStyle
+        target:
+          description: "Undo button"
+          hint: 'button:has-text("Undo")'
+        expected:
+          minWidth: "44px"
+          minHeight: "44px"
+
+      - action: checkStyle
+        target:
+          description: "Clear button"
+          hint: 'button:has-text("Clear")'
+        expected:
+          minWidth: "44px"
+          minHeight: "44px"
+
+  - id: "number-line-react/default/axe-scan-gather"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates no accessibility violations in gather mode"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+          mode: "gather"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "number-line-react/default/axe-scan-evaluate"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates no accessibility violations in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  # ====================
+  # Style & Visual Tests
+  # ====================
+
+  - id: "number-line-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates sufficient color contrast for text and interactive elements"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: checkColorContrast
+        target:
+          description: "Prompt text"
+          hint: 'p, [data-testid="prompt"]'
+        expected:
+          minRatio: 4.5
+
+      - action: checkColorContrast
+        target:
+          description: "Button labels in chooser"
+          hint: '[role="toolbar"] button'
+        expected:
+          minRatio: 4.5
+
+      - action: checkColorContrast
+        target:
+          description: "Domain labels (tick numbers)"
+          hint: 'text[data-type="tick-label"], svg text'
+        expected:
+          minRatio: 4.5
+
+  - id: "number-line-react/default/typography"
+    sampleId: "default"
+    severity: "error"
+
+    intent: "Validates font sizes meet WCAG readability standards"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: checkFont
+        target:
+          description: "Prompt text"
+          hint: 'p'
+        expected:
+          minSize: "14px"
+
+      - action: checkFont
+        target:
+          description: "Button text"
+          hint: 'button'
+        expected:
+          minSize: "14px"
+
+      - action: checkFont
+        target:
+          description: "Tick labels on number line"
+          hint: 'svg text'
+        expected:
+          minSize: "12px"
+
+  - id: "number-line-react/default/visual-regression-baseline"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Captures visual regression baseline screenshot"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: screenshot
+        filename: "number-line-default-baseline.png"
+        fullPage: false
+
+    spiritChecks:
+      - "Overall layout is clean and professional"
+      - "Number line is horizontally centered"
+      - "Spacing between UI elements is consistent"
+      - "Tick marks are evenly distributed"
+
+  # ====================
+  # Error Handling Tests
+  # ====================
+
+  - id: "number-line-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates behavior when submitting without placing any elements"
+
+    notes:
+      - "Empty submission should be treated as unanswered or incorrect"
+      - "Should not crash or show error"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+          mode: "gather"
+
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Unanswered or incorrect feedback"
+          hint: 'text="unanswered", text="Incorrect", [data-feedback]'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "No JavaScript errors in console"
+      - "Feedback message is appropriate for empty state"
+
+  - id: "number-line-react/default/max-elements-limit"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates handling of maximum number of elements constraint"
+
+    notes:
+      - "If maxNumberOfPoints is set, should show warning when limit reached"
+      - "Should prevent adding more elements beyond limit"
+      - "This test assumes a limit exists in the configuration"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+
+      - action: click
+        target:
+          description: "PF button"
+          hint: 'button[title*="Full"]'
+
+      # Add multiple points (assuming reasonable limit like 10)
+      - action: clickAt
+        target:
+          description: "Add point 1"
+          hint: 'svg'
+        coordinates:
+          x: 200
+          y: 150
+
+      - action: clickAt
+        target:
+          description: "Add point 2"
+          hint: 'svg'
+        coordinates:
+          x: 250
+          y: 150
+
+    spiritChecks:
+      - "If limit is reached, clear warning message appears"
+      - "Attempting to add beyond limit has no effect"
+      - "Existing elements remain stable"
+
+  # ====================
+  # Performance Test
+  # ====================
+
+  - id: "number-line-react/default/load-time"
+    sampleId: "default"
+    severity: "warn"
+
+    intent: "Validates element loads within acceptable time"
+
+    notes:
+      - "Number line with SVG rendering should load quickly"
+      - "Target: < 2 seconds from navigation to interactive"
+
+    steps:
+      - action: navigate
+        path: "/number-line"
+        params:
+          sampleId: "default"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Number line fully rendered"
+          hint: 'svg'
+        expected:
+          exists: true
+
+    spiritChecks:
+      - "No perceptible lag when adding elements"
+      - "Smooth drag interactions without frame drops"
+      - "Undo/clear operations are instantaneous"

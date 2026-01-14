@@ -1,0 +1,17 @@
+{
+  "id": "mc-grid-1",
+  "element": "@pie-elements-ng/multiple-choice",
+  "prompt": "<p><strong>What color is the sky on a clear day?</strong></p>",
+  "promptEnabled": true,
+  "choices": [
+    { "value": "a", "label": "Red", "correct": false },
+    { "value": "b", "label": "Blue", "correct": true },
+    { "value": "c", "label": "Green", "correct": false },
+    { "value": "d", "label": "Yellow", "correct": false }
+  ],
+  "choiceMode": "radio",
+  "choicePrefix": "numbers",
+  "choicesLayout": "grid",
+  "feedbackEnabled": false,
+  "rationaleEnabled": false
+}

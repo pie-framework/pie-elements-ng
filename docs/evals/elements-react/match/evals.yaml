@@ -1,0 +1,423 @@
+version: 1
+
+component:
+  element: "@pie-element/match"
+  framework: "react"
+
+examplesApp:
+  app: "@pie-examples/react"
+  routeTemplate: "/match"
+
+evals:
+  - id: "match-react/default/renders-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates match element renders with rows and draggable choices"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: observe
+        target:
+          description: "Prompt"
+          hint: 'text="Match each capital"'
+        expected:
+          exists: true
+
+      - action: observe
+        target:
+          description: "Match rows"
+          hint: '[data-testid="match-row"], .match-row'
+        expected:
+          count: 3
+
+      - action: observe
+        target:
+          description: "Draggable choices"
+          hint: '[draggable="true"]'
+        expected:
+          exists: true
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "match-react/default/drag-choice-to-row"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates dragging choice to row updates session"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: drag
+        source:
+          description: "Paris choice"
+          hint: '[data-value="paris"]'
+        target:
+          description: "France row"
+          hint: '[data-row-id="1"]'
+
+      - action: observe
+        target:
+          description: "Paris in France row"
+          hint: '[data-row-id="1"] [data-value="paris"]'
+        expected:
+          exists: true
+
+    expected:
+      session:
+        value:
+          exists: true
+
+  - id: "match-react/default/correct-matches"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates correct matches yield score of 1.0"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: drag
+        source:
+          hint: '[data-value="paris"]'
+        target:
+          hint: '[data-row-id="1"]'
+
+      - action: drag
+        source:
+          hint: '[data-value="berlin"]'
+        target:
+          hint: '[data-row-id="2"]'
+
+      - action: drag
+        source:
+          hint: '[data-value="madrid"]'
+        target:
+          hint: '[data-row-id="3"]'
+
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 1.0
+
+  - id: "match-react/default/incorrect-matches"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates incorrect matches yield score of 0.0"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: drag
+        source:
+          hint: '[data-value="berlin"]'
+        target:
+          hint: '[data-row-id="1"]'
+
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+    expected:
+      outcome:
+        score: 0.0
+
+  - id: "match-react/default/remove-match"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates dragging choice back removes match"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: drag
+        source:
+          hint: '[data-value="paris"]'
+        target:
+          hint: '[data-row-id="1"]'
+
+      - action: drag
+        source:
+          description: "Paris from row back to choices"
+          hint: '[data-row-id="1"] [data-value="paris"]'
+        target:
+          description: "Choices area"
+          hint: '[data-testid="choices"], .choices'
+
+      - action: observe
+        target:
+          description: "Paris back in choices"
+          hint: '.choices [data-value="paris"]'
+        expected:
+          exists: true
+
+  - id: "match-react/default/view-mode"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates view mode disables drag-and-drop"
+
+    steps:
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "view"
+
+      - action: observe
+        target:
+          description: "Rows visible"
+          hint: '[data-testid="match-row"]'
+        expected:
+          exists: true
+
+  - id: "match-react/default/evaluate-feedback"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates evaluate mode shows correct/incorrect styling"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: drag
+        source:
+          hint: '[data-value="berlin"]'
+        target:
+          hint: '[data-row-id="1"]'
+
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Incorrect match styling"
+          hint: '[data-correct="false"], .incorrect'
+        expected:
+          exists: true
+
+  - id: "match-react/default/instructor-rationale"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates instructor view shows rationale"
+
+    steps:
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "evaluate"
+          role: "instructor"
+
+      - action: observe
+        target:
+          description: "Rationale or correct answer display"
+          hint: '.rationale, [data-testid="correct-answer"]'
+        expected:
+          exists: true
+
+  - id: "match-react/default/keyboard-navigation"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates keyboard accessibility"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: observe
+        target:
+          description: "Focusable choices"
+          hint: '[draggable][tabindex="0"]'
+        expected:
+          exists: true
+
+  - id: "match-react/default/touch-targets"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates touch target sizes (44x44px)"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: checkStyle
+        target:
+          description: "Draggable choices"
+          hint: '[draggable]'
+        expected:
+          minWidth: "44px"
+          minHeight: "44px"
+
+  - id: "match-react/default/axe-gather"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in gather mode"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "match-react/default/axe-evaluate"
+    sampleId: "default"
+    severity: "error"
+    intent: "No accessibility violations in evaluate mode"
+
+    steps:
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "evaluate"
+
+      - action: axe
+        expected:
+          maxViolations: 0
+          wcagLevel: "AA"
+
+  - id: "match-react/default/color-contrast"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates sufficient color contrast"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: checkColorContrast
+        target:
+          description: "Row titles"
+          hint: '.match-row p'
+        expected:
+          minRatio: 4.5
+
+  - id: "match-react/default/visual-regression"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Captures visual baseline"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: screenshot
+        filename: "match-default-baseline.png"
+
+  - id: "match-react/default/empty-submission"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Handles empty submission gracefully"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Feedback"
+          hint: '[data-feedback]'
+        expected:
+          exists: true
+
+  - id: "match-react/default/mode-switching"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates smooth mode transitions"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: drag
+        source:
+          hint: '[data-value="paris"]'
+        target:
+          hint: '[data-row-id="1"]'
+
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "view"
+          preserveSession: true
+
+      - action: navigate
+        path: "/match"
+        params:
+          mode: "evaluate"
+          preserveSession: true
+
+      - action: observe
+        target:
+          description: "Element stable"
+          hint: '[data-testid="match-row"]'
+        expected:
+          exists: true
+
+  - id: "match-react/default/reset"
+    sampleId: "default"
+    severity: "error"
+    intent: "Validates reset clears all matches"
+
+    steps:
+      - action: navigate
+        path: "/match"
+
+      - action: drag
+        source:
+          hint: '[data-value="paris"]'
+        target:
+          hint: '[data-row-id="1"]'
+
+      - action: click
+        target:
+          description: "Reset button"
+          hint: 'button:has-text("Reset")'
+
+      - action: observe
+        target:
+          description: "Paris back in choices"
+          hint: '.choices [data-value="paris"]'
+        expected:
+          exists: true
+
+  - id: "match-react/default/performance"
+    sampleId: "default"
+    severity: "warn"
+    intent: "Validates load performance"
+
+    steps:
+      - action: navigate
+        path: "/match"
+        performance:
+          maxLoadTime: 2000
+
+      - action: observe
+        target:
+          description: "Element rendered"
+          hint: '[data-testid="match-row"]'
+        expected:
+          exists: true

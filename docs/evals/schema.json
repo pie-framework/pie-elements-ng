@@ -1,0 +1,810 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pie-framework.github.io/pie-elements-ng/schemas/evals-v1.json",
+  "title": "PIE Elements NG Evaluation Schema",
+  "description": "Schema for YAML-based PIE element evaluations (version 1)",
+  "type": "object",
+  "required": ["version", "component", "examplesApp", "evals"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version number"
+    },
+    "component": {
+      "type": "object",
+      "required": ["element", "framework"],
+      "properties": {
+        "element": {
+          "type": "string",
+          "pattern": "^@pie-element/[a-z-]+$",
+          "description": "Element package name"
+        },
+        "framework": {
+          "type": "string",
+          "enum": ["svelte", "react"],
+          "description": "Framework identifier"
+        },
+        "tagName": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Web component tag name (if applicable)"
+        }
+      }
+    },
+    "examplesApp": {
+      "type": "object",
+      "required": ["app", "routeTemplate"],
+      "properties": {
+        "app": {
+          "type": "string",
+          "pattern": "^@pie-(examples/react|demos/sveltekit)$",
+          "description": "Target example/demo app package name"
+        },
+        "routeTemplate": {
+          "type": "string",
+          "pattern": "^/(?:[a-z-]+|demos/<tagName>)$",
+          "description": "Route pattern for element demo page"
+        }
+      }
+    },
+    "evals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/evaluation"
+      }
+    }
+  },
+  "definitions": {
+    "evaluation": {
+      "type": "object",
+      "required": ["id", "severity", "intent", "steps"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+/[a-z0-9-]+/[a-z0-9-]+$",
+          "description": "Unique evaluation identifier (format: element/sample/scenario)"
+        },
+        "sampleId": {
+          "type": "string",
+          "description": "Reference to sample JSON file (without .json extension)"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warn"],
+          "description": "Test failure behavior"
+        },
+        "gradeBand": {
+          "type": "string",
+          "description": "Optional grade band metadata (e.g., '3-6', 'K-2', '9-12')"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Optional subject metadata (e.g., 'math', 'ela', 'science')"
+        },
+        "intent": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Clear statement of what this evaluation validates"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional context or implementation notes"
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/action"
+          }
+        },
+        "expected": {
+          "type": "object",
+          "properties": {
+            "session": {
+              "$ref": "#/definitions/matcher"
+            },
+            "outcome": {
+              "$ref": "#/definitions/matcher"
+            }
+          }
+        },
+        "spiritChecks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Qualitative assessment criteria"
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["action"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "navigate",
+            "click",
+            "type",
+            "select",
+            "observe",
+            "wait",
+            "axe",
+            "dispatchEvent",
+            "clickAt",
+            "dragSlider",
+            "uploadFile",
+            "playMedia",
+            "screenshot",
+            "compareScreenshot",
+            "checkStyle",
+            "checkLayout",
+            "checkColorContrast",
+            "checkFont"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "navigate"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/navigateAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "click"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/clickAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "type"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/typeAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "select"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/selectAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "observe"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/observeAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "wait"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/waitAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "axe"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/axeAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "dispatchEvent"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/dispatchEventAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "clickAt"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/clickAtAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "dragSlider"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/dragSliderAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "uploadFile"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/uploadFileAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "playMedia"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/playMediaAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "screenshot"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/screenshotAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "compareScreenshot"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/compareScreenshotAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "checkStyle"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/checkStyleAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "checkLayout"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/checkLayoutAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "checkColorContrast"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/checkColorContrastAction"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "checkFont"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/checkFontAction"
+          }
+        }
+      ]
+    },
+    "target": {
+      "type": "object",
+      "required": ["description", "hint"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 3,
+          "description": "Human-readable description of target element"
+        },
+        "hint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "CSS selector or Playwright locator hint"
+        }
+      }
+    },
+    "navigateAction": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "Route path to navigate to"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Query parameters"
+        }
+      }
+    },
+    "clickAction": {
+      "type": "object",
+      "required": ["target"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        }
+      }
+    },
+    "typeAction": {
+      "type": "object",
+      "required": ["target", "text"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "text": {
+          "type": "string",
+          "description": "Text to type into element"
+        }
+      }
+    },
+    "selectAction": {
+      "type": "object",
+      "required": ["target", "value"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "value": {
+          "type": "string",
+          "description": "Option value to select"
+        }
+      }
+    },
+    "observeAction": {
+      "type": "object",
+      "required": ["target"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "expected": {
+          "$ref": "#/definitions/matcher"
+        }
+      }
+    },
+    "waitAction": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": "string",
+          "enum": ["load", "domcontentloaded", "networkidle"],
+          "description": "Wait condition"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30000,
+          "description": "Timeout in milliseconds"
+        }
+      }
+    },
+    "axeAction": {
+      "type": "object",
+      "properties": {
+        "expected": {
+          "type": "object",
+          "properties": {
+            "maxViolations": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum allowed violations"
+            },
+            "wcagLevel": {
+              "type": "string",
+              "enum": ["A", "AA", "AAA"],
+              "description": "WCAG conformance level"
+            }
+          }
+        }
+      }
+    },
+    "dispatchEventAction": {
+      "type": "object",
+      "required": ["target", "eventName"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "eventName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Event name to dispatch"
+        },
+        "detail": {
+          "type": "object",
+          "description": "Event detail payload"
+        }
+      }
+    },
+    "clickAtAction": {
+      "type": "object",
+      "required": ["target", "coordinates"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "coordinates": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": {
+              "type": "number",
+              "description": "X coordinate"
+            },
+            "y": {
+              "type": "number",
+              "description": "Y coordinate"
+            }
+          }
+        }
+      }
+    },
+    "dragSliderAction": {
+      "type": "object",
+      "required": ["target", "value"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "value": {
+          "type": "number",
+          "description": "Target value for slider"
+        }
+      }
+    },
+    "uploadFileAction": {
+      "type": "object",
+      "required": ["target", "filePath"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "filePath": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to file to upload"
+        }
+      }
+    },
+    "playMediaAction": {
+      "type": "object",
+      "required": ["target", "command"],
+      "properties": {
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "command": {
+          "type": "string",
+          "enum": ["play", "pause", "seekTo"],
+          "description": "Media control command"
+        },
+        "seekTime": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Seek time in seconds (for seekTo command)"
+        }
+      }
+    },
+    "screenshotAction": {
+      "type": "object",
+      "required": ["action", "name"],
+      "properties": {
+        "action": {
+          "const": "screenshot"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "name": {
+          "type": "string",
+          "description": "Screenshot filename (without extension)"
+        },
+        "fullPage": {
+          "type": "boolean",
+          "description": "Capture full scrollable page"
+        }
+      }
+    },
+    "compareScreenshotAction": {
+      "type": "object",
+      "required": ["action", "name"],
+      "properties": {
+        "action": {
+          "const": "compareScreenshot"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "name": {
+          "type": "string",
+          "description": "Baseline screenshot name to compare against"
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Acceptable difference threshold (0-1)"
+        }
+      }
+    },
+    "checkStyleAction": {
+      "type": "object",
+      "required": ["action", "target", "property", "expected"],
+      "properties": {
+        "action": {
+          "const": "checkStyle"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "property": {
+          "type": "string",
+          "description": "CSS property name (e.g., 'width', 'color', 'fontSize')"
+        },
+        "expected": {
+          "$ref": "#/definitions/matcher"
+        }
+      }
+    },
+    "checkLayoutAction": {
+      "type": "object",
+      "required": ["action", "target", "expected"],
+      "properties": {
+        "action": {
+          "const": "checkLayout"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "expected": {
+          "type": "object",
+          "properties": {
+            "boundingBox": {
+              "type": "object",
+              "properties": {
+                "minWidth": {
+                  "type": "number"
+                },
+                "maxWidth": {
+                  "type": "number"
+                },
+                "minHeight": {
+                  "type": "number"
+                },
+                "maxHeight": {
+                  "type": "number"
+                }
+              }
+            },
+            "spacing": {
+              "type": "object",
+              "properties": {
+                "margin": {
+                  "type": "number"
+                },
+                "padding": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "checkColorContrastAction": {
+      "type": "object",
+      "required": ["action", "target", "expected"],
+      "properties": {
+        "action": {
+          "const": "checkColorContrast"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "expected": {
+          "type": "object",
+          "properties": {
+            "ratio": {
+              "$ref": "#/definitions/matcher"
+            }
+          }
+        }
+      }
+    },
+    "checkFontAction": {
+      "type": "object",
+      "required": ["action", "target", "expected"],
+      "properties": {
+        "action": {
+          "const": "checkFont"
+        },
+        "target": {
+          "$ref": "#/definitions/target"
+        },
+        "expected": {
+          "type": "object",
+          "properties": {
+            "fontSize": {
+              "$ref": "#/definitions/matcher"
+            },
+            "lineHeight": {
+              "$ref": "#/definitions/matcher"
+            },
+            "fontFamily": {
+              "$ref": "#/definitions/matcher"
+            },
+            "fontWeight": {
+              "$ref": "#/definitions/matcher"
+            }
+          }
+        }
+      }
+    },
+    "matcher": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "equals": {
+                "description": "Exact equality check"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "contains": {
+                "type": ["string", "number"],
+                "description": "Contains check"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "exists": {
+                "type": "boolean",
+                "description": "Existence check"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "greaterThan": {
+                "type": "number",
+                "description": "Greater than comparison"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "lessThan": {
+                "type": "number",
+                "description": "Less than comparison"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "greaterThanOrEqual": {
+                "type": "number",
+                "description": "Greater than or equal to comparison"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "lessThanOrEqual": {
+                "type": "number",
+                "description": "Less than or equal to comparison"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "matches": {
+                "type": "string",
+                "description": "Regular expression match"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
