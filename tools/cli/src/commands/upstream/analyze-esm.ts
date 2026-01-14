@@ -90,35 +90,17 @@ export default class AnalyzeEsm extends Command {
       default: true,
       allowNo: true,
     }),
-    'runtime-check': Flags.boolean({
-      description:
-        'Perform runtime-ish CDN probes for ESM player readiness (fetch entry/controller from CDN and parse as ESM).',
-      default: true,
-      allowNo: true,
-    }),
-    'runtime-deep': Flags.boolean({
-      description:
-        'Deep runtime probe: recursively fetch and parse transitive module imports (slower but higher confidence).',
-      default: true,
-      allowNo: true,
-    }),
     'runtime-cdn-base-url': Flags.string({
       description: 'CDN base URL to use for runtime probes (e.g. https://esm.sh)',
       default: 'https://esm.sh',
     }),
-    'runtime-local-pie': Flags.boolean({
-      description:
-        'When deep probing, resolve PIE-owned packages (@pie-lib/*, @pie-element/*) from local sources instead of the CDN.',
-      default: true,
-      allowNo: true,
-    }),
     'runtime-local-pie-elements-path': Flags.string({
       description:
-        'Path to sibling pie-elements repo used for local PIE resolution during deep probes.',
+        'Path to sibling pie-elements repo used for local PIE resolution during probes.',
       default: '../pie-elements',
     }),
     'runtime-local-pie-lib-path': Flags.string({
-      description: 'Path to sibling pie-lib repo used for local PIE resolution during deep probes.',
+      description: 'Path to sibling pie-lib repo used for local PIE resolution during probes.',
       default: '../pie-lib',
     }),
     'runtime-timeout-ms': Flags.integer({
@@ -130,11 +112,11 @@ export default class AnalyzeEsm extends Command {
       default: 8,
     }),
     'runtime-max-depth': Flags.integer({
-      description: 'Max import graph depth for --runtime-deep',
+      description: 'Max import graph depth for the deep runtime probe',
       default: 6,
     }),
     'runtime-max-modules': Flags.integer({
-      description: 'Max total modules fetched per element for --runtime-deep',
+      description: 'Max total modules fetched per element for the deep runtime probe',
       default: 250,
     }),
     'runtime-cache-file': Flags.string({
@@ -169,10 +151,7 @@ export default class AnalyzeEsm extends Command {
       flags.verbose,
       flags['include-dev-deps'],
       flags['validate-esm-player'],
-      flags['runtime-check'],
-      flags['runtime-deep'],
       flags['runtime-cdn-base-url'],
-      flags['runtime-local-pie'],
       flags['runtime-local-pie-elements-path'],
       flags['runtime-local-pie-lib-path'],
       flags['runtime-timeout-ms'],
@@ -195,10 +174,7 @@ export default class AnalyzeEsm extends Command {
     verbose: boolean,
     includeDevDeps: boolean,
     validateEsmPlayer: boolean,
-    runtimeCheck: boolean,
-    runtimeDeep: boolean,
     runtimeCdnBaseUrl: string,
-    runtimeLocalPie: boolean,
     runtimeLocalPieElementsPath: string,
     runtimeLocalPieLibPath: string,
     runtimeTimeoutMs: number,
@@ -214,7 +190,7 @@ export default class AnalyzeEsm extends Command {
       esmPlayerReady: [],
       esmValidation: {},
       esmPlayerValidationEnabled: validateEsmPlayer,
-      esmRuntimeValidationEnabled: runtimeCheck,
+      esmRuntimeValidationEnabled: true,
       esmRuntimeCdnBaseUrl: runtimeCdnBaseUrl,
       esmRuntimeValidation: {},
       elementDetails: {},
@@ -334,8 +310,7 @@ export default class AnalyzeEsm extends Command {
     }
 
     // Runtime-ish CDN probes (production-like signal)
-    if (runtimeCheck) {
-      const base = runtimeCdnBaseUrl.replace(/\/+$/, '');
+    const base = runtimeCdnBaseUrl.replace(/\/+$/, '');
 
       // Probe all CommonJS-free elements by default.
       // Rationale: "ESM ready in production" is primarily about whether the CDN can resolve
@@ -351,17 +326,11 @@ export default class AnalyzeEsm extends Command {
         );
         this.logger.info(`   CDN base: ${base}\n`);
         this.logger.info(
-          `   Mode: ${runtimeDeep ? `deep (maxDepth=${runtimeMaxDepth}, maxModules=${runtimeMaxModules})` : 'shallow'}\n`
+          `   Mode: deep (maxDepth=${runtimeMaxDepth}, maxModules=${runtimeMaxModules})\n`
         );
-        if (runtimeDeep) {
-          this.logger.info(
-            `   Local PIE resolution: ${
-              runtimeLocalPie
-                ? `enabled (pie-elements=${runtimeLocalPieElementsPath}, pie-lib=${runtimeLocalPieLibPath})`
-                : 'disabled'
-            }\n`
-          );
-        }
+        this.logger.info(
+          `   Local PIE resolution: enabled (pie-elements=${runtimeLocalPieElementsPath}, pie-lib=${runtimeLocalPieLibPath})\n`
+        );
       } else {
         this.logger.info(
           `🌐 Probing ESM runtime readiness via CDN (${elementsToProbe.length} elements, concurrency=${runtimeConcurrency})...`
@@ -372,12 +341,12 @@ export default class AnalyzeEsm extends Command {
         elements: elementsToProbe,
         pieElementsPath,
         cdnBaseUrl: base,
-        localPieEnabled: runtimeLocalPie,
+        localPieEnabled: true,
         localPieElementsPath: runtimeLocalPieElementsPath,
         localPieLibPath: runtimeLocalPieLibPath,
         timeoutMs: runtimeTimeoutMs,
         concurrency: runtimeConcurrency,
-        deep: runtimeDeep,
+        deep: true,
         maxDepth: runtimeMaxDepth,
         maxModules: runtimeMaxModules,
         cache,
@@ -397,7 +366,6 @@ export default class AnalyzeEsm extends Command {
       if (!verbose) {
         this.logger.info(`   Runtime-ready: ${okCount}/${elementsToProbe.length}\n`);
       }
-    }
 
     return report;
   }

@@ -7,7 +7,7 @@
 
 1. [Overview](#overview)
 2. [Migration Philosophy](#migration-philosophy)
-3. [The Two-Step Process](#the-two-step-process)
+3. Two-Step Process
 4. [ESM Compatibility Analysis](#esm-compatibility-analysis)
 5. [Syncing Code from Upstream](#syncing-code-from-upstream)
 6. [CLI Commands Reference](#cli-commands-reference)
@@ -42,7 +42,7 @@ This guide describes the complete process for migrating PIE elements from the up
 
 **PIE Elements NG** is a modern reimplementation supporting **BOTH** Svelte AND React:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Upstream Repositories                        │
 │                                                                 │
@@ -76,7 +76,7 @@ This guide describes the complete process for migrating PIE elements from the up
 │  🔧 MODERN INFRASTRUCTURE:                                       │
 │  └── Bun, Vite, TypeScript, Turbo, ESM                          │
 └─────────────────────────────────────────────────────────────────┘
-```
+```text
 
 ### Self-Contained Architecture
 
@@ -89,7 +89,7 @@ This guide describes the complete process for migrating PIE elements from the up
 
 ---
 
-## The Two-Step Process
+## Two-Step Process
 
 **IMPORTANT:** Migration is a two-step process:
 
@@ -99,7 +99,7 @@ This guide describes the complete process for migrating PIE elements from the up
 
 ```bash
 bun run cli upstream:analyze-esm --verbose
-```
+```text
 
 This generates `esm-compatible-elements.json` containing:
 
@@ -108,7 +108,7 @@ This generates `esm-compatible-elements.json` containing:
 
 **Output example:**
 
-```
+```text
 📊 ESM COMPATIBILITY REPORT
 ======================================================================
 
@@ -195,18 +195,15 @@ Common packages that prevent ESM builds:
 
 ### Running ESM Analysis
 
+Runtime probes always run in **deep** mode and **resolve all PIE packages locally** (`@pie-element/*`, `@pie-lib/*`).
+Only non-PIE dependencies are fetched from the configured CDN.
+
 ```bash
-# Analyze all elements with strict ESM validation + runtime probes (default)
+# Analyze all elements with strict ESM validation + deep runtime probes (default)
 bun run cli upstream:analyze-esm
 
 # Verbose output with detailed dependency info
 bun run cli upstream:analyze-esm --verbose
-
-# Disable runtime probes entirely
-bun run cli upstream:analyze-esm --no-runtime-check
-
-# Keep runtime probes but make them shallow (faster, less certain)
-bun run cli upstream:analyze-esm --no-runtime-deep
 
 # Skip ESM player validation (only check CommonJS blockers)
 bun run cli upstream:analyze-esm --no-validate-esm-player
@@ -214,10 +211,21 @@ bun run cli upstream:analyze-esm --no-validate-esm-player
 # Custom output path
 bun run cli upstream:analyze-esm --output=./esm-report.json
 
+# Runtime probe tuning (deep probes are always enabled)
+bun run cli upstream:analyze-esm --runtime-max-depth=8 --runtime-max-modules=400
+
 # Custom upstream paths
 PIE_ELEMENTS_PATH=/custom/path/pie-elements \
 PIE_LIB_PATH=/custom/path/pie-lib \
 bun run cli upstream:analyze-esm
+
+# Override local PIE resolution paths (non-PIE deps still come from CDN)
+bun run cli upstream:analyze-esm \
+  --runtime-local-pie-elements-path=/custom/path/pie-elements \
+  --runtime-local-pie-lib-path=/custom/path/pie-lib
+
+# Override CDN base (non-PIE deps only)
+bun run cli upstream:analyze-esm --runtime-cdn-base-url=https://esm.sh
 ```
 
 ### ESM Player Validation
