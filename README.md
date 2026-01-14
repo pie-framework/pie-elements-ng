@@ -194,7 +194,6 @@ For more details, see:
 
 - [**USAGE.md**](./docs/USAGE.md) - Quick start guide with installation and usage examples
 - [**API_REFERENCE.md**](./docs/API_REFERENCE.md) - Complete API documentation for all interfaces and props
-- [**INTEGRATION.md**](./docs/INTEGRATION.md) - Framework integration examples (React, Vue, Angular, etc.)
 
 ### Development
 

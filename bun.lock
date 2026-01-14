@@ -55,15 +55,6 @@
     "apps/demos-data": {
       "name": "@pie-demos/data",
       "version": "0.0.0",
-      "dependencies": {
-        "@pie-element/multiple-choice": "^11.2.0-mui-update.4",
-        "@pie-lib/config-module": "^2.23.3",
-        "@pie-lib/drag-module": "^2.11.5",
-        "@pie-lib/editable-html-module": "^5.9.5",
-        "@pie-lib/math-edit-module": "^2.8.5",
-        "@pie-lib/math-rendering-module": "^3.1.5",
-        "@pie-lib/shared-module": "^1.17.5",
-      },
     },
     "apps/demos-sveltekit": {
       "name": "@pie-demos/sveltekit",
@@ -99,24 +90,6 @@
     "apps/local-esm-cdn": {
       "name": "@pie-apps/local-esm-cdn",
       "version": "0.0.0",
-    },
-    "packages/cli": {
-      "name": "@pie-elements-ng/cli",
-      "version": "0.1.0",
-      "bin": {
-        "pie-cli": "./bin/run.js",
-      },
-      "dependencies": {
-        "@oclif/core": "^4.0.0",
-        "@oclif/plugin-help": "^6.2.0",
-        "es-module-lexer": "^1.7.0",
-        "glob": "^13.0.0",
-      },
-      "devDependencies": {
-        "@types/node": "^25.0.3",
-        "bun-types": "^1.3.5",
-        "typescript": "^5.9.3",
-      },
     },
     "packages/core": {
       "name": "@pie-elements-ng/core",
@@ -299,6 +272,24 @@
         "typescript": "^5.9.3",
         "vite": "^6.0.0",
         "vitest": "^4.0.0",
+      },
+    },
+    "tools/cli": {
+      "name": "@pie-elements-ng/cli",
+      "version": "0.1.0",
+      "bin": {
+        "pie-cli": "./bin/run.js",
+      },
+      "dependencies": {
+        "@oclif/core": "^4.0.0",
+        "@oclif/plugin-help": "^6.2.0",
+        "es-module-lexer": "^1.7.0",
+        "glob": "^13.0.0",
+      },
+      "devDependencies": {
+        "@types/node": "^25.0.3",
+        "bun-types": "^1.3.5",
+        "typescript": "^5.9.3",
       },
     },
   },
@@ -527,7 +518,7 @@
 
     "@pie-element/multiple-choice": ["@pie-element/multiple-choice@11.4.3", "", { "dependencies": { "@material-ui/core": "^3.9.2", "@pie-framework/pie-player-events": "^0.1.0", "@pie-lib/correct-answer-toggle": "2.25.2", "@pie-lib/math-rendering": "3.22.1", "@pie-lib/render-ui": "4.35.2", "@pie-lib/translator": "2.23.1", "classnames": "^2.2.5", "debug": "^4.1.1", "enzyme-to-json": "^3.3.3", "lodash": "^4.17.10", "prop-types": "^15.6.1", "react": "^16.8.1", "react-dom": "^16.8.1", "react-test-renderer": "^16.3.2", "react-transition-group": "^2.3.1" } }, "sha512-N5MPDj9hRZ5fEzdh6J4w6Tr77MIuVSzOefihu90lKiHVjwwr1hEVHJHZsBLA9jssaFlQIL+npId7RJcFcCGDnQ=="],
 
-    "@pie-elements-ng/cli": ["@pie-elements-ng/cli@workspace:packages/cli"],
+    "@pie-elements-ng/cli": ["@pie-elements-ng/cli@workspace:tools/cli"],
 
     "@pie-elements-ng/core": ["@pie-elements-ng/core@workspace:packages/core"],
 
@@ -553,25 +544,13 @@
 
     "@pie-framework/pie-player-events": ["@pie-framework/pie-player-events@0.1.0", "", {}, "sha512-6H1tlRGmcZ3Wt+8HMqu5KugVcwwyNrMylfI5rIpvOSt0T82QDmjRj+2sPgQG5zos/w6MtwUqn/QZ+8Rq2EXSOA=="],
 
-    "@pie-lib/config-module": ["@pie-lib/config-module@2.23.3", "", {}, "sha512-tFD4VHow/KquOYk7Ny19IiQclFyPbFumdiqP4Y3HLBABCJggKnL+/87i7c7YmFjP7+LEthDUPWGNwKEYSo7WrA=="],
-
     "@pie-lib/correct-answer-toggle": ["@pie-lib/correct-answer-toggle@2.25.2", "", { "dependencies": { "@material-ui/core": "^3.8.3", "@pie-lib/icons": "^2.24.1", "@pie-lib/render-ui": "^4.35.2", "@pie-lib/translator": "^2.23.1", "classnames": "^2.2.6", "lodash": "^4.17.11", "prop-types": "^15.6.2", "react-transition-group": "^2.5.2" }, "peerDependencies": { "react": "^16.8.1", "react-dom": "^16.8.1" } }, "sha512-oMx2C6zxWR+KDQ6WzAmPZdjVXvamiEeLWABf2c+lAn6iuCHkM7GfvGTgObEWtKnzEwIU8Yy5woLnqtfnOpnung=="],
-
-    "@pie-lib/drag-module": ["@pie-lib/drag-module@2.11.5", "", {}, "sha512-L+AEC5b7DgvXymC1/4PenAUIPqhXU0b8G+nXVvOtb0u+p0tv5gZSrQtZHCOEWdfWSgZX+VfZkd7YuVLuHaIpzw=="],
-
-    "@pie-lib/editable-html-module": ["@pie-lib/editable-html-module@5.9.5", "", {}, "sha512-Nx6kD6tKqWZBDxP/jTN1unPShMjG+Tn5SyU8kajtGS1KBBUGOREoSREjDuz0xzpUu005m3GmQ/LWU317p8xwkA=="],
 
     "@pie-lib/icons": ["@pie-lib/icons@2.24.1", "", { "dependencies": { "classnames": "^2.2.6", "prop-types": "^15.6.2" }, "peerDependencies": { "@material-ui/core": "^3.8.3", "react": "^16.8.1" } }, "sha512-VR/gtBR8xOEuJd5wv3QL1bL87LtnS6DkW+HGyitz+YYI0gcdpYGBUEoTO7WGc2CPIbo/XrBKJUDe2XCEK7Y6YQ=="],
 
-    "@pie-lib/math-edit-module": ["@pie-lib/math-edit-module@2.8.5", "", {}, "sha512-oC0PxHwyh0U1cWFSi4oKcFMhcvRoZUHBhmHzlfZTzxWt9vNYNbWlLue4Gy2MkIKVs9yvpIvJIw+JTGuY2mzPxA=="],
-
     "@pie-lib/math-rendering": ["@pie-lib/math-rendering@3.22.1", "", { "dependencies": { "@pie-framework/mathml-to-latex": "1.4.4", "debug": "^4.1.1", "lodash": "^4.17.11", "mathjax-full": "3.2.2", "react": "^16.8.1" } }, "sha512-cPHy8LRXS+tJ0DPghjF+rp3Td6FCGGDg6ngYaPpctDZZzadzNA9kKUKUmNG+jto3vgu/U/lFzSqP5OwirONDIA=="],
 
-    "@pie-lib/math-rendering-module": ["@pie-lib/math-rendering-module@3.1.5", "", {}, "sha512-usSNsD/nvf2PRA8tLl+kxBwCLtZ7MROFSHSDV7YxkEyxwUhxvvPtSR/oLj19Nl6F2JJRdM3WaAIVD0L5FGEFUQ=="],
-
     "@pie-lib/render-ui": ["@pie-lib/render-ui@4.35.2", "", { "dependencies": { "@material-ui/core": "^3.8.3", "@material-ui/icons": "^3.0.2", "@pie-lib/icons": "^2.24.1", "@pie-lib/math-rendering": "^3.22.1", "@pie-lib/test-utils": "^0.22.1", "classnames": "^2.2.6", "debug": "^4.1.1", "lodash": "^4.17.11", "prop-types": "^15.7.2", "react-transition-group": "^2.5.2" }, "peerDependencies": { "react": "^16.8.1", "react-dom": "^16.8.1" } }, "sha512-/w1ido2UGV2x0qdi+90wI6SDjPvcwl1UuCF2WM3M6Lum5JHIKfUXUFxK8Jk/uSCwbQv6XnYPQqH9pQj6cPy2CQ=="],
-
-    "@pie-lib/shared-module": ["@pie-lib/shared-module@1.17.5", "", {}, "sha512-mrzp7GYtIAlb8tOrbJJZyBljX98lemg5dtLRSKj4oQ311Upp8pSWzZGMeRla63lEhLP6Tn0ptOJyCh4um1y+vA=="],
 
     "@pie-lib/test-utils": ["@pie-lib/test-utils@0.22.1", "", { "peerDependencies": { "enzyme": "^3.8.0", "react": "^16.8.1" } }, "sha512-4xNRnZ0bBBQytOh7AWKg+qkHYZz2mojRch5UtFkEZQ7vCAEsZkfRITldKPNwW9rRFY7J+5AFAzfynesVieEfOw=="],
 

@@ -8,7 +8,7 @@ From the root of the monorepo:
 
 ```bash
 bun install
-cd packages/cli
+cd tools/cli
 bun run build
 ```
 

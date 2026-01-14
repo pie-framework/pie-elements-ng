@@ -433,7 +433,7 @@ git clone https://github.com/PieLabs/pie-lib.git
 **2. Build the CLI:**
 
 ```bash
-cd pie-elements-ng/packages/cli
+cd pie-elements-ng/tools/cli
 bun install
 bun run build
 ```
@@ -577,7 +577,7 @@ Synced files include header comments tracking upstream commits:
 ### Installation
 
 ```bash
-cd packages/cli
+cd tools/cli
 bun install
 bun run build
 
@@ -1279,7 +1279,7 @@ cd ../pie-elements/packages/your-element
 cat package.json | jq '.dependencies'
 
 # 3. If blocker pattern is wrong, update CLI
-cd ../../../pie-elements-ng/packages/cli
+cd ../../../pie-elements-ng/tools/cli
 # Edit src/commands/upstream/analyze-esm.ts
 # Update ESM_BLOCKERS array
 
@@ -1416,8 +1416,7 @@ bun install
 
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - System architecture
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - Contributing guidelines
-- [INTEGRATION.md](../INTEGRATION.md) - Integration guide
-- [CLI README](../../packages/cli/README.md) - Detailed CLI usage
+- [CLI README](../../tools/cli/README.md) - Detailed CLI usage
 
 ---
 
