@@ -67,7 +67,7 @@ export default class AnalyzeEsm extends Command {
   static override examples = [
     '<%= config.bin %> <%= command.id %>',
     '<%= config.bin %> <%= command.id %> --verbose',
-    '<%= config.bin %> <%= command.id %> --output=./esm-report.json',
+    '<%= config.bin %> <%= command.id %> --output=./.compatibility/custom-report.json',
   ];
 
   static override flags = {
@@ -86,7 +86,7 @@ export default class AnalyzeEsm extends Command {
     }),
     output: Flags.string({
       description: 'Output JSON file path',
-      default: './esm-compatible-elements.json',
+      default: './.compatibility/report.json',
     }),
     'include-dev-deps': Flags.boolean({
       description:
@@ -306,8 +306,16 @@ export default class AnalyzeEsm extends Command {
         report.elements.push(element);
         report.summary.compatibleElements++;
 
-        // Track pie-lib usage
-        for (const pieLibDep of result.pieLibDeps) {
+        // Track pie-lib usage (including transitive deps)
+        // For example: if element uses text-select, and text-select uses style-utils,
+        // we need to sync both text-select AND style-utils
+        const allPieLibDeps = await this.collectAllTransitivePieLibDeps(
+          result.pieLibDeps,
+          pieLibPath,
+          includeDevDeps
+        );
+
+        for (const pieLibDep of allPieLibDeps) {
           if (!pieLibUsage.has(pieLibDep)) {
             pieLibUsage.set(pieLibDep, new Set());
           }
@@ -1393,6 +1401,53 @@ export default class AnalyzeEsm extends Command {
     }
 
     return finalResult;
+  }
+
+  /**
+   * Collect all transitive pie-lib dependencies recursively.
+   * For example, if text-select depends on style-utils, we need style-utils too.
+   */
+  private async collectAllTransitivePieLibDeps(
+    pieLibDeps: string[],
+    pieLibPath: string,
+    includeDevDeps: boolean,
+    visited = new Set<string>()
+  ): Promise<string[]> {
+    const allDeps = new Set<string>(pieLibDeps);
+
+    for (const dep of pieLibDeps) {
+      if (visited.has(dep)) {
+        continue;
+      }
+      visited.add(dep);
+
+      const pkgPath = join(pieLibPath, 'packages', dep, 'package.json');
+      let pkg: PackageJson | null = null;
+      try {
+        pkg = await loadPackageJson(pkgPath);
+      } catch (error) {
+        // Package doesn't exist or can't be read, skip it
+        continue;
+      }
+      if (!pkg) continue;
+
+      const deps = this.getAllDeps(pkg, includeDevDeps);
+      const transitivePieLibDeps = this.extractPieLibDeps(deps);
+
+      // Recursively collect transitive deps
+      const deepDeps = await this.collectAllTransitivePieLibDeps(
+        transitivePieLibDeps,
+        pieLibPath,
+        includeDevDeps,
+        visited
+      );
+
+      for (const transitiveDep of deepDeps) {
+        allDeps.add(transitiveDep);
+      }
+    }
+
+    return Array.from(allDeps);
   }
 
   private getAllDeps(pkg: PackageJson, includeDevDeps: boolean): Record<string, string> {

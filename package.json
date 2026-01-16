@@ -10,6 +10,7 @@
     "packages/lib-svelte/*",
     "packages/lib-react/*",
     "packages/core",
+    "packages/demo-player",
     "tools/cli",
     "apps/esm-player-test",
     "apps/local-esm-cdn",

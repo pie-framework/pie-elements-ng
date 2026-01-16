@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PIE Demo - Element Name</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <pie-demo-player></pie-demo-player>
+
+  <script type="module">
+    // Import the demo player
+    import '@pie-elements-ng/demo-player';
+
+    // Import element components
+    // Note: Paths will be relative to your element's docs/demo directory
+    import Element from '../../dist/index.js';
+    import Configure from '../../dist/configure/index.js';
+    import * as controller from '../../dist/controller/index.js';
+
+    // Get the demo player element
+    const player = document.querySelector('pie-demo-player');
+
+    // Set the element definition
+    player.element = {
+      Element,
+      Configure,
+      controller,
+    };
+
+    // Set initial model
+    player.model = {
+      id: '1',
+      element: 'your-element-name',
+      // Add your model properties here
+    };
+
+    // Set initial session
+    player.session = {
+      // Add your session properties here
+    };
+
+    // Set initial mode
+    player.mode = 'gather';
+
+    // Listen for events
+    player.addEventListener('submit', (e) => {
+      console.log('Submit event:', e);
+    });
+
+    player.addEventListener('reset', (e) => {
+      console.log('Reset event:', e);
+      player.session = {};
+    });
+  </script>
+</body>
+</html>

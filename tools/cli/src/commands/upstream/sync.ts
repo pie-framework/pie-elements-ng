@@ -12,7 +12,12 @@ import { cp, mkdir, readFile, rm as fsRm, writeFile, stat as fsStat } from 'node
 import { dirname, join, resolve } from 'node:path';
 import { readdir } from './sync-filesystem.js';
 import { getAllDeps } from './sync-package-json.js';
-import { generateDemoModule, generateDemoHtml } from './sync-demo.js';
+import {
+  generateDemoModule,
+  generateDemoHtml,
+  generateDeliveryDemoHtml,
+  generateAuthorDemoHtml,
+} from './sync-demo.js';
 import { ControllersStrategy } from './sync-controllers-strategy.js';
 import { ReactComponentsStrategy } from './sync-react-strategy.js';
 import { PieLibStrategy } from './sync-pielib-strategy.js';
@@ -100,7 +105,7 @@ export default class Sync extends Command {
       syncPieLibPackages: false,
       syncDemos: true,
       useEsmFilter: true,
-      compatibilityFile: './esm-compatible-elements.json',
+      compatibilityFile: './.compatibility/report.json',
       dryRun: flags['dry-run'],
       verbose: flags.verbose,
       rewritePackageJson: true,
@@ -224,6 +229,13 @@ export default class Sync extends Command {
           syncSummary.controllersSync = result.count;
         } else if (desc === 'React components') {
           syncSummary.reactComponentsSynced = result.count;
+          // Track touched React element packages for demo sync
+          for (const pkgName of result.packageNames) {
+            // Only add element packages (not @pie-lib packages)
+            if (!pkgName.startsWith('@pie-lib/')) {
+              this.touchedElementPackages.add(pkgName);
+            }
+          }
         } else if (desc === '@pie-lib packages') {
           syncSummary.pieLibPackagesSynced = result.count;
         }
@@ -316,7 +328,7 @@ export default class Sync extends Command {
 
       await mkdir(targetDemoDir, { recursive: true });
       await cp(upstreamDemoDir, targetDemoDir, { recursive: true });
-      await this.writeDemoHarness(targetDemoDir);
+      await this.writeDemoHarness(targetDemoDir, pkg);
       result.filesCopied++;
       this.logger.success(
         `  ✨ ${pkg}: synced docs/demo → packages/elements-react/${pkg}/docs/demo (tag: ${tagName})`
@@ -324,7 +336,7 @@ export default class Sync extends Command {
     }
   }
 
-  private async writeDemoHarness(demoDir: string): Promise<void> {
+  private async writeDemoHarness(demoDir: string, elementName: string): Promise<void> {
     const configPath = resolve(demoDir, 'config.js');
     const sessionPath = resolve(demoDir, 'session.js');
 
@@ -373,11 +385,18 @@ export default class Sync extends Command {
     await writeFile(configMjsPath, `export default ${JSON.stringify(config ?? {}, null, 2)};\n`);
     await writeFile(sessionMjsPath, `export default ${JSON.stringify(session ?? [], null, 2)};\n`);
 
-    const demoModule = generateDemoModule();
-    const demoHtml = generateDemoHtml();
+    // Generate new demo files using local demo player
+    const deliveryHtml = generateDeliveryDemoHtml(elementName);
+    const authorHtml = generateAuthorDemoHtml(elementName);
 
+    await writeFile(join(demoDir, 'index.html'), deliveryHtml);
+    await writeFile(join(demoDir, 'author.html'), authorHtml);
+
+    // Keep legacy demo files for backward compatibility
+    const demoModule = generateDemoModule();
+    const legacyDemoHtml = generateDemoHtml();
     await writeFile(join(demoDir, 'demo.mjs'), demoModule);
-    await writeFile(join(demoDir, 'index.html'), demoHtml);
+    await writeFile(join(demoDir, 'demo.html'), legacyDemoHtml);
   }
 
   private async applyEsmFilter(config: SyncConfig): Promise<void> {

@@ -1,12 +1,178 @@
 /**
  * Demo generation utilities for sync operations
+ *
+ * Generates two demos for each element:
+ * 1. Delivery demo (index.html) - Student/teacher-facing UI with gather/view/evaluate modes
+ * 2. Author demo (author.html) - Authoring UI with configure mode
  */
 
 /**
- * Generate demo module JavaScript code
+ * Generate delivery demo HTML (index.html)
+ * Uses the main element component for delivery (student/teacher-facing) modes
+ */
+export function generateDeliveryDemoHtml(elementName: string): string {
+  return `<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PIE Demo - ${elementName} (Delivery)</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <pie-demo-player></pie-demo-player>
+
+  <script type="module">
+    // Import the demo player (relative path from docs/demo/)
+    import '../../../../demo-player/dist/index.js';
+
+    // Import element components for DELIVERY UI (student/teacher-facing)
+    import Element from '../../dist/index.js';
+
+    // Controller module for processing models
+    let controller;
+    const controllerUrl = new URL('../../dist/controller/index.js', import.meta.url).href;
+    try {
+      controller = await import(/* @vite-ignore */ controllerUrl);
+    } catch (e) {
+      console.warn('Controller not available:', e.message);
+    }
+
+    // Import config and session data
+    import config from './config.mjs';
+    import sessions from './session.mjs';
+
+    // Get the demo player element
+    const player = document.querySelector('pie-demo-player');
+
+    // Set the element definition (DELIVERY only)
+    player.element = {
+      Element,
+      controller,
+      // Note: No Author component - use author.html for authoring UI
+    };
+
+    // Set initial model (use first model from config)
+    const model = Array.isArray(config?.models) ? config.models[0] : config;
+    player.model = model;
+
+    // Set initial session
+    const session = Array.isArray(sessions) ? sessions[0] : sessions;
+    player.session = session;
+
+    // Start in GATHER mode for student interaction
+    player.mode = 'gather';
+
+    // Listen for session changes
+    player.addEventListener('session-changed', (e) => {
+      console.log('Session changed:', e.detail);
+    });
+  </script>
+</body>
+</html>
+`;
+}
+
+/**
+ * Generate author demo HTML (author.html)
+ * Uses the configure component for authoring mode
+ */
+export function generateAuthorDemoHtml(elementName: string): string {
+  return `<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PIE Demo - ${elementName} (Author)</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <pie-demo-player></pie-demo-player>
+
+  <script type="module">
+    // Import the demo player (relative path from docs/demo/)
+    import '../../../../demo-player/dist/index.js';
+
+    // Import element components
+    import Element from '../../dist/index.js';
+
+    // Author component (previously "configure") - may not be available if blocked by ESM incompatibility
+    // Use dynamic import with URL to bypass Vite's static analysis in dev mode
+    let Configure;  // Note: Still called "Configure" in code for compatibility
+    const configureUrl = new URL('../../dist/configure/index.js', import.meta.url).href;
+    try {
+      const configureModule = await import(/* @vite-ignore */ configureUrl);
+      Configure = configureModule.default;
+    } catch (e) {
+      console.error('Author component not available:', e.message);
+      alert('Author component is not available for this element. It may not be ready for ESM yet.');
+    }
+
+    // Controller module
+    let controller;
+    const controllerUrl = new URL('../../dist/controller/index.js', import.meta.url).href;
+    try {
+      controller = await import(/* @vite-ignore */ controllerUrl);
+    } catch (e) {
+      console.warn('Controller not available:', e.message);
+    }
+
+    // Import config and session data
+    import config from './config.mjs';
+    import sessions from './session.mjs';
+
+    // Get the demo player element
+    const player = document.querySelector('pie-demo-player');
+
+    // Set the element definition
+    player.element = {
+      Element,
+      Configure,
+      controller,
+    };
+
+    // Set initial model (use first model from config)
+    const model = Array.isArray(config?.models) ? config.models[0] : config;
+    player.model = model;
+
+    // Set initial session
+    const session = Array.isArray(sessions) ? sessions[0] : sessions;
+    player.session = session;
+
+    // Start in CONFIGURE mode for author UI
+    player.mode = 'configure';
+
+    // Listen for session changes
+    player.addEventListener('session-changed', (e) => {
+      console.log('Session changed:', e.detail);
+    });
+  </script>
+</body>
+</html>
+`;
+}
+
+// Backward compatibility aliases
+export const generateStudentDemoHtml = generateDeliveryDemoHtml;
+export const generateConfigureDemoHtml = generateAuthorDemoHtml;
+
+/**
+ * Legacy: Generate demo module JavaScript code (demo.mjs)
  *
- * Note: Always uses dynamic imports with try/catch for configure and controller
- * since they may be unavailable due to ESM incompatibility
+ * @deprecated Use generateStudentDemoHtml and generateConfigureDemoHtml instead
+ * This is kept for backward compatibility with old @pslb/demo-el system
  */
 export function generateDemoModule(): string {
   return `import config from './config.mjs';
@@ -51,7 +217,10 @@ customElements.whenDefined('demo-el').then(() => {
 }
 
 /**
- * Generate demo HTML page
+ * Legacy: Generate demo HTML page for old @pslb/demo-el system
+ *
+ * @deprecated Use generateStudentDemoHtml and generateConfigureDemoHtml instead
+ * This is kept for backward compatibility
  */
 export function generateDemoHtml(): string {
   return `<!doctype html>
