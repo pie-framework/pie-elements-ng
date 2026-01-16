@@ -5,8 +5,8 @@ component:
   framework: "svelte"
 
 examplesApp:
-  app: "@pie-demos/sveltekit"
-  routeTemplate: "/demos/<tagName>"
+  app: "@pie-elements-ng/multiple-choice"
+  routeTemplate: "/docs/demo/demo.html"
 
 evals:
   # ==========================================================================
@@ -25,7 +25,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: observe
         target:
@@ -67,7 +67,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -112,7 +112,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -148,7 +148,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice?sampleId=multi-select"
+        path: "/docs/demo/demo.html"
 
       - action: observe
         target:
@@ -193,7 +193,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -231,7 +231,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -269,7 +269,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -312,7 +312,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: observe
         target:
@@ -341,7 +341,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: observe
         target:
@@ -367,7 +367,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: observe
         target:
@@ -403,7 +403,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: axe
         expected:
@@ -426,7 +426,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -464,7 +464,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -513,7 +513,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -550,7 +550,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: wait
         condition: "networkidle"
@@ -578,7 +578,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: click
         target:
@@ -619,7 +619,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: checkStyle
         target:
@@ -657,7 +657,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: checkColorContrast
         target:
@@ -695,7 +695,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: checkFont
         target:
@@ -727,7 +727,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: checkLayout
         target:
@@ -758,7 +758,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
 
       - action: screenshot
         target:

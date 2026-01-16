@@ -12,8 +12,8 @@ import type {
   PieModel,
   PieSession,
   ValidationErrors,
-} from '@pie-shared/types';
-import { isEmpty, showFeedback, showRationale, shuffle, uuid } from '@pie-shared/utils';
+} from '@pie-elements-ng/shared-types';
+import { isEmpty, showFeedback, showRationale, shuffle, uuid } from '@pie-elements-ng/shared-utils';
 import type {
   Choice,
   MultipleChoiceModel,

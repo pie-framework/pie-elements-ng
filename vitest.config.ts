@@ -15,6 +15,7 @@ export default defineConfig({
       '**/dist/**',
       '**/build/**',
       '**/.svelte-kit/**',
+      '**/.bun-tests/**',
       '**/e2e/**', // Exclude E2E tests (use Playwright for those)
       '**/tests/e2e/**', // Exclude E2E tests in tests directory
       '**/*.spec.ts', // Exclude Playwright spec files

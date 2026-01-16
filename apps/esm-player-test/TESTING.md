@@ -1,13 +1,13 @@
 # Testing Guide: ESM Player Test App
 
-Complete guide for testing the ESM player integration with PIE web components.
+Complete guide for testing the ESM player integration with PIE elements.
 
 ## Prerequisites
 
 Ensure both workspaces are ready:
 
 1. **pie-players workspace**: pie-esm-player should be built
-2. **pie-elements-ng workspace**: @pie-wc packages should be built
+2. **pie-elements-ng workspace**: element packages should be built
 
 ## Step 1: Build the PIE ESM Player
 
@@ -24,20 +24,20 @@ ls -la dist/pie-esm-player.js
 
 **Expected**: You should see `pie-esm-player.js` (~2.5MB) in the dist folder.
 
-## Step 2: Build the Multiple Choice Web Component
+## Step 2: Build the Multiple Choice Element
 
 ```bash
 # Navigate to pie-elements-ng workspace
-cd /Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-wc/multiple-choice
+cd /Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice
 
-# Build the web component
+# Build the element package
 bun run build
 
 # Verify dist exists
 ls -la dist/index.js
 ```
 
-**Expected**: You should see `index.js` (~900KB-1MB) in the dist folder.
+**Expected**: You should see `index.js` in the dist folder.
 
 ## Step 3: Install Test App Dependencies
 
@@ -139,14 +139,13 @@ This is the critical test - loading the player with a real element:
 
 **If elements are NOT yet published (expected initially):**
 - Status shows: "Loading elements..."
-- Status shows error: "Failed to load element multiple-choice from https://cdn.jsdelivr.net/npm/@pie-wc/multiple-choice..."
+- Status shows error: "Failed to load element multiple-choice from https://cdn.jsdelivr.net/npm/@pie-element/multiple-choice..."
 - Error message appears in main area
-- This is EXPECTED until @pie-wc packages are published to npm
+- This is EXPECTED until @pie-element packages are published to npm
 
 **If using "Local Build" (and local build exists):**
-- Should attempt to load from `@local-elements/multiple-choice/dist/index.js`
-- May fail if path resolution doesn't work with Vite alias
-- This needs additional Vite config work to serve local builds
+- Should attempt to load from the local `elements-react` build via Vite `/@fs/` path
+- Requires `packages/elements-react/<element>/dist/index.js` to exist
 
 ## Step 6: Automated Tests - Run Playwright Evals
 
@@ -197,7 +196,7 @@ Open browser DevTools (F12) and check Console tab for:
 
 ```
 PIE ESM player initialized (local workspace)
-Loading element multiple-choice from: https://cdn.jsdelivr.net/npm/@pie-wc/multiple-choice/dist/index.js
+Loading element multiple-choice from: https://cdn.jsdelivr.net/npm/@pie-element/multiple-choice/dist/index.js
 Session changed: {...}
 ```
 
@@ -219,7 +218,7 @@ Open DevTools → Network tab and verify:
    - Type: JavaScript module
 
 2. **Element loading attempts**
-   - Should see request to: `https://cdn.jsdelivr.net/npm/@pie-wc/multiple-choice/dist/index.js`
+   - Should see request to: `https://cdn.jsdelivr.net/npm/@pie-element/multiple-choice/dist/index.js`
    - Status: 404 (if not published) or 200 (if published)
 
 ## Troubleshooting
@@ -287,7 +286,7 @@ Based on test results:
 
 1. **If player initialization works**: ✅ pie-esm-player integration successful
 2. **If item selection works**: ✅ UI and state management working
-3. **If element loading fails (404)**: Expected - need to publish @pie-wc packages to npm
+3. **If element loading fails (404)**: Expected - need to publish @pie-element packages to npm
 4. **If element loading succeeds but rendering fails**: Need to debug player config format
 5. **If everything works end-to-end**: 🎉 Ready for production use!
 
@@ -307,11 +306,11 @@ To test with local builds instead of npm packages:
 
 ```bash
 # Build the element
-cd packages/elements-wc/multiple-choice
+cd packages/elements-react/multiple-choice
 bun run build
 
 # Note the output path
-# Should be: packages/elements-wc/multiple-choice/dist/index.js
+# Should be: packages/elements-react/multiple-choice/dist/index.js
 ```
 
 Then in the app:

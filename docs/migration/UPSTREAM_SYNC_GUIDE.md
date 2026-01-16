@@ -26,7 +26,7 @@ This guide describes the complete process for migrating PIE elements from the up
 
 **React packages are largely COPIES of pie-elements and pie-lib.** This means:
 
-- ✅ **React UI components ARE synced** - they are THE POINT
+- ✅ **React UI components are synced** - they are THE POINT
 - ✅ **Controllers are synced** - framework-agnostic business logic
 - ✅ **Dependencies should match** - always update to match upstream
 - ✅ **Each element is self-contained** - controllers live inside each element package
@@ -159,12 +159,6 @@ bun run cli upstream:sync --element=multiple-choice
 
 # Sync all compatible elements
 bun run cli upstream:sync
-
-# Sync React UI components
-bun run cli upstream:sync --react
-
-# Sync pie-lib packages
-bun run cli upstream:sync --pie-lib
 ```
 
 The sync command automatically respects the ESM compatibility report and will warn if you try to sync a blocked element.
@@ -462,7 +456,7 @@ bun run build
 - `model(question, session, env)` - Transform model for rendering
 - `outcome(question, session, env)` - Calculate score and feedback
 
-#### React UI Components (Synced with --react)
+#### React UI Components (Synced by default)
 
 **React components ARE the point - they should be synced:**
 
@@ -473,13 +467,14 @@ bun run build
 
 **Philosophy:** React packages are COPIES of upstream (not custom implementations).
 
-#### PIE Lib Packages (Synced with --pie-lib)
+#### PIE Lib Packages (Auto-synced)
 
 **Shared utilities and UI components:**
 
 - ✅ Synced to `packages/lib-react/{package}/`
 - ✅ Includes shared UI components, math rendering, etc.
 - ✅ Converted to TypeScript
+- ✅ Automatically includes transitive `@pie-lib/*` dependencies required by synced elements
 
 #### Dependencies
 
@@ -507,34 +502,14 @@ bun run cli upstream:sync --dry-run
 bun run cli upstream:sync --element=multiple-choice --dry-run
 ```
 
-#### Sync Controllers Only
+#### Sync (Default)
 
 ```bash
-# Sync specific element's controller
-bun run cli upstream:sync --element=multiple-choice
-
-# Sync all compatible element controllers
+# Sync all compatible elements (controllers + React UI + demos)
 bun run cli upstream:sync
-```
 
-#### Sync React UI Components
-
-```bash
-# Sync React components for specific element
-bun run cli upstream:sync --element=multiple-choice --react
-
-# Sync all React components
-bun run cli upstream:sync --react
-```
-
-#### Sync PIE Lib Packages
-
-```bash
-# Sync specific pie-lib package
-bun run cli upstream:sync --pie-lib --package=editable-html
-
-# Sync all compatible pie-lib packages
-bun run cli upstream:sync --pie-lib
+# Sync a specific compatible element
+bun run cli upstream:sync --element=multiple-choice
 ```
 
 ### JavaScript to TypeScript Conversion
@@ -624,16 +599,8 @@ bun run cli upstream:sync --dry-run
 # Sync specific element
 bun run cli upstream:sync --element=multiple-choice
 
-# Sync all controllers
+# Sync all compatible elements (controllers + React UI + demos)
 bun run cli upstream:sync
-
-# Sync React UI
-bun run cli upstream:sync --react
-bun run cli upstream:sync --element=multiple-choice --react
-
-# Sync pie-lib
-bun run cli upstream:sync --pie-lib
-bun run cli upstream:sync --pie-lib --package=editable-html
 ```
 
 ### upstream:check
@@ -721,7 +688,7 @@ bun run cli packages:init-synced-elements --verbose
 
 **When to use:**
 
-- After syncing new React elements with `upstream:sync --react`
+- After syncing new elements with `upstream:sync`
 - When setting up a newly synced element package
 - When you need to regenerate package configuration
 
@@ -773,10 +740,10 @@ cat esm-compatible-elements.json | jq '.elementDetails["multiple-choice"]'
 
 ```bash
 # Preview what will be synced
-bun run cli upstream:sync --element=multiple-choice --react --dry-run
+bun run cli upstream:sync --element=multiple-choice --dry-run
 
-# Sync entire React package (UI + controller)
-bun run cli upstream:sync --element=multiple-choice --react
+# Sync entire element package (React UI + controller + demos)
+bun run cli upstream:sync --element=multiple-choice
 
 # Synced to:
 # packages/elements-react/multiple-choice/
@@ -964,7 +931,7 @@ Use this checklist for each element:
 
 #### React Package
 
-- [ ] Sync React package: `bun run cli upstream:sync --element=X --react`
+- [ ] Sync React package: `bun run cli upstream:sync --element=X`
 - [ ] Review synced code for correctness
 - [ ] Verify dependencies match upstream
 - [ ] Test React UI in all modes (student, authoring, view, evaluate)
@@ -1033,7 +1000,7 @@ cd ../pie-elements-ng
 bun run cli upstream:analyze-esm --element=multiple-choice
 
 # 5. Sync if still compatible
-bun run cli upstream:sync --element=multiple-choice --react
+bun run cli upstream:sync --element=multiple-choice
 
 # 6. Review changes
 git diff packages/elements-react/multiple-choice/
@@ -1084,8 +1051,8 @@ git log --oneline packages/multiple-choice/ | head -20
 **4. Make changes:**
 
 ```bash
-# Sync controller
-bun run cli upstream:sync --element=multiple-choice --react
+# Sync element
+bun run cli upstream:sync --element=multiple-choice
 
 # Update Svelte if needed
 # Update tests
@@ -1140,7 +1107,7 @@ bun run cli upstream:sync --element=X  # Might fail!
 
 ```bash
 # ✅ Good: Sync entire React package
-bun run cli upstream:sync --element=X --react
+bun run cli upstream:sync --element=X
 
 # ❌ Bad: Cherry-picking parts
 # (Don't manually copy just controller or just UI)
@@ -1269,7 +1236,7 @@ cd ../../../pie-elements-ng
 bun run cli upstream:analyze-esm
 
 # 5. Sync if now compatible
-bun run cli upstream:sync --element=your-element --react
+bun run cli upstream:sync --element=your-element
 ```
 
 ### False Positives in ESM Analysis

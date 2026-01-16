@@ -16,10 +16,5 @@ export default defineConfig({
       allow: ['../..', '../../../pie-players'],
     },
   },
-  resolve: {
-    alias: {
-      // Alias for local element builds
-      '@local-elements': resolve(__dirname, '../../packages/elements-wc'),
-    },
-  },
+  resolve: {},
 });

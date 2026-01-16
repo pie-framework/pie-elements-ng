@@ -2,7 +2,7 @@
  * Common utilities for PIE elements
  */
 
-import type { PieEnvironment, PieSession } from '@pie-shared/types';
+import type { PieEnvironment, PieSession } from '@pie-elements-ng/shared-types';
 
 /**
  * Check if session is empty

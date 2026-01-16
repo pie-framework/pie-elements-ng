@@ -1,0 +1,9 @@
+{
+  "name": "@pie-apps/demo-index",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts"
+  },
+  "dependencies": {}
+}

@@ -6,6 +6,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type {
   CompatibilityReport,
+  ElementDetail,
   EsmPackageValidation,
   EsmRuntimeValidationResult,
   EsmValidationResult,
@@ -53,6 +54,13 @@ const ESM_BLOCKERS = [
   { pattern: /^enzyme/, reason: 'Enzyme is not ESM compatible' },
 ];
 
+// PIE lib packages that should always be included if compatible
+// These are packages that may be imported directly in code (e.g., controllers)
+// but not declared in package.json dependencies
+const ALWAYS_INCLUDE_PIE_LIB = [
+  'controller-utils', // Used in controller code via direct imports
+];
+
 export default class AnalyzeEsm extends Command {
   static override description = 'Analyze PIE elements for ESM compatibility';
 
@@ -95,8 +103,7 @@ export default class AnalyzeEsm extends Command {
       default: 'https://esm.sh',
     }),
     'runtime-local-pie-elements-path': Flags.string({
-      description:
-        'Path to sibling pie-elements repo used for local PIE resolution during probes.',
+      description: 'Path to sibling pie-elements repo used for local PIE resolution during probes.',
       default: '../pie-elements',
     }),
     'runtime-local-pie-lib-path': Flags.string({
@@ -133,9 +140,11 @@ export default class AnalyzeEsm extends Command {
 
     this.logger = new Logger(flags.verbose);
 
-    this.logger.section('🔍 Analyzing ESM Compatibility');
-    this.logger.info(`   PIE Elements: ${flags['pie-elements']}`);
-    this.logger.info(`   PIE Lib:      ${flags['pie-lib']}\n`);
+    if (flags.verbose) {
+      this.logger.section('🔍 Analyzing ESM Compatibility');
+      this.logger.info(`   PIE Elements: ${flags['pie-elements']}`);
+      this.logger.info(`   PIE Lib:      ${flags['pie-lib']}\n`);
+    }
 
     // Verify repos exist
     if (!existsSync(flags['pie-elements'])) {
@@ -162,6 +171,8 @@ export default class AnalyzeEsm extends Command {
     );
 
     // Save JSON report
+    const outputDir = join(flags.output, '..');
+    await mkdir(outputDir, { recursive: true });
     await writeFile(flags.output, JSON.stringify(report, null, 2), 'utf-8');
 
     // Print summary
@@ -183,6 +194,10 @@ export default class AnalyzeEsm extends Command {
     runtimeMaxModules: number,
     runtimeCacheFile: string
   ): Promise<CompatibilityReport> {
+    if (!verbose) {
+      this.logger.progressStart('Analyzing ESM compatibility...');
+    }
+
     const report: CompatibilityReport = {
       elements: [],
       pieLibPackages: [],
@@ -243,6 +258,48 @@ export default class AnalyzeEsm extends Command {
         includeDevDeps
       );
 
+      // Check subdirectories separately
+      const srcCheck = await this.checkSubdirectoryCompatibility(
+        element,
+        'src',
+        pieElementsPath,
+        pieLibPath,
+        pieLibCache,
+        verbose,
+        includeDevDeps
+      );
+
+      const configureCheck = await this.checkSubdirectoryCompatibility(
+        element,
+        'configure',
+        pieElementsPath,
+        pieLibPath,
+        pieLibCache,
+        verbose,
+        includeDevDeps
+      );
+
+      const controllerCheck = await this.checkSubdirectoryCompatibility(
+        element,
+        'controller',
+        pieElementsPath,
+        pieLibPath,
+        pieLibCache,
+        verbose,
+        includeDevDeps
+      );
+
+      // Add subdirectory results to element details
+      if (srcCheck !== null) {
+        result.studentUI = srcCheck;
+      }
+      if (configureCheck !== null) {
+        result.configure = configureCheck;
+      }
+      if (controllerCheck !== null) {
+        result.controller = controllerCheck;
+      }
+
       report.elementDetails[element] = result;
 
       if (result.compatible) {
@@ -265,6 +322,49 @@ export default class AnalyzeEsm extends Command {
       }
     }
 
+    // Second pass: Check element-to-element dependencies
+    // Elements can only be compatible if all their element dependencies are also compatible
+    if (verbose) {
+      this.logger.info('\n🔗 Checking element-to-element dependencies...\n');
+    }
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const element of elements) {
+        const details = report.elementDetails[element];
+        if (!details?.compatible) continue; // Already blocked, skip
+
+        // Check if this element depends on any blocked elements
+        for (const depElement of details.pieElementDeps) {
+          const depDetails = report.elementDetails[depElement];
+
+          if (!depDetails?.compatible) {
+            // This element depends on a blocked element
+            const blocker = `@pie-element/${depElement} - dependency is not ESM compatible`;
+            details.blockers.push(blocker);
+            details.compatible = false;
+
+            // Move from compatible to blocked
+            const idx = report.elements.indexOf(element);
+            if (idx !== -1) {
+              report.elements.splice(idx, 1);
+              report.summary.compatibleElements--;
+            }
+            report.blockedElements[element] = details.blockers;
+            report.summary.blockedElements++;
+
+            changed = true;
+
+            if (verbose) {
+              this.logger.info(`  ❌ ${element}: depends on blocked element ${depElement}`);
+            }
+            break;
+          }
+        }
+      }
+    }
+
     // Build pie-lib report
     for (const [pieLibPkg, usedBy] of pieLibUsage.entries()) {
       const check = pieLibCache.get(pieLibPkg);
@@ -284,8 +384,62 @@ export default class AnalyzeEsm extends Command {
       }
     }
 
-    report.summary.totalPieLibPackages = pieLibUsage.size;
+    // Add always-include pie-lib packages if they're compatible
+    for (const pieLibPkg of ALWAYS_INCLUDE_PIE_LIB) {
+      // Skip if already in the report
+      if (pieLibUsage.has(pieLibPkg)) {
+        continue;
+      }
+
+      // Check if this package exists and is compatible
+      let check = pieLibCache.get(pieLibPkg);
+      if (!check) {
+        check = await this.checkPieLibCompatibility(
+          pieLibPkg,
+          pieLibPath,
+          verbose,
+          includeDevDeps,
+          pieLibCache
+        );
+        pieLibCache.set(pieLibPkg, check);
+      }
+
+      if (check.compatible) {
+        report.pieLibPackages.push(pieLibPkg);
+        report.pieLibDetails[pieLibPkg] = {
+          compatible: true,
+          usedBy: ['(always included)'], // Mark as always included
+          blockers: [],
+        };
+        if (verbose) {
+          this.logger.info(`  ✅ ${pieLibPkg}: always included (compatible)`);
+        }
+      } else if (verbose) {
+        this.logger.info(`  ⏭️  ${pieLibPkg}: skipped (not compatible)`);
+      }
+    }
+
+    report.summary.totalPieLibPackages = pieLibUsage.size + ALWAYS_INCLUDE_PIE_LIB.length;
     report.summary.compatiblePieLibPackages = report.pieLibPackages.length;
+
+    // Identify student-UI-only elements (blocked overall but student UI is compatible)
+    report.studentUIOnly = [];
+    for (const element of elements) {
+      const details = report.elementDetails[element];
+      if (!details?.compatible && details?.studentUI?.compatible) {
+        report.studentUIOnly.push(element);
+      }
+    }
+    report.summary.studentUIOnlyElements = report.studentUIOnly.length;
+
+    if (verbose && report.studentUIOnly.length > 0) {
+      this.logger.info(
+        `\n📱 Found ${report.studentUIOnly.length} elements with student-UI-only support:\n`
+      );
+      for (const element of report.studentUIOnly) {
+        this.logger.info(`  ${element}`);
+      }
+    }
 
     // ESM player validation (only for compatible elements)
     if (validateEsmPlayer) {
@@ -312,60 +466,80 @@ export default class AnalyzeEsm extends Command {
     // Runtime-ish CDN probes (production-like signal)
     const base = runtimeCdnBaseUrl.replace(/\/+$/, '');
 
-      // Probe all CommonJS-free elements by default.
-      // Rationale: "ESM ready in production" is primarily about whether the CDN can resolve
-      // the package + transitives into browser-loadable ESM, not whether upstream package.json
-      // has ideal exports metadata (which we often rewrite during sync).
-      const elementsToProbe = report.elements.slice();
+    // Probe all CommonJS-free elements by default.
+    // Rationale: "ESM ready in production" is primarily about whether the CDN can resolve
+    // the package + transitives into browser-loadable ESM, not whether upstream package.json
+    // has ideal exports metadata (which we often rewrite during sync).
+    const elementsToProbe = report.elements.slice();
 
-      const cache = await this.loadRuntimeCache(runtimeCacheFile);
+    const cache = await this.loadRuntimeCache(runtimeCacheFile);
 
-      if (verbose) {
-        this.logger.info(
-          `\n🌐 Probing ESM runtime readiness via CDN (${elementsToProbe.length} elements, concurrency=${runtimeConcurrency})...\n`
-        );
-        this.logger.info(`   CDN base: ${base}\n`);
-        this.logger.info(
-          `   Mode: deep (maxDepth=${runtimeMaxDepth}, maxModules=${runtimeMaxModules})\n`
-        );
-        this.logger.info(
-          `   Local PIE resolution: enabled (pie-elements=${runtimeLocalPieElementsPath}, pie-lib=${runtimeLocalPieLibPath})\n`
-        );
-      } else {
-        this.logger.info(
-          `🌐 Probing ESM runtime readiness via CDN (${elementsToProbe.length} elements, concurrency=${runtimeConcurrency})...`
+    if (verbose) {
+      this.logger.info(
+        `\n🌐 Probing ESM runtime readiness via CDN (${elementsToProbe.length} elements, concurrency=${runtimeConcurrency})...\n`
+      );
+      this.logger.info(`   CDN base: ${base}\n`);
+      this.logger.info(
+        `   Mode: deep (maxDepth=${runtimeMaxDepth}, maxModules=${runtimeMaxModules})\n`
+      );
+      this.logger.info(
+        `   Local PIE resolution: enabled (pie-elements=${runtimeLocalPieElementsPath}, pie-lib=${runtimeLocalPieLibPath})\n`
+      );
+    } else {
+      this.logger.info(
+        `🌐 Probing ESM runtime readiness via CDN (${elementsToProbe.length} elements, concurrency=${runtimeConcurrency})...`
+      );
+    }
+
+    const results = await this.probeElementsRuntime({
+      elements: elementsToProbe,
+      pieElementsPath,
+      cdnBaseUrl: base,
+      localPieEnabled: true,
+      localPieElementsPath: runtimeLocalPieElementsPath,
+      localPieLibPath: runtimeLocalPieLibPath,
+      timeoutMs: runtimeTimeoutMs,
+      concurrency: runtimeConcurrency,
+      deep: true,
+      maxDepth: runtimeMaxDepth,
+      maxModules: runtimeMaxModules,
+      cache,
+      verbose,
+    });
+
+    let okCount = 0;
+    for (const [element, result] of Object.entries(results)) {
+      report.esmRuntimeValidation ??= {};
+      report.esmRuntimeValidation[element] = result;
+      if (result.compatible) okCount++;
+    }
+    report.summary.esmRuntimeReady = okCount;
+
+    await this.saveRuntimeCache(runtimeCacheFile, cache);
+
+    if (!verbose) {
+      this.logger.info(`   Runtime-ready: ${okCount}/${elementsToProbe.length}\n`);
+    }
+
+    if (!verbose) {
+      this.logger.progressComplete();
+      this.logger.info('');
+      this.logger.success(`${report.summary.compatibleElements} elements compatible`);
+      if (report.summary.blockedElements > 0) {
+        this.logger.warn(`${report.summary.blockedElements} elements blocked`);
+      }
+      if (report.summary.compatiblePieLibPackages > 0) {
+        this.logger.info(`${report.summary.compatiblePieLibPackages} @pie-lib packages compatible`);
+      }
+      if (report.summary.totalPieLibPackages - report.summary.compatiblePieLibPackages > 0) {
+        this.logger.warn(
+          `${report.summary.totalPieLibPackages - report.summary.compatiblePieLibPackages} @pie-lib packages blocked`
         );
       }
-
-      const results = await this.probeElementsRuntime({
-        elements: elementsToProbe,
-        pieElementsPath,
-        cdnBaseUrl: base,
-        localPieEnabled: true,
-        localPieElementsPath: runtimeLocalPieElementsPath,
-        localPieLibPath: runtimeLocalPieLibPath,
-        timeoutMs: runtimeTimeoutMs,
-        concurrency: runtimeConcurrency,
-        deep: true,
-        maxDepth: runtimeMaxDepth,
-        maxModules: runtimeMaxModules,
-        cache,
-        verbose,
-      });
-
-      let okCount = 0;
-      for (const [element, result] of Object.entries(results)) {
-        report.esmRuntimeValidation ??= {};
-        report.esmRuntimeValidation[element] = result;
-        if (result.compatible) okCount++;
-      }
-      report.summary.esmRuntimeReady = okCount;
-
-      await this.saveRuntimeCache(runtimeCacheFile, cache);
-
-      if (!verbose) {
-        this.logger.info(`   Runtime-ready: ${okCount}/${elementsToProbe.length}\n`);
-      }
+      this.logger.info('');
+      this.logger.info('Run with --verbose to see detailed blocker information');
+      this.logger.info('');
+    }
 
     return report;
   }
@@ -867,45 +1041,47 @@ export default class AnalyzeEsm extends Command {
     pieLibCache: Map<string, { compatible: boolean; blockers: string[] }>,
     verbose: boolean,
     includeDevDeps: boolean
-  ): Promise<{
-    compatible: boolean;
-    directDeps: string[];
-    pieLibDeps: string[];
-    blockers: string[];
-  }> {
+  ): Promise<ElementDetail> {
     const blockers: string[] = [];
     const elementPath = join(pieElementsPath, 'packages', elementName, 'package.json');
     const pkg = await loadPackageJson(elementPath);
 
     if (!pkg) {
       blockers.push(`Package.json not found at ${elementPath}`);
-      return { compatible: false, directDeps: [], pieLibDeps: [], blockers };
+      return { compatible: false, directDeps: [], pieLibDeps: [], pieElementDeps: [], blockers };
     }
 
     const deps = this.getAllDeps(pkg, includeDevDeps);
     const directDeps = Object.keys(deps);
     const pieLibDeps = this.extractPieLibDeps(deps);
+    const pieElementDeps = this.extractPieElementDeps(deps);
 
     if (verbose) {
       this.logger.info(`\n  📦 ${elementName}:`);
       this.logger.info(`    Direct deps: ${directDeps.length}`);
       this.logger.info(`    PIE Lib deps: ${pieLibDeps.join(', ') || 'none'}`);
+      this.logger.info(`    PIE Element deps: ${pieElementDeps.join(', ') || 'none'}`);
     }
 
-    // Check direct dependencies for blockers
+    // Deep scan all dependencies recursively
+    const depCache = new Map<string, { compatible: boolean; blockers: string[] }>();
     for (const [dep, version] of Object.entries(deps)) {
       // Skip pie-lib packages - we'll check those separately
       if (dep.startsWith('@pie-lib/')) {
         continue;
       }
 
-      const blocker = this.checkEsmBlocker(dep, version);
-      if (blocker) {
-        blockers.push(blocker);
-        if (verbose) {
-          this.logger.info(`    ❌ Direct: ${blocker}`);
-        }
-      }
+      await this.checkDependencyDeep(
+        dep,
+        version,
+        pieElementsPath,
+        pieLibPath,
+        depCache,
+        blockers,
+        verbose,
+        includeDevDeps,
+        []
+      );
     }
 
     // Check transitive pie-lib dependencies
@@ -917,7 +1093,8 @@ export default class AnalyzeEsm extends Command {
           pieLibDep,
           pieLibPath,
           verbose,
-          includeDevDeps
+          includeDevDeps,
+          pieLibCache
         );
         pieLibCache.set(pieLibDep, pieLibCheck);
       }
@@ -943,19 +1120,213 @@ export default class AnalyzeEsm extends Command {
       compatible,
       directDeps,
       pieLibDeps,
+      pieElementDeps,
       blockers,
     };
+  }
+
+  /**
+   * Check subdirectory compatibility (src/, configure/, controller/)
+   * Returns compatibility status for each subdirectory that has its own package.json
+   */
+  private async checkSubdirectoryCompatibility(
+    elementName: string,
+    subdirName: 'src' | 'configure' | 'controller',
+    pieElementsPath: string,
+    pieLibPath: string,
+    pieLibCache: Map<string, { compatible: boolean; blockers: string[] }>,
+    verbose: boolean,
+    includeDevDeps: boolean
+  ): Promise<{ compatible: boolean; blockers: string[] } | null> {
+    const subdirPath = join(pieElementsPath, 'packages', elementName, subdirName);
+    const pkgJsonPath = join(subdirPath, 'package.json');
+
+    // If no package.json in subdirectory, it's part of the main element
+    if (!existsSync(pkgJsonPath)) {
+      return null;
+    }
+
+    const blockers: string[] = [];
+    const pkg = await loadPackageJson(pkgJsonPath);
+
+    if (!pkg) {
+      return null;
+    }
+
+    const deps = this.getAllDeps(pkg, includeDevDeps);
+    const pieLibDeps = this.extractPieLibDeps(deps);
+
+    if (verbose) {
+      this.logger.info(`    📁 ${subdirName}/: checking ${Object.keys(deps).length} dependencies`);
+    }
+
+    // Deep scan all dependencies
+    const depCache = new Map<string, { compatible: boolean; blockers: string[] }>();
+    for (const [dep, version] of Object.entries(deps)) {
+      if (dep.startsWith('@pie-lib/')) {
+        continue;
+      }
+
+      await this.checkDependencyDeep(
+        dep,
+        version,
+        pieElementsPath,
+        pieLibPath,
+        depCache,
+        blockers,
+        verbose,
+        includeDevDeps,
+        []
+      );
+    }
+
+    // Check pie-lib dependencies
+    for (const pieLibDep of pieLibDeps) {
+      let pieLibCheck = pieLibCache.get(pieLibDep);
+
+      if (!pieLibCheck) {
+        pieLibCheck = await this.checkPieLibCompatibility(
+          pieLibDep,
+          pieLibPath,
+          verbose,
+          includeDevDeps,
+          pieLibCache
+        );
+        pieLibCache.set(pieLibDep, pieLibCheck);
+      }
+
+      if (!pieLibCheck.compatible) {
+        for (const blocker of pieLibCheck.blockers) {
+          const transitiveBlocker = `@pie-lib/${pieLibDep} -> ${blocker}`;
+          blockers.push(transitiveBlocker);
+          if (verbose) {
+            this.logger.info(`      ❌ ${subdirName}/: ${transitiveBlocker}`);
+          }
+        }
+      }
+    }
+
+    const compatible = blockers.length === 0;
+
+    if (verbose) {
+      if (compatible) {
+        this.logger.info(`      ✅ ${subdirName}/: Compatible`);
+      } else {
+        this.logger.info(`      ❌ ${subdirName}/: Blocked`);
+      }
+    }
+
+    return { compatible, blockers };
+  }
+
+  private async checkDependencyDeep(
+    depName: string,
+    version: string,
+    pieElementsPath: string,
+    pieLibPath: string,
+    cache: Map<string, { compatible: boolean; blockers: string[] }>,
+    blockers: string[],
+    verbose: boolean,
+    includeDevDeps: boolean,
+    depChain: string[]
+  ): Promise<void> {
+    const depKey = `${depName}@${version}`;
+
+    // Check cache
+    if (cache.has(depKey)) {
+      const cached = cache.get(depKey);
+      if (cached && !cached.compatible) {
+        for (const blocker of cached.blockers) {
+          const chain = [...depChain, blocker].join(' -> ');
+          if (!blockers.includes(chain)) {
+            blockers.push(chain);
+          }
+        }
+      }
+      return;
+    }
+
+    // Check if this is a known ESM blocker
+    const blocker = this.checkEsmBlocker(depName, version);
+    if (blocker) {
+      const chain = [...depChain, blocker].join(' -> ');
+      if (!blockers.includes(chain)) {
+        blockers.push(chain);
+        if (verbose) {
+          this.logger.info(`    ❌ Transitive: ${chain}`);
+        }
+      }
+      cache.set(depKey, { compatible: false, blockers: [blocker] });
+      return;
+    }
+
+    // Try to load package.json from upstream repos to get transitive deps
+    // Look in pie-elements node_modules first, then pie-lib node_modules
+    let pkg: PackageJson | null = null;
+    const possiblePaths = [
+      join(pieElementsPath, 'node_modules', depName, 'package.json'),
+      join(pieLibPath, 'node_modules', depName, 'package.json'),
+    ];
+
+    for (const path of possiblePaths) {
+      if (existsSync(path)) {
+        pkg = await loadPackageJson(path);
+        if (pkg) break;
+      }
+    }
+
+    if (!pkg) {
+      // Can't resolve - assume compatible (will be caught by runtime validation if problematic)
+      cache.set(depKey, { compatible: true, blockers: [] });
+      return;
+    }
+
+    // Check transitive dependencies
+    const transitiveDeps = this.getAllDeps(pkg, false); // Don't include devDeps for transitive checks
+    const hasBlockers = false;
+
+    for (const [transitiveDep, transitiveVersion] of Object.entries(transitiveDeps)) {
+      // Skip PIE packages in transitive scan
+      if (
+        transitiveDep.startsWith('@pie-lib/') ||
+        transitiveDep.startsWith('@pie-element/') ||
+        transitiveDep.startsWith('@pie-elements-ng/')
+      ) {
+        continue;
+      }
+
+      await this.checkDependencyDeep(
+        transitiveDep,
+        transitiveVersion,
+        pieElementsPath,
+        pieLibPath,
+        cache,
+        blockers,
+        verbose,
+        includeDevDeps,
+        [...depChain, `${depName}@${version}`]
+      );
+    }
+
+    cache.set(depKey, { compatible: !hasBlockers, blockers: [] });
   }
 
   private async checkPieLibCompatibility(
     pkgName: string,
     pieLibPath: string,
     verbose: boolean,
-    includeDevDeps: boolean
+    includeDevDeps: boolean,
+    pieLibCache?: Map<string, { compatible: boolean; blockers: string[] }>
   ): Promise<{
     compatible: boolean;
     blockers: string[];
   }> {
+    // Check cache first to avoid infinite recursion
+    if (pieLibCache?.has(pkgName)) {
+      const cached = pieLibCache.get(pkgName);
+      if (cached) return cached;
+    }
+
     const blockers: string[] = [];
     const pkgPath = join(pieLibPath, 'packages', pkgName, 'package.json');
     const pkg = await loadPackageJson(pkgPath);
@@ -969,19 +1340,59 @@ export default class AnalyzeEsm extends Command {
 
     // Check direct dependencies for blockers
     for (const [dep, version] of Object.entries(deps)) {
-      const blocker = this.checkEsmBlocker(dep, version);
-      if (blocker) {
-        blockers.push(blocker);
-        if (verbose) {
-          this.logger.info(`    ❌ ${pkgName}: ${blocker}`);
+      // Check for direct ESM blockers (non pie-lib packages)
+      if (!dep.startsWith('@pie-lib/')) {
+        const blocker = this.checkEsmBlocker(dep, version);
+        if (blocker) {
+          blockers.push(blocker);
+          if (verbose) {
+            this.logger.info(`    ❌ ${pkgName}: ${blocker}`);
+          }
         }
       }
     }
 
-    return {
+    // Store preliminary result in cache to prevent infinite recursion
+    const preliminaryResult = {
+      compatible: blockers.length === 0,
+      blockers: [...blockers],
+    };
+    if (pieLibCache) {
+      pieLibCache.set(pkgName, preliminaryResult);
+    }
+
+    // Recursively check transitive pie-lib dependencies
+    const pieLibDeps = this.extractPieLibDeps(deps);
+    for (const transitivePieLib of pieLibDeps) {
+      const transitiveCheck = await this.checkPieLibCompatibility(
+        transitivePieLib,
+        pieLibPath,
+        verbose,
+        includeDevDeps,
+        pieLibCache
+      );
+
+      if (!transitiveCheck.compatible) {
+        for (const blocker of transitiveCheck.blockers) {
+          const transitiveBlocker = `@pie-lib/${transitivePieLib} -> ${blocker}`;
+          blockers.push(transitiveBlocker);
+          if (verbose) {
+            this.logger.info(`    ❌ ${pkgName}: transitive ${transitiveBlocker}`);
+          }
+        }
+      }
+    }
+
+    // Update cache with final result
+    const finalResult = {
       compatible: blockers.length === 0,
       blockers,
     };
+    if (pieLibCache) {
+      pieLibCache.set(pkgName, finalResult);
+    }
+
+    return finalResult;
   }
 
   private getAllDeps(pkg: PackageJson, includeDevDeps: boolean): Record<string, string> {
@@ -998,6 +1409,12 @@ export default class AnalyzeEsm extends Command {
     return Object.keys(deps)
       .filter((dep) => dep.startsWith('@pie-lib/'))
       .map((dep) => dep.replace('@pie-lib/', ''));
+  }
+
+  private extractPieElementDeps(deps: Record<string, string>): string[] {
+    return Object.keys(deps)
+      .filter((dep) => dep.startsWith('@pie-element/'))
+      .map((dep) => dep.replace('@pie-element/', ''));
   }
 
   private checkEsmBlocker(dep: string, version: string): string | null {
@@ -1134,139 +1551,148 @@ export default class AnalyzeEsm extends Command {
   }
 
   private printReport(report: CompatibilityReport, outputPath: string): void {
-    this.log(`\n${'='.repeat(70)}`);
-    this.log('📊 ESM COMPATIBILITY REPORT');
-    this.log('='.repeat(70));
-    this.log('\n📦 Elements:');
-    this.log(`   Total:              ${report.summary.totalElements}`);
-    this.log(`   CommonJS-free:      ${report.summary.compatibleElements} ✅  (no CommonJS deps)`);
-    if (report.esmPlayerValidationEnabled) {
+    const verbose = this.logger.isVerbose();
+
+    if (verbose) {
+      this.log(`\n${'='.repeat(70)}`);
+      this.log('📊 ESM COMPATIBILITY REPORT');
+      this.log('='.repeat(70));
+      this.log('\n📦 Elements:');
+      this.log(`   Total:              ${report.summary.totalElements}`);
       this.log(
-        `   ESM player ready:   ${report.summary.esmPlayerReady} ✅  (package.json exports)`
+        `   CommonJS-free:      ${report.summary.compatibleElements} ✅  (no CommonJS deps)`
       );
-    } else {
-      this.log('   ESM player ready:   n/a (validation disabled)');
-    }
+      if (report.esmPlayerValidationEnabled) {
+        this.log(
+          `   ESM player ready:   ${report.summary.esmPlayerReady} ✅  (package.json exports)`
+        );
+      } else {
+        this.log('   ESM player ready:   n/a (validation disabled)');
+      }
 
-    if (report.esmRuntimeValidationEnabled) {
-      const runtimeReady = report.summary.esmRuntimeReady ?? 0;
-      this.log(`   Runtime ready:      ${runtimeReady} ✅  (CDN probe: fetch + parse)`);
-    } else {
-      this.log('   Runtime ready:      n/a (runtime probes disabled)');
-    }
-    this.log(`   Blocked:            ${report.summary.blockedElements} ❌`);
+      if (report.esmRuntimeValidationEnabled) {
+        const runtimeReady = report.summary.esmRuntimeReady ?? 0;
+        this.log(`   Runtime ready:      ${runtimeReady} ✅  (CDN probe: fetch + parse)`);
+      } else {
+        this.log('   Runtime ready:      n/a (runtime probes disabled)');
+      }
+      this.log(`   Blocked:            ${report.summary.blockedElements} ❌`);
 
-    this.log('\n📚 PIE Lib Packages:');
-    this.log(`   Total:      ${report.summary.totalPieLibPackages}`);
-    this.log(`   Compatible: ${report.summary.compatiblePieLibPackages} ✅`);
-    this.log(
-      `   Blocked:    ${report.summary.totalPieLibPackages - report.summary.compatiblePieLibPackages} ❌`
-    );
+      this.log('\n📚 PIE Lib Packages:');
+      this.log(`   Total:      ${report.summary.totalPieLibPackages}`);
+      this.log(`   Compatible: ${report.summary.compatiblePieLibPackages} ✅`);
+      this.log(
+        `   Blocked:    ${report.summary.totalPieLibPackages - report.summary.compatiblePieLibPackages} ❌`
+      );
 
-    if (report.esmPlayerValidationEnabled) {
-      // ESM player ready elements (best category)
-      if (report.esmPlayerReady.length > 0) {
-        this.log(`\n✅ ESM Player Ready (${report.esmPlayerReady.length}):`);
-        for (const element of report.esmPlayerReady.sort()) {
-          const validation = report.esmValidation[element];
-          const deps = report.elementDetails[element]?.pieLibDeps || [];
-          this.log(`   • ${element}`);
-          this.log(`     - type: module ${validation.packageJson.hasTypeModule ? '✅' : '❌'}`);
-          this.log(`     - exports: . ${validation.packageJson.hasMainExport ? '✅' : '❌'}`);
-          this.log(
-            `     - exports: ./controller ${validation.packageJson.hasControllerExport ? '✅' : '❌'}`
-          );
-          this.log(`     - deps: ${deps.length > 0 ? deps.join(', ') : 'none'}`);
-
-          if (report.esmRuntimeValidationEnabled && report.esmRuntimeValidation?.[element]) {
-            const r = report.esmRuntimeValidation[element];
+      if (report.esmPlayerValidationEnabled) {
+        // ESM player ready elements (best category)
+        if (report.esmPlayerReady.length > 0) {
+          this.log(`\n✅ ESM Player Ready (${report.esmPlayerReady.length}):`);
+          for (const element of report.esmPlayerReady.sort()) {
+            const validation = report.esmValidation[element];
+            const deps = report.elementDetails[element]?.pieLibDeps || [];
+            this.log(`   • ${element}`);
+            this.log(`     - type: module ${validation.packageJson.hasTypeModule ? '✅' : '❌'}`);
+            this.log(`     - exports: . ${validation.packageJson.hasMainExport ? '✅' : '❌'}`);
             this.log(
-              `     - runtime probe: ${r.compatible ? '✅' : '❌'} (${r.cdnBaseUrl}, entry:${r.entryOk ? 'ok' : 'bad'}, controller:${r.controllerOk ? 'ok' : 'bad'})`
+              `     - exports: ./controller ${validation.packageJson.hasControllerExport ? '✅' : '❌'}`
             );
-            if (!r.compatible && r.errors?.length) {
-              this.log(`       - ${r.errors[0]}`);
+            this.log(`     - deps: ${deps.length > 0 ? deps.join(', ') : 'none'}`);
+
+            if (report.esmRuntimeValidationEnabled && report.esmRuntimeValidation?.[element]) {
+              const r = report.esmRuntimeValidation[element];
+              this.log(
+                `     - runtime probe: ${r.compatible ? '✅' : '❌'} (${r.cdnBaseUrl}, entry:${r.entryOk ? 'ok' : 'bad'}, controller:${r.controllerOk ? 'ok' : 'bad'})`
+              );
+              if (!r.compatible && r.errors?.length) {
+                this.log(`       - ${r.errors[0]}`);
+              }
+            }
+          }
+        }
+
+        // CommonJS-free but not ESM player ready
+        const commonJsFreeNotEsmReady = report.elements.filter(
+          (element) => !report.esmPlayerReady.includes(element)
+        );
+
+        if (commonJsFreeNotEsmReady.length > 0) {
+          this.log(
+            `\n⚠️  CommonJS-free but not ESM Player Ready (${commonJsFreeNotEsmReady.length}):`
+          );
+          for (const element of commonJsFreeNotEsmReady.sort()) {
+            const validation = report.esmValidation[element];
+            this.log(`   • ${element}`);
+
+            if (!validation.packageJson.hasTypeModule) {
+              this.log(`     ❌ Missing "type": "module"`);
+            }
+            if (!validation.packageJson.hasExportsField) {
+              this.log(`     ❌ Missing "exports" field`);
+            }
+            if (!validation.packageJson.hasMainExport) {
+              this.log(`     ❌ Missing "." export`);
+            }
+            if (!validation.packageJson.hasControllerExport) {
+              this.log(`     ❌ Missing "./controller" export`);
+            }
+            if (!validation.packageJson.mainExportIsEsm) {
+              this.log(`     ❌ Main export not ESM (.js)`);
+            }
+
+            // Show warnings
+            for (const warning of validation.warnings) {
+              this.log(`     ⚠️  ${warning}`);
             }
           }
         }
       }
 
-      // CommonJS-free but not ESM player ready
-      const commonJsFreeNotEsmReady = report.elements.filter(
-        (element) => !report.esmPlayerReady.includes(element)
-      );
-
-      if (commonJsFreeNotEsmReady.length > 0) {
-        this.log(
-          `\n⚠️  CommonJS-free but not ESM Player Ready (${commonJsFreeNotEsmReady.length}):`
-        );
-        for (const element of commonJsFreeNotEsmReady.sort()) {
-          const validation = report.esmValidation[element];
-          this.log(`   • ${element}`);
-
-          if (!validation.packageJson.hasTypeModule) {
-            this.log(`     ❌ Missing "type": "module"`);
-          }
-          if (!validation.packageJson.hasExportsField) {
-            this.log(`     ❌ Missing "exports" field`);
-          }
-          if (!validation.packageJson.hasMainExport) {
-            this.log(`     ❌ Missing "." export`);
-          }
-          if (!validation.packageJson.hasControllerExport) {
-            this.log(`     ❌ Missing "./controller" export`);
-          }
-          if (!validation.packageJson.mainExportIsEsm) {
-            this.log(`     ❌ Main export not ESM (.js)`);
-          }
-
-          // Show warnings
-          for (const warning of validation.warnings) {
-            this.log(`     ⚠️  ${warning}`);
+      if (Object.keys(report.blockedElements).length > 0) {
+        this.log(`\n❌ Blocked Elements (${Object.keys(report.blockedElements).length}):`);
+        for (const [element, blockers] of Object.entries(report.blockedElements).sort()) {
+          this.log(`   • ${element}:`);
+          for (const blocker of blockers) {
+            this.log(`     - ${blocker}`);
           }
         }
       }
-    }
 
-    if (Object.keys(report.blockedElements).length > 0) {
-      this.log(`\n❌ Blocked Elements (${Object.keys(report.blockedElements).length}):`);
-      for (const [element, blockers] of Object.entries(report.blockedElements).sort()) {
-        this.log(`   • ${element}:`);
-        for (const blocker of blockers) {
-          this.log(`     - ${blocker}`);
+      if (report.pieLibPackages.length > 0) {
+        this.log(`\n📚 Compatible PIE Lib Packages (${report.pieLibPackages.length}):`);
+        for (const pkg of report.pieLibPackages.sort()) {
+          const usedBy = report.pieLibDetails[pkg]?.usedBy || [];
+          this.log(`   • ${pkg} (used by: ${usedBy.join(', ')})`);
         }
       }
-    }
 
-    if (report.pieLibPackages.length > 0) {
-      this.log(`\n📚 Compatible PIE Lib Packages (${report.pieLibPackages.length}):`);
-      for (const pkg of report.pieLibPackages.sort()) {
-        const usedBy = report.pieLibDetails[pkg]?.usedBy || [];
-        this.log(`   • ${pkg} (used by: ${usedBy.join(', ')})`);
-      }
-    }
+      const blockedPieLib = Object.entries(report.pieLibDetails)
+        .filter(([_, details]) => !details.compatible)
+        .sort();
 
-    const blockedPieLib = Object.entries(report.pieLibDetails)
-      .filter(([_, details]) => !details.compatible)
-      .sort();
-
-    if (blockedPieLib.length > 0) {
-      this.log(`\n❌ Blocked PIE Lib Packages (${blockedPieLib.length}):`);
-      for (const [pkg, details] of blockedPieLib) {
-        this.log(`   • ${pkg} (needed by: ${details.usedBy.join(', ')}):`);
-        for (const blocker of details.blockers) {
-          this.log(`     - ${blocker}`);
+      if (blockedPieLib.length > 0) {
+        this.log(`\n❌ Blocked PIE Lib Packages (${blockedPieLib.length}):`);
+        for (const [pkg, details] of blockedPieLib) {
+          this.log(`   • ${pkg} (needed by: ${details.usedBy.join(', ')}):`);
+          for (const blocker of details.blockers) {
+            this.log(`     - ${blocker}`);
+          }
         }
       }
+
+      this.printNotReadyActionReport(report);
+
+      this.log(`\n${'='.repeat(70)}`);
+      this.log(`\n💾 Report saved to: ${outputPath}`);
+      this.log('\n💡 Next steps:');
+      this.log('   1. Review the compatibility report above');
+      this.log('   2. Run sync: bun run upstream:sync');
+      this.log('   3. The sync will automatically use the ESM-compatible list\n');
+    } else {
+      // Non-verbose: just show where report was saved
+      this.log(`\n💾 Report saved to: ${outputPath}`);
     }
-
-    this.printNotReadyActionReport(report);
-
-    this.log(`\n${'='.repeat(70)}`);
-    this.log(`\n💾 Report saved to: ${outputPath}`);
-    this.log('\n💡 Next steps:');
-    this.log('   1. Review the compatibility report above');
-    this.log('   2. Run sync: bun run upstream:sync');
-    this.log('   3. The sync will automatically use the ESM-compatible list\n');
   }
 
   private printNotReadyActionReport(report: CompatibilityReport): void {

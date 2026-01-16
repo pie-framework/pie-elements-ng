@@ -20,17 +20,14 @@ These packages are native to this project and will be automatically published to
 - `@pie-elements-ng/lib-math`
 - `@pie-elements-ng/lib-ui`
 
-**Web Components** (`packages/elements-wc/*`):
-- `@pie-elements-ng/wc-multiple-choice`
-
 **Shared/Core Packages** (`packages/shared/*`, `packages/core`):
-- `@pie-shared/types`
-- `@pie-shared/utils`
-- `@pie-shared/test-utils`
+- `@pie-elements-ng/shared-types`
+- `@pie-elements-ng/shared-utils`
+- `@pie-elements-ng/shared-test-utils`
 - All `*-controller` packages (32 controllers)
 - `@pie-elements-ng/core`
 
-**Total: ~40 packages will be published**
+**Total: ~39 packages will be published**
 
 ### 2. React Packages (NOT Published Yet)
 

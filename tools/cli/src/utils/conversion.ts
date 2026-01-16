@@ -20,18 +20,28 @@ export function convertJsToTs(jsCode: string, metadata: ConversionMetadata): Con
   // We intentionally do NOT transform the JavaScript syntax.
   // Goal: keep upstream source as-is, while letting the monorepo's TS/Vite pipeline build it.
   // TypeScript diagnostics are suppressed for synced files.
-  const tsCode = jsCode;
+  let tsCode = jsCode;
   const hasDefaultObjectExport = false;
+
+  // Convert CommonJS module.exports to ES modules
+  tsCode = convertModuleExportsToEsm(tsCode);
 
   // Must be at the very top of the file to reliably suppress TypeScript diagnostics.
   // We keep synced files buildable even when upstream JS has type issues.
   const tsNoCheck = `// @ts-nocheck\n`;
+
+  // Sync version: increment this when transformation logic changes to force re-sync
+  // v1: Initial sync
+  // v2: Added lodash -> lodash-es transformation
+  // v3: Added @pie-framework event package transformations
+  const SYNC_VERSION = 'v3';
 
   // Add sync metadata header
   const header = `/**
  * @synced-from ${metadata.sourcePath}
  * @synced-commit ${metadata.commit}
  * @synced-date ${metadata.date}
+ * @sync-version ${SYNC_VERSION}
  * @auto-generated
  *
  * This file is automatically synced from pie-elements and converted to TypeScript.
@@ -41,6 +51,60 @@ export function convertJsToTs(jsCode: string, metadata: ConversionMetadata): Con
 
 `;
   return { code: tsNoCheck + header + tsCode, hasDefaultObjectExport };
+}
+
+/**
+ * Convert CommonJS module.exports to ES module exports
+ */
+function convertModuleExportsToEsm(content: string): string {
+  // Match: module.exports = { key: value, key2: value2, ... };
+  const moduleExportsPattern = /module\.exports\s*=\s*\{([\s\S]*?)\};?/;
+  const match = content.match(moduleExportsPattern);
+
+  if (!match) {
+    return content;
+  }
+
+  const [fullMatch, objectContent] = match;
+
+  // Parse the object content into key-value pairs
+  const exports: string[] = [];
+  const lines = objectContent.split('\n');
+
+  let currentKey: string | null = null;
+  let currentValue: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed === '{' || trimmed === '}') continue;
+
+    // Check if this line starts a new key
+    const keyMatch = trimmed.match(/^(\w+):\s*(.*)/);
+    if (keyMatch) {
+      // Save previous export if any
+      if (currentKey) {
+        const value = currentValue.join('\n').replace(/,\s*$/, ''); // Remove trailing comma
+        exports.push(`export const ${currentKey} =\n${value};`);
+      }
+
+      // Start new export
+      currentKey = keyMatch[1];
+      currentValue = [keyMatch[2]];
+    } else {
+      // Continuation of current value
+      currentValue.push(line);
+    }
+  }
+
+  // Save last export
+  if (currentKey) {
+    const value = currentValue.join('\n').replace(/,\s*$/, '');
+    exports.push(`export const ${currentKey} =\n${value};`);
+  }
+
+  // Replace the module.exports block with ES module exports
+  const esmExports = exports.join('\n\n');
+  return content.replace(fullMatch, esmExports);
 }
 
 /**
@@ -57,11 +121,18 @@ export function convertJsxToTsx(jsxCode: string, metadata: ConversionMetadata): 
   // We keep synced files buildable even when upstream JSX has type issues.
   const tsNoCheck = `// @ts-nocheck\n`;
 
+  // Sync version: increment this when transformation logic changes to force re-sync
+  // v1: Initial sync
+  // v2: Added lodash -> lodash-es transformation
+  // v3: Added @pie-framework event package transformations
+  const SYNC_VERSION = 'v3';
+
   // Add sync metadata header
   const header = `/**
  * @synced-from ${metadata.sourcePath}
  * @synced-commit ${metadata.commit}
  * @synced-date ${metadata.date}
+ * @sync-version ${SYNC_VERSION}
  * @auto-generated
  *
  * This file is automatically synced from pie-elements and converted to TypeScript.

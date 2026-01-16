@@ -21,10 +21,8 @@
       "!**/packages/elements-svelte/multiple-choice/src/configure",
       "!packages/elements-react",
       "!packages/lib-react",
-      "!apps/demos-data",
       "!packages/shared/*/src/index.ts",
-      "!apps/examples-react/src/index.css",
-      "!apps/demos-sveltekit/src/app.css"
+      "!apps/examples-react/src/index.css"
     ]
   },
   "formatter": {

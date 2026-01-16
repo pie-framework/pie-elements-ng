@@ -21,7 +21,7 @@
     "svelte": "^5.0.0"
   },
   "devDependencies": {
-    "@pie-shared/types": "workspace:*",
+    "@pie-elements-ng/shared-types": "workspace:*",
     "svelte": "^5.43.8",
     "typescript": "^5.9.3"
   }

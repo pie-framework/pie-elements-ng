@@ -38,14 +38,8 @@ bun run cli upstream:sync --dry-run
 # Sync specific element
 bun run cli upstream:sync --element multiple-choice
 
-# Sync React components
-bun run cli upstream:sync --react
-
-# Sync @pie-lib packages
-bun run cli upstream:sync --pie-lib
-
-# Sync all elements (ignore ESM filter)
-bun run cli upstream:sync --all
+# Sync all compatible elements (controllers + React UI + demos)
+bun run cli upstream:sync
 
 # Verbose output
 bun run cli upstream:sync --verbose

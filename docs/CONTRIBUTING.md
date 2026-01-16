@@ -57,9 +57,6 @@ bun run build
 # Run all packages in dev mode
 bun run dev
 
-# Or run the SvelteKit demos host only
-bun run demos
-
 # Or run the React examples app only
 bun run react-examples
 ```
@@ -105,14 +102,10 @@ pie-elements-ng/
 │   │   ├── hotspot/               # Hotspot element
 │   │   ├── multiple-choice/       # Multiple choice element
 │   │   └── number-line/           # Number line element
-│   ├── elements-wc/               # Web Component wrappers
-│   │   └── multiple-choice/       # Multiple choice WC wrapper
 │   ├── lib-svelte/                # Shared Svelte libraries
 │   ├── lib-react/                 # Shared React libraries
 │   └── shared/                    # Shared utilities
 ├── apps/
-│   ├── demos-sveltekit/           # SvelteKit demo host
-│   ├── demos-data/                # Synced demo data (raw + compiled)
 │   ├── examples-react/            # React examples app
 │   └── local-esm-cdn/             # Local CDN for ESM modules
 └── docs/                          # Documentation
@@ -372,15 +365,18 @@ describe('MyElement Controller', () => {
 
 ### 7. Add a Demo Entry
 
-The SvelteKit demos host loads compiled demo data from `apps/demos-data`.
+Per-package demos live inside each element package:
 
-- If the element comes from upstream, run:
-  ```bash
-  bun run upstream:sync --element my-element
-  ```
-  This copies `docs/demo` into `apps/demos-data/<tagName>/raw` and generates
-  `apps/demos-data/<tagName>/compiled/demo.json` + `demo.mjs`.
-- The demo page is then available at `/demos/<tagName>` in `apps/demos-sveltekit`.
+- `packages/elements-react/<element>/docs/demo` for synced React elements
+- (Svelte elements can add their own `docs/demo` as they are implemented)
+
+If the element comes from upstream, run:
+```bash
+bun run upstream:sync --element my-element
+```
+
+This copies `docs/demo` into the element package and generates `demo.html` + `demo.mjs`
+so the demo can run standalone after a build.
 
 ### 8. Add Evaluations
 
@@ -396,8 +392,8 @@ component:
   framework: "svelte"
 
 examplesApp:
-  app: "@pie-demos/sveltekit"
-  routeTemplate: "/demos/<tagName>"
+  app: "@pie-element/<element>"
+  routeTemplate: "/docs/demo/demo.html"
 
 evals:
   - id: "my-element/basic/interaction"
@@ -406,7 +402,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/my-element"
+        path: "/docs/demo/demo.html"
         params:
           mode: "gather"
 

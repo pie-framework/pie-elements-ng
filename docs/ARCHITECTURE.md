@@ -61,11 +61,6 @@ Original pie-elements:          This project:
 │  │  │  - React implementations (ported)            │  │  │
 │  │  │  - Compatible with existing consumers        │  │  │
 │  │  └──────────────────────────────────────────────┘  │  │
-│  │  ┌──────────────────────────────────────────────┐  │  │
-│  │  │  Web Components (elements-wc/)               │  │  │
-│  │  │  - Framework-agnostic wrappers               │  │  │
-│  │  │  - Standard custom elements                  │  │  │
-│  │  └──────────────────────────────────────────────┘  │  │
 │  └─────────────┬──────────────────────────────────────┘  │
 │                │                                           │
 │  ┌─────────────▼──────────────────────────────────────┐  │

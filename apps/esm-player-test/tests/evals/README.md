@@ -56,7 +56,7 @@ These tests validate that:
 ## Current Limitations
 
 Some tests are marked as TODO because they depend on:
-- Elements actually rendering inside the player (requires published @pie-wc packages)
+- Elements actually rendering inside the player (requires published @pie-element packages)
 - Player API finalization for session management
 - Local build serving infrastructure
 

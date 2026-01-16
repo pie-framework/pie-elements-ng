@@ -5,8 +5,8 @@ component:
   framework: "svelte"
 
 examplesApp:
-  app: "@pie-demos/sveltekit"
-  routeTemplate: "/demos/<tagName>"
+  app: "@pie-elements-ng/upload"
+  routeTemplate: "/docs/demo/demo.html"
 
 evals:
   # ==========================================================================

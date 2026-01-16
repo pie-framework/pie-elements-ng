@@ -6,8 +6,8 @@ This directory contains user-facing applications for demonstrating PIE assessmen
 
 ```
 apps/
-├── examples-react/     # React elements showcase (port 5174)
-└── demos-sveltekit/    # SvelteKit demo host (per-element routes)
+├── demo-index/         # Per-package demo index (port 5181)
+└── examples-react/     # React elements showcase (port 5174)
 ```
 
 ## Local ESM CDN (dev-only)
@@ -23,6 +23,43 @@ bun run local-esm-cdn
 See `apps/local-esm-cdn/README.md`.
 
 ## Quick Start
+
+### Single Element Demo (Recommended)
+
+Run a specific React element's demo from the project root:
+
+```bash
+# From repository root
+bun react-demo --element categorize
+bun react-demo --element multiple-choice
+bun react-demo --element hotspot
+```
+
+Visit <http://localhost:5174>
+
+**Note**:
+
+- This currently works for **React elements only** (`packages/elements-react/`)
+- The element **and all its dependencies** must be built first. Run:
+
+```bash
+# Build element with all dependencies (recommended)
+bun run build --filter=@pie-element/<element-name>...
+
+# Or build everything
+bun run build
+```
+
+### Demo Index (all demos)
+
+View all available demos in one app:
+
+```bash
+# From repository root
+bun run demos
+```
+
+Visit <http://localhost:5181>
 
 ### React Examples
 
@@ -48,9 +85,9 @@ Visit http://localhost:5174
 - Hotspot - Interactive image hotspot selection
 - Number Line - Points, lines, and rays
 
-### Svelte Demos (SvelteKit host)
+### Per-package Demos
 
-The Svelte demo experience is now hosted in `apps/demos-sveltekit` with per-element routes.
+Each element package contains its own demo under `packages/elements-react/<element>/docs/demo`.
 
 ## Architecture Decision
 
@@ -74,9 +111,6 @@ bun run examples
 ```bash
 # Build React examples
 cd apps/examples-react && bun run build
-
-# Build Svelte demos host
-cd apps/demos-sveltekit && bun run build
 ```
 
 ## Testing
@@ -84,10 +118,16 @@ cd apps/demos-sveltekit && bun run build
 ### React Examples
 Currently no tests (TBD)
 
-### Svelte Demos
+### Per-package Demos
+
+Each element package has a `demo` script that uses Vite's dev server:
+
 ```bash
-cd apps/demos-sveltekit
-bun run test:e2e        # Run E2E tests
-bun run test:e2e:ui     # Run with Playwright UI
-bun run test:a11y       # Run accessibility tests
+cd packages/elements-react/multiple-choice
+bun run build  # Build the package first
+bun run demo   # Start demo server
 ```
+
+Then open <http://localhost:5174>
+
+This is equivalent to running `bun react-demo --element multiple-choice` from the project root.

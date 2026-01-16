@@ -24,7 +24,7 @@
     "clean": "echo 'Nothing to clean'"
   },
   "dependencies": {
-    "@pie-shared/types": "workspace:*",
+    "@pie-elements-ng/shared-types": "workspace:*",
     "@tiptap/core": "^3.14.0",
     "@tiptap/extension-blockquote": "^3.14.0",
     "@tiptap/extension-heading": "^3.14.0",

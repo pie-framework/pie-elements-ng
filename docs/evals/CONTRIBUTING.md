@@ -166,7 +166,7 @@ Choose the right action for the interaction:
 ```yaml
 # Navigation
 - action: navigate
-  path: "/demos/multiple-choice"
+  path: "/docs/demo/demo.html"
   params:
     mode: "gather"
 
@@ -457,7 +457,7 @@ notes:
 
   steps:
     - action: navigate
-      path: "/demos/multiple-choice"
+      path: "/docs/demo/demo.html"
 
     - action: wait
       condition: "networkidle"

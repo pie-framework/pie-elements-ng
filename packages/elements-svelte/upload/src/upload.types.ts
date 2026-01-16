@@ -5,7 +5,12 @@
  * Allows candidates to upload files for assessment
  */
 
-import type { PieEnvironment, PieEvaluation, PieModel, PieSession } from '@pie-shared/types';
+import type {
+  PieEnvironment,
+  PieEvaluation,
+  PieModel,
+  PieSession,
+} from '@pie-elements-ng/shared-types';
 
 /**
  * Uploaded file information

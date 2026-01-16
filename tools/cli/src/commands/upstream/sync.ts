@@ -1,21 +1,22 @@
 import { Command, Flags } from '@oclif/core';
 import { Logger } from '../../utils/logger.js';
-import { loadCompatibilityReport } from '../../utils/compatibility.js';
-import { convertJsToTs, convertJsxToTsx } from '../../utils/conversion.js';
+import { loadCompatibilityReport, type CompatibilityReport } from '../../utils/compatibility.js';
 import { getCurrentCommit } from '../../utils/git.js';
-import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
+import { printSyncSummary, createEmptySummary } from './sync-summary.js';
+import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import {
-  cp,
-  mkdir,
-  readFile,
-  readdir as fsReaddir,
-  rm as fsRm,
-  writeFile,
-  stat as fsStat,
-} from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import vm from 'node:vm';
+import { cp, mkdir, readFile, rm as fsRm, writeFile, stat as fsStat } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { readdir } from './sync-filesystem.js';
+import { getAllDeps } from './sync-package-json.js';
+import { generateDemoModule, generateDemoHtml } from './sync-demo.js';
+import { ControllersStrategy } from './sync-controllers-strategy.js';
+import { ReactComponentsStrategy } from './sync-react-strategy.js';
+import { PieLibStrategy } from './sync-pielib-strategy.js';
+import type { SyncStrategy, SyncContext } from './sync-strategy.js';
 
 interface SyncConfig {
   pieElements: string;
@@ -43,6 +44,9 @@ interface SyncConfig {
   verbose: boolean;
   rewritePackageJson: boolean;
   skipBuild: boolean;
+
+  // Internal: auto-sync pie-lib deps for selected elements
+  autoSyncPieLibDeps: boolean;
 }
 
 interface SyncResult {
@@ -60,11 +64,7 @@ export default class Sync extends Command {
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dry-run',
     '<%= config.bin %> <%= command.id %> --element=multiple-choice',
-    '<%= config.bin %> <%= command.id %> --element=multiple-choice --react',
-    '<%= config.bin %> <%= command.id %> --react',
-    '<%= config.bin %> <%= command.id %> --pie-lib',
-    '<%= config.bin %> <%= command.id %> --pie-lib-package=render-ui',
-    '<%= config.bin %> <%= command.id %> --all',
+    '<%= config.bin %> <%= command.id %>',
   ];
 
   static override flags = {
@@ -78,38 +78,7 @@ export default class Sync extends Command {
       default: false,
     }),
     element: Flags.string({
-      description: 'Sync only specified element',
-    }),
-    react: Flags.boolean({
-      description: 'Sync React components instead of controllers',
-      default: false,
-    }),
-    'pie-lib': Flags.boolean({
-      description: 'Sync @pie-lib packages',
-      default: false,
-    }),
-    'pie-lib-package': Flags.string({
-      description: 'Sync only specified @pie-lib package',
-    }),
-    'no-esm-filter': Flags.boolean({
-      description: 'Disable ESM compatibility filtering',
-      default: false,
-    }),
-    all: Flags.boolean({
-      description: 'Sync all elements (ignores ESM filter)',
-      default: false,
-    }),
-    'no-package-json-rewrite': Flags.boolean({
-      description: 'Do not create/update package.json files to ensure ESM module support',
-      default: false,
-    }),
-    'skip-build': Flags.boolean({
-      description: 'Skip running a build after syncing (sync runs build by default)',
-      default: false,
-    }),
-    'no-demo': Flags.boolean({
-      description: 'Do not sync upstream docs/demo folders for touched elements',
-      default: false,
+      description: 'Sync only specified element (if ESM-compatible)',
     }),
   };
 
@@ -127,50 +96,31 @@ export default class Sync extends Command {
       pieLib: '../pie-lib',
       pieElementsNg: '.',
       syncControllers: true,
-      syncReactComponents: false,
+      syncReactComponents: true,
       syncPieLibPackages: false,
-      syncDemos: !flags['no-demo'],
-      useEsmFilter: !flags['no-esm-filter'] && !flags.all,
+      syncDemos: true,
+      useEsmFilter: true,
       compatibilityFile: './esm-compatible-elements.json',
       dryRun: flags['dry-run'],
       verbose: flags.verbose,
-      rewritePackageJson: !flags['no-package-json-rewrite'],
-      skipBuild: flags['skip-build'],
+      rewritePackageJson: true,
+      skipBuild: false,
+      autoSyncPieLibDeps: true,
       elementsSpecifiedByUser: !!flags.element,
-      pieLibPackagesSpecifiedByUser: !!flags['pie-lib-package'],
+      pieLibPackagesSpecifiedByUser: false,
     };
-
-    // Configure what to sync
-    if (flags.react) {
-      config.syncReactComponents = true;
-      config.syncControllers = false;
-    }
-
-    if (flags['pie-lib'] || flags['pie-lib-package']) {
-      config.syncPieLibPackages = true;
-      config.syncControllers = false;
-      config.syncReactComponents = false;
-      config.syncDemos = false;
-    }
 
     // Configure filters
     if (flags.element) {
       config.elements = [flags.element];
     }
 
-    if (flags['pie-lib-package']) {
-      config.pieLibPackages = [flags['pie-lib-package']];
-    }
-
-    const result = await this.syncUpstream(config);
-    this.generateReport(result);
-
-    if (result.errors.length > 0) {
-      this.error('Sync completed with errors', { exit: 1 });
-    }
+    await this.syncUpstream(config);
   }
 
-  private async syncUpstream(config: SyncConfig): Promise<SyncResult> {
+  private async syncUpstream(config: SyncConfig): Promise<void> {
+    const syncSummary = createEmptySummary();
+
     const result: SyncResult = {
       filesChecked: 0,
       filesCopied: 0,
@@ -189,32 +139,110 @@ export default class Sync extends Command {
     this.logger.info(`   Destination: ${config.pieElementsNg}/packages/`);
     this.logger.info(`   Mode:        ${config.dryRun ? 'DRY RUN' : 'LIVE'}\n`);
 
-    // Apply ESM compatibility filter
+    // Apply ESM compatibility filter and load report for summary
+    let compatibilityReport: CompatibilityReport | null = null;
+    if (config.useEsmFilter) {
+      try {
+        compatibilityReport = await loadCompatibilityReport(config.compatibilityFile);
+      } catch {
+        // Report loading handled in applyEsmFilter
+      }
+    }
     await this.applyEsmFilter(config);
+
+    // Auto-sync pie-lib dependencies for selected elements (unless explicit pie-lib mode)
+    if (config.autoSyncPieLibDeps) {
+      const elementsToSync = await this.listElementPackages(config);
+      const requiredPieLib = await this.collectPieLibDepsFromElements(config, elementsToSync);
+      if (requiredPieLib.length > 0) {
+        config.syncPieLibPackages = true;
+        config.pieLibPackages = requiredPieLib;
+        if (config.verbose) {
+          this.logger.info(
+            `   Auto pie-lib deps: ${requiredPieLib.length} package(s) required by selected elements`
+          );
+        }
+      }
+    }
+
+    // Merge with ESM-compatible pie-lib packages from compatibility report
+    // (This ensures packages like controller-utils that are imported in controllers but not declared in package.json get synced)
+    if (compatibilityReport?.pieLibPackages && compatibilityReport.pieLibPackages.length > 0) {
+      config.syncPieLibPackages = true;
+      const autoDeps = new Set(config.pieLibPackages || []);
+      const compatiblePkgs = compatibilityReport.pieLibPackages;
+      const merged = new Set([...autoDeps, ...compatiblePkgs]);
+      config.pieLibPackages = Array.from(merged);
+
+      const additionalCount = config.pieLibPackages.length - autoDeps.size;
+      if (config.verbose && additionalCount > 0) {
+        this.logger.info(
+          `   Additional ESM-compatible pie-lib: ${additionalCount} package(s) from compatibility report`
+        );
+      }
+    }
 
     // Verify repos exist
     if (!existsSync(config.pieElements)) {
-      result.errors.push(`pie-elements not found at ${config.pieElements}`);
-      return result;
+      this.logger.error(`pie-elements not found at ${config.pieElements}`);
+      this.error('Sync failed', { exit: 1 });
     }
 
     // Clean stale targets first (prevents leftover packages/files from older sync runs)
     await this.cleanStaleTargets(config);
 
-    if (config.syncControllers) {
-      await this.syncControllers(config, result);
-    }
+    // Execute sync strategies
+    const strategies: SyncStrategy[] = [
+      new ControllersStrategy(),
+      new ReactComponentsStrategy(),
+      new PieLibStrategy(),
+    ];
 
-    if (config.syncReactComponents) {
-      await this.syncReactComponents(config, result);
+    const context: SyncContext = {
+      config: {
+        pieElements: config.pieElements,
+        pieLib: config.pieLib,
+        pieElementsNg: config.pieElementsNg,
+        syncControllers: config.syncControllers,
+        syncReactComponents: config.syncReactComponents,
+        syncPieLib: config.syncPieLibPackages,
+        skipDemos: !config.syncDemos,
+        upstreamCommit: getCurrentCommit(config.pieElements),
+      },
+      logger: this.logger,
+      packageFilter: config.elements?.[0],
+      compatibilityReport: compatibilityReport || undefined,
+    };
+
+    for (const strategy of strategies) {
+      if (strategy.shouldRun(context.config)) {
+        const result = await strategy.execute(context);
+
+        // Track by strategy type
+        const desc = strategy.getDescription();
+        if (desc === 'controllers') {
+          syncSummary.controllersSync = result.count;
+        } else if (desc === 'React components') {
+          syncSummary.reactComponentsSynced = result.count;
+        } else if (desc === '@pie-lib packages') {
+          syncSummary.pieLibPackagesSynced = result.count;
+        }
+        syncSummary.totalPackagesSynced += result.count;
+        // Add unique package names (avoid duplicates from multiple strategies syncing same package)
+        for (const pkgName of result.packageNames) {
+          if (!syncSummary.syncedPackageNames.includes(pkgName)) {
+            syncSummary.syncedPackageNames.push(pkgName);
+          }
+        }
+      }
     }
 
     if (config.syncDemos) {
       await this.syncDemos(config, result);
     }
 
-    if (config.syncPieLibPackages) {
-      await this.syncPieLibPackages(config, result);
+    // Ensure external dependencies from synced packages are available at repo root.
+    if (!config.dryRun) {
     }
 
     // Build by default (unless dry-run or explicitly skipped)
@@ -222,7 +250,20 @@ export default class Sync extends Command {
       await this.buildTouchedPackages(config, result);
     }
 
-    return result;
+    // Add blocked package counts from compatibility report
+    if (compatibilityReport) {
+      syncSummary.blockedElements = Object.keys(compatibilityReport.blockedElements).length;
+      syncSummary.blockedPieLib = Object.values(compatibilityReport.pieLibDetails).filter(
+        (d) => !d.compatible
+      ).length;
+    }
+
+    // Print summary and handle errors
+    printSyncSummary(syncSummary, compatibilityReport, config.pieElementsNg, this.logger);
+
+    if (result.errors.length > 0) {
+      this.error('Sync completed with errors', { exit: 1 });
+    }
   }
 
   private async syncDemos(config: SyncConfig, result: SyncResult): Promise<void> {
@@ -256,27 +297,87 @@ export default class Sync extends Command {
         }
       }
 
-      // Store demos under the element package name so we can resolve local sources later.
-      const baseDir = join(config.pieElementsNg, 'apps/demos-data', pkg);
-      const targetRawDir = join(baseDir, 'raw');
+      const elementDir = join(config.pieElementsNg, 'packages/elements-react', pkg);
+      const targetDemoDir = join(elementDir, 'docs/demo');
 
       // Clean target first so removed upstream demo files don't linger.
       if (!config.dryRun) {
-        await fsRm(baseDir, { recursive: true, force: true });
-        await mkdir(dirname(targetRawDir), { recursive: true });
+        await fsRm(targetDemoDir, { recursive: true, force: true });
+        await mkdir(dirname(targetDemoDir), { recursive: true });
       }
 
       result.filesChecked++;
       if (config.dryRun) {
-        this.logger.success(`  🔍 ${pkg}: would sync docs/demo → apps/demos-data/${tagName}/raw`);
+        this.logger.success(
+          `  🔍 ${pkg}: would sync docs/demo → packages/elements-react/${pkg}/docs/demo`
+        );
         continue;
       }
 
-      await mkdir(targetRawDir, { recursive: true });
-      await cp(upstreamDemoDir, targetRawDir, { recursive: true });
+      await mkdir(targetDemoDir, { recursive: true });
+      await cp(upstreamDemoDir, targetDemoDir, { recursive: true });
+      await this.writeDemoHarness(targetDemoDir);
       result.filesCopied++;
-      this.logger.success(`  ✨ ${pkg}: synced docs/demo → apps/demos-data/${pkg}/raw (tag: ${tagName})`);
+      this.logger.success(
+        `  ✨ ${pkg}: synced docs/demo → packages/elements-react/${pkg}/docs/demo (tag: ${tagName})`
+      );
     }
+  }
+
+  private async writeDemoHarness(demoDir: string): Promise<void> {
+    const configPath = resolve(demoDir, 'config.js');
+    const sessionPath = resolve(demoDir, 'session.js');
+
+    if (!existsSync(configPath)) {
+      return;
+    }
+
+    const baseRequire = createRequire(import.meta.url);
+    const loadCjsModule = (filePath: string): unknown => {
+      const code = readFileSync(filePath, 'utf-8');
+      const module = { exports: {} as unknown };
+      const moduleDir = dirname(filePath);
+      const localRequire = (specifier: string) => {
+        if (specifier.startsWith('.')) {
+          const resolved = resolve(moduleDir, specifier);
+          const candidates = [resolved, `${resolved}.js`, `${resolved}.cjs`];
+          for (const candidate of candidates) {
+            if (existsSync(candidate)) {
+              return loadCjsModule(candidate);
+            }
+          }
+        }
+        return baseRequire(specifier);
+      };
+      const wrapper = `(function (exports, require, module, __filename, __dirname) {\n${code}\n})`;
+      const compiled = vm.runInThisContext(wrapper, { filename: filePath });
+      compiled(module.exports, localRequire, module, filePath, moduleDir);
+      return module.exports;
+    };
+    let config: { models?: unknown[] } | undefined;
+    let session: unknown | null = null;
+    try {
+      config = loadCjsModule(configPath) as { models?: unknown[] } | undefined;
+      if (existsSync(sessionPath)) {
+        session = loadCjsModule(sessionPath) as unknown;
+      }
+    } catch (error) {
+      this.logger.warn(
+        `  ⚠️  Failed to generate demo harness from ${configPath}: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return;
+    }
+
+    const configMjsPath = join(demoDir, 'config.mjs');
+    const sessionMjsPath = join(demoDir, 'session.mjs');
+    await writeFile(configMjsPath, `export default ${JSON.stringify(config ?? {}, null, 2)};\n`);
+    await writeFile(sessionMjsPath, `export default ${JSON.stringify(session ?? [], null, 2)};\n`);
+
+    const demoModule = generateDemoModule();
+    const demoHtml = generateDemoHtml();
+
+    await writeFile(join(demoDir, 'demo.mjs'), demoModule);
+    await writeFile(join(demoDir, 'index.html'), demoHtml);
   }
 
   private async applyEsmFilter(config: SyncConfig): Promise<void> {
@@ -284,12 +385,17 @@ export default class Sync extends Command {
       return;
     }
 
-    const report = await loadCompatibilityReport(config.compatibilityFile);
+    let report: CompatibilityReport | null = null;
+    try {
+      report = await loadCompatibilityReport(config.compatibilityFile);
+    } catch (error) {
+      this.logger.warn(`⚠️  ESM compatibility file not found at ${config.compatibilityFile}`);
+      this.logger.warn('   Run: bun cli upstream:analyze-esm to generate it');
+      this.logger.warn('   Proceeding without ESM filter...\n');
+      return;
+    }
 
     if (!report) {
-      this.logger.warn(`⚠️  ESM compatibility file not found at ${config.compatibilityFile}`);
-      this.logger.warn('   Run: bun run cli upstream:analyze-esm to generate it');
-      this.logger.warn('   Proceeding without ESM filter...\n');
       return;
     }
 
@@ -326,300 +432,60 @@ export default class Sync extends Command {
     }
   }
 
-  private async syncControllers(config: SyncConfig, result: SyncResult): Promise<void> {
-    this.logger.section('📦 Syncing controllers');
+  private async listElementPackages(config: SyncConfig): Promise<string[]> {
+    if (config.elements && config.elements.length > 0) {
+      return config.elements;
+    }
 
     const upstreamElementsDir = join(config.pieElements, 'packages');
-    const targetBaseDir = join(config.pieElementsNg, 'packages/elements-react');
-
-    const upstreamCommit = getCurrentCommit(config.pieElements);
-    const syncDate = new Date().toISOString().split('T')[0];
-
-    const packages = await this.readdir(upstreamElementsDir);
-
-    for (const pkg of packages) {
-      if (config.elements && !config.elements.includes(pkg)) {
-        continue;
-      }
-
-      // Check if controller exists upstream
-      const controllerPath = join(upstreamElementsDir, pkg, 'controller/src/index.js');
-      if (!existsSync(controllerPath)) {
-        if (config.verbose) {
-          this.logger.info(`  ⏭️  ${pkg}: No controller found`);
-        }
-        continue;
-      }
-
-      result.filesChecked++;
-
-      // Target: packages/elements-react/{element}/src/controller/index.ts
-      const targetDir = join(targetBaseDir, pkg, 'src/controller');
-      const targetPath = join(targetDir, 'index.ts');
-
-      // Clean target controller subtree first so removed upstream files don't linger
-      await this.cleanTargetDir(config, targetDir, `elements-react/${pkg}/src/controller`);
-
-      // Read source
-      const sourceContent = await readFile(controllerPath, 'utf-8');
-
-      // Convert JS to TS
-      const { code: converted } = convertJsToTs(sourceContent, {
-        sourcePath: `pie-elements/packages/${pkg}/controller/src/index.js`,
-        commit: upstreamCommit,
-        date: syncDate,
-      });
-
-      let elementChanged = false;
-
-      // Sync index.ts
-      const isNew = !existsSync(targetPath);
-      if (!isNew) {
-        const currentContent = await readFile(targetPath, 'utf-8');
-        if (currentContent === converted) {
-          result.filesSkipped++;
-          if (config.verbose) {
-            this.logger.info(`  ⏭️  ${pkg}: index.ts unchanged`);
-          }
-        } else {
-          result.filesUpdated++;
-          elementChanged = true;
-          if (!config.dryRun) {
-            await mkdir(dirname(targetPath), { recursive: true });
-            await writeFile(targetPath, converted, 'utf-8');
-          }
-        }
-      } else {
-        result.filesCopied++;
-        elementChanged = true;
-        if (!config.dryRun) {
-          await mkdir(dirname(targetPath), { recursive: true });
-          await writeFile(targetPath, converted, 'utf-8');
-        }
-      }
-
-      // Also sync related files (defaults.js, utils.js)
-      const relatedFiles = ['defaults.js', 'utils.js'];
-      for (const file of relatedFiles) {
-        const relatedPath = join(upstreamElementsDir, pkg, 'controller/src', file);
-        if (existsSync(relatedPath)) {
-          const relatedTarget = join(targetDir, file.replace('.js', '.ts'));
-          const relatedContent = await readFile(relatedPath, 'utf-8');
-          const { code: relatedConverted } = convertJsToTs(relatedContent, {
-            sourcePath: `pie-elements/packages/${pkg}/controller/src/${file}`,
-            commit: upstreamCommit,
-            date: syncDate,
-          });
-
-          const relatedIsNew = !existsSync(relatedTarget);
-          if (!relatedIsNew) {
-            const currentRelated = await readFile(relatedTarget, 'utf-8');
-            if (currentRelated === relatedConverted) {
-              result.filesSkipped++;
-              continue;
-            }
-            result.filesUpdated++;
-            elementChanged = true;
-          } else {
-            result.filesCopied++;
-            elementChanged = true;
-          }
-
-          if (!config.dryRun) {
-            await mkdir(dirname(relatedTarget), { recursive: true });
-            await writeFile(relatedTarget, relatedConverted, 'utf-8');
-          }
-        }
-      }
-
-      // Ensure package.json has ESM module support (even in controller-only sync)
-      let wrotePkgJson = false;
-      if (config.rewritePackageJson) {
-        const elementDir = join(targetBaseDir, pkg);
-        wrotePkgJson = await this.ensureElementPackageJson(config, pkg, elementDir);
-      }
-
-      if (elementChanged || wrotePkgJson) {
-        if (!config.dryRun) {
-          this.logger.success(`  🔄 ${pkg}: controller package updated`);
-        }
-        this.touchedElementPackages.add(pkg);
-      }
-    }
+    return await readdir(upstreamElementsDir);
   }
 
-  private async syncReactComponents(config: SyncConfig, result: SyncResult): Promise<void> {
-    this.logger.section('⚛️  Syncing React components');
-
-    const upstreamElementsDir = join(config.pieElements, 'packages');
-    const targetBaseDir = join(config.pieElementsNg, 'packages/elements-react');
-
-    const upstreamCommit = getCurrentCommit(config.pieElements);
-    const syncDate = new Date().toISOString().split('T')[0];
-
-    const packages = await this.readdir(upstreamElementsDir);
-
-    for (const pkg of packages) {
-      if (config.elements && !config.elements.includes(pkg)) {
-        continue;
-      }
-
-      // Check if React component exists upstream (src/ directory)
-      const componentSrcDir = join(upstreamElementsDir, pkg, 'src');
-      if (!existsSync(componentSrcDir)) {
-        if (config.verbose) {
-          this.logger.info(`  ⏭️  ${pkg}: No src/ directory found`);
-        }
-        continue;
-      }
-
-      // Target: packages/elements-react/{element}/src/
-      const targetDir = join(targetBaseDir, pkg);
-      const targetSrcDir = join(targetDir, 'src');
-
-      // Clean target src subtree first so removed upstream files don't linger
-      await this.cleanTargetDir(config, targetSrcDir, `elements-react/${pkg}/src`);
-
-      // Recursively sync all files from src/ directory
-      const beforeChanges = result.filesCopied + result.filesUpdated;
-      let elementFilesProcessed = await this.syncDirectory(
-        componentSrcDir,
-        targetSrcDir,
-        'src',
-        pkg,
-        config,
-        result,
-        upstreamCommit,
-        syncDate
-      );
-
-      // Also sync configure/src/ if it exists
-      const configureSrcDir = join(upstreamElementsDir, pkg, 'configure/src');
-      if (existsSync(configureSrcDir)) {
-        const targetConfigureDir = join(targetDir, 'src/configure');
-        const configureFilesProcessed = await this.syncDirectory(
-          configureSrcDir,
-          targetConfigureDir,
-          'configure/src',
-          pkg,
-          config,
-          result,
-          upstreamCommit,
-          syncDate
-        );
-        elementFilesProcessed += configureFilesProcessed;
-      }
-      const afterChanges = result.filesCopied + result.filesUpdated;
-      const elementChanged = afterChanges > beforeChanges;
-
-      if (elementFilesProcessed > 0) {
-        const statusEmoji = config.dryRun ? '🔍' : '✨';
-        this.logger.success(
-          `  ${statusEmoji} ${pkg}: ${elementFilesProcessed} file(s) ${config.dryRun ? 'would be synced' : 'synced'}`
-        );
-      }
-
-      // Ensure package.json has ESM module support and expected exports
-      let wrotePkgJson = false;
-      if (config.rewritePackageJson) {
-        const elementDir = join(targetBaseDir, pkg);
-        wrotePkgJson = await this.ensureElementPackageJson(config, pkg, elementDir);
-      }
-
-      if (elementChanged || wrotePkgJson) {
-        this.touchedElementPackages.add(pkg);
-      }
-    }
-  }
-
-  private async syncPieLibPackages(config: SyncConfig, result: SyncResult): Promise<void> {
-    this.logger.section('📚 Syncing @pie-lib packages');
-
-    const upstreamLibDir = join(config.pieLib, 'packages');
-    const targetBaseDir = join(config.pieElementsNg, 'packages/lib-react');
-
-    // Verify pie-lib exists
-    if (!existsSync(upstreamLibDir)) {
-      result.errors.push(`pie-lib packages not found at ${upstreamLibDir}`);
-      return;
-    }
-
-    const upstreamCommit = getCurrentCommit(config.pieLib);
-    const syncDate = new Date().toISOString().split('T')[0];
-
-    // Get list of packages to sync
-    const allPackages = await this.readdir(upstreamLibDir);
-    const packagesToSync = config.pieLibPackages || allPackages;
-
-    for (const pkg of packagesToSync) {
-      // Skip if package doesn't exist
-      const pkgSrcDir = join(upstreamLibDir, pkg, 'src');
-      if (!existsSync(pkgSrcDir)) {
-        if (config.verbose) {
-          this.logger.info(`  ⏭️  ${pkg}: No src/ directory found`);
-        }
-        continue;
-      }
-
-      // Target: packages/lib-react/{package}/src/
-      const targetDir = join(targetBaseDir, pkg);
-      const targetSrcDir = join(targetDir, 'src');
-
-      // Clean target src subtree first so removed upstream files don't linger
-      await this.cleanTargetDir(config, targetSrcDir, `lib-react/${pkg}/src`);
-
-      // Recursively sync all files from src/ directory
-      const beforeChanges = result.filesCopied + result.filesUpdated;
-      const filesProcessed = await this.syncDirectory(
-        pkgSrcDir,
-        targetSrcDir,
-        'src',
-        pkg,
-        config,
-        result,
-        upstreamCommit,
-        syncDate
-      );
-      const afterChanges = result.filesCopied + result.filesUpdated;
-      const libChanged = afterChanges > beforeChanges;
-
-      if (filesProcessed > 0) {
-        const statusEmoji = config.dryRun ? '🔍' : '✨';
-        this.logger.success(
-          `  ${statusEmoji} ${pkg}: ${filesProcessed} file(s) ${config.dryRun ? 'would be synced' : 'synced'}`
-        );
-      }
-
-      // Ensure package.json has ESM module support and expected exports
-      let wrotePkgJson = false;
-      if (config.rewritePackageJson) {
-        wrotePkgJson = await this.ensurePieLibPackageJson(config, pkg, targetDir);
-      }
-
-      if (libChanged || wrotePkgJson) {
-        this.touchedPieLibPackages.add(pkg);
-      }
-    }
-  }
-
-  private existsAny(paths: string[]): boolean {
-    return paths.some((p) => existsSync(p));
-  }
-
-  private async cleanTargetDir(
+  private async collectPieLibDepsFromElements(
     config: SyncConfig,
-    targetDir: string,
-    label: string
-  ): Promise<void> {
-    if (!existsSync(targetDir)) return;
+    elements: string[]
+  ): Promise<string[]> {
+    const deps = new Set<string>();
 
-    if (config.dryRun) {
-      if (config.verbose) this.logger.info(`  🧹 Would clean ${label}`);
-      return;
+    for (const element of elements) {
+      const pkgPath = join(config.pieElements, 'packages', element, 'package.json');
+      if (!existsSync(pkgPath)) {
+        continue;
+      }
+      const pkg = (await loadPackageJson(pkgPath)) as PackageJson | null;
+      const pkgDeps = getAllDeps(pkg);
+      for (const name of Object.keys(pkgDeps)) {
+        if (name.startsWith('@pie-lib/')) {
+          deps.add(name.replace('@pie-lib/', ''));
+        }
+      }
     }
 
-    await fsRm(targetDir, { recursive: true, force: true });
-    if (config.verbose) this.logger.info(`  🧹 Cleaned ${label}`);
+    return await this.expandPieLibDeps(config, Array.from(deps));
+  }
+
+  private async expandPieLibDeps(config: SyncConfig, initial: string[]): Promise<string[]> {
+    const seen = new Set<string>();
+    const queue = [...initial];
+
+    while (queue.length > 0) {
+      const pkg = queue.shift();
+      if (!pkg || seen.has(pkg)) continue;
+      seen.add(pkg);
+
+      const pkgPath = join(config.pieLib, 'packages', pkg, 'package.json');
+      if (!existsSync(pkgPath)) continue;
+      const pkgJson = (await loadPackageJson(pkgPath)) as PackageJson | null;
+      const deps = getAllDeps(pkgJson);
+      for (const name of Object.keys(deps)) {
+        if (name.startsWith('@pie-lib/')) {
+          const depName = name.replace('@pie-lib/', '');
+          if (!seen.has(depName)) queue.push(depName);
+        }
+      }
+    }
+
+    return Array.from(seen).sort();
   }
 
   private async cleanStaleTargets(config: SyncConfig): Promise<void> {
@@ -650,7 +516,7 @@ export default class Sync extends Command {
     expectedNamePrefix: string,
     labelPrefix: string
   ): Promise<void> {
-    const entries = await this.readdir(baseDir);
+    const entries = await readdir(baseDir);
     for (const entry of entries) {
       const entryPath = join(baseDir, entry);
       const stat = await fsStat(entryPath).catch(() => null);
@@ -674,250 +540,38 @@ export default class Sync extends Command {
     }
   }
 
-  private async ensureElementPackageJson(
-    config: SyncConfig,
-    elementName: string,
-    elementDir: string
-  ): Promise<boolean> {
-    // Only operate when the element directory exists
-    if (!existsSync(elementDir)) {
-      return false;
-    }
-
-    const pkgPath = join(elementDir, 'package.json');
-    const upstreamPkgPath = join(config.pieElements, 'packages', elementName, 'package.json');
-
-    let pkg: PackageJson | null = null;
-    if (existsSync(pkgPath)) {
-      pkg = await loadPackageJson(pkgPath).catch(() => null);
-    }
-
-    const upstreamPkg = existsSync(upstreamPkgPath)
-      ? await loadPackageJson(upstreamPkgPath).catch(() => null)
-      : null;
-
-    // If missing, generate a minimal package.json based on upstream deps
-    if (!pkg) {
-      const deps: Record<string, string> = {};
-      const upstreamDeps = (upstreamPkg?.dependencies as Record<string, string> | undefined) ?? {};
-
-      for (const [name] of Object.entries(upstreamDeps)) {
-        if (name.startsWith('@pie-lib/')) {
-          deps[name] = 'workspace:*';
-        } else if (name !== 'react' && name !== 'react-dom') {
-          deps[name] = '*';
-        }
-      }
-
-      pkg = {
-        name: `@pie-element/${elementName}`,
-        private: true,
-        version: '0.1.0',
-        description:
-          (upstreamPkg?.description as string | undefined) ??
-          `React implementation of ${elementName} element synced from pie-elements`,
-        dependencies: deps,
-        peerDependencies: {
-          react: '^18.0.0',
-          'react-dom': '^18.0.0',
-        },
-      };
-    }
-
-    // Compute expected exports based on present source entrypoints
-    const exportsObj: Record<string, unknown> = {
-      ...(typeof pkg.exports === 'object' && pkg.exports
-        ? (pkg.exports as Record<string, unknown>)
-        : {}),
-    };
-
-    exportsObj['.'] = {
-      types: './dist/index.d.ts',
-      default: './dist/index.js',
-    };
-    exportsObj['./src/*'] = './src/*';
-
-    const hasDelivery = this.existsAny([
-      join(elementDir, 'src/delivery/index.ts'),
-      join(elementDir, 'src/delivery/index.tsx'),
-      join(elementDir, 'src/delivery/index.js'),
-      join(elementDir, 'src/delivery/index.jsx'),
-    ]);
-    if (hasDelivery) {
-      exportsObj['./delivery'] = {
-        types: './dist/delivery/index.d.ts',
-        default: './dist/delivery/index.js',
-      };
-    }
-
-    const hasAuthoring = this.existsAny([
-      join(elementDir, 'src/authoring/index.ts'),
-      join(elementDir, 'src/authoring/index.tsx'),
-      join(elementDir, 'src/authoring/index.js'),
-      join(elementDir, 'src/authoring/index.jsx'),
-    ]);
-    if (hasAuthoring) {
-      exportsObj['./authoring'] = {
-        types: './dist/authoring/index.d.ts',
-        default: './dist/authoring/index.js',
-      };
-    }
-
-    const hasController = this.existsAny([
-      join(elementDir, 'src/controller/index.ts'),
-      join(elementDir, 'src/controller/index.tsx'),
-      join(elementDir, 'src/controller/index.js'),
-      join(elementDir, 'src/controller/index.jsx'),
-    ]);
-    if (hasController) {
-      exportsObj['./controller'] = {
-        types: './dist/controller/index.d.ts',
-        default: './dist/controller/index.js',
-      };
-    }
-
-    const hasConfigure = this.existsAny([
-      join(elementDir, 'src/configure/index.ts'),
-      join(elementDir, 'src/configure/index.tsx'),
-      join(elementDir, 'src/configure/index.js'),
-      join(elementDir, 'src/configure/index.jsx'),
-    ]);
-    if (hasConfigure) {
-      exportsObj['./configure'] = {
-        types: './dist/configure/index.d.ts',
-        default: './dist/configure/index.js',
-      };
-    }
-
-    pkg.name = `@pie-element/${elementName}`;
-    pkg.type = 'module';
-    pkg.main = './dist/index.js';
-    pkg.types = './dist/index.d.ts';
-    pkg.exports = exportsObj;
-
-    // Ensure files includes dist/src (without removing existing entries)
-    const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
-    const normalizedFiles = new Set<string>(
-      files.filter((v): v is string => typeof v === 'string')
-    );
-    normalizedFiles.add('dist');
-    normalizedFiles.add('src');
-    pkg.files = Array.from(normalizedFiles).sort();
-
-    // Recommend tree-shaking by default unless explicitly set otherwise
-    if (typeof pkg.sideEffects === 'undefined') {
-      pkg.sideEffects = false;
-    }
-
-    if (config.dryRun) {
-      this.logger.info(
-        `  🔍 ${elementName}: Would ${existsSync(pkgPath) ? 'update' : 'create'} package.json (ESM)`
-      );
-      return false;
-    }
-
-    const nextContent = `${JSON.stringify(pkg, null, 2)}\n`;
-    const currentContent = existsSync(pkgPath)
-      ? await readFile(pkgPath, 'utf-8').catch(() => null)
-      : null;
-    if (currentContent === nextContent) {
-      return false;
-    }
-
-    await writePackageJson(pkgPath, pkg);
-    return true;
-  }
-
-  private async ensurePieLibPackageJson(
-    config: SyncConfig,
-    pkgName: string,
-    pkgDir: string
-  ): Promise<boolean> {
-    if (!existsSync(pkgDir)) {
-      return false;
-    }
-
-    const pkgPath = join(pkgDir, 'package.json');
-    const upstreamPkgPath = join(config.pieLib, 'packages', pkgName, 'package.json');
-
-    let pkg: PackageJson | null = null;
-    if (existsSync(pkgPath)) {
-      pkg = await loadPackageJson(pkgPath).catch(() => null);
-    }
-
-    const upstreamPkg = existsSync(upstreamPkgPath)
-      ? await loadPackageJson(upstreamPkgPath).catch(() => null)
-      : null;
-
-    if (!pkg) {
-      // Prefer upstream dependency versions for libs; map internal @pie-lib/* to workspace:*
-      const deps: Record<string, string> = {};
-      const upstreamDeps = (upstreamPkg?.dependencies as Record<string, string> | undefined) ?? {};
-      for (const [name, version] of Object.entries(upstreamDeps)) {
-        deps[name] = name.startsWith('@pie-lib/') ? 'workspace:*' : version;
-      }
-
-      pkg = {
-        name: `@pie-lib/${pkgName}`,
-        private: true,
-        version: '0.1.0',
-        description:
-          (upstreamPkg?.description as string | undefined) ??
-          `React implementation of @pie-lib/${pkgName} synced from pie-lib`,
-        dependencies: deps,
-      };
-    }
-
-    const exportsObj: Record<string, unknown> = {
-      ...(typeof pkg.exports === 'object' && pkg.exports
-        ? (pkg.exports as Record<string, unknown>)
-        : {}),
-    };
-
-    exportsObj['.'] = {
-      types: './dist/index.d.ts',
-      default: './dist/index.js',
-    };
-    exportsObj['./src/*'] = './src/*';
-
-    pkg.name = `@pie-lib/${pkgName}`;
-    pkg.type = 'module';
-    pkg.main = './dist/index.js';
-    pkg.types = './dist/index.d.ts';
-    pkg.exports = exportsObj;
-
-    const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
-    const normalizedFiles = new Set<string>(
-      files.filter((v): v is string => typeof v === 'string')
-    );
-    normalizedFiles.add('dist');
-    normalizedFiles.add('src');
-    pkg.files = Array.from(normalizedFiles).sort();
-
-    if (typeof pkg.sideEffects === 'undefined') {
-      pkg.sideEffects = false;
-    }
-
-    if (config.dryRun) {
-      this.logger.info(
-        `  🔍 ${pkgName}: Would ${existsSync(pkgPath) ? 'update' : 'create'} package.json (ESM)`
-      );
-      return false;
-    }
-
-    const nextContent = `${JSON.stringify(pkg, null, 2)}\n`;
-    const currentContent = existsSync(pkgPath)
-      ? await readFile(pkgPath, 'utf-8').catch(() => null)
-      : null;
-    if (currentContent === nextContent) {
-      return false;
-    }
-
-    await writePackageJson(pkgPath, pkg);
-    return true;
+  private async checkViteAvailable(config: SyncConfig): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+      const child = spawn('bun', ['x', 'vite', '--version'], {
+        cwd: config.pieElementsNg,
+        stdio: 'pipe',
+        env: process.env,
+      });
+      let output = '';
+      child.stdout?.on('data', (data) => {
+        output += data.toString();
+      });
+      child.stderr?.on('data', (data) => {
+        output += data.toString();
+      });
+      child.on('close', (code) => {
+        resolve(code === 0);
+      });
+      child.on('error', () => {
+        resolve(false);
+      });
+    });
   }
 
   private async buildTouchedPackages(config: SyncConfig, result: SyncResult): Promise<void> {
+    const rootPkgPath = join(config.pieElementsNg, 'package.json');
+    const rootPkg = (await loadPackageJson(rootPkgPath)) as PackageJson | null;
+    const workspaces = Array.isArray(rootPkg?.workspaces) ? (rootPkg?.workspaces as string[]) : [];
+    const hasElementsReactWorkspace = workspaces.some((ws) =>
+      ws.startsWith('packages/elements-react')
+    );
+    const hasLibReactWorkspace = workspaces.some((ws) => ws.startsWith('packages/lib-react'));
+
     const elementFilters = Array.from(this.touchedElementPackages)
       .sort()
       .map((el) => `--filter=@pie-element/${el}`);
@@ -927,10 +581,31 @@ export default class Sync extends Command {
 
     const filters = [...elementFilters, ...pieLibFilters];
 
+    if (
+      (elementFilters.length > 0 && !hasElementsReactWorkspace) ||
+      (pieLibFilters.length > 0 && !hasLibReactWorkspace)
+    ) {
+      this.logger.info(
+        '🏗️  Build: Skipped (synced packages are not part of the current workspaces)'
+      );
+      this.logger.info('   Hint: add packages/elements-react/* and/or packages/lib-react/* to');
+      this.logger.info('   root workspaces if you want turbo to build them.');
+      return;
+    }
+
     if (filters.length === 0) {
       if (config.verbose) {
         this.logger.info('🏗️  Build: Skipped (no touched packages detected)');
       }
+      return;
+    }
+
+    // Check if vite is available before attempting to build
+    const viteAvailable = await this.checkViteAvailable(config);
+    if (!viteAvailable) {
+      this.logger.warn(
+        '🏗️  Build: Skipped (vite not found). Run "bun install" to install dependencies, then "bun run build" manually.'
+      );
       return;
     }
 
@@ -953,233 +628,12 @@ export default class Sync extends Command {
     });
 
     if (exitCode !== 0) {
-      result.errors.push(
-        `Build failed (exit code ${exitCode}). Re-run upstream:sync with --skip-build to skip.`
-      );
-    }
-  }
-
-  private async syncDirectory(
-    sourceDir: string,
-    targetDir: string,
-    relativePath: string,
-    pkg: string,
-    config: SyncConfig,
-    result: SyncResult,
-    upstreamCommit: string,
-    syncDate: string
-  ): Promise<number> {
-    let filesProcessed = 0;
-    const defaultExportFiles = new Set<string>(); // Track files with default exports
-
-    const items = await this.readdir(sourceDir);
-
-    for (const item of items) {
-      const srcPath = join(sourceDir, item);
-      const stat = await fsStat(srcPath);
-
-      if (stat.isDirectory()) {
-        // Skip __tests__, __mocks__, etc.
-        if (item.startsWith('__')) {
-          continue;
-        }
-        // Recursively sync subdirectories
-        const subFilesProcessed = await this.syncDirectory(
-          srcPath,
-          join(targetDir, item),
-          join(relativePath, item),
-          pkg,
-          config,
-          result,
-          upstreamCommit,
-          syncDate
-        );
-        filesProcessed += subFilesProcessed;
-        continue;
-      }
-
-      // Only process .js and .jsx files
-      if (!item.endsWith('.js') && !item.endsWith('.jsx')) {
-        continue;
-      }
-
-      result.filesChecked++;
-      filesProcessed++;
-
-      // Convert .js → .ts and .jsx → .tsx
-      const targetFile = item.replace(/\.jsx?$/, item.endsWith('.jsx') ? '.tsx' : '.ts');
-      const targetPath = join(targetDir, targetFile);
-
-      // Read source
-      const sourceContent = await readFile(srcPath, 'utf-8');
-
-      // Convert based on file extension
-      const conversionResult = item.endsWith('.jsx')
-        ? convertJsxToTsx(sourceContent, {
-            sourcePath: `pie-elements/packages/${pkg}/${relativePath}/${item}`,
-            commit: upstreamCommit,
-            date: syncDate,
-          })
-        : convertJsToTs(sourceContent, {
-            sourcePath: `pie-elements/packages/${pkg}/${relativePath}/${item}`,
-            commit: upstreamCommit,
-            date: syncDate,
-          });
-
-      const converted = conversionResult.code;
-
-      // Track files that export default objects (for import fixing later)
-      if (conversionResult.hasDefaultObjectExport) {
-        // Store the file name without extension for import matching
-        const fileNameWithoutExt = targetFile.replace(/\.(ts|tsx)$/, '');
-        defaultExportFiles.add(fileNameWithoutExt);
-      }
-
-      // Check if different
-      const isNew = !existsSync(targetPath);
-      if (!isNew) {
-        const currentContent = await readFile(targetPath, 'utf-8');
-        if (currentContent === converted) {
-          result.filesSkipped++;
-          continue;
-        }
-        result.filesUpdated++;
+      const errorMsg = `Build failed (exit code ${exitCode}). This may be due to missing dependencies. Run 'bun install' to install new devDependencies, then 'bun run build' manually.`;
+      if (config.skipBuild) {
+        this.logger.warn(`  ⚠️  ${errorMsg}`);
       } else {
-        result.filesCopied++;
+        result.errors.push(errorMsg);
       }
-
-      // Write
-      if (!config.dryRun) {
-        await mkdir(dirname(targetPath), { recursive: true });
-        await writeFile(targetPath, converted, 'utf-8');
-      }
-    }
-
-    // After all files are synced, fix import statements in consuming files
-    if (!config.dryRun && defaultExportFiles.size > 0) {
-      const targetDirItems = await this.readdir(targetDir);
-      for (const item of targetDirItems) {
-        const itemPath = join(targetDir, item);
-        const stat = await fsStat(itemPath);
-        if (stat.isFile() && (item.endsWith('.tsx') || item.endsWith('.ts'))) {
-          await this.fixImportsInFile(itemPath, defaultExportFiles);
-        }
-      }
-    }
-
-    return filesProcessed;
-  }
-
-  private async fixImportsInFile(
-    filePath: string,
-    defaultExportFiles: Set<string>
-  ): Promise<boolean> {
-    let content = await readFile(filePath, 'utf-8');
-    let modified = false;
-
-    // Find all import statements
-    const importRegex = /import\s+{([^}]+)}\s+from\s+['"](.+?)['"]/g;
-    const matches = content.matchAll(importRegex);
-    const replacements: Array<{ from: string; to: string; imports: string[]; moduleName: string }> =
-      [];
-
-    for (const match of matches) {
-      const imports = match[1].split(',').map((s) => s.trim());
-      const importPath = match[2];
-
-      // Check if this import is from a file that exports default object
-      // Normalize the import path (remove ./ and extension if present)
-      const normalizedPath = importPath.replace(/^\.\//, '').replace(/\.(ts|tsx|js|jsx)$/, '');
-
-      if (defaultExportFiles.has(normalizedPath)) {
-        // Extract module name from path (e.g., './icons' -> 'icons')
-        const moduleName =
-          importPath
-            .split('/')
-            .pop()
-            ?.replace(/\.(ts|tsx|js|jsx)$/, '') || 'module';
-
-        replacements.push({
-          from: match[0],
-          to: `import ${moduleName} from '${importPath}'`,
-          imports,
-          moduleName,
-        });
-      }
-    }
-
-    // Apply replacements
-    if (replacements.length > 0) {
-      for (const { from, to, imports, moduleName } of replacements) {
-        // Replace the import statement
-        content = content.replace(from, to);
-        modified = true;
-
-        // Replace usage of imported items (e.g., faCorrect -> icons.faCorrect)
-        for (const importName of imports) {
-          // Match word boundaries to avoid partial replacements
-          // Don't replace in import statements or property definitions
-          const usageRegex = new RegExp(`\\b${importName}\\b(?!:)`, 'g');
-          content = content.replace(usageRegex, (match, offset) => {
-            // Check if this is in an import statement (skip those)
-            const beforeMatch = content.substring(0, offset);
-            const lastImportIndex = beforeMatch.lastIndexOf('import');
-            const lastSemicolon = beforeMatch.lastIndexOf(';');
-            const lastNewline = beforeMatch.lastIndexOf('\n');
-
-            // If we're inside an import statement, don't replace
-            if (lastImportIndex > Math.max(lastSemicolon, lastNewline)) {
-              return match;
-            }
-
-            return `${moduleName}.${importName}`;
-          });
-        }
-      }
-
-      await writeFile(filePath, content, 'utf-8');
-    }
-
-    return modified;
-  }
-
-  private async readdir(path: string): Promise<string[]> {
-    try {
-      return await fsReaddir(path);
-    } catch {
-      return [];
-    }
-  }
-
-  private generateReport(result: SyncResult): void {
-    this.log(`\n${'='.repeat(60)}`);
-    this.log('📊 SYNC REPORT');
-    this.log('='.repeat(60));
-    this.log(`Files checked:  ${result.filesChecked}`);
-    this.log(`Files created:  ${result.filesCopied}`);
-    this.log(`Files updated:  ${result.filesUpdated}`);
-    this.log(`Files skipped:  ${result.filesSkipped}`);
-    this.log(`Errors:         ${result.errors.length}`);
-    this.log(`Warnings:       ${result.warnings.length}`);
-
-    if (result.errors.length > 0) {
-      this.log('\n❌ ERRORS:');
-      for (const err of result.errors) this.log(`  - ${err}`);
-    }
-
-    if (result.warnings.length > 0) {
-      this.log('\n⚠️  WARNINGS:');
-      for (const warn of result.warnings) this.log(`  - ${warn}`);
-    }
-
-    this.log(`${'='.repeat(60)}\n`);
-
-    if (result.filesCopied > 0 || result.filesUpdated > 0) {
-      this.logger.section('💡 Next steps');
-      this.logger.info('  1. Review changes: git diff packages/elements-react/');
-      this.logger.info('  2. Add proper TypeScript types to synced files');
-      this.logger.info('  3. Run tests: bun test');
-      this.logger.info('  4. Update tracking: bun run upstream:track record\n');
     }
   }
 }

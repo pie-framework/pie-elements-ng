@@ -20,7 +20,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-shared/types": "workspace:*",
+    "@pie-elements-ng/shared-types": "workspace:*",
     "@pie-elements-ng/lib-ui": "workspace:*"
   },
   "devDependencies": {

@@ -85,11 +85,15 @@ export interface CompatibilityReport {
   esmRuntimeCdnBaseUrl?: string;
   esmRuntimeValidation?: Record<string, EsmRuntimeValidationResult>;
 
+  // Student UI only (elements where student UI is ESM-ready but authoring isn't)
+  studentUIOnly?: string[];
+
   lastAnalyzed: string;
   summary: {
     totalElements: number;
     compatibleElements: number;
     blockedElements: number;
+    studentUIOnlyElements?: number;
     esmPlayerReady: number;
     esmRuntimeReady?: number;
     totalPieLibPackages: number;
@@ -101,7 +105,22 @@ export interface ElementDetail {
   compatible: boolean;
   directDeps: string[];
   pieLibDeps: string[];
+  pieElementDeps: string[];
   blockers: string[];
+
+  // Separate analysis for student UI vs authoring
+  studentUI?: {
+    compatible: boolean;
+    blockers: string[];
+  };
+  configure?: {
+    compatible: boolean;
+    blockers: string[];
+  };
+  controller?: {
+    compatible: boolean;
+    blockers: string[];
+  };
 }
 
 export interface PieLibDetail {
@@ -136,6 +155,20 @@ export function getElementBlockers(element: string, report: CompatibilityReport)
  */
 export function isElementEsmPlayerReady(element: string, report: CompatibilityReport): boolean {
   return report.esmPlayerReady.includes(element);
+}
+
+/**
+ * Check if an element has student UI ready (even if configure/controller aren't)
+ */
+export function isElementStudentUIReady(element: string, report: CompatibilityReport): boolean {
+  const detail = report.elementDetails[element];
+  if (!detail) return false;
+
+  // If fully compatible, student UI is ready
+  if (detail.compatible) return true;
+
+  // Check if student UI is explicitly marked as compatible
+  return detail.studentUI?.compatible === true;
 }
 
 /**

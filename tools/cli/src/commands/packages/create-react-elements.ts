@@ -183,7 +183,7 @@ export default class CreateReactElements extends Command {
     // Add dependencies (use * for external deps, they're in root package.json)
     for (const dep of deps) {
       // Use workspace protocol for internal packages
-      if (dep.startsWith('@pie-elements-ng/') || dep.startsWith('@pie-shared/')) {
+      if (dep.startsWith('@pie-elements-ng/')) {
         dependencies[dep] = 'workspace:*';
       } else {
         dependencies[dep] = '*';

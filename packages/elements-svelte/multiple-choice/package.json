@@ -31,10 +31,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-shared/types": "workspace:*",
-    "@pie-shared/utils": "workspace:*",
+    "@pie-elements-ng/shared-types": "workspace:*",
+    "@pie-elements-ng/shared-utils": "workspace:*",
     "@pie-elements-ng/lib-ui": "workspace:*",
-    "@pie-framework/pie-player-events": "*"
+    "@pie-elements-ng/shared-player-events": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.4",

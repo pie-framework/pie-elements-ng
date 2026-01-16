@@ -5,7 +5,12 @@
  * Provides video/audio playback with optional interaction tracking
  */
 
-import type { PieEnvironment, PieEvaluation, PieModel, PieSession } from '@pie-shared/types';
+import type {
+  PieEnvironment,
+  PieEvaluation,
+  PieModel,
+  PieSession,
+} from '@pie-elements-ng/shared-types';
 
 /**
  * Media type

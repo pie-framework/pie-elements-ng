@@ -23,6 +23,7 @@ coverage/
 .playwright/
 test-results/
 playwright-report/
+tests/e2e/.generated/
 
 # Environment
 .env

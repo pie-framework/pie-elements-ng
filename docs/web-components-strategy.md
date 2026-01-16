@@ -6,6 +6,7 @@
 ## Overview
 
 This document outlines the strategy for providing Web Components as the primary distribution format for PIE elements, enabling framework-agnostic consumption.
+In practice, most consumers will load elements through a PIE player, which is responsible for wiring models, sessions, and player-specific lifecycle behaviors.
 
 ## The Problem
 
@@ -24,11 +25,19 @@ PIE elements are consumed by diverse applications using different frameworks (Re
 <pie-multiple-choice id="q1"></pie-multiple-choice>
 
 <script type="module">
-  import '@pie-element/multiple-choice';
+  import '@pie-elements-ng/multiple-choice';
 
   const el = document.getElementById('q1');
-  el.model = { prompt: 'What is 2 + 2?', choices: [...] };
-  el.addEventListener('session-change', (e) => {
+  el.model = {
+    prompt: 'What is 2 + 2?',
+    choiceMode: 'radio',
+    choices: [
+      { id: 'a', label: '3' },
+      { id: 'b', label: '4' }
+    ]
+  };
+
+  el.addEventListener('session-changed', (e) => {
     console.log('Answer:', e.detail.session);
   });
 </script>
@@ -37,15 +46,19 @@ PIE elements are consumed by diverse applications using different frameworks (Re
 ## Benefits
 
 ### Framework Independence
+
 Elements work in React, Vue, Angular, Svelte, or vanilla JS without modification.
 
 ### Smaller Bundles
+
 Svelte compiles to native Web Components with minimal overhead (~5KB) vs React wrappers (~40KB+).
 
 ### Future-Proof
+
 Standard browser APIs won't break with framework version changes.
 
 ### Gradual Adoption
+
 Consumers can migrate element-by-element, mixing implementations during transition.
 
 ## Implementation Approach
@@ -55,12 +68,7 @@ Consumers can migrate element-by-element, mixing implementations during transiti
 Svelte 5 has built-in Web Component support:
 
 ```svelte
-<svelte:options
-  customElement={{
-    tag: 'pie-multiple-choice',
-    shadow: 'none'
-  }}
-/>
+<svelte:options customElement="pie-multiple-choice" />
 ```
 
 - No wrapper needed
@@ -96,18 +104,23 @@ customElements.define('pie-multiple-choice', PieMultipleChoiceElement);
 ## Key Design Decisions
 
 ### Light DOM (No Shadow DOM)
+
 PIE elements use Light DOM to inherit host application styles and support theming.
 
 ### Property-Based API
+
 Complex data passed via JavaScript properties, not HTML attributes:
+
 ```javascript
 element.model = { /* complex object */ };  // ✅
 ```
 
 ### Standard Events
+
 Use CustomEvents for all element output:
+
 ```javascript
-element.dispatchEvent(new CustomEvent('session-change', {
+element.dispatchEvent(new CustomEvent('session-changed', {
   detail: { session },
   bubbles: true
 }));
@@ -115,7 +128,7 @@ element.dispatchEvent(new CustomEvent('session-change', {
 
 ## Package Structure
 
-```
+```text
 packages/
 ├── elements-svelte/               # Svelte element implementations
 │   ├── media/
@@ -126,8 +139,6 @@ packages/
 │   ├── hotspot/
 │   ├── multiple-choice/
 │   └── number-line/
-├── elements-wc/                   # Web Component wrappers
-│   └── multiple-choice/
 ├── lib-svelte/                    # Shared Svelte libraries
 ├── lib-react/                     # Shared React libraries
 ├── shared/                        # Shared utilities
@@ -137,12 +148,14 @@ packages/
 ## Trade-offs
 
 ### Advantages
+
 - Framework agnostic
 - Smaller bundles (Svelte)
 - Standard APIs
 - Better tree-shaking
 
 ### Challenges
+
 - SSR requires special handling
 - Property hydration in frameworks
 - Event handling differs by framework
@@ -152,6 +165,7 @@ packages/
 
 **Current:** Proposed strategy
 **Next Steps:**
+
 1. Build proof-of-concept with 1-2 elements
 2. Test integration in major frameworks
 3. Gather feedback from consumers
@@ -161,7 +175,7 @@ packages/
 
 - [Svelte Custom Elements](https://svelte.dev/docs/custom-elements-api)
 - [Web Components MDN](https://developer.mozilla.org/en-US/docs/Web/Web_Components)
-- [INTEGRATION.md](./INTEGRATION.md) - Framework integration examples
+- Framework integration examples live in the main docs and per-package demos.
 
 ---
 

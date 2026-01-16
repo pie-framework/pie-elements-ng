@@ -395,8 +395,8 @@ class ESMPlayerTestApp {
       const config = this.buildPlayerConfig(this.state.currentItem);
 
       // Check if all elements are local (no version specifier means local)
-      // Local: "@pie-wc/multiple-choice" (no @version)
-      // NPM: "@pie-wc/multiple-choice@1.0.0" (has @version)
+      // Local: "@pie-element/multiple-choice" (no @version)
+      // NPM: "@pie-element/multiple-choice@1.0.0" (has @version)
       const allElementsLocal = Object.values(config.elements).every((pkg) => {
         const parts = pkg.split('@');
         // If it's @scope/name format, it will have 3 parts when split by @

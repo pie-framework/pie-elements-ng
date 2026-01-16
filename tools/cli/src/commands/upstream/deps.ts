@@ -36,8 +36,8 @@ const TRACKED_DEPS = [
   '@pie-framework/pie-player-events',
   '@pie-framework/pie-configure-events',
 
-  // Utilities
-  'lodash',
+  // Utilities (note: lodash is replaced with lodash-es during sync)
+  'lodash-es',
   'uuid',
 ];
 

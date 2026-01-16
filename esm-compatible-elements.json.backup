@@ -1,0 +1,2587 @@
+{
+  "elements": [
+    "drawing-response",
+    "ebsr",
+    "hotspot",
+    "image-cloze-association",
+    "likert",
+    "match",
+    "match-list",
+    "math-inline",
+    "matrix",
+    "multi-trait-rubric",
+    "multiple-choice",
+    "number-line",
+    "passage",
+    "placement-ordering",
+    "rubric",
+    "select-text"
+  ],
+  "pieLibPackages": [
+    "math-rendering",
+    "render-ui",
+    "translator",
+    "correct-answer-toggle",
+    "test-utils",
+    "drag",
+    "math-input",
+    "math-toolbar",
+    "icons",
+    "text-select",
+    "controller-utils"
+  ],
+  "blockedElements": {
+    "categorize": [
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "charting": [
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "complex-rubric": [
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/rubric -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "drag-in-the-blank": [
+      "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "explicit-constructed-response": [
+      "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "extended-text-entry": [
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "fraction-model": [
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "graphing": [
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "graphing-solution-set": [
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "inline-dropdown": [
+      "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ],
+    "math-templated": [
+      "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+      "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+    ]
+  },
+  "esmPlayerReady": [],
+  "esmValidation": {
+    "drawing-response": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "ebsr": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": true,
+        "hasMainExport": true,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": true,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
+      "warnings": [
+        "Missing \"./controller\" export - ESM player needs controller subpath",
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "hotspot": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "image-cloze-association": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "likert": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "match": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "match-list": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "math-inline": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": true,
+        "hasMainExport": true,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": true,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
+      "warnings": [
+        "Missing \"./controller\" export - ESM player needs controller subpath",
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "matrix": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "multi-trait-rubric": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": true,
+        "hasMainExport": true,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": true,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
+      "warnings": [
+        "Missing \"./controller\" export - ESM player needs controller subpath",
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "multiple-choice": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": true,
+        "hasMainExport": true,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": true,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
+      "warnings": [
+        "Missing \"./controller\" export - ESM player needs controller subpath",
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "number-line": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "passage": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": true,
+        "hasMainExport": true,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": true,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
+      "warnings": [
+        "Missing \"./controller\" export - ESM player needs controller subpath",
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "placement-ordering": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": false,
+        "hasMainExport": false,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": false,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json",
+        "Missing \"exports\" field in package.json"
+      ],
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "rubric": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": true,
+        "hasMainExport": true,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": true,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
+      "warnings": [
+        "Missing \"./controller\" export - ESM player needs controller subpath",
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    },
+    "select-text": {
+      "compatible": false,
+      "packageJson": {
+        "hasTypeModule": false,
+        "hasExportsField": true,
+        "hasMainExport": true,
+        "hasControllerExport": false,
+        "sideEffectsFree": false,
+        "mainExportIsEsm": true,
+        "controllerExportIsEsm": false
+      },
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
+      "warnings": [
+        "Missing \"./controller\" export - ESM player needs controller subpath",
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
+    }
+  },
+  "esmPlayerValidationEnabled": true,
+  "esmRuntimeValidationEnabled": true,
+  "esmRuntimeCdnBaseUrl": "https://esm.sh",
+  "esmRuntimeValidation": {
+    "ebsr": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "12.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 221,
+      "fetchedOk": 219,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
+    },
+    "likert": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "2.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 187,
+      "fetchedOk": 186,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    },
+    "drawing-response": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "10.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 215,
+      "fetchedOk": 214,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    },
+    "match": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "10.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 233,
+      "fetchedOk": 231,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    },
+    "image-cloze-association": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "8.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 226,
+      "fetchedOk": 223,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022"
+    },
+    "hotspot": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "9.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 199,
+      "fetchedOk": 197,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    },
+    "match-list": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "5.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 252,
+      "fetchedOk": 249,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022"
+    },
+    "math-inline": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "10.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 295,
+      "fetchedOk": 293,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    },
+    "matrix": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "2.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 210,
+      "fetchedOk": 209,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    },
+    "number-line": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/react-draggable@^3.3.0?target=es2022 -> 500 (cjsModuleLexer(fallback mode): error: Uncaught (in promise) Error: Cannot find module 'react-dom'\nRequire stack:\n- /esm/)",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 312,
+      "fetchedOk": 309,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    },
+    "multi-trait-rubric": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "6.2.1-mui-update.1",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs -> error (This operation was aborted)"
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 254,
+      "fetchedOk": 253,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs"
+    },
+    "multiple-choice": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.2.0-mui-update.4",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 265,
+      "fetchedOk": 264,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs"
+    },
+    "passage": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "5.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 194,
+      "fetchedOk": 193,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    },
+    "rubric": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "6.2.0-mui-update.2",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 254,
+      "fetchedOk": 253,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs"
+    },
+    "placement-ordering": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "12.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 270,
+      "fetchedOk": 267,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022"
+    },
+    "select-text": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.2.0",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/text-select@^1.28.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 209,
+      "fetchedOk": 206,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+    }
+  },
+  "elementDetails": {
+    "categorize": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/categorize",
+        "@pie-lib/config-ui",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/drag",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/translator",
+        "debug",
+        "lodash",
+        "prop-types",
+        "react",
+        "@dnd-kit/core",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "categorize",
+        "config-ui",
+        "correct-answer-toggle",
+        "drag",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "charting": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/charting",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "debug",
+        "lodash",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "charting",
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "complex-rubric": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-element/multi-trait-rubric",
+        "@pie-element/rubric",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/rubric",
+        "classnames",
+        "debug",
+        "lodash",
+        "prop-types"
+      ],
+      "pieLibDeps": [
+        "rubric"
+      ],
+      "pieElementDeps": [
+        "multi-trait-rubric",
+        "rubric"
+      ],
+      "blockers": [
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/rubric -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "drag-in-the-blank": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/drag",
+        "@pie-lib/mask-markup",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "drag",
+        "mask-markup",
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "drawing-response": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@mdi/js",
+        "@mdi/react",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/translator",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom",
+        "react-konva",
+        "konva"
+      ],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "ebsr": {
+      "compatible": true,
+      "directDeps": [
+        "@pie-element/multiple-choice",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/translator",
+        "classnames",
+        "debug",
+        "lodash"
+      ],
+      "pieLibDeps": [
+        "translator"
+      ],
+      "pieElementDeps": [
+        "multiple-choice"
+      ],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "explicit-constructed-response": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/mask-markup",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/translator",
+        "classnames",
+        "he",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "mask-markup",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "extended-text-entry": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/config-ui",
+        "@pie-lib/editable-html",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "classnames",
+        "debug",
+        "lodash.throttle",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "config-ui",
+        "editable-html",
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "fraction-model": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/config-ui",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/test-utils",
+        "prop-types",
+        "react",
+        "react-dom",
+        "recharts"
+      ],
+      "pieLibDeps": [
+        "config-ui",
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "test-utils"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "graphing": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/graphing",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "classnames",
+        "debug",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "graphing",
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "graphing-solution-set": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/config-ui",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/graphing-solution-set",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "classnames",
+        "debug",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "config-ui",
+        "correct-answer-toggle",
+        "graphing-solution-set",
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/graphing-solution-set -> @pie-lib/plot -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "hotspot": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/test-utils",
+        "prop-types",
+        "react",
+        "react-dom",
+        "react-konva",
+        "konva"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "test-utils"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "image-cloze-association": {
+      "compatible": true,
+      "directDeps": [
+        "@dnd-kit/core",
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/drag",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/translator",
+        "classnames",
+        "humps",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "drag",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "inline-dropdown": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/mask-markup",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "mask-markup",
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "likert": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "classnames",
+        "debug",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom",
+        "react-test-renderer",
+        "react-transition-group"
+      ],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "match": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/test-utils",
+        "classnames",
+        "debug",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "test-utils"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "match-list": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/drag",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "debug",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom",
+        "@dnd-kit/core"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "drag",
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "math-inline": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/mathquill",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/math-input",
+        "@pie-lib/math-rendering",
+        "@pie-lib/math-toolbar",
+        "@pie-lib/render-ui",
+        "@pie-lib/translator",
+        "classnames",
+        "debug",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-input",
+        "math-rendering",
+        "math-toolbar",
+        "render-ui",
+        "translator"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "math-templated": {
+      "compatible": false,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/mask-markup",
+        "@pie-lib/math-input",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "mask-markup",
+        "math-input",
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [
+        "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+        "@pie-lib/mask-markup -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+      ],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "matrix": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "debug",
+        "prop-types",
+        "react",
+        "react-dom",
+        "styled-components"
+      ],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "multi-trait-rubric": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "clsx",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "multiple-choice": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/translator",
+        "classnames",
+        "debug",
+        "lodash",
+        "prop-types",
+        "react",
+        "react-dom",
+        "react-transition-group"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "number-line": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/icons",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/translator",
+        "classnames",
+        "d3-scale",
+        "d3-selection",
+        "lodash",
+        "mathjs",
+        "prop-types",
+        "react",
+        "react-dom",
+        "react-jss",
+        "@dnd-kit/core",
+        "react-transition-group"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "icons",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "passage": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "placement-ordering": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/drag",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/translator",
+        "debug",
+        "decimal.js",
+        "lodash",
+        "prop-types",
+        "react",
+        "@dnd-kit/core",
+        "react-dom",
+        "react-jss",
+        "react-transition-group"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "drag",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "rubric": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "prop-types"
+      ],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/rubric -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    },
+    "select-text": {
+      "compatible": true,
+      "directDeps": [
+        "@emotion/react",
+        "@emotion/style",
+        "@mui/icons-material",
+        "@mui/material",
+        "@pie-framework/pie-player-events",
+        "@pie-lib/correct-answer-toggle",
+        "@pie-lib/math-rendering",
+        "@pie-lib/render-ui",
+        "@pie-lib/text-select",
+        "prop-types",
+        "react",
+        "react-dom"
+      ],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "text-select"
+      ],
+      "pieElementDeps": [],
+      "blockers": [],
+      "configure": {
+        "compatible": false,
+        "blockers": [
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-edit-table@^0.17.0 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-plain-serializer@^0.5.26 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-prop-types@^0.4.38 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-react@^0.14.3 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-schema-violations@^0.1.39 - Slate v0.x plugins are not ESM compatible",
+          "@pie-lib/editable-html -> slate-soft-break@^0.8.1 - Slate v0.x plugins are not ESM compatible"
+        ]
+      },
+      "controller": {
+        "compatible": true,
+        "blockers": []
+      }
+    }
+  },
+  "pieLibDetails": {
+    "math-rendering": {
+      "compatible": true,
+      "usedBy": [
+        "drawing-response",
+        "hotspot",
+        "image-cloze-association",
+        "likert",
+        "match",
+        "match-list",
+        "math-inline",
+        "matrix",
+        "multi-trait-rubric",
+        "multiple-choice",
+        "number-line",
+        "passage",
+        "placement-ordering",
+        "rubric",
+        "select-text"
+      ],
+      "blockers": []
+    },
+    "render-ui": {
+      "compatible": true,
+      "usedBy": [
+        "drawing-response",
+        "hotspot",
+        "image-cloze-association",
+        "likert",
+        "match",
+        "match-list",
+        "math-inline",
+        "matrix",
+        "multi-trait-rubric",
+        "multiple-choice",
+        "number-line",
+        "passage",
+        "placement-ordering",
+        "rubric",
+        "select-text"
+      ],
+      "blockers": []
+    },
+    "translator": {
+      "compatible": true,
+      "usedBy": [
+        "drawing-response",
+        "ebsr",
+        "image-cloze-association",
+        "math-inline",
+        "multiple-choice",
+        "number-line",
+        "placement-ordering"
+      ],
+      "blockers": []
+    },
+    "correct-answer-toggle": {
+      "compatible": true,
+      "usedBy": [
+        "hotspot",
+        "image-cloze-association",
+        "match",
+        "match-list",
+        "math-inline",
+        "multiple-choice",
+        "number-line",
+        "placement-ordering",
+        "select-text"
+      ],
+      "blockers": []
+    },
+    "test-utils": {
+      "compatible": true,
+      "usedBy": [
+        "hotspot",
+        "match"
+      ],
+      "blockers": []
+    },
+    "drag": {
+      "compatible": true,
+      "usedBy": [
+        "image-cloze-association",
+        "match-list",
+        "placement-ordering"
+      ],
+      "blockers": []
+    },
+    "math-input": {
+      "compatible": true,
+      "usedBy": [
+        "math-inline"
+      ],
+      "blockers": []
+    },
+    "math-toolbar": {
+      "compatible": true,
+      "usedBy": [
+        "math-inline"
+      ],
+      "blockers": []
+    },
+    "icons": {
+      "compatible": true,
+      "usedBy": [
+        "number-line"
+      ],
+      "blockers": []
+    },
+    "text-select": {
+      "compatible": true,
+      "usedBy": [
+        "select-text"
+      ],
+      "blockers": []
+    }
+  },
+  "lastAnalyzed": "2026-01-15T22:25:42.032Z",
+  "summary": {
+    "totalElements": 27,
+    "compatibleElements": 16,
+    "blockedElements": 11,
+    "esmPlayerReady": 0,
+    "esmRuntimeReady": 0,
+    "totalPieLibPackages": 10,
+    "compatiblePieLibPackages": 10,
+    "studentUIOnlyElements": 0
+  },
+  "studentUIOnly": []
+}

@@ -30,13 +30,9 @@ bun run test
 # Run all E2E tests
 bun run test:e2e
 
-# Run E2E tests in UI mode
-cd apps/demos-sveltekit
-bun run test:e2e:ui
-
-# Run accessibility tests only
-cd apps/demos-sveltekit
-bun run test:a11y
+# Run evals in UI mode
+cd apps/examples-react
+bun run test:evals:ui
 ```
 
 ## Test Environment
@@ -142,11 +138,10 @@ packages/
 │           ├── Feedback.test.ts           # Component tests
 │           └── Prompt.test.ts             # Component tests
 └── apps/
-    └── demos-sveltekit/
+    └── examples-react/
         └── tests/
-            └── e2e/
-                ├── basic.spec.ts          # E2E tests
-                └── accessibility.spec.ts  # A11y tests
+            └── evals/
+                └── evals-runner.spec.ts   # Evals runner
 ```
 
 ## Best Practices
@@ -196,10 +191,10 @@ describe('MyComponent', () => {
 });
 ```
 
-### E2E tests fail locally
+### Evals fail locally
 
 Make sure Playwright browsers are installed:
 ```bash
-cd apps/demos-sveltekit
+cd apps/examples-react
 bun playwright install
 ```

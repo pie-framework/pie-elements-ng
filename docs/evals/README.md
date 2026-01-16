@@ -84,8 +84,8 @@ component:
   tagName: "pie-multiple-choice"
 
 examplesApp:
-  app: "@pie-demos/sveltekit"
-  routeTemplate: "/demos/<tagName>"
+  app: "@pie-element/<element>"
+  routeTemplate: "/docs/demo/demo.html"
 
 evals:
   - id: "mc-svelte/simple-choice/correct"
@@ -100,7 +100,7 @@ evals:
 
     steps:
       - action: navigate
-        path: "/demos/multiple-choice"
+        path: "/docs/demo/demo.html"
         params:
           sampleId: "simple-choice"
           mode: "gather"
@@ -138,7 +138,7 @@ Navigate to a route with optional query parameters.
 
 ```yaml
 - action: navigate
-  path: "/demos/multiple-choice"
+  path: "/docs/demo/demo.html"
   params:
     sampleId: "simple-choice"
     mode: "gather"

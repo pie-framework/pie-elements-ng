@@ -1,4 +1,4 @@
-import type { PieEnvironment } from '@pie-shared/types';
+import type { PieEnvironment } from '@pie-elements-ng/shared-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MultipleChoiceModel, MultipleChoiceSession } from '../types';
 import {

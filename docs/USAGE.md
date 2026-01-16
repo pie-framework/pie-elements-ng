@@ -474,14 +474,14 @@ const env: Environment = { mode: 'gather', role: 'student' };
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Understand the design
 - [INTEGRATION.md](./INTEGRATION.md) - Advanced integration patterns
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Common issues and solutions
-- [Demos](../apps/demos-sveltekit/) - Per-element demos (demo data synced from upstream)
+- **Demos**: Run element demos with `bun react-demo --element <name>` (React elements only)
 
 ## Getting Help
 
 - **Documentation**: Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 - **GitHub Issues**: Report bugs or request features
 - **Discussions**: Ask questions in GitHub Discussions
-- **Demos**: Review and run per-element demos in `apps/demos-sveltekit` (demo data is generated into `apps/demos-data`)
+- **Demos**: Run `bun react-demo --element categorize` or see [apps/README.md](../apps/README.md)
 
 ---
 

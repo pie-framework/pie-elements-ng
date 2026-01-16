@@ -61,14 +61,13 @@ Output will be in `dist/` directory, ready for static hosting.
 
 ### Testing with Local Builds
 
-1. Build the web components you want to test:
+1. Build the element packages you want to test:
    ```bash
-   cd packages/elements-wc/multiple-choice
+   cd packages/elements-react/multiple-choice
    bun run build
    ```
 
-2. The dev server needs to serve local builds from `/local-builds/`
-   - TODO: Add vite config to proxy local builds from `../../dist/`
+2. Local builds are loaded via Vite `/@fs/` paths, so ensure the `dist/` files exist.
 
 ## Architecture
 
@@ -82,13 +81,12 @@ Output will be in `dist/` directory, ready for static hosting.
 ### Loading Strategy
 
 **NPM Packages (Default):**
-- Loaded via jsDelivr CDN: `https://cdn.jsdelivr.net/npm/@pie-wc/multiple-choice@latest/dist/index.js`
+- Loaded via jsDelivr CDN: `https://cdn.jsdelivr.net/npm/@pie-element/multiple-choice@latest/dist/index.js`
 - Supports version selection from npm registry
 - No build step required
 
 **Local Builds:**
-- Loaded from `/local-builds/` path
-- Served by dev server from monorepo `dist/` folders
+- Loaded from local `elements-react` or `elements-svelte` `dist/` files via Vite `/@fs/`
 - Used for testing unreleased changes
 
 ### State Management

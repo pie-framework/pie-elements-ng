@@ -348,9 +348,10 @@ test('should not have accessibility violations', async ({ page }) => {
 # Run all accessibility tests
 bun run test:a11y
 
-# Run specific element
-cd apps/demos-sveltekit
-bun run test:a11y tests/e2e/accessibility.spec.ts
+# Per-element demo (after build)
+# cd packages/elements-react/<element>
+# python -m http.server 5174
+# open http://localhost:5174/docs/demo/demo.html
 ```
 
 ### Manual Testing
