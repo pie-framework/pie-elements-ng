@@ -21,13 +21,14 @@
     "math-rendering",
     "render-ui",
     "translator",
-    "correct-answer-toggle",
+    "icons",
     "test-utils",
+    "correct-answer-toggle",
     "drag",
     "math-input",
     "math-toolbar",
-    "icons",
     "text-select",
+    "style-utils",
     "controller-utils"
   ],
   "blockedElements": {
@@ -218,7 +219,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "ebsr": {
       "compatible": false,
@@ -231,7 +234,9 @@
         "mainExportIsEsm": true,
         "controllerExportIsEsm": false
       },
-      "blockers": ["Missing \"type\": \"module\" in package.json"],
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
       "warnings": [
         "Missing \"./controller\" export - ESM player needs controller subpath",
         "Consider adding \"sideEffects\": false for better tree-shaking"
@@ -252,7 +257,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "image-cloze-association": {
       "compatible": false,
@@ -269,7 +276,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "likert": {
       "compatible": false,
@@ -286,7 +295,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "match": {
       "compatible": false,
@@ -303,7 +314,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "match-list": {
       "compatible": false,
@@ -320,7 +333,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "math-inline": {
       "compatible": false,
@@ -333,7 +348,9 @@
         "mainExportIsEsm": true,
         "controllerExportIsEsm": false
       },
-      "blockers": ["Missing \"type\": \"module\" in package.json"],
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
       "warnings": [
         "Missing \"./controller\" export - ESM player needs controller subpath",
         "Consider adding \"sideEffects\": false for better tree-shaking"
@@ -354,7 +371,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "multi-trait-rubric": {
       "compatible": false,
@@ -367,7 +386,9 @@
         "mainExportIsEsm": true,
         "controllerExportIsEsm": false
       },
-      "blockers": ["Missing \"type\": \"module\" in package.json"],
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
       "warnings": [
         "Missing \"./controller\" export - ESM player needs controller subpath",
         "Consider adding \"sideEffects\": false for better tree-shaking"
@@ -384,7 +405,9 @@
         "mainExportIsEsm": true,
         "controllerExportIsEsm": false
       },
-      "blockers": ["Missing \"type\": \"module\" in package.json"],
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
       "warnings": [
         "Missing \"./controller\" export - ESM player needs controller subpath",
         "Consider adding \"sideEffects\": false for better tree-shaking"
@@ -405,7 +428,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "passage": {
       "compatible": false,
@@ -418,7 +443,9 @@
         "mainExportIsEsm": true,
         "controllerExportIsEsm": false
       },
-      "blockers": ["Missing \"type\": \"module\" in package.json"],
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
       "warnings": [
         "Missing \"./controller\" export - ESM player needs controller subpath",
         "Consider adding \"sideEffects\": false for better tree-shaking"
@@ -439,7 +466,9 @@
         "Missing \"type\": \"module\" in package.json",
         "Missing \"exports\" field in package.json"
       ],
-      "warnings": ["Consider adding \"sideEffects\": false for better tree-shaking"]
+      "warnings": [
+        "Consider adding \"sideEffects\": false for better tree-shaking"
+      ]
     },
     "rubric": {
       "compatible": false,
@@ -452,7 +481,9 @@
         "mainExportIsEsm": true,
         "controllerExportIsEsm": false
       },
-      "blockers": ["Missing \"type\": \"module\" in package.json"],
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
       "warnings": [
         "Missing \"./controller\" export - ESM player needs controller subpath",
         "Consider adding \"sideEffects\": false for better tree-shaking"
@@ -469,7 +500,9 @@
         "mainExportIsEsm": true,
         "controllerExportIsEsm": false
       },
-      "blockers": ["Missing \"type\": \"module\" in package.json"],
+      "blockers": [
+        "Missing \"type\": \"module\" in package.json"
+      ],
       "warnings": [
         "Missing \"./controller\" export - ESM player needs controller subpath",
         "Consider adding \"sideEffects\": false for better tree-shaking"
@@ -480,10 +513,28 @@
   "esmRuntimeValidationEnabled": true,
   "esmRuntimeCdnBaseUrl": "https://esm.sh",
   "esmRuntimeValidation": {
-    "ebsr": {
+    "drawing-response": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "12.2.0",
+      "version": "10.3.3",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 213,
+      "fetchedOk": 212,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
+    },
+    "hotspot": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "9.3.3",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
@@ -495,189 +546,153 @@
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 221,
-      "fetchedOk": 219,
+      "fetchedModules": 197,
+      "fetchedOk": 195,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
+    },
+    "ebsr": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "12.3.3",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 220,
+      "fetchedOk": 218,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
+    },
+    "match": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "10.3.3",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 231,
+      "fetchedOk": 229,
       "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
     },
     "image-cloze-association": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "8.2.0",
+      "version": "8.3.3",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/drag@2.22.2/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
         "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 226,
-      "fetchedOk": 223,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022"
-    },
-    "drawing-response": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "10.2.0",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 215,
-      "fetchedOk": 214,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+      "fetchedModules": 223,
+      "fetchedOk": 220,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@2.22.2/es2022/drag.mjs"
     },
     "likert": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "2.2.0",
+      "version": "2.3.3",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 187,
-      "fetchedOk": 186,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
-    },
-    "hotspot": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "9.2.0",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 199,
-      "fetchedOk": 197,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
-    },
-    "match": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "10.2.0",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 233,
-      "fetchedOk": 231,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
-    },
-    "match-list": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "5.2.0",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 252,
-      "fetchedOk": 249,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022"
+      "fetchedModules": 186,
+      "fetchedOk": 185,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
     },
     "math-inline": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "10.2.0",
+      "version": "10.3.3",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
         "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 295,
-      "fetchedOk": 293,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+      "fetchedModules": 289,
+      "fetchedOk": 287,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
+    },
+    "match-list": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "5.3.3",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/drag@2.22.2/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 250,
+      "fetchedOk": 247,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@2.22.2/es2022/drag.mjs"
     },
     "multi-trait-rubric": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "6.2.1-mui-update.1",
+      "version": "6.3.3",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs -> error (This operation was aborted)"
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 254,
-      "fetchedOk": 253,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs"
-    },
-    "passage": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "5.2.0",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 194,
-      "fetchedOk": 193,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+      "fetchedModules": 228,
+      "fetchedOk": 227,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
     },
     "number-line": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "11.2.0",
+      "version": "11.3.3",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
         "fetch https://esm.sh/react-draggable@^3.3.0?target=es2022 -> 500 (cjsModuleLexer(fallback mode): error: Uncaught (in promise) Error: Cannot find module 'react-dom'\nRequire stack:\n- /esm/)",
         "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
@@ -686,101 +701,120 @@
       "maxModules": 250,
       "fetchedModules": 312,
       "fetchedOk": 309,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
     },
     "matrix": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "2.2.0",
+      "version": "2.3.3",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 210,
-      "fetchedOk": 209,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
-    },
-    "multiple-choice": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "11.2.0-mui-update.4",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 265,
-      "fetchedOk": 264,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs"
-    },
-    "placement-ordering": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "12.2.0",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 270,
-      "fetchedOk": 267,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@^2.18.1?target=es2022"
-    },
-    "rubric": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "6.2.0-mui-update.2",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 254,
-      "fetchedOk": 253,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.42.1-mui-update.0/es2022/render-ui.mjs"
-    },
-    "select-text": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "11.2.0",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/text-select@^1.28.1?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 209,
-      "fetchedOk": 206,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@^4.31.1?target=es2022"
+      "fetchedOk": 208,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
+    },
+    "multiple-choice": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.4.3",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 235,
+      "fetchedOk": 233,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
+    },
+    "passage": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "5.3.3",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 193,
+      "fetchedOk": 192,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
+    },
+    "placement-ordering": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "12.3.3",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/drag@2.22.2/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 266,
+      "fetchedOk": 263,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@2.22.2/es2022/drag.mjs"
+    },
+    "rubric": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "6.3.3",
+      "entryOk": false,
+      "controllerOk": true,
+      "entryParseOk": false,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-element/rubric@6.3.3 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 9,
+      "fetchedOk": 8,
+      "firstFailingUrl": "https://esm.sh/@pie-element/rubric@6.3.3"
+    },
+    "select-text": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.3.3",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/text-select@1.32.2/es2022/text-select.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^4.35.2?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 207,
+      "fetchedOk": 204,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@4.35.2/es2022/render-ui.mjs"
     }
   },
   "elementDetails": {
@@ -872,7 +906,12 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["charting", "correct-answer-toggle", "math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "charting",
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [
         "@pie-lib/charting -> @pie-lib/plot -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
@@ -938,8 +977,13 @@
         "lodash",
         "prop-types"
       ],
-      "pieLibDeps": ["rubric"],
-      "pieElementDeps": ["multi-trait-rubric", "rubric"],
+      "pieLibDeps": [
+        "rubric"
+      ],
+      "pieElementDeps": [
+        "multi-trait-rubric",
+        "rubric"
+      ],
       "blockers": [
         "@pie-lib/rubric -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
         "@pie-lib/rubric -> @pie-lib/editable-html -> slate-edit-list@^0.11.3 - Slate v0.x plugins are not ESM compatible",
@@ -997,7 +1041,13 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "drag", "mask-markup", "math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "drag",
+        "mask-markup",
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [
         "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
@@ -1061,7 +1111,11 @@
         "react-konva",
         "konva"
       ],
-      "pieLibDeps": ["math-rendering", "render-ui", "translator"],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -1102,8 +1156,12 @@
         "debug",
         "lodash"
       ],
-      "pieLibDeps": ["translator"],
-      "pieElementDeps": ["multiple-choice"],
+      "pieLibDeps": [
+        "translator"
+      ],
+      "pieElementDeps": [
+        "multiple-choice"
+      ],
       "blockers": [],
       "configure": {
         "compatible": false,
@@ -1213,7 +1271,12 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["config-ui", "editable-html", "math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "config-ui",
+        "editable-html",
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [
         "@pie-lib/config-ui -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
@@ -1345,7 +1408,12 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "graphing", "math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "graphing",
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [
         "@pie-lib/graphing -> @pie-lib/editable-html -> slate-dev-environment@^0.2.0 - Slate v0.x plugins are not ESM compatible",
@@ -1532,7 +1600,12 @@
         "react-konva",
         "konva"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "math-rendering", "render-ui", "test-utils"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "test-utils"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -1583,7 +1656,13 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "drag", "math-rendering", "render-ui", "translator"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "drag",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -1631,7 +1710,12 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "mask-markup", "math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "mask-markup",
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [
         "@pie-lib/mask-markup -> slate-html-serializer@^0.6.12 - Slate v0.x plugins are not ESM compatible",
@@ -1694,7 +1778,10 @@
         "react-test-renderer",
         "react-transition-group"
       ],
-      "pieLibDeps": ["math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -1744,7 +1831,12 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "math-rendering", "render-ui", "test-utils"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "test-utils"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -1794,7 +1886,12 @@
         "react-dom",
         "@dnd-kit/core"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "drag", "math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "drag",
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "controller": {
@@ -1945,7 +2042,10 @@
         "react-dom",
         "styled-components"
       ],
-      "pieLibDeps": ["math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -1991,7 +2091,10 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -2042,7 +2145,12 @@
         "react-dom",
         "react-transition-group"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "math-rendering", "render-ui", "translator"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -2097,7 +2205,13 @@
         "@dnd-kit/core",
         "react-transition-group"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "icons", "math-rendering", "render-ui", "translator"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "icons",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -2142,7 +2256,10 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -2196,7 +2313,13 @@
         "react-jss",
         "react-transition-group"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "drag", "math-rendering", "render-ui", "translator"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "drag",
+        "math-rendering",
+        "render-ui",
+        "translator"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -2238,7 +2361,10 @@
         "@pie-lib/render-ui",
         "prop-types"
       ],
-      "pieLibDeps": ["math-rendering", "render-ui"],
+      "pieLibDeps": [
+        "math-rendering",
+        "render-ui"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -2294,7 +2420,12 @@
         "react",
         "react-dom"
       ],
-      "pieLibDeps": ["correct-answer-toggle", "math-rendering", "render-ui", "text-select"],
+      "pieLibDeps": [
+        "correct-answer-toggle",
+        "math-rendering",
+        "render-ui",
+        "text-select"
+      ],
       "pieElementDeps": [],
       "blockers": [],
       "configure": {
@@ -2374,11 +2505,57 @@
       "usedBy": [
         "drawing-response",
         "ebsr",
+        "hotspot",
         "image-cloze-association",
+        "match",
+        "match-list",
         "math-inline",
         "multiple-choice",
         "number-line",
-        "placement-ordering"
+        "placement-ordering",
+        "select-text"
+      ],
+      "blockers": []
+    },
+    "icons": {
+      "compatible": true,
+      "usedBy": [
+        "drawing-response",
+        "hotspot",
+        "image-cloze-association",
+        "likert",
+        "match",
+        "match-list",
+        "math-inline",
+        "matrix",
+        "multi-trait-rubric",
+        "multiple-choice",
+        "number-line",
+        "passage",
+        "placement-ordering",
+        "rubric",
+        "select-text"
+      ],
+      "blockers": []
+    },
+    "test-utils": {
+      "compatible": true,
+      "usedBy": [
+        "drawing-response",
+        "hotspot",
+        "image-cloze-association",
+        "likert",
+        "match",
+        "match-list",
+        "math-inline",
+        "matrix",
+        "multi-trait-rubric",
+        "multiple-choice",
+        "number-line",
+        "passage",
+        "placement-ordering",
+        "rubric",
+        "select-text"
       ],
       "blockers": []
     },
@@ -2397,51 +2574,60 @@
       ],
       "blockers": []
     },
-    "test-utils": {
-      "compatible": true,
-      "usedBy": ["hotspot", "match"],
-      "blockers": []
-    },
     "drag": {
       "compatible": true,
-      "usedBy": ["image-cloze-association", "match-list", "placement-ordering"],
+      "usedBy": [
+        "image-cloze-association",
+        "match-list",
+        "placement-ordering"
+      ],
       "blockers": []
     },
     "math-input": {
       "compatible": true,
-      "usedBy": ["math-inline"],
+      "usedBy": [
+        "math-inline"
+      ],
       "blockers": []
     },
     "math-toolbar": {
       "compatible": true,
-      "usedBy": ["math-inline"],
-      "blockers": []
-    },
-    "icons": {
-      "compatible": true,
-      "usedBy": ["number-line"],
+      "usedBy": [
+        "math-inline"
+      ],
       "blockers": []
     },
     "text-select": {
       "compatible": true,
-      "usedBy": ["select-text"],
+      "usedBy": [
+        "select-text"
+      ],
+      "blockers": []
+    },
+    "style-utils": {
+      "compatible": true,
+      "usedBy": [
+        "select-text"
+      ],
       "blockers": []
     },
     "controller-utils": {
       "compatible": true,
-      "usedBy": ["(always included)"],
+      "usedBy": [
+        "(always included)"
+      ],
       "blockers": []
     }
   },
-  "lastAnalyzed": "2026-01-16T09:10:31.037Z",
+  "lastAnalyzed": "2026-01-17T18:53:47.630Z",
   "summary": {
     "totalElements": 27,
     "compatibleElements": 16,
     "blockedElements": 11,
     "esmPlayerReady": 0,
     "esmRuntimeReady": 0,
-    "totalPieLibPackages": 11,
-    "compatiblePieLibPackages": 11,
+    "totalPieLibPackages": 12,
+    "compatiblePieLibPackages": 12,
     "studentUIOnlyElements": 0
   },
   "studentUIOnly": []

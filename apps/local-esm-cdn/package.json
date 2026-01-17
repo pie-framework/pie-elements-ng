@@ -5,5 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "es-module-lexer": "^2.0.0"
   }
 }

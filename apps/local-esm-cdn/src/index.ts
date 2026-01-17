@@ -70,7 +70,7 @@ function parsePackageRequest(pathname: string): { pkg: string; subpath: string }
   if (parts.length < 2) return null;
 
   const scope = parts[0];
-  if (scope !== '@pie-element' && scope !== '@pie-lib') return null;
+  if (scope !== '@pie-element' && scope !== '@pie-lib' && scope !== '@pie-elements-ng' && scope !== '@pie-framework') return null;
 
   const nameWithVersion = parts[1];
   // Accept either "<name>@<version>" or "<name>".
@@ -121,10 +121,25 @@ async function resolveEntryFile(
   subpath: string
 ): Promise<string | null> {
   const [scope, name] = pkg.split('/') as [string, string];
-  const base =
-    scope === '@pie-element'
-      ? path.join(pieElementsNgPath, 'packages', 'elements-react', name, 'dist')
-      : path.join(pieElementsNgPath, 'packages', 'lib-react', name, 'dist');
+
+  let base: string;
+  if (scope === '@pie-element') {
+    base = path.join(pieElementsNgPath, 'packages', 'elements-react', name, 'dist');
+  } else if (scope === '@pie-lib') {
+    base = path.join(pieElementsNgPath, 'packages', 'lib-react', name, 'dist');
+  } else if (scope === '@pie-elements-ng') {
+    // @pie-elements-ng/shared-* packages are in packages/shared/
+    // e.g. @pie-elements-ng/shared-math-rendering -> packages/shared/math-rendering
+    const packageName = name.replace(/^shared-/, '');
+    base = path.join(pieElementsNgPath, 'packages', 'shared', packageName, 'dist');
+  } else if (scope === '@pie-framework') {
+    // @pie-framework packages are also in packages/shared/
+    // e.g. @pie-framework/pie-player-events -> packages/shared/player-events
+    const packageName = name.replace(/^pie-/, '');
+    base = path.join(pieElementsNgPath, 'packages', 'shared', packageName, 'dist');
+  } else {
+    return null;
+  }
 
   const normalizedSubpath = subpath.replace(/^\/+/, '').replace(/\/+$/, '');
   const candidates: string[] = [];
@@ -133,6 +148,9 @@ async function resolveEntryFile(
     candidates.push(path.join(base, 'index.js'));
     candidates.push(path.join(base, 'index.mjs'));
   } else {
+    // Try the path as-is first (for files that already have extensions like .js)
+    candidates.push(path.join(base, normalizedSubpath));
+
     // Common build layouts: dist/<sub>/index.js or dist/<sub>.js
     candidates.push(path.join(base, normalizedSubpath, 'index.js'));
     candidates.push(path.join(base, `${normalizedSubpath}.js`));
@@ -311,7 +329,11 @@ async function main(): Promise<void> {
     }
 
     const code = await readFile(entryFile, 'utf8');
-    const rewritten = await rewriteImports(code, { esmShBaseUrl });
+    const rewritten = await rewriteImports(code, {
+      esmShBaseUrl,
+      pkg: parsed.pkg,
+      subpath: parsed.subpath,
+    });
     return js(rewritten, {
       headers: {
         'x-local-esm-cdn-file': entryFile,

@@ -5,19 +5,11 @@ import { getCurrentCommit } from '../../utils/git.js';
 import { printSyncSummary, createEmptySummary } from './sync-summary.js';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import { spawn } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import vm from 'node:vm';
-import { cp, mkdir, readFile, rm as fsRm, writeFile, stat as fsStat } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { rm as fsRm, stat as fsStat } from 'node:fs/promises';
+import { join } from 'node:path';
 import { readdir } from './sync-filesystem.js';
 import { getAllDeps } from './sync-package-json.js';
-import {
-  generateDemoModule,
-  generateDemoHtml,
-  generateDeliveryDemoHtml,
-  generateAuthorDemoHtml,
-} from './sync-demo.js';
 import { ControllersStrategy } from './sync-controllers-strategy.js';
 import { ReactComponentsStrategy } from './sync-react-strategy.js';
 import { PieLibStrategy } from './sync-pielib-strategy.js';
@@ -32,7 +24,6 @@ interface SyncConfig {
   syncControllers: boolean;
   syncReactComponents: boolean;
   syncPieLibPackages: boolean;
-  syncDemos: boolean;
 
   // Filters
   elements?: string[];
@@ -103,7 +94,6 @@ export default class Sync extends Command {
       syncControllers: true,
       syncReactComponents: true,
       syncPieLibPackages: false,
-      syncDemos: true,
       useEsmFilter: true,
       compatibilityFile: './.compatibility/report.json',
       dryRun: flags['dry-run'],
@@ -211,7 +201,7 @@ export default class Sync extends Command {
         syncControllers: config.syncControllers,
         syncReactComponents: config.syncReactComponents,
         syncPieLib: config.syncPieLibPackages,
-        skipDemos: !config.syncDemos,
+        skipDemos: true,
         upstreamCommit: getCurrentCommit(config.pieElements),
       },
       logger: this.logger,
@@ -229,7 +219,7 @@ export default class Sync extends Command {
           syncSummary.controllersSync = result.count;
         } else if (desc === 'React components') {
           syncSummary.reactComponentsSynced = result.count;
-          // Track touched React element packages for demo sync
+          // Track touched React element packages for build
           for (const pkgName of result.packageNames) {
             // Only add element packages (not @pie-lib packages)
             if (!pkgName.startsWith('@pie-lib/')) {
@@ -247,10 +237,6 @@ export default class Sync extends Command {
           }
         }
       }
-    }
-
-    if (config.syncDemos) {
-      await this.syncDemos(config, result);
     }
 
     // Ensure external dependencies from synced packages are available at repo root.
@@ -276,127 +262,6 @@ export default class Sync extends Command {
     if (result.errors.length > 0) {
       this.error('Sync completed with errors', { exit: 1 });
     }
-  }
-
-  private async syncDemos(config: SyncConfig, result: SyncResult): Promise<void> {
-    this.logger.section('🧪 Syncing upstream demos (docs/demo)');
-
-    if (this.touchedElementPackages.size === 0) {
-      if (config.verbose) {
-        this.logger.info('  ⏭️  No touched elements; skipping demo sync');
-      }
-      return;
-    }
-
-    for (const pkg of this.touchedElementPackages) {
-      const upstreamDemoDir = join(config.pieElements, 'packages', pkg, 'docs/demo');
-      if (!existsSync(upstreamDemoDir)) {
-        result.warnings.push(`${pkg}: no docs/demo found upstream (skipped)`);
-        if (config.verbose) {
-          this.logger.info(`  ⏭️  ${pkg}: no docs/demo found`);
-        }
-        continue;
-      }
-
-      // Best-effort extraction of tagName from config.js (used for log output only).
-      const upstreamConfigPath = join(upstreamDemoDir, 'config.js');
-      let tagName = pkg;
-      if (existsSync(upstreamConfigPath)) {
-        const raw = await readFile(upstreamConfigPath, 'utf-8');
-        const match = raw.match(/elements\\s*:\\s*\\{[\\s\\S]*?['"]([^'"]+)['"]\\s*:/m);
-        if (match?.[1]) {
-          tagName = match[1];
-        }
-      }
-
-      const elementDir = join(config.pieElementsNg, 'packages/elements-react', pkg);
-      const targetDemoDir = join(elementDir, 'docs/demo');
-
-      // Clean target first so removed upstream demo files don't linger.
-      if (!config.dryRun) {
-        await fsRm(targetDemoDir, { recursive: true, force: true });
-        await mkdir(dirname(targetDemoDir), { recursive: true });
-      }
-
-      result.filesChecked++;
-      if (config.dryRun) {
-        this.logger.success(
-          `  🔍 ${pkg}: would sync docs/demo → packages/elements-react/${pkg}/docs/demo`
-        );
-        continue;
-      }
-
-      await mkdir(targetDemoDir, { recursive: true });
-      await cp(upstreamDemoDir, targetDemoDir, { recursive: true });
-      await this.writeDemoHarness(targetDemoDir, pkg);
-      result.filesCopied++;
-      this.logger.success(
-        `  ✨ ${pkg}: synced docs/demo → packages/elements-react/${pkg}/docs/demo (tag: ${tagName})`
-      );
-    }
-  }
-
-  private async writeDemoHarness(demoDir: string, elementName: string): Promise<void> {
-    const configPath = resolve(demoDir, 'config.js');
-    const sessionPath = resolve(demoDir, 'session.js');
-
-    if (!existsSync(configPath)) {
-      return;
-    }
-
-    const baseRequire = createRequire(import.meta.url);
-    const loadCjsModule = (filePath: string): unknown => {
-      const code = readFileSync(filePath, 'utf-8');
-      const module = { exports: {} as unknown };
-      const moduleDir = dirname(filePath);
-      const localRequire = (specifier: string) => {
-        if (specifier.startsWith('.')) {
-          const resolved = resolve(moduleDir, specifier);
-          const candidates = [resolved, `${resolved}.js`, `${resolved}.cjs`];
-          for (const candidate of candidates) {
-            if (existsSync(candidate)) {
-              return loadCjsModule(candidate);
-            }
-          }
-        }
-        return baseRequire(specifier);
-      };
-      const wrapper = `(function (exports, require, module, __filename, __dirname) {\n${code}\n})`;
-      const compiled = vm.runInThisContext(wrapper, { filename: filePath });
-      compiled(module.exports, localRequire, module, filePath, moduleDir);
-      return module.exports;
-    };
-    let config: { models?: unknown[] } | undefined;
-    let session: unknown | null = null;
-    try {
-      config = loadCjsModule(configPath) as { models?: unknown[] } | undefined;
-      if (existsSync(sessionPath)) {
-        session = loadCjsModule(sessionPath) as unknown;
-      }
-    } catch (error) {
-      this.logger.warn(
-        `  ⚠️  Failed to generate demo harness from ${configPath}: ${error instanceof Error ? error.message : String(error)}`
-      );
-      return;
-    }
-
-    const configMjsPath = join(demoDir, 'config.mjs');
-    const sessionMjsPath = join(demoDir, 'session.mjs');
-    await writeFile(configMjsPath, `export default ${JSON.stringify(config ?? {}, null, 2)};\n`);
-    await writeFile(sessionMjsPath, `export default ${JSON.stringify(session ?? [], null, 2)};\n`);
-
-    // Generate new demo files using local demo player
-    const deliveryHtml = generateDeliveryDemoHtml(elementName);
-    const authorHtml = generateAuthorDemoHtml(elementName);
-
-    await writeFile(join(demoDir, 'index.html'), deliveryHtml);
-    await writeFile(join(demoDir, 'author.html'), authorHtml);
-
-    // Keep legacy demo files for backward compatibility
-    const demoModule = generateDemoModule();
-    const legacyDemoHtml = generateDemoHtml();
-    await writeFile(join(demoDir, 'demo.mjs'), demoModule);
-    await writeFile(join(demoDir, 'demo.html'), legacyDemoHtml);
   }
 
   private async applyEsmFilter(config: SyncConfig): Promise<void> {

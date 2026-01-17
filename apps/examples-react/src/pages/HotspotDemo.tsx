@@ -123,7 +123,7 @@ export default function HotspotDemo() {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Element Preview</h2>
-            <div className="bg-gray-50 p-6 rounded">
+            <div className="bg-gray-50 p-6 rounded" style={{ position: 'relative', overflow: 'visible' }}>
               <HotspotComponent
                 model={model}
                 session={session}

@@ -5,6 +5,26 @@
 import type { PieEnvironment, PieSession } from '@pie-elements-ng/shared-types';
 
 /**
+ * Simple debug logger factory
+ * Replacement for the 'debug' npm package
+ *
+ * Usage:
+ *   const log = debug('my-component');
+ *   log('message', data); // Only logs if DEBUG environment includes 'my-component'
+ */
+export function debug(namespace: string): (...args: unknown[]) => void {
+  // Check if debugging is enabled for this namespace
+  const isEnabled = typeof process !== 'undefined' &&
+    process.env?.DEBUG?.includes(namespace);
+
+  return (...args: unknown[]) => {
+    if (isEnabled) {
+      console.log(`[${namespace}]`, ...args);
+    }
+  };
+}
+
+/**
  * Check if session is empty
  */
 export function isEmpty(session: PieSession | null | undefined): boolean {

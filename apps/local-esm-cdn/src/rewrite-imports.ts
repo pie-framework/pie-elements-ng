@@ -1,20 +1,57 @@
 export type RewriteOptions = {
   esmShBaseUrl: string;
+  pkg?: string; // e.g., "@pie-lib/render-ui"
+  subpath?: string; // e.g., "controller/index" or empty
 };
 
-function shouldRewrite(specifier: string): boolean {
+function shouldRewriteToEsmSh(specifier: string): boolean {
   if (!specifier) return false;
   if (specifier.startsWith('./') || specifier.startsWith('../')) return false;
   if (specifier.startsWith('/')) return false;
   if (specifier.startsWith('http://') || specifier.startsWith('https://')) return false;
   if (specifier.startsWith('@pie-element/')) return false;
   if (specifier.startsWith('@pie-lib/')) return false;
+  if (specifier.startsWith('@pie-elements-ng/')) return false;
+  if (specifier.startsWith('@pie-framework/')) return false;
   return true;
 }
 
-function toEsmShUrl(specifier: string, esmShBaseUrl: string): string {
-  const base = esmShBaseUrl.endsWith('/') ? esmShBaseUrl : `${esmShBaseUrl}/`;
-  return `${base}${specifier}`;
+function rewriteSpecifier(specifier: string, opts: RewriteOptions): string {
+  // Rewrite external packages to esm.sh
+  if (shouldRewriteToEsmSh(specifier)) {
+    const base = opts.esmShBaseUrl.endsWith('/') ? opts.esmShBaseUrl : `${opts.esmShBaseUrl}/`;
+    return `${base}${specifier}`;
+  }
+
+  // Rewrite relative imports to absolute package imports
+  if (opts.pkg && (specifier.startsWith('./') || specifier.startsWith('../'))) {
+    // For relative imports, convert to absolute package path
+    // e.g., "./feedback.js" in @pie-lib/render-ui becomes "/@pie-lib/render-ui/feedback.js"
+
+    // Remove leading ./ or ../
+    let cleaned = specifier;
+    if (cleaned.startsWith('./')) {
+      cleaned = cleaned.slice(2);
+    } else if (cleaned.startsWith('../')) {
+      // Handle ../ by going up in the subpath
+      // For now, just remove the ../
+      cleaned = cleaned.slice(3);
+    }
+
+    // Construct absolute path
+    if (opts.subpath) {
+      // If we're in a subpath, go up one level
+      const parts = opts.subpath.split('/');
+      parts.pop(); // Remove the file part
+      if (parts.length > 0) {
+        return `/${opts.pkg}/${parts.join('/')}/${cleaned}`;
+      }
+    }
+
+    return `/${opts.pkg}/${cleaned}`;
+  }
+
+  return specifier;
 }
 
 async function tryRewriteWithEsModuleLexer(
@@ -36,7 +73,7 @@ async function tryRewriteWithEsModuleLexer(
     let last = 0;
     for (const i of imports) {
       const spec = code.slice(i.s, i.e);
-      const next = shouldRewrite(spec) ? toEsmShUrl(spec, opts.esmShBaseUrl) : spec;
+      const next = rewriteSpecifier(spec, opts);
       if (next !== spec) {
         out += code.slice(last, i.s);
         out += next;
@@ -51,25 +88,22 @@ async function tryRewriteWithEsModuleLexer(
 }
 
 function rewriteWithRegexFallback(code: string, opts: RewriteOptions): string {
-  const rewriteSpec = (spec: string) =>
-    shouldRewrite(spec) ? toEsmShUrl(spec, opts.esmShBaseUrl) : spec;
-
   // from "x" / from 'x'
   code = code.replace(
     /(\bfrom\s+["'])([^"']+)(["'])/g,
-    (_m, a, spec, c) => `${a}${rewriteSpec(spec)}${c}`
+    (_m, a, spec, c) => `${a}${rewriteSpecifier(spec, opts)}${c}`
   );
 
   // import("x") / import('x')
   code = code.replace(
     /(\bimport\s*\(\s*["'])([^"']+)(["']\s*\))/g,
-    (_m, a, spec, c) => `${a}${rewriteSpec(spec)}${c}`
+    (_m, a, spec, c) => `${a}${rewriteSpecifier(spec, opts)}${c}`
   );
 
   // import "x" / import 'x' (side-effect import)
   code = code.replace(
     /(\bimport\s+["'])([^"']+)(["'])/g,
-    (_m, a, spec, c) => `${a}${rewriteSpec(spec)}${c}`
+    (_m, a, spec, c) => `${a}${rewriteSpecifier(spec, opts)}${c}`
   );
 
   return code;
