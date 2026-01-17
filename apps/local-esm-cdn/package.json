@@ -3,10 +3,49 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./embedded": {
+      "types": "./src/embedded.ts",
+      "default": "./src/embedded.ts"
+    },
+    "./adapters/vite": {
+      "types": "./src/adapters/vite.ts",
+      "default": "./src/adapters/vite.ts"
+    },
+    "./adapters/sveltekit": {
+      "types": "./src/adapters/sveltekit.ts",
+      "default": "./src/adapters/sveltekit.ts"
+    },
+    "./adapters/connect": {
+      "types": "./src/adapters/connect.ts",
+      "default": "./src/adapters/connect.ts"
+    }
+  },
   "scripts": {
-    "dev": "bun run src/index.ts"
+    "dev": "bun run src/index.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:standalone": "bun test test/standalone.test.ts",
+    "test:embedded": "bun test test/embedded.test.ts",
+    "test:adapters": "bun test test/adapters.test.ts"
   },
   "dependencies": {
     "es-module-lexer": "^2.0.0"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0 || ^6.0.0",
+    "@sveltejs/kit": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    },
+    "@sveltejs/kit": {
+      "optional": true
+    }
   }
 }

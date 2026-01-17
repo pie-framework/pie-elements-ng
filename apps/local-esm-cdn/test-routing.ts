@@ -31,7 +31,7 @@ async function main() {
   console.log('🧪 Testing local-esm-cdn routing...\n');
 
   // Wait a bit for server to be ready
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   // Test 1: Health check
   try {
@@ -108,7 +108,8 @@ async function main() {
     const res = await fetch(`${BASE_URL}/@pie-element/hotspot`);
     const code = await res.text();
     const hasLocalImports = code.includes('@pie-lib/') || code.includes('@pie-elements-ng/');
-    const hasNoEsmShForLocal = !code.includes('esm.sh/@pie-lib/') && !code.includes('esm.sh/@pie-elements-ng/');
+    const hasNoEsmShForLocal =
+      !code.includes('esm.sh/@pie-lib/') && !code.includes('esm.sh/@pie-elements-ng/');
     test(
       'Local imports not rewritten to esm.sh',
       hasNoEsmShForLocal,
@@ -138,16 +139,18 @@ async function main() {
 
   // Summary
   console.log('\n' + '='.repeat(60));
-  const passed = results.filter(r => r.pass).length;
+  const passed = results.filter((r) => r.pass).length;
   const total = results.length;
   const icon = passed === total ? '🎉' : '⚠️';
   console.log(`${icon} Results: ${passed}/${total} tests passed`);
 
   if (passed < total) {
     console.log('\nFailed tests:');
-    results.filter(r => !r.pass).forEach(r => {
-      console.log(`  - ${r.name}: ${r.message}`);
-    });
+    results
+      .filter((r) => !r.pass)
+      .forEach((r) => {
+        console.log(`  - ${r.name}: ${r.message}`);
+      });
     process.exit(1);
   }
 }

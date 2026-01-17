@@ -14,8 +14,7 @@ import type { PieEnvironment, PieSession } from '@pie-elements-ng/shared-types';
  */
 export function debug(namespace: string): (...args: unknown[]) => void {
   // Check if debugging is enabled for this namespace
-  const isEnabled = typeof process !== 'undefined' &&
-    process.env?.DEBUG?.includes(namespace);
+  const isEnabled = typeof process !== 'undefined' && process.env?.DEBUG?.includes(namespace);
 
   return (...args: unknown[]) => {
     if (isEnabled) {
@@ -99,4 +98,32 @@ function seededRandom(seed: number): () => number {
     value = (value * 9301 + 49297) % 233280;
     return value / 233280;
   };
+}
+
+export type AssignPropsOptions = {
+  /**
+   * When true (default), keys with `undefined` values are skipped.
+   * This prevents accidentally overwriting existing values on the element.
+   *
+   * Note: `null` is still assigned (it is often a meaningful value).
+   */
+  skipUndefined?: boolean;
+};
+
+/**
+ * Assign a set of JS properties onto a DOM element.
+ *
+ * This is the preferred way to pass values into our custom elements, especially
+ * Svelte custom elements, where camelCase props do not map cleanly via HTML attributes.
+ */
+export function assignProps(
+  node: HTMLElement,
+  props: Record<string, unknown>,
+  options: AssignPropsOptions = {}
+): void {
+  const { skipUndefined = true } = options;
+  for (const [key, value] of Object.entries(props)) {
+    if (skipUndefined && value === undefined) continue;
+    (node as Record<string, unknown>)[key] = value;
+  }
 }

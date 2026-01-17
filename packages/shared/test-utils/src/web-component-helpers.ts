@@ -5,6 +5,7 @@
  */
 
 import type { PieModel, PieSession } from '@pie-elements-ng/shared-types';
+import { assignProps } from '@pie-elements-ng/shared-utils';
 
 /**
  * Create a test container for web components
@@ -53,9 +54,7 @@ export async function mountComponent<T extends HTMLElement>(
   const element = document.createElement(tagName) as T;
 
   if (props) {
-    for (const [key, value] of Object.entries(props)) {
-      (element as Record<string, unknown>)[key] = value;
-    }
+    assignProps(element, props);
   }
 
   container.appendChild(element);
