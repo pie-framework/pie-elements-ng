@@ -1,6 +1,15 @@
 import type { PieEnvironment } from '@pie-elements-ng/shared-types';
 import { describe, expect, it, vi } from 'vitest';
-import { assignProps, clamp, debounce, isEmpty, showFeedback, showRationale, shuffle, uuid } from '../src/utils';
+import {
+  assignProps,
+  clamp,
+  debounce,
+  isEmpty,
+  showFeedback,
+  showRationale,
+  shuffle,
+  uuid,
+} from '../src/utils';
 
 describe('isEmpty', () => {
   it('returns true for null', () => {
@@ -275,9 +284,13 @@ describe('assignProps', () => {
     const element = document.createElement('div');
     (element as any).prop = 'original';
 
-    assignProps(element, {
-      prop: undefined,
-    }, { skipUndefined: false });
+    assignProps(
+      element,
+      {
+        prop: undefined,
+      },
+      { skipUndefined: false }
+    );
 
     expect((element as any).prop).toBe(undefined);
   });
