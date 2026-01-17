@@ -1,6 +1,6 @@
 import type { PieEnvironment } from '@pie-elements-ng/shared-types';
 import { describe, expect, it, vi } from 'vitest';
-import { clamp, debounce, isEmpty, showFeedback, showRationale, shuffle, uuid } from '../src/utils';
+import { assignProps, clamp, debounce, isEmpty, showFeedback, showRationale, shuffle, uuid } from '../src/utils';
 
 describe('isEmpty', () => {
   it('returns true for null', () => {
@@ -232,5 +232,109 @@ describe('shuffle', () => {
     expect(result.length).toBe(2);
     expect(result).toContain('a');
     expect(result).toContain('b');
+  });
+});
+
+describe('assignProps', () => {
+  it('assigns properties to HTMLElement', () => {
+    const element = document.createElement('div');
+    assignProps(element, {
+      foo: 'bar',
+      baz: 123,
+    });
+
+    expect((element as any).foo).toBe('bar');
+    expect((element as any).baz).toBe(123);
+  });
+
+  it('skips undefined values by default', () => {
+    const element = document.createElement('div');
+    (element as any).existing = 'original';
+
+    assignProps(element, {
+      existing: undefined,
+      newProp: 'value',
+    });
+
+    expect((element as any).existing).toBe('original');
+    expect((element as any).newProp).toBe('value');
+  });
+
+  it('assigns null values', () => {
+    const element = document.createElement('div');
+    (element as any).prop = 'original';
+
+    assignProps(element, {
+      prop: null,
+    });
+
+    expect((element as any).prop).toBe(null);
+  });
+
+  it('assigns undefined when skipUndefined is false', () => {
+    const element = document.createElement('div');
+    (element as any).prop = 'original';
+
+    assignProps(element, {
+      prop: undefined,
+    }, { skipUndefined: false });
+
+    expect((element as any).prop).toBe(undefined);
+  });
+
+  it('handles complex objects', () => {
+    const element = document.createElement('div');
+    const obj = { nested: { value: 42 } };
+    const arr = [1, 2, 3];
+
+    assignProps(element, {
+      object: obj,
+      array: arr,
+    });
+
+    expect((element as any).object).toBe(obj);
+    expect((element as any).array).toBe(arr);
+  });
+
+  it('handles functions', () => {
+    const element = document.createElement('div');
+    const fn = () => 'test';
+
+    assignProps(element, {
+      callback: fn,
+    });
+
+    expect((element as any).callback).toBe(fn);
+    expect((element as any).callback()).toBe('test');
+  });
+
+  it('handles empty props object', () => {
+    const element = document.createElement('div');
+
+    expect(() => assignProps(element, {})).not.toThrow();
+  });
+
+  it('handles boolean values', () => {
+    const element = document.createElement('div');
+
+    assignProps(element, {
+      enabled: true,
+      disabled: false,
+    });
+
+    expect((element as any).enabled).toBe(true);
+    expect((element as any).disabled).toBe(false);
+  });
+
+  it('handles zero and empty string', () => {
+    const element = document.createElement('div');
+
+    assignProps(element, {
+      count: 0,
+      text: '',
+    });
+
+    expect((element as any).count).toBe(0);
+    expect((element as any).text).toBe('');
   });
 });

@@ -124,6 +124,6 @@ export function assignProps(
   const { skipUndefined = true } = options;
   for (const [key, value] of Object.entries(props)) {
     if (skipUndefined && value === undefined) continue;
-    (node as Record<string, unknown>)[key] = value;
+    (node as unknown as Record<string, unknown>)[key] = value;
   }
 }
