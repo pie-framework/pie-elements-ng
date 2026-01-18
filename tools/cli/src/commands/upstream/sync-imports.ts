@@ -269,7 +269,8 @@ export function transformToAssignProps(content: string): string {
 
   // Pattern 1: Object.entries(props).forEach with element[key] = value
   // Matches: Object.entries(props).forEach(([key, value]) => { element[key] = value; });
-  const pattern1 = /Object\.entries\((\w+)\)\.forEach\(\(\[(\w+),\s*(\w+)\]\)\s*=>\s*\{\s*(\w+)\[\2\]\s*=\s*\3;\s*\}\);?/g;
+  const pattern1 =
+    /Object\.entries\((\w+)\)\.forEach\(\(\[(\w+),\s*(\w+)\]\)\s*=>\s*\{\s*(\w+)\[\2\]\s*=\s*\3;\s*\}\);?/g;
   const matches1 = Array.from(transformed.matchAll(pattern1));
 
   for (const match of matches1) {
@@ -281,7 +282,8 @@ export function transformToAssignProps(content: string): string {
 
   // Pattern 2: for...of loop with Object.entries
   // Matches: for (const [key, value] of Object.entries(props)) { element[key] = value; }
-  const pattern2 = /for\s*\(const\s*\[(\w+),\s*(\w+)\]\s*of\s*Object\.entries\((\w+)\)\)\s*\{\s*(\w+)\[\1\]\s*=\s*\2;\s*\}/g;
+  const pattern2 =
+    /for\s*\(const\s*\[(\w+),\s*(\w+)\]\s*of\s*Object\.entries\((\w+)\)\)\s*\{\s*(\w+)\[\1\]\s*=\s*\2;\s*\}/g;
   const matches2 = Array.from(transformed.matchAll(pattern2));
 
   for (const match of matches2) {

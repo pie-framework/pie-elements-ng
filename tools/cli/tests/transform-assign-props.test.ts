@@ -10,7 +10,7 @@ Object.entries(props).forEach(([key, value]) => { element[key] = value; });
 
     const output = transformToAssignProps(input);
 
-    expect(output).toContain("assignProps(element, props);");
+    expect(output).toContain('assignProps(element, props);');
     expect(output).toContain("import { assignProps } from '@pie-elements-ng/shared-utils';");
     expect(output).not.toContain('Object.entries');
   });
@@ -23,7 +23,7 @@ for (const [key, value] of Object.entries(props)) { element[key] = value; }
 
     const output = transformToAssignProps(input);
 
-    expect(output).toContain("assignProps(element, props);");
+    expect(output).toContain('assignProps(element, props);');
     expect(output).toContain("import { assignProps } from '@pie-elements-ng/shared-utils';");
     expect(output).not.toContain('Object.entries');
   });
@@ -71,8 +71,8 @@ for (const [key, value] of Object.entries(props2)) { el2[key] = value; }
 
     const output = transformToAssignProps(input);
 
-    expect(output).toContain("assignProps(el1, props1);");
-    expect(output).toContain("assignProps(el2, props2);");
+    expect(output).toContain('assignProps(el1, props1);');
+    expect(output).toContain('assignProps(el2, props2);');
     expect(output).not.toContain('Object.entries');
   });
 
@@ -96,6 +96,6 @@ Object.entries(properties).forEach(([k, v]) => { node[k] = v; });
 
     const output = transformToAssignProps(input);
 
-    expect(output).toContain("assignProps(node, properties);");
+    expect(output).toContain('assignProps(node, properties);');
   });
 });
