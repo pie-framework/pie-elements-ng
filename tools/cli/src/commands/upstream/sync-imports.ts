@@ -246,3 +246,72 @@ export function transformPackageJsonPieEvents<T extends Record<string, any>>(pac
 
   return transformed;
 }
+
+/**
+ * Transform direct property assignment patterns to use assignProps utility
+ *
+ * Replaces patterns like:
+ *   Object.entries(props).forEach(([key, value]) => { element[key] = value; });
+ * With:
+ *   assignProps(element, props);
+ *
+ * And adds the import if not present.
+ *
+ * NOTE: This transform is available but NOT enabled in the sync pipeline by default.
+ * Only enable it if this pattern appears frequently in upstream code and needs
+ * to be refactored automatically. For one-off cases, manual refactoring is preferred.
+ *
+ * To enable: Import and call this in sync-pielib-strategy.ts after other transforms.
+ */
+export function transformToAssignProps(content: string): string {
+  let transformed = content;
+  let needsImport = false;
+
+  // Pattern 1: Object.entries(props).forEach with element[key] = value
+  // Matches: Object.entries(props).forEach(([key, value]) => { element[key] = value; });
+  const pattern1 = /Object\.entries\((\w+)\)\.forEach\(\(\[(\w+),\s*(\w+)\]\)\s*=>\s*\{\s*(\w+)\[\2\]\s*=\s*\3;\s*\}\);?/g;
+  const matches1 = Array.from(transformed.matchAll(pattern1));
+
+  for (const match of matches1) {
+    const [fullMatch, propsVar, _keyVar, _valueVar, elementVar] = match;
+    const replacement = `assignProps(${elementVar}, ${propsVar});`;
+    transformed = transformed.replace(fullMatch, replacement);
+    needsImport = true;
+  }
+
+  // Pattern 2: for...of loop with Object.entries
+  // Matches: for (const [key, value] of Object.entries(props)) { element[key] = value; }
+  const pattern2 = /for\s*\(const\s*\[(\w+),\s*(\w+)\]\s*of\s*Object\.entries\((\w+)\)\)\s*\{\s*(\w+)\[\1\]\s*=\s*\2;\s*\}/g;
+  const matches2 = Array.from(transformed.matchAll(pattern2));
+
+  for (const match of matches2) {
+    const [fullMatch, _keyVar, _valueVar, propsVar, elementVar] = match;
+    const replacement = `assignProps(${elementVar}, ${propsVar});`;
+    transformed = transformed.replace(fullMatch, replacement);
+    needsImport = true;
+  }
+
+  // Add import if needed and not already present
+  if (needsImport && !transformed.includes("from '@pie-elements-ng/shared-utils'")) {
+    // Find where to insert the import (after other imports)
+    const importMatch = transformed.match(/(import\s+.*?from\s+['"].*?['"];?\s*\n)+/);
+    if (importMatch && importMatch.index !== undefined) {
+      const lastImportEnd = importMatch.index + importMatch[0].length;
+      transformed =
+        transformed.slice(0, lastImportEnd) +
+        "import { assignProps } from '@pie-elements-ng/shared-utils';\n" +
+        transformed.slice(lastImportEnd);
+    } else {
+      // No imports found, add at the beginning (after any leading comments)
+      const firstNonCommentLine = transformed.search(/^(?!\/\/|\/\*|\*|$)/m);
+      if (firstNonCommentLine !== -1) {
+        transformed =
+          transformed.slice(0, firstNonCommentLine) +
+          "import { assignProps } from '@pie-elements-ng/shared-utils';\n\n" +
+          transformed.slice(firstNonCommentLine);
+      }
+    }
+  }
+
+  return transformed;
+}
