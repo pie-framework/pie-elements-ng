@@ -17,6 +17,16 @@ function shouldRewriteToEsmSh(specifier: string): boolean {
 }
 
 function rewriteSpecifier(specifier: string, opts: RewriteOptions): string {
+  // Rewrite PIE packages to use /@pie- prefix for local serving
+  if (
+    specifier.startsWith('@pie-element/') ||
+    specifier.startsWith('@pie-lib/') ||
+    specifier.startsWith('@pie-elements-ng/') ||
+    specifier.startsWith('@pie-framework/')
+  ) {
+    return specifier.replace('@pie-', '/@pie-');
+  }
+
   // Rewrite external packages to esm.sh
   if (shouldRewriteToEsmSh(specifier)) {
     const base = opts.esmShBaseUrl.endsWith('/') ? opts.esmShBaseUrl : `${opts.esmShBaseUrl}/`;
@@ -25,6 +35,25 @@ function rewriteSpecifier(specifier: string, opts: RewriteOptions): string {
 
   // Rewrite relative imports to absolute package imports
   if (opts.pkg && (specifier.startsWith('./') || specifier.startsWith('../'))) {
+    // SPECIAL CASE: Bun bundler creates relative imports to node_modules/.bun/
+    // These should be treated as external dependencies and proxied to esm.sh
+    if (specifier.includes('/node_modules/.bun/')) {
+      // Extract the actual package name from the Bun internal path
+      // e.g., "./node_modules/.bun/react-transition-group@4.4.5_abc/node_modules/react-transition-group/esm/CSSTransition.js"
+      // becomes "react-transition-group/esm/CSSTransition.js"
+      const match = specifier.match(
+        /\/node_modules\/([^@/]+)(?:@[^/]+)?\/node_modules\/([^/]+)\/(.+)/
+      );
+      if (match) {
+        const packageName = match[2]; // e.g., "react-transition-group"
+        const subpath = match[3]; // e.g., "esm/CSSTransition.js"
+        const base = opts.esmShBaseUrl.endsWith('/') ? opts.esmShBaseUrl : `${opts.esmShBaseUrl}/`;
+        return `${base}${packageName}/${subpath}`;
+      }
+      // If we can't parse it, skip rewriting (will likely fail, but better than creating invalid path)
+      return specifier;
+    }
+
     // For relative imports, convert to absolute package path
     // e.g., "./feedback.js" in @pie-lib/render-ui becomes "/@pie-lib/render-ui/feedback.js"
 
@@ -63,7 +92,7 @@ async function tryRewriteWithEsModuleLexer(
     // If it's missing, we'll fall back to a simple regex approach.
     const mod = (await import('es-module-lexer')) as unknown as {
       init: Promise<void>;
-      parse: (source: string) => [{ s: number; e: number }[], unknown];
+      parse: (source: string) => [{ s: number; e: number; d: number }[], unknown];
     };
 
     await mod.init;
@@ -73,11 +102,38 @@ async function tryRewriteWithEsModuleLexer(
     let last = 0;
     for (const i of imports) {
       const spec = code.slice(i.s, i.e);
-      const next = rewriteSpecifier(spec, opts);
-      if (next !== spec) {
-        out += code.slice(last, i.s);
-        out += next;
-        last = i.e;
+
+      // Skip if this is a dynamic import with a variable/expression (not a string literal)
+      // Dynamic imports have d >= 0. Static imports have d === -1.
+      if (i.d >= 0) {
+        // Check if the specifier is actually a string literal
+        const isStringLiteral =
+          (spec.startsWith('"') && spec.endsWith('"')) ||
+          (spec.startsWith("'") && spec.endsWith("'")) ||
+          (spec.startsWith('`') && spec.endsWith('`'));
+
+        if (!isStringLiteral) {
+          // Skip rewriting variables/expressions like: import(variableName)
+          continue;
+        }
+
+        // For string literals in dynamic imports, remove quotes before rewriting
+        const quote = spec[0];
+        const unquoted = spec.slice(1, -1);
+        const next = rewriteSpecifier(unquoted, opts);
+        if (next !== unquoted) {
+          out += code.slice(last, i.s);
+          out += `${quote}${next}${quote}`; // Re-wrap in same quotes
+          last = i.e;
+        }
+      } else {
+        // Static import - rewrite normally (specifier doesn't include quotes)
+        const next = rewriteSpecifier(spec, opts);
+        if (next !== spec) {
+          out += code.slice(last, i.s);
+          out += next;
+          last = i.e;
+        }
       }
     }
     out += code.slice(last);

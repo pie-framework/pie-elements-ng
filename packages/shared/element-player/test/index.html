@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PIE Element Player - Standalone Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .header {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.8rem;
+      color: #333;
+    }
+
+    .info {
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .info code {
+      background: #f0f0f0;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+
+    .test-container {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .status {
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .status.loading {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🧪 PIE Element Player - Standalone Test</h1>
+    <p class="info">
+      This page tests the <code>&lt;pie-element-player&gt;</code> web component in isolation.
+      <br>Make sure local-esm-cdn is running on <code>http://localhost:5179</code>
+      and the hotspot element is built.
+    </p>
+  </div>
+
+  <div class="test-container">
+    <div id="status" class="status loading">Loading element player...</div>
+
+    <pie-element-player
+      element-name="hotspot"
+      cdn-url="http://localhost:5179"
+      show-configure="false"
+      debug="true"
+    ></pie-element-player>
+  </div>
+
+  <script type="module">
+    // Import the element player (registers custom element)
+    import '../dist/pie-element-player.js';
+
+    const statusEl = document.getElementById('status');
+
+    // Wait for the custom element to be defined
+    customElements.whenDefined('pie-element-player').then(() => {
+      console.log('✓ pie-element-player custom element is defined');
+      statusEl.textContent = '✓ Custom element registered. Loading element...';
+
+      const player = document.querySelector('pie-element-player');
+
+      if (player) {
+        // Set initial model and session
+        const model = {
+          id: '1',
+          element: 'hotspot',
+          imageUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjMwMCIgeT0iMjAwIiBmb250LXNpemU9IjI0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2Ij5DbGljayBhcmVhcyB0byB0ZXN0PC90ZXh0Pjwvc3ZnPg==',
+          hotspotColor: 'rgba(137, 183, 244, 0.65)',
+          hotspotList: ['rgba(137, 183, 244, 0.65)'],
+          multipleCorrect: false,
+          partialScoring: false,
+          prompt: 'Click on the hotspot area',
+          promptEnabled: true,
+          rationaleEnabled: true,
+          teacherInstructionsEnabled: true,
+          studentInstructionsEnabled: true,
+          shapes: {
+            rectangles: [
+              {
+                height: 100,
+                width: 150,
+                x: 50,
+                y: 50,
+                correct: true
+              },
+              {
+                height: 100,
+                width: 150,
+                x: 400,
+                y: 250,
+                correct: false
+              }
+            ],
+            polygons: []
+          }
+        };
+
+        const session = {
+          id: '1',
+          element: 'hotspot',
+          answers: []
+        };
+
+        // Set properties
+        player.model = model;
+        player.session = session;
+
+        statusEl.className = 'status success';
+        statusEl.textContent = '✓ Element player initialized successfully';
+
+        console.log('✓ Element player props set:', { model, session });
+
+        // Listen for session changes
+        player.addEventListener('session-changed', (e) => {
+          console.log('Session changed:', e.detail);
+        });
+      } else {
+        statusEl.className = 'status error';
+        statusEl.textContent = '✗ Could not find pie-element-player element';
+      }
+    }).catch((error) => {
+      console.error('Error initializing element player:', error);
+      statusEl.className = 'status error';
+      statusEl.textContent = `✗ Error: ${error.message}`;
+    });
+  </script>
+</body>
+</html>

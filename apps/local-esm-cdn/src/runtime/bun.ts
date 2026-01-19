@@ -85,13 +85,13 @@ export async function createStandaloneServer(
   // Try to start server
   let server: ReturnType<typeof Bun.serve> | null = null;
   try {
-    server = Bun.serve({ port, fetch: fetchHandler });
+    server = Bun.serve({ port, fetch: fetchHandler } as any);
   } catch (e: any) {
     const code = e?.code ?? e?.errno ?? e?.cause?.code;
     if (code === 'EADDRINUSE' && port !== 0 && allowRandomPortFallback) {
       // eslint-disable-next-line no-console
       console.warn(`[local-esm-cdn] Port ${port} is in use. Retrying with a random free port...`);
-      server = Bun.serve({ port: 0, fetch: fetchHandler });
+      server = Bun.serve({ port: 0, fetch: fetchHandler } as any);
     } else {
       throw e;
     }

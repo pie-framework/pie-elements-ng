@@ -40,11 +40,16 @@ async function main() {
     process.exit(1);
   }
 
-  // Always build to ensure the element is up to date
-  console.log(`📦 Building element '${element}' and its dependencies...`);
+  // Always build to ensure the element and element-player are up to date
+  console.log(
+    `📦 Building element '${element}' and its dependencies (including element-player)...`
+  );
   console.log('');
 
-  const buildProcess = spawn('bun', ['run', 'build', '--filter', `@pie-element/${element}...`], {
+  // Build the element; Turbo's `dependsOn: ["^build"]` will also build its deps.
+  // NOTE: In Turborepo filter syntax, `pkg...` means "dependents of pkg" (not dependencies),
+  // which can accidentally skip building the element itself.
+  const buildProcess = spawn('bun', ['run', 'build', '--filter', `@pie-element/${element}`], {
     cwd: process.cwd(),
     stdio: 'inherit',
     shell: true,
@@ -74,10 +79,11 @@ async function main() {
   console.log(`🌐 Server: http://localhost:5174`);
   console.log('');
 
-  const child = spawn('bun', ['run', 'demo'], {
-    cwd: elementDir,
+  // Start demo with static server (serves pre-built bundles like pie-players)
+  const demoDir = resolve(elementDir, 'docs/demo');
+  const child = spawn('node', [resolve(process.cwd(), 'scripts/static-demo-server.js'), demoDir], {
     stdio: 'inherit',
-    shell: true,
+    shell: false,
   });
 
   child.on('error', (error) => {

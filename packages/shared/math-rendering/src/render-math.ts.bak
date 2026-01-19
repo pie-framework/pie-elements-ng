@@ -3,13 +3,10 @@
  *
  * Framework-agnostic implementation that works in any browser environment.
  * Handles both LaTeX (via data-latex attributes) and MathML elements.
- *
- * Note: KaTeX CSS must be loaded separately in the HTML:
- * <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-
  */
 
 import katex from 'katex';
+import 'katex/dist/katex.css';
 import { mmlToLatex } from './mml-to-latex';
 import { wrapMath, unWrapMath } from './normalization';
 

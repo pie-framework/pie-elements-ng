@@ -104,6 +104,18 @@ export async function handleRequest(
     subpath: parsed.subpath,
   });
 
+  // Log if rewriting changed the code
+  if (rewritten === code) {
+    console.log(
+      `[local-esm-cdn] No rewrites for ${parsed.pkg}${parsed.subpath ? '/' + parsed.subpath : ''}`
+    );
+  } else {
+    const changes = rewritten.length - code.length;
+    console.log(
+      `[local-esm-cdn] Rewrote ${parsed.pkg}${parsed.subpath ? '/' + parsed.subpath : ''} (${changes > 0 ? '+' : ''}${changes} chars)`
+    );
+  }
+
   return js(rewritten, {
     headers: {
       'x-local-esm-cdn-file': entryFile,

@@ -60,4 +60,5 @@ export function createLocalEsmCdn(config: Partial<LocalEsmCdnConfig>): LocalEsmC
 }
 
 // Re-export types for convenience
-export type { LocalEsmCdnConfig, Health } from './core/config.js';
+export type { LocalEsmCdnConfig } from './core/config.js';
+export type { Health } from './core/health.js';

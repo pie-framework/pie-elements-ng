@@ -1,0 +1,19 @@
+import { defineConfig } from 'vite';
+import { createVitePlugin as createLocalEsmCdnPlugin } from '@pie-apps/local-esm-cdn/adapters/vite';
+import path from 'node:path';
+
+export default defineConfig({
+  plugins: [
+    createLocalEsmCdnPlugin({
+      repoRoot: path.resolve(__dirname, '../../../../..'),
+      esmShBaseUrl: 'https://esm.sh',
+      buildScope: 'none'
+    })
+  ],
+  server: {
+    port: 5174
+  },
+  preview: {
+    port: 5174
+  }
+});

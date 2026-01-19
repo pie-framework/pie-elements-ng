@@ -30,42 +30,50 @@ export function createVitePlugin(config: Partial<LocalEsmCdnConfig>): Plugin {
 
   return {
     name: 'vite-plugin-local-esm-cdn',
-    configureServer(server) {
-      server.middlewares.use(async (req, res, next) => {
-        // Only handle PIE package requests
-        if (!req.url?.startsWith('/@pie-')) {
-          return next();
+    enforce: 'pre', // Run before other plugins
+
+    resolveId(id) {
+      // Mark PIE packages for handling (with or without leading slash)
+      if (id.startsWith('@pie-') || id.startsWith('/@pie-')) {
+        // Normalize to always have the leading slash
+        const normalizedId = id.startsWith('/@') ? id : `/${id}`;
+        console.log(`[vite-plugin-local-esm-cdn] resolveId: ${id} -> ${normalizedId}`);
+        return { id: normalizedId, external: false };
+      }
+      return null;
+    },
+
+    async load(id) {
+      // Only handle PIE package requests
+      if (!id.startsWith('/@pie-')) {
+        return null;
+      }
+
+      try {
+        console.log(`[vite-plugin-local-esm-cdn] Loading: ${id}`);
+
+        // Convert to Web Request
+        const url = `http://localhost${id}`;
+        const request = new Request(url, {
+          method: 'GET',
+        });
+
+        // Get response from CDN
+        const response = await cdn.handler(request);
+        console.log(
+          `[vite-plugin-local-esm-cdn] Response: ${response.status} ${response.statusText}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to load ${id}: ${response.status} ${response.statusText}`);
         }
 
-        try {
-          // Convert Node.js request to Web Request
-          const protocol = req.socket.encrypted ? 'https' : 'http';
-          const host = req.headers.host || 'localhost';
-          const url = `${protocol}://${host}${req.url}`;
-
-          const request = new Request(url, {
-            method: req.method,
-            headers: req.headers as HeadersInit,
-          });
-
-          // Get response from CDN
-          const response = await cdn.handler(request);
-
-          // Convert Web Response to Node.js response
-          res.statusCode = response.status;
-          response.headers.forEach((value, key) => {
-            res.setHeader(key, value);
-          });
-
-          const text = await response.text();
-          res.end(text);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('[vite-plugin-local-esm-cdn] Error:', error);
-          res.statusCode = 500;
-          res.end('Internal Server Error');
-        }
-      });
+        const code = await response.text();
+        return { code, map: null };
+      } catch (error) {
+        console.error('[vite-plugin-local-esm-cdn] Error:', error);
+        throw error;
+      }
     },
   };
 }

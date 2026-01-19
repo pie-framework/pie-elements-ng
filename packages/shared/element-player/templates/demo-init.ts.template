@@ -1,0 +1,35 @@
+/**
+ * {{MODE}} Demo - {{ELEMENT_NAME}} Element
+ *
+ * Simple demo using the pie-{{MODE}}-element-player component
+ */
+
+// Import the player components (loads and registers custom elements)
+import '../../../../../shared/element-player/dist/pie-element-player.js';
+import config from '../config.mjs';
+import sessions from '../session.mjs';
+
+// Extract model and session from imported data
+const model = Array.isArray(config?.models) ? config.models[0] : config;
+const session = Array.isArray(sessions) ? sessions[0] : sessions;
+
+console.log('[{{MODE}}] Initializing {{MODE}} demo');
+
+// Get player element
+const player = document.getElementById('{{MODE}}-player') as any;
+
+if (!player) {
+  console.error('[{{MODE}}] Player element not found');
+  throw new Error('Player element not found');
+}
+
+// Set properties
+player.model = model;
+player.session = session;
+
+// Listen for session changes
+player.addEventListener('session-changed', (e: Event) => {
+  console.log('[{{MODE}}] Session changed:', (e as CustomEvent).detail);
+});
+
+console.log('[{{MODE}}] {{MODE}} demo initialized');

@@ -3,35 +3,43 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./embedded": {
-      "types": "./src/embedded.ts",
-      "default": "./src/embedded.ts"
+      "types": "./dist/embedded.d.ts",
+      "default": "./dist/embedded.js"
     },
     "./adapters/vite": {
-      "types": "./src/adapters/vite.ts",
-      "default": "./src/adapters/vite.ts"
+      "types": "./dist/adapters/vite.d.ts",
+      "default": "./dist/adapters/vite.js"
     },
     "./adapters/sveltekit": {
-      "types": "./src/adapters/sveltekit.ts",
-      "default": "./src/adapters/sveltekit.ts"
+      "types": "./dist/adapters/sveltekit.d.ts",
+      "default": "./dist/adapters/sveltekit.js"
     },
     "./adapters/connect": {
-      "types": "./src/adapters/connect.ts",
-      "default": "./src/adapters/connect.ts"
+      "types": "./dist/adapters/connect.d.ts",
+      "default": "./dist/adapters/connect.js"
     }
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "dev": "bun run src/index.ts",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:standalone": "bun test test/standalone.test.ts",
     "test:embedded": "bun test test/embedded.test.ts",
-    "test:adapters": "bun test test/adapters.test.ts"
+    "test:adapters": "bun test test/adapters.test.ts",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "es-module-lexer": "^2.0.0"

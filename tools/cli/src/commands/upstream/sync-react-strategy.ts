@@ -142,6 +142,13 @@ export class ReactComponentsStrategy implements SyncStrategy {
       wrotePkgJson = await this.ensureElementPackageJson(pkg, elementDir, config, logger);
       await this.ensureElementViteConfig(pkg, elementDir, logger);
 
+      // Ensure IIFE build configuration
+      await this.ensureIifeEntryPoint(pkg, elementDir, config, logger);
+      await this.ensureIifeViteConfig(pkg, elementDir, config, logger);
+
+      // Ensure demo structure
+      await this.ensureElementDemoStructure(pkg, elementDir, config, logger);
+
       if (elementChanged || wrotePkgJson) {
         this.touchedElementPackages.add(pkg);
       }
@@ -496,7 +503,14 @@ export class ReactComponentsStrategy implements SyncStrategy {
     }
     const scripts = pkg.scripts as Record<string, string>;
     // Always update build scripts to use bun x for workspace resolution
-    scripts.build = 'bun x vite build && bun x tsc --emitDeclarationOnly';
+    // Include IIFE build if IIFE entry point exists
+    const hasIifeEntry = existsSync(join(elementDir, 'src/index.iife.ts'));
+    if (hasIifeEntry) {
+      scripts.build =
+        'bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly';
+    } else {
+      scripts.build = 'bun x vite build && bun x tsc --emitDeclarationOnly';
+    }
     scripts.dev = 'bun x vite';
     scripts.demo = 'bun x vite --mode demo';
     scripts.test = 'bun x vitest run';
@@ -697,5 +711,181 @@ ${entryLines}
   },
 }));
 `;
+  }
+
+  /**
+   * Ensure IIFE entry point exists for element
+   */
+  private async ensureIifeEntryPoint(
+    elementName: string,
+    elementDir: string,
+    _config: SyncConfig,
+    _logger: any
+  ): Promise<void> {
+    const iifeEntryPath = join(elementDir, 'src/index.iife.ts');
+
+    // Check if main entry point exists
+    const mainEntryExists = existsAny([
+      join(elementDir, 'src/index.ts'),
+      join(elementDir, 'src/index.tsx'),
+    ]);
+
+    if (!mainEntryExists) {
+      return; // No main entry, skip IIFE
+    }
+
+    const iifeContent = `/**
+ * IIFE entry point for ${elementName} element
+ * This file is only used for IIFE builds and includes auto-registration
+ *
+ * @sync-generated - Auto-generated during sync from pie-elements
+ */
+
+import Element from './index';
+
+// Auto-register the custom element for IIFE mode
+if (typeof window !== 'undefined' && !customElements.get('${elementName}-element')) {
+  customElements.define('${elementName}-element', Element);
+}
+
+// Export for IIFE global
+export default Element;
+`;
+
+    await writeFile(iifeEntryPath, iifeContent, 'utf-8');
+  }
+
+  /**
+   * Ensure IIFE Vite config exists for element
+   */
+  private async ensureIifeViteConfig(
+    elementName: string,
+    elementDir: string,
+    _config: SyncConfig,
+    _logger: any
+  ): Promise<void> {
+    const iifeViteConfigPath = join(elementDir, 'vite.config.iife.ts');
+
+    // Check if IIFE entry exists
+    if (!existsSync(join(elementDir, 'src/index.iife.ts'))) {
+      return;
+    }
+
+    // Compute global name (e.g., "hotspot" → "HotspotElement")
+    const globalName =
+      elementName
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('') + 'Element';
+
+    const config = `import { resolve } from 'node:path';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [react()],
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
+  build: {
+    emptyOutDir: false, // Don't wipe existing ESM builds
+    lib: {
+      entry: resolve(__dirname, 'src/index.iife.ts'),
+      name: '${globalName}',
+      fileName: () => 'index.iife.js',
+      formats: ['iife'] as const,
+    },
+    rollupOptions: {
+      external: (id: string) => {
+        // Bundle everything including React and math-rendering
+        // This creates a fully self-contained IIFE bundle
+        return false;
+      },
+      output: {
+        // IIFE global name
+        name: '${globalName}',
+        extend: true,
+      },
+    },
+  },
+});
+`;
+
+    await writeFile(iifeViteConfigPath, config, 'utf-8');
+  }
+
+  /**
+   * Ensure element demo structure exists with dual ESM/IIFE support
+   */
+  private async ensureElementDemoStructure(
+    elementName: string,
+    elementDir: string,
+    config: SyncConfig,
+    _logger: any
+  ): Promise<void> {
+    const upstreamDemoDir = join(config.pieElements, 'packages', elementName, 'docs/demo');
+
+    // Only generate if upstream has demo files
+    if (!existsSync(upstreamDemoDir)) {
+      return;
+    }
+
+    const targetDemoDir = join(elementDir, 'docs/demo');
+    await mkdir(targetDemoDir, { recursive: true });
+
+    // Copy template files and substitute placeholders
+    const templates = ['iife-demo.html', 'esm-demo.html', 'index.html', 'vite.config.ts.template'];
+
+    const templateDir = join(config.pieElementsNg, 'packages/shared/element-player/templates');
+
+    for (const template of templates) {
+      const templatePath = join(templateDir, template);
+      if (!existsSync(templatePath)) continue;
+
+      let content = await readFile(templatePath, 'utf-8');
+
+      // Substitute placeholders
+      const elementTitle = elementName
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      content = content
+        .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
+        .replace(/\{\{ELEMENT_TITLE\}\}/g, elementTitle);
+
+      // Determine target filename
+      let targetFile = template.replace('.template', '');
+      if (template === 'iife-demo.html') targetFile = 'iife.html';
+      if (template === 'esm-demo.html') targetFile = 'esm.html';
+
+      const targetPath = join(targetDemoDir, targetFile);
+      await writeFile(targetPath, content, 'utf-8');
+    }
+
+    // Generate iife.ts and esm.ts from template
+    const initTemplate = await readFile(join(templateDir, 'demo-init.ts.template'), 'utf-8');
+
+    for (const mode of ['iife', 'esm']) {
+      const content = initTemplate
+        .replace(/\{\{MODE\}\}/g, mode)
+        .replace(/\{\{ELEMENT_NAME\}\}/g, elementName);
+
+      const srcDir = join(targetDemoDir, 'src');
+      await mkdir(srcDir, { recursive: true });
+      await writeFile(join(srcDir, `${mode}.ts`), content, 'utf-8');
+    }
+
+    // Copy config.mjs and session.mjs if they exist upstream
+    const demoFiles = ['config.mjs', 'session.mjs'];
+    for (const file of demoFiles) {
+      const upstreamFile = join(upstreamDemoDir, file);
+      const targetFile = join(targetDemoDir, file);
+
+      if (existsSync(upstreamFile)) {
+        const content = await readFile(upstreamFile, 'utf-8');
+        await writeFile(targetFile, content, 'utf-8');
+      }
+    }
   }
 }

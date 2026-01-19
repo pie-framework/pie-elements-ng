@@ -22,7 +22,8 @@
       "!packages/elements-react",
       "!packages/lib-react",
       "!packages/shared/*/src/index.ts",
-      "!apps/examples-react/src/index.css"
+      "!apps/examples-react/src/index.css",
+      "!packages/shared/element-player/templates"
     ]
   },
   "formatter": {

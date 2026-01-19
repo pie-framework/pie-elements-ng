@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { fileExists } from './utils.js';
 
 /**
@@ -74,6 +75,40 @@ export async function resolveEntryFile(
   const candidates: string[] = [];
 
   if (!normalizedSubpath) {
+    // Try to read package.json to get the correct entry point
+    const packageJsonPath = path.join(path.dirname(base), 'package.json');
+    try {
+      const packageJsonContent = await readFile(packageJsonPath, 'utf-8');
+      const packageJson = JSON.parse(packageJsonContent);
+
+      // Check exports field first (modern approach)
+      if (packageJson.exports?.['.']) {
+        const defaultExport =
+          typeof packageJson.exports['.'] === 'string'
+            ? packageJson.exports['.']
+            : packageJson.exports['.'].default;
+
+        if (defaultExport) {
+          // Convert relative path to absolute
+          const entryPath = path.join(path.dirname(base), defaultExport);
+          if (await fileExists(entryPath)) {
+            return entryPath;
+          }
+        }
+      }
+
+      // Fallback to main field
+      if (packageJson.main) {
+        const mainPath = path.join(path.dirname(base), packageJson.main);
+        if (await fileExists(mainPath)) {
+          return mainPath;
+        }
+      }
+    } catch (err) {
+      // If package.json doesn't exist or can't be read, continue with fallback candidates
+    }
+
+    // Fallback candidates
     candidates.push(path.join(base, 'index.js'));
     candidates.push(path.join(base, 'index.mjs'));
   } else {
