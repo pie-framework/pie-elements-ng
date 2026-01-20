@@ -40,12 +40,7 @@ interface Props {
   session?: any;
 }
 
-let {
-  elementName = '',
-  cdnUrl = '',
-  model = $bindable(),
-  session = $bindable(),
-}: Props = $props();
+let { elementName = '', cdnUrl = '', model = $bindable(), session = $bindable() }: Props = $props();
 const dispatch = createEventDispatcher();
 
 let container: HTMLElement;

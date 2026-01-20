@@ -189,7 +189,10 @@ const configureTag = $derived(`${elementName}-configure`);
  * Loads the element, controller, and optionally configure component
  */
 const handleWindowError = (event: ErrorEvent) => {
-  console.error('[pie-element-player] window:error', event.message || event.error || 'Unknown error');
+  console.error(
+    '[pie-element-player] window:error',
+    event.message || event.error || 'Unknown error'
+  );
 };
 const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
   console.error(
@@ -271,7 +274,6 @@ onMount(async () => {
     loading = false;
     console.error(`[pie-element-player] Error initializing:`, err);
   }
-
 });
 
 /**
@@ -288,7 +290,11 @@ onDestroy(() => {
 
 // Build the view model using the controller when available
 let modelRequestId = 0;
-const buildModel = async (requestId: number, currentSessionVersion: number, currentModelVersion: number) => {
+const buildModel = async (
+  requestId: number,
+  currentSessionVersion: number,
+  currentModelVersion: number
+) => {
   const currentMode = mode;
   const currentRole = playerRole;
   const currentPartialScoring = partialScoring;

@@ -145,7 +145,10 @@ export async function resolveEntryFile(
 
     // Controller/configure fallback for controller-local imports (e.g. defaults.js, utils.js)
     if (!normalizedSubpath.startsWith('controller/')) {
-      const controllerCandidates = buildCandidates(base, path.join('controller', normalizedSubpath));
+      const controllerCandidates = buildCandidates(
+        base,
+        path.join('controller', normalizedSubpath)
+      );
       for (const c of controllerCandidates) {
         if (await fileExists(c)) return c;
       }

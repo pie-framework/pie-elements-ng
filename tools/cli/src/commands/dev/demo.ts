@@ -177,10 +177,14 @@ export default class DevDemo extends Command {
     this.log(`Building ${element}...`);
 
     return new Promise((resolve, reject) => {
-      const build = spawn('bun', ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}`], {
-        stdio: 'inherit',
-        cwd: process.cwd(),
-      });
+      const build = spawn(
+        'bun',
+        ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}`],
+        {
+          stdio: 'inherit',
+          cwd: process.cwd(),
+        }
+      );
 
       build.on('close', (code) => {
         if (code === 0) {
