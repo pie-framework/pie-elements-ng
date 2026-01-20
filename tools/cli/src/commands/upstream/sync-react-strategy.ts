@@ -6,13 +6,14 @@
  */
 
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, stat as fsStat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat as fsStat, writeFile, rm as fsRm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { convertJsToTs, convertJsxToTsx } from '../../utils/conversion.js';
 import { getCurrentCommit } from '../../utils/git.js';
 import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, existsAny, readdir } from './sync-filesystem.js';
+import { demoOverrides } from './demo-overrides.js';
 import {
   fixImportsInFile,
   containsJsx,
@@ -148,11 +149,14 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
       // Ensure demo structure
       await this.ensureElementDemoStructure(pkg, elementDir, config, logger);
+      await this.applyDemoOverrides(pkg, elementDir);
 
       if (elementChanged || wrotePkgJson) {
         this.touchedElementPackages.add(pkg);
       }
     }
+
+    await this.applyOverridesForExistingElements(targetBaseDir);
 
     if (!logger.isVerbose()) {
       logger.progressCompleteWithCount(this.touchedElementPackages.size, 'packages');
@@ -163,6 +167,15 @@ export class ReactComponentsStrategy implements SyncStrategy {
       count: this.touchedElementPackages.size,
       packageNames: Array.from(this.touchedElementPackages).sort(),
     };
+  }
+
+  private async applyOverridesForExistingElements(targetBaseDir: string): Promise<void> {
+    const overrideElements = Object.keys(demoOverrides);
+    for (const elementName of overrideElements) {
+      const elementDir = join(targetBaseDir, elementName);
+      if (!existsSync(elementDir)) continue;
+      await this.applyDemoOverrides(elementName, elementDir);
+    }
   }
 
   /**
@@ -886,6 +899,41 @@ export default defineConfig({
         const content = await readFile(upstreamFile, 'utf-8');
         await writeFile(targetFile, content, 'utf-8');
       }
+    }
+
+    // Apply demo overrides if configured
+    await this.applyDemoOverrides(elementName, elementDir);
+
+    // Remove unused generate.js if config.mjs exists
+    const configPath = join(targetDemoDir, 'config.mjs');
+    const generatePath = join(targetDemoDir, 'generate.js');
+    if (existsSync(configPath) && existsSync(generatePath)) {
+      await fsRm(generatePath, { force: true });
+    }
+  }
+
+  private async applyDemoOverrides(elementName: string, elementDir: string): Promise<void> {
+    const override = demoOverrides[elementName];
+    if (!override) return;
+
+    const targetDemoDir = join(elementDir, 'docs/demo');
+    if (!existsSync(targetDemoDir)) return;
+
+    if (override.model) {
+      const configPath = join(targetDemoDir, 'config.mjs');
+      const configContent = `export default ${JSON.stringify({ models: [override.model] }, null, 2)};\n`;
+      await writeFile(configPath, configContent, 'utf-8');
+
+      const generatePath = join(targetDemoDir, 'generate.js');
+      if (existsSync(generatePath)) {
+        await fsRm(generatePath, { force: true });
+      }
+    }
+
+    if (override.session) {
+      const sessionPath = join(targetDemoDir, 'session.mjs');
+      const sessionContent = `export default ${JSON.stringify(override.session, null, 2)};\n`;
+      await writeFile(sessionPath, sessionContent, 'utf-8');
     }
   }
 }

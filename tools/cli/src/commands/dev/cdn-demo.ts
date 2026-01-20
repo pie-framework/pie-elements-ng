@@ -150,32 +150,13 @@ export default class DevCdnDemo extends Command {
           session: { id: '1', element },
         };
       } catch (error) {
-        this.warn(`Could not load model from ${pieElementsPath}: ${error}`);
-        this.warn('Using fallback model');
+        throw new Error(`Could not load model from ${pieElementsPath}: ${error}`);
       }
     }
 
-    // Fallback: hardcoded multiple-choice model
-    return {
-      model: {
-        id: '1',
-        element: 'multiple-choice',
-        choiceMode: 'checkbox',
-        choicePrefix: 'numbers',
-        choices: [
-          { correct: true, value: 'sweden', label: 'Sweden' },
-          { value: 'iceland', label: 'Iceland' },
-          { value: 'norway', label: 'Norway' },
-          { correct: true, value: 'finland', label: 'Finland' },
-        ],
-        prompt: 'Which countries are part of Scandinavia?',
-        promptEnabled: true,
-      },
-      session: {
-        id: '1',
-        element: 'multiple-choice',
-      },
-    };
+    throw new Error(
+      `Demo model not found at ${pieElementsPath}. Ensure upstream demo data exists before running dev:cdn-demo.`
+    );
   }
 
   private generateHtml(

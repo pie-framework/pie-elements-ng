@@ -6,8 +6,10 @@
 
 let {
   mode = $bindable('gather'),
+  evaluateDisabled = false,
 }: {
   mode?: 'gather' | 'view' | 'evaluate';
+  evaluateDisabled?: boolean;
 } = $props();
 </script>
 
@@ -22,8 +24,8 @@ let {
     <span>View</span>
   </label>
 
-  <label class:active={mode === 'evaluate'}>
-    <input type="radio" bind:group={mode} value="evaluate" />
+  <label class:active={mode === 'evaluate'} class:disabled={evaluateDisabled}>
+    <input type="radio" bind:group={mode} value="evaluate" disabled={evaluateDisabled} />
     <span>Evaluate</span>
   </label>
 </div>
@@ -48,6 +50,15 @@ let {
 
   label:hover {
     background: #f5f5f5;
+  }
+
+  label.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  label.disabled:hover {
+    background: transparent;
   }
 
   label.active {

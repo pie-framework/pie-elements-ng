@@ -79,13 +79,16 @@ export default class DevDemo extends Command {
     this.log('');
 
     try {
+      const skipElementBuild = flags['skip-build'] || flags['skip-element-build'];
+      const skipPlayerBuild = flags['skip-build'] || flags['skip-player-build'];
+
       // 1. Build element-player if needed
-      if (!flags['skip-build'] && !flags['skip-player-build']) {
+      if (!skipPlayerBuild) {
         await this.buildElementPlayer();
       }
 
       // 2. Build element if needed
-      if (!flags['skip-build'] && !flags['skip-element-build']) {
+      if (!skipElementBuild) {
         await this.buildElement(args.element);
       }
 
@@ -150,7 +153,7 @@ export default class DevDemo extends Command {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--filter', '@pie-elements-ng/element-player'],
+        ['run', 'turbo', 'build', '--force', '--filter', '@pie-elements-ng/element-player'],
         {
           stdio: 'inherit',
           cwd: process.cwd(),
@@ -174,7 +177,7 @@ export default class DevDemo extends Command {
     this.log(`Building ${element}...`);
 
     return new Promise((resolve, reject) => {
-      const build = spawn('bun', ['run', 'turbo', 'build', '--filter', `@pie-element/${element}`], {
+      const build = spawn('bun', ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}`], {
         stdio: 'inherit',
         cwd: process.cwd(),
       });

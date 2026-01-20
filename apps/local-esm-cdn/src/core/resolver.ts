@@ -72,7 +72,31 @@ export async function resolveEntryFile(
   }
 
   const normalizedSubpath = subpath.replace(/^\/+/, '').replace(/\/+$/, '');
-  const candidates: string[] = [];
+
+  const buildCandidates = (basePath: string, targetSubpath: string): string[] => {
+    const list: string[] = [];
+    if (!targetSubpath) {
+      return list;
+    }
+
+    // Try the path as-is first (for files that already have extensions like .js)
+    list.push(path.join(basePath, targetSubpath));
+
+    // Common build layouts: dist/<sub>/index.js or dist/<sub>.js
+    list.push(path.join(basePath, targetSubpath, 'index.js'));
+    list.push(path.join(basePath, `${targetSubpath}.js`));
+    list.push(path.join(basePath, targetSubpath, 'index.mjs'));
+    list.push(path.join(basePath, `${targetSubpath}.mjs`));
+
+    // Some builds may output dist/<subpath>/index.js even for nested paths
+    const nested = targetSubpath.split('/');
+    if (nested.length > 1) {
+      list.push(path.join(basePath, ...nested, 'index.js'));
+      list.push(path.join(basePath, ...nested) + '.js');
+    }
+
+    return list;
+  };
 
   if (!normalizedSubpath) {
     // Try to read package.json to get the correct entry point
@@ -109,28 +133,29 @@ export async function resolveEntryFile(
     }
 
     // Fallback candidates
-    candidates.push(path.join(base, 'index.js'));
-    candidates.push(path.join(base, 'index.mjs'));
-  } else {
-    // Try the path as-is first (for files that already have extensions like .js)
-    candidates.push(path.join(base, normalizedSubpath));
-
-    // Common build layouts: dist/<sub>/index.js or dist/<sub>.js
-    candidates.push(path.join(base, normalizedSubpath, 'index.js'));
-    candidates.push(path.join(base, `${normalizedSubpath}.js`));
-    candidates.push(path.join(base, normalizedSubpath, 'index.mjs'));
-    candidates.push(path.join(base, `${normalizedSubpath}.mjs`));
-
-    // Some builds may output dist/<subpath>/index.js even for nested paths
-    const nested = normalizedSubpath.split('/');
-    if (nested.length > 1) {
-      candidates.push(path.join(base, ...nested, 'index.js'));
-      candidates.push(path.join(base, ...nested) + '.js');
+    const rootCandidates = [path.join(base, 'index.js'), path.join(base, 'index.mjs')];
+    for (const c of rootCandidates) {
+      if (await fileExists(c)) return c;
     }
-  }
+  } else {
+    const candidates = buildCandidates(base, normalizedSubpath);
+    for (const c of candidates) {
+      if (await fileExists(c)) return c;
+    }
 
-  for (const c of candidates) {
-    if (await fileExists(c)) return c;
+    // Controller/configure fallback for controller-local imports (e.g. defaults.js, utils.js)
+    if (!normalizedSubpath.startsWith('controller/')) {
+      const controllerCandidates = buildCandidates(base, path.join('controller', normalizedSubpath));
+      for (const c of controllerCandidates) {
+        if (await fileExists(c)) return c;
+      }
+    }
+    if (!normalizedSubpath.startsWith('configure/')) {
+      const configureCandidates = buildCandidates(base, path.join('configure', normalizedSubpath));
+      for (const c of configureCandidates) {
+        if (await fileExists(c)) return c;
+      }
+    }
   }
   return null;
 }

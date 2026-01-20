@@ -46,7 +46,6 @@ export async function loadElement(
 
   try {
     // Dynamic import from CDN
-    // @ts-expect-error - dynamic import with vite-ignore
     const module = await import(/* @vite-ignore */ modulePath);
 
     // Get element class (try default export first, then Element export)
@@ -70,10 +69,11 @@ export async function loadElement(
     // Only log errors for non-optional elements
     if (!optional) {
       console.error(`[element-loader] Failed to load element ${packagePath}:`, err);
-    } else if (debug) {
+      throw new Error(`Failed to load element ${packagePath}: ${err.message}`);
+    }
+    if (debug) {
       console.log(`[element-loader] Optional element ${packagePath} not available`);
     }
-    throw new Error(`Failed to load element ${packagePath}: ${err.message}`);
   }
 }
 
@@ -105,7 +105,6 @@ export async function loadController(
 
   try {
     // Dynamic import from CDN
-    // @ts-expect-error - dynamic import with vite-ignore
     const module = await import(/* @vite-ignore */ controllerPath);
 
     const controller = module.default || module;

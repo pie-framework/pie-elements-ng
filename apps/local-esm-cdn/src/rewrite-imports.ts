@@ -16,6 +16,35 @@ function shouldRewriteToEsmSh(specifier: string): boolean {
   return true;
 }
 
+type BunModuleResolution = { packageName: string; subpath: string };
+
+function parseBunNodeModulesSpecifier(specifier: string): BunModuleResolution | null {
+  const marker = '/node_modules/.bun/';
+  const markerIndex = specifier.indexOf(marker);
+  if (markerIndex === -1) return null;
+
+  const afterMarker = specifier.slice(markerIndex + marker.length);
+  const nestedIndex = afterMarker.indexOf('/node_modules/');
+  if (nestedIndex === -1) return null;
+
+  const afterNested = afterMarker.slice(nestedIndex + '/node_modules/'.length);
+  if (!afterNested) return null;
+
+  const parts = afterNested.split('/').filter(Boolean);
+  if (parts.length === 0) return null;
+
+  if (parts[0].startsWith('@')) {
+    if (parts.length < 2) return null;
+    const packageName = `${parts[0]}/${parts[1]}`;
+    const subpath = parts.slice(2).join('/');
+    return { packageName, subpath };
+  }
+
+  const packageName = parts[0];
+  const subpath = parts.slice(1).join('/');
+  return { packageName, subpath };
+}
+
 function rewriteSpecifier(specifier: string, opts: RewriteOptions): string {
   // Rewrite PIE packages to use /@pie- prefix for local serving
   if (
@@ -40,15 +69,11 @@ function rewriteSpecifier(specifier: string, opts: RewriteOptions): string {
     if (specifier.includes('/node_modules/.bun/')) {
       // Extract the actual package name from the Bun internal path
       // e.g., "./node_modules/.bun/react-transition-group@4.4.5_abc/node_modules/react-transition-group/esm/CSSTransition.js"
-      // becomes "react-transition-group/esm/CSSTransition.js"
-      const match = specifier.match(
-        /\/node_modules\/([^@/]+)(?:@[^/]+)?\/node_modules\/([^/]+)\/(.+)/
-      );
-      if (match) {
-        const packageName = match[2]; // e.g., "react-transition-group"
-        const subpath = match[3]; // e.g., "esm/CSSTransition.js"
+      const parsed = parseBunNodeModulesSpecifier(specifier);
+      if (parsed) {
         const base = opts.esmShBaseUrl.endsWith('/') ? opts.esmShBaseUrl : `${opts.esmShBaseUrl}/`;
-        return `${base}${packageName}/${subpath}`;
+        const suffix = parsed.subpath ? `/${parsed.subpath}` : '';
+        return `${base}${parsed.packageName}${suffix}`;
       }
       // If we can't parse it, skip rewriting (will likely fail, but better than creating invalid path)
       return specifier;

@@ -4,6 +4,7 @@
     shadow: "none",
     props: {
       elementName: { reflect: true, type: "String", attribute: "element-name" },
+      cdnUrl: { reflect: true, type: "String", attribute: "cdn-url" },
       model: { reflect: false, type: "Object" },
       session: { reflect: false, type: "Object" }
     }
@@ -29,16 +30,28 @@
  *   - session-changed: Dispatched when session updates
  */
 
+import { createEventDispatcher } from 'svelte';
+import { loadElement as loadElementFromCdn } from '../lib/element-loader';
+
 interface Props {
   elementName?: string;
+  cdnUrl?: string;
   model?: any;
   session?: any;
 }
 
-let { elementName = '', model = $bindable(), session = $bindable() }: Props = $props();
+let {
+  elementName = '',
+  cdnUrl = '',
+  model = $bindable(),
+  session = $bindable(),
+}: Props = $props();
+const dispatch = createEventDispatcher();
 
 let container: HTMLElement;
-let elementInstance: HTMLElement | null = null;
+let elementInstance = $state<HTMLElement | null>(null);
+let currentTagName = $state<string | null>(null);
+let lastSessionRef = $state<any>(undefined);
 let error = $state<string | null>(null);
 let loading = $state(true);
 
@@ -55,12 +68,21 @@ $effect(() => {
 
 $effect(() => {
   if (elementInstance && model !== undefined) {
+    console.log('[esm-player] model:update', {
+      tag: currentTagName,
+      id: (model as any)?.id,
+      prompt: model?.prompt,
+    });
     (elementInstance as any).model = model;
   }
 });
 
 $effect(() => {
   if (elementInstance && session !== undefined) {
+    if (session === lastSessionRef) {
+      return;
+    }
+    lastSessionRef = session;
     (elementInstance as any).session = session;
   }
 });
@@ -76,65 +98,71 @@ async function loadElement() {
     loading = true;
     error = null;
 
-    console.log(`[esm-player] Loading element: @pie-element/${elementName}`);
+    const packageName = `@pie-element/${elementName}`;
+    console.log(`[esm-player] Loading element: ${packageName}`);
 
-    // Import the element class dynamically with timeout
-    const importPromise = import(/* @vite-ignore */ `@pie-element/${elementName}`);
+    // Register custom element if not already registered
+    const tagName = `${elementName}-element`;
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(
         () =>
           reject(
             new Error(
-              `Timeout loading @pie-element/${elementName} (>10s). Check import maps and network.`
+              `Timeout loading ${packageName} (>10s). Check /@pie- routes, Vite server, and network.`
             )
           ),
         10000
       )
     );
-
-    const module = await Promise.race([importPromise, timeoutPromise]);
-    const ElementClass = (module as any).default;
-
-    if (!ElementClass) {
-      throw new Error(
-        `Element @pie-element/${elementName} does not have a default export. ` +
-          `Verify the element exports a custom element class.`
-      );
-    }
-
-    // Register custom element if not already registered
-    const tagName = `${elementName}-element`;
-    if (!customElements.get(tagName)) {
-      console.log(`[esm-player] Registering custom element: ${tagName}`);
-      customElements.define(tagName, ElementClass);
-    }
+    await Promise.race([loadElementFromCdn(packageName, tagName, cdnUrl), timeoutPromise]);
 
     // Wait for custom element to be defined
     await customElements.whenDefined(tagName);
 
-    // Create element instance
-    console.log(`[esm-player] Creating element instance: ${tagName}`);
-    elementInstance = document.createElement(tagName);
+    // Reuse existing element instance when possible
+    if (elementInstance && currentTagName === tagName) {
+      console.log(`[esm-player] Reusing element instance: ${tagName}`);
+    } else {
+      if (elementInstance) {
+        elementInstance.remove();
+      }
+      console.log(`[esm-player] Creating element instance: ${tagName}`);
+      elementInstance = document.createElement(tagName);
+      currentTagName = tagName;
+    }
 
     // Set initial properties
     if (model !== undefined) {
       (elementInstance as any).model = model;
     }
-    if (session !== undefined) {
-      (elementInstance as any).session = session;
+    const nextSession = session ?? (elementInstance as any).session;
+    if (nextSession !== undefined) {
+      (elementInstance as any).session = nextSession;
     }
 
     // Listen for session changes
     elementInstance.addEventListener('session-changed', (e: Event) => {
+      e.stopPropagation();
       const customEvent = e as CustomEvent;
+      const nextSession = (elementInstance as any).session;
       console.log('[esm-player] Session changed:', customEvent.detail);
-      session = customEvent.detail;
+      if (nextSession !== session) {
+        session = nextSession;
+        lastSessionRef = nextSession;
+      }
+      dispatch('session-changed', {
+        session: nextSession,
+        complete: (customEvent.detail as any)?.complete,
+        component: (customEvent.detail as any)?.component,
+      });
     });
 
-    // Clear container and add element
+    // Clear container and add element if not already attached
     if (container) {
-      container.innerHTML = '';
-      container.appendChild(elementInstance);
+      if (elementInstance.parentElement !== container) {
+        container.innerHTML = '';
+        container.appendChild(elementInstance);
+      }
     }
 
     console.log(`[esm-player] Element ${elementName} loaded successfully`);
