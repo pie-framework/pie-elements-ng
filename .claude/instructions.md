@@ -151,6 +151,13 @@ bun run check          # Svelte component validation
 
 ## Special Patterns
 
+### Web Components and Reactivity
+
+- Treat custom elements as imperative APIs: set properties, not attributes.
+- Do not assume attribute updates are reactive for object data.
+- For model/session updates, reassign new objects when needed to trigger updates.
+- When using controller-based elements, rebuild and re-set the element model on mode/session changes.
+
 ### Framework Agnostic
 
 - Can be used as web components in any framework
