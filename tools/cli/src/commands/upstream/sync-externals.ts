@@ -55,15 +55,15 @@ export function isExternal(id: string, variant: 'element' | 'pielib'): boolean {
 
   // Common utility and UI libraries - always external
   const commonExternals = [
-    'prop-types',      // React prop validation
-    'classnames',      // CSS class utility
-    'debug',           // Debug logging
-    'i18next',         // Internationalization
-    'humps',           // String case conversion
-    'mathjs',          // Math expression evaluation
-    'react-jss',       // JSS styling for React
+    'prop-types', // React prop validation
+    'classnames', // CSS class utility
+    'debug', // Debug logging
+    'i18next', // Internationalization
+    'humps', // String case conversion
+    'mathjs', // Math expression evaluation
+    'react-jss', // JSS styling for React
     'js-combinatorics', // Combinatorics library
-    '@dnd-kit/core',   // Drag and drop
+    '@dnd-kit/core', // Drag and drop
     'react-transition-group', // Animations
   ];
 
@@ -75,10 +75,11 @@ export function isExternal(id: string, variant: 'element' | 'pielib'): boolean {
  * Use this in vite.config.ts generation
  */
 export function createExternalFunction(variant: 'element' | 'pielib'): string {
-  const lodashCheck = variant === 'element'
-    ? `id === 'lodash' ||
+  const lodashCheck =
+    variant === 'element'
+      ? `id === 'lodash' ||
           /^lodash\\//.test(id) ||`
-    : `id === 'lodash-es' ||
+      : `id === 'lodash-es' ||
           /^lodash-es\\//.test(id) ||`;
 
   return `(id) => {

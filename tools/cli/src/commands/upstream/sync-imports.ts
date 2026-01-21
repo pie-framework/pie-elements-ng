@@ -83,7 +83,8 @@ export function containsJsx(code: string): boolean {
  */
 export function inlineEditableHtmlConstants(code: string): string {
   // Check if file imports from editable-html
-  const editableHtmlImportRegex = /import\s+(\w+)\s+from\s+['"]\.\.\/\.\.\/\.\.\/editable-html\/src\/constants['"]/;
+  const editableHtmlImportRegex =
+    /import\s+(\w+)\s+from\s+['"]\.\.\/\.\.\/\.\.\/editable-html\/src\/constants['"]/;
   const match = code.match(editableHtmlImportRegex);
 
   if (!match) {
@@ -114,7 +115,7 @@ export function reexportTokenTypes(code: string, filePath: string): string {
   }
 
   // Check if file imports TokenTypes from ./token
-  if (!code.includes('import Token, { TokenTypes } from \'./token\'')) {
+  if (!code.includes("import Token, { TokenTypes } from './token'")) {
     return code;
   }
 
@@ -136,7 +137,8 @@ export function reexportTokenTypes(code: string, filePath: string): string {
  */
 export function inlineConfigureDefaults(code: string): string {
   // Only apply to files that import from ../configure/lib/defaults
-  const configureImportRegex = /import\s+(\w+)\s+from\s+['"](\.\.\/configure\/lib\/defaults|\.\.\/\.\.\/configure\/lib\/defaults)['"]/;
+  const configureImportRegex =
+    /import\s+(\w+)\s+from\s+['"](\.\.\/configure\/lib\/defaults|\.\.\/\.\.\/configure\/lib\/defaults)['"]/;
   const match = code.match(configureImportRegex);
 
   if (!match) return code;
