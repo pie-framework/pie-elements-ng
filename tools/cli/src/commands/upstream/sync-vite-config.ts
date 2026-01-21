@@ -180,7 +180,7 @@ export default defineConfig({
           /^d3-/.test(id) ||
           id === 'lodash-es' ||
           /^lodash-es\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug'].includes(id)
+          ['prop-types', 'classnames', 'debug', 'i18next'].includes(id)
         );
       },
       output: {
@@ -220,7 +220,7 @@ export default defineConfig({
           /^d3-/.test(id) ||
           id === 'lodash-es' ||
           /^lodash-es\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug'].includes(id)
+          ['prop-types', 'classnames', 'debug', 'i18next'].includes(id)
         );
       },
       output: {
