@@ -1,5 +1,32 @@
 /**
  * Import rewriting utilities for sync operations
+ *
+ * This module contains transforms that rewrite imports during the sync process
+ * to handle differences between the upstream CommonJS/Webpack code and the
+ * ESM-only target environment.
+ *
+ * ## Why These Rewrites Are Needed:
+ *
+ * 1. **Lodash → Lodash-ES**:
+ *    - Upstream uses CommonJS `lodash` package
+ *    - ESM requires `lodash-es` for proper tree-shaking
+ *
+ * 2. **@pie-framework Events → Internal Packages**:
+ *    - Upstream references external @pie-framework packages
+ *    - Monorepo uses internal @pie-elements-ng/shared-* packages
+ *
+ * 3. **Editable-HTML Constants Inlining**:
+ *    - `editable-html` package is not ESM-compatible (Slate v0.x dependencies)
+ *    - We only need constants, so inline them to avoid the dependency
+ *
+ * 4. **TokenTypes Re-export**:
+ *    - Upstream code works in CommonJS/Webpack (looser module resolution)
+ *    - ESM requires explicit re-exports for proper module graph
+ *
+ * 5. **Configure Defaults Inlining**:
+ *    - Configure package is not ESM-compatible (Slate v0.x dependencies)
+ *    - Student-facing UI only needs minimal fallback configuration
+ *    - Inline empty defaults object to avoid the dependency
  */
 import { readFile, writeFile } from 'node:fs/promises';
 
@@ -46,6 +73,87 @@ export async function fixImportsInFile(
  */
 export function containsJsx(code: string): boolean {
   return /<[A-Za-z][\w-]*[\s/>]/.test(code);
+}
+
+/**
+ * Replace editable-html imports with inlined constants
+ *
+ * editable-html is not ESM-compatible (depends on Slate v0.x), but some packages
+ * only import constants from it. We inline these constants to avoid the dependency.
+ */
+export function inlineEditableHtmlConstants(code: string): string {
+  // Check if file imports from editable-html
+  const editableHtmlImportRegex = /import\s+(\w+)\s+from\s+['"]\.\.\/\.\.\/\.\.\/editable-html\/src\/constants['"]/;
+  const match = code.match(editableHtmlImportRegex);
+
+  if (!match) {
+    return code; // No editable-html import, return unchanged
+  }
+
+  const importName = match[1];
+
+  // Replace the import with inlined constants
+  const inlinedConstants = `// Inlined from editable-html/src/constants (not ESM-compatible)
+const ${importName} = {
+  MAIN_CONTAINER_CLASS: 'main-container',
+  PIE_TOOLBAR__CLASS: 'pie-toolbar',
+};`;
+
+  return code.replace(editableHtmlImportRegex, inlinedConstants);
+}
+
+/**
+ * Fix missing re-export of TokenTypes in text-select token-select/index.jsx
+ * The upstream imports TokenTypes from ./token but doesn't re-export it,
+ * causing build failures when parent index.js tries to import it.
+ */
+export function reexportTokenTypes(code: string, filePath: string): string {
+  // Only apply to text-select token-select/index file
+  if (!filePath.includes('text-select') || !filePath.includes('token-select/index')) {
+    return code;
+  }
+
+  // Check if file imports TokenTypes from ./token
+  if (!code.includes('import Token, { TokenTypes } from \'./token\'')) {
+    return code;
+  }
+
+  // Check if already exports TokenTypes
+  if (code.includes('export { TokenTypes }')) {
+    return code;
+  }
+
+  // Add export after the default export
+  return code.replace(
+    /^export default TokenSelect;$/m,
+    'export default TokenSelect;\nexport { TokenTypes };'
+  );
+}
+
+/**
+ * Replace configure/lib/defaults import with an empty defaults object
+ * when configure directory is not synced (ESM-incompatible due to Slate v0.x)
+ */
+export function inlineConfigureDefaults(code: string): string {
+  // Only apply to files that import from ../configure/lib/defaults
+  const configureImportRegex = /import\s+(\w+)\s+from\s+['"](\.\.\/configure\/lib\/defaults|\.\.\/\.\.\/configure\/lib\/defaults)['"]/;
+  const match = code.match(configureImportRegex);
+
+  if (!match) return code;
+
+  const importName = match[1];
+
+  // Replace with minimal defaults object
+  // The configuration property is what's typically used in student-facing code
+  const inlinedDefaults = `// Inlined from configure/lib/defaults (configure/ not synced - ESM-incompatible)
+const ${importName} = {
+  configuration: {
+    // Minimal configuration for student-facing UI
+    // Full authoring configuration is only needed in the configure package
+  } as any
+};`;
+
+  return code.replace(configureImportRegex, inlinedDefaults);
 }
 
 /**

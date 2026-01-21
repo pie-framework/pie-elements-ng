@@ -74,11 +74,16 @@ $effect(() => {
 
 $effect(() => {
   if (elementInstance && session !== undefined) {
+    // Skip if this is the same reference we just set from the element
     if (session === lastSessionRef) {
       return;
     }
-    lastSessionRef = session;
-    (elementInstance as any).session = session;
+    // Only update element if session changed externally
+    const currentElementSession = (elementInstance as any).session;
+    if (session !== currentElementSession) {
+      lastSessionRef = session;
+      (elementInstance as any).session = session;
+    }
   }
 });
 

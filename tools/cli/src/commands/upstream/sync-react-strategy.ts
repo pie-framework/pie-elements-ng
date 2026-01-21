@@ -14,6 +14,7 @@ import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, existsAny, readdir } from './sync-filesystem.js';
 import { demoOverrides } from './demo-overrides.js';
+import { createExternalFunction, createKonvaExternalFunction } from './sync-externals.js';
 import {
   fixImportsInFile,
   containsJsx,
@@ -21,6 +22,7 @@ import {
   transformPackageJsonLodash,
   transformPieFrameworkEventImports,
   transformPackageJsonPieEvents,
+  inlineConfigureDefaults,
 } from './sync-imports.js';
 
 interface InternalSyncResult {
@@ -78,6 +80,21 @@ export class ReactComponentsStrategy implements SyncStrategy {
     for (const pkg of packages) {
       if (context.packageFilter && pkg !== context.packageFilter) {
         continue;
+      }
+
+      // Check if element is in compatibility report (ESM-compatible)
+      if (context.compatibilityReport) {
+        if (!context.compatibilityReport.elements.includes(pkg)) {
+          continue; // Skip non-compatible elements
+        }
+
+        // Check if student UI (src/) is ESM-compatible
+        if (!this.isSubdirectoryCompatible(pkg, 'src', context)) {
+          if (logger.isVerbose()) {
+            logger.info(`  ⏭️  ${pkg}: skipping src/ (not ESM-compatible)`);
+          }
+          continue;
+        }
       }
 
       // Check if React component exists upstream (src/ directory)
@@ -276,6 +293,9 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
       // Transform @pie-framework event packages to internal packages
       sourceContent = transformPieFrameworkEventImports(sourceContent);
+
+      // Inline configure defaults if configure wasn't synced
+      sourceContent = inlineConfigureDefaults(sourceContent);
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
 
@@ -541,7 +561,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
   }
 
   private async ensureElementViteConfig(
-    elementName: string,
+    _elementName: string,
     elementDir: string,
     _logger: any
   ): Promise<void> {
@@ -556,36 +576,32 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
     // Detect entry points
     const entryPoints: Record<string, string> = {};
-    const indexEntry = existsAny([
-      join(elementDir, 'src/index.ts'),
-      join(elementDir, 'src/index.tsx'),
-    ]);
+
+    // Helper to find which file extension exists (.ts or .tsx)
+    const findEntry = (basePath: string): string | null => {
+      if (existsSync(join(elementDir, `${basePath}.tsx`))) return `${basePath}.tsx`;
+      if (existsSync(join(elementDir, `${basePath}.ts`))) return `${basePath}.ts`;
+      return null;
+    };
+
+    const indexEntry = findEntry('src/index');
     if (indexEntry) {
-      entryPoints.index = 'src/index.ts';
+      entryPoints.index = indexEntry;
     }
 
-    const hasController = existsAny([
-      join(elementDir, 'src/controller/index.ts'),
-      join(elementDir, 'src/controller/index.tsx'),
-    ]);
-    if (hasController) {
-      entryPoints['controller/index'] = 'src/controller/index.ts';
+    const controllerEntry = findEntry('src/controller/index');
+    if (controllerEntry) {
+      entryPoints['controller/index'] = controllerEntry;
     }
 
-    const hasConfigure = existsAny([
-      join(elementDir, 'src/configure/index.ts'),
-      join(elementDir, 'src/configure/index.tsx'),
-    ]);
-    if (hasConfigure) {
-      entryPoints['configure/index'] = 'src/configure/index.ts';
+    const configureEntry = findEntry('src/configure/index');
+    if (configureEntry) {
+      entryPoints['configure/index'] = configureEntry;
     }
 
-    const hasDelivery = existsAny([
-      join(elementDir, 'src/delivery/index.ts'),
-      join(elementDir, 'src/delivery/index.tsx'),
-    ]);
-    if (hasDelivery) {
-      entryPoints['delivery/index'] = 'src/delivery/index.ts';
+    const deliveryEntry = findEntry('src/delivery/index');
+    if (deliveryEntry) {
+      entryPoints['delivery/index'] = deliveryEntry;
     }
 
     if (Object.keys(entryPoints).length === 0) {
@@ -597,10 +613,9 @@ export class ReactComponentsStrategy implements SyncStrategy {
       .map(([key, value]) => `        '${key}': resolve(__dirname, '${value}'),`)
       .join('\n');
 
-    // Elements that use konva/react-konva should bundle them instead of externalizing
-    // to avoid runtime resolution issues with transitive dependencies (scheduler, react-reconciler)
-    const konvaElements = ['hotspot', 'drawing-response'];
-    const shouldBundleKonva = konvaElements.includes(elementName);
+    // Konva is now external like other dependencies - no special bundling needed
+    // This avoids workspace dependency resolution issues
+    const shouldBundleKonva = false;
 
     // Check if demo directory exists
     const hasDemoDir = existsSync(join(elementDir, 'docs/demo'));
@@ -626,7 +641,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
   // Build mode: build the library
   return {`
-      : `({`;
+      : `{`;
 
     return `import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
@@ -642,21 +657,7 @@ ${entryLines}
       formats: ['es'],
     },
     rollupOptions: {
-      external: (id) => {
-        return (
-          /^react($|\\/)/.test(id) ||
-          /^react-dom($|\\/)/.test(id) ||
-          /^@pie-lib\\//.test(id) ||
-          /^@pie-elements-ng\\//.test(id) ||
-          /^@pie-framework\\//.test(id) ||
-          /^@mui\\//.test(id) ||
-          /^@emotion\\//.test(id) ||
-          /^d3-/.test(id) ||
-          id === 'lodash' ||
-          /^lodash\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', '@dnd-kit/core', 'react-transition-group'].includes(id)
-        );
-      },
+      external: ${createExternalFunction('element')},
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',
@@ -673,7 +674,7 @@ ${entryLines}
   plugins: [react()],
   // Only change root for demo mode when serving (not building)
   root: mode === 'demo' && command === 'serve' ? resolve(__dirname, 'docs/demo') : __dirname,`
-      : `({
+      : `{
   plugins: [react()],`;
 
     return `import { resolve } from 'node:path';
@@ -689,26 +690,7 @@ ${entryLines}
       formats: ['es'],
     },
     rollupOptions: {
-      external: (id) => {
-        // Always external: base package names
-        if (id === 'react' || id.startsWith('react/')) return true;
-        if (id === 'react-dom' || id.startsWith('react-dom/')) return true;
-        if (id.startsWith('@pie-lib/')) return true;
-        if (id.startsWith('@pie-elements-ng/')) return true;
-        if (id.startsWith('@pie-framework/')) return true;
-        if (id.startsWith('@mui/')) return true;
-        if (id.startsWith('@emotion/')) return true;
-        if (id.startsWith('d3-')) return true;
-        // Keep lodash external even with preserveModules: false
-        // It will be resolved via import map in demo HTML
-        if (id === 'lodash' || id.startsWith('lodash/')) return true;
-        if (['prop-types', 'classnames', 'debug', '@dnd-kit/core', 'react-transition-group'].includes(id)) return true;
-
-        // Bundle konva, react-konva, scheduler, and react-reconciler
-        // These are element-specific and bundling avoids runtime resolution issues
-
-        return false;
-      },
+      external: ${createKonvaExternalFunction()},
       output: {
         preserveModules: false,
         // Paths helps resolve external lodash imports correctly in the bundled output
@@ -722,7 +704,7 @@ ${entryLines}
       },
     },
   },
-}));
+}${hasDemoDir ? '))' : ')'};
 `;
   }
 
@@ -847,7 +829,7 @@ export default defineConfig({
     await mkdir(targetDemoDir, { recursive: true });
 
     // Copy template files and substitute placeholders
-    const templates = ['iife-demo.html', 'esm-demo.html', 'index.html', 'vite.config.ts.template'];
+    const templates = ['esm-demo.html', 'index.html', 'vite.config.ts.template'];
 
     const templateDir = join(config.pieElementsNg, 'packages/shared/element-player/templates');
 
@@ -869,36 +851,46 @@ export default defineConfig({
 
       // Determine target filename
       let targetFile = template.replace('.template', '');
-      if (template === 'iife-demo.html') targetFile = 'iife.html';
       if (template === 'esm-demo.html') targetFile = 'esm.html';
 
       const targetPath = join(targetDemoDir, targetFile);
       await writeFile(targetPath, content, 'utf-8');
     }
 
-    // Generate iife.ts and esm.ts from template
+    // Generate esm.ts from template
     const initTemplate = await readFile(join(templateDir, 'demo-init.ts.template'), 'utf-8');
 
-    for (const mode of ['iife', 'esm']) {
-      const content = initTemplate
-        .replace(/\{\{MODE\}\}/g, mode)
-        .replace(/\{\{ELEMENT_NAME\}\}/g, elementName);
+    const content = initTemplate
+      .replace(/\{\{MODE\}\}/g, 'esm')
+      .replace(/\{\{ELEMENT_NAME\}\}/g, elementName);
 
-      const srcDir = join(targetDemoDir, 'src');
-      await mkdir(srcDir, { recursive: true });
-      await writeFile(join(srcDir, `${mode}.ts`), content, 'utf-8');
+    const srcDir = join(targetDemoDir, 'src');
+    await mkdir(srcDir, { recursive: true });
+    await writeFile(join(srcDir, 'esm.ts'), content, 'utf-8');
+
+    // Copy config.mjs if it exists upstream
+    const configMjs = join(upstreamDemoDir, 'config.mjs');
+    if (existsSync(configMjs)) {
+      const content = await readFile(configMjs, 'utf-8');
+      await writeFile(join(targetDemoDir, 'config.mjs'), content, 'utf-8');
     }
 
-    // Copy config.mjs and session.mjs if they exist upstream
-    const demoFiles = ['config.mjs', 'session.mjs'];
-    for (const file of demoFiles) {
-      const upstreamFile = join(upstreamDemoDir, file);
-      const targetFile = join(targetDemoDir, file);
+    // Convert session.js (CommonJS) to session.mjs (ESM) if it exists upstream
+    const sessionJs = join(upstreamDemoDir, 'session.js');
+    const sessionMjs = join(upstreamDemoDir, 'session.mjs');
 
-      if (existsSync(upstreamFile)) {
-        const content = await readFile(upstreamFile, 'utf-8');
-        await writeFile(targetFile, content, 'utf-8');
-      }
+    if (existsSync(sessionMjs)) {
+      // If session.mjs exists, just copy it
+      const content = await readFile(sessionMjs, 'utf-8');
+      await writeFile(join(targetDemoDir, 'session.mjs'), content, 'utf-8');
+    } else if (existsSync(sessionJs)) {
+      // Convert CommonJS session.js to ESM session.mjs
+      const content = await readFile(sessionJs, 'utf-8');
+      // Simple conversion: replace module.exports with export default
+      const esmContent = content
+        .replace(/module\.exports\s*=/, 'export default')
+        .replace(/exports\.\w+\s*=/g, 'export const');
+      await writeFile(join(targetDemoDir, 'session.mjs'), esmContent, 'utf-8');
     }
 
     // Apply demo overrides if configured

@@ -40,7 +40,7 @@ import type { MathRenderer } from '@pie-elements-ng/math-typesetting';
 // Props with Svelte 5 runes
 let {
   elementName = '',
-  cdnUrl = 'http://localhost:5179',
+  cdnUrl = '',
   model = $bindable({}),
   session = $bindable({}),
   mode = $bindable('gather'),

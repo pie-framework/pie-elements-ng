@@ -12,7 +12,7 @@ import { createLocalEsmCdn } from '../embedded.js';
  * ```typescript
  * // vite.config.ts
  * import { defineConfig } from 'vite';
- * import { createVitePlugin } from '@pie-apps/local-esm-cdn/adapters/vite';
+ * import { createVitePlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
  * import path from 'path';
  *
  * export default defineConfig({

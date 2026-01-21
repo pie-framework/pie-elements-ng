@@ -6,7 +6,7 @@ import { printSyncSummary, createEmptySummary } from './sync-summary.js';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { rm as fsRm, stat as fsStat } from 'node:fs/promises';
+import { rm as fsRm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readdir } from './sync-filesystem.js';
 import { getAllDeps } from './sync-package-json.js';
@@ -183,8 +183,8 @@ export default class Sync extends Command {
       this.error('Sync failed', { exit: 1 });
     }
 
-    // Clean stale targets first (prevents leftover packages/files from older sync runs)
-    await this.cleanStaleTargets(config);
+    // Clean target directories first (ensures a clean slate for full syncs)
+    await this.cleanTargetDirectories(config);
 
     // Execute sync strategies
     const strategies: SyncStrategy[] = [
@@ -205,7 +205,8 @@ export default class Sync extends Command {
         upstreamCommit: getCurrentCommit(config.pieElements),
       },
       logger: this.logger,
-      packageFilter: config.elements?.[0],
+      // Only set packageFilter if user explicitly specified a single element
+      packageFilter: config.elementsSpecifiedByUser ? config.elements?.[0] : undefined,
       compatibilityReport: compatibilityReport || undefined,
     };
 
@@ -372,55 +373,25 @@ export default class Sync extends Command {
     return Array.from(seen).sort();
   }
 
-  private async cleanStaleTargets(config: SyncConfig): Promise<void> {
+  private async cleanTargetDirectories(config: SyncConfig): Promise<void> {
     if (!config.useEsmFilter || config.dryRun) return;
 
-    // Only remove stale packages when doing a "full compatible sync" (no explicit package filters),
+    // Only remove entire directories when doing a "full compatible sync" (no explicit package filters),
     // otherwise a targeted sync would unexpectedly delete unrelated packages.
     if ((config.syncControllers || config.syncReactComponents) && !config.elementsSpecifiedByUser) {
-      const wanted = new Set(config.elements ?? []);
-      if (wanted.size > 0) {
-        const baseDir = join(config.pieElementsNg, 'packages/elements-react');
-        await this.cleanStalePackageDirs(baseDir, wanted, '@pie-element/', 'elements-react');
+      const baseDir = join(config.pieElementsNg, 'packages/elements-react');
+      if (existsSync(baseDir)) {
+        await fsRm(baseDir, { recursive: true, force: true });
+        this.logger.info('  🧹 Removed packages/elements-react/ for clean sync');
       }
     }
 
     if (config.syncPieLibPackages && !config.pieLibPackagesSpecifiedByUser) {
-      const wanted = new Set(config.pieLibPackages ?? []);
-      if (wanted.size > 0) {
-        const baseDir = join(config.pieElementsNg, 'packages/lib-react');
-        await this.cleanStalePackageDirs(baseDir, wanted, '@pie-lib/', 'lib-react');
+      const baseDir = join(config.pieElementsNg, 'packages/lib-react');
+      if (existsSync(baseDir)) {
+        await fsRm(baseDir, { recursive: true, force: true });
+        this.logger.info('  🧹 Removed packages/lib-react/ for clean sync');
       }
-    }
-  }
-
-  private async cleanStalePackageDirs(
-    baseDir: string,
-    wantedDirNames: Set<string>,
-    expectedNamePrefix: string,
-    labelPrefix: string
-  ): Promise<void> {
-    const entries = await readdir(baseDir);
-    for (const entry of entries) {
-      const entryPath = join(baseDir, entry);
-      const stat = await fsStat(entryPath).catch(() => null);
-      if (!stat?.isDirectory()) continue;
-
-      // Keep wanted packages
-      if (wantedDirNames.has(entry)) continue;
-
-      // Safety: only delete packages that look like PIE packages via package.json name
-      const pkgJsonPath = join(entryPath, 'package.json');
-      if (!existsSync(pkgJsonPath)) continue;
-
-      const pkg = await loadPackageJson(pkgJsonPath).catch(() => null);
-      const pkgName = typeof pkg?.name === 'string' ? pkg.name : '';
-      if (!pkgName.startsWith(expectedNamePrefix)) continue;
-
-      await fsRm(entryPath, { recursive: true, force: true });
-      this.logger.info(
-        `  🧹 Removed stale package ${labelPrefix}/${entry} (no longer in current ESM-compatible set)`
-      );
     }
   }
 

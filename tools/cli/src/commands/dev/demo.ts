@@ -1,7 +1,7 @@
 import { Args, Command, Flags } from '@oclif/core';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 /**
  * Start development server for element demos using the new embedded local-esm-cdn architecture.
@@ -134,15 +134,35 @@ export default class DevDemo extends Command {
   }
 
   private resolveElementPath(element: string): string | null {
-    // Try React first
-    let elementPath = path.join(process.cwd(), 'packages/elements-react', element);
+    // Check compatibility report to determine the correct implementation
+    const compatReportPath = path.join(process.cwd(), '.compatibility/report.json');
+    let preferReact = true; // Default to React
 
-    if (existsSync(elementPath)) return elementPath;
+    if (existsSync(compatReportPath)) {
+      try {
+        const report = JSON.parse(readFileSync(compatReportPath, 'utf-8'));
+        // If element is in compatibility report, it should use React
+        // If not, it might be a legacy Svelte-only element
+        preferReact = report.elements?.includes(element) ?? true;
+      } catch {
+        // If report can't be read, default to React
+        preferReact = true;
+      }
+    }
 
-    // Try Svelte
-    elementPath = path.join(process.cwd(), 'packages/elements-svelte', element);
+    // Try preferred implementation first
+    const implementations = preferReact
+      ? ['elements-react', 'elements-svelte']
+      : ['elements-svelte', 'elements-react'];
 
-    if (existsSync(elementPath)) return elementPath;
+    for (const impl of implementations) {
+      const elementPath = path.join(process.cwd(), 'packages', impl, element);
+      const demoPath = path.join(elementPath, 'docs/demo');
+
+      if (existsSync(elementPath) && existsSync(demoPath)) {
+        return elementPath;
+      }
+    }
 
     return null;
   }

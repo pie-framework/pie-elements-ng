@@ -18,6 +18,8 @@ import {
   containsJsx,
   transformLodashToLodashEs,
   transformPieFrameworkEventImports,
+  inlineEditableHtmlConstants,
+  reexportTokenTypes,
 } from './sync-imports.js';
 import { generatePieLibViteConfig } from './sync-vite-config.js';
 
@@ -230,6 +232,12 @@ export class PieLibStrategy implements SyncStrategy {
 
       // Transform @pie-framework event packages to internal packages
       sourceContent = transformPieFrameworkEventImports(sourceContent);
+
+      // Inline editable-html constants (editable-html is not ESM-compatible)
+      sourceContent = inlineEditableHtmlConstants(sourceContent);
+
+      // Fix missing TokenTypes re-export in text-select
+      sourceContent = reexportTokenTypes(sourceContent, srcPath);
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
 

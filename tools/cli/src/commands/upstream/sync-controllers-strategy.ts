@@ -13,6 +13,7 @@ import { getCurrentCommit } from '../../utils/git.js';
 import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, existsAny, readdir } from './sync-filesystem.js';
+import { createExternalFunction } from './sync-externals.js';
 import {
   transformLodashToLodashEs,
   transformPackageJsonLodash,
@@ -143,8 +144,8 @@ export class ControllersStrategy implements SyncStrategy {
         await writeFile(targetPath, converted, 'utf-8');
       }
 
-      // Also sync related files (defaults.js, utils.js)
-      const relatedFiles = ['defaults.js', 'utils.js'];
+      // Also sync related files (defaults.js, utils.js, scoring.js, tickUtils.js)
+      const relatedFiles = ['defaults.js', 'utils.js', 'scoring.js', 'tickUtils.js'];
       for (const file of relatedFiles) {
         const relatedPath = join(upstreamElementsDir, pkg, 'controller/src', file);
         if (existsSync(relatedPath)) {
@@ -505,21 +506,7 @@ ${entryLines}
       formats: ['es'],
     },
     rollupOptions: {
-      external: (id) => {
-        return (
-          /^react($|\\/)/.test(id) ||
-          /^react-dom($|\\/)/.test(id) ||
-          /^@pie-lib\\//.test(id) ||
-          /^@pie-elements-ng\\//.test(id) ||
-          /^@pie-framework\\//.test(id) ||
-          /^@mui\\//.test(id) ||
-          /^@emotion\\//.test(id) ||
-          /^d3-/.test(id) ||
-          id === 'lodash-es' ||
-          /^lodash-es\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', '@dnd-kit/core', 'react-transition-group'].includes(id)
-        );
-      },
+      external: ${createExternalFunction('pielib')},
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',

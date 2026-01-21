@@ -3,6 +3,7 @@
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { createExternalFunction } from './sync-externals.js';
 
 /**
  * Detect the actual file extension for a source file
@@ -167,22 +168,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: (id) => {
-        return (
-          /^react($|\\/)/.test(id) ||
-          /^react-dom($|\\/)/.test(id) ||
-          /^@pie-lib\\//.test(id) ||
-          /^@pie-elements-ng\\//.test(id) ||
-          /^@pie-framework\\//.test(id) ||
-          /^@mui\\//.test(id) ||
-          /^@emotion\\//.test(id) ||
-          /^@testing-library\\//.test(id) ||
-          /^d3-/.test(id) ||
-          id === 'lodash-es' ||
-          /^lodash-es\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', 'i18next'].includes(id)
-        );
-      },
+      external: ${createExternalFunction('pielib')},
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',
@@ -208,21 +194,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: (id) => {
-        return (
-          /^react($|\\/)/.test(id) ||
-          /^react-dom($|\\/)/.test(id) ||
-          /^@pie-lib\\//.test(id) ||
-          /^@pie-elements-ng\\//.test(id) ||
-          /^@pie-framework\\//.test(id) ||
-          /^@mui\\//.test(id) ||
-          /^@emotion\\//.test(id) ||
-          /^d3-/.test(id) ||
-          id === 'lodash-es' ||
-          /^lodash-es\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', 'i18next'].includes(id)
-        );
-      },
+      external: ${createExternalFunction('pielib')},
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',

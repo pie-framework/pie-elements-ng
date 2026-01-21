@@ -265,7 +265,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
-import { createVitePlugin } from '@pie-apps/local-esm-cdn/adapters/vite';
+import { createVitePlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -322,8 +322,8 @@ export default defineConfig({
 
     let updated = false;
 
-    if (!packageJson.devDependencies['@pie-apps/local-esm-cdn']) {
-      packageJson.devDependencies['@pie-apps/local-esm-cdn'] = 'workspace:*';
+    if (!packageJson.devDependencies['@pie-elements-ng/local-esm-cdn']) {
+      packageJson.devDependencies['@pie-elements-ng/local-esm-cdn'] = 'workspace:*';
       updated = true;
     }
 

@@ -21,7 +21,7 @@ export type ConnectMiddleware = (
  * ```typescript
  * // Express
  * import express from 'express';
- * import { createConnectMiddleware } from '@pie-apps/local-esm-cdn/adapters/connect';
+ * import { createConnectMiddleware } from '@pie-elements-ng/local-esm-cdn/adapters/connect';
  *
  * const app = express();
  *
@@ -37,7 +37,7 @@ export type ConnectMiddleware = (
  * ```typescript
  * // Connect
  * import connect from 'connect';
- * import { createConnectMiddleware } from '@pie-apps/local-esm-cdn/adapters/connect';
+ * import { createConnectMiddleware } from '@pie-elements-ng/local-esm-cdn/adapters/connect';
  *
  * const app = connect();
  *

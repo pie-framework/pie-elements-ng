@@ -35,7 +35,7 @@ export interface LocalEsmCdnInstance {
  *
  * @example
  * ```typescript
- * import { createLocalEsmCdn } from '@pie-apps/local-esm-cdn/embedded';
+ * import { createLocalEsmCdn } from '@pie-elements-ng/local-esm-cdn/embedded';
  *
  * const cdn = createLocalEsmCdn({
  *   repoRoot: '/path/to/pie-elements-ng',
