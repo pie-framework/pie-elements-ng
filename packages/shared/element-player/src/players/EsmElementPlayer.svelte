@@ -69,8 +69,14 @@ $effect(() => {
       prompt: model?.prompt,
     });
     console.log('[esm-player] elementInstance type:', elementInstance.tagName, elementInstance);
-    console.log('[esm-player] Element has model setter?', Object.getOwnPropertyDescriptor(Object.getPrototypeOf(elementInstance), 'model'));
-    console.log('[esm-player] Element has session setter?', Object.getOwnPropertyDescriptor(Object.getPrototypeOf(elementInstance), 'session'));
+    console.log(
+      '[esm-player] Element has model setter?',
+      Object.getOwnPropertyDescriptor(Object.getPrototypeOf(elementInstance), 'model')
+    );
+    console.log(
+      '[esm-player] Element has session setter?',
+      Object.getOwnPropertyDescriptor(Object.getPrototypeOf(elementInstance), 'session')
+    );
     console.log('[esm-player] Setting model on element...');
     try {
       (elementInstance as any).model = model;
@@ -95,7 +101,10 @@ $effect(() => {
       const elementSessionAfter = (elementInstance as any).session;
       console.log('[esm-player] Element session after:', elementSessionAfter);
       console.log('[esm-player] Element session.value after:', elementSessionAfter?.value);
-      console.log('[esm-player] Element session stringified after:', JSON.stringify(elementSessionAfter));
+      console.log(
+        '[esm-player] Element session stringified after:',
+        JSON.stringify(elementSessionAfter)
+      );
     }
   }
 });

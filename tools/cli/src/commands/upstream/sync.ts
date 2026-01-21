@@ -229,6 +229,13 @@ export default class Sync extends Command {
           }
         } else if (desc === '@pie-lib packages') {
           syncSummary.pieLibPackagesSynced = result.count;
+          // Track touched pie-lib packages for build
+          for (const pkgName of result.packageNames) {
+            if (pkgName.startsWith('@pie-lib/')) {
+              const libName = pkgName.replace('@pie-lib/', '');
+              this.touchedPieLibPackages.add(libName);
+            }
+          }
         }
         syncSummary.totalPackagesSynced += result.count;
         // Add unique package names (avoid duplicates from multiple strategies syncing same package)
@@ -242,6 +249,7 @@ export default class Sync extends Command {
 
     // Ensure external dependencies from synced packages are available at repo root.
     if (!config.dryRun) {
+      await this.rewriteWorkspaceDependencies(config);
     }
 
     // Build by default (unless dry-run or explicitly skipped)
@@ -416,6 +424,127 @@ export default class Sync extends Command {
         resolve(false);
       });
     });
+  }
+
+  private async rewriteWorkspaceDependencies(config: SyncConfig): Promise<void> {
+    this.logger.section('🔧 Rewriting workspace dependencies');
+
+    // Discover available packages in the workspace
+    const libReactDir = join(config.pieElementsNg, 'packages/lib-react');
+    const elementsReactDir = join(config.pieElementsNg, 'packages/elements-react');
+
+    const availableLibPackages = new Set<string>();
+    const availableElementPackages = new Set<string>();
+
+    if (existsSync(libReactDir)) {
+      const libPackages = await readdir(libReactDir);
+      for (const pkg of libPackages) {
+        if (existsSync(join(libReactDir, pkg, 'package.json'))) {
+          availableLibPackages.add(pkg);
+        }
+      }
+    }
+
+    if (existsSync(elementsReactDir)) {
+      const elementPackages = await readdir(elementsReactDir);
+      for (const pkg of elementPackages) {
+        if (existsSync(join(elementsReactDir, pkg, 'package.json'))) {
+          availableElementPackages.add(pkg);
+        }
+      }
+    }
+
+    this.logger.info(`   Found ${availableLibPackages.size} lib-react packages`);
+    this.logger.info(`   Found ${availableElementPackages.size} elements-react packages\n`);
+
+    // Scan and rewrite package.json files
+    const packagesToCheck = [
+      ...Array.from(availableLibPackages).map((pkg) => join(libReactDir, pkg)),
+      ...Array.from(availableElementPackages).map((pkg) => join(elementsReactDir, pkg)),
+    ];
+
+    let totalRemoved = 0;
+    const removedDeps: Array<{ pkg: string; dep: string }> = [];
+
+    for (const pkgPath of packagesToCheck) {
+      const pkgJsonPath = join(pkgPath, 'package.json');
+      const pkgJson = (await loadPackageJson(pkgJsonPath)) as PackageJson | null;
+
+      if (!pkgJson || !pkgJson.dependencies) {
+        continue;
+      }
+
+      const pkgName = pkgJson.name || pkgPath;
+      let modified = false;
+      const depsToRemove: string[] = [];
+
+      for (const [dep, version] of Object.entries(pkgJson.dependencies)) {
+        // Only check workspace dependencies
+        if (!version.startsWith('workspace:')) {
+          continue;
+        }
+
+        // Check @pie-lib/* dependencies
+        if (dep.startsWith('@pie-lib/')) {
+          const libName = dep.replace('@pie-lib/', '');
+          if (!availableLibPackages.has(libName)) {
+            depsToRemove.push(dep);
+            removedDeps.push({ pkg: pkgName, dep });
+            modified = true;
+          }
+        }
+
+        // Check @pie-element/* dependencies
+        if (dep.startsWith('@pie-element/')) {
+          const elementName = dep.replace('@pie-element/', '');
+          if (!availableElementPackages.has(elementName)) {
+            depsToRemove.push(dep);
+            removedDeps.push({ pkg: pkgName, dep });
+            modified = true;
+          }
+        }
+      }
+
+      if (modified) {
+        // Remove the invalid dependencies
+        for (const dep of depsToRemove) {
+          delete pkgJson.dependencies[dep];
+          totalRemoved++;
+        }
+
+        // Write back the modified package.json
+        const fs = await import('node:fs/promises');
+        await fs.writeFile(pkgJsonPath, JSON.stringify(pkgJson, null, 2) + '\n', 'utf-8');
+      }
+    }
+
+    if (totalRemoved > 0) {
+      this.logger.info(`   Removed ${totalRemoved} invalid workspace dependencies:\n`);
+      for (const { pkg, dep } of removedDeps) {
+        this.logger.info(`   - ${dep} from ${pkg}`);
+      }
+      this.log('');
+    } else {
+      this.logger.info('   ✓ All workspace dependencies are valid\n');
+    }
+
+    // Run bun install to update the lockfile
+    this.logger.info('   Running bun install to update lockfile...');
+    const exitCode = await new Promise<number>((resolve) => {
+      const child = spawn('bun', ['install'], {
+        cwd: config.pieElementsNg,
+        stdio: 'inherit',
+        env: process.env,
+      });
+      child.on('close', (code) => resolve(code ?? 1));
+      child.on('error', () => resolve(1));
+    });
+
+    if (exitCode !== 0) {
+      this.logger.warn('   ⚠️  bun install failed');
+    } else {
+      this.logger.info('   ✓ bun install completed successfully\n');
+    }
   }
 
   private async buildTouchedPackages(config: SyncConfig, result: SyncResult): Promise<void> {

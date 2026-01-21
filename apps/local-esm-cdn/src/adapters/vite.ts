@@ -172,7 +172,9 @@ export function createVitePlugin(config: Partial<LocalEsmCdnConfig>): Plugin {
       const matchingModules = allModules.filter((url) => url.startsWith(urlPattern));
 
       if (matchingModules.length > 0) {
-        console.log(`[vite-plugin-local-esm-cdn] Found ${matchingModules.length} modules to invalidate`);
+        console.log(
+          `[vite-plugin-local-esm-cdn] Found ${matchingModules.length} modules to invalidate`
+        );
         matchingModules.forEach((url) => {
           if (server) {
             const mod = server.moduleGraph.urlToModuleMap.get(url);
