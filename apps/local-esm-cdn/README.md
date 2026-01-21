@@ -60,7 +60,7 @@ Import and use in your web application for single-process development. No need t
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { createVitePlugin } from '@pie-apps/local-esm-cdn/adapters/vite';
+import { createVitePlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
 import path from 'path';
 
 export default defineConfig({
@@ -79,7 +79,7 @@ Now your Vite dev server will automatically serve `/@pie-element/*` routes!
 
 ```typescript
 // src/hooks.server.ts
-import { createSvelteKitHandle } from '@pie-apps/local-esm-cdn/adapters/sveltekit';
+import { createSvelteKitHandle } from '@pie-elements-ng/local-esm-cdn/adapters/sveltekit';
 
 export const handle = createSvelteKitHandle({
   repoRoot: '/path/to/pie-elements-ng',
@@ -91,7 +91,7 @@ With other hooks:
 
 ```typescript
 // src/hooks.server.ts
-import { createSvelteKitHandle } from '@pie-apps/local-esm-cdn/adapters/sveltekit';
+import { createSvelteKitHandle } from '@pie-elements-ng/local-esm-cdn/adapters/sveltekit';
 import { sequence } from '@sveltejs/kit/hooks';
 
 const localEsmCdn = createSvelteKitHandle({
@@ -106,7 +106,7 @@ export const handle = sequence(localEsmCdn, myOtherHandle);
 
 ```typescript
 import express from 'express';
-import { createConnectMiddleware } from '@pie-apps/local-esm-cdn/adapters/connect';
+import { createConnectMiddleware } from '@pie-elements-ng/local-esm-cdn/adapters/connect';
 
 const app = express();
 
@@ -125,7 +125,7 @@ app.listen(3000);
 For any framework that can handle Web API Request/Response:
 
 ```typescript
-import { createLocalEsmCdn } from '@pie-apps/local-esm-cdn/embedded';
+import { createLocalEsmCdn } from '@pie-elements-ng/local-esm-cdn/embedded';
 
 const cdn = createLocalEsmCdn({
   repoRoot: '/path/to/pie-elements-ng',

@@ -157,13 +157,17 @@ $effect(() => {
     }
   }
 
-  if (session && session !== lastElementSessionRef) {
-    lastElementSessionRef = session;
-    try {
-      (elementPlayer as any).session = session;
-      logConsole('element:session:set');
-    } catch (err) {
-      console.error('[pie-element-player] Error setting element session:', err);
+  // Check if session content has changed (not just reference)
+  if (session) {
+    const sessionChanged = JSON.stringify(session) !== JSON.stringify(lastElementSessionRef);
+    if (sessionChanged) {
+      lastElementSessionRef = session;
+      try {
+        (elementPlayer as any).session = session;
+        logConsole('element:session:set', { value: session?.value });
+      } catch (err) {
+        console.error('[pie-element-player] Error setting element session:', err);
+      }
     }
   }
 });
@@ -383,6 +387,12 @@ const buildModel = async (
 };
 
 $effect(() => {
+  // Read reactive dependencies explicitly to ensure effect re-runs on changes
+  const currentMode = mode;
+  const currentRole = playerRole;
+  const currentPartialScoring = partialScoring;
+  const currentAddCorrectResponse = addCorrectResponse;
+
   modelRequestId += 1;
   const requestId = modelRequestId;
   const currentSessionVersion = sessionVersion;

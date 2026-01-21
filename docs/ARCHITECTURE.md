@@ -585,6 +585,19 @@ export { default as MultipleChoice } from './MultipleChoice.js';
 export { model, outcome } from './controller.js';
 ```
 
+**IIFE** (Immediately Invoked Function Expression) format for CDN deployment:
+
+```javascript
+// dist/index.iife.js
+(function() {
+  // Self-contained bundle with all dependencies (React, etc.)
+  // Auto-registers custom element: <multiple-choice-pie>
+  // Size: ~1.2MB / 400KB gzipped
+})();
+```
+
+**Key difference from original pie-elements**: The original `@pie-element/*` packages do NOT include IIFE builds. They only publish CommonJS (`lib/index.js`) and ESM source (`src/index.js`). This project adds IIFE builds to enable zero-config CDN deployment via `<script>` tags.
+
 **Types**: TypeScript definitions generated:
 
 ```typescript

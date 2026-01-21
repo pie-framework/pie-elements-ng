@@ -14,6 +14,11 @@ const model = Array.isArray(config?.models) ? config.models[0] : config;
 const session = Array.isArray(sessions) ? sessions[0] : sessions;
 
 console.log('[demo] Initializing demo');
+console.log('[demo] Model:', model);
+console.log('[demo] Session:', session);
+
+// Wait for custom element to be defined
+await customElements.whenDefined('pie-element-player');
 
 // Get player element
 const player = document.getElementById('player') as any;
@@ -23,9 +28,13 @@ if (!player) {
   throw new Error('Player element not found');
 }
 
-// Set properties
-player.model = model;
-player.session = session;
+console.log('[demo] Player element found:', player);
+
+// Set properties (create new objects to trigger reactivity)
+console.log('[demo] Setting model and session...');
+player.model = { ...model };
+player.session = { ...session };
+console.log('[demo] Model and session set');
 
 // Listen for session changes
 player.addEventListener('session-changed', (e: Event) => {
