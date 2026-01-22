@@ -868,11 +868,18 @@ export default defineConfig({
     await mkdir(srcDir, { recursive: true });
     await writeFile(join(srcDir, 'esm.ts'), content, 'utf-8');
 
-    // Copy config.mjs if it exists upstream
+    // Copy or generate config.mjs
     const configMjs = join(upstreamDemoDir, 'config.mjs');
+    const configJs = join(upstreamDemoDir, 'config.js');
+    const generateJs = join(upstreamDemoDir, 'generate.js');
+
     if (existsSync(configMjs)) {
+      // Copy config.mjs if it exists
       const content = await readFile(configMjs, 'utf-8');
       await writeFile(join(targetDemoDir, 'config.mjs'), content, 'utf-8');
+    } else if (existsSync(configJs) && existsSync(generateJs)) {
+      // Generate config.mjs from config.js + generate.js
+      await this.generateConfigFromUpstream(upstreamDemoDir, targetDemoDir, elementName);
     }
 
     // Convert session.js (CommonJS) to session.mjs (ESM) if it exists upstream
@@ -901,6 +908,72 @@ export default defineConfig({
     const generatePath = join(targetDemoDir, 'generate.js');
     if (existsSync(configPath) && existsSync(generatePath)) {
       await fsRm(generatePath, { force: true });
+    }
+  }
+
+  /**
+   * Generate config.mjs from upstream config.js + generate.js
+   *
+   * This method handles the conversion from upstream's CommonJS config system
+   * to our ESM-based config.mjs format. It also normalizes element names to
+   * match our package naming convention (e.g., "hotspot-element" -> "hotspot").
+   */
+  private async generateConfigFromUpstream(
+    upstreamDemoDir: string,
+    targetDemoDir: string,
+    elementName: string
+  ): Promise<void> {
+    try {
+      // Execute config.js in upstream context to get the model
+      // We need to use child_process to run Node.js with the correct require resolution
+      const { execSync } = await import('node:child_process');
+
+      // Create a temporary script file to avoid escaping issues
+      const tempScriptPath = join(upstreamDemoDir, '.generate-config-temp.js');
+      const script = `const { model } = require('./generate.js');
+const config = require('./config.js');
+
+// Determine what element name to pass to the model function
+// Check if config.models exists and get the element name from it
+let upstreamElementName = '${elementName}-element';
+if (config.models && config.models[0]) {
+  if (typeof config.models[0] === 'function') {
+    // If it's a function, call it to get the element name
+    const testModel = config.models[0]('1', 'test-element');
+    upstreamElementName = testModel.element || upstreamElementName;
+  } else {
+    // If it's an object, get the element name directly
+    upstreamElementName = config.models[0].element || upstreamElementName;
+  }
+}
+
+// Generate the model using the upstream's expected element name
+const generatedModel = model('1', upstreamElementName);
+
+// Normalize element name to match our package convention
+// Remove common suffixes like -element, -el, etc. and use just the base package name
+generatedModel.element = '${elementName}';
+
+console.log(JSON.stringify({ models: [generatedModel] }, null, 2));`;
+
+      await writeFile(tempScriptPath, script, 'utf-8');
+
+      const result = execSync('node .generate-config-temp.js', {
+        cwd: upstreamDemoDir,
+        encoding: 'utf-8',
+      });
+
+      // Clean up temp file
+      await fsRm(tempScriptPath, { force: true });
+
+      const configContent = `export default ${result};\n`;
+      await writeFile(join(targetDemoDir, 'config.mjs'), configContent, 'utf-8');
+    } catch (error) {
+      // If generation fails, log warning but don't fail the sync
+      console.warn(
+        `Warning: Could not generate config.mjs for ${elementName} from config.js + generate.js:`,
+        error
+      );
     }
   }
 
