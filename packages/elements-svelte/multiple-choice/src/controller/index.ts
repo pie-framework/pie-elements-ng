@@ -12,8 +12,8 @@ import type {
   PieModel,
   PieSession,
   ValidationErrors,
-} from '@pie-elements-ng/shared-types';
-import { isEmpty, showFeedback, showRationale, shuffle, uuid } from '@pie-elements-ng/shared-utils';
+} from '@pie-element/shared-types';
+import { isEmpty, showFeedback, showRationale, shuffle, uuid } from '@pie-element/shared-utils';
 import type {
   Choice,
   MultipleChoiceModel,
@@ -147,7 +147,7 @@ export function createDefaultModel(partial?: Partial<MultipleChoiceModel>): Mult
   return {
     ...defaults,
     id: uuid(),
-    element: '@pie-elements-ng/multiple-choice',
+    element: '@pie-element/multiple-choice',
     ...partial,
   };
 }

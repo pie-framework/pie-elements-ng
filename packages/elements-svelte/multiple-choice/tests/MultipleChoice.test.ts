@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { MultipleChoiceViewModel } from '../types';
-import MultipleChoice from './MultipleChoice.svelte';
+import type { MultipleChoiceViewModel } from '../src/types';
+import MultipleChoice from '../src/delivery/MultipleChoice.svelte';
 
 describe('MultipleChoice Component', () => {
   const baseModel: MultipleChoiceViewModel = {

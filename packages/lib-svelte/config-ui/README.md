@@ -1,11 +1,11 @@
-# @pie-elements-ng/lib-config-ui
+# @pie-element/lib-config-ui
 
 Reusable configuration UI components for PIE element authoring interfaces built with Svelte 5.
 
 ## Installation
 
 ```bash
-bun add @pie-elements-ng/lib-config-ui
+bun add @pie-element/lib-config-ui
 ```
 
 ## Components
@@ -16,7 +16,7 @@ Text input field for configuration forms.
 
 ```svelte
 <script>
-  import TextInput from '@pie-elements-ng/lib-config-ui/TextInput.svelte';
+  import TextInput from '@pie-element/lib-config-ui/TextInput.svelte';
   let promptText = $state('');
 </script>
 
@@ -35,7 +35,7 @@ Number input field with min/max/step controls.
 
 ```svelte
 <script>
-  import NumberInput from '@pie-elements-ng/lib-config-ui/NumberInput.svelte';
+  import NumberInput from '@pie-element/lib-config-ui/NumberInput.svelte';
   let maxScore = $state(1);
 </script>
 
@@ -55,7 +55,7 @@ Checkbox input for boolean options.
 
 ```svelte
 <script>
-  import Checkbox from '@pie-elements-ng/lib-config-ui/Checkbox.svelte';
+  import Checkbox from '@pie-element/lib-config-ui/Checkbox.svelte';
   let shuffleChoices = $state(false);
 </script>
 
@@ -72,7 +72,7 @@ Dropdown select component.
 
 ```svelte
 <script>
-  import Select from '@pie-elements-ng/lib-config-ui/Select.svelte';
+  import Select from '@pie-element/lib-config-ui/Select.svelte';
   let mode = $state('single');
   const options = [
     { value: 'single', label: 'Single Answer' },
@@ -94,7 +94,7 @@ Rich text editor for HTML content (currently a textarea, will be enhanced).
 
 ```svelte
 <script>
-  import RichTextEditor from '@pie-elements-ng/lib-config-ui/RichTextEditor.svelte';
+  import RichTextEditor from '@pie-element/lib-config-ui/RichTextEditor.svelte';
   let feedback = $state('');
 </script>
 
@@ -112,7 +112,7 @@ Section component for grouping related form fields.
 
 ```svelte
 <script>
-  import Section from '@pie-elements-ng/lib-config-ui/Section.svelte';
+  import Section from '@pie-element/lib-config-ui/Section.svelte';
 </script>
 
 <Section

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
-import LoadingSpinner from './LoadingSpinner.svelte';
+import LoadingSpinner from '../src/LoadingSpinner.svelte';
 
 describe('LoadingSpinner', () => {
   it('renders with default props', () => {

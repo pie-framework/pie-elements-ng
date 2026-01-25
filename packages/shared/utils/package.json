@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/shared-utils",
+  "name": "@pie-element/shared-utils",
   "version": "1.0.0",
   "description": "Shared utilities for PIE elements",
   "type": "module",
@@ -21,7 +21,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-elements-ng/shared-types": "workspace:*"
+    "@pie-element/shared-types": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -31,5 +31,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

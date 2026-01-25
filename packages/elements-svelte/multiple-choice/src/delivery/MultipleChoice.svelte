@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { MultipleChoiceViewModel } from '../types';
-import Prompt from '@pie-elements-ng/lib-ui/Prompt.svelte';
-import Feedback from '@pie-elements-ng/lib-ui/Feedback.svelte';
-import Rationale from '@pie-elements-ng/lib-ui/Rationale.svelte';
+import Prompt from '@pie-element/lib-ui/Prompt.svelte';
+import Feedback from '@pie-element/lib-ui/Feedback.svelte';
+import Rationale from '@pie-element/lib-ui/Rationale.svelte';
 
 interface Props {
   model: MultipleChoiceViewModel;

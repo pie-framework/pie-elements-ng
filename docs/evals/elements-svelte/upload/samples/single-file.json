@@ -1,6 +1,6 @@
 {
   "id": "upload-single-1",
-  "element": "@pie-elements-ng/upload",
+  "element": "@pie-element/upload",
   "prompt": "<p>Upload a single image file.</p>",
   "promptEnabled": true,
   "instructions": "Upload one image file (JPG, PNG, or GIF).",

@@ -1,6 +1,6 @@
 {
   "id": "mc-simple-1",
-  "element": "@pie-elements-ng/multiple-choice",
+  "element": "@pie-element/multiple-choice",
   "prompt": "<p><strong>What is 2 + 2?</strong></p><p>Select the correct answer:</p>",
   "promptEnabled": true,
   "choices": [

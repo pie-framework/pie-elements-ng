@@ -1,6 +1,6 @@
 {
   "id": "slider-simple-1",
-  "element": "@pie-elements-ng/slider",
+  "element": "@pie-element/slider",
   "prompt": "<p>Select a value between 0 and 10.</p>",
   "lowerBound": 0,
   "upperBound": 10,

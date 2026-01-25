@@ -13,7 +13,7 @@
  *
  * 2. **@pie-framework Events → Internal Packages**:
  *    - Upstream references external @pie-framework packages
- *    - Monorepo uses internal @pie-elements-ng/shared-* packages
+ *    - Monorepo uses internal @pie-element/shared-* packages
  *
  * 3. **Editable-HTML Constants Inlining**:
  *    - `editable-html` package is not ESM-compatible (Slate v0.x dependencies)
@@ -305,8 +305,8 @@ export function transformPackageJsonLodash<T extends Record<string, any>>(packag
  * Transform @pie-framework event package imports to internal packages
  *
  * Handles:
- * - @pie-framework/pie-player-events → @pie-elements-ng/shared-player-events
- * - @pie-framework/pie-configure-events → @pie-elements-ng/shared-configure-events
+ * - @pie-framework/pie-player-events → @pie-element/shared-player-events
+ * - @pie-framework/pie-configure-events → @pie-element/shared-configure-events
  */
 export function transformPieFrameworkEventImports(content: string): string {
   let transformed = content;
@@ -314,13 +314,13 @@ export function transformPieFrameworkEventImports(content: string): string {
   // Transform pie-player-events imports
   transformed = transformed.replace(
     /from\s+['"]@pie-framework\/pie-player-events['"]/g,
-    "from '@pie-elements-ng/shared-player-events'"
+    "from '@pie-element/shared-player-events'"
   );
 
   // Transform pie-configure-events imports
   transformed = transformed.replace(
     /from\s+['"]@pie-framework\/pie-configure-events['"]/g,
-    "from '@pie-elements-ng/shared-configure-events'"
+    "from '@pie-element/shared-configure-events'"
   );
 
   return transformed;
@@ -336,21 +336,21 @@ export function transformPackageJsonPieEvents<T extends Record<string, any>>(pac
 
   // Replace @pie-framework/pie-player-events with internal package
   if (transformed.dependencies?.['@pie-framework/pie-player-events']) {
-    transformed.dependencies['@pie-elements-ng/shared-player-events'] = 'workspace:*';
+    transformed.dependencies['@pie-element/shared-player-events'] = 'workspace:*';
     delete transformed.dependencies['@pie-framework/pie-player-events'];
   }
   if (transformed.devDependencies?.['@pie-framework/pie-player-events']) {
-    transformed.devDependencies['@pie-elements-ng/shared-player-events'] = 'workspace:*';
+    transformed.devDependencies['@pie-element/shared-player-events'] = 'workspace:*';
     delete transformed.devDependencies['@pie-framework/pie-player-events'];
   }
 
   // Replace @pie-framework/pie-configure-events with internal package
   if (transformed.dependencies?.['@pie-framework/pie-configure-events']) {
-    transformed.dependencies['@pie-elements-ng/shared-configure-events'] = 'workspace:*';
+    transformed.dependencies['@pie-element/shared-configure-events'] = 'workspace:*';
     delete transformed.dependencies['@pie-framework/pie-configure-events'];
   }
   if (transformed.devDependencies?.['@pie-framework/pie-configure-events']) {
-    transformed.devDependencies['@pie-elements-ng/shared-configure-events'] = 'workspace:*';
+    transformed.devDependencies['@pie-element/shared-configure-events'] = 'workspace:*';
     delete transformed.devDependencies['@pie-framework/pie-configure-events'];
   }
 
@@ -404,14 +404,14 @@ export function transformToAssignProps(content: string): string {
   }
 
   // Add import if needed and not already present
-  if (needsImport && !transformed.includes("from '@pie-elements-ng/shared-utils'")) {
+  if (needsImport && !transformed.includes("from '@pie-element/shared-utils'")) {
     // Find where to insert the import (after other imports)
     const importMatch = transformed.match(/(import\s+.*?from\s+['"].*?['"];?\s*\n)+/);
     if (importMatch && importMatch.index !== undefined) {
       const lastImportEnd = importMatch.index + importMatch[0].length;
       transformed =
         transformed.slice(0, lastImportEnd) +
-        "import { assignProps } from '@pie-elements-ng/shared-utils';\n" +
+        "import { assignProps } from '@pie-element/shared-utils';\n" +
         transformed.slice(lastImportEnd);
     } else {
       // No imports found, add at the beginning (after any leading comments)
@@ -419,7 +419,7 @@ export function transformToAssignProps(content: string): string {
       if (firstNonCommentLine !== -1) {
         transformed =
           transformed.slice(0, firstNonCommentLine) +
-          "import { assignProps } from '@pie-elements-ng/shared-utils';\n\n" +
+          "import { assignProps } from '@pie-element/shared-utils';\n\n" +
           transformed.slice(firstNonCommentLine);
       }
     }

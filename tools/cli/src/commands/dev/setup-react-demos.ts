@@ -97,7 +97,7 @@ export default class SetupReactDemos extends Command {
       this.log('Next steps:');
       this.log('  1. Build elements: bun run turbo build --filter @pie-element/*');
       this.log(
-        '  2. Build element-player: bun run turbo build --filter @pie-elements-ng/element-player'
+        '  2. Build element-player: bun run turbo build --filter @pie-element/element-player'
       );
       this.log('  3. Run demo: bun cli dev:demo <element-name>');
       this.log('');
@@ -192,7 +192,7 @@ export default class SetupReactDemos extends Command {
   private generateAppSvelte(element: string): string {
     return `<script lang="ts">
 import { onMount } from 'svelte';
-import '@pie-elements-ng/element-player';
+import '@pie-element/element-player';
 
 let player: any;
 let session = $state({
@@ -265,7 +265,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
-import { createVitePlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
+import { createVitePlugin } from '@pie-element/local-esm-cdn/adapters/vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -292,7 +292,7 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    exclude: ['@pie-element/*', '@pie-lib/*', '@pie-elements-ng/*', '@pie-framework/*'],
+    exclude: ['@pie-element/*', '@pie-lib/*', '@pie-element/*', '@pie-framework/*'],
   },
   server: {
     port: 5174,
@@ -322,13 +322,13 @@ export default defineConfig({
 
     let updated = false;
 
-    if (!packageJson.devDependencies['@pie-elements-ng/local-esm-cdn']) {
-      packageJson.devDependencies['@pie-elements-ng/local-esm-cdn'] = 'workspace:*';
+    if (!packageJson.devDependencies['@pie-element/local-esm-cdn']) {
+      packageJson.devDependencies['@pie-element/local-esm-cdn'] = 'workspace:*';
       updated = true;
     }
 
-    if (!packageJson.devDependencies['@pie-elements-ng/element-player']) {
-      packageJson.devDependencies['@pie-elements-ng/element-player'] = 'workspace:*';
+    if (!packageJson.devDependencies['@pie-element/element-player']) {
+      packageJson.devDependencies['@pie-element/element-player'] = 'workspace:*';
       updated = true;
     }
 

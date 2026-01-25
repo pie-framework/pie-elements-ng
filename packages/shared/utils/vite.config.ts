@@ -9,7 +9,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['@pie-elements-ng/shared-types'],
+      external: ['@pie-element/shared-types'],
     },
   },
   test: {

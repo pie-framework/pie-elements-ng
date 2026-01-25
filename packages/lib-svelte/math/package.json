@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/lib-math",
+  "name": "@pie-element/lib-math",
   "version": "0.1.0",
   "main": "./src/index.ts",
   "devDependencies": {
@@ -26,5 +26,6 @@
   "type": "module",
   "dependencies": {
     "mathjax": "4.1.0"
-  }
+  },
+  "license": "MIT"
 }

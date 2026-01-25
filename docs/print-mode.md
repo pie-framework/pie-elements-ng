@@ -2,7 +2,7 @@
 
 ## Overview
 
-Print mode provides static rendering of PIE elements for paper-based assessments, answer keys, and PDF exports. Unlike the original pie-elements which used separate print components, pie-elements-ng integrates print mode into the unified component architecture.
+Print mode provides static rendering of PIE elements for paper-based assessments, answer keys, and PDF exports. Unlike the original pie-elements which used separate print components, pie-element integrates print mode into the unified component architecture.
 
 **Status:** Optional but recommended for feature parity with original pie-elements
 
@@ -15,7 +15,7 @@ Print mode provides static rendering of PIE elements for paper-based assessments
 - Duplicated component logic
 - Located in `src/print.js` per element
 
-### pie-elements-ng Approach (Recommended)
+### pie-element Approach (Recommended)
 
 **Add `print` as a mode** to the unified component architecture:
 
@@ -358,7 +358,7 @@ test('prints to PDF correctly', async ({ page }) => {
 
 ### Comparison
 
-| Aspect | Original | pie-elements-ng |
+| Aspect | Original | pie-element |
 |--------|----------|-----------------|
 | **Architecture** | Separate print component | Unified component with print mode |
 | **Build** | Separate build process | Same build as main component |

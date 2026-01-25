@@ -5,7 +5,7 @@
  * Compatible with PIE player system.
  */
 
-import { ModelSetEvent, SessionChangedEvent } from '@pie-elements-ng/shared-player-events';
+import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 import { mount, unmount } from 'svelte';
 import { model as modelController } from '../controller/index';
 import MultipleChoice from '../delivery/MultipleChoice.svelte';
@@ -146,7 +146,7 @@ if (typeof window !== 'undefined') {
   window.pie = window.pie || {};
   window.pie.default = window.pie.default || {};
 
-  window.pie.default['@pie-elements-ng/multiple-choice'] = {
+  window.pie.default['@pie-element/multiple-choice'] = {
     Element: MultipleChoiceElement,
     controller: { model: modelController },
     config: null,

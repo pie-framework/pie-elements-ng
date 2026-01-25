@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/shared-configure-events",
+  "name": "@pie-element/shared-configure-events",
   "version": "1.0.0",
   "description": "PIE Configure Events (ESM) - internalized from @pie-framework/pie-configure-events",
   "type": "module",
@@ -29,5 +29,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

@@ -10,7 +10,7 @@ import type {
   PieEvaluation,
   PieModel,
   PieSession,
-} from '@pie-elements-ng/shared-types';
+} from '@pie-element/shared-types';
 
 /**
  * Media type

@@ -291,7 +291,7 @@ export default class DevCdnDemo extends Command {
         } else {
           res.writeHead(404, { 'Content-Type': 'text/plain' });
           res.end(
-            'Element player not found. Run: bun run turbo build --filter @pie-elements-ng/element-player'
+            'Element player not found. Run: bun run turbo build --filter @pie-element/element-player'
           );
         }
         return;

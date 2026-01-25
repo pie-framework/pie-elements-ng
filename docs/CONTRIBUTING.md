@@ -27,14 +27,14 @@ Thank you for your interest in contributing to PIE Elements! This guide will hel
 2. Clone your fork locally:
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/pie-elements-ng.git
-cd pie-elements-ng
+git clone https://github.com/YOUR-USERNAME/pie-element.git
+cd pie-element
 ```
 
 3. Add upstream remote:
 
 ```bash
-git remote add upstream https://github.com/ORIGINAL-ORG/pie-elements-ng.git
+git remote add upstream https://github.com/ORIGINAL-ORG/pie-element.git
 ```
 
 ## Development Setup
@@ -90,7 +90,7 @@ bun run lint:fix
 ## Project Structure
 
 ```
-pie-elements-ng/
+pie-element/
 ├── packages/
 │   ├── core/                      # Core PIE interfaces
 │   ├── elements-svelte/           # Svelte element implementations
@@ -191,8 +191,8 @@ Create the Svelte component for student interaction:
 ```svelte
 <script lang="ts">
   import type { MyElementModel, MyElementSession } from '../controller';
-  import type { PieEnvironment } from '@pie-elements-ng/core';
-  import { Prompt } from '@pie-elements-ng/lib-ui';
+  import type { PieEnvironment } from '@pie-element/core';
+  import { Prompt } from '@pie-element/lib-ui';
 
   interface Props {
     model: MyElementModel;
@@ -244,7 +244,7 @@ Create the authoring/configuration UI:
 ```svelte
 <script lang="ts">
   import type { MyElementModel } from '../controller';
-  import { RichTextEditor } from '@pie-elements-ng/lib-ui';
+  import { RichTextEditor } from '@pie-element/lib-ui';
 
   interface Props {
     model: MyElementModel;
@@ -290,7 +290,7 @@ Create the authoring/configuration UI:
 
 ```json
 {
-  "name": "@pie-elements-ng/my-element",
+  "name": "@pie-element/my-element",
   "version": "0.1.0",
   "type": "module",
   "exports": {
@@ -309,8 +309,8 @@ Create the authoring/configuration UI:
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@pie-elements-ng/core": "workspace:*",
-    "@pie-elements-ng/lib-ui": "workspace:*"
+    "@pie-element/core": "workspace:*",
+    "@pie-element/lib-ui": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.2",
@@ -388,7 +388,7 @@ Create YAML evaluation specs:
 version: 1
 
 component:
-  element: "@pie-elements-ng/my-element"
+  element: "@pie-element/my-element"
   framework: "svelte"
 
 examplesApp:

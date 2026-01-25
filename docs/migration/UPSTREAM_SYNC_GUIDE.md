@@ -58,7 +58,7 @@ This guide describes the complete process for migrating PIE elements from the up
                   │    (UI + controllers + deps)
                   │
 ┌─────────────────▼───────────────────────────────────────────────┐
-│                    pie-elements-ng                              │
+│                    pie-element                              │
 │                                                                 │
 │  📦 REACT PACKAGES (copied from upstream):                      │
 │  ├── packages/elements-react/{element}/                         │
@@ -183,7 +183,7 @@ The sync command automatically respects the ESM compatibility report and will wa
 
 Common packages that prevent ESM builds:
 
-- **Slate v0.x** (`slate@0.36.x`): Old rich text editor (replaced by TipTap in pie-elements-ng)
+- **Slate v0.x** (`slate@0.36.x`): Old rich text editor (replaced by TipTap in pie-element)
 - **Enzyme**: React testing library (replaced by React Testing Library)
 - **Old build tools**: Webpack plugins, outdated Babel presets
 
@@ -407,7 +407,7 @@ bun add --dev @testing-library/react @testing-library/jest-dom
 **After fixing upstream:**
 
 ```bash
-cd pie-elements-ng
+cd pie-element
 bun run cli upstream:analyze-esm
 # Check if more elements are now compatible
 ```
@@ -429,13 +429,13 @@ git clone https://github.com/PieLabs/pie-lib.git
 # ~/projects/
 #   pie-elements/
 #   pie-lib/
-#   pie-elements-ng/
+#   pie-element/
 ```
 
 **2. Build the CLI:**
 
 ```bash
-cd pie-elements-ng/tools/cli
+cd pie-element/tools/cli
 bun install
 bun run build
 ```
@@ -463,7 +463,7 @@ bun run build
 - ✅ Synced to `packages/elements-react/{element}/src/`
 - ✅ Includes `student/`, `authoring/`, and other UI code
 - ✅ Converted from `.jsx` to `.tsx`
-- ✅ Updated imports to use pie-elements-ng libraries
+- ✅ Updated imports to use pie-element libraries
 
 **Philosophy:** React packages are COPIES of upstream (not custom implementations).
 
@@ -722,7 +722,7 @@ export PIE_LIB_PATH=/custom/path/pie-lib
 #### 1. Analyze ESM Compatibility
 
 ```bash
-cd pie-elements-ng
+cd pie-element
 
 # Run analysis
 bun run cli upstream:analyze-esm --verbose
@@ -780,7 +780,7 @@ bun test
 <!-- packages/elements-svelte/multiple-choice/src/delivery/index.svelte -->
 <script lang="ts">
   import type { MultipleChoiceModel, SessionData } from '../types';
-  import type { PieEnvironment } from '@pie-elements-ng/core';
+  import type { PieEnvironment } from '@pie-element/core';
 
   interface Props {
     model: MultipleChoiceModel;
@@ -996,7 +996,7 @@ git show <commit-sha>
 # ⚠️ Breaking changes → Evaluate carefully
 
 # 4. Re-run ESM analysis if dependencies changed
-cd ../pie-elements-ng
+cd ../pie-element
 bun run cli upstream:analyze-esm --element=multiple-choice
 
 # 5. Sync if still compatible
@@ -1206,7 +1206,7 @@ For significant changes:
 ```bash
 # Ensure repos are cloned as siblings
 ls -la ..
-# Should show: pie-elements/, pie-lib/, pie-elements-ng/
+# Should show: pie-elements/, pie-lib/, pie-element/
 
 # Or set environment variables
 export PIE_ELEMENTS_PATH=/custom/path/pie-elements
@@ -1232,7 +1232,7 @@ bun remove slate
 bun add @tiptap/core  # or other ESM-compatible alternative
 
 # 4. Re-analyze
-cd ../../../pie-elements-ng
+cd ../../../pie-element
 bun run cli upstream:analyze-esm
 
 # 5. Sync if now compatible
@@ -1254,7 +1254,7 @@ cd ../pie-elements/packages/your-element
 cat package.json | jq '.dependencies'
 
 # 3. If blocker pattern is wrong, update CLI
-cd ../../../pie-elements-ng/tools/cli
+cd ../../../pie-element/tools/cli
 # Edit src/commands/upstream/analyze-esm.ts
 # Update ESM_BLOCKERS array
 
@@ -1344,7 +1344,7 @@ cd ../pie-elements/packages/multiple-choice
 cat package.json | jq '.dependencies.react'
 
 # 2. Match upstream version
-cd ../../../pie-elements-ng/packages/elements-react/multiple-choice
+cd ../../../pie-element/packages/elements-react/multiple-choice
 bun add react@<upstream-version>
 
 # 3. Update lockfile

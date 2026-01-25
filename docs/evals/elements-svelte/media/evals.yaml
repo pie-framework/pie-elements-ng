@@ -1,11 +1,11 @@
 version: 1
 
 component:
-  element: "@pie-elements-ng/media"
+  element: "@pie-element/media"
   framework: "svelte"
 
 examplesApp:
-  app: "@pie-elements-ng/media"
+  app: "@pie-element/media"
   routeTemplate: "/docs/demo/demo.html"
 
 evals:

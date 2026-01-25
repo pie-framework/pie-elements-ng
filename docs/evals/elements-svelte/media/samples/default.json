@@ -1,6 +1,6 @@
 {
   "id": "media-default",
-  "element": "@pie-elements-ng/media",
+  "element": "@pie-element/media",
   "mediaType": "video",
   "prompt": "<p>Watch the video about web accessibility.</p>",
   "sources": [

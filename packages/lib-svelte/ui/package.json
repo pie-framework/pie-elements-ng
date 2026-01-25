@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/lib-ui",
+  "name": "@pie-element/lib-ui",
   "version": "0.0.0",
   "description": "Shared UI components for PIE elements",
   "type": "module",
@@ -24,7 +24,6 @@
     "clean": "echo 'Nothing to clean'"
   },
   "dependencies": {
-    "@pie-elements-ng/shared-types": "workspace:*",
     "@tiptap/core": "^3.14.0",
     "@tiptap/extension-blockquote": "^3.14.0",
     "@tiptap/extension-heading": "^3.14.0",
@@ -38,7 +37,8 @@
     "@tiptap/extension-underline": "^3.14.0",
     "@tiptap/starter-kit": "^3.14.0",
     "dompurify": "^3.2.5",
-    "katex": "^0.16.27"
+    "katex": "^0.16.27",
+    "@pie-element/shared-types": "workspace:*"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"
@@ -50,5 +50,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

@@ -25,7 +25,7 @@ PIE elements are consumed by diverse applications using different frameworks (Re
 <pie-multiple-choice id="q1"></pie-multiple-choice>
 
 <script type="module">
-  import '@pie-elements-ng/multiple-choice';
+  import '@pie-element/multiple-choice';
 
   const el = document.getElementById('q1');
   el.model = {

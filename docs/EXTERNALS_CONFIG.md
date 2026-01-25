@@ -28,7 +28,7 @@ This is **standard practice** for library builds, not a hack or workaround.
 
 ### 2. Internal Monorepo Packages
 
-**@pie-lib/\*, @pie-element/\*, @pie-elements-ng/\*** are external for separate resolution:
+**@pie-lib/\*, @pie-element/\*, @pie-element/\*** are external for separate resolution:
 
 - Each package is built independently
 - Changes to one package don't require rebuilding all consumers
@@ -104,7 +104,7 @@ export function isExternal(id: string, variant: 'element' | 'pielib'): boolean {
   // Internal monorepo packages - always external
   if (/^@pie-lib\//.test(id)) return true;
   if (/^@pie-element\//.test(id)) return true;
-  if (/^@pie-elements-ng\//.test(id)) return true;
+  if (/^@pie-element\//.test(id)) return true;
   if (/^@pie-framework\//.test(id)) return true;
 
   // UI framework packages - always external (peer dependencies)
@@ -190,7 +190,7 @@ export default defineConfig({
           /^react-dom($|\/)/.test(id) ||
           /^@pie-lib\//.test(id) ||
           /^@pie-element\//.test(id) ||
-          /^@pie-elements-ng\//.test(id) ||
+          /^@pie-element\//.test(id) ||
           /^@pie-framework\//.test(id) ||
           /^@mui\//.test(id) ||
           /^@emotion\//.test(id) ||

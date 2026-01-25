@@ -27,7 +27,7 @@ Browser Request → Vite Dev Server (localhost:5174)
    - Integrates controller for scoring in evaluate mode
 
 2. **Local ESM CDN** (`apps/local-esm-cdn/`)
-   - Embedded as Vite plugin via `@pie-elements-ng/local-esm-cdn/adapters/vite`
+   - Embedded as Vite plugin via `@pie-element/local-esm-cdn/adapters/vite`
    - Intercepts requests to `/@pie-*` URLs
    - Serves PIE packages from local `dist/` folders
    - Rewrites imports:
@@ -153,7 +153,7 @@ customElements.whenDefined('pie-element-player').then(() => {
 
 ```typescript
 import { defineConfig } from 'vite';
-import { createVitePlugin as createLocalEsmCdnPlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
+import { createVitePlugin as createLocalEsmCdnPlugin } from '@pie-element/local-esm-cdn/adapters/vite';
 import path from 'node:path';
 
 export default defineConfig({
@@ -179,8 +179,8 @@ export default defineConfig({
     "demo:preview": "cd docs/demo && vite preview"
   },
   "devDependencies": {
-    "@pie-elements-ng/element-player": "workspace:*",
-    "@pie-elements-ng/local-esm-cdn": "workspace:*"
+    "@pie-element/element-player": "workspace:*",
+    "@pie-element/local-esm-cdn": "workspace:*"
   }
 }
 ```

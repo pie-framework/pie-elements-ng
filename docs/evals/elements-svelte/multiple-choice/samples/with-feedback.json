@@ -1,6 +1,6 @@
 {
   "id": "mc-feedback-1",
-  "element": "@pie-elements-ng/multiple-choice",
+  "element": "@pie-element/multiple-choice",
   "prompt": "<p><strong>What is the capital of France?</strong></p>",
   "promptEnabled": true,
   "choices": [

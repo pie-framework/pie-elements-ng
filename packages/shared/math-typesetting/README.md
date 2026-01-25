@@ -1,4 +1,4 @@
-# @pie-elements-ng/math-typesetting
+# @pie-element/math-typesetting
 
 Pluggable math typesetting system for PIE elements with KaTeX and MathML support.
 
@@ -16,7 +16,7 @@ Pluggable math typesetting system for PIE elements with KaTeX and MathML support
 ## Installation
 
 ```bash
-bun add @pie-elements-ng/math-typesetting
+bun add @pie-element/math-typesetting
 ```
 
 ## Quick Start
@@ -24,7 +24,7 @@ bun add @pie-elements-ng/math-typesetting
 ### Basic Usage with KaTeX (Default)
 
 ```typescript
-import { createKatexRenderer } from '@pie-elements-ng/math-typesetting';
+import { createKatexRenderer } from '@pie-element/math-typesetting';
 
 // Create renderer (KaTeX and CSS loaded automatically)
 const renderer = createKatexRenderer();
@@ -36,7 +36,7 @@ await renderer(document.body);
 ### Using Native MathML
 
 ```typescript
-import { createMathMLRenderer } from '@pie-elements-ng/math-typesetting';
+import { createMathMLRenderer } from '@pie-element/math-typesetting';
 
 // Create MathML renderer (no dependencies, no CSS needed)
 const renderer = createMathMLRenderer();
@@ -99,7 +99,7 @@ renderer(document.body); // Synchronous, no await needed
 Wraps content with LaTeX delimiters.
 
 ```typescript
-import { wrapMath, BracketTypes } from '@pie-elements-ng/math-typesetting';
+import { wrapMath, BracketTypes } from '@pie-element/math-typesetting';
 
 const wrapped = wrapMath('x^2 + y^2 = z^2', BracketTypes.ROUND_BRACKETS);
 // Returns: "\\(x^2 + y^2 = z^2\\)"
@@ -110,7 +110,7 @@ const wrapped = wrapMath('x^2 + y^2 = z^2', BracketTypes.ROUND_BRACKETS);
 Unwraps content from LaTeX delimiters.
 
 ```typescript
-import { unWrapMath } from '@pie-elements-ng/math-typesetting';
+import { unWrapMath } from '@pie-element/math-typesetting';
 
 const result = unWrapMath('\\(x^2\\)');
 // Returns: { unwrapped: "x^2", wrapType: "round_brackets" }
@@ -121,7 +121,7 @@ const result = unWrapMath('\\(x^2\\)');
 Converts MathML to LaTeX.
 
 ```typescript
-import { mmlToLatex } from '@pie-elements-ng/math-typesetting';
+import { mmlToLatex } from '@pie-element/math-typesetting';
 
 const latex = mmlToLatex('<math><mi>x</mi></math>');
 ```
@@ -131,7 +131,7 @@ const latex = mmlToLatex('<math><mi>x</mi></math>');
 Dynamically loads CSS (with caching).
 
 ```typescript
-import { loadCss } from '@pie-elements-ng/math-typesetting';
+import { loadCss } from '@pie-element/math-typesetting';
 
 await loadCss('https://example.com/style.css', {
   integrity: 'sha384-...',
@@ -144,8 +144,8 @@ await loadCss('https://example.com/style.css', {
 ### With PIE Element Player
 
 ```typescript
-import { createKatexRenderer } from '@pie-elements-ng/math-typesetting';
-import type { MathRenderer } from '@pie-elements-ng/math-typesetting';
+import { createKatexRenderer } from '@pie-element/math-typesetting';
+import type { MathRenderer } from '@pie-element/math-typesetting';
 
 // The element player accepts a math renderer prop
 const player = document.querySelector('pie-element-player');
@@ -156,7 +156,7 @@ const player = document.querySelector('pie-element-player');
 
 ```typescript
 import { useEffect, useRef } from 'react';
-import { createKatexRenderer } from '@pie-elements-ng/math-typesetting';
+import { createKatexRenderer } from '@pie-element/math-typesetting';
 
 function MathComponent({ content }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -177,7 +177,7 @@ function MathComponent({ content }) {
 ```svelte
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { createKatexRenderer } from '@pie-elements-ng/math-typesetting';
+  import { createKatexRenderer } from '@pie-element/math-typesetting';
 
   let container: HTMLDivElement;
   const renderer = createKatexRenderer();
@@ -203,7 +203,7 @@ function MathComponent({ content }) {
 You can create your own custom math renderer:
 
 ```typescript
-import type { MathRenderer } from '@pie-elements-ng/math-typesetting';
+import type { MathRenderer } from '@pie-element/math-typesetting';
 
 const myCustomRenderer: MathRenderer = async (element) => {
   // Custom implementation
@@ -241,19 +241,19 @@ This package follows the pluggable architecture pattern from pie-qti's typesetti
 3. **Lazy Loading**: Math engines loaded only when first used
 4. **Graceful Degradation**: Missing renderer = raw LaTeX/MathML displayed
 
-## Migration from @pie-elements-ng/shared-math-rendering
+## Migration from @pie-element/shared-math-rendering
 
 The new package provides a cleaner, pluggable API:
 
 **Old (tightly coupled):**
 ```typescript
-import { renderMath } from '@pie-elements-ng/shared-math-rendering';
+import { renderMath } from '@pie-element/shared-math-rendering';
 renderMath(document.body);
 ```
 
 **New (pluggable):**
 ```typescript
-import { createKatexRenderer } from '@pie-elements-ng/math-typesetting';
+import { createKatexRenderer } from '@pie-element/math-typesetting';
 
 const renderer = createKatexRenderer();
 await renderer(document.body);
@@ -285,8 +285,8 @@ See the root LICENSE file.
 
 ## Related Packages
 
-- `@pie-elements-ng/element-player` - PIE element player (uses this package)
-- `@pie-elements-ng/shared-mathml-to-latex` - MathML to LaTeX conversion
+- `@pie-element/element-player` - PIE element player (uses this package)
+- `@pie-element/shared-mathml-to-latex` - MathML to LaTeX conversion
 - `@pie-qti/qti2-typeset-katex` - Similar implementation for QTI
 
 ## Contributing

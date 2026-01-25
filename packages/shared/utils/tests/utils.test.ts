@@ -1,4 +1,4 @@
-import type { PieEnvironment } from '@pie-elements-ng/shared-types';
+import type { PieEnvironment } from '@pie-element/shared-types';
 import { describe, expect, it, vi } from 'vitest';
 import {
   assignProps,

@@ -3,7 +3,7 @@
  * Test script to verify local-esm-cdn routing behavior
  *
  * Tests:
- * 1. Local PIE packages (@pie-element, @pie-lib, @pie-elements-ng, @pie-framework) are served from filesystem
+ * 1. Local PIE packages (@pie-element, @pie-lib, @pie-element, @pie-framework) are served from filesystem
  * 2. External packages (react, etc.) are proxied to esm.sh
  */
 
@@ -74,18 +74,18 @@ async function main() {
     test('@pie-lib/render-ui served locally', false, `Failed: ${e.message}`);
   }
 
-  // Test 4: @pie-elements-ng package (should be served from local filesystem)
+  // Test 4: @pie-element package (should be served from local filesystem)
   try {
-    const res = await fetch(`${BASE_URL}/@pie-elements-ng/shared-math-rendering`);
+    const res = await fetch(`${BASE_URL}/@pie-element/shared-math-rendering`);
     const hasLocalHeader = res.headers.has('x-local-esm-cdn-file');
     const localFile = res.headers.get('x-local-esm-cdn-file') || '';
     test(
-      '@pie-elements-ng/shared-math-rendering served locally',
+      '@pie-element/shared-math-rendering served locally',
       res.ok && hasLocalHeader && localFile.includes('/packages/shared/math-rendering/'),
       hasLocalHeader ? `File: ${localFile}` : 'No x-local-esm-cdn-file header'
     );
   } catch (e: any) {
-    test('@pie-elements-ng/shared-math-rendering served locally', false, `Failed: ${e.message}`);
+    test('@pie-element/shared-math-rendering served locally', false, `Failed: ${e.message}`);
   }
 
   // Test 5: @pie-framework package (should be served from local filesystem)
@@ -107,9 +107,9 @@ async function main() {
   try {
     const res = await fetch(`${BASE_URL}/@pie-element/hotspot`);
     const code = await res.text();
-    const hasLocalImports = code.includes('@pie-lib/') || code.includes('@pie-elements-ng/');
+    const hasLocalImports = code.includes('@pie-lib/') || code.includes('@pie-element/');
     const hasNoEsmShForLocal =
-      !code.includes('esm.sh/@pie-lib/') && !code.includes('esm.sh/@pie-elements-ng/');
+      !code.includes('esm.sh/@pie-lib/') && !code.includes('esm.sh/@pie-element/');
     test(
       'Local imports not rewritten to esm.sh',
       hasNoEsmShForLocal,

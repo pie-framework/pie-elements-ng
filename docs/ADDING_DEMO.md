@@ -23,7 +23,7 @@ Create `docs/demo/vite.config.ts`:
 
 ```typescript
 import { defineConfig } from 'vite';
-import { createVitePlugin as createLocalEsmCdnPlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
+import { createVitePlugin as createLocalEsmCdnPlugin } from '@pie-element/local-esm-cdn/adapters/vite';
 import path from 'node:path';
 
 export default defineConfig({
@@ -155,8 +155,8 @@ Add demo scripts and dependencies to `package.json`:
     "demo:preview": "cd docs/demo && vite preview"
   },
   "devDependencies": {
-    "@pie-elements-ng/element-player": "workspace:*",
-    "@pie-elements-ng/local-esm-cdn": "workspace:*"
+    "@pie-element/element-player": "workspace:*",
+    "@pie-element/local-esm-cdn": "workspace:*"
   }
 }
 ```
@@ -333,4 +333,4 @@ After adding your demo:
 
 - See [DEMO_SYSTEM.md](./DEMO_SYSTEM.md) for architecture details
 - Check the hotspot demo as a reference: `packages/elements-react/hotspot/docs/demo/`
-- Report issues at: https://github.com/anthropics/pie-elements-ng/issues
+- Report issues at: https://github.com/anthropics/pie-element/issues

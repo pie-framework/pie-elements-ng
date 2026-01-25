@@ -1,6 +1,6 @@
 {
   "id": "media-audio-1",
-  "element": "@pie-elements-ng/media",
+  "element": "@pie-element/media",
   "mediaType": "audio",
   "prompt": "<p>Listen to the audio clip.</p>",
   "sources": [

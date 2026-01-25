@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/shared-mathml-to-latex",
+  "name": "@pie-element/shared-mathml-to-latex",
   "version": "1.0.0",
   "description": "MathML to LaTeX converter (ESM) - internalized from @pie-framework/mathml-to-latex",
   "type": "module",

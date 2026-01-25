@@ -39,7 +39,7 @@ bun x turbo run build --filter=./packages/elements-react/* --filter=./packages/l
 
 ### Standalone Server Tests
 - ✅ Health endpoint
-- ✅ Package serving (@pie-element, @pie-lib, @pie-elements-ng, @pie-framework)
+- ✅ Package serving (@pie-element, @pie-lib, @pie-element, @pie-framework)
 - ✅ CORS headers
 - ✅ Import rewriting (external → esm.sh, local preserved)
 - ✅ Error handling (404s)

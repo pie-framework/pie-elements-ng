@@ -1,5 +1,5 @@
 /**
- * @pie-elements-ng/shared-math-rendering
+ * @pie-element/shared-math-rendering
  *
  * Framework-agnostic math rendering using KaTeX.
  * Provides utilities for rendering LaTeX and MathML in the browser.

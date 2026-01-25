@@ -11,7 +11,7 @@ function shouldRewriteToEsmSh(specifier: string): boolean {
   if (specifier.startsWith('http://') || specifier.startsWith('https://')) return false;
   if (specifier.startsWith('@pie-element/')) return false;
   if (specifier.startsWith('@pie-lib/')) return false;
-  if (specifier.startsWith('@pie-elements-ng/')) return false;
+  if (specifier.startsWith('@pie-element/')) return false;
   if (specifier.startsWith('@pie-framework/')) return false;
   return true;
 }
@@ -50,7 +50,7 @@ function rewriteSpecifier(specifier: string, opts: RewriteOptions): string {
   if (
     specifier.startsWith('@pie-element/') ||
     specifier.startsWith('@pie-lib/') ||
-    specifier.startsWith('@pie-elements-ng/') ||
+    specifier.startsWith('@pie-element/') ||
     specifier.startsWith('@pie-framework/')
   ) {
     return specifier.replace('@pie-', '/@pie-');

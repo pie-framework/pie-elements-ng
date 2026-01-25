@@ -1,11 +1,11 @@
-# @pie-elements-ng/lib-math
+# @pie-element/lib-math
 
 Math rendering utilities for PIE elements using MathJax 4.
 
 ## Installation
 
 ```bash
-bun add @pie-elements-ng/lib-math
+bun add @pie-element/lib-math
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ Render HTML content with LaTeX math expressions:
 
 ```svelte
 <script>
-  import Math from '@pie-elements-ng/lib-math/Math.svelte';
+  import Math from '@pie-element/lib-math/Math.svelte';
 
   const mathContent = '<p>Solve for x: \\(x^2 + 2x + 1 = 0\\)</p>';
 </script>
@@ -32,7 +32,7 @@ Render HTML content with LaTeX math expressions:
 Render math in DOM elements directly:
 
 ```typescript
-import { renderMath } from '@pie-elements-ng/lib-math';
+import { renderMath } from '@pie-element/lib-math';
 
 // Render math in a single element
 const element = document.getElementById('math-content');
@@ -56,7 +56,7 @@ import {
   unWrapMath,
   fixMathElement,
   BracketTypes,
-} from '@pie-elements-ng/lib-math';
+} from '@pie-element/lib-math';
 
 // Check if HTML contains math
 if (containsMath('<p>\\(x^2\\)</p>')) {
@@ -161,7 +161,7 @@ const latex = 'x = 1 \\newline y = 2';
 ### Handling math in dynamic content
 
 ```typescript
-import { renderMath } from '@pie-elements-ng/lib-math';
+import { renderMath } from '@pie-element/lib-math';
 
 // After adding dynamic content
 const container = document.getElementById('dynamic-content');

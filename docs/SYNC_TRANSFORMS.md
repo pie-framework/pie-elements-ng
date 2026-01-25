@@ -35,7 +35,7 @@ Replaces external event packages with internal workspace packages:
 import { PiePlayerEvent } from '@pie-framework/pie-player-events';
 
 // After (synced)
-import { PiePlayerEvent } from '@pie-elements-ng/shared-player-events';
+import { PiePlayerEvent } from '@pie-element/shared-player-events';
 ```
 
 ### 3. Editable-HTML Constants Inlining
@@ -121,7 +121,7 @@ Object.entries(props).forEach(([key, value]) => {
 });
 
 // After (if enabled)
-import { assignProps } from '@pie-elements-ng/shared-utils';
+import { assignProps } from '@pie-element/shared-utils';
 assignProps(element, props);
 ```
 
@@ -265,7 +265,7 @@ Files NOT affected:
 
 The `assignProps` transform checks if the import already exists:
 ```typescript
-if (!transformed.includes("from '@pie-elements-ng/shared-utils'"))
+if (!transformed.includes("from '@pie-element/shared-utils'"))
 ```
 
 If you see duplicate imports, the check needs refinement.

@@ -9,7 +9,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['katex', /^katex\//, '@pie-elements-ng/shared-mathml-to-latex', '@xmldom/xmldom'],
+      external: ['katex', /^katex\//, '@pie-element/shared-mathml-to-latex', '@xmldom/xmldom'],
     },
   },
 });

@@ -1,6 +1,6 @@
 {
   "id": "upload-default",
-  "element": "@pie-elements-ng/upload",
+  "element": "@pie-element/upload",
   "prompt": "<p>Upload your assignment files below.</p>",
   "promptEnabled": true,
   "instructions": "You can upload up to 3 files. Accepted formats: images, PDFs, and text files.",

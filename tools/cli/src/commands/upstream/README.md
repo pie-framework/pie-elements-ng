@@ -142,12 +142,12 @@ bun cli upstream:track --element=multiple-choice
    cd /path/to/projects
    git clone https://github.com/PieLabs/pie-elements.git
    git clone https://github.com/PieLabs/pie-lib.git
-   git clone https://github.com/your-org/pie-elements-ng.git
+   git clone https://github.com/your-org/pie-element.git
    ```
 
 2. Run initial analysis to see what's available:
    ```bash
-   cd pie-elements-ng
+   cd pie-element
    bun cli upstream:analyze-esm --verbose
    ```
 
@@ -159,7 +159,7 @@ The simplest workflow using the combined `update` command:
    ```bash
    cd ../pie-elements && git pull
    cd ../pie-lib && git pull
-   cd ../pie-elements-ng
+   cd ../pie-element
    ```
 
 2. **Check what would change** (dry run):
@@ -189,7 +189,7 @@ For testing changes to individual elements first:
    ```bash
    cd ../pie-elements && git pull
    cd ../pie-lib && git pull
-   cd ../pie-elements-ng
+   cd ../pie-element
    ```
 
 2. **Update specific element** (with dry run first):

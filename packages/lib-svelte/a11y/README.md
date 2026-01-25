@@ -1,11 +1,11 @@
-# @pie-elements-ng/lib-a11y
+# @pie-element/lib-a11y
 
 Accessibility utilities and helpers for PIE elements. Ensures WCAG 2.1 AA compliance.
 
 ## Installation
 
 ```bash
-bun add @pie-elements-ng/lib-a11y
+bun add @pie-element/lib-a11y
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ bun add @pie-elements-ng/lib-a11y
 ### Screen Reader Announcements
 
 ```typescript
-import { announceToScreenReader } from '@pie-elements-ng/lib-a11y';
+import { announceToScreenReader } from '@pie-element/lib-a11y';
 
 // Polite announcement (doesn't interrupt)
 announceToScreenReader('Your answer has been saved');
@@ -25,7 +25,7 @@ announceToScreenReader('Error: Please answer all required questions', true);
 ### ARIA Labels
 
 ```typescript
-import { getScoreAriaLabel, getFeedbackAriaLabel } from '@pie-elements-ng/lib-a11y';
+import { getScoreAriaLabel, getFeedbackAriaLabel } from '@pie-element/lib-a11y';
 
 const scoreLabel = getScoreAriaLabel(8, 10);
 // "Score: 8 out of 10 points (80 percent)"
@@ -37,7 +37,7 @@ const feedbackLabel = getFeedbackAriaLabel(true);
 ### Keyboard Navigation
 
 ```typescript
-import { makeKeyboardNavigable, trapFocus } from '@pie-elements-ng/lib-a11y';
+import { makeKeyboardNavigable, trapFocus } from '@pie-element/lib-a11y';
 
 // Make an element keyboard accessible
 const div = document.querySelector('.interactive-element');
@@ -54,7 +54,7 @@ const cleanup = trapFocus(modal);
 ### Screen Reader Only Content
 
 ```typescript
-import { createScreenReaderOnly } from '@pie-elements-ng/lib-a11y';
+import { createScreenReaderOnly } from '@pie-element/lib-a11y';
 
 const srOnly = createScreenReaderOnly('This is only for screen readers');
 document.body.appendChild(srOnly);
@@ -63,7 +63,7 @@ document.body.appendChild(srOnly);
 ### Visibility Checks
 
 ```typescript
-import { isVisibleToScreenReader } from '@pie-elements-ng/lib-a11y';
+import { isVisibleToScreenReader } from '@pie-element/lib-a11y';
 
 const element = document.querySelector('.my-element');
 if (isVisibleToScreenReader(element)) {
@@ -74,7 +74,7 @@ if (isVisibleToScreenReader(element)) {
 ### Skip Links
 
 ```typescript
-import { addSkipLink } from '@pie-elements-ng/lib-a11y';
+import { addSkipLink } from '@pie-element/lib-a11y';
 
 // Add a skip link to main content
 const skipLink = addSkipLink('main-content', 'Skip to question');
@@ -84,7 +84,7 @@ document.body.prepend(skipLink);
 ### Keyboard Shortcuts
 
 ```typescript
-import { getKeyboardShortcutLabel } from '@pie-elements-ng/lib-a11y';
+import { getKeyboardShortcutLabel } from '@pie-element/lib-a11y';
 
 const shortcut = getKeyboardShortcutLabel('S', ['ctrl', 'shift']);
 // "Control + Shift + S" (Windows/Linux)
@@ -94,7 +94,7 @@ const shortcut = getKeyboardShortcutLabel('S', ['ctrl', 'shift']);
 ### ARIA Roles
 
 ```typescript
-import { getAriaRole } from '@pie-elements-ng/lib-a11y';
+import { getAriaRole } from '@pie-element/lib-a11y';
 
 const role = getAriaRole('button');
 element.setAttribute('role', role);

@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/media",
+  "name": "@pie-element/media-svelte",
   "version": "0.0.0",
   "description": "Media element for video/audio playback with interaction tracking",
   "type": "module",
@@ -20,8 +20,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-elements-ng/shared-types": "workspace:*",
-    "@pie-elements-ng/lib-ui": "workspace:*"
+    "@pie-element/shared-types": "workspace:*",
+    "@pie-element/lib-ui": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.4",
@@ -33,5 +33,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

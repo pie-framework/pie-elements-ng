@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { userEvent } from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import Rationale from './Rationale.svelte';
+import Rationale from '../src/Rationale.svelte';
 
 describe('Rationale', () => {
   it('renders with default title', () => {

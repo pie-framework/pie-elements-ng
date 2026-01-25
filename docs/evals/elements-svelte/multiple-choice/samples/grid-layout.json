@@ -1,6 +1,6 @@
 {
   "id": "mc-grid-1",
-  "element": "@pie-elements-ng/multiple-choice",
+  "element": "@pie-element/multiple-choice",
   "prompt": "<p><strong>What color is the sky on a clear day?</strong></p>",
   "promptEnabled": true,
   "choices": [

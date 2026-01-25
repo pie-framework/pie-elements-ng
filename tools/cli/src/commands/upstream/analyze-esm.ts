@@ -628,7 +628,7 @@ export default class AnalyzeEsm extends Command {
     return (
       spec.startsWith('@pie-lib/') ||
       spec.startsWith('@pie-element/') ||
-      spec.startsWith('@pie-elements-ng/')
+      spec.startsWith('@pie-element/')
     );
   }
 
@@ -1298,7 +1298,7 @@ export default class AnalyzeEsm extends Command {
       if (
         transitiveDep.startsWith('@pie-lib/') ||
         transitiveDep.startsWith('@pie-element/') ||
-        transitiveDep.startsWith('@pie-elements-ng/')
+        transitiveDep.startsWith('@pie-element/')
       ) {
         continue;
       }

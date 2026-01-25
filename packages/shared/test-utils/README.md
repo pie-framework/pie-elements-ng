@@ -1,11 +1,11 @@
-# @pie-elements-ng/test-utils
+# @pie-element/test-utils
 
 Testing utilities for PIE element development.
 
 ## Installation
 
 ```bash
-bun add -D @pie-elements-ng/test-utils
+bun add -D @pie-element/test-utils
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ bun add -D @pie-elements-ng/test-utils
 ### Controller Testing
 
 ```typescript
-import { testController, testEnvironments } from '@pie-elements-ng/test-utils';
+import { testController, testEnvironments } from '@pie-element/test-utils';
 import { myController } from './controller';
 
 const testCases = [
@@ -36,7 +36,7 @@ console.log(results); // [{ passed: true, testCase: '...', errors: [] }]
 ### Fixtures
 
 ```typescript
-import { createTestModel, createTestSession, testPrompts } from '@pie-elements-ng/test-utils';
+import { createTestModel, createTestSession, testPrompts } from '@pie-element/test-utils';
 
 const model = createTestModel({ prompt: testPrompts.withMath });
 const session = createTestSession({ value: ['answer1'] });
@@ -50,7 +50,7 @@ import {
   waitForEvent,
   simulateClick,
   querySelector,
-} from '@pie-elements-ng/test-utils';
+} from '@pie-element/test-utils';
 
 // Mount a component
 const element = await mountComponent('my-element', {

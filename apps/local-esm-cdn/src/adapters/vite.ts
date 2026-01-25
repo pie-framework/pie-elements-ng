@@ -13,7 +13,7 @@ import path from 'node:path';
  * ```typescript
  * // vite.config.ts
  * import { defineConfig } from 'vite';
- * import { createVitePlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
+ * import { createVitePlugin } from '@pie-element/local-esm-cdn/adapters/vite';
  * import path from 'path';
  *
  * export default defineConfig({
@@ -209,7 +209,7 @@ export function createVitePlugin(config: Partial<LocalEsmCdnConfig>): Plugin {
       { regex: /packages\/elements-react\/([^/]+)\/dist/, scope: '@pie-element' },
       { regex: /packages\/elements-svelte\/([^/]+)\/dist/, scope: '@pie-element' },
       { regex: /packages\/lib-react\/([^/]+)\/dist/, scope: '@pie-lib' },
-      { regex: /packages\/shared\/([^/]+)\/dist/, scope: '@pie-elements-ng' },
+      { regex: /packages\/shared\/([^/]+)\/dist/, scope: '@pie-element' },
     ];
 
     for (const { regex, scope } of patterns) {

@@ -35,7 +35,7 @@ The project should always attempt to read from these sibling directories when th
 ## Monorepo Structure
 
 ```text
-pie-elements-ng/
+pie-element/
 ├── packages/
 │   ├── core/                      # Core PIE interfaces & types
 │   ├── cli/                       # oclif-based CLI tools

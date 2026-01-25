@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/shared-player-events",
+  "name": "@pie-element/shared-player-events",
   "version": "1.0.0",
   "description": "PIE Player Events (ESM) - internalized from @pie-framework/pie-player-events",
   "type": "module",
@@ -29,5 +29,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

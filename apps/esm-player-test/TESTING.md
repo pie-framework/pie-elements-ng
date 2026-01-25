@@ -7,7 +7,7 @@ Complete guide for testing the ESM player integration with PIE elements.
 Ensure both workspaces are ready:
 
 1. **pie-players workspace**: pie-esm-player should be built
-2. **pie-elements-ng workspace**: element packages should be built
+2. **pie-element workspace**: element packages should be built
 
 ## Step 1: Build the PIE ESM Player
 
@@ -27,8 +27,8 @@ ls -la dist/pie-esm-player.js
 ## Step 2: Build the Multiple Choice Element
 
 ```bash
-# Navigate to pie-elements-ng workspace
-cd /Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice
+# Navigate to pie-element workspace
+cd /Users/eelco.hillenius/dev/prj/pie/pie-element/packages/elements-react/multiple-choice
 
 # Build the element package
 bun run build
@@ -43,7 +43,7 @@ ls -la dist/index.js
 
 ```bash
 # Navigate to test app
-cd /Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/apps/esm-player-test
+cd /Users/eelco.hillenius/dev/prj/pie/pie-element/apps/esm-player-test
 
 # Install dependencies
 bun install

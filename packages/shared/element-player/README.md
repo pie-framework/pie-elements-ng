@@ -67,7 +67,7 @@ bun cli dev:demo hotspot
 **Prerequisites:**
 
 - Element must be built: `bun run turbo build --filter @pie-element/hotspot`
-- Element player must be built: `bun run turbo build --filter @pie-elements-ng/element-player`
+- Element player must be built: `bun run turbo build --filter @pie-element/element-player`
 
 ## Development
 

@@ -1,11 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as mathModule from './index';
-import MathComponent from './Math.svelte';
+import * as mathModule from '../src/index';
+import MathComponent from '../src/Math.svelte';
 
 // Mock the renderMath function
-vi.mock('./index', async () => {
-  const actual = await vi.importActual<typeof mathModule>('./index');
+vi.mock('../src/index', async () => {
+  const actual = await vi.importActual<typeof mathModule>('../src/index');
   return {
     ...actual,
     renderMath: vi.fn().mockResolvedValue(undefined),

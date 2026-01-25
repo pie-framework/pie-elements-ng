@@ -60,7 +60,7 @@ describe('Embedded API Integration Tests', () => {
     const packages = [
       '@pie-element/hotspot',
       '@pie-lib/render-ui',
-      '@pie-elements-ng/shared-math-rendering',
+      '@pie-element/shared-math-rendering',
       '@pie-framework/pie-player-events',
     ];
 

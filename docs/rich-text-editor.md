@@ -18,7 +18,7 @@ PIE Elements NG uses TipTap-based rich text editing for authoring element conten
 
 ```svelte
 <script lang="ts">
-  import { RichTextEditor } from '@pie-elements-ng/lib-ui';
+  import { RichTextEditor } from '@pie-element/lib-ui';
 
   let content = $state('');
 </script>
@@ -94,7 +94,7 @@ interface RichTextEditorProps {
 ```svelte
 <!-- packages/elements-svelte/multiple-choice/src/authoring/Config.svelte -->
 <script lang="ts">
-  import { RichTextEditor } from '@pie-elements-ng/lib-ui';
+  import { RichTextEditor } from '@pie-element/lib-ui';
 
   let { model = $bindable() } = $props();
 
@@ -193,7 +193,7 @@ The editor uses CSS variables for theming:
 
 ```typescript
 import { render } from '@testing-library/svelte';
-import { RichTextEditor } from '@pie-elements-ng/lib-ui';
+import { RichTextEditor } from '@pie-element/lib-ui';
 
 test('renders with placeholder', () => {
   const { getByRole } = render(RichTextEditor, {

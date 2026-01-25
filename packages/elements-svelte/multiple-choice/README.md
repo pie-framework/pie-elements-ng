@@ -1,4 +1,4 @@
-# @pie-elements-ng/multiple-choice
+# @pie-element/multiple-choice
 
 Multiple choice assessment element for PIE.
 
@@ -16,7 +16,7 @@ Multiple choice assessment element for PIE.
 ## Installation
 
 ```bash
-bun add @pie-elements-ng/multiple-choice
+bun add @pie-element/multiple-choice
 ```
 
 ## Usage
@@ -24,11 +24,11 @@ bun add @pie-elements-ng/multiple-choice
 ### With Controller
 
 ```typescript
-import { model, outcome } from '@pie-elements-ng/multiple-choice/controller';
+import { model, outcome } from '@pie-element/multiple-choice/controller';
 
 const question = {
   id: '1',
-  element: '@pie-elements-ng/multiple-choice',
+  element: '@pie-element/multiple-choice',
   prompt: '<p>What is 2 + 2?</p>',
   promptEnabled: true,
   choices: [
@@ -59,8 +59,8 @@ console.log(result.score); // 1 (100%)
 
 ```svelte
 <script>
-  import MultipleChoice from '@pie-elements-ng/multiple-choice/MultipleChoice.svelte';
-  import { model } from '@pie-elements-ng/multiple-choice/controller';
+  import MultipleChoice from '@pie-element/multiple-choice/MultipleChoice.svelte';
+  import { model } from '@pie-element/multiple-choice/controller';
 
   let session = $state({ value: [] });
   let viewModel = $state(null);
@@ -154,7 +154,7 @@ interface Props {
 ```typescript
 interface MultipleChoiceModel {
   id: string;
-  element: '@pie-elements-ng/multiple-choice';
+  element: '@pie-element/multiple-choice';
   prompt?: string;
   promptEnabled?: boolean;
   choices: Choice[];

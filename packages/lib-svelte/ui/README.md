@@ -1,11 +1,11 @@
-# @pie-elements-ng/lib-ui
+# @pie-element/lib-ui
 
 Shared UI components for PIE elements built with Svelte 5.
 
 ## Installation
 
 ```bash
-bun add @pie-elements-ng/lib-ui
+bun add @pie-element/lib-ui
 ```
 
 ## Components
@@ -16,7 +16,7 @@ Renders HTML prompts with sanitization and math support (future).
 
 ```svelte
 <script>
-  import Prompt from '@pie-elements-ng/lib-ui/Prompt.svelte';
+  import Prompt from '@pie-element/lib-ui/Prompt.svelte';
 </script>
 
 <Prompt html="<p>What is the <strong>answer</strong>?</p>" />
@@ -28,7 +28,7 @@ Shows correct/incorrect indicators with optional feedback messages.
 
 ```svelte
 <script>
-  import Feedback from '@pie-elements-ng/lib-ui/Feedback.svelte';
+  import Feedback from '@pie-element/lib-ui/Feedback.svelte';
 </script>
 
 <Feedback correct={true} feedback="Great job!" />
@@ -41,7 +41,7 @@ Displays instructional rationale (instructor-only) in a collapsible section.
 
 ```svelte
 <script>
-  import Rationale from '@pie-elements-ng/lib-ui/Rationale.svelte';
+  import Rationale from '@pie-element/lib-ui/Rationale.svelte';
 </script>
 
 <Rationale
@@ -56,7 +56,7 @@ Shows loading state with optional message.
 
 ```svelte
 <script>
-  import LoadingSpinner from '@pie-elements-ng/lib-ui/LoadingSpinner.svelte';
+  import LoadingSpinner from '@pie-element/lib-ui/LoadingSpinner.svelte';
 </script>
 
 <LoadingSpinner size="md" message="Loading question..." />

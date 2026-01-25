@@ -20,13 +20,7 @@ export function parsePackageRequest(pathname: string): PackageRequest | null {
   if (parts.length < 2) return null;
 
   const scope = parts[0];
-  if (
-    scope !== '@pie-element' &&
-    scope !== '@pie-lib' &&
-    scope !== '@pie-elements-ng' &&
-    scope !== '@pie-framework'
-  )
-    return null;
+  if (scope !== '@pie-element' && scope !== '@pie-lib' && scope !== '@pie-framework') return null;
 
   const nameWithVersion = parts[1];
   // Accept either "<name>@<version>" or "<name>".
@@ -54,14 +48,18 @@ export async function resolveEntryFile(
 
   let base: string;
   if (scope === '@pie-element') {
-    base = path.join(pieElementsNgPath, 'packages', 'elements-react', name, 'dist');
+    // Check if it's a shared package
+    if (name.startsWith('shared-')) {
+      // @pie-element/shared-* packages are in packages/shared/
+      // e.g. @pie-element/shared-math-rendering -> packages/shared/math-rendering
+      const packageName = name.replace(/^shared-/, '');
+      base = path.join(pieElementsNgPath, 'packages', 'shared', packageName, 'dist');
+    } else {
+      // Regular element packages are in packages/elements-react/
+      base = path.join(pieElementsNgPath, 'packages', 'elements-react', name, 'dist');
+    }
   } else if (scope === '@pie-lib') {
     base = path.join(pieElementsNgPath, 'packages', 'lib-react', name, 'dist');
-  } else if (scope === '@pie-elements-ng') {
-    // @pie-elements-ng/shared-* packages are in packages/shared/
-    // e.g. @pie-elements-ng/shared-math-rendering -> packages/shared/math-rendering
-    const packageName = name.replace(/^shared-/, '');
-    base = path.join(pieElementsNgPath, 'packages', 'shared', packageName, 'dist');
   } else if (scope === '@pie-framework') {
     // @pie-framework packages are also in packages/shared/
     // e.g. @pie-framework/pie-player-events -> packages/shared/player-events

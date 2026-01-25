@@ -11,7 +11,7 @@ Object.entries(props).forEach(([key, value]) => { element[key] = value; });
     const output = transformToAssignProps(input);
 
     expect(output).toContain('assignProps(element, props);');
-    expect(output).toContain("import { assignProps } from '@pie-elements-ng/shared-utils';");
+    expect(output).toContain("import { assignProps } from '@pie-element/shared-utils';");
     expect(output).not.toContain('Object.entries');
   });
 
@@ -24,7 +24,7 @@ for (const [key, value] of Object.entries(props)) { element[key] = value; }
     const output = transformToAssignProps(input);
 
     expect(output).toContain('assignProps(element, props);');
-    expect(output).toContain("import { assignProps } from '@pie-elements-ng/shared-utils';");
+    expect(output).toContain("import { assignProps } from '@pie-element/shared-utils';");
     expect(output).not.toContain('Object.entries');
   });
 
@@ -39,15 +39,15 @@ Object.entries(props).forEach(([key, value]) => { element[key] = value; });
 
     const output = transformToAssignProps(input);
 
-    expect(output).toContain("import { assignProps } from '@pie-elements-ng/shared-utils';");
+    expect(output).toContain("import { assignProps } from '@pie-element/shared-utils';");
     const propTypesIndex = output.indexOf("from 'prop-types'");
-    const assignPropsIndex = output.indexOf("from '@pie-elements-ng/shared-utils'");
+    const assignPropsIndex = output.indexOf("from '@pie-element/shared-utils'");
     expect(assignPropsIndex).toBeGreaterThan(propTypesIndex);
   });
 
   it('does not add import if already present', () => {
     const input = `
-import { assignProps } from '@pie-elements-ng/shared-utils';
+import { assignProps } from '@pie-element/shared-utils';
 
 const element = document.createElement('div');
 Object.entries(props).forEach(([key, value]) => { element[key] = value; });
@@ -56,7 +56,7 @@ Object.entries(props).forEach(([key, value]) => { element[key] = value; });
     const output = transformToAssignProps(input);
 
     // Count occurrences of the import
-    const matches = output.match(/import.*?@pie-elements-ng\/shared-utils/g);
+    const matches = output.match(/import.*?@pie-element\/shared-utils/g);
     expect(matches).toHaveLength(1);
   });
 

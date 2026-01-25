@@ -1,4 +1,4 @@
-# @pie-elements-ng/shared-math-rendering
+# @pie-element/shared-math-rendering
 
 Framework-agnostic math rendering using KaTeX.
 
@@ -18,7 +18,7 @@ This package provides utilities for rendering LaTeX and MathML mathematical expr
 ## Installation
 
 ```bash
-bun add @pie-elements-ng/shared-math-rendering
+bun add @pie-element/shared-math-rendering
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ bun add @pie-elements-ng/shared-math-rendering
 ### Basic Rendering
 
 ```typescript
-import { renderMath } from '@pie-elements-ng/shared-math-rendering';
+import { renderMath } from '@pie-element/shared-math-rendering';
 
 // Render math in an element
 renderMath(document.querySelector('.math-container'));
@@ -62,7 +62,7 @@ MathML elements are automatically converted to LaTeX and rendered:
 ### String Utilities
 
 ```typescript
-import { wrapMath, unWrapMath } from '@pie-elements-ng/shared-math-rendering';
+import { wrapMath, unWrapMath } from '@pie-element/shared-math-rendering';
 
 // Wrap LaTeX content
 const wrapped = wrapMath('x^2 + y^2'); // Returns: \(x^2 + y^2\)

@@ -87,7 +87,7 @@ export default defineConfig(({ mode }) => {
             /^react($|\\/)/.test(id) ||
             /^react-dom($|\\/)/.test(id) ||
             /^@pie-lib\\//.test(id) ||
-            /^@pie-elements-ng\\//.test(id) ||
+            /^@pie-element\\//.test(id) ||
             /^@pie-framework\\//.test(id) ||
             /^@mui\\//.test(id) ||
             /^@emotion\\//.test(id) ||
@@ -137,7 +137,7 @@ export default defineConfig({
     rollupOptions: {
       external: (id) => {
         return (
-          /^@pie-elements-ng\\/shared-/.test(id) ||
+          /^@pie-element\\/shared-/.test(id) ||
           /^@pie-lib\\//.test(id) ||
           ['katex', 'debug'].includes(id)
         );

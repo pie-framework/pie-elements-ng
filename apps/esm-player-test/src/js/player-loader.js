@@ -68,9 +68,7 @@ export async function loadElement(elementType, config) {
     // Load from npm via jsDelivr CDN
     const version = config.version === 'latest' ? '' : `@${config.version}`;
     const packageName =
-      config.framework === 'react'
-        ? `@pie-element/${elementType}`
-        : `@pie-elements-ng/${elementType}`;
+      config.framework === 'react' ? `@pie-element/${elementType}` : `@pie-element/${elementType}`;
     url = `${JSDELIVR_BASE}/${packageName}${version}/dist/${config.framework === 'react' ? 'index' : 'element'}.js`;
   }
 

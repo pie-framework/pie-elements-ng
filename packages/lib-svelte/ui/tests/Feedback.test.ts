@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
-import Feedback from './Feedback.svelte';
+import Feedback from '../src/Feedback.svelte';
 
 describe('Feedback', () => {
   it('renders correct feedback with icon', () => {

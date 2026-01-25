@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/multiple-choice",
+  "name": "@pie-element/multiple-choice-svelte",
   "version": "0.0.0",
   "description": "Multiple choice assessment element",
   "type": "module",
@@ -31,10 +31,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-elements-ng/shared-types": "workspace:*",
-    "@pie-elements-ng/shared-utils": "workspace:*",
-    "@pie-elements-ng/lib-ui": "workspace:*",
-    "@pie-elements-ng/shared-player-events": "workspace:*"
+    "@pie-element/shared-types": "workspace:*",
+    "@pie-element/shared-utils": "workspace:*",
+    "@pie-element/lib-ui": "workspace:*",
+    "@pie-element/shared-player-events": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.4",
@@ -45,5 +45,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

@@ -7,16 +7,16 @@ The `bun cli dev:cdn-demo` command demonstrates that PIE element players work in
 ## Prerequisites
 
 **Important**:
-- The element-player must be built locally: `bun run turbo build --filter @pie-elements-ng/element-player`
+- The element-player must be built locally: `bun run turbo build --filter @pie-element/element-player`
 - The target PIE element must be published to npm with IIFE builds at `dist/index.iife.js`
 
 **Note**: The original `@pie-element/*` packages from pie-elements do NOT include IIFE builds. They publish:
 - `lib/index.js` - CommonJS web component (main entry)
 - `src/index.js` - ESM source (module entry)
 
-This command is designed to test elements built by THIS project (pie-elements-ng) which DO include IIFE builds. Once pie-elements-ng packages are published, you can test them with:
+This command is designed to test elements built by THIS project (pie-element) which DO include IIFE builds. Once pie-element packages are published, you can test them with:
 ```bash
-bun cli dev:cdn-demo multiple-choice  # Will work once @pie-elements-ng/multiple-choice is published
+bun cli dev:cdn-demo multiple-choice  # Will work once @pie-element/multiple-choice is published
 ```
 
 For testing with the original pie-elements packages, use the ESM demo instead (not yet implemented)

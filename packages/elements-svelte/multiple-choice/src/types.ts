@@ -2,10 +2,10 @@
  * Multiple Choice types
  */
 
-import type { PieModel, PieSession, ViewModel } from '@pie-elements-ng/shared-types';
+import type { PieModel, PieSession, ViewModel } from '@pie-element/shared-types';
 
 export interface MultipleChoiceModel extends PieModel {
-  element: '@pie-elements-ng/multiple-choice';
+  element: '@pie-element/multiple-choice';
   prompt?: string;
   promptEnabled?: boolean;
   choices: Choice[];

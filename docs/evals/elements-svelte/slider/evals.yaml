@@ -1,11 +1,11 @@
 version: 1
 
 component:
-  element: "@pie-elements-ng/slider"
+  element: "@pie-element/slider"
   framework: "svelte"
 
 examplesApp:
-  app: "@pie-elements-ng/slider"
+  app: "@pie-element/slider"
   routeTemplate: "/docs/demo/demo.html"
 
 evals:

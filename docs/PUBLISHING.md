@@ -1,6 +1,6 @@
 # Publishing Workflow
 
-This document describes the CI/CD publishing strategy for pie-elements-ng packages.
+This document describes the CI/CD publishing strategy for pie-element packages.
 
 ## Package Categories
 
@@ -9,23 +9,23 @@ This document describes the CI/CD publishing strategy for pie-elements-ng packag
 These packages are native to this project and will be automatically published to npm:
 
 **Svelte Elements** (`packages/elements-svelte/*`):
-- `@pie-elements-ng/media`
-- `@pie-elements-ng/multiple-choice`
-- `@pie-elements-ng/slider`
-- `@pie-elements-ng/upload`
+- `@pie-element/media`
+- `@pie-element/multiple-choice`
+- `@pie-element/slider`
+- `@pie-element/upload`
 
 **Svelte Libraries** (`packages/lib-svelte/*`):
-- `@pie-elements-ng/lib-a11y`
-- `@pie-elements-ng/lib-config-ui`
-- `@pie-elements-ng/lib-math`
-- `@pie-elements-ng/lib-ui`
+- `@pie-element/lib-a11y`
+- `@pie-element/lib-config-ui`
+- `@pie-element/lib-math`
+- `@pie-element/lib-ui`
 
 **Shared/Core Packages** (`packages/shared/*`, `packages/core`):
-- `@pie-elements-ng/shared-types`
-- `@pie-elements-ng/shared-utils`
-- `@pie-elements-ng/shared-test-utils`
+- `@pie-element/shared-types`
+- `@pie-element/shared-utils`
+- `@pie-element/shared-test-utils`
 - All `*-controller` packages (32 controllers)
-- `@pie-elements-ng/core`
+- `@pie-element/core`
 
 **Total: ~39 packages will be published**
 
@@ -161,7 +161,7 @@ cd packages/elements-svelte/multiple-choice
 
 # 2. Create a changeset
 bun run changeset
-# Select: @pie-elements-ng/multiple-choice
+# Select: @pie-element/multiple-choice
 # Type: patch
 # Summary: "Fix answer validation logic"
 

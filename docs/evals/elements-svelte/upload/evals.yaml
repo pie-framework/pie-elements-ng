@@ -1,11 +1,11 @@
 version: 1
 
 component:
-  element: "@pie-elements-ng/upload"
+  element: "@pie-element/upload"
   framework: "svelte"
 
 examplesApp:
-  app: "@pie-elements-ng/upload"
+  app: "@pie-element/upload"
   routeTemplate: "/docs/demo/demo.html"
 
 evals:

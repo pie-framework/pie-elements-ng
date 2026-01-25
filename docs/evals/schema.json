@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://pie-framework.github.io/pie-elements-ng/schemas/evals-v1.json",
+  "$id": "https://pie-framework.github.io/pie-element/schemas/evals-v1.json",
   "title": "PIE Elements NG Evaluation Schema",
   "description": "Schema for YAML-based PIE element evaluations (version 1)",
   "type": "object",

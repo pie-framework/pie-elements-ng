@@ -18,7 +18,7 @@ import isEmpty from 'lodash/isEmpty';
 import { cloneDeep, isEqual } from 'lodash';
 import _ from 'lodash';
 
-// TO (synced to pie-elements-ng)
+// TO (synced to pie-element)
 import { isEmpty } from 'lodash-es';
 import { cloneDeep, isEqual } from 'lodash-es';
 import _ from 'lodash-es';

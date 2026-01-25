@@ -1,4 +1,4 @@
-import type { PieModel, PieSession } from '@pie-elements-ng/shared-types';
+import type { PieModel, PieSession } from '@pie-element/shared-types';
 import { describe, expect, it } from 'vitest';
 import {
   assertControllerTest,

@@ -1,6 +1,6 @@
 {
   "id": "slider-vertical-1",
-  "element": "@pie-elements-ng/slider",
+  "element": "@pie-element/slider",
   "prompt": "<p>Rate your understanding from 1 to 10.</p>",
   "lowerBound": 1,
   "upperBound": 10,

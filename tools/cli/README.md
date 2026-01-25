@@ -1,4 +1,4 @@
-# @pie-elements-ng/cli
+# @pie-element/cli
 
 CLI tools for managing PIE Elements NG - synchronization, package generation, and verification.
 

@@ -2,7 +2,7 @@
 
 ## Summary
 
-Analysis of dependencies for potential ESM compatibility issues in the pie-elements-ng project.
+Analysis of dependencies for potential ESM compatibility issues in the pie-element project.
 
 ## Status: Mostly ESM-Ready ✅
 
@@ -37,7 +37,7 @@ Replaced with a simple inline logger that:
 - Maintains the same debug output format
 - Zero ESM compatibility concerns
 
-**2. External @pie-framework/mathml-to-latex dependency has been internalized** as `@pie-elements-ng/shared-mathml-to-latex`.
+**2. External @pie-framework/mathml-to-latex dependency has been internalized** as `@pie-element/shared-mathml-to-latex`.
 
 This ensures:
 - Full control over ESM configuration
@@ -48,8 +48,8 @@ This ensures:
 
 **3. External @pie-framework event packages have been internalized**:
 
-- `@pie-framework/pie-player-events` → `@pie-elements-ng/shared-player-events`
-- `@pie-framework/pie-configure-events` → `@pie-elements-ng/shared-configure-events`
+- `@pie-framework/pie-player-events` → `@pie-element/shared-player-events`
+- `@pie-framework/pie-configure-events` → `@pie-element/shared-configure-events`
 
 This ensures:
 - Full control over ESM configuration
@@ -93,8 +93,8 @@ const TRACKED_DEPS = [
   '@tiptap/extension-task-list',       // ✅ ESM-ready
 
   // PIE framework (now internalized)
-  '@pie-framework/pie-player-events',   // ✅ Internalized as @pie-elements-ng/shared-player-events
-  '@pie-framework/pie-configure-events',// ✅ Internalized as @pie-elements-ng/shared-configure-events
+  '@pie-framework/pie-player-events',   // ✅ Internalized as @pie-element/shared-player-events
+  '@pie-framework/pie-configure-events',// ✅ Internalized as @pie-element/shared-configure-events
 
   // Utilities
   'lodash-es',          // ✅ ESM-ready (auto-transformed)
@@ -102,7 +102,7 @@ const TRACKED_DEPS = [
 ];
 ```
 
-**Note on PIE Framework packages:** These have been internalized into the monorepo as `@pie-elements-ng/shared-player-events` and `@pie-elements-ng/shared-configure-events` with full ESM support and modern TypeScript. The sync CLI automatically transforms imports during upstream sync.
+**Note on PIE Framework packages:** These have been internalized into the monorepo as `@pie-element/shared-player-events` and `@pie-element/shared-configure-events` with full ESM support and modern TypeScript. The sync CLI automatically transforms imports during upstream sync.
 
 ## Recommendations
 
@@ -135,4 +135,4 @@ Run dependency version check:
 bun run upstream:deps
 ```
 
-This compares tracked dependencies between pie-elements, pie-lib, and pie-elements-ng.
+This compares tracked dependencies between pie-elements, pie-lib, and pie-element.

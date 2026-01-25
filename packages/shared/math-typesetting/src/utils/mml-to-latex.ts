@@ -4,7 +4,7 @@
  * Simple wrapper around the internal mathml-to-latex package
  */
 
-import { convertMathMLToLaTeX } from '@pie-elements-ng/shared-mathml-to-latex';
+import { convertMathMLToLaTeX } from '@pie-element/shared-mathml-to-latex';
 
 /**
  * Convert MathML to LaTeX

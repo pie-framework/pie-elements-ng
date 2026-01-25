@@ -28,7 +28,6 @@ export interface LocalEsmCdnConfig {
   pathMappings?: {
     '@pie-element'?: string;
     '@pie-lib'?: string;
-    '@pie-elements-ng'?: string;
     '@pie-framework'?: string;
   };
 }

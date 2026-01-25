@@ -142,7 +142,7 @@ export default class DevDemoReact extends Command {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', '@pie-elements-ng/element-player'],
+        ['run', 'turbo', 'build', '--force', '--filter', '@pie-element/element-player'],
         {
           stdio: 'inherit',
           cwd: process.cwd(),

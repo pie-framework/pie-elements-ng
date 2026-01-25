@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/element-player",
+  "name": "@pie-element/element-player",
   "version": "0.1.0",
   "description": "Shared PIE element player web component",
   "type": "module",
@@ -25,11 +25,12 @@
   },
   "dependencies": {
     "svelte": "^5.46.1",
-    "@pie-elements-ng/math-typesetting": "workspace:*"
+    "@pie-element/math-typesetting": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "vite": "^7.2.2",
     "typescript": "^5.9.3"
-  }
+  },
+  "license": "MIT"
 }

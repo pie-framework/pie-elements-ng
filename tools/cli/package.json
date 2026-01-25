@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/cli",
+  "name": "@pie-element/cli",
   "version": "0.1.0",
   "description": "CLI tools for managing PIE Elements NG",
   "type": "module",
@@ -49,5 +49,6 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  }
+  },
+  "license": "MIT"
 }

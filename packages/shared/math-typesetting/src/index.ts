@@ -5,7 +5,7 @@
  *
  * @example
  * ```typescript
- * import { createKatexRenderer } from '@pie-elements-ng/math-typesetting';
+ * import { createKatexRenderer } from '@pie-element/math-typesetting';
  *
  * // Create renderer with default options
  * const renderer = createKatexRenderer();
@@ -16,7 +16,7 @@
  *
  * @example
  * ```typescript
- * import { createMathMLRenderer } from '@pie-elements-ng/math-typesetting';
+ * import { createMathMLRenderer } from '@pie-element/math-typesetting';
  *
  * // Use native MathML (modern browsers only)
  * const renderer = createMathMLRenderer();

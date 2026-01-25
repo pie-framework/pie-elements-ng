@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { BracketTypes, unWrapMath, wrapMath } from './normalization';
+import { BracketTypes, unWrapMath, wrapMath } from '../src/normalization';
 
 describe('wrapMath', () => {
   it('wraps content with round brackets by default', () => {

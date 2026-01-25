@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PieEnvironment } from './types';
-import { clamp, debounce, isEmpty, showFeedback, showRationale, shuffle, uuid } from './utils';
+import type { PieEnvironment } from '../src/types';
+import { clamp, debounce, isEmpty, showFeedback, showRationale, shuffle, uuid } from '../src/utils';
 
 describe('isEmpty', () => {
   it('returns true for null', () => {

@@ -11,7 +11,7 @@ import { createLocalEsmCdn } from '../embedded.js';
  * @example
  * ```typescript
  * // src/hooks.server.ts
- * import { createSvelteKitHandle } from '@pie-elements-ng/local-esm-cdn/adapters/sveltekit';
+ * import { createSvelteKitHandle } from '@pie-element/local-esm-cdn/adapters/sveltekit';
  *
  * export const handle = createSvelteKitHandle({
  *   repoRoot: '/path/to/pie-elements-ng',
@@ -22,7 +22,7 @@ import { createLocalEsmCdn } from '../embedded.js';
  * @example
  * ```typescript
  * // src/hooks.server.ts (with other hooks)
- * import { createSvelteKitHandle } from '@pie-elements-ng/local-esm-cdn/adapters/sveltekit';
+ * import { createSvelteKitHandle } from '@pie-element/local-esm-cdn/adapters/sveltekit';
  * import { sequence } from '@sveltejs/kit/hooks';
  *
  * const localEsmCdn = createSvelteKitHandle({

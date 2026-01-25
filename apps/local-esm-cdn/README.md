@@ -4,7 +4,7 @@ A development-only ESM module server that serves local PIE packages from disk an
 
 ## Features
 
-- ✅ Serves locally-built PIE packages (@pie-element, @pie-lib, @pie-elements-ng, @pie-framework)
+- ✅ Serves locally-built PIE packages (@pie-element, @pie-lib, @pie-element, @pie-framework)
 - ✅ Rewrites external imports (react, etc.) to esm.sh
 - ✅ Framework-agnostic: Works with any web framework
 - ✅ Two modes: Standalone server or embedded middleware
@@ -30,7 +30,7 @@ Default URL: `http://localhost:5179`
 
 #### Environment Variables
 
-- `PIE_ELEMENTS_NG_PATH` - Path to pie-elements-ng repo (default: auto-detected)
+- `PIE_ELEMENTS_NG_PATH` - Path to pie-element repo (default: auto-detected)
 - `LOCAL_ESM_CDN_PORT` - Server port (default: 5179)
 - `LOCAL_ESM_CDN_ESM_SH_BASE_URL` - CDN base URL (default: https://esm.sh)
 - `LOCAL_ESM_CDN_SKIP_BUILD` - Skip pre-build (default: false)
@@ -60,7 +60,7 @@ Import and use in your web application for single-process development. No need t
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { createVitePlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
+import { createVitePlugin } from '@pie-element/local-esm-cdn/adapters/vite';
 import path from 'path';
 
 export default defineConfig({
@@ -79,10 +79,10 @@ Now your Vite dev server will automatically serve `/@pie-element/*` routes!
 
 ```typescript
 // src/hooks.server.ts
-import { createSvelteKitHandle } from '@pie-elements-ng/local-esm-cdn/adapters/sveltekit';
+import { createSvelteKitHandle } from '@pie-element/local-esm-cdn/adapters/sveltekit';
 
 export const handle = createSvelteKitHandle({
-  repoRoot: '/path/to/pie-elements-ng',
+  repoRoot: '/path/to/pie-element',
   esmShBaseUrl: 'https://esm.sh',
 });
 ```
@@ -91,11 +91,11 @@ With other hooks:
 
 ```typescript
 // src/hooks.server.ts
-import { createSvelteKitHandle } from '@pie-elements-ng/local-esm-cdn/adapters/sveltekit';
+import { createSvelteKitHandle } from '@pie-element/local-esm-cdn/adapters/sveltekit';
 import { sequence } from '@sveltejs/kit/hooks';
 
 const localEsmCdn = createSvelteKitHandle({
-  repoRoot: '/path/to/pie-elements-ng',
+  repoRoot: '/path/to/pie-element',
   esmShBaseUrl: 'https://esm.sh',
 });
 
@@ -106,13 +106,13 @@ export const handle = sequence(localEsmCdn, myOtherHandle);
 
 ```typescript
 import express from 'express';
-import { createConnectMiddleware } from '@pie-elements-ng/local-esm-cdn/adapters/connect';
+import { createConnectMiddleware } from '@pie-element/local-esm-cdn/adapters/connect';
 
 const app = express();
 
 app.use(
   createConnectMiddleware({
-    repoRoot: '/path/to/pie-elements-ng',
+    repoRoot: '/path/to/pie-element',
     esmShBaseUrl: 'https://esm.sh',
   })
 );
@@ -125,10 +125,10 @@ app.listen(3000);
 For any framework that can handle Web API Request/Response:
 
 ```typescript
-import { createLocalEsmCdn } from '@pie-elements-ng/local-esm-cdn/embedded';
+import { createLocalEsmCdn } from '@pie-element/local-esm-cdn/embedded';
 
 const cdn = createLocalEsmCdn({
-  repoRoot: '/path/to/pie-elements-ng',
+  repoRoot: '/path/to/pie-element',
   esmShBaseUrl: 'https://esm.sh',
 });
 
@@ -152,7 +152,7 @@ if (req.url.startsWith('/@pie-')) {
 
 ```typescript
 interface LocalEsmCdnConfig {
-  /** Root path to the pie-elements-ng repository */
+  /** Root path to the pie-element repository */
   repoRoot: string;
 
   /** Base URL for esm.sh (or alternative CDN) */
@@ -176,7 +176,7 @@ When running (standalone or embedded), the following endpoints are available:
 - `GET /health` - Health check (returns build status)
 - `GET /@pie-element/<name>[@<version>][/<subpath>]` - Serve element package
 - `GET /@pie-lib/<name>[@<version>][/<subpath>]` - Serve library package
-- `GET /@pie-elements-ng/<name>[@<version>][/<subpath>]` - Serve shared package
+- `GET /@pie-element/<name>[@<version>][/<subpath>]` - Serve shared package
 - `GET /@pie-framework/<name>[@<version>][/<subpath>]` - Serve framework package
 
 Examples:
@@ -184,7 +184,7 @@ Examples:
 - `/@pie-element/hotspot` → `packages/elements-react/hotspot/dist/index.js`
 - `/@pie-element/hotspot/controller` → `packages/elements-react/hotspot/dist/controller/index.js`
 - `/@pie-lib/render-ui` → `packages/lib-react/render-ui/dist/index.js`
-- `/@pie-elements-ng/shared-math-rendering` → `packages/shared/math-rendering/dist/index.js`
+- `/@pie-element/shared-math-rendering` → `packages/shared/math-rendering/dist/index.js`
 - `/@pie-framework/pie-player-events` → `packages/shared/player-events/dist/index.js`
 
 ## How It Works
@@ -192,7 +192,7 @@ Examples:
 1. **Package Resolution**: Maps package requests to local dist/ directories
    - `@pie-element/NAME` → `packages/elements-react/NAME/dist/`
    - `@pie-lib/NAME` → `packages/lib-react/NAME/dist/`
-   - `@pie-elements-ng/shared-NAME` → `packages/shared/NAME/dist/`
+   - `@pie-element/shared-NAME` → `packages/shared/NAME/dist/`
    - `@pie-framework/pie-NAME` → `packages/shared/NAME/dist/`
 
 2. **Import Rewriting**: Analyzes JS code and rewrites imports
@@ -321,4 +321,4 @@ Make sure you're requesting packages with the correct URL format:
 
 ## License
 
-This is a development tool for the pie-elements-ng monorepo.
+This is a development tool for the pie-element monorepo.

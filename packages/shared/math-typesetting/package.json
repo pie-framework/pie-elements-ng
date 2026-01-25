@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/math-typesetting",
+  "name": "@pie-element/math-typesetting",
   "version": "1.0.0",
   "description": "Pluggable math typesetting for PIE elements with KaTeX and MathML support",
   "type": "module",
@@ -41,7 +41,7 @@
     }
   },
   "dependencies": {
-    "@pie-elements-ng/shared-mathml-to-latex": "workspace:*"
+    "@pie-element/shared-mathml-to-latex": "workspace:*"
   },
   "devDependencies": {
     "@types/katex": "^0.16.0",
@@ -61,5 +61,6 @@
     "latex",
     "typesetting",
     "rendering"
-  ]
+  ],
+  "license": "MIT"
 }

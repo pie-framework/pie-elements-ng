@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
-import Prompt from './Prompt.svelte';
+import Prompt from '../src/Prompt.svelte';
 
 describe('Prompt', () => {
   it('renders simple HTML content', () => {

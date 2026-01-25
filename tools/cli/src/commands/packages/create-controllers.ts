@@ -91,7 +91,7 @@ export default class CreateControllers extends Command {
     }
 
     const pkg = {
-      name: `@pie-elements-ng/${name}`,
+      name: `@pie-element/${name}`,
       version: '0.1.0',
       description: `Framework-agnostic ${name.replace('-controller', '')} controller synced from pie-elements`,
       type: 'module',

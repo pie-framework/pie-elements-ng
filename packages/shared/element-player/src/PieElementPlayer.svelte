@@ -34,8 +34,8 @@ import ModelPanel from './components/ModelPanel.svelte';
 import Tabs from './components/Tabs.svelte';
 import { loadElement, loadController } from './lib/element-loader';
 import type { PieController } from './lib/types';
-import { createKatexRenderer } from '@pie-elements-ng/math-typesetting';
-import type { MathRenderer } from '@pie-elements-ng/math-typesetting';
+import { createKatexRenderer } from '@pie-element/math-typesetting';
+import type { MathRenderer } from '@pie-element/math-typesetting';
 
 // Props with Svelte 5 runes
 let {

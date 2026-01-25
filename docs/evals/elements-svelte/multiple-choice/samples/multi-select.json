@@ -1,6 +1,6 @@
 {
   "id": "mc-multi-1",
-  "element": "@pie-elements-ng/multiple-choice",
+  "element": "@pie-element/multiple-choice",
   "prompt": "<p><strong>Which of the following are prime numbers?</strong></p><p>Select all that apply:</p>",
   "promptEnabled": true,
   "choices": [

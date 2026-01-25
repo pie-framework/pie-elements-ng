@@ -10,7 +10,7 @@ Mini players are compact preview components designed for displaying PIE elements
 
 **Existing implementation:** `/Users/eelco.hillenius/dev/prj/kds/pie-api-aws/containers/pieoneer/src/lib/pie-mini-players/`
 
-This implementation already exists in Svelte 5 with 25+ element types and can be ported to pie-elements-ng.
+This implementation already exists in Svelte 5 with 25+ element types and can be ported to pie-element.
 
 ## Architecture
 
@@ -106,7 +106,7 @@ export function getMiniPlayer(type: string): Component<MiniPlayerProps> {
 }
 
 // Auto-register mini players
-import MultipleChoiceMiniPlayer from '@pie-elements-ng/multiple-choice/mini';
+import MultipleChoiceMiniPlayer from '@pie-element/multiple-choice/mini';
 registerMiniPlayer('multiple-choice', MultipleChoiceMiniPlayer);
 
 // ... register other element types
@@ -203,9 +203,9 @@ registerMiniPlayer('multiple-choice', MultipleChoiceMiniPlayer);
 ```svelte
 <!-- packages/multiple-choice/src/mini/MultipleChoiceMiniPlayer.svelte -->
 <script lang="ts">
-  import type { MiniPlayerProps } from '@pie-elements-ng/lib-ui/mini';
-  import MiniPlayerBase from '@pie-elements-ng/lib-ui/mini/MiniPlayerBase.svelte';
-  import CorrectnessIndicator from '@pie-elements-ng/lib-ui/mini/CorrectnessIndicator.svelte';
+  import type { MiniPlayerProps } from '@pie-element/lib-ui/mini';
+  import MiniPlayerBase from '@pie-element/lib-ui/mini/MiniPlayerBase.svelte';
+  import CorrectnessIndicator from '@pie-element/lib-ui/mini/CorrectnessIndicator.svelte';
 
   let { item, passage } = $props<MiniPlayerProps>();
 </script>
@@ -297,8 +297,8 @@ Mini players are used in list containers:
 ```svelte
 <!-- apps/example/src/routes/item-browser/+page.svelte -->
 <script lang="ts">
-  import { getMiniPlayer } from '@pie-elements-ng/lib-ui/mini';
-  import type { ItemEntity } from '@pie-elements-ng/lib-ui/mini';
+  import { getMiniPlayer } from '@pie-element/lib-ui/mini';
+  import type { ItemEntity } from '@pie-element/lib-ui/mini';
 
   let items = $state<ItemEntity[]>([]);
   let expandedItems = $state(new Set<string>());
@@ -534,7 +534,7 @@ The pieoneer project already has 25+ mini players implemented. To migrate:
    cp -r pieoneer/src/lib/pie-mini-players/* packages/lib-ui/src/mini/
    ```
 
-2. **Update imports** to use pie-elements-ng packages
+2. **Update imports** to use pie-element packages
 
 3. **Port element-specific mini players** to their respective packages
 

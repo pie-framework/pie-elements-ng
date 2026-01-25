@@ -1,5 +1,5 @@
 {
-  "name": "@pie-elements-ng/shared-math-rendering",
+  "name": "@pie-element/shared-math-rendering",
   "version": "1.0.0",
   "description": "Framework-agnostic math rendering with KaTeX",
   "type": "module",
@@ -21,8 +21,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-elements-ng/shared-mathml-to-latex": "workspace:*",
-    "katex": "^0.16.27"
+    "katex": "^0.16.27",
+    "@pie-element/shared-mathml-to-latex": "workspace:*"
   },
   "peerDependencies": {
     "katex": "^0.16.27"
@@ -39,5 +39,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

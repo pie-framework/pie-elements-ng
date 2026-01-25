@@ -4,8 +4,8 @@
  * Utilities for testing PIE Web Components.
  */
 
-import type { PieModel, PieSession } from '@pie-elements-ng/shared-types';
-import { assignProps } from '@pie-elements-ng/shared-utils';
+import type { PieModel, PieSession } from '@pie-element/shared-types';
+import { assignProps } from '@pie-element/shared-utils';
 
 /**
  * Create a test container for web components

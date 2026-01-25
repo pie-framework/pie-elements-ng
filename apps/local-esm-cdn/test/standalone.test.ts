@@ -54,8 +54,8 @@ describe('Standalone Server Integration Tests', () => {
     expect(response.headers.get('x-local-esm-cdn-file')).toContain('/render-ui/');
   });
 
-  test('serves @pie-elements-ng shared package', async () => {
-    const response = await fetch(`${baseUrl}/@pie-elements-ng/shared-math-rendering`);
+  test('serves @pie-element shared package', async () => {
+    const response = await fetch(`${baseUrl}/@pie-element/shared-math-rendering`);
 
     expect(response.status).toBe(200);
     expect(response.headers.get('x-local-esm-cdn-file')).toContain('/math-rendering/');
@@ -83,7 +83,7 @@ describe('Standalone Server Integration Tests', () => {
     // Should not rewrite local PIE package imports to esm.sh
     expect(code).not.toContain('esm.sh/@pie-lib/');
     expect(code).not.toContain('esm.sh/@pie-element/');
-    expect(code).not.toContain('esm.sh/@pie-elements-ng/');
+    expect(code).not.toContain('esm.sh/@pie-element/');
   });
 
   test('handles CORS preflight requests', async () => {

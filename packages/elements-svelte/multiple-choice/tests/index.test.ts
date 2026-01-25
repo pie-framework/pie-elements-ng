@@ -1,13 +1,13 @@
-import type { PieEnvironment } from '@pie-elements-ng/shared-types';
+import type { PieEnvironment } from '@pie-element/shared-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { MultipleChoiceModel, MultipleChoiceSession } from '../types';
+import type { MultipleChoiceModel, MultipleChoiceSession } from '../src/types';
 import {
   createCorrectResponseSession,
   createDefaultModel,
   model,
   outcome,
   validate,
-} from './index';
+} from '../src/controller/index';
 
 describe('Multiple Choice Controller', () => {
   let question: MultipleChoiceModel;
@@ -16,7 +16,7 @@ describe('Multiple Choice Controller', () => {
   beforeEach(() => {
     question = {
       id: '1',
-      element: '@pie-elements-ng/multiple-choice',
+      element: '@pie-element/multiple-choice',
       prompt: '<p>What is 2 + 2?</p>',
       promptEnabled: true,
       choices: [
@@ -299,7 +299,7 @@ describe('Multiple Choice Controller', () => {
       const model = createDefaultModel();
 
       expect(model.id).toBeDefined();
-      expect(model.element).toBe('@pie-elements-ng/multiple-choice');
+      expect(model.element).toBe('@pie-element/multiple-choice');
       expect(model.choices).toHaveLength(3);
       expect(model.choiceMode).toBe('radio');
     });
