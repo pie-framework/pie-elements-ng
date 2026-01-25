@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - main
+      - master
     # Avoid running release on docs-only changes.
     # Releases should be driven by Changesets (new .changeset files) and the
     # resulting version-bump commits (packages/*/package.json + CHANGELOG.md).
