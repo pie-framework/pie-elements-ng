@@ -448,17 +448,14 @@ export function transformConfigureUtilsImports(content: string, relativePath: st
   // Match patterns like:
   // - "configure/src/something.js" (yes)
   // - "configure/src/design/something.js" (no - has subdirectory)
-  const configureRootFilePattern = /^configure\/src\/[^\/]+\.(jsx?|tsx?)$/;
+  const configureRootFilePattern = /^configure\/src\/[^/]+\.(jsx?|tsx?)$/;
   if (!configureRootFilePattern.test(relativePath)) {
     return content;
   }
 
   // Transform '../utils' to './utils' (only exact match, not '../utils/something')
   let transformed = content;
-  transformed = transformed.replace(
-    /from\s+['"]\.\.\/utils['"]/g,
-    "from './utils'"
-  );
+  transformed = transformed.replace(/from\s+['"]\.\.\/utils['"]/g, "from './utils'");
 
   return transformed;
 }

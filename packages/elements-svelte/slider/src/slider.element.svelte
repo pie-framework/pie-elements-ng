@@ -6,7 +6,12 @@
  * Registration handled by wrapper to prevent duplicate registration errors
  */
 
-import type { SliderModel, SliderSession, SliderEvaluation, PieEnvironment } from './slider.types.js';
+import type {
+  SliderModel,
+  SliderSession,
+  SliderEvaluation,
+  PieEnvironment,
+} from './slider.types.js';
 import { formatValue, normalizeValue } from './slider.controller.js';
 
 interface Props {
@@ -16,7 +21,12 @@ interface Props {
   evaluation?: SliderEvaluation | string;
 }
 
-let { model = $bindable(), session = $bindable(), env = $bindable(), evaluation = $bindable() }: Props = $props();
+let {
+  model = $bindable(),
+  session = $bindable(),
+  env = $bindable(),
+  evaluation = $bindable(),
+}: Props = $props();
 
 // Parse props that may be JSON strings (web component usage)
 function parseJsonProp<T>(prop: T | string | undefined): T | null {

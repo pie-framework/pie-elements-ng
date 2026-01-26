@@ -6,7 +6,13 @@
  * Maps to QTI uploadInteraction
  */
 
-import { addFile, removeFile, formatFileSize, getAcceptString, isImageType } from './upload.controller.js';
+import {
+  addFile,
+  removeFile,
+  formatFileSize,
+  getAcceptString,
+  isImageType,
+} from './upload.controller.js';
 import type { FileValidationError, UploadComponentProps } from './upload.types.js';
 
 let {

@@ -9,15 +9,15 @@ export default defineConfig({
     createLocalEsmCdnPlugin({
       repoRoot: path.resolve(__dirname, '../../../../..'),
       esmShBaseUrl: 'https://esm.sh',
-      buildScope: 'esm'
-    })
+      buildScope: 'esm',
+    }),
   ],
   server: {
     // Port can be overridden via --port flag
     // Default is 5300 to match React element demos
-    port: 5300
+    port: 5300,
   },
   preview: {
-    port: 5300
-  }
+    port: 5300,
+  },
 });

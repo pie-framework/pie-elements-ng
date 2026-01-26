@@ -1,4 +1,4 @@
 export default {
-  "files": [],
-  "attempted": false
+  files: [],
+  attempted: false,
 };

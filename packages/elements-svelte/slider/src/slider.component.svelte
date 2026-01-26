@@ -9,13 +9,7 @@
 import { formatValue, normalizeValue } from './slider.controller.js';
 import type { SliderComponentProps } from './slider.types.js';
 
-let {
-  model,
-  session,
-  evaluation,
-  env,
-  onSessionChange,
-}: SliderComponentProps = $props();
+let { model, session, evaluation, env, onSessionChange }: SliderComponentProps = $props();
 
 // Reactive computed values
 const isDisabled = $derived(env.mode === 'view' || env.mode === 'evaluate');
@@ -39,10 +33,7 @@ const _stepLabels = $derived(() => {
 
   // Calculate a reasonable label interval (aim for ~10 labels max)
   const targetLabels = 10;
-  const labelStep = Math.max(
-    model.step,
-    Math.ceil(range / targetLabels / model.step) * model.step
-  );
+  const labelStep = Math.max(model.step, Math.ceil(range / targetLabels / model.step) * model.step);
 
   for (let value = model.lowerBound; value <= model.upperBound; value += labelStep) {
     const position = ((value - model.lowerBound) / range) * 100;

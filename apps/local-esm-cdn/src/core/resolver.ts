@@ -153,7 +153,7 @@ export async function resolveEntryFile(
     const rootCandidates = [
       path.join(base, 'index.js'),
       path.join(base, 'index.mjs'),
-      path.join(base, 'index.ts')
+      path.join(base, 'index.ts'),
     ];
     for (const c of rootCandidates) {
       if (await fileExists(c)) return c;

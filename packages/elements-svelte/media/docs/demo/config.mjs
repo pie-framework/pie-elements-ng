@@ -1,20 +1,21 @@
 export default {
-  "id": "media-default",
-  "element": "@pie-element/media-svelte",
-  "mediaType": "video",
-  "prompt": "<p>Watch the video about web accessibility.</p>",
-  "sources": [
+  id: 'media-default',
+  element: '@pie-element/media-svelte',
+  mediaType: 'video',
+  prompt: '<p>Watch the video about web accessibility.</p>',
+  sources: [
     {
-      "src": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-      "type": "video/mp4"
-    }
+      src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      type: 'video/mp4',
+    },
   ],
-  "poster": "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg?x11217",
-  "showControls": true,
-  "requireCompletion": true,
-  "minPlayedPercentage": 50,
-  "trackPlayback": true,
-  "promptEnabled": true,
-  "rationale": "<p>This video demonstrates the importance of multimedia accessibility in web content.</p>",
-  "rationaleEnabled": true
+  poster: 'https://peach.blender.org/wp-content/uploads/title_anouncement.jpg?x11217',
+  showControls: true,
+  requireCompletion: true,
+  minPlayedPercentage: 50,
+  trackPlayback: true,
+  promptEnabled: true,
+  rationale:
+    '<p>This video demonstrates the importance of multimedia accessibility in web content.</p>',
+  rationaleEnabled: true,
 };

@@ -7,7 +7,12 @@
 
 import { mount, unmount, hydrate, type Component } from 'svelte';
 import SliderElementComponent from './slider.element.svelte';
-import type { SliderModel, SliderSession, SliderEvaluation, PieEnvironment } from './slider.types.js';
+import type {
+  SliderModel,
+  SliderSession,
+  SliderEvaluation,
+  PieEnvironment,
+} from './slider.types.js';
 
 const ELEMENT_NAME = 'slider-svelte-element';
 

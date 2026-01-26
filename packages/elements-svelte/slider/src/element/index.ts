@@ -7,7 +7,12 @@
 import type { Component } from 'svelte';
 import { mount, unmount } from 'svelte';
 import SliderComponent from '../slider.component.svelte';
-import type { SliderModel, SliderSession, SliderEvaluation, PieEnvironment } from '../slider.types.js';
+import type {
+  SliderModel,
+  SliderSession,
+  SliderEvaluation,
+  PieEnvironment,
+} from '../slider.types.js';
 
 /**
  * Base class for Svelte-based custom elements
@@ -104,8 +109,7 @@ export class SliderElement extends BaseSvelteMountElement<{
     const newValue = value?.value;
 
     // Skip if value hasn't changed (handles NaN correctly)
-    const isSame = oldValue === newValue ||
-                   (Number.isNaN(oldValue) && Number.isNaN(newValue));
+    const isSame = oldValue === newValue || (Number.isNaN(oldValue) && Number.isNaN(newValue));
 
     if (isSame) return;
 
@@ -166,8 +170,7 @@ export class SliderElement extends BaseSvelteMountElement<{
         const newValue = newSession.value;
 
         // Handle NaN comparison (NaN !== NaN)
-        const isSame = oldValue === newValue ||
-                      (Number.isNaN(oldValue) && Number.isNaN(newValue));
+        const isSame = oldValue === newValue || (Number.isNaN(oldValue) && Number.isNaN(newValue));
 
         if (isSame) {
           return;

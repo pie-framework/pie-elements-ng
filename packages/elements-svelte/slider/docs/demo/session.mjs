@@ -1,3 +1,3 @@
 export default {
-  "value": undefined
+  value: undefined,
 };
