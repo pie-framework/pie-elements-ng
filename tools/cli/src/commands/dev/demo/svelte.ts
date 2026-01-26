@@ -18,16 +18,16 @@ export default class DevDemoSvelte extends Command {
   static override description = 'Start demo server for Svelte elements with embedded local-esm-cdn';
 
   static override examples = [
-    '<%= config.bin %> <%= command.id %> multiple-choice',
-    '<%= config.bin %> <%= command.id %> slider --port 5180',
-    '<%= config.bin %> <%= command.id %> media --skip-build --no-open',
+    '<%= config.bin %> <%= command.id %> slider',
+    '<%= config.bin %> <%= command.id %> media --port 5180',
+    '<%= config.bin %> <%= command.id %> upload --skip-build --no-open',
   ];
 
   static override flags = {
     port: Flags.integer({
       char: 'p',
       description: 'Vite dev server port',
-      default: 5174,
+      default: 5300,
     }),
     'skip-build': Flags.boolean({
       description: 'Skip building element and element-player',
@@ -52,7 +52,7 @@ export default class DevDemoSvelte extends Command {
   static override args = {
     element: Args.string({
       required: true,
-      description: 'Element name (e.g., multiple-choice, slider, media)',
+      description: 'Element name (e.g., slider, media, upload)',
     }),
   };
 
@@ -168,7 +168,7 @@ export default class DevDemoSvelte extends Command {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}`],
+        ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}-svelte`],
         {
           stdio: 'inherit',
           cwd: process.cwd(),

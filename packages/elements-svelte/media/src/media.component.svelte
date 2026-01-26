@@ -180,10 +180,10 @@ const _evaluationClass = $derived(() => {
 	class:audio={model.mediaType === 'audio'}
 	class:video={model.mediaType === 'video'}
 	class:disabled={isDisabled}
-	class:evaluated={showEvaluation}
+	class:evaluated={_showEvaluation}
 >
 	{#if model.promptEnabled && model.prompt}
-		<div id={promptId} class="prompt">
+		<div id={_promptId} class="prompt">
 			{@html model.prompt}
 		</div>
 	{/if}
@@ -193,23 +193,23 @@ const _evaluationClass = $derived(() => {
 			<!-- Video element -->
 			<video
 				bind:this={mediaElement}
-				id={mediaId}
+				id={_mediaId}
 				class="media-element"
 				poster={model.poster}
 				controls={model.showControls !== false}
 				autoplay={model.autoplay}
 				loop={model.loop}
-				aria-labelledby={model.promptEnabled && model.prompt ? promptId : undefined}
+				aria-labelledby={model.promptEnabled && model.prompt ? _promptId : undefined}
 				aria-label={!model.promptEnabled || !model.prompt ? 'Video player' : undefined}
-				aria-describedby={showEvaluation ? statusId : undefined}
-				onplay={handlePlay}
-				onpause={handlePause}
-				onended={handleEnded}
-				onseeked={handleSeeked}
-				onseeking={handleSeeking}
-				ontimeupdate={handleTimeUpdate}
-				ondurationchange={handleDurationChange}
-				onratechange={handleRateChange}
+				aria-describedby={_showEvaluation ? _statusId : undefined}
+				onplay={_handlePlay}
+				onpause={_handlePause}
+				onended={_handleEnded}
+				onseeked={_handleSeeked}
+				onseeking={_handleSeeking}
+				ontimeupdate={_handleTimeUpdate}
+				ondurationchange={_handleDurationChange}
+				onratechange={_handleRateChange}
 			>
 				{#each model.sources as source}
 					<source src={source.src} type={source.type} />
@@ -233,22 +233,22 @@ const _evaluationClass = $derived(() => {
 			<!-- Audio element -->
 			<audio
 				bind:this={mediaElement}
-				id={mediaId}
+				id={_mediaId}
 				class="media-element"
 				controls={model.showControls !== false}
 				autoplay={model.autoplay}
 				loop={model.loop}
-				aria-labelledby={model.promptEnabled && model.prompt ? promptId : undefined}
+				aria-labelledby={model.promptEnabled && model.prompt ? _promptId : undefined}
 				aria-label={!model.promptEnabled || !model.prompt ? 'Audio player' : undefined}
-				aria-describedby={showEvaluation ? statusId : undefined}
-				onplay={handlePlay}
-				onpause={handlePause}
-				onended={handleEnded}
-				onseeked={handleSeeked}
-				onseeking={handleSeeking}
-				ontimeupdate={handleTimeUpdate}
-				ondurationchange={handleDurationChange}
-				onratechange={handleRateChange}
+				aria-describedby={_showEvaluation ? _statusId : undefined}
+				onplay={_handlePlay}
+				onpause={_handlePause}
+				onended={_handleEnded}
+				onseeked={_handleSeeked}
+				onseeking={_handleSeeking}
+				ontimeupdate={_handleTimeUpdate}
+				ondurationchange={_handleDurationChange}
+				onratechange={_handleRateChange}
 			>
 				{#each model.sources as source}
 					<source src={source.src} type={source.type} />
@@ -273,7 +273,7 @@ const _evaluationClass = $derived(() => {
 		<!-- Playback info -->
 		<div class="playback-info" aria-live="polite" aria-atomic="true">
 			<span class="time-display">
-				{formattedCurrentTime} / {formattedDuration}
+				{_formattedCurrentTime} / {_formattedDuration}
 			</span>
 			{#if model.requireCompletion || model.minPlayedPercentage}
 				<span class="requirement-info">
@@ -291,8 +291,8 @@ const _evaluationClass = $derived(() => {
 
 		<!-- Progress indicator (if requirements exist) -->
 		{#if model.requireCompletion || model.minPlayedPercentage}
-			<div class="progress-bar" role="progressbar" aria-label="Media playback progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage()}>
-				<div class="progress-fill" style="width: {progressPercentage()}%"></div>
+			<div class="progress-bar" role="progressbar" aria-label="Media playback progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={_progressPercentage()}>
+				<div class="progress-fill" style="width: {_progressPercentage()}%"></div>
 				{#if model.minPlayedPercentage}
 					<div class="progress-threshold" style="left: {model.minPlayedPercentage}%"></div>
 				{/if}
@@ -301,8 +301,8 @@ const _evaluationClass = $derived(() => {
 	</div>
 
 	<!-- Evaluation feedback -->
-	{#if showEvaluation && evaluation}
-		<div id={statusId} class="response-indicator {evaluationClass()}" role="status" aria-live="polite">
+	{#if _showEvaluation && evaluation}
+		<div id={_statusId} class="response-indicator {_evaluationClass()}" role="status" aria-live="polite">
 			{#if evaluation.complete}
 				<span class="status-icon">✓</span>
 				<span class="status-text">Requirements met</span>
@@ -320,7 +320,7 @@ const _evaluationClass = $derived(() => {
 	{/if}
 
 	<!-- Rationale (instructor only) -->
-	{#if showRationale}
+	{#if _showRationale}
 		<div class="rationale">
 			<strong>Rationale:</strong>
 			{@html model.rationale}

@@ -54,8 +54,13 @@ export async function resolveEntryFile(
       // e.g. @pie-element/shared-math-rendering -> packages/shared/math-rendering
       const packageName = name.replace(/^shared-/, '');
       base = path.join(pieElementsNgPath, 'packages', 'shared', packageName, 'dist');
+    } else if (name.endsWith('-svelte')) {
+      // Svelte element packages export source files directly (no build step)
+      // e.g. @pie-element/slider-svelte -> packages/elements-svelte/slider/src
+      const elementName = name.replace(/-svelte$/, '');
+      base = path.join(pieElementsNgPath, 'packages', 'elements-svelte', elementName, 'src');
     } else {
-      // Regular element packages are in packages/elements-react/
+      // Regular React element packages are in packages/elements-react/
       base = path.join(pieElementsNgPath, 'packages', 'elements-react', name, 'dist');
     }
   } else if (scope === '@pie-lib') {
@@ -77,8 +82,15 @@ export async function resolveEntryFile(
       return list;
     }
 
-    // Try the path as-is first (for files that already have extensions like .js)
+    // Try the path as-is first (for files that already have extensions like .js, .ts, .svelte)
     list.push(path.join(basePath, targetSubpath));
+
+    // TypeScript convention: .js imports resolve to .ts files
+    // e.g., slider.controller.js -> slider.controller.ts
+    if (targetSubpath.endsWith('.js')) {
+      const tsPath = targetSubpath.replace(/\.js$/, '.ts');
+      list.push(path.join(basePath, tsPath));
+    }
 
     // Common build layouts: dist/<sub>/index.js or dist/<sub>.js
     list.push(path.join(basePath, targetSubpath, 'index.js'));
@@ -86,11 +98,18 @@ export async function resolveEntryFile(
     list.push(path.join(basePath, targetSubpath, 'index.mjs'));
     list.push(path.join(basePath, `${targetSubpath}.mjs`));
 
+    // For Svelte elements (source files): try .ts and .svelte extensions
+    list.push(path.join(basePath, targetSubpath, 'index.ts'));
+    list.push(path.join(basePath, `${targetSubpath}.ts`));
+    list.push(path.join(basePath, `${targetSubpath}.svelte`));
+
     // Some builds may output dist/<subpath>/index.js even for nested paths
     const nested = targetSubpath.split('/');
     if (nested.length > 1) {
       list.push(path.join(basePath, ...nested, 'index.js'));
       list.push(path.join(basePath, ...nested) + '.js');
+      list.push(path.join(basePath, ...nested, 'index.ts'));
+      list.push(path.join(basePath, ...nested) + '.ts');
     }
 
     return list;
@@ -130,8 +149,12 @@ export async function resolveEntryFile(
       // If package.json doesn't exist or can't be read, continue with fallback candidates
     }
 
-    // Fallback candidates
-    const rootCandidates = [path.join(base, 'index.js'), path.join(base, 'index.mjs')];
+    // Fallback candidates (include .ts for Svelte source files)
+    const rootCandidates = [
+      path.join(base, 'index.js'),
+      path.join(base, 'index.mjs'),
+      path.join(base, 'index.ts')
+    ];
     for (const c of rootCandidates) {
       if (await fileExists(c)) return c;
     }
@@ -139,6 +162,20 @@ export async function resolveEntryFile(
     const candidates = buildCandidates(base, normalizedSubpath);
     for (const c of candidates) {
       if (await fileExists(c)) return c;
+    }
+
+    // For Svelte elements: special handling for controller/configure shortcuts
+    // e.g., @pie-element/slider-svelte/controller -> slider.controller.ts
+    if (name.endsWith('-svelte')) {
+      const elementName = name.replace(/-svelte$/, '');
+      if (normalizedSubpath === 'controller') {
+        const controllerFile = path.join(base, `${elementName}.controller.ts`);
+        if (await fileExists(controllerFile)) return controllerFile;
+      }
+      if (normalizedSubpath === 'configure') {
+        const configureFile = path.join(base, `${elementName}.configure.ts`);
+        if (await fileExists(configureFile)) return configureFile;
+      }
     }
 
     // Controller/configure fallback for controller-local imports (e.g. defaults.js, utils.js)

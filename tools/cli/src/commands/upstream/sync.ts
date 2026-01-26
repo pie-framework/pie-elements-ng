@@ -2,18 +2,18 @@ import { Command, Flags } from '@oclif/core';
 import { Logger } from '../../utils/logger.js';
 import { loadCompatibilityReport, type CompatibilityReport } from '../../utils/compatibility.js';
 import { getCurrentCommit } from '../../utils/git.js';
-import { printSyncSummary, createEmptySummary } from './sync-summary.js';
+import { printSyncSummary, createEmptySummary } from '../../lib/upstream/sync-summary.js';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { rm as fsRm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { readdir } from './sync-filesystem.js';
-import { getAllDeps } from './sync-package-json.js';
-import { ControllersStrategy } from './sync-controllers-strategy.js';
-import { ReactComponentsStrategy } from './sync-react-strategy.js';
-import { PieLibStrategy } from './sync-pielib-strategy.js';
-import type { SyncStrategy, SyncContext } from './sync-strategy.js';
+import { readdir } from '../../lib/upstream/sync-filesystem.js';
+import { getAllDeps } from '../../lib/upstream/sync-package-json.js';
+import { ControllersStrategy } from '../../lib/upstream/sync-controllers-strategy.js';
+import { ReactComponentsStrategy } from '../../lib/upstream/sync-react-strategy.js';
+import { PieLibStrategy } from '../../lib/upstream/sync-pielib-strategy.js';
+import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy.js';
 
 interface SyncConfig {
   pieElements: string;

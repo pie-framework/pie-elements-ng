@@ -11,7 +11,7 @@ import type { SliderComponentProps } from './slider.types.js';
 
 let {
   model,
-  session = $bindable(),
+  session,
   evaluation,
   env,
   onSessionChange,
@@ -24,25 +24,27 @@ const _showRationale = $derived(
 );
 const _showEvaluation = $derived(env.mode === 'evaluate' && evaluation);
 
-// Current value with default - initialize session if undefined
-$effect(() => {
-  if (session.value === undefined) {
-    session = { value: model.lowerBound };
-    onSessionChange(session);
-  }
-});
-
-const currentValue = $derived(session.value ?? model.lowerBound);
+// Current value - just use what we have with a safe fallback
+const currentValue = $derived(
+  typeof session?.value === 'number' ? session.value : (model?.lowerBound ?? 0)
+);
 const _formattedValue = $derived(formatValue(currentValue, model));
 
-// Step labels
+// Step labels - show a reasonable number of labels (max ~10)
 const _stepLabels = $derived(() => {
   if (!model.stepLabel || !model.step) return [];
 
   const labels: Array<{ value: number; position: number }> = [];
   const range = model.upperBound - model.lowerBound;
 
-  for (let value = model.lowerBound; value <= model.upperBound; value += model.step) {
+  // Calculate a reasonable label interval (aim for ~10 labels max)
+  const targetLabels = 10;
+  const labelStep = Math.max(
+    model.step,
+    Math.ceil(range / targetLabels / model.step) * model.step
+  );
+
+  for (let value = model.lowerBound; value <= model.upperBound; value += labelStep) {
     const position = ((value - model.lowerBound) / range) * 100;
     labels.push({ value, position });
   }
@@ -58,8 +60,7 @@ function _handleChange(event: Event) {
   const rawValue = parseFloat(target.value);
   const normalizedValue = normalizeValue(rawValue, model);
 
-  session = { value: normalizedValue };
-  onSessionChange(session);
+  onSessionChange({ value: normalizedValue });
 }
 
 // Evaluation status class
@@ -82,12 +83,12 @@ const _statusId = $derived(`slider-status-${model.id}`);
 	class:vertical={model.orientation === 'vertical'}
 	class:reverse={model.reverse}
 	class:disabled={isDisabled}
-	class:evaluated={showEvaluation}
+	class:evaluated={_showEvaluation}
 	class:correct={evaluation?.correct}
 	class:incorrect={evaluation && !evaluation.correct}
 >
 	{#if model.promptEnabled && model.prompt}
-		<div id={promptId} class="prompt">
+		<div id={_promptId} class="prompt">
 			{@html model.prompt}
 		</div>
 	{/if}
@@ -103,29 +104,29 @@ const _statusId = $derived(`slider-status-${model.id}`);
 			<div class="slider-track">
 				<input
 					type="range"
-					id={sliderId}
-					class="slider-input {evaluationClass()}"
+					id={_sliderId}
+					class="slider-input {_evaluationClass()}"
 					min={model.lowerBound}
 					max={model.upperBound}
 					step={model.step ?? 1}
 					value={currentValue}
 					disabled={isDisabled}
-					aria-labelledby={model.promptEnabled && model.prompt ? promptId : undefined}
+					aria-labelledby={model.promptEnabled && model.prompt ? _promptId : undefined}
 					aria-label={!model.promptEnabled || !model.prompt ? 'Slider value selector' : undefined}
 					aria-valuemin={model.lowerBound}
 					aria-valuemax={model.upperBound}
 					aria-valuenow={currentValue}
-					aria-valuetext={formattedValue}
-					aria-describedby={showEvaluation ? statusId : undefined}
+					aria-valuetext={_formattedValue}
+					aria-describedby={_showEvaluation ? _statusId : undefined}
 					aria-disabled={isDisabled}
-					onchange={handleChange}
-					oninput={handleChange}
+					onchange={_handleChange}
+					oninput={_handleChange}
 				/>
 
 				<!-- Step labels -->
-				{#if model.stepLabel && stepLabels().length > 0}
+				{#if model.stepLabel && _stepLabels().length > 0}
 					<div class="step-labels" aria-hidden="true">
-						{#each stepLabels() as label}
+						{#each _stepLabels() as label}
 							<span
 								class="step-label"
 								style="left: {label.position}%"
@@ -147,13 +148,13 @@ const _statusId = $derived(`slider-status-${model.id}`);
 		<!-- Current value display -->
 		<div class="value-display" aria-live="polite" aria-atomic="true">
 			<span class="value-label">Current value:</span>
-			<span class="value-number">{formattedValue}</span>
+			<span class="value-number">{_formattedValue}</span>
 		</div>
 	</div>
 
 	<!-- Evaluation feedback -->
-	{#if showEvaluation && evaluation}
-		<div id={statusId} class="response-indicator {evaluationClass()}" role="status" aria-live="polite">
+	{#if _showEvaluation && evaluation}
+		<div id={_statusId} class="response-indicator {_evaluationClass()}" role="status" aria-live="polite">
 			{#if evaluation.correct}
 				<span class="status-icon">✓</span>
 				<span class="status-text">Correct!</span>
@@ -186,7 +187,7 @@ const _statusId = $derived(`slider-status-${model.id}`);
 	{/if}
 
 	<!-- Rationale (instructor only) -->
-	{#if showRationale}
+	{#if _showRationale}
 		<div class="rationale">
 			<strong>Rationale:</strong>
 			{@html model.rationale}

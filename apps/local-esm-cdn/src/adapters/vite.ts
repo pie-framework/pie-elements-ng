@@ -34,12 +34,31 @@ export function createVitePlugin(config: Partial<LocalEsmCdnConfig>): Plugin {
     name: 'vite-plugin-local-esm-cdn',
     enforce: 'pre', // Run before other plugins
 
-    resolveId(id) {
+    async resolveId(id) {
       // Mark PIE packages for handling (with or without leading slash)
       if (id.startsWith('@pie-') || id.startsWith('/@pie-')) {
         // Normalize to always have the leading slash
         const normalizedId = id.startsWith('/@') ? id : `/${id}`;
         console.log(`[vite-plugin-local-esm-cdn] resolveId: ${id} -> ${normalizedId}`);
+
+        // For Svelte elements (source files), resolve to actual file path
+        // so Vite can transform them with TypeScript/Svelte plugins
+        if (normalizedId.includes('-svelte')) {
+          const url = `http://localhost${normalizedId}`;
+          const request = new Request(url, { method: 'GET' });
+          const response = await cdn.handler(request);
+
+          if (response.ok) {
+            // Check if the response has a file path in headers
+            const filePath = response.headers.get('x-local-esm-cdn-file');
+            if (filePath && (filePath.endsWith('.ts') || filePath.endsWith('.svelte'))) {
+              console.log(`[vite-plugin-local-esm-cdn] Resolved to file: ${filePath}`);
+              // Return the actual file path so Vite can process it
+              return { id: filePath, external: false };
+            }
+          }
+        }
+
         return { id: normalizedId, external: false };
       }
       return null;

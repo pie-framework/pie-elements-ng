@@ -6,7 +6,7 @@
  * Maps to QTI uploadInteraction
  */
 
-import { addFile, removeFile } from './upload.controller.js';
+import { addFile, removeFile, formatFileSize, getAcceptString, isImageType } from './upload.controller.js';
 import type { FileValidationError, UploadComponentProps } from './upload.types.js';
 
 let {
@@ -145,10 +145,10 @@ const _evaluationClass = $derived(() => {
 <div
 	class="pie-upload"
 	class:disabled={isDisabled}
-	class:evaluated={showEvaluation}
+	class:evaluated={_showEvaluation}
 >
 	{#if model.promptEnabled && model.prompt}
-		<div id={promptId} class="prompt">
+		<div id={_promptId} class="prompt">
 			{@html model.prompt}
 		</div>
 	{/if}
@@ -165,33 +165,33 @@ const _evaluationClass = $derived(() => {
 		<input
 			bind:this={fileInput}
 			type="file"
-			id={uploadId}
+			id={_uploadId}
 			class="file-input"
 			accept={getAcceptString(model)}
 			multiple={maxFiles > 1}
-			disabled={isDisabled || !canAddMore}
-			onchange={handleInputChange}
-			aria-labelledby={model.promptEnabled && model.prompt ? promptId : undefined}
+			disabled={isDisabled || !_canAddMore}
+			onchange={_handleInputChange}
+			aria-labelledby={model.promptEnabled && model.prompt ? _promptId : undefined}
 			aria-label={!model.promptEnabled || !model.prompt ? 'File upload' : undefined}
-			aria-describedby={error ? errorId : showEvaluation ? statusId : undefined}
-			aria-invalid={error ? 'true' : undefined}
+			aria-describedby={_error ? _errorId : _showEvaluation ? _statusId : undefined}
+			aria-invalid={_error ? 'true' : undefined}
 		/>
 
 		<!-- Drop zone -->
-		{#if canAddMore}
+		{#if _canAddMore}
 			<div
 				class="drop-zone"
-				class:drag-active={dragActive}
+				class:drag-active={_dragActive}
 				role="button"
 				tabindex={isDisabled ? -1 : 0}
-				ondragover={handleDragOver}
-				ondragleave={handleDragLeave}
-				ondrop={handleDrop}
-				onclick={triggerFileInput}
+				ondragover={_handleDragOver}
+				ondragleave={_handleDragLeave}
+				ondrop={_handleDrop}
+				onclick={_triggerFileInput}
 				onkeydown={(e) => {
 					if (e.key === 'Enter' || e.key === ' ') {
 						e.preventDefault();
-						triggerFileInput();
+						_triggerFileInput();
 					}
 				}}
 				aria-label="Click or drag files to upload"
@@ -203,7 +203,7 @@ const _evaluationClass = $derived(() => {
 				</svg>
 
 				<p class="drop-text">
-					{#if dragActive}
+					{#if _dragActive}
 						Drop files here
 					{:else}
 						Click to select files or drag and drop
@@ -218,7 +218,7 @@ const _evaluationClass = $derived(() => {
 					<p class="file-size">Max size: {formatFileSize(model.maxFileSize)}</p>
 				{/if}
 
-				{#if uploading}
+				{#if _uploading}
 					<div class="uploading" role="status" aria-live="polite">
 						Uploading...
 					</div>
@@ -258,7 +258,7 @@ const _evaluationClass = $derived(() => {
 							<button
 								type="button"
 								class="remove-button"
-								onclick={() => handleRemove(index)}
+								onclick={() => _handleRemove(index)}
 								aria-label="Remove {file.name}"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -273,9 +273,9 @@ const _evaluationClass = $derived(() => {
 		{/if}
 
 		<!-- Error message -->
-		{#if error}
-			<div id={errorId} class="error-message" role="alert" aria-live="assertive">
-				{error.message}
+		{#if _error}
+			<div id={_errorId} class="error-message" role="alert" aria-live="assertive">
+				{_error.message}
 			</div>
 		{/if}
 
@@ -288,8 +288,8 @@ const _evaluationClass = $derived(() => {
 	</div>
 
 	<!-- Evaluation feedback -->
-	{#if showEvaluation && evaluation}
-		<div id={statusId} class="response-indicator {evaluationClass()}" role="status" aria-live="polite">
+	{#if _showEvaluation && evaluation}
+		<div id={_statusId} class="response-indicator {_evaluationClass()}" role="status" aria-live="polite">
 			{#if evaluation.complete}
 				<span class="status-icon">✓</span>
 				<span class="status-text">Upload complete</span>
@@ -307,7 +307,7 @@ const _evaluationClass = $derived(() => {
 	{/if}
 
 	<!-- Rationale (instructor only) -->
-	{#if showRationale}
+	{#if _showRationale}
 		<div class="rationale">
 			<strong>Rationale:</strong>
 			{@html model.rationale}
