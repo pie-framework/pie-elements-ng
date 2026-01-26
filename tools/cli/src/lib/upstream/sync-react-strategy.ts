@@ -315,7 +315,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
       sourceContent = inlineConfigureDefaults(sourceContent);
 
       // Transform configure utility imports for flattened directory structure
-      sourceContent = transformConfigureUtilsImports(sourceContent, relativePath);
+      sourceContent = transformConfigureUtilsImports(sourceContent, join(relativePath, item));
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
 

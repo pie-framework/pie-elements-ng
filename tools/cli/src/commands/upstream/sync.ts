@@ -599,7 +599,8 @@ export default class Sync extends Command {
     // turbo filters are passed through the root build script:
     // package.json: "build": "turbo run build"
     // bun run requires `--` to forward args to the script.
-    const args = ['run', 'build', '--', ...filters];
+    // Always use --force to disable Turbo cache for consistency
+    const args = ['run', 'build', '--', '--force', ...filters];
 
     const exitCode = await new Promise<number>((resolve) => {
       const child = spawn('bun', args, {
