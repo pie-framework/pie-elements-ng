@@ -671,17 +671,11 @@ function wrapComponentInSuspense(content: string, componentName: string): string
   // This handles both self-closing and paired tags
 
   // Pattern for self-closing tags: <ComponentName ... />
-  const selfClosingPattern = new RegExp(
-    `(<${componentName}[\\s\\n][^>]*?\\/>)`,
-    'g'
-  );
+  const selfClosingPattern = new RegExp(`(<${componentName}[\\s\\n][^>]*?\\/>)`, 'g');
 
   // Pattern for paired tags: <ComponentName ...>...</ComponentName>
   // We need to handle potentially nested content, so we'll use a simple approach
-  const openTagPattern = new RegExp(
-    `(<${componentName}(?:[\\s\\n][^>]*)?>)`,
-    'g'
-  );
+  const openTagPattern = new RegExp(`(<${componentName}(?:[\\s\\n][^>]*)?>)`, 'g');
 
   // Track all positions where we found the component
   const positions: Array<{ start: number; end: number; content: string }> = [];

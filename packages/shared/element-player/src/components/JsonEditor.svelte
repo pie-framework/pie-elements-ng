@@ -34,10 +34,7 @@ lowlight.register('json', json);
 
 // Convert JSON string to Tiptap HTML format
 function formatContentAsHtml(text: string): string {
-  const escaped = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return `<pre><code data-language="json">${escaped}</code></pre>`;
 }
 
@@ -45,10 +42,7 @@ function formatContentAsHtml(text: string): string {
 function extractTextFromHtml(html: string): string {
   const codeBlockMatch = html.match(/<code[^>]*>([\s\S]*?)<\/code>/);
   if (codeBlockMatch) {
-    return codeBlockMatch[1]
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&');
+    return codeBlockMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
   }
   return '';
 }

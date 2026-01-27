@@ -188,11 +188,13 @@ $effect(() => {
     // Get host element reference
     const host = document.querySelector('pie-element-player');
     if (host) {
-      host.dispatchEvent(new CustomEvent('tab-changed', {
-        detail: activeTab,
-        bubbles: true,
-        composed: true
-      }));
+      host.dispatchEvent(
+        new CustomEvent('tab-changed', {
+          detail: activeTab,
+          bubbles: true,
+          composed: true,
+        })
+      );
     }
   }
   logConsole('tab:changed', activeTab);
