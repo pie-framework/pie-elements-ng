@@ -232,14 +232,14 @@ export default class DevDemoSvelte extends Command {
       }
       this.viteProcess = null;
 
-    if (this.packageServerProcess) {
-      try {
-        this.packageServerProcess.kill('SIGTERM');
-      } catch (error) {
-        // Ignore errors during cleanup
+      if (this.packageServerProcess) {
+        try {
+          this.packageServerProcess.kill('SIGTERM');
+        } catch (error) {
+          // Ignore errors during cleanup
+        }
+        this.packageServerProcess = null;
       }
-      this.packageServerProcess = null;
-    }
     }
   }
 
@@ -258,7 +258,6 @@ export default class DevDemoSvelte extends Command {
 
     return proc;
   }
-
 
   private async ensureVerdaccioAndPublish(): Promise<void> {
     return new Promise((resolve, reject) => {

@@ -405,7 +405,9 @@ export function transformPackageJsonPieEvents<T extends Record<string, any>>(pac
  *
  * Replaces @pie-lib/controller-utils with internal @pie-framework/controller-utils
  */
-export function transformPackageJsonControllerUtils<T extends Record<string, any>>(packageJson: T): T {
+export function transformPackageJsonControllerUtils<T extends Record<string, any>>(
+  packageJson: T
+): T {
   const transformed = { ...packageJson };
 
   // Replace @pie-lib/controller-utils with internal package
@@ -426,7 +428,9 @@ export function transformPackageJsonControllerUtils<T extends Record<string, any
  *
  * Replaces @pie-lib shared packages with internal @pie-element/shared-* packages
  */
-export function transformPackageJsonSharedPackages<T extends Record<string, any>>(packageJson: T): T {
+export function transformPackageJsonSharedPackages<T extends Record<string, any>>(
+  packageJson: T
+): T {
   const transformed = { ...packageJson };
 
   const sharedPackages = {

@@ -17,9 +17,11 @@ export const demoOverrides: Record<string, DemoOverride> = {
           label: 'Photosynthesis converts light energy into chemical energy',
           feedback: {
             type: 'default',
-            value: 'Correct! Photosynthesis is the process by which plants convert sunlight into glucose.',
+            value:
+              'Correct! Photosynthesis is the process by which plants convert sunlight into glucose.',
           },
-          rationale: 'Photosynthesis is performed by plants, algae, and some bacteria. It uses light energy to convert carbon dioxide and water into glucose and oxygen.',
+          rationale:
+            'Photosynthesis is performed by plants, algae, and some bacteria. It uses light energy to convert carbon dioxide and water into glucose and oxygen.',
         },
         {
           correct: false,
@@ -29,7 +31,8 @@ export const demoOverrides: Record<string, DemoOverride> = {
             type: 'default',
             value: 'Incorrect. Mitochondria are found in both plant and animal cells.',
           },
-          rationale: 'Mitochondria are the "powerhouses" of the cell and are present in nearly all eukaryotic cells, including both plants and animals.',
+          rationale:
+            'Mitochondria are the "powerhouses" of the cell and are present in nearly all eukaryotic cells, including both plants and animals.',
         },
         {
           correct: true,
@@ -39,7 +42,8 @@ export const demoOverrides: Record<string, DemoOverride> = {
             type: 'default',
             value: 'Correct! Cellular respiration is how cells extract energy from glucose.',
           },
-          rationale: 'Cellular respiration occurs in the mitochondria and converts glucose and oxygen into ATP (energy), carbon dioxide, and water. This is essentially the reverse of photosynthesis.',
+          rationale:
+            'Cellular respiration occurs in the mitochondria and converts glucose and oxygen into ATP (energy), carbon dioxide, and water. This is essentially the reverse of photosynthesis.',
         },
         {
           correct: false,
@@ -47,16 +51,20 @@ export const demoOverrides: Record<string, DemoOverride> = {
           label: 'Chloroplasts are the site of cellular respiration',
           feedback: {
             type: 'default',
-            value: 'Incorrect. Chloroplasts are where photosynthesis occurs, not cellular respiration.',
+            value:
+              'Incorrect. Chloroplasts are where photosynthesis occurs, not cellular respiration.',
           },
-          rationale: 'Chloroplasts contain chlorophyll and are responsible for photosynthesis in plant cells. Cellular respiration takes place in the mitochondria.',
+          rationale:
+            'Chloroplasts contain chlorophyll and are responsible for photosynthesis in plant cells. Cellular respiration takes place in the mitochondria.',
         },
       ],
       extraCSSRules: {
         names: ['red', 'blue'],
-        rules: '\n      .red {\n        color: red !important;\n      }\n\n      .blue {\n        color: blue !important;\n      }\n    ',
+        rules:
+          '\n      .red {\n        color: red !important;\n      }\n\n      .blue {\n        color: blue !important;\n      }\n    ',
       },
-      prompt: '<p><strong>Biology Question:</strong> Select all true statements about cellular processes.</p>',
+      prompt:
+        '<p><strong>Biology Question:</strong> Select all true statements about cellular processes.</p>',
       promptEnabled: true,
       toolbarEditorPosition: 'bottom',
       rubricEnabled: false,

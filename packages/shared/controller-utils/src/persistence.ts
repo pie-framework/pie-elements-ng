@@ -86,9 +86,7 @@ export async function getShuffledChoices<T extends Choice>(
   updateSession?: UpdateSessionFunction,
   choiceKey: string = 'value'
 ): Promise<T[] | undefined> {
-  const currentShuffled = compact(
-    session?.data?.shuffledValues ?? session?.shuffledValues ?? []
-  );
+  const currentShuffled = compact(session?.data?.shuffledValues ?? session?.shuffledValues ?? []);
 
   if (!session) {
     console.warn("Unable to save shuffled choices because there's no session.");
@@ -97,9 +95,7 @@ export async function getShuffledChoices<T extends Choice>(
 
   if (!isEmpty(currentShuffled)) {
     // Use existing shuffled order from session
-    return compact(
-      currentShuffled.map((v) => choices.find((c) => c[choiceKey] === v))
-    ) as T[];
+    return compact(currentShuffled.map((v) => choices.find((c) => c[choiceKey] === v))) as T[];
   }
 
   // Create new shuffle
@@ -107,9 +103,7 @@ export async function getShuffledChoices<T extends Choice>(
 
   if (updateSession && typeof updateSession === 'function') {
     try {
-      const shuffledValues = compact(
-        shuffledChoices.map((c) => c[choiceKey])
-      ) as string[];
+      const shuffledValues = compact(shuffledChoices.map((c) => c[choiceKey])) as string[];
 
       if (isEmpty(shuffledValues)) {
         console.error(

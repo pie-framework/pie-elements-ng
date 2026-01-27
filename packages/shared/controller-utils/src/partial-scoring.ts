@@ -25,11 +25,7 @@ interface Environment {
  * @param defaultValue - Default value if neither config nor env specify a preference
  * @returns Whether partial scoring is enabled
  */
-export function enabled(
-  config?: Config,
-  env?: Environment,
-  defaultValue?: boolean
-): boolean {
+export function enabled(config?: Config, env?: Environment, defaultValue?: boolean): boolean {
   if (config?.partialScoring === false) {
     return false;
   }

@@ -31,7 +31,7 @@ async function isVerdaccioResponding(): Promise<boolean> {
   try {
     const response = await fetch(PING_ENDPOINT, {
       method: 'GET',
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(5000),
     });
     return response.ok;
   } catch {
@@ -41,7 +41,8 @@ async function isVerdaccioResponding(): Promise<boolean> {
 
 async function isContainerRunning(): Promise<boolean> {
   try {
-    const result = await $`docker ps --filter name=pie-elements-verdaccio --format {{.Names}}`.quiet();
+    const result =
+      await $`docker ps --filter name=pie-elements-verdaccio --format {{.Names}}`.quiet();
     return result.text().trim() === 'pie-elements-verdaccio';
   } catch {
     return false;
@@ -127,7 +128,7 @@ async function start() {
   console.log('🚀 Starting Verdaccio registry...\n');
 
   // Check Docker
-  if (!await isDockerRunning()) {
+  if (!(await isDockerRunning())) {
     console.error('❌ Docker is not running!');
     console.error('\n📝 Please start Docker Desktop and try again.');
     console.error('   On macOS: Open Docker Desktop from Applications');
@@ -172,7 +173,7 @@ async function start() {
 async function stop() {
   console.log('🛑 Stopping Verdaccio registry...\n');
 
-  if (!await isContainerRunning()) {
+  if (!(await isContainerRunning())) {
     console.log('ℹ️  Verdaccio is not running');
     return;
   }
@@ -262,7 +263,7 @@ async function publish() {
   await check();
 
   // Ensure we're logged in
-  if (!await isLoggedIn()) {
+  if (!(await isLoggedIn())) {
     await login();
   }
 
@@ -293,8 +294,13 @@ async function publish() {
       published++;
     } catch (error: any) {
       // Check if already published
-      const errorOutput = error.stderr?.toString() || error.stdout?.toString() || error.message || '';
-      if (errorOutput.includes('previously published') || errorOutput.includes('already exists') || errorOutput.includes('cannot publish')) {
+      const errorOutput =
+        error.stderr?.toString() || error.stdout?.toString() || error.message || '';
+      if (
+        errorOutput.includes('previously published') ||
+        errorOutput.includes('already exists') ||
+        errorOutput.includes('cannot publish')
+      ) {
         console.log(`  ⏭️  ${pkg.name} (already published)`);
         skipped++;
       } else {

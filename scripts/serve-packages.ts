@@ -73,14 +73,18 @@ serve({
       [, packageName, filePath] = matchWithoutVersion;
 
       // Check if this looks like a directory request (no file extension)
-      const isDirectory = !filePath.endsWith('.js') && !filePath.endsWith('.json') && !filePath.endsWith('.css') && !filePath.endsWith('/');
+      const isDirectory =
+        !filePath.endsWith('.js') &&
+        !filePath.endsWith('.json') &&
+        !filePath.endsWith('.css') &&
+        !filePath.endsWith('/');
 
       if (isDirectory) {
         // Redirect to add trailing slash so relative imports work correctly
         return new Response(null, {
           status: 301,
           headers: {
-            'Location': `${path}/`,
+            Location: `${path}/`,
             'Access-Control-Allow-Origin': '*',
           },
         });
@@ -101,7 +105,7 @@ serve({
       return new Response(null, {
         status: 301,
         headers: {
-          'Location': `${path}/dist/`,
+          Location: `${path}/dist/`,
           'Access-Control-Allow-Origin': '*',
         },
       });
@@ -152,4 +156,6 @@ function getContentType(filePath: string): string {
 
 console.log(`🚀 Package server running at http://localhost:${PORT}`);
 console.log(`   Serving files from workspace packages`);
-console.log(`   Example: http://localhost:${PORT}/@pie-element/element-player/0.1.0/dist/pie-element-player.js`);
+console.log(
+  `   Example: http://localhost:${PORT}/@pie-element/element-player/0.1.0/dist/pie-element-player.js`
+);
