@@ -1,0 +1,44 @@
+import { defineConfig } from 'vite';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import react from '@vitejs/plugin-react';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: {{PORT}},
+    fs: {
+      // Allow serving files from the entire monorepo
+      allow: ['../../../..'],
+    },
+  },
+  preview: {
+    port: {{PORT}}
+  },
+  resolve: {
+    alias: {
+      // Element player (built - it's a Svelte web component)
+      '@pie-element/element-player': resolve(__dirname, '../../../../shared/element-player/dist/pie-element-player.js'),
+
+      // {{ELEMENT_TITLE}} element and controller (SOURCE for HMR)
+      '@pie-element/{{ELEMENT_NAME}}': resolve(__dirname, '../../../src/index.ts'),
+      '@pie-element/{{ELEMENT_NAME}}/controller': resolve(__dirname, '../../../src/controller/index.ts'),
+
+      // Shared packages (SOURCE for HMR)
+      '@pie-element/shared-player-events': resolve(__dirname, '../../../../shared/player-events/src/index.ts'),
+      '@pie-element/shared-math-rendering': resolve(__dirname, '../../../../shared/math-rendering/src/index.ts'),
+      '@pie-element/shared-mathml-to-latex': resolve(__dirname, '../../../../shared/mathml-to-latex/src/index.ts'),
+      '@pie-framework/controller-utils': resolve(__dirname, '../../../../lib-react/controller-utils/src/index.ts'),
+
+      // React libs (SOURCE for HMR)
+      '@pie-lib/render-ui': resolve(__dirname, '../../../../lib-react/render-ui/src/index.ts'),
+      '@pie-lib/correct-answer-toggle': resolve(__dirname, '../../../../lib-react/correct-answer-toggle/src/index.tsx'),
+      '@pie-lib/translator': resolve(__dirname, '../../../../lib-react/translator/src/index.ts'),
+      '@pie-lib/config-ui': resolve(__dirname, '../../../../lib-react/config-ui/src/index.ts'),
+      '@pie-lib/editable-html-tip-tap': resolve(__dirname, '../../../../lib-react/editable-html-tip-tap/src/index.ts'),
+    },
+  },
+});

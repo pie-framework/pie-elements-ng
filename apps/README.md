@@ -10,18 +10,6 @@ apps/
 └── examples-react/     # React elements showcase (port 5174)
 ```
 
-## Local ESM CDN (dev-only)
-
-If you want to emulate CDN-style ESM loading (importing modules by URL) **without publishing**, run:
-
-```bash
-# From repository root
-bun run build
-bun run local-esm-cdn
-```
-
-See `apps/local-esm-cdn/README.md`.
-
 ## Quick Start
 
 ### Single Element Demo (Recommended)

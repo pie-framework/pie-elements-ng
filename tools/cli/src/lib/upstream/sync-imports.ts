@@ -327,6 +327,49 @@ export function transformPieFrameworkEventImports(content: string): string {
 }
 
 /**
+ * Transform @pie-lib/controller-utils imports to internal @pie-framework/controller-utils
+ *
+ * Handles:
+ * - @pie-lib/controller-utils → @pie-framework/controller-utils
+ *
+ * Our internal controller-utils package has the same API but with modernized TypeScript
+ * and no lodash/debug dependencies.
+ */
+export function transformControllerUtilsImports(content: string): string {
+  return content.replace(
+    /from\s+['"]@pie-lib\/controller-utils['"]/g,
+    "from '@pie-framework/controller-utils'"
+  );
+}
+
+/**
+ * Transform @pie-lib shared package imports to internal @pie-element/shared-* packages
+ *
+ * Handles:
+ * - @pie-lib/math-rendering → @pie-element/shared-math-rendering
+ * - @pie-lib/mathml-to-latex → @pie-element/shared-mathml-to-latex
+ *
+ * These packages have been moved to shared/ for better version control and consistency.
+ */
+export function transformSharedPackageImports(content: string): string {
+  let transformed = content;
+
+  // Transform math-rendering
+  transformed = transformed.replace(
+    /from\s+['"]@pie-lib\/math-rendering['"]/g,
+    "from '@pie-element/shared-math-rendering'"
+  );
+
+  // Transform mathml-to-latex
+  transformed = transformed.replace(
+    /from\s+['"]@pie-lib\/mathml-to-latex['"]/g,
+    "from '@pie-element/shared-mathml-to-latex'"
+  );
+
+  return transformed;
+}
+
+/**
  * Transform package.json dependencies for PIE Framework event packages
  *
  * Replaces external @pie-framework event packages with internal workspace packages
@@ -352,6 +395,56 @@ export function transformPackageJsonPieEvents<T extends Record<string, any>>(pac
   if (transformed.devDependencies?.['@pie-framework/pie-configure-events']) {
     transformed.devDependencies['@pie-element/shared-configure-events'] = 'workspace:*';
     delete transformed.devDependencies['@pie-framework/pie-configure-events'];
+  }
+
+  return transformed;
+}
+
+/**
+ * Transform package.json dependencies for @pie-lib/controller-utils
+ *
+ * Replaces @pie-lib/controller-utils with internal @pie-framework/controller-utils
+ */
+export function transformPackageJsonControllerUtils<T extends Record<string, any>>(packageJson: T): T {
+  const transformed = { ...packageJson };
+
+  // Replace @pie-lib/controller-utils with internal package
+  if (transformed.dependencies?.['@pie-lib/controller-utils']) {
+    transformed.dependencies['@pie-framework/controller-utils'] = 'workspace:*';
+    delete transformed.dependencies['@pie-lib/controller-utils'];
+  }
+  if (transformed.devDependencies?.['@pie-lib/controller-utils']) {
+    transformed.devDependencies['@pie-framework/controller-utils'] = 'workspace:*';
+    delete transformed.devDependencies['@pie-lib/controller-utils'];
+  }
+
+  return transformed;
+}
+
+/**
+ * Transform package.json dependencies for shared packages
+ *
+ * Replaces @pie-lib shared packages with internal @pie-element/shared-* packages
+ */
+export function transformPackageJsonSharedPackages<T extends Record<string, any>>(packageJson: T): T {
+  const transformed = { ...packageJson };
+
+  const sharedPackages = {
+    '@pie-lib/math-rendering': '@pie-element/shared-math-rendering',
+    '@pie-lib/mathml-to-latex': '@pie-element/shared-mathml-to-latex',
+  };
+
+  for (const [oldPkg, newPkg] of Object.entries(sharedPackages)) {
+    // Replace in dependencies
+    if (transformed.dependencies?.[oldPkg]) {
+      transformed.dependencies[newPkg] = 'workspace:*';
+      delete transformed.dependencies[oldPkg];
+    }
+    // Replace in devDependencies
+    if (transformed.devDependencies?.[oldPkg]) {
+      transformed.devDependencies[newPkg] = 'workspace:*';
+      delete transformed.devDependencies[oldPkg];
+    }
   }
 
   return transformed;

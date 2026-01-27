@@ -2,6 +2,8 @@
 
 Framework-agnostic math rendering using KaTeX.
 
+> **Note**: This package replaces `@pie-lib/math-rendering` from the upstream pie-lib monorepo. During upstream sync, imports are automatically rewritten to use this package.
+
 ## Overview
 
 This package provides utilities for rendering LaTeX and MathML mathematical expressions in the browser. It uses [KaTeX](https://katex.org/) for fast, high-quality rendering without the overhead of MathJax.

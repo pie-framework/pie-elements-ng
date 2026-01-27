@@ -19,6 +19,10 @@ import {
   transformPackageJsonLodash,
   transformPieFrameworkEventImports,
   transformPackageJsonPieEvents,
+  transformControllerUtilsImports,
+  transformPackageJsonControllerUtils,
+  transformSharedPackageImports,
+  transformPackageJsonSharedPackages,
 } from './sync-imports.js';
 
 interface InternalSyncResult {
@@ -111,6 +115,12 @@ export class ControllersStrategy implements SyncStrategy {
       // Transform @pie-framework event packages to internal packages
       sourceContent = transformPieFrameworkEventImports(sourceContent);
 
+      // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
+      sourceContent = transformControllerUtilsImports(sourceContent);
+
+      // Transform @pie-lib shared packages to @pie-element/shared-*
+      sourceContent = transformSharedPackageImports(sourceContent);
+
       // Convert JS to TS
       const { code: converted } = convertJsToTs(sourceContent, {
         sourcePath: `pie-elements/packages/${pkg}/controller/src/index.js`,
@@ -157,6 +167,9 @@ export class ControllersStrategy implements SyncStrategy {
 
           // Transform @pie-framework event packages to internal packages
           relatedContent = transformPieFrameworkEventImports(relatedContent);
+
+          // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
+          relatedContent = transformControllerUtilsImports(relatedContent);
 
           const { code: relatedConverted } = convertJsToTs(relatedContent, {
             sourcePath: `pie-elements/packages/${pkg}/controller/src/${file}`,
@@ -305,6 +318,12 @@ export class ControllersStrategy implements SyncStrategy {
 
     // Transform @pie-framework event packages to internal packages
     pkg = transformPackageJsonPieEvents(pkg);
+
+    // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
+    pkg = transformPackageJsonControllerUtils(pkg);
+
+    // Transform @pie-lib shared packages to @pie-element/shared-*
+    pkg = transformPackageJsonSharedPackages(pkg);
 
     // Compute expected exports based on present source entrypoints
     const exportsObj: Record<string, unknown> = {

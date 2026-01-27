@@ -22,6 +22,10 @@ import {
   transformPackageJsonLodash,
   transformPieFrameworkEventImports,
   transformPackageJsonPieEvents,
+  transformControllerUtilsImports,
+  transformPackageJsonControllerUtils,
+  transformSharedPackageImports,
+  transformPackageJsonSharedPackages,
   inlineConfigureDefaults,
   transformConfigureUtilsImports,
 } from './sync-imports.js';
@@ -41,6 +45,25 @@ export class ReactComponentsStrategy implements SyncStrategy {
     filesSkipped: 0,
     filesUpdated: 0,
   };
+
+  /**
+   * Convert kebab-case element name to PascalCase class name
+   * e.g., "multiple-choice" → "MultipleChoice"
+   */
+  private toPascalCase(elementName: string): string {
+    return elementName
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+  }
+
+  /**
+   * Get element tag name (kebab-case with -element suffix)
+   * e.g., "multiple-choice" → "multiple-choice-element"
+   */
+  private toElementTag(elementName: string): string {
+    return `${elementName}-element`;
+  }
 
   getName(): string {
     return 'react-components';
@@ -311,6 +334,12 @@ export class ReactComponentsStrategy implements SyncStrategy {
       // Transform @pie-framework event packages to internal packages
       sourceContent = transformPieFrameworkEventImports(sourceContent);
 
+      // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
+      sourceContent = transformControllerUtilsImports(sourceContent);
+
+      // Transform @pie-lib shared packages to @pie-element/shared-*
+      sourceContent = transformSharedPackageImports(sourceContent);
+
       // Inline configure defaults if configure wasn't synced
       sourceContent = inlineConfigureDefaults(sourceContent);
 
@@ -423,6 +452,12 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
       // Transform @pie-framework event packages to internal packages
       sourceContent = transformPieFrameworkEventImports(sourceContent);
+
+      // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
+      sourceContent = transformControllerUtilsImports(sourceContent);
+
+      // Transform @pie-lib shared packages to @pie-element/shared-*
+      sourceContent = transformSharedPackageImports(sourceContent);
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
 
@@ -559,6 +594,12 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
     // Transform @pie-framework event packages to internal packages
     pkg = transformPackageJsonPieEvents(pkg);
+
+    // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
+    pkg = transformPackageJsonControllerUtils(pkg);
+
+    // Transform @pie-lib shared packages to @pie-element/shared-*
+    pkg = transformPackageJsonSharedPackages(pkg);
 
     // Compute expected exports based on present source entrypoints
     const exportsObj: Record<string, unknown> = {
@@ -946,7 +987,7 @@ export default defineConfig({
   }
 
   /**
-   * Ensure element demo structure exists with dual ESM/IIFE support
+   * Ensure element demo structure exists with new dev/production split
    */
   private async ensureElementDemoStructure(
     elementName: string,
@@ -962,84 +1003,111 @@ export default defineConfig({
     }
 
     const targetDemoDir = join(elementDir, 'docs/demo');
+    const targetProductionTestDir = join(elementDir, 'docs/production-test');
     await mkdir(targetDemoDir, { recursive: true });
-
-    // Copy template files and substitute placeholders
-    const templates = ['esm-demo.html', 'index.html', 'vite.config.ts.template'];
+    await mkdir(targetProductionTestDir, { recursive: true });
 
     const templateDir = join(config.pieElementsNg, 'packages/shared/element-player/templates');
 
-    for (const template of templates) {
-      const templatePath = join(templateDir, template);
-      if (!existsSync(templatePath)) continue;
+    // Prepare substitution values
+    const elementTitle = elementName
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    const elementClass = this.toPascalCase(elementName) + 'Element';
+    const elementTag = this.toElementTag(elementName);
+    const port = 5174; // Standard dev port
 
-      let content = await readFile(templatePath, 'utf-8');
+    // 1. Create dev demo files
+    // dev.html
+    let devHtml = await readFile(join(templateDir, 'dev.html'), 'utf-8');
+    devHtml = devHtml
+      .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
+      .replace(/\{\{ELEMENT_TITLE\}\}/g, elementTitle);
+    await writeFile(join(targetDemoDir, 'dev.html'), devHtml, 'utf-8');
 
-      // Substitute placeholders
-      const elementTitle = elementName
-        .split('-')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
+    // index.html (redirects to dev.html)
+    let indexHtml = await readFile(join(templateDir, 'demo-index.html'), 'utf-8');
+    indexHtml = indexHtml.replace(/\{\{ELEMENT_NAME\}\}/g, elementName);
+    await writeFile(join(targetDemoDir, 'index.html'), indexHtml, 'utf-8');
 
-      content = content
-        .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
-        .replace(/\{\{ELEMENT_TITLE\}\}/g, elementTitle);
+    // vite.config.ts
+    let viteConfig = await readFile(join(templateDir, 'demo-vite.config.ts.template'), 'utf-8');
+    viteConfig = viteConfig
+      .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
+      .replace(/\{\{ELEMENT_TITLE\}\}/g, elementTitle)
+      .replace(/\{\{PORT\}\}/g, port.toString());
+    await writeFile(join(targetDemoDir, 'vite.config.ts'), viteConfig, 'utf-8');
 
-      // Determine target filename
-      let targetFile = template.replace('.template', '');
-      if (template === 'esm-demo.html') targetFile = 'esm.html';
-
-      const targetPath = join(targetDemoDir, targetFile);
-      await writeFile(targetPath, content, 'utf-8');
-    }
-
-    // Generate esm.ts from template
-    const initTemplate = await readFile(join(templateDir, 'demo-init.ts.template'), 'utf-8');
-
-    const content = initTemplate
-      .replace(/\{\{MODE\}\}/g, 'esm')
-      .replace(/\{\{ELEMENT_NAME\}\}/g, elementName);
-
+    // src/dev.ts
+    let devTs = await readFile(join(templateDir, 'dev.ts.template'), 'utf-8');
+    devTs = devTs
+      .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
+      .replace(/\{\{ELEMENT_CLASS\}\}/g, elementClass)
+      .replace(/\{\{ELEMENT_TAG\}\}/g, elementTag);
     const srcDir = join(targetDemoDir, 'src');
     await mkdir(srcDir, { recursive: true });
-    await writeFile(join(srcDir, 'esm.ts'), content, 'utf-8');
+    await writeFile(join(srcDir, 'dev.ts'), devTs, 'utf-8');
 
-    // Copy or generate config.mjs
+    // 2. Create production-test files
+    // Copy esm-demo.html to production-test/index.html
+    if (existsSync(join(templateDir, 'esm-demo.html'))) {
+      let esmHtml = await readFile(join(templateDir, 'esm-demo.html'), 'utf-8');
+      esmHtml = esmHtml
+        .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
+        .replace(/\{\{ELEMENT_TITLE\}\}/g, elementTitle);
+      await writeFile(join(targetProductionTestDir, 'index.html'), esmHtml, 'utf-8');
+    }
+
+    // Copy or generate config.mjs to both demo and production-test directories
     const configMjs = join(upstreamDemoDir, 'config.mjs');
     const configJs = join(upstreamDemoDir, 'config.js');
     const generateJs = join(upstreamDemoDir, 'generate.js');
 
+    let configContent: string | null = null;
+
     if (existsSync(configMjs)) {
       // Copy config.mjs if it exists
-      const content = await readFile(configMjs, 'utf-8');
-      await writeFile(join(targetDemoDir, 'config.mjs'), content, 'utf-8');
+      configContent = await readFile(configMjs, 'utf-8');
     } else if (existsSync(configJs) && existsSync(generateJs)) {
       // Generate config.mjs from config.js + generate.js
-      await this.generateConfigFromUpstream(upstreamDemoDir, targetDemoDir, elementName);
+      configContent = await this.generateConfigContent(upstreamDemoDir, elementName);
+    }
+
+    if (configContent) {
+      // Write to both directories
+      await writeFile(join(targetDemoDir, 'config.mjs'), configContent, 'utf-8');
+      await writeFile(join(targetProductionTestDir, 'config.mjs'), configContent, 'utf-8');
     }
 
     // Convert session.js (CommonJS) to session.mjs (ESM) if it exists upstream
     const sessionJs = join(upstreamDemoDir, 'session.js');
     const sessionMjs = join(upstreamDemoDir, 'session.mjs');
 
+    let sessionContent: string | null = null;
+
     if (existsSync(sessionMjs)) {
       // If session.mjs exists, just copy it
-      const content = await readFile(sessionMjs, 'utf-8');
-      await writeFile(join(targetDemoDir, 'session.mjs'), content, 'utf-8');
+      sessionContent = await readFile(sessionMjs, 'utf-8');
     } else if (existsSync(sessionJs)) {
       // Convert CommonJS session.js to ESM session.mjs
       const content = await readFile(sessionJs, 'utf-8');
       // Simple conversion: replace module.exports with export default
-      const esmContent = content
+      sessionContent = content
         .replace(/module\.exports\s*=/, 'export default')
         .replace(/exports\.\w+\s*=/g, 'export const');
-      await writeFile(join(targetDemoDir, 'session.mjs'), esmContent, 'utf-8');
+    }
+
+    if (sessionContent) {
+      // Write to both directories
+      await writeFile(join(targetDemoDir, 'session.mjs'), sessionContent, 'utf-8');
+      await writeFile(join(targetProductionTestDir, 'session.mjs'), sessionContent, 'utf-8');
     }
 
     // Apply demo overrides if configured
     await this.applyDemoOverrides(elementName, elementDir);
 
-    // Remove unused generate.js if config.mjs exists
+    // Remove unused generate.js if config.mjs exists (from demo dir only)
     const configPath = join(targetDemoDir, 'config.mjs');
     const generatePath = join(targetDemoDir, 'generate.js');
     if (existsSync(configPath) && existsSync(generatePath)) {
@@ -1048,17 +1116,18 @@ export default defineConfig({
   }
 
   /**
-   * Generate config.mjs from upstream config.js + generate.js
+   * Generate config.mjs content from upstream config.js + generate.js
    *
    * This method handles the conversion from upstream's CommonJS config system
    * to our ESM-based config.mjs format. It also normalizes element names to
    * match our package naming convention (e.g., "hotspot-element" -> "hotspot").
+   *
+   * @returns The generated config.mjs content, or null if generation fails
    */
-  private async generateConfigFromUpstream(
+  private async generateConfigContent(
     upstreamDemoDir: string,
-    targetDemoDir: string,
     elementName: string
-  ): Promise<void> {
+  ): Promise<string | null> {
     try {
       // Execute config.js in upstream context to get the model
       // We need to use child_process to run Node.js with the correct require resolution
@@ -1086,7 +1155,7 @@ if (config.models && config.models[0]) {
 // Generate the model using the upstream's expected element name
 const generatedModel = model('1', upstreamElementName);
 
-// Normalize element name to match our package convention
+// Normalize element name to match our package naming convention
 // Remove common suffixes like -element, -el, etc. and use just the base package name
 generatedModel.element = '${elementName}';
 
@@ -1102,14 +1171,14 @@ console.log(JSON.stringify({ models: [generatedModel] }, null, 2));`;
       // Clean up temp file
       await fsRm(tempScriptPath, { force: true });
 
-      const configContent = `export default ${result};\n`;
-      await writeFile(join(targetDemoDir, 'config.mjs'), configContent, 'utf-8');
+      return `export default ${result};\n`;
     } catch (error) {
       // If generation fails, log warning but don't fail the sync
       console.warn(
         `Warning: Could not generate config.mjs for ${elementName} from config.js + generate.js:`,
         error
       );
+      return null;
     }
   }
 

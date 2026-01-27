@@ -4,7 +4,6 @@
     shadow: 'none',
     props: {
       elementName: { attribute: 'element-name', type: 'String' },
-      cdnUrl: { attribute: 'cdn-url', type: 'String' },
       model: { attribute: 'model', type: 'Object' },
       session: { attribute: 'session', type: 'Object' },
       mode: { attribute: 'mode', type: 'String' },
@@ -40,7 +39,6 @@ import type { MathRenderer } from '@pie-element/math-typesetting';
 // Props with Svelte 5 runes
 let {
   elementName = '',
-  cdnUrl = '',
   model = $bindable({}),
   session = $bindable({}),
   mode = $bindable('gather'),
@@ -51,9 +49,9 @@ let {
   partialScoring = $bindable(true),
   addCorrectResponse = $bindable(false),
   debug = false,
+  preloadedController = undefined,
 }: {
   elementName?: string;
-  cdnUrl?: string;
   model?: any;
   session?: any;
   mode?: 'gather' | 'view' | 'evaluate';
@@ -64,6 +62,7 @@ let {
   partialScoring?: boolean;
   addCorrectResponse?: boolean;
   debug?: boolean;
+  preloadedController?: PieController;
 } = $props();
 
 // State
@@ -218,9 +217,15 @@ onMount(async () => {
 
     if (debug) console.log(`[pie-element-player] Loading element: ${elementName}`);
 
-    // Try to load controller (unless hosted)
-    if (!hosted) {
+    // Use preloaded controller if provided, otherwise try to load dynamically (unless hosted)
+    if (preloadedController) {
+      controller = preloadedController;
+      if (debug) console.log(`[pie-element-player] Using preloaded controller`);
+    } else if (!hosted) {
+      // For production: try to load controller dynamically from CDN
+      // Note: This requires import maps or a package server
       try {
+        const cdnUrl = ''; // Empty for development with import maps
         const ctrl = await loadController(packageName, cdnUrl, debug);
         controller = ctrl;
       } catch (e) {
@@ -236,6 +241,7 @@ onMount(async () => {
     // Try to load configure if requested (silently fail if not available)
     if (showConfigure) {
       try {
+        const cdnUrl = ''; // Empty for development with import maps
         await loadElement(`${packageName}/configure`, configureTag, cdnUrl, debug, true);
         if (customElements.get(configureTag)) {
           hasConfigure = true;

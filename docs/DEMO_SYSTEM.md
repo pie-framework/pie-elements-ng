@@ -2,43 +2,72 @@
 
 ## Overview
 
-This document describes the new demo system for PIE React elements, built with Svelte 5 and an embedded local ESM CDN.
+This document describes the demo system for PIE elements (both React and Svelte), using a two-server architecture with Verdaccio for package validation and a custom package server for file serving.
 
 ## Architecture
 
-### Single Server Design
+### Two-Server Design
 
-Each element demo runs as a **single Vite development server** with an embedded local ESM CDN:
+Each element demo uses two complementary servers:
 
 ```
-Browser Request → Vite Dev Server (localhost:5174)
-                  ├─ Regular files (HTML, JS, CSS)
-                  └─ Vite Plugin intercepts /@pie-* requests
-                     └─ Serves from local dist/ folders with import rewriting
+Browser Request → Import Maps (localhost:4874)
+                  ↓
+┌─────────────────┐
+│ Package Server  │  Serves built dist/ files for browser import maps
+│ (Bun)           │
+│ localhost:4874  │
+└─────────────────┘
+
+Built Packages → npm publish
+                 ↓
+┌─────────────────┐
+│ Verdaccio       │  Validates packages can be published to npm
+│ (Docker)        │
+│ localhost:4873  │
+└─────────────────┘
 ```
+
+### Why Two Servers?
+
+1. **Verdaccio (Port 4873) - Package Validation**
+   - Validates packages can be published to npm
+   - Tests package.json configuration
+   - Verifies tarball structure
+   - **Does NOT serve individual files** (only tarballs for npm install)
+
+2. **Package Server (Port 4874) - File Serving**
+   - Serves built dist/ files directly from workspace
+   - Works with browser import maps
+   - Provides CDN-like file serving for demos
+   - Fast iteration without republishing
+
+This gives us both production validation (Verdaccio) and developer convenience (package server).
 
 ### Key Components
 
 1. **Element Player** (`packages/shared/element-player/`)
    - Svelte 5 web component: `<pie-element-player>`
    - Custom element with shadow: none
-   - Props: elementName, cdnUrl, model, session, mode, showConfigure, debug
+   - Props: elementName, model, session
    - Dynamically loads PIE elements and registers them as custom HTML elements
    - Integrates controller for scoring in evaluate mode
 
-2. **Local ESM CDN** (`apps/local-esm-cdn/`)
-   - Embedded as Vite plugin via `@pie-element/local-esm-cdn/adapters/vite`
-   - Intercepts requests to `/@pie-*` URLs
-   - Serves PIE packages from local `dist/` folders
-   - Rewrites imports:
-     - `@pie-element/foo` → `/@pie-element/foo`
-     - `@pie-lib/bar` → `/@pie-lib/bar`
-     - External packages → `https://esm.sh/package`
+2. **Package Server** (`scripts/serve-packages.ts`)
+   - Scans workspace packages
+   - Serves files from built dist/ directories
+   - Provides CDN-like URLs: `http://localhost:4874/@pie-element/multiple-choice/0.1.0/dist/index.js`
+   - Started automatically by demo commands
 
-3. **Per-Element Demos** (`packages/elements-react/*/docs/demo/`)
+3. **Verdaccio Registry** (Docker)
+   - Local npm registry for validation
+   - Managed via `npm run registry:*` scripts
+   - Used to ensure packages are production-ready
+
+4. **Per-Element Demos** (`packages/elements-{react|svelte}/*/docs/demo/`)
    - Complete Vite app per element
    - Uses existing config.mjs and session.mjs
-   - No central demo app
+   - Import maps point to package server
 
 ## File Structure
 
@@ -60,18 +89,23 @@ packages/shared/element-player/
 │       ├── SessionPanel.svelte
 │       ├── ScoringPanel.svelte
 │       └── Tabs.svelte
+├── templates/                  # Demo templates
+│   ├── esm-demo.html
+│   ├── demo-init.ts.template
+│   └── vite.config.ts.template
 └── dist/
-    └── pie-element-player.js   # Built output (87 KB)
+    └── pie-element-player.js   # Built output
 ```
 
 ### Per-Element Demo
 
 ```
 packages/elements-react/{element}/docs/demo/
-├── vite.config.ts              # Vite config with local-esm-cdn plugin
-├── index.html                  # Entry HTML with <pie-element-player>
+├── vite.config.ts              # Simple Vite config
+├── index.html                  # Redirects to esm.html
+├── esm.html                    # Import maps + <pie-element-player>
 ├── src/
-│   └── main.ts                 # Demo initialization
+│   └── esm.ts                  # Demo initialization
 ├── config.mjs                  # Model configurations (existing)
 └── session.mjs                 # Session data (existing)
 ```
@@ -83,24 +117,30 @@ packages/elements-react/{element}/docs/demo/
 **From the repo root** (recommended):
 
 ```bash
-bun react-demo --element hotspot
+# React element demo
+bun run dev:demo:react multiple-choice
+
+# Svelte element demo
+bun run dev:demo:svelte slider
 ```
 
 This will:
 
-1. Build the element-player and all dependencies
-2. Build the specified element
-3. Start the Vite dev server with embedded local-esm-cdn
-4. Open the demo in your browser
+1. Publish packages to Verdaccio (validates production readiness)
+2. Build the element-player (if needed)
+3. Build the specified element (if needed)
+4. Start the package server on port 4874
+5. Start the Vite dev server for the demo
+6. Open the demo in your browser
 
 **From the element directory** (alternative):
 
 ```bash
-cd packages/elements-react/hotspot
+cd packages/elements-react/multiple-choice
 bun run demo
 ```
 
-Note: You may need to manually build the element-player first if it hasn't been built yet.
+Note: You may need to manually run `npm run registry:publish` first if packages aren't published.
 
 ### Demo HTML Template
 
@@ -110,18 +150,40 @@ Note: You may need to manually build the element-player first if it hasn't been 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PIE Demo - {Element Name}</title>
+  <title>PIE Demo - Multiple Choice</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "@pie-element/element-player": "http://localhost:4874/@pie-element/element-player/0.1.0/dist/pie-element-player.js",
+        "@pie-element/multiple-choice/": "http://localhost:4874/@pie-element/multiple-choice/0.1.0/dist/",
+        "@pie-lib/": "http://localhost:4874/@pie-lib/"
+      }
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 1rem;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+    }
+    .demo-container {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
 <body>
-  <h1>{Element} Demo</h1>
-  <pie-element-player
-    element-name="{element}"
-    cdn-url=""
-    show-configure="false"
-    debug="true"
-  ></pie-element-player>
-
-  <script type="module" src="./src/main.ts"></script>
+  <div class="demo-container">
+    <h1>🎯 Multiple Choice Demo</h1>
+    <pie-element-player
+      id="player"
+      element-name="multiple-choice"
+    ></pie-element-player>
+  </div>
+  <script type="module" src="./src/esm.ts"></script>
 </body>
 </html>
 ```
@@ -129,122 +191,137 @@ Note: You may need to manually build the element-player first if it hasn't been 
 ### Demo Main Script Template
 
 ```typescript
-import '../../../../../shared/element-player/dist/pie-element-player.js';
+// Import the player component (loads and registers custom elements)
+import '@pie-element/element-player';
 import config from '../config.mjs';
 import sessions from '../session.mjs';
 
-customElements.whenDefined('pie-element-player').then(() => {
-  const player = document.querySelector('pie-element-player');
-  if (player) {
-    const model = Array.isArray(config?.models) ? config.models[0] : config;
-    const session = Array.isArray(sessions) ? sessions[0] : sessions;
+// Extract model and session from imported data
+const model = Array.isArray(config?.models) ? config.models[0] : config;
+const session = Array.isArray(sessions) ? sessions[0] : sessions;
 
-    (player as any).model = model;
-    (player as any).session = session;
+console.log('[demo] Initializing demo');
+console.log('[demo] Model:', model);
+console.log('[demo] Session:', session);
 
-    player.addEventListener('session-changed', (e: Event) => {
-      console.log('Session changed:', (e as CustomEvent).detail);
-    });
-  }
+// Wait for custom element to be defined
+await customElements.whenDefined('pie-element-player');
+
+// Get player element
+const player = document.getElementById('player') as any;
+
+if (!player) {
+  console.error('[demo] Player element not found');
+  throw new Error('Player element not found');
+}
+
+console.log('[demo] Player element found:', player);
+
+// Set properties (create new objects to trigger reactivity)
+console.log('[demo] Setting model and session...');
+player.model = { ...model };
+player.session = { ...session };
+console.log('[demo] Model and session set');
+
+// Listen for session changes
+player.addEventListener('session-changed', (e: Event) => {
+  console.log('[demo] Session changed:', (e as CustomEvent).detail);
 });
+
+console.log('[demo] Demo initialized');
 ```
 
 ### Vite Config Template
 
 ```typescript
 import { defineConfig } from 'vite';
-import { createVitePlugin as createLocalEsmCdnPlugin } from '@pie-element/local-esm-cdn/adapters/vite';
-import path from 'node:path';
 
 export default defineConfig({
-  plugins: [
-    createLocalEsmCdnPlugin({
-      repoRoot: path.resolve(__dirname, '../../../../..'),
-      esmShBaseUrl: 'https://esm.sh',
-      buildScope: 'none'
-    })
-  ],
-  server: { port: 5174 },
-  preview: { port: 5174 }
-});
-```
-
-### Package.json Scripts
-
-```json
-{
-  "scripts": {
-    "demo": "cd docs/demo && vite",
-    "demo:build": "cd docs/demo && vite build",
-    "demo:preview": "cd docs/demo && vite preview"
+  server: {
+    port: 5174
   },
-  "devDependencies": {
-    "@pie-element/element-player": "workspace:*",
-    "@pie-element/local-esm-cdn": "workspace:*"
+  preview: {
+    port: 5174
   }
-}
+});
 ```
 
 ## How It Works
 
-### 1. Element Loading
+### 1. Package Validation
+
+Before starting the demo, packages are published to Verdaccio:
+
+1. Build all packages with Turbo
+2. Publish each package to `http://localhost:4873`
+3. Verdaccio validates package structure, exports, dependencies
+4. Ensures packages are production-ready
+
+### 2. Element Loading
 
 When the page loads:
 
-1. Browser loads `<pie-element-player>` custom element
-2. Element player calls `loadElement('@pie-element/hotspot', 'hotspot-element', '', true)`
-3. Element loader converts `@pie-element/hotspot` → `/@pie-element/hotspot`
-4. Browser requests `/@pie-element/hotspot`
-5. Vite plugin intercepts and serves from `packages/elements-react/hotspot/dist/index.js`
-6. Plugin rewrites all imports in the served file:
-   - `@pie-lib/math-rendering` → `/@pie-lib/math-rendering`
-   - `react` → `https://esm.sh/react`
-7. Element class is registered: `customElements.define('hotspot-element', HotspotElement)`
-8. Element instance created: `<hotspot-element>` inserted in DOM
-9. Props set: `element.model = {...}`, `element.session = {...}`
+1. Browser loads `<pie-element-player>` custom element from import map
+2. Element player calls `loadElement('@pie-element/multiple-choice', 'multiple-choice-element')`
+3. Browser resolves import via import map: `@pie-element/multiple-choice/` → `http://localhost:4874/@pie-element/multiple-choice/0.1.0/dist/`
+4. Package server serves file from workspace: `packages/elements-react/multiple-choice/dist/index.js`
+5. Browser loads the element and all its dependencies via import map
+6. Element class is registered: `customElements.define('multiple-choice-element', MultipleChoiceElement)`
+7. Element instance created: `<multiple-choice-element>` inserted in DOM
+8. Props set: `element.model = {...}`, `element.session = {...}`
 
-### 2. Controller Loading
+### 3. Controller Loading
 
 When switching to evaluate mode:
 
-1. Element player calls `loadController('@pie-element/hotspot', '', true)`
-2. Controller loader converts to `/@pie-element/hotspot/controller`
-3. Vite plugin serves from `packages/elements-react/hotspot/dist/controller/index.js`
+1. Element player calls `loadController('@pie-element/multiple-choice')`
+2. Browser resolves: `@pie-element/multiple-choice/controller` → `http://localhost:4874/@pie-element/multiple-choice/0.1.0/dist/controller/index.js`
+3. Package server serves controller from `packages/elements-react/multiple-choice/dist/controller/index.js`
 4. Controller methods available: `model()`, `score()`, `outcome()`
 
-### 3. Import Rewriting
+### 4. Import Resolution
 
-The local-esm-cdn plugin rewrites imports in served files:
+All imports are resolved via the browser's native import map:
 
-**Input** (in dist/index.js):
 ```javascript
+// In the element's built code
 import { renderMath } from "@pie-lib/math-rendering";
 import React from "react";
-import { jsx } from "react/jsx-runtime";
 ```
 
-**Output** (served to browser):
-```javascript
-import { renderMath } from "/@pie-lib/math-rendering";
-import React from "https://esm.sh/react";
-import { jsx } from "https://esm.sh/react/jsx-runtime";
+The import map tells the browser where to find these:
+
+```json
+{
+  "imports": {
+    "@pie-lib/": "http://localhost:4874/@pie-lib/",
+    "react": "https://esm.sh/react@18.2.0"
+  }
+}
 ```
 
 ## Key Design Decisions
 
-### Why Svelte 5?
+### Why Verdaccio?
 
-- Modern reactive system with runes ($state, $effect, $bindable)
-- Custom element support built-in
-- Small bundle size (87 KB for entire player)
-- Fast compilation
+- **Production-equivalent**: Tests real npm package structure
+- **Validates exports**: Catches package.json issues before publishing
+- **Cross-platform**: Works identically via Docker
+- **No external dependencies**: Local iteration without npm
 
-### Why Embedded CDN?
+### Why Package Server?
 
-- Single server = simpler setup
-- No CORS issues
-- Faster reload during development
-- No need to manage multiple processes
+- **Fast iteration**: Serves files directly without republishing
+- **Simple**: Just maps URLs to workspace dist/ folders
+- **CDN-like**: Mimics real CDN behavior for import maps
+- **Lightweight**: 90-line Bun script
+
+### Why Import Maps?
+
+- **Native browser feature**: No build step or bundler needed
+- **Production-like**: Same as real CDN usage
+- **Clear dependencies**: See exactly what's being loaded
+- **Flexible**: Easy to add/remove packages
 
 ### Why Per-Element Demos?
 
@@ -253,75 +330,84 @@ import { jsx } from "https://esm.sh/react/jsx-runtime";
 - Can customize per element if needed
 - Matches existing config.mjs/session.mjs pattern
 
-### Why Custom Elements?
+## Verdaccio Commands
 
-- Matches PIE ecosystem patterns (like ESM player)
-- Elements are already built as web components
-- Native browser API, no framework lock-in
-- Clean encapsulation
+```bash
+# Start Verdaccio (Docker)
+npm run registry:start
 
-## Implementation Status
+# Stop Verdaccio
+npm run registry:stop
 
-### ✅ Completed (Phase 1-6)
+# Check status
+npm run registry:status
 
-- [x] Element player package structure
-- [x] Core element-loader logic
-- [x] UI components (ModeSelector, SessionPanel, etc.)
-- [x] PieElementPlayer.svelte main component
-- [x] Standalone element player testing
-- [x] Local-esm-cdn TypeScript fixes
-- [x] Local-esm-cdn import rewriting for PIE packages
-- [x] Hotspot demo integration
+# Publish all packages
+npm run registry:publish
 
-### ⏳ Pending (Phase 7-8)
+# Force republish (bumps versions)
+npm run registry:publish:force
 
-- [ ] Root demo script (`bun react-demo --element <name>`)
-- [ ] Demo templates and documentation
-- [ ] Script to auto-generate demos for all elements
-- [ ] Integration with 2-3 more elements for testing
+# Reset registry (delete all data)
+npm run registry:reset
+
+# View logs
+npm run registry:logs
+```
 
 ## Troubleshooting
 
-### Module resolution errors
+### 404 for package files
 
-**Problem:** `Failed to resolve module specifier "@pie-lib/something"`
+**Problem:** `http://localhost:4874/@pie-element/something/0.1.0/dist/index.js` returns 404
 
-**Solution:** Ensure local-esm-cdn is built:
+**Solution:** Ensure the package is built:
 ```bash
-cd apps/local-esm-cdn
+cd packages/elements-react/something
 bun run build
+```
+
+### Verdaccio not running
+
+**Problem:** `registry:publish` fails with connection error
+
+**Solution:** Start Verdaccio:
+```bash
+npm run registry:start
 ```
 
 ### Element not loading
 
 **Problem:** Element player shows loading forever
 
-**Solution:** Check that element is built:
-```bash
-cd packages/elements-react/{element}
-bun run build
-```
+**Solution:**
 
-### Vite plugin not intercepting requests
+1. Check browser console for errors
+2. Verify element is built: `cd packages/elements-react/{element} && bun run build`
+3. Verify package server is running (should start automatically with demo)
 
-**Problem:** 404 errors for `/@pie-*` requests
+### Import map not working
 
-**Solution:** Restart Vite dev server to pick up plugin changes:
-```bash
-# Stop the demo
-# Ctrl+C or: lsof -ti :5174 | xargs kill
+**Problem:** Browser can't resolve `@pie-element/*` imports
 
-# Start again
-bun run demo
-```
+**Solution:**
+
+1. Check that esm.html has the import map
+2. Verify package server is running on port 4874
+3. Check browser console for import errors
 
 ## Future Enhancements
 
 1. **Auto-generate demos** for all elements
 2. **Demo gallery** - index page listing all element demos
-3. **Embed mode** - hide controls for iframe embedding
-4. **Comparison view** - side-by-side modes
-5. **Model editor** - in-app config editor
-6. **Snapshot/restore** - save and load demo states
-7. **Dark mode** support
-8. **Mobile responsive** improvements
+3. **Hot reload** - watch dist/ and reload on changes
+4. **Version management** - support multiple versions in package server
+5. **CDN fallback** - fall back to real CDN if local files missing
+6. **Model editor** - in-app config editor
+7. **Snapshot/restore** - save and load demo states
+
+## Related Documentation
+
+- [ESM Testing Strategy](./esm-testing-strategy.md) - Architecture and rationale
+- [Verdaccio Setup](./verdaccio-setup.md) - Detailed Verdaccio configuration
+- [Adding a Demo](./ADDING_DEMO.md) - How to create demos for new elements

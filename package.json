@@ -12,7 +12,6 @@
     "packages/core",
     "tools/cli",
     "apps/esm-player-test",
-    "apps/local-esm-cdn",
     "apps/demo-index"
   ],
   "scripts": {
@@ -24,7 +23,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "turbo run test:e2e",
-    "test:demos": "PLAYWRIGHT_HOST_PLATFORM=darwin-arm64 PLAYWRIGHT_BROWSERS_PATH=0 playwright test -c tests/e2e/playwright.config.ts",
+    "test:demos": "bun run registry:publish && PLAYWRIGHT_HOST_PLATFORM=darwin-arm64 PLAYWRIGHT_BROWSERS_PATH=0 playwright test -c tests/e2e/playwright.config.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
@@ -38,7 +37,6 @@
     "dev:demo:react": "bun run cli:dev dev:demo:react",
     "dev:demo:svelte": "bun run cli:dev dev:demo:svelte",
     "demos": "bun run --cwd apps/demo-index dev",
-    "local-esm-cdn": "bun run --cwd apps/local-esm-cdn dev",
     "examples": "turbo run dev --filter=@pie-examples/*",
     "cli": "bun run --cwd tools/cli build && node tools/cli/bin/run.js",
     "cli:dev": "bun run --cwd tools/cli build && node tools/cli/bin/dev.js",
@@ -56,7 +54,16 @@
     "evals": "turbo run test:evals",
     "evals:ui": "turbo run test:evals:ui",
     "evals:headed": "turbo run test:evals:headed",
-    "evals:react": "cd apps/examples-react && bun run test:evals"
+    "evals:react": "cd apps/examples-react && bun run test:evals",
+    "registry:start": "bun scripts/verdaccio.ts start",
+    "registry:stop": "bun scripts/verdaccio.ts stop",
+    "registry:check": "bun scripts/verdaccio.ts check",
+    "registry:status": "bun scripts/verdaccio.ts status",
+    "registry:login": "bun scripts/verdaccio.ts login",
+    "registry:logs": "docker compose logs -f verdaccio",
+    "registry:reset": "docker compose down -v && bun scripts/verdaccio.ts start",
+    "registry:publish": "bun scripts/verdaccio.ts publish",
+    "registry:publish:force": "bun scripts/verdaccio.ts publish --force"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",

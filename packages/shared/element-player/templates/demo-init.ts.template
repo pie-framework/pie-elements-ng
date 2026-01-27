@@ -5,7 +5,7 @@
  */
 
 // Import the player component (loads and registers custom elements)
-import '../../../../../shared/element-player/dist/pie-element-player.js';
+import '@pie-element/element-player';
 import config from '../config.mjs';
 import sessions from '../session.mjs';
 

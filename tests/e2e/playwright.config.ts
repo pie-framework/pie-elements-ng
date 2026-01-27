@@ -1,8 +1,16 @@
 import { defineConfig } from '@playwright/test';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { homedir } from 'node:os';
 
 function resolveLocalBrowsersDir(): string | undefined {
+  // First try system cache (macOS)
+  const systemCache = join(homedir(), 'Library', 'Caches', 'ms-playwright');
+  if (existsSync(systemCache)) {
+    return systemCache;
+  }
+
+  // Fallback to bun modules
   const bunModulesDir = join(process.cwd(), 'node_modules', '.bun');
   if (!existsSync(bunModulesDir)) {
     return undefined;

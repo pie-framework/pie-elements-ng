@@ -7,10 +7,9 @@
   <script type="importmap">
     {
       "imports": {
-        "@pie-element/": "http://localhost:5174/@pie-element/",
-        "@pie-lib/": "http://localhost:5174/@pie-lib/",
-        "@pie-elements-ng/": "http://localhost:5174/@pie-elements-ng/",
-        "@pie-framework/": "http://localhost:5174/@pie-framework/"
+        "@pie-element/element-player": "http://localhost:4874/@pie-element/element-player/0.1.0/dist/pie-element-player.js",
+        "@pie-element/{{ELEMENT_NAME}}/": "http://localhost:4874/@pie-element/{{ELEMENT_NAME}}/0.1.0/dist/",
+        "@pie-lib/": "http://localhost:4874/@pie-lib/"
       }
     }
   </script>
@@ -46,6 +45,48 @@
     ></pie-element-player>
   </div>
 
-  <script type="module" src="./src/esm.ts"></script>
+  <script type="module">
+    // Import element-player (registers as web component)
+    import '@pie-element/element-player';
+
+    // Import config and session
+    import config from './config.mjs';
+    import sessions from './session.mjs';
+
+    // Extract model and session from imported data
+    const model = Array.isArray(config?.models) ? config.models[0] : config;
+    const session = Array.isArray(sessions) ? sessions[0] : sessions;
+
+    console.log('[production-test] Initializing demo');
+    console.log('[production-test] Model:', model);
+    console.log('[production-test] Session:', session);
+
+    // Wait for custom element to be defined
+    await customElements.whenDefined('pie-element-player');
+
+    // Get player element
+    const player = document.getElementById('player');
+
+    if (!player) {
+      console.error('[production-test] Player element not found');
+      throw new Error('Player element not found');
+    }
+
+    console.log('[production-test] Player element found:', player);
+
+    // Set properties (create new objects to trigger reactivity)
+    console.log('[production-test] Setting model and session...');
+    player.model = { ...model };
+    player.session = { ...session };
+    console.log('[production-test] Model and session set');
+
+    // Listen for session changes
+    player.addEventListener('session-changed', (e) => {
+      console.log('[production-test] Session changed:', e.detail);
+    });
+
+    console.log('[production-test] Demo initialized!');
+    console.log('[production-test] Controller and element loaded dynamically via import maps');
+  </script>
 </body>
 </html>

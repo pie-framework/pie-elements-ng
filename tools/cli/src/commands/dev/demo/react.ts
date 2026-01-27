@@ -4,18 +4,20 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 
 /**
- * Start development server for React element demos using the new embedded local-esm-cdn architecture.
+ * Start development server for React element demos.
  *
  * This command:
- * 1. Builds the element player (if needed)
- * 2. Builds the specified React element (if needed)
- * 3. Starts a single Vite dev server with embedded local-esm-cdn
+ * 1. Publishes packages to Verdaccio for validation
+ * 2. Builds the element player (if needed)
+ * 3. Builds the specified React element (if needed)
+ * 4. Starts the package server (serves built dist/ files)
+ * 5. Starts a Vite dev server for the demo
  *
- * Unlike dev:serve, this uses the new architecture where local-esm-cdn
- * is embedded as a Vite plugin, not a separate server.
+ * The demo uses import maps pointing to the local package server,
+ * which serves files directly from workspace packages.
  */
 export default class DevDemoReact extends Command {
-  static override description = 'Start demo server for React elements with embedded local-esm-cdn';
+  static override description = 'Start demo server for React elements';
 
   static override examples = [
     '<%= config.bin %> <%= command.id %> hotspot',
@@ -57,6 +59,7 @@ export default class DevDemoReact extends Command {
   };
 
   private viteProcess: ChildProcess | null = null;
+  private packageServerProcess: ChildProcess | null = null;
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(DevDemoReact);
@@ -85,17 +88,25 @@ export default class DevDemoReact extends Command {
       const skipElementBuild = flags['skip-build'] || flags['skip-element-build'];
       const skipPlayerBuild = flags['skip-build'] || flags['skip-player-build'];
 
-      // 1. Build element-player if needed
+      // 1. Ensure Verdaccio is running and packages are published
+      this.log('Checking Verdaccio and publishing packages...');
+      await this.ensureVerdaccioAndPublish();
+
+      // 2. Build element-player if needed
       if (!skipPlayerBuild) {
         await this.buildElementPlayer();
       }
 
-      // 2. Build element if needed
+      // 3. Build element if needed
       if (!skipElementBuild) {
         await this.buildElement(args.element);
       }
 
-      // 3. Start Vite dev server (with embedded local-esm-cdn)
+      // 4. Start package server (serves built dist files)
+      this.log('Starting package server on port 4874...');
+      this.packageServerProcess = await this.startPackageServer();
+
+      // 5. Start Vite dev server
       this.log(`Starting Vite dev server on port ${flags.port}...`);
       this.viteProcess = await this.startVite(elementPath, flags.port);
 
@@ -111,8 +122,9 @@ export default class DevDemoReact extends Command {
       this.log('✓ React demo server running');
       this.log(`  Demo: http://localhost:${flags.port}`);
       this.log('');
-      this.log('📖 The demo uses embedded local-esm-cdn (Vite plugin)');
-      this.log('   PIE packages are served via /@pie-* URLs');
+      this.log('📦 The demo uses local package server (http://localhost:4874)');
+      this.log('   PIE packages are served from built dist/ directories');
+      this.log('   Packages validated via Verdaccio: http://localhost:4873');
       this.log('');
       this.log('Press Ctrl+C to stop');
 
@@ -220,6 +232,50 @@ export default class DevDemoReact extends Command {
       }
       this.viteProcess = null;
     }
+
+    if (this.packageServerProcess) {
+      try {
+        this.packageServerProcess.kill('SIGTERM');
+      } catch (error) {
+        // Ignore errors during cleanup
+      }
+      this.packageServerProcess = null;
+    }
+  }
+
+  private async startPackageServer(): Promise<ChildProcess> {
+    const proc = spawn('bun', ['scripts/serve-packages.ts'], {
+      cwd: process.cwd(),
+      stdio: 'inherit',
+    });
+
+    proc.on('error', (error) => {
+      this.error(`Failed to start package server: ${error.message}`);
+    });
+
+    // Wait a bit for server to start
+    await this.sleep(1000);
+
+    return proc;
+  }
+
+  private async ensureVerdaccioAndPublish(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const publish = spawn('bun', ['run', 'registry:publish'], {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      });
+
+      publish.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Failed to publish to Verdaccio (code ${code})`));
+        }
+      });
+
+      publish.on('error', reject);
+    });
   }
 
   private sleep(ms: number): Promise<void> {

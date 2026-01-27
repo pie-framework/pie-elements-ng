@@ -28,18 +28,14 @@ export async function loadElement(
   }
 
   // Build module path
-  // If cdnUrl is empty, use Vite's /@pie- prefix for embedded local-esm-cdn
+  // If cdnUrl is empty, use bare specifier (resolved by import maps or Vite aliases)
   let modulePath: string;
-  if (packagePath.startsWith('@')) {
-    if (!cdnUrl || cdnUrl === '') {
-      // Embedded mode: use Vite's special /@pie- prefix
-      modulePath = packagePath.replace('@pie-', '/@pie-');
-    } else {
-      // External CDN mode
-      modulePath = `${cdnUrl}/${packagePath}`;
-    }
-  } else {
+  if (!cdnUrl || cdnUrl === '') {
+    // Use bare specifier - let import maps or Vite aliases resolve it
     modulePath = packagePath;
+  } else {
+    // External CDN mode with full URL
+    modulePath = `${cdnUrl}/${packagePath}`;
   }
 
   if (debug) console.log(`[element-loader] Loading element from ${modulePath}`);
@@ -91,13 +87,13 @@ export async function loadController(
   debug: boolean = false
 ): Promise<any> {
   // Build controller path
-  // If cdnUrl is empty, use Vite's /@pie- prefix for embedded local-esm-cdn
+  // If cdnUrl is empty, use bare specifier (resolved by import maps or Vite aliases)
   let controllerPath: string;
   if (!cdnUrl || cdnUrl === '') {
-    // Embedded mode: use Vite's special /@pie- prefix
-    controllerPath = `${packageName.replace('@pie-', '/@pie-')}/controller`;
+    // Use bare specifier - let import maps or Vite aliases resolve it
+    controllerPath = `${packageName}/controller`;
   } else {
-    // External CDN mode
+    // External CDN mode with full URL
     controllerPath = `${cdnUrl}/${packageName}/controller`;
   }
 

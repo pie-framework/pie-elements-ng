@@ -1,0 +1,62 @@
+/**
+ * Development Demo Entry Point - {{ELEMENT_NAME}}
+ *
+ * Uses Vite dev mode with source file aliases for HMR.
+ * Pre-loads controller and element from source, then passes to player.
+ */
+
+// Import the player component (registers as web component)
+import '@pie-element/element-player';
+
+// Import controller and element directly from source files
+import * as controller from '../../../src/controller/index.ts';
+import {{ELEMENT_CLASS}} from '../../../src/index.ts';
+
+// Import config and session
+import config from '../config.mjs';
+import sessions from '../session.mjs';
+
+// Extract model and session from imported data
+const model = Array.isArray(config?.models) ? config.models[0] : config;
+const session = Array.isArray(sessions) ? sessions[0] : sessions;
+
+console.log('[dev-demo] Initializing demo');
+console.log('[dev-demo] Model:', model);
+console.log('[dev-demo] Session:', session);
+
+// Register element manually (player will skip loading if already registered)
+if (!customElements.get('{{ELEMENT_TAG}}')) {
+  customElements.define('{{ELEMENT_TAG}}', {{ELEMENT_CLASS}});
+  console.log('[dev-demo] ✓ Registered {{ELEMENT_TAG}}');
+}
+
+// Wait for custom element to be defined
+await customElements.whenDefined('pie-element-player');
+
+// Get player element
+const player = document.getElementById('player') as any;
+
+if (!player) {
+  console.error('[dev-demo] Player element not found');
+  throw new Error('Player element not found');
+}
+
+console.log('[dev-demo] Player element found:', player);
+
+// Pass preloaded controller to player
+player.preloadedController = controller;
+console.log('[dev-demo] ✓ Controller injected');
+
+// Set properties (create new objects to trigger reactivity)
+console.log('[dev-demo] Setting model and session...');
+player.model = { ...model };
+player.session = { ...session };
+console.log('[dev-demo] Model and session set');
+
+// Listen for session changes
+player.addEventListener('session-changed', (e: Event) => {
+  console.log('[dev-demo] Session changed:', (e as CustomEvent).detail);
+});
+
+console.log('[dev-demo] Demo initialized - HMR enabled!');
+console.log('[dev-demo] Edit source files in ../../../src/ to see hot reload');
