@@ -10,6 +10,10 @@ packages/lib-react/
 .cache/
 .playwright-mcp/
 
+# MCP configuration (local only)
+.mcp.json
+packages/mcp-imagen/
+
 # Build outputs
 dist/
 build/
