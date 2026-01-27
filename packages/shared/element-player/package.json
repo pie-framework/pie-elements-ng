@@ -24,8 +24,16 @@
     "test:serve": "python3 -m http.server 5175"
   },
   "dependencies": {
-    "svelte": "^5.46.1",
-    "@pie-element/math-typesetting": "workspace:*"
+    "@pie-element/math-typesetting": "workspace:*",
+    "@tiptap/core": "3.15.3",
+    "@tiptap/extension-code-block-lowlight": "3.15.3",
+    "@tiptap/extension-document": "3.15.3",
+    "@tiptap/extension-history": "3.15.3",
+    "@tiptap/extension-text": "3.15.3",
+    "@tiptap/starter-kit": "3.15.3",
+    "highlight.js": "^11.11.1",
+    "lowlight": "^3.3.0",
+    "svelte": "^5.46.1"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.1",

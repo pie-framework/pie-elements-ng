@@ -21,8 +21,12 @@ let {
       class:active={active === tab.id}
       disabled={tab.disabled}
       onclick={() => !tab.disabled && (active = tab.id)}
+      title={tab.description}
     >
-      {tab.label}
+      <span class="tab-label">{tab.label}</span>
+      {#if tab.description}
+        <span class="tab-description">{tab.description}</span>
+      {/if}
     </button>
   {/each}
 </div>
@@ -36,7 +40,11 @@ let {
   }
 
   button {
-    padding: 0.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 1.25rem;
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
@@ -48,9 +56,24 @@ let {
     margin-bottom: -2px;
   }
 
+  .tab-label {
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .tab-description {
+    font-size: 0.75rem;
+    color: #999;
+    font-weight: normal;
+  }
+
   button:hover:not(:disabled) {
     color: #0066cc;
     background: #f5f5f5;
+  }
+
+  button:hover:not(:disabled) .tab-description {
+    color: #0066cc;
   }
 
   button.active {
@@ -58,8 +81,18 @@ let {
     border-bottom-color: #0066cc;
   }
 
+  button.active .tab-description {
+    color: #0066cc;
+  }
+
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  @media (max-width: 640px) {
+    .tab-description {
+      display: none;
+    }
   }
 </style>

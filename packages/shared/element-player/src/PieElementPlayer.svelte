@@ -30,6 +30,7 @@ import ModeSelector from './components/ModeSelector.svelte';
 import SessionPanel from './components/SessionPanel.svelte';
 import ScoringPanel from './components/ScoringPanel.svelte';
 import ModelPanel from './components/ModelPanel.svelte';
+import ModelInspector from './components/ModelInspector.svelte';
 import Tabs from './components/Tabs.svelte';
 import { loadElement, loadController } from './lib/element-loader';
 import type { PieController } from './lib/types';
@@ -42,6 +43,7 @@ let {
   model = $bindable({}),
   session = $bindable({}),
   mode = $bindable('gather'),
+  activeTab = $bindable('delivery'),
   showConfigure = false,
   mathRenderer = $bindable<MathRenderer>(createKatexRenderer()),
   hosted = $bindable(false),
@@ -55,6 +57,7 @@ let {
   model?: any;
   session?: any;
   mode?: 'gather' | 'view' | 'evaluate';
+  activeTab?: string;
   showConfigure?: boolean;
   mathRenderer?: MathRenderer;
   hosted?: boolean;
@@ -68,7 +71,6 @@ let {
 // State
 let loading = $state(true);
 let error = $state<string | null>(null);
-let activeTab = $state('delivery');
 let score = $state<any>(null);
 let controller = $state<PieController | null>(null);
 let hasConfigure = $state(false);
@@ -83,6 +85,7 @@ let lastSessionRef = session;
 let lastElementModelRef = elementModel;
 let lastElementSessionRef = session;
 let roleLocked = $state(false);
+let syncing = $state(false);
 
 const logConsole = (label: string, data?: any) => {
   console.log('[pie-element-player]', label, data ?? '');
@@ -177,6 +180,22 @@ $effect(() => {
 
 $effect(() => {
   logConsole('role:changed', playerRole);
+});
+
+// Dispatch tab-changed event when activeTab changes
+$effect(() => {
+  if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') {
+    // Get host element reference
+    const host = document.querySelector('pie-element-player');
+    if (host) {
+      host.dispatchEvent(new CustomEvent('tab-changed', {
+        detail: activeTab,
+        bubbles: true,
+        composed: true
+      }));
+    }
+  }
+  logConsole('tab:changed', activeTab);
 });
 
 // DOM references
@@ -493,8 +512,12 @@ function handleSessionChange(event: CustomEvent) {
  */
 function handleModelChange(event: CustomEvent) {
   if (debug) console.log(`[pie-element-player] Model changed:`, event.detail);
+  syncing = true;
   model = event.detail;
   logConsole('model:changed', event.detail);
+  setTimeout(() => {
+    syncing = false;
+  }, 300);
 }
 
 function handleModelApply(nextModel: any) {
@@ -502,12 +525,16 @@ function handleModelApply(nextModel: any) {
     nextModelKeys: nextModel ? Object.keys(nextModel) : [],
     hadModel: !!model,
   });
+  syncing = true;
   model = { ...(nextModel ?? {}) };
   modelVersion += 1;
   sessionVersion += 1;
   logConsole('model:apply', nextModel);
   const requestId = ++modelRequestId;
   buildModel(requestId, sessionVersion, modelVersion);
+  setTimeout(() => {
+    syncing = false;
+  }, 300);
 }
 
 function handleSplitPointerDown(event: PointerEvent) {
@@ -553,15 +580,20 @@ function handleSplitPointerDown(event: PointerEvent) {
       <p>{error}</p>
     </div>
   {:else}
-    {#if hasConfigure}
-      <Tabs
-        tabs={[
-          { id: 'delivery', label: 'Delivery' },
-          { id: 'configure', label: 'Configure' }
-        ]}
-        bind:active={activeTab}
-      />
+    {#if syncing}
+      <div class="sync-indicator">
+        <span class="spinner-small"></span>
+        Synchronizing...
+      </div>
     {/if}
+    <Tabs
+      tabs={[
+        { id: 'delivery', label: 'Delivery' },
+        { id: 'author', label: 'Author', disabled: !hasConfigure },
+        { id: 'source', label: 'Source' }
+      ]}
+      bind:active={activeTab}
+    />
     {#if controllerWarning}
       <div class="warning">{controllerWarning}</div>
     {/if}
@@ -576,15 +608,18 @@ function handleSplitPointerDown(event: PointerEvent) {
           class="element-container"
           class:hidden={activeTab !== 'delivery'}
           element-name={elementName}
+          model={elementModel}
+          session={session}
           onsession-changed={handleSessionChange}
         ></pie-esm-element-player>
-        {#if hasConfigure}
-          <div
-            bind:this={configureContainer}
-            class="configure-container"
-            class:hidden={activeTab !== 'configure'}
-          ></div>
-        {/if}
+        <div
+          bind:this={configureContainer}
+          class="configure-container"
+          class:hidden={activeTab !== 'author'}
+        ></div>
+        <div class="source-container" class:hidden={activeTab !== 'source'}>
+          <ModelInspector bind:model onModelChange={handleModelApply} />
+        </div>
       </main>
 
       <div class="splitter" onpointerdown={handleSplitPointerDown} role="separator" aria-orientation="vertical"></div>
@@ -770,7 +805,52 @@ function handleSplitPointerDown(event: PointerEvent) {
     background: transparent;
   }
 
+  .sync-indicator {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem 1rem;
+    background: #4caf50;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1000;
+    animation: fadeIn 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
 
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .spinner-small {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  .configure-container {
+    height: 100%;
+    overflow: auto;
+  }
+
+  .source-container {
+    height: 100%;
+    overflow: auto;
+  }
 
   /* Make responsive for smaller screens */
   @media (max-width: 900px) {

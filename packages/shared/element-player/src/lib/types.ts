@@ -23,5 +23,6 @@ export interface PieController {
 export interface Tab {
   id: string;
   label: string;
+  description?: string;
   disabled?: boolean;
 }

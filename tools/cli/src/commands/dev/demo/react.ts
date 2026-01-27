@@ -7,7 +7,7 @@ import { existsSync } from 'node:fs';
  * Start development server for React element demos.
  *
  * This command:
- * 1. Publishes packages to Verdaccio for validation
+ * 1. Optionally validates packages via Verdaccio (--validate flag)
  * 2. Builds the element player (if needed)
  * 3. Builds the specified React element (if needed)
  * 4. Starts the package server (serves built dist/ files)
@@ -15,6 +15,9 @@ import { existsSync } from 'node:fs';
  *
  * The demo uses import maps pointing to the local package server,
  * which serves files directly from workspace packages.
+ *
+ * By default, Verdaccio validation is skipped for faster startup.
+ * Use --validate to ensure packages are production-ready.
  */
 export default class DevDemoReact extends Command {
   static override description = 'Start demo server for React elements';
@@ -23,6 +26,7 @@ export default class DevDemoReact extends Command {
     '<%= config.bin %> <%= command.id %> hotspot',
     '<%= config.bin %> <%= command.id %> multiple-choice --port 5180',
     '<%= config.bin %> <%= command.id %> math-inline --skip-build --no-open',
+    '<%= config.bin %> <%= command.id %> slider --validate  # Validate packages before CI/release',
   ];
 
   static override flags = {
@@ -41,6 +45,11 @@ export default class DevDemoReact extends Command {
     }),
     'skip-player-build': Flags.boolean({
       description: 'Skip building the element-player only',
+      default: false,
+    }),
+    validate: Flags.boolean({
+      char: 'v',
+      description: 'Validate packages via Verdaccio (publish for validation)',
       default: false,
     }),
     open: Flags.boolean({
@@ -88,9 +97,13 @@ export default class DevDemoReact extends Command {
       const skipElementBuild = flags['skip-build'] || flags['skip-element-build'];
       const skipPlayerBuild = flags['skip-build'] || flags['skip-player-build'];
 
-      // 1. Ensure Verdaccio is running and packages are published
-      this.log('Checking Verdaccio and publishing packages...');
-      await this.ensureVerdaccioAndPublish();
+      // 1. Optionally validate packages via Verdaccio
+      if (flags.validate) {
+        this.log('Validating packages via Verdaccio...');
+        await this.ensureVerdaccioAndPublish();
+      } else {
+        this.log('Skipping Verdaccio validation (use --validate to enable)');
+      }
 
       // 2. Build element-player if needed
       if (!skipPlayerBuild) {

@@ -20,6 +20,7 @@ import {
   transformPieFrameworkEventImports,
   inlineEditableHtmlConstants,
   reexportTokenTypes,
+  transformSsrRequireToReactLazy,
 } from './sync-imports.js';
 import { generatePieLibViteConfig } from './sync-vite-config.js';
 
@@ -238,6 +239,9 @@ export class PieLibStrategy implements SyncStrategy {
 
       // Fix missing TokenTypes re-export in text-select
       sourceContent = reexportTokenTypes(sourceContent, srcPath);
+
+      // Transform SSR-unsafe require() calls to React.lazy() with dynamic imports
+      sourceContent = transformSsrRequireToReactLazy(sourceContent);
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
 

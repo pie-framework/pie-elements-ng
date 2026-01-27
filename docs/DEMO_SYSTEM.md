@@ -9,18 +9,33 @@ This document describes the demo system for PIE elements (both React and Svelte)
 **Run a demo from the repo root** (recommended):
 
 ```bash
-# React element demo
+# React element demo (fast startup, no validation)
 bun run dev:demo:react multiple-choice
 
-# Svelte element demo
+# Svelte element demo (fast startup, no validation)
 bun run dev:demo:svelte slider
+
+# With package validation (slower, validates npm-readiness)
+bun run dev:demo:react multiple-choice --validate
 ```
 
 This automatically:
-- ✅ Validates packages can be published to npm (via Verdaccio)
+
 - ✅ Builds required packages
 - ✅ Starts both package server and Vite dev server
 - ✅ Opens your browser to the demo
+- 🔍 Optional: Validates packages can be published (--validate flag)
+
+**When to use `--validate`:**
+
+- Before committing changes to package.json or exports
+- Before publishing to npm
+- When CI/E2E tests need validation
+
+**Normal development:**
+
+- Default (no --validate) is fast and sufficient for day-to-day work
+- Just rebuilds and serves from dist/ folders
 
 **Alternative - Run from element directory:**
 
@@ -28,8 +43,6 @@ This automatically:
 cd packages/elements-react/multiple-choice
 bun run demo
 ```
-
-> **Note:** You may need to run `npm run registry:publish` first if packages aren't already published.
 
 ## Architecture
 
@@ -104,6 +117,67 @@ A reusable Svelte 5 web component that provides a complete demo environment:
 - Integrates controller for scoring in evaluate mode
 - Built-in mode selector (gather/view/evaluate)
 - Session and scoring panels
+- **Multi-tab interface** for comprehensive authoring and testing
+
+##### Multi-Tab Interface
+
+The element player provides three integrated views for a complete authoring and testing experience:
+
+**1. 📊 Delivery Tab** (Student/Teacher View)
+
+- The learner-facing interface with three modes:
+  - **Gather** - Answer/input mode (student fills in answers)
+  - **View** - Review mode (show answers without scoring)
+  - **Evaluate** - Scoring mode (show correct answers and score)
+- Role switching between Student and Instructor perspectives
+- Real-time session tracking
+- Default tab when opening the demo
+
+**2. ✏️ Configure Tab** (Authoring)
+
+- Rich authoring interface from pie-elements upstream
+- Visual editors for prompts, instructions, and content
+- Element-specific settings panels (choices, correct answers, scoring, etc.)
+- Image and media upload support
+- WYSIWYG editing experience
+- Changes immediately reflect in Delivery and Inspector tabs
+
+**3. 🔍 Inspector Tab** (Model JSON)
+
+- Full-width JSON editor with syntax highlighting powered by Tiptap
+- Direct model editing for advanced configuration
+- Toolbar actions:
+  - **Format** - Pretty-print JSON with proper indentation
+  - **Copy** - Copy JSON to clipboard
+  - **Apply** - Save changes and sync to other tabs
+  - **Reset** - Discard changes and restore from model
+- Real-time validation with error messages
+- Dirty state indicator when changes are pending
+- Changes sync to Delivery and Configure tabs on apply
+
+**Live Synchronization:**
+
+All tabs are connected through bidirectional synchronization:
+
+- Configure tab changes → Update Inspector JSON + Delivery preview
+- Inspector tab changes → Update Configure editors + Delivery preview
+- Visual sync indicator flashes when changes propagate
+- No page refresh needed - instant updates across all views
+
+**Side Panels:**
+
+The demo also includes collapsible side panels visible in all tabs:
+
+- **Session Panel** - Shows current session/answer data
+- **Model Panel** - Quick JSON view of current model
+- **Scoring Panel** - Shows score and correctness (evaluate mode only)
+
+This multi-tab architecture provides a comprehensive environment for:
+
+- Question authors to create and configure elements
+- Developers to debug and inspect element behavior
+- Educators to preview student/teacher experiences
+- All in one integrated interface with instant feedback
 
 #### 2. Package Server (`scripts/serve-packages.ts`)
 
