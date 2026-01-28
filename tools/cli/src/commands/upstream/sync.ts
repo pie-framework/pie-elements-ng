@@ -162,18 +162,31 @@ export default class Sync extends Command {
 
     // Merge with ESM-compatible pie-lib packages from compatibility report
     // (This ensures packages like controller-utils that are imported in controllers but not declared in package.json get synced)
+    // BUT: Only merge ALL packages when doing a full sync (no specific elements specified)
+    // When syncing specific elements, only sync the required deps (don't merge all 23 compat packages)
     if (compatibilityReport?.pieLibPackages && compatibilityReport.pieLibPackages.length > 0) {
       config.syncPieLibPackages = true;
       const autoDeps = new Set(config.pieLibPackages || []);
-      const compatiblePkgs = compatibilityReport.pieLibPackages;
-      const merged = new Set([...autoDeps, ...compatiblePkgs]);
-      config.pieLibPackages = Array.from(merged);
 
-      const additionalCount = config.pieLibPackages.length - autoDeps.size;
-      if (config.verbose && additionalCount > 0) {
-        this.logger.info(
-          `   Additional ESM-compatible pie-lib: ${additionalCount} package(s) from compatibility report`
-        );
+      // Only merge all compatible packages when doing a full sync
+      if (!config.elementsSpecifiedByUser) {
+        const compatiblePkgs = compatibilityReport.pieLibPackages;
+        const merged = new Set([...autoDeps, ...compatiblePkgs]);
+        config.pieLibPackages = Array.from(merged);
+
+        const additionalCount = config.pieLibPackages.length - autoDeps.size;
+        if (config.verbose && additionalCount > 0) {
+          this.logger.info(
+            `   Additional ESM-compatible pie-lib: ${additionalCount} package(s) from compatibility report`
+          );
+        }
+      } else {
+        // For targeted element sync, only sync required deps (don't bloat with all 23 packages)
+        if (config.verbose && autoDeps.size > 0) {
+          this.logger.info(
+            `   Targeted sync: ${autoDeps.size} pie-lib package(s) required by ${config.elements?.[0]}`
+          );
+        }
       }
     }
 
@@ -394,7 +407,9 @@ export default class Sync extends Command {
       }
     }
 
-    if (config.syncPieLibPackages && !config.pieLibPackagesSpecifiedByUser) {
+    // Only clean lib-react when syncing ALL elements (not when user specified specific elements)
+    // This prevents re-syncing all 23 pie-lib packages multiple times when syncing specific elements
+    if (config.syncPieLibPackages && !config.pieLibPackagesSpecifiedByUser && !config.elementsSpecifiedByUser) {
       const baseDir = join(config.pieElementsNg, 'packages/lib-react');
       if (existsSync(baseDir)) {
         await fsRm(baseDir, { recursive: true, force: true });

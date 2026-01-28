@@ -565,7 +565,10 @@ export class ReactComponentsStrategy implements SyncStrategy {
     // Transform imports from './' to '../delivery/' since print is now in print/
     // This handles './main', './stimulus-tabs', './choice', etc.
     sourceContent = sourceContent.replace(/from\s+['"]\.\/([^'"]+)['"]/g, "from '../delivery/$1'");
-    sourceContent = sourceContent.replace(/import\s*\(\s*['"]\.\/([^'"]+)['"]\s*\)/g, "import('../delivery/$1')");
+    sourceContent = sourceContent.replace(
+      /import\s*\(\s*['"]\.\/([^'"]+)['"]\s*\)/g,
+      "import('../delivery/$1')"
+    );
 
     const hasJsx = sourceContent.includes('React.createElement') || containsJsx(sourceContent);
 
