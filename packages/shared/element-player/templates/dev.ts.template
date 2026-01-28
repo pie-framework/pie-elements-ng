@@ -8,10 +8,17 @@
 // Import the player component (registers as web component)
 import '@pie-element/element-player';
 
-// Import controller, element, and configure directly from source files
+// Import controller, element, author, and print directly from source files
 import * as controller from '../../../src/controller/index.ts';
 import {{ELEMENT_CLASS}} from '../../../src/delivery/index.ts';
 import {{ELEMENT_CLASS}}Author from '../../../src/author/index.ts';
+// Try to import print if it exists (will fail silently if not present)
+let {{ELEMENT_CLASS}}Print: any;
+try {
+  {{ELEMENT_CLASS}}Print = (await import('../../../src/print/index.tsx')).default;
+} catch (e) {
+  // Print not available for this element
+}
 
 // Import config and session
 import config from '../config.mjs';
@@ -35,6 +42,12 @@ if (!customElements.get('{{ELEMENT_TAG}}')) {
 if (!customElements.get('{{ELEMENT_TAG}}-author')) {
   customElements.define('{{ELEMENT_TAG}}-author', {{ELEMENT_CLASS}}Author);
   console.log('[dev-demo] ✓ Registered {{ELEMENT_TAG}}-author');
+}
+
+// Register print element if available
+if ({{ELEMENT_CLASS}}Print && !customElements.get('{{ELEMENT_TAG}}-print')) {
+  customElements.define('{{ELEMENT_TAG}}-print', {{ELEMENT_CLASS}}Print);
+  console.log('[dev-demo] ✓ Registered {{ELEMENT_TAG}}-print');
 }
 
 // Wait for custom element to be defined

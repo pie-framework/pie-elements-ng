@@ -74,7 +74,9 @@ let error = $state<string | null>(null);
 let score = $state<any>(null);
 let controller = $state<PieController | null>(null);
 let hasConfigure = $state(false);
+let hasPrint = $state(false);
 let configureWarning = $state<string | null>(null);
+let printWarning = $state<string | null>(null);
 let controllerWarning = $state<string | null>(null);
 let elementModel = $state<any>({});
 let modelError = $state<string | null>(null);
@@ -204,6 +206,8 @@ $effect(() => {
 let elementPlayer = $state<HTMLElement | null>(null);
 let configureContainer = $state<HTMLDivElement | null>(null);
 let configureInstance: HTMLElement | null = null;
+let printContainer = $state<HTMLDivElement | null>(null);
+let printInstance: HTMLElement | null = null;
 
 // Derived values
 const configureTag = $derived(`${elementName}-configure`);
@@ -281,6 +285,20 @@ onMount(async () => {
       }
     }
 
+    // Try to load print component (silently fail if not available)
+    const printTag = `${elementTag}-print`;
+    try {
+      const cdnUrl = ''; // Empty for development with import maps
+      await loadElement(`${packageName}/print`, printTag, cdnUrl, debug, true);
+      if (customElements.get(printTag)) {
+        hasPrint = true;
+        if (debug) console.log(`[pie-element-player] Print component loaded`);
+      }
+    } catch (e) {
+      // Print is optional, fail silently
+      if (debug) console.log(`[pie-element-player] Print not available for ${elementName}`);
+    }
+
     loading = false;
 
     // Wait for next tick to ensure DOM containers are rendered
@@ -296,6 +314,19 @@ onMount(async () => {
       if (model) {
         (configureInstance as any).model = model;
         if (debug) console.log(`[pie-element-player] Set initial configure model:`, model);
+      }
+    }
+
+    // Create print instance if available
+    if (hasPrint && printContainer) {
+      printInstance = document.createElement(printTag);
+      printContainer.appendChild(printInstance);
+
+      // Set initial model and options
+      if (model) {
+        (printInstance as any).model = model;
+        (printInstance as any).options = { role: playerRole };
+        if (debug) console.log(`[pie-element-player] Set initial print model:`, model);
       }
     }
 
@@ -316,6 +347,9 @@ onDestroy(() => {
   if (configureInstance) {
     configureInstance.removeEventListener('model-changed', handleModelChange as EventListener);
     configureInstance.remove();
+  }
+  if (printInstance) {
+    printInstance.remove();
   }
 });
 
@@ -459,6 +493,20 @@ $effect(() => {
 });
 
 /**
+ * Update print instance when model or role changes
+ */
+$effect(() => {
+  if (printInstance && model) {
+    try {
+      (printInstance as any).model = model;
+      (printInstance as any).options = { role: playerRole };
+    } catch (err) {
+      console.error(`[pie-element-player] Error updating print properties:`, err);
+    }
+  }
+});
+
+/**
  * Call controller in evaluate mode
  */
 $effect(() => {
@@ -592,6 +640,7 @@ function handleSplitPointerDown(event: PointerEvent) {
       tabs={[
         { id: 'delivery', label: 'Delivery' },
         { id: 'author', label: 'Author', disabled: !hasConfigure },
+        { id: 'print', label: 'Print', disabled: !hasPrint },
         { id: 'source', label: 'Source' }
       ]}
       bind:active={activeTab}
@@ -618,6 +667,11 @@ function handleSplitPointerDown(event: PointerEvent) {
           bind:this={configureContainer}
           class="configure-container"
           class:hidden={activeTab !== 'author'}
+        ></div>
+        <div
+          bind:this={printContainer}
+          class="print-container"
+          class:hidden={activeTab !== 'print'}
         ></div>
         <div class="source-container" class:hidden={activeTab !== 'source'}>
           <ModelInspector bind:model onModelChange={handleModelApply} />
