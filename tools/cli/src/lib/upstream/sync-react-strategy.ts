@@ -190,6 +190,20 @@ export class ReactComponentsStrategy implements SyncStrategy {
         }
       }
 
+      // Sync print file if it exists (src/print.js -> src/print/index.ts)
+      const upstreamPrintFile = join(componentSrcDir, 'print.js');
+      if (existsSync(upstreamPrintFile)) {
+        const targetPrintDir = join(targetDir, 'src/print');
+        const printFilesProcessed = await this.syncPrintFile(
+          upstreamPrintFile,
+          targetPrintDir,
+          pkg,
+          upstreamCommit,
+          syncDate
+        );
+        elementFilesProcessed += printFilesProcessed;
+      }
+
       // Generate src/index.ts that re-exports from delivery/
       const mainIndexPath = join(targetDir, 'src/index.ts');
       const mainIndexContent = `export { default } from './delivery/index.js';\n`;
@@ -327,6 +341,11 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
       // Only process .js and .jsx files
       if (!item.endsWith('.js') && !item.endsWith('.jsx')) {
+        continue;
+      }
+
+      // Skip print.js/print.jsx files - they're synced to src/print/ separately
+      if (item === 'print.js' || item === 'print.jsx') {
         continue;
       }
 
@@ -514,6 +533,77 @@ export class ReactComponentsStrategy implements SyncStrategy {
     }
 
     return filesProcessed;
+  }
+
+  /**
+   * Sync a single print file (src/print.js -> src/print/index.ts)
+   */
+  private async syncPrintFile(
+    sourceFile: string,
+    targetDir: string,
+    pkg: string,
+    upstreamCommit: string,
+    syncDate: string
+  ): Promise<number> {
+    this.result.filesChecked++;
+
+    // Read source
+    let sourceContent = await readFile(sourceFile, 'utf-8');
+
+    // Transform lodash to lodash-es for ESM compatibility
+    sourceContent = transformLodashToLodashEs(sourceContent);
+
+    // Transform @pie-framework event packages to internal packages
+    sourceContent = transformPieFrameworkEventImports(sourceContent);
+
+    // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
+    sourceContent = transformControllerUtilsImports(sourceContent);
+
+    // Transform @pie-lib shared packages to @pie-element/shared-*
+    sourceContent = transformSharedPackageImports(sourceContent);
+
+    // Transform imports from './main' to '../delivery/main' since print is now in print/
+    sourceContent = sourceContent.replace(
+      /from\s+['"]\.\/main['"]/g,
+      "from '../delivery/main'"
+    );
+
+    const hasJsx = sourceContent.includes('React.createElement') || containsJsx(sourceContent);
+
+    // Convert to TypeScript
+    const conversionResult = hasJsx
+      ? convertJsxToTsx(sourceContent, {
+          sourcePath: `pie-elements/packages/${pkg}/src/print.js`,
+          commit: upstreamCommit,
+          date: syncDate,
+        })
+      : convertJsToTs(sourceContent, {
+          sourcePath: `pie-elements/packages/${pkg}/src/print.js`,
+          commit: upstreamCommit,
+          date: syncDate,
+        });
+
+    const converted = conversionResult.code;
+    const targetFile = hasJsx ? 'index.tsx' : 'index.ts';
+    const targetPath = join(targetDir, targetFile);
+
+    // Check if needs update
+    const isNew = !existsSync(targetPath);
+    if (!isNew) {
+      const existingContent = await readFile(targetPath, 'utf-8');
+      if (existingContent === converted) {
+        this.result.filesSkipped++;
+        return 1;
+      }
+      await writeFile(targetPath, converted, 'utf-8');
+      this.result.filesUpdated++;
+    } else {
+      await mkdir(targetDir, { recursive: true });
+      await writeFile(targetPath, converted, 'utf-8');
+      this.result.filesCopied++;
+    }
+
+    return 1;
   }
 
   /**
