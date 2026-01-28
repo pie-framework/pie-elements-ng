@@ -562,8 +562,10 @@ export class ReactComponentsStrategy implements SyncStrategy {
     // Transform @pie-lib shared packages to @pie-element/shared-*
     sourceContent = transformSharedPackageImports(sourceContent);
 
-    // Transform imports from './main' to '../delivery/main' since print is now in print/
-    sourceContent = sourceContent.replace(/from\s+['"]\.\/main['"]/g, "from '../delivery/main'");
+    // Transform imports from './' to '../delivery/' since print is now in print/
+    // This handles './main', './stimulus-tabs', './choice', etc.
+    sourceContent = sourceContent.replace(/from\s+['"]\.\/([^'"]+)['"]/g, "from '../delivery/$1'");
+    sourceContent = sourceContent.replace(/import\s*\(\s*['"]\.\/([^'"]+)['"]\s*\)/g, "import('../delivery/$1')");
 
     const hasJsx = sourceContent.includes('React.createElement') || containsJsx(sourceContent);
 
