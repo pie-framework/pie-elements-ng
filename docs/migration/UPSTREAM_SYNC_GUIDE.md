@@ -63,14 +63,14 @@ This guide describes the complete process for migrating PIE elements from the up
 │  📦 REACT PACKAGES (copied from upstream):                      │
 │  ├── packages/elements-react/{element}/                         │
 │  │   ├── src/delivery/         ← React UI (synced)               │
-│  │   ├── src/authoring/       ← React UI (synced)               │
+│  │   ├── src/author/           ← React UI (synced)               │
 │  │   └── src/controller/      ← Logic (synced)                  │
 │  └── packages/lib-react/{lib}/ ← Shared libs (synced)           │
 │                                                                 │
 │  ✨ SVELTE PACKAGES (written from scratch):                     │
 │  └── packages/elements-svelte/{element}/                        │
 │      ├── src/delivery/         ← Svelte UI (new)                 │
-│      ├── src/authoring/       ← Svelte UI (new)                 │
+│      ├── src/author/           ← Svelte UI (new)                 │
 │      └── src/controller/      ← Symlink to React controller     │
 │                                                                 │
 │  🔧 MODERN INFRASTRUCTURE:                                       │
@@ -460,8 +460,8 @@ bun run build
 
 **React components ARE the point - they should be synced:**
 
-- ✅ Synced to `packages/elements-react/{element}/src/`
-- ✅ Includes `student/`, `authoring/`, and other UI code
+- ✅ Synced to `packages/elements-react/{element}/src/delivery/` (student/teacher UI)
+- ✅ Synced to `packages/elements-react/{element}/src/author/` (authoring UI)
 - ✅ Converted from `.jsx` to `.tsx`
 - ✅ Updated imports to use pie-element libraries
 
@@ -749,7 +749,7 @@ bun run cli upstream:sync --element=multiple-choice
 # packages/elements-react/multiple-choice/
 # ├── src/
 # │   ├── delivery/          ← React UI (synced)
-# │   ├── authoring/        ← React UI (synced)
+# │   ├── author/            ← React UI (synced)
 # │   └── controller/       ← Business logic (synced)
 # ├── package.json          ← Dependencies (synced)
 # └── vite.config.ts        ← Our build config
@@ -774,7 +774,7 @@ bun test
 
 #### 4. Implement Svelte UI (Optional)
 
-**Svelte is written from scratch, not synced:**
+**Svelte is written from scratch, not synced. Note the new directory structure with delivery/ and author/ subdirectories:**
 
 ```svelte
 <!-- packages/elements-svelte/multiple-choice/src/delivery/index.svelte -->
@@ -791,7 +791,7 @@ bun test
   let { model, session = $bindable({ value: null }), env }: Props = $props();
 
   // Use same controller as React (symlink or shared)
-  import { model as controllerModel } from '../../elements-react/multiple-choice/controller';
+  import { model as controllerModel } from '../../../elements-react/multiple-choice/src/controller';
 
   let viewModel = $derived.by(async () => {
     return await controllerModel(model, session, env);

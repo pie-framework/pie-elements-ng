@@ -133,7 +133,7 @@ The element player provides three integrated views for a complete authoring and 
 - Real-time session tracking
 - Default tab when opening the demo
 
-**2. ✏️ Configure Tab** (Authoring)
+**2. ✏️ Author Tab** (Authoring)
 
 - Rich authoring interface from pie-elements upstream
 - Visual editors for prompts, instructions, and content
@@ -159,8 +159,8 @@ The element player provides three integrated views for a complete authoring and 
 
 All tabs are connected through bidirectional synchronization:
 
-- Configure tab changes → Update Inspector JSON + Delivery preview
-- Inspector tab changes → Update Configure editors + Delivery preview
+- Author tab changes → Update Inspector JSON + Delivery preview
+- Inspector tab changes → Update Author editors + Delivery preview
 - Visual sync indicator flashes when changes propagate
 - No page refresh needed - instant updates across all views
 
@@ -216,6 +216,66 @@ docs/demo/
 - Easy to add new demos (copy template)
 - Can customize per element
 - Reuses existing `config.mjs`/`session.mjs` files
+
+## Element Package Structure
+
+PIE elements follow a consistent directory structure that separates concerns by rendering mode:
+
+```
+packages/elements-react/{element}/src/
+├── delivery/              # Student/teacher facing UI
+│   ├── index.ts          # Web component + React rendering
+│   ├── main.tsx          # Root component
+│   ├── [components].tsx  # Sub-components
+│   ├── [utilities].ts    # Delivery-specific utilities
+│   └── print.ts          # Print mode (optional, reuses delivery components)
+│
+├── author/                # Authoring interface
+│   ├── index.ts          # Web component + React rendering
+│   ├── main.tsx          # Root component
+│   ├── defaults.ts
+│   └── utils.ts
+│
+├── controller/            # Business logic
+│   ├── index.ts
+│   ├── defaults.ts
+│   └── utils.ts
+│
+└── index.ts               # Main entry (re-exports from delivery/)
+```
+
+**Key Concepts:**
+
+- **delivery/** - The learner-facing interface with gather/view/evaluate modes
+- **author/** - The authoring interface for creating and configuring elements
+- **controller/** - Business logic for scoring, model transformations, and outcomes
+- **print/** - Optional print rendering that reuses delivery components with transformed models
+
+**Print Mode Details:**
+
+Print files are Web Components that:
+
+- Reuse the main delivery component (no code duplication)
+- Transform the model via `preparePrintModel()` function
+- Disable interactivity and animations
+- Show/hide content based on role (instructor vs student)
+- Render to static HTML for printing
+
+**Package Exports:**
+
+Each element package exports multiple entry points:
+
+```json
+{
+  "exports": {
+    ".": "./dist/index.js",              // Main entry (delivery)
+    "./delivery": "./dist/delivery/index.js",
+    "./author": "./dist/author/index.js",
+    "./controller": "./dist/controller/index.js",
+    "./print": "./dist/print/index.js"   // Optional
+  }
+}
+```
 
 ## File Structure
 
