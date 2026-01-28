@@ -8,9 +8,10 @@
 // Import the player component (registers as web component)
 import '@pie-element/element-player';
 
-// Import controller and element directly from source files
+// Import controller, element, and configure directly from source files
 import * as controller from '../../../src/controller/index.ts';
-import {{ELEMENT_CLASS}} from '../../../src/index.ts';
+import {{ELEMENT_CLASS}} from '../../../src/delivery/index.ts';
+import {{ELEMENT_CLASS}}Author from '../../../src/author/index.ts';
 
 // Import config and session
 import config from '../config.mjs';
@@ -28,6 +29,12 @@ console.log('[dev-demo] Session:', session);
 if (!customElements.get('{{ELEMENT_TAG}}')) {
   customElements.define('{{ELEMENT_TAG}}', {{ELEMENT_CLASS}});
   console.log('[dev-demo] ✓ Registered {{ELEMENT_TAG}}');
+}
+
+// Register author element (configure mode)
+if (!customElements.get('{{ELEMENT_TAG}}-author')) {
+  customElements.define('{{ELEMENT_TAG}}-author', {{ELEMENT_CLASS}}Author);
+  console.log('[dev-demo] ✓ Registered {{ELEMENT_TAG}}-author');
 }
 
 // Wait for custom element to be defined

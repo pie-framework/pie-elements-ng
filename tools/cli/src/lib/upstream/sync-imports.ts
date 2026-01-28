@@ -542,6 +542,7 @@ export function transformToAssignProps(content: string): string {
  */
 export function transformConfigureUtilsImports(content: string, relativePath: string): string {
   // Only apply to files directly in configure/src/ (not in subdirectories)
+  // Note: In the target, these files end up in author/ directory
   // Match patterns like:
   // - "configure/src/something.js" (yes)
   // - "configure/src/design/something.js" (no - has subdirectory)

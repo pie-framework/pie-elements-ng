@@ -140,11 +140,12 @@ export class ReactComponentsStrategy implements SyncStrategy {
         logger
       );
 
-      // Recursively sync all files from src/ directory
+      // Recursively sync all files from src/ directory to delivery/ subdirectory
       const beforeChanges = this.result.filesCopied + this.result.filesUpdated;
+      const targetDeliveryDir = join(targetDir, 'src/delivery');
       let elementFilesProcessed = await this.syncDirectory(
         componentSrcDir,
-        targetSrcDir,
+        targetDeliveryDir,
         'src',
         pkg,
         upstreamCommit,
@@ -152,18 +153,19 @@ export class ReactComponentsStrategy implements SyncStrategy {
       );
 
       // Also sync configure/ if it exists and is ESM-compatible
+      // Note: Renamed to author/ in the target directory
       const configureDir = join(upstreamElementsDir, pkg, 'configure');
       if (existsSync(configureDir)) {
         // Check if configure subdirectory is ESM-compatible
         const configureCompatible = this.isSubdirectoryCompatible(pkg, 'configure', context);
         if (configureCompatible) {
-          // First, sync configure/src/ -> src/configure/
+          // First, sync configure/src/ -> src/author/
           const configureSrcDir = join(configureDir, 'src');
           if (existsSync(configureSrcDir)) {
-            const targetConfigureDir = join(targetDir, 'src/configure');
+            const targetAuthorDir = join(targetDir, 'src/author');
             const configureFilesProcessed = await this.syncDirectory(
               configureSrcDir,
-              targetConfigureDir,
+              targetAuthorDir,
               'configure/src',
               pkg,
               upstreamCommit,
@@ -172,12 +174,12 @@ export class ReactComponentsStrategy implements SyncStrategy {
             elementFilesProcessed += configureFilesProcessed;
           }
 
-          // Then, sync configure/*.js files (not in subdirectories) -> src/configure/
+          // Then, sync configure/*.js files (not in subdirectories) -> src/author/
           // These are utility files that live directly in configure/ like utils.js
-          const targetConfigureDir = join(targetDir, 'src/configure');
+          const targetAuthorDir = join(targetDir, 'src/author');
           const configureRootFilesProcessed = await this.syncConfigureRootFiles(
             configureDir,
-            targetConfigureDir,
+            targetAuthorDir,
             pkg,
             upstreamCommit,
             syncDate
@@ -187,6 +189,12 @@ export class ReactComponentsStrategy implements SyncStrategy {
           logger.info(`  ⏭️  ${pkg}: skipping configure/ (not ESM-compatible)`);
         }
       }
+
+      // Generate src/index.ts that re-exports from delivery/
+      const mainIndexPath = join(targetDir, 'src/index.ts');
+      const mainIndexContent = `export { default } from './delivery/index.js';\n`;
+      await writeFile(mainIndexPath, mainIndexContent, 'utf-8');
+
       const afterChanges = this.result.filesCopied + this.result.filesUpdated;
       const elementChanged = afterChanges > beforeChanges;
 
@@ -627,16 +635,16 @@ export class ReactComponentsStrategy implements SyncStrategy {
       };
     }
 
-    const hasAuthoring = existsAny([
-      join(elementDir, 'src/authoring/index.ts'),
-      join(elementDir, 'src/authoring/index.tsx'),
-      join(elementDir, 'src/authoring/index.js'),
-      join(elementDir, 'src/authoring/index.jsx'),
+    const hasAuthor = existsAny([
+      join(elementDir, 'src/author/index.ts'),
+      join(elementDir, 'src/author/index.tsx'),
+      join(elementDir, 'src/author/index.js'),
+      join(elementDir, 'src/author/index.jsx'),
     ]);
-    if (hasAuthoring) {
-      exportsObj['./authoring'] = {
-        types: './dist/authoring/index.d.ts',
-        default: './dist/authoring/index.js',
+    if (hasAuthor) {
+      exportsObj['./author'] = {
+        types: './dist/author/index.d.ts',
+        default: './dist/author/index.js',
       };
     }
 
@@ -663,6 +671,32 @@ export class ReactComponentsStrategy implements SyncStrategy {
       exportsObj['./configure'] = {
         types: './dist/configure/index.d.ts',
         default: './dist/configure/index.js',
+      };
+    }
+
+    const hasPrint = existsAny([
+      join(elementDir, 'src/print/index.ts'),
+      join(elementDir, 'src/print/index.tsx'),
+      join(elementDir, 'src/print/index.js'),
+      join(elementDir, 'src/print/index.jsx'),
+    ]);
+    if (hasPrint) {
+      exportsObj['./print'] = {
+        types: './dist/print/index.d.ts',
+        default: './dist/print/index.js',
+      };
+    }
+
+    const hasTypes = existsAny([
+      join(elementDir, 'src/types/index.ts'),
+      join(elementDir, 'src/types/index.tsx'),
+      join(elementDir, 'src/types/index.js'),
+      join(elementDir, 'src/types/index.jsx'),
+    ]);
+    if (hasTypes) {
+      exportsObj['./types'] = {
+        types: './dist/types/index.d.ts',
+        default: './dist/types/index.js',
       };
     }
 
@@ -779,6 +813,21 @@ export class ReactComponentsStrategy implements SyncStrategy {
     const deliveryEntry = findEntry('src/delivery/index');
     if (deliveryEntry) {
       entryPoints['delivery/index'] = deliveryEntry;
+    }
+
+    const authorEntry = findEntry('src/author/index');
+    if (authorEntry) {
+      entryPoints['author/index'] = authorEntry;
+    }
+
+    const printEntry = findEntry('src/print/index');
+    if (printEntry) {
+      entryPoints['print/index'] = printEntry;
+    }
+
+    const typesEntry = findEntry('src/types/index');
+    if (typesEntry) {
+      entryPoints['types/index'] = typesEntry;
     }
 
     if (Object.keys(entryPoints).length === 0) {

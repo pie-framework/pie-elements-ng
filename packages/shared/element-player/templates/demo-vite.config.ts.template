@@ -24,7 +24,9 @@ export default defineConfig({
       '@pie-element/element-player': resolve(__dirname, '../../../../shared/element-player/dist/pie-element-player.js'),
 
       // {{ELEMENT_TITLE}} element and controller (SOURCE for HMR)
-      '@pie-element/{{ELEMENT_NAME}}': resolve(__dirname, '../../../src/index.ts'),
+      '@pie-element/{{ELEMENT_NAME}}': resolve(__dirname, '../../../src/delivery/index.ts'),
+      '@pie-element/{{ELEMENT_NAME}}/delivery': resolve(__dirname, '../../../src/delivery/index.ts'),
+      '@pie-element/{{ELEMENT_NAME}}/author': resolve(__dirname, '../../../src/author/index.ts'),
       '@pie-element/{{ELEMENT_NAME}}/controller': resolve(__dirname, '../../../src/controller/index.ts'),
 
       // Shared packages (SOURCE for HMR)
