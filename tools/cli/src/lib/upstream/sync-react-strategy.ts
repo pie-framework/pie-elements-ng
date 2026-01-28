@@ -563,10 +563,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
     sourceContent = transformSharedPackageImports(sourceContent);
 
     // Transform imports from './main' to '../delivery/main' since print is now in print/
-    sourceContent = sourceContent.replace(
-      /from\s+['"]\.\/main['"]/g,
-      "from '../delivery/main'"
-    );
+    sourceContent = sourceContent.replace(/from\s+['"]\.\/main['"]/g, "from '../delivery/main'");
 
     const hasJsx = sourceContent.includes('React.createElement') || containsJsx(sourceContent);
 

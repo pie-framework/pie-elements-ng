@@ -34,7 +34,7 @@ export default defineConfig({
       '@pie-element/shared-player-events': resolve(__dirname, '../../../../shared/player-events/src/index.ts'),
       '@pie-element/shared-math-rendering': resolve(__dirname, '../../../../shared/math-rendering/src/index.ts'),
       '@pie-element/shared-mathml-to-latex': resolve(__dirname, '../../../../shared/mathml-to-latex/src/index.ts'),
-      '@pie-framework/controller-utils': resolve(__dirname, '../../../../lib-react/controller-utils/src/index.ts'),
+      '@pie-framework/controller-utils': resolve(__dirname, '../../../../shared/controller-utils/src/index.ts'),
 
       // React libs (SOURCE for HMR)
       '@pie-lib/render-ui': resolve(__dirname, '../../../../lib-react/render-ui/src/index.ts'),
