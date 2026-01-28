@@ -14,6 +14,9 @@ export interface SyncConfig {
   syncReactComponents: boolean;
   syncPieLib: boolean;
 
+  // Filters
+  pieLibPackages?: string[];
+
   // Options
   skipDemos: boolean;
   upstreamCommit: string;

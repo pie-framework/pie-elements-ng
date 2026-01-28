@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "rootDir": "src",
+    "allowJs": true,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": false,
+    "emitDeclarationOnly": true,
+    "noEmit": false
+  },
+  "include": ["src/index.ts", "src/types.ts"],
+  "exclude": ["src/**/*.js", "src/legacy/**/*", "src/css/**/*"]
+}

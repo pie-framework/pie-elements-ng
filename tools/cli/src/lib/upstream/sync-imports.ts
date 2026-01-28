@@ -700,12 +700,17 @@ function wrapComponentInSuspense(content: string, componentName: string): string
   // Find paired tag instances (more complex - need to find matching closing tag)
   openTagPattern.lastIndex = 0;
   match = openTagPattern.exec(content);
-  while (match !== null) {
+  const maxIterations = 1000; // Safety limit to prevent infinite loops
+  let iterations = 0;
+
+  while (match !== null && iterations < maxIterations) {
+    iterations++;
     const openTagStart = match.index;
     const openTag = match[0];
 
     // Skip if this is a self-closing tag (already handled)
     if (openTag.endsWith('/>')) {
+      match = openTagPattern.exec(content);
       continue;
     }
 
@@ -749,7 +754,22 @@ function wrapComponentInSuspense(content: string, componentName: string): string
         });
       }
     }
+
+    // Get next match - ensure we're advancing
+    const prevLastIndex = openTagPattern.lastIndex;
     match = openTagPattern.exec(content);
+
+    // Safety: if lastIndex didn't advance, force it forward to prevent infinite loop
+    if (match && openTagPattern.lastIndex === prevLastIndex) {
+      openTagPattern.lastIndex = prevLastIndex + 1;
+      match = openTagPattern.exec(content);
+    }
+  }
+
+  if (iterations >= maxIterations) {
+    console.warn(
+      `Warning: wrapComponentInSuspense hit iteration limit for component ${componentName}`
+    );
   }
 
   // Apply wrapping in reverse order to preserve positions
@@ -761,6 +781,72 @@ function wrapComponentInSuspense(content: string, componentName: string): string
       </React.Suspense>`;
 
     transformed = transformed.slice(0, pos.start) + wrapped + transformed.slice(pos.end);
+  }
+
+  return transformed;
+}
+
+/**
+ * Fix TypeScript type inference errors for styled components
+ *
+ * TypeScript can't infer types for some MUI styled components, causing errors like:
+ * "The inferred type of 'X' cannot be named without a reference to '@emotion/styled'"
+ *
+ * This transform adds explicit type annotations to fix these errors.
+ */
+export function fixStyledComponentTypes(content: string): string {
+  let transformed = content;
+
+  // Pattern 1: Export const styled components (e.g., export const StyledFormControlLabel = styled(...))
+  // Add `: any` to fix type inference issues
+  // Match any identifier, not just those starting with "Styled"
+  const exportConstStyledRegex = /export const (\w+) = styled\(/g;
+  transformed = transformed.replace(exportConstStyledRegex, 'export const $1: any = styled(');
+
+  // Pattern 2: Const styled components (e.g., const StyledToken = styled(...), const MiniField = styled(...))
+  // Add `: any` to fix type inference issues
+  // Match any identifier, not just those starting with "Styled"
+  const constStyledRegex = /const (\w+) = styled\(/g;
+  transformed = transformed.replace(constStyledRegex, 'const $1: any = styled(');
+
+  // Pattern 3: Class methods/arrow functions that might return styled components
+  // Add `: any` return type to methods that are missing type annotations
+  // Match: methodName = () => { or methodName = (params) => {
+  // But only at start of line (class methods), not property assignments like reader.onload =
+  // And only if they don't already have a type annotation
+  const methodRegex = /^(\s*)(\w+)\s*=\s*\([^)]*\)\s*=>\s*\{/gm;
+  transformed = transformed.replace(methodRegex, (match) => {
+    // Check if already has type annotation (: type = )
+    const hasTypeAnnotation = match.includes(':');
+    if (hasTypeAnnotation) {
+      return match;
+    }
+    // Add `: any` type annotation
+    return match.replace(/(\w+)(\s*=)/, '$1: any$2');
+  });
+
+  return transformed;
+}
+
+/**
+ * Fix type inference errors for exported functions with complex return types
+ *
+ * TypeScript can't infer types for some exported functions that have complex dependencies,
+ * causing errors like: "The inferred type of 'X' cannot be named without a reference to 'Y'"
+ *
+ * This transform adds explicit `: any` type annotations to fix these portability errors.
+ */
+export function fixExportedFunctionTypes(content: string, sourcePath?: string): string {
+  let transformed = content;
+
+  // Only apply to specific files that are known to have issues
+  if (sourcePath?.includes('charting') && sourcePath.includes('utils')) {
+    // Fix: export const dataToXBand = (...) => { ... }
+    // Pattern: export const functionName = (params) => {
+    transformed = transformed.replace(
+      /export const dataToXBand = \(/g,
+      'export const dataToXBand: any = ('
+    );
   }
 
   return transformed;

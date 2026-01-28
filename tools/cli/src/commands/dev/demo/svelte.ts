@@ -167,7 +167,7 @@ export default class DevDemoSvelte extends Command {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', '@pie-element/element-player'],
+        ['run', 'turbo', 'build', '--filter', '@pie-element/element-player'],
         {
           stdio: 'inherit',
           cwd: process.cwd(),
@@ -193,7 +193,7 @@ export default class DevDemoSvelte extends Command {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}-svelte`],
+        ['run', 'turbo', 'build', '--filter', `@pie-element/${element}-svelte`],
         {
           stdio: 'inherit',
           cwd: process.cwd(),

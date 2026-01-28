@@ -167,7 +167,7 @@ export default class DevDemoReact extends Command {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', '@pie-element/element-player'],
+        ['run', 'turbo', 'build', '--filter', '@pie-element/element-player'],
         {
           stdio: 'inherit',
           cwd: process.cwd(),
@@ -191,14 +191,10 @@ export default class DevDemoReact extends Command {
     this.log(`Building ${element}...`);
 
     return new Promise((resolve, reject) => {
-      const build = spawn(
-        'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}`],
-        {
-          stdio: 'inherit',
-          cwd: process.cwd(),
-        }
-      );
+      const build = spawn('bun', ['run', 'turbo', 'build', '--filter', `@pie-element/${element}`], {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      });
 
       build.on('close', (code) => {
         if (code === 0) {

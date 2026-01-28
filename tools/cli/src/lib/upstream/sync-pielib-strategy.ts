@@ -10,19 +10,12 @@ import { mkdir, readFile, stat as fsStat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { convertJsToTs, convertJsxToTsx } from '../../utils/conversion.js';
 import { getCurrentCommit } from '../../utils/git.js';
-import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, readdir } from './sync-filesystem.js';
-import {
-  fixImportsInFile,
-  containsJsx,
-  transformLodashToLodashEs,
-  transformPieFrameworkEventImports,
-  inlineEditableHtmlConstants,
-  reexportTokenTypes,
-  transformSsrRequireToReactLazy,
-} from './sync-imports.js';
+import { fixImportsInFile, containsJsx } from './sync-imports.js';
 import { generatePieLibViteConfig } from './sync-vite-config.js';
+import { createPieLibTransformPipeline } from './sync-transforms.js';
+import { ensurePieLibPackageJson } from './sync-package-manager.js';
 
 interface InternalSyncResult {
   filesChecked: number;
@@ -91,17 +84,23 @@ export class PieLibStrategy implements SyncStrategy {
       );
     }
 
-    // Note: packageFilter is for elements, not pie-lib packages
-    // Always use compatibility report list for pie-lib packages
-    if (context.compatibilityReport?.pieLibPackages?.length) {
-      // Use ESM compatibility report list
+    // Use the filtered list from config if available (computed from element dependencies)
+    // This ensures we only sync the pie-lib packages actually needed by the elements being synced
+    if (config.pieLibPackages && config.pieLibPackages.length > 0) {
+      packagesToSync = config.pieLibPackages;
+      if (logger.isVerbose()) {
+        logger.info(`   Using filtered pie-lib list: ${packagesToSync.length} packages`);
+        logger.info(`   Packages: ${packagesToSync.join(', ')}`);
+      }
+    } else if (context.compatibilityReport?.pieLibPackages?.length) {
+      // Fallback to compatibility report list (used when no filtering is needed)
       packagesToSync = context.compatibilityReport.pieLibPackages;
       if (logger.isVerbose()) {
         logger.info(`   Using ESM compatibility report list: ${packagesToSync.length} packages`);
         logger.info(`   Packages: ${packagesToSync.join(', ')}`);
       }
     } else {
-      // Fallback: sync all packages
+      // Final fallback: sync all packages
       packagesToSync = allPackages;
       if (logger.isVerbose()) {
         logger.info(`   Using all packages fallback: ${allPackages.length} packages`);
@@ -155,12 +154,15 @@ export class PieLibStrategy implements SyncStrategy {
 
       // Ensure package.json has ESM module support and expected exports
       let wrotePkgJson = false;
-      wrotePkgJson = await this.ensurePieLibPackageJson(pkg, targetDir, config, logger);
+      wrotePkgJson = await ensurePieLibPackageJson(pkg, targetDir, config);
 
       // Ensure vite.config.ts exists
       const wroteViteConfig = await this.ensureViteConfig(pkg, targetDir, logger);
 
-      if (libChanged || wrotePkgJson || wroteViteConfig) {
+      // Ensure tsconfig.json exists
+      const wroteTsConfig = await this.ensureTsConfig(pkg, targetDir, logger);
+
+      if (libChanged || wrotePkgJson || wroteViteConfig || wroteTsConfig) {
         this.touchedPieLibPackages.add(pkg);
       }
     }
@@ -228,20 +230,9 @@ export class PieLibStrategy implements SyncStrategy {
       // Read source
       let sourceContent = await readFile(srcPath, 'utf-8');
 
-      // Transform lodash to lodash-es for ESM compatibility
-      sourceContent = transformLodashToLodashEs(sourceContent);
-
-      // Transform @pie-framework event packages to internal packages
-      sourceContent = transformPieFrameworkEventImports(sourceContent);
-
-      // Inline editable-html constants (editable-html is not ESM-compatible)
-      sourceContent = inlineEditableHtmlConstants(sourceContent);
-
-      // Fix missing TokenTypes re-export in text-select
-      sourceContent = reexportTokenTypes(sourceContent, srcPath);
-
-      // Transform SSR-unsafe require() calls to React.lazy() with dynamic imports
-      sourceContent = transformSsrRequireToReactLazy(sourceContent);
+      // Apply all standard transformations
+      const transformPipeline = createPieLibTransformPipeline();
+      sourceContent = transformPipeline(sourceContent, srcPath);
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
 
@@ -349,111 +340,6 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
     return 0;
   }
 
-  private async ensurePieLibPackageJson(
-    pkgName: string,
-    pkgDir: string,
-    config: SyncConfig,
-    _logger: any
-  ): Promise<boolean> {
-    if (!existsSync(pkgDir)) {
-      return false;
-    }
-
-    const pkgPath = join(pkgDir, 'package.json');
-    const upstreamPkgPath = join(config.pieLib, 'packages', pkgName, 'package.json');
-
-    let pkg: PackageJson | null = null;
-    if (existsSync(pkgPath)) {
-      pkg = await loadPackageJson(pkgPath).catch(() => null);
-    }
-
-    const upstreamPkg = existsSync(upstreamPkgPath)
-      ? await loadPackageJson(upstreamPkgPath).catch(() => null)
-      : null;
-
-    const upstreamDeps = (upstreamPkg?.dependencies as Record<string, string> | undefined) ?? {};
-    const expectedDeps: Record<string, string> = {};
-    for (const [name, version] of Object.entries(upstreamDeps)) {
-      if (name.startsWith('@pie-lib/')) {
-        expectedDeps[name] = 'workspace:*';
-      } else {
-        expectedDeps[name] = version;
-      }
-    }
-
-    if (!pkg) {
-      pkg = {
-        name: `@pie-lib/${pkgName}`,
-        private: true,
-        version: '0.1.0',
-        description:
-          (upstreamPkg?.description as string | undefined) ??
-          `React implementation of @pie-lib/${pkgName} synced from pie-lib`,
-        dependencies: expectedDeps,
-      };
-    }
-    if (Object.keys(expectedDeps).length > 0) {
-      pkg.dependencies = expectedDeps;
-    }
-
-    // Special handling for math-rendering: reference shared package
-    if (pkgName === 'math-rendering') {
-      pkg.dependencies = {
-        '@pie-element/shared-math-rendering': 'workspace:*',
-      };
-    }
-
-    const exportsObj: Record<string, unknown> = {
-      ...(typeof pkg.exports === 'object' && pkg.exports
-        ? (pkg.exports as Record<string, unknown>)
-        : {}),
-    };
-
-    exportsObj['.'] = {
-      types: './dist/index.d.ts',
-      default: './dist/index.js',
-    };
-    exportsObj['./src/*'] = './src/*';
-
-    pkg.name = `@pie-lib/${pkgName}`;
-    pkg.type = 'module';
-    pkg.main = './dist/index.js';
-    pkg.types = './dist/index.d.ts';
-    pkg.exports = exportsObj;
-
-    const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
-    const normalizedFiles = new Set<string>(
-      files.filter((v): v is string => typeof v === 'string')
-    );
-    normalizedFiles.add('dist');
-    normalizedFiles.add('src');
-    pkg.files = Array.from(normalizedFiles).sort();
-
-    if (typeof pkg.sideEffects === 'undefined') {
-      pkg.sideEffects = false;
-    }
-
-    // Ensure build scripts exist
-    if (!pkg.scripts || typeof pkg.scripts !== 'object') {
-      pkg.scripts = {};
-    }
-    const scripts = pkg.scripts as Record<string, string>;
-    scripts.build = 'bun x vite build && bun x tsc --emitDeclarationOnly';
-    scripts.dev = 'bun x vite';
-    scripts.test = 'bun x vitest run';
-
-    const nextContent = `${JSON.stringify(pkg, null, 2)}\n`;
-    const currentContent = existsSync(pkgPath)
-      ? await readFile(pkgPath, 'utf-8').catch(() => null)
-      : null;
-    if (currentContent === nextContent) {
-      return false;
-    }
-
-    await writePackageJson(pkgPath, pkg);
-    return true;
-  }
-
   private async ensureViteConfig(pkgName: string, pkgDir: string, logger: any): Promise<boolean> {
     if (!existsSync(pkgDir)) {
       return false;
@@ -476,5 +362,42 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
       logger.success(`  📝 ${pkgName}: generated vite.config.ts`);
     }
     return true;
+  }
+
+  private async ensureTsConfig(pkgName: string, pkgDir: string, logger: any): Promise<boolean> {
+    if (!existsSync(pkgDir)) {
+      return false;
+    }
+
+    const tsConfigPath = join(pkgDir, 'tsconfig.json');
+    const tsConfig = this.generateTsConfig();
+
+    // Check if tsconfig needs to be written
+    const currentContent = existsSync(tsConfigPath)
+      ? await readFile(tsConfigPath, 'utf-8').catch(() => null)
+      : null;
+
+    if (currentContent === tsConfig) {
+      return false;
+    }
+
+    await writeFile(tsConfigPath, tsConfig, 'utf-8');
+    if (logger.isVerbose()) {
+      logger.success(`  📝 ${pkgName}: generated tsconfig.json`);
+    }
+    return true;
+  }
+
+  private generateTsConfig(): string {
+    return `{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*"]
+}
+`;
   }
 }

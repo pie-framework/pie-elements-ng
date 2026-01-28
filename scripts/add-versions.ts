@@ -4,8 +4,8 @@
  */
 
 import { $ } from 'bun';
-import { readdirSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const DEFAULT_VERSION = '0.0.0';
 

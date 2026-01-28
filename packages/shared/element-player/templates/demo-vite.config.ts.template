@@ -24,11 +24,11 @@ export default defineConfig({
       '@pie-element/element-player': resolve(__dirname, '../../../../shared/element-player/dist/pie-element-player.js'),
 
       // {{ELEMENT_TITLE}} element and controller (SOURCE for HMR)
-      '@pie-element/{{ELEMENT_NAME}}': resolve(__dirname, '../../../src/delivery/index.ts'),
-      '@pie-element/{{ELEMENT_NAME}}/delivery': resolve(__dirname, '../../../src/delivery/index.ts'),
-      '@pie-element/{{ELEMENT_NAME}}/author': resolve(__dirname, '../../../src/author/index.ts'),
-      '@pie-element/{{ELEMENT_NAME}}/controller': resolve(__dirname, '../../../src/controller/index.ts'),
-      '@pie-element/{{ELEMENT_NAME}}/print': resolve(__dirname, '../../../src/print/index.tsx'),
+      '@pie-element/{{ELEMENT_NAME}}': resolve(__dirname, '../../src/delivery/index.ts'),
+      '@pie-element/{{ELEMENT_NAME}}/delivery': resolve(__dirname, '../../src/delivery/index.ts'),
+      '@pie-element/{{ELEMENT_NAME}}/author': resolve(__dirname, '../../src/author/index.ts'),
+      '@pie-element/{{ELEMENT_NAME}}/controller': resolve(__dirname, '../../src/controller/index.ts'),
+      '@pie-element/{{ELEMENT_NAME}}/print': resolve(__dirname, '../../src/print/index.tsx'),
 
       // Shared packages (SOURCE for HMR)
       '@pie-element/shared-player-events': resolve(__dirname, '../../../../shared/player-events/src/index.ts'),
@@ -41,7 +41,7 @@ export default defineConfig({
       '@pie-lib/correct-answer-toggle': resolve(__dirname, '../../../../lib-react/correct-answer-toggle/src/index.tsx'),
       '@pie-lib/translator': resolve(__dirname, '../../../../lib-react/translator/src/index.ts'),
       '@pie-lib/config-ui': resolve(__dirname, '../../../../lib-react/config-ui/src/index.ts'),
-      '@pie-lib/editable-html-tip-tap': resolve(__dirname, '../../../../lib-react/editable-html-tip-tap/src/index.ts'),
+      '@pie-lib/editable-html-tip-tap': resolve(__dirname, '../../../../lib-react/editable-html-tip-tap/src/index.tsx'),
     },
   },
 });

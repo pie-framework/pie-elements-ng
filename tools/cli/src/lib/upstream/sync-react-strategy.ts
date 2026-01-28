@@ -10,25 +10,14 @@ import { mkdir, readFile, stat as fsStat, writeFile, rm as fsRm } from 'node:fs/
 import { dirname, join } from 'node:path';
 import { convertJsToTs, convertJsxToTsx } from '../../utils/conversion.js';
 import { getCurrentCommit } from '../../utils/git.js';
-import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, existsAny, readdir } from './sync-filesystem.js';
 import { demoOverrides } from './demo-overrides.js';
 import { createExternalFunction, createKonvaExternalFunction } from './sync-externals.js';
-import {
-  fixImportsInFile,
-  containsJsx,
-  transformLodashToLodashEs,
-  transformPackageJsonLodash,
-  transformPieFrameworkEventImports,
-  transformPackageJsonPieEvents,
-  transformControllerUtilsImports,
-  transformPackageJsonControllerUtils,
-  transformSharedPackageImports,
-  transformPackageJsonSharedPackages,
-  inlineConfigureDefaults,
-  transformConfigureUtilsImports,
-} from './sync-imports.js';
+import { fixImportsInFile, containsJsx } from './sync-imports.js';
+import { createReactComponentTransformPipeline } from './sync-transforms.js';
+import { ensureElementPackageJson } from './sync-package-manager.js';
+import { isSubdirectoryCompatible } from './sync-compatibility.js';
 
 interface InternalSyncResult {
   filesChecked: number;
@@ -113,7 +102,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
         }
 
         // Check if student UI (src/) is ESM-compatible
-        if (!this.isSubdirectoryCompatible(pkg, 'src', context)) {
+        if (!isSubdirectoryCompatible(pkg, 'src', context)) {
           if (logger.isVerbose()) {
             logger.info(`  ⏭️  ${pkg}: skipping src/ (not ESM-compatible)`);
           }
@@ -157,7 +146,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
       const configureDir = join(upstreamElementsDir, pkg, 'configure');
       if (existsSync(configureDir)) {
         // Check if configure subdirectory is ESM-compatible
-        const configureCompatible = this.isSubdirectoryCompatible(pkg, 'configure', context);
+        const configureCompatible = isSubdirectoryCompatible(pkg, 'configure', context);
         if (configureCompatible) {
           // First, sync configure/src/ -> src/author/
           const configureSrcDir = join(configureDir, 'src');
@@ -219,8 +208,9 @@ export class ReactComponentsStrategy implements SyncStrategy {
       // Ensure package.json has ESM module support and expected exports
       let wrotePkgJson = false;
       const elementDir = join(targetBaseDir, pkg);
-      wrotePkgJson = await this.ensureElementPackageJson(pkg, elementDir, config, logger);
+      wrotePkgJson = await ensureElementPackageJson(pkg, elementDir, config);
       await this.ensureElementViteConfig(pkg, elementDir, logger);
+      const wroteTsConfig = await this.ensureTsConfig(pkg, elementDir, logger);
 
       // Ensure IIFE build configuration
       await this.ensureIifeEntryPoint(pkg, elementDir, config, logger);
@@ -230,7 +220,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
       await this.ensureElementDemoStructure(pkg, elementDir, config, logger);
       await this.applyDemoOverrides(pkg, elementDir);
 
-      if (elementChanged || wrotePkgJson) {
+      if (elementChanged || wrotePkgJson || wroteTsConfig) {
         this.touchedElementPackages.add(pkg);
       }
     }
@@ -255,39 +245,6 @@ export class ReactComponentsStrategy implements SyncStrategy {
       if (!existsSync(elementDir)) continue;
       await this.applyDemoOverrides(elementName, elementDir);
     }
-  }
-
-  /**
-   * Check if a subdirectory is ESM-compatible based on the compatibility report
-   */
-  private isSubdirectoryCompatible(
-    elementName: string,
-    subdir: 'src' | 'configure' | 'controller',
-    context: SyncContext
-  ): boolean {
-    // If no compatibility report, assume compatible (backward compatibility)
-    if (!context.compatibilityReport) {
-      return true;
-    }
-
-    const elementDetail = context.compatibilityReport.elementDetails[elementName];
-    if (!elementDetail) {
-      return true; // Element not in report, assume compatible
-    }
-
-    // Check subdirectory-specific compatibility
-    if (subdir === 'configure' && elementDetail.configure) {
-      return elementDetail.configure.compatible;
-    }
-    if (subdir === 'controller' && elementDetail.controller) {
-      return elementDetail.controller.compatible;
-    }
-    if (subdir === 'src' && elementDetail.studentUI) {
-      return elementDetail.studentUI.compatible;
-    }
-
-    // If no subdirectory info, fall back to element-level compatibility
-    return elementDetail.compatible;
   }
 
   private async cleanTargetDirExcept(
@@ -355,23 +312,9 @@ export class ReactComponentsStrategy implements SyncStrategy {
       // Read source
       let sourceContent = await readFile(srcPath, 'utf-8');
 
-      // Transform lodash to lodash-es for ESM compatibility
-      sourceContent = transformLodashToLodashEs(sourceContent);
-
-      // Transform @pie-framework event packages to internal packages
-      sourceContent = transformPieFrameworkEventImports(sourceContent);
-
-      // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
-      sourceContent = transformControllerUtilsImports(sourceContent);
-
-      // Transform @pie-lib shared packages to @pie-element/shared-*
-      sourceContent = transformSharedPackageImports(sourceContent);
-
-      // Inline configure defaults if configure wasn't synced
-      sourceContent = inlineConfigureDefaults(sourceContent);
-
-      // Transform configure utility imports for flattened directory structure
-      sourceContent = transformConfigureUtilsImports(sourceContent, join(relativePath, item));
+      // Apply all standard transformations
+      const transformPipeline = createReactComponentTransformPipeline();
+      sourceContent = transformPipeline(sourceContent, join(relativePath, item));
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
 
@@ -474,17 +417,9 @@ export class ReactComponentsStrategy implements SyncStrategy {
       // Read source
       let sourceContent = await readFile(srcPath, 'utf-8');
 
-      // Transform lodash to lodash-es for ESM compatibility
-      sourceContent = transformLodashToLodashEs(sourceContent);
-
-      // Transform @pie-framework event packages to internal packages
-      sourceContent = transformPieFrameworkEventImports(sourceContent);
-
-      // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
-      sourceContent = transformControllerUtilsImports(sourceContent);
-
-      // Transform @pie-lib shared packages to @pie-element/shared-*
-      sourceContent = transformSharedPackageImports(sourceContent);
+      // Apply all standard transformations
+      const transformPipeline = createReactComponentTransformPipeline();
+      sourceContent = transformPipeline(sourceContent);
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
 
@@ -550,17 +485,9 @@ export class ReactComponentsStrategy implements SyncStrategy {
     // Read source
     let sourceContent = await readFile(sourceFile, 'utf-8');
 
-    // Transform lodash to lodash-es for ESM compatibility
-    sourceContent = transformLodashToLodashEs(sourceContent);
-
-    // Transform @pie-framework event packages to internal packages
-    sourceContent = transformPieFrameworkEventImports(sourceContent);
-
-    // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
-    sourceContent = transformControllerUtilsImports(sourceContent);
-
-    // Transform @pie-lib shared packages to @pie-element/shared-*
-    sourceContent = transformSharedPackageImports(sourceContent);
+    // Apply all standard transformations
+    const transformPipeline = createReactComponentTransformPipeline();
+    sourceContent = transformPipeline(sourceContent);
 
     // Transform imports from './' to '../delivery/' since print is now in print/
     // This handles './main', './stimulus-tabs', './choice', etc.
@@ -632,235 +559,6 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
     // Combine: use existing header + both sets of exports
     return `${existingHeader}${existingExports}\n\n${newExports}\n`;
-  }
-
-  private async ensureElementPackageJson(
-    elementName: string,
-    elementDir: string,
-    config: SyncConfig,
-    _logger: any
-  ): Promise<boolean> {
-    // Only operate when the element directory exists
-    if (!existsSync(elementDir)) {
-      return false;
-    }
-
-    const pkgPath = join(elementDir, 'package.json');
-    const upstreamPkgPath = join(config.pieElements, 'packages', elementName, 'package.json');
-
-    let pkg: PackageJson | null = null;
-    if (existsSync(pkgPath)) {
-      pkg = await loadPackageJson(pkgPath).catch(() => null);
-    }
-
-    const upstreamPkg = existsSync(upstreamPkgPath)
-      ? await loadPackageJson(upstreamPkgPath).catch(() => null)
-      : null;
-
-    const upstreamDeps = (upstreamPkg?.dependencies as Record<string, string> | undefined) ?? {};
-    const expectedDeps: Record<string, string> = {};
-
-    for (const [name, version] of Object.entries(upstreamDeps)) {
-      if (name.startsWith('@pie-lib/')) {
-        expectedDeps[name] = 'workspace:*';
-      } else if (name !== 'react' && name !== 'react-dom') {
-        expectedDeps[name] = version;
-      }
-    }
-
-    // If missing, generate a minimal package.json based on upstream deps
-    if (!pkg) {
-      pkg = {
-        name: `@pie-element/${elementName}`,
-        private: true,
-        version: '0.1.0',
-        description:
-          (upstreamPkg?.description as string | undefined) ??
-          `React implementation of ${elementName} element synced from pie-elements`,
-        dependencies: expectedDeps,
-        peerDependencies: {
-          react: '^18.0.0',
-          'react-dom': '^18.0.0',
-        },
-      };
-    }
-    // Keep dependencies aligned with upstream for existing packages too.
-    if (Object.keys(expectedDeps).length > 0) {
-      pkg.dependencies = expectedDeps;
-    }
-
-    // Transform lodash to lodash-es for ESM compatibility
-    pkg = transformPackageJsonLodash(pkg);
-
-    // Transform @pie-framework event packages to internal packages
-    pkg = transformPackageJsonPieEvents(pkg);
-
-    // Transform @pie-lib/controller-utils to @pie-framework/controller-utils
-    pkg = transformPackageJsonControllerUtils(pkg);
-
-    // Transform @pie-lib shared packages to @pie-element/shared-*
-    pkg = transformPackageJsonSharedPackages(pkg);
-
-    // Compute expected exports based on present source entrypoints
-    const exportsObj: Record<string, unknown> = {
-      ...(typeof pkg.exports === 'object' && pkg.exports
-        ? (pkg.exports as Record<string, unknown>)
-        : {}),
-    };
-
-    exportsObj['.'] = {
-      types: './dist/index.d.ts',
-      default: './dist/index.js',
-    };
-    exportsObj['./src/*'] = './src/*';
-
-    const hasDelivery = existsAny([
-      join(elementDir, 'src/delivery/index.ts'),
-      join(elementDir, 'src/delivery/index.tsx'),
-      join(elementDir, 'src/delivery/index.js'),
-      join(elementDir, 'src/delivery/index.jsx'),
-    ]);
-    if (hasDelivery) {
-      exportsObj['./delivery'] = {
-        types: './dist/delivery/index.d.ts',
-        default: './dist/delivery/index.js',
-      };
-    }
-
-    const hasAuthor = existsAny([
-      join(elementDir, 'src/author/index.ts'),
-      join(elementDir, 'src/author/index.tsx'),
-      join(elementDir, 'src/author/index.js'),
-      join(elementDir, 'src/author/index.jsx'),
-    ]);
-    if (hasAuthor) {
-      exportsObj['./author'] = {
-        types: './dist/author/index.d.ts',
-        default: './dist/author/index.js',
-      };
-    }
-
-    const hasController = existsAny([
-      join(elementDir, 'src/controller/index.ts'),
-      join(elementDir, 'src/controller/index.tsx'),
-      join(elementDir, 'src/controller/index.js'),
-      join(elementDir, 'src/controller/index.jsx'),
-    ]);
-    if (hasController) {
-      exportsObj['./controller'] = {
-        types: './dist/controller/index.d.ts',
-        default: './dist/controller/index.js',
-      };
-    }
-
-    const hasConfigure = existsAny([
-      join(elementDir, 'src/configure/index.ts'),
-      join(elementDir, 'src/configure/index.tsx'),
-      join(elementDir, 'src/configure/index.js'),
-      join(elementDir, 'src/configure/index.jsx'),
-    ]);
-    if (hasConfigure) {
-      exportsObj['./configure'] = {
-        types: './dist/configure/index.d.ts',
-        default: './dist/configure/index.js',
-      };
-    }
-
-    const hasPrint = existsAny([
-      join(elementDir, 'src/print/index.ts'),
-      join(elementDir, 'src/print/index.tsx'),
-      join(elementDir, 'src/print/index.js'),
-      join(elementDir, 'src/print/index.jsx'),
-    ]);
-    if (hasPrint) {
-      exportsObj['./print'] = {
-        types: './dist/print/index.d.ts',
-        default: './dist/print/index.js',
-      };
-    }
-
-    const hasTypes = existsAny([
-      join(elementDir, 'src/types/index.ts'),
-      join(elementDir, 'src/types/index.tsx'),
-      join(elementDir, 'src/types/index.js'),
-      join(elementDir, 'src/types/index.jsx'),
-    ]);
-    if (hasTypes) {
-      exportsObj['./types'] = {
-        types: './dist/types/index.d.ts',
-        default: './dist/types/index.js',
-      };
-    }
-
-    pkg.name = `@pie-element/${elementName}`;
-    pkg.type = 'module';
-    pkg.main = './dist/index.js';
-    pkg.types = './dist/index.d.ts';
-    pkg.exports = exportsObj;
-
-    // Ensure files includes dist/src (without removing existing entries)
-    const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
-    const normalizedFiles = new Set<string>(
-      files.filter((v): v is string => typeof v === 'string')
-    );
-    normalizedFiles.add('dist');
-    normalizedFiles.add('src');
-    pkg.files = Array.from(normalizedFiles).sort();
-
-    // Recommend tree-shaking by default unless explicitly set otherwise
-    if (typeof pkg.sideEffects === 'undefined') {
-      pkg.sideEffects = false;
-    }
-
-    // Ensure devDependencies for build tools
-    if (!pkg.devDependencies || typeof pkg.devDependencies !== 'object') {
-      pkg.devDependencies = {};
-    }
-    const devDeps = pkg.devDependencies as Record<string, string>;
-    if (!devDeps.vite) {
-      devDeps.vite = '^6.0.0';
-    }
-    if (!devDeps.typescript) {
-      devDeps.typescript = '^5.9.3';
-    }
-    if (!devDeps['@vitejs/plugin-react']) {
-      devDeps['@vitejs/plugin-react'] = '^4.2.0';
-    }
-    if (!devDeps['@types/react']) {
-      devDeps['@types/react'] = '^18.2.0';
-    }
-    if (!devDeps['@types/react-dom']) {
-      devDeps['@types/react-dom'] = '^18.2.0';
-    }
-
-    // Ensure build scripts exist
-    if (!pkg.scripts || typeof pkg.scripts !== 'object') {
-      pkg.scripts = {};
-    }
-    const scripts = pkg.scripts as Record<string, string>;
-    // Always update build scripts to use bun x for workspace resolution
-    // Include IIFE build if IIFE entry point exists
-    const hasIifeEntry = existsSync(join(elementDir, 'src/index.iife.ts'));
-    if (hasIifeEntry) {
-      scripts.build =
-        'bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly';
-    } else {
-      scripts.build = 'bun x vite build && bun x tsc --emitDeclarationOnly';
-    }
-    scripts.dev = 'bun x vite';
-    scripts.demo = 'bun x vite --mode demo';
-    scripts.test = 'bun x vitest run';
-
-    const nextContent = `${JSON.stringify(pkg, null, 2)}\n`;
-    const currentContent = existsSync(pkgPath)
-      ? await readFile(pkgPath, 'utf-8').catch(() => null)
-      : null;
-    if (currentContent === nextContent) {
-      return false;
-    }
-
-    await writePackageJson(pkgPath, pkg);
-    return true;
   }
 
   private async ensureElementViteConfig(
@@ -1346,5 +1044,46 @@ console.log(JSON.stringify({ models: [generatedModel] }, null, 2));`;
       const sessionContent = `export default ${JSON.stringify(override.session, null, 2)};\n`;
       await writeFile(sessionPath, sessionContent, 'utf-8');
     }
+  }
+
+  private async ensureTsConfig(
+    elementName: string,
+    elementDir: string,
+    logger: any
+  ): Promise<boolean> {
+    if (!existsSync(elementDir)) {
+      return false;
+    }
+
+    const tsConfigPath = join(elementDir, 'tsconfig.json');
+    const tsConfig = this.generateTsConfig();
+
+    // Check if tsconfig needs to be written
+    const currentContent = existsSync(tsConfigPath)
+      ? await readFile(tsConfigPath, 'utf-8').catch(() => null)
+      : null;
+
+    if (currentContent === tsConfig) {
+      return false;
+    }
+
+    await writeFile(tsConfigPath, tsConfig, 'utf-8');
+    if (logger.isVerbose()) {
+      logger.success(`  📝 ${elementName}: generated tsconfig.json`);
+    }
+    return true;
+  }
+
+  private generateTsConfig(): string {
+    return `{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*"]
+}
+`;
   }
 }

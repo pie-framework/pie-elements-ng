@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { transformToAssignProps } from '../src/commands/upstream/sync-imports';
+import { transformToAssignProps } from '../src/lib/upstream/sync-imports';
 
 describe('transformToAssignProps', () => {
   it('transforms Object.entries().forEach pattern', () => {

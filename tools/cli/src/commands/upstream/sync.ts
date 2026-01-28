@@ -14,6 +14,7 @@ import { ControllersStrategy } from '../../lib/upstream/sync-controllers-strateg
 import { ReactComponentsStrategy } from '../../lib/upstream/sync-react-strategy.js';
 import { PieLibStrategy } from '../../lib/upstream/sync-pielib-strategy.js';
 import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy.js';
+import { DEFAULT_PATHS, COMPATIBILITY_FILE, WORKSPACE } from '../../lib/upstream/sync-constants.js';
 
 interface SyncConfig {
   pieElements: string;
@@ -88,14 +89,14 @@ export default class Sync extends Command {
     this.logger = new Logger(flags.verbose);
 
     const config: SyncConfig = {
-      pieElements: '../pie-elements',
-      pieLib: '../pie-lib',
-      pieElementsNg: '.',
+      pieElements: DEFAULT_PATHS.PIE_ELEMENTS,
+      pieLib: DEFAULT_PATHS.PIE_LIB,
+      pieElementsNg: DEFAULT_PATHS.PIE_ELEMENTS_NG,
       syncControllers: true,
       syncReactComponents: true,
       syncPieLibPackages: false,
       useEsmFilter: true,
-      compatibilityFile: './.compatibility/report.json',
+      compatibilityFile: COMPATIBILITY_FILE,
       dryRun: flags['dry-run'],
       verbose: flags.verbose,
       rewritePackageJson: true,
@@ -214,6 +215,7 @@ export default class Sync extends Command {
         syncControllers: config.syncControllers,
         syncReactComponents: config.syncReactComponents,
         syncPieLib: config.syncPieLibPackages,
+        pieLibPackages: config.pieLibPackages,
         skipDemos: true,
         upstreamCommit: getCurrentCommit(config.pieElements),
       },
@@ -361,8 +363,8 @@ export default class Sync extends Command {
       const pkg = (await loadPackageJson(pkgPath)) as PackageJson | null;
       const pkgDeps = getAllDeps(pkg);
       for (const name of Object.keys(pkgDeps)) {
-        if (name.startsWith('@pie-lib/')) {
-          deps.add(name.replace('@pie-lib/', ''));
+        if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+          deps.add(name.replace(WORKSPACE.PIE_LIB_PREFIX, ''));
         }
       }
     }
@@ -384,8 +386,8 @@ export default class Sync extends Command {
       const pkgJson = (await loadPackageJson(pkgPath)) as PackageJson | null;
       const deps = getAllDeps(pkgJson);
       for (const name of Object.keys(deps)) {
-        if (name.startsWith('@pie-lib/')) {
-          const depName = name.replace('@pie-lib/', '');
+        if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+          const depName = name.replace(WORKSPACE.PIE_LIB_PREFIX, '');
           if (!seen.has(depName)) queue.push(depName);
         }
       }
@@ -409,7 +411,11 @@ export default class Sync extends Command {
 
     // Only clean lib-react when syncing ALL elements (not when user specified specific elements)
     // This prevents re-syncing all 23 pie-lib packages multiple times when syncing specific elements
-    if (config.syncPieLibPackages && !config.pieLibPackagesSpecifiedByUser && !config.elementsSpecifiedByUser) {
+    if (
+      config.syncPieLibPackages &&
+      !config.pieLibPackagesSpecifiedByUser &&
+      !config.elementsSpecifiedByUser
+    ) {
       const baseDir = join(config.pieElementsNg, 'packages/lib-react');
       if (existsSync(baseDir)) {
         await fsRm(baseDir, { recursive: true, force: true });
@@ -447,6 +453,7 @@ export default class Sync extends Command {
     // Discover available packages in the workspace
     const libReactDir = join(config.pieElementsNg, 'packages/lib-react');
     const elementsReactDir = join(config.pieElementsNg, 'packages/elements-react');
+    const sharedDir = join(config.pieElementsNg, 'packages/shared');
 
     const availableLibPackages = new Set<string>();
     const availableElementPackages = new Set<string>();
@@ -469,14 +476,43 @@ export default class Sync extends Command {
       }
     }
 
+    // Also scan shared packages - these are @pie-element/shared-* packages
+    if (existsSync(sharedDir)) {
+      const sharedPackages = await readdir(sharedDir);
+      for (const pkg of sharedPackages) {
+        if (existsSync(join(sharedDir, pkg, 'package.json'))) {
+          // Shared packages use the pattern @pie-element/shared-{name}
+          // But the directory is just {name}, so we need to add the "shared-" prefix
+          availableElementPackages.add(`shared-${pkg}`);
+        }
+      }
+    }
+
     this.logger.info(`   Found ${availableLibPackages.size} lib-react packages`);
-    this.logger.info(`   Found ${availableElementPackages.size} elements-react packages\n`);
+    this.logger.info(
+      `   Found ${availableElementPackages.size} elements-react packages (including shared)\n`
+    );
 
     // Scan and rewrite package.json files
-    const packagesToCheck = [
-      ...Array.from(availableLibPackages).map((pkg) => join(libReactDir, pkg)),
-      ...Array.from(availableElementPackages).map((pkg) => join(elementsReactDir, pkg)),
-    ];
+    const packagesToCheck: string[] = [];
+
+    // Add lib-react packages
+    for (const pkg of availableLibPackages) {
+      packagesToCheck.push(join(libReactDir, pkg));
+    }
+
+    // Add elements-react packages (non-shared)
+    if (existsSync(elementsReactDir)) {
+      const elementPackages = await readdir(elementsReactDir);
+      for (const pkg of elementPackages) {
+        if (existsSync(join(elementsReactDir, pkg, 'package.json'))) {
+          packagesToCheck.push(join(elementsReactDir, pkg));
+        }
+      }
+    }
+
+    // Note: We don't check shared packages because they are managed separately
+    // and don't have dependencies on synced packages
 
     let totalRemoved = 0;
     const removedDeps: Array<{ pkg: string; dep: string }> = [];
@@ -500,8 +536,8 @@ export default class Sync extends Command {
         }
 
         // Check @pie-lib/* dependencies
-        if (dep.startsWith('@pie-lib/')) {
-          const libName = dep.replace('@pie-lib/', '');
+        if (dep.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+          const libName = dep.replace(WORKSPACE.PIE_LIB_PREFIX, '');
           if (!availableLibPackages.has(libName)) {
             depsToRemove.push(dep);
             removedDeps.push({ pkg: pkgName, dep });
@@ -510,8 +546,8 @@ export default class Sync extends Command {
         }
 
         // Check @pie-element/* dependencies
-        if (dep.startsWith('@pie-element/')) {
-          const elementName = dep.replace('@pie-element/', '');
+        if (dep.startsWith(WORKSPACE.PIE_ELEMENT_PREFIX)) {
+          const elementName = dep.replace(WORKSPACE.PIE_ELEMENT_PREFIX, '');
           if (!availableElementPackages.has(elementName)) {
             depsToRemove.push(dep);
             removedDeps.push({ pkg: pkgName, dep });

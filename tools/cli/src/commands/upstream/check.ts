@@ -4,6 +4,7 @@ import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { getCurrentCommit, getFileModifiedDate } from '../../utils/git.js';
 import { Logger } from '../../utils/logger.js';
+import { DEFAULT_PATHS } from '../../lib/upstream/sync-constants.js';
 
 interface CheckConfig {
   pieElements: string;
@@ -60,9 +61,9 @@ export default class Check extends Command {
     this.logger = new Logger(flags.verbose);
 
     const config: CheckConfig = {
-      pieElements: '../pie-elements',
-      pieLib: '../pie-lib',
-      pieElementsNg: '.',
+      pieElements: DEFAULT_PATHS.PIE_ELEMENTS,
+      pieLib: DEFAULT_PATHS.PIE_LIB,
+      pieElementsNg: DEFAULT_PATHS.PIE_ELEMENTS_NG,
       elements: flags.element ? [flags.element] : undefined,
       verbose: flags.verbose,
     };

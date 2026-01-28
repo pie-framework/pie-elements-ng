@@ -80,13 +80,20 @@ describe('ESM build outputs', () => {
       }
 
       for (const target of distTargets) {
-        if (!target.endsWith('.js') && !target.endsWith('.mjs')) {
+        // Allow CSS files for packages that need them (e.g., mathquill)
+        const isCss = target.endsWith('.css');
+        if (!isCss && !target.endsWith('.js') && !target.endsWith('.mjs')) {
           failures.push(`${pkg.name ?? pkgPath}: export target is not .js/.mjs (${target})`);
         }
 
         const outputPath = resolve(pkgDir, target);
         if (!existsSync(outputPath)) {
           failures.push(`${pkg.name ?? pkgPath}: missing build output ${target}`);
+          continue;
+        }
+
+        // Skip ESM validation for CSS files
+        if (isCss) {
           continue;
         }
 

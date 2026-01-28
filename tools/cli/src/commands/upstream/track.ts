@@ -8,6 +8,7 @@ import {
   getAuthorName,
 } from '../../utils/git.js';
 import { Logger } from '../../utils/logger.js';
+import { DEFAULT_PATHS, HISTORY_FILE } from '../../lib/upstream/sync-constants.js';
 
 interface UpstreamState {
   lastCheck: string;
@@ -40,7 +41,6 @@ export default class Track extends Command {
   };
 
   private logger = new Logger();
-  private readonly HISTORY_FILE = '.upstream-sync-history.json';
 
   public async run(): Promise<void> {
     const { args } = await this.parse(Track);
@@ -66,15 +66,15 @@ export default class Track extends Command {
   private async showCommits(): Promise<void> {
     this.logger.section('📊 Upstream Repository Status');
 
-    const pieElements = '../pie-elements';
-    const pieLib = '../pie-lib';
+    const pieElements = DEFAULT_PATHS.PIE_ELEMENTS;
+    const pieLib = DEFAULT_PATHS.PIE_LIB;
 
-    if (!existsSync(this.HISTORY_FILE)) {
+    if (!existsSync(HISTORY_FILE)) {
       this.logger.warn('No history file found. Run "record" first to establish baseline.');
       return;
     }
 
-    const history: UpstreamState = JSON.parse(await readFile(this.HISTORY_FILE, 'utf-8'));
+    const history: UpstreamState = JSON.parse(await readFile(HISTORY_FILE, 'utf-8'));
 
     this.logger.info(`\nLast checked: ${history.lastCheck}`);
     this.logger.info(`Checked by: ${history.checkedBy}\n`);
@@ -111,8 +111,8 @@ export default class Track extends Command {
   }
 
   private async recordState(): Promise<void> {
-    const pieElements = '../pie-elements';
-    const pieLib = '../pie-lib';
+    const pieElements = DEFAULT_PATHS.PIE_ELEMENTS;
+    const pieLib = DEFAULT_PATHS.PIE_LIB;
 
     const state: UpstreamState = {
       lastCheck: new Date().toISOString(),
@@ -123,7 +123,7 @@ export default class Track extends Command {
       checkedBy: getAuthorName(pieElements),
     };
 
-    await writeFile(this.HISTORY_FILE, `${JSON.stringify(state, null, 2)}\n`, 'utf-8');
+    await writeFile(HISTORY_FILE, `${JSON.stringify(state, null, 2)}\n`, 'utf-8');
 
     this.logger.success('✅ Upstream state recorded');
     this.logger.info(`   pie-elements: ${state.upstreamCommits.pieElements.substring(0, 8)}`);
@@ -131,7 +131,7 @@ export default class Track extends Command {
   }
 
   private async compareCommit(commit: string): Promise<void> {
-    const pieElements = '../pie-elements';
+    const pieElements = DEFAULT_PATHS.PIE_ELEMENTS;
 
     this.logger.section(`📋 Commit Details: ${commit.substring(0, 8)}`);
 

@@ -30,10 +30,6 @@ class SliderElement extends HTMLElement {
   private _env = $state<PieEnvironment>({ mode: 'gather', role: 'student' });
   private _evaluation = $state<SliderEvaluation | undefined>(undefined);
 
-  constructor() {
-    super();
-  }
-
   // Properties with getters/setters
   set model(value: SliderModel | null) {
     this._model = value;

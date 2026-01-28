@@ -286,7 +286,7 @@ onMount(async () => {
     }
 
     // Try to load print component (silently fail if not available)
-    const printTag = `${elementTag}-print`;
+    const printTag = `${elementName}-print`;
     try {
       const cdnUrl = ''; // Empty for development with import maps
       await loadElement(`${packageName}/print`, printTag, cdnUrl, debug, true);
