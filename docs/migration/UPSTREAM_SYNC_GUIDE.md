@@ -462,8 +462,10 @@ bun run build
 
 - ✅ Synced to `packages/elements-react/{element}/src/delivery/` (student/teacher UI)
 - ✅ Synced to `packages/elements-react/{element}/src/author/` (authoring UI)
+- ✅ Synced to `packages/elements-react/{element}/src/print/` (print rendering, if exists)
 - ✅ Converted from `.jsx` to `.tsx`
 - ✅ Updated imports to use pie-element libraries
+- ✅ Print imports automatically transformed (`'./main'` → `'../delivery/main'`)
 
 **Philosophy:** React packages are COPIES of upstream (not custom implementations).
 
@@ -750,9 +752,11 @@ bun run cli upstream:sync --element=multiple-choice
 # ├── src/
 # │   ├── delivery/          ← React UI (synced)
 # │   ├── author/            ← React UI (synced)
-# │   └── controller/       ← Business logic (synced)
-# ├── package.json          ← Dependencies (synced)
-# └── vite.config.ts        ← Our build config
+# │   ├── controller/        ← Business logic (synced)
+# │   ├── print/             ← Print rendering (synced if exists)
+# │   └── index.ts           ← Main entry (generated)
+# ├── package.json           ← Dependencies (synced)
+# └── vite.config.ts         ← Our build config
 ```
 
 #### 3. Review and Test React Package

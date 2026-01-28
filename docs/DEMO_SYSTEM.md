@@ -227,8 +227,7 @@ packages/elements-react/{element}/src/
 │   ├── index.ts          # Web component + React rendering
 │   ├── main.tsx          # Root component
 │   ├── [components].tsx  # Sub-components
-│   ├── [utilities].ts    # Delivery-specific utilities
-│   └── print.ts          # Print mode (optional, reuses delivery components)
+│   └── [utilities].ts    # Delivery-specific utilities
 │
 ├── author/                # Authoring interface
 │   ├── index.ts          # Web component + React rendering
@@ -240,6 +239,9 @@ packages/elements-react/{element}/src/
 │   ├── index.ts
 │   ├── defaults.ts
 │   └── utils.ts
+│
+├── print/                 # Print rendering (optional)
+│   └── index.ts          # Reuses ../delivery/main with model transformation
 │
 └── index.ts               # Main entry (re-exports from delivery/)
 ```
