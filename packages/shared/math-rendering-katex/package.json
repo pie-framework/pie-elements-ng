@@ -1,0 +1,45 @@
+{
+  "name": "@pie-element/math-rendering-katex",
+  "version": "1.0.0",
+  "description": "KaTeX adapter for PIE math rendering (~100KB)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
+    "dev": "vite build --watch",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "katex": "^0.16.27",
+    "@pie-element/math-rendering": "workspace:*",
+    "@pie-element/shared-mathml-to-latex": "workspace:*"
+  },
+  "peerDependencies": {
+    "katex": "^0.16.27"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/katex": "^0.16.7",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "vitest": "^4.0.17"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

@@ -15,6 +15,8 @@ import { ReactComponentsStrategy } from '../../lib/upstream/sync-react-strategy.
 import { PieLibStrategy } from '../../lib/upstream/sync-pielib-strategy.js';
 import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy.js';
 import { DEFAULT_PATHS, COMPATIBILITY_FILE, WORKSPACE } from '../../lib/upstream/sync-constants.js';
+import { generateDemoMetadata } from '../../lib/upstream/sync-demo-metadata.js';
+import { assertReposExist } from '../../lib/upstream/repo-utils.js';
 
 interface SyncConfig {
   pieElements: string;
@@ -135,16 +137,8 @@ export default class Sync extends Command {
     this.logger.info(`   Destination: ${config.pieElementsNg}/packages/`);
     this.logger.info(`   Mode:        ${config.dryRun ? 'DRY RUN' : 'LIVE'}\n`);
 
-    // Apply ESM compatibility filter and load report for summary
-    let compatibilityReport: CompatibilityReport | null = null;
-    if (config.useEsmFilter) {
-      try {
-        compatibilityReport = await loadCompatibilityReport(config.compatibilityFile);
-      } catch {
-        // Report loading handled in applyEsmFilter
-      }
-    }
-    await this.applyEsmFilter(config);
+    // Apply ESM compatibility filter (also returns report for summary)
+    const compatibilityReport = await this.applyEsmFilter(config);
 
     // Auto-sync pie-lib dependencies for selected elements (unless explicit pie-lib mode)
     if (config.autoSyncPieLibDeps) {
@@ -192,8 +186,10 @@ export default class Sync extends Command {
     }
 
     // Verify repos exist
-    if (!existsSync(config.pieElements)) {
-      this.logger.error(`pie-elements not found at ${config.pieElements}`);
+    try {
+      assertReposExist([{ label: 'pie-elements', path: config.pieElements }]);
+    } catch (error) {
+      this.logger.error(error instanceof Error ? error.message : String(error));
       this.error('Sync failed', { exit: 1 });
     }
 
@@ -280,6 +276,11 @@ export default class Sync extends Command {
       ).length;
     }
 
+    // Generate demo metadata for SvelteKit app
+    if (!config.dryRun) {
+      await this.generateDemoMetadata(config);
+    }
+
     // Print summary and handle errors
     printSyncSummary(syncSummary, compatibilityReport, config.pieElementsNg, this.logger);
 
@@ -288,9 +289,9 @@ export default class Sync extends Command {
     }
   }
 
-  private async applyEsmFilter(config: SyncConfig): Promise<void> {
+  private async applyEsmFilter(config: SyncConfig): Promise<CompatibilityReport | null> {
     if (!config.useEsmFilter) {
-      return;
+      return null;
     }
 
     let report: CompatibilityReport | null = null;
@@ -300,11 +301,11 @@ export default class Sync extends Command {
       this.logger.warn(`⚠️  ESM compatibility file not found at ${config.compatibilityFile}`);
       this.logger.warn('   Run: bun cli upstream:analyze-esm to generate it');
       this.logger.warn('   Proceeding without ESM filter...\n');
-      return;
+      return null;
     }
 
     if (!report) {
-      return;
+      return null;
     }
 
     this.logger.info(`📋 Using ESM compatibility filter from ${config.compatibilityFile}`);
@@ -338,6 +339,8 @@ export default class Sync extends Command {
     if (config.syncPieLibPackages && !config.pieLibPackages) {
       config.pieLibPackages = report.pieLibPackages;
     }
+
+    return report;
   }
 
   private async listElementPackages(config: SyncConfig): Promise<string[]> {
@@ -670,6 +673,16 @@ export default class Sync extends Command {
       } else {
         result.errors.push(errorMsg);
       }
+    }
+  }
+
+  private async generateDemoMetadata(_config: SyncConfig): Promise<void> {
+    this.logger.section('📦 Generating demos');
+    try {
+      await generateDemoMetadata();
+      this.logger.info('   ✓ Demo metadata generated');
+    } catch (error) {
+      this.logger.warn(`   ⚠️  Failed to generate demos: ${error}`);
     }
   }
 }

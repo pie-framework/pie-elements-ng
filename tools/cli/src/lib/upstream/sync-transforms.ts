@@ -11,6 +11,7 @@ import {
   transformPieFrameworkEventImports,
   transformControllerUtilsImports,
   transformSharedPackageImports,
+  transformMathquillImports,
   inlineEditableHtmlConstants,
   reexportTokenTypes,
   transformSsrRequireToReactLazy,
@@ -20,6 +21,7 @@ import {
   transformPackageJsonPieEvents,
   transformPackageJsonControllerUtils,
   transformPackageJsonSharedPackages,
+  transformPackageJsonMathquill,
   fixStyledComponentTypes,
   fixExportedFunctionTypes,
 } from './sync-imports.js';
@@ -44,9 +46,10 @@ export interface TransformOptions {
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
- * 5. Configure-specific transforms (if enabled)
- * 6. Pie-lib-specific transforms (if enabled)
- * 7. Fix styled component TypeScript type inference errors
+ * 5. @pie-framework/mathquill → @pie-element/shared-mathquill
+ * 7. Configure-specific transforms (if enabled)
+ * 8. Pie-lib-specific transforms (if enabled)
+ * 9. Fix styled component TypeScript type inference errors
  */
 export function applySourceTransforms(content: string, options: TransformOptions = {}): string {
   let transformed = content;
@@ -56,6 +59,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
   transformed = transformSharedPackageImports(transformed);
+  transformed = transformMathquillImports(transformed);
 
   // Configure-specific transforms
   if (options.includeConfigure) {
@@ -89,6 +93,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
+ * 5. @pie-framework/mathquill → @pie-element/shared-mathquill
  */
 export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   let transformed = pkg;
@@ -97,6 +102,7 @@ export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   transformed = transformPackageJsonPieEvents(transformed);
   transformed = transformPackageJsonControllerUtils(transformed);
   transformed = transformPackageJsonSharedPackages(transformed);
+  transformed = transformPackageJsonMathquill(transformed);
 
   return transformed;
 }

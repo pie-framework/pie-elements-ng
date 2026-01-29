@@ -12,7 +12,9 @@
       playerRole: { attribute: 'player-role', type: 'String' },
       partialScoring: { attribute: 'partial-scoring', type: 'Boolean' },
       addCorrectResponse: { attribute: 'add-correct-response', type: 'Boolean' },
-      debug: { attribute: 'debug', type: 'Boolean' }
+      debug: { attribute: 'debug', type: 'Boolean' },
+      capabilities: { reflect: false, type: 'Array' },
+      preloadedController: { reflect: false, type: 'Object' }
     }
   }}
 />
@@ -34,8 +36,8 @@ import ModelInspector from './components/ModelInspector.svelte';
 import Tabs from './components/Tabs.svelte';
 import { loadElement, loadController } from './lib/element-loader';
 import type { PieController } from './lib/types';
-import { createKatexRenderer } from '@pie-element/math-typesetting';
-import type { MathRenderer } from '@pie-element/math-typesetting';
+import { createKatexRenderer } from '@pie-element/math-rendering-katex';
+import type { MathRenderer } from '@pie-element/math-rendering';
 
 // Props with Svelte 5 runes
 let {
@@ -52,6 +54,7 @@ let {
   addCorrectResponse = $bindable(false),
   debug = false,
   preloadedController = undefined,
+  capabilities = undefined,
 }: {
   elementName?: string;
   model?: any;
@@ -66,6 +69,7 @@ let {
   addCorrectResponse?: boolean;
   debug?: boolean;
   preloadedController?: PieController;
+  capabilities?: string[];
 } = $props();
 
 // State
@@ -83,9 +87,9 @@ let modelError = $state<string | null>(null);
 let splitRatio = $state(50);
 let sessionVersion = $state(0);
 let modelVersion = $state(0);
-let lastSessionRef = session;
-let lastElementModelRef = elementModel;
-let lastElementSessionRef = session;
+let lastSessionRef = $state<any>(null);
+let lastElementModelRef = $state<any>(null);
+let lastElementSessionRef = $state<any>(null);
 let roleLocked = $state(false);
 let syncing = $state(false);
 
@@ -137,15 +141,22 @@ $effect(() => {
 });
 
 $effect(() => {
-  if (session && session !== lastSessionRef) {
-    lastSessionRef = session;
-    const normalized = normalizeSession(session);
-    if (normalized !== session) {
-      session = normalized;
-    }
-    sessionVersion += 1;
-    logConsole('session:prop', normalized);
+  if (!session) return;
+
+  // Only process if session reference actually changed
+  if (session === lastSessionRef) return;
+
+  const normalized = normalizeSession(session);
+  lastSessionRef = normalized;
+
+  // If normalization changed the object, update the bindable prop
+  if (normalized !== session) {
+    session = normalized;
+    return; // Exit early to avoid double-processing
   }
+
+  sessionVersion += 1;
+  logConsole('session:prop', normalized);
 });
 
 $effect(() => {
@@ -233,6 +244,11 @@ onMount(async () => {
   window.addEventListener('error', handleWindowError);
   window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
+  // Initialize tracking refs
+  lastSessionRef = session;
+  lastElementSessionRef = session;
+  lastElementModelRef = elementModel;
+
   try {
     if (!elementName) {
       throw new Error('element-name attribute is required');
@@ -263,8 +279,21 @@ onMount(async () => {
       console.log(`[pie-element-player] hosted=true, skipping controller load`);
     }
 
-    // Try to load configure if requested (silently fail if not available)
-    if (showConfigure) {
+    // Check capabilities metadata (if provided)
+    if (capabilities) {
+      // Use metadata to avoid unnecessary loading attempts
+      hasConfigure = capabilities.includes('author');
+      hasPrint = capabilities.includes('print');
+      if (debug) {
+        console.log(`[pie-element-player] Using capabilities metadata:`, {
+          hasConfigure,
+          hasPrint,
+        });
+      }
+    }
+
+    // Try to load configure if requested AND not already determined by capabilities
+    if (showConfigure && !capabilities) {
       try {
         const cdnUrl = ''; // Empty for development with import maps
         await loadElement(`${packageName}/configure`, configureTag, cdnUrl, debug, true);
@@ -285,18 +314,20 @@ onMount(async () => {
       }
     }
 
-    // Try to load print component (silently fail if not available)
+    // Try to load print component if not already determined by capabilities
     const printTag = `${elementName}-print`;
-    try {
-      const cdnUrl = ''; // Empty for development with import maps
-      await loadElement(`${packageName}/print`, printTag, cdnUrl, debug, true);
-      if (customElements.get(printTag)) {
-        hasPrint = true;
-        if (debug) console.log(`[pie-element-player] Print component loaded`);
+    if (!capabilities) {
+      try {
+        const cdnUrl = ''; // Empty for development with import maps
+        await loadElement(`${packageName}/print`, printTag, cdnUrl, debug, true);
+        if (customElements.get(printTag)) {
+          hasPrint = true;
+          if (debug) console.log(`[pie-element-player] Print component loaded`);
+        }
+      } catch (e) {
+        // Print is optional, fail silently
+        if (debug) console.log(`[pie-element-player] Print not available for ${elementName}`);
       }
-    } catch (e) {
-      // Print is optional, fail silently
-      if (debug) console.log(`[pie-element-player] Print not available for ${elementName}`);
     }
 
     loading = false;

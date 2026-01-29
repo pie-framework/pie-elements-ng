@@ -1,0 +1,11 @@
+export default {
+  "models": [
+    {
+      "id": "1",
+      "element": "fraction-model",
+      "title": "Title",
+      "prompt": "Custom Question"
+    }
+  ]
+}
+;

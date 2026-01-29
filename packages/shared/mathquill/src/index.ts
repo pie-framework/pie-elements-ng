@@ -3,32 +3,26 @@
  * PIE Framework fork with matrix support, accessibility, and custom symbols
  *
  * This is a modernized ESM wrapper around the original MathQuill IIFE code.
- * The original source uses jQuery extensively and is wrapped in an IIFE that
- * attaches MathQuill to the window object. This wrapper:
- * 1. Imports jQuery and makes it globally available
- * 2. Imports the concatenated IIFE bundle
- * 3. Exports the MathQuill API from window
+ * The IIFE has been modified to:
+ * 1. Accept jQuery as a parameter instead of expecting it globally
+ * 2. Return the MathQuill object instead of attaching to window
+ *
+ * This approach avoids global scope pollution and works properly in ESM environments.
  *
  * @see https://github.com/pie-framework/mathquill
  */
 import jQuery from 'jquery';
 
-// Make jQuery available globally for MathQuill's internal code
-// MathQuill expects window.jQuery to exist and uses it extensively
-if (typeof window !== 'undefined') {
-  window.jQuery = window.$ = jQuery;
-}
-
-// Import the concatenated legacy bundle
+// Import the concatenated legacy bundle function
 // This contains all MathQuill source: intro + sources + outro
-// The bundle is wrapped in an IIFE that attaches MathQuill to window
-import './legacy/mathquill-bundle.js';
+// The IIFE accepts jQuery as parameter and returns MathQuill
+import mathquillFactory from './legacy/mathquill-bundle.js';
 
 // Import CSS
 import './css/main.less';
 
-// Get the MathQuill API from window (attached by the IIFE)
-const MathQuill = (window as any).MathQuill;
+// Initialize MathQuill by passing jQuery to the factory function
+const MathQuill = mathquillFactory(jQuery);
 
 // Export the MathQuill interface
 export default MathQuill;

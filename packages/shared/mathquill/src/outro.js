@@ -10,4 +10,7 @@ for (var key in MQ1) (((key, val) => {
   else MathQuill[key] = val;
 })(key, MQ1[key]));
 
-}());
+// Return MathQuill for ESM export
+return MathQuill;
+
+});

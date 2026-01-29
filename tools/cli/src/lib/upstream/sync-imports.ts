@@ -327,10 +327,10 @@ export function transformPieFrameworkEventImports(content: string): string {
 }
 
 /**
- * Transform @pie-lib/controller-utils imports to internal @pie-framework/controller-utils
+ * Transform @pie-lib/controller-utils imports to internal @pie-element/shared-controller-utils
  *
  * Handles:
- * - @pie-lib/controller-utils → @pie-framework/controller-utils
+ * - @pie-lib/controller-utils → @pie-element/shared-controller-utils
  *
  * Our internal controller-utils package has the same API but with modernized TypeScript
  * and no lodash/debug dependencies.
@@ -338,7 +338,7 @@ export function transformPieFrameworkEventImports(content: string): string {
 export function transformControllerUtilsImports(content: string): string {
   return content.replace(
     /from\s+['"]@pie-lib\/controller-utils['"]/g,
-    "from '@pie-framework/controller-utils'"
+    "from '@pie-element/shared-controller-utils'"
   );
 }
 
@@ -346,7 +346,7 @@ export function transformControllerUtilsImports(content: string): string {
  * Transform @pie-lib shared package imports to internal @pie-element/shared-* packages
  *
  * Handles:
- * - @pie-lib/math-rendering → @pie-element/shared-math-rendering
+ * - @pie-lib/math-rendering → @pie-element/math-rendering-katex
  * - @pie-lib/mathml-to-latex → @pie-element/shared-mathml-to-latex
  *
  * These packages have been moved to shared/ for better version control and consistency.
@@ -357,7 +357,7 @@ export function transformSharedPackageImports(content: string): string {
   // Transform math-rendering
   transformed = transformed.replace(
     /from\s+['"]@pie-lib\/math-rendering['"]/g,
-    "from '@pie-element/shared-math-rendering'"
+    "from '@pie-element/math-rendering-katex'"
   );
 
   // Transform mathml-to-latex
@@ -366,7 +366,29 @@ export function transformSharedPackageImports(content: string): string {
     "from '@pie-element/shared-mathml-to-latex'"
   );
 
+  // Transform feedback
+  transformed = transformed.replace(
+    /from\s+['"]@pie-lib\/feedback['"]/g,
+    "from '@pie-element/shared-feedback'"
+  );
+
   return transformed;
+}
+
+/**
+ * Transform @pie-framework/mathquill imports to internal @pie-element/shared-mathquill
+ *
+ * Handles:
+ * - @pie-framework/mathquill → @pie-element/shared-mathquill
+ *
+ * Our internal mathquill package is a fork from the PIE org with matrix support,
+ * accessibility features, and modernized ESM code.
+ */
+export function transformMathquillImports(content: string): string {
+  return content.replace(
+    /from\s+['"]@pie-framework\/mathquill['"]/g,
+    "from '@pie-element/shared-mathquill'"
+  );
 }
 
 /**
@@ -403,7 +425,7 @@ export function transformPackageJsonPieEvents<T extends Record<string, any>>(pac
 /**
  * Transform package.json dependencies for @pie-lib/controller-utils
  *
- * Replaces @pie-lib/controller-utils with internal @pie-framework/controller-utils
+ * Replaces @pie-lib/controller-utils with internal @pie-element/shared-controller-utils
  */
 export function transformPackageJsonControllerUtils<T extends Record<string, any>>(
   packageJson: T
@@ -412,11 +434,11 @@ export function transformPackageJsonControllerUtils<T extends Record<string, any
 
   // Replace @pie-lib/controller-utils with internal package
   if (transformed.dependencies?.['@pie-lib/controller-utils']) {
-    transformed.dependencies['@pie-framework/controller-utils'] = 'workspace:*';
+    transformed.dependencies['@pie-element/shared-controller-utils'] = 'workspace:*';
     delete transformed.dependencies['@pie-lib/controller-utils'];
   }
   if (transformed.devDependencies?.['@pie-lib/controller-utils']) {
-    transformed.devDependencies['@pie-framework/controller-utils'] = 'workspace:*';
+    transformed.devDependencies['@pie-element/shared-controller-utils'] = 'workspace:*';
     delete transformed.devDependencies['@pie-lib/controller-utils'];
   }
 
@@ -434,8 +456,9 @@ export function transformPackageJsonSharedPackages<T extends Record<string, any>
   const transformed = { ...packageJson };
 
   const sharedPackages = {
-    '@pie-lib/math-rendering': '@pie-element/shared-math-rendering',
+    '@pie-lib/math-rendering': '@pie-element/math-rendering-katex',
     '@pie-lib/mathml-to-latex': '@pie-element/shared-mathml-to-latex',
+    '@pie-lib/feedback': '@pie-element/shared-feedback',
   };
 
   for (const [oldPkg, newPkg] of Object.entries(sharedPackages)) {
@@ -449,6 +472,27 @@ export function transformPackageJsonSharedPackages<T extends Record<string, any>
       transformed.devDependencies[newPkg] = 'workspace:*';
       delete transformed.devDependencies[oldPkg];
     }
+  }
+
+  return transformed;
+}
+
+/**
+ * Transform package.json dependencies for @pie-framework/mathquill
+ *
+ * Replaces @pie-framework/mathquill with internal @pie-element/shared-mathquill
+ */
+export function transformPackageJsonMathquill<T extends Record<string, any>>(packageJson: T): T {
+  const transformed = { ...packageJson };
+
+  // Replace @pie-framework/mathquill with internal package
+  if (transformed.dependencies?.['@pie-framework/mathquill']) {
+    transformed.dependencies['@pie-element/shared-mathquill'] = 'workspace:*';
+    delete transformed.dependencies['@pie-framework/mathquill'];
+  }
+  if (transformed.devDependencies?.['@pie-framework/mathquill']) {
+    transformed.devDependencies['@pie-element/shared-mathquill'] = 'workspace:*';
+    delete transformed.devDependencies['@pie-framework/mathquill'];
   }
 
   return transformed;
@@ -847,6 +891,38 @@ export function fixExportedFunctionTypes(content: string, sourcePath?: string): 
       /export const dataToXBand = \(/g,
       'export const dataToXBand: any = ('
     );
+  }
+
+  // Fix translator package default export type inference issue
+  // The spread operator `...i18next` causes TypeScript to require a reference to i18next types
+  if (sourcePath?.includes('translator') && sourcePath?.includes('/src/index')) {
+    // Add type imports
+    if (!transformed.includes('type i18n')) {
+      transformed = transformed.replace(
+        /import i18next from 'i18next';/,
+        "import i18next, { type i18n, type TOptions } from 'i18next';"
+      );
+    }
+
+    // Add type annotations before the export default
+    if (!transformed.includes('interface Translator')) {
+      const typeAnnotations = `
+interface Translator extends i18n {
+  t: (key: string, options: TOptions) => string;
+}
+
+interface TranslatorModule {
+  translator: Translator;
+  languageOptions: Array<{ value: string; label: string }>;
+}
+
+const translatorModule: TranslatorModule = `;
+
+      transformed = transformed.replace(/export default \{/, typeAnnotations + '{');
+
+      // Replace the export statement
+      transformed = transformed.replace(/\n\};$/m, '\n};\n\nexport default translatorModule;');
+    }
   }
 
   return transformed;

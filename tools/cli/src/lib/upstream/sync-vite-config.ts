@@ -82,21 +82,7 @@ export default defineConfig(({ mode }) => {
         formats: ['es'],
       },
       rollupOptions: {
-        external: (id) => {
-          return (
-            /^react($|\\/)/.test(id) ||
-            /^react-dom($|\\/)/.test(id) ||
-            /^@pie-lib\\//.test(id) ||
-            /^@pie-element\\//.test(id) ||
-            /^@pie-framework\\//.test(id) ||
-            /^@mui\\//.test(id) ||
-            /^@emotion\\//.test(id) ||
-            /^d3-/.test(id) ||
-            id === 'lodash-es' ||
-            /^lodash-es\\//.test(id) ||
-            ['prop-types', 'classnames', 'debug', '@dnd-kit/core', 'react-transition-group'].includes(id)
-          );
-        },
+        external: ${createExternalFunction('element')},
         output: {
           preserveModules: true,
           preserveModulesRoot: 'src',
@@ -121,7 +107,7 @@ export function generatePieLibViteConfig(packageName?: string, packageDir?: stri
     }
   }
 
-  // Special config for math-rendering wrapper (externalizes shared package)
+  // Special config for math-rendering wrapper (externalizes adapter package)
   if (packageName === 'math-rendering') {
     return `import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
@@ -138,6 +124,7 @@ export default defineConfig({
       external: (id) => {
         return (
           /^@pie-element\\/shared-/.test(id) ||
+          id === '@pie-element/math-rendering-katex' ||
           /^@pie-lib\\//.test(id) ||
           ['katex', 'debug'].includes(id)
         );

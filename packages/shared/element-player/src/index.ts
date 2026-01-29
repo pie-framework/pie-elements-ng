@@ -14,6 +14,9 @@
  *   ></pie-element-player>
  */
 
+// Import Tailwind CSS + DaisyUI
+import './app.css';
+
 export { default as PieElementPlayer } from './PieElementPlayer.svelte';
 
 // Import the component to register it as a custom element

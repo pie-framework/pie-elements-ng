@@ -235,17 +235,26 @@ export function ensureBuildToolDependencies(pkg: PackageJson): void {
 }
 
 /**
- * Check if a @pie-framework package exists in the workspace
+ * Check if a @pie-framework or @pie-element/shared- package exists in the workspace
+ *
+ * Supports both legacy @pie-framework naming and new @pie-element/shared- naming:
+ * - @pie-framework/mathquill → packages/shared/mathquill (legacy, should migrate)
+ * - @pie-element/shared-mathquill → packages/shared/mathquill (new convention)
  */
 function isPieFrameworkWorkspacePackage(packageName: string, config: SyncConfig): boolean {
-  if (!packageName.startsWith(WORKSPACE.PIE_FRAMEWORK_PREFIX)) {
+  let pkgName: string;
+
+  if (packageName.startsWith(WORKSPACE.PIE_FRAMEWORK_PREFIX)) {
+    // Legacy @pie-framework/* packages
+    pkgName = packageName.replace(WORKSPACE.PIE_FRAMEWORK_PREFIX, '');
+  } else if (packageName.startsWith(WORKSPACE.PIE_ELEMENT_PREFIX + 'shared-')) {
+    // New @pie-element/shared-* packages
+    pkgName = packageName.replace(WORKSPACE.PIE_ELEMENT_PREFIX + 'shared-', '');
+  } else {
     return false;
   }
 
-  // Extract package name without scope (e.g., @pie-framework/controller-utils -> controller-utils)
-  const pkgName = packageName.replace(WORKSPACE.PIE_FRAMEWORK_PREFIX, '');
   const sharedPackagePath = join(config.pieElementsNg, 'packages/shared', pkgName, 'package.json');
-
   return existsSync(sharedPackagePath);
 }
 
@@ -331,14 +340,60 @@ export async function ensureElementPackageJson(
     pkg.dependencies = expectedDeps;
   }
 
+  // Preserve pie metadata (if present upstream or locally)
+  const pieMetadata = ((upstreamPkg as PackageJson | null | undefined)?.pie ??
+    (pkg as PackageJson | null | undefined)?.pie ??
+    undefined) as { capabilities?: string[] } | undefined;
+
   // Apply all standard transformations
   pkg = applyPackageJsonTransforms(pkg);
+
+  if (pieMetadata) {
+    pkg.pie = pieMetadata;
+  }
 
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
 
   // Generate exports based on entry points
   pkg.exports = generateExportsObject(entryPoints);
+
+  // Warn when metadata/structure disagree for core capabilities
+  const metadataCapabilities = Array.isArray(pieMetadata?.capabilities)
+    ? new Set(pieMetadata.capabilities)
+    : null;
+
+  if (!entryPoints.hasDelivery || !entryPoints.hasController) {
+    console.warn(
+      `[upstream:update] ${elementName} missing required entry points:` +
+        `${entryPoints.hasDelivery ? '' : ' delivery'}` +
+        `${entryPoints.hasController ? '' : ' controller'}`
+    );
+  }
+
+  if (metadataCapabilities) {
+    if (metadataCapabilities.has('author') && !entryPoints.hasAuthor) {
+      console.warn(
+        `[upstream:update] ${elementName} metadata includes author but no src/author entry`
+      );
+    }
+    if (metadataCapabilities.has('print') && !entryPoints.hasPrint) {
+      console.warn(
+        `[upstream:update] ${elementName} metadata includes print but no src/print entry`
+      );
+    }
+  } else {
+    if (entryPoints.hasAuthor) {
+      console.warn(
+        `[upstream:update] ${elementName} has src/author but no pie.capabilities metadata`
+      );
+    }
+    if (entryPoints.hasPrint) {
+      console.warn(
+        `[upstream:update] ${elementName} has src/print but no pie.capabilities metadata`
+      );
+    }
+  }
 
   // Set core package.json fields
   pkg.name = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}`;
@@ -418,7 +473,10 @@ export async function ensurePieLibPackageJson(
   const expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
-    if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+    // Transform @pie-framework/mathquill to @pie-element/shared-mathquill
+    if (name === '@pie-framework/mathquill') {
+      expectedDeps['@pie-element/shared-mathquill'] = WORKSPACE.VERSION;
+    } else if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[name] = WORKSPACE.VERSION;
     } else {
       expectedDeps[name] = version;
@@ -443,10 +501,10 @@ export async function ensurePieLibPackageJson(
     pkg.dependencies = expectedDeps;
   }
 
-  // Special handling for math-rendering: reference shared package
+  // Special handling for math-rendering: reference KaTeX adapter package
   if (pkgName === 'math-rendering') {
     pkg.dependencies = {
-      [`${WORKSPACE.PIE_ELEMENT_PREFIX}shared-math-rendering`]: WORKSPACE.VERSION,
+      [`${WORKSPACE.PIE_ELEMENT_PREFIX}math-rendering-katex`]: WORKSPACE.VERSION,
     };
   }
 

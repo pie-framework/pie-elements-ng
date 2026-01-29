@@ -9,6 +9,7 @@ export default defineConfig({
       formats: ['es'],
       fileName: 'index',
     },
+    minify: false, // Don't minify - the bundle contains pre-concatenated code
     rollupOptions: {
       external: ['jquery'], // Don't bundle jQuery
       output: {

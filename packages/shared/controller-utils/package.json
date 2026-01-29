@@ -1,5 +1,5 @@
 {
-  "name": "@pie-framework/controller-utils",
+  "name": "@pie-element/shared-controller-utils",
   "version": "0.1.0",
   "description": "Controller utility functions for PIE elements",
   "type": "module",
@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && vite build && tsc --emitDeclarationOnly",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
     "test": "vitest",
     "clean": "rm -rf dist"

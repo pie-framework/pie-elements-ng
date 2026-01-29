@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document outlines our strategy for validating that PIE element packages are production-ready for ESM consumption via npm/CDN services like esm.sh.
+This document outlines a planned strategy for validating that PIE element packages are production-ready for ESM consumption via npm/CDN services like esm.sh.
+The automation scripts for this flow are not part of the repo yet.
 
 ## The Problem
 

@@ -474,14 +474,14 @@ const env: Environment = { mode: 'gather', role: 'student' };
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Understand the design
 - [INTEGRATION.md](./INTEGRATION.md) - Advanced integration patterns
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Common issues and solutions
-- **Demos**: Run element demos with `bun react-demo --element <name>` (React elements only)
+- **Demos**: Run element demos with `bun run dev:demo <name>` (per-element demos)
 
 ## Getting Help
 
 - **Documentation**: Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 - **GitHub Issues**: Report bugs or request features
 - **Discussions**: Ask questions in GitHub Discussions
-- **Demos**: Run `bun react-demo --element categorize` or see [apps/README.md](../apps/README.md)
+- **Demos**: Run `bun run dev:demo categorize` or see [docs/DEMO_SYSTEM.md](./DEMO_SYSTEM.md)
 
 ---
 

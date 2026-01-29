@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { getCurrentCommit, getFileModifiedDate } from '../../utils/git.js';
 import { Logger } from '../../utils/logger.js';
 import { DEFAULT_PATHS } from '../../lib/upstream/sync-constants.js';
+import { formatRepoNotFound } from '../../lib/upstream/repo-utils.js';
 
 interface CheckConfig {
   pieElements: string;
@@ -94,11 +95,11 @@ export default class Check extends Command {
 
     // Verify upstream repos exist
     if (!existsSync(config.pieElements)) {
-      result.errors.push(`pie-elements not found at ${config.pieElements}`);
+      result.errors.push(formatRepoNotFound('pie-elements', config.pieElements));
       return result;
     }
     if (!existsSync(config.pieLib)) {
-      result.errors.push(`pie-lib not found at ${config.pieLib}`);
+      result.errors.push(formatRepoNotFound('pie-lib', config.pieLib));
       return result;
     }
 

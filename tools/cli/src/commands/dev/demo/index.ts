@@ -1,21 +1,19 @@
 import { Args, Command, Flags } from '@oclif/core';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 
 /**
- * Start development server for element demos using the new embedded local-esm-cdn architecture.
+ * Start development server for element demos.
  *
  * This command:
  * 1. Builds the element player (if needed)
  * 2. Builds the specified element (if needed)
- * 3. Starts a single Vite dev server with embedded local-esm-cdn
- *
- * Unlike dev:serve, this uses the new architecture where local-esm-cdn
- * is embedded as a Vite plugin, not a separate server.
+ * 3. Generates a demo app from the template
+ * 4. Starts a single Vite dev server for the generated demo
  */
 export default class DevDemo extends Command {
-  static override description = 'Start demo server with embedded local-esm-cdn (new architecture)';
+  static override description = 'Start demo server using apps/element-demo';
 
   static override examples = [
     '<%= config.bin %> <%= command.id %> hotspot',
@@ -27,7 +25,7 @@ export default class DevDemo extends Command {
     port: Flags.integer({
       char: 'p',
       description: 'Vite dev server port',
-      default: 5174,
+      default: 5600,
     }),
     'skip-build': Flags.boolean({
       description: 'Skip building element and element-player',
@@ -57,6 +55,7 @@ export default class DevDemo extends Command {
   };
 
   private viteProcess: ChildProcess | null = null;
+  private lockFilePath = path.join(process.cwd(), '.demo-server.lock');
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(DevDemo);
@@ -67,13 +66,11 @@ export default class DevDemo extends Command {
       this.error(`Element not found: ${args.element}`);
     }
 
-    // Check if demo exists
-    const demoPath = path.join(elementPath, 'docs/demo');
-    if (!existsSync(demoPath)) {
-      this.error(
-        `No demo found at ${demoPath}. Please create a demo using the templates in docs/DEMO_SYSTEM.md`
-      );
-    }
+    this.acquireLock(flags.port, args.element);
+
+    // Determine element type (react or svelte)
+    const elementType = elementPath.includes('elements-svelte') ? 'svelte' : 'react';
+    const elementPathRelative = path.relative(process.cwd(), elementPath);
 
     this.log(`Starting demo for ${args.element}...`);
     this.log('');
@@ -92,11 +89,25 @@ export default class DevDemo extends Command {
         await this.buildElement(args.element);
       }
 
-      // 3. Start Vite dev server (with embedded local-esm-cdn)
-      this.log(`Starting Vite dev server on port ${flags.port}...`);
-      this.viteProcess = await this.startVite(elementPath, flags.port);
+      // 3. Install workspace dependencies
+      this.log('Installing workspace dependencies...');
+      await this.installDependencies();
+      this.log('✓ Dependencies installed\n');
 
-      // 4. Open browser
+      // 4. Start Vite dev server
+      this.log(`Starting Vite dev server on port ${flags.port}...`);
+      const demoAppPath = path.join(process.cwd(), 'apps', 'element-demo');
+      if (!existsSync(demoAppPath)) {
+        this.error(`Demo app not found at ${demoAppPath}`);
+      }
+      this.viteProcess = await this.startVite(demoAppPath, flags.port, {
+        VITE_ELEMENT_NAME: args.element,
+        VITE_ELEMENT_PATH: elementPathRelative,
+        VITE_ELEMENT_TYPE: elementType,
+        VITE_WORKSPACE_ROOT: process.cwd(),
+      });
+
+      // 5. Open browser
       if (flags.open) {
         await this.sleep(2000); // Wait for Vite to start
         const url = `http://localhost:${flags.port}`;
@@ -108,12 +119,12 @@ export default class DevDemo extends Command {
       this.log('✓ Demo server running');
       this.log(`  Demo: http://localhost:${flags.port}`);
       this.log('');
-      this.log('📖 The demo uses embedded local-esm-cdn (Vite plugin)');
-      this.log('   PIE packages are served via /@pie-* URLs');
+      this.log('📖 The demo uses workspace dependencies for module resolution');
+      this.log('   All PIE packages are resolved automatically via the monorepo');
       this.log('');
       this.log('Press Ctrl+C to stop');
 
-      // 5. Handle graceful shutdown
+      // 7. Handle graceful shutdown
       process.on('SIGINT', () => {
         this.log('\nShutting down...');
         this.cleanup();
@@ -134,37 +145,53 @@ export default class DevDemo extends Command {
   }
 
   private resolveElementPath(element: string): string | null {
-    // Check compatibility report to determine the correct implementation
-    const compatReportPath = path.join(process.cwd(), '.compatibility/report.json');
-    let preferReact = true; // Default to React
+    const targetPackageName = `@pie-element/${element}`;
+    const workspacePackages = this.getWorkspacePackages();
+    const match = workspacePackages.find((pkg) => pkg.name === targetPackageName);
+    return match?.path ?? null;
+  }
 
-    if (existsSync(compatReportPath)) {
-      try {
-        const report = JSON.parse(readFileSync(compatReportPath, 'utf-8'));
-        // If element is in compatibility report, it should use React
-        // If not, it might be a legacy Svelte-only element
-        preferReact = report.elements?.includes(element) ?? true;
-      } catch {
-        // If report can't be read, default to React
-        preferReact = true;
+  private getWorkspacePackages(): Array<{ name: string; path: string }> {
+    const rootPkgPath = path.join(process.cwd(), 'package.json');
+    if (!existsSync(rootPkgPath)) {
+      return [];
+    }
+
+    const rootPkg = JSON.parse(readFileSync(rootPkgPath, 'utf-8'));
+    const workspaces = Array.isArray(rootPkg.workspaces)
+      ? rootPkg.workspaces
+      : (rootPkg.workspaces?.packages ?? []);
+
+    const packages: Array<{ name: string; path: string }> = [];
+
+    for (const pattern of workspaces) {
+      if (typeof pattern !== 'string') continue;
+      if (pattern.includes('*')) {
+        const baseDir = pattern.replace('/*', '');
+        const basePath = path.join(process.cwd(), baseDir);
+        if (!existsSync(basePath)) continue;
+
+        const dirs = readdirSync(basePath, { withFileTypes: true })
+          .filter((d) => d.isDirectory())
+          .map((d) => d.name);
+
+        for (const dir of dirs) {
+          const pkgPath = path.join(basePath, dir);
+          const pkgJsonPath = path.join(pkgPath, 'package.json');
+          if (!existsSync(pkgJsonPath)) continue;
+          const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+          packages.push({ name: pkgJson.name, path: pkgPath });
+        }
+      } else {
+        const pkgPath = path.join(process.cwd(), pattern);
+        const pkgJsonPath = path.join(pkgPath, 'package.json');
+        if (!existsSync(pkgJsonPath)) continue;
+        const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+        packages.push({ name: pkgJson.name, path: pkgPath });
       }
     }
 
-    // Try preferred implementation first
-    const implementations = preferReact
-      ? ['elements-react', 'elements-svelte']
-      : ['elements-svelte', 'elements-react'];
-
-    for (const impl of implementations) {
-      const elementPath = path.join(process.cwd(), 'packages', impl, element);
-      const demoPath = path.join(elementPath, 'docs/demo');
-
-      if (existsSync(elementPath) && existsSync(demoPath)) {
-        return elementPath;
-      }
-    }
-
-    return null;
+    return packages;
   }
 
   private async buildElementPlayer(): Promise<void> {
@@ -219,10 +246,19 @@ export default class DevDemo extends Command {
     });
   }
 
-  private async startVite(elementPath: string, port: number): Promise<ChildProcess> {
-    const proc = spawn('bunx', ['vite', 'docs/demo', '--port', port.toString(), '--host'], {
-      cwd: elementPath,
+  private async startVite(
+    demoPath: string,
+    port: number,
+    env: Record<string, string>
+  ): Promise<ChildProcess> {
+    const proc = spawn('bunx', ['vite', '--port', port.toString(), '--host'], {
+      cwd: demoPath,
       stdio: 'inherit',
+      env: {
+        ...process.env,
+        PORT: port.toString(),
+        ...env,
+      },
     });
 
     proc.on('error', (error) => {
@@ -242,6 +278,25 @@ export default class DevDemo extends Command {
     }
   }
 
+  private async installDependencies(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const install = spawn('bun', ['install'], {
+        cwd: process.cwd(), // Run from monorepo root to resolve all workspaces
+        stdio: 'inherit',
+      });
+
+      install.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Dependency installation failed with code ${code}`));
+        }
+      });
+
+      install.on('error', reject);
+    });
+  }
+
   private cleanup(): void {
     if (this.viteProcess) {
       try {
@@ -251,9 +306,69 @@ export default class DevDemo extends Command {
       }
       this.viteProcess = null;
     }
+
+    this.releaseLock();
   }
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private acquireLock(port: number, element: string): void {
+    if (existsSync(this.lockFilePath)) {
+      try {
+        const raw = readFileSync(this.lockFilePath, 'utf-8');
+        const lock = JSON.parse(raw);
+        if (lock?.pid && this.isProcessRunning(lock.pid)) {
+          this.error(
+            `A demo server is already running (element: ${lock.element ?? 'unknown'}, port: ${
+              lock.port ?? 'unknown'
+            }, pid: ${lock.pid}). Stop it or use --port to run another demo.`
+          );
+        }
+      } catch (error) {
+        // If the lock is unreadable, remove it and continue.
+      }
+
+      try {
+        unlinkSync(this.lockFilePath);
+      } catch {
+        // Ignore cleanup errors.
+      }
+    }
+
+    const lockInfo = {
+      pid: process.pid,
+      port,
+      element,
+      startedAt: new Date().toISOString(),
+    };
+    writeFileSync(this.lockFilePath, `${JSON.stringify(lockInfo, null, 2)}\n`);
+  }
+
+  private releaseLock(): void {
+    if (!existsSync(this.lockFilePath)) return;
+    try {
+      const raw = readFileSync(this.lockFilePath, 'utf-8');
+      const lock = JSON.parse(raw);
+      if (lock?.pid !== process.pid) return;
+    } catch {
+      // If parsing fails, still attempt to remove stale lock.
+    }
+
+    try {
+      unlinkSync(this.lockFilePath);
+    } catch {
+      // Ignore cleanup errors.
+    }
+  }
+
+  private isProcessRunning(pid: number): boolean {
+    try {
+      process.kill(pid, 0);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

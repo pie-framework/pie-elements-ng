@@ -301,7 +301,7 @@ export class PieLibStrategy implements SyncStrategy {
   }
 
   /**
-   * Generate a thin wrapper for math-rendering that re-exports from @pie-element/shared-math-rendering
+   * Generate a thin wrapper for math-rendering that re-exports from @pie-element/math-rendering
    */
   private async generateMathRenderingWrapper(
     targetSrcDir: string,
@@ -318,11 +318,11 @@ export class PieLibStrategy implements SyncStrategy {
  * @synced-date ${syncDate}
  * @auto-generated
  *
- * This is a thin wrapper that re-exports from @pie-element/shared-math-rendering.
- * The actual implementation is in packages/shared/math-rendering.
+ * This is a thin wrapper that re-exports from @pie-element/math-rendering-katex.
+ * The actual implementation is in packages/shared/math-rendering-katex.
  */
 
-export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/shared-math-rendering';
+export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/math-rendering-katex';
 `;
 
     const indexPath = join(targetSrcDir, 'index.ts');

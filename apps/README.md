@@ -4,31 +4,41 @@ This directory contains user-facing applications for demonstrating PIE assessmen
 
 ## Directory Structure
 
-```
+```text
 apps/
-├── demo-index/         # Per-package demo index (port 5181)
-└── examples-react/     # React elements showcase (port 5174)
+├── element-demo/       # Shared single-element demo app (port 5222)
+└── esm-player-test/    # ESM player test application
 ```
 
 ## Quick Start
 
 ### Single Element Demo (Recommended)
 
-Run a specific React element's demo from the project root:
+Run any element's demo using the shared demo app:
 
 ```bash
 # From repository root
-bun react-demo --element categorize
-bun react-demo --element multiple-choice
-bun react-demo --element hotspot
+bun run dev:demo multiple-choice
+bun run dev:demo categorize
+bun run dev:demo hotspot
 ```
 
-Visit <http://localhost:5174>
+Visit <http://localhost:5222>
 
-**Note**:
+**Features:**
 
-- This currently works for **React elements only** (`packages/elements-react/`)
-- The element **and all its dependencies** must be built first. Run:
+- Single shared demo app (NOT copied per-element)
+- Looks and behaves exactly like per-element demos
+- Works with ANY element in the workspace
+- Dynamic element loading via environment variables
+- HMR (Hot Module Reload) for instant updates
+- DaisyUI theming with light/dark mode toggle
+- Delivery, Author, and Print tabs (when available)
+
+**Note:**
+
+- Currently works for **React elements** (`packages/elements-react/`)
+- The element **and all its dependencies** must be built first:
 
 ```bash
 # Build element with all dependencies (recommended)
@@ -49,62 +59,46 @@ bun run demos
 
 Visit <http://localhost:5181>
 
-### React Examples
+## Element Demo Architecture
 
-```bash
-# From repository root
-bun run react-examples
+### How It Works
 
-# Or directly
-cd apps/examples-react
-bun install
-bun run dev
-```
+The `apps/element-demo` app is a SvelteKit application that dynamically loads any PIE element at runtime:
 
-Visit http://localhost:5174
+1. **CLI Command**: `bun run dev:demo <element-name>`
+2. **Environment Variables**: CLI passes element info to Vite:
+   - `VITE_ELEMENT_NAME` - e.g., "multiple-choice"
+   - `VITE_ELEMENT_PATH` - e.g., "packages/elements-react/multiple-choice"
+   - `VITE_ELEMENT_TYPE` - e.g., "react" or "svelte"
+3. **Dynamic Loading**: [+page.ts](element-demo/src/routes/+page.ts) uses dynamic imports with `@vite-ignore`
+4. **Generic Config**: [vite.config.ts](element-demo/vite.config.ts) has shared package aliases (NOT element-specific)
+5. **Module Resolution**: Vite resolves element packages through workspace
 
-**Features:**
-- Clean React + Vite setup
-- React Router navigation
-- Tailwind CSS styling
-- Direct component imports (no framework mixing)
+### Benefits
 
-**Available elements:**
-- Hotspot - Interactive image hotspot selection
-- Number Line - Points, lines, and rays
+- **No Duplication**: Single 30MB app instead of 26 × 30MB = 780MB
+- **Exact Match**: Looks identical to per-element demos
+- **Easy Maintenance**: Update once, applies to all elements
+- **HMR Support**: Source aliases for instant updates
+- **Future-Proof**: Works with elements-react and future elements-svelte
 
-### Per-package Demos
+### Per-Element Demos (Legacy)
 
-Each element package contains its own demo under `packages/elements-react/<element>/docs/demo`.
+Per-element demos under `packages/elements-react/<element>/demo/` will be removed after verifying the shared demo works. The upstream sync script will stop generating them.
 
 ## Architecture Decision
 
-We maintain separate example apps for each framework to:
+This directory contains the shared element demo app and test tooling.
 
-1. **Avoid cross-framework complexity** - No hacky workarounds needed
-2. **Use proper tooling** - Each app uses its native dev tools
-3. **Better performance** - No mixed runtime overhead
-4. **Clearer boundaries** - Easy to understand and maintain
-5. **Independent deployment** - Deploy to different URLs if needed
-
-## Running Both Apps
+## Running the Demo
 
 ```bash
-# Run both concurrently with Turbo
-bun run examples
+bun run dev:demo <element>
 ```
 
-## Building
+## ESM Player Tests
 
-```bash
-# Build React examples
-cd apps/examples-react && bun run build
-```
-
-## Testing
-
-### React Examples
-Currently no tests (TBD)
+See `apps/esm-player-test/TESTING.md`.
 
 ### Per-package Demos
 

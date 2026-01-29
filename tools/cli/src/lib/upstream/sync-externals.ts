@@ -66,6 +66,7 @@ export function isExternal(id: string, variant: 'element' | 'pielib'): boolean {
     'mathjs', // Math expression evaluation
     'react-jss', // JSS styling for React
     'js-combinatorics', // Combinatorics library
+    '@mapbox/point-geometry', // Graphing utils dependency
     '@dnd-kit/core', // Drag and drop
     'react-transition-group', // Animations
     'nested-property', // Object property access (placement-ordering)
@@ -107,7 +108,7 @@ export function createExternalFunction(variant: 'element' | 'pielib'): string {
           /^@dnd-kit\\//.test(id) ||
           id === '@mdi/react' || /^@mdi\\/react\\//.test(id) ||
           id === '@mdi/js' || /^@mdi\\/js\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)
+          ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)
         );
       }`;
 }
@@ -144,7 +145,7 @@ export function createKonvaExternalFunction(): string {
         // Material Design Icons for drawing-response
         if (id === '@mdi/react' || id.startsWith('@mdi/react/')) return true;
         if (id === '@mdi/js' || id.startsWith('@mdi/js/')) return true;
-        if (['prop-types', 'classnames', 'debug', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)) return true;
+        if (['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)) return true;
 
         // Everything else gets bundled (including dependencies of konva/react-konva)
         return false;

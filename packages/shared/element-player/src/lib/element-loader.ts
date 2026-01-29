@@ -41,8 +41,8 @@ export async function loadElement(
   if (debug) console.log(`[element-loader] Loading element from ${modulePath}`);
 
   try {
-    // Dynamic import from CDN
-    const module = await import(/* @vite-ignore */ modulePath);
+    // Dynamic import from CDN or local Vite alias
+    const module = cdnUrl ? await import(/* @vite-ignore */ modulePath) : await import(modulePath);
 
     // Get element class (try default export first, then Element export)
     const ElementClass = module.default || module.Element;
@@ -100,8 +100,10 @@ export async function loadController(
   if (debug) console.log(`[element-loader] Loading controller from ${controllerPath}`);
 
   try {
-    // Dynamic import from CDN
-    const module = await import(/* @vite-ignore */ controllerPath);
+    // Dynamic import from CDN or local Vite alias
+    const module = cdnUrl
+      ? await import(/* @vite-ignore */ controllerPath)
+      : await import(controllerPath);
 
     const controller = module.default || module;
 

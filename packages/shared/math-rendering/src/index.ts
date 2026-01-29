@@ -1,11 +1,27 @@
 /**
- * @pie-element/shared-math-rendering
+ * Math Rendering Core
  *
- * Framework-agnostic math rendering using KaTeX.
- * Provides utilities for rendering LaTeX and MathML in the browser.
+ * Core types and utilities for pluggable math rendering in PIE elements.
+ * This package provides the foundation - actual rendering is done by adapter packages:
+ *
+ * - @pie-element/math-rendering-katex - Fast, lightweight KaTeX renderer (~100KB)
+ * - @pie-element/math-rendering-mathjax - Full-featured MathJax renderer (~2.7MB)
+ *
+ * @example
+ * ```typescript
+ * import type { MathRenderer } from '@pie-element/math-rendering';
+ * import { createKatexRenderer } from '@pie-element/math-rendering-katex';
+ *
+ * const renderer: MathRenderer = createKatexRenderer();
+ * await renderer(document.body);
+ * ```
  */
 
-export { renderMath, fixMathElement, fixMathElements } from './render-math';
-export { wrapMath, unWrapMath, BracketTypes } from './normalization';
-export { mmlToLatex } from './mml-to-latex';
-export type { RenderMathOptions } from './types';
+// Core types
+export type { MathRenderer, TypesetConfig, BracketType } from './types';
+export { BracketTypes } from './types';
+
+// Utilities
+export { wrapMath, unWrapMath, fixMathElement, fixMathElements } from './utils/normalization';
+export { mmlToLatex } from './utils/mml-to-latex';
+export { loadCss, isCssLoaded } from './utils/css-loader';

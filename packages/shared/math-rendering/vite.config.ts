@@ -9,7 +9,15 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['katex', /^katex\//, '@pie-element/shared-mathml-to-latex', '@xmldom/xmldom'],
+      external: ['@pie-element/shared-mathml-to-latex', '@xmldom/xmldom'],
+      output: {
+        preserveModules: true,
+        preserveModulesRoot: 'src',
+      },
     },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
   },
 });

@@ -1,130 +1,294 @@
-# @pie-element/shared-math-rendering
+# @pie-element/math-typesetting
 
-Framework-agnostic math rendering using KaTeX.
-
-> **Note**: This package replaces `@pie-lib/math-rendering` from the upstream pie-lib monorepo. During upstream sync, imports are automatically rewritten to use this package.
-
-## Overview
-
-This package provides utilities for rendering LaTeX and MathML mathematical expressions in the browser. It uses [KaTeX](https://katex.org/) for fast, high-quality rendering without the overhead of MathJax.
+Pluggable math typesetting system for PIE elements with KaTeX and MathML support.
 
 ## Features
 
-- **Framework-agnostic**: Works with React, Svelte, Vue, or vanilla JavaScript
-- **Fast rendering**: KaTeX is ~100x faster than MathJax
-- **Small bundle**: ~100KB vs several MB for MathJax
-- **Browser-native ESM**: Works with import maps and modern build tools
-- **LaTeX support**: Renders LaTeX expressions via `data-latex` attributes
-- **MathML support**: Converts and renders MathML elements
+- **Pluggable Architecture**: Easy to swap between different math rendering engines
+- **KaTeX by Default**: Automatic KaTeX rendering with lazy loading
+- **MathML Support**: Native browser MathML rendering as an alternative
+- **Zero Coupling**: Math rendering engine is completely decoupled from consumers
+- **Lazy Loading**: Math engines only loaded when first used
+- **Automatic CSS Loading**: CSS dependencies loaded automatically (configurable)
+- **Framework Agnostic**: Works in React, Svelte, vanilla JavaScript
+- **TypeScript**: Full TypeScript support with type definitions
 
 ## Installation
 
 ```bash
-bun add @pie-element/shared-math-rendering
+bun add @pie-element/math-typesetting
 ```
 
-## Usage
+## Quick Start
 
-### Basic Rendering
+### Basic Usage with KaTeX (Default)
 
 ```typescript
-import { renderMath } from '@pie-element/shared-math-rendering';
+import { createKatexRenderer } from '@pie-element/math-typesetting';
+
+// Create renderer (KaTeX and CSS loaded automatically)
+const renderer = createKatexRenderer();
 
 // Render math in an element
-renderMath(document.querySelector('.math-container'));
-
-// Render math in the entire document
-renderMath();
+await renderer(document.body);
 ```
 
-### LaTeX Elements
-
-Add a `data-latex` attribute to any element:
-
-```html
-<div data-latex>x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}</div>
-```
-
-Then call `renderMath()` to render it.
-
-### MathML Support
-
-MathML elements are automatically converted to LaTeX and rendered:
-
-```html
-<math>
-  <mrow>
-    <mi>x</mi>
-    <mo>=</mo>
-    <mn>5</mn>
-  </mrow>
-</math>
-```
-
-### String Utilities
+### Using Native MathML
 
 ```typescript
-import { wrapMath, unWrapMath } from '@pie-element/shared-math-rendering';
+import { createMathMLRenderer } from '@pie-element/math-typesetting';
 
-// Wrap LaTeX content
-const wrapped = wrapMath('x^2 + y^2'); // Returns: \(x^2 + y^2\)
+// Create MathML renderer (no dependencies, no CSS needed)
+const renderer = createMathMLRenderer();
 
-// Unwrap LaTeX content
-const { unwrapped, wrapType } = unWrapMath('\\(x^2 + y^2\\)');
+// Render math in an element (synchronous)
+renderer(document.body);
 ```
 
-## API
+## API Reference
 
-### `renderMath(el?, options?)`
+### Core Types
 
-Render math in a DOM element or HTML string.
+#### `MathRenderer`
 
-- **Parameters**:
-  - `el` (optional): DOM element, HTML string, or `undefined` (defaults to `document.body`)
-  - `options` (optional): Rendering options (reserved for future use)
-- **Returns**: If `el` is a string, returns rendered HTML. Otherwise renders in place.
+Function signature for math renderers:
 
-### `fixMathElement(element)`
+```typescript
+type MathRenderer = (element: HTMLElement) => void | Promise<void>;
+```
 
-Normalize a single math element by wrapping/unwrapping its content.
+### Adapters
 
-### `fixMathElements(container)`
+#### `createKatexRenderer(options?): MathRenderer`
 
-Normalize all `[data-latex]` elements in a container.
+Creates a KaTeX-based math renderer with lazy loading.
 
-### `wrapMath(content, wrapType?)`
+**Options:**
 
-Wrap math content with LaTeX delimiters.
+- `loadCss` (boolean, default: `true`): Automatically load KaTeX CSS
+- `trust` (boolean, default: `true`): Trust user LaTeX (allows `\includegraphics`, etc.)
+- `throwOnError` (boolean, default: `false`): Throw on rendering errors
 
-### `unWrapMath(content)`
+**Example:**
 
-Unwrap math content from LaTeX delimiters.
+```typescript
+const renderer = createKatexRenderer({
+  loadCss: true,
+  trust: true,
+  throwOnError: false
+});
 
-### `mmlToLatex(mathml)`
+await renderer(document.getElementById('math-container'));
+```
 
-Convert MathML to LaTeX.
+#### `createMathMLRenderer(): MathRenderer`
 
-## Trade-offs vs MathJax
+Creates a native MathML renderer (uses browser's built-in support).
 
-**Advantages**:
+**Example:**
 
-- ✅ Much faster rendering (KaTeX is ~100x faster)
-- ✅ Smaller bundle size (~100KB vs several MB)
-- ✅ Works with production-like ESM import maps
-- ✅ No global state conflicts
+```typescript
+const renderer = createMathMLRenderer();
+renderer(document.body); // Synchronous, no await needed
+```
 
-**Limitations**:
+### Utilities
 
-- ❌ Slightly less complete LaTeX support (95% coverage vs 99%)
-- ❌ No speech-rule-engine accessibility features (yet)
-  - accessibility features will be part of the pie-players project; if we need to add features in here to support that, we'll do that when proven.
+#### `wrapMath(content, wrapType?): string`
 
-## Dependencies
+Wraps content with LaTeX delimiters.
 
-- `katex` - Math rendering engine
-- `@pie-framework/mathml-to-latex` - MathML conversion
-- `debug` - Debug logging
+```typescript
+import { wrapMath, BracketTypes } from '@pie-element/math-typesetting';
+
+const wrapped = wrapMath('x^2 + y^2 = z^2', BracketTypes.ROUND_BRACKETS);
+// Returns: "\\(x^2 + y^2 = z^2\\)"
+```
+
+#### `unWrapMath(content): { unwrapped: string; wrapType: BracketType }`
+
+Unwraps content from LaTeX delimiters.
+
+```typescript
+import { unWrapMath } from '@pie-element/math-typesetting';
+
+const result = unWrapMath('\\(x^2\\)');
+// Returns: { unwrapped: "x^2", wrapType: "round_brackets" }
+```
+
+#### `mmlToLatex(mathml): string`
+
+Converts MathML to LaTeX.
+
+```typescript
+import { mmlToLatex } from '@pie-element/math-typesetting';
+
+const latex = mmlToLatex('<math><mi>x</mi></math>');
+```
+
+#### `loadCss(url, options?): Promise<void>`
+
+Dynamically loads CSS (with caching).
+
+```typescript
+import { loadCss } from '@pie-element/math-typesetting';
+
+await loadCss('https://example.com/style.css', {
+  integrity: 'sha384-...',
+  crossOrigin: 'anonymous'
+});
+```
+
+## Integration Examples
+
+### With PIE Element Player
+
+```typescript
+import { createKatexRenderer } from '@pie-element/math-typesetting';
+import type { MathRenderer } from '@pie-element/math-typesetting';
+
+// The element player accepts a math renderer prop
+const player = document.querySelector('pie-element-player');
+(player as any).mathRenderer = createKatexRenderer();
+```
+
+### With React Component
+
+```typescript
+import { useEffect, useRef } from 'react';
+import { createKatexRenderer } from '@pie-element/math-typesetting';
+
+function MathComponent({ content }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const renderer = useRef(createKatexRenderer());
+
+  useEffect(() => {
+    if (ref.current) {
+      renderer.current(ref.current);
+    }
+  }, [content]);
+
+  return <div ref={ref} dangerouslySetInnerHTML={{ __html: content }} />;
+}
+```
+
+### With Svelte Component
+
+```svelte
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { createKatexRenderer } from '@pie-element/math-typesetting';
+
+  let container: HTMLDivElement;
+  const renderer = createKatexRenderer();
+
+  onMount(() => {
+    renderer(container);
+  });
+
+  $effect(() => {
+    if (container) {
+      renderer(container);
+    }
+  });
+</script>
+
+<div bind:this={container}>
+  <span data-latex>x^2 + y^2 = z^2</span>
+</div>
+```
+
+### Custom Renderer
+
+You can create your own custom math renderer:
+
+```typescript
+import type { MathRenderer } from '@pie-element/math-typesetting';
+
+const myCustomRenderer: MathRenderer = async (element) => {
+  // Custom implementation
+  const mathElements = element.querySelectorAll('[data-latex]');
+
+  for (const el of mathElements) {
+    const latex = el.textContent || '';
+    // ... custom rendering logic
+    el.innerHTML = await renderWithCustomEngine(latex);
+  }
+};
+
+// Use it
+await myCustomRenderer(document.body);
+```
+
+## Browser Support
+
+### KaTeX Adapter
+- All modern browsers (Chrome, Firefox, Safari, Edge)
+- Requires ES2015+ support
+
+### MathML Adapter
+- Chrome 109+
+- Firefox (all versions)
+- Safari (all versions)
+- **Not supported:** Internet Explorer
+
+## Architecture
+
+This package follows the pluggable architecture pattern from pie-qti's typesetting system:
+
+1. **Simple Interface**: Just a function `(element: HTMLElement) => void | Promise<void>`
+2. **Zero Coupling**: Consumers don't depend on specific math engines
+3. **Lazy Loading**: Math engines loaded only when first used
+4. **Graceful Degradation**: Missing renderer = raw LaTeX/MathML displayed
+
+## Migration from @pie-element/shared-math-rendering
+
+The new package provides a cleaner, pluggable API:
+
+**Old (tightly coupled):**
+```typescript
+import { renderMath } from '@pie-element/shared-math-rendering';
+renderMath(document.body);
+```
+
+**New (pluggable):**
+```typescript
+import { createKatexRenderer } from '@pie-element/math-typesetting';
+
+const renderer = createKatexRenderer();
+await renderer(document.body);
+```
+
+## Development
+
+### Build
+
+```bash
+bun run build
+```
+
+### Test
+
+```bash
+bun test
+```
+
+### Dev Mode
+
+```bash
+bun run dev
+```
 
 ## License
 
 See the root LICENSE file.
+
+## Related Packages
+
+- `@pie-element/element-player` - PIE element player (uses this package)
+- `@pie-element/shared-mathml-to-latex` - MathML to LaTeX conversion
+- `@pie-qti/qti2-typeset-katex` - Similar implementation for QTI
+
+## Contributing
+
+Contributions are welcome! Please follow the monorepo contribution guidelines.

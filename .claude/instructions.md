@@ -62,8 +62,7 @@ pie-element/
 │   │   └── ui/                  # General UI components
 │   └── lib-react/                # React shared libraries (25+ packages)
 └── apps/
-    ├── examples-svelte/          # SvelteKit demo
-    ├── examples-react/           # React demo
+    ├── element-demo/            # Shared element demo
     └── esm-player-test/         # ESM player testing
 ```
 
@@ -73,7 +72,7 @@ pie-element/
 
 1. Run Biome with auto-fix: `bun run lint:fix` or `npx @biomejs/biome check --write .`
 2. Run TypeScript type checking: `bunx tsc --noEmit`
-3. Run Svelte type checking: `bunx svelte-check --workspace packages/components`
+3. Run Svelte type checking: `bunx svelte-check` (from `apps/element-demo`)
 4. Fix all errors and warnings before marking the task as complete
 
 These checks ensure:

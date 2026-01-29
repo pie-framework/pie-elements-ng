@@ -35,25 +35,6 @@ export class ReactComponentsStrategy implements SyncStrategy {
     filesUpdated: 0,
   };
 
-  /**
-   * Convert kebab-case element name to PascalCase class name
-   * e.g., "multiple-choice" → "MultipleChoice"
-   */
-  private toPascalCase(elementName: string): string {
-    return elementName
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join('');
-  }
-
-  /**
-   * Get element tag name (kebab-case with -element suffix)
-   * e.g., "multiple-choice" → "multiple-choice-element"
-   */
-  private toElementTag(elementName: string): string {
-    return `${elementName}-element`;
-  }
-
   getName(): string {
     return 'react-components';
   }
@@ -842,63 +823,12 @@ export default defineConfig({
     }
 
     const targetDemoDir = join(elementDir, 'docs/demo');
-    const targetProductionTestDir = join(elementDir, 'docs/production-test');
     await mkdir(targetDemoDir, { recursive: true });
-    await mkdir(targetProductionTestDir, { recursive: true });
 
-    const templateDir = join(config.pieElementsNg, 'packages/shared/element-player/templates');
+    // Demo content is now shared via apps/element-demo.
+    // Keep only demo data (config/session) in docs/demo.
 
-    // Prepare substitution values
-    const elementTitle = elementName
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-    const elementClass = this.toPascalCase(elementName) + 'Element';
-    const elementTag = this.toElementTag(elementName);
-    const port = 5174; // Standard dev port
-
-    // 1. Create dev demo files
-    // dev.html
-    let devHtml = await readFile(join(templateDir, 'dev.html'), 'utf-8');
-    devHtml = devHtml
-      .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
-      .replace(/\{\{ELEMENT_TITLE\}\}/g, elementTitle);
-    await writeFile(join(targetDemoDir, 'dev.html'), devHtml, 'utf-8');
-
-    // index.html (redirects to dev.html)
-    let indexHtml = await readFile(join(templateDir, 'demo-index.html'), 'utf-8');
-    indexHtml = indexHtml.replace(/\{\{ELEMENT_NAME\}\}/g, elementName);
-    await writeFile(join(targetDemoDir, 'index.html'), indexHtml, 'utf-8');
-
-    // vite.config.ts
-    let viteConfig = await readFile(join(templateDir, 'demo-vite.config.ts.template'), 'utf-8');
-    viteConfig = viteConfig
-      .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
-      .replace(/\{\{ELEMENT_TITLE\}\}/g, elementTitle)
-      .replace(/\{\{PORT\}\}/g, port.toString());
-    await writeFile(join(targetDemoDir, 'vite.config.ts'), viteConfig, 'utf-8');
-
-    // src/dev.ts
-    let devTs = await readFile(join(templateDir, 'dev.ts.template'), 'utf-8');
-    devTs = devTs
-      .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
-      .replace(/\{\{ELEMENT_CLASS\}\}/g, elementClass)
-      .replace(/\{\{ELEMENT_TAG\}\}/g, elementTag);
-    const srcDir = join(targetDemoDir, 'src');
-    await mkdir(srcDir, { recursive: true });
-    await writeFile(join(srcDir, 'dev.ts'), devTs, 'utf-8');
-
-    // 2. Create production-test files
-    // Copy esm-demo.html to production-test/index.html
-    if (existsSync(join(templateDir, 'esm-demo.html'))) {
-      let esmHtml = await readFile(join(templateDir, 'esm-demo.html'), 'utf-8');
-      esmHtml = esmHtml
-        .replace(/\{\{ELEMENT_NAME\}\}/g, elementName)
-        .replace(/\{\{ELEMENT_TITLE\}\}/g, elementTitle);
-      await writeFile(join(targetProductionTestDir, 'index.html'), esmHtml, 'utf-8');
-    }
-
-    // Copy or generate config.mjs to both demo and production-test directories
+    // Copy or generate config.mjs into docs/demo
     const configMjs = join(upstreamDemoDir, 'config.mjs');
     const configJs = join(upstreamDemoDir, 'config.js');
     const generateJs = join(upstreamDemoDir, 'generate.js');
@@ -914,9 +844,7 @@ export default defineConfig({
     }
 
     if (configContent) {
-      // Write to both directories
       await writeFile(join(targetDemoDir, 'config.mjs'), configContent, 'utf-8');
-      await writeFile(join(targetProductionTestDir, 'config.mjs'), configContent, 'utf-8');
     }
 
     // Convert session.js (CommonJS) to session.mjs (ESM) if it exists upstream
@@ -938,9 +866,7 @@ export default defineConfig({
     }
 
     if (sessionContent) {
-      // Write to both directories
       await writeFile(join(targetDemoDir, 'session.mjs'), sessionContent, 'utf-8');
-      await writeFile(join(targetProductionTestDir, 'session.mjs'), sessionContent, 'utf-8');
     }
 
     // Apply demo overrides if configured

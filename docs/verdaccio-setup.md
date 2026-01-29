@@ -1,6 +1,6 @@
 # Local Package Registry (Verdaccio)
 
-This project uses [Verdaccio](https://verdaccio.org/) as a local npm registry for testing package publishing and ESM module resolution before deploying to the real npm registry.
+This document describes a planned Verdaccio-based workflow. The supporting scripts are not part of the repo yet.
 
 ## Why Verdaccio?
 

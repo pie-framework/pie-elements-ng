@@ -351,7 +351,7 @@ bun run test:a11y
 # Per-element demo (after build)
 # cd packages/elements-react/<element>
 # python -m http.server 5174
-# open http://localhost:5174/docs/demo/demo.html
+# open http://localhost:5174/
 ```
 
 ### Manual Testing

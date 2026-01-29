@@ -6,7 +6,7 @@ This package is a modernized ESM wrapper around the PIE Framework fork of MathQu
 
 - **Upstream Source**: `../../../mathquill` (PIE fork)
 - **Package Location**: `packages/shared/mathquill`
-- **Package Name**: `@pie-framework/mathquill`
+- **Package Name**: `@pie-element/shared-mathquill`
 - **Version**: 1.1.4 (ESM modernized)
 - **Module Format**: ESM with TypeScript declarations
 - **Build System**: Vite + TypeScript
@@ -152,7 +152,7 @@ To expand type definitions:
 
 **Import in consuming packages**:
 ```typescript
-import '@pie-framework/mathquill/mathquill.css';
+import '@pie-element/shared-mathquill/mathquill.css';
 ```
 
 ## jQuery Dependency
@@ -177,7 +177,7 @@ All consuming packages reference it as:
 ```json
 {
   "dependencies": {
-    "@pie-framework/mathquill": "workspace:*"
+    "@pie-element/shared-mathquill": "workspace:*"
   }
 }
 ```
@@ -188,7 +188,7 @@ The upstream sync scripts in `tools/cli/src/lib/upstream/` automatically handle 
 
 **File**: `sync-package-manager.ts`
 
-The `isPieFrameworkWorkspacePackage()` function checks if `@pie-framework/mathquill` exists in `packages/shared/mathquill/package.json` and treats it as a workspace dependency (not external npm).
+The `isPieFrameworkWorkspacePackage()` function checks if `@pie-element/shared-mathquill` exists in `packages/shared/mathquill/package.json` and treats it as a workspace dependency (not external npm).
 
 **No changes needed** to sync scripts when updating mathquill - it's treated as a shared package, not synced from upstream.
 
@@ -221,10 +221,10 @@ bun install jquery
 
 ### Workspace Resolution
 
-**"Workspace dependency @pie-framework/mathquill not found"**:
+**"Workspace dependency @pie-element/shared-mathquill not found"**:
 - Ensure package.json exists in `packages/shared/mathquill/`
 - Run `bun install` from workspace root
-- Check that `name` field is `"@pie-framework/mathquill"`
+- Check that `name` field is `"@pie-element/shared-mathquill"`
 
 ## Publishing
 
@@ -240,7 +240,7 @@ If you need to publish:
 
 - **MathQuill API**: See [mathquill.com](http://mathquill.com) or upstream README.md
 - **PIE Customizations**: See CHANGELOG.md for PIE-specific features
-- **TypeScript Usage**: Import types from `@pie-framework/mathquill`
+- **TypeScript Usage**: Import types from `@pie-element/shared-mathquill`
 
 ## Support
 

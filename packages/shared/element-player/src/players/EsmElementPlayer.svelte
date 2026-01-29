@@ -46,7 +46,6 @@ const dispatch = createEventDispatcher();
 let container: HTMLElement;
 let elementInstance = $state<HTMLElement | null>(null);
 let currentTagName = $state<string | null>(null);
-let lastSessionRef = $state<any>(undefined);
 let error = $state<string | null>(null);
 let loading = $state(true);
 
@@ -63,48 +62,10 @@ $effect(() => {
 
 $effect(() => {
   if (elementInstance && model !== undefined) {
-    console.log('[esm-player] model:update', {
-      tag: currentTagName,
-      id: (model as any)?.id,
-      prompt: model?.prompt,
-    });
-    console.log('[esm-player] elementInstance type:', elementInstance.tagName, elementInstance);
-    console.log(
-      '[esm-player] Element has model setter?',
-      Object.getOwnPropertyDescriptor(Object.getPrototypeOf(elementInstance), 'model')
-    );
-    console.log(
-      '[esm-player] Element has session setter?',
-      Object.getOwnPropertyDescriptor(Object.getPrototypeOf(elementInstance), 'session')
-    );
-    console.log('[esm-player] Setting model on element...');
     try {
       (elementInstance as any).model = model;
-      console.log('[esm-player] Model set successfully');
     } catch (err) {
       console.error('[esm-player] Error setting model:', err);
-    }
-
-    // Also ensure session is set when model changes
-    // This is important for mode changes where the session object doesn't change
-    // but the element needs to have the correct session to calculate responseCorrect
-    if (session !== undefined) {
-      console.log('[esm-player] About to update session. Session object:', session);
-      console.log('[esm-player] Session.value:', (session as any)?.value);
-      console.log('[esm-player] Session stringified:', JSON.stringify(session));
-      const elementSessionBefore = (elementInstance as any).session;
-      console.log('[esm-player] Element session before:', elementSessionBefore);
-      console.log('[esm-player] Element session.value before:', elementSessionBefore?.value);
-
-      (elementInstance as any).session = session;
-
-      const elementSessionAfter = (elementInstance as any).session;
-      console.log('[esm-player] Element session after:', elementSessionAfter);
-      console.log('[esm-player] Element session.value after:', elementSessionAfter?.value);
-      console.log(
-        '[esm-player] Element session stringified after:',
-        JSON.stringify(elementSessionAfter)
-      );
     }
   }
 });
@@ -112,11 +73,7 @@ $effect(() => {
 $effect(() => {
   if (elementInstance && session !== undefined) {
     const currentElementSession = (elementInstance as any).session;
-    // Check if session content is different (not just reference)
-    const sessionChanged = JSON.stringify(session) !== JSON.stringify(currentElementSession);
-
-    if (sessionChanged) {
-      console.log('[esm-player] Updating element session');
+    if (currentElementSession !== session) {
       (elementInstance as any).session = session;
     }
   }

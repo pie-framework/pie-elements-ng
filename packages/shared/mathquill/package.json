@@ -1,5 +1,5 @@
 {
-  "name": "@pie-framework/mathquill",
+  "name": "@pie-element/shared-mathquill",
   "version": "1.1.4",
   "description": "MathQuill fork for PIE Framework - modernized ESM version with matrix support, accessibility, and custom symbols",
   "type": "module",
@@ -16,7 +16,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && vite build && bun x tsc --emitDeclarationOnly",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && bun x tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
     "clean": "rm -rf dist"
   },
