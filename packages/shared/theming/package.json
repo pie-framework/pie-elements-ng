@@ -1,6 +1,6 @@
 {
-  "name": "@pie-element/theming",
-  "version": "1.0.0",
+  "name": "@pie-element/shared-theming",
+  "version": "0.1.0",
   "description": "Base theming system for PIE elements with MUI integration",
   "type": "module",
   "main": "./dist/index.js",

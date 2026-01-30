@@ -9,7 +9,7 @@ let {
   elementName = '',
   model = {},
   role = 'student',
-  debug = false
+  debug = false,
 }: {
   elementName: string;
   model: any;

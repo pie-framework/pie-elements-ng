@@ -1,7 +1,7 @@
 {
-  "name": "@pie-element/math-rendering-mathjax",
-  "version": "1.0.0",
-  "description": "MathJax adapter for PIE math rendering (~2.7MB) - full-featured with accessibility",
+  "name": "@pie-element/shared-math-rendering-mathjax",
+  "version": "0.1.0",
+  "description": "MathJax adapter for PIE math rendering",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,7 +21,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-element/math-rendering": "workspace:*"
+    "@pie-element/shared-math-rendering": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

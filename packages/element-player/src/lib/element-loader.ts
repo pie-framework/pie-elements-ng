@@ -5,6 +5,9 @@
  * Based on the ESM loader pattern from pie-players.
  */
 
+// Import helper for static workspace imports (only in development)
+let staticImports: any = null;
+
 /**
  * Load and register a PIE element as a custom element
  *
@@ -27,22 +30,34 @@ export async function loadElement(
     return;
   }
 
-  // Build module path
-  // If cdnUrl is empty, use bare specifier (resolved by import maps or Vite aliases)
-  let modulePath: string;
-  if (!cdnUrl || cdnUrl === '') {
-    // Use bare specifier - let import maps or Vite aliases resolve it
-    modulePath = packagePath;
-  } else {
-    // External CDN mode with full URL
-    modulePath = `${cdnUrl}/${packagePath}`;
-  }
-
-  if (debug) console.log(`[element-loader] Loading element from ${modulePath}`);
+  if (debug) console.log(`[element-loader] Loading element ${packagePath} (cdnUrl: ${cdnUrl || 'local'})`);
 
   try {
-    // Dynamic import from CDN or local Vite alias
-    const module = cdnUrl ? await import(/* @vite-ignore */ modulePath) : await import(modulePath);
+    let module: any;
+
+    if (!cdnUrl || cdnUrl === '') {
+      // Local development mode - use static imports
+      // Lazy load the static imports module
+      if (!staticImports) {
+        try {
+          // This dynamic import is OK because it's a constant string
+          staticImports = await import('$lib/element-imports');
+        } catch (e) {
+          console.warn('[element-loader] Static imports module not found, trying direct import');
+        }
+      }
+
+      if (staticImports && staticImports.hasElementModule(packagePath)) {
+        module = await staticImports.getElementModule(packagePath);
+      } else {
+        // Fallback to dynamic import (will fail in Vite but kept for compatibility)
+        module = await import(/* @vite-ignore */ packagePath);
+      }
+    } else {
+      // External CDN mode with full URL
+      const modulePath = `${cdnUrl}/${packagePath}`;
+      module = await import(/* @vite-ignore */ modulePath);
+    }
 
     // Get element class (try default export first, then Element export)
     const ElementClass = module.default || module.Element;
@@ -86,24 +101,35 @@ export async function loadController(
   cdnUrl: string,
   debug: boolean = false
 ): Promise<any> {
-  // Build controller path
-  // If cdnUrl is empty, use bare specifier (resolved by import maps or Vite aliases)
-  let controllerPath: string;
-  if (!cdnUrl || cdnUrl === '') {
-    // Use bare specifier - let import maps or Vite aliases resolve it
-    controllerPath = `${packageName}/controller`;
-  } else {
-    // External CDN mode with full URL
-    controllerPath = `${cdnUrl}/${packageName}/controller`;
-  }
+  const controllerPath = `${packageName}/controller`;
 
-  if (debug) console.log(`[element-loader] Loading controller from ${controllerPath}`);
+  if (debug) console.log(`[element-loader] Loading controller from ${controllerPath} (cdnUrl: ${cdnUrl || 'local'})`);
 
   try {
-    // Dynamic import from CDN or local Vite alias
-    const module = cdnUrl
-      ? await import(/* @vite-ignore */ controllerPath)
-      : await import(controllerPath);
+    let module: any;
+
+    if (!cdnUrl || cdnUrl === '') {
+      // Local development mode - use static imports
+      // Lazy load the static imports module if not already loaded
+      if (!staticImports) {
+        try {
+          staticImports = await import('$lib/element-imports');
+        } catch (e) {
+          console.warn('[element-loader] Static imports module not found, trying direct import');
+        }
+      }
+
+      if (staticImports?.hasElementModule(controllerPath)) {
+        module = await staticImports.getElementModule(controllerPath);
+      } else {
+        // Fallback to dynamic import (will fail in Vite but kept for compatibility)
+        module = await import(/* @vite-ignore */ controllerPath);
+      }
+    } else {
+      // External CDN mode with full URL
+      const fullPath = `${cdnUrl}/${controllerPath}`;
+      module = await import(/* @vite-ignore */ fullPath);
+    }
 
     const controller = module.default || module;
 

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-types",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Shared TypeScript types for PIE elements",
   "type": "module",
   "main": "./dist/index.js",

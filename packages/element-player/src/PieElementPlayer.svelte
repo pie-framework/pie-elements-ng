@@ -36,8 +36,8 @@ import ModelInspector from './components/ModelInspector.svelte';
 import Tabs from './components/Tabs.svelte';
 import { loadElement, loadController } from './lib/element-loader';
 import type { PieController } from './lib/types';
-import { createKatexRenderer } from '@pie-element/math-rendering-katex';
-import type { MathRenderer } from '@pie-element/math-rendering';
+import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
+import type { MathRenderer } from '@pie-element/shared-math-rendering';
 
 // Props with Svelte 5 runes
 let {

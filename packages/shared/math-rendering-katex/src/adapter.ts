@@ -4,8 +4,8 @@
  * Provides KaTeX-based math rendering with automatic LaTeX delimiter detection
  */
 
-import type { MathRenderer } from '@pie-element/math-rendering';
-import { loadCss, fixMathElements, mmlToLatex } from '@pie-element/math-rendering';
+import type { MathRenderer } from '@pie-element/shared-math-rendering';
+import { loadCss, fixMathElements, mmlToLatex } from '@pie-element/shared-math-rendering';
 import katex from 'katex';
 import type { KatexOptions } from './types';
 

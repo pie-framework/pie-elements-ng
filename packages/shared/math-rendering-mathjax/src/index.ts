@@ -9,7 +9,7 @@
  *
  * @example
  * ```typescript
- * import { createMathjaxRenderer } from '@pie-element/math-rendering-mathjax';
+ * import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
  *
  * const renderer = createMathjaxRenderer();
  * renderer(document.body);

@@ -14,10 +14,10 @@ import ModelPanel from './components/ModelPanel.svelte';
 import ModelInspector from './components/ModelInspector.svelte';
 import Tabs from './components/Tabs.svelte';
 import { EsmElementPlayer } from '@pie-element/element-player/players';
-import { loadElement, loadController } from './lib/element-loader';
+import { loadElement, loadController } from './lib/demo-element-loader';
 import type { PieController } from './lib/types';
-import { createKatexRenderer } from '@pie-element/math-rendering-katex';
-import type { MathRenderer } from '@pie-element/math-rendering';
+import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
+import type { MathRenderer } from '@pie-element/shared-math-rendering';
 
 const dispatch = createEventDispatcher();
 

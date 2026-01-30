@@ -3,15 +3,15 @@
  * Loads element metadata and initial model/session
  */
 import type { LayoutLoad } from './$types';
-import { createKatexRenderer } from '@pie-element/math-rendering-katex';
+import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
 
 export const ssr = false; // Client-side only rendering for web components
 
 // Cache the math renderer to prevent re-creating it on every load
 let cachedMathRenderer: any = null;
 
-export const load: LayoutLoad = async () => {
-  const elementName = import.meta.env.VITE_ELEMENT_NAME || 'multiple-choice';
+export const load: LayoutLoad = async ({ params }: { params: { element: string } }) => {
+  const elementName = params.element || 'multiple-choice';
 
   // Format element name for display
   let elementTitle = elementName
@@ -39,15 +39,26 @@ export const load: LayoutLoad = async () => {
         capabilities.push('print');
       }
 
-      // Try to load default model from element package
+      // Load sample config from JSON file (instead of dynamic import)
       try {
-        const elementModule = await import(`@pie-element/${elementName}`);
-        if (elementModule.defaultModel) {
-          initialModel = elementModule.defaultModel;
+        const configModule = await import(`$lib/data/sample-configs/react/${elementName}.json`);
+        if (configModule.default?.models?.[0]) {
+          initialModel = configModule.default.models[0];
+          console.log(`[+layout.ts] Loaded sample model for ${elementName}`);
         }
       } catch (e) {
-        // Default model not available, use empty object
-        console.log(`No default model for ${elementName}`);
+        console.log(`[+layout.ts] No sample config found for ${elementName}, using empty model`);
+      }
+
+      // Try to load sample session from JSON file
+      try {
+        const sessionModule = await import(`$lib/data/sample-configs/react/${elementName}-session.json`);
+        if (sessionModule.default) {
+          initialSession = sessionModule.default;
+          console.log(`[+layout.ts] Loaded sample session for ${elementName}`);
+        }
+      } catch (e) {
+        console.log(`[+layout.ts] No sample session found for ${elementName}, using empty session`);
       }
     }
   } catch (e) {
@@ -65,6 +76,6 @@ export const load: LayoutLoad = async () => {
     capabilities,
     initialModel,
     initialSession,
-    mathRenderer: cachedMathRenderer
+    mathRenderer: cachedMathRenderer,
   };
 };

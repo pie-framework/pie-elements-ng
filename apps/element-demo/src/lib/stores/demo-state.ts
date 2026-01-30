@@ -90,7 +90,7 @@ export function updateSession(newSession: any) {
   // Check if session actually changed
   if (JSON.stringify(normalized) !== JSON.stringify(current)) {
     session.set(normalized);
-    sessionVersion.update(v => v + 1);
+    sessionVersion.update((v) => v + 1);
     console.log('[demo-state] session updated', normalized);
   }
 }
@@ -105,7 +105,7 @@ export function updateModel(newModel: any) {
   // Check if model actually changed
   if (JSON.stringify(newModel) !== JSON.stringify(current)) {
     model.set(newModel);
-    modelVersion.update(v => v + 1);
+    modelVersion.update((v) => v + 1);
     console.log('[demo-state] model updated', newModel);
   }
 }
@@ -118,5 +118,5 @@ export function resetSession() {
     ...$session,
     value: [],
   }));
-  sessionVersion.update(v => v + 1);
+  sessionVersion.update((v) => v + 1);
 }

@@ -1,5 +1,5 @@
 import type { PieTheme } from '@pie-element/shared-types';
-import type { PieThemeExtended } from '@pie-element/theming';
+import type { PieThemeExtended } from '@pie-element/shared-theming';
 import { lighten, darken, rgba } from './colors';
 
 /**

@@ -5,7 +5,7 @@
  * Provides full-featured math rendering with accessibility support.
  */
 
-import type { MathRenderer } from '@pie-element/math-rendering';
+import type { MathRenderer } from '@pie-element/shared-math-rendering';
 import type { MathjaxOptions } from './types';
 
 interface MathJaxTexConfig {

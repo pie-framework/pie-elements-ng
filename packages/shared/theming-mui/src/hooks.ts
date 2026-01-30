@@ -1,6 +1,6 @@
 import { useTheme } from '@mui/material/styles';
 import { useMemo } from 'react';
-import type { PieThemeExtended } from '@pie-element/theming';
+import type { PieThemeExtended } from '@pie-element/shared-theming';
 import { extractMuiTheme } from './extract';
 import { muiToPieTheme } from './convert';
 

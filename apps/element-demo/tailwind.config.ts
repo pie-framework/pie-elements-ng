@@ -1,3 +1,4 @@
+// @ts-nocheck
 import daisyui from 'daisyui';
 import type { Config } from 'tailwindcss';
 
@@ -8,7 +9,7 @@ export default {
   },
   plugins: [daisyui],
   daisyui: {
-    themes: ['light', 'dark'], // Use built-in themes
+    themes: ['light', 'dark'],
     darkTheme: 'dark',
     base: true,
     styled: true,

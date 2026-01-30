@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Core PIE interfaces and utilities",
   "type": "module",
   "main": "./dist/index.js",

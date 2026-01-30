@@ -357,7 +357,7 @@ export function transformSharedPackageImports(content: string): string {
   // Transform math-rendering
   transformed = transformed.replace(
     /from\s+['"]@pie-lib\/math-rendering['"]/g,
-    "from '@pie-element/math-rendering-katex'"
+    "from '@pie-element/shared-math-rendering-katex'"
   );
 
   // Transform mathml-to-latex
@@ -456,7 +456,7 @@ export function transformPackageJsonSharedPackages<T extends Record<string, any>
   const transformed = { ...packageJson };
 
   const sharedPackages = {
-    '@pie-lib/math-rendering': '@pie-element/math-rendering-katex',
+    '@pie-lib/math-rendering': '@pie-element/shared-math-rendering-katex',
     '@pie-lib/mathml-to-latex': '@pie-element/shared-mathml-to-latex',
     '@pie-lib/feedback': '@pie-element/shared-feedback',
   };

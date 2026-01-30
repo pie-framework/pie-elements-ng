@@ -10,7 +10,7 @@ const dispatch = createEventDispatcher();
 // Props
 let {
   model = $bindable({}),
-  debug = false
+  debug = false,
 }: {
   model?: any;
   debug?: boolean;

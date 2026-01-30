@@ -1,5 +1,5 @@
-import type { PieThemeExtended } from '@pie-element/theming';
-import { lighten, darken, rgba } from '@pie-element/theming-daisyui';
+import type { PieThemeExtended } from '@pie-element/shared-theming';
+import { lighten, darken, rgba } from '@pie-element/shared-theming-daisyui';
 
 /**
  * Convert MUI theme to extended PIE theme with derived colors

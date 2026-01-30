@@ -13,7 +13,7 @@ import {
   role,
   partialScoring,
   controller,
-  capabilities
+  capabilities,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -24,11 +24,6 @@ const debug = false;
 
 <PlayerLayout
   elementName={$elementName}
-  model={$model}
-  session={$session}
-  bind:mode={$mode}
-  bind:playerRole={$role}
-  bind:partialScoring={$partialScoring}
   bind:controller={$controller}
   capabilities={$capabilities}
   {debug}

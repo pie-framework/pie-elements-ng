@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { PieTheme } from '@pie-element/shared-types';
-import type { PieThemeExtended } from '@pie-element/theming';
+import type { PieThemeExtended } from '@pie-element/shared-theming';
 import { extractDaisyUiTheme, watchDaisyUiTheme } from './extract';
 import { daisyUiToPieTheme } from './convert';
 

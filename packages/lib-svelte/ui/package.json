@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/lib-ui",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared UI components for PIE elements",
   "type": "module",
   "exports": {

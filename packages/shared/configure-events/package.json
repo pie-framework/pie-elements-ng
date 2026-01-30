@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-configure-events",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "PIE Configure Events (ESM) - internalized from @pie-framework/pie-configure-events",
   "type": "module",
   "main": "./dist/index.js",

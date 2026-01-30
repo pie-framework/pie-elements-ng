@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { createKatexRenderer } from '@pie-element/math-rendering-katex';
+ * import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
  *
  * const renderer = createKatexRenderer();
  * await renderer(document.body);

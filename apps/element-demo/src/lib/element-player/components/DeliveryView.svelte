@@ -2,7 +2,7 @@
 /**
  * Delivery View - Shows the rendered PIE element for student/instructor interaction
  */
-import { EsmElementPlayer } from '@pie-element/element-player/players';
+import DemoElementPlayer from './DemoElementPlayer.svelte';
 import { onMount, createEventDispatcher } from 'svelte';
 
 const dispatch = createEventDispatcher();
@@ -13,7 +13,7 @@ let {
   elementModel = {},
   session = $bindable({}),
   mathRenderer = undefined,
-  debug = false
+  debug = false,
 }: {
   elementName: string;
   elementModel: any;
@@ -101,7 +101,7 @@ onMount(() => {
     bind:this={elementPlayer}
     class="element-container"
   >
-    <EsmElementPlayer
+    <DemoElementPlayer
       {elementName}
       model={elementModel}
       bind:session={session}

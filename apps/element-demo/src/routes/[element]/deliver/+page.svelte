@@ -4,7 +4,7 @@
  * Shows the rendered PIE element for interaction
  */
 import { onMount } from 'svelte';
-import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
+import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
 import DeliveryView from '$lib/element-player/components/DeliveryView.svelte';
 import {
   elementName,
@@ -18,7 +18,7 @@ import {
   mathRenderer,
   updateSession,
   modelVersion,
-  sessionVersion
+  sessionVersion,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -68,7 +68,8 @@ const buildModel = async (
   currentPartialScoring: boolean,
   currentController: any
 ) => {
-  if (debug) console.log('[deliver] Building model...', { requestId, mode: currentMode, role: currentRole });
+  if (debug)
+    console.log('[deliver] Building model...', { requestId, mode: currentMode, role: currentRole });
 
   if (!currentModel) {
     elementModel = {};
@@ -137,7 +138,7 @@ function handleSessionChanged(event: CustomEvent) {
 }
 </script>
 
-<PlayerLayout
+<DeliveryPlayerLayout
   elementName={$elementName}
   model={$model}
   session={$session}
@@ -161,7 +162,7 @@ function handleSessionChanged(event: CustomEvent) {
       <div class="model-error">{modelError}</div>
     {/if}
   {/snippet}
-</PlayerLayout>
+</DeliveryPlayerLayout>
 
 <style>
   .model-error {

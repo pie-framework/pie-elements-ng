@@ -1,10 +1,10 @@
 <script lang="ts">
 /**
- * Author Route
- * Shows the configure component for authoring questions
+ * Source Route
+ * Shows and allows editing of the raw model JSON
  */
 import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
-import AuthorView from '$lib/element-player/components/AuthorView.svelte';
+import SourceView from '$lib/element-player/components/SourceView.svelte';
 import {
   elementName,
   model,
@@ -14,7 +14,8 @@ import {
   partialScoring,
   controller,
   capabilities,
-  updateModel
+  updateModel,
+  sessionVersion,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -23,11 +24,13 @@ let { data }: { data: LayoutData } = $props();
 const debug = false;
 let syncing = $state(false);
 
-// Handle model changes from configure component
+// Handle model changes from source view
 function handleModelChanged(event: CustomEvent) {
-  if (debug) console.log('[author] Model changed:', event.detail);
+  if (debug) console.log('[source] Model changed:', event.detail);
   syncing = true;
   updateModel(event.detail);
+  // Increment session version to trigger rebuild in deliver tab
+  sessionVersion.update((v) => v + 1);
   setTimeout(() => {
     syncing = false;
   }, 300);
@@ -36,11 +39,6 @@ function handleModelChanged(event: CustomEvent) {
 
 <PlayerLayout
   elementName={$elementName}
-  model={$model}
-  session={$session}
-  bind:mode={$mode}
-  bind:playerRole={$role}
-  bind:partialScoring={$partialScoring}
   bind:controller={$controller}
   capabilities={$capabilities}
   {debug}
@@ -52,9 +50,8 @@ function handleModelChanged(event: CustomEvent) {
         Synchronizing...
       </div>
     {/if}
-    <AuthorView
-      elementName={$elementName}
-      model={$model}
+    <SourceView
+      bind:model={$model}
       {debug}
       on:model-changed={handleModelChanged}
     />

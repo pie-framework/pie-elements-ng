@@ -1,6 +1,6 @@
 {
-  "name": "@pie-element/math-rendering",
-  "version": "1.0.0",
+  "name": "@pie-element/shared-math-rendering",
+  "version": "0.1.0",
   "description": "Core types and utilities for pluggable math rendering in PIE elements",
   "type": "module",
   "main": "./dist/index.js",

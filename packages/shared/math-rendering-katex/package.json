@@ -1,7 +1,7 @@
 {
-  "name": "@pie-element/math-rendering-katex",
-  "version": "1.0.0",
-  "description": "KaTeX adapter for PIE math rendering (~100KB)",
+  "name": "@pie-element/shared-math-rendering-katex",
+  "version": "0.1.0",
+  "description": "KaTeX adapter for PIE math rendering",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "katex": "^0.16.27",
-    "@pie-element/math-rendering": "workspace:*",
+    "@pie-element/shared-math-rendering": "workspace:*",
     "@pie-element/shared-mathml-to-latex": "workspace:*"
   },
   "peerDependencies": {

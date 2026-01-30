@@ -9,8 +9,8 @@
  *
  * @example
  * ```typescript
- * import type { MathRenderer } from '@pie-element/math-rendering';
- * import { createKatexRenderer } from '@pie-element/math-rendering-katex';
+ * import type { MathRenderer } from '@pie-element/shared-math-rendering';
+ * import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
  *
  * const renderer: MathRenderer = createKatexRenderer();
  * await renderer(document.body);

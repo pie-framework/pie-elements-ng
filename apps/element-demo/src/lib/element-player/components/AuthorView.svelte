@@ -10,7 +10,7 @@ const dispatch = createEventDispatcher();
 let {
   elementName = '',
   model = {},
-  debug = false
+  debug = false,
 }: {
   elementName: string;
   model: any;

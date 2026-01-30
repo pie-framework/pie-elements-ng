@@ -9,6 +9,7 @@
     "packages/elements-react/*/demo",
     "packages/lib-svelte/*",
     "packages/lib-react/*",
+    "packages/element-player",
     "packages/core",
     "tools/cli",
     "apps/element-demo",

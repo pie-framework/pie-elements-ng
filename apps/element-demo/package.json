@@ -1,18 +1,21 @@
 {
   "name": "@pie-element/element-demo",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Shared SvelteKit demo app for any PIE element",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-imports": "bun run scripts/generate-element-imports.ts",
+    "predev": "bun run generate-imports"
   },
   "dependencies": {
     "@pie-element/element-player": "workspace:*",
-    "@pie-element/math-rendering": "workspace:*",
-    "@pie-element/math-rendering-katex": "workspace:*",
+    "@pie-element/shared-math-rendering": "workspace:*",
+    "@pie-element/shared-math-rendering-katex": "workspace:*",
+    "@pie-element/multiple-choice": "workspace:*",
     "@tiptap/core": "3.18.0",
     "@tiptap/extension-code-block-lowlight": "3.18.0",
     "@tiptap/extension-document": "3.18.0",

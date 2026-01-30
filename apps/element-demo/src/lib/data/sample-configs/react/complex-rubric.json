@@ -6,8 +6,18 @@
       "rubricType": "simpleRubric",
       "rubrics": {
         "simpleRubric": {
-          "points": ["nothing right", "a teeny bit right", "mostly right", "bingo"],
-          "sampleAnswers": [null, "just right", "not left", null],
+          "points": [
+            "nothing right",
+            "a teeny bit right",
+            "mostly right",
+            "bingo"
+          ],
+          "sampleAnswers": [
+            null,
+            "just right",
+            "not left",
+            null
+          ],
           "maxPoints": 3,
           "excludeZero": false
         },
@@ -111,7 +121,11 @@
             },
             {
               "maxPoints": 5,
-              "scorePointsLabels": ["Non-Scorable", "Unsatisfactory", "Satisfactory"],
+              "scorePointsLabels": [
+                "Non-Scorable",
+                "Unsatisfactory",
+                "Satisfactory"
+              ],
               "traitLabel": "Category",
               "traits": [
                 {

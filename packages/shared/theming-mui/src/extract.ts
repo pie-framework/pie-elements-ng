@@ -1,5 +1,5 @@
 import type { Theme } from '@mui/material/styles';
-import type { PieThemeExtended } from '@pie-element/theming';
+import type { PieThemeExtended } from '@pie-element/shared-theming';
 
 /**
  * Extract PIE theme from MUI Theme object

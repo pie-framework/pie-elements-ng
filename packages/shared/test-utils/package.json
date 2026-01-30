@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-test-utils",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Testing utilities for PIE elements",
   "type": "module",
   "main": "./dist/index.js",

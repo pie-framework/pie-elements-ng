@@ -25,11 +25,11 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@pie-element/math-rendering": "workspace:*",
-    "@pie-element/math-rendering-katex": "workspace:*",
-    "@pie-element/math-rendering-mathjax": "workspace:*",
-    "@pie-element/theming": "workspace:*",
-    "@pie-element/theming-daisyui": "workspace:*",
+    "@pie-element/shared-math-rendering": "workspace:*",
+    "@pie-element/shared-math-rendering-katex": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "@pie-element/shared-theming": "workspace:*",
+    "@pie-element/shared-theming-daisyui": "workspace:*",
     "@tiptap/core": "3.18.0",
     "@tiptap/extension-code-block-lowlight": "3.18.0",
     "@tiptap/extension-document": "3.18.0",

@@ -1,5 +1,5 @@
 import type { ThemeOptions } from '@mui/material/styles';
-import type { PieThemeExtended } from '@pie-element/theming';
+import type { PieThemeExtended } from '@pie-element/shared-theming';
 import { createTheme } from '@mui/material/styles';
 
 /**

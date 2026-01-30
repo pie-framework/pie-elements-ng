@@ -57,3 +57,4 @@ yarn-error.log*
 # ESM compatibility analysis (generated locally)
 esm-compatible-elements.json
 /.compatibility
+apps/element-demo/src/lib/element-imports.ts

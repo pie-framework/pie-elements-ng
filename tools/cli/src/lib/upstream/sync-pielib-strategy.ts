@@ -322,7 +322,7 @@ export class PieLibStrategy implements SyncStrategy {
  * The actual implementation is in packages/shared/math-rendering-katex.
  */
 
-export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/math-rendering-katex';
+export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/shared-math-rendering-katex';
 `;
 
     const indexPath = join(targetSrcDir, 'index.ts');
