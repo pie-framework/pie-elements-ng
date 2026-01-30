@@ -1,0 +1,145 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/explicit-constructed-response/configure/src/defaults.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+export default {
+  model: {
+    choices: {},
+    displayType: 'block',
+    markup: '',
+    maxLengthPerChoiceEnabled: true,
+    playerSpellCheckEnabled: true,
+    prompt: '',
+    promptEnabled: true,
+    rationale: '',
+    rationaleEnabled: true,
+    spellCheckEnabled: true,
+    studentInstructionsEnabled: true,
+    teacherInstructions: '',
+    teacherInstructionsEnabled: true,
+    toolbarEditorPosition: 'bottom',
+    responseAreaInputConfiguration: {},
+  },
+  configuration: {
+    baseInputConfiguration: {
+      html: { disabled: true },
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+      textAlign: { disabled: true },
+      showParagraphs: { disabled: false },
+      separateParagraphs: { disabled: true },
+    },
+    prompt: {
+      settings: true,
+      label: 'Prompt',
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+      },
+      required: false,
+    },
+    partialScoring: {
+      settings: false,
+      label: 'Allow Partial Scoring',
+    },
+    rationale: {
+      settings: true,
+      label: 'Rationale',
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+      },
+      required: false,
+    },
+    settingsPanelDisabled: false,
+    spellCheck: {
+      label: 'Spellcheck',
+      settings: false,
+      enabled: true,
+    },
+    editSource: {
+      label: 'Edit Source',
+      settings: false,
+      enabled: false,
+    },
+    playerSpellCheck: {
+      label: 'Student Spellcheck',
+      settings: true,
+      enabled: true,
+    },
+    teacherInstructions: {
+      settings: true,
+      label: 'Teacher Instructions',
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+      },
+      required: false,
+    },
+    template: {
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+        h3: { disabled: true },
+        blockquote: { disabled: true },
+      },
+    },
+    maxLengthPerChoice: {
+      settings: true,
+      label: 'Maximum Length Per Choice',
+    },
+    maxResponseAreas: 10,
+    maxImageWidth: {
+      teacherInstructions: 300,
+      prompt: 300,
+      rationale: 300,
+    },
+    maxImageHeight: {
+      teacherInstructions: 300,
+      prompt: 300,
+      rationale: 300,
+    },
+    withRubric: {
+      settings: false,
+      label: 'Add Rubric',
+    },
+    mathMlOptions: {
+      mmlOutput: false,
+      mmlEditing: false,
+    },
+    language: {
+      settings: false,
+      label: 'Specify Language',
+      enabled: false,
+    },
+    languageChoices: {
+      label: 'Language Choices',
+      options: [],
+    },
+    responseAreaInputConfiguration: {
+      inputConfiguration: {
+        characters: {
+          disabled: true
+        },
+      },
+    },
+    spanishButton: {
+      settings: true,
+      label: 'Disable Spanish Characters',
+    },
+  },
+};

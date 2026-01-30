@@ -1,0 +1,88 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/correct-answer-toggle/src/expander.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React, { useRef } from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import { CSSTransition } from 'react-transition-group';
+
+const transition = 'height ease-in 300ms, opacity ease-in 300ms';
+
+const StyledExpander: any = styled('div')(() => ({
+  position: 'relative',
+  height: 0,
+  overflow: 'hidden',
+  display: 'flex',
+  visibility: 'hidden',
+  width: 0,
+  '&.enter': {
+    transition,
+    opacity: 1,
+    height: 'auto',
+    width: 'auto',
+    visibility: 'visible',
+    minHeight: '25px',
+  },
+  '&.enter-done': {
+    height: 'auto',
+    visibility: 'visible',
+    width: 'auto',
+    minHeight: '25px',
+  },
+  '&.exit': {
+    transition,
+    opacity: 0,
+    height: 0,
+    visibility: 'visible',
+    width: 0,
+  },
+  '&.exit-done': {
+    opacity: 0,
+    visibility: 'hidden',
+    height: 0,
+    width: 0,
+  },
+}));
+
+const Expander = (props) => {
+  const { show, children, className } = props;
+  const nodeRef = useRef(null);
+
+  return (
+    <CSSTransition
+      nodeRef={nodeRef}
+      in={show}
+      appear={true}
+      mountOnEnter={false}
+      timeout={300}
+      classNames={{
+        enter: 'enter',
+        enterDone: 'enter-done',
+        exit: 'exit',
+        exitDone: 'exit-done',
+      }}
+    >
+      <StyledExpander ref={nodeRef} className={className}>
+        {children}
+      </StyledExpander>
+    </CSSTransition>
+  );
+};
+
+Expander.propTypes = {
+  show: PropTypes.bool.isRequired,
+  className: PropTypes.string,
+  children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
+};
+
+export default Expander;

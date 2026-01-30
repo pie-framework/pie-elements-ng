@@ -1,0 +1,96 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/number-line/configure/src/point-config.jsx
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import Button from '@mui/material/Button';
+import React from 'react';
+import { pointChooser } from '@pie-element/number-line';
+import { styled } from '@mui/material/styles';
+import PropTypes from 'prop-types';
+const { Point } = pointChooser;
+
+const DisplayToggles: any = styled('div')(({ theme }) => ({
+  paddingTop: theme.spacing(2.5),
+  '& > :first-child': {
+    marginRight: theme.spacing(1),
+  },
+}));
+
+class PointConfig extends React.Component {
+  static propTypes = {
+    onSelectionChange: PropTypes.func,
+    selection: PropTypes.object,
+    availableTools: PropTypes.array,
+    hideButtons: PropTypes.bool,
+  };
+  constructor(props) {
+    super(props);
+  }
+
+  toggle(point) {
+    const update = { ...this.props.selection };
+    update[point] = !update[point];
+    this._propsUpdate(update);
+  }
+
+  toggleAll(value) {
+    const display = [...PointConfig.types].reduce((acc, point) => {
+      acc[point] = value;
+
+      return acc;
+    }, {});
+
+    this._propsUpdate(display);
+  }
+
+  _propsUpdate(selection) {
+    this.props.onSelectionChange(selection);
+  }
+
+  active(point) {
+    return this.props.selection[point] === true; // ? 'active' : '';
+  }
+
+  render() {
+    // Setting default value if not passed in configuration properties.
+    const { availableTools, hideButtons = false } = this.props;
+
+    const icons = (availableTools || []).map((point) => {
+      return (
+        <Point
+          iconKey={point.toLowerCase()}
+          key={point.toLowerCase()}
+          onClick={this.toggle.bind(this, point)}
+          active={this.active(point)}
+        />
+      );
+    });
+
+    return (
+      <div>
+        <div>{icons}</div>
+        <DisplayToggles hidden={hideButtons}>
+          <Button variant="outlined" size="small" onClick={this.toggleAll.bind(this, true)}>
+            Select All
+          </Button>
+          <Button variant="outlined" size="small" onClick={this.toggleAll.bind(this, false)}>
+            None
+          </Button>
+        </DisplayToggles>
+      </div>
+    );
+  }
+}
+
+PointConfig.types = ['PF', 'LFF', 'LEF', 'LFE', 'LEE', 'RFN', 'RFP', 'REN', 'REP'];
+
+export default PointConfig;

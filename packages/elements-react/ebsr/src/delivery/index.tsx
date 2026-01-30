@@ -1,0 +1,170 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/ebsr/src/index.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import { SessionChangedEvent } from '@pie-element/shared-player-events';
+import MultipleChoice from '@pie-element/multiple-choice';
+import { get } from 'lodash-es';
+import debug from 'debug';
+
+const SESSION_CHANGED = SessionChangedEvent.TYPE;
+const MC_TAG_NAME = 'ebsr-multiple-choice';
+const log = debug('pie-elements:ebsr');
+
+class EbsrMC extends MultipleChoice {}
+
+const defineMultipleChoice = () => {
+  if (!customElements.get(MC_TAG_NAME)) {
+    customElements.define(MC_TAG_NAME, EbsrMC);
+  }
+};
+
+defineMultipleChoice();
+
+const isNonEmptyArray = (a) => Array.isArray(a) && a.length > 0;
+
+export const isSessionComplete = (session) => {
+  const a = get(session, 'value.partA.value');
+  const b = get(session, 'value.partB.value');
+
+  return isNonEmptyArray(a) && isNonEmptyArray(b);
+};
+
+export default class Ebsr extends HTMLElement {
+  constructor() {
+    super();
+    this._model = {};
+    this._session = {};
+  }
+
+  onSessionUpdated: any = (e) => {
+    if (e.target === this) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    const id = e.target.getAttribute('id');
+
+    if (id) {
+      const key = `part${id.toUpperCase()}`;
+
+      if (e.update) {
+        this._model[key] = e.update;
+      }
+      //TODO: accessing a private property here. The session event should contain the update in future to prevent this.
+      this.dispatchSessionChanged(e.srcElement._session, key);
+    }
+  };
+
+  set model(m) {
+    this._model = m;
+
+    customElements.whenDefined(MC_TAG_NAME).then(() => {
+      this.setPartModel(this.partA, 'partA');
+      this.setPartModel(this.partB, 'partB');
+    });
+  }
+
+  set session(s) {
+    this._session = s;
+
+    customElements.whenDefined(MC_TAG_NAME).then(() => {
+      this.setPartSession(this.partA, 'partA');
+      this.setPartSession(this.partB, 'partB');
+    });
+  }
+
+  get session() {
+    return this._session;
+  }
+
+  setPartModel(part, key) {
+    if (this._model && this._model[key] && part) {
+      const { mode } = this._model;
+
+      part.model = {
+        ...this._model[key],
+        mode,
+        keyMode: this._model[key].choicePrefix,
+      };
+    }
+  }
+
+  setPartSession(part, key) {
+    if (this._session && this._model && part) {
+      const { value } = this._session;
+      part.session = value && value[key] ? value[key] : { id: key };
+    }
+  }
+
+  dispatchSessionChanged(partSession, key) {
+    this._session.value = {
+      ...this._session.value,
+      [key]: partSession,
+    };
+
+    log('[onSessionChanged] session: ', this._session);
+    const complete = isSessionComplete(this._session);
+    this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), complete));
+  }
+
+  get partA() {
+    return this.querySelector(`${MC_TAG_NAME}#a`);
+  }
+
+  get partB() {
+    return this.querySelector(`${MC_TAG_NAME}#b`);
+  }
+
+  connectedCallback() {
+    this._render();
+    this.addEventListener(SESSION_CHANGED, this.onSessionUpdated);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener(SESSION_CHANGED, this.onSessionUpdated);
+  }
+
+  _render() {
+    this.ariaLabel = 'Two-Part Question';
+    this.role = 'region';
+    this.innerHTML = `
+      <style>
+        .srOnly {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        left: -10000px;
+        top: auto;
+      }
+      ${this._model?.extraCSSRules?.rules}
+      </style>
+        <h2 class="srOnly">Two-Part Question</h2>
+        <${MC_TAG_NAME} id="a"></${MC_TAG_NAME}>
+        <${MC_TAG_NAME} id="b"></${MC_TAG_NAME}>
+    `;
+
+    // when item is re-rendered (due to connectedCallback), if the custom element is already defined,
+    // we need to set the model and session, otherwise the setters are not reached again
+    if (customElements.get(MC_TAG_NAME)) {
+      this.setPartModel(this.partA, 'partA');
+      this.setPartModel(this.partB, 'partB');
+      this.setPartSession(this.partA, 'partA');
+      this.setPartSession(this.partB, 'partB');
+    }
+  }
+}

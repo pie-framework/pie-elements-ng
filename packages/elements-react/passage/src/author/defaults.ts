@@ -1,0 +1,126 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/passage/configure/src/defaults.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+// TODO: also update '../../controller/src/defaults.js' and '../../src/print.js' when updating defaults
+export default {
+  model: {
+    authorEnabled: true,
+    passages: [
+      {
+        teacherInstructions: '',
+        title: '',
+        subtitle: '',
+        author: '',
+        text: '',
+      },
+    ],
+    subtitleEnabled: true,
+    teacherInstructionsEnabled: true,
+    textEnabled: true,
+    titleEnabled: true,
+  },
+  configuration: {
+    baseInputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+      h3: { disabled: true },
+      blockquote: { disabled: true },
+      textAlign: { disabled: true },
+      showParagraphs: { disabled: false },
+      separateParagraphs: { disabled: true },
+    },
+    settingsPanelDisabled: false,
+    title: {
+      settings: true,
+      label: 'Title',
+      inputConfiguration: {
+        audio: { disabled: true },
+        video: { disabled: true },
+        image: { disabled: true },
+        textAlign: { disabled: false },
+      },
+      required: true,
+    },
+    subtitle: {
+      settings: true,
+      label: 'Subtitle',
+      inputConfiguration: {
+        audio: { disabled: true },
+        video: { disabled: true },
+        image: { disabled: true },
+        textAlign: { disabled: false },
+      },
+      required: false,
+    },
+    author: {
+      settings: true,
+      label: 'Author',
+      inputConfiguration: {
+        audio: { disabled: true },
+        video: { disabled: true },
+        image: { disabled: true },
+      },
+      required: false,
+    },
+    text: {
+      settings: true,
+      label: 'Text',
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+        h3: { disabled: false },
+        blockquote: { disabled: false },
+        textAlign: { disabled: false },
+      },
+      required: true,
+    },
+    teacherInstructions: {
+      settings: true,
+      label: 'Teacher Instructions',
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+      },
+      required: false,
+    },
+    maxImageWidth: {
+      teacherInstructions: 300,
+      text: 300,
+    },
+    maxImageHeight: {
+      teacherInstructions: 300,
+      text: 300,
+    },
+    mathMlOptions: {
+      mmlOutput: false,
+      mmlEditing: false,
+    },
+    language: {
+      settings: false,
+      label: 'Specify Language',
+      enabled: false,
+    },
+    languageChoices: {
+      label: 'Language Choices',
+      options: [],
+    },
+    additionalPassage: {
+      settings: true,
+      label: 'Additional Passage',
+      enabled: false,
+    },
+  },
+};

@@ -1,0 +1,174 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/categorize/configure/src/index.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import {
+  ModelUpdatedEvent,
+  DeleteImageEvent,
+  InsertImageEvent,
+  InsertSoundEvent,
+  DeleteSoundEvent,
+} from '@pie-element/shared-configure-events';
+import { renderMath } from '@pie-element/shared-math-rendering-katex';
+
+import Main from './main';
+
+import defaults from './defaults';
+
+export default class CategorizeConfigure extends HTMLElement {
+  static createDefaultModel = (model = {}) => ({
+    ...defaults.model,
+    ...model,
+  });
+
+  // PD-2960: make sure we don't have alternates in model or possibility to add them (temporary solution)
+  // this function is used in controller, too
+  static disableAlternateResponses = (m) => {
+    let { correctResponse } = m || {};
+    correctResponse = correctResponse || [];
+    const mappedCorrectResponse = correctResponse.map((cr) => {
+      const { alternateResponses, ...response } = cr;
+      return response;
+    });
+    return {
+      ...m,
+      correctResponse: mappedCorrectResponse,
+      allowAlternateEnabled: false,
+    };
+  };
+
+  constructor() {
+    super();
+    this._root = null;
+    this._model = CategorizeConfigure.createDefaultModel();
+    this._configuration = defaults.configuration;
+  }
+
+  set model(m) {
+    this._model = CategorizeConfigure.createDefaultModel(m);
+
+    if (m.choices && m.choices.length >= m.maxAnswerChoices) {
+      this._model.maxAnswerChoices = m.choices.length;
+      console.warn("Max Answer Choices can't be less than choices length!");
+    }
+
+    this.render();
+  }
+
+  set configuration(c) {
+    const newConfiguration = {
+      ...defaults.configuration,
+      ...c,
+    };
+
+    this._configuration = newConfiguration;
+
+    // if language:enabled is true, then the corresponding default item model should include a language value;
+    // if it is false, then the language field should be omitted from the item model.
+    // if a default item model includes a language value (e.g., en_US) and the corresponding authoring view settings have language:settings = true,
+    // then (a) language:enabled should also be true, and (b) that default language value should be represented in languageChoices[] (as a key).
+    if (newConfiguration?.language?.enabled) {
+      if (newConfiguration?.languageChoices?.options?.length) {
+        this._model.language = newConfiguration?.languageChoices.options[0].value;
+      }
+    } else if (newConfiguration.language.settings && this._model.language) {
+      this._configuration.language.enabled = true;
+
+      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
+        this._configuration.languageChoices.options = [];
+      }
+
+      // check if the language is already included in the languageChoices.options array
+      // and if not, then add it.
+      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
+        this._configuration.languageChoices.options.push({
+          value: this._model.language,
+          label: this._model.language,
+        });
+      }
+    } else {
+      delete this._model.language;
+    }
+
+    this.render();
+  }
+
+  onModelChanged(m) {
+    this._model = m;
+
+    this.render();
+    this.dispatchEvent(new ModelUpdatedEvent(this._model, false));
+  }
+
+  onConfigurationChanged(c) {
+    this._configuration = c;
+    this.render();
+  }
+
+  connectedCallback() {
+    this.render();
+  }
+
+  /**
+   *
+   * @param {done, progress, file} handler
+   */
+  insertImage(handler) {
+    this.dispatchEvent(new InsertImageEvent(handler));
+  }
+
+  onDeleteImage(src, done) {
+    this.dispatchEvent(new DeleteImageEvent(src, done));
+  }
+
+  insertSound(handler) {
+    this.dispatchEvent(new InsertSoundEvent(handler));
+  }
+
+  onDeleteSound(src, done) {
+    this.dispatchEvent(new DeleteSoundEvent(src, done));
+  }
+
+  render() {
+    const el = React.createElement(Main, {
+      model: this._model,
+      configuration: this._configuration,
+      onModelChanged: this.onModelChanged.bind(this),
+      onConfigurationChanged: this.onConfigurationChanged.bind(this),
+      imageSupport: {
+        add: this.insertImage.bind(this),
+        delete: this.onDeleteImage.bind(this),
+      },
+      uploadSoundSupport: {
+        add: this.insertSound.bind(this),
+        delete: this.onDeleteSound.bind(this),
+      },
+    });
+
+    if (!this._root) {
+      this._root = createRoot(this);
+    }
+    this._root.render(el);
+
+    setTimeout(() => {
+      renderMath(this);
+    }, 0);
+  }
+
+  disconnectedCallback() {
+    if (this._root) {
+      this._root.unmount();
+    }
+  }
+}

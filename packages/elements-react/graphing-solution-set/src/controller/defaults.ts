@@ -1,0 +1,75 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/graphing-solution-set/controller/src/defaults.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+/*
+ * This file contains the default configuration for the Graphing Solution Set Item Type.
+ * Model is similar to the one used in graphing item type except for the gssLineData object which handles
+ * the configuration for the lines and the solution set.
+ *
+ * Same model is used in configure/src default.js
+ * */
+export default {
+  answers: {
+    correctAnswer: {
+      name: 'Correct Answer',
+      marks: [],
+    },
+  },
+  arrows: {
+    left: true,
+    right: true,
+    up: true,
+    down: true,
+  },
+  marks: [],
+  defaultGridConfiguration: 0,
+  domain: {
+    min: -5,
+    max: 5,
+    step: 1,
+    labelStep: 1,
+    axisLabel: 'x',
+  },
+  graph: {
+    width: 500,
+    height: 500,
+  },
+  gssLineData: {
+    numberOfLines: 1,
+    selectedTool: 'lineA',
+    sections: [],
+    lineA: {
+      lineType: 'Solid',
+    },
+  },
+  includeAxes: true,
+  labels: {},
+  labelsEnabled: true,
+  padding: true,
+  prompt: '',
+  range: {
+    min: -5,
+    max: 5,
+    step: 1,
+    labelStep: 1,
+    axisLabel: 'y',
+  },
+  rationale: '',
+  standardGrid: false,
+  title: '',
+  coordinatesOnHover: false,
+  promptEnabled: true,
+  rationaleEnabled: true,
+  teacherInstructionsEnabled: true,
+  studentInstructionsEnabled: true,
+};

@@ -1,0 +1,436 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/graphing/configure/src/defaults.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+const allTools = [
+  'circle',
+  'line',
+  'label',
+  'parabola',
+  'point',
+  'polygon',
+  'ray',
+  'segment',
+  'sine',
+  'vector',
+  // 'absolute', // - not available as default
+  // 'exponential', // - not available as default
+];
+
+export default {
+  model: {
+    answers: {
+      correctAnswer: {
+        name: 'Correct Answer',
+        marks: [],
+      },
+    },
+    arrows: {
+      left: true,
+      right: true,
+      up: true,
+      down: true,
+    },
+    backgroundMarks: [],
+    coordinatesOnHover: false,
+    defaultGridConfiguration: 0,
+    domain: {
+      min: -5,
+      max: 5,
+      step: 1,
+      labelStep: 1,
+      axisLabel: 'x',
+    },
+    graph: { width: 500, height: 500 },
+    includeAxes: true,
+    labels: {},
+    labelsEnabled: true,
+    padding: true,
+    prompt: '',
+    promptEnabled: true,
+    range: {
+      min: -5,
+      max: 5,
+      step: 1,
+      labelStep: 1,
+      axisLabel: 'y',
+    },
+    rationale: '',
+    rationaleEnabled: true,
+    standardGrid: false,
+    studentInstructionsEnabled: true,
+    teacherInstructions: '',
+    teacherInstructionsEnabled: true,
+    title: '',
+    titleEnabled: true,
+    toolbarTools: allTools,
+  },
+  configuration: {
+    baseInputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+      textAlign: { disabled: true },
+      showParagraphs: { disabled: false },
+      separateParagraphs: { disabled: true },
+    },
+    availableTools: allTools,
+    authoring: {
+      settings: false,
+      label: 'Customize Grid Setup',
+      enabled: true,
+      includeAxesEnabled: true,
+      standardGridEnabled: true,
+      min: {
+        label: 'Min Value',
+        enabled: true,
+      },
+      max: {
+        label: 'Max Value',
+        enabled: true,
+      },
+      axisLabel: {
+        label: 'Label',
+        enabled: true,
+      },
+      step: {
+        label: 'Grid Interval',
+        enabled: true,
+      },
+      labelStep: {
+        label: 'Label Interval',
+        enabled: true,
+      },
+    },
+    arrows: {
+      settings: true,
+      label: 'Include Arrows',
+      left: {
+        label: 'left',
+      },
+      right: {
+        label: 'right',
+      },
+      up: {
+        label: 'up',
+      },
+      down: {
+        label: 'down',
+      },
+    },
+    gridConfigurations: [
+      {
+        label: '4-quadrant coordinate grid, -10 to 10',
+        arrows: {
+          left: true,
+          right: true,
+          up: true,
+          down: true,
+        },
+        domain: {
+          min: -10,
+          max: 10,
+          step: 1,
+          padding: 0,
+          labelStep: 1,
+          axisLabel: '<i>x</i>',
+        },
+        graph: {
+          width: 480,
+          height: 480,
+        },
+        includeAxes: true,
+        labels: {
+          top: '',
+          right: '',
+          bottom: '',
+          left: '',
+        },
+        padding: true,
+        range: {
+          min: -10,
+          max: 10,
+          step: 1,
+          padding: 0,
+          labelStep: 1,
+          axisLabel: '<i>y</i>',
+        },
+        standardGrid: true,
+        title: '',
+      },
+      {
+        label: '0 to 10 on both axes',
+        arrows: {
+          left: false,
+          right: true,
+          up: true,
+          down: false,
+        },
+        domain: {
+          min: 0,
+          max: 10,
+          step: 1,
+          padding: 0,
+          labelStep: 1,
+          axisLabel: '<i>x</i>',
+        },
+        graph: {
+          width: 480,
+          height: 480,
+        },
+        includeAxes: true,
+        labels: {
+          top: '',
+          right: '',
+          bottom: '',
+          left: '',
+        },
+        padding: true,
+        range: {
+          min: 0,
+          max: 10,
+          step: 1,
+          padding: 0,
+          labelStep: 1,
+          axisLabel: '<i>y</i>',
+        },
+        standardGrid: true,
+        title: '',
+      },
+      {
+        label: '0 to 20 on both axes',
+        arrows: {
+          left: false,
+          right: true,
+          up: true,
+          down: false,
+        },
+        domain: {
+          min: 0,
+          max: 20,
+          step: 1,
+          padding: 0,
+          labelStep: 1,
+          axisLabel: '<i>x</i>',
+        },
+        graph: {
+          width: 480,
+          height: 480,
+        },
+        includeAxes: true,
+        labels: {
+          top: '',
+          right: '',
+          bottom: '',
+          left: '',
+        },
+        padding: true,
+        range: {
+          min: 0,
+          max: 20,
+          step: 1,
+          padding: 0,
+          labelStep: 1,
+          axisLabel: '<i>y</i>',
+        },
+        standardGrid: true,
+        title: '',
+      },
+      {
+        label: 'Sample Data Graph',
+        arrows: {
+          left: false,
+          right: true,
+          up: true,
+          down: false,
+        },
+        domain: {
+          min: 0,
+          max: 30,
+          step: 1,
+          padding: 0,
+          labelStep: 2,
+          axisLabel: '<i>t</i>',
+        },
+        graph: {
+          width: 480,
+          height: 480,
+        },
+        includeAxes: true,
+        labels: {
+          top: '',
+          right: '',
+          bottom: 'Time (seconds)',
+          left: 'Distance (meters)',
+        },
+        padding: true,
+        range: {
+          min: 0,
+          max: 80,
+          step: 5,
+          padding: 0,
+          labelStep: 10,
+          axisLabel: '<i>d</i>',
+        },
+        standardGrid: false,
+        title: 'Distance as a function of time',
+      },
+      {
+        label: 'No Visible Axes',
+        arrows: {
+          left: false,
+          right: false,
+          up: false,
+          down: false,
+        },
+        domain: {
+          min: 1,
+          max: 21,
+          step: 1,
+          padding: 0,
+          labelStep: 0,
+          axisLabel: '',
+        },
+        graph: {
+          width: 480,
+          height: 480,
+        },
+        includeAxes: false,
+        labels: {
+          top: '',
+          right: '',
+          bottom: '',
+          left: '',
+        },
+        padding: true,
+        range: {
+          min: 1,
+          max: 21,
+          step: 1,
+          padding: 0,
+          labelStep: 0,
+          axisLabel: '',
+        },
+        standardGrid: false,
+        title: '',
+      },
+    ],
+    graphDimensions: {
+      settings: false,
+      label: 'Graph Dimensions',
+      enabled: true,
+      min: 150,
+      max: 800,
+      step: 20,
+    },
+    padding: {
+      settings: false,
+      label: 'Padding',
+    },
+    labels: {
+      settings: true,
+      label: 'Graph Labels',
+      enabled: true,
+      top: 'Click here to add a top label',
+      right: 'Click here to add a right label',
+      bottom: 'Click here to add a bottom label',
+      left: 'Click here to add a left label',
+    },
+    prompt: {
+      settings: true,
+      label: 'Item Stem',
+      required: false,
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+      },
+    },
+    rationale: {
+      settings: true,
+      label: 'Rationale',
+      required: false,
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+      },
+    },
+    scoringType: {
+      settings: false,
+      label: 'Scoring Type',
+    },
+    studentInstructions: {
+      settings: false,
+      label: 'Student Instructions',
+    },
+    teacherInstructions: {
+      settings: true,
+      label: 'Teacher Instructions',
+      required: false,
+      inputConfiguration: {
+        audio: { disabled: false },
+        video: { disabled: false },
+        image: { disabled: false },
+      },
+    },
+    title: {
+      settings: true,
+      label: 'Graph Title',
+      enabled: true,
+      placeholder: 'Click here to add a title for this graph',
+    },
+    instruction: {
+      settings: false,
+      label:
+        'Graphing questions involve plotting points, lines, or other objects on a graph. To create one, first configure the grid, then select the plotting tools students will be offered, and use them to define the correct answer.',
+    },
+    settingsPanelDisabled: false,
+    spellCheck: {
+      label: 'Spellcheck',
+      settings: false,
+      enabled: true,
+    },
+    coordinatesOnHover: {
+      settings: true,
+      label: 'Coordinates on Hover',
+    },
+    maxImageWidth: {
+      teacherInstructions: 300,
+      prompt: 300,
+      rationale: 300,
+    },
+    maxImageHeight: {
+      teacherInstructions: 300,
+      prompt: 300,
+      rationale: 300,
+    },
+    withRubric: {
+      settings: false,
+      label: 'Add Rubric',
+    },
+    language: {
+      settings: false,
+      label: 'Specify Language',
+      enabled: false,
+    },
+    languageChoices: {
+      label: 'Language Choices',
+      options: [],
+    },
+    mathMlOptions: {
+      mmlOutput: false,
+      mmlEditing: false,
+    },
+    removeIncompleteTool: false,
+  },
+};

@@ -1,0 +1,116 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/multi-trait-rubric/src/main.jsx
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+
+import Scale from './scale';
+import Link from '@mui/material/Link';
+import Collapse from '@mui/material/Collapse';
+import { color, UiLayout } from '@pie-lib/render-ui';
+
+class Main extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      rubricOpen: false,
+      linkPrefix: 'Show',
+    };
+    this.toggleRubric = this.toggleRubric.bind(this);
+  }
+
+  toggleRubric() {
+    this.setState({ rubricOpen: !this.state.rubricOpen });
+    this.setState({ linkPrefix: this.state.rubricOpen ? 'Show' : 'Hide' });
+  }
+
+  render() {
+    const { model } = this.props;
+    let { animationsDisabled } = this.props;
+    const { extraCSSRules, halfScoring, scales, visible, pointLabels, description, standards, arrowsDisabled } =
+      model || {};
+    animationsDisabled = animationsDisabled || model.animationsDisabled;
+
+    if (!scales || !visible) {
+      return null;
+    }
+
+    const rubricItem = (
+      <UiLayout
+        extraCSSRules={extraCSSRules}
+        style={{ fontFamily: 'Cerebri Sans', color: color.text(), backgroundColor: color.background() }}
+      >
+        {halfScoring ? (
+          <div style={{ marginBottom: '16px' }}>* Half-point or in-between scores are permitted under this rubric.</div>
+        ) : null}
+
+        {scales.map((scale, scaleIndex) => (
+          <Scale
+            key={`scale_${scaleIndex}`}
+            scale={scale}
+            scaleIndex={scaleIndex}
+            showPointsLabels={pointLabels}
+            showDescription={description}
+            showStandards={standards}
+            arrowsDisabled={arrowsDisabled}
+          />
+        ))}
+      </UiLayout>
+    );
+
+    if (animationsDisabled) {
+      return rubricItem;
+    }
+
+    return (
+      <UiLayout extraCSSRules={extraCSSRules} style={{ color: color.text(), backgroundColor: color.background() }}>
+        <Link style={{ backgroundColor: color.background() }} href={this.dudUrl} onClick={this.toggleRubric}>
+          {this.state.linkPrefix} Rubric
+        </Link>
+        <Collapse style={{ marginTop: '16px' }} in={this.state.rubricOpen} timeout={{ enter: 225, exit: 195 }}>
+          {rubricItem}
+        </Collapse>
+      </UiLayout>
+    );
+  }
+}
+
+Main.propTypes = {
+  model: PropTypes.shape({
+    halfScoring: PropTypes.bool,
+    scales: PropTypes.arrayOf(
+      PropTypes.shape({
+        excludeZero: PropTypes.bool,
+        maxPoints: PropTypes.number,
+        scorePointsLabels: PropTypes.arrayOf(PropTypes.string),
+        traitLabel: PropTypes.string,
+        traits: PropTypes.arrayOf(
+          PropTypes.shape({
+            name: PropTypes.string,
+            description: PropTypes.string,
+            scorePointsDescriptors: PropTypes.arrayOf(PropTypes.string),
+            standards: PropTypes.arrayOf(PropTypes.string),
+          }),
+        ),
+      }),
+    ),
+    visible: PropTypes.bool,
+    pointLabels: PropTypes.bool,
+    description: PropTypes.bool,
+    standards: PropTypes.bool,
+    animationsDisabled: PropTypes.bool,
+  }),
+  animationsDisabled: PropTypes.bool,
+};
+
+export default Main;

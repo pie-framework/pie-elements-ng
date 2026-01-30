@@ -1,0 +1,45 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/graphing/src/tools/shared/icons/CorrectSVG.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+
+const CorrectSVG = ({ scale, x, y }) => (
+  <svg
+    width="11"
+    height="13"
+    viewBox="0 0 14 14"
+    fill="none"
+    stroke="#ffffff"
+    x={scale.x(x) - 5}
+    y={scale.y(y) - 6}
+    style={{ pointerEvents: 'none' }}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M10.1953 2.46875C10.3125 2.35156 10.5 2.35156 10.5938 2.46875L11.2734 3.125C11.3672 3.24219 11.3672 3.42969 11.2734 3.52344L4.24219 10.5547C4.125 10.6719 3.96094 10.6719 3.84375 10.5547L0.703125 7.4375C0.609375 7.32031 0.609375 7.13281 0.703125 7.03906L1.38281 6.35938C1.47656 6.26562 1.66406 6.26562 1.78125 6.35938L4.03125 8.63281L10.1953 2.46875Z"
+      fill="white"
+    />
+  </svg>
+);
+
+CorrectSVG.propTypes = {
+  scale: PropTypes.shape({
+    x: PropTypes.func,
+    y: PropTypes.func,
+  }),
+  x: PropTypes.number,
+  y: PropTypes.number,
+};
+
+export default CorrectSVG;

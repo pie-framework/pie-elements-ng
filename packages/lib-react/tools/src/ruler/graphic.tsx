@@ -1,0 +1,61 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/tools/src/ruler/graphic.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import UnitType from './unit-type';
+import { range } from 'lodash-es';
+import Unit from './unit';
+import { strokeColor, fillColor } from '../style-utils';
+
+const StyledBg: any = styled('rect')(({ theme }) => ({
+  stroke: strokeColor(theme),
+  strokeWidth: '2px',
+  fill: fillColor(theme),
+}));
+
+const Bg = ({ width, height }) => <StyledBg width={width} height={height} cx={0} cy={0} />;
+
+Bg.propTypes = {
+  width: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
+};
+
+export class Graphic extends React.PureComponent {
+  static propTypes = {
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired,
+    units: PropTypes.number.isRequired,
+    unit: PropTypes.object.isRequired,
+  };
+
+  render() {
+    const { width, height, units, unit } = this.props;
+    const viewBox = `0 0 ${width} ${height}`;
+    const unitWidth = width / units;
+    const unitHeight = height;
+
+    return (
+      <svg viewBox={viewBox}>
+        <Bg width={width} height={height} />
+        <UnitType label={unit.type} />
+        {range(1, units + 1).map((r) => (
+          <Unit width={unitWidth} height={unitHeight} key={r} index={r} config={unit} last={r === units} />
+        ))}
+      </svg>
+    );
+  }
+}
+
+export default Graphic;

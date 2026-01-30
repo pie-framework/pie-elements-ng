@@ -1,0 +1,100 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/rubric/src/point-menu.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import IconButton from '@mui/material/IconButton';
+import PropTypes from 'prop-types';
+import React from 'react';
+
+export class IconMenu extends React.Component {
+  static propTypes = {
+    opts: PropTypes.object,
+    onClick: PropTypes.func.isRequired,
+  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      anchorEl: undefined,
+      open: false,
+    };
+  }
+
+  handleClick = (event) => this.setState({ open: true, anchorEl: event.currentTarget });
+
+  handleRequestClose = () => this.setState({ open: false });
+
+  render() {
+    const { opts, onClick } = this.props;
+    const { open, anchorEl } = this.state;
+    const keys = Object.keys(opts) || [];
+
+    const handleMenuClick = (key) => () => {
+      onClick(key);
+      this.handleRequestClose();
+    };
+
+    const iconColor = open ? 'inherit' : 'disabled';
+
+    return (
+      <div>
+        <div onClick={this.handleClick}>
+          <IconButton size="large">
+            {open ? <MoreVertIcon color={iconColor} /> : <MoreHorizIcon color={iconColor} />}
+          </IconButton>
+        </div>
+        <Menu
+          id="point-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={this.handleRequestClose}
+          style={{ transform: 'translate(-15px, -15px)' }}
+          transformOrigin={{
+            vertical: 'center',
+            horizontal: 'right',
+          }}
+        >
+          {keys.map((k, index) => (
+            <MenuItem key={index} onClick={handleMenuClick(k)}>
+              {opts[k]}
+            </MenuItem>
+          ))}
+        </Menu>
+      </div>
+    );
+  }
+}
+
+export default class PointMenu extends React.Component {
+  static propTypes = {
+    onChange: PropTypes.func.isRequired,
+    showSampleAnswer: PropTypes.bool.isRequired,
+  };
+
+  render() {
+    const { onChange, showSampleAnswer } = this.props;
+    const sampleText = showSampleAnswer ? 'Provide Sample Response' : 'Remove Sample Response';
+
+    return (
+      <IconMenu
+        onClick={(key) => onChange(key)}
+        opts={{
+          sample: sampleText,
+        }}
+      />
+    );
+  }
+}

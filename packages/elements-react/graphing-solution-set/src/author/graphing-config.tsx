@@ -1,0 +1,321 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/graphing-solution-set/configure/src/graphing-config.jsx
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import * as React from 'react';
+import PropTypes from 'prop-types';
+import { GraphContainer, GridSetup } from '@pie-lib/graphing-solution-set';
+import { AlertDialog } from '@pie-lib/config-ui';
+import { MenuItem, Select, Typography, OutlinedInput } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { applyConstraints, filterPlotableMarks, getGridValues, getLabelValues } from './utils';
+import { isEqual, cloneDeep } from 'lodash-es';
+
+const Container: any = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  marginBottom: theme.spacing(2.5),
+}));
+
+const GridConfigWrapper: any = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  marginRight: theme.spacing(3),
+  marginBottom: theme.spacing(2.5),
+}));
+
+const GraphConfig: any = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+});
+
+const SubtitleText: any = styled(Typography)(({ theme }) => ({
+  marginTop: theme.spacing(1.5),
+  marginBottom: theme.spacing(1),
+}));
+
+const GridConfig: any = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  width: '100%',
+  marginBottom: theme.spacing(2.5),
+}));
+
+const GridConfigLabel: any = styled(Typography)(({ theme }) => ({
+  padding: `0 ${theme.spacing(1)}`,
+}));
+
+const GridConfigSelect: any = styled(Select)({
+  flex: '1',
+});
+
+export class GraphingConfig extends React.Component {
+  static propTypes = {
+    availableTools: PropTypes.array,
+    authoring: PropTypes.object,
+    dimensionsEnabled: PropTypes.bool,
+    graphDimensions: PropTypes.object,
+    gridConfigurations: PropTypes.array,
+    labelsPlaceholders: PropTypes.object,
+    model: PropTypes.object.isRequired,
+    onChange: PropTypes.func.isRequired,
+    showLabels: PropTypes.bool,
+    showTitle: PropTypes.bool,
+    titlePlaceholder: PropTypes.string,
+  };
+
+  constructor(props) {
+    super(props);
+    const { domain, range, graph } = props.model || {};
+    const gridValues = {
+      domain: getGridValues(domain, graph.width, true),
+      range: getGridValues(range, graph.height, true),
+    };
+    const labelValues = {
+      domain: getLabelValues(domain.step),
+      range: getLabelValues(range.step),
+    };
+    this.state = {
+      gridValues,
+      labelValues,
+      showPixelGuides: false,
+      dialog: { isOpened: false },
+      domain: { ...domain },
+      range: { ...range },
+    };
+  }
+
+  /*
+   * Function to change labels
+   * @param {object} labels - labels object
+   * */
+  changeLabels: any = (labels) => {
+    const { model, onChange } = this.props;
+    onChange({ ...model, labels });
+  };
+
+  /*
+   * Function to change title
+   * @param {string} title - title string
+   * */
+  changeTitle: any = (title) => {
+    const { model, onChange } = this.props;
+    onChange({ ...model, title });
+  };
+
+  /*
+   * Function to change grid configuration
+   * @param {object} config - grid configuration object
+   * @param {number} newSelectedGrid - new selected grid
+   * */
+  onConfigChange: any = (config, newSelectedGrid) => {
+    const { model, onChange } = this.props;
+    const { defaultGridConfiguration: oldSelectedGrid = 0 } = model;
+    const { gridValues: oldGridValues, labelValues: oldLabelValues, domain: oldDomain, range: oldRange } = this.state;
+    const updatedModel = { ...model, ...config };
+    const { answers, domain, includeAxes = true, graph, range, standardGrid } = updatedModel;
+    const gridValues = { domain: [], range: [] };
+    const labelValues = { domain: [], range: [] };
+    const selectedGrid = newSelectedGrid >= 0 ? newSelectedGrid : oldSelectedGrid;
+    if (includeAxes) {
+      const domainConstraints = applyConstraints(domain, graph.width, oldGridValues.domain, oldLabelValues.domain);
+      gridValues.domain = domainConstraints.gridValues || [];
+      labelValues.domain = domainConstraints.labelValues || [];
+    }
+    if (standardGrid) {
+      gridValues.range = gridValues.domain;
+      labelValues.range = labelValues.domain;
+      range.step = domain.step;
+      range.labelStep = domain.labelStep;
+    } else {
+      if (includeAxes) {
+        const rangeConstraints = applyConstraints(range, graph.height, oldGridValues.range, oldLabelValues.range);
+        gridValues.range = rangeConstraints.gridValues || [];
+        labelValues.range = rangeConstraints.labelValues || [];
+      }
+    }
+    const filteredAnswers = cloneDeep(answers);
+    filteredAnswers.correctAnswer.marks = answers.correctAnswer.marks.filter((mark) => mark.type !== 'polygon');
+    const plotableAnswers = filterPlotableMarks(domain, range, filteredAnswers);
+    if (!isEqual(filteredAnswers, plotableAnswers)) {
+      this.setState({
+        dialog: {
+          isOpened: true,
+          onClose: () =>
+            this.setState({ dialog: { isOpened: false } }, onChange({ ...model, domain: oldDomain, range: oldRange })),
+          onConfirm: () => {
+            updatedModel.gssLineData.sections = [];
+            updatedModel.gssLineData.selectedTool = 'lineA';
+            this.setState(
+              {
+                gridValues,
+                labelValues,
+                dialog: { isOpened: false },
+                domain: { ...domain },
+                range: { ...range },
+              },
+              onChange({ ...updatedModel, answers: plotableAnswers, defaultGridConfiguration: selectedGrid }),
+            );
+          },
+        },
+      });
+      return;
+    }
+    this.setState({ gridValues, labelValues, domain: { ...domain }, range: { ...range } });
+    onChange({ ...updatedModel, defaultGridConfiguration: selectedGrid });
+  };
+
+  /*
+   * Function to change view
+   * @param {object} event - event object
+   * @param {boolean} expanded - expanded boolean
+   * */
+  onChangeView: any = (event, expanded) => {
+    const { graphDimensions: { enabled } = {} } = this.props;
+    if (enabled) {
+      this.setState({ showPixelGuides: expanded });
+    }
+  };
+
+  /*
+   * Function to change grid configuration
+   * @param {object} event - event object
+   * */
+  changeGridConfiguration: any = (event) => {
+    const { gridConfigurations } = this.props;
+    const { value } = event.target;
+    this.onConfigChange(gridConfigurations?.[value] || {}, value);
+  };
+
+  /*
+   * Render the component
+   * */
+  render() {
+    const {
+      authoring = {},
+      gridConfigurations = [],
+      graphDimensions = {},
+      labelsPlaceholders,
+      model,
+      showLabels,
+      dimensionsEnabled,
+      showTitle,
+      titlePlaceholder,
+      mathMlOptions = {},
+    } = this.props;
+    const { arrows, coordinatesOnHover, defaultGridConfiguration, domain, labels, range, standardGrid, title } =
+      model || {};
+    const graph = (model || {}).graph || {};
+    const { min, max, step } = graphDimensions || {};
+    const { dialog = {}, gridValues, labelValues, showPixelGuides } = this.state;
+    const sizeConstraints = {
+      min: Math.max(150, min),
+      max: Math.min(800, max),
+      step: step >= 1 ? Math.min(200, step) : 20,
+    };
+    const displayedFields = {
+      axisLabel: authoring.axisLabel,
+      dimensionsEnabled,
+      includeAxesEnabled: false, //Setting false by default as per requirement
+      labelStep: authoring.labelStep,
+      min: authoring.min,
+      max: authoring.max,
+      standardGridEnabled: authoring.standardGridEnabled,
+      step: authoring.step,
+    };
+    const displayGridSetup =
+      authoring.enabled &&
+      Object.values(displayedFields).some((field) => (typeof field === 'object' ? field.enabled : field));
+    return (
+      <Container>
+        <GridConfigWrapper>
+          {gridConfigurations && gridConfigurations.length ? (
+            <GridConfig>
+              <GridConfigLabel component="div" variant="h6">
+                Grid Configuration
+              </GridConfigLabel>
+              <GridConfigSelect
+                input={<OutlinedInput labelWidth={10} />}
+                displayEmpty
+                onChange={this.changeGridConfiguration}
+                value={defaultGridConfiguration}
+                MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}
+              >
+                {(gridConfigurations || []).map((config, index) => (
+                  <MenuItem key={index} value={index}>
+                    {config.label}
+                  </MenuItem>
+                ))}
+              </GridConfigSelect>
+            </GridConfig>
+          ) : null}
+          {displayGridSetup && (
+            <GridSetup
+              displayedFields={displayedFields}
+              domain={domain}
+              gridValues={gridValues}
+              includeAxes={true} //Setting true by default as per requirement
+              labelValues={labelValues}
+              range={range}
+              size={graph}
+              sizeConstraints={sizeConstraints}
+              standardGrid={standardGrid}
+              onChange={this.onConfigChange}
+              onChangeView={this.onChangeView}
+            />
+          )}
+        </GridConfigWrapper>
+        <GraphConfig key="graph">
+          <Typography component="div" variant="h6">
+            Define Graph Attributes
+          </Typography>
+          <SubtitleText component="div" variant="body1">
+            Use this interface to add/edit a title and/or labels
+          </SubtitleText>
+          <GraphContainer
+            axesSettings={{ includeArrows: arrows }}
+            backgroundMarks={[]}
+            coordinatesOnHover={coordinatesOnHover}
+            collapsibleToolbar={true}
+            collapsibleToolbarTitle={'Add Background Shapes to Graph'}
+            domain={domain}
+            key="graphing-config"
+            labels={labels}
+            labelsPlaceholders={labelsPlaceholders}
+            marks={[]}
+            onChangeLabels={this.changeLabels}
+            onChangeTitle={this.changeTitle}
+            range={range}
+            showLabels={showLabels}
+            showPixelGuides={showPixelGuides}
+            showTitle={showTitle}
+            size={{ width: graph.width, height: graph.height }}
+            title={title}
+            titlePlaceholder={titlePlaceholder}
+            disableToolbar={true}
+            mathMlOptions={mathMlOptions}
+          />
+        </GraphConfig>
+        <AlertDialog
+          open={dialog.isOpened}
+          title="Warning"
+          text="This change would make it impossible for students to plot one or more graph objects in the current correct answers. If you proceed, all such graph objects will be removed from the correct answers."
+          onClose={dialog.onClose}
+          onConfirm={dialog.onConfirm}
+        />
+      </Container>
+    );
+  }
+}
+
+export default GraphingConfig;

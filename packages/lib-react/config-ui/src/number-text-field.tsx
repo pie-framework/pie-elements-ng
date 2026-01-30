@@ -1,0 +1,231 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/config-ui/src/number-text-field.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import PropTypes from 'prop-types';
+import React from 'react';
+import TextField from '@mui/material/TextField';
+import { styled } from '@mui/material/styles';
+import debug from 'debug';
+import { isFinite } from 'lodash-es';
+import InputAdornment from '@mui/material/InputAdornment';
+const log = debug('@pie-lib:config-ui:number-text-field');
+
+const StyledTextField: any = styled(TextField)(({ theme }) => ({
+  marginRight: theme.spacing(1),
+  '& .MuiInputLabel-root': {
+    width: 'auto',
+    minWidth: 'max-content',
+    maxWidth: 'none',
+    whiteSpace: 'nowrap',
+    overflow: 'visible',
+    transform: 'translate(0, 8px) scale(0.75)',
+    transformOrigin: 'top left',
+    position: 'relative',
+  },
+  '& .MuiInputBase-root, & .MuiInput-root, & .MuiFilledInput-root, & .MuiOutlinedInput-root': {
+    height: 'auto',
+    minHeight: 'auto',
+  },
+  '& .MuiInputBase-input': {
+    height: 'auto',
+    minHeight: 'auto',
+    padding: '8px 12px',
+  },
+  '& .MuiInput-root, & .MuiFilledInput-root': {
+    '&:before, &:after, &:hover:not(.Mui-disabled):before': {
+      display: 'none',
+    },
+  },
+}));
+
+const fallbackNumber = (min, max) => {
+  if (!isFinite(min) && !isFinite(max)) {
+    return 0;
+  }
+  if (!isFinite(min) && isFinite(max)) {
+    return max;
+  }
+
+  if (isFinite(min)) {
+    return min;
+  }
+};
+
+export class NumberTextField extends React.Component {
+  static propTypes = {
+    disabled: PropTypes.bool,
+    className: PropTypes.string,
+    inputClassName: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    value: PropTypes.number,
+    min: PropTypes.number,
+    max: PropTypes.number,
+    label: PropTypes.string,
+    suffix: PropTypes.string,
+    showErrorWhenOutsideRange: PropTypes.bool,
+    disableUnderline: PropTypes.bool,
+    variant: PropTypes.string,
+  };
+
+  static defaultProps = {
+    showErrorWhenOutsideRange: false,
+  };
+
+  constructor(props) {
+    super(props);
+
+    const value = this.clamp(props.value);
+
+    this.state = {
+      value,
+    };
+
+    if (value !== props.value) {
+      this.props.onChange({}, value);
+    }
+
+    this.onChange = this.onChange.bind(this);
+  }
+
+  UNSAFE_componentWillReceiveProps(props) {
+    const value = this.clamp(props.value, props.min, props.max);
+
+    this.setState({ value });
+  }
+
+  clamp(value, min = this.props.min, max = this.props.max) {
+    if (!isFinite(value)) {
+      return fallbackNumber(min, max);
+    }
+
+    if (isFinite(max)) {
+      value = Math.min(value, max);
+    }
+
+    if (isFinite(min)) {
+      value = Math.max(value, min);
+    }
+
+    return value;
+  }
+
+  /**
+   * on Blur (this can be triggered by pressing Enter, see below)
+   * we check the entered value and reset it if needed
+   */
+  onBlur: any = (event) => {
+    const value = event.target.value;
+
+    const rawNumber = parseFloat(value);
+    log('rawNumber: ', rawNumber);
+
+    const number = this.clamp(rawNumber);
+    log('number: ', number);
+
+    if (number !== this.state.value) {
+      log('trigger update...');
+      this.setState({ value: number.toString() }, () => {
+        this.props.onChange(event, number);
+      });
+    }
+  };
+
+  onChange(event) {
+    const value = event.target.value;
+    this.setState({ value });
+  }
+
+  errorMessage: any = () => {
+    const { min, max } = this.props;
+    if (min && max) {
+      return `The value must be between ${min} and ${max}`;
+    }
+    if (min) {
+      return `The value must be greater than ${min}`;
+    }
+    if (max) {
+      return `The value must be less than ${max}`;
+    }
+  };
+
+  /**
+   * if the input has to show error when outside range,
+   * and the entered value is not matching the requirements
+   * we display error message
+   */
+
+  getError: any = () => {
+    const { value } = this.state;
+    const float = parseFloat(value);
+    const clamped = this.clamp(float);
+    if (clamped !== float) {
+      return this.errorMessage();
+    }
+  };
+
+  render() {
+    const {
+      className,
+      label,
+      disabled,
+      suffix,
+      min,
+      max,
+      inputClassName,
+      disableUnderline,
+      showErrorWhenOutsideRange,
+      variant,
+    } = this.props;
+
+    const error = showErrorWhenOutsideRange && this.getError();
+    return (
+      <StyledTextField
+        variant={disableUnderline ? 'filled' : (variant || 'standard')}
+        inputRef={(ref) => {
+          this.inputRef = ref;
+        }}
+        disabled={disabled}
+        label={label}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        value={this.state.value}
+        error={!!error}
+        helperText={error}
+        onChange={this.onChange}
+        onBlur={this.onBlur}
+        onKeyDown={(e) => {
+          // once the Enter key is pressed, we force input blur
+          if (e.key === 'Enter' && this.inputRef) {
+            this.inputRef.blur();
+          }
+        }}
+        type="number"
+        className={className}
+        slotProps={{
+          input: {
+            endAdornment: suffix && <InputAdornment position="end">{suffix}</InputAdornment>,
+            className: inputClassName,
+            inputProps: {
+              min,
+              max,
+            },
+          },
+        }}
+        margin="normal"
+      />
+    );
+  }
+}
+
+export default NumberTextField;

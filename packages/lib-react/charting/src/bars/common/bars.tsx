@@ -1,0 +1,280 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/charting/src/bars/common/bars.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Group } from '@visx/group';
+import { Bar as VisxBar } from '@visx/shape';
+import { styled } from '@mui/material/styles';
+import debug from 'debug';
+
+import { color } from '@pie-lib/render-ui';
+import { types } from '@pie-lib/plot';
+import { bandKey } from '../../utils';
+import DraggableHandle, { DragHandle } from '../../common/drag-handle';
+import { CorrectCheckIcon } from './correct-check-icon';
+
+const log = debug('pie-lib:chart:bars');
+const histogramColors = [
+  '#006699',
+  '#F59B00',
+  '#08916D',
+  '#529EE0',
+  '#52B7D8',
+  '#D9A6C2',
+  '#FFB03B',
+  '#54A77B',
+  '#E16032',
+  '#4FD2D2',
+  '#F0E442',
+  '#E287B2',
+];
+const hoverHistogramColors = [
+  '#003754',
+  '#975616',
+  '#00503B',
+  '#225982',
+  '#1F687D',
+  '#825E6F',
+  '#996428',
+  '#255E44',
+  '#8A331F',
+  '#167A7A',
+  '#91862D',
+  '#894A65',
+];
+
+const calculateFillColor = (isHovered, barColor, index, hoverHistogramColors, allowRolloverEvent) => {
+  if (isHovered && barColor && allowRolloverEvent) {
+    return hoverHistogramColors[index % hoverHistogramColors.length];
+  }
+  if (isHovered && allowRolloverEvent) {
+    return color.visualElementsColors.ROLLOVER_FILL_BAR_COLOR;
+  }
+  return barColor || null;
+};
+
+const StyledVisxBar: any = styled(VisxBar)(() => ({
+  fill: color.defaults.TERTIARY,
+}));
+
+export class RawBar extends React.Component {
+  static propTypes = {
+    barColor: PropTypes.string,
+    onChangeCategory: PropTypes.func,
+    value: PropTypes.number,
+    label: PropTypes.string,
+    xBand: PropTypes.func,
+    index: PropTypes.number.isRequired,
+    graphProps: types.GraphPropsType.isRequired,
+    interactive: PropTypes.bool,
+    correctness: PropTypes.shape({
+      value: PropTypes.string,
+      label: PropTypes.string,
+    }),
+    correctData: PropTypes.array,
+    defineChart: PropTypes.bool,
+  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      dragValue: undefined,
+      isHovered: false,
+    };
+    this.mouseX = 0;
+    this.mouseY = 0;
+  }
+
+  componentDidMount() {
+    window.addEventListener('mousemove', this.handleMouseMove);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('mousemove', this.handleMouseMove);
+  }
+
+  handleMouseMove: any = (e) => {
+    this.mouseX = e.clientX;
+    this.mouseY = e.clientY;
+    const isMouseInside = this.isMouseInsideSvgElement();
+    this.setState({ isHovered: isMouseInside });
+  };
+
+  isMouseInsideSvgElement: any = () => {
+    const gBoundingBox = this.gRef.getBoundingClientRect();
+    return (
+      this.mouseX >= gBoundingBox.left &&
+      this.mouseX <= gBoundingBox.right &&
+      this.mouseY >= gBoundingBox.top &&
+      this.mouseY <= gBoundingBox.bottom
+    );
+  };
+
+  handleMouseEnter = () => this.setState({ isHovered: true });
+  handleMouseLeave = () => this.setState({ isHovered: false });
+
+  setDragValue = (dragValue) => this.setState({ dragValue });
+
+  dragStop: any = () => {
+    const { label, onChangeCategory } = this.props;
+    const { dragValue } = this.state;
+    log('[dragStop]', dragValue);
+
+    if (dragValue !== undefined) {
+      onChangeCategory({ label, value: dragValue });
+    }
+
+    this.setDragValue(undefined);
+  };
+
+  dragValue: any = (existing, next) => {
+    log('[dragValue] next:', next);
+
+    this.setDragValue(next);
+  };
+
+  render() {
+    const {
+      graphProps,
+      value,
+      label,
+      xBand,
+      index,
+      interactive,
+      correctness,
+      barColor,
+      defineChart,
+      correctData,
+    } = this.props;
+    const { scale, range } = graphProps;
+    const { dragValue, isHovered } = this.state;
+
+    const allowRolloverEvent = interactive && !correctness;
+    const fillColor = calculateFillColor(isHovered, barColor, index, hoverHistogramColors, allowRolloverEvent);
+    const v = Number.isFinite(dragValue) ? dragValue : value;
+    const barWidth = xBand.bandwidth();
+    const barHeight = scale.y(range.max - v);
+    const barX = xBand(bandKey({ label }, index));
+    const rawY = range.max - v;
+    const yy = range.max - rawY;
+    const correctValue = correctData ? correctData.find((d) => d.label === label) : null;
+
+    const Component = interactive ? DraggableHandle : DragHandle;
+    const isHistogram = !!barColor;
+
+    return (
+      <g
+        ref={(ref) => (this.gRef = ref)}
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseLeave}
+        onTouchStart={this.handleMouseEnter}
+        onTouchEnd={this.handleMouseLeave}
+      >
+        <StyledVisxBar
+          x={barX}
+          y={scale.y(yy)}
+          width={barWidth}
+          height={barHeight}
+          style={{ fill: fillColor }}
+        />
+        {correctness && correctness.value === 'incorrect' && (() => {
+          const correctVal = parseFloat(correctValue && correctValue.value);
+          if (isNaN(correctVal)) return null;
+          const correctPxHeight = scale.y(range.max - correctVal);
+          const actualPxHeight = barHeight;
+          const diffPx = Math.abs(correctPxHeight - actualPxHeight);
+          const yDiff = scale.y(correctVal);
+          const indicatorBarColor = correctPxHeight > actualPxHeight ? color.borderGray() : color.defaults.WHITE;
+          const yToRender = correctPxHeight > actualPxHeight ? yDiff : yDiff - diffPx;
+
+          return (
+            <>
+              <StyledVisxBar
+                x={barX + 2}
+                y={yToRender}
+                width={barWidth - 4}
+                height={diffPx}
+                style={{ stroke: indicatorBarColor, strokeWidth: 2, strokeDasharray: '5,2', fill: 'none' }}
+              />
+              <foreignObject
+                x={barX + barWidth - (isHistogram ? 24 : 14)}
+                y={yDiff - 12}
+                width={24}
+                height={24}
+              >
+                <CorrectCheckIcon dashColor={indicatorBarColor} />
+              </foreignObject>
+            </>
+          );
+        })()}
+        <Component
+          x={barX}
+          y={v}
+          defineChart={defineChart}
+          interactive={interactive}
+          width={barWidth}
+          onDrag={(v) => this.dragValue(value, v)}
+          onDragStop={this.dragStop}
+          graphProps={graphProps}
+          correctness={correctness}
+          isHovered={isHovered}
+          color={fillColor}
+        />
+      </g>
+    );
+  }
+}
+
+const Bar = RawBar;
+
+export class Bars extends React.Component {
+  static propTypes = {
+    data: PropTypes.array,
+    correctData: PropTypes.array,
+    onChangeCategory: PropTypes.func,
+    defineChart: PropTypes.bool,
+    xBand: PropTypes.func,
+    graphProps: types.GraphPropsType.isRequired,
+    histogram: PropTypes.bool,
+  };
+
+  render() {
+    const { data, graphProps, xBand, onChangeCategory, defineChart, histogram, correctData } = this.props;
+
+    return (
+      <Group>
+        {(data || []).map((d, index) => (
+          <Bar
+            value={d.value}
+            interactive={defineChart || d.interactive}
+            defineChart={defineChart}
+            label={d.label}
+            xBand={xBand}
+            index={index}
+            key={`bar-${d.label}-${d.value}-${index}`}
+            onChangeCategory={(category) => onChangeCategory(index, category)}
+            graphProps={graphProps}
+            correctness={d.correctness}
+            correctData={correctData}
+            barColor={
+              histogram && (histogramColors[index] ? histogramColors[index] : histogramColors[index % histogramColors.length])
+            }
+          />
+        ))}
+      </Group>
+    );
+  }
+}
+
+export default Bars;

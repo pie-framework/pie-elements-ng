@@ -1,0 +1,115 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/math-inline/src/index.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import debug from 'debug';
+import _ from 'lodash-es';
+import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
+
+// Inlined from configure/lib/defaults (configure/ not synced - ESM-incompatible)
+const defaults = {
+  configuration: {
+    // Minimal configuration for student-facing UI
+    // Full authoring configuration is only needed in the configure package
+  } as any
+};;
+import Main from './main';
+
+const log = debug('pie-ui:math-inline');
+
+export { Main as Component };
+
+export default class MathInline extends HTMLElement {
+  constructor() {
+    super();
+    this._root = null;
+    this._configuration = defaults.configuration;
+    this.sessionChangedEventCaller = _.debounce(() => {
+      this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), true));
+    }, 1000);
+  }
+
+  setLangAttribute() {
+    const language = this._model && typeof this._model.language ? this._model.language : '';
+    const lang = language ? language.slice(0, 2) : 'en';
+    this.setAttribute('lang', lang);
+
+    // set the lang attribute for the nearest parent div with class 'player-container' for MPI items as per PD-2483
+    const playerContainer = this.closest('.player-container');
+    if (playerContainer) {
+      playerContainer.setAttribute('lang', lang);
+    }
+  }
+
+  set model(m) {
+    this._model = m;
+    this.dispatchEvent(new ModelSetEvent(this._model, true, !!this._model));
+    this.setLangAttribute();
+    this._render();
+  }
+
+  set session(s) {
+    this._session = s;
+    this._render();
+  }
+
+  get session() {
+    return this._session;
+  }
+
+  set configuration(c) {
+    this._configuration = c;
+    this._render();
+  }
+
+  sessionChanged(s) {
+    Object.keys(s).map((key) => {
+      this._session[key] = s[key];
+    });
+
+    this.sessionChangedEventCaller();
+    log('session: ', this._session);
+  }
+
+  connectedCallback() {
+    this.setAttribute('aria-label', 'Math Response Question');
+    this.setAttribute('role', 'region');
+
+    this._render();
+  }
+
+  _render() {
+    if (!this._model || !this._session) {
+      return;
+    }
+
+    const el = React.createElement(Main, {
+      model: this._model,
+      session: this._session,
+      configuration: this._configuration,
+      onSessionChange: this.sessionChanged.bind(this),
+    });
+
+    if (!this._root) {
+      this._root = createRoot(this);
+    }
+    this._root.render(el);
+  }
+
+  disconnectedCallback() {
+    if (this._root) {
+      this._root.unmount();
+    }
+  }
+}

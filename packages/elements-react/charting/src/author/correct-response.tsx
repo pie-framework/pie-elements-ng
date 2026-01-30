@@ -1,0 +1,271 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/charting/configure/src/correct-response.jsx
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import * as React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import { Chart } from '@pie-lib/charting';
+import { isEqual } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
+
+import Typography from '@mui/material/Typography';
+
+const Container: any = styled('div')(({ theme }) => ({
+  marginBottom: theme.spacing(2.5),
+  display: 'flex',
+  flex: 1,
+}));
+
+const Column: any = styled('div')({
+  flex: 1,
+});
+
+const ChartError: any = styled('div')(({ theme }) => ({
+  border: `2px solid ${theme.palette.error.main}`,
+}));
+
+const ErrorText: any = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.fontSize - 2,
+  color: theme.palette.error.main,
+  paddingTop: theme.spacing(1),
+}));
+
+const Title: any = styled('div')(({ theme }) => ({
+  marginBottom: theme.spacing(1),
+}));
+
+const addCategoryProps = (correctAnswer, data) =>
+  correctAnswer.map((correct, index) => ({
+    ...correct,
+    editable: index < data.length ? data[index].editable : true,
+    interactive: index < data.length ? data[index].interactive : true,
+    deletable: index >= data.length ? true : false,
+  }));
+
+const updateCorrectResponseData = (correctAnswer, data) => {
+  if (!correctAnswer) {
+    return data;
+  }
+
+  const correctAnswerData = [...correctAnswer];
+  let correctResponseDefinition = [];
+
+  (data || []).forEach((category, currentIndex) => {
+    const editable = category.editable;
+    const interactive = category.interactive;
+    const label = editable && correctAnswer[currentIndex]?.label ? correctAnswer[currentIndex].label : category.label;
+    const value =
+      (interactive && correctAnswer[currentIndex]?.value) || (interactive && correctAnswer[currentIndex]?.value == 0)
+        ? correctAnswer[currentIndex].value
+        : category.value;
+
+    correctResponseDefinition[currentIndex] = {
+      label: label,
+      value: value,
+      editable: category.editable,
+      interactive: category.interactive,
+    };
+  });
+
+  if (correctResponseDefinition.length < correctAnswer.length) {
+    const missingCategories = (correctAnswerData || []).slice(correctResponseDefinition.length, correctAnswer.length);
+
+    return addCategoryProps((correctResponseDefinition || []).concat(missingCategories), data);
+  }
+
+  return correctResponseDefinition;
+};
+
+const insertCategory = (correctAnswer, data) => {
+  const positionToInsert = data.length - 1;
+  // eslint-disable-next-line no-unused-vars
+  const { editable, interactive, deletable, ...categoryToInsert } = data[data.length - 1];
+
+  (correctAnswer || []).splice(positionToInsert, 0, categoryToInsert);
+  const correctAnswerData = [...correctAnswer];
+
+  return addCategoryProps(correctAnswerData, data);
+};
+
+const removeCategory = (correctAnswer, data, positionToRemove) => {
+  (correctAnswer || []).splice(positionToRemove, 1);
+  const correctAnswerData = [...correctAnswer];
+
+  return addCategoryProps(correctAnswerData, data);
+};
+
+export const getUpdatedCategories = (nextProps, prevProps, prevState) => {
+  const nextData = (nextProps && nextProps.model && nextProps.model.data) || [];
+  const data = (prevProps && prevProps.model && prevProps.model.data) || [];
+  const nextCorrectAnswerDataCopy = cloneDeep(
+    (nextProps && nextProps.model && nextProps.model.correctAnswer && nextProps.model.correctAnswer.data) || [],
+  );
+
+  const categoriesCopy = cloneDeep(prevState ? prevState.categories : []);
+
+  let nextCategories = [];
+
+  // Handle categories insertion in Define Chart
+  if (nextData.length > data.length) {
+    nextCategories = insertCategory(nextCorrectAnswerDataCopy, nextData);
+    return nextCategories;
+  }
+
+  // Handle categories removal from Define Chart
+  if (nextData.length < data.length) {
+    let removedIndex = nextData.length;
+
+    // we need to remove the category from the correct answer data and categories, from the same index it was removed from the data
+    // index is a property of the nextData category
+    for (let index = 0; index < nextData.length; index++) {
+      if (nextData[index].index !== index) {
+        removedIndex = index;
+        break;
+      }
+    }
+
+    nextCategories = removeCategory(categoriesCopy, nextData, removedIndex);
+    return nextCategories;
+  }
+
+  // Handle category value or label changes in Define Chart
+  // Handle categories update in Define Correct Response Chart
+  nextCategories = updateCorrectResponseData(nextCorrectAnswerDataCopy, nextData);
+
+  return nextCategories;
+};
+
+export class CorrectResponse extends React.Component {
+  static propTypes = {
+    correctAnswerErrors: PropTypes.object,
+    studentNewCategoryDefaultLabel: PropTypes.string,
+    model: PropTypes.object.isRequired,
+    onChange: PropTypes.func.isRequired,
+    charts: PropTypes.array,
+    error: PropTypes.string,
+  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      categories: [],
+    };
+  }
+
+  changeData: any = (data) => {
+    const { model, onChange } = this.props;
+    const { correctAnswer } = model || {};
+
+    onChange({
+      ...model,
+      correctAnswer: {
+        ...correctAnswer,
+        // eslint-disable-next-line no-unused-vars
+        data: data.map(({ interactive, editable, index, ...keepAttrs }) => keepAttrs),
+      },
+    });
+  };
+
+  componentDidMount() {
+    const initialCategories = getUpdatedCategories(this.props, this.props, null);
+
+    this.setState({
+      categories:
+        initialCategories || updateCorrectResponseData(this.props.model.correctAnswer.data, this.props.model.data),
+    });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const nextCategories = getUpdatedCategories(this.props, prevProps, prevState);
+
+    if (nextCategories && !isEqual(nextCategories, this.state.categories)) {
+      this.changeData(nextCategories);
+      this.setState({ categories: nextCategories });
+    }
+  }
+
+  render() {
+    const {
+      model,
+      charts,
+      error,
+      studentNewCategoryDefaultLabel,
+      correctAnswerErrors,
+      mathMlOptions = {},
+      labelsPlaceholders = {},
+    } = this.props;
+    const { categories } = this.state;
+
+    const { domain = {}, range = {} } = model || {};
+    const { identicalError, categoriesError } = correctAnswerErrors || {};
+
+    return (
+      <div>
+        <Title>Define Correct Response</Title>
+        <Container>
+          <Column key="graph">
+            <Typography component="div" type="body1">
+              <span>Use the tools below to define the correct answer.</span>
+            </Typography>
+
+            {(identicalError || categoriesError) ? (
+              <ChartError key={`correct-response-graph-${model.correctAnswer.name}`}>
+                <Chart
+                  chartType={model.chartType}
+                  size={model.graph}
+                  domain={domain}
+                  range={range}
+                  charts={charts}
+                  data={categories}
+                  title={model.title}
+                  onDataChange={this.changeData}
+                  addCategoryEnabled={model.addCategoryEnabled}
+                  categoryDefaultLabel={studentNewCategoryDefaultLabel}
+                  error={error}
+                  mathMlOptions={mathMlOptions}
+                  labelsPlaceholders={labelsPlaceholders}
+                />
+              </ChartError>
+            ) : (
+              <div key={`correct-response-graph-${model.correctAnswer.name}`}>
+                <Chart
+                  chartType={model.chartType}
+                  size={model.graph}
+                  domain={domain}
+                  range={range}
+                  charts={charts}
+                  data={categories}
+                  title={model.title}
+                  onDataChange={this.changeData}
+                  addCategoryEnabled={model.addCategoryEnabled}
+                  categoryDefaultLabel={studentNewCategoryDefaultLabel}
+                  error={error}
+                  mathMlOptions={mathMlOptions}
+                  labelsPlaceholders={labelsPlaceholders}
+                />
+              </div>
+            )}
+
+            {(identicalError || categoriesError) && (
+              <ErrorText component="div" type="body1">
+                <span>{identicalError || categoriesError}</span>
+              </ErrorText>
+            )}
+          </Column>
+        </Container>
+      </div>
+    );
+  }
+}
+
+export default CorrectResponse;

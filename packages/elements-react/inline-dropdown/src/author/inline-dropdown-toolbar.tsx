@@ -1,0 +1,448 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/inline-dropdown/configure/src/inline-dropdown-toolbar.jsx
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import { getPluginProps } from './utils';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+import EditableHtml from '@pie-lib/editable-html-tip-tap';
+import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { styled } from '@mui/material/styles';
+import { isEqual } from 'lodash-es';
+import { isEmpty } from 'lodash-es';
+import { color } from '@pie-lib/render-ui';
+
+import AddIcon from '@mui/icons-material/Add';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
+
+const MenuItemWrapper: any = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  position: 'relative',
+  background: theme.palette.common.white,
+  borderBottom: `1px solid ${theme.palette.grey[400]}`,
+
+  '&:last-child': {
+    borderRadius: '0 0 4px 4px',
+  },
+}));
+
+const SelectedIcon: any = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  color: theme.palette.common.white,
+  fontSize: theme.typography.fontSize,
+  fontStyle: 'normal',
+  position: 'absolute',
+  transform: 'translate(0, -50%)',
+  backgroundColor: color.correct(),
+  borderRadius: '50%',
+  top: theme.spacing(2),
+  left: theme.spacing(1),
+  zIndex: 3,
+}));
+
+const ValueHolder: any = styled('div')(({ theme, correct }) => ({
+  flex: 1,
+  padding: theme.spacing(0.75),
+  paddingLeft: theme.spacing(3.5),
+  ...(correct && {
+    background: color.correctSecondary(),
+  }),
+}));
+
+const ActionButtons: any = styled('div')(({ theme }) => ({
+  margin: theme.spacing(0.5),
+  display: 'flex',
+}));
+
+const StyledIconButton: any = styled(IconButton)(({ theme }) => ({
+  fontSize: theme.typography.fontSize,
+  padding: theme.spacing(0.5),
+  color: theme.palette.common.black,
+}));
+
+class MenuItemComp extends React.Component {
+  static propTypes = {
+    correct: PropTypes.bool.isRequired,
+    onClick: PropTypes.func.isRequired,
+    onRemoveChoice: PropTypes.func.isRequired,
+    onEditChoice: PropTypes.func.isRequired,
+    value: PropTypes.string.isRequired,
+  };
+
+  onRemoveClick: any = (e) => {
+    const { onRemoveChoice } = this.props;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    onRemoveChoice();
+  };
+
+  onEditClick: any = (e) => {
+    const { onEditChoice } = this.props;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    onEditChoice();
+  };
+
+  render() {
+    const { correct, onClick, value } = this.props;
+
+    return (
+      <MenuItemWrapper>
+        {correct && (
+          <SelectedIcon onClick={onClick}>
+            <CheckIcon fontSize="inherit" />
+          </SelectedIcon>
+        )}
+        <ValueHolder
+          correct={correct}
+          onClick={onClick}
+          dangerouslySetInnerHTML={{
+            __html: value,
+          }}
+        />
+        <ActionButtons>
+          <StyledIconButton onClick={this.onEditClick} size="small" aria-label="Edit">
+            <EditIcon fontSize="inherit" />
+          </StyledIconButton>
+          <StyledIconButton onClick={this.onRemoveClick} size="small" aria-label="Remove">
+            <CloseIcon fontSize="inherit" />
+          </StyledIconButton>
+        </ActionButtons>
+      </MenuItemWrapper>
+    );
+  }
+}
+
+const MenuItem = MenuItemComp;
+
+const findSlateNode = (key) => {
+  return window.document.querySelector('[data-key="' + key + '"]');
+};
+
+const createElementFromHTML = (htmlString) => {
+  const div = document.createElement('div');
+
+  div.innerHTML = (htmlString || '').trim();
+
+  return div;
+};
+
+const ResponseContainer: any = styled('div')(({ theme }) => ({
+  boxShadow: theme.shadows[2],
+  borderRadius: '4px',
+  width: '400px',
+}));
+
+const RespArea: any = styled(EditableHtml)(({ theme }) => ({
+  borderRadius: '4px',
+  backgroundColor: theme.palette.common.white,
+  '& [data-slate-editor="true"]': {
+    minHeight: 'initial !important',
+  },
+}));
+
+const AddButton: any = styled(IconButton)(({ theme }) => ({
+  fontSize: theme.typography.fontSize + 2,
+  padding: theme.spacing(0.5),
+  color: theme.palette.common.black,
+  position: 'absolute',
+  top: '50%',
+  right: theme.spacing(2),
+  transform: 'translate(0, -50%)',
+}));
+
+const ChoicesHolder: any = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  '& > div:last-child': {
+    border: 'none',
+  },
+});
+
+const ItemBuilder: any = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0.5),
+  position: 'relative',
+}));
+
+class RespAreaToolbar extends React.Component {
+  static propTypes = {
+    node: PropTypes.object,
+    uploadSoundSupport: PropTypes.object,
+    onDone: PropTypes.func,
+    choices: PropTypes.array,
+    onAddChoice: PropTypes.func.isRequired,
+    onCheck: PropTypes.func,
+    onRemoveChoice: PropTypes.func.isRequired,
+    onSelectChoice: PropTypes.func.isRequired,
+    onToolbarDone: PropTypes.func.isRequired,
+    editor: PropTypes.object,
+    spellCheck: PropTypes.bool,
+  };
+  clickedInside = false;
+  preventDone = false;
+
+  state = {
+    respAreaMarkup: '',
+    editedChoiceIndex: -1,
+  };
+
+  componentDidMount() {
+    const { editor } = this.props;
+
+    const domNode = editor.view.nodeDOM(editor.state.selection.from);
+
+    if (domNode?.nodeType === 1) {
+      //eslint-disable-next-line
+      const domNodeRect = domNode.getBoundingClientRect();
+      const editorNode = domNode.closest('.tiptap');
+      const editorRect = editorNode.getBoundingClientRect();
+      const top = domNodeRect.top - domNodeRect.height;
+      const left = domNodeRect.left - editorRect.left;
+
+      this.setState({
+        toolbarStyle: {
+          position: 'absolute',
+          top: `${top + domNodeRect.height + 40}px`,
+          left: `${left + 25}px`,
+        },
+      });
+    }
+  }
+
+  componentDidUpdate() {
+    //eslint-disable-next-line
+    const domNode = ReactDOM.findDOMNode(this);
+
+    renderMath(domNode);
+  }
+
+  onRespAreaChange: any = (respAreaMarkup) => {
+    this.setState({ respAreaMarkup });
+  };
+
+  onAddChoice: any = () => {
+    const { editor } = this.props;
+    const { tr } = editor.state;
+
+    tr.isDone = true;
+    editor.view.dispatch(tr);
+  };
+
+  onDone: any = (val) => {
+    const { choices, node, editor, onAddChoice, onToolbarDone } = this.props;
+    const { editedChoiceIndex } = this.state;
+    const onlyText = createElementFromHTML(val).textContent.trim();
+
+    if (editedChoiceIndex >= 0 && choices?.[editedChoiceIndex]?.correct) {
+      editor.commands.updateAttributes('inline_dropdown', { value: val });
+      onToolbarDone(false);
+    }
+
+    if (!isEmpty(onlyText)) {
+      onAddChoice(node.attrs.index, val, editedChoiceIndex);
+      editor.commands.refreshResponseArea();
+    }
+
+    this.setState({ editedChoiceIndex: -1 });
+  };
+
+  onSelectChoice: any = (newValue, index) => {
+    const { node, editor, onToolbarDone, onSelectChoice } = this.props;
+
+    editor.commands.updateAttributes('inline_dropdown', { value: newValue });
+
+    onToolbarDone(false);
+    onSelectChoice(index);
+    editor.commands.refreshResponseArea();
+  };
+
+  onRemoveChoice: any = (val, index) => {
+    const { node, editor, onToolbarDone, onRemoveChoice } = this.props;
+
+    console.log('LOGGING', val, node.attrs.value, isEqual(val, node.attrs.value));
+
+    if (isEqual(val, node.attrs.value)) {
+      editor.commands.updateAttributes('explicit_constructed_response', { value: null });
+      onToolbarDone(false);
+    }
+
+    onRemoveChoice(index);
+    editor.commands.refreshResponseArea();
+  };
+
+  onEditChoice: any = (val, index) => {
+    this.onRespAreaChange(val);
+    this.setState({ editedChoiceIndex: index });
+  };
+
+  onKeyDown: any = (event) => {
+    if (event.key === 'Enter') {
+      this.preventDone = false;
+      this.onAddChoice();
+      // Cancelling event
+      return false;
+    }
+  };
+
+  onBlur: any = () => {
+
+    if (this.clickedInside) {
+      this.clickedInside = false;
+      return;
+    }
+
+    const { node, choices, onCheck, onToolbarDone, editor } = this.props;
+    const correctResponse = (choices || []).find((choice) => choice.correct);
+
+    this.onAddChoice();
+    if (!choices || (choices && choices.length < 2) || !correctResponse) {
+      onCheck(() => {
+        const { tr } = editor.state;
+
+        tr.deleteSelection();
+        editor.view.dispatch(tr);
+        onToolbarDone(false);
+      });
+    }
+  };
+
+  onClickInside: any = () => {
+    this.clickedInside = true;
+  };
+
+  focusInput: any = () => {
+    // we need to focus the input so that math is saved even without pressing the green checkmark
+    const slateEditorRef = this.editorRef && this.editorRef.rootRef && this.editorRef.rootRef.slateEditor;
+    const inputRef = slateEditorRef && slateEditorRef.editorRef && slateEditorRef.editorRef.element;
+
+    if (inputRef) {
+      inputRef.focus();
+    }
+  };
+
+  render() {
+    const {
+      choices,
+      spellCheck,
+      uploadSoundSupport,
+      mathMlOptions = {},
+      baseInputConfiguration = {},
+      responseAreaInputConfiguration = {},
+    } = this.props;
+    const { respAreaMarkup, toolbarStyle } = this.state;
+
+    if (!toolbarStyle) {
+      return null;
+    }
+
+    return (
+      <ResponseContainer
+        style={{
+          ...toolbarStyle,
+          backgroundColor: '#E0E1E6',
+        }}
+        onMouseDown={this.onClickInside}
+      >
+        <ItemBuilder>
+          <RespArea
+            ref={(ref) => {
+              if (ref) {
+                this.editorRef = ref;
+              }
+            }}
+            autoFocus={true}
+            autoSave
+            toolbarOpts={{
+              position: 'top',
+              alwaysVisible: false,
+              showDone: false,
+              doneOn: 'blur',
+            }}
+            markup={respAreaMarkup}
+            onKeyDown={this.onKeyDown}
+            languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
+            onChange={(respAreaMarkup) => {
+              if (this.preventDone) {
+                return;
+              }
+
+              this.onRespAreaChange(respAreaMarkup);
+            }}
+            onDone={(val) => {
+              if (this.preventDone) {
+                return;
+              }
+
+              this.onDone(val);
+            }}
+            onBlur={(e) => {
+              if (!e.relatedTarget) {
+                return;
+              }
+
+              const isInInsertCharacter = !!(e.relatedTarget && e.relatedTarget.closest('.insert-character-dialog'));
+              const isInDoneButton = !!(e.relatedTarget && e.relatedTarget.closest('[aria-label="Done"]'));
+
+              this.preventDone = isInInsertCharacter || isInDoneButton;
+              if (isInInsertCharacter || isInDoneButton) {
+                this.clickedInside = true;
+              }
+              this.onBlur(e);
+            }}
+            placeholder="Add Choice"
+            pluginProps={getPluginProps(responseAreaInputConfiguration?.inputConfiguration, baseInputConfiguration)}
+            spellCheck={spellCheck}
+            uploadSoundSupport={uploadSoundSupport}
+            mathMlOptions={mathMlOptions}
+          />
+          <AddButton
+            onMouseDown={() => this.focusInput()}
+            onClick={() => this.onAddChoice()}
+            size="small"
+            aria-label="Add"
+          >
+            <AddIcon fontSize="inherit" />
+          </AddButton>
+        </ItemBuilder>
+
+        {choices && (
+          <ChoicesHolder>
+            {choices.map(({ label, correct }, index) => (
+              <MenuItem
+                key={index}
+                onClick={() => this.onSelectChoice(label, index)}
+                onRemoveChoice={() => this.onRemoveChoice(label, index)}
+                onEditChoice={() => this.onEditChoice(label, index)}
+                value={label}
+                correct={correct}
+              />
+            ))}
+          </ChoicesHolder>
+        )}
+      </ResponseContainer>
+    );
+  }
+}
+
+const StyledRespAreaToolbar = RespAreaToolbar;
+
+export default StyledRespAreaToolbar;

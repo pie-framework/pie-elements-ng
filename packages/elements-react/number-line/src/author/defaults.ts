@@ -1,0 +1,129 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/number-line/configure/src/defaults.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+export const model = {
+  correctResponse: [],
+  feedback: {
+    correct: { default: 'Correct', type: 'none' },
+    incorrect: { default: 'Incorrect', type: 'none' },
+    partial: { default: 'Nearly', type: 'none' },
+  },
+  graph: {
+    arrows: { left: true, right: true },
+    availableTypes: {
+      PF: true,
+    },
+    domain: { min: -1, max: 1 },
+    exhibitOnly: false,
+    initialElements: [],
+    initialType: 'PF',
+    maxNumberOfPoints: 1,
+    ticks: { minor: 0.125, major: 0.5, tickIntervalType: 'Decimal' },
+    title: '',
+    width: 500,
+  },
+  prompt: '',
+  promptEnabled: true,
+  rationale: '',
+  rationaleEnabled: true,
+  teacherInstructions: '',
+  teacherInstructionsEnabled: true,
+  toolbarEditorPosition: 'bottom',
+  widthEnabled: true,
+};
+
+export const configuration = {
+  baseInputConfiguration: {
+    audio: { disabled: false },
+    video: { disabled: false },
+    image: { disabled: false },
+    textAlign: { disabled: true },
+    showParagraphs: { disabled: false },
+  },
+  instruction: {
+    settings: false,
+    enabled: true,
+    label:
+      'Number line questions involve plotting points or other objects. To create one, first set up the number line, then select the plotting tools students will be offered and use them to define the correct answer.',
+  },
+  prompt: {
+    settings: true,
+    label: 'Item Stem',
+    required: false,
+    inputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+    },
+  },
+  rationale: {
+    settings: true,
+    label: 'Rationale',
+    required: false,
+    inputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+    },
+  },
+  teacherInstructions: {
+    settings: true,
+    label: 'Teacher Instructions',
+    required: false,
+    inputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+    },
+  },
+  title: {
+    label: 'Title',
+    settings: true,
+    enabled: true,
+    inputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+    },
+  },
+  numberLineDimensions: {
+    settings: true,
+    label: 'Width',
+    enabled: true,
+    min: 200,
+    max: 800,
+    step: 20,
+  },
+  mathMlOptions: {
+    mmlOutput: false,
+    mmlEditing: false,
+  },
+  language: {
+    settings: false,
+    label: 'Specify Language',
+    enabled: false,
+  },
+  languageChoices: {
+    label: 'Language Choices',
+    options: [],
+  },
+  spellCheck: {
+    label: 'Spellcheck',
+    settings: false,
+    enabled: true,
+  },
+  maxMaxElements: 20,
+  hidePointConfigButtons: false,
+  availableTools: ['PF', 'LFF', 'LEF', 'LFE', 'LEE', 'RFN', 'RFP', 'REN', 'REP'],
+  settingsPanelDisabled: false,
+};

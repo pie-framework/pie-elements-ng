@@ -1,0 +1,365 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/categorize/src/index.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { EnableAudioAutoplayImage } from '@pie-lib/render-ui';
+import { SessionChangedEvent, ModelSetEvent } from '@pie-element/shared-player-events';
+import CategorizeComponent from './categorize';
+
+export default class Categorize extends HTMLElement {
+  constructor() {
+    super();
+    this._root = null;
+    this._mathObserver = null;
+    this._mathRenderPending = false;
+  }
+
+  _scheduleMathRender: any = () => {
+    if (this._mathRenderPending) return;
+
+    this._mathRenderPending = true;
+
+    requestAnimationFrame(() => {
+      if (this._mathObserver && !this._mathObserverPaused) {
+        this._mathObserver.disconnect();
+      }
+
+      renderMath(this);
+
+      this._mathRenderPending = false;
+
+      setTimeout(() => {
+        if (this._mathObserver && !this._mathObserverPaused) {
+          this._mathObserver.observe(this, {
+            childList: true,
+            subtree: true,
+            characterData: false,
+          });
+        }
+      }, 50);
+    });
+  };
+
+  _initMathObserver() {
+    if (this._mathObserver) return;
+
+    this._mathObserver = new MutationObserver(() => {
+      this._scheduleMathRender();
+    });
+
+    this._mathObserver.observe(this, {
+      childList: true,
+      subtree: true,
+      characterData: false,
+    });
+  }
+
+  _disconnectMathObserver() {
+    if (this._mathObserver) {
+      this._mathObserver.disconnect();
+      this._mathObserver = null;
+    }
+  }
+
+  pauseMathObserver: any = () => {
+    if (this._mathObserver) {
+      this._mathObserver.disconnect();
+      this._mathObserverPaused = true;
+    }
+  };
+
+  resumeMathObserver: any = () => {
+    if (this._mathObserverPaused) {
+      this._mathObserverPaused = false;
+
+      if (this._mathObserver) {
+        this._mathObserver.observe(this, {
+          childList: true,
+          subtree: true,
+          characterData: false,
+        });
+      }
+    }
+  };
+
+  set model(m) {
+    this._model = m;
+
+    this.eliminateBlindAnswersFromSession();
+    this.dispatchEvent(new ModelSetEvent(this.tagName.toLowerCase(), this.isComplete(), !!this._model));
+    // reset the audioInitialized to false since the model changed, and we might need to reinitialize the audio
+    this._audioInitialized = false;
+
+    this.render();
+  }
+
+  isComplete() {
+    const {
+      autoplayAudioEnabled,
+      choices,
+      completeAudioEnabled,
+      hasUnplacedChoices,
+      possibleResponses,
+      responseAreasToBeFilled,
+    } = this._model || {};
+    const elementContext = this;
+
+    // check audio completion if audio settings are enabled and audio actually exists
+    if (autoplayAudioEnabled && completeAudioEnabled && !this.audioComplete) {
+      if (elementContext) {
+        const audio = elementContext.querySelector('audio');
+        const isInsidePrompt = audio && audio.closest('#preview-prompt');
+
+        // only require audio completion if audio exists and is inside the prompt
+        if (audio && isInsidePrompt) {
+          return false;
+        }
+      }
+    }
+
+    if (!this._session || !this._session.answers) {
+      return false;
+    }
+
+    const { answers } = this._session;
+
+    if (!Array.isArray(answers)) {
+      return false;
+    }
+
+    // filter answers by category and count the ones with content
+    const filledResponseAreas = answers.filter((answer) => answer.choices.length).length;
+    // check if an answer choice was added to at least as many response areas
+    // as the number of populated response areas in the correct answer
+    const areResponseAreasFilled = filledResponseAreas >= responseAreasToBeFilled;
+    // check if multiple placements are allowed
+    const duplicatesAllowed = (choices || []).some((choice) => choice.categoryCount === 0);
+
+    if (duplicatesAllowed) {
+      // an answer choice can be used multiple times
+      return areResponseAreasFilled;
+    }
+
+    // any correct answer have any unplaced answer choices (by the author)
+    if (hasUnplacedChoices) {
+      return areResponseAreasFilled;
+    }
+
+    const allAnswersIds = answers.map((answer) => answer.choices).flat();
+
+    // check if any correct answer have any unplaced answer choices (by the student)
+    const requiredAnswersPlaced = (possibleResponses || []).some((response) =>
+      response.every((val) => allAnswersIds.includes(val)),
+    );
+
+    // true - all choices (required for a correct response) were placed into a response area
+    return requiredAnswersPlaced;
+  }
+
+  set session(s) {
+    if (s && !s.answers) {
+      s.answers = [];
+    }
+
+    this._session = s;
+    this.render();
+  }
+
+  get session() {
+    return this._session;
+  }
+
+  eliminateBlindAnswersFromSession() {
+    const { answers = [] } = this._session || {};
+    const { choices = [] } = this._model || {};
+
+    const mappedChoices = choices.map((c) => c.id) || [];
+    const filteredAnswers = answers.map((answer) => {
+      const answerChoices = answer?.choices || [];
+      answer.choices = answerChoices.filter((c) => mappedChoices.includes(c));
+
+      return answer;
+    });
+
+    if (filteredAnswers.length > 0) {
+      this.changeAnswers(filteredAnswers);
+    }
+  }
+
+  changeAnswers(answers) {
+    this._session.answers = answers;
+    this._session.selector = 'Mouse';
+
+    this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this.isComplete()));
+
+    this.render();
+  }
+
+  onShowCorrectToggle() {
+    renderMath(this);
+  }
+
+  _createAudioInfoToast() {
+    const info = document.createElement('div');
+    info.id = 'play-audio-info';
+
+    Object.assign(info.style, {
+      position: 'absolute',
+      top: 0,
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      background: 'white',
+      zIndex: '1000',
+      cursor: 'pointer',
+    });
+
+    const img = document.createElement('img');
+    img.src = EnableAudioAutoplayImage;
+    img.alt = 'Click anywhere to enable audio autoplay';
+    img.width = 500;
+    img.height = 300;
+
+    info.appendChild(img);
+    return info;
+  }
+
+  connectedCallback() {
+    this._initMathObserver();
+    
+    // Observation:  audio in Chrome will have the autoplay attribute,
+    // while other browsers will not have the autoplay attribute and will need a user interaction to play the audio
+    // This workaround fixes the issue of audio being cached and played on any user interaction in Safari and Firefox
+    const observer = new MutationObserver((mutationsList, observer) => {
+      mutationsList.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          if (this._audioInitialized) return;
+          const audio = this.querySelector('audio');
+          const isInsidePrompt = audio && audio.closest('#preview-prompt');
+
+          if (!this._model) return;
+          if (!this._model.autoplayAudioEnabled) return;
+          if (audio && !isInsidePrompt) return;
+          if (!audio) return;
+
+          const info = this._createAudioInfoToast();
+          const container = this.querySelector('#main-container');
+          const enableAudio = () => {
+            if (this.querySelector('#play-audio-info')) {
+              audio.play();
+              container.removeChild(info);
+            }
+
+            document.removeEventListener('click', enableAudio);
+          };
+
+          // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
+          // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
+          setTimeout(() => {
+            if (audio.paused && !this.querySelector('#play-audio-info')) {
+              // add info message as a toast to enable audio playback
+              container.appendChild(info);
+              document.addEventListener('click', enableAudio);
+            } else {
+              document.removeEventListener('click', enableAudio);
+            }
+          }, 500);
+
+          // we need to listen for the playing event to remove the toast in case the audio plays because of re-rendering
+          const handlePlaying = () => {
+            //timestamp when auto-played audio started playing
+            this._session.audioStartTime = this._session.audioStartTime || new Date().getTime();
+
+            const info = this.querySelector('#play-audio-info');
+            if (info) {
+              container.removeChild(info);
+            }
+
+            audio.removeEventListener('playing', handlePlaying);
+          };
+
+          audio.addEventListener('playing', handlePlaying);
+
+          // we need to listen for the ended event to update the isComplete state
+          const handleEnded = () => {
+            //timestamp when auto-played audio completed playing
+            this._session.audioEndTime = this._session.audioEndTime || new Date().getTime();
+
+            let { audioStartTime, audioEndTime, waitTime } = this._session;
+            if (!waitTime && audioStartTime && audioEndTime) {
+              // waitTime is elapsed time the user waited for auto-played audio to finish
+              this._session.waitTime = audioEndTime - audioStartTime;
+            }
+
+            this.audioComplete = true;
+            this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this.isComplete()));
+
+            audio.removeEventListener('ended', handleEnded);
+          };
+
+          audio.addEventListener('ended', handleEnded);
+
+          // store references to remove later
+          this._audio = audio;
+          this._handlePlaying = handlePlaying;
+          this._handleEnded = handleEnded;
+          this._enableAudio = enableAudio;
+          // set to true to prevent multiple initializations
+          this._audioInitialized = true;
+
+          observer.disconnect();
+        }
+      });
+    });
+
+    observer.observe(this, { childList: true, subtree: true });
+  }
+
+  disconnectedCallback() {
+    this._disconnectMathObserver();
+    
+    document.removeEventListener('click', this._enableAudio);
+
+    if (this._audio) {
+      this._audio.removeEventListener('playing', this._handlePlaying);
+      this._audio.removeEventListener('ended', this._handleEnded);
+      this._audio = null;
+    }
+
+    if (this._root) {
+      this._root.unmount();
+    }
+  }
+
+  render() {
+    if (this._model && this._session) {
+      const el = React.createElement(CategorizeComponent, {
+        model: this._model,
+        session: this._session,
+        onAnswersChange: this.changeAnswers.bind(this),
+        onShowCorrectToggle: this.onShowCorrectToggle.bind(this),
+        pauseMathObserver: this.pauseMathObserver,
+        resumeMathObserver: this.resumeMathObserver,
+      });
+
+      if (!this._root) {
+        this._root = createRoot(this);
+      }
+      this._root.render(el);
+    }
+  }
+}

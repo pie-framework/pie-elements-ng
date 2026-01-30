@@ -1,0 +1,71 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/graphing-solution-set/src/tools/shared/point/index.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import { gridDraggable } from '@pie-lib/plot';
+import * as utils from '../../../utils';
+import { disabled, correct, incorrect, missing } from '../styles';
+import { RawBp } from './base-point';
+import { RawArrow } from './arrow-point';
+import { color } from '@pie-lib/render-ui';
+import BaseArrow from './arrow';
+
+const opts = {
+  bounds: (props, { domain, range }) => {
+    const { x, y } = props;
+    const area = { left: x, top: y, bottom: y, right: x };
+
+    return utils.bounds(area, domain, range);
+  },
+  anchorPoint: (props) => {
+    const { x, y } = props;
+
+    return { x, y };
+  },
+  fromDelta: (props, delta) => {
+    return utils.point(props).add(utils.point(delta));
+  },
+};
+
+const StyledPointWrapper: any = styled('g', {
+  shouldForwardProp: (prop) => !['disabled', 'correctness'].includes(prop),
+})(({ disabled: isDisabled, correctness }) => ({
+  '& circle, & polygon': {
+    cursor: 'pointer',
+    fill: color.defaults.SECONDARY,
+    ...(isDisabled && disabled()),
+    ...(correctness === 'correct' && correct()),
+    ...(correctness === 'incorrect' && incorrect()),
+    ...(correctness === 'missing' && missing()),
+  },
+}));
+
+const withStyledWrapper = (WrappedComponent) => {
+  const WrappedComponentWithStyles = (props) => (
+    <StyledPointWrapper disabled={props.disabled} correctness={props.correctness}>
+      <WrappedComponent {...props} />
+    </StyledPointWrapper>
+  );
+  WrappedComponentWithStyles.displayName = `withStyledWrapper(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+  WrappedComponentWithStyles.propTypes = {
+    disabled: PropTypes.bool,
+    correctness: PropTypes.string,
+  };
+  return WrappedComponentWithStyles;
+};
+
+export const BasePoint = gridDraggable(opts)(withStyledWrapper(RawBp));
+export const ArrowPoint = gridDraggable(opts)(withStyledWrapper(RawArrow));
+export const Arrow = gridDraggable(opts)(withStyledWrapper(BaseArrow));

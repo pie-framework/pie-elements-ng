@@ -1,0 +1,84 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/drawing-response/controller/src/index.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import debug from 'debug';
+import defaults from './defaults';
+
+const log = debug('pie-elements:drawing-response:controller');
+
+export const normalize = (question) => ({ ...defaults, ...question });
+
+export function model(question, session, env) {
+  const normalizedQuestion = normalize(question);
+  const { extraCSSRules, imageUrl, imageDimensions, prompt, promptEnabled, backgroundImageEnabled, language } = normalizedQuestion;
+
+  return new Promise((resolve) => {
+    const out = {
+      disabled: env.mode !== 'gather',
+      mode: env.mode,
+      imageDimensions,
+      imageUrl,
+      prompt: promptEnabled ? prompt : null,
+      backgroundImageEnabled,
+      language,
+      extraCSSRules,
+    };
+
+    if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
+      out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
+        ? normalizedQuestion.teacherInstructions
+        : null;
+    } else {
+      out.teacherInstructions = null;
+    }
+
+    resolve(out);
+  });
+}
+
+export const createDefaultModel = (model = {}) =>
+  new Promise((resolve) => {
+    resolve({
+      ...defaults,
+      ...model,
+    });
+  });
+
+export function outcome(/*config, session*/) {
+  return new Promise((resolve) => {
+    log('outcome...');
+    resolve({
+      score: 0,
+      completed: 'n/a',
+      note: 'Requires manual scoring',
+    });
+  });
+}
+
+// remove all html tags
+const getInnerText = (html) => (html || '').replaceAll(/<[^>]*>/g, '');
+
+// remove all html tags except img, iframe and source tag for audio
+const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+
+export const validate = (model = {}, config = {}) => {
+  const errors = {};
+
+  ['teacherInstructions', 'prompt'].forEach((field) => {
+    if (config[field]?.required && !getContent(model[field])) {
+      errors[field] = 'This field is required.';
+    }
+  });
+
+  return errors;
+};

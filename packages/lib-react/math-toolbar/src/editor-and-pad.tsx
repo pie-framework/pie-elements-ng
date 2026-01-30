@@ -1,0 +1,511 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/math-toolbar/src/editor-and-pad.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import debug from 'debug';
+import PropTypes from 'prop-types';
+import Button from '@mui/material/Button';
+import { styled } from '@mui/material/styles';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import { isEqual } from 'lodash-es';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+
+import { HorizontalKeypad, mq, updateSpans } from '@pie-lib/math-input';
+import { color } from '@pie-lib/render-ui';
+import { markFractionBaseSuperscripts } from './utils';
+
+const { commonMqFontStyles, commonMqKeyboardStyles, longdivStyles, supsubStyles } = mq.CommonMqStyles;
+const log = debug('@pie-lib:math-toolbar:editor-and-pad');
+
+const decimalRegex = /\.|,/g;
+
+const MathToolbarContainer: any = styled('div')(({ theme }) => ({
+  zIndex: 9,
+  position: 'relative',
+  textAlign: 'center',
+  width: 'auto',
+  '& > .mq-math-mode': {
+    border: 'solid 1px lightgrey',
+  },
+  '& > .mq-focused': {
+    outline: 'none',
+    boxShadow: 'none',
+    border: `dotted 1px ${theme.palette.primary.main}`,
+    borderRadius: '0px',
+  },
+  '& .mq-overarrow-inner': {
+    border: 'none !important',
+    paddingTop: '0 !important',
+  },
+  '& .mq-overarrow-inner-right': {
+    display: 'none !important',
+  },
+  '& .mq-overarrow-inner-left': {
+    display: 'none !important',
+  },
+  '& .mq-longdiv-inner': {
+    borderTop: '1px solid !important',
+    paddingTop: '1.5px !important',
+  },
+  '& .mq-overarrow.mq-arrow-both': {
+    top: '7.8px',
+    marginTop: '0px',
+    minWidth: '1.23em',
+  },
+  '& .mq-parallelogram': {
+    lineHeight: 0.85,
+  },
+}));
+
+const InputAndTypeContainer: any = styled('div')(({ theme, hide }) => ({
+  display: hide ? 'none' : 'flex',
+  alignItems: 'center',
+  '& .mq-editable-field .mq-cursor': {
+    top: '-4px',
+  },
+  '& .mq-math-mode .mq-selection, .mq-editable-field .mq-selection': {
+    paddingTop: '18px',
+  },
+  '& .mq-math-mode .mq-overarrow': {
+    fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
+  },
+  '& .mq-math-mode .mq-overline .mq-overline-inner': {
+    paddingTop: '0.4em !important',
+  },
+  '& .mq-overarrow.mq-arrow-both': {
+    minWidth: '1.23em',
+    '& *': {
+      lineHeight: '1 !important',
+    },
+    '&:before': {
+      top: '-0.45em',
+      left: '-1px',
+    },
+    '&:after': {
+      position: 'absolute !important',
+      top: '0px !important',
+      right: '-2px',
+    },
+    '&.mq-empty:after': {
+      top: '-0.45em',
+    },
+  },
+  '& .mq-overarrow.mq-arrow-right': {
+    '&:before': {
+      top: '-0.4em',
+      right: '-1px',
+    },
+  },
+  '& *': {
+    ...commonMqFontStyles,
+    ...supsubStyles,
+    ...longdivStyles,
+    '& .mq-math-mode .mq-sqrt-prefix': {
+      verticalAlign: 'baseline !important',
+      top: '1px !important',
+      left: '-0.1em !important',
+    },
+    '& .mq-math-mode .mq-overarc ': {
+      paddingTop: '0.45em !important',
+    },
+    '& .mq-math-mode .mq-empty': {
+      padding: '9px 1px !important',
+    },
+    '& .mq-math-mode .mq-root-block': {
+      paddingTop: '10px',
+    },
+    '& .mq-scaled .mq-sqrt-prefix': {
+      top: '0 !important',
+    },
+    '& .mq-math-mode .mq-longdiv .mq-longdiv-inner': {
+      marginLeft: '4px !important',
+      paddingTop: '6px !important',
+      paddingLeft: '6px !important',
+    },
+    '& .mq-math-mode .mq-paren': {
+      verticalAlign: 'top !important',
+      padding: '1px 0.1em !important',
+    },
+    '& .mq-math-mode .mq-sqrt-stem': {
+      borderTop: '0.07em solid',
+      marginLeft: '-1.5px',
+      marginTop: '-2px !important',
+      paddingTop: '5px !important',
+    },
+    '& .mq-math-mode .mq-denominator': {
+      marginTop: '-5px !important',
+      padding: '0.5em 0.1em 0.1em !important',
+    },
+    '& .mq-math-mode .mq-numerator, .mq-math-mode .mq-over': {
+      padding: '0 0.1em !important',
+      paddingBottom: '0 !important',
+      marginBottom: '-2px',
+    },
+  },
+  '& span[data-prime="true"]': {
+    fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
+  },
+}));
+
+const StyledFormControl: any = styled(FormControl)({
+  flex: 'initial',
+  width: '25%',
+  minWidth: '100px',
+  marginLeft: '15px',
+  marginTop: '5px',
+  marginBottom: '5px',
+  marginRight: '5px',
+  '& label': {
+    fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
+  },
+  '& div': {
+    fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
+  },
+});
+
+const StyledInputLabel: any = styled(InputLabel)(() => ({
+  backgroundColor: 'transparent',
+}));
+
+const InputContainerDiv: any = styled('div')(({ theme, error }) => ({
+  minWidth: '500px',
+  maxWidth: '900px',
+  minHeight: '30px',
+  width: '100%',
+  display: 'flex',
+  marginTop: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  ...(error && {
+    border: '2px solid red',
+  }),
+  '& .mq-sqrt-prefix .mq-scaled': {
+    verticalAlign: 'middle !important',
+  },
+}));
+
+const MathEditor: any = styled(mq.Input)(({ controlledKeypadMode }) => ({
+  maxWidth: controlledKeypadMode ? '400px' : '500px',
+  color: color.text(),
+  backgroundColor: color.background(),
+  padding: '2px',
+}));
+
+const AddAnswerBlockButton: any = styled(Button)({
+  position: 'absolute',
+  right: '12px',
+  border: '1px solid lightgrey',
+  color: color.text(),
+});
+
+const StyledHr: any = styled('hr')(({ theme }) => ({
+  padding: 0,
+  margin: 0,
+  height: '1px',
+  border: 'none',
+  borderBottom: `solid 1px ${theme.palette.primary.main}`,
+}));
+
+const KeyboardContainer: any = styled(HorizontalKeypad)(({ mode }) => ({
+  ...commonMqKeyboardStyles,
+  ...(mode === 'language' && {
+    '& *': {
+      fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
+    },
+  }),
+}));
+
+const toNodeData = (data) => {
+  if (!data) {
+    return;
+  }
+
+  const { type, value } = data;
+
+  if (type === 'command' || type === 'cursor') {
+    return data;
+  } else if (type === 'answer') {
+    return { type: 'answer', ...data };
+  } else if (value === 'clear') {
+    return { type: 'clear' };
+  } else {
+    return { type: 'write', value };
+  }
+};
+
+export class EditorAndPad extends React.Component {
+  static propTypes = {
+    classNames: PropTypes.object,
+    keypadMode: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    autoFocus: PropTypes.bool,
+    allowAnswerBlock: PropTypes.bool,
+    showKeypad: PropTypes.bool,
+    controlledKeypad: PropTypes.bool,
+    controlledKeypadMode: PropTypes.bool,
+    error: PropTypes.string,
+    noDecimal: PropTypes.bool,
+    hideInput: PropTypes.bool,
+    noLatexHandling: PropTypes.bool,
+    layoutForKeyPad: PropTypes.object,
+    maxResponseAreas: PropTypes.number,
+    additionalKeys: PropTypes.array,
+    latex: PropTypes.string.isRequired,
+    onAnswerBlockAdd: PropTypes.func,
+    onFocus: PropTypes.func,
+    onBlur: PropTypes.func,
+    onChange: PropTypes.func.isRequired,
+    setKeypadInteraction: PropTypes.func,
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = { equationEditor: 'item-authoring', addDisabled: false };
+  }
+
+  componentDidMount() {
+    if (this.input && this.props.autoFocus) {
+      this.input.focus();
+    }
+  }
+
+  onClick: any = (data) => {
+    const { noDecimal, noLatexHandling, onChange } = this.props;
+    const c = toNodeData(data);
+    log('mathChange: ', c);
+
+    if (noLatexHandling) {
+      onChange(c.value);
+      return;
+    }
+
+    // if decimals are not allowed for this response, we discard the input
+    if (noDecimal && (c.value === '.' || c.value === ',')) {
+      return;
+    }
+
+    if (!c) {
+      return;
+    }
+
+    if (c.type === 'clear') {
+      log('call clear...');
+      this.input.clear();
+    } else if (c.type === 'command') {
+      this.input.command(c.value);
+    } else if (c.type === 'cursor') {
+      this.input.keystroke(c.value);
+    } else if (c.type === 'answer') {
+      this.input.write('%response%');
+    } else {
+      this.input.write(c.value);
+    }
+  };
+
+  updateDisable: any = (isEdit) => {
+    const { maxResponseAreas } = this.props;
+
+    if (maxResponseAreas) {
+      const shouldDisable = this.checkResponseAreasNumber(maxResponseAreas, isEdit);
+
+      this.setState({ addDisabled: shouldDisable });
+    }
+  };
+
+  onAnswerBlockClick: any = () => {
+    this.props.onAnswerBlockAdd();
+    this.onClick({
+      type: 'answer',
+    });
+
+    this.updateDisable(true);
+  };
+
+  onEditorChange: any = (latex) => {
+    const { onChange, noDecimal } = this.props;
+
+    updateSpans();
+    markFractionBaseSuperscripts();
+
+    this.updateDisable(true);
+
+    // if no decimals are allowed and the last change is a decimal dot, discard the change
+    if (noDecimal && (latex.indexOf('.') !== -1 || latex.indexOf(',') !== -1) && this.input) {
+      this.input.clear();
+      this.input.write(latex.replace(decimalRegex, ''));
+      return;
+    }
+
+    // eslint-disable-next-line no-useless-escape
+    const regexMatch = latex.match(/[0-9]\\ \\frac\{[^\{]*\}\{ \}/);
+
+    if (this.input && regexMatch && regexMatch?.length) {
+      try {
+        this.input.mathField.__controller.cursor.insLeftOf(this.input.mathField.__controller.cursor.parent[-1].parent);
+        this.input.mathField.el().dispatchEvent(new KeyboardEvent('keydown', { keyCode: 8 }));
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e.toString());
+      }
+
+      return;
+    }
+
+    onChange(latex);
+  };
+
+  /** Only render if the mathquill instance's latex is different
+   * or the keypad state changed from one state to the other (shown / hidden) */
+  shouldComponentUpdate(nextProps, nextState) {
+    const inputIsDifferent = this.input.mathField.latex() !== nextProps.latex;
+    log('[shouldComponentUpdate] ', 'inputIsDifferent: ', inputIsDifferent);
+
+    if (!isEqual(this.props.error, nextProps.error)) {
+      return true;
+    }
+
+    if (!inputIsDifferent && this.props.keypadMode !== nextProps.keypadMode) {
+      return true;
+    }
+
+    if (!inputIsDifferent && this.props.noDecimal !== nextProps.noDecimal) {
+      return true;
+    }
+
+    if (!inputIsDifferent && this.state.equationEditor !== nextState.equationEditor) {
+      return true;
+    }
+
+    if (!inputIsDifferent && this.props.controlledKeypad) {
+      return this.props.showKeypad !== nextProps.showKeypad;
+    }
+
+    return inputIsDifferent;
+  }
+
+  onEditorTypeChange: any = (evt) => {
+    this.setState({ equationEditor: evt.target.value });
+  };
+
+  checkResponseAreasNumber: any = (maxResponseAreas, isEdit) => {
+    const { latex } = (this.input && this.input.props) || {};
+
+    if (latex) {
+      const count = (latex.match(/answerBlock/g) || []).length;
+
+      return isEdit ? count === maxResponseAreas - 1 : count === maxResponseAreas;
+    }
+
+    return false;
+  };
+
+  render() {
+    const {
+      classNames,
+      keypadMode,
+      allowAnswerBlock,
+      additionalKeys,
+      controlledKeypad,
+      controlledKeypadMode,
+      showKeypad,
+      setKeypadInteraction,
+      noDecimal,
+      hideInput,
+      layoutForKeyPad,
+      latex,
+      onFocus,
+      onBlur,
+      error,
+    } = this.props;
+    const shouldShowKeypad = !controlledKeypad || (controlledKeypad && showKeypad);
+    const { addDisabled } = this.state;
+
+    log('[render]', latex);
+
+    return (
+      <MathToolbarContainer className={classNames.mathToolbar}>
+        <InputAndTypeContainer hide={hideInput}>
+          {controlledKeypadMode && (
+            <StyledFormControl variant={'standard'}>
+              <StyledInputLabel id="equation-editor-label">{'Equation Editor'}</StyledInputLabel>
+              <Select
+                labelId="equation-editor-label"
+                id="equation-editor-select"
+                name="equationEditor"
+                label={'Equation Editor'}
+                onChange={this.onEditorTypeChange}
+                value={this.state.equationEditor}
+                MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}
+              >
+                <MenuItem value="non-negative-integers">Numeric - Non-Negative Integers</MenuItem>
+                <MenuItem value="integers">Numeric - Integers</MenuItem>
+                <MenuItem value="decimals">Numeric - Decimals</MenuItem>
+                <MenuItem value="fractions">Numeric - Fractions</MenuItem>
+                <MenuItem value={1}>Grade 1 - 2</MenuItem>
+                <MenuItem value={3}>Grade 3 - 5</MenuItem>
+                <MenuItem value={6}>Grade 6 - 7</MenuItem>
+                <MenuItem value={8}>Grade 8 - HS</MenuItem>
+                <MenuItem value={'geometry'}>Geometry</MenuItem>
+                <MenuItem value={'advanced-algebra'}>Advanced Algebra</MenuItem>
+                <MenuItem value={'statistics'}>Statistics</MenuItem>
+                <MenuItem value={'item-authoring'}>Item Authoring</MenuItem>
+              </Select>
+            </StyledFormControl>
+          )}
+          <InputContainerDiv error={error}>
+            <MathEditor
+              onFocus={() => {
+                onFocus && onFocus();
+                this.updateDisable(false);
+              }}
+              onBlur={(event) => {
+                this.updateDisable(false);
+                onBlur && onBlur(event);
+              }}
+              className={(classNames && classNames.editor) || ''}
+              controlledKeypadMode={controlledKeypadMode}
+              ref={(r) => (this.input = r)}
+              latex={latex}
+              onChange={this.onEditorChange}
+            />
+          </InputContainerDiv>
+        </InputAndTypeContainer>
+        {allowAnswerBlock && (
+          <AddAnswerBlockButton
+            type="primary"
+            style={{ bottom: shouldShowKeypad ? '320px' : '20px' }}
+            onClick={this.onAnswerBlockClick}
+            disabled={addDisabled}
+          >
+            + Response Area
+          </AddAnswerBlockButton>
+        )}
+        <StyledHr />
+        {shouldShowKeypad && (
+          <KeyboardContainer
+            mode={controlledKeypadMode ? this.state.equationEditor : keypadMode}
+            controlledKeypadMode={controlledKeypadMode}
+            layoutForKeyPad={layoutForKeyPad}
+            additionalKeys={additionalKeys}
+            onClick={this.onClick}
+            noDecimal={noDecimal}
+            setKeypadInteraction={setKeypadInteraction}
+          />
+        )}
+      </MathToolbarContainer>
+    );
+  }
+}
+
+export default EditorAndPad;

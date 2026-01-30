@@ -1,0 +1,207 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/graphing/configure/src/index.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import Configure from './configure';
+import {
+  DeleteImageEvent,
+  DeleteSoundEvent,
+  InsertImageEvent,
+  InsertSoundEvent,
+  ModelUpdatedEvent,
+} from '@pie-element/shared-configure-events';
+import debug from 'debug';
+import defaultValues from './defaults';
+import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { cloneDeep } from 'lodash-es';
+
+const log = debug('pie-elements:graphing:configure');
+
+// this function is implemented in controller as well
+const sortedAnswers = (answers) =>
+  Object.keys(answers || {})
+    .sort()
+    .reduce((result, key) => {
+      if (key !== 'correctAnswer') {
+        result[key] = answers[key];
+      }
+
+      return result;
+    }, {});
+
+export default class GraphLinesConfigure extends HTMLElement {
+  static createDefaultModel = (model = {}) => {
+    const normalizedModel = { ...defaultValues.model, ...model };
+    const {
+      answers = {},
+      domain = {},
+      defaultTool,
+      graph = {},
+      range = {},
+      standardGrid,
+      toolbarTools,
+    } = normalizedModel;
+
+    // added support for models without defaultTool defined; also used in packages/graphing/controller/src/index.js
+    const toolbarToolsNoLabel = (toolbarTools || []).filter((tool) => tool !== 'label');
+    const normalizedDefaultTool = defaultTool || (toolbarToolsNoLabel.length && toolbarToolsNoLabel[0]) || '';
+
+    return {
+      ...normalizedModel,
+      answers:
+        (answers &&
+          answers.correctAnswer && {
+            correctAnswer: answers.correctAnswer,
+            ...sortedAnswers(answers),
+          }) ||
+        answers,
+      defaultTool: normalizedDefaultTool,
+      range:
+        (standardGrid && {
+          ...range,
+          min: domain.min,
+          max: domain.max,
+          step: domain.step,
+          labelStep: domain.labelStep,
+        }) ||
+        range,
+      graph: (standardGrid && { ...graph, height: graph.width }) || graph,
+    };
+  };
+
+  constructor() {
+    super();
+    this._root = null;
+    this._model = GraphLinesConfigure.createDefaultModel();
+    this._configuration = defaultValues.configuration;
+  }
+
+  set model(m) {
+    this._model = GraphLinesConfigure.createDefaultModel(m);
+    this._modelCopy = cloneDeep(this._model);
+
+    this._render();
+  }
+
+  resetModelAfterConfigurationIsSet: any = () => {
+    // In environments that use pie-player-components, model is set before configuration.
+    // This is the reason why sometimes the model gets altered non-reversible
+    // (altered using default configuration instead of client configuration, because at that point client configuration was not set yet)
+    // Therefore, in such environments, we will make sure to keep a modelCopy (initialised in set model) and use it to reset
+    // the model in set configuration (resetModelAfterConfigurationIsSet) if set configuration is ever called
+    const pieAuthors = document.querySelectorAll('pie-author');
+    this.hasPlayerAsParent = Array.from(pieAuthors).some((author) => author.contains(this));
+
+    if (this.hasPlayerAsParent) {
+      if (this._modelCopy) {
+        this._model = this._modelCopy;
+      } else {
+        delete this._modelCopy;
+      }
+    }
+  };
+
+  set configuration(c) {
+    this._configuration = {
+      ...defaultValues.configuration,
+      ...c,
+    };
+
+    this.resetModelAfterConfigurationIsSet();
+
+    // if language:enabled is true, then the corresponding default item model should include a language value;
+    // if it is false, then the language field should be omitted from the item model.
+    // if a default item model includes a language value (e.g., en_US) and the corresponding authoring view settings have language:settings = true,
+    // then (a) language:enabled should also be true, and (b) that default language value should be represented in languageChoices[] (as a key).
+    //TODO: add logic in controller and add tests
+    if (c.language?.enabled) {
+      if (c.languageChoices?.options?.length) {
+        this._model.language = c.languageChoices.options[0].value;
+      }
+    } else {
+      if (c.language.settings) {
+        if (this._model.language) {
+          this._configuration.language.enabled = true;
+        }
+      } else {
+        delete this._model.language;
+      }
+    }
+
+    this._render();
+  }
+
+  onModelChanged: any = (model) => {
+    this._model = model;
+    this._render();
+
+    log('[onModelChanged]: ', this._model);
+
+    this.dispatchEvent(new ModelUpdatedEvent(this._model));
+  };
+
+  onConfigurationChanged: any = (config) => {
+    this._configuration = config;
+    this._render();
+  };
+
+  insertImage: any = (handler) => {
+    this.dispatchEvent(new InsertImageEvent(handler));
+  };
+
+  onDeleteImage: any = (src, done) => {
+    this.dispatchEvent(new DeleteImageEvent(src, done));
+  };
+
+  insertSound(handler) {
+    this.dispatchEvent(new InsertSoundEvent(handler));
+  }
+
+  onDeleteSound(src, done) {
+    this.dispatchEvent(new DeleteSoundEvent(src, done));
+  }
+
+  _render() {
+    if (this._model) {
+      const el = React.createElement(Configure, {
+        onModelChanged: this.onModelChanged,
+        onConfigurationChanged: this.onConfigurationChanged,
+        model: this._model,
+        configuration: this._configuration,
+        imageSupport: {
+          add: this.insertImage,
+          delete: this.onDeleteImage,
+        },
+        uploadSoundSupport: {
+          add: this.insertSound.bind(this),
+          delete: this.onDeleteSound.bind(this),
+        },
+      });
+
+      if (!this._root) {
+        this._root = createRoot(this);
+      }
+      this._root.render(el);
+      queueMicrotask(() => {
+        renderMath(this);
+      });
+    }
+  }
+
+  disconnectedCallback() {
+    if (this._root) {
+      this._root.unmount();
+    }
+  }
+}

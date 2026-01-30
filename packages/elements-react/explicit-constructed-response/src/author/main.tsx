@@ -1,0 +1,508 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/explicit-constructed-response/configure/src/main.jsx
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { cloneDeep } from 'lodash-es';
+import { isEmpty } from 'lodash-es';
+import { pick } from 'lodash-es';
+import { throttle } from 'lodash-es';
+import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
+import { InputContainer, layout, settings } from '@pie-lib/config-ui';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import Info from '@mui/icons-material/Info';
+import Tooltip from '@mui/material/Tooltip';
+
+import ECRToolbar from './ecr-toolbar';
+import AlternateResponses from './alternateResponses';
+import { decodeHTML, getAdjustedLength } from './markupUtils';
+import { generateValidationMessage } from './utils';
+
+const { toggle, Panel, dropdown } = settings;
+
+const PromptHolder: any = styled(InputContainer)(({ theme }) => ({
+  width: '100%',
+  paddingTop: theme.spacing(1),
+  marginTop: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+}));
+
+const MarkupContainer: any = styled(EditableHtml)(({ theme }) => ({
+  minHeight: '100px',
+  paddingTop: theme.spacing(1),
+  width: '100%',
+  '& [data-slate-editor="true"]': {
+    minHeight: '100px',
+  },
+}));
+
+const StyledText: any = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.fontSize + 2,
+}));
+
+const StyledTooltip: any = styled(Tooltip)(({ theme }) => ({
+  '& .MuiTooltip-tooltip': {
+    fontSize: theme.typography.fontSize - 2,
+    whiteSpace: 'pre',
+    maxWidth: '500px',
+  },
+}));
+
+const ErrorText: any = styled('div')(({ theme }) => ({
+  fontSize: theme.typography.fontSize - 2,
+  color: theme.palette.error.main,
+  paddingTop: theme.spacing(1),
+}));
+
+const FlexContainer: any = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const ResponseHeader: any = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.fontSize + 2,
+  marginTop: theme.spacing(3),
+  marginBottom: theme.spacing(1),
+}));
+
+const createElementFromHTML = (htmlString) => {
+  const div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  return div;
+};
+
+export class Main extends React.Component {
+  static propTypes = {
+    configuration: PropTypes.object.isRequired,
+    model: PropTypes.object.isRequired,
+    disableSidePanel: PropTypes.bool,
+    onModelChanged: PropTypes.func.isRequired,
+    onConfigurationChanged: PropTypes.func.isRequired,
+    imageSupport: PropTypes.shape({
+      add: PropTypes.func.isRequired,
+      delete: PropTypes.func.isRequired,
+    }),
+    uploadSoundSupport: PropTypes.object,
+  };
+
+  state = {};
+
+  componentDidMount() {
+    const {
+      model: { slateMarkup, choices, maxLengthPerChoice = [] },
+      onModelChanged,
+    } = this.props;
+    const undefinedLengths = !maxLengthPerChoice.length;
+
+    this.setState({ markup: slateMarkup });
+
+    // calculate maxLengthPerChoice array if it is not defined or defined incorrectly
+    Object.values(choices).forEach((choice, index) => {
+      const labelLengthsArr = choice.map((choice) => decodeHTML(choice.label || '').length);
+      const length = Math.max(...labelLengthsArr);
+
+      if (
+        undefinedLengths ||
+        !maxLengthPerChoice[index] ||
+        maxLengthPerChoice[index] < length ||
+        maxLengthPerChoice[index] > length + 10
+      ) {
+        maxLengthPerChoice[index] = getAdjustedLength(length);
+      }
+    });
+
+    onModelChanged({ ...this.props.model, maxLengthPerChoice });
+  }
+
+  onModelChange: any = (newVal) => {
+    this.props.onModelChanged({ ...this.props.model, ...newVal });
+  };
+
+  onPromptChanged: any = (prompt) => {
+    this.props.onModelChanged({ ...this.props.model, prompt });
+  };
+
+  onRationaleChanged: any = (rationale) => {
+    this.props.onModelChanged({ ...this.props.model, rationale });
+  };
+
+  onTeacherInstructionsChanged: any = (teacherInstructions) => {
+    const { model, onModelChanged } = this.props;
+
+    onModelChanged({ ...model, teacherInstructions });
+  };
+
+  onMarkupChanged: any = (slateMarkup) => {
+    this.props.onModelChanged({ ...this.props.model, slateMarkup });
+  };
+
+  onResponsesChanged: any = (choices) => {
+    this.props.onModelChanged({ ...this.props.model, choices });
+  };
+
+  onLengthChanged: any = (maxLengthPerChoice) => {
+    const { model, onModelChanged } = this.props;
+
+    onModelChanged({ ...model, maxLengthPerChoice });
+  };
+
+  onChangeResponse: any = (index, newVal) => {
+    const { model, onModelChanged } = this.props;
+    const { choices } = model;
+    let { maxLengthPerChoice } = model;
+    const newValLength = decodeHTML(newVal || '').length;
+
+    if (!choices[index] || !choices[index].length) {
+      choices[index] = [{ label: newVal || '', value: '0' }];
+
+      // add default values for missing choices up to the new index position
+      const nbOfMissingChoices = index > maxLengthPerChoice.length ? index - maxLengthPerChoice.length : 0;
+
+      maxLengthPerChoice = [...maxLengthPerChoice, ...Array(nbOfMissingChoices).fill(1)];
+
+      maxLengthPerChoice.splice(index, 0, getAdjustedLength(newValLength));
+    } else {
+      choices[index][0].label = newVal || '';
+
+      if (
+        maxLengthPerChoice &&
+        (maxLengthPerChoice[index] < newValLength || maxLengthPerChoice[index] > newValLength + 10)
+      ) {
+        maxLengthPerChoice[index] = getAdjustedLength(newValLength);
+      }
+    }
+
+    onModelChanged({ ...model, choices, maxLengthPerChoice });
+  };
+
+  onChange: any = (markup) => {
+    const {
+      model: { choices, maxLengthPerChoice },
+      onModelChanged,
+    } = this.props;
+    const domMarkup = createElementFromHTML(markup);
+    const allRespAreas = domMarkup.querySelectorAll('[data-type="explicit_constructed_response"]');
+
+    const allChoices = {};
+    const updatedMaxLengthPerChoice = [];
+
+    allRespAreas.forEach((el, index) => {
+      const newChoices = cloneDeep(choices[el.dataset.index]);
+
+      if (newChoices) {
+        newChoices[0] = {
+          label: el.dataset.value || '',
+          value: '0',
+        };
+
+        updatedMaxLengthPerChoice[index] = maxLengthPerChoice[el.dataset.index];
+      }
+
+      allChoices[index] = newChoices;
+      el.dataset.index = index;
+    });
+
+    const callback = () =>
+      onModelChanged({
+        ...this.props.model,
+        choices: allChoices,
+        slateMarkup: domMarkup.innerHTML,
+        maxLengthPerChoice: updatedMaxLengthPerChoice,
+      });
+
+    this.setState({ cachedChoices: undefined }, callback);
+  };
+
+  onHandleAreaChange = throttle(
+    (nodes) => {
+      const {
+        model: { choices },
+        onModelChanged,
+      } = this.props;
+      const { cachedChoices } = this.state;
+
+      if (!nodes) {
+        return;
+      }
+
+      const newChoices = choices ? cloneDeep(choices) : {};
+      const newCachedChoices = cachedChoices ? cloneDeep(cachedChoices) : {};
+
+      nodes.forEach((node) => {
+        const keyForNode = node.index;
+
+        if (!newChoices[keyForNode] && newCachedChoices[keyForNode]) {
+          Object.assign(newChoices, pick(newCachedChoices, keyForNode));
+
+          if (Object.prototype.hasOwnProperty.call(newCachedChoices, keyForNode)) {
+            delete newCachedChoices[keyForNode];
+          }
+        } else {
+          Object.assign(newCachedChoices, pick(newChoices, keyForNode));
+
+          if (Object.prototype.hasOwnProperty.call(newChoices, keyForNode)) {
+            delete newChoices[keyForNode];
+          }
+        }
+      });
+
+      const callback = () => onModelChanged({ ...this.props.model, choices: newChoices });
+
+      this.setState({ cachedChoices: newCachedChoices }, callback);
+    },
+    500,
+    { trailing: false, leading: true },
+  );
+
+  render() {
+    const { model, configuration, onConfigurationChanged, imageSupport, uploadSoundSupport } = this.props;
+
+    const {
+      baseInputConfiguration = {},
+      contentDimensions = {},
+      maxImageWidth = {},
+      maxImageHeight = {},
+      maxLengthPerChoice = {},
+      maxResponseAreas,
+      partialScoring = {},
+      playerSpellCheck = {},
+      prompt = {},
+      rationale = {},
+      template = {},
+      settingsPanelDisabled,
+      spellCheck = {},
+      editSource = {},
+      teacherInstructions = {},
+      withRubric = {},
+      mathMlOptions = {},
+      language = {},
+      languageChoices = {},
+      spanishButton = {},
+      responseAreaInputConfiguration = {},
+    } = configuration || {};
+    const {
+      errors,
+      extraCSSRules,
+      maxLengthPerChoiceEnabled,
+      promptEnabled,
+      rationaleEnabled,
+      spellCheckEnabled,
+      teacherInstructionsEnabled,
+      toolbarEditorPosition,
+    } = model || {};
+
+    const {
+      choices: choicesErrors = {},
+      prompt: promptError,
+      rationale: rationaleError,
+      responseAreas: responseAreasError,
+      teacherInstructions: teacherInstructionsError,
+    } = errors || {};
+    const validationMessage = generateValidationMessage(configuration);
+
+    const defaultImageMaxWidth = maxImageWidth && maxImageWidth.prompt;
+    const defaultImageMaxHeight = maxImageHeight && maxImageHeight.prompt;
+
+    const toolbarOpts = {
+      position: toolbarEditorPosition === 'top' ? 'top' : 'bottom',
+    };
+
+    const panelSettings = {
+      partialScoring: partialScoring.settings && toggle(partialScoring.label),
+      maxLengthPerChoiceEnabled: maxLengthPerChoice.settings && toggle(maxLengthPerChoice.label),
+      'language.enabled': language.settings && toggle(language.label, true),
+      language: language.settings && language.enabled && dropdown(languageChoices.label, languageChoices.options),
+      'responseAreaInputConfiguration.inputConfiguration.characters.disabled':
+        spanishButton.settings && toggle(spanishButton.label, true),
+    };
+    const panelProperties = {
+      teacherInstructionsEnabled: teacherInstructions.settings && toggle(teacherInstructions.label),
+      rationaleEnabled: rationale.settings && toggle(rationale.label),
+      promptEnabled: prompt.settings && toggle(prompt.label),
+      spellCheckEnabled: spellCheck.settings && toggle(spellCheck.label),
+      playerSpellCheckEnabled: playerSpellCheck.settings && toggle(playerSpellCheck.label),
+      rubricEnabled: withRubric?.settings && toggle(withRubric?.label),
+      'editSource.enabled': editSource?.settings && toggle(editSource.label, true),
+    };
+
+    const getPluginProps = (props = {}) => ({
+      ...baseInputConfiguration,
+      ...props,
+    });
+    return (
+      <layout.ConfigLayout
+        extraCSSRules={extraCSSRules}
+        dimensions={contentDimensions}
+        hideSettings={settingsPanelDisabled}
+        settings={
+          <Panel
+            model={model}
+            configuration={configuration}
+            onChangeModel={(model) => this.onModelChange(model)}
+            onChangeConfiguration={(configuration) => onConfigurationChanged(configuration, true)}
+            groups={{
+              Settings: panelSettings,
+              Properties: panelProperties,
+            }}
+          />
+        }
+      >
+        {teacherInstructionsEnabled && (
+          <PromptHolder label={teacherInstructions.label}>
+            <EditableHtml
+              className="prompt"
+              markup={model.teacherInstructions || ''}
+              onChange={this.onTeacherInstructionsChanged}
+              imageSupport={imageSupport}
+              nonEmpty={false}
+              error={teacherInstructionsError}
+              toolbarOpts={toolbarOpts}
+              pluginProps={getPluginProps(teacherInstructions?.inputConfiguration)}
+              spellCheck={spellCheckEnabled}
+              maxImageWidth={(maxImageWidth && maxImageWidth.teacherInstructions) || defaultImageMaxWidth}
+              maxImageHeight={(maxImageHeight && maxImageHeight.teacherInstructions) || defaultImageMaxHeight}
+              uploadSoundSupport={uploadSoundSupport}
+              languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
+              mathMlOptions={mathMlOptions}
+              autoWidthToolbar
+            />
+            {teacherInstructionsError && <ErrorText>{teacherInstructionsError}</ErrorText>}
+          </PromptHolder>
+        )}
+
+        {promptEnabled && (
+          <PromptHolder label={prompt.label}>
+            <EditableHtml
+              className="prompt"
+              markup={model.prompt}
+              onChange={this.onPromptChanged}
+              imageSupport={imageSupport}
+              nonEmpty={false}
+              disableUnderline
+              error={promptError}
+              toolbarOpts={toolbarOpts}
+              pluginProps={getPluginProps(prompt?.inputConfiguration)}
+              spellCheck={spellCheckEnabled}
+              maxImageWidth={defaultImageMaxWidth}
+              maxImageHeight={defaultImageMaxHeight}
+              uploadSoundSupport={uploadSoundSupport}
+              languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
+              mathMlOptions={mathMlOptions}
+              autoWidthToolbar
+            />
+            {promptError && <ErrorText>{promptError}</ErrorText>}
+          </PromptHolder>
+        )}
+
+        <FlexContainer>
+          <StyledText component="div">
+            Define Template, Choices, and Correct Responses
+          </StyledText>
+          <StyledTooltip
+            disableFocusListener
+            disableTouchListener
+            placement={'right'}
+            title={validationMessage}
+          >
+            <Info fontSize={'small'} color={'primary'} style={{ marginLeft: '8px' }} />
+          </StyledTooltip>
+        </FlexContainer>
+
+        <MarkupContainer
+          activePlugins={ALL_PLUGINS}
+          toolbarOpts={{ position: 'top' }}
+          spellCheck={spellCheckEnabled}
+          pluginProps={getPluginProps(template?.inputConfiguration)}
+          responseAreaProps={{
+            type: 'explicit-constructed-response',
+            options: {
+              duplicates: true,
+            },
+            maxResponseAreas: maxResponseAreas,
+            respAreaToolbar: (node, editor, onToolbarDone) => {
+              const { model } = this.props;
+              const correctChoice = (model.choices[node.attrs.index] || [])[0];
+              return () => (
+                <ECRToolbar
+                  onChangeResponse={(newVal) => this.onChangeResponse(node.attrs.index, newVal)}
+                  node={node}
+                  editor={editor}
+                  onToolbarDone={onToolbarDone}
+                  correctChoice={correctChoice}
+                  maxLengthPerChoiceEnabled={maxLengthPerChoiceEnabled}
+                  pluginProps={getPluginProps(responseAreaInputConfiguration?.inputConfiguration)}
+                />
+              );
+            },
+            error: () => choicesErrors,
+            onHandleAreaChange: this.onHandleAreaChange,
+          }}
+          markup={model.slateMarkup}
+          onChange={this.onChange}
+          imageSupport={imageSupport}
+          disableImageAlignmentButtons={true}
+          onBlur={this.onBlur}
+          disabled={false}
+          highlightShape={false}
+          error={responseAreasError}
+          uploadSoundSupport={uploadSoundSupport}
+          languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
+          mathMlOptions={mathMlOptions}
+          autoWidthToolbar
+        />
+        {responseAreasError && <ErrorText>{responseAreasError}</ErrorText>}
+
+        {!isEmpty(model.choices) && (
+          <ResponseHeader>
+            {`Define Alternates ${maxLengthPerChoiceEnabled ? 'and Character Limits' : ''}`}
+          </ResponseHeader>
+        )}
+        <AlternateResponses
+          model={model}
+          onChange={this.onResponsesChanged}
+          onLengthChange={this.onLengthChanged}
+          maxLengthPerChoiceEnabled={maxLengthPerChoiceEnabled}
+          spellCheck={spellCheckEnabled}
+          choicesErrors={choicesErrors}
+          pluginProps={getPluginProps(responseAreaInputConfiguration?.inputConfiguration)}
+        />
+
+        {rationaleEnabled && (
+          <PromptHolder label={rationale.label}>
+            <EditableHtml
+              className="prompt"
+              markup={model.rationale || ''}
+              onChange={this.onRationaleChanged}
+              imageSupport={imageSupport}
+              error={rationaleError}
+              toolbarOpts={toolbarOpts}
+              pluginProps={getPluginProps(rationale?.inputConfiguration)}
+              spellCheck={spellCheckEnabled}
+              maxImageWidth={(maxImageWidth && maxImageWidth.rationale) || defaultImageMaxWidth}
+              maxImageHeight={(maxImageHeight && maxImageHeight.rationale) || defaultImageMaxHeight}
+              uploadSoundSupport={uploadSoundSupport}
+              languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
+              mathMlOptions={mathMlOptions}
+              autoWidthToolbar
+            />
+            {rationaleError && <ErrorText>{rationaleError}</ErrorText>}
+          </PromptHolder>
+        )}
+      </layout.ConfigLayout>
+    );
+  }
+}
+
+export default Main;

@@ -2,9 +2,10 @@
 node_modules/
 .pnpm-store/
 
-# Upstream-copied packages (kept local, do not commit)
-packages/elements-react/
-packages/lib-react/
+# Upstream-copied packages are now committed to simplify bootstrap
+# (Previously kept local, but this caused chicken-and-egg install problems)
+# packages/elements-react/
+# packages/lib-react/
 
 # Local caches / tooling artifacts
 .cache/
@@ -57,4 +58,8 @@ yarn-error.log*
 # ESM compatibility analysis (generated locally)
 esm-compatible-elements.json
 /.compatibility
+
+# Demo app - generated files (regenerated on upstream:sync)
 apps/element-demo/src/lib/element-imports.ts
+apps/element-demo/src/lib/elements/registry.ts
+apps/element-demo/src/lib/data/sample-configs/

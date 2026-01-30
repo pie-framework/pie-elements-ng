@@ -1,0 +1,61 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/graphing/src/tools/index.js
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import { tool as point } from './point';
+import { tool as circle } from './circle';
+import { tool as polygon } from './polygon';
+import { tool as sine } from './sine';
+import { tool as parabola } from './parabola';
+import { tool as line } from './line';
+import { tool as segment } from './segment';
+import { tool as ray } from './ray';
+import { tool as vector } from './vector';
+import { tool as absolute } from './absolute';
+import { tool as exponential } from './exponential';
+
+const allTools = [
+  'circle',
+  'line',
+  'label',
+  'parabola',
+  'point',
+  'polygon',
+  'ray',
+  'segment',
+  'sine',
+  'vector',
+  'absolute',
+  'exponential',
+];
+
+// need this because now we should treat label as other tools PD-3736
+const labelTool = {
+  type: 'label',
+};
+
+const toolsArr = [
+  circle(),
+  line(),
+  parabola(),
+  point(),
+  polygon(),
+  ray(),
+  segment(),
+  sine(),
+  vector(),
+  absolute(),
+  exponential(),
+  labelTool,
+];
+
+export { allTools, toolsArr, circle, line, point, parabola, polygon, ray, sine, vector, absolute, exponential };

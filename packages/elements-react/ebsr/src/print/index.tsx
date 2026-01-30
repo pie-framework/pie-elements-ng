@@ -1,0 +1,217 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/ebsr/src/print.js
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import { cloneDeep } from 'lodash-es';
+import MultipleChoice from '@pie-element/multiple-choice';
+import debug from 'debug';
+import { get } from 'lodash-es';
+import { SessionChangedEvent } from '@pie-element/shared-player-events';
+const MC_TAG_NAME = 'ebsr-multiple-choice';
+const SESSION_CHANGED = SessionChangedEvent.TYPE;
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
+
+const log = debug('pie-element:ebsr:print');
+
+/**
+ * Live in same package as main element - so we can access some of the shared comps!
+ *
+ * - update pslb to build print if src/print.js is there
+ * - update demo el
+ * - get configure/controller building
+ */
+
+const preparePrintModel = (model, opts) => {
+  const instr = opts.role === 'instructor';
+
+  model.prompt = model.promptEnabled !== false ? model.prompt : undefined;
+  model.teacherInstructions =
+    instr && model.teacherInstructionsEnabled !== false ? model.teacherInstructions : undefined;
+  model.showTeacherInstructions = instr;
+  model.alwaysShowCorrect = instr;
+  model.mode = instr ? 'evaluate' : 'gather';
+
+  model.disabled = true;
+  model.animationsDisabled = true;
+  model.lockChoiceOrder = true;
+  model.choicesLayout = model.choicesLayout || 'vertical';
+
+  const choices = cloneDeep(model.choices);
+
+  model.choices = choices.map((c) => {
+    c.rationale = instr && model.rationaleEnabled !== false ? c.rationale : undefined;
+    c.hideTick = instr;
+    c.feedback = undefined;
+    return c;
+  });
+
+  model.keyMode = model.choicePrefix || 'letters';
+
+  return model;
+};
+
+class EbsrMC extends MultipleChoice {}
+
+const defineMultipleChoice = () => {
+  if (!customElements.get(MC_TAG_NAME)) {
+    customElements.define(MC_TAG_NAME, EbsrMC);
+  }
+};
+
+defineMultipleChoice();
+
+const isNonEmptyArray = (a) => Array.isArray(a) && a.length > 0;
+
+export const isSessionComplete = (session) => {
+  const a = get(session, 'value.partA.value');
+  const b = get(session, 'value.partB.value');
+
+  return isNonEmptyArray(a) && isNonEmptyArray(b);
+};
+
+export default class Ebsr extends HTMLElement {
+  constructor() {
+    super();
+    this._model = {};
+    this._session = {};
+    this._options = null;
+  }
+
+  onSessionUpdated: any = (e) => {
+    if (e.target === this) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    const id = e.target.getAttribute('id');
+
+    if (id) {
+      const key = `part${id.toUpperCase()}`;
+
+      if (e.update) {
+        this._model[key] = e.update;
+      }
+      //TODO: accessing a private property here. The session event should contain the update in future to prevent this.
+      this.dispatchSessionChanged(e.srcElement._session, key);
+    }
+  };
+
+  set model(m) {
+    this._model = m;
+
+    customElements.whenDefined(MC_TAG_NAME).then(() => {
+      this.setPartModel(this.partA, 'partA');
+      this.setPartModel(this.partB, 'partB');
+    });
+  }
+
+  set session(s) {
+    this._session = s;
+
+    customElements.whenDefined(MC_TAG_NAME).then(() => {
+      this.setPartSession(this.partA, 'partA');
+      this.setPartSession(this.partB, 'partB');
+    });
+  }
+
+  setPartModel(part, key) {
+    if (this._model && this._model[key] && part) {
+      let labels = {
+        'partA': undefined,
+        'partB': undefined
+      };
+
+      if (this._model.partLabels) {
+        const language = this._model.language;
+
+        labels = {
+          'partA': translator.t('ebsr.part', {
+            lng: language,
+            index: this._model.partLabelType === 'Letters' ? 'A' : '1'
+          }),
+          'partB': translator.t('ebsr.part', {
+            lng: language,
+            index: this._model.partLabelType === 'Letters' ? 'B' : '2'
+          })
+        };
+      }
+
+      part.model = {
+        ...preparePrintModel(this._model[key], this._options),
+        keyMode: this._model[key].choicePrefix,
+        partLabel: labels[key]
+      };
+
+      // pass options to enable print mode detection in multiple-choice component
+      part.options = this._options;
+
+      if (!part._session) {
+        // for print, "set session" is not called,
+        // but ebsr needs sessions in order to render the elements,
+        // so we set it here it was not set already
+        part.session = {};
+      }
+    }
+  }
+
+  set options(o) {
+    this._options = o;
+  }
+
+  setPartSession(part, key) {
+    if (this._session && this._model && part) {
+      const { value } = this._session;
+      part.session = value && value[key] ? value[key] : { id: key };
+    }
+  }
+
+  dispatchSessionChanged(partSession, key) {
+    this._session.value = {
+      ...this._session.value,
+      [key]: partSession,
+    };
+
+    log('[onSessionChanged] session: ', this._session);
+    const complete = isSessionComplete(this._session);
+    this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), complete));
+  }
+
+  get partA() {
+    return this.querySelector(`${MC_TAG_NAME}#a`);
+  }
+
+  get partB() {
+    return this.querySelector(`${MC_TAG_NAME}#b`);
+  }
+
+  connectedCallback() {
+    this._render();
+    this.addEventListener(SESSION_CHANGED, this.onSessionUpdated);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener(SESSION_CHANGED, this.onSessionUpdated);
+  }
+
+  _render() {
+    this.innerHTML = `
+      <div>
+        <${MC_TAG_NAME} id="a"></${MC_TAG_NAME}>
+        <${MC_TAG_NAME} id="b"></${MC_TAG_NAME}>
+      </div>
+    `;
+  }
+}

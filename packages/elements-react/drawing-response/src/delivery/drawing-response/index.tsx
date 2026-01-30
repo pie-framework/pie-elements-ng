@@ -1,0 +1,105 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/drawing-response/src/drawing-response/index.jsx
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { color, Collapsible, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
+import { styled } from '@mui/material/styles';
+
+import Container from './container';
+
+const StyledUiLayout: any = styled(UiLayout)({
+  color: color.text(),
+  backgroundColor: color.background(),
+});
+
+const StyledCollapsible: any = styled(Collapsible)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+}));
+
+const ErrorDiv: any = styled('div')({
+  color: color.text(),
+  backgroundColor: color.background(),
+});
+
+class DrawingResponseComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showCorrect: false,
+      hasError: false,
+    };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, errorMessage: error.message };
+  }
+
+  render() {
+    const {
+      model: {
+        extraCSSRules,
+        disabled,
+        imageDimensions,
+        imageUrl,
+        prompt,
+        mode,
+        teacherInstructions,
+        backgroundImageEnabled,
+        language,
+      },
+      session,
+      onSessionChange,
+    } = this.props;
+    const { hasError, errorMessage } = this.state;
+    const isEvaluateMode = mode === 'evaluate';
+
+    return hasError ? (
+      <ErrorDiv>An error occured: {errorMessage}</ErrorDiv>
+    ) : (
+      <StyledUiLayout extraCSSRules={extraCSSRules}>
+        {teacherInstructions && (
+          <StyledCollapsible
+            labels={{
+              hidden: 'Show Teacher Instructions',
+              visible: 'Hide Teacher Instructions',
+            }}
+          >
+            <PreviewPrompt prompt={teacherInstructions} />
+          </StyledCollapsible>
+        )}
+
+        {prompt && <PreviewPrompt tagName="span" prompt={prompt} />}
+
+        <Container
+          session={session}
+          onSessionChange={onSessionChange}
+          isEvaluateMode={isEvaluateMode}
+          imageDimensions={imageDimensions}
+          imageUrl={imageUrl}
+          backgroundImageEnabled={backgroundImageEnabled}
+          disabled={disabled}
+          language={language}
+        />
+      </StyledUiLayout>
+    );
+  }
+}
+
+DrawingResponseComponent.propTypes = {
+  model: PropTypes.object.isRequired,
+  onSessionChange: PropTypes.func.isRequired,
+  session: PropTypes.object.isRequired,
+};
+
+export default DrawingResponseComponent;

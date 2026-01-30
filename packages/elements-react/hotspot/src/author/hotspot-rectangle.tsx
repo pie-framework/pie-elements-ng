@@ -1,0 +1,181 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/hotspot/configure/src/hotspot-rectangle.jsx
+ * @synced-commit 2a252291609481706fda098983c2973ccff27c81
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Rect, Group, Transformer } from 'react-konva';
+import DeleteWidget from './DeleteWidget';
+
+class RectComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      hovered: false,
+      isDragging: false,
+    };
+    this.shapeRef = React.createRef();
+    this.trRef = React.createRef();
+  }
+
+  handleClick: any = (e) => {
+    const { width, height, isDrawing, onClick, id } = this.props;
+    if (width < 0 && height < 0 && isDrawing) {
+      return;
+    }
+    e.cancelBubble = true;
+    onClick(id);
+  };
+
+  handleMouseEnter: any = () => {
+    document.body.style.cursor = 'pointer';
+    this.setState({ hovered: true });
+    this.trRef.current.setNode(this.shapeRef.current);
+    this.trRef.current.getLayer().batchDraw();
+  };
+
+  handleMouseLeave: any = () => {
+    this.setState({ hovered: false });
+    document.body.style.cursor = 'default';
+  };
+
+  handleOnDragEnd: any = (e) => {
+    const { onDragEnd, id } = this.props;
+    this.setState({ isDragging: false });
+    onDragEnd(id, {
+      x: e.target.x(),
+      y: e.target.y(),
+    });
+  };
+
+  onResizeEnd: any = () => {
+    const { onDragEnd, id } = this.props;
+    // transformer is changing scale of the node
+    // and NOT its width or height
+    // but in the store we have only width and height
+    // to match the data better we will reset scale on transform end
+    const node = this.shapeRef.current;
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+
+    // we will reset it back
+    node.scaleX(1);
+    node.scaleY(1);
+    this.setState({ isDragging: false });
+    onDragEnd(id, {
+      x: node.x(),
+      y: node.y(),
+      // set minimal value
+      width: Math.max(5, node.width() * scaleX),
+      height: Math.max(node.height() * scaleY),
+    });
+  };
+
+  handleDelete: any = (id) => {
+    const { onDeleteShape } = this.props;
+    onDeleteShape(id);
+  };
+
+  render() {
+    const {
+      correct,
+      height,
+      hotspotColor,
+      id,
+      outlineColor,
+      width,
+      x,
+      y,
+      strokeWidth = 5,
+      selectedHotspotColor,
+      hoverOutlineColor,
+    } = this.props;
+
+    const { hovered } = this.state;
+
+    return (
+      <Group onMouseLeave={this.handleMouseLeave} onMouseEnter={this.handleMouseEnter} padding={12}>
+        {hoverOutlineColor && hovered && (
+          <Rect
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            stroke={hoverOutlineColor}
+            strokeWidth={2}
+            listening={false}
+          />
+        )}
+
+        <Rect
+          ref={this.shapeRef}
+          width={width}
+          height={height}
+          fill={correct && selectedHotspotColor ? selectedHotspotColor : hotspotColor}
+          onClick={this.handleClick}
+          onTap={this.handleClick}
+          draggable
+          stroke={hovered ? 'transparent' : outlineColor}
+          strokeWidth={correct && !hovered ? strokeWidth : 0}
+          onDragStart={() => this.setState({ isDragging: true })}
+          onDragEnd={this.handleOnDragEnd}
+          onTransformStart={() => this.setState({ isDragging: true })}
+          onTransformEnd={this.onResizeEnd}
+          x={x}
+          y={y}
+          opacity={0.5}
+          cursor="pointer"
+        />
+        {!this.state.isDragging && this.state.hovered && (
+          <DeleteWidget id={id} height={height} width={width} x={x} y={y} handleWidgetClick={this.handleDelete} />
+        )}
+        {this.state.hovered && (
+          <Transformer
+            ref={this.trRef}
+            rotateEnabled={false}
+            boundBoxFunc={(oldBox, newBox) => {
+              // limit resize
+              if (newBox.width < 10 || newBox.height < 10) {
+                return oldBox;
+              }
+              return newBox;
+            }}
+          />
+        )}
+      </Group>
+    );
+  }
+}
+
+RectComponent.propTypes = {
+  correct: PropTypes.bool,
+  isDrawing: PropTypes.bool.isRequired,
+  id: PropTypes.string.isRequired,
+  height: PropTypes.number.isRequired,
+  hotspotColor: PropTypes.string.isRequired,
+  selectedHotspotColor: PropTypes.string,
+  hoverOutlineColor: PropTypes.string,
+  onClick: PropTypes.func.isRequired,
+  onDeleteShape: PropTypes.func.isRequired,
+  onDragEnd: PropTypes.func.isRequired,
+  outlineColor: PropTypes.string.isRequired,
+  width: PropTypes.number.isRequired,
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
+  strokeWidth: PropTypes.number,
+};
+
+RectComponent.defaultProps = {
+  correct: false,
+};
+
+export default RectComponent;

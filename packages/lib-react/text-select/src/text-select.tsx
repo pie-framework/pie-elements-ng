@@ -1,0 +1,92 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/text-select/src/text-select.jsx
+ * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
+ * @synced-date 2026-01-30
+ * @sync-version v3
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+
+import TokenSelect from './token-select';
+import { normalize } from './tokenizer/builder';
+import { TokenTypes } from './token-select/token';
+import debug from 'debug';
+
+const log = debug('@pie-lib:text-select');
+/**
+ * Built on TokenSelect uses build.normalize to build the token set.
+ */
+export default class TextSelect extends React.Component {
+  static propTypes = {
+    onChange: PropTypes.func,
+    disabled: PropTypes.bool,
+    tokens: PropTypes.arrayOf(PropTypes.shape(TokenTypes)).isRequired,
+    selectedTokens: PropTypes.arrayOf(PropTypes.shape(TokenTypes)).isRequired,
+    text: PropTypes.string.isRequired,
+    className: PropTypes.string,
+    highlightChoices: PropTypes.bool,
+    animationsDisabled: PropTypes.bool,
+    maxNoOfSelections: PropTypes.number,
+  };
+
+  change: any = (tokens) => {
+    const { onChange } = this.props;
+
+    if (!onChange) {
+      return;
+    }
+    const out = tokens.filter((t) => t.selected).map((t) => ({ start: t.start, end: t.end }));
+
+    onChange(out);
+  };
+
+  render() {
+    const {
+      text,
+      disabled,
+      tokens,
+      selectedTokens,
+      className,
+      highlightChoices,
+      maxNoOfSelections,
+      animationsDisabled,
+    } = this.props;
+
+    const normalized = normalize(text, tokens);
+    log('normalized: ', normalized);
+    const prepped = normalized.map((t) => {
+      const selectedIndex = selectedTokens.findIndex((s) => {
+        return s.start === t.start && s.end === t.end;
+      });
+      const selected = selectedIndex !== -1;
+      const correct = selected ? t.correct : undefined;
+      const isMissing = t.isMissing;
+      return {
+        ...t,
+        selectable: !disabled && t.predefined,
+        selected,
+        correct,
+        isMissing,
+      };
+    });
+
+    return (
+      <TokenSelect
+        highlightChoices={!disabled && highlightChoices}
+        className={className}
+        tokens={prepped}
+        disabled={disabled}
+        onChange={this.change}
+        maxNoOfSelections={maxNoOfSelections}
+        animationsDisabled={animationsDisabled}
+      />
+    );
+  }
+}
