@@ -67,12 +67,30 @@ export default defineConfig({
           id === 'lodash' ||
           /^lodash\//.test(id) ||
           /^styled-components/.test(id) ||
-          id === 'konva' || /^konva\//.test(id) ||
-          id === 'react-konva' || /^react-konva\//.test(id) ||
+          id === 'konva' ||
+          /^konva\//.test(id) ||
+          id === 'react-konva' ||
+          /^react-konva\//.test(id) ||
           /^@dnd-kit\//.test(id) ||
-          id === '@mdi/react' || /^@mdi\/react\//.test(id) ||
-          id === '@mdi/js' || /^@mdi\/js\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)
+          id === '@mdi/react' ||
+          /^@mdi\/react\//.test(id) ||
+          id === '@mdi/js' ||
+          /^@mdi\/js\//.test(id) ||
+          [
+            'prop-types',
+            'classnames',
+            'debug',
+            'i18next',
+            'humps',
+            'mathjs',
+            'react-jss',
+            'js-combinatorics',
+            '@mapbox/point-geometry',
+            'react-transition-group',
+            'nested-property',
+            'pluralize',
+            'decimal.js',
+          ].includes(id)
         );
       },
     },
