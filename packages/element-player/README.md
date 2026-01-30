@@ -2,6 +2,32 @@
 
 Self-contained web components for rendering PIE elements, following the same architecture as `@pie-framework/pie-players`.
 
+---
+
+## ⚠️ IMPORTANT: NOT FOR PUBLISHING
+
+**This package is currently marked as `private` and should NOT be published to npm.**
+
+### Build Issue
+
+The package has a dependency resolution issue that prevents it from building as a standalone library:
+
+- [element-loader.ts](src/lib/element-loader.ts) imports `$lib/element-imports` for local development mode
+- This import only exists in the element-demo app, not in this package
+- The import is marked as external in the build config as a workaround
+- For production use, this architecture needs to be refactored
+
+**Before publishing this package**, the following must be resolved:
+
+1. Refactor the element-loader to not depend on app-specific imports
+2. Either remove local development mode from the library OR provide a proper abstraction
+3. Ensure the build completes successfully without external dependencies on non-existent modules
+4. Remove the `"private": true` field from package.json
+
+**Issue tracked in**: Build fails with "Rollup failed to resolve import '$lib/element-imports'"
+
+---
+
 ## Overview
 
 The element player is a **standalone web component bundle** (`pie-element-player.js`) that can be dropped into any HTML page with a simple `<script>` tag. It loads PIE elements via dynamic ESM imports.

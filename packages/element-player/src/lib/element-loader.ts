@@ -42,6 +42,7 @@ export async function loadElement(
       if (!staticImports) {
         try {
           // This dynamic import is OK because it's a constant string
+          // @ts-expect-error - This module only exists in element-demo app, not in this library
           staticImports = await import('$lib/element-imports');
         } catch (e) {
           console.warn('[element-loader] Static imports module not found, trying direct import');
@@ -117,6 +118,7 @@ export async function loadController(
       // Lazy load the static imports module if not already loaded
       if (!staticImports) {
         try {
+          // @ts-expect-error - This module only exists in element-demo app, not in this library
           staticImports = await import('$lib/element-imports');
         } catch (e) {
           console.warn('[element-loader] Static imports module not found, trying direct import');

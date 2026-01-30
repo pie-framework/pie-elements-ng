@@ -1,6 +1,7 @@
 {
   "name": "@pie-element/element-player",
   "version": "0.1.0",
+  "private": true,
   "description": "Shared PIE element player web component",
   "type": "module",
   "main": "./dist/pie-element-player.js",

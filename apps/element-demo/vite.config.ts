@@ -47,4 +47,34 @@ export default defineConfig({
     // Note: Not excluding workspace packages to prevent issues
     // exclude: ['@pie-element/*', '@pie-lib/*'],
   },
+
+  build: {
+    rollupOptions: {
+      external: (id) => {
+        // Mark common dependencies that React elements mark as external
+        // These match the external configuration in element vite configs
+        // to prevent "failed to resolve import" errors during build
+        return (
+          /^react($|\/)/.test(id) ||
+          /^react-dom($|\/)/.test(id) ||
+          /^@pie-lib\//.test(id) ||
+          /^@pie-element\//.test(id) ||
+          /^@pie-framework\//.test(id) ||
+          /^@mui\//.test(id) ||
+          /^@emotion\//.test(id) ||
+          /^d3-/.test(id) ||
+          /^@testing-library\//.test(id) ||
+          id === 'lodash' ||
+          /^lodash\//.test(id) ||
+          /^styled-components/.test(id) ||
+          id === 'konva' || /^konva\//.test(id) ||
+          id === 'react-konva' || /^react-konva\//.test(id) ||
+          /^@dnd-kit\//.test(id) ||
+          id === '@mdi/react' || /^@mdi\/react\//.test(id) ||
+          id === '@mdi/js' || /^@mdi\/js\//.test(id) ||
+          ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)
+        );
+      },
+    },
+  },
 });

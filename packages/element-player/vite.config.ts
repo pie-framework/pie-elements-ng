@@ -22,6 +22,11 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
+      external: [
+        // Mark app-specific imports as external to prevent build errors
+        // This import only exists in element-demo app, not in this library
+        '$lib/element-imports',
+      ],
       output: {
         // Enable code splitting for lazy-loaded math renderers
         inlineDynamicImports: false,
