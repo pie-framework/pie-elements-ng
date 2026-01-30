@@ -2,124 +2,298 @@
 
 ## Overview
 
-This is a modern implementation of the PIE (Platform Independent Elements) specification, built with Svelte 5, TypeScript, and contemporary tooling. This document describes the architectural decisions, patterns, and structure of the project.
+This is a modern implementation of the PIE (Platform Independent Elements) specification, built with TypeScript, ESM, and contemporary tooling. The project currently syncs React-based elements from the upstream [pie-elements](https://github.com/PieLabs/pie-elements) repository while providing modern ESM packaging, Vite builds, and improved developer experience. Future plans include native Svelte 5 implementations for smaller bundle sizes and better performance.
 
 ## Core Philosophy
 
-### Unified Component Architecture
+### Why This New Project?
 
-**Unlike the original pie-elements**, this project uses a **unified component architecture** where each element is a single component that handles all modes:
+This is a **completely new project**, not a refactor of the original pie-elements. The legacy pie-elements project remains available for backwards compatibility, while this project provides a modern foundation for future development.
+
+**Key reasons for a new project:**
+
+- **Backwards compatibility**: Legacy consumers can continue using pie-elements without disruption
+- **ESM enablement**: The PIE team's work on library updates (React, MUI) and migration from Slate to Tiptap now allows full ESM adoption
+- **Modern tooling**: Clean slate enables use of Vite, Bun, and contemporary build tools
+- **Unified player architecture**: ESM makes it possible to have a single player for all views (delivery, authoring, print)
+
+### Legacy vs Modern: Key Architectural Differences
+
+![Legacy vs Modern: Key Architectural Differences](img/unified-architecture-comparison-1-1769801122632.jpg)
+
+This project differs fundamentally from the legacy pie-elements in eight key ways:
+
+1. **Framework Flexibility**: Legacy was React-only; this project is framework-agnostic via web components
+2. **Module System**: CommonJS → ESM-first with browser-managed dependencies
+3. **Build Tooling**: Bespoke tools (webpack, pie-shared-lib-builder) → Standard tools (Vite, Bun, Turbo)
+4. **Bundle Strategy**: IIFE with all dependencies → ESM with on-demand loading
+5. **Player Architecture**: Separate players per view → Unified player for all views
+6. **Directory Organization**: Asymmetric structure → Symmetric peer folders
+7. **CI/CD**: CircleCI → GitHub Actions
+8. **Monorepo**: pie-lib was separate → now integrated in packages/lib-react/
+
+## What Makes This Project Different
+
+### 1. Framework Flexibility via Web Components
+
+**Legacy approach**: React-only implementation. Every element, controller, and UI component was tightly coupled to React.
+
+**Modern approach**: Framework-agnostic via web components and the PIE controller interface.
+
+- **Controllers** are pure TypeScript business logic (completely framework-independent)
+- **UI implementations** can use any framework (React, Svelte, Vue, Angular) as long as they produce web components
+- **Element Player** loads elements via custom element registry, regardless of underlying framework
+- **Coexistence**: React and Svelte elements work side-by-side in the same application
+
+This flexibility allows choosing the right framework for each use case (e.g., Svelte for smaller bundles, React for ecosystem compatibility).
+
+### 2. ESM-First Build System
+
+**Legacy approach**: CommonJS modules with webpack and pie-shared-lib-builder creating IIFE bundles that include ALL dependencies.
+
+**Modern approach**: ESM-only with modern build tools.
+
+- Every package has `"type": "module"` in package.json
+- Vite for fast builds with Hot Module Replacement (HMR)
+- Bun as package manager (3-5x faster than npm)
+- Turbo for monorepo orchestration with intelligent caching
+- **External dependencies**: Not bundled, loaded by browser on-demand
+
+**Benefits of ESM**:
+
+- Better browser caching (shared dependencies across elements)
+- Smaller initial bundle sizes (tree-shaking)
+- Faster development (native ESM in browsers, instant HMR)
+- Standards-based (no custom module system)
+
+This was enabled by the PIE team's work on upstream library updates (React 18, MUI 7, Tiptap editor).
+
+### 3. Unified Player Architecture (Enabled by ESM)
+
+**Legacy approach**: Separate players for different views:
+
+- One player for delivery (student/teacher interaction)
+- Separate authoring interface
+- Separate package for print views
+
+**Modern approach**: Single unified player handles ALL views.
+
+![Unified Player: One Player, All Views, Any Framework](img/unified-player-architecture-1-1769801208629.jpg)
+
+The element player can render:
+
+- `delivery/` - Student and teacher interaction (gather, view, evaluate modes)
+- `author/` - Configuration interface (formerly "configure")
+- `print/` - Print-friendly rendering
+- Future: `listview/` or other views as they're added
+
+**Why ESM enables this**: Because dependencies are loaded on-demand by the browser, we don't need to create separate bundles for each view. The unified player loads only what it needs for the current view, making bundle size management unnecessary.
+
+### 4. Symmetric Directory Organization
+
+**Legacy approach**: Asymmetric structure
+
+- Root of package = student view
+- `config/` directory for authoring
+- Print was a separate package
+
+**Modern approach**: Symmetric peer folders at `src/` level
 
 ```
-Original pie-elements:          This project:
-┌─────────────────────┐        ┌──────────────────────┐
-│ @pie-element/X      │        │ @pie-element/X       │
-│ @pie-element/X-     │   →    │  - student/          │
-│   configure         │        │  - authoring/        │
-│ @pie-element/X-     │        │  - controller/       │
-│   controller        │        │  - Single package    │
-└─────────────────────┘        └──────────────────────┘
-  (3 packages)                    (1 self-contained pkg)
+src/
+├── delivery/     # Student/teacher interaction
+├── author/       # Configuration interface
+├── controller/   # Business logic
+└── print/        # Print view (optional)
 ```
 
-### Key Differences from Original
+**Benefits**:
 
-| Aspect | Original pie-elements | This Project |
-|--------|----------------------|--------------|
-| **Framework** | React | Svelte 5 (primary) + React |
-| **Language** | JavaScript | TypeScript |
-| **Package Manager** | npm/yarn | Bun |
-| **Build Tool** | Webpack/Rollup | Vite |
-| **Monorepo** | Lerna | Turbo |
-| **Testing** | Jest | Vitest + Playwright |
-| **Components per Element** | 3 packages | 1 package |
-| **Mode Switching** | Separate components | Single component with props |
+- Clear separation of concerns
+- Each view is a peer (no implicit hierarchy)
+- Easy to add new views (`listview/`, `mini/`, etc.) as additional peers
+- Predictable package structure across all elements
+
+### 5. Modern Standard Tooling
+
+**Legacy approach**: Bespoke tooling
+
+- Custom `pie-cli` for element management
+- `pie-shared-lib-builder` for webpack configuration
+- Custom build scripts and conventions
+
+**Modern approach**: Standard, widely-adopted tools
+
+- **Vite**: Industry-standard build tool with excellent ESM support
+- **Bun**: Modern package manager and runtime
+- **Turbo**: Proven monorepo orchestration
+- **TypeScript**: First-class throughout
+- **Biome**: Modern linting and formatting
+- Project CLI only for upstream sync operations (not build tooling)
+
+**Developer experience benefits**:
+
+- Extensive documentation and community support
+- IDE integration works out of the box
+- Fewer bespoke concepts to learn
+- Can leverage ecosystem tooling (plugins, extensions)
+
+### 6. Consolidated Demo System
+
+**Legacy approach**: Either separate demos per element or manual setup required.
+
+**Modern approach**: Single unified demo app (`apps/element-demo`) built with SvelteKit.
+
+- **Framework-agnostic**: Demos elements built with ANY framework (React, Svelte, future Vue/Angular)
+- **Auto-discovery**: Generates element registry and imports automatically
+- **Modern UI**: Vite-based with live editing and HMR
+- **Internal dev tool**: Not published, purely for development
+
+The demo system works by dynamically loading elements via the unified player, regardless of their underlying framework implementation.
+
+### 7. Monorepo with pie-lib Integration
+
+**Legacy approach**:
+
+- `pie-lib` was a separate repository
+- Required coordinating releases across repos
+- Version drift between pie-elements and pie-lib
+
+**Modern approach**:
+
+- `@pie-lib/*` packages pulled into monorepo under `packages/lib-react/`
+- Single source of truth for all PIE code
+- Workspace references (`"workspace:*"`) ensure consistency
+- **Versioning**: Independent versioning with Changesets
+  - Elements evolve at different rates
+  - Core packages can maintain stable APIs
+  - Synced elements updated independently as upstream changes
+
+### 8. GitHub Actions CI/CD
+
+**Legacy approach**: CircleCI for continuous integration and deployment.
+
+**Modern approach**: GitHub Actions for all CI/CD workflows.
+
+- **Integration**: Native GitHub integration (no external service)
+- **Transparency**: Workflows visible in repository
+- **Ecosystem**: Can use marketplace actions
+- **Modern**: Industry-standard CI/CD platform
+
+## Upstream Sync Strategy
+
+This project maintains compatibility with the existing PIE ecosystem by syncing element implementations from upstream repositories.
+
+### Source Repositories
+
+- **[pie-elements](https://github.com/PieLabs/pie-elements)** → `packages/elements-react/`
+  - 50+ production-tested React element implementations
+  - Controllers (business logic)
+  - UI components (delivery, authoring, print modes)
+
+- **[pie-lib](https://github.com/PieLabs/pie-lib)** → `packages/lib-react/`
+  - Shared UI libraries (config-ui, render-ui, etc.)
+  - In some cases, we have full replacements for legacy pie-lib packages
+
+### Why Sync?
+
+1. **Leverage existing work** - Reuse 50+ production-tested elements
+2. **Maintain compatibility** - Ensure consistency with existing PIE consumers
+3. **Modernize existing code** - Transform to ESM, TypeScript, and modern tooling
+4. **Stable baseline** - Synced React elements provide production-ready implementations
+
+### How Syncing Works
+
+The CLI tool (`tools/cli`) handles synchronization:
+
+```bash
+bun cli upstream:sync
+```
+
+**Process:**
+
+1. **Analyze** - Scan upstream packages for ESM compatibility
+2. **Copy** - Extract controller and UI code from upstream
+3. **Transform** - Convert to modern format:
+   - `.js` → `.ts` conversions
+   - `.jsx` → `.tsx` conversions
+   - Import rewrites (`lodash` → `lodash-es`, package path updates)
+   - Inline constants and utilities
+4. **Generate** - Create ESM-compatible configs:
+   - `package.json` with proper exports
+   - `vite.config.ts` for builds
+   - `tsconfig.json` for TypeScript
+5. **Commit** - Transformed source is committed to this repo
+
+**What Gets Committed:**
+
+- Transformed source files (`src/`) - ~1000 files
+- Generated configs (`package.json`, `vite.config.ts`)
+- Demo configs (`docs/demo/config.mjs`)
+
+**What's Gitignored:**
+
+- Build artifacts (`dist/`, `node_modules/`)
+- Generated demo metadata (has timestamps, machine-specific paths)
+
+See [UPSTREAM_SYNC_COMMIT_GUIDE.md](../UPSTREAM_SYNC_COMMIT_GUIDE.md) for details.
+
+### Current State & Future
+
+**Upstream sync is complete** - the React elements and libraries we have today are the stable baseline. Any future element implementations (Svelte, Angular, Vue, etc.) will be developed **natively in this repository**, not synced from upstream.
+
+**Framework Flexibility:**
+
+![Upstream Sync Strategy](img/upstream-sync-strategy-1-1769797885690.jpg)
+
+Multiple framework implementations can coexist. Consumers choose based on their needs.
 
 ## High-Level Architecture
 
-```
-┌───────────────────────────────────────────────────────────┐
-│                    PIE Elements                            │
-├───────────────────────────────────────────────────────────┤
-│                                                            │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │            Examples Apps (SvelteKit)               │  │
-│  │  - Demo/development interface                      │  │
-│  │  - Visual testing playground                       │  │
-│  │  - E2E test targets                                │  │
-│  └─────────────┬──────────────────────────────────────┘  │
-│                │                                           │
-│  ┌─────────────▼──────────────────────────────────────┐  │
-│  │                 Element Layer                       │  │
-│  │  ┌──────────────────────────────────────────────┐  │  │
-│  │  │  Svelte Elements (elements-svelte/)          │  │  │
-│  │  │  - Native Svelte 5 implementations           │  │  │
-│  │  │  - Mode-aware components                     │  │  │
-│  │  └──────────────────────────────────────────────┘  │  │
-│  │  ┌──────────────────────────────────────────────┐  │  │
-│  │  │  React Elements (elements-react/)            │  │  │
-│  │  │  - React implementations (ported)            │  │  │
-│  │  │  - Compatible with existing consumers        │  │  │
-│  │  └──────────────────────────────────────────────┘  │  │
-│  └─────────────┬──────────────────────────────────────┘  │
-│                │                                           │
-│  ┌─────────────▼──────────────────────────────────────┐  │
-│  │              Library Layer                          │  │
-│  │  ┌──────────────────────────────────────────────┐  │  │
-│  │  │  UI Libraries (lib-svelte/, lib-react/)      │  │  │
-│  │  │  - Shared components (Prompt, Feedback, etc) │  │  │
-│  │  │  - Rich text editor (TipTap)                 │  │  │
-│  │  │  - Math rendering (KaTeX, MathLive)          │  │  │
-│  │  └──────────────────────────────────────────────┘  │  │
-│  │  ┌──────────────────────────────────────────────┐  │  │
-│  │  │  Shared Utilities (shared/)                  │  │  │
-│  │  │  - Types and interfaces                      │  │  │
-│  │  │  - Common utilities                          │  │  │
-│  │  └──────────────────────────────────────────────┘  │  │
-│  └─────────────┬──────────────────────────────────────┘  │
-│                │                                           │
-│  ┌─────────────▼──────────────────────────────────────┐  │
-│  │              Core Layer                             │  │
-│  │  - PIE specification interfaces                     │  │
-│  │  - PieModel, PieController, PieEnvironment         │  │
-│  │  - Framework-agnostic contracts                     │  │
-│  └─────────────────────────────────────────────────────┘  │
-│                                                            │
-└───────────────────────────────────────────────────────────┘
-```
+![High-Level Architecture: Multi-Framework Coexistence](img/high-level-arch-unified-1-1769801167302.jpg)
+
+The architecture consists of three main layers:
+
+**Application Layer**: A single unified demo app (`apps/element-demo`) built with SvelteKit that can demonstrate ALL elements regardless of their underlying framework. This is an internal development tool, not published to npm.
+
+**Element Layer**: Elements can be implemented in any framework (currently React and Svelte), as long as they export web components and implement the PIE controller interface. The unified Element Player can load elements from any framework implementation.
+
+**Foundation Layer**: Shared libraries (`@pie-lib/*` in `packages/lib-react/`), core PIE interfaces (`packages/core`), and framework-specific utilities coexist to support element development.
 
 ## Package Structure
+
+### Repository Organization
+
+![Package Structure](img/package-structure-1-1769797957965.jpg)
+
+**Key organizational decisions**:
+
+- **@pie-lib integration**: The `@pie-lib/*` packages (formerly a separate repository) are now in `packages/lib-react/` for better version management and coordination
+- **Versioning**: Independent versioning using Changesets. Most synced packages are marked private; core packages like `@pie-element/core` are publishable
+- **Workspaces**: Bun workspaces with `"workspace:*"` references ensure consistency across the monorepo
 
 ### Element Package Anatomy
 
 Each element follows a consistent, symmetric structure where student UI, authoring UI, and business logic are peer folders at the same level:
 
-```
-packages/elements-react/multiple-choice/
-├── src/
-│   ├── delivery/                # Delivery interaction mode
-│   │   ├── index.tsx          # Main student component
-│   │   ├── multiple-choice.tsx
-│   │   ├── choice.tsx
-│   │   ├── choice-input.tsx
-│   │   └── session-updater.ts
-│   ├── authoring/              # Authoring/configuration mode
-│   │   ├── index.ts           # Main authoring component
-│   │   └── main.tsx
-│   ├── controller/             # Business logic (framework-agnostic)
-│   │   ├── index.ts           # PIE controller implementation
-│   │   ├── defaults.ts        # Default model configuration
-│   │   └── utils.ts           # Helper utilities
-│   ├── index.ts               # HTML Custom Element wrapper
-│   └── types.ts               # Shared types
-├── tests/                      # E2E tests (optional)
-│   └── multiple-choice.spec.ts
-├── package.json
-├── vite.config.ts
-└── README.md
-```
+![Element Package Anatomy](img/element-package-anatomy-1-1769797993611.jpg)
 
-**Note**: The Svelte elements follow a similar structure but with `.svelte` files instead of `.tsx` files. Future modes like `print/`, `mini/`, or `listview/` can be added as additional peer folders.
+**Symmetric peer organization** (contrast with legacy):
+
+**Legacy structure** (asymmetric):
+
+- Root of package = student view
+- `config/` directory for authoring
+- Print was a separate package
+
+**Modern structure** (symmetric):
+
+- `src/delivery/` - student/teacher interaction
+- `src/author/` - configuration interface
+- `src/controller/` - business logic
+- `src/print/` - print view (optional)
+
+Future views like `mini/`, `listview/`, or others can be added as additional peer folders. This symmetric organization makes the package structure predictable and enables the unified player to load any view on demand.
 
 ### Separation of Concerns
 
@@ -130,6 +304,7 @@ packages/elements-react/multiple-choice/
 **Responsibility**: Framework-agnostic business logic
 
 **Key Functions**:
+
 - `model()` - Transform question model for rendering
 - `outcome()` - Calculate score and feedback
 
@@ -137,7 +312,7 @@ packages/elements-react/multiple-choice/
 export async function model(
   question: MultipleChoiceModel,
   session: SessionData | null,
-  env: PieEnvironment
+  env: PieEnvironment,
 ): Promise<ViewModel> {
   // Transform based on mode (gather/view/evaluate/authoring)
   // Apply role-based permissions (student/instructor)
@@ -147,7 +322,7 @@ export async function model(
 export async function outcome(
   question: MultipleChoiceModel,
   session: SessionData,
-  env: PieEnvironment
+  env: PieEnvironment,
 ): Promise<PieOutcome> {
   // Calculate score
   // Generate feedback
@@ -164,6 +339,7 @@ export async function outcome(
 **Responsibility**: Render question and handle user interaction
 
 **Modes Handled**:
+
 - `gather` - Interactive, user can answer
 - `view` - Read-only, show question without interaction
 - `evaluate` - Show score, feedback, correct answers
@@ -197,6 +373,7 @@ export async function outcome(
 **Responsibility**: Author/configure question settings
 
 **Features**:
+
 - Rich text editor for prompts
 - Choice management (add/remove/edit)
 - Configuration options (scoring, feedback, etc.)
@@ -233,7 +410,7 @@ export interface PieController {
   model(
     question: PieModel,
     session: SessionData | null,
-    env: PieEnvironment
+    env: PieEnvironment,
   ): Promise<ViewModel>;
 
   /**
@@ -246,7 +423,7 @@ export interface PieController {
   outcome(
     question: PieModel,
     session: SessionData,
-    env: PieEnvironment
+    env: PieEnvironment,
   ): Promise<PieOutcome>;
 }
 ```
@@ -255,12 +432,13 @@ export interface PieController {
 
 ```typescript
 export interface PieEnvironment {
-  mode: 'gather' | 'view' | 'evaluate' | 'authoring' | 'print';
-  role: 'student' | 'instructor';
+  mode: "gather" | "view" | "evaluate" | "authoring" | "print";
+  role: "student" | "instructor";
 }
 ```
 
 **Modes**:
+
 - `gather` - Student answering question
 - `view` - Read-only display (no interaction)
 - `evaluate` - Show score, feedback, correct answers
@@ -268,6 +446,7 @@ export interface PieEnvironment {
 - `print` - Static rendering for paper/PDF
 
 **Roles**:
+
 - `student` - Learner interacting with assessment
 - `instructor` - Teacher/author viewing or configuring
 
@@ -286,10 +465,10 @@ export interface PieModel {
 
 ```typescript
 export interface PieOutcome {
-  score: number;           // 0.0 to 1.0
-  correct?: boolean;       // Binary correct/incorrect
-  feedback?: string;       // Feedback message
-  rationale?: string;      // Explanation
+  score: number; // 0.0 to 1.0
+  correct?: boolean; // Binary correct/incorrect
+  feedback?: string; // Feedback message
+  rationale?: string; // Explanation
   // Element-specific outcome data
 }
 ```
@@ -302,12 +481,13 @@ export interface PieOutcome {
 
 ```typescript
 interface Session {
-  value?: unknown;  // Element-specific answer data
+  value?: unknown; // Element-specific answer data
   // Additional session metadata
 }
 ```
 
 **Flow**:
+
 1. User interacts with element
 2. Component updates `session` via `$bindable()`
 3. Parent receives `onSessionChange` event
@@ -346,108 +526,21 @@ Svelte 5 runes provide fine-grained reactivity:
 
 ### Gather Mode (Student Interaction)
 
-```
-┌─────────────────┐
-│  Assessment     │
-│  Player/Host    │
-└────────┬────────┘
-         │ model, session, env
-         ▼
-┌─────────────────┐
-│  PIE Element    │
-│  Component      │
-└────────┬────────┘
-         │ User interacts
-         ▼
-┌─────────────────┐
-│  Update Session │
-│  (via bindable) │
-└────────┬────────┘
-         │ onSessionChange
-         ▼
-┌─────────────────┐
-│  Host Persists  │
-│  Session        │
-└─────────────────┘
-```
+![Data Flow: User Interaction](img/data-flow-interaction-1-1769798091721.jpg)
 
 ### Evaluate Mode (Scoring)
 
-```
-┌─────────────────┐
-│  Assessment     │
-│  Player/Host    │
-└────────┬────────┘
-         │ Call controller.outcome()
-         ▼
-┌─────────────────┐
-│  Controller     │
-│  outcome()      │
-└────────┬────────┘
-         │ Calculate score
-         ▼
-┌─────────────────┐
-│  Return         │
-│  PieOutcome     │
-└────────┬────────┘
-         │ Pass to component
-         ▼
-┌─────────────────┐
-│  Component      │
-│  Renders        │
-│  Feedback       │
-└─────────────────┘
-```
+![Data Flow: Scoring & Validation](img/data-flow-scoring-1-1769798123533.jpg)
 
 ### Authoring Mode (Configuration)
 
-```
-┌─────────────────┐
-│  Authoring      │
-│  Tool           │
-└────────┬────────┘
-         │ model (editable)
-         ▼
-┌─────────────────┐
-│  Authoring      │
-│  Component      │
-└────────┬────────┘
-         │ User edits
-         ▼
-┌─────────────────┐
-│  Update Model   │
-│  (via bindable) │
-└────────┬────────┘
-         │ onModelChange
-         ▼
-┌─────────────────┐
-│  Host Persists  │
-│  Model          │
-└─────────────────┘
-```
+![Data Flow: Configuration](img/data-flow-configuration-1-1769798064332.jpg)
 
 ## Dependency Structure
 
 ### Dependency Graph
 
-```
-┌──────────────────────────────────────┐
-│          Examples App                │
-│         (SvelteKit)                  │
-└──────────────┬───────────────────────┘
-               │
-       ┌───────▼──────────┐
-       │   Elements       │
-       │   (Svelte)       │
-       └───────┬──────────┘
-               │
-       ┌───────▼──────────┬────────────┐
-       │                  │            │
-   ┌───▼──────┐   ┌──────▼───┐   ┌───▼──────┐
-   │  lib-ui  │   │  shared  │   │   core   │
-   │ (Svelte) │   │  utils   │   │ (types)  │
-   └──────────┘   └──────────┘   └──────────┘
-```
+![Package Dependency Graph](img/dependency-graph-1-1769798028827.jpg)
 
 ### Package Dependencies
 
@@ -473,6 +566,7 @@ Svelte 5 runes provide fine-grained reactivity:
 ### Why Svelte 5?
 
 **Benefits**:
+
 - Native Web Components support
 - Smaller bundle size (~3KB overhead vs 40KB+ for React)
 - True reactivity without virtual DOM
@@ -480,6 +574,7 @@ Svelte 5 runes provide fine-grained reactivity:
 - Excellent TypeScript support
 
 **Trade-offs**:
+
 - Smaller ecosystem than React
 - Less community resources
 - Learning curve for React developers
@@ -487,6 +582,7 @@ Svelte 5 runes provide fine-grained reactivity:
 ### Why TypeScript?
 
 **Benefits**:
+
 - Type safety catches errors early
 - Better IDE support (autocomplete, refactoring)
 - Self-documenting code
@@ -496,18 +592,21 @@ Svelte 5 runes provide fine-grained reactivity:
 ### Why Bun?
 
 **Benefits**:
+
 - Fast package installation (3-5x faster than npm)
 - Built-in test runner
 - Native TypeScript support
 - All-in-one tool (package manager + bundler + runner)
 
 **Trade-offs**:
+
 - Newer, less proven than npm/yarn
 - Some compatibility issues (using Vitest instead of Bun test for now)
 
 ### Why Vite?
 
 **Benefits**:
+
 - Extremely fast HMR (Hot Module Replacement)
 - Native ESM support
 - Excellent Svelte integration
@@ -516,6 +615,7 @@ Svelte 5 runes provide fine-grained reactivity:
 ### Why Turbo?
 
 **Benefits**:
+
 - Fast monorepo builds (caching, parallelization)
 - Task orchestration
 - Smart dependency graph execution
@@ -524,20 +624,7 @@ Svelte 5 runes provide fine-grained reactivity:
 
 ### Test Pyramid
 
-```
-        ┌─────────────┐
-        │     E2E     │  ← Few, high-value scenarios
-        │ (Playwright)│
-        └──────┬──────┘
-       ┌───────▼──────────┐
-       │   Integration    │  ← Cross-package interactions
-       │   (Vitest)       │
-       └────────┬─────────┘
-   ┌────────────▼────────────────┐
-   │        Unit Tests           │  ← Many, fast, focused
-   │  (Vitest + Testing Library) │
-   └─────────────────────────────┘
-```
+![Test Pyramid Strategy](img/test-pyramid-1-1769798163922.jpg)
 
 ### Test Categories
 
@@ -550,7 +637,103 @@ Svelte 5 runes provide fine-grained reactivity:
 
 See [testing.md](./testing.md) for details.
 
+## Demo Application
+
+### Element Demo (SvelteKit)
+
+**IMPORTANT**: This is an **internal development tool**, NOT published to npm. It exists solely for testing and demonstrating elements during development.
+
+**Location**: `apps/element-demo/`
+
+**Purpose**: A single unified demo application that can demonstrate ALL PIE elements, regardless of which framework they're built with (React, Svelte, or future frameworks).
+
+The demo uses the unified Element Player to dynamically load elements via custom element registration, making it framework-agnostic.
+
+**Features:**
+
+- Interactive element testing (gather, view, evaluate modes)
+- Live model/session editing
+- Controller testing
+- Math rendering preview
+- Accessibility testing
+
+**Architecture:**
+
+```
+apps/element-demo/
+├── src/
+│   ├── routes/
+│   │   └── [element]/        # Dynamic route for any element
+│   │       ├── +page.svelte   # Main player page
+│   │       └── +layout.ts     # Data loader
+│   └── lib/
+│       ├── element-player/    # Player implementation
+│       ├── elements/
+│       │   └── registry.ts    # GENERATED: Element metadata
+│       ├── data/
+│       │   └── sample-configs/ # GENERATED: Sample configs
+│       └── element-imports.ts  # GENERATED: Import map
+```
+
+**Generated Files (gitignored):**
+
+These files are automatically generated and should NOT be committed:
+
+1. **`registry.ts`** - Element metadata (has timestamps)
+   - Generated by scanning `packages/elements-react/`
+   - Created during `upstream:sync` and `predev` script
+
+2. **`element-imports.ts`** - Import map
+   - Maps element names to absolute `/@fs/` paths for Vite
+   - Generated by `predev` script before `bun run dev`
+
+3. **`sample-configs/`** - Demo data
+   - Copied from `packages/elements-react/*/docs/demo/`
+   - Redundant (source is already in element packages)
+
+**Running the Demo:**
+
+```bash
+cd apps/element-demo
+bun run dev              # Runs predev script, then starts dev server
+```
+
+The `predev` script automatically regenerates all required files before starting the server.
+
+**URL Format:**
+
+```
+http://localhost:5173/[element-name]
+
+Examples:
+http://localhost:5173/multiple-choice
+http://localhost:5173/hotspot
+```
+
 ## Build Process
+
+![Build & Distribution Process](img/build-process-1-1769798201992.jpg)
+
+### ESM-First Approach
+
+**Contrast with legacy**:
+
+**Legacy (webpack + IIFE)**:
+
+- Bundled ALL dependencies into single IIFE file
+- Large bundle sizes (~1-2MB per element)
+- No tree-shaking across elements
+- Required custom bundle service (pie-shared-lib-builder)
+
+**Modern (ESM + Vite)**:
+
+- External dependencies loaded by browser
+- Small element bundles (~15-40KB per element)
+- Browser caches shared dependencies
+- Tree-shaking works naturally
+- Standards-based module loading
+
+This ESM-first approach is what enables the unified player architecture - the browser manages dependency loading, so we don't need separate bundles for each view.
 
 ### Development Build
 
@@ -581,15 +764,15 @@ bun run build
 
 ```javascript
 // dist/index.js
-export { default as MultipleChoice } from './MultipleChoice.js';
-export { model, outcome } from './controller.js';
+export { default as MultipleChoice } from "./MultipleChoice.js";
+export { model, outcome } from "./controller.js";
 ```
 
 **IIFE** (Immediately Invoked Function Expression) format for CDN deployment:
 
 ```javascript
 // dist/index.iife.js
-(function() {
+(function () {
   // Self-contained bundle with all dependencies (React, etc.)
   // Auto-registers custom element: <multiple-choice-pie>
   // Size: ~1.2MB / 400KB gzipped
@@ -699,7 +882,7 @@ Packages can be loaded from CDN:
 
 ```html
 <script type="module">
-  import { MultipleChoice } from 'https://esm.sh/@pie-element/multiple-choice';
+  import { MultipleChoice } from "https://esm.sh/@pie-element/multiple-choice";
 </script>
 ```
 
@@ -734,28 +917,39 @@ Consumers can override variables to match their brand.
 ### Plugin System (Future)
 
 Planned extension points:
+
 - Custom validators
 - Custom feedback generators
 - Custom rendering plugins
 - Third-party integrations
 
-## Future Architecture
+## Future Enhancements
 
-### Planned Enhancements
+### Planned Features
 
-1. **Web Components as Primary Output**
+1. **Multi-Framework Support**
+   - Add native implementations in additional frameworks as needed
+   - Svelte 5 elements for smaller bundles (~15KB vs ~40KB)
+   - Angular elements for Angular-native consumers
+   - Vue elements for Vue-native consumers
+   - All developed directly in this repository
+
+2. **Web Components as Distribution Format**
    - Framework-agnostic custom elements
    - Standard browser APIs
-   - See [web-components-strategy.md](./web-components-strategy.md)
+   - Universal compatibility across frameworks
+   - Can wrap any framework implementation
 
-2. **Plugin Architecture**
+3. **Plugin Architecture**
    - Extensible validation
    - Custom scoring algorithms
+   - Custom rendering plugins
    - Third-party integrations
 
-3. **Edge Runtime Support**
+4. **Edge Runtime Support**
    - Deno, Cloudflare Workers compatibility
    - Serverless controller execution
+   - Distributed scoring
 
 ## References
 

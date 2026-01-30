@@ -1,13 +1,23 @@
 # PIE Elements NG
 
-This project is meant to eventually replace the current pie-elements project with the following improvements:
+A modern, ESM-first implementation of the PIE (Platform Independent Elements) specification. This is a **new project** (not a refactor) that provides a clean foundation for future PIE development while maintaining backwards compatibility through the legacy pie-elements project.
 
-- Current libraries (work underway in pie-elements to upgrade React, MUI, migrate to Tiptap, etc)
-- PIE full on board with ESM
-- Vite builds, improved tools (like CLI support, demos, etc)
-- Better testing support
+## Why a New Project?
 
-It includes scripting to help pie-elements migrate to this project.
+The PIE team's work on upstream library modernization (React 18, MUI 7, Tiptap editor) now enables full ESM adoption and modern tooling. This new project takes advantage of those improvements while keeping the legacy pie-elements available for existing consumers.
+
+## Key Improvements Over Legacy pie-elements
+
+1. **Framework-agnostic architecture** - Supports multiple frameworks (React, Svelte, future Vue/Angular) via web components, not just React
+2. **ESM-first build system** - Browser-managed dependencies, better caching, smaller bundles (vs CommonJS + webpack IIFE bundles)
+3. **Unified player** - Single player for all views (delivery, authoring, print), enabled by ESM on-demand loading
+4. **Symmetric package organization** - Peer folders (delivery/author/controller/print) vs asymmetric legacy structure
+5. **Modern standard tooling** - Vite + Bun + Turbo vs bespoke pie-cli + pie-shared-lib-builder
+6. **Consolidated demo system** - Single unified demo app for all elements vs separate demos per element
+7. **Integrated monorepo** - @pie-lib pulled in vs separate repository
+8. **GitHub Actions CI/CD** - Modern GitHub-native workflows vs CircleCI
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed explanations of each difference.
 
 ## Getting started
 
