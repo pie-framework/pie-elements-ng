@@ -30,7 +30,8 @@ export async function loadElement(
     return;
   }
 
-  if (debug) console.log(`[element-loader] Loading element ${packagePath} (cdnUrl: ${cdnUrl || 'local'})`);
+  if (debug)
+    console.log(`[element-loader] Loading element ${packagePath} (cdnUrl: ${cdnUrl || 'local'})`);
 
   try {
     let module: any;
@@ -47,7 +48,7 @@ export async function loadElement(
         }
       }
 
-      if (staticImports && staticImports.hasElementModule(packagePath)) {
+      if (staticImports?.hasElementModule(packagePath)) {
         module = await staticImports.getElementModule(packagePath);
       } else {
         // Fallback to dynamic import (will fail in Vite but kept for compatibility)
@@ -103,7 +104,10 @@ export async function loadController(
 ): Promise<any> {
   const controllerPath = `${packageName}/controller`;
 
-  if (debug) console.log(`[element-loader] Loading controller from ${controllerPath} (cdnUrl: ${cdnUrl || 'local'})`);
+  if (debug)
+    console.log(
+      `[element-loader] Loading controller from ${controllerPath} (cdnUrl: ${cdnUrl || 'local'})`
+    );
 
   try {
     let module: any;

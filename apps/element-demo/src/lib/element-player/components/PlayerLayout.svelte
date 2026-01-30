@@ -55,7 +55,7 @@ onMount(async () => {
 
     // Load author/configure component if capabilities indicate it exists
     const configureTag = `${elementName}-configure`;
-    if (capabilities && capabilities.includes('author')) {
+    if (capabilities?.includes('author')) {
       try {
         console.log(`[player-layout] Loading author component for ${packageName}`);
         const AuthorComponent = await loadAuthor(packageName, '', debug);
@@ -75,7 +75,7 @@ onMount(async () => {
 
     // Load print component if capabilities indicate it exists
     const printTag = `${elementName}-print`;
-    if (capabilities && capabilities.includes('print')) {
+    if (capabilities?.includes('print')) {
       try {
         console.log(`[player-layout] Loading print component for ${packageName}`);
         const PrintComponent = await loadPrint(packageName, '', debug);
@@ -101,7 +101,6 @@ onMount(async () => {
     console.error('[player-layout] Error initializing:', err);
   }
 });
-
 </script>
 
 {#if loading}

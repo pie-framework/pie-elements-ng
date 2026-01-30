@@ -52,7 +52,9 @@ export const load: LayoutLoad = async ({ params }: { params: { element: string }
 
       // Try to load sample session from JSON file
       try {
-        const sessionModule = await import(`$lib/data/sample-configs/react/${elementName}-session.json`);
+        const sessionModule = await import(
+          `$lib/data/sample-configs/react/${elementName}-session.json`
+        );
         if (sessionModule.default) {
           initialSession = sessionModule.default;
           console.log(`[+layout.ts] Loaded sample session for ${elementName}`);

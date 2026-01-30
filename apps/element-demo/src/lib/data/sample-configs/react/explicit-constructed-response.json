@@ -41,11 +41,7 @@
           }
         ]
       },
-      "maxLengthPerChoice": [
-        7,
-        10,
-        4
-      ],
+      "maxLengthPerChoice": [7, 10, 4],
       "prompt": "Complete the sentence",
       "promptEnabled": true,
       "toolbarEditorPosition": "bottom",

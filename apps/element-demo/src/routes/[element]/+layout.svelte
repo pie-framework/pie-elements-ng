@@ -11,6 +11,9 @@ import type { LayoutData } from './$types';
 let { data, children }: { data: LayoutData; children: any } = $props();
 
 // Initialize stores immediately when data is available
+// Note: We intentionally capture the initial value here, not react to changes
+// The Svelte warning about state_referenced_locally is a false positive in this case
+// because we need synchronous initialization before child components render
 if (data) {
   initializeDemo({
     elementName: data.elementName,

@@ -15,9 +15,9 @@ function formatElementName(name: string): string {
     .join(' ');
 }
 
-const packageName = `@pie-element/${data.elementName}`;
-const hasAuthor = data.capabilities.includes('author');
-const hasPrint = data.capabilities.includes('print');
+const packageName = $derived(`@pie-element/${data.elementName}`);
+const hasAuthor = $derived(data.capabilities.includes('author'));
+const hasPrint = $derived(data.capabilities.includes('print'));
 </script>
 
 <div class="hero min-h-screen bg-gradient-to-br from-primary to-secondary">

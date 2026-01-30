@@ -1,26 +1,30 @@
-<script>
+<script lang="ts">
 import { onMount } from 'svelte';
-import { getElementModule, hasElementModule } from '$lib/element-imports';
+import { getElementModule, getControllerModule, hasElementModule } from '$lib/element-imports';
 
 let status = $state('Loading...');
-let elementClass = $state(null);
-let controller = $state(null);
-let errors = $state([]);
+let elementClass = $state<string | null>(null);
+let controller = $state<string | null>(null);
+let errors = $state<string[]>([]);
 
 onMount(async () => {
   try {
     // Test element import
     if (hasElementModule('@pie-element/multiple-choice')) {
-      const mod = await getElementModule('@pie-element/multiple-choice');
-      elementClass = mod.default?.name || 'Unknown';
-      status = 'Element loaded: ' + elementClass;
+      const loader = getElementModule('@pie-element/multiple-choice');
+      if (loader) {
+        const mod = await loader();
+        elementClass = mod.default?.name || 'Unknown';
+        status = 'Element loaded: ' + elementClass;
+      }
     } else {
       errors.push('Element not registered');
     }
 
     // Test controller import
-    if (hasElementModule('@pie-element/multiple-choice/controller')) {
-      const mod = await getElementModule('@pie-element/multiple-choice/controller');
+    const controllerLoader = getControllerModule('multiple-choice');
+    if (controllerLoader) {
+      const mod = await controllerLoader();
       controller = mod.model ? 'Controller has model method' : 'Controller loaded but no model';
     } else {
       errors.push('Controller not registered');
@@ -30,7 +34,8 @@ onMount(async () => {
       status = 'All imports successful!';
     }
   } catch (err) {
-    errors.push(err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    errors.push(message);
     status = 'Error loading modules';
   }
 });

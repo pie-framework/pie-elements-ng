@@ -59,18 +59,11 @@
       "correctResponse": [
         {
           "category": "0",
-          "choices": [
-            "3",
-            "4"
-          ]
+          "choices": ["3", "4"]
         },
         {
           "category": "1",
-          "choices": [
-            "0",
-            "1",
-            "2"
-          ]
+          "choices": ["0", "1", "2"]
         }
       ],
       "allowAlternateEnabled": false,

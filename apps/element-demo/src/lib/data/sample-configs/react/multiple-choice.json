@@ -48,10 +48,7 @@
         }
       ],
       "extraCSSRules": {
-        "names": [
-          "red",
-          "blue"
-        ],
+        "names": ["red", "blue"],
         "rules": "\n      .red {\n        color: red !important;\n      }\n\n      .blue {\n        color: blue !important;\n      }\n    "
       },
       "prompt": "<p><strong>Biology Question:</strong> Select all true statements about cellular processes.</p>",
