@@ -12,7 +12,7 @@ packages/lib-react/
 
 # MCP configuration (local only)
 .mcp.json
-packages/mcp-imagen/
+.mcp-imagen/
 
 # Build outputs
 dist/

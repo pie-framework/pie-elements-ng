@@ -1,0 +1,51 @@
+{
+  "models": [
+    {
+      "id": "1",
+      "element": "explicit-constructed-response",
+      "markup": "<p>The {{0}} <br> jumped {{1}} <br> the {{2}}</p>",
+      "disabled": false,
+      "choices": {
+        "0": [
+          {
+            "label": "cow",
+            "value": "0"
+          },
+          {
+            "label": "cattle",
+            "value": "1"
+          },
+          {
+            "label": "calf",
+            "value": "2"
+          }
+        ],
+        "1": [
+          {
+            "label": "over",
+            "value": "0"
+          },
+          {
+            "label": "past",
+            "value": "1"
+          },
+          {
+            "label": "beyond",
+            "value": "2"
+          }
+        ],
+        "2": [
+          {
+            "label": "moon",
+            "value": "0"
+          }
+        ]
+      },
+      "maxLengthPerChoice": [7, 10, 4],
+      "prompt": "Complete the sentence",
+      "promptEnabled": true,
+      "toolbarEditorPosition": "bottom",
+      "rubricEnabled": false
+    }
+  ]
+}

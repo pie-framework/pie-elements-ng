@@ -3,10 +3,10 @@
  *
  * This module generates:
  * 1. Element registry (lib/elements/registry.ts)
- * 2. Sample configs copied from each element
- * 3. Sample sessions copied from each element
+ * 2. Sample configs converted to JSON from each element
+ * 3. Sample sessions converted to JSON from each element
  */
-import { mkdir, writeFile, copyFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,12 +14,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '../../../../..');
 const DEMO_APP_PATH = join(REPO_ROOT, 'apps/element-demo');
 const ELEMENTS_REACT_PATH = join(REPO_ROOT, 'packages/elements-react');
-const ELEMENTS_SVELTE_PATH = join(REPO_ROOT, 'packages/elements-svelte');
 
 export interface ElementMetadata {
   name: string;
   title: string;
-  type: 'react' | 'svelte';
   packageName: string;
   hasAuthor: boolean;
   hasPrint: boolean;
@@ -70,62 +68,6 @@ async function scanReactElements(): Promise<ElementMetadata[]> {
     elements.push({
       name: dir,
       title,
-      type: 'react',
-      packageName: `@pie-element/${dir}`,
-      hasAuthor,
-      hasPrint,
-      hasConfig,
-      hasSession,
-    });
-  }
-
-  return elements;
-}
-
-/**
- * Scan elements-svelte directory for all elements
- */
-async function scanSvelteElements(): Promise<ElementMetadata[]> {
-  const { readdirSync, existsSync: fsExistsSync, statSync } = await import('node:fs');
-
-  if (!fsExistsSync(ELEMENTS_SVELTE_PATH)) {
-    console.log('[demo-metadata] elements-svelte directory not found, skipping');
-    return [];
-  }
-
-  const elements: ElementMetadata[] = [];
-  const dirs = readdirSync(ELEMENTS_SVELTE_PATH);
-
-  for (const dir of dirs) {
-    const elementPath = join(ELEMENTS_SVELTE_PATH, dir);
-    const stat = statSync(elementPath);
-
-    if (!stat.isDirectory()) continue;
-
-    // Check for required structure
-    const srcPath = join(elementPath, 'src');
-    if (!fsExistsSync(srcPath)) continue;
-
-    // Check for author and print (convention: separate files or directories)
-    const hasAuthor =
-      fsExistsSync(join(srcPath, 'author')) || fsExistsSync(join(srcPath, 'configure'));
-    const hasPrint = fsExistsSync(join(srcPath, 'print'));
-
-    // Check for demo files
-    const docsPath = join(elementPath, 'docs/demo');
-    const hasConfig = fsExistsSync(join(docsPath, 'config.mjs'));
-    const hasSession = fsExistsSync(join(docsPath, 'session.mjs'));
-
-    // Generate title from name
-    const title = dir
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-
-    elements.push({
-      name: dir,
-      title,
-      type: 'svelte',
       packageName: `@pie-element/${dir}`,
       hasAuthor,
       hasPrint,
@@ -155,7 +97,6 @@ async function generateRegistry(elements: ElementMetadata[]): Promise<void> {
 export interface ElementMetadata {
   name: string;
   title: string;
-  type: 'react' | 'svelte';
   packageName: string;
   hasAuthor: boolean;
   hasPrint: boolean;
@@ -163,14 +104,10 @@ export interface ElementMetadata {
   hasSession: boolean;
 }
 
-export const ELEMENT_REGISTRY: ElementMetadata[] = ${JSON.stringify(elements, null, 2)};
+export const ELEMENT_REGISTRY: readonly ElementMetadata[] = ${JSON.stringify(elements, null, 2)};
 
 export function getElement(name: string): ElementMetadata | undefined {
   return ELEMENT_REGISTRY.find((el) => el.name === name);
-}
-
-export function getElementsByType(type: 'react' | 'svelte'): ElementMetadata[] {
-  return ELEMENT_REGISTRY.filter((el) => el.type === type);
 }
 
 export function getAllElements(): ElementMetadata[] {
@@ -184,42 +121,48 @@ export function getAllElements(): ElementMetadata[] {
 }
 
 /**
- * Copy sample configs for an element
+ * Convert and copy sample configs for an element as JSON
  */
 async function copySampleConfigs(elements: ElementMetadata[]): Promise<void> {
   for (const element of elements) {
-    const sourcePath =
-      element.type === 'react'
-        ? join(ELEMENTS_REACT_PATH, element.name, 'docs/demo')
-        : join(ELEMENTS_SVELTE_PATH, element.name, 'docs/demo');
-
-    const targetDir = join(DEMO_APP_PATH, `src/lib/data/sample-configs/${element.type}`);
+    const sourcePath = join(ELEMENTS_REACT_PATH, element.name, 'docs/demo');
+    const targetDir = join(DEMO_APP_PATH, 'src/lib/data/sample-configs/react');
     await mkdir(targetDir, { recursive: true });
 
-    // Copy config.mjs
+    // Convert config.mjs to JSON
     if (element.hasConfig) {
       const sourceConfig = join(sourcePath, 'config.mjs');
-      const targetConfig = join(targetDir, `${element.name}.mjs`);
+      const targetConfig = join(targetDir, `${element.name}.json`);
       try {
-        await copyFile(sourceConfig, targetConfig);
+        // Dynamic import the .mjs file
+        const configModule = await import(`file://${sourceConfig}`);
+        const configData = configModule.default;
+
+        // Write as JSON
+        await writeFile(targetConfig, JSON.stringify(configData, null, 2) + '\n', 'utf-8');
       } catch (e) {
-        console.warn(`[demo-metadata] Failed to copy config for ${element.name}:`, e);
+        console.warn(`[demo-metadata] Failed to convert config for ${element.name}:`, e);
       }
     }
 
-    // Copy session.mjs
+    // Convert session.mjs to JSON
     if (element.hasSession) {
       const sourceSession = join(sourcePath, 'session.mjs');
-      const targetSession = join(targetDir, `${element.name}-session.mjs`);
+      const targetSession = join(targetDir, `${element.name}-session.json`);
       try {
-        await copyFile(sourceSession, targetSession);
+        // Dynamic import the .mjs file
+        const sessionModule = await import(`file://${sourceSession}`);
+        const sessionData = sessionModule.default;
+
+        // Write as JSON
+        await writeFile(targetSession, JSON.stringify(sessionData, null, 2) + '\n', 'utf-8');
       } catch (e) {
-        console.warn(`[demo-metadata] Failed to copy session for ${element.name}:`, e);
+        console.warn(`[demo-metadata] Failed to convert session for ${element.name}:`, e);
       }
     }
   }
 
-  console.log(`[demo-metadata] Copied sample configs for ${elements.length} elements`);
+  console.log(`[demo-metadata] Converted sample configs to JSON for ${elements.length} elements`);
 }
 
 /**
@@ -229,13 +172,9 @@ export async function generateDemoMetadata(): Promise<void> {
   console.log('[demo-metadata] Scanning elements...');
 
   const reactElements = await scanReactElements();
-  const svelteElements = await scanSvelteElements();
-  const allElements = [...reactElements, ...svelteElements].sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+  const allElements = [...reactElements].sort((a, b) => a.name.localeCompare(b.name));
 
   console.log(`[demo-metadata] Found ${reactElements.length} React elements`);
-  console.log(`[demo-metadata] Found ${svelteElements.length} Svelte elements`);
 
   await generateRegistry(allElements);
   await copySampleConfigs(allElements);

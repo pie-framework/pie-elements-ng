@@ -123,7 +123,7 @@ export default class Check extends Command {
     this.logger.info('📦 Checking controllers...\n');
 
     const upstreamElementsDir = join(config.pieElements, 'packages');
-    const localElementsDir = join(config.pieElementsNg, 'packages/elements-svelte');
+    const localElementsDir = join(config.pieElementsNg, 'packages/elements-react');
 
     // Get list of elements that exist in both repos
     const upstreamPackages = await readdir(upstreamElementsDir);

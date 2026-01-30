@@ -6,19 +6,18 @@ import { existsSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from
 /**
  * Start development server for element demos.
  *
- * This command:
- * 1. Builds the element player (if needed)
- * 2. Builds the specified element (if needed)
- * 3. Generates a demo app from the template
- * 4. Starts a single Vite dev server for the generated demo
+ * This command starts the SvelteKit dev server directly by default.
+ * Use --build to rebuild the element and player before starting.
  */
 export default class DevDemo extends Command {
-  static override description = 'Start demo server using apps/element-demo';
+  static override description =
+    'Start demo server using apps/element-demo (fast start, no build by default)';
 
   static override examples = [
     '<%= config.bin %> <%= command.id %> hotspot',
     '<%= config.bin %> <%= command.id %> multiple-choice --port 5180',
-    '<%= config.bin %> <%= command.id %> math-inline --skip-build --no-open',
+    '<%= config.bin %> <%= command.id %> math-inline --build',
+    '<%= config.bin %> <%= command.id %> hotspot --build-element',
   ];
 
   static override flags = {
@@ -27,16 +26,17 @@ export default class DevDemo extends Command {
       description: 'Vite dev server port',
       default: 5600,
     }),
-    'skip-build': Flags.boolean({
-      description: 'Skip building element and element-player',
+    build: Flags.boolean({
+      char: 'b',
+      description: 'Build element and element-player before starting',
       default: false,
     }),
-    'skip-element-build': Flags.boolean({
-      description: 'Skip building the element only',
+    'build-element': Flags.boolean({
+      description: 'Build only the element before starting',
       default: false,
     }),
-    'skip-player-build': Flags.boolean({
-      description: 'Skip building the element-player only',
+    'build-player': Flags.boolean({
+      description: 'Build only the element-player before starting',
       default: false,
     }),
     open: Flags.boolean({
@@ -68,31 +68,29 @@ export default class DevDemo extends Command {
 
     this.acquireLock(flags.port, args.element);
 
-    // Determine element type (react or svelte)
-    const elementType = elementPath.includes('elements-svelte') ? 'svelte' : 'react';
-    const elementPathRelative = path.relative(process.cwd(), elementPath);
-
     this.log(`Starting demo for ${args.element}...`);
     this.log('');
 
     try {
-      const skipElementBuild = flags['skip-build'] || flags['skip-element-build'];
-      const skipPlayerBuild = flags['skip-build'] || flags['skip-player-build'];
+      const shouldBuildElement = flags.build || flags['build-element'];
+      const shouldBuildPlayer = flags.build || flags['build-player'];
 
-      // 1. Build element-player if needed
-      if (!skipPlayerBuild) {
+      // 1. Build element-player if requested
+      if (shouldBuildPlayer) {
         await this.buildElementPlayer();
       }
 
-      // 2. Build element if needed
-      if (!skipElementBuild) {
+      // 2. Build element if requested
+      if (shouldBuildElement) {
         await this.buildElement(args.element);
       }
 
-      // 3. Install workspace dependencies
-      this.log('Installing workspace dependencies...');
-      await this.installDependencies();
-      this.log('✓ Dependencies installed\n');
+      // 3. Install workspace dependencies (only if building)
+      if (shouldBuildElement || shouldBuildPlayer) {
+        this.log('Installing workspace dependencies...');
+        await this.installDependencies();
+        this.log('✓ Dependencies installed\n');
+      }
 
       // 4. Start Vite dev server
       this.log(`Starting Vite dev server on port ${flags.port}...`);
@@ -102,9 +100,6 @@ export default class DevDemo extends Command {
       }
       this.viteProcess = await this.startVite(demoAppPath, flags.port, {
         VITE_ELEMENT_NAME: args.element,
-        VITE_ELEMENT_PATH: elementPathRelative,
-        VITE_ELEMENT_TYPE: elementType,
-        VITE_WORKSPACE_ROOT: process.cwd(),
       });
 
       // 5. Open browser
@@ -119,6 +114,10 @@ export default class DevDemo extends Command {
       this.log('✓ Demo server running');
       this.log(`  Demo: http://localhost:${flags.port}`);
       this.log('');
+      if (!shouldBuildElement && !shouldBuildPlayer) {
+        this.log('ℹ️  Running without rebuild. Use --build to rebuild element and player first.');
+        this.log('');
+      }
       this.log('📖 The demo uses workspace dependencies for module resolution');
       this.log('   All PIE packages are resolved automatically via the monorepo');
       this.log('');

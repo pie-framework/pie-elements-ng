@@ -17,6 +17,7 @@ import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy
 import { DEFAULT_PATHS, COMPATIBILITY_FILE, WORKSPACE } from '../../lib/upstream/sync-constants.js';
 import { generateDemoMetadata } from '../../lib/upstream/sync-demo-metadata.js';
 import { assertReposExist } from '../../lib/upstream/repo-utils.js';
+import { addDevelopmentExports } from '../../lib/upstream/sync-dev-exports.js';
 
 interface SyncConfig {
   pieElements: string;
@@ -261,6 +262,11 @@ export default class Sync extends Command {
     // Ensure external dependencies from synced packages are available at repo root.
     if (!config.dryRun) {
       await this.rewriteWorkspaceDependencies(config);
+    }
+
+    // Add development export conditions for HMR support
+    if (!config.dryRun && this.touchedElementPackages.size > 0) {
+      await this.addDevelopmentExportsToPackages(config);
     }
 
     // Build by default (unless dry-run or explicitly skipped)
@@ -598,6 +604,26 @@ export default class Sync extends Command {
       this.logger.warn('   ⚠️  bun install failed');
     } else {
       this.logger.info('   ✓ bun install completed successfully\n');
+    }
+  }
+
+  private async addDevelopmentExportsToPackages(config: SyncConfig): Promise<void> {
+    this.logger.section('🔧 Adding development export conditions');
+
+    const elementsDir = join(config.pieElementsNg, 'packages/elements-react');
+    const packageNames = Array.from(this.touchedElementPackages);
+
+    if (packageNames.length === 0) {
+      this.logger.debug('   No element packages to process');
+      return;
+    }
+
+    const updated = await addDevelopmentExports(elementsDir, packageNames, this.logger);
+
+    if (updated > 0) {
+      this.logger.info(`   ✓ Added development exports to ${updated} package(s)\n`);
+    } else {
+      this.logger.debug('   → No changes needed\n');
     }
   }
 

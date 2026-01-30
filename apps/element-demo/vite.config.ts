@@ -1,32 +1,37 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-// Import plugin directly from source (no build needed)
-import { findWorkspaceRoot, workspaceResolver } from './src/vite-plugin-workspace-resolver';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const workspaceRoot = findWorkspaceRoot(process.cwd());
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = join(__dirname, '../..');
 
 /**
- * Generic Vite config for shared element demo app.
+ * Simplified Vite config for element demo app.
  *
- * Dynamically adds aliases for the element being loaded based on environment variables.
- * This allows proper resolution of element imports and their dependencies.
+ * Uses Vite's native module resolution with export conditions:
+ * - In development: resolves to src/ files via "development" condition for HMR
+ * - In production: resolves to dist/ files via "import" condition
  *
- * Element info passed via environment variables:
- * - VITE_ELEMENT_NAME (e.g., "multiple-choice")
- * - VITE_ELEMENT_PATH (e.g., "packages/elements-react/multiple-choice")
- * - VITE_ELEMENT_TYPE (e.g., "react" or "svelte")
+ * Element packages must have proper "exports" fields with "development" conditions.
+ *
+ * Environment variables:
+ * - VITE_ELEMENT_NAME: Name of element to load (e.g., "multiple-choice")
  */
 export default defineConfig({
   plugins: [
-    // Resolve workspace:* dependencies to source files
-    workspaceResolver({
-      resolveSources: true,
-      debug: false, // Set to true to debug resolution
-    }),
-    tailwindcss(),
+    // Tailwind v4 optimizes CSS using @tailwindcss/node (LightningCSS). DaisyUI uses the
+    // standards-track `@property` at-rule, which currently produces a noisy warning during
+    // optimization. Disable Tailwind's optimization pass here; Vite will still minify CSS.
+    tailwindcss({ optimize: false }),
     sveltekit(),
   ],
+
+  resolve: {
+    // Prefer development exports which point directly to src/ files
+    conditions: ['development', 'import', 'default'],
+  },
 
   server: {
     port: Number(process.env.PORT ?? 5222),
@@ -38,5 +43,7 @@ export default defineConfig({
   optimizeDeps: {
     // Include React in pre-bundling to avoid issues
     include: ['react', 'react-dom', 'react/jsx-runtime'],
+    // Exclude workspace packages from pre-bundling to use source directly
+    exclude: ['@pie-element/*', '@pie-lib/*'],
   },
 });
