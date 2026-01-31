@@ -13,7 +13,7 @@ The PIE team's work on upstream library modernization (React 18, MUI 7, Tiptap e
 3. **Unified player** - Single player for all views (delivery, authoring, print), enabled by ESM on-demand loading
 4. **Symmetric package organization** - Peer folders (delivery/author/controller/print) vs asymmetric legacy structure
 5. **Modern standard tooling** - Vite + Bun + Turbo vs bespoke pie-cli + pie-shared-lib-builder
-6. **Consolidated demo system** - Single unified demo app for all elements vs separate demos per element
+6. **Consolidated demo system** - Single unified SvelteKit app for all elements vs per-element tool-generated demos
 7. **Integrated monorepo** - @pie-lib pulled in vs separate repository
 8. **GitHub Actions CI/CD** - Modern GitHub-native workflows vs CircleCI
 
