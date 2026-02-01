@@ -17,8 +17,7 @@ export const load: LayoutServerLoad = async ({ params }) => {
 
     // Find similar elements (fuzzy match)
     const similarElements = availableElements.filter(
-      (name) =>
-        name.includes(elementName.slice(0, 3)) || elementName.includes(name.slice(0, 3))
+      (name) => name.includes(elementName.slice(0, 3)) || elementName.includes(name.slice(0, 3))
     );
 
     // Build helpful error message
