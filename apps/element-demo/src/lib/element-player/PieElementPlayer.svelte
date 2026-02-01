@@ -26,7 +26,7 @@ const dispatch = createEventDispatcher();
 let {
   elementName = '',
   model = $bindable({}),
-  session = {},  // Remove $bindable - session flows one way: element → player
+  session = {}, // Remove $bindable - session flows one way: element → player
   mode = $bindable('gather'),
   activeTab = $bindable('delivery'),
   showConfigure = false,

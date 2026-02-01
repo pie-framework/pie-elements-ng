@@ -16,7 +16,7 @@ interface Props {
   session?: any;
 }
 
-let { elementName = '', model = $bindable(), session = {} }: Props = $props();  // Remove session $bindable
+let { elementName = '', model = $bindable(), session = {} }: Props = $props(); // Remove session $bindable
 const dispatch = createEventDispatcher();
 
 let container: HTMLElement;
