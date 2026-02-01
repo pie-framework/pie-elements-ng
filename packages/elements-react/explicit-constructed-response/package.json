@@ -20,6 +20,7 @@
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "lodash-es": "^4.17.22"
   },
   "peerDependencies": {

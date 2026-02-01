@@ -16,7 +16,8 @@
     "recharts": "2.15.1",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",

@@ -9,7 +9,7 @@
  *
  * @example
  * ```typescript
- * import type { MathRenderer } from '@pie-element/shared-math-rendering';
+ * import type { MathRenderer } from '@pie-element/shared-math-rendering-core';
  * import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
  *
  * const renderer: MathRenderer = createKatexRenderer();

@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/extended-text-entry/src/index.js
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -16,7 +15,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
 
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 
 const log = debug('@pie-elements:extended-text-entry');

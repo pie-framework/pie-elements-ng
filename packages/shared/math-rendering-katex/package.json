@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "katex": "^0.16.27",
-    "@pie-element/shared-math-rendering": "workspace:*",
+    "@pie-element/shared-math-rendering-core": "workspace:*",
     "@pie-element/shared-mathml-to-latex": "workspace:*"
   },
   "peerDependencies": {

@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-lib/packages/mask-markup/src/choices/choice.jsx
  * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -16,7 +15,7 @@ import PropTypes from 'prop-types';
 import { useDraggable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { color } from '@pie-lib/render-ui';
 
 export const DRAG_TYPE = 'MaskBlank';

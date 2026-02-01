@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/drag-in-the-blank/configure/src/index.js
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -21,7 +20,7 @@ import {
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Main from './main';
 import debug from 'debug';
 import { defaults } from 'lodash-es';

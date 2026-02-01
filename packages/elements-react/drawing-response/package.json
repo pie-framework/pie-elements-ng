@@ -18,6 +18,7 @@
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "lodash-es": "^4.17.22"
   },

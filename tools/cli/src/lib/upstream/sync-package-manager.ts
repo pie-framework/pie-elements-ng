@@ -501,10 +501,10 @@ export async function ensurePieLibPackageJson(
     pkg.dependencies = expectedDeps;
   }
 
-  // Special handling for math-rendering: reference KaTeX adapter package
+  // Special handling for math-rendering: reference MathJax adapter package
   if (pkgName === 'math-rendering') {
     pkg.dependencies = {
-      [`${WORKSPACE.PIE_ELEMENT_PREFIX}math-rendering-katex`]: WORKSPACE.VERSION,
+      [`${WORKSPACE.PIE_ELEMENT_PREFIX}math-rendering-mathjax`]: WORKSPACE.VERSION,
     };
   }
 

@@ -9,7 +9,7 @@
  */
 
 import katex from 'katex';
-import { loadCss, isCssLoaded } from '@pie-element/shared-math-rendering';
+import { loadCss, isCssLoaded } from '@pie-element/shared-math-rendering-core';
 import { mmlToLatex } from './mml-to-latex';
 import { wrapMath, unWrapMath } from './normalization';
 

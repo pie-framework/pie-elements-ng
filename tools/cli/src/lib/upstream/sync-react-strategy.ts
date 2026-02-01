@@ -67,7 +67,6 @@ export class ReactComponentsStrategy implements SyncStrategy {
     const targetBaseDir = join(config.pieElementsNg, 'packages/elements-react');
 
     const upstreamCommit = getCurrentCommit(config.pieElements);
-    const syncDate = new Date().toISOString().split('T')[0];
 
     const packages = await readdir(upstreamElementsDir);
 
@@ -118,8 +117,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
         targetDeliveryDir,
         'src',
         pkg,
-        upstreamCommit,
-        syncDate
+        upstreamCommit
       );
 
       // Also sync configure/ if it exists and is ESM-compatible
@@ -138,8 +136,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
               targetAuthorDir,
               'configure/src',
               pkg,
-              upstreamCommit,
-              syncDate
+              upstreamCommit
             );
             elementFilesProcessed += configureFilesProcessed;
           }
@@ -151,8 +148,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
             configureDir,
             targetAuthorDir,
             pkg,
-            upstreamCommit,
-            syncDate
+            upstreamCommit
           );
           elementFilesProcessed += configureRootFilesProcessed;
         } else if (logger.isVerbose()) {
@@ -168,8 +164,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
           upstreamPrintFile,
           targetPrintDir,
           pkg,
-          upstreamCommit,
-          syncDate
+          upstreamCommit
         );
         elementFilesProcessed += printFilesProcessed;
       }
@@ -247,8 +242,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
     targetDir: string,
     relativePath: string,
     pkg: string,
-    upstreamCommit: string,
-    syncDate: string
+    upstreamCommit: string
   ): Promise<number> {
     let filesProcessed = 0;
     const defaultExportFiles = new Set<string>(); // Track files with default exports
@@ -270,8 +264,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
           join(targetDir, item),
           join(relativePath, item),
           pkg,
-          upstreamCommit,
-          syncDate
+          upstreamCommit
         );
         filesProcessed += subFilesProcessed;
         continue;
@@ -308,12 +301,10 @@ export class ReactComponentsStrategy implements SyncStrategy {
         ? convertJsxToTsx(sourceContent, {
             sourcePath: `pie-elements/packages/${pkg}/${relativePath}/${item}`,
             commit: upstreamCommit,
-            date: syncDate,
           })
         : convertJsToTs(sourceContent, {
             sourcePath: `pie-elements/packages/${pkg}/${relativePath}/${item}`,
             commit: upstreamCommit,
-            date: syncDate,
           });
 
       const converted = conversionResult.code;
@@ -371,8 +362,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
     sourceDir: string,
     targetDir: string,
     pkg: string,
-    upstreamCommit: string,
-    syncDate: string
+    upstreamCommit: string
   ): Promise<number> {
     let filesProcessed = 0;
 
@@ -413,12 +403,10 @@ export class ReactComponentsStrategy implements SyncStrategy {
         ? convertJsxToTsx(sourceContent, {
             sourcePath: `pie-elements/packages/${pkg}/configure/${item}`,
             commit: upstreamCommit,
-            date: syncDate,
           })
         : convertJsToTs(sourceContent, {
             sourcePath: `pie-elements/packages/${pkg}/configure/${item}`,
             commit: upstreamCommit,
-            date: syncDate,
           });
 
       const converted = conversionResult.code;
@@ -458,8 +446,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
     sourceFile: string,
     targetDir: string,
     pkg: string,
-    upstreamCommit: string,
-    syncDate: string
+    upstreamCommit: string
   ): Promise<number> {
     this.result.filesChecked++;
 
@@ -485,12 +472,10 @@ export class ReactComponentsStrategy implements SyncStrategy {
       ? convertJsxToTsx(sourceContent, {
           sourcePath: `pie-elements/packages/${pkg}/src/print.js`,
           commit: upstreamCommit,
-          date: syncDate,
         })
       : convertJsToTs(sourceContent, {
           sourcePath: `pie-elements/packages/${pkg}/src/print.js`,
           commit: upstreamCommit,
-          date: syncDate,
         });
 
     const converted = conversionResult.code;

@@ -5,7 +5,6 @@
 export interface ConversionMetadata {
   sourcePath: string;
   commit: string;
-  date: string;
 }
 
 export interface ConversionResult {
@@ -40,7 +39,6 @@ export function convertJsToTs(jsCode: string, metadata: ConversionMetadata): Con
   const header = `/**
  * @synced-from ${metadata.sourcePath}
  * @synced-commit ${metadata.commit}
- * @synced-date ${metadata.date}
  * @sync-version ${SYNC_VERSION}
  * @auto-generated
  *
@@ -131,7 +129,6 @@ export function convertJsxToTsx(jsxCode: string, metadata: ConversionMetadata): 
   const header = `/**
  * @synced-from ${metadata.sourcePath}
  * @synced-commit ${metadata.commit}
- * @synced-date ${metadata.date}
  * @sync-version ${SYNC_VERSION}
  * @auto-generated
  *

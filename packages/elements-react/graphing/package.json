@@ -16,6 +16,7 @@
     "debug": "^4.1.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-lib/graphing-utils": "workspace:*",

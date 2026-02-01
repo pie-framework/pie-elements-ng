@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/categorize/src/categorize/index.jsx
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -20,7 +19,7 @@ import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { buildState, removeChoiceFromCategory, moveChoiceToCategory } from '@pie-lib/categorize';
 import { DragProvider, uid } from '@pie-lib/drag';
 import { color, Feedback, Collapsible, hasText, hasMedia, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
 import { AlertDialog } from '@pie-lib/config-ui';
 import Choices from './choices';

@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-lib/packages/editable-html-tip-tap/src/extensions/math.js
  * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -17,7 +16,7 @@ import { Extension, Node, mergeAttributes } from '@tiptap/core';
 import { NodeViewWrapper, ReactRenderer, ReactNodeViewRenderer } from '@tiptap/react';
 import { Plugin, PluginKey, NodeSelection, TextSelection } from 'prosemirror-state';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
-import { wrapMath, mmlToLatex, renderMath } from '@pie-element/shared-math-rendering-katex';
+import { wrapMath, mmlToLatex, renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const ensureTextAfterMathPluginKey = new PluginKey('ensureTextAfterMath');
 

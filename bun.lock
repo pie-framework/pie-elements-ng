@@ -60,12 +60,12 @@
     },
     "apps/element-demo": {
       "name": "@pie-element/element-demo",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@pie-element/element-player": "workspace:*",
         "@pie-element/multiple-choice": "workspace:*",
-        "@pie-element/shared-math-rendering": "workspace:*",
-        "@pie-element/shared-math-rendering-katex": "workspace:*",
+        "@pie-element/shared-math-rendering-core": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@tiptap/core": "3.18.0",
         "@tiptap/extension-code-block-lowlight": "3.18.0",
         "@tiptap/extension-document": "3.18.0",
@@ -99,7 +99,7 @@
     },
     "packages/core": {
       "name": "@pie-element/core",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.9.3",
@@ -109,7 +109,7 @@
       "name": "@pie-element/element-player",
       "version": "0.1.0",
       "dependencies": {
-        "@pie-element/shared-math-rendering": "workspace:*",
+        "@pie-element/shared-math-rendering-core": "workspace:*",
         "@pie-element/shared-math-rendering-katex": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-theming": "workspace:*",
@@ -144,6 +144,7 @@
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "prop-types": "^15.6.1",
@@ -172,6 +173,7 @@
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/categorize": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
@@ -206,6 +208,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/charting": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
@@ -269,6 +272,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -302,6 +306,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -360,6 +365,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -394,6 +400,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -424,6 +431,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -455,6 +463,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -487,6 +496,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -519,6 +529,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -552,6 +563,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -585,6 +597,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -615,6 +628,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -649,6 +663,7 @@
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -684,6 +699,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/drag": "workspace:*",
@@ -714,6 +730,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-mathquill": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-framework/math-validation": "^1.0.0",
@@ -751,6 +768,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-mathquill": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-framework/math-validation": "^1.0.0",
@@ -785,6 +803,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -814,6 +833,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/drag": "workspace:*",
@@ -844,6 +864,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -880,6 +901,7 @@
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -916,6 +938,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -946,6 +969,7 @@
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -981,6 +1005,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/rubric": "workspace:*",
@@ -1009,6 +1034,7 @@
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-feedback": "workspace:*",
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -1484,7 +1510,7 @@
     },
     "packages/lib-svelte/ui": {
       "name": "@pie-element/lib-ui",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
         "@tiptap/core": "^3.14.0",
@@ -1513,7 +1539,7 @@
     },
     "packages/shared/configure-events": {
       "name": "@pie-element/shared-configure-events",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.9.3",
@@ -1544,9 +1570,9 @@
         "vitest": "^4.0.17",
       },
     },
-    "packages/shared/math-rendering": {
-      "name": "@pie-element/shared-math-rendering",
-      "version": "1.0.0",
+    "packages/shared/math-rendering-core": {
+      "name": "@pie-element/shared-math-rendering-core",
+      "version": "0.1.0",
       "dependencies": {
         "@pie-element/shared-mathml-to-latex": "workspace:*",
       },
@@ -1558,9 +1584,9 @@
     },
     "packages/shared/math-rendering-katex": {
       "name": "@pie-element/shared-math-rendering-katex",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "dependencies": {
-        "@pie-element/shared-math-rendering": "workspace:*",
+        "@pie-element/shared-math-rendering-core": "workspace:*",
         "@pie-element/shared-mathml-to-latex": "workspace:*",
         "katex": "^0.16.27",
       },
@@ -1577,9 +1603,9 @@
     },
     "packages/shared/math-rendering-mathjax": {
       "name": "@pie-element/shared-math-rendering-mathjax",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "dependencies": {
-        "@pie-element/shared-math-rendering": "workspace:*",
+        "@pie-element/shared-math-rendering-core": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^5.9.3",
@@ -1589,7 +1615,7 @@
     },
     "packages/shared/mathml-to-latex": {
       "name": "@pie-element/shared-mathml-to-latex",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@xmldom/xmldom": "^0.9.8",
       },
@@ -1602,7 +1628,7 @@
     },
     "packages/shared/mathquill": {
       "name": "@pie-element/shared-mathquill",
-      "version": "1.1.4",
+      "version": "0.1.0",
       "dependencies": {
         "jquery": "^3.7.1",
       },
@@ -1617,7 +1643,7 @@
     },
     "packages/shared/player-events": {
       "name": "@pie-element/shared-player-events",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.9.3",
@@ -1627,7 +1653,7 @@
     },
     "packages/shared/test-utils": {
       "name": "@pie-element/shared-test-utils",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
@@ -1639,7 +1665,7 @@
     },
     "packages/shared/theming": {
       "name": "@pie-element/shared-theming",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1659,7 +1685,7 @@
     },
     "packages/shared/theming-daisyui": {
       "name": "@pie-element/shared-theming-daisyui",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@pie-element/shared-theming": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
@@ -1683,7 +1709,7 @@
     },
     "packages/shared/theming-mui": {
       "name": "@pie-element/shared-theming-mui",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@pie-element/shared-theming": "workspace:*",
         "@pie-element/shared-theming-daisyui": "workspace:*",
@@ -1704,14 +1730,14 @@
     },
     "packages/shared/types": {
       "name": "@pie-element/shared-types",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "devDependencies": {
         "typescript": "^5.9.3",
       },
     },
     "packages/shared/utils": {
       "name": "@pie-element/shared-utils",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
       },
@@ -2107,7 +2133,7 @@
 
     "@pie-element/shared-feedback": ["@pie-element/shared-feedback@workspace:packages/shared/feedback"],
 
-    "@pie-element/shared-math-rendering": ["@pie-element/shared-math-rendering@workspace:packages/shared/math-rendering"],
+    "@pie-element/shared-math-rendering-core": ["@pie-element/shared-math-rendering-core@workspace:packages/shared/math-rendering-core"],
 
     "@pie-element/shared-math-rendering-katex": ["@pie-element/shared-math-rendering-katex@workspace:packages/shared/math-rendering-katex"],
 

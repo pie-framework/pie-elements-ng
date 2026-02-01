@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/inline-dropdown/configure/src/main.jsx
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -16,7 +15,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 import { AlertDialog, InputContainer, layout, settings } from '@pie-lib/config-ui';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { color } from '@pie-lib/render-ui';
 import { cloneDeep } from 'lodash-es';
 import { isEqual } from 'lodash-es';

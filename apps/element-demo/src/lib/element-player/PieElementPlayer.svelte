@@ -17,7 +17,7 @@ import { EsmElementPlayer } from '@pie-element/element-player/players';
 import { loadElement, loadController } from './lib/demo-element-loader';
 import type { PieController } from './lib/types';
 import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
-import type { MathRenderer } from '@pie-element/shared-math-rendering';
+import type { MathRenderer } from '@pie-element/shared-math-rendering-core';
 
 const dispatch = createEventDispatcher();
 

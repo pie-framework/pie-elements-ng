@@ -21,7 +21,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-element/shared-math-rendering": "workspace:*"
+    "@pie-element/shared-math-rendering-core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

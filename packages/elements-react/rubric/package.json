@@ -12,7 +12,8 @@
     "prop-types": "^15.7.2",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/rubric": "workspace:*",
-    "@pie-lib/config-ui": "workspace:*"
+    "@pie-lib/config-ui": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",

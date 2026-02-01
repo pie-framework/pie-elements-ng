@@ -21,6 +21,7 @@
     "@pie-framework/math-validation": "^1.0.0",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-mathquill": "workspace:*"
   },
   "peerDependencies": {

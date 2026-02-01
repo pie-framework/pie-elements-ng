@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-lib/packages/mask-markup/src/components/dropdown.jsx
  * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -24,7 +23,7 @@ import Check from '@mui/icons-material/Check';
 import { styled } from '@mui/material/styles';
 
 import { color } from '@pie-lib/render-ui';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const StyledButton: any = styled(Button)(() => ({
   color: color.text(),

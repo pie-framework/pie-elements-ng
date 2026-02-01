@@ -17,6 +17,7 @@
     "debug": "^4.1.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {

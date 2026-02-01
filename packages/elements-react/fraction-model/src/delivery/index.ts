@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/fraction-model/src/index.js
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -16,7 +15,7 @@ import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import Main from './main';
 import { cloneDeep } from 'lodash-es';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import FractionModelChart from './fraction-model-chart';
 
 // Export FractionModelChart for use in configure

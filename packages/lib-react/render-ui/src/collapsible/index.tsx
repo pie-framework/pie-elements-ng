@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-lib/packages/render-ui/src/collapsible/index.jsx
  * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -14,7 +13,7 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import Collapse from '@mui/material/Collapse';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import PropTypes from 'prop-types';
 
 const Title: any = styled('span')(({ theme }) => ({

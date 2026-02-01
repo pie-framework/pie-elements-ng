@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/drag-in-the-blank/configure/src/main.jsx
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -17,7 +16,7 @@ import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 import { layout, settings } from '@pie-lib/config-ui';
 import { InputContainer } from '@pie-lib/render-ui';
 import { DragProvider } from '@pie-lib/drag';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';

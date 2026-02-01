@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/graphing/configure/src/correct-response.jsx
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -17,7 +16,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { GraphContainer as Graph } from '@pie-lib/graphing';
 import { AlertDialog } from '@pie-lib/config-ui';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Delete from '@mui/icons-material/Delete';
 import { set, isEqual } from 'lodash-es';
 import { MenuItem, Select, Tooltip, Typography } from '@mui/material';

@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/categorize/configure/src/design/index.jsx
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -29,7 +28,7 @@ import {
 } from '@pie-lib/categorize';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { DragProvider, uid } from '@pie-lib/drag';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 import Categories from './categories';
 import AlternateResponses from './categories/alternateResponses';

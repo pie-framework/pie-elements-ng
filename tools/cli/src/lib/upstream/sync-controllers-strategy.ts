@@ -65,7 +65,6 @@ export class ControllersStrategy implements SyncStrategy {
     const targetBaseDir = join(config.pieElementsNg, 'packages/elements-react');
 
     const upstreamCommit = getCurrentCommit(config.pieElements);
-    const syncDate = new Date().toISOString().split('T')[0];
 
     const packages = await readdir(upstreamElementsDir);
 
@@ -109,7 +108,6 @@ export class ControllersStrategy implements SyncStrategy {
       const { code: converted } = convertJsToTs(sourceContent, {
         sourcePath: `pie-elements/packages/${pkg}/controller/src/index.js`,
         commit: upstreamCommit,
-        date: syncDate,
       });
 
       let elementChanged = false;
@@ -152,8 +150,7 @@ export class ControllersStrategy implements SyncStrategy {
           const { code: relatedConverted } = convertJsToTs(relatedContent, {
             sourcePath: `pie-elements/packages/${pkg}/controller/src/${file}`,
             commit: upstreamCommit,
-            date: syncDate,
-          });
+              });
 
           const relatedIsNew = !existsSync(relatedTarget);
           if (!relatedIsNew) {

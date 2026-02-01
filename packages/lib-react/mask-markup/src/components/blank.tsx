@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-lib/packages/mask-markup/src/components/blank.jsx
  * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -13,7 +12,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';

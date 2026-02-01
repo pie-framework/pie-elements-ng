@@ -241,13 +241,13 @@ This package follows the pluggable architecture pattern from pie-qti's typesetti
 3. **Lazy Loading**: Math engines loaded only when first used
 4. **Graceful Degradation**: Missing renderer = raw LaTeX/MathML displayed
 
-## Migration from @pie-element/shared-math-rendering
+## Migration from @pie-element/shared-math-rendering-core
 
 The new package provides a cleaner, pluggable API:
 
 **Old (tightly coupled):**
 ```typescript
-import { renderMath } from '@pie-element/shared-math-rendering';
+import { renderMath } from '@pie-element/shared-math-rendering-core';
 renderMath(document.body);
 ```
 

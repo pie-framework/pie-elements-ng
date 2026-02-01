@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/select-text/src/print.js
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -15,7 +14,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { debounce } from 'lodash-es';
 import Main from '../delivery/main';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
 
 const log = debug('pie-element:select-text:print');

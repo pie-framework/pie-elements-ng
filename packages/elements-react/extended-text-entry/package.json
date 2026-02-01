@@ -17,6 +17,7 @@
     "prop-types": "^15.6.1",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-feedback": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {

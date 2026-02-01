@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-lib/packages/render-ui/src/preview-prompt.jsx
  * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -15,7 +14,7 @@ import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import * as color from './color';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
   // Base promptTable styles

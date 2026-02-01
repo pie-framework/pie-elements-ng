@@ -26,7 +26,7 @@
     "dev": "vite"
   },
   "dependencies": {
-    "@pie-element/shared-math-rendering": "workspace:*",
+    "@pie-element/shared-math-rendering-core": "workspace:*",
     "@pie-element/shared-math-rendering-katex": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-theming": "workspace:*",

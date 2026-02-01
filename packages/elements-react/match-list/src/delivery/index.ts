@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/match-list/src/index.js
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -17,7 +16,7 @@ import debug from 'debug';
 import Main from './main';
 
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const log = debug('pie-ui:graph-lines');
 

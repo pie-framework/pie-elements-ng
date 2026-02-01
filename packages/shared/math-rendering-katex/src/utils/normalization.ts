@@ -4,7 +4,7 @@
  * Handles wrapping and unwrapping of math content with LaTeX delimiters.
  */
 
-import { BracketTypes, type BracketType } from '@pie-element/shared-math-rendering';
+import { BracketTypes, type BracketType } from '@pie-element/shared-math-rendering-core';
 
 const PAIRS: Record<BracketType, [string, string]> = {
   [BracketTypes.ROUND_BRACKETS]: ['\\(', '\\)'],

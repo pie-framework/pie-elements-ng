@@ -1,5 +1,5 @@
 {
-  "name": "@pie-element/shared-math-rendering",
+  "name": "@pie-element/shared-math-rendering-core",
   "version": "0.1.0",
   "description": "Core types and utilities for pluggable math rendering in PIE elements",
   "type": "module",

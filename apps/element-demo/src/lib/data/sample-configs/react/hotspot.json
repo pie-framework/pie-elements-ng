@@ -18,7 +18,11 @@
         "rgba(0, 0, 0, 0.1)"
       ],
       "outlineColor": "blue",
-      "outlineList": ["blue", "red", "yellow"],
+      "outlineList": [
+        "blue",
+        "red",
+        "yellow"
+      ],
       "multipleCorrect": true,
       "shapes": {
         "rectangles": [

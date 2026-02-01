@@ -9,7 +9,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['@pie-element/shared-math-rendering'],
+      external: ['@pie-element/shared-math-rendering-core'],
     },
   },
 });

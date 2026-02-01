@@ -124,9 +124,9 @@ export default defineConfig({
       external: (id) => {
         return (
           /^@pie-element\\/shared-/.test(id) ||
-          id === '@pie-element/shared-math-rendering-katex' ||
+          id === '@pie-element/shared-math-rendering-mathjax' ||
           /^@pie-lib\\//.test(id) ||
-          ['katex', 'debug'].includes(id)
+          ['debug'].includes(id)
         );
       },
       output: {

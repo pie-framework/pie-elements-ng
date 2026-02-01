@@ -13,7 +13,7 @@ node_modules/
 
 # MCP configuration (local only)
 .mcp.json
-.mcp-imagen/
+mcp-imagen/
 
 # Build outputs
 dist/

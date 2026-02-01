@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@pie-element/element-player": "workspace:*",
-    "@pie-element/shared-math-rendering": "workspace:*",
-    "@pie-element/shared-math-rendering-katex": "workspace:*",
+    "@pie-element/shared-math-rendering-core": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/multiple-choice": "workspace:*",
     "@tiptap/core": "3.18.0",
     "@tiptap/extension-code-block-lowlight": "3.18.0",

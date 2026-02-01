@@ -3,7 +3,7 @@
  * Loads element metadata and initial model/session
  */
 import type { LayoutLoad } from './$types';
-import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
+import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
 
 export const ssr = false; // Client-side only rendering for web components
 
@@ -69,7 +69,7 @@ export const load: LayoutLoad = async ({ params }: { params: { element: string }
 
   // Create math renderer only once and cache it
   if (!cachedMathRenderer) {
-    cachedMathRenderer = createKatexRenderer();
+    cachedMathRenderer = createMathjaxRenderer();
   }
 
   return {

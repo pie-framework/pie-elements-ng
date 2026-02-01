@@ -18,3 +18,6 @@
 
 export { createMathjaxRenderer, getMathjaxCssUrls } from './adapter';
 export type { MathjaxOptions } from './types';
+
+// Legacy @pie-lib/math-rendering API for backward compatibility
+export { renderMath, wrapMath, unWrapMath, mmlToLatex } from './render-math';

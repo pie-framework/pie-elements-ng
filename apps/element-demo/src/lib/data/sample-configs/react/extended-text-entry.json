@@ -3,7 +3,9 @@
     {
       "id": "1",
       "element": "extended-text-entry",
-      "customKeys": ["\\square"],
+      "customKeys": [
+        "\\square"
+      ],
       "feedback": {
         "type": "default",
         "default": "this is default feedback"

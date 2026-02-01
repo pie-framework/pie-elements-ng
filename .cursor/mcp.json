@@ -9,6 +9,13 @@
       "command": "npx",
       "args": ["-y", "@playwright/mcp"],
       "env": {}
+    },
+    "imagen": {
+      "command": "node",
+      "args": ["mcp-imagen/dist/index.js"],
+      "env": {
+        "GOOGLE_API_KEY": "${GOOGLE_API_KEY}"
+      }
     }
   }
 }

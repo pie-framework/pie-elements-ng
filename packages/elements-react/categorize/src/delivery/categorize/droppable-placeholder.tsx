@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/categorize/src/categorize/droppable-placeholder.jsx
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *

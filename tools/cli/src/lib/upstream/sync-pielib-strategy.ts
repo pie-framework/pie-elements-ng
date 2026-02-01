@@ -71,7 +71,6 @@ export class PieLibStrategy implements SyncStrategy {
     }
 
     const upstreamCommit = getCurrentCommit(config.pieLib);
-    const syncDate = new Date().toISOString().split('T')[0];
 
     // Get list of packages to sync
     const allPackages = await readdir(upstreamLibDir);
@@ -129,7 +128,6 @@ export class PieLibStrategy implements SyncStrategy {
         filesProcessed = await this.generateMathRenderingWrapper(
           targetSrcDir,
           upstreamCommit,
-          syncDate,
           logger
         );
         libChanged = filesProcessed > 0;
@@ -141,8 +139,7 @@ export class PieLibStrategy implements SyncStrategy {
           targetSrcDir,
           'src',
           pkg,
-          upstreamCommit,
-          syncDate
+          upstreamCommit
         );
         const afterChanges = this.result.filesCopied + this.result.filesUpdated;
         libChanged = afterChanges > beforeChanges;
@@ -189,8 +186,7 @@ export class PieLibStrategy implements SyncStrategy {
     targetDir: string,
     relativePath: string,
     pkg: string,
-    upstreamCommit: string,
-    syncDate: string
+    upstreamCommit: string
   ): Promise<number> {
     let filesProcessed = 0;
     const defaultExportFiles = new Set<string>(); // Track files with default exports
@@ -212,8 +208,7 @@ export class PieLibStrategy implements SyncStrategy {
           join(targetDir, item),
           join(relativePath, item),
           pkg,
-          upstreamCommit,
-          syncDate
+          upstreamCommit
         );
         filesProcessed += subFilesProcessed;
         continue;
@@ -245,12 +240,10 @@ export class PieLibStrategy implements SyncStrategy {
         ? convertJsxToTsx(sourceContent, {
             sourcePath: `pie-lib/packages/${pkg}/${relativePath}/${item}`,
             commit: upstreamCommit,
-            date: syncDate,
           })
         : convertJsToTs(sourceContent, {
             sourcePath: `pie-lib/packages/${pkg}/${relativePath}/${item}`,
             commit: upstreamCommit,
-            date: syncDate,
           });
 
       let converted = conversionResult.code;
@@ -306,7 +299,6 @@ export class PieLibStrategy implements SyncStrategy {
   private async generateMathRenderingWrapper(
     targetSrcDir: string,
     upstreamCommit: string,
-    syncDate: string,
     logger: any
   ): Promise<number> {
     await mkdir(targetSrcDir, { recursive: true });
@@ -315,14 +307,13 @@ export class PieLibStrategy implements SyncStrategy {
 /**
  * @synced-from pie-lib/packages/math-rendering
  * @synced-commit ${upstreamCommit}
- * @synced-date ${syncDate}
  * @auto-generated
  *
- * This is a thin wrapper that re-exports from @pie-element/math-rendering-katex.
- * The actual implementation is in packages/shared/math-rendering-katex.
+ * This is a thin wrapper that re-exports from @pie-element/shared-math-rendering-mathjax.
+ * The actual implementation is in packages/shared/math-rendering-mathjax.
  */
 
-export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/shared-math-rendering-katex';
+export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/shared-math-rendering-mathjax';
 `;
 
     const indexPath = join(targetSrcDir, 'index.ts');

@@ -23,6 +23,7 @@
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-framework/math-validation": "^1.0.0",
     "@pie-element/shared-player-events": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "lodash-es": "^4.17.22"
   },
   "peerDependencies": {

@@ -36,8 +36,8 @@ import ModelInspector from './components/ModelInspector.svelte';
 import Tabs from './components/Tabs.svelte';
 import { loadElement, loadController } from './lib/element-loader';
 import type { PieController } from './lib/types';
-import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
-import type { MathRenderer } from '@pie-element/shared-math-rendering';
+import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
+import type { MathRenderer } from '@pie-element/shared-math-rendering-core';
 
 // Props with Svelte 5 runes
 let {
@@ -47,7 +47,7 @@ let {
   mode = $bindable('gather'),
   activeTab = $bindable('delivery'),
   showConfigure = false,
-  mathRenderer = $bindable<MathRenderer>(createKatexRenderer()),
+  mathRenderer = $bindable<MathRenderer>(createMathjaxRenderer()),
   hosted = $bindable(false),
   playerRole = $bindable<'student' | 'instructor'>('student'),
   partialScoring = $bindable(true),

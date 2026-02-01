@@ -2,7 +2,6 @@
 /**
  * @synced-from pie-elements/packages/multiple-choice/src/print.js
  * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @synced-date 2026-01-30
  * @sync-version v3
  * @auto-generated
  *
@@ -16,7 +15,7 @@ import { createRoot } from 'react-dom/client';
 import { debounce } from 'lodash-es';
 import { cloneDeep } from 'lodash-es';
 import Main from '../delivery/main';
-import { renderMath } from '@pie-element/shared-math-rendering-katex';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
 
 const log = debug('pie-element:multiple-choice:print');

@@ -10,7 +10,8 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
     "prop-types": "^15.6.1",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",
