@@ -5,7 +5,7 @@
 import type { LayoutLoad } from './$types';
 import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
 
-export const ssr = false; // Client-side only rendering for web components
+// SSR enabled for server-side validation - web components will hydrate on client
 
 // Cache the math renderer to prevent re-creating it on every load
 let cachedMathRenderer: any = null;
@@ -20,6 +20,7 @@ export const load: LayoutLoad = async ({ params }: { params: { element: string }
     .join(' ');
 
   // Load element registry to get metadata
+  // Note: Element existence is validated server-side in +layout.server.ts
   let capabilities: string[] = [];
   let initialModel: any = {};
   let initialSession: any = { value: [] };

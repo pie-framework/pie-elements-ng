@@ -63,3 +63,6 @@ esm-compatible-elements.json
 apps/element-demo/src/lib/element-imports.ts
 apps/element-demo/src/lib/elements/registry.ts
 apps/element-demo/src/lib/data/sample-configs/
+
+# Demo server lock file
+.demo-server.lock
