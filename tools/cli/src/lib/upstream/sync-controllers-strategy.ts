@@ -150,7 +150,7 @@ export class ControllersStrategy implements SyncStrategy {
           const { code: relatedConverted } = convertJsToTs(relatedContent, {
             sourcePath: `pie-elements/packages/${pkg}/controller/src/${file}`,
             commit: upstreamCommit,
-              });
+          });
 
           const relatedIsNew = !existsSync(relatedTarget);
           if (!relatedIsNew) {
