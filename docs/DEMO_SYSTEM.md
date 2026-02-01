@@ -166,3 +166,31 @@ The `upstream:sync` command already adds 'development' export conditions to sync
    - The element imports other workspace packages that also use 'development' exports
 
 **Recommendation:** For most development, use the stable configuration (no 'development' condition) and rebuild packages as needed. Only use HMR for rapid iteration when absolutely necessary.
+
+---
+
+### Drag-and-Drop Lockups
+
+**Symptom:** Browser lockup after dragging items in interactive elements.
+
+**Cause:** Bidirectional `$bindable` on session creates infinite loops - player updates element, element fires session-changed, player updates element again.
+
+**Solution:** Session flows ONE WAY only (element → player):
+
+```ts
+// ❌ Wrong: bidirectional binding creates loops
+let { session = $bindable({}) } = $props();
+
+// ✅ Correct: read-only, no loop possible
+let { session = {} } = $props();
+let internalSession = $state(session);  // Internal tracking if needed
+
+function handleSessionChange(event) {
+  internalSession = event.detail.session;
+  dispatch('session-changed', event.detail);
+}
+```
+
+**Key Rule:** Elements own session state. Players observe via events, never push back.
+
+---

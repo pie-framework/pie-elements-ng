@@ -18,6 +18,7 @@ import { loadElement, loadController } from './lib/demo-element-loader';
 import type { PieController } from './lib/types';
 import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
 import type { MathRenderer } from '@pie-element/shared-math-rendering-core';
+import { sessionsEqual } from '@pie-element/shared-utils';
 
 const dispatch = createEventDispatcher();
 
@@ -25,7 +26,7 @@ const dispatch = createEventDispatcher();
 let {
   elementName = '',
   model = $bindable({}),
-  session = $bindable({}),
+  session = {},  // Remove $bindable - session flows one way: element → player
   mode = $bindable('gather'),
   activeTab = $bindable('delivery'),
   showConfigure = false,
@@ -69,11 +70,12 @@ let modelError = $state<string | null>(null);
 let splitRatio = $state(50);
 let sessionVersion = $state(0);
 let modelVersion = $state(0);
-let lastSessionRef = $state<any>(null);
 let lastElementModelRef = $state<any>(null);
-let lastElementSessionRef = $state<any>(null);
 let roleLocked = $state(false);
 let syncing = $state(false);
+
+// Internal session state (owned by element, not synced back to parent)
+let internalSession = $state<any>(session);
 
 const logConsole = (label: string, data?: any) => {
   console.log('[pie-element-player]', label, data ?? '');
@@ -122,25 +124,7 @@ $effect(() => {
   }
 });
 
-$effect(() => {
-  if (!session) return;
-
-  // Only process if session reference actually changed
-  if (session === lastSessionRef) return;
-
-  const normalized = normalizeSession(session);
-  lastSessionRef = normalized;
-
-  // If normalization changed the object, update the bindable prop
-  if (normalized !== session) {
-    session = normalized;
-    return; // Exit early to avoid double-processing
-  }
-
-  sessionVersion += 1;
-  logConsole('session:prop', normalized);
-});
-
+// Simple effect: only push model to element (session flows from element, not to it)
 $effect(() => {
   if (!elementPlayer) return;
 
@@ -151,20 +135,6 @@ $effect(() => {
       logConsole('element:model:set', { prompt: elementModel?.prompt });
     } catch (err) {
       console.error('[pie-element-player] Error setting element model:', err);
-    }
-  }
-
-  // Check if session content has changed (not just reference)
-  if (session) {
-    const sessionChanged = JSON.stringify(session) !== JSON.stringify(lastElementSessionRef);
-    if (sessionChanged) {
-      lastElementSessionRef = session;
-      try {
-        (elementPlayer as any).session = session;
-        logConsole('element:session:set', { value: session?.value });
-      } catch (err) {
-        console.error('[pie-element-player] Error setting element session:', err);
-      }
     }
   }
 });
@@ -214,10 +184,10 @@ onMount(async () => {
   window.addEventListener('error', handleWindowError);
   window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
-  // Initialize tracking refs
-  lastSessionRef = session;
-  lastElementSessionRef = session;
-  lastElementModelRef = elementModel;
+  // Initialize internal session from prop (one-time setup)
+  if (session) {
+    internalSession = normalizeSession(session);
+  }
 
   try {
     if (!elementName) {
@@ -511,7 +481,7 @@ $effect(() => {
  * Call controller in evaluate mode
  */
 $effect(() => {
-  if (mode === 'evaluate' && controller && model && session) {
+  if (mode === 'evaluate' && controller && model && internalSession) {
     if (debug) console.log(`[pie-element-player] Calling controller.score()`);
 
     // Try score method first, fall back to outcome
@@ -519,7 +489,7 @@ $effect(() => {
 
     if (scoreMethod) {
       logConsole('outcome:start', { mode, role: playerRole, partialScoring });
-      scoreMethod(model, session, { mode, role: playerRole, partialScoring })
+      scoreMethod(model, internalSession, { mode, role: playerRole, partialScoring })
         .then((result: any) => {
           score = result;
           if (debug) console.log(`[pie-element-player] Score result:`, result);
@@ -541,20 +511,33 @@ $effect(() => {
 
 /**
  * Handle session-changed event from element
+ * Session flows ONE WAY: element → player (never back to element)
  */
 function handleSessionChange(event: CustomEvent) {
   if (debug) console.log(`[pie-element-player] Session changed:`, event.detail);
+
   const detail = event.detail as any;
+  let newSession: any = null;
+
   if (detail?.session) {
-    setSession(detail.session, 'session:changed');
-    lastElementSessionRef = session;
-    return;
+    newSession = detail.session;
+  } else if (elementPlayer && (elementPlayer as any).session) {
+    newSession = (elementPlayer as any).session;
   }
-  if (elementPlayer && (elementPlayer as any).session) {
-    setSession((elementPlayer as any).session, 'session:changed');
-    lastElementSessionRef = session;
-    return;
+
+  // Update internal session state and bump version for model rebuilds
+  if (newSession && !sessionsEqual(newSession, internalSession)) {
+    internalSession = newSession;
+    sessionVersion += 1;
+    if (debug) console.log(`[pie-element-player] Session version: ${sessionVersion}`);
   }
+
+  // Dispatch to parent (one-way flow up)
+  dispatch('session-changed', {
+    session: newSession,
+    complete: detail?.complete,
+  });
+
   logConsole('session:changed', detail);
 }
 
@@ -663,7 +646,7 @@ function handleSplitPointerDown(event: PointerEvent) {
           <EsmElementPlayer
             elementName={elementName}
             model={elementModel}
-            bind:session={session}
+            session={internalSession}
             on:session-changed={handleSessionChange}
           />
         </div>

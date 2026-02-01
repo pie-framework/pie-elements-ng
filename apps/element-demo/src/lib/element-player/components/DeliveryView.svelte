@@ -4,6 +4,7 @@
  */
 import DemoElementPlayer from './DemoElementPlayer.svelte';
 import { onMount, createEventDispatcher } from 'svelte';
+import { sessionsEqual } from '@pie-element/shared-utils';
 
 const dispatch = createEventDispatcher();
 
@@ -27,21 +28,27 @@ let elementPlayer = $state<HTMLElement | null>(null);
 
 // Track last session to avoid infinite loops
 let lastElementSessionRef = $state<any>(null);
+let updatingFromElement = $state(false);
+let elementSessionVersion = $state(0);
+let updateTimer: ReturnType<typeof setTimeout> | null = null;
 
 // Update element session when session prop changes
 $effect(() => {
-  if (!elementPlayer) return;
+  // Guard against re-entry when element fires session-changed
+  if (!elementPlayer || updatingFromElement) return;
 
-  if (session) {
-    const sessionChanged = JSON.stringify(session) !== JSON.stringify(lastElementSessionRef);
-    if (sessionChanged) {
-      lastElementSessionRef = session;
-      try {
-        (elementPlayer as any).session = session;
-        if (debug) console.log('[delivery-view] session updated', { value: session?.value });
-      } catch (err) {
-        console.error('[delivery-view] Error setting element session:', err);
-      }
+  if (session && !sessionsEqual(session, lastElementSessionRef)) {
+    lastElementSessionRef = session;
+    elementSessionVersion += 1;
+    try {
+      (elementPlayer as any).session = session;
+      if (debug)
+        console.log('[delivery-view] session updated', {
+          value: session?.value,
+          version: elementSessionVersion,
+        });
+    } catch (err) {
+      console.error('[delivery-view] Error setting element session:', err);
     }
   }
 });
@@ -74,20 +81,48 @@ $effect(() => {
  * Handle session-changed event from element
  */
 function handleSessionChange(event: CustomEvent) {
+  // Guard against re-entry when we're updating the element from our effect
+  if (updatingFromElement) {
+    if (debug) console.log('[delivery-view] Ignoring session-changed (updating from element)');
+    return;
+  }
+
   if (debug) console.log('[delivery-view] Session changed:', event.detail);
+
+  // Set guard flag to prevent infinite loop
+  updatingFromElement = true;
+
+  // Clear any existing timer
+  if (updateTimer) {
+    clearTimeout(updateTimer);
+  }
+
   const detail = event.detail as any;
+  let newSession: any = null;
+
   if (detail?.session) {
-    session = detail.session;
-    lastElementSessionRef = session;
-    dispatch('session-changed', session);
-    return;
+    newSession = detail.session;
+  } else if (elementPlayer && (elementPlayer as any).session) {
+    newSession = (elementPlayer as any).session;
   }
-  if (elementPlayer && (elementPlayer as any).session) {
-    session = (elementPlayer as any).session;
-    lastElementSessionRef = session;
+
+  // Only update if session actually changed
+  if (newSession && !sessionsEqual(newSession, session)) {
+    session = newSession;
+    lastElementSessionRef = newSession;
+    elementSessionVersion += 1;
+    if (debug) console.log('[delivery-view] Session version:', elementSessionVersion);
     dispatch('session-changed', session);
-    return;
+  } else {
+    // Even if session didn't change, update the ref to prevent effect from running
+    lastElementSessionRef = session;
   }
+
+  // Clear guard flag after a longer delay to ensure effect has completed
+  updateTimer = setTimeout(() => {
+    updatingFromElement = false;
+    updateTimer = null;
+  }, 100);
 }
 
 onMount(() => {

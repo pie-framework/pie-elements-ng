@@ -16,7 +16,7 @@ interface Props {
   session?: any;
 }
 
-let { elementName = '', model = $bindable(), session = $bindable() }: Props = $props();
+let { elementName = '', model = $bindable(), session = {} }: Props = $props();  // Remove session $bindable
 const dispatch = createEventDispatcher();
 
 let container: HTMLElement;
@@ -46,14 +46,7 @@ $effect(() => {
   }
 });
 
-$effect(() => {
-  if (elementInstance && session !== undefined) {
-    const currentElementSession = (elementInstance as any).session;
-    if (currentElementSession !== session) {
-      (elementInstance as any).session = session;
-    }
-  }
-});
+// No effect needed - session is set once during loadElementInstance
 
 async function loadElementInstance() {
   if (!elementName) {
@@ -110,15 +103,13 @@ async function loadElementInstance() {
       (elementInstance as any).session = nextSession;
     }
 
-    // Listen for session changes
+    // Listen for session changes - simple dispatch up (no loop risk)
     elementInstance.addEventListener('session-changed', (e: Event) => {
       e.stopPropagation();
       const customEvent = e as CustomEvent;
       const nextSession = (elementInstance as any).session;
       console.log('[demo-player] Session changed:', customEvent.detail);
-      if (nextSession !== session) {
-        session = nextSession;
-      }
+
       dispatch('session-changed', {
         session: nextSession,
         complete: (customEvent.detail as any)?.complete,

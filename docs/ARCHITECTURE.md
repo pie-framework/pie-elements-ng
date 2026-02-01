@@ -926,6 +926,38 @@ Planned extension points:
 - Custom rendering plugins
 - Third-party integrations
 
+## Best Practices
+
+### Session State: One-Way Data Flow
+
+**Rule:** Session flows from element → player only, never back.
+
+```svelte
+<!-- ❌ Wrong: bidirectional creates infinite loops -->
+let { session = $bindable({}) } = $props();
+$effect(() => { element.session = session; });  // Triggers loop
+
+<!-- ✅ Correct: read-only, observe via events -->
+let { session = {} } = $props();
+let internalSession = $state(session);
+
+function handleSessionChange(event) {
+  internalSession = event.detail.session;
+  dispatch('session-changed', event.detail);
+}
+```
+
+**Why:** Elements own their session state (user responses). Players observe changes via events. Pushing session back to elements creates loops: update → effect → element fires event → update → repeat.
+
+### Use $bindable Sparingly
+
+Use `$bindable` only for true bidirectional flow:
+
+- ✅ UI controls: `mode`, `playerRole`, `splitRatio`
+- ✅ Settings: `partialScoring`, `addCorrectResponse`
+- ❌ Session state (element owns it)
+- ❌ Derived values (use `$derived` instead)
+
 ## Future Enhancements
 
 ### Planned Features
