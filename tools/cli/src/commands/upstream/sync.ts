@@ -6,7 +6,6 @@ import { printSyncSummary, createEmptySummary } from '../../lib/upstream/sync-su
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { rm as fsRm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readdir } from '../../lib/upstream/sync-filesystem.js';
 import { getAllDeps } from '../../lib/upstream/sync-package-json.js';
@@ -408,29 +407,16 @@ export default class Sync extends Command {
   private async cleanTargetDirectories(config: SyncConfig): Promise<void> {
     if (!config.useEsmFilter || config.dryRun) return;
 
-    // Only remove entire directories when doing a "full compatible sync" (no explicit package filters),
-    // otherwise a targeted sync would unexpectedly delete unrelated packages.
-    if ((config.syncControllers || config.syncReactComponents) && !config.elementsSpecifiedByUser) {
-      const baseDir = join(config.pieElementsNg, 'packages/elements-react');
-      if (existsSync(baseDir)) {
-        await fsRm(baseDir, { recursive: true, force: true });
-        this.logger.info('  🧹 Removed packages/elements-react/ for clean sync');
-      }
-    }
-
-    // Only clean lib-react when syncing ALL elements (not when user specified specific elements)
-    // This prevents re-syncing all 23 pie-lib packages multiple times when syncing specific elements
-    if (
-      config.syncPieLibPackages &&
-      !config.pieLibPackagesSpecifiedByUser &&
-      !config.elementsSpecifiedByUser
-    ) {
-      const baseDir = join(config.pieElementsNg, 'packages/lib-react');
-      if (existsSync(baseDir)) {
-        await fsRm(baseDir, { recursive: true, force: true });
-        this.logger.info('  🧹 Removed packages/lib-react/ for clean sync');
-      }
-    }
+    // NOTE: We intentionally do NOT delete the entire packages/elements-react/ directory
+    // because that would delete locally-maintained content like docs/demo/config.mjs files.
+    // Instead, each sync strategy (ReactComponentsStrategy, PieLibStrategy, etc.) handles
+    // cleaning individual package directories while preserving specific subdirectories
+    // (like docs/ and controller/).
+    //
+    // This approach ensures:
+    // 1. Demo configs (docs/demo/*.mjs) are preserved across syncs
+    // 2. Controllers (src/controller/) are preserved during React component sync
+    // 3. Only the files that need updating are touched
   }
 
   private async checkViteAvailable(config: SyncConfig): Promise<boolean> {

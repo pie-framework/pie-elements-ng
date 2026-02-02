@@ -857,7 +857,7 @@
     },
     "packages/elements-react/multiple-choice": {
       "name": "@pie-element/multiple-choice",
-      "version": "0.0.0-test.1769993634241",
+      "version": "0.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1306,6 +1306,8 @@
       "name": "@pie-lib/mask-markup",
       "version": "0.1.0",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
+        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",

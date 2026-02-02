@@ -17,12 +17,11 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 import Group from './group';
 
-// Lazy load EditableHtml to avoid SSR issues with mathquill
-const EditableHtmlLazy = React.lazy(() =>
-  import('@pie-lib/editable-html-tip-tap').then(module => ({ default: module.default }))
-);
+// - mathquill error window not defined
+import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
 
-const StyledEditableHTML: any = styled(EditableHtmlLazy)(({ theme }) => ({
+const EditableHtml = EditableHtmlImport;
+const StyledEditableHTML: any = styled(EditableHtml)(({ theme }) => ({
     fontFamily: theme.typography.fontFamily,
   }));
 
@@ -109,15 +108,13 @@ export class FeedbackSelector extends React.Component {
 
         {feedback.type === 'custom' && (
           <StyledCustomHolder>
-            <React.Suspense fallback={<div>Loading editor...</div>}>
-        <StyledEditableHTML
+            <StyledEditableHTML
               onChange={this.changeCustom}
               markup={feedback.custom || ''}
               toolbarOpts={toolbarOpts}
               languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
               mathMlOptions={mathMlOptions}
             />
-      </React.Suspense>
           </StyledCustomHolder>
         )}
 

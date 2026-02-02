@@ -65,17 +65,9 @@ $effect(() => {
   }
 });
 
-// Render math when element content changes
-$effect(() => {
-  if (elementPlayer && mathRenderer) {
-    try {
-      mathRenderer(elementPlayer);
-      if (debug) console.log('[delivery-view] Math rendering applied');
-    } catch (err) {
-      console.error('[delivery-view] Math rendering error:', err);
-    }
-  }
-});
+// Note: Math rendering is handled internally by the element itself
+// The element calls renderMath() after each render (see delivery/index.ts line 96)
+// No external math rendering needed
 
 /**
  * Handle session-changed event from element

@@ -108,6 +108,8 @@ const buildModel = async (
 };
 
 // Rebuild model when dependencies change
+// Note: Session changes do NOT trigger rebuild - they're handled by DeliveryView
+// Only rebuild when model, mode, role, partialScoring, or controller changes
 $effect(() => {
   const currentModel = $model;
   const currentSession = $session;
@@ -116,7 +118,7 @@ $effect(() => {
   const currentPartialScoring = $partialScoring;
   const currentController = $controller;
   const currentModelVersion = $modelVersion;
-  const currentSessionVersion = $sessionVersion;
+  // Explicitly NOT including sessionVersion - session updates should not trigger model rebuild
 
   modelRequestId += 1;
   const requestId = modelRequestId;

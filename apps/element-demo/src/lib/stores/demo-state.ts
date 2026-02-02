@@ -12,10 +12,28 @@
 
 import { writable, derived, get } from 'svelte/store';
 
+// Demo configuration
+export interface DemoConfig {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  model: any;
+  session?: any;
+}
+
 // Element metadata
 export const elementName = writable<string>('');
 export const elementTitle = writable<string>('');
 export const capabilities = writable<string[]>([]);
+
+// Demo management
+export const demos = writable<DemoConfig[]>([]);
+export const activeDemoId = writable<string>('default');
+export const activeDemoIndex = derived([demos, activeDemoId], ([$demos, $activeDemoId]) => {
+  const index = $demos.findIndex((d) => d.id === $activeDemoId);
+  return index >= 0 ? index : 0;
+});
 
 // Element data - these are the source of truth shared across all routes
 export const model = writable<any>({});
@@ -56,6 +74,8 @@ export function initializeDemo(data: {
   controller: any;
   capabilities: string[];
   mathRenderer?: any;
+  demos?: DemoConfig[];
+  activeDemoId?: string;
 }) {
   elementName.set(data.elementName);
   elementTitle.set(data.elementTitle);
@@ -65,6 +85,12 @@ export function initializeDemo(data: {
   capabilities.set(data.capabilities);
   if (data.mathRenderer) {
     mathRenderer.set(data.mathRenderer);
+  }
+  if (data.demos) {
+    demos.set(data.demos);
+  }
+  if (data.activeDemoId) {
+    activeDemoId.set(data.activeDemoId);
   }
 }
 
@@ -119,4 +145,24 @@ export function resetSession() {
     value: [],
   }));
   sessionVersion.update((v) => v + 1);
+}
+
+/**
+ * Switch to a different demo by ID
+ * This loads the demo's model and session and resets versions
+ */
+export function switchDemo(demoId: string) {
+  const allDemos = get(demos);
+  const demo = allDemos.find((d) => d.id === demoId);
+
+  if (demo) {
+    activeDemoId.set(demoId);
+    model.set(demo.model || {});
+    session.set(demo.session || { value: [] });
+    modelVersion.update((v) => v + 1);
+    sessionVersion.update((v) => v + 1);
+    console.log('[demo-state] switched to demo:', demoId);
+  } else {
+    console.warn('[demo-state] demo not found:', demoId);
+  }
 }

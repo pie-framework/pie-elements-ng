@@ -1,42 +1,34 @@
-import { Args, Command, Flags } from '@oclif/core';
+import { Command, Flags } from '@oclif/core';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
-import { existsSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 
 /**
- * Start development server for element demos.
+ * Start unified demo application for all PIE elements.
  *
- * This command starts the SvelteKit dev server directly by default.
- * Use --build to rebuild the element and player before starting.
+ * This command starts the apps/element-demo SvelteKit application which provides
+ * a unified demo experience for all 27 PIE elements with multiple demo configurations.
  */
 export default class DevDemo extends Command {
   static override description =
-    'Start demo server using apps/element-demo (fast start, no build by default)';
+    'Start unified demo app for all PIE elements (apps/element-demo)';
 
   static override examples = [
-    '<%= config.bin %> <%= command.id %> hotspot',
-    '<%= config.bin %> <%= command.id %> multiple-choice --port 5180',
-    '<%= config.bin %> <%= command.id %> math-inline --build',
-    '<%= config.bin %> <%= command.id %> hotspot --build-element',
+    '<%= config.bin %> <%= command.id %>',
+    '<%= config.bin %> <%= command.id %> --port 5180',
+    '<%= config.bin %> <%= command.id %> --open',
+    '<%= config.bin %> <%= command.id %> --build',
   ];
 
   static override flags = {
     port: Flags.integer({
       char: 'p',
       description: 'Vite dev server port',
-      default: 5600,
+      default: 5222,
     }),
     build: Flags.boolean({
       char: 'b',
-      description: 'Build element and element-player before starting',
-      default: false,
-    }),
-    'build-element': Flags.boolean({
-      description: 'Build only the element before starting',
-      default: false,
-    }),
-    'build-player': Flags.boolean({
-      description: 'Build only the element-player before starting',
+      description: 'Build all elements before starting',
       default: false,
     }),
     open: Flags.boolean({
@@ -47,79 +39,70 @@ export default class DevDemo extends Command {
     }),
   };
 
-  static override args = {
-    element: Args.string({
-      required: true,
-      description: 'Element name (e.g., hotspot, multiple-choice, math-inline)',
-    }),
-  };
+  static override args = {};
 
   private viteProcess: ChildProcess | null = null;
   private lockFilePath = path.join(process.cwd(), '.demo-server.lock');
 
   public async run(): Promise<void> {
-    const { args, flags } = await this.parse(DevDemo);
+    const { flags } = await this.parse(DevDemo);
 
-    // Resolve element path
-    const elementPath = this.resolveElementPath(args.element);
-    if (!elementPath) {
-      this.error(`Element not found: ${args.element}`);
+    // Find monorepo root - check if we're already at root or need to traverse up
+    let monorepoRoot = process.cwd();
+    const rootPackageJson = path.join(monorepoRoot, 'package.json');
+
+    // If package.json doesn't exist at current level, we're in a subdirectory (like tools/cli)
+    // Traverse up to find the root
+    if (!existsSync(rootPackageJson) || !existsSync(path.join(monorepoRoot, 'apps'))) {
+      monorepoRoot = path.resolve(monorepoRoot, '../..');
     }
 
-    this.acquireLock(flags.port, args.element);
+    const demoAppPath = path.join(monorepoRoot, 'apps', 'element-demo');
 
-    this.log(`Starting demo for ${args.element}...`);
+    this.acquireLock(flags.port);
+
+    this.log('Starting unified demo app for all PIE elements...');
     this.log('');
 
     try {
-      const shouldBuildElement = flags.build || flags['build-element'];
-      const shouldBuildPlayer = flags.build || flags['build-player'];
-
-      // 1. Build element-player if requested
-      if (shouldBuildPlayer) {
-        await this.buildElementPlayer();
+      // 1. Build all elements if requested
+      if (flags.build) {
+        this.log('Building all React elements...');
+        await this.buildAllElements(monorepoRoot);
       }
 
-      // 2. Build element if requested
-      if (shouldBuildElement) {
-        await this.buildElement(args.element);
-      }
-
-      // 3. Install workspace dependencies (only if building)
-      if (shouldBuildElement || shouldBuildPlayer) {
+      // 2. Install workspace dependencies (only if building)
+      if (flags.build) {
         this.log('Installing workspace dependencies...');
-        await this.installDependencies();
+        await this.installDependencies(monorepoRoot);
         this.log('✓ Dependencies installed\n');
       }
 
-      // 4. Start Vite dev server
+      // 3. Start Vite dev server
       this.log(`Starting Vite dev server on port ${flags.port}...`);
-      const demoAppPath = path.join(process.cwd(), 'apps', 'element-demo');
       if (!existsSync(demoAppPath)) {
         this.error(`Demo app not found at ${demoAppPath}`);
       }
-      this.viteProcess = await this.startVite(demoAppPath, flags.port, {
-        VITE_ELEMENT_NAME: args.element,
-      });
+      this.viteProcess = await this.startVite(demoAppPath, flags.port, {});
 
-      // 5. Open browser
+      // 4. Open browser
       if (flags.open) {
-        await this.sleep(2000); // Wait for Vite to start
+        await this.sleep(3000); // Wait for Vite to start
         const url = `http://localhost:${flags.port}`;
         this.log(`Opening ${url}...`);
         await this.openBrowser(url);
       }
 
       this.log('');
-      this.log('✓ Demo server running');
-      this.log(`  Demo: http://localhost:${flags.port}`);
+      this.log('✓ Demo app running');
+      this.log(`  URL: http://localhost:${flags.port}`);
       this.log('');
-      if (!shouldBuildElement && !shouldBuildPlayer) {
-        this.log('ℹ️  Running without rebuild. Use --build to rebuild element and player first.');
+      if (!flags.build) {
+        this.log('ℹ️  Running without rebuild. Use --build to rebuild all elements first.');
         this.log('');
       }
-      this.log('📖 The demo uses workspace dependencies for module resolution');
-      this.log('   All PIE packages are resolved automatically via the monorepo');
+      this.log('📖 The demo app showcases all 27 PIE elements with multiple demos');
+      this.log('   Navigate to any element to see available demo configurations');
       this.log('');
       this.log('Press Ctrl+C to stop');
 
@@ -143,101 +126,23 @@ export default class DevDemo extends Command {
     }
   }
 
-  private resolveElementPath(element: string): string | null {
-    const targetPackageName = `@pie-element/${element}`;
-    const workspacePackages = this.getWorkspacePackages();
-    const match = workspacePackages.find((pkg) => pkg.name === targetPackageName);
-    return match?.path ?? null;
-  }
-
-  private getWorkspacePackages(): Array<{ name: string; path: string }> {
-    const rootPkgPath = path.join(process.cwd(), 'package.json');
-    if (!existsSync(rootPkgPath)) {
-      return [];
-    }
-
-    const rootPkg = JSON.parse(readFileSync(rootPkgPath, 'utf-8'));
-    const workspaces = Array.isArray(rootPkg.workspaces)
-      ? rootPkg.workspaces
-      : (rootPkg.workspaces?.packages ?? []);
-
-    const packages: Array<{ name: string; path: string }> = [];
-
-    for (const pattern of workspaces) {
-      if (typeof pattern !== 'string') continue;
-      if (pattern.includes('*')) {
-        const baseDir = pattern.replace('/*', '');
-        const basePath = path.join(process.cwd(), baseDir);
-        if (!existsSync(basePath)) continue;
-
-        const dirs = readdirSync(basePath, { withFileTypes: true })
-          .filter((d) => d.isDirectory())
-          .map((d) => d.name);
-
-        for (const dir of dirs) {
-          const pkgPath = path.join(basePath, dir);
-          const pkgJsonPath = path.join(pkgPath, 'package.json');
-          if (!existsSync(pkgJsonPath)) continue;
-          const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
-          packages.push({ name: pkgJson.name, path: pkgPath });
-        }
-      } else {
-        const pkgPath = path.join(process.cwd(), pattern);
-        const pkgJsonPath = path.join(pkgPath, 'package.json');
-        if (!existsSync(pkgJsonPath)) continue;
-        const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
-        packages.push({ name: pkgJson.name, path: pkgPath });
-      }
-    }
-
-    return packages;
-  }
-
-  private async buildElementPlayer(): Promise<void> {
-    this.log('Building element-player...');
-
+  private async buildAllElements(cwd: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', '@pie-element/element-player'],
+        ['run', 'turbo', 'build', '--force', '--filter', './packages/elements-react/*'],
         {
           stdio: 'inherit',
-          cwd: process.cwd(),
+          cwd,
         }
       );
 
       build.on('close', (code) => {
         if (code === 0) {
-          this.log('✓ Element player built\n');
+          this.log('✓ All elements built\n');
           resolve();
         } else {
-          reject(new Error(`Element player build failed with code ${code}`));
-        }
-      });
-
-      build.on('error', reject);
-    });
-  }
-
-  private async buildElement(element: string): Promise<void> {
-    this.log(`Building ${element}...`);
-
-    return new Promise((resolve, reject) => {
-      const build = spawn(
-        'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}`],
-        {
-          stdio: 'inherit',
-          cwd: process.cwd(),
-        }
-      );
-
-      build.on('close', (code) => {
-        if (code === 0) {
-          this.log('✓ Element built\n');
-          resolve();
-        } else {
-          reject(new Error(`Element build failed with code ${code}`));
+          reject(new Error(`Build failed with code ${code}`));
         }
       });
 
@@ -277,10 +182,10 @@ export default class DevDemo extends Command {
     }
   }
 
-  private async installDependencies(): Promise<void> {
+  private async installDependencies(cwd: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const install = spawn('bun', ['install'], {
-        cwd: process.cwd(), // Run from monorepo root to resolve all workspaces
+        cwd, // Run from monorepo root to resolve all workspaces
         stdio: 'inherit',
       });
 
@@ -313,16 +218,16 @@ export default class DevDemo extends Command {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  private acquireLock(port: number, element: string): void {
+  private acquireLock(port: number): void {
     if (existsSync(this.lockFilePath)) {
       try {
         const raw = readFileSync(this.lockFilePath, 'utf-8');
         const lock = JSON.parse(raw);
         if (lock?.pid && this.isProcessRunning(lock.pid)) {
           this.error(
-            `A demo server is already running (element: ${lock.element ?? 'unknown'}, port: ${
-              lock.port ?? 'unknown'
-            }, pid: ${lock.pid}). Stop it or use --port to run another demo.`
+            `A demo server is already running (port: ${lock.port ?? 'unknown'}, pid: ${
+              lock.pid
+            }). Stop it or use --port to run on a different port.`
           );
         }
       } catch (error) {
@@ -339,7 +244,6 @@ export default class DevDemo extends Command {
     const lockInfo = {
       pid: process.pid,
       port,
-      element,
       startedAt: new Date().toISOString(),
     };
     writeFileSync(this.lockFilePath, `${JSON.stringify(lockInfo, null, 2)}\n`);

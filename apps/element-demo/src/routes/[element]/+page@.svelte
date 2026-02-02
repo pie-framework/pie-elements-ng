@@ -91,6 +91,35 @@ const hasPrint = $derived(data.capabilities.includes('print'));
         </div>
       </div>
 
+      <div class="card bg-base-200 mb-6">
+        <div class="card-body p-6">
+          <h2 class="card-title text-lg mb-3">
+            Available Demos
+            <span class="badge badge-primary">{data.demos?.length ?? 0}</span>
+          </h2>
+          <div class="space-y-2 max-h-80 overflow-y-auto">
+            {#each data.demos ?? [] as demo}
+              <a
+                href="/{data.elementName}/deliver?demo={demo.id}"
+                class="block p-3 rounded-lg hover:bg-base-300 transition-colors border border-base-300"
+              >
+                <div class="font-semibold text-sm">{demo.title}</div>
+                <div class="text-xs text-base-content/70 mt-1">
+                  {demo.description}
+                </div>
+                {#if demo.tags && demo.tags.length > 0}
+                  <div class="flex gap-1 mt-2 flex-wrap">
+                    {#each demo.tags as tag}
+                      <span class="badge badge-xs badge-outline">{tag}</span>
+                    {/each}
+                  </div>
+                {/if}
+              </a>
+            {/each}
+          </div>
+        </div>
+      </div>
+
       <p class="text-base-content/70">
         This is the PIE element demo application. Use the player to interact
         with the element in different modes (delivery, authoring, print) and

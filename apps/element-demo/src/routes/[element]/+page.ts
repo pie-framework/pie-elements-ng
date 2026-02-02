@@ -4,6 +4,13 @@
  */
 import type { PageLoad } from './$types';
 
+interface DemoConfig {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+}
+
 export const load: PageLoad = async ({ params }) => {
   const elementName = params.element || 'multiple-choice';
 
@@ -15,6 +22,8 @@ export const load: PageLoad = async ({ params }) => {
 
   // Load element registry to get metadata
   let capabilities: string[] = [];
+  let demos: DemoConfig[] = [];
+  let demoCount = 0;
 
   try {
     const registry = await import('$lib/elements/registry');
@@ -22,6 +31,7 @@ export const load: PageLoad = async ({ params }) => {
 
     if (elementInfo) {
       elementTitle = elementInfo.title;
+      demoCount = elementInfo.demoCount || 0;
 
       // Convert registry metadata to capabilities array
       if (elementInfo.hasAuthor) {
@@ -29,6 +39,23 @@ export const load: PageLoad = async ({ params }) => {
       }
       if (elementInfo.hasPrint) {
         capabilities.push('print');
+      }
+
+      // Load demos if available
+      if (demoCount > 0) {
+        try {
+          const configModule = await import(`$lib/data/sample-configs/react/${elementName}.json`);
+          if (configModule.default?.demos && Array.isArray(configModule.default.demos)) {
+            demos = configModule.default.demos.map((demo: any) => ({
+              id: demo.id,
+              title: demo.title,
+              description: demo.description,
+              tags: demo.tags || [],
+            }));
+          }
+        } catch (e) {
+          console.log(`[+page.ts] Could not load demos for ${elementName}`);
+        }
       }
     }
   } catch (e) {
@@ -39,5 +66,7 @@ export const load: PageLoad = async ({ params }) => {
     elementName,
     elementTitle,
     capabilities,
+    demos,
+    demoCount,
   };
 };

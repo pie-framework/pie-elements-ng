@@ -603,7 +603,7 @@ export function transformConfigureUtilsImports(content: string, relativePath: st
 }
 
 /**
- * Transform SSR-unsafe require() calls to React.lazy() with dynamic imports
+ * Transform SSR-unsafe require() calls to standard ESM imports
  *
  * Upstream pie-lib code uses this pattern for SSR compatibility with MathQuill:
  *
@@ -622,21 +622,22 @@ export function transformConfigureUtilsImports(content: string, relativePath: st
  * This doesn't work in browser ESM (require is not defined). Transform to:
  *
  * ```tsx
- * // Lazy load EditableHtml to avoid SSR issues with mathquill
- * const EditableHtmlLazy = React.lazy(() =>
- *   import('@pie-lib/editable-html-tip-tap').then(module => ({ default: module.default }))
- * );
+ * import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
  *
- * const StyledEditableHTML = styled(EditableHtmlLazy)(({ theme }) => ({
+ * const EditableHtml = EditableHtmlImport;
+ * const StyledEditableHTML = styled(EditableHtml)(({ theme }) => ({
  *   fontFamily: theme.typography.fontFamily,
  * }));
  * ```
  *
- * Also automatically wraps JSX usage in React.Suspense for full automation.
+ * We use direct imports instead of React.lazy because:
+ * - Simpler code (no Suspense wrapper needed)
+ * - No loading flicker
+ * - Modern bundlers handle ESM imports correctly for SSR
+ * - The component is always needed (no code-splitting benefit)
  */
 export function transformSsrRequireToReactLazy(content: string): string {
   let transformed = content;
-  let componentToWrap: string | null = null;
 
   // Pattern 1: SSR check with require() for editable-html-tip-tap with styled wrapper
   // Matches:
@@ -647,28 +648,28 @@ export function transformSsrRequireToReactLazy(content: string): string {
   //     EditableHtml = require('@pie-lib/editable-html-tip-tap')['default'];
   //     StyledEditableHTML = styled(EditableHtml)(...);
   //   }
+  //
+  // Note: styled() call may span multiple lines
 
   const ssrRequirePattern =
-    /\/\/\s*-\s*mathquill\s+error\s+window\s+not\s+defined\s*\nlet\s+(\w+);\s*\nlet\s+(\w+);\s*\nif\s*\(\s*typeof\s+window\s*!==\s*['"]undefined['"]\s*\)\s*\{\s*\n\s*\1\s*=\s*require\(['"](@pie-lib\/[^'"]+)['"]\)\[['"]default['"]\];\s*\n\s*\2\s*=\s*styled\(\1\)\(([\s\S]*?)\);\s*\n\s*\}/;
+    /(?:\/\/import\s+\w+\s+from\s+['"]@pie-lib\/[^'"]+['"]\s*;\s*\n)?let\s+(\w+);\s*\nlet\s+(\w+);\s*\n(?:\/\/\s*-\s*mathquill\s+error\s+window\s+not\s+defined\s*\n)?if\s*\(\s*typeof\s+window\s*!==\s*['"]undefined['"]\s*\)\s*\{\s*\n\s*\1\s*=\s*require\(['"](@pie-lib\/[^'"]+)['"]\)\[['"]default['"]\];\s*\n\s*\2\s*=\s*styled\(\1\)\(([\s\S]*?)\);\s*\n\s*\}/;
 
   const match = transformed.match(ssrRequirePattern);
 
   if (match) {
     const [fullMatch, componentVar, styledVar, importPath, styleParams] = match;
 
-    // Generate the React.lazy() replacement
-    const replacement = `// Lazy load EditableHtml to avoid SSR issues with mathquill
-const ${componentVar}Lazy = React.lazy(() =>
-  import('${importPath}').then(module => ({ default: module.default }))
-);
+    // Generate direct import replacement (better than React.lazy - simpler, no Suspense needed)
+    const importVarName = `${componentVar}Import`;
+    const replacement = `import ${importVarName} from '${importPath}';
 
-const ${styledVar} = styled(${componentVar}Lazy)(${styleParams});`;
+const ${componentVar} = ${importVarName};
+const ${styledVar} = styled(${componentVar})(${styleParams});`;
 
     transformed = transformed.replace(fullMatch, replacement);
-    componentToWrap = styledVar; // The styled component needs Suspense wrapping
   }
 
-  // Pattern 2: Simpler pattern without styled wrapper (used in mask-markup)
+  // Pattern 2: Simpler pattern without styled wrapper
   // Matches:
   //   //import EditableHTML from '@pie-lib/editable-html-tip-tap';
   //   let EditableHtml;
@@ -685,146 +686,13 @@ const ${styledVar} = styled(${componentVar}Lazy)(${styleParams});`;
     // Only apply if we didn't already match the styled pattern
     const [fullMatch, componentVar, importPath] = simpleMatch;
 
-    // Generate the React.lazy() replacement
-    const replacement = `// Lazy load EditableHtml to avoid SSR issues with mathquill
-const ${componentVar} = React.lazy(() =>
-  import('${importPath}').then(module => ({ default: module.default }))
-);`;
+    // Generate direct import replacement (better than React.lazy - simpler, no Suspense needed)
+    const importVarName = `${componentVar}Import`;
+    const replacement = `import ${importVarName} from '${importPath}';
+
+const ${componentVar} = ${importVarName};`;
 
     transformed = transformed.replace(fullMatch, replacement);
-    componentToWrap = componentVar;
-  }
-
-  // Now wrap JSX usage in React.Suspense if we found a component to wrap
-  if (componentToWrap) {
-    transformed = wrapComponentInSuspense(transformed, componentToWrap);
-  }
-
-  return transformed;
-}
-
-/**
- * Wrap JSX component usage in React.Suspense
- *
- * Finds all JSX instances of the component and wraps them in Suspense,
- * but only if not already wrapped.
- */
-function wrapComponentInSuspense(content: string, componentName: string): string {
-  let transformed = content;
-
-  // Find all JSX instances of the component: <ComponentName ... />  or  <ComponentName ...>...</ComponentName>
-  // This handles both self-closing and paired tags
-
-  // Pattern for self-closing tags: <ComponentName ... />
-  const selfClosingPattern = new RegExp(`(<${componentName}[\\s\\n][^>]*?\\/>)`, 'g');
-
-  // Pattern for paired tags: <ComponentName ...>...</ComponentName>
-  // We need to handle potentially nested content, so we'll use a simple approach
-  const openTagPattern = new RegExp(`(<${componentName}(?:[\\s\\n][^>]*)?>)`, 'g');
-
-  // Track all positions where we found the component
-  const positions: Array<{ start: number; end: number; content: string }> = [];
-
-  // Find self-closing instances
-  let match: RegExpExecArray | null;
-  match = selfClosingPattern.exec(content);
-  while (match !== null) {
-    const start = match.index;
-    const fullMatch = match[0];
-    const end = start + fullMatch.length;
-
-    // Check if already wrapped in Suspense
-    const before = content.slice(Math.max(0, start - 150), start);
-    if (!before.includes('<React.Suspense') && !before.includes('<Suspense')) {
-      positions.push({ start, end, content: fullMatch });
-    }
-    match = selfClosingPattern.exec(content);
-  }
-
-  // Find paired tag instances (more complex - need to find matching closing tag)
-  openTagPattern.lastIndex = 0;
-  match = openTagPattern.exec(content);
-  const maxIterations = 1000; // Safety limit to prevent infinite loops
-  let iterations = 0;
-
-  while (match !== null && iterations < maxIterations) {
-    iterations++;
-    const openTagStart = match.index;
-    const openTag = match[0];
-
-    // Skip if this is a self-closing tag (already handled)
-    if (openTag.endsWith('/>')) {
-      match = openTagPattern.exec(content);
-      continue;
-    }
-
-    // Find the matching closing tag
-    const closingTag = `</${componentName}>`;
-    let depth = 1;
-    let searchPos = openTagStart + openTag.length;
-    let closingTagPos = -1;
-
-    // Simple depth-based search for matching closing tag
-    while (depth > 0 && searchPos < content.length) {
-      const nextOpen = content.indexOf(`<${componentName}`, searchPos);
-      const nextClose = content.indexOf(closingTag, searchPos);
-
-      if (nextClose === -1) break; // No closing tag found
-
-      if (nextOpen !== -1 && nextOpen < nextClose) {
-        // Another opening tag before the closing tag
-        depth++;
-        searchPos = nextOpen + componentName.length + 1;
-      } else {
-        // Closing tag
-        depth--;
-        if (depth === 0) {
-          closingTagPos = nextClose;
-        }
-        searchPos = nextClose + closingTag.length;
-      }
-    }
-
-    if (closingTagPos !== -1) {
-      const fullContent = content.slice(openTagStart, closingTagPos + closingTag.length);
-
-      // Check if already wrapped in Suspense
-      const before = content.slice(Math.max(0, openTagStart - 150), openTagStart);
-      if (!before.includes('<React.Suspense') && !before.includes('<Suspense')) {
-        positions.push({
-          start: openTagStart,
-          end: closingTagPos + closingTag.length,
-          content: fullContent,
-        });
-      }
-    }
-
-    // Get next match - ensure we're advancing
-    const prevLastIndex = openTagPattern.lastIndex;
-    match = openTagPattern.exec(content);
-
-    // Safety: if lastIndex didn't advance, force it forward to prevent infinite loop
-    if (match && openTagPattern.lastIndex === prevLastIndex) {
-      openTagPattern.lastIndex = prevLastIndex + 1;
-      match = openTagPattern.exec(content);
-    }
-  }
-
-  if (iterations >= maxIterations) {
-    console.warn(
-      `Warning: wrapComponentInSuspense hit iteration limit for component ${componentName}`
-    );
-  }
-
-  // Apply wrapping in reverse order to preserve positions
-  positions.sort((a, b) => b.start - a.start);
-
-  for (const pos of positions) {
-    const wrapped = `<React.Suspense fallback={<div>Loading editor...</div>}>
-        ${pos.content}
-      </React.Suspense>`;
-
-    transformed = transformed.slice(0, pos.start) + wrapped + transformed.slice(pos.end);
   }
 
   return transformed;

@@ -12,7 +12,7 @@ let renderer: ReturnType<typeof createMathjaxRenderer> | null = null;
 
 function getRenderer() {
   if (!renderer) {
-    renderer = createMathjaxRenderer({ accessibility: true });
+    renderer = createMathjaxRenderer({ accessibility: true, useSingleDollar: true });
   }
   return renderer;
 }

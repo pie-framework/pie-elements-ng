@@ -12,7 +12,6 @@ import { convertJsToTs, convertJsxToTsx } from '../../utils/conversion.js';
 import { getCurrentCommit } from '../../utils/git.js';
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, existsAny, readdir } from './sync-filesystem.js';
-import { demoOverrides } from './demo-overrides.js';
 import { createExternalFunction, createKonvaExternalFunction } from './sync-externals.js';
 import { fixImportsInFile, containsJsx } from './sync-imports.js';
 import { createReactComponentTransformPipeline } from './sync-transforms.js';
@@ -194,14 +193,14 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
       // Ensure demo structure
       await this.ensureElementDemoStructure(pkg, elementDir, config, logger);
-      await this.applyDemoOverrides(pkg, elementDir);
+      // Demo configs are maintained locally - we do NOT apply overrides from upstream
 
       if (elementChanged || wrotePkgJson || wroteTsConfig) {
         this.touchedElementPackages.add(pkg);
       }
     }
 
-    await this.applyOverridesForExistingElements(targetBaseDir);
+    // Demo configs are maintained locally - we do NOT apply overrides to existing elements
 
     if (!logger.isVerbose()) {
       logger.progressCompleteWithCount(this.touchedElementPackages.size, 'packages');
@@ -212,15 +211,6 @@ export class ReactComponentsStrategy implements SyncStrategy {
       count: this.touchedElementPackages.size,
       packageNames: Array.from(this.touchedElementPackages).sort(),
     };
-  }
-
-  private async applyOverridesForExistingElements(targetBaseDir: string): Promise<void> {
-    const overrideElements = Object.keys(demoOverrides);
-    for (const elementName of overrideElements) {
-      const elementDir = join(targetBaseDir, elementName);
-      if (!existsSync(elementDir)) continue;
-      await this.applyDemoOverrides(elementName, elementDir);
-    }
   }
 
   private async cleanTargetDirExcept(
@@ -810,27 +800,15 @@ export default defineConfig({
     const targetDemoDir = join(elementDir, 'docs/demo');
     await mkdir(targetDemoDir, { recursive: true });
 
-    // Demo content is now shared via apps/element-demo.
-    // Keep only demo data (config/session) in docs/demo.
-
-    // Copy or generate config.mjs into docs/demo
-    const configMjs = join(upstreamDemoDir, 'config.mjs');
-    const configJs = join(upstreamDemoDir, 'config.js');
-    const generateJs = join(upstreamDemoDir, 'generate.js');
-
-    let configContent: string | null = null;
-
-    if (existsSync(configMjs)) {
-      // Copy config.mjs if it exists
-      configContent = await readFile(configMjs, 'utf-8');
-    } else if (existsSync(configJs) && existsSync(generateJs)) {
-      // Generate config.mjs from config.js + generate.js
-      configContent = await this.generateConfigContent(upstreamDemoDir, elementName);
-    }
-
-    if (configContent) {
-      await writeFile(join(targetDemoDir, 'config.mjs'), configContent, 'utf-8');
-    }
+    // Demo configs are maintained locally for the unified demo app (apps/element-demo).
+    // We do NOT sync demo configs from upstream - each element should have its own
+    // locally-maintained multi-demo config.mjs in docs/demo/.
+    //
+    // If a new element is synced and doesn't have a local demo config yet,
+    // it should be created manually with multiple demo scenarios.
+    //
+    // The unified demo app showcases all elements with rich demo configurations,
+    // so we maintain these locally rather than using upstream's single-demo configs.
 
     // Convert session.js (CommonJS) to session.mjs (ESM) if it exists upstream
     const sessionJs = join(upstreamDemoDir, 'session.js');
@@ -854,106 +832,13 @@ export default defineConfig({
       await writeFile(join(targetDemoDir, 'session.mjs'), sessionContent, 'utf-8');
     }
 
-    // Apply demo overrides if configured
-    await this.applyDemoOverrides(elementName, elementDir);
+    // Demo configs are maintained locally - we do NOT apply overrides from upstream
 
     // Remove unused generate.js if config.mjs exists (from demo dir only)
     const configPath = join(targetDemoDir, 'config.mjs');
     const generatePath = join(targetDemoDir, 'generate.js');
     if (existsSync(configPath) && existsSync(generatePath)) {
       await fsRm(generatePath, { force: true });
-    }
-  }
-
-  /**
-   * Generate config.mjs content from upstream config.js + generate.js
-   *
-   * This method handles the conversion from upstream's CommonJS config system
-   * to our ESM-based config.mjs format. It also normalizes element names to
-   * match our package naming convention (e.g., "hotspot-element" -> "hotspot").
-   *
-   * @returns The generated config.mjs content, or null if generation fails
-   */
-  private async generateConfigContent(
-    upstreamDemoDir: string,
-    elementName: string
-  ): Promise<string | null> {
-    try {
-      // Execute config.js in upstream context to get the model
-      // We need to use child_process to run Node.js with the correct require resolution
-      const { execSync } = await import('node:child_process');
-
-      // Create a temporary script file to avoid escaping issues
-      const tempScriptPath = join(upstreamDemoDir, '.generate-config-temp.js');
-      const script = `const { model } = require('./generate.js');
-const config = require('./config.js');
-
-// Determine what element name to pass to the model function
-// Check if config.models exists and get the element name from it
-let upstreamElementName = '${elementName}-element';
-if (config.models && config.models[0]) {
-  if (typeof config.models[0] === 'function') {
-    // If it's a function, call it to get the element name
-    const testModel = config.models[0]('1', 'test-element');
-    upstreamElementName = testModel.element || upstreamElementName;
-  } else {
-    // If it's an object, get the element name directly
-    upstreamElementName = config.models[0].element || upstreamElementName;
-  }
-}
-
-// Generate the model using the upstream's expected element name
-const generatedModel = model('1', upstreamElementName);
-
-// Normalize element name to match our package naming convention
-// Remove common suffixes like -element, -el, etc. and use just the base package name
-generatedModel.element = '${elementName}';
-
-console.log(JSON.stringify({ models: [generatedModel] }, null, 2));`;
-
-      await writeFile(tempScriptPath, script, 'utf-8');
-
-      const result = execSync('node .generate-config-temp.js', {
-        cwd: upstreamDemoDir,
-        encoding: 'utf-8',
-      });
-
-      // Clean up temp file
-      await fsRm(tempScriptPath, { force: true });
-
-      return `export default ${result};\n`;
-    } catch (error) {
-      // If generation fails, log warning but don't fail the sync
-      console.warn(
-        `Warning: Could not generate config.mjs for ${elementName} from config.js + generate.js:`,
-        error
-      );
-      return null;
-    }
-  }
-
-  private async applyDemoOverrides(elementName: string, elementDir: string): Promise<void> {
-    const override = demoOverrides[elementName];
-    if (!override) return;
-
-    const targetDemoDir = join(elementDir, 'docs/demo');
-    if (!existsSync(targetDemoDir)) return;
-
-    if (override.model) {
-      const configPath = join(targetDemoDir, 'config.mjs');
-      const configContent = `export default ${JSON.stringify({ models: [override.model] }, null, 2)};\n`;
-      await writeFile(configPath, configContent, 'utf-8');
-
-      const generatePath = join(targetDemoDir, 'generate.js');
-      if (existsSync(generatePath)) {
-        await fsRm(generatePath, { force: true });
-      }
-    }
-
-    if (override.session) {
-      const sessionPath = join(targetDemoDir, 'session.mjs');
-      const sessionContent = `export default ${JSON.stringify(override.session, null, 2)};\n`;
-      await writeFile(sessionPath, sessionContent, 'utf-8');
     }
   }
 

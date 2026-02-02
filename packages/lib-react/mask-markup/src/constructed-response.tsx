@@ -16,15 +16,10 @@ import classnames from 'classnames';
 
 import { color } from '@pie-lib/render-ui';
 import { withMask } from './with-mask';
-//import EditableHtml from '@pie-lib/editable-html-tip-tap';
+import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
 
-let EditableHtml;
-let StyledEditableHtml;
-
-// - mathquill error window not defined
-if (typeof window !== 'undefined') {
-  EditableHtml = require('@pie-lib/editable-html-tip-tap')['default'];
-  StyledEditableHtml = styled(EditableHtml)(() => ({
+const EditableHtml = EditableHtmlImport;
+const StyledEditableHtml: any = styled(EditableHtml)(() => ({
     display: 'inline-block',
     verticalAlign: 'middle',
     margin: '4px',
@@ -37,7 +32,6 @@ if (typeof window !== 'undefined') {
       border: `1px solid ${color.incorrect()}`,
     },
   }));
-}
 
 const MaskedInput = (props) => (node, data) => {
   const { adjustedLimit, disabled, feedback, showCorrectAnswer, maxLength, spellCheck, pluginProps, onChange } = props;

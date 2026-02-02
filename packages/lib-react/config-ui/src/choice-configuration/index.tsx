@@ -23,10 +23,9 @@ import { InputCheckbox, InputRadio } from '../inputs';
 import FeedbackMenu from './feedback-menu';
 
 // - mathquill error window not defined
-// Lazy load EditableHtml to avoid SSR issues with mathquill
-const EditableHtml = React.lazy(() =>
-  import('@pie-lib/editable-html-tip-tap').then(module => ({ default: module.default }))
-);
+import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
+
+const EditableHtml = EditableHtmlImport;
 
 const StyledEditorHolder: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -53,7 +52,6 @@ const EditableHtmlContainer = ({
   return (
     <InputContainer label={label} className={className}>
       <StyledEditorHolder>
-        <React.Suspense fallback={<div>Loading editor...</div>}>
         <EditableHtml
           markup={value || ''}
           disabled={disabled}
@@ -71,7 +69,6 @@ const EditableHtmlContainer = ({
           languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
           mathMlOptions={mathMlOptions}
         />
-      </React.Suspense>
       </StyledEditorHolder>
     </InputContainer>
   );

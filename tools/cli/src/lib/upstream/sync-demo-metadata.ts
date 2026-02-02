@@ -23,6 +23,7 @@ export interface ElementMetadata {
   hasPrint: boolean;
   hasConfig: boolean;
   hasSession: boolean;
+  demoCount: number;
 }
 
 /**
@@ -73,6 +74,7 @@ async function scanReactElements(): Promise<ElementMetadata[]> {
       hasPrint,
       hasConfig,
       hasSession,
+      demoCount: 0, // Will be updated in copySampleConfigs
     });
   }
 
@@ -102,6 +104,7 @@ export interface ElementMetadata {
   hasPrint: boolean;
   hasConfig: boolean;
   hasSession: boolean;
+  demoCount: number;
 }
 
 export const ELEMENT_REGISTRY: readonly ElementMetadata[] = ${JSON.stringify(elements, null, 2)};
@@ -137,6 +140,15 @@ async function copySampleConfigs(elements: ElementMetadata[]): Promise<void> {
         // Dynamic import the .mjs file
         const configModule = await import(`file://${sourceConfig}`);
         const configData = configModule.default;
+
+        // Count demos (supports both old 'models' and new 'demos' format)
+        if (configData?.demos && Array.isArray(configData.demos)) {
+          element.demoCount = configData.demos.length;
+        } else if (configData?.models && Array.isArray(configData.models)) {
+          element.demoCount = 1; // Old format treated as single demo
+        } else {
+          element.demoCount = 0;
+        }
 
         // Write as JSON
         await writeFile(targetConfig, JSON.stringify(configData, null, 2) + '\n', 'utf-8');
@@ -176,8 +188,11 @@ export async function generateDemoMetadata(): Promise<void> {
 
   console.log(`[demo-metadata] Found ${reactElements.length} React elements`);
 
-  await generateRegistry(allElements);
+  // Copy sample configs first so demoCount gets populated
   await copySampleConfigs(allElements);
+
+  // Then generate registry with updated demoCount values
+  await generateRegistry(allElements);
 
   console.log('[demo-metadata] ✓ Demo metadata generation complete');
 }
