@@ -1,69 +1,315 @@
 {
-  "models": [
+  "demos": [
     {
-      "id": "1",
-      "element": "match",
-      "feedback": {
-        "correct": {
-          "type": "none",
-          "default": "Correct"
+      "id": "basic-geography",
+      "title": "Basic Geography Match",
+      "description": "Simple radio mode matching - capitals to countries",
+      "tags": [
+        "radio",
+        "basic",
+        "geography"
+      ],
+      "model": {
+        "id": "1",
+        "element": "match",
+        "choiceMode": "radio",
+        "headers": [
+          "Country",
+          "Capital",
+          "Population"
+        ],
+        "layout": 3,
+        "lockChoiceOrder": false,
+        "partialScoring": false,
+        "feedbackEnabled": true,
+        "feedback": {
+          "correct": {
+            "type": "default",
+            "default": "Excellent! You matched all countries correctly."
+          },
+          "partial": {
+            "type": "default",
+            "default": "Good effort, but some matches are incorrect."
+          },
+          "incorrect": {
+            "type": "default",
+            "default": "Review world capitals and try again."
+          }
         },
-        "partial": {
-          "type": "none",
-          "default": "Nearly"
-        },
-        "incorrect": {
-          "type": "none",
-          "default": "Incorrect"
-        }
+        "rows": [
+          {
+            "id": 1,
+            "title": "France",
+            "values": [
+              true,
+              false
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Japan",
+            "values": [
+              false,
+              true
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Brazil",
+            "values": [
+              false,
+              false
+            ]
+          }
+        ],
+        "promptEnabled": true,
+        "prompt": "<p>Match each country with its capital city.</p>",
+        "rationaleEnabled": true,
+        "rationale": "<p>Paris is the capital of France, Tokyo is the capital of Japan, and Brasília is the capital of Brazil.</p>",
+        "teacherInstructionsEnabled": true,
+        "teacherInstructions": "<p>Students should demonstrate knowledge of world capitals. This is a basic geography assessment.</p>",
+        "toolbarEditorPosition": "bottom"
       },
-      "headers": [
-        "Column 1",
-        "Column 2",
-        "Column 3"
+      "session": {
+        "id": "1",
+        "answers": {}
+      }
+    },
+    {
+      "id": "math-equations",
+      "title": "Algebra Equations Match",
+      "description": "Match equations with their solutions using LaTeX math rendering",
+      "tags": [
+        "radio",
+        "math",
+        "algebra",
+        "latex"
       ],
-      "layout": 3,
-      "lockChoiceOrder": true,
-      "partialScoring": false,
-      "choiceMode": "radio",
-      "rows": [
-        {
-          "id": 1,
-          "title": "Question Text 1",
-          "values": [
-            false,
-            false
-          ]
+      "model": {
+        "id": "2",
+        "element": "match",
+        "choiceMode": "radio",
+        "headers": [
+          "Equation",
+          "Solution \\(x =\\)",
+          "Type"
+        ],
+        "layout": 3,
+        "lockChoiceOrder": true,
+        "partialScoring": false,
+        "feedbackEnabled": true,
+        "feedback": {
+          "correct": {
+            "type": "custom",
+            "default": "Perfect! You solved all equations correctly."
+          },
+          "incorrect": {
+            "type": "custom",
+            "default": "Review your algebra skills and try again."
+          }
         },
-        {
-          "id": 2,
-          "title": "Question Text 2",
-          "values": [
-            false,
-            false
-          ]
-        },
-        {
-          "id": 3,
-          "title": "Question Text 3",
-          "values": [
-            false,
-            false
-          ]
-        },
-        {
-          "id": 4,
-          "title": "Question Text 4",
-          "values": [
-            false,
-            false
-          ]
-        }
+        "rows": [
+          {
+            "id": 1,
+            "title": "\\(2x + 5 = 13\\)",
+            "values": [
+              false,
+              true
+            ]
+          },
+          {
+            "id": 2,
+            "title": "\\(x^2 - 9 = 0\\) (positive)",
+            "values": [
+              true,
+              false
+            ]
+          },
+          {
+            "id": 3,
+            "title": "\\(\\frac{x}{3} + 2 = 5\\)",
+            "values": [
+              false,
+              false
+            ]
+          }
+        ],
+        "promptEnabled": true,
+        "prompt": "<p>Match each equation with its correct solution.</p>",
+        "rationaleEnabled": true,
+        "rationale": "<p>For \\(2x + 5 = 13\\): subtract 5 from both sides to get \\(2x = 8\\), then divide by 2.</p><p>For \\(x^2 - 9 = 0\\): factor as \\((x-3)(x+3) = 0\\), so \\(x = 3\\) or \\(x = -3\\).</p><p>For \\(\\frac{x}{3} + 2 = 5\\): subtract 2 to get \\(\\frac{x}{3} = 3\\), then multiply by 3.</p>",
+        "teacherInstructionsEnabled": true,
+        "teacherInstructions": "<p>This assesses students' ability to solve linear and quadratic equations. Watch for common algebraic errors.</p>",
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "id": "2",
+        "answers": {}
+      }
+    },
+    {
+      "id": "checkbox-partial-scoring",
+      "title": "Math Properties (Checkbox Mode)",
+      "description": "Multiple correct answers per row with partial scoring enabled",
+      "tags": [
+        "checkbox",
+        "partial-scoring",
+        "math",
+        "properties"
       ],
-      "promptEnabled": true,
-      "prompt": "Select correct answers.",
-      "toolbarEditorPosition": "bottom",
-      "rubricEnabled": false
+      "model": {
+        "id": "3",
+        "element": "match",
+        "choiceMode": "checkbox",
+        "headers": [
+          "Property",
+          "Commutative",
+          "Associative",
+          "Distributive"
+        ],
+        "layout": 4,
+        "lockChoiceOrder": true,
+        "partialScoring": true,
+        "feedbackEnabled": true,
+        "feedback": {
+          "correct": {
+            "type": "default",
+            "default": "Excellent! You correctly identified all mathematical properties."
+          },
+          "partial": {
+            "type": "default",
+            "default": "You're on the right track. Review the properties you missed."
+          },
+          "incorrect": {
+            "type": "default",
+            "default": "Review the definitions of mathematical properties."
+          }
+        },
+        "rows": [
+          {
+            "id": 1,
+            "title": "\\(a + b = b + a\\)",
+            "values": [
+              true,
+              false,
+              false
+            ]
+          },
+          {
+            "id": 2,
+            "title": "\\(a \\times (b + c) = ab + ac\\)",
+            "values": [
+              false,
+              false,
+              true
+            ]
+          },
+          {
+            "id": 3,
+            "title": "\\((a + b) + c = a + (b + c)\\)",
+            "values": [
+              false,
+              true,
+              false
+            ]
+          },
+          {
+            "id": 4,
+            "title": "\\(a \\times b = b \\times a\\)",
+            "values": [
+              true,
+              false,
+              false
+            ]
+          }
+        ],
+        "promptEnabled": true,
+        "prompt": "<p>Select all the properties that apply to each mathematical statement. Multiple properties may apply to the same statement.</p>",
+        "rationaleEnabled": true,
+        "rationale": "<p><strong>Commutative Property:</strong> The order of numbers can be changed without affecting the result (applies to addition and multiplication).</p><p><strong>Associative Property:</strong> The grouping of numbers can be changed without affecting the result.</p><p><strong>Distributive Property:</strong> Multiplication distributes over addition.</p>",
+        "teacherInstructionsEnabled": true,
+        "teacherInstructions": "<p>This question assesses understanding of fundamental algebraic properties. Partial credit is enabled to reward partial knowledge.</p>",
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "id": "3",
+        "answers": {}
+      }
+    },
+    {
+      "id": "geometry-formulas",
+      "title": "Geometry Formulas Match",
+      "description": "Match geometric shapes with their area formulas using advanced math notation",
+      "tags": [
+        "radio",
+        "math",
+        "geometry",
+        "formulas"
+      ],
+      "model": {
+        "id": "4",
+        "element": "match",
+        "choiceMode": "radio",
+        "headers": [
+          "Shape",
+          "Area Formula"
+        ],
+        "layout": 2,
+        "lockChoiceOrder": false,
+        "partialScoring": false,
+        "feedbackEnabled": true,
+        "feedback": {
+          "correct": {
+            "type": "custom",
+            "default": "Outstanding! You know your geometry formulas."
+          },
+          "incorrect": {
+            "type": "custom",
+            "default": "Review the area formulas for basic geometric shapes."
+          }
+        },
+        "rows": [
+          {
+            "id": 1,
+            "title": "Circle",
+            "values": [
+              true
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Rectangle",
+            "values": [
+              false
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Triangle",
+            "values": [
+              false
+            ]
+          },
+          {
+            "id": 4,
+            "title": "Trapezoid",
+            "values": [
+              false
+            ]
+          }
+        ],
+        "promptEnabled": true,
+        "prompt": "<p>Match each geometric shape with its correct area formula.</p><p><em>Note: \\(r\\) = radius, \\(l\\) = length, \\(w\\) = width, \\(b\\) = base, \\(h\\) = height, \\(b_1\\) and \\(b_2\\) = parallel bases</em></p>",
+        "rationaleEnabled": true,
+        "rationale": "<ul><li><strong>Circle:</strong> \\(A = \\pi r^2\\)</li><li><strong>Rectangle:</strong> \\(A = l \\times w\\)</li><li><strong>Triangle:</strong> \\(A = \\frac{1}{2}bh\\)</li><li><strong>Trapezoid:</strong> \\(A = \\frac{1}{2}(b_1 + b_2)h\\)</li></ul>",
+        "teacherInstructionsEnabled": true,
+        "teacherInstructions": "<p>This assesses memorization and application of basic geometry area formulas. Ensure students understand what each variable represents.</p>",
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "id": "4",
+        "answers": {}
+      }
     }
   ]
 }

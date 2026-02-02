@@ -95,7 +95,7 @@ const hasPrint = $derived(data.capabilities.includes('print'));
         <div class="card-body p-6">
           <h2 class="card-title text-lg mb-3">
             Available Demos
-            <span class="badge badge-primary">{data.demos?.length ?? 0}</span>
+            <span class="badge badge-primary">{data.demoCount}</span>
           </h2>
           <div class="space-y-2 max-h-80 overflow-y-auto">
             {#each data.demos ?? [] as demo}

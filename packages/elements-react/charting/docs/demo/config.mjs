@@ -1,68 +1,139 @@
 export default {
-  "models": [
+  demos: [
     {
-      "id": "1",
-      "element": "charting",
-      "addCategoryEnabled": true,
-      "changeInteractiveEnabled": true,
-      "changeEditableEnabled": true,
-      "changeAddCategoryEnabled": true,
-      "chartType": "bar",
-      "correctAnswer": {
-        "data": [
-          {
-            "label": "A",
-            "value": 1
-          },
-          {
-            "label": "B",
-            "value": 1
-          },
-          {
-            "label": "C",
-            "value": 1
-          }
-        ]
-      },
-      "data": [
-        {
-          "label": "A",
-          "value": 1,
-          "interactive": false,
-          "editable": false
+      id: 'bar-chart-statistics',
+      title: 'Bar Chart - Test Score Distribution',
+      description: 'Interactive bar chart for analyzing student test scores with editable values',
+      tags: ['bar', 'statistics', 'data-analysis', 'interactive'],
+      model: {
+        id: '1',
+        element: 'charting',
+        chartType: 'bar',
+        title: 'Class Test Score Distribution',
+        prompt: '<p><strong>Data Analysis:</strong> The bar chart shows test scores for five students. Student C scored 15 points less than the class average of 85. Update the chart to show the correct score for Student C.</p><p>You can also add additional students if needed.</p>',
+        promptEnabled: true,
+        teacherInstructions: '<p><strong>Scoring:</strong> Student C should have a score of 70 (85 - 15 = 70). Award full credit if students correctly calculate and enter 70 for Student C.</p>',
+        teacherInstructionsEnabled: true,
+        addCategoryEnabled: true,
+        changeInteractiveEnabled: true,
+        changeEditableEnabled: true,
+        changeAddCategoryEnabled: true,
+        studentNewCategoryDefaultLabel: 'New Student',
+        data: [
+          { label: 'Student A', value: 95, interactive: false, editable: false },
+          { label: 'Student B', value: 88, interactive: false, editable: false },
+          { label: 'Student C', value: 75, interactive: true, editable: false },
+          { label: 'Student D', value: 82, interactive: false, editable: false },
+          { label: 'Student E', value: 90, interactive: false, editable: false }
+        ],
+        correctAnswer: {
+          data: [
+            { label: 'Student A', value: 95 },
+            { label: 'Student B', value: 88 },
+            { label: 'Student C', value: 70 },
+            { label: 'Student D', value: 82 },
+            { label: 'Student E', value: 90 }
+          ]
         },
-        {
-          "label": "B",
-          "value": 1,
-          "interactive": true,
-          "editable": false
+        domain: { label: 'Students' },
+        range: { label: 'Test Scores', min: 0, max: 100, labelStep: 10 },
+        graph: { width: 480, height: 480 },
+        scoringType: 'partial scoring',
+        rationale: '<p>Student C\'s score should be 70 because the class average is 85 and Student C scored 15 points less: 85 - 15 = 70.</p>',
+        rationaleEnabled: true,
+        rubricEnabled: false
+      },
+      session: { answer: [] }
+    },
+    {
+      id: 'line-chart-growth',
+      title: 'Line Chart - Plant Growth with Math',
+      description: 'Line chart with cross markers showing exponential plant growth over time',
+      tags: ['line', 'lineCross', 'growth', 'math', 'science'],
+      model: {
+        id: '2',
+        element: 'charting',
+        chartType: 'lineCross',
+        title: 'Plant Height Growth Over Time',
+        prompt: '<p><strong>Biology Experiment:</strong> A plant grows according to the formula <em>h(t) = 2t + 3</em>, where <em>h</em> is height in centimeters and <em>t</em> is time in weeks.</p><p>The chart shows measurements for weeks 0-3. Calculate and plot the height for <strong>Week 4</strong> and <strong>Week 5</strong> using the growth formula.</p>',
+        promptEnabled: true,
+        teacherInstructions: '<p><strong>Answer Key:</strong> Week 4: h(4) = 2(4) + 3 = 11 cm. Week 5: h(5) = 2(5) + 3 = 13 cm. Students should add these two data points to complete the growth pattern.</p>',
+        teacherInstructionsEnabled: true,
+        addCategoryEnabled: true,
+        changeInteractiveEnabled: false,
+        changeEditableEnabled: true,
+        changeAddCategoryEnabled: true,
+        studentNewCategoryDefaultLabel: 'New Week',
+        data: [
+          { label: 'Week 0', value: 3, interactive: false, editable: false },
+          { label: 'Week 1', value: 5, interactive: false, editable: false },
+          { label: 'Week 2', value: 7, interactive: false, editable: false },
+          { label: 'Week 3', value: 9, interactive: false, editable: false }
+        ],
+        correctAnswer: {
+          data: [
+            { label: 'Week 0', value: 3 },
+            { label: 'Week 1', value: 5 },
+            { label: 'Week 2', value: 7 },
+            { label: 'Week 3', value: 9 },
+            { label: 'Week 4', value: 11 },
+            { label: 'Week 5', value: 13 }
+          ]
         },
-        {
-          "label": "C",
-          "value": 2,
-          "interactive": true,
-          "editable": false
-        }
-      ],
-      "domain": {
-        "label": "Characters"
+        domain: { label: 'Time (weeks)' },
+        range: { label: 'Height (cm)', min: 0, max: 15, labelStep: 1 },
+        graph: { width: 480, height: 480 },
+        scoringType: 'partial scoring',
+        rationale: '<p>Using the formula h(t) = 2t + 3:<br/>Week 4: h(4) = 2(4) + 3 = 8 + 3 = 11 cm<br/>Week 5: h(5) = 2(5) + 3 = 10 + 3 = 13 cm<br/>The plant grows 2 cm each week with a starting height of 3 cm.</p>',
+        rationaleEnabled: true,
+        rubricEnabled: false
       },
-      "graph": {
-        "width": 480,
-        "height": 480
+      session: { answer: [] }
+    },
+    {
+      id: 'histogram-frequency',
+      title: 'Histogram - Survey Response Frequencies',
+      description: 'Histogram showing frequency distribution with all editable categories',
+      tags: ['histogram', 'frequency', 'survey', 'statistics', 'editable'],
+      model: {
+        id: '3',
+        element: 'charting',
+        chartType: 'histogram',
+        title: 'Hours of Weekly Exercise Survey',
+        prompt: '<p><strong>Statistics Problem:</strong> A survey asked 50 students how many hours they exercise per week. The results are shown in the histogram below.</p><p>However, some data was recorded incorrectly. Update the chart so that:</p><ul><li>The "3-4 hours" category has 8 responses</li><li>The "5-6 hours" category has 12 responses</li><li>All frequencies sum to exactly 50 students</li></ul>',
+        promptEnabled: true,
+        addCategoryEnabled: false,
+        changeInteractiveEnabled: true,
+        changeEditableEnabled: false,
+        changeAddCategoryEnabled: false,
+        studentNewCategoryDefaultLabel: 'New Range',
+        data: [
+          { label: '0-1 hours', value: 6, interactive: true, editable: false },
+          { label: '1-2 hours', value: 10, interactive: true, editable: false },
+          { label: '2-3 hours', value: 9, interactive: true, editable: false },
+          { label: '3-4 hours', value: 5, interactive: true, editable: false },
+          { label: '5-6 hours', value: 10, interactive: true, editable: false },
+          { label: '7+ hours', value: 8, interactive: true, editable: false }
+        ],
+        correctAnswer: {
+          data: [
+            { label: '0-1 hours', value: 6 },
+            { label: '1-2 hours', value: 10 },
+            { label: '2-3 hours', value: 9 },
+            { label: '3-4 hours', value: 8 },
+            { label: '5-6 hours', value: 12 },
+            { label: '7+ hours', value: 5 }
+          ]
+        },
+        domain: { label: 'Exercise Duration (hours per week)' },
+        range: { label: 'Number of Students', min: 0, max: 15, labelStep: 1 },
+        graph: { width: 480, height: 480 },
+        scoringType: 'all or nothing',
+        rationale: '<p>To make the frequencies sum to 50:<br/>Original sum: 6 + 10 + 9 + 5 + 10 + 8 = 48<br/>We need: 6 + 10 + 9 + 8 + 12 + 5 = 50<br/>Changed "3-4 hours" from 5 to 8 (+3), "5-6 hours" from 10 to 12 (+2), and "7+ hours" from 8 to 5 (-3) to balance the total.</p>',
+        rationaleEnabled: true,
+        rubricEnabled: false
       },
-      "prompt": "Here goes item stem!",
-      "promptEnabled": true,
-      "rationale": "Rationale goes here!",
-      "range": {
-        "label": "Amount",
-        "max": 3,
-        "min": 0,
-        "labelStep": 1
-      },
-      "title": "This is a chart!",
-      "rubricEnabled": false
+      session: { answer: [] }
     }
   ]
-}
-;
+};

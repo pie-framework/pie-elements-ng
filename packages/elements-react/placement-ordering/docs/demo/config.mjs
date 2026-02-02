@@ -1,69 +1,311 @@
 export default {
-  "models": [
+  "demos": [
     {
-      "id": "1",
-      "element": "placement-ordering",
-      "choiceLabel": "Choices",
-      "choices": [
-        {
-          "id": "c1",
-          "label": "Blueberry"
-        },
-        {
-          "id": "c2",
-          "label": "Lemon"
-        },
-        {
-          "id": "c3",
-          "label": "Melon"
-        },
-        {
-          "id": "c4",
-          "label": "Pear"
-        }
+      "id": "basic-historical-events",
+      "title": "Order Historical Events",
+      "description": "Basic ordering task with historical events in chronological order",
+      "tags": [
+        "basic",
+        "history",
+        "chronological"
       ],
-      "correctResponse": [
-        "c1",
-        "c2",
-        "c3",
-        "c4"
-      ],
-      "alternateResponses": [
-        {
-          "response": [
-            "c4",
-            "c3",
-            "c2",
-            "c1"
-          ]
-        }
-      ],
-      "feedback": {
-        "correct": {
-          "type": "custom",
-          "custom": "foo"
+      "model": {
+        "id": "1",
+        "element": "placement-ordering",
+        "choiceLabel": "Events",
+        "choiceLabelEnabled": true,
+        "choices": [
+          {
+            "id": "c1",
+            "label": "World War II Ends"
+          },
+          {
+            "id": "c2",
+            "label": "American Revolution"
+          },
+          {
+            "id": "c3",
+            "label": "Moon Landing"
+          },
+          {
+            "id": "c4",
+            "label": "Declaration of Independence"
+          }
+        ],
+        "correctResponse": [
+          "c4",
+          "c2",
+          "c1",
+          "c3"
+        ],
+        "alternateResponses": [],
+        "feedback": {
+          "correct": {
+            "type": "custom",
+            "custom": "Excellent! You correctly ordered these historical events chronologically."
+          },
+          "incorrect": {
+            "type": "custom",
+            "custom": "Not quite. Review the timeline of these events."
+          },
+          "partial": {
+            "type": "custom",
+            "custom": "You're getting there! Some events are in the correct order."
+          }
         },
-        "incorrect": {
-          "type": "custom",
-          "custom": "no"
-        },
-        "partial": {
-          "type": "custom",
-          "custom": "nearly"
-        }
+        "feedbackEnabled": true,
+        "prompt": "<p>Arrange these historical events in chronological order from earliest to latest:</p>",
+        "promptEnabled": true,
+        "numberedGuides": true,
+        "orientation": "vertical",
+        "partialScoring": true,
+        "placementArea": true,
+        "removeTilesAfterPlacing": true,
+        "targetLabel": "Timeline (Earliest to Latest)",
+        "rationale": "The correct chronological order is: Declaration of Independence (1776), American Revolution (1775-1783), World War II Ends (1945), Moon Landing (1969).",
+        "rationaleEnabled": true,
+        "teacherInstructions": "Students should order events from earliest to latest. Partial credit is given for each correctly positioned event.",
+        "teacherInstructionsEnabled": true,
+        "toolbarEditorPosition": "bottom"
       },
-      "feedbackEnabled": true,
-      "prompt": "Arrange the fruits alphabetically",
-      "promptEnabled": true,
-      "numberedGuides": false,
-      "orientation": "vertical",
-      "partialScoring": false,
-      "placementArea": false,
-      "scoringType": "auto",
-      "targetLabel": "Answers",
-      "toolbarEditorPosition": "bottom",
-      "rubricEnabled": false
+      "session": {
+        "value": []
+      }
+    },
+    {
+      "id": "math-equations-complexity",
+      "title": "Order Mathematical Equations",
+      "description": "Order equations by complexity with LaTeX math rendering",
+      "tags": [
+        "math",
+        "equations",
+        "complexity",
+        "latex"
+      ],
+      "model": {
+        "id": "2",
+        "element": "placement-ordering",
+        "choiceLabel": "Equations",
+        "choiceLabelEnabled": true,
+        "choices": [
+          {
+            "id": "c1",
+            "label": "\\(x^3 + 2x^2 - 5x + 1 = 0\\)"
+          },
+          {
+            "id": "c2",
+            "label": "\\(x + 5 = 12\\)"
+          },
+          {
+            "id": "c3",
+            "label": "\\(x^2 - 4x + 4 = 0\\)"
+          },
+          {
+            "id": "c4",
+            "label": "\\(3x - 7 = 11\\)"
+          }
+        ],
+        "correctResponse": [
+          "c2",
+          "c4",
+          "c3",
+          "c1"
+        ],
+        "alternateResponses": [],
+        "feedback": {
+          "correct": {
+            "type": "custom",
+            "custom": "Perfect! You correctly ordered the equations from simplest to most complex."
+          },
+          "incorrect": {
+            "type": "custom",
+            "custom": "Incorrect. Consider the degree and number of terms in each equation."
+          },
+          "partial": {
+            "type": "custom",
+            "custom": "Good progress! Some equations are correctly positioned."
+          }
+        },
+        "feedbackEnabled": true,
+        "prompt": "<p>Order these equations from <strong>simplest to most complex</strong>:</p>",
+        "promptEnabled": true,
+        "numberedGuides": true,
+        "orientation": "vertical",
+        "partialScoring": true,
+        "placementArea": true,
+        "removeTilesAfterPlacing": true,
+        "targetLabel": "Ordered by Complexity",
+        "rationale": "Complexity is determined by the degree of the polynomial: linear equations (degree 1) are simplest, then quadratic (degree 2), then cubic (degree 3).",
+        "rationaleEnabled": true,
+        "teacherInstructions": "Students should recognize that equation complexity increases with polynomial degree: linear (x), quadratic (x²), cubic (x³).",
+        "teacherInstructionsEnabled": true,
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "value": []
+      }
+    },
+    {
+      "id": "planets-distance",
+      "title": "Order Planets by Distance",
+      "description": "Order planets from closest to farthest from the Sun with mixed content",
+      "tags": [
+        "science",
+        "astronomy",
+        "planets",
+        "numbered-guides"
+      ],
+      "model": {
+        "id": "3",
+        "element": "placement-ordering",
+        "choiceLabel": "Planets",
+        "choiceLabelEnabled": true,
+        "choices": [
+          {
+            "id": "c1",
+            "label": "Jupiter"
+          },
+          {
+            "id": "c2",
+            "label": "Venus"
+          },
+          {
+            "id": "c3",
+            "label": "Mars"
+          },
+          {
+            "id": "c4",
+            "label": "Mercury"
+          },
+          {
+            "id": "c5",
+            "label": "Earth"
+          },
+          {
+            "id": "c6",
+            "label": "Saturn"
+          }
+        ],
+        "correctResponse": [
+          "c4",
+          "c2",
+          "c5",
+          "c3",
+          "c1",
+          "c6"
+        ],
+        "alternateResponses": [],
+        "feedback": {
+          "correct": {
+            "type": "custom",
+            "custom": "Excellent! You correctly ordered the planets by distance from the Sun."
+          },
+          "incorrect": {
+            "type": "custom",
+            "custom": "Not quite right. Remember: My Very Educated Mother Just Served Us..."
+          },
+          "partial": {
+            "type": "custom",
+            "custom": "You're on the right track! Some planets are in the correct position."
+          }
+        },
+        "feedbackEnabled": true,
+        "prompt": "<p>Arrange these planets in order from <strong>closest to farthest</strong> from the Sun:</p>",
+        "promptEnabled": true,
+        "numberedGuides": true,
+        "orientation": "horizontal",
+        "partialScoring": true,
+        "placementArea": false,
+        "removeTilesAfterPlacing": true,
+        "targetLabel": "",
+        "rationale": "The order of planets from the Sun is: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune. This follows the mnemonic: My Very Educated Mother Just Served Us Nachos.",
+        "rationaleEnabled": true,
+        "teacherInstructions": "This exercise tests students' knowledge of the solar system. The horizontal orientation provides a visual representation of the planets' positions.",
+        "teacherInstructionsEnabled": true,
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "value": []
+      }
+    },
+    {
+      "id": "math-solving-steps",
+      "title": "Order Equation Solving Steps",
+      "description": "Order the steps to solve a quadratic equation with mathematical notation",
+      "tags": [
+        "math",
+        "algebra",
+        "steps",
+        "latex",
+        "placement-area"
+      ],
+      "model": {
+        "id": "4",
+        "element": "placement-ordering",
+        "choiceLabel": "Steps",
+        "choiceLabelEnabled": true,
+        "choices": [
+          {
+            "id": "c1",
+            "label": "\\(x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}\\)"
+          },
+          {
+            "id": "c2",
+            "label": "\\(x^2 + 6x + 8 = 0\\)"
+          },
+          {
+            "id": "c3",
+            "label": "Identify: \\(a=1, b=6, c=8\\)"
+          },
+          {
+            "id": "c4",
+            "label": "\\(x = \\frac{-6 \\pm \\sqrt{36-32}}{2}\\)"
+          },
+          {
+            "id": "c5",
+            "label": "\\(x = -2\\) or \\(x = -4\\)"
+          }
+        ],
+        "correctResponse": [
+          "c2",
+          "c3",
+          "c1",
+          "c4",
+          "c5"
+        ],
+        "alternateResponses": [],
+        "feedback": {
+          "correct": {
+            "type": "custom",
+            "custom": "Perfect! You correctly ordered the steps to solve the quadratic equation."
+          },
+          "incorrect": {
+            "type": "custom",
+            "custom": "Review the order of operations for solving quadratic equations using the quadratic formula."
+          },
+          "partial": {
+            "type": "custom",
+            "custom": "Good effort! You have some steps in the correct order."
+          }
+        },
+        "feedbackEnabled": true,
+        "prompt": "<p>Arrange these steps in the correct order to solve the quadratic equation:</p>",
+        "promptEnabled": true,
+        "numberedGuides": true,
+        "orientation": "vertical",
+        "partialScoring": true,
+        "placementArea": true,
+        "removeTilesAfterPlacing": true,
+        "targetLabel": "Solution Steps (in order)",
+        "rationale": "To solve a quadratic equation: (1) Write the equation in standard form, (2) Identify coefficients a, b, and c, (3) Apply the quadratic formula, (4) Substitute values, (5) Simplify to find solutions.",
+        "rationaleEnabled": true,
+        "teacherInstructions": "This question assesses students' understanding of the systematic approach to solving quadratic equations using the quadratic formula. Each step builds upon the previous one.",
+        "teacherInstructionsEnabled": true,
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "value": []
+      }
     }
   ]
-}
-;
+};

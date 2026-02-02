@@ -10,8 +10,7 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
  * a unified demo experience for all 27 PIE elements with multiple demo configurations.
  */
 export default class DevDemo extends Command {
-  static override description =
-    'Start unified demo app for all PIE elements (apps/element-demo)';
+  static override description = 'Start unified demo app for all PIE elements (apps/element-demo)';
 
   static override examples = [
     '<%= config.bin %> <%= command.id %>',

@@ -934,6 +934,239 @@ Total: 3.3MB (same size, but native browser caching + full accessibility)
 
 ---
 
+## Controller Bundling Architecture
+
+### Overview
+
+Controllers are bundled **separately** from player bundles and follow a different strategy.
+
+### Controller Bundle Process
+
+**Location:** `kds/pie-api-aws/packages/bundler/src/webpack/controller.ts`
+
+#### Key Differences from Player Bundles
+
+**Player bundles:**
+- Mark shared libraries as **externals** (not bundled)
+- References: `@pie-lib/pie-toolbox`, `@pie-lib/math-rendering`
+- Bundle size: ~200KB (without shared libs)
+
+**Controller bundles:**
+- **NO externals** - everything is bundled together
+- Self-contained CommonJS bundle
+- Bundle size: varies (~500KB-1MB with all dependencies)
+
+#### Webpack Configuration
+
+```typescript
+// controller.ts (simplified)
+const options: Configuration = {
+  target: 'web',
+  mode: 'production',
+  entry: { controller: '@pie-element/multiple-choice/controller' },
+
+  // NO externals configuration
+  // All dependencies are bundled into the controller
+
+  output: {
+    filename: '[name].js',
+    libraryTarget: 'commonjs2',  // ← CommonJS, not IIFE
+    path: join(rootDir, 'dist'),
+  },
+
+  resolve: {
+    modules: [join(srcSnapshot.rootDir, 'node_modules'), 'node_modules'],
+  },
+
+  optimization: {
+    minimize: true,
+    minimizer: [new EsbuildPlugin({ target: 'es2015', format: 'cjs' })],
+  },
+};
+```
+
+### Dependency Installation
+
+**Step 1: Download from NPM**
+
+```typescript
+// installer.ts:75-95
+await pacote.tarball.stream(
+  `${dependency.name}@${dependency.version}`,
+  tarballStreamHandler(pkgPath, dependency.name),
+  {
+    registry: process.env.REGISTRY_URL || 'https://registry.npmjs.org/',
+    timeout: 30000,
+  }
+);
+```
+
+Controllers are downloaded from the **standard NPM registry** (not a custom location).
+
+**Step 2: Install All Dependencies**
+
+```typescript
+// srcSnapshot.ts:86
+const result = await this.installer.install(deps, tmpDir);
+
+// Uses yarn to install:
+// - Element package
+// - Controller dependencies (from controller/package.json)
+// - ALL transitive dependencies
+```
+
+**Step 3: Bundle Everything**
+
+```typescript
+// controllerBundler.ts:43-49
+const bundleResult = await this.bundler.bundle(
+  {
+    controller: controllerPkgName,  // e.g., '@pie-element/multiple-choice/controller'
+  },
+  srcSnapshot,  // Contains full node_modules with all dependencies
+  tmpDir
+);
+```
+
+### What Gets Bundled into Controllers
+
+**Example: Multiple Choice Controller**
+
+```
+controller.js (~800KB minified)
+├── Controller logic (50KB)
+├── lodash (70KB)
+├── @pie-framework/math-validation (200KB)
+├── @pie-lib/controller-utils (100KB)
+├── Other dependencies (380KB)
+└── Webpack runtime (minimal, ~10KB)
+```
+
+**All external dependencies are bundled:**
+- `@pie-framework/math-validation`
+- `lodash`, `lodash-es`
+- `debug`
+- Any other npm dependencies from controller's `package.json`
+
+### Why Controllers Bundle Everything
+
+**Isolation:**
+- Controllers run in assessment scoring environments
+- Need to be fully self-contained
+- Can't rely on external shared libraries
+- Must work offline or in restricted environments
+
+**Consistency:**
+- Controller logic must produce identical results
+- Version pinning ensures reproducibility
+- No shared library version conflicts
+
+**Security:**
+- Scoring happens server-side in many cases
+- Self-contained bundle reduces attack surface
+- All dependencies are audited and bundled together
+
+### pie-elements-ng Compatibility
+
+**Current Approach:**
+```
+packages/elements-react/multiple-choice/
+├── src/
+│   ├── index.ts          # Player component
+│   ├── delivery/         # Delivery view
+│   ├── author/           # Authoring view
+│   └── controller/       # Controller logic
+│       ├── index.ts
+│       └── package.json  # ← Controller dependencies declared here
+└── package.json          # Element dependencies
+```
+
+**What Happens in pie-api-aws:**
+
+1. **Download** `@pie-element/multiple-choice` from NPM
+2. **Read** controller package.json at `controller/package.json`
+3. **Install** all dependencies via yarn (including controller deps)
+4. **Bundle** controller with webpack (all deps included)
+5. **Result** Self-contained `controller.js` (~800KB)
+
+**Tree Shaking:**
+- Webpack bundles only imported code
+- Unused exports from dependencies are eliminated
+- Minification reduces size further
+- Example: Only used lodash functions are bundled
+
+**External Dependencies:**
+- pie-api-aws **automatically installs** controller dependencies
+- Reads from `controller/package.json`
+- Runs `yarn install` in snapshot directory
+- All deps available during bundling
+
+**Local Development:**
+- Need controller external deps in root `package.json` for dev server
+- Example: `@pie-framework/math-validation` needed locally
+- In production, pie-api-aws handles this automatically
+
+### Bundle Size Comparison
+
+**IIFE Player Bundle:**
+```
+multiple-choice player.js
+├── Player component: 150KB
+├── React/UI code: 50KB
+├── No shared libs (external)
+└── Total: ~200KB
+```
+
+**Controller Bundle:**
+```
+multiple-choice controller.js
+├── Controller logic: 50KB
+├── All dependencies bundled: 750KB
+└── Total: ~800KB
+```
+
+**Why the Size Difference?**
+- Controllers can't use shared libraries (isolated execution)
+- Players reference shared libs (loaded once, cached)
+- Controllers need to be self-contained for scoring environments
+
+### Deployment Flow
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant NPM as NPM Registry
+    participant Builder as pie-api-aws Builder
+    participant CDN as CDN
+
+    Dev->>NPM: npm publish @pie-element/multiple-choice@12.0.0
+    Note over NPM: Package includes:<br/>- Player code<br/>- Controller code<br/>- controller/package.json
+
+    Builder->>NPM: Download @pie-element/multiple-choice@12.0.0
+    NPM-->>Builder: Tarball with all code
+
+    Builder->>NPM: yarn install (resolves controller deps)
+    NPM-->>Builder: Installs @pie-framework/math-validation, etc.
+
+    Builder->>Builder: Webpack bundle controller<br/>(all deps included)
+
+    Builder->>CDN: Upload controller.js (~800KB)
+    CDN-->>Builder: Ready
+
+    Note over CDN: Controller is now available:<br/>https://cdn.example.com/bundles/<br/>@pie-element/multiple-choice@12.0.0/<br/>controller.js
+```
+
+### Key Insights
+
+1. **Controllers are self-contained** - all dependencies bundled
+2. **Players use externals** - shared libraries not bundled
+3. **Automatic dependency resolution** - pie-api-aws installs from controller/package.json
+4. **Local dev needs manual setup** - add external deps to root package.json
+5. **Tree shaking works** - only imported code is bundled
+6. **CommonJS output** - not IIFE, not ESM (for Node.js compatibility)
+
+---
+
 ## Key Insights for pie-elements-ng
 
 ### 1. Math Rendering Must Be External
@@ -1011,3 +1244,400 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
 - **Full accessibility maintained** - WCAG AAA compliance via Speech Rule Engine
 
 The key difference: IIFE uses manual DLL tooling, ESM uses native browser module caching + CDN. Both avoid duplication, but ESM is simpler and provides better global caching (jsdelivr CDN vs per-deployment CDN).
+
+---
+
+## The Custom Elements Global Namespace Problem
+
+### The Fundamental Tension
+
+There's an architectural tension between **ESM module scope** and **custom elements global registration**:
+
+```
+┌─────────────────────────────────────────┐
+│  ESM Modules: Local Scope               │
+│  ✅ Can import multiple versions        │
+│  ✅ Module instances are isolated       │
+│  ✅ Each import gets its own context    │
+└─────────────────┬───────────────────────┘
+                  │
+                  │ But must register to...
+                  ↓
+┌─────────────────────────────────────────┐
+│  customElements: Global to Page         │
+│  ❌ Cannot register same tag twice      │
+│  ❌ No scoping mechanism exists         │
+│  ❌ Permanent for page lifetime         │
+└─────────────────────────────────────────┘
+```
+
+### The Problem in Detail
+
+**ESM allows multiple versions:**
+
+```javascript
+// Module A imports version 1.0
+import Element_v1 from 'https://esm.sh/@pie-element/multiple-choice@1.0.0';
+
+// Module B imports version 2.0
+import Element_v2 from 'https://esm.sh/@pie-element/multiple-choice@2.0.0';
+
+// Both modules loaded successfully! ✅
+```
+
+**But custom element registration is global:**
+
+```javascript
+// Module A tries to register
+customElements.define('multiple-choice', Element_v1);  // ✅ Works
+
+// Module B tries to register the same tag
+customElements.define('multiple-choice', Element_v2);
+// ❌ DOMException: Failed to execute 'define' on 'CustomElementRegistry':
+//    the name "multiple-choice" has already been used with this registry
+```
+
+**Key facts about `customElements`:**
+
+1. **Singleton per document** - only one registry per page
+2. **Cannot undefine** - once registered, permanent until page reload
+3. **Cannot redefine** - same tag name cannot be registered twice
+4. **No namespacing** - no way to scope tags to components or modules
+5. **Globally accessible** - `window.customElements` everywhere
+
+### Why This Matters for PIE
+
+**Scenario:** An assessment page needs two elements that depend on different versions:
+
+```
+Assessment Item:
+├── multiple-choice (depends on @pie-lib/render-ui@5.0.0)
+└── drag-in-the-blank (depends on @pie-lib/render-ui@6.0.0)
+```
+
+**Without versioned tags:**
+```javascript
+// First element loads
+customElements.define('multiple-choice', MultipleChoiceClass_v1);  // ✅
+
+// Second element tries to load (different version)
+customElements.define('multiple-choice', MultipleChoiceClass_v2);  // ❌ ERROR!
+```
+
+The browser **cannot** distinguish between versions using the same tag name.
+
+### The Solution: Versioned Tag Names
+
+Both **pie-players** and **pie-elements-ng** solve this using **version-encoded tag names**:
+
+#### Implementation in pie-players
+
+**File:** `packages/players-shared/src/pie/config.ts`
+
+```typescript
+/**
+ * We make the web component name unique by using the version number. This is needed
+ * because the spec doesn't allow for removing/updating a custom element definition
+ * once it's been defined. This is a workaround to ensure that the custom element
+ * is redefined when the version changes.
+ */
+export const makeUniqueTags = <T extends ConfigContainerEntity>(container: T): T => {
+  const VERSION_DELIMITER = "--version-";
+
+  const createVersionedName = (elName: string, pkg: string): string => {
+    const { baseName, existingVersion } = parseElementName(elName);
+    const { version } = parsePackageName(pkg);
+
+    if (existingVersion !== version) {
+      return `${baseName}${VERSION_DELIMITER}${version.replace(/\./g, "-")}`;
+    }
+    return elName;
+  };
+
+  // Transform markup and model references
+  // ...
+}
+```
+
+**Example transformation:**
+
+```html
+<!-- Original markup -->
+<multiple-choice id="1"></multiple-choice>
+
+<!-- After makeUniqueTags() with version 11.2.0 -->
+<multiple-choice--version-11-2-0 id="1"></multiple-choice--version-11-2-0>
+
+<!-- After makeUniqueTags() with version 12.0.0 -->
+<multiple-choice--version-12-0-0 id="1"></multiple-choice--version-12-0-0>
+```
+
+**Now both versions can coexist:**
+
+```javascript
+customElements.define('multiple-choice--version-11-2-0', MultipleChoiceClass_v11);  // ✅
+customElements.define('multiple-choice--version-12-0-0', MultipleChoiceClass_v12);  // ✅
+```
+
+### Why Global State is Actually Correct
+
+Since custom elements are inherently global, **tracking them globally makes sense**:
+
+#### pie-players Approach: `window.PIE_REGISTRY`
+
+```typescript
+// packages/players-shared/src/pie/registry.ts
+export const pieRegistry = (): PieRegistry => {
+  let registry: PieRegistry;
+  if (isPieRegistryAvailable(window)) {
+    registry = window.PIE_REGISTRY;
+  } else {
+    registry = {};
+    (window as any).PIE_REGISTRY = registry;
+  }
+  return registry;
+};
+```
+
+**What the registry tracks:**
+
+```typescript
+interface Entry {
+  package: string;              // "@pie-element/multiple-choice@12.0.0"
+  status: Status;               // 'loading' | 'loaded'
+  tagName: string;              // "multiple-choice--version-12-0-0"
+  controller?: PieController;   // Controller instance
+  element?: any;                // Element class
+  bundleType?: BundleType;      // 'esm' | 'iife'
+}
+
+// Global registry
+window.PIE_REGISTRY = {
+  'multiple-choice--version-11-2-0': {
+    package: '@pie-element/multiple-choice@11.2.0',
+    status: 'loaded',
+    controller: { model: ..., score: ... }
+  },
+  'multiple-choice--version-12-0-0': {
+    package: '@pie-element/multiple-choice@12.0.0',
+    status: 'loaded',
+    controller: { model: ..., score: ... }
+  }
+};
+```
+
+**Why global state is appropriate:**
+
+1. **Aligns with platform** - `customElements` is already global
+2. **Prevents duplicate loading** - check registry before loading
+3. **Enables controller lookup** - map tag name to controller
+4. **Coordinates multiple players** - share state across player instances
+5. **Tracks loading status** - know what's already available
+
+#### Alternative: Use customElements Directly?
+
+**Could we avoid `window.PIE_REGISTRY` and just use `customElements`?**
+
+```javascript
+// Check if already registered
+if (customElements.get('multiple-choice--version-12-0-0')) {
+  console.log('Already registered');
+}
+```
+
+**This works for checking registration, but:**
+
+❌ **Where do you store the controller?**
+```javascript
+// Need to associate controller with tag somehow...
+// Still need global state!
+```
+
+❌ **How do you track loading status?**
+```javascript
+// customElements doesn't tell you if something is currently loading
+// Still need to track this globally!
+```
+
+❌ **How do you find package version from tag?**
+```javascript
+// customElements.get() returns the class, not metadata
+// Still need global metadata store!
+```
+
+**Conclusion:** You need global state anyway. `window.PIE_REGISTRY` is the honest approach.
+
+### Registration Pattern with Checks
+
+Both projects check before registering:
+
+**ESM Loader (pie-players):**
+
+```typescript
+// packages/players-shared/src/pie/esm-loader.ts
+if (!customElements.get(tag)) {
+  if (isCustomElementConstructor(ElementClass)) {
+    // Wrap to allow multiple registrations with same constructor
+    customElements.define(tag, class extends ElementClass {});
+    logger.debug(`Registered custom element: ${tag}`);
+
+    registry[tag] = {
+      ...registry[tag],
+      status: Status.loaded,
+    };
+  }
+} else {
+  logger.debug(`Element ${tag} already registered`);
+  registry[tag] = {
+    ...registry[tag],
+    status: Status.loaded,
+  };
+}
+```
+
+**Element Loader (pie-elements-ng):**
+
+```typescript
+// packages/element-player/src/lib/element-loader.ts
+export async function loadElement(
+  packagePath: string,
+  tagName: string,
+  cdnUrl: string
+): Promise<void> {
+  // Check if already registered
+  if (customElements.get(tagName)) {
+    if (debug) console.log(`Element ${tagName} already registered`);
+    return;
+  }
+
+  // Load and register
+  const module = await import(/* @vite-ignore */ modulePath);
+  const ElementClass = module.default || module.Element;
+
+  customElements.define(tagName, ElementClass);
+  await customElements.whenDefined(tagName);
+}
+```
+
+### Class Wrapping Technique
+
+**Why wrap the element class?**
+
+```typescript
+customElements.define(tag, class extends ElementClass {});
+```
+
+This allows:
+
+1. **Multiple versions using same base class** - each gets unique subclass
+2. **Bypasses constructor reference check** - each wrapper is a new class
+3. **Preserves element behavior** - inheritance maintains all functionality
+
+**Without wrapping:**
+
+```javascript
+// If two versions try to register with same constructor
+customElements.define('tag-v1', SameClass);  // ✅
+customElements.define('tag-v2', SameClass);  // ❌ May fail in some browsers
+```
+
+**With wrapping:**
+
+```javascript
+customElements.define('tag-v1', class extends SameClass {});  // ✅
+customElements.define('tag-v2', class extends SameClass {});  // ✅
+// Each gets a unique class instance
+```
+
+### Coordination Across the Page
+
+**Why this matters for multiple players on one page:**
+
+```html
+<!-- Page with two assessment players -->
+<div id="assessment-1">
+  <pie-esm-player config='{"elements": {...}}'></pie-esm-player>
+</div>
+
+<div id="assessment-2">
+  <pie-esm-player config='{"elements": {...}}'></pie-esm-player>
+</div>
+```
+
+**Without global registry:**
+- Player 1 loads `multiple-choice--version-12-0-0`
+- Player 2 also needs `multiple-choice--version-12-0-0`
+- Both try to `customElements.define()` → ❌ Second one fails
+
+**With global registry:**
+- Player 1 loads and registers element, updates registry
+- Player 2 checks registry, sees element already loaded
+- Player 2 skips registration, uses existing definition → ✅
+
+### ESM vs IIFE: Same Problem, Different Scale
+
+**IIFE bundles:**
+- Use `window.pie` to expose elements
+- Global state is explicit and expected
+- DLL shared libraries also use globals
+
+**ESM modules:**
+- Import statements feel "local" and modular
+- But `customElements.define()` is still global
+- The illusion of module isolation breaks at registration
+
+**Both need versioned tags and global coordination.**
+
+### Import Maps Don't Solve This
+
+**Import maps handle module resolution:**
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "multiple-choice": "https://esm.sh/@pie-element/multiple-choice@12.0.0"
+  }
+}
+</script>
+```
+
+**But they don't scope custom element registration:**
+
+```javascript
+import Element from 'multiple-choice';  // ✅ Import maps work here
+
+customElements.define('multiple-choice', Element);  // ❌ Still global!
+```
+
+Import maps only control **where modules come from**, not **how they register**.
+
+### Future Web Platform?
+
+**Potential future solutions (not yet available):**
+
+1. **Scoped Custom Element Registries** - Allow per-component registries
+   - Proposal: https://github.com/WICG/webcomponents/issues/716
+   - Status: Early discussion, not implemented
+
+2. **Shadow DOM Registries** - Scope elements to shadow root
+   - Would require each player to use shadow DOM
+   - Breaks global styling and CSS inheritance
+
+3. **Module Blocks** - Inline modules with private scope
+   - Still experimental
+   - Doesn't solve custom element registration
+
+**Current reality:** Versioned tag names are the only practical solution.
+
+### Key Takeaways
+
+1. **Custom elements are inherently global** - no scoping mechanism exists
+2. **ESM module scope is an illusion** - breaks at custom element registration
+3. **Versioned tag names are necessary** - allow multiple versions to coexist
+4. **Global state is correct** - aligns with the platform's global registry
+5. **Both IIFE and ESM need this** - the problem is independent of bundle format
+6. **Check before registering** - `customElements.get()` prevents errors
+7. **Class wrapping enables reuse** - same base class, different subclasses
+
+The `window.PIE_REGISTRY` in pie-players is not a workaround or anti-pattern - it's the **correct architectural response** to the web platform's global custom element namespace. Since `customElements` is global, tracking elements globally is the honest, maintainable approach.

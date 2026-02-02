@@ -5,6 +5,8 @@
  * Shows navbar and tab navigation for player views
  */
 import { page } from '$app/stores';
+import { goto } from '$app/navigation';
+import { onMount } from 'svelte';
 import { initializeDemo, hasConfigure, hasPrint } from '$lib/stores/demo-state';
 import DemoSelector from '$lib/components/DemoSelector.svelte';
 import type { LayoutData } from './$types';
@@ -46,24 +48,42 @@ const tabs = $derived([
 // Determine active tab from current path (use $derived in Svelte 5)
 const activeTab = $derived($page.url.pathname.split('/')[2] || 'deliver');
 const packageName = $derived(`@pie-element/${data.elementName}`);
+
+// Ensure URL always has the demo parameter for bookmarkability
+onMount(() => {
+  const currentDemoParam = $page.url.searchParams.get('demo');
+  const hasMultipleDemos = data.demos && data.demos.length > 1;
+
+  // If we have multiple demos but no demo parameter, add it to the URL
+  if (hasMultipleDemos && !currentDemoParam && data.activeDemoId) {
+    const url = new URL($page.url);
+    url.searchParams.set('demo', data.activeDemoId);
+    goto(url.toString(), { replaceState: true, noScroll: true });
+  }
+});
 </script>
 
 <div class="flex flex-col h-screen">
   <!-- Navbar -->
   <div class="navbar bg-base-100 shadow-lg">
-    <div class="navbar-start">
-      <a href="/{data.elementName}" class="btn btn-ghost text-xl gap-3">
-        <img src="/pie-logo-orange.svg" alt="PIE Logo" class="w-10 h-10" />
-        <div class="flex flex-col items-start">
-          <span class="font-bold">{formatElementName(data.elementName)}</span>
-          <span class="text-xs opacity-70">{packageName}</span>
+    <div class="navbar-start flex-shrink min-w-0">
+      <a href="/" class="btn btn-ghost btn-sm flex-shrink-0" title="All Elements">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      </a>
+      <a href="/{data.elementName}" class="btn btn-ghost text-xl gap-3 flex-shrink min-w-0 overflow-hidden">
+        <img src="/pie-logo-orange.svg" alt="PIE Logo" class="w-10 h-10 flex-shrink-0" />
+        <div class="flex flex-col items-start min-w-0 overflow-hidden">
+          <span class="font-bold truncate max-w-full">{formatElementName(data.elementName)}</span>
+          <span class="text-xs opacity-70 truncate max-w-full">{packageName}</span>
         </div>
       </a>
     </div>
-    <div class="navbar-center">
+    <div class="navbar-center flex-shrink-0">
       <DemoSelector demos={data.demos || []} activeDemoId={data.activeDemoId || 'default'} />
     </div>
-    <div class="navbar-end">
+    <div class="navbar-end flex-shrink-0">
       <label class="swap swap-rotate">
         <input type="checkbox" class="theme-controller" value="dark" />
         <svg class="swap-on fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

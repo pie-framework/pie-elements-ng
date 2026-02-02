@@ -1,44 +1,185 @@
 export default {
-  "models": [
+  "demos": [
     {
-      "id": "1",
-      "element": "math-templated",
-      "rationale": "Rationale",
-      "partialScoring": true,
-      "prompt": "There are 24 students in the class. They had the choice to buy supplies from two different stores, Store A and B. Each of them bought 2 binders and 5 notebooks. The students have a total of $420 to spend.",
-      "scoringType": "auto",
-      "feedbackEnabled": false,
-      "promptEnabled": true,
-      "rationaleEnabled": true,
-      "teacherInstructionsEnabled": true,
-      "studentInstructionsEnabled": true,
-      "toolbarEditorPosition": "bottom",
-      "validationDefault": "literal",
-      "ignoreOrderDefault": false,
-      "allowTrailingZerosDefault": false,
-      "teacherInstructions": "These are teacher instructions",
-      "customKeys": [],
-      "equationEditor": "geometry",
-      "markup": "\n    <p>If the unit price of a notebook in Store A is $1.50, what is the unit price of a binder? ${{0}}</p>\n    <p>If the unit price of a binder in Store B is $2.80, what is the unit price of a notebook? ${{1}}</p>\n  ",
-      "responses": {
-        "0": {
-          "allowTrailingZeros": false,
-          "answer": "5",
-          "id": "1",
-          "validation": "symbolic",
-          "ignoreOrder": false,
-          "alternates": {}
+      "id": "algebra-word-problem",
+      "title": "Algebra Word Problem with Multiple Responses",
+      "description": "Multi-step algebra problem with different validation modes for each response area",
+      "tags": [
+        "algebra",
+        "multi-response",
+        "word-problem",
+        "mixed-validation"
+      ],
+      "model": {
+        "id": "1",
+        "element": "math-templated",
+        "prompt": "<p>A movie theater charges $12 for adult tickets and $8 for child tickets. On Saturday, they sold tickets worth $2,400 total. If they sold 150 adult tickets, answer the following:</p>",
+        "promptEnabled": true,
+        "markup": "<p>1. How many child tickets did they sell? {{0}}</p>\n<p>2. Write an expression for total revenue if <em>a</em> represents adult tickets and <em>c</em> represents child tickets: {{1}}</p>\n<p>3. What is the average ticket price? ${{2}}</p>",
+        "responses": {
+          "0": {
+            "answer": "75",
+            "validation": "literal",
+            "allowTrailingZeros": false,
+            "ignoreOrder": false,
+            "alternates": {}
+          },
+          "1": {
+            "answer": "12a+8c",
+            "validation": "symbolic",
+            "allowTrailingZeros": false,
+            "ignoreOrder": false,
+            "alternates": {
+              "1": "8c+12a",
+              "2": "12\\cdot a+8\\cdot c"
+            }
+          },
+          "2": {
+            "answer": "10.00",
+            "validation": "literal",
+            "allowTrailingZeros": true,
+            "ignoreOrder": false,
+            "alternates": {
+              "1": "10"
+            }
+          }
         },
-        "1": {
-          "allowTrailingZeros": false,
-          "answer": "2.38",
-          "id": "1",
-          "validation": "literal",
-          "ignoreOrder": false,
-          "alternates": {}
-        }
+        "equationEditor": "8",
+        "validationDefault": "symbolic",
+        "allowTrailingZerosDefault": false,
+        "ignoreOrderDefault": false,
+        "partialScoring": true,
+        "rationaleEnabled": true,
+        "rationale": "<p>1. Total revenue = $2,400. Adult revenue = 150 \u00d7 $12 = $1,800. Child revenue = $2,400 - $1,800 = $600. Child tickets = $600 \u00f7 $8 = 75 tickets.</p>\n<p>2. Revenue = (price \u00d7 quantity) for each type. Adult revenue: 12a, Child revenue: 8c, Total: 12a + 8c</p>\n<p>3. Total tickets = 150 + 75 = 225. Average = $2,400 \u00f7 225 = $10.67 (rounded to $10.00 for the answer)</p>",
+        "teacherInstructionsEnabled": true,
+        "teacherInstructions": "<p>This problem tests multi-step problem solving and algebraic expression writing. Note that response 2 accepts multiple equivalent forms.</p>",
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "answers": {}
+      }
+    },
+    {
+      "id": "geometry-measurements",
+      "title": "Geometry Measurements with Symbolic Validation",
+      "description": "Geometry problem using symbolic validation to accept equivalent expressions for area and perimeter",
+      "tags": [
+        "geometry",
+        "symbolic-validation",
+        "alternates",
+        "measurements"
+      ],
+      "model": {
+        "id": "2",
+        "element": "math-templated",
+        "prompt": "<p>A rectangle has a length of <em>x</em> + 5 and a width of <em>x</em> - 2, where <em>x</em> > 2.</p>",
+        "promptEnabled": true,
+        "markup": "<p>1. Write an expression for the perimeter: {{0}}</p>\n<p>2. Write an expression for the area: {{1}}</p>\n<p>3. If <em>x</em> = 7, what is the area? {{2}}</p>",
+        "responses": {
+          "0": {
+            "answer": "4x+6",
+            "validation": "symbolic",
+            "allowTrailingZeros": false,
+            "ignoreOrder": false,
+            "alternates": {
+              "1": "2(x+5)+2(x-2)",
+              "2": "2x+10+2x-4",
+              "3": "2(2x+3)"
+            }
+          },
+          "1": {
+            "answer": "x^2+3x-10",
+            "validation": "symbolic",
+            "allowTrailingZeros": false,
+            "ignoreOrder": false,
+            "alternates": {
+              "1": "(x+5)(x-2)",
+              "2": "x(x+5)-2(x+5)",
+              "3": "x^2-2x+5x-10"
+            }
+          },
+          "2": {
+            "answer": "60",
+            "validation": "literal",
+            "allowTrailingZeros": false,
+            "ignoreOrder": false,
+            "alternates": {}
+          }
+        },
+        "equationEditor": "geometry",
+        "validationDefault": "symbolic",
+        "allowTrailingZerosDefault": false,
+        "ignoreOrderDefault": false,
+        "partialScoring": true,
+        "rationaleEnabled": true,
+        "rationale": "<p>1. Perimeter = 2(length + width) = 2((x+5) + (x-2)) = 2(2x+3) = 4x+6</p>\n<p>2. Area = length \u00d7 width = (x+5)(x-2) = x\u00b2 + 3x - 10</p>\n<p>3. Substitute x=7: Area = 7\u00b2 + 3(7) - 10 = 49 + 21 - 10 = 60</p>",
+        "teacherInstructionsEnabled": true,
+        "teacherInstructions": "<p>Multiple equivalent forms are accepted for expressions. Students can expand or factor as long as the expression is mathematically equivalent.</p>",
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "answers": {}
+      }
+    },
+    {
+      "id": "statistics-calculations",
+      "title": "Statistics with Literal Validation and Decimal Precision",
+      "description": "Statistics problem using literal validation with options for trailing zeros and decimal precision",
+      "tags": [
+        "statistics",
+        "literal-validation",
+        "decimals",
+        "trailing-zeros"
+      ],
+      "model": {
+        "id": "3",
+        "element": "math-templated",
+        "prompt": "<p>A data set contains the following test scores: 85, 92, 78, 95, 88, 91, 87</p>",
+        "promptEnabled": true,
+        "markup": "<p>1. Calculate the mean (average) score: {{0}}</p>\n<p>2. Calculate the median score: {{1}}</p>\n<p>3. What is the range of the scores? {{2}}</p>",
+        "responses": {
+          "0": {
+            "answer": "88.00",
+            "validation": "literal",
+            "allowTrailingZeros": true,
+            "ignoreOrder": false,
+            "alternates": {
+              "1": "88.0",
+              "2": "88"
+            }
+          },
+          "1": {
+            "answer": "88",
+            "validation": "literal",
+            "allowTrailingZeros": true,
+            "ignoreOrder": false,
+            "alternates": {
+              "1": "88.0",
+              "2": "88.00"
+            }
+          },
+          "2": {
+            "answer": "17",
+            "validation": "literal",
+            "allowTrailingZeros": false,
+            "ignoreOrder": false,
+            "alternates": {}
+          }
+        },
+        "equationEditor": "statistics",
+        "validationDefault": "literal",
+        "allowTrailingZerosDefault": true,
+        "ignoreOrderDefault": false,
+        "partialScoring": true,
+        "rationaleEnabled": true,
+        "rationale": "<p>1. Mean = Sum \u00f7 Count = (85+92+78+95+88+91+87) \u00f7 7 = 616 \u00f7 7 = 88</p>\n<p>2. Ordered data: 78, 85, 87, 88, 91, 92, 95. The median (middle value) is 88</p>\n<p>3. Range = Maximum - Minimum = 95 - 78 = 17</p>",
+        "teacherInstructionsEnabled": true,
+        "teacherInstructions": "<p>Literal validation is used with trailing zeros allowed for mean and median to accept various decimal formats. Range must be exact.</p>",
+        "toolbarEditorPosition": "bottom"
+      },
+      "session": {
+        "answers": {}
       }
     }
   ]
-}
-;
+};

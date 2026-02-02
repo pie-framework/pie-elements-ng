@@ -34,6 +34,15 @@ export default defineConfig({
   // Solution: Use built dist files (default condition) and ensure
   // all dependencies are properly bundled or available
 
+  resolve: {
+    alias: {
+      // Fix @pie-framework/math-validation resolution issue
+      // The package has module: "src/index.ts" which doesn't exist in installed package
+      // Force Vite to use the main field (lib/index.js) instead
+      '@pie-framework/math-validation': '@pie-framework/math-validation/lib/index.js',
+    },
+  },
+
   server: {
     port: Number(process.env.PORT ?? 5222),
     fs: {
@@ -44,8 +53,24 @@ export default defineConfig({
   optimizeDeps: {
     // Include React in pre-bundling to avoid issues
     include: ['react', 'react-dom', 'react/jsx-runtime'],
-    // Note: Not excluding workspace packages to prevent issues
-    // exclude: ['@pie-element/*', '@pie-lib/*'],
+    // Exclude workspace packages and @pie-framework packages to prevent dependency scanning errors
+    // These are marked as external in the build config
+    exclude: ['@pie-element/*', '@pie-lib/*', '@pie-framework/*'],
+    // Tell esbuild not to scan controller dist files or other problematic paths
+    esbuildOptions: {
+      plugins: [
+        {
+          name: 'exclude-controller-dist',
+          setup(build) {
+            // Ignore controller dist files from dependency scanning
+            build.onResolve({ filter: /.*\/dist\/controller\/.*/ }, () => ({
+              path: 'ignored',
+              external: true,
+            }));
+          },
+        },
+      ],
+    },
   },
 
   build: {

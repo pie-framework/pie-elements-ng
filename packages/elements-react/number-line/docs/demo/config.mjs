@@ -1,67 +1,295 @@
 export default {
-  "models": [
+  "demos": [
     {
-      "correctResponse": [
-        {
-          "type": "point",
-          "pointType": "full",
-          "domainPosition": 0
-        }
+      "id": "basic-points",
+      "title": "Plot Points on Integer Number Line",
+      "description": "Basic point plotting with closed points on an integer number line",
+      "tags": [
+        "points",
+        "integers",
+        "basic"
       ],
-      "feedback": {
-        "correct": {
-          "type": "default",
-          "default": "Correct"
+      "model": {
+        "id": "1",
+        "element": "number-line",
+        "prompt": "<p>Plot the solutions to the equation: <strong>x<sup>2</sup> - 9 = 0</strong></p>",
+        "correctResponse": [
+          {
+            "type": "point",
+            "pointType": "full",
+            "domainPosition": -3
+          },
+          {
+            "type": "point",
+            "pointType": "full",
+            "domainPosition": 3
+          }
+        ],
+        "feedback": {
+          "correct": {
+            "type": "default",
+            "default": "Correct! The equation x\u00b2 - 9 = 0 has solutions at x = -3 and x = 3"
+          },
+          "partial": {
+            "type": "default",
+            "default": "You have some correct points, but not all"
+          },
+          "incorrect": {
+            "type": "default",
+            "default": "Incorrect. Solve for x by factoring: (x-3)(x+3) = 0"
+          }
         },
-        "partial": {
-          "type": "default",
-          "default": "Nearly"
-        },
-        "incorrect": {
-          "type": "default",
-          "default": "Incorrect"
+        "graph": {
+          "title": "",
+          "arrows": {
+            "left": true,
+            "right": true
+          },
+          "width": 600,
+          "domain": {
+            "min": -5,
+            "max": 5
+          },
+          "ticks": {
+            "minor": 1,
+            "major": 1,
+            "tickIntervalType": "Integer"
+          },
+          "initialElements": [],
+          "maxNumberOfPoints": 2,
+          "showMinorTicks": true,
+          "snapPerTick": 1,
+          "tickLabelOverrides": [],
+          "initialType": "PF",
+          "exhibitOnly": false,
+          "availableTypes": {
+            "PF": true
+          }
         }
       },
-      "prompt": "",
-      "widthEnabled": true,
-      "graph": {
-        "title": "",
-        "arrows": {
-          "left": true,
-          "right": true
+      "session": {
+        "answer": []
+      }
+    },
+    {
+      "id": "inequality-rays",
+      "title": "Represent Inequalities with Rays",
+      "description": "Show inequality solutions using rays with open and closed endpoints",
+      "tags": [
+        "rays",
+        "inequalities",
+        "algebra"
+      ],
+      "model": {
+        "id": "2",
+        "element": "number-line",
+        "prompt": "<p>Graph the solution set for the inequality: <strong>x \u2264 -2</strong></p>",
+        "correctResponse": [
+          {
+            "type": "ray",
+            "domainPosition": -2,
+            "pointType": "full",
+            "direction": "negative"
+          }
+        ],
+        "feedback": {
+          "correct": {
+            "type": "default",
+            "default": "Correct! The inequality x \u2264 -2 includes -2 (closed point) and all values to the left"
+          },
+          "partial": {
+            "type": "default",
+            "default": "Nearly correct - check if the endpoint should be open or closed"
+          },
+          "incorrect": {
+            "type": "default",
+            "default": "Incorrect. Remember: \u2264 means 'less than or equal to', so use a closed point"
+          }
         },
-        "width": 500,
-        "domain": {
-          "min": -5,
-          "max": 5
-        },
-        "ticks": {
-          "minor": 1,
-          "major": 2,
-          "tickIntervalType": "Integer"
-        },
-        "initialElements": [],
-        "maxNumberOfPoints": 30,
-        "showMinorTicks": true,
-        "snapPerTick": 1,
-        "tickLabelOverrides": [],
-        "initialType": "PF",
-        "exhibitOnly": false,
-        "availableTypes": {
-          "PF": true,
-          "LFF": true,
-          "LEF": true,
-          "LFE": true,
-          "LEE": true,
-          "RFN": true,
-          "RFP": true,
-          "REN": true,
-          "REP": true
+        "graph": {
+          "title": "",
+          "arrows": {
+            "left": true,
+            "right": true
+          },
+          "width": 600,
+          "domain": {
+            "min": -6,
+            "max": 2
+          },
+          "ticks": {
+            "minor": 1,
+            "major": 2,
+            "tickIntervalType": "Integer"
+          },
+          "initialElements": [],
+          "maxNumberOfPoints": 1,
+          "showMinorTicks": true,
+          "snapPerTick": 1,
+          "tickLabelOverrides": [],
+          "initialType": "RFN",
+          "exhibitOnly": false,
+          "availableTypes": {
+            "RFN": true,
+            "RFP": true,
+            "REN": true,
+            "REP": true
+          }
         }
       },
-      "id": "1",
-      "element": "number-line"
+      "session": {
+        "answer": []
+      }
+    },
+    {
+      "id": "fractions-decimals",
+      "title": "Fractions and Mixed Numbers",
+      "description": "Plot fractions and mixed numbers on a number line with fractional tick marks",
+      "tags": [
+        "fractions",
+        "decimals",
+        "mixed-numbers"
+      ],
+      "model": {
+        "id": "3",
+        "element": "number-line",
+        "prompt": "<p>Plot the following values on the number line:</p><ul><li><strong>1/2</strong></li><li><strong>1 3/4</strong></li><li><strong>-1/4</strong></li></ul>",
+        "correctResponse": [
+          {
+            "type": "point",
+            "pointType": "full",
+            "domainPosition": 0.5
+          },
+          {
+            "type": "point",
+            "pointType": "full",
+            "domainPosition": 1.75
+          },
+          {
+            "type": "point",
+            "pointType": "full",
+            "domainPosition": -0.25
+          }
+        ],
+        "feedback": {
+          "correct": {
+            "type": "default",
+            "default": "Excellent! You correctly plotted all three fractional values"
+          },
+          "partial": {
+            "type": "default",
+            "default": "You have some correct points. Check your fraction calculations"
+          },
+          "incorrect": {
+            "type": "default",
+            "default": "Review: 1/2 = 0.5, 1 3/4 = 1.75, -1/4 = -0.25"
+          }
+        },
+        "graph": {
+          "title": "",
+          "arrows": {
+            "left": true,
+            "right": true
+          },
+          "width": 650,
+          "domain": {
+            "min": -1,
+            "max": 3
+          },
+          "ticks": {
+            "minor": 0.25,
+            "major": 1,
+            "tickIntervalType": "Fraction"
+          },
+          "labelStep": "1/4",
+          "fraction": true,
+          "initialElements": [],
+          "maxNumberOfPoints": 3,
+          "showMinorTicks": true,
+          "snapPerTick": 1,
+          "tickLabelOverrides": [],
+          "initialType": "PF",
+          "exhibitOnly": false,
+          "availableTypes": {
+            "PF": true
+          }
+        }
+      },
+      "session": {
+        "answer": []
+      }
+    },
+    {
+      "id": "intervals-ranges",
+      "title": "Graph Intervals and Ranges",
+      "description": "Represent mathematical intervals using line segments with various endpoint types",
+      "tags": [
+        "intervals",
+        "lines",
+        "ranges",
+        "notation"
+      ],
+      "model": {
+        "id": "4",
+        "element": "number-line",
+        "prompt": "<p>Graph the interval: <strong>[-3, 4)</strong></p><p><em>Note: Square bracket [ means closed endpoint, parenthesis ) means open endpoint</em></p>",
+        "correctResponse": [
+          {
+            "type": "line",
+            "domainPosition": -3,
+            "size": 7,
+            "leftPoint": "full",
+            "rightPoint": "empty"
+          }
+        ],
+        "feedback": {
+          "correct": {
+            "type": "default",
+            "default": "Perfect! You correctly represented the interval [-3, 4) with a closed point at -3 and an open point at 4"
+          },
+          "partial": {
+            "type": "default",
+            "default": "Close! Check whether the endpoints should be open or closed"
+          },
+          "incorrect": {
+            "type": "default",
+            "default": "Incorrect. Remember: [a means closed at a, b) means open at b"
+          }
+        },
+        "graph": {
+          "title": "",
+          "arrows": {
+            "left": true,
+            "right": true
+          },
+          "width": 650,
+          "domain": {
+            "min": -5,
+            "max": 6
+          },
+          "ticks": {
+            "minor": 1,
+            "major": 1,
+            "tickIntervalType": "Integer"
+          },
+          "initialElements": [],
+          "maxNumberOfPoints": 1,
+          "showMinorTicks": true,
+          "snapPerTick": 1,
+          "tickLabelOverrides": [],
+          "initialType": "LFE",
+          "exhibitOnly": false,
+          "availableTypes": {
+            "LFF": true,
+            "LEF": true,
+            "LFE": true,
+            "LEE": true
+          }
+        }
+      },
+      "session": {
+        "answer": []
+      }
     }
   ]
-}
-;
+};

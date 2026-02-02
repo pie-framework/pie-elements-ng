@@ -2,7 +2,17 @@ import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
+export default defineConfig(({ mode, command }) => {
+  // Demo mode: serve the docs/demo directory
+  if (mode === 'demo' && command === 'serve') {
+    return {
+      plugins: [react()],
+      root: resolve(__dirname, 'docs/demo'),
+    };
+  }
+
+  // Build mode: build the library
+  return {
   plugins: [react()],
   build: {
     lib: {
@@ -45,4 +55,5 @@ export default defineConfig({
       },
     },
   },
+  };
 });

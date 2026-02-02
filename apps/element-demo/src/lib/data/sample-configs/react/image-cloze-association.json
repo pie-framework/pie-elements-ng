@@ -1,52 +1,57 @@
 {
-  "models": [
+  "demos": [
     {
-      "id": "1",
+      "id": "geometry-angles",
       "element": "image-cloze-association",
-      "prompt": "This is the question prompt",
+      "prompt": "Label the angles in this triangle with their correct measurements.",
       "image": {
         "src": "https://app.fluence.net/ia/image/6412223997a34018b15f8512bee6c04c",
-        "width": 465,
+        "width": 500,
         "scale": false,
-        "height": 313
+        "height": 400
       },
-      "responseAreaFill": "rgba(240,255,224,0.9)",
+      "responseAreaFill": "rgba(135,206,250,0.7)",
       "response_container": {
         "wordwrap": true,
-        "width": "130px",
-        "height": "55px"
+        "width": "80px",
+        "height": "40px"
       },
-      "metadata": {},
-      "is_math": true,
-      "response_id": "8a808081592940240159464a277609e7",
       "response_containers": [
         {
           "wordwrap": true,
-          "x": 64.3,
-          "width": "35.70%",
-          "y": 1.6,
-          "height": "23.64%",
-          "aria_label": ""
+          "x": 15,
+          "width": "16%",
+          "y": 70,
+          "height": "10%",
+          "aria_label": "Angle A"
         },
         {
-          "pointer": "undefined",
           "wordwrap": true,
-          "x": 64.09,
-          "width": "35.92%",
-          "y": 39.62,
-          "height": "23.32%",
-          "aria_label": ""
+          "x": 70,
+          "width": "16%",
+          "y": 70,
+          "height": "10%",
+          "aria_label": "Angle B"
+        },
+        {
+          "wordwrap": true,
+          "x": 42,
+          "width": "16%",
+          "y": 10,
+          "height": "10%",
+          "aria_label": "Angle C"
         }
       ],
-      "stimulus": "<p>A car manufacturer proposes the development of a car tire disposal area near an important wetland habitat. In this area, tires will be broken into pieces and buried. The manufacturer needs to design this area to address the environmental concerns from the list in the passage. After breaking the tires into pieces, the manufacturer decides to recycle some of the pieces and dispose of the rest in this newly developed area. Drag and drop the data labels into the graph to show how this decision will likely affect the number of tire pieces collected from a sample area of the wetland after many years.</p>",
-      "metadatadistractor_rationale": "<p>A correct response is shown below.&#160;This response best shows how this decision will likely affect the number tire pieces collected.<img alt=\"image 03de38019abe41b1bc95d1199658327f\" id=\"03de38019abe41b1bc95d1199658327f\" src=\"https://localhost:8443/ia/image/03de38019abe41b1bc95d1199658327f\" /></p>",
+      "stimulus": "<p>A triangle has three interior angles. The sum of all interior angles in a triangle equals \\(180^\\circ\\). Use the given information to determine the measure of each angle.</p>",
       "ui_style": {
         "possibility_list_position": "bottom",
-        "fontsize": "small"
+        "fontsize": "normal"
       },
       "possible_responses": [
-        "<img alt=\"\" src=\"https://app.fluence.net/ia/image/9e5ed1d6762c4dac87b080e190af113d\"/>",
-        "<img alt=\"\" src=\"https://app.fluence.net/ia/image/729ca157d04c440ab7ae1c2abfb9c057\"/>"
+        "\\(45^\\circ\\)",
+        "\\(60^\\circ\\)",
+        "\\(75^\\circ\\)",
+        "\\(90^\\circ\\)"
       ],
       "validation": {
         "scoring_type": "exactMatch",
@@ -55,22 +60,245 @@
           "value": [
             {
               "images": [
-                "<img alt=\"\" src=\"https://app.fluence.net/ia/image/729ca157d04c440ab7ae1c2abfb9c057\"/>"
+                "\\(60^\\circ\\)"
               ]
             },
             {
               "images": [
-                "<img alt=\"\" src=\"https://app.fluence.net/ia/image/9e5ed1d6762c4dac87b080e190af113d\"/>"
+                "\\(45^\\circ\\)"
+              ]
+            },
+            {
+              "images": [
+                "\\(75^\\circ\\)"
               ]
             }
           ]
         }
       },
-      "partialScoring": false,
+      "partialScoring": true,
       "shuffle": true,
-      "rubricEnabled": false,
+      "duplicateResponses": false,
+      "maxResponsePerZone": 1,
+      "imageDropTargetPadding": "3px",
+      "responseContainerPadding": "10px",
+      "rationaleEnabled": true,
+      "rationale": "<p>The angles must sum to \\(180^\\circ\\). With the given triangle, angle A = \\(60^\\circ\\), angle B = \\(45^\\circ\\), and angle C = \\(75^\\circ\\). Verify: \\(60 + 45 + 75 = 180\\).</p>",
+      "teacherInstructions": "<p>Students should understand that the sum of interior angles in a triangle is always \\(180^\\circ\\).</p>",
+      "teacherInstructionsEnabled": true
+    },
+    {
+      "id": "chemical-structures",
+      "element": "image-cloze-association",
+      "prompt": "Match each molecular formula to its location in the chemical equation.",
+      "image": {
+        "src": "https://app.fluence.net/ia/image/9e5ed1d6762c4dac87b080e190af113d",
+        "width": 600,
+        "scale": false,
+        "height": 300
+      },
+      "responseAreaFill": "rgba(255,228,196,0.8)",
+      "response_container": {
+        "wordwrap": true,
+        "width": "100px",
+        "height": "50px"
+      },
+      "response_containers": [
+        {
+          "wordwrap": true,
+          "x": 10,
+          "width": "15%",
+          "y": 35,
+          "height": "16%",
+          "aria_label": "Reactant 1"
+        },
+        {
+          "wordwrap": true,
+          "x": 32,
+          "width": "15%",
+          "y": 35,
+          "height": "16%",
+          "aria_label": "Reactant 2"
+        },
+        {
+          "wordwrap": true,
+          "x": 70,
+          "width": "15%",
+          "y": 35,
+          "height": "16%",
+          "aria_label": "Product 1"
+        },
+        {
+          "wordwrap": true,
+          "x": 70,
+          "width": "15%",
+          "y": 60,
+          "height": "16%",
+          "aria_label": "Product 2"
+        }
+      ],
+      "stimulus": "<p>Photosynthesis is the process by which plants convert carbon dioxide and water into glucose and oxygen using sunlight. Complete the balanced chemical equation by dragging the correct molecular formulas to each position.</p>",
+      "ui_style": {
+        "possibility_list_position": "right",
+        "fontsize": "normal"
+      },
+      "possible_responses": [
+        "\\(6CO_2\\)",
+        "\\(6H_2O\\)",
+        "\\(C_6H_{12}O_6\\)",
+        "\\(6O_2\\)",
+        "\\(2H_2\\)",
+        "\\(3CO_2\\)"
+      ],
+      "validation": {
+        "scoring_type": "exactMatch",
+        "valid_response": {
+          "score": 1,
+          "value": [
+            {
+              "images": [
+                "\\(6CO_2\\)"
+              ]
+            },
+            {
+              "images": [
+                "\\(6H_2O\\)"
+              ]
+            },
+            {
+              "images": [
+                "\\(C_6H_{12}O_6\\)"
+              ]
+            },
+            {
+              "images": [
+                "\\(6O_2\\)"
+              ]
+            }
+          ]
+        }
+      },
+      "partialScoring": true,
+      "shuffle": true,
+      "duplicateResponses": false,
+      "maxResponsePerZone": 1,
+      "imageDropTargetPadding": "4px",
+      "responseContainerPadding": "8px",
+      "rationaleEnabled": true,
+      "rationale": "<p>The balanced equation for photosynthesis is: \\(6CO_2 + 6H_2O \\rightarrow C_6H_{12}O_6 + 6O_2\\). This shows that six molecules of carbon dioxide and six molecules of water produce one molecule of glucose and six molecules of oxygen.</p>",
+      "teacherInstructions": "<p>Students should understand chemical equation balancing and recognize the molecular formulas for common compounds in photosynthesis.</p>",
+      "teacherInstructionsEnabled": true
+    },
+    {
+      "id": "coordinate-plane-functions",
+      "element": "image-cloze-association",
+      "prompt": "Place the correct function expressions on the coordinate plane to match each graphed line.",
+      "image": {
+        "src": "https://app.fluence.net/ia/image/729ca157d04c440ab7ae1c2abfb9c057",
+        "width": 550,
+        "scale": false,
+        "height": 450
+      },
+      "responseAreaFill": "rgba(216,191,216,0.75)",
+      "response_container": {
+        "wordwrap": true,
+        "width": "110px",
+        "height": "45px"
+      },
+      "response_containers": [
+        {
+          "wordwrap": true,
+          "x": 65,
+          "width": "20%",
+          "y": 20,
+          "height": "10%",
+          "aria_label": "Line 1"
+        },
+        {
+          "wordwrap": true,
+          "x": 15,
+          "width": "20%",
+          "y": 45,
+          "height": "10%",
+          "aria_label": "Line 2"
+        },
+        {
+          "wordwrap": true,
+          "x": 40,
+          "width": "20%",
+          "y": 70,
+          "height": "10%",
+          "aria_label": "Line 3"
+        }
+      ],
+      "stimulus": "<p>The coordinate plane shows three linear functions. Match each line with its algebraic equation. Consider the slope \\(m\\) and y-intercept \\(b\\) in the form \\(y = mx + b\\).</p>",
+      "ui_style": {
+        "possibility_list_position": "bottom",
+        "fontsize": "normal"
+      },
+      "possible_responses": [
+        "\\(y = 2x + 1\\)",
+        "\\(y = -x + 3\\)",
+        "\\(y = \\frac{1}{2}x - 2\\)",
+        "\\(y = -2x + 4\\)",
+        "\\(y = x\\)"
+      ],
+      "validation": {
+        "scoring_type": "exactMatch",
+        "valid_response": {
+          "score": 1,
+          "value": [
+            {
+              "images": [
+                "\\(y = 2x + 1\\)"
+              ]
+            },
+            {
+              "images": [
+                "\\(y = -x + 3\\)"
+              ]
+            },
+            {
+              "images": [
+                "\\(y = \\frac{1}{2}x - 2\\)"
+              ]
+            }
+          ]
+        },
+        "alt_responses": [
+          {
+            "score": 1,
+            "value": [
+              {
+                "images": [
+                  "\\(y = 2x + 1\\)"
+                ]
+              },
+              {
+                "images": [
+                  "\\(y = 3 - x\\)"
+                ]
+              },
+              {
+                "images": [
+                  "\\(y = 0.5x - 2\\)"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "partialScoring": true,
+      "shuffle": true,
+      "duplicateResponses": false,
+      "maxResponsePerZone": 1,
       "imageDropTargetPadding": "2px",
-      "responseContainerPadding": "8px"
+      "responseContainerPadding": "10px",
+      "showDashedBorder": true,
+      "rationaleEnabled": true,
+      "rationale": "<p>To identify each line, examine its slope and y-intercept. Line 1 has a steep positive slope (2) and crosses the y-axis at 1. Line 2 has a negative slope (-1) and y-intercept at 3. Line 3 has a gentle positive slope (\\(\\frac{1}{2}\\)) and crosses at -2.</p>",
+      "teacherInstructions": "<p>This assesses students' ability to match graphical representations of linear functions with their algebraic equations. Focus on identifying slope and intercept from the graph.</p>",
+      "teacherInstructionsEnabled": true
     }
   ]
 }

@@ -14,8 +14,11 @@ interface Props {
 
 let { demos, activeDemoId }: Props = $props();
 
+// Get the active demo ID from URL query parameter, falling back to the prop
+const currentActiveDemoId = $derived($page.url.searchParams.get('demo') || activeDemoId);
+
 // Get the active demo
-const activeDemo = $derived(demos.find((d) => d.id === activeDemoId) || demos[0]);
+const activeDemo = $derived(demos.find((d) => d.id === currentActiveDemoId) || demos[0]);
 
 // Handle demo selection
 function selectDemo(demoId: string) {
@@ -31,9 +34,9 @@ function selectDemo(demoId: string) {
 }
 </script>
 
-{#if demos.length > 1}
-  <div class="demo-selector dropdown">
-    <div tabindex="0" role="button" class="btn btn-sm btn-outline gap-2">
+{#if demos.length >= 1}
+  <div class="demo-selector dropdown" class:single-demo={demos.length === 1}>
+    <div tabindex={demos.length > 1 ? "0" : "-1"} role={demos.length > 1 ? "button" : "status"} class="btn btn-sm btn-outline gap-2" class:cursor-default={demos.length === 1}>
       <!-- Icon -->
       <svg
         class="w-4 h-4"
@@ -56,10 +59,12 @@ function selectDemo(demoId: string) {
       <!-- Demo count badge -->
       <span class="badge badge-sm badge-primary">{demos.length}</span>
 
-      <!-- Dropdown arrow -->
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
+      <!-- Dropdown arrow (only show if multiple demos) -->
+      {#if demos.length > 1}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      {/if}
     </div>
 
     <!-- Dropdown menu -->
@@ -70,7 +75,7 @@ function selectDemo(demoId: string) {
         <li class="w-full">
           <button
             class="flex flex-col items-start gap-1 py-3 px-4 w-full"
-            class:active={demo.id === activeDemoId}
+            class:active={demo.id === currentActiveDemoId}
             onclick={() => selectDemo(demo.id)}
             type="button"
           >
@@ -106,11 +111,22 @@ function selectDemo(demoId: string) {
     transition: opacity 0.2s, visibility 0.2s;
   }
 
-  /* Show dropdown when button is focused/active */
+  /* Show dropdown when button is focused/active (but not for single demo) */
   .demo-selector:focus-within :global(.dropdown-content) {
     pointer-events: auto;
     opacity: 1;
     visibility: visible;
+  }
+
+  /* Prevent dropdown from opening when there's only one demo */
+  .demo-selector.single-demo :global(.dropdown-content) {
+    display: none !important;
+  }
+
+  /* Make single demo button non-interactive */
+  .demo-selector.single-demo .cursor-default {
+    cursor: default !important;
+    pointer-events: none;
   }
 
   .demo-selector :global(.menu) {
