@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-mathquill",
-  "version": "0.1.0",
+  "version": "0.0.0-test.1769993634241",
   "description": "MathQuill fork for PIE Framework - modernized ESM version with matrix support, accessibility, and custom symbols",
   "type": "module",
   "main": "./dist/index.js",

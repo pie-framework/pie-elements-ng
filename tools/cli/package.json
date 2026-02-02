@@ -18,9 +18,11 @@
   "dependencies": {
     "@oclif/core": "^4.0.0",
     "@oclif/plugin-help": "^6.2.0",
+    "@pie-element/bundler-shared": "workspace:*",
     "es-module-lexer": "^1.7.0",
     "glob": "^13.0.0",
-    "open": "^10.0.3"
+    "open": "^10.0.3",
+    "webpack": "^5.104.1"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",

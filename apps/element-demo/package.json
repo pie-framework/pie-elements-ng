@@ -12,6 +12,7 @@
     "predev": "bun run generate-imports"
   },
   "dependencies": {
+    "@pie-element/bundler-shared": "workspace:*",
     "@pie-element/element-player": "workspace:*",
     "@pie-element/shared-math-rendering-core": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",

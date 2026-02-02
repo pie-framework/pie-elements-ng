@@ -66,3 +66,6 @@ apps/element-demo/src/lib/data/sample-configs/
 
 # Demo server lock file
 .demo-server.lock
+
+# Bundler outputs
+static/bundles/
