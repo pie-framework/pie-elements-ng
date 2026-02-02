@@ -13,53 +13,53 @@ import type { MathRenderer } from './types';
  * Singleton that manages the active math renderer globally.
  */
 class MathRendererProvider {
-	private currentRenderer: MathRenderer | null = null;
+  private currentRenderer: MathRenderer | null = null;
 
-	/**
-	 * Set the active math renderer
-	 *
-	 * @param renderer - The renderer function to use
-	 *
-	 * @example
-	 * ```typescript
-	 * import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
-	 * import { mathRendererProvider } from '@pie-element/shared-math-rendering-core';
-	 *
-	 * const renderer = createKatexRenderer();
-	 * mathRendererProvider.setRenderer(renderer);
-	 * ```
-	 */
-	setRenderer(renderer: MathRenderer): void {
-		this.currentRenderer = renderer;
-	}
+  /**
+   * Set the active math renderer
+   *
+   * @param renderer - The renderer function to use
+   *
+   * @example
+   * ```typescript
+   * import { createKatexRenderer } from '@pie-element/shared-math-rendering-katex';
+   * import { mathRendererProvider } from '@pie-element/shared-math-rendering-core';
+   *
+   * const renderer = createKatexRenderer();
+   * mathRendererProvider.setRenderer(renderer);
+   * ```
+   */
+  setRenderer(renderer: MathRenderer): void {
+    this.currentRenderer = renderer;
+  }
 
-	/**
-	 * Get the current renderer
-	 *
-	 * @returns The active renderer, or null if none set
-	 */
-	getRenderer(): MathRenderer | null {
-		return this.currentRenderer;
-	}
+  /**
+   * Get the current renderer
+   *
+   * @returns The active renderer, or null if none set
+   */
+  getRenderer(): MathRenderer | null {
+    return this.currentRenderer;
+  }
 
-	/**
-	 * Check if a renderer has been initialized
-	 *
-	 * @returns true if a renderer is set
-	 */
-	isInitialized(): boolean {
-		return this.currentRenderer !== null;
-	}
+  /**
+   * Check if a renderer has been initialized
+   *
+   * @returns true if a renderer is set
+   */
+  isInitialized(): boolean {
+    return this.currentRenderer !== null;
+  }
 
-	/**
-	 * Get the current renderer or a default
-	 *
-	 * @param defaultRenderer - Renderer to return if none is set
-	 * @returns The current renderer or the provided default
-	 */
-	getRendererOrDefault(defaultRenderer: MathRenderer): MathRenderer {
-		return this.currentRenderer ?? defaultRenderer;
-	}
+  /**
+   * Get the current renderer or a default
+   *
+   * @param defaultRenderer - Renderer to return if none is set
+   * @returns The current renderer or the provided default
+   */
+  getRendererOrDefault(defaultRenderer: MathRenderer): MathRenderer {
+    return this.currentRenderer ?? defaultRenderer;
+  }
 }
 
 /**
