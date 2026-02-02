@@ -4,6 +4,7 @@
  */
 import type { LayoutLoad } from './$types';
 import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
+import { registerGlobalMathRenderer } from '$lib/element-player/lib/math-rendering-coordinator';
 
 // SSR enabled for server-side validation - web components will hydrate on client
 
@@ -123,6 +124,8 @@ export const load: LayoutLoad = async ({
   // Create math renderer only once and cache it
   if (!cachedMathRenderer) {
     cachedMathRenderer = createMathjaxRenderer();
+    // Register globally so all elements and views can access it
+    registerGlobalMathRenderer(cachedMathRenderer);
   }
 
   return {

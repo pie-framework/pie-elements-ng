@@ -15,7 +15,8 @@ The PIE team's work on upstream library modernization (React 18, MUI 7, Tiptap e
 5. **Modern standard tooling** - Vite + Bun + Turbo vs bespoke pie-cli + pie-shared-lib-builder
 6. **Consolidated demo system** - Single unified SvelteKit app for all elements vs per-element tool-generated demos
 7. **Integrated monorepo** - @pie-lib pulled in vs separate repository
-8. **GitHub Actions CI/CD** - Modern GitHub-native workflows vs CircleCI
+8. **Workspace-wide versioning** - Synchronized releases across all packages vs independent per-package versions
+9. **GitHub Actions CI/CD** - Modern GitHub-native workflows vs CircleCI
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed explanations of each difference.
 

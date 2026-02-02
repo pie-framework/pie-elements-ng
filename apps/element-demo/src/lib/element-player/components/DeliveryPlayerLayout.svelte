@@ -5,6 +5,7 @@
  * Extended layout with mode/role/session/model controls for delivery view.
  */
 import { onMount } from 'svelte';
+import { page } from '$app/stores';
 import ModeSelector from './ModeSelector.svelte';
 import SessionPanel from './SessionPanel.svelte';
 import ScoringPanel from './ScoringPanel.svelte';
@@ -142,6 +143,13 @@ function handleModelApply(nextModel: any) {
   // Model updates are handled by the store in parent routes
   console.log('[delivery-player-layout] Model apply requested:', nextModel);
 }
+
+// Build URL for role change, preserving other params
+function getRoleUrl(newRole: 'student' | 'instructor'): string {
+  const url = new URL($page.url);
+  url.searchParams.set('role', newRole);
+  return url.pathname + url.search;
+}
 </script>
 
 {#if loading}
@@ -175,27 +183,31 @@ function handleModelApply(nextModel: any) {
       <div class="panel">
         <h3>Role</h3>
         <div class="role-selector">
-          <label class:active={playerRole === 'student'} class:disabled={roleLocked}>
-            <input
-              type="radio"
-              bind:group={playerRole}
-              value="student"
-              disabled={roleLocked}
-            />
+          <a
+            href={getRoleUrl('student')}
+            class="role-link"
+            class:active={playerRole === 'student'}
+            class:disabled={roleLocked}
+            aria-disabled={roleLocked}
+            tabindex={roleLocked ? -1 : 0}
+            data-sveltekit-reload
+          >
             <span>Student</span>
-          </label>
-          <label class:active={playerRole === 'instructor'}>
-            <input type="radio" bind:group={playerRole} value="instructor" />
+          </a>
+          <a
+            href={getRoleUrl('instructor')}
+            class="role-link"
+            class:active={playerRole === 'instructor'}
+            data-sveltekit-reload
+          >
             <span>Instructor</span>
-          </label>
+          </a>
         </div>
       </div>
 
       <SessionPanel {session} />
 
       <ScoringPanel {score} />
-
-      <ModelPanel {model} onApply={handleModelApply} />
     </aside>
   </div>
 {/if}
@@ -304,7 +316,7 @@ function handleModelApply(nextModel: any) {
     gap: 0.5rem;
   }
 
-  .role-selector label {
+  .role-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -313,24 +325,23 @@ function handleModelApply(nextModel: any) {
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
   }
 
-  .role-selector label:hover {
+  .role-link:hover:not(.disabled) {
     background: #f5f5f5;
   }
 
-  .role-selector label.active {
+  .role-link.active {
     background: #e3f2fd;
     border-color: #0066cc;
   }
 
-  .role-selector label.disabled {
+  .role-link.disabled {
     opacity: 0.6;
     cursor: not-allowed;
-  }
-
-  .role-selector label.disabled:hover {
-    background: transparent;
+    pointer-events: none;
   }
 
   /* Responsive */

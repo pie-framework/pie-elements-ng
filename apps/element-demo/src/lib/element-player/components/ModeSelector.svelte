@@ -4,6 +4,8 @@
  * Allows switching between gather/view/evaluate modes
  */
 
+import { page } from '$app/stores';
+
 let {
   mode = $bindable('gather'),
   evaluateDisabled = false,
@@ -11,23 +13,45 @@ let {
   mode?: 'gather' | 'view' | 'evaluate';
   evaluateDisabled?: boolean;
 } = $props();
+
+// Build URL for mode change, preserving other params
+function getModeUrl(newMode: 'gather' | 'view' | 'evaluate'): string {
+  const url = new URL($page.url);
+  url.searchParams.set('mode', newMode);
+  return url.pathname + url.search;
+}
 </script>
 
 <div class="mode-selector">
-  <label class:active={mode === 'gather'}>
-    <input type="radio" bind:group={mode} value="gather" />
+  <a
+    href={getModeUrl('gather')}
+    class="mode-link"
+    class:active={mode === 'gather'}
+    data-sveltekit-reload
+  >
     <span>Gather</span>
-  </label>
+  </a>
 
-  <label class:active={mode === 'view'}>
-    <input type="radio" bind:group={mode} value="view" />
+  <a
+    href={getModeUrl('view')}
+    class="mode-link"
+    class:active={mode === 'view'}
+    data-sveltekit-reload
+  >
     <span>View</span>
-  </label>
+  </a>
 
-  <label class:active={mode === 'evaluate'} class:disabled={evaluateDisabled}>
-    <input type="radio" bind:group={mode} value="evaluate" disabled={evaluateDisabled} />
+  <a
+    href={getModeUrl('evaluate')}
+    class="mode-link"
+    class:active={mode === 'evaluate'}
+    class:disabled={evaluateDisabled}
+    aria-disabled={evaluateDisabled}
+    tabindex={evaluateDisabled ? -1 : 0}
+    data-sveltekit-reload
+  >
     <span>Evaluate</span>
-  </label>
+  </a>
 </div>
 
 <style>
@@ -37,7 +61,7 @@ let {
     gap: 0.5rem;
   }
 
-  label {
+  .mode-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -46,28 +70,23 @@ let {
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
   }
 
-  label:hover {
+  .mode-link:hover:not(.disabled) {
     background: #f5f5f5;
   }
 
-  label.disabled {
+  .mode-link.disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    pointer-events: none;
   }
 
-  label.disabled:hover {
-    background: transparent;
-  }
-
-  label.active {
+  .mode-link.active {
     background: #e3f2fd;
     border-color: #0066cc;
-  }
-
-  input[type="radio"] {
-    cursor: pointer;
   }
 
   span {

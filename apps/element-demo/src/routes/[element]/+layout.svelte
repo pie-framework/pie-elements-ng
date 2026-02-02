@@ -37,28 +37,111 @@ function formatElementName(name: string): string {
     .join(' ');
 }
 
-// Tab configuration - paths are derived from element name
+// Tab configuration - paths are derived from element name and preserve demo/mode/role parameters
+const currentDemoParam = $derived($page.url.searchParams.get('demo'));
+const currentModeParam = $derived($page.url.searchParams.get('mode'));
+const currentRoleParam = $derived($page.url.searchParams.get('role'));
+
+// Build query string with all relevant parameters
+const buildQueryString = $derived((includeDeliveryParams: boolean) => {
+  const params = new URLSearchParams();
+  if (currentDemoParam) {
+    params.set('demo', currentDemoParam);
+  }
+  if (includeDeliveryParams) {
+    if (currentModeParam) {
+      params.set('mode', currentModeParam);
+    }
+    if (currentRoleParam) {
+      params.set('role', currentRoleParam);
+    }
+  }
+  const str = params.toString();
+  return str ? `?${str}` : '';
+});
+
 const tabs = $derived([
-  { id: 'deliver', label: 'Delivery', path: `/${data.elementName}/deliver` },
-  { id: 'author', label: 'Author', path: `/${data.elementName}/author` },
-  { id: 'print', label: 'Print', path: `/${data.elementName}/print` },
-  { id: 'source', label: 'Source', path: `/${data.elementName}/source` },
+  {
+    id: 'deliver',
+    label: 'Delivery',
+    path: `/${data.elementName}/deliver${buildQueryString(true)}`,
+  },
+  { id: 'author', label: 'Author', path: `/${data.elementName}/author${buildQueryString(false)}` },
+  { id: 'print', label: 'Print', path: `/${data.elementName}/print${buildQueryString(false)}` },
+  { id: 'source', label: 'Source', path: `/${data.elementName}/source${buildQueryString(false)}` },
 ]);
 
 // Determine active tab from current path (use $derived in Svelte 5)
 const activeTab = $derived($page.url.pathname.split('/')[2] || 'deliver');
 const packageName = $derived(`@pie-element/${data.elementName}`);
 
-// Ensure URL always has the demo parameter for bookmarkability
-onMount(() => {
-  const currentDemoParam = $page.url.searchParams.get('demo');
-  const hasMultipleDemos = data.demos && data.demos.length > 1;
+// Import stores for mode and role
+import { mode, role } from '$lib/stores/demo-state';
 
-  // If we have multiple demos but no demo parameter, add it to the URL
+// Sync URL parameters with stores for bookmarkability
+onMount(() => {
+  const url = new URL($page.url);
+  let needsUpdate = false;
+
+  // Demo parameter
+  const currentDemoParam = url.searchParams.get('demo');
+  const hasMultipleDemos = data.demos && data.demos.length > 1;
   if (hasMultipleDemos && !currentDemoParam && data.activeDemoId) {
-    const url = new URL($page.url);
     url.searchParams.set('demo', data.activeDemoId);
+    needsUpdate = true;
+  }
+
+  // Mode parameter (only for deliver route)
+  const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
+  if (isDeliverRoute) {
+    const modeParam = url.searchParams.get('mode');
+    if (modeParam && ['gather', 'view', 'evaluate'].includes(modeParam)) {
+      mode.set(modeParam as 'gather' | 'view' | 'evaluate');
+    } else if (!modeParam) {
+      // Add current mode to URL
+      url.searchParams.set('mode', $mode);
+      needsUpdate = true;
+    }
+
+    // Role parameter
+    const roleParam = url.searchParams.get('role');
+    if (roleParam && ['student', 'instructor'].includes(roleParam)) {
+      role.set(roleParam as 'student' | 'instructor');
+    } else if (!roleParam) {
+      // Add current role to URL
+      url.searchParams.set('role', $role);
+      needsUpdate = true;
+    }
+  }
+
+  if (needsUpdate) {
     goto(url.toString(), { replaceState: true, noScroll: true });
+  }
+});
+
+// Subscribe to mode/role changes and update URL
+$effect(() => {
+  const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
+  if (isDeliverRoute) {
+    const url = new URL($page.url);
+    const currentMode = url.searchParams.get('mode');
+    const currentRole = url.searchParams.get('role');
+
+    let needsUpdate = false;
+
+    if (currentMode !== $mode) {
+      url.searchParams.set('mode', $mode);
+      needsUpdate = true;
+    }
+
+    if (currentRole !== $role) {
+      url.searchParams.set('role', $role);
+      needsUpdate = true;
+    }
+
+    if (needsUpdate) {
+      goto(url.toString(), { replaceState: true, noScroll: true });
+    }
   }
 });
 </script>
@@ -111,6 +194,7 @@ onMount(() => {
         class:tab-disabled={isDisabled}
         aria-disabled={isDisabled}
         tabindex={isDisabled ? -1 : 0}
+        data-sveltekit-reload
       >
         {tab.label}
       </a>

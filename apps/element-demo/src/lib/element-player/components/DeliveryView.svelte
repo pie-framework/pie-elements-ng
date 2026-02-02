@@ -5,6 +5,10 @@
 import DemoElementPlayer from './DemoElementPlayer.svelte';
 import { onMount, createEventDispatcher } from 'svelte';
 import { sessionsEqual } from '@pie-element/shared-utils';
+import {
+  renderMathInContainer,
+  createMathRenderingObserver,
+} from '../lib/math-rendering-coordinator';
 
 const dispatch = createEventDispatcher();
 
@@ -31,6 +35,9 @@ let lastElementSessionRef = $state<any>(null);
 let updatingFromElement = $state(false);
 let elementSessionVersion = $state(0);
 let updateTimer: ReturnType<typeof setTimeout> | null = null;
+
+// Math rendering observer
+let mathObserver: MutationObserver | null = null;
 
 // Update element session when session prop changes
 $effect(() => {
@@ -65,9 +72,55 @@ $effect(() => {
   }
 });
 
-// Note: Math rendering is handled internally by the element itself
-// The element calls renderMath() after each render (see delivery/index.ts line 96)
-// No external math rendering needed
+// Setup parent-level math rendering to catch rationales, feedback, and dynamic content
+// Elements handle their own internal math rendering, but parent catches:
+// - Rationales that appear after element render
+// - Feedback overlays
+// - Dynamic content changes (show correct answer, etc.)
+//
+// Strategy: Use MutationObserver to detect when content actually changes in the DOM
+// This is more reliable than timers since it responds to actual render events
+$effect(() => {
+  if (elementPlayer) {
+    // Clean up previous observer
+    if (mathObserver) {
+      mathObserver.disconnect();
+    }
+
+    // Setup mutation observer FIRST - this catches the element's initial render
+    // Use a very short debounce (10ms) to batch rapid mutations but respond quickly
+    mathObserver = createMathRenderingObserver(elementPlayer, { debounceMs: 10 });
+
+    // Also render immediately in case content is already present
+    // Use requestAnimationFrame to ensure we render after the current frame
+    requestAnimationFrame(() => {
+      renderMathInContainer(elementPlayer);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (mathObserver) {
+        mathObserver.disconnect();
+        mathObserver = null;
+      }
+    };
+  }
+});
+
+// Re-render math when model changes (mode/role switches)
+// The MutationObserver will catch the DOM changes, but we also do an explicit render
+// to ensure math is processed even if the mutation observer's timing is off
+$effect(() => {
+  if (elementPlayer && elementModel) {
+    // Use requestAnimationFrame to render after React updates the DOM
+    requestAnimationFrame(() => {
+      // Double-rAF to ensure we're after React's commit phase
+      requestAnimationFrame(() => {
+        renderMathInContainer(elementPlayer);
+      });
+    });
+  }
+});
 
 /**
  * Handle session-changed event from element

@@ -3,6 +3,10 @@
  * Author View - Shows the configure component for authoring questions
  */
 import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+import {
+  renderMathInContainer,
+  createMathRenderingObserver,
+} from '../lib/math-rendering-coordinator';
 
 const dispatch = createEventDispatcher();
 
@@ -21,6 +25,9 @@ let {
 let configureContainer = $state<HTMLDivElement | null>(null);
 let configureInstance: HTMLElement | null = null;
 
+// Math rendering observer
+let mathObserver: MutationObserver | null = null;
+
 // Derived values
 const configureTag = $derived(`${elementName}-configure`);
 
@@ -33,6 +40,31 @@ $effect(() => {
     } catch (err) {
       console.error('[author-view] Error updating configure model:', err);
     }
+  }
+});
+
+// Setup parent-level math rendering for author view
+// Configure components may have math in preview areas
+$effect(() => {
+  if (configureContainer) {
+    // Clean up previous observer
+    if (mathObserver) {
+      mathObserver.disconnect();
+    }
+
+    // Initial render
+    renderMathInContainer(configureContainer);
+
+    // Setup mutation observer to catch dynamic content changes
+    mathObserver = createMathRenderingObserver(configureContainer, { debounceMs: 150 });
+
+    // Cleanup on unmount
+    return () => {
+      if (mathObserver) {
+        mathObserver.disconnect();
+        mathObserver = null;
+      }
+    };
   }
 });
 

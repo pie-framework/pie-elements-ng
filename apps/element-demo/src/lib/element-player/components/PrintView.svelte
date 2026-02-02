@@ -3,6 +3,10 @@
  * Print View - Shows the print-friendly version of the element
  */
 import { onMount, onDestroy } from 'svelte';
+import {
+  renderMathInContainer,
+  createMathRenderingObserver,
+} from '../lib/math-rendering-coordinator';
 
 // Props
 let {
@@ -21,6 +25,9 @@ let {
 let printContainer = $state<HTMLDivElement | null>(null);
 let printInstance: HTMLElement | null = null;
 
+// Math rendering observer
+let mathObserver: MutationObserver | null = null;
+
 // Derived values
 const printTag = $derived(`${elementName}-print`);
 
@@ -34,6 +41,34 @@ $effect(() => {
     } catch (err) {
       console.error('[print-view] Error updating print properties:', err);
     }
+  }
+});
+
+// Setup parent-level math rendering for print view
+// Print elements render math internally, but parent catches:
+// - Rationales in print view
+// - Dynamic content that appears after initial render
+// - LaTeX in prompts and feedback
+$effect(() => {
+  if (printContainer) {
+    // Clean up previous observer
+    if (mathObserver) {
+      mathObserver.disconnect();
+    }
+
+    // Initial render
+    renderMathInContainer(printContainer);
+
+    // Setup mutation observer to catch dynamic content changes
+    mathObserver = createMathRenderingObserver(printContainer, { debounceMs: 150 });
+
+    // Cleanup on unmount
+    return () => {
+      if (mathObserver) {
+        mathObserver.disconnect();
+        mathObserver = null;
+      }
+    };
   }
 });
 
