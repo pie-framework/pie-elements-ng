@@ -37,7 +37,7 @@ import Tabs from './components/Tabs.svelte';
 import { loadElement, loadController } from './lib/element-loader';
 import type { PieController } from './lib/types';
 import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
-import type { MathRenderer } from '@pie-element/shared-math-rendering-core';
+import { mathRendererProvider } from '@pie-element/shared-math-rendering-core';
 
 // Props with Svelte 5 runes
 let {
@@ -47,7 +47,6 @@ let {
   mode = $bindable('gather'),
   activeTab = $bindable('delivery'),
   showConfigure = false,
-  mathRenderer = $bindable<MathRenderer>(createMathjaxRenderer()),
   hosted = $bindable(false),
   playerRole = $bindable<'student' | 'instructor'>('student'),
   partialScoring = $bindable(true),
@@ -62,7 +61,6 @@ let {
   mode?: 'gather' | 'view' | 'evaluate';
   activeTab?: string;
   showConfigure?: boolean;
-  mathRenderer?: MathRenderer;
   hosted?: boolean;
   playerRole?: 'student' | 'instructor';
   partialScoring?: boolean;
@@ -494,12 +492,16 @@ $effect(() => {
 
 /**
  * Render math when element content changes
+ * Uses mathRendererProvider to get the active renderer (or defaults to MathJax)
  */
 $effect(() => {
-  if (elementPlayer && mathRenderer && !loading) {
+  if (elementPlayer && !loading) {
     try {
+      // Get renderer from provider or use default MathJax
+      const renderer = mathRendererProvider.getRendererOrDefault(createMathjaxRenderer());
+
       // Call math renderer on the container to process all math elements
-      mathRenderer(elementPlayer);
+      renderer(elementPlayer);
 
       if (debug) {
         console.log(`[pie-element-player] Math rendering applied`);

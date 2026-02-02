@@ -21,6 +21,9 @@
 export type { MathRenderer, TypesetConfig, BracketType } from './types';
 export { BracketTypes } from './types';
 
+// Provider
+export { mathRendererProvider } from './provider';
+
 // Utilities
 export { wrapMath, unWrapMath, fixMathElement, fixMathElements } from './utils/normalization';
 export { mmlToLatex } from './utils/mml-to-latex';
