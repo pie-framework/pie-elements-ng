@@ -23,7 +23,6 @@ if (data) {
     session: data.initialSession,
     controller: null, // Will be loaded by PlayerLayout
     capabilities: data.capabilities,
-    mathRenderer: data.mathRenderer,
     demos: data.demos,
     activeDemoId: data.activeDemoId,
   });
@@ -60,16 +59,54 @@ const buildQueryString = $derived((includeDeliveryParams: boolean) => {
   return str ? `?${str}` : '';
 });
 
-const tabs = $derived([
-  {
+// Generate tabs dynamically based on discovered views
+const tabs = $derived.by(() => {
+  const generatedTabs = [];
+
+  // Always add deliver (baseline delivery view)
+  generatedTabs.push({
     id: 'deliver',
     label: 'Delivery',
     path: `/${data.elementName}/deliver${buildQueryString(true)}`,
-  },
-  { id: 'author', label: 'Author', path: `/${data.elementName}/author${buildQueryString(false)}` },
-  { id: 'print', label: 'Print', path: `/${data.elementName}/print${buildQueryString(false)}` },
-  { id: 'source', label: 'Source', path: `/${data.elementName}/source${buildQueryString(false)}` },
-]);
+    description: 'Interactive delivery view'
+  });
+
+  // Add dynamically discovered views
+  for (const view of data.availableViews || []) {
+    // Map view ID to route path
+    // For delivery variants, use 'deliver' route with query param
+    // For other views (author, print), use dedicated routes
+    let routePath: string;
+    let description = view.description;
+
+    if (view.isDeliveryVariant) {
+      // Delivery variants go to /deliver?variant=mobile
+      const variantName = view.id.replace('delivery-', '');
+      routePath = `/${data.elementName}/deliver${buildQueryString(true)}&variant=${variantName}`;
+      description = description || `${view.label} variant`;
+    } else {
+      // Standard views have their own routes
+      routePath = `/${data.elementName}/${view.id}${buildQueryString(false)}`;
+    }
+
+    generatedTabs.push({
+      id: view.id,
+      label: view.label,
+      path: routePath,
+      description
+    });
+  }
+
+  // Always add source (code viewer)
+  generatedTabs.push({
+    id: 'source',
+    label: 'Source',
+    path: `/${data.elementName}/source${buildQueryString(false)}`,
+    description: 'View source code'
+  });
+
+  return generatedTabs;
+});
 
 // Determine active tab from current path (use $derived in Svelte 5)
 const activeTab = $derived($page.url.pathname.split('/')[2] || 'deliver');

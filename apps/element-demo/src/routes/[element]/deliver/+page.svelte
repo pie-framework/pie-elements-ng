@@ -15,7 +15,6 @@ import {
   partialScoring,
   controller,
   capabilities,
-  mathRenderer,
   updateSession,
   modelVersion,
   sessionVersion,
@@ -156,7 +155,6 @@ function handleSessionChanged(event: CustomEvent) {
       elementName={$elementName}
       {elementModel}
       bind:session={$session}
-      mathRenderer={$mathRenderer}
       {debug}
       on:session-changed={handleSessionChanged}
     />

@@ -1,8 +1,6 @@
 // @ts-nocheck
 /**
  * @synced-from pie-elements/packages/placement-ordering/configure/src/utils.js
- * @synced-commit 2a252291609481706fda098983c2973ccff27c81
- * @sync-version v3
  * @auto-generated
  *
  * This file is automatically synced from pie-elements and converted to TypeScript.

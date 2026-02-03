@@ -10,7 +10,7 @@ The PIE team's work on upstream library modernization (React 18, MUI 7, Tiptap e
 
 1. **Framework-agnostic architecture** - Supports multiple frameworks (React, Svelte, future Vue/Angular) via web components, not just React
 2. **ESM-first build system** - Browser-managed dependencies, better caching, smaller bundles (vs CommonJS + webpack IIFE bundles)
-3. **Unified player** - Single player for all views (delivery, authoring, print), enabled by ESM on-demand loading
+3. **Unified player approach** - Element-level players for development (interactive + print), item-level players in pie-players for production
 4. **Symmetric package organization** - Peer folders (delivery/author/controller/print) vs asymmetric legacy structure
 5. **Modern standard tooling** - Vite + Bun + Turbo vs bespoke pie-cli + pie-shared-lib-builder
 6. **Consolidated demo system** - Single unified SvelteKit app for all elements vs per-element tool-generated demos
@@ -81,4 +81,32 @@ git push
 
 `bun cli dev:demo multiple-choice` - Test one of the migrated PIE elements in this project. Besides starting a simple demo server, it also starts what is basically an ESM proxy so that references to @pie-element and @pie-lib load from the local system and all other dependencies go to esm.sh.
 
-TODO [fill in more documentation when this comes closer to switching to]
+## Print Support
+
+PIE elements include print views for generating paper-based assessments and answer keys. Two complementary players serve different use cases:
+
+### Element-Level Print Player (This Project)
+For development and testing of individual elements:
+```html
+<pie-esm-print-player element-name="multiple-choice" role="student" model={...} />
+```
+- **Package:** `@pie-element/element-player`
+- **Use for:** Element development, testing, documentation
+- **Location:** `packages/element-player/src/players/EsmPrintPlayer.svelte`
+
+### Item-Level Print Player (pie-players)
+For production rendering of complete assessment items:
+```html
+<pie-print config={{ item: {...}, options: { role: 'student' } }}></pie-print>
+```
+- **Package:** `@pie-player/print` (in pie-players repository)
+- **Use for:** Production apps, multi-element items, markup-driven rendering
+- **Location:** `../pie-players/packages/print-player`
+
+See [docs/PRINT_SUPPORT.md](docs/PRINT_SUPPORT.md) for complete documentation.
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md) - Detailed architecture and design decisions
+- [Print Support](docs/PRINT_SUPPORT.md) - Print architecture and usage
+- [Upstream Sync Guide](docs/migration/UPSTREAM_SYNC_GUIDE.md) - Syncing from pie-elements

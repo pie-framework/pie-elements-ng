@@ -68,26 +68,44 @@ This flexibility allows choosing the right framework for each use case (e.g., Sv
 
 This was enabled by the PIE team's work on upstream library updates (React 18, MUI 7, Tiptap editor).
 
-### 3. Unified Player Architecture (Enabled by ESM)
+### 3. Player Architecture (Enabled by ESM)
 
-**Legacy approach**: Separate players for different views:
+**Legacy approach**: Separate players and packages for different views:
 
 - One player for delivery (student/teacher interaction)
 - Separate authoring interface
-- Separate package for print views
+- Separate package (`@pie-framework/pie-print`) for print views
 
-**Modern approach**: Single unified player handles ALL views.
+**Modern approach**: Two-level player architecture with clear separation of concerns.
 
 ![Unified Player: One Player, All Views, Any Framework](img/unified-player-architecture-1-1769801208629.jpg)
 
-The element player can render:
+**Element-Level Players** (this repository):
 
-- `delivery/` - Student and teacher interaction (gather, view, evaluate modes)
-- `author/` - Configuration interface (formerly "configure")
-- `print/` - Print-friendly rendering
-- Future: `listview/` or other views as they're added
+- `<pie-esm-element-player>` - Interactive delivery and authoring
+- `<pie-esm-print-player>` - Print views for development/testing
+- **Package**: `@pie-element/element-player`
+- **Use for**: Element development, testing, documentation
 
-**Why ESM enables this**: Because dependencies are loaded on-demand by the browser, we don't need to create separate bundles for each view. The unified player loads only what it needs for the current view, making bundle size management unnecessary.
+**Item-Level Players** (pie-players repository):
+
+- Interactive players (esm-player, fixed-player, etc.) - Multi-element assessments
+- `<pie-print>` - Print views for production
+- **Package**: `@pie-player/print`
+- **Use for**: Production applications, complete assessment items
+
+**Element structure**: Each element has symmetric peer folders:
+
+- `delivery/` - Student/teacher interaction
+- `author/` - Configuration interface
+- `controller/` - Business logic
+- `print/` - Print view (custom element)
+
+**Why ESM enables this**: Dependencies are loaded on-demand, so we can have specialized players without worrying about bundle sizes. Element-level players load single elements via import maps. Item-level players dynamically load and orchestrate multiple element types from CDN.
+
+**Print architecture key insight**: Print components are self-contained. Each element's print export handles its own transformations (`preparePrintModel`), role-based visibility, and rendering. Players simply load and orchestrate them - element-level for development, item-level for production.
+
+**View-based architecture**: ESM's module system enables a powerful pattern - **UI variants through subpaths**. Instead of duplicating entire elements for different use cases (mobile, accessibility, branding, complexity levels), elements can provide multiple UI implementations that share the same controller logic. The ESM player loads the appropriate view on-demand with automatic fallback support.
 
 ### 4. Symmetric Directory Organization
 
@@ -113,6 +131,72 @@ src/
 - Each view is a peer (no implicit hierarchy)
 - Easy to add new views (`listview/`, `mini/`, etc.) as additional peers
 - Predictable package structure across all elements
+
+#### UI Variants: A Game-Changing Capability
+
+The symmetric peer-folder structure combined with ESM's module system enables a powerful pattern: **multiple UI implementations sharing a single controller**.
+
+##### Example: Multiple UI variants for the same element
+
+```
+packages/multiple-choice/
+├── delivery/              # Standard UI
+├── delivery-mobile/       # Touch-optimized UI (larger tap targets)
+├── delivery-a11y/         # Accessibility-optimized UI
+├── delivery-simple/       # Simplified UI for younger students
+├── delivery-branded/      # Custom district branding
+├── author/                # Configuration UI
+├── controller/            # Shared business logic (scoring, validation)
+└── print/                 # Print view
+```
+
+##### Loading specific variants
+
+```typescript
+// Load mobile-optimized view with automatic fallback
+await esmLoader.load(config, document, {
+  view: 'delivery-mobile',
+  fallback: 'delivery',
+  loadControllers: true
+});
+
+// Load accessibility-optimized view
+await esmLoader.load(config, document, {
+  view: 'delivery-a11y',
+  fallback: 'delivery',
+  loadControllers: true
+});
+```
+
+##### Benefits over separate elements
+
+✅ **Single source of truth** - Controller logic (scoring, validation, outcomes) maintained in one place
+✅ **Consistent behavior** - All variants use the same business logic, ensuring consistent assessment results
+✅ **Easy maintenance** - Bug fixes and feature updates benefit all UI variants simultaneously
+✅ **Reduced duplication** - No need to copy-paste controller code across multiple element packages
+✅ **Flexible deployment** - Districts/users can choose their preferred UI without forking elements
+✅ **Graceful fallback** - If a specialized view doesn't exist, automatically fall back to standard view
+
+##### Use cases
+
+1. **Device optimization** - Mobile vs desktop vs tablet layouts
+2. **Accessibility** - Screen reader optimized, high contrast, simplified visuals
+3. **Age/grade adaptation** - Simplified UI for younger students, advanced for older
+4. **Branding** - District-specific themes without forking elements
+5. **Language/cultural adaptation** - RTL layouts, culturally appropriate imagery
+6. **Performance** - Lightweight variants for low-bandwidth environments
+
+##### Legacy limitation
+
+In the old system, supporting these variations required either:
+
+- ❌ Duplicating entire elements (e.g., `multiple-choice-mobile`, `multiple-choice-a11y`)
+- ❌ Complex conditional rendering in a single monolithic component
+- ❌ Custom build configurations per variant
+
+##### Modern solution
+
+Each variant is simply a peer folder with its own implementation, loaded on-demand via ESM subpath imports. The ESM player handles view selection, fallback logic, and lazy loading automatically.
 
 ### 5. Modern Standard Tooling
 

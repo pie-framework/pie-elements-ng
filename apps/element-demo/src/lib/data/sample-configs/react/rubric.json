@@ -1,22 +1,31 @@
 {
-  "models": [
+  "demos": [
     {
-      "id": "1",
-      "element": "rubric",
-      "points": [
-        "nothing right",
-        "a teeny bit right",
-        "mostly right",
-        "bingo"
-      ],
-      "sampleAnswers": [
-        null,
-        "just right",
-        "not left",
-        null
-      ],
-      "maxPoints": 3,
-      "excludeZero": false
+      "id": "default",
+      "title": "Default Demo",
+      "description": "Default configuration",
+      "tags": [],
+      "model": {
+        "id": "1",
+        "element": "rubric",
+        "points": [
+          "nothing right",
+          "a teeny bit right",
+          "mostly right",
+          "bingo"
+        ],
+        "sampleAnswers": [
+          null,
+          "just right",
+          "not left",
+          null
+        ],
+        "maxPoints": 3,
+        "excludeZero": false
+      },
+      "session": {
+        "value": []
+      }
     }
   ]
 }

@@ -17,13 +17,11 @@ let {
   elementName = '',
   elementModel = {},
   session = $bindable({}),
-  mathRenderer = undefined,
   debug = false,
 }: {
   elementName: string;
   elementModel: any;
   session?: any;
-  mathRenderer?: any;
   debug?: boolean;
 } = $props();
 

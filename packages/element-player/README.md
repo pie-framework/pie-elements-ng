@@ -73,13 +73,30 @@ For elements with import maps:
 
 ## Architecture
 
-### ESM Player (`<pie-esm-element-player>`)
+### ESM Players
+
+**Interactive Player (`<pie-esm-element-player>`):**
 
 - Loads elements via dynamic ESM imports: `import('@pie-element/hotspot')`
-- Uses import maps for module resolution
-- Smaller bundle sizes (shared dependencies via CDN)
-- Fast refresh during development
+- Handles session state and user interactions
+- Manages math rendering internally (MathJax)
+- Emits `session-changed` events
 - Works with both React and Svelte elements
+
+**Print Player (`<pie-esm-print-player>`):**
+
+- Loads print exports: `import('@pie-element/hotspot/print')`
+- Stateless (no session management)
+- Optimized for print layouts
+- Manages math rendering internally (MathJax)
+- Role-based rendering (student/instructor)
+
+**Both players:**
+
+- Use import maps for module resolution
+- Self-contained (no external setup needed)
+- Handle math rendering automatically
+- Support for both React and Svelte elements
 
 ## Testing Elements Locally
 

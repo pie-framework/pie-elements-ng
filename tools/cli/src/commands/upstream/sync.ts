@@ -14,7 +14,6 @@ import { ReactComponentsStrategy } from '../../lib/upstream/sync-react-strategy.
 import { PieLibStrategy } from '../../lib/upstream/sync-pielib-strategy.js';
 import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy.js';
 import { DEFAULT_PATHS, COMPATIBILITY_FILE, WORKSPACE } from '../../lib/upstream/sync-constants.js';
-import { generateDemoMetadata } from '../../lib/upstream/sync-demo-metadata.js';
 import { assertReposExist } from '../../lib/upstream/repo-utils.js';
 import { addDevelopmentExports } from '../../lib/upstream/sync-dev-exports.js';
 
@@ -281,10 +280,8 @@ export default class Sync extends Command {
       ).length;
     }
 
-    // Generate demo metadata for SvelteKit app
-    if (!config.dryRun) {
-      await this.generateDemoMetadata(config);
-    }
+    // Demo metadata generation removed - demos are now tracked in git
+    // and managed directly in this repository (not synced from upstream)
 
     // Print summary and handle errors
     printSyncSummary(syncSummary, compatibilityReport, config.pieElementsNg, this.logger);
@@ -688,13 +685,4 @@ export default class Sync extends Command {
     }
   }
 
-  private async generateDemoMetadata(_config: SyncConfig): Promise<void> {
-    this.logger.section('📦 Generating demos');
-    try {
-      await generateDemoMetadata();
-      this.logger.info('   ✓ Demo metadata generated');
-    } catch (error) {
-      this.logger.warn(`   ⚠️  Failed to generate demos: ${error}`);
-    }
-  }
 }

@@ -1,29 +1,19 @@
 /**
  * PIE Element Player
  *
- * A shared web component for rendering PIE elements in demo environments.
- * Loads elements dynamically, handles mode switching, session management,
- * and controller integration.
+ * Self-contained web components for rendering PIE elements.
+ * Handles element loading, math rendering, and session management internally.
  *
  * Usage:
- *   <pie-element-player
- *     element-name="hotspot"
- *     cdn-url="http://localhost:5179"
- *     show-configure="false"
- *     debug="true"
- *   ></pie-element-player>
+ *   <pie-esm-element-player element-name="hotspot"></pie-esm-element-player>
+ *   <pie-esm-print-player element-name="hotspot" role="student"></pie-esm-print-player>
  */
 
 // Import Tailwind CSS + DaisyUI
 import './app.css';
 
-export { default as PieElementPlayer } from './PieElementPlayer.svelte';
-
-// Import the component to register it as a custom element
-import './PieElementPlayer.svelte';
-
-// Export ESM player
-export { EsmElementPlayer } from './players';
+// Export ESM players (recommended)
+export { EsmElementPlayer, EsmPrintPlayer } from './players';
 
 // Import players to register them as custom elements
 import './players';

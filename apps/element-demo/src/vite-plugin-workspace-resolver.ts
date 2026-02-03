@@ -182,8 +182,12 @@ export function workspaceResolver(options: ResolverOptions = {}): Plugin {
             log(`Resolved ${exportKey} (${exportValue}) -> ${sourcePath}`);
           }
         } else if (typeof exportValue === 'object') {
-          // Conditional exports: { "import": "...", "require": "..." }
-          const importPath = (exportValue as any).import || (exportValue as any).default;
+          // Conditional exports: { "development": "...", "import": "...", "require": "...", "default": "..." }
+          // Prefer development over import over default when resolveSources is true
+          const importPath =
+            (exportValue as any).development ||
+            (exportValue as any).import ||
+            (exportValue as any).default;
           if (importPath) {
             const sourcePath = resolveToSource(pkg.path, importPath);
             if (sourcePath) {

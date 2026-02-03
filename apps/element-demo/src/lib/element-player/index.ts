@@ -1,21 +1,9 @@
 /**
- * PIE Element Player
+ * PIE Element Player Components
  *
- * A Svelte component for rendering PIE elements in the demo app.
- * Loads elements dynamically, handles mode switching, session management,
- * and controller integration.
- *
- * Usage:
- *   <PieElementPlayer
- *     elementName="hotspot"
- *     {model}
- *     {session}
- *     mode="gather"
- *     showConfigure={true}
- *   />
+ * Demo app uses the ESM players from @pie-element/element-player package.
+ * This file exists for backward compatibility with internal imports.
  */
-
-export { default as PieElementPlayer } from './PieElementPlayer.svelte';
 
 // Re-export types
 export type { ElementPlayerProps, PieController, Tab } from './lib/types';

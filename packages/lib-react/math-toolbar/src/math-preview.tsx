@@ -1,8 +1,6 @@
 // @ts-nocheck
 /**
  * @synced-from pie-lib/packages/math-toolbar/src/math-preview.jsx
- * @synced-commit a933f8d7661c0d7d814f8732bd246cef24eeb040
- * @sync-version v3
  * @auto-generated
  *
  * This file is automatically synced from pie-elements and converted to TypeScript.
@@ -142,7 +140,6 @@ const InsideOverlay: any = styled('span')({
 export class RawMathPreview extends React.Component {
   static propTypes = {
     latex: PropTypes.string,
-    node: PropTypes.object,
     isSelected: PropTypes.bool,
     onFocus: PropTypes.func,
     onBlur: PropTypes.func,
@@ -154,15 +151,14 @@ export class RawMathPreview extends React.Component {
 
   componentDidUpdate(prevProps) {
     // Re-run only if LaTeX changed
-    if (this.props.node.data.get('latex') !== prevProps.node.data.get('latex')) {
+    if (this.props.latex !== prevProps.latex) {
       markFractionBaseSuperscripts();
     }
   }
 
   render() {
-    log('[render] data: ', this.props.node.data);
-    const latex = this.props.node.data.get('latex');
-    const { isSelected, onFocus, onBlur } = this.props;
+    const { isSelected, onFocus, onBlur, latex } = this.props;
+    log('[render] latex: ', latex);
     return (
       <MathPreviewContainer isSelected={isSelected}>
         {' '}

@@ -1,12 +1,15 @@
 <script lang="ts">
 /**
  * Print View - Shows the print-friendly version of the element
+ *
+ * Uses the EsmPrintPlayer web component for consistent API with interactive player.
  */
-import { onMount, onDestroy } from 'svelte';
+import { onMount } from 'svelte';
 import {
   renderMathInContainer,
   createMathRenderingObserver,
 } from '../lib/math-rendering-coordinator';
+import '@pie-element/element-player/players';
 
 // Props
 let {
@@ -21,28 +24,9 @@ let {
   debug?: boolean;
 } = $props();
 
-// DOM reference
+// DOM reference for math rendering
 let printContainer = $state<HTMLDivElement | null>(null);
-let printInstance: HTMLElement | null = null;
-
-// Math rendering observer
 let mathObserver: MutationObserver | null = null;
-
-// Derived values
-const printTag = $derived(`${elementName}-print`);
-
-// Update print instance when model or role changes
-$effect(() => {
-  if (printInstance && model) {
-    try {
-      (printInstance as any).model = model;
-      (printInstance as any).options = { role };
-      if (debug) console.log('[print-view] model/role updated', { model, role });
-    } catch (err) {
-      console.error('[print-view] Error updating print properties:', err);
-    }
-  }
-});
 
 // Setup parent-level math rendering for print view
 // Print elements render math internally, but parent catches:
@@ -71,41 +55,20 @@ $effect(() => {
     };
   }
 });
-
-onMount(() => {
-  // Create print instance
-  if (printContainer) {
-    printInstance = document.createElement(printTag);
-    printContainer.appendChild(printInstance);
-
-    // Set initial model and options
-    if (model) {
-      (printInstance as any).model = model;
-      (printInstance as any).options = { role };
-      if (debug) console.log('[print-view] Initial model set:', model);
-    }
-  }
-});
-
-onDestroy(() => {
-  if (printInstance) {
-    printInstance.remove();
-  }
-});
 </script>
 
-<div class="print-view">
-  <div bind:this={printContainer} class="print-container"></div>
+<div class="print-view" bind:this={printContainer}>
+  <pie-esm-print-player
+    element-name={elementName}
+    {role}
+    model={model}
+  />
 </div>
 
 <style>
   .print-view {
     height: 100%;
     overflow: auto;
-  }
-
-  .print-container {
     padding: 1rem;
-    height: 100%;
   }
 </style>

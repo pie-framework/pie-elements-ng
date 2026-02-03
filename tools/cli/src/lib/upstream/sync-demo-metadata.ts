@@ -139,13 +139,26 @@ async function copySampleConfigs(elements: ElementMetadata[]): Promise<void> {
       try {
         // Dynamic import the .mjs file
         const configModule = await import(`file://${sourceConfig}`);
-        const configData = configModule.default;
+        let configData = configModule.default;
 
-        // Count demos (supports both old 'models' and new 'demos' format)
+        // Convert old format (models array) to new format (demos array)
+        if (configData?.models && !configData?.demos) {
+          console.log(`[demo-metadata] Converting ${element.name} from old format to new format`);
+          configData = {
+            demos: configData.models.map((model: any, index: number) => ({
+              id: index === 0 ? 'default' : `demo-${index + 1}`,
+              title: index === 0 ? 'Default Demo' : `Demo ${index + 1}`,
+              description: 'Default configuration',
+              tags: [],
+              model: model,
+              session: { value: [] },
+            })),
+          };
+        }
+
+        // Count demos (now all in 'demos' format)
         if (configData?.demos && Array.isArray(configData.demos)) {
           element.demoCount = configData.demos.length;
-        } else if (configData?.models && Array.isArray(configData.models)) {
-          element.demoCount = 1; // Old format treated as single demo
         } else {
           element.demoCount = 0;
         }
@@ -157,21 +170,9 @@ async function copySampleConfigs(elements: ElementMetadata[]): Promise<void> {
       }
     }
 
-    // Convert session.mjs to JSON
-    if (element.hasSession) {
-      const sourceSession = join(sourcePath, 'session.mjs');
-      const targetSession = join(targetDir, `${element.name}-session.json`);
-      try {
-        // Dynamic import the .mjs file
-        const sessionModule = await import(`file://${sourceSession}`);
-        const sessionData = sessionModule.default;
-
-        // Write as JSON
-        await writeFile(targetSession, JSON.stringify(sessionData, null, 2) + '\n', 'utf-8');
-      } catch (e) {
-        console.warn(`[demo-metadata] Failed to convert session for ${element.name}:`, e);
-      }
-    }
+    // Note: session.mjs files are no longer copied as separate files.
+    // Sessions are now embedded within each demo object in the config.
+    // Old format session files are automatically converted during config import above.
   }
 
   console.log(`[demo-metadata] Converted sample configs to JSON for ${elements.length} elements`);

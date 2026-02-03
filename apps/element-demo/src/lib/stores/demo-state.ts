@@ -46,9 +46,6 @@ export const role = writable<'student' | 'instructor'>('student');
 export const partialScoring = writable<boolean>(true);
 export const addCorrectResponse = writable<boolean>(false);
 
-// Math renderer
-export const mathRenderer = writable<any>(null);
-
 // Theme
 export const theme = writable<'light' | 'dark'>('light');
 
@@ -73,7 +70,6 @@ export function initializeDemo(data: {
   session: any;
   controller: any;
   capabilities: string[];
-  mathRenderer?: any;
   demos?: DemoConfig[];
   activeDemoId?: string;
 }) {
@@ -83,9 +79,6 @@ export function initializeDemo(data: {
   session.set(data.session);
   controller.set(data.controller);
   capabilities.set(data.capabilities);
-  if (data.mathRenderer) {
-    mathRenderer.set(data.mathRenderer);
-  }
   if (data.demos) {
     demos.set(data.demos);
   }

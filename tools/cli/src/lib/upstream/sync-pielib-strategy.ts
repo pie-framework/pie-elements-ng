@@ -127,7 +127,6 @@ export class PieLibStrategy implements SyncStrategy {
       if (pkg === 'math-rendering') {
         filesProcessed = await this.generateMathRenderingWrapper(
           targetSrcDir,
-          upstreamCommit,
           logger
         );
         libChanged = filesProcessed > 0;
@@ -298,7 +297,6 @@ export class PieLibStrategy implements SyncStrategy {
    */
   private async generateMathRenderingWrapper(
     targetSrcDir: string,
-    upstreamCommit: string,
     logger: any
   ): Promise<number> {
     await mkdir(targetSrcDir, { recursive: true });
@@ -306,7 +304,6 @@ export class PieLibStrategy implements SyncStrategy {
     const wrapperContent = `// @ts-nocheck
 /**
  * @synced-from pie-lib/packages/math-rendering
- * @synced-commit ${upstreamCommit}
  * @auto-generated
  *
  * This is a thin wrapper that re-exports from @pie-element/shared-math-rendering-mathjax.

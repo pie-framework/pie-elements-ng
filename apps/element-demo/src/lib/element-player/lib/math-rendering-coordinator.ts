@@ -39,15 +39,27 @@ export function getGlobalMathRenderer(): MathRenderingApi | null {
 /**
  * Render math in a container element
  * This is the main function that parent components should call
+ *
+ * Note: Returns a Promise to allow callers to await completion if needed,
+ * but can also be called without await for fire-and-forget rendering.
  */
-export function renderMathInContainer(container: HTMLElement) {
+export function renderMathInContainer(container: HTMLElement): Promise<void> {
   const renderer = getGlobalMathRenderer();
   if (renderer && typeof renderer.renderMath === 'function') {
-    // Use microtask to ensure DOM is fully updated
-    queueMicrotask(() => {
-      renderer.renderMath(container);
+    // Use microtask to ensure DOM is fully updated, then render
+    return new Promise((resolve) => {
+      queueMicrotask(async () => {
+        try {
+          await renderer.renderMath(container);
+          resolve();
+        } catch (error) {
+          console.error('[math-rendering-coordinator] Error rendering math:', error);
+          resolve(); // Resolve anyway to prevent blocking
+        }
+      });
     });
   }
+  return Promise.resolve();
 }
 
 /**

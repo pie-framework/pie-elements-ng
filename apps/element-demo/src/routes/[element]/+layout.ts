@@ -1,15 +1,12 @@
 /**
  * Shared layout data loader for player routes
  * Loads element metadata and initial model/session
+ * Discovers available views dynamically from package.json exports
  */
 import type { LayoutLoad } from './$types';
-import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
-import { registerGlobalMathRenderer } from '$lib/element-player/lib/math-rendering-coordinator';
+import { discoverElementViews, type ElementView } from '$lib/utils/view-discovery';
 
 // SSR enabled for server-side validation - web components will hydrate on client
-
-// Cache the math renderer to prevent re-creating it on every load
-let cachedMathRenderer: any = null;
 
 // Demo configuration interface
 interface DemoConfig {
@@ -40,10 +37,18 @@ export const load: LayoutLoad = async ({
   // Load element registry to get metadata
   // Note: Element existence is validated server-side in +layout.server.ts
   let capabilities: string[] = [];
+  let availableViews: ElementView[] = [];
   let demos: DemoConfig[] = [];
   let activeDemoId = 'default';
   let initialModel: any = {};
   let initialSession: any = { value: [] };
+
+  // Discover available views from package.json exports
+  try {
+    availableViews = await discoverElementViews(elementName);
+  } catch (e) {
+    console.warn(`[+layout.ts] Could not discover views for ${elementName}:`, e);
+  }
 
   try {
     const registry = await import('$lib/elements/registry');
@@ -60,11 +65,10 @@ export const load: LayoutLoad = async ({
         capabilities.push('print');
       }
 
-      // Load sample config from JSON file (supports both new and old formats)
+      // Load sample config from JSON file
       try {
         const configModule = await import(`$lib/data/sample-configs/react/${elementName}.json`);
 
-        // Check for new format (demos array)
         if (configModule.default?.demos && Array.isArray(configModule.default.demos)) {
           demos = configModule.default.demos;
           console.log(`[+layout.ts] Loaded ${demos.length} demos for ${elementName}`);
@@ -80,39 +84,6 @@ export const load: LayoutLoad = async ({
             console.log(`[+layout.ts] Active demo: ${activeDemoId}`);
           }
         }
-        // Fall back to old format (models array) for backwards compatibility
-        else if (configModule.default?.models?.[0]) {
-          const oldModel = configModule.default.models[0];
-          demos = [
-            {
-              id: 'default',
-              title: 'Default Demo',
-              description: 'Default configuration',
-              tags: [],
-              model: oldModel,
-              session: { value: [] },
-            },
-          ];
-          activeDemoId = 'default';
-          initialModel = oldModel;
-          console.log(`[+layout.ts] Loaded sample model (old format) for ${elementName}`);
-
-          // Try to load old-format session file
-          try {
-            const sessionModule = await import(
-              `$lib/data/sample-configs/react/${elementName}-session.json`
-            );
-            if (sessionModule.default) {
-              initialSession = sessionModule.default;
-              demos[0].session = sessionModule.default;
-              console.log(`[+layout.ts] Loaded sample session for ${elementName}`);
-            }
-          } catch (e) {
-            console.log(
-              `[+layout.ts] No sample session found for ${elementName}, using empty session`
-            );
-          }
-        }
       } catch (e) {
         console.log(`[+layout.ts] No sample config found for ${elementName}, using empty model`);
       }
@@ -121,21 +92,14 @@ export const load: LayoutLoad = async ({
     console.error('[+layout.ts] Error loading element registry:', e);
   }
 
-  // Create math renderer only once and cache it
-  if (!cachedMathRenderer) {
-    cachedMathRenderer = createMathjaxRenderer();
-    // Register globally so all elements and views can access it
-    registerGlobalMathRenderer(cachedMathRenderer);
-  }
-
   return {
     elementName,
     elementTitle,
     capabilities,
+    availableViews,
     demos,
     activeDemoId,
     initialModel,
     initialSession,
-    mathRenderer: cachedMathRenderer,
   };
 };

@@ -16,7 +16,7 @@
  * ESM Element Player
  *
  * A web component that loads and renders PIE elements using ESM imports.
- * Handles element registration, property management, and session updates.
+ * Handles element registration, property management, session updates, and math rendering.
  *
  * Usage:
  *   <pie-esm-element-player element-name="hotspot"></pie-esm-element-player>
@@ -30,8 +30,10 @@
  *   - session-changed: Dispatched when session updates
  */
 
-import { createEventDispatcher } from 'svelte';
+import { createEventDispatcher, onMount } from 'svelte';
 import { loadElement as loadElementFromCdn } from '../lib/element-loader';
+import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
+import type { MathRenderer } from '@pie-element/shared-math-rendering-core';
 
 interface Props {
   elementName?: string;
@@ -48,6 +50,8 @@ let elementInstance = $state<HTMLElement | null>(null);
 let currentTagName = $state<string | null>(null);
 let error = $state<string | null>(null);
 let loading = $state(true);
+let mathRenderer: MathRenderer | null = null;
+let mathObserver: MutationObserver | null = null;
 
 // Watch for elementName changes and load element
 $effect(() => {
@@ -67,6 +71,88 @@ $effect(() => {
     } catch (err) {
       console.error('[esm-player] Error setting model:', err);
     }
+  }
+});
+
+// Initialize math rendering on mount
+onMount(() => {
+  // Create math renderer once
+  mathRenderer = createMathjaxRenderer();
+
+  // Register globally for backward compatibility with elements that expect it
+  if (typeof window !== 'undefined') {
+    (window as any)['@pie-lib/math-rendering'] = {
+      renderMath: mathRenderer
+    };
+  }
+
+  // Start preloading MathJax immediately
+  if (mathRenderer && typeof window !== 'undefined') {
+    const tempDiv = document.createElement('div');
+    mathRenderer(tempDiv).catch(() => {
+      // Ignore errors - just preloading
+    });
+  }
+
+  return () => {
+    if (mathObserver) {
+      mathObserver.disconnect();
+    }
+  };
+});
+
+// Set up math rendering observer when container is available
+$effect(() => {
+  if (container && mathRenderer) {
+    // Clean up previous observer
+    if (mathObserver) {
+      mathObserver.disconnect();
+    }
+
+    // Create observer to catch dynamic content changes
+    let renderTimeout: number | null = null;
+
+    mathObserver = new MutationObserver(() => {
+      if (renderTimeout) {
+        clearTimeout(renderTimeout);
+      }
+
+      renderTimeout = window.setTimeout(() => {
+        if (mathRenderer && container) {
+          mathRenderer(container).catch(err => {
+            console.error('[esm-player] Math rendering error:', err);
+          });
+        }
+      }, 100);
+    });
+
+    mathObserver.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+      characterData: false,
+    });
+
+    // Initial render
+    mathRenderer(container).catch(err => {
+      console.error('[esm-player] Initial math rendering error:', err);
+    });
+  }
+});
+
+// Render math when model changes
+$effect(() => {
+  if (container && mathRenderer && model) {
+    // Use requestAnimationFrame to render after React/element updates DOM
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (mathRenderer && container) {
+          mathRenderer(container).catch(err => {
+            console.error('[esm-player] Math rendering error:', err);
+          });
+        }
+      });
+    });
   }
 });
 

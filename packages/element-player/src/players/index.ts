@@ -4,8 +4,10 @@
  * ESM player for loading elements via ES module imports with import maps
  */
 
-// Import component to register it as a custom element
+// Import components to register them as custom elements
 import './EsmElementPlayer.svelte';
+import './EsmPrintPlayer.svelte';
 
-// Re-export component for programmatic use
+// Re-export components for programmatic use
 export { default as EsmElementPlayer } from './EsmElementPlayer.svelte';
+export { default as EsmPrintPlayer } from './EsmPrintPlayer.svelte';
