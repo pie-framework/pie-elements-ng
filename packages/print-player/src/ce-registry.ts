@@ -47,10 +47,7 @@ export const define = (name: string, def: CustomElementConstructor): void => {
      */
     if (e && (e as DOMException).code === DOMException.NOT_SUPPORTED_ERR) {
       try {
-        customElements.define(
-          name,
-          class extends def {}
-        );
+        customElements.define(name, class extends def {});
       } catch (wrappedError) {
         console.error('[ce-registry] Wrapped class failed', wrappedError);
         definitions.set(name, { inProgress: false, error: wrappedError as Error });

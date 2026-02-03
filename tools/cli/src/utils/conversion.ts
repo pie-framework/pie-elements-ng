@@ -29,7 +29,6 @@ export function convertJsToTs(jsCode: string, metadata: ConversionMetadata): Con
   // We keep synced files buildable even when upstream JS has type issues.
   const tsNoCheck = `// @ts-nocheck\n`;
 
-
   // Add sync metadata header
   const header = `/**
  * @synced-from ${metadata.sourcePath}
@@ -111,7 +110,6 @@ export function convertJsxToTsx(jsxCode: string, metadata: ConversionMetadata): 
   // Must be at the very top of the file to reliably suppress TypeScript diagnostics.
   // We keep synced files buildable even when upstream JSX has type issues.
   const tsNoCheck = `// @ts-nocheck\n`;
-
 
   // Add sync metadata header
   const header = `/**

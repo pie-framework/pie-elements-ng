@@ -125,10 +125,7 @@ export class PieLibStrategy implements SyncStrategy {
       let libChanged: boolean;
 
       if (pkg === 'math-rendering') {
-        filesProcessed = await this.generateMathRenderingWrapper(
-          targetSrcDir,
-          logger
-        );
+        filesProcessed = await this.generateMathRenderingWrapper(targetSrcDir, logger);
         libChanged = filesProcessed > 0;
       } else {
         // Recursively sync all files from src/ directory
@@ -295,10 +292,7 @@ export class PieLibStrategy implements SyncStrategy {
   /**
    * Generate a thin wrapper for math-rendering that re-exports from @pie-element/math-rendering
    */
-  private async generateMathRenderingWrapper(
-    targetSrcDir: string,
-    logger: any
-  ): Promise<number> {
+  private async generateMathRenderingWrapper(targetSrcDir: string, logger: any): Promise<number> {
     await mkdir(targetSrcDir, { recursive: true });
 
     const wrapperContent = `// @ts-nocheck

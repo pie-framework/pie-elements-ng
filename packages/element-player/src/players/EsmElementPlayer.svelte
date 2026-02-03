@@ -82,7 +82,7 @@ onMount(() => {
   // Register globally for backward compatibility with elements that expect it
   if (typeof window !== 'undefined') {
     (window as any)['@pie-lib/math-rendering'] = {
-      renderMath: mathRenderer
+      renderMath: mathRenderer,
     };
   }
 
@@ -119,7 +119,7 @@ $effect(() => {
 
       renderTimeout = window.setTimeout(() => {
         if (mathRenderer && container) {
-          mathRenderer(container).catch(err => {
+          mathRenderer(container).catch((err) => {
             console.error('[esm-player] Math rendering error:', err);
           });
         }
@@ -134,7 +134,7 @@ $effect(() => {
     });
 
     // Initial render
-    mathRenderer(container).catch(err => {
+    mathRenderer(container).catch((err) => {
       console.error('[esm-player] Initial math rendering error:', err);
     });
   }
@@ -147,7 +147,7 @@ $effect(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (mathRenderer && container) {
-          mathRenderer(container).catch(err => {
+          mathRenderer(container).catch((err) => {
             console.error('[esm-player] Math rendering error:', err);
           });
         }

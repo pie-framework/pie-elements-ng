@@ -684,5 +684,4 @@ export default class Sync extends Command {
       }
     }
   }
-
 }

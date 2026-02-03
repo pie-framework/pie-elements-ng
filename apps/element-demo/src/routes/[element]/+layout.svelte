@@ -68,7 +68,7 @@ const tabs = $derived.by(() => {
     id: 'deliver',
     label: 'Delivery',
     path: `/${data.elementName}/deliver${buildQueryString(true)}`,
-    description: 'Interactive delivery view'
+    description: 'Interactive delivery view',
   });
 
   // Add dynamically discovered views
@@ -93,7 +93,7 @@ const tabs = $derived.by(() => {
       id: view.id,
       label: view.label,
       path: routePath,
-      description
+      description,
     });
   }
 
@@ -102,7 +102,7 @@ const tabs = $derived.by(() => {
     id: 'source',
     label: 'Source',
     path: `/${data.elementName}/source${buildQueryString(false)}`,
-    description: 'View source code'
+    description: 'View source code',
   });
 
   return generatedTabs;

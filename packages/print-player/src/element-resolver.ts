@@ -15,7 +15,10 @@ import type { PkgResolution, ResolverFn, LoadResolutionResult } from './types.js
  * @param pkg - Package identifier (e.g., '@pie-element/multiple-choice@12.0.0')
  * @returns Package resolution with CDN URL
  */
-export const defaultResolve: ResolverFn = (tagName: string, pkg: string): Promise<PkgResolution> => {
+export const defaultResolve: ResolverFn = (
+  tagName: string,
+  pkg: string
+): Promise<PkgResolution> => {
   return Promise.resolve({
     tagName,
     pkg,
