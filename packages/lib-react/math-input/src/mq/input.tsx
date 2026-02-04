@@ -15,9 +15,10 @@ import debug from 'debug';
 import { registerLineBreak } from './custom-elements';
 import MathQuill from '@pie-element/shared-mathquill';
 
+// PIE wrapper exports v3 interface directly (no jQuery required)
 let MQ;
 if (typeof window !== 'undefined') {
-  MQ = MathQuill.getInterface(2);
+  MQ = MathQuill;
 
   if (MQ && MQ.registerEmbed) {
     registerLineBreak(MQ);

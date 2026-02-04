@@ -13,9 +13,8 @@ import type { LayoutData } from './$types';
 
 let { data, children }: { data: LayoutData; children: any } = $props();
 
-// Initialize stores immediately when data is available
-// This runs synchronously on component initialization to ensure stores are ready
-if (data) {
+// Initialize stores on mount - simple, no reactivity complexity
+onMount(() => {
   initializeDemo({
     elementName: data.elementName,
     elementTitle: data.elementTitle,
@@ -26,7 +25,7 @@ if (data) {
     demos: data.demos,
     activeDemoId: data.activeDemoId,
   });
-}
+});
 
 // Format element name for display
 function formatElementName(name: string): string {
@@ -112,8 +111,8 @@ const tabs = $derived.by(() => {
 const activeTab = $derived($page.url.pathname.split('/')[2] || 'deliver');
 const packageName = $derived(`@pie-element/${data.elementName}`);
 
-// Import stores for mode and role
-import { mode, role } from '$lib/stores/demo-state';
+// Import stores for mode, role, and theme
+import { mode, role, theme } from '$lib/stores/demo-state';
 
 // Sync URL parameters with stores for bookmarkability
 onMount(() => {
@@ -181,6 +180,13 @@ $effect(() => {
     }
   }
 });
+
+// Handle theme toggle checkbox
+function handleThemeToggle(event: Event) {
+  const checkbox = event.target as HTMLInputElement;
+  const newTheme = checkbox.checked ? 'dark' : 'light';
+  theme.set(newTheme);
+}
 </script>
 
 <div class="flex flex-col h-screen">
@@ -205,7 +211,13 @@ $effect(() => {
     </div>
     <div class="navbar-end flex-shrink-0">
       <label class="swap swap-rotate">
-        <input type="checkbox" class="theme-controller" value="dark" />
+        <input
+          type="checkbox"
+          class="theme-controller"
+          value="dark"
+          checked={$theme === 'dark'}
+          onchange={handleThemeToggle}
+        />
         <svg class="swap-on fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1-.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/>
         </svg>

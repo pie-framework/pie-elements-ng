@@ -14,9 +14,10 @@ import debug from 'debug';
 import MathQuill from '@pie-element/shared-mathquill';
 import { updateSpans } from '../updateSpans';
 
+// PIE wrapper exports v3 interface directly (no jQuery required)
 let MQ;
 if (typeof window !== 'undefined') {
-  MQ = MathQuill.getInterface(2);
+  MQ = MathQuill;
 }
 
 const log = debug('pie-lib:math-input:mq:static');

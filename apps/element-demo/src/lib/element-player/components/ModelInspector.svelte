@@ -124,8 +124,8 @@ const copyToClipboard = async () => {
     gap: 0.5rem;
     align-items: center;
     padding: 0.75rem;
-    background: #f8f9fa;
-    border: 1px solid #e5e7eb;
+    background: hsl(var(--b2));
+    border: 1px solid hsl(var(--bc) / 0.2);
     border-radius: 0.5rem;
   }
 
@@ -135,9 +135,9 @@ const copyToClipboard = async () => {
 
   .dirty-badge {
     padding: 0.375rem 0.75rem;
-    background: #fff8e1;
-    color: #8a6d3b;
-    border: 1px solid #f1c232;
+    background: hsl(var(--wa) / 0.1);
+    color: hsl(var(--wa));
+    border: 1px solid hsl(var(--wa) / 0.5);
     border-radius: 0.25rem;
     font-size: 0.85rem;
     font-weight: 500;
@@ -149,7 +149,7 @@ const copyToClipboard = async () => {
     gap: 0.375rem;
     padding: 0.5rem 0.875rem;
     border-radius: 0.375rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid hsl(var(--bc) / 0.2);
     background: white;
     cursor: pointer;
     font-size: 0.875rem;
@@ -158,8 +158,8 @@ const copyToClipboard = async () => {
   }
 
   .btn:hover:not(:disabled) {
-    background: #f9fafb;
-    border-color: #9ca3af;
+    background: hsl(var(--b2));
+    border-color: hsl(var(--bc) / 0.3);
   }
 
   .btn:active:not(:disabled) {
@@ -172,33 +172,33 @@ const copyToClipboard = async () => {
   }
 
   .btn-primary {
-    background: #0066cc;
+    background: hsl(var(--p));
     color: white;
-    border-color: #0066cc;
+    border-color: hsl(var(--p));
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: #0052a3;
-    border-color: #0052a3;
+    background: hsl(var(--p));
+    border-color: hsl(var(--p));
   }
 
   .btn-secondary {
-    background: #6b7280;
+    background: hsl(var(--bc) / 0.4);
     color: white;
-    border-color: #6b7280;
+    border-color: hsl(var(--bc) / 0.4);
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: #4b5563;
-    border-color: #4b5563;
+    background: hsl(var(--bc) / 0.5);
+    border-color: hsl(var(--bc) / 0.5);
   }
 
   .error-banner {
     padding: 0.875rem 1rem;
-    background: #ffebee;
-    border: 1px solid #ef5350;
+    background: hsl(var(--er) / 0.1);
+    border: 1px solid hsl(var(--er));
     border-radius: 0.5rem;
-    color: #c62828;
+    color: hsl(var(--er));
     font-size: 0.9rem;
     display: flex;
     align-items: center;

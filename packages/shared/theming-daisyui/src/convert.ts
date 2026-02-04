@@ -117,6 +117,53 @@ export function daisyUiToPieTheme(daisyTheme: PieTheme): PieThemeExtended {
   pieTheme.black = '#000000';
   pieTheme.white = '#ffffff';
 
+  // Derive component-specific variables from base theme colors
+  // Choice inputs
+  if (daisyTheme['base-content']) {
+    pieTheme['choice-input-color'] = daisyTheme['base-content'];
+  }
+  if (daisyTheme.primary) {
+    pieTheme['choice-input-selected-color'] = daisyTheme.primary;
+  }
+  if (pieTheme.disabled) {
+    pieTheme['choice-input-disabled-color'] = pieTheme.disabled;
+  }
+
+  // Feedback backgrounds
+  if (daisyTheme.success) {
+    pieTheme['feedback-correct-bg'] = rgba(daisyTheme.success, 0.1);
+  }
+  if (daisyTheme.error) {
+    pieTheme['feedback-incorrect-bg'] = rgba(daisyTheme.error, 0.1);
+  }
+
+  // Annotations
+  if (daisyTheme.success) {
+    pieTheme['annotation-pointer-border-color'] = lighten(daisyTheme.success, 0.2);
+  }
+  pieTheme['annotation-pointer-right'] = '100%';
+  pieTheme['annotation-pointer-top'] = '5px';
+  pieTheme['annotation-pointer-border-width'] = '7px';
+
+  // Number line / graphing
+  if (daisyTheme.error) {
+    pieTheme['arrow-color'] = daisyTheme.error;
+  }
+  if (daisyTheme.primary) {
+    pieTheme['point-fill'] = daisyTheme.primary;
+  }
+  // Detect if dark theme for appropriate colors
+  const isDark = isDarkTheme(daisyTheme);
+  pieTheme['tick-color'] = isDark ? lighten(greyBase, 0.4) : darken(greyBase, 0.4);
+  pieTheme['line-stroke'] = isDark ? lighten(greyBase, 0.2) : greyBase;
+  pieTheme['point-stroke'] = isDark ? darken(greyBase, 0.5) : '#ffffff';
+  pieTheme['correct-answer-toggle-label-color'] = daisyTheme['base-content'] || '#000000';
+
+  // Primary text (nested fallback)
+  if (daisyTheme['base-content']) {
+    pieTheme['primary-text'] = daisyTheme['base-content'];
+  }
+
   return pieTheme;
 }
 

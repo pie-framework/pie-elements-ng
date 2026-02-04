@@ -36,36 +36,60 @@ function selectDemo(demoId: string) {
 
 {#if demos.length >= 1}
   <div class="demo-selector dropdown" class:single-demo={demos.length === 1}>
-    <div tabindex={demos.length > 1 ? "0" : "-1"} role={demos.length > 1 ? "button" : "status"} class="btn btn-sm btn-outline gap-2" class:cursor-default={demos.length === 1}>
-      <!-- Icon -->
-      <svg
-        class="w-4 h-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-        />
-      </svg>
+    {#if demos.length > 1}
+      <div tabindex="0" role="button" class="btn btn-sm btn-outline gap-2">
+        <!-- Icon -->
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
 
-      <!-- Active demo title -->
-      <span class="max-w-[200px] truncate">{activeDemo?.title || 'Select Demo'}</span>
+        <!-- Active demo title -->
+        <span class="max-w-[200px] truncate">{activeDemo?.title || 'Select Demo'}</span>
 
-      <!-- Demo count badge -->
-      <span class="badge badge-sm badge-primary">{demos.length}</span>
+        <!-- Demo count badge -->
+        <span class="badge badge-sm badge-primary">{demos.length}</span>
 
-      <!-- Dropdown arrow (only show if multiple demos) -->
-      {#if demos.length > 1}
+        <!-- Dropdown arrow -->
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
         </svg>
-      {/if}
-    </div>
+      </div>
+    {:else}
+      <div role="status" class="btn btn-sm btn-outline gap-2 cursor-default">
+        <!-- Icon -->
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+
+        <!-- Active demo title -->
+        <span class="max-w-[200px] truncate">{activeDemo?.title || 'Select Demo'}</span>
+
+        <!-- Demo count badge -->
+        <span class="badge badge-sm badge-primary">{demos.length}</span>
+      </div>
+    {/if}
 
     <!-- Dropdown menu -->
     <ul

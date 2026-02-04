@@ -1,613 +1,490 @@
-# Theming and Customization
+# PIE Elements Theming Guide
 
-PIE Elements NG uses DaisyUI for theming, providing 32 built-in themes and full customization via CSS variables.
+PIE Elements use CSS custom properties (CSS variables) for theming, providing a flexible and framework-agnostic way to customize element appearance.
 
-## Quick Start
+## Overview
 
-### Using Built-in Themes
+PIE Elements are implemented as React components using Material-UI (MUI) and Emotion for styling internally. However, theming is exposed through CSS variables, making it possible to theme elements regardless of the surrounding application framework.
+
+**Key concepts:**
+- Elements reference CSS variables like `var(--pie-text, fallback)`
+- You set CSS variables at a container level
+- Variables cascade down to all nested elements
+- Fallback values ensure elements work even without theming
+
+## Architecture
+
+### How Elements Use CSS Variables
+
+Elements use helper functions from `@pie-lib/render-ui` that generate CSS variable references:
+
+```typescript
+// From element code
+import { color } from '@pie-lib/render-ui';
+
+const Container = styled('div')({
+  color: color.text(),           // Generates: var(--pie-text, black)
+  backgroundColor: color.background(), // Generates: var(--pie-background, rgba(255,255,255,0))
+  borderColor: color.border(),   // Generates: var(--pie-border, #9A9A9A)
+});
+```
+
+This abstraction means:
+- ✅ Element internals (MUI/Emotion) are implementation details
+- ✅ Theming works through standard CSS custom properties
+- ✅ Elements work in any framework (React, Vue, Svelte, vanilla JS)
+- ✅ Graceful fallbacks if variables aren't set
+
+### Theming Packages
+
+For programmatic theme management, see:
+- [`@pie-element/shared-theming`](../packages/shared/theming/) - Core theming utilities with PIE light/dark themes
+- [`@pie-element/shared-theming-daisyui`](../packages/shared/theming-daisyui/) - DaisyUI adapter
+- [Theming system documentation](./theming/) - Complete theming architecture
+
+### PIE Default Themes
+
+PIE Elements provides two default themes with PIE branding (orange #FF6F00):
+- `PIE_LIGHT_THEME` - Clean, professional light theme
+- `PIE_DARK_THEME` - Modern dark theme for reduced eye strain
+
+Both themes are WCAG AA compliant and fully customizable.
+
+## Formal CSS Variables
+
+These are the officially supported CSS variables defined in the PIE theming system. All elements use these variables through the `color.*()` helper functions.
+
+### Core Colors (5 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-text` | `base-content` | `black` | Primary text color |
+| `--pie-background` | `base-100` | `rgba(255,255,255,0)` | Primary background color |
+| `--pie-background-dark` | `background-dark` | `#ECEDF1` | Darker background variant |
+| `--pie-secondary-background` | `secondary-background` | `rgba(241,241,241,1)` | Secondary background (containers, panels) |
+| `--pie-dropdown-background` | `dropdown-background` | `#E0E1E6` | Dropdown menu backgrounds |
+
+### Primary Colors (4 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-primary` | `primary` | `#3F51B5` (indigo[500]) | Main brand color |
+| `--pie-primary-light` | `primary-light` | `#9FA8DA` (indigo[200]) | Lighter primary variant |
+| `--pie-primary-dark` | `primary-dark` | `#283593` (indigo[800]) | Darker primary variant |
+| `--pie-faded-primary` | `faded-primary` | `#DCDAFB` | Very light primary (backgrounds) |
+
+### Secondary Colors (3 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-secondary` | `secondary` | `#F50057` (pink.A400) | Secondary brand color |
+| `--pie-secondary-light` | `secondary-light` | `#F48FB1` (pink[200]) | Lighter secondary variant |
+| `--pie-secondary-dark` | `secondary-dark` | `#880E4F` (pink[900]) | Darker secondary variant |
+
+### Tertiary Colors (2 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-tertiary` | `tertiary` | `#146EB3` | Tertiary brand color |
+| `--pie-tertiary-light` | `tertiary-light` | `#D0E2F0` | Lighter tertiary variant |
+
+### Status Colors - Correct (4 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-correct` | `success` | `#4CAF50` (green[500]) | Correct answer color |
+| `--pie-correct-secondary` | `correct-secondary` | `#E8F5E9` (green[50]) | Correct background (very light) |
+| `--pie-correct-tertiary` | `correct-tertiary` | `#0EA449` | Correct borders/accents |
+| `--pie-correct-icon` | `correct-icon` | `#087D38` | Correct icons (darker for visibility) |
+
+### Status Colors - Incorrect (3 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-incorrect` | `error` | `#FF9800` (orange[500]) | Incorrect answer color |
+| `--pie-incorrect-secondary` | `incorrect-secondary` | `#FFEBEE` (red[50]) | Incorrect background (very light) |
+| `--pie-incorrect-icon` | `incorrect-icon` | `#BF0D00` | Incorrect icons (darker for visibility) |
+
+### Status Colors - Missing (2 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-missing` | `warning` | `#D32F2F` (red[700]) | Missing/partial answer color |
+| `--pie-missing-icon` | `missing-icon` | `#6A78A1` | Missing answer icons |
+
+### Disabled State (2 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-disabled` | `disabled` | `grey` | Disabled text/controls |
+| `--pie-disabled-secondary` | `disabled-secondary` | `#ABABAB` | Disabled backgrounds |
+
+### Border Colors (4 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-border` | `border` | `#9A9A9A` | Default border color |
+| `--pie-border-light` | `border-light` | `#D1D1D1` | Lighter borders (subtle) |
+| `--pie-border-dark` | `border-dark` | `#646464` | Darker borders (emphasis) |
+| `--pie-border-gray` | `border-gray` | `#7E8494` | Gray borders (neutral) |
+
+### Focus States (4 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-focus-checked` | `focus-checked` | `#BBDEFB` | Focus ring for selected items |
+| `--pie-focus-checked-border` | `focus-checked-border` | `#1565C0` | Focus border for selected items |
+| `--pie-focus-unchecked` | `focus-unchecked` | `#E0E0E0` | Focus ring for unselected items |
+| `--pie-focus-unchecked-border` | `focus-unchecked-border` | `#757575` | Focus border for unselected items |
+
+### Blue-Grey Palette (4 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-blue-grey-100` | `blue-grey-100` | `#F3F5F7` | Lightest blue-grey |
+| `--pie-blue-grey-300` | `blue-grey-300` | `#C0C3CF` | Light blue-grey |
+| `--pie-blue-grey-600` | `blue-grey-600` | `#7E8494` | Medium blue-grey |
+| `--pie-blue-grey-900` | `blue-grey-900` | `#152452` | Darkest blue-grey |
+
+### Absolute Colors (2 variables)
+
+| Variable | Theme Key | Default | Description |
+|----------|-----------|---------|-------------|
+| `--pie-black` | `black` | `#000000` | Pure black |
+| `--pie-white` | `white` | `#ffffff` | Pure white |
+
+**Total: 43 formal CSS variables**
+
+---
+
+## Component-Specific Variables
+
+These variables provide fine-grained control over specific element components. They are now **formally supported** as part of the PIE theming system and are automatically derived when using theme adapters (DaisyUI, MUI, etc.).
+
+### Choice Input Variables
+
+Used by: `multiple-choice`, `likert`, `matrix` elements
+
+| Variable | Default Fallback | Description |
+|----------|------------------|-------------|
+| `--choice-input-color` | `var(--pie-text, black)` | Choice radio/checkbox color |
+| `--choice-input-selected-color` | `var(--pie-primary, #3F51B5)` | Selected choice color |
+| `--choice-input-disabled-color` | `var(--pie-disabled, grey)` | Disabled choice color |
+
+**Dynamic pattern**: `--choice-input-${state}` where `state` can be:
+- `correct-color` → Text color for correct choices
+- `incorrect-color` → Text color for incorrect choices
+- `correct-selected-color` → Selected color for correct choices
+- `incorrect-checked` → Checked color for incorrect choices
+- `correct-disabled-color` → Disabled color for correct choices
+- `incorrect-disabled-color` → Disabled color for incorrect choices
+
+**Example usage:**
+```css
+:root {
+  --choice-input-color: #333;
+  --choice-input-selected-color: #007bff;
+  --choice-input-correct-color: #28a745;
+  --choice-input-incorrect-color: #dc3545;
+}
+```
+
+### Feedback Variables
+
+Used by: `multiple-choice`, `match-list` elements
+
+| Variable | Default Fallback | Description |
+|----------|------------------|-------------|
+| `--feedback-correct-bg-color` | `var(--pie-correct, #4CAF50)` | Correct feedback background |
+| `--feedback-incorrect-bg-color` | `var(--pie-incorrect, #FF9800)` | Incorrect feedback background |
+
+**Example usage:**
+```css
+:root {
+  --feedback-correct-bg-color: #d4edda;
+  --feedback-incorrect-bg-color: #f8d7da;
+}
+```
+
+### Annotation Variables
+
+Used by: `extended-text-entry` element (annotation feature)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `--before-right` | `100%` | Annotation pointer right position |
+| `--before-top` | `5px` | Annotation pointer top position |
+| `--before-border-width` | `7px` | Annotation pointer border width |
+| `--before-border-color` | `rgb(153, 255, 153)` | Annotation pointer color |
+
+**Note**: These control the pseudo-element pointer that connects annotations to text.
+
+### Number Line / Graphing Variables
+
+Used by: `number-line` element
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `--arrow-color` | Varies by state | Arrow color on number line |
+| `--tick-color` | `white` | Tick mark color |
+| `--line-stroke` | `white` | Line stroke color |
+| `--point-fill` | `black` | Point fill color |
+| `--point-stroke` | `white` | Point outline color |
+| `--correct-answer-toggle-label-color` | `white` | Toggle label text color |
+
+**Note**: Some values are dynamically set based on answer state (correct/incorrect/selected).
+
+### Utility Variables
+
+| Variable | Used By | Description |
+|----------|---------|-------------|
+| `--pie-zoom` | `drawing-response`, `hotspot` | Zoom scale factor (read from inline styles) |
+| `--pie-primary-text` | `likert` | Primary text color (nested fallback: `var(--pie-text, #000000)`) |
+
+---
+
+**Total: 60+ CSS variables** (43 core + 17 component-specific)
+
+---
+
+## Usage Examples
+
+### Using PIE Default Themes
+
+The simplest way to get started with a professionally designed theme:
+
+```javascript
+import { PIE_LIGHT_THEME, PIE_DARK_THEME, generateCssVariables, injectCssVariables } from '@pie-element/shared-theming';
+
+// Apply PIE light theme
+const cssVars = generateCssVariables(PIE_LIGHT_THEME);
+injectCssVariables(cssVars);
+
+// Or apply PIE dark theme
+const darkCssVars = generateCssVariables(PIE_DARK_THEME);
+injectCssVariables(darkCssVars);
+```
+
+### Basic Theme Setup
+
+Set CSS variables on a container element to theme all nested PIE elements:
 
 ```html
 <!DOCTYPE html>
-<html data-theme="light">
-<head>
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.css" rel="stylesheet">
-</head>
-<body>
-  <pie-multiple-choice></pie-multiple-choice>
-</body>
-</html>
-```
-
-### Switching Themes Dynamically
-
-```javascript
-// Toggle between light and dark
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  html.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
-}
-
-// Or use a theme selector
-function setTheme(themeName) {
-  document.documentElement.setAttribute('data-theme', themeName);
-  localStorage.setItem('theme', themeName);
-}
-
-// Restore saved theme on load
-const savedTheme = localStorage.getItem('theme') || 'light';
-document.documentElement.setAttribute('data-theme', savedTheme);
-```
-
-## Available Themes
-
-DaisyUI provides 32 themes out of the box:
-
-### Light Themes
-- `light` - Default light theme
-- `cupcake` - Sweet pastel colors
-- `bumblebee` - Yellow accents
-- `emerald` - Green tones
-- `corporate` - Professional blues
-- `retro` - Vintage warm colors
-- `cyberpunk` - Neon highlights
-- `valentine` - Pink and romantic
-- `garden` - Nature greens
-- `lofi` - Calm minimalist
-- `pastel` - Soft colors
-- `fantasy` - Purple magical
-- `wireframe` - Monochrome sketch
-- `cmyk` - Print colors
-- `autumn` - Warm orange
-- `acid` - Lime green
-- `lemonade` - Yellow citrus
-- `winter` - Cool blues
-
-### Dark Themes
-- `dark` - Default dark theme
-- `synthwave` - Retro neon
-- `halloween` - Orange and purple
-- `forest` - Deep greens
-- `aqua` - Blue underwater
-- `black` - Pure black background
-- `luxury` - Gold accents
-- `dracula` - Purple vampire
-- `business` - Professional dark
-- `night` - Deep blue
-- `coffee` - Brown tones
-
-### Demo Themes
-
-```html
-<select onchange="setTheme(this.value)">
-  <option value="light">Light</option>
-  <option value="dark">Dark</option>
-  <option value="cupcake">Cupcake</option>
-  <option value="corporate">Corporate</option>
-  <option value="synthwave">Synthwave</option>
-  <option value="halloween">Halloween</option>
-</select>
-```
-
-## CSS Variables
-
-### Color Variables
-
-PIE elements use these CSS custom properties from DaisyUI:
-
-```css
-:root {
-  /* Base colors */
-  --color-primary: /* Main brand color */
-  --color-secondary: /* Secondary brand color */
-  --color-accent: /* Accent highlights */
-  --color-neutral: /* Neutral grays */
-
-  /* Background colors */
-  --color-base-100: /* Page background */
-  --color-base-200: /* Component background */
-  --color-base-300: /* Borders and dividers */
-  --color-base-content: /* Text on base colors */
-
-  /* Semantic colors */
-  --color-info: /* Information messages */
-  --color-success: /* Success states */
-  --color-warning: /* Warning states */
-  --color-error: /* Error states */
-
-  /* Border radius */
-  --rounded-box: 1rem;
-  --rounded-btn: 0.5rem;
-  --rounded-badge: 1.9rem;
-
-  /* Other */
-  --animation-btn: 0.25s;
-  --animation-input: 0.2s;
-  --btn-focus-scale: 0.95;
-  --border-btn: 1px;
-  --tab-border: 1px;
-}
-```
-
-### Component-Specific Variables
-
-PIE elements also use custom variables:
-
-```css
-:root {
-  /* Touch targets */
-  --pie-target-size: 44px;
-
-  /* Spacing */
-  --pie-spacing-xs: 0.25rem;  /* 4px */
-  --pie-spacing-sm: 0.5rem;   /* 8px */
-  --pie-spacing-md: 1rem;     /* 16px */
-  --pie-spacing-lg: 1.5rem;   /* 24px */
-  --pie-spacing-xl: 2rem;     /* 32px */
-
-  /* Typography */
-  --pie-font-family: system-ui, -apple-system, sans-serif;
-  --pie-font-size-sm: 0.875rem;  /* 14px */
-  --pie-font-size-base: 1rem;    /* 16px */
-  --pie-font-size-lg: 1.125rem;  /* 18px */
-  --pie-line-height: 1.5;
-
-  /* Transitions */
-  --pie-transition-fast: 150ms ease;
-  --pie-transition-base: 200ms ease;
-  --pie-transition-slow: 300ms ease;
-}
-```
-
-## Customization Examples
-
-### Custom Brand Colors
-
-Override primary color to match your brand:
-
-```css
-:root {
-  --color-primary: #your-brand-color;
-  --color-primary-focus: #darker-shade;
-  --color-primary-content: #ffffff;
-}
-
-/* Or in data-theme */
-[data-theme="my-brand"] {
-  --color-primary: #ff6b35;
-  --color-secondary: #004e89;
-  --color-accent: #f77f00;
-}
-```
-
-### Custom Dark Theme
-
-```css
-[data-theme="my-dark"] {
-  color-scheme: dark;
-
-  --color-primary: #60a5fa;
-  --color-secondary: #a78bfa;
-  --color-accent: #fb923c;
-
-  --color-base-100: #1e1e2e;
-  --color-base-200: #181825;
-  --color-base-300: #11111b;
-  --color-base-content: #cdd6f4;
-
-  --color-success: #a6e3a1;
-  --color-warning: #f9e2af;
-  --color-error: #f38ba8;
-  --color-info: #89dceb;
-}
-```
-
-### Corporate Theme
-
-```css
-[data-theme="my-corporate"] {
-  /* Muted professional colors */
-  --color-primary: #0f4c81;
-  --color-secondary: #5c6f82;
-  --color-accent: #ee6c4d;
-
-  --color-base-100: #ffffff;
-  --color-base-200: #f8f9fa;
-  --color-base-300: #dee2e6;
-  --color-base-content: #212529;
-
-  /* Subtle rounded corners */
-  --rounded-box: 0.375rem;
-  --rounded-btn: 0.25rem;
-
-  /* Professional font */
-  --pie-font-family: 'Inter', system-ui, sans-serif;
-}
-```
-
-### Educational Theme
-
-```css
-[data-theme="my-edu"] {
-  /* Bright, friendly colors */
-  --color-primary: #4299e1;
-  --color-secondary: #48bb78;
-  --color-accent: #ed8936;
-
-  --color-base-100: #f7fafc;
-  --color-base-200: #edf2f7;
-  --color-base-content: #2d3748;
-
-  /* Playful rounded corners */
-  --rounded-box: 1rem;
-  --rounded-btn: 2rem;
-
-  /* Legible font */
-  --pie-font-family: 'Open Sans', sans-serif;
-  --pie-font-size-base: 1.125rem; /* Larger for readability */
-  --pie-line-height: 1.6;
-}
-```
-
-## Styling Specific Elements
-
-### Multiple Choice
-
-```css
-/* Choice items */
-pie-multiple-choice .choice {
-  padding: var(--pie-spacing-md);
-  border-radius: var(--rounded-box);
-  transition: background-color var(--pie-transition-base);
-}
-
-pie-multiple-choice .choice:hover {
-  background-color: var(--color-base-200);
-}
-
-pie-multiple-choice .choice.selected {
-  background-color: color-mix(in oklab, var(--color-primary) 10%, transparent);
-  border-color: var(--color-primary);
-}
-
-/* Radio buttons */
-pie-multiple-choice input[type="radio"] {
-  width: var(--pie-target-size);
-  height: var(--pie-target-size);
-  accent-color: var(--color-primary);
-}
-
-/* Feedback in evaluate mode */
-pie-multiple-choice .feedback.correct {
-  color: var(--color-success);
-  background: color-mix(in oklab, var(--color-success) 10%, transparent);
-}
-
-pie-multiple-choice .feedback.incorrect {
-  color: var(--color-error);
-  background: color-mix(in oklab, var(--color-error) 10%, transparent);
-}
-```
-
-### Slider
-
-```css
-/* Slider track */
-pie-slider input[type="range"] {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--color-base-300);
-}
-
-/* Slider thumb */
-pie-slider input[type="range"]::-webkit-slider-thumb {
-  width: var(--pie-target-size);
-  height: var(--pie-target-size);
-  background: var(--color-primary);
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Value display */
-pie-slider .value-display {
-  font-size: var(--pie-font-size-lg);
-  font-weight: 600;
-  color: var(--color-primary);
-}
-```
-
-### Rich Text Editor
-
-```css
-/* Editor container */
-.tiptap-editor-container {
-  background: var(--color-base-100);
-  border: 1px solid var(--color-base-300);
-  border-radius: var(--rounded-box);
-  transition: border-color var(--pie-transition-base);
-}
-
-.tiptap-editor-container:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 15%, transparent);
-}
-
-/* Editor content */
-.pie-tiptap {
-  color: var(--color-base-content);
-  font-family: var(--pie-font-family);
-  font-size: var(--pie-font-size-base);
-  line-height: var(--pie-line-height);
-}
-
-/* Toolbar */
-.tiptap-toolbar button {
-  padding: var(--pie-spacing-sm);
-  border-radius: var(--rounded-btn);
-  transition: background-color var(--pie-transition-fast);
-}
-
-.tiptap-toolbar button:hover {
-  background: var(--color-base-200);
-}
-
-.tiptap-toolbar button.active {
-  background: var(--color-primary);
-  color: var(--color-primary-content);
-}
-```
-
-## Responsive Design
-
-### Mobile Optimizations
-
-```css
-/* Increase touch targets on mobile */
-@media (max-width: 767px) {
-  :root {
-    --pie-target-size: 48px; /* Larger for fingers */
-    --pie-font-size-base: 1.0625rem; /* Slightly larger */
-  }
-
-  /* Stack choices vertically */
-  pie-multiple-choice .choices {
-    flex-direction: column;
-  }
-
-  /* Full-width buttons */
-  pie-multiple-choice button {
-    width: 100%;
-  }
-}
-```
-
-### Tablet Adjustments
-
-```css
-@media (min-width: 768px) and (max-width: 1023px) {
-  :root {
-    --pie-spacing-md: 1.25rem;
-    --pie-spacing-lg: 2rem;
-  }
-
-  /* Two-column layout for choices */
-  pie-multiple-choice .choices {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--pie-spacing-md);
-  }
-}
-```
-
-### Desktop Enhancements
-
-```css
-@media (min-width: 1024px) {
-  /* Hover effects only on desktop */
-  pie-multiple-choice .choice:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  /* More generous spacing */
-  :root {
-    --pie-spacing-lg: 2rem;
-    --pie-spacing-xl: 3rem;
-  }
-}
-```
-
-## Print Styles
-
-### Print Mode Styling
-
-```css
-@media print {
-  /* Remove interactive elements */
-  pie-multiple-choice button,
-  pie-multiple-choice input[type="radio"]:not(:checked) {
-    display: none;
-  }
-
-  /* Show selected answers */
-  pie-multiple-choice input[type="radio"]:checked::before {
-    content: '✓';
-    display: inline-block;
-    margin-right: 0.5em;
-  }
-
-  /* Black and white for printing */
-  * {
-    background: white !important;
-    color: black !important;
-  }
-
-  /* Highlight correct answers (instructor) */
-  pie-multiple-choice[data-role="instructor"] .choice.correct {
-    font-weight: bold;
-    text-decoration: underline;
-  }
-}
-```
-
-## Accessibility Considerations
-
-### High Contrast Mode
-
-```css
-@media (prefers-contrast: high) {
-  :root {
-    --color-primary: #0000ff;
-    --color-base-content: #000000;
-    --color-base-100: #ffffff;
-  }
-
-  /* Stronger borders */
-  pie-multiple-choice .choice {
-    border: 2px solid currentColor;
-  }
-
-  /* Clearer focus indicators */
-  :focus-visible {
-    outline: 3px solid currentColor;
-    outline-offset: 3px;
-  }
-}
-```
-
-### Reduced Motion
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  /* Disable hover animations */
-  pie-multiple-choice .choice:hover {
-    transform: none;
-  }
-}
-```
-
-### Dark Mode Preference
-
-```css
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    /* Auto dark mode if no theme set */
-    --color-base-100: #1e1e2e;
-    --color-base-200: #181825;
-    --color-base-content: #cdd6f4;
-    /* ... other dark colors */
-  }
-}
-```
-
-## Custom Theme Configuration
-
-### Tailwind Config
-
-If using Tailwind CSS with DaisyUI:
-
-```javascript
-// tailwind.config.js
-module.exports = {
-  plugins: [require('daisyui')],
-  daisyui: {
-    themes: [
-      'light',
-      'dark',
-      {
-        'my-theme': {
-          primary: '#0f4c81',
-          secondary: '#5c6f82',
-          accent: '#ee6c4d',
-          neutral: '#2a2e37',
-          'base-100': '#ffffff',
-          info: '#3abff8',
-          success: '#36d399',
-          warning: '#fbbd23',
-          error: '#f87272',
-        },
-      },
-    ],
-  },
-};
-```
-
-### Theme Generator
-
-Use DaisyUI's theme generator:
-
-1. Visit [daisyui.com/theme-generator](https://daisyui.com/theme-generator/)
-2. Customize colors
-3. Copy generated CSS
-4. Add to your stylesheet
-
-## Best Practices
-
-### Do's
-
-✅ Use CSS variables for consistency
-✅ Test themes in both light and dark modes
-✅ Verify color contrast meets WCAG AA (4.5:1)
-✅ Provide fallbacks for older browsers
-✅ Use semantic color names (primary, not blue)
-✅ Test with accessibility preferences enabled
-
-### Don'ts
-
-❌ Hardcode color values
-❌ Rely on color alone to convey information
-❌ Ignore user's color scheme preference
-❌ Use low contrast for decorative purposes
-❌ Forget to test print styles
-❌ Override user's font size preferences
-
-## Examples
-
-### Complete Custom Theme
-
-```html
-<!DOCTYPE html>
-<html data-theme="my-edu">
+<html>
 <head>
   <style>
-    [data-theme="my-edu"] {
-      --color-primary: #4299e1;
-      --color-secondary: #48bb78;
-      --color-accent: #ed8936;
-      --color-base-100: #f7fafc;
-      --color-base-200: #edf2f7;
-      --color-base-300: #cbd5e0;
-      --color-base-content: #2d3748;
-      --rounded-box: 1rem;
-      --pie-font-family: 'Open Sans', sans-serif;
-    }
+    .pie-container {
+      /* Core colors */
+      --pie-text: #2d3748;
+      --pie-background: #ffffff;
 
-    /* Element-specific overrides */
-    pie-multiple-choice .choice {
-      font-size: 1.125rem;
-      padding: 1.25rem;
+      /* Brand colors */
+      --pie-primary: #0066cc;
+      --pie-primary-light: #3399ff;
+      --pie-primary-dark: #004c99;
+
+      /* Status colors */
+      --pie-correct: #28a745;
+      --pie-incorrect: #dc3545;
+
+      /* Borders */
+      --pie-border: #dee2e6;
     }
   </style>
 </head>
 <body>
-  <pie-multiple-choice></pie-multiple-choice>
+  <div class="pie-container">
+    <!-- All PIE elements in here will use the theme -->
+    <pie-multiple-choice-element />
+    <pie-text-entry-element />
+  </div>
 </body>
 </html>
 ```
 
-## See Also
+### Dark Theme Example
 
-- [ACCESSIBILITY.md](./ACCESSIBILITY.md) - Accessibility requirements
-- [USAGE.md](./USAGE.md) - Usage examples
-- [DaisyUI Themes](https://daisyui.com/docs/themes/) - Official theme docs
-- [Tailwind Colors](https://tailwindcss.com/docs/customizing-colors) - Color reference
+```css
+.pie-container.dark {
+  /* Core colors */
+  --pie-text: #e2e8f0;
+  --pie-background: #1a202c;
+  --pie-background-dark: #2d3748;
+  --pie-secondary-background: #374151;
+
+  /* Brand colors */
+  --pie-primary: #60a5fa;
+  --pie-primary-light: #93c5fd;
+  --pie-primary-dark: #3b82f6;
+
+  /* Status colors */
+  --pie-correct: #10b981;
+  --pie-incorrect: #f59e0b;
+  --pie-missing: #ef4444;
+
+  /* Borders */
+  --pie-border: #4b5563;
+  --pie-border-light: #6b7280;
+
+  /* Focus states */
+  --pie-focus-checked: #1e40af;
+  --pie-focus-unchecked: #4b5563;
+}
+```
+
+### Customizing Choice Inputs
+
+Override component-specific variables for granular control:
+
+```css
+.custom-quiz {
+  /* Use formal variables for main theming */
+  --pie-primary: #8b5cf6;
+  --pie-correct: #22c55e;
+  --pie-incorrect: #ef4444;
+
+  /* Customize choice inputs specifically */
+  --choice-input-color: #6b7280;
+  --choice-input-selected-color: #8b5cf6;
+  --choice-input-disabled-color: #d1d5db;
+
+  /* Custom feedback backgrounds */
+  --feedback-correct-bg-color: #d1fae5;
+  --feedback-incorrect-bg-color: #fee2e2;
+}
+```
+
+### DaisyUI Integration
+
+PIE Elements work seamlessly with DaisyUI themes using the theming adapter:
+
+```javascript
+// Using the DaisyUI adapter
+import { initializeAutoTheming } from '@pie-element/theming-daisyui';
+
+// Initialize once - automatically extracts DaisyUI theme and sets --pie-* variables
+initializeAutoTheming();
+
+// Now changing data-theme attribute updates all PIE elements
+document.documentElement.setAttribute('data-theme', 'corporate');
+```
+
+```html
+<!DOCTYPE html>
+<html data-theme="corporate">
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.css" rel="stylesheet">
+  <script type="module">
+    import { initializeAutoTheming } from '@pie-element/theming-daisyui';
+    initializeAutoTheming();
+  </script>
+</head>
+<body>
+  <!-- PIE elements automatically use DaisyUI theme colors -->
+  <pie-multiple-choice-element />
+</body>
+</html>
+```
+
+See [DaisyUI integration documentation](./theming/04-daisyui-integration.md) for details.
+
+### Custom Theme System
+
+Programmatically generate and inject CSS variables:
+
+```javascript
+import { generateCssVariables, injectCssVariables } from '@pie-element/shared-theming';
+
+// Your custom theme
+const myTheme = {
+  'base-content': '#1a202c',
+  'base-100': '#ffffff',
+  primary: '#0066cc',
+  success: '#28a745',
+  error: '#dc3545',
+  // ... other colors
+};
+
+// Generate CSS variables
+const cssVars = generateCssVariables(myTheme);
+// Returns: { '--pie-text': '#1a202c', '--pie-primary': '#0066cc', ... }
+
+// Inject to document root
+injectCssVariables(cssVars);
+
+// Or inject to specific element
+const container = document.querySelector('.pie-container');
+injectCssVariables(cssVars, container);
+```
 
 ---
 
-**Last Updated**: 2025-01-08
+## Best Practices
+
+### ✅ Do's
+
+- **Start with PIE themes** - Use `PIE_LIGHT_THEME` or `PIE_DARK_THEME` as a base
+- **Use formal variables** - All 60+ variables are formally supported
+- **Set at container level** - Set CSS variables on a wrapper element, not globally
+- **Test light and dark themes** - Ensure your theme works in both modes
+- **Check contrast** - Verify WCAG AA compliance (4.5:1 contrast ratio) for text
+- **Use semantic colors** - Use `--pie-correct`, `--pie-incorrect` for feedback, not arbitrary colors
+- **Leverage theme adapters** - DaisyUI/MUI adapters automatically derive all variables
+
+### ❌ Don'ts
+
+- **Don't hardcode colors in element HTML** - Always use CSS variables
+- **Don't override MUI theme directly** - Theme through CSS variables, not MUI's ThemeProvider
+- **Don't use color alone for meaning** - Supplement with icons or text for accessibility
+- **Don't forget focus states** - Ensure `--pie-focus-*` variables have good contrast
+- **Don't skip component variables** - They provide fine-grained control and are now formal
+
+### Accessibility Considerations
+
+**Color Contrast**:
+- Text on background: minimum 4.5:1 ratio
+- Status indicators: minimum 3:1 ratio
+- Focus indicators: minimum 3:1 ratio
+
+**High Contrast Mode**:
+```css
+@media (prefers-contrast: high) {
+  .pie-container {
+    --pie-text: #000000;
+    --pie-background: #ffffff;
+    --pie-primary: #0000ff;
+    --pie-border: #000000;
+    /* Stronger, bolder colors */
+  }
+}
+```
+
+**Dark Mode Preference**:
+```css
+@media (prefers-color-scheme: dark) {
+  .pie-container {
+    --pie-text: #f8f9fa;
+    --pie-background: #212529;
+    /* ... dark theme variables */
+  }
+}
+```
+
+---
+
+## See Also
+
+- [Complete theming system documentation](./theming/) - Architecture and detailed guides
+- [Color system reference](./theming/02-color-system.md) - Complete color palette
+- [DaisyUI integration](./theming/04-daisyui-integration.md) - DaisyUI adapter usage
+- [Creating elements with theming](./theming/06-creating-elements.md) - Guidelines for element authors
+- [Accessibility requirements](./ACCESSIBILITY.md) - WCAG compliance guidelines
+
+---
+
+**Source Files**:
+- Formal variables: [`packages/shared/theming/src/constants.ts`](../packages/shared/theming/src/constants.ts)
+- Color functions: [`packages/lib-react/render-ui/src/color.ts`](../packages/lib-react/render-ui/src/color.ts)
+
+**Last Updated**: 2026-02-02

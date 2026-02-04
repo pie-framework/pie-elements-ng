@@ -9,8 +9,8 @@ const error = $derived($page.error as any);
 const status = $derived($page.status);
 
 // Check if this is an element not found error
-const isElementError = error?.message?.includes('not found in registry');
-const errorMessage = error?.message || 'An unexpected error occurred';
+const isElementError = $derived(error?.message?.includes('not found in registry'));
+const errorMessage = $derived(error?.message || 'An unexpected error occurred');
 </script>
 
 <div class="error-container">

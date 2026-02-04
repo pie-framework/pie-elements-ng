@@ -1,43 +1,197 @@
-# [MathQuill](http://mathquill.com)
+# @pie-element/shared-mathquill
 
-by [Han](http://github.com/laughinghan), [Jeanine](http://github.com/jneen), and [Mary](http://github.com/stufflebear) (<maintainers@mathquill.com>) [<img alt="slackin.mathquill.com" src="http://slackin.mathquill.com/badge.svg" align="top">](http://slackin.mathquill.com)
+MathQuill for PIE - Desmos fork with Khan patches, Learnosity features, and PIE extensions.
 
-MathQuill is a web formula editor designed to make typing math easy and beautiful.
+## Features
 
-[<img alt="homepage demo" src="https://cloud.githubusercontent.com/assets/225809/15163580/1bc048c4-16be-11e6-98a6-de467d00cff1.gif" width="260">](http://mathquill.com)
+This package provides a **PIE-specific wrapper** around MathQuill that:
 
-The MathQuill project is supported by its [partners](http://mathquill.com/partners.html). We hold ourselves to a compassionate [Code of Conduct](http://docs.mathquill.com/en/latest/Code_of_Conduct/).
+- ✅ **No jQuery dependency** - Uses MathQuill v3 interface (jQuery-free)
+- ✅ **All PIE extensions pre-loaded** - Matrix support, recurring decimals, LRN exponents
+- ✅ **Khan Academy patches** - Mobile keyboard fixes, i18n ARIA support
+- ✅ **Learnosity features** - Not-symbols (≮, ≯), empty detection
+- ✅ **Simple import** - Just `import MathQuill from '@pie-element/shared-mathquill'`
 
-MathQuill is resuming active development and we're committed to getting things running smoothly. Find a dusty corner? [Let us know in Slack.](http://slackin.mathquill.com) (Prefer IRC? We're `#mathquill` on Freenode.)
+## Installation
 
-## Getting Started
-
-MathQuill has a simple interface. This brief example creates a MathQuill element and renders, then reads a given input:
-```javascript
-var htmlElement = document.getElementById('some_id');
-var config = {
-  handlers: { edit: function(){ ... } },
-  restrictMismatchedBrackets: true
-};
-var mathField = MQ.MathField(htmlElement, config);
-
-mathField.latex('2^{\\frac{3}{2}}'); // Renders the given LaTeX in the MathQuill field
-mathField.latex(); // => '2^{\\frac{3}{2}}'
+```bash
+bun add @pie-element/shared-mathquill
 ```
 
-Check out our [Getting Started Guide](http://docs.mathquill.com/en/latest/Getting_Started/) for setup instructions and basic MathQuill usage.
+## Usage
 
-## Docs
+### Basic Import
 
-Most documentation for MathQuill is located on [ReadTheDocs](http://docs.mathquill.com/en/latest/).
+```typescript
+import MathQuill from '@pie-element/shared-mathquill';
+import '@pie-element/shared-mathquill/mathquill.css';
 
-Some older documentation still exists on the [Wiki](https://github.com/mathquill/mathquill/wiki).
+// MathQuill is ready to use - no need to call getInterface()!
+const mathField = MathQuill.MathField(element, {
+  handlers: {
+    edit: () => console.log('edited!')
+  }
+});
+```
 
-## Open-Source License
+### Named Exports
 
-The Source Code Form of MathQuill is subject to the terms of the Mozilla Public
-License, v. 2.0: [http://mozilla.org/MPL/2.0/](http://mozilla.org/MPL/2.0/)
+```typescript
+import { MathField, StaticMath } from '@pie-element/shared-mathquill';
 
-The quick-and-dirty is you can do whatever if modifications to MathQuill are in
-public GitHub forks. (Other ways to publicize modifications are also fine, as
-are private use modifications. See also: [MPL 2.0 FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/))
+// Create a math field
+const field = MathField(element, config);
+
+// Create static math
+const static = StaticMath(element);
+```
+
+### Register Custom Embeds
+
+```typescript
+import MathQuill from '@pie-element/shared-mathquill';
+
+MathQuill.registerEmbed('myEmbed', (data) => ({
+  htmlString: '<span class="my-embed">Custom</span>',
+  text: () => 'Custom',
+  latex: () => `\\embed{myEmbed}[${data}]`
+}));
+```
+
+## Important: No jQuery Required!
+
+**For PIE elements:** Do NOT call `getInterface(2)` - this wrapper exports the v3 interface directly:
+
+```typescript
+// ❌ OLD (requires jQuery)
+import MathQuill from '@pie-element/shared-mathquill';
+const MQ = MathQuill.getInterface(2);
+
+// ✅ NEW (no jQuery needed)
+import MathQuill from '@pie-element/shared-mathquill';
+const MQ = MathQuill;
+```
+
+The v3 interface provides the same API without requiring jQuery:
+- `MathQuill.MathField()`
+- `MathQuill.StaticMath()`
+- `MathQuill.registerEmbed()`
+
+## PIE Extensions
+
+### Matrix Support
+
+Create matrices with LaTeX commands:
+
+```typescript
+// Create different matrix types
+mathField.write('\\pmatrix{a&b\\\\c&d}');  // Parentheses ( )
+mathField.write('\\bmatrix{a&b\\\\c&d}');  // Brackets [ ]
+mathField.write('\\vmatrix{a&b\\\\c&d}');  // Bars | |
+mathField.write('\\Bmatrix{a&b\\\\c&d}');  // Braces { }
+mathField.write('\\Vmatrix{a&b\\\\c&d}');  // Double bars ‖ ‖
+```
+
+**Keyboard shortcuts:**
+- `Shift-Enter` - Add row
+- `Shift-Space` - Add column
+- Arrow keys - Navigate cells
+- Auto-cleanup empty rows/columns
+
+### Recurring Decimals
+
+```typescript
+mathField.write('0.\\dot{3}');  // 0.3̇
+```
+
+### LRN Exponents
+
+```typescript
+mathField.write('\\lrnexponent{x}{2}');        // x² (proper superscript)
+mathField.write('\\lrnsquaredexponent{x}');    // x² (shorthand)
+mathField.write('\\lrnsubscript{x}{1}');       // x₁ (subscript)
+```
+
+### Not Symbols (Learnosity)
+
+```typescript
+mathField.write('\\nless');   // ≮ (not less than)
+mathField.write('\\ngtr');    // ≯ (not greater than)
+```
+
+## API Compatibility
+
+This package exports a **v3 MathQuillInterface** which is compatible with all PIE elements:
+
+```typescript
+interface MathQuillInterface {
+  MathField(element: HTMLElement, config?: MathFieldConfig): MathFieldInterface;
+  StaticMath(element: HTMLElement): StaticMathInterface;
+  registerEmbed(name: string, fn: (data: string) => EmbedDefinition): void;
+}
+```
+
+All methods work identically to v2, but **without jQuery dependency**.
+
+## Migration from jQuery Version
+
+If you have code using `getInterface(2)`:
+
+```typescript
+// Before
+import MathQuill from '@pie-element/shared-mathquill';
+let MQ;
+if (typeof window !== 'undefined') {
+  MQ = MathQuill.getInterface(2);
+}
+
+// After
+import MathQuill from '@pie-element/shared-mathquill';
+let MQ;
+if (typeof window !== 'undefined') {
+  MQ = MathQuill;  // Direct use, no getInterface() needed
+}
+```
+
+## Bundle Size
+
+- **346KB** (63KB gzipped) - MathQuill + all extensions, no jQuery
+- Includes all PIE extensions pre-configured
+- CSS: 0.82KB (0.34KB gzipped)
+
+## Testing
+
+```bash
+# Run tests
+bun test
+
+# Run tests in watch mode
+bun test --watch
+```
+
+**Test coverage:** 53 tests covering:
+- Matrix implementation (40 tests)
+- Extension functionality (13 tests)
+- All edge cases and limits
+
+## CSS Import
+
+Always import the MathQuill CSS in your application:
+
+```typescript
+import '@pie-element/shared-mathquill/mathquill.css';
+```
+
+Or in your CSS file:
+
+```css
+@import '@pie-element/shared-mathquill/mathquill.css';
+```
+
+## License
+
+MPL-2.0 (inherited from Desmos MathQuill fork)
+
+## Base Package
+
+Built on [Desmos MathQuill](https://github.com/desmosinc/mathquill) - a TypeScript fork of the original MathQuill with modern improvements.

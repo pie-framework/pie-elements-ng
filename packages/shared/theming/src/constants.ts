@@ -45,6 +45,33 @@ export const PIE_COLOR_DEFAULTS = {
   BLUE_GREY600: '#7E8494',
   BLUE_GREY900: '#152452',
   FADED_PRIMARY: '#DCDAFB',
+
+  // Component-specific colors (formerly ad-hoc, now formalized)
+  // Choice inputs
+  CHOICE_INPUT_COLOR: 'black', // References TEXT
+  CHOICE_INPUT_SELECTED_COLOR: indigo[500], // References PRIMARY
+  CHOICE_INPUT_DISABLED_COLOR: 'grey', // References DISABLED
+
+  // Feedback
+  FEEDBACK_CORRECT_BG: green[500], // References CORRECT
+  FEEDBACK_INCORRECT_BG: orange[500], // References INCORRECT
+
+  // Annotations (extended-text-entry)
+  ANNOTATION_POINTER_RIGHT: '100%',
+  ANNOTATION_POINTER_TOP: '5px',
+  ANNOTATION_POINTER_BORDER_WIDTH: '7px',
+  ANNOTATION_POINTER_BORDER_COLOR: 'rgb(153, 255, 153)',
+
+  // Number line / graphing
+  ARROW_COLOR: orange[500], // Dynamic, using INCORRECT as default
+  TICK_COLOR: '#ffffff',
+  LINE_STROKE: '#ffffff',
+  POINT_FILL: '#000000',
+  POINT_STROKE: '#ffffff',
+  CORRECT_ANSWER_TOGGLE_LABEL_COLOR: '#ffffff',
+
+  // Utility
+  PRIMARY_TEXT: 'black', // References TEXT
 } as const;
 
 /**
@@ -262,4 +289,95 @@ export const DEFAULT_CSS_MAPPINGS = [
   // Base colors
   { variableName: '--pie-black', themeKey: 'black' as const, fallback: PIE_COLOR_DEFAULTS.BLACK },
   { variableName: '--pie-white', themeKey: 'white' as const, fallback: PIE_COLOR_DEFAULTS.WHITE },
+
+  // Component-specific variables (formerly ad-hoc, now formalized for comprehensive theming)
+  // Choice inputs (multiple-choice, likert, matrix)
+  {
+    variableName: '--choice-input-color',
+    themeKey: 'choice-input-color' as const,
+    fallback: PIE_COLOR_DEFAULTS.CHOICE_INPUT_COLOR,
+  },
+  {
+    variableName: '--choice-input-selected-color',
+    themeKey: 'choice-input-selected-color' as const,
+    fallback: PIE_COLOR_DEFAULTS.CHOICE_INPUT_SELECTED_COLOR,
+  },
+  {
+    variableName: '--choice-input-disabled-color',
+    themeKey: 'choice-input-disabled-color' as const,
+    fallback: PIE_COLOR_DEFAULTS.CHOICE_INPUT_DISABLED_COLOR,
+  },
+
+  // Feedback (multiple-choice, match-list)
+  {
+    variableName: '--feedback-correct-bg-color',
+    themeKey: 'feedback-correct-bg' as const,
+    fallback: PIE_COLOR_DEFAULTS.FEEDBACK_CORRECT_BG,
+  },
+  {
+    variableName: '--feedback-incorrect-bg-color',
+    themeKey: 'feedback-incorrect-bg' as const,
+    fallback: PIE_COLOR_DEFAULTS.FEEDBACK_INCORRECT_BG,
+  },
+
+  // Annotations (extended-text-entry)
+  {
+    variableName: '--before-right',
+    themeKey: 'annotation-pointer-right' as const,
+    fallback: PIE_COLOR_DEFAULTS.ANNOTATION_POINTER_RIGHT,
+  },
+  {
+    variableName: '--before-top',
+    themeKey: 'annotation-pointer-top' as const,
+    fallback: PIE_COLOR_DEFAULTS.ANNOTATION_POINTER_TOP,
+  },
+  {
+    variableName: '--before-border-width',
+    themeKey: 'annotation-pointer-border-width' as const,
+    fallback: PIE_COLOR_DEFAULTS.ANNOTATION_POINTER_BORDER_WIDTH,
+  },
+  {
+    variableName: '--before-border-color',
+    themeKey: 'annotation-pointer-border-color' as const,
+    fallback: PIE_COLOR_DEFAULTS.ANNOTATION_POINTER_BORDER_COLOR,
+  },
+
+  // Number line / graphing (number-line)
+  {
+    variableName: '--arrow-color',
+    themeKey: 'arrow-color' as const,
+    fallback: PIE_COLOR_DEFAULTS.ARROW_COLOR,
+  },
+  {
+    variableName: '--tick-color',
+    themeKey: 'tick-color' as const,
+    fallback: PIE_COLOR_DEFAULTS.TICK_COLOR,
+  },
+  {
+    variableName: '--line-stroke',
+    themeKey: 'line-stroke' as const,
+    fallback: PIE_COLOR_DEFAULTS.LINE_STROKE,
+  },
+  {
+    variableName: '--point-fill',
+    themeKey: 'point-fill' as const,
+    fallback: PIE_COLOR_DEFAULTS.POINT_FILL,
+  },
+  {
+    variableName: '--point-stroke',
+    themeKey: 'point-stroke' as const,
+    fallback: PIE_COLOR_DEFAULTS.POINT_STROKE,
+  },
+  {
+    variableName: '--correct-answer-toggle-label-color',
+    themeKey: 'correct-answer-toggle-label-color' as const,
+    fallback: PIE_COLOR_DEFAULTS.CORRECT_ANSWER_TOGGLE_LABEL_COLOR,
+  },
+
+  // Utility
+  {
+    variableName: '--pie-primary-text',
+    themeKey: 'primary-text' as const,
+    fallback: PIE_COLOR_DEFAULTS.PRIMARY_TEXT,
+  },
 ] as const;

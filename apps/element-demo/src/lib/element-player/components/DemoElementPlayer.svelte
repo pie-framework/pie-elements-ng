@@ -156,16 +156,16 @@ async function loadElementInstance() {
   .loading {
     padding: 2rem;
     text-align: center;
-    color: #666;
+    color: hsl(var(--bc) / 0.6);
     font-style: italic;
   }
 
   .error {
     padding: 1rem;
-    background: #fee;
-    border: 1px solid #fcc;
+    background: hsl(var(--er) / 0.1);
+    border: 1px solid hsl(var(--er) / 0.3);
     border-radius: 4px;
-    color: #c00;
+    color: hsl(var(--er));
   }
 
   .error pre {

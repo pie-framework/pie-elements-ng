@@ -105,23 +105,28 @@ onDestroy(() => {
 </div>
 
 <style>
+/* DaisyUI theme-aware JSON editor using CSS filter-based syntax highlighting */
 .json-editor-container {
   --json-syntax-saturation: 500%;
   --json-syntax-string-hue: 80deg;     /* Strings: green */
   --json-syntax-number-hue: 160deg;     /* Numbers: cyan */
   --json-syntax-keyword-hue: 340deg;    /* true/false/null: red */
   --json-syntax-property-hue: 190deg;   /* Property names: blue */
+
+  border: 1px solid hsl(var(--bc) / 0.2);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: hsl(var(--b1));
 }
 
 .json-editor-container :global(.json-editor-content) {
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.6;
   padding: 1rem;
-  background: hsl(var(--b1, 0 0% 100%));
-  color: hsl(var(--bc, 0 0% 20%));
-  border: 1px solid hsl(var(--b3, 0 0% 90%));
-  border-radius: 0.5rem;
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
+  outline: none;
   overflow: auto;
 }
 
@@ -129,36 +134,58 @@ onDestroy(() => {
   margin: 0;
   padding: 0;
   background: transparent;
+  border: none;
 }
 
 .json-editor-container :global(.json-editor-content code) {
-  font-family: inherit;
-  background: transparent;
+  display: block;
   padding: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Force text selection enabled */
+.json-editor-container :global(*) {
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 /* Syntax highlighting via CSS filters (theme-aware) */
+/* All colors derive from base content, ensuring compatibility with all DaisyUI themes */
 .json-editor-container :global(.hljs-string) {
+  color: hsl(var(--bc));
   filter: saturate(var(--json-syntax-saturation)) hue-rotate(var(--json-syntax-string-hue));
 }
 
 .json-editor-container :global(.hljs-number) {
+  color: hsl(var(--bc));
   filter: saturate(var(--json-syntax-saturation)) hue-rotate(var(--json-syntax-number-hue));
 }
 
 .json-editor-container :global(.hljs-literal),
 .json-editor-container :global(.hljs-keyword) {
+  color: hsl(var(--bc));
   filter: saturate(var(--json-syntax-saturation)) hue-rotate(var(--json-syntax-keyword-hue));
 }
 
 .json-editor-container :global(.hljs-attr) {
+  color: hsl(var(--bc));
   filter: saturate(var(--json-syntax-saturation)) hue-rotate(var(--json-syntax-property-hue));
-  font-weight: bold;
+  font-weight: 600;
 }
 
-/* Focus outline */
+.json-editor-container :global(.hljs-punctuation) {
+  color: hsl(var(--bc) / 0.7);
+}
+
+/* Focus outline using primary color */
 .json-editor-container :global(.json-editor-content:focus-visible) {
-  outline: 2px solid #0066cc;
+  outline: 2px solid hsl(var(--p));
   outline-offset: 2px;
 }
 </style>

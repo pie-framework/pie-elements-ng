@@ -3,7 +3,7 @@
  * Delivery View - Shows the rendered PIE element for student/instructor interaction
  */
 import DemoElementPlayer from './DemoElementPlayer.svelte';
-import { onMount, createEventDispatcher } from 'svelte';
+import { onMount, createEventDispatcher, untrack } from 'svelte';
 import { sessionsEqual } from '@pie-element/shared-utils';
 import {
   renderMathInContainer,
@@ -28,10 +28,9 @@ let {
 // DOM reference
 let elementPlayer = $state<HTMLElement | null>(null);
 
-// Track last session to avoid infinite loops
-let lastElementSessionRef = $state<any>(null);
-let updatingFromElement = $state(false);
-let elementSessionVersion = $state(0);
+// Track last session to avoid infinite loops - use plain variables, not $state
+let lastElementSessionRef: any = null;
+let updatingFromElement = false;
 let updateTimer: ReturnType<typeof setTimeout> | null = null;
 
 // Math rendering observer
@@ -44,13 +43,12 @@ $effect(() => {
 
   if (session && !sessionsEqual(session, lastElementSessionRef)) {
     lastElementSessionRef = session;
-    elementSessionVersion += 1;
+    // Don't modify reactive state inside effect - causes infinite loop
     try {
       (elementPlayer as any).session = session;
       if (debug)
         console.log('[delivery-view] session updated', {
           value: session?.value,
-          version: elementSessionVersion,
         });
     } catch (err) {
       console.error('[delivery-view] Error setting element session:', err);
@@ -92,7 +90,9 @@ $effect(() => {
     // Also render immediately in case content is already present
     // Use requestAnimationFrame to ensure we render after the current frame
     requestAnimationFrame(() => {
-      renderMathInContainer(elementPlayer);
+      if (elementPlayer) {
+        renderMathInContainer(elementPlayer);
+      }
     });
 
     // Cleanup on unmount
@@ -114,7 +114,9 @@ $effect(() => {
     requestAnimationFrame(() => {
       // Double-rAF to ensure we're after React's commit phase
       requestAnimationFrame(() => {
-        renderMathInContainer(elementPlayer);
+        if (elementPlayer) {
+          renderMathInContainer(elementPlayer);
+        }
       });
     });
   }
@@ -151,10 +153,13 @@ function handleSessionChange(event: CustomEvent) {
 
   // Only update if session actually changed
   if (newSession && !sessionsEqual(newSession, session)) {
-    session = newSession;
+    // Update ref BEFORE updating session to prevent effect from running
     lastElementSessionRef = newSession;
-    elementSessionVersion += 1;
-    if (debug) console.log('[delivery-view] Session version:', elementSessionVersion);
+    // Use untrack to prevent triggering the effect when updating bindable session
+    untrack(() => {
+      session = newSession;
+    });
+    if (debug) console.log('[delivery-view] Session updated from element');
     dispatch('session-changed', session);
   } else {
     // Even if session didn't change, update the ref to prevent effect from running
@@ -182,7 +187,7 @@ onMount(() => {
     <DemoElementPlayer
       {elementName}
       model={elementModel}
-      bind:session={session}
+      {session}
       on:session-changed={handleSessionChange}
     />
   </div>

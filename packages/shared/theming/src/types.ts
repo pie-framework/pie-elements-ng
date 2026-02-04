@@ -55,6 +55,24 @@ export interface PieThemeExtended extends PieTheme {
   'blue-grey-900'?: string;
   black?: string;
   white?: string;
+
+  // Component-specific colors (formerly ad-hoc, now formal)
+  'choice-input-color'?: string;
+  'choice-input-selected-color'?: string;
+  'choice-input-disabled-color'?: string;
+  'feedback-correct-bg'?: string;
+  'feedback-incorrect-bg'?: string;
+  'annotation-pointer-right'?: string;
+  'annotation-pointer-top'?: string;
+  'annotation-pointer-border-width'?: string;
+  'annotation-pointer-border-color'?: string;
+  'arrow-color'?: string;
+  'tick-color'?: string;
+  'line-stroke'?: string;
+  'point-fill'?: string;
+  'point-stroke'?: string;
+  'correct-answer-toggle-label-color'?: string;
+  'primary-text'?: string;
 }
 
 /**

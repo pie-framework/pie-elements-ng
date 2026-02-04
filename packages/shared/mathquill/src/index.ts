@@ -1,39 +1,29 @@
 /**
  * MathQuill - ESM Entry Point
- * PIE Framework fork with matrix support, accessibility, and custom symbols
+ * Desmos fork with Khan patches, Learnosity features, and PIE extensions
  *
- * This is a modernized ESM wrapper around the original MathQuill IIFE code.
- * The IIFE has been modified to:
- * 1. Accept jQuery as a parameter instead of expecting it globally
- * 2. Return the MathQuill object instead of attaching to window
+ * This package uses the Desmos MathQuill fork as a base and layers on:
+ * - Khan Academy: Mobile keyboard fixes, i18n ARIA strings
+ * - Learnosity: Recurring decimals, not-less/greater symbols, empty() method
+ * - PIE: Matrix commands, LRN exponent notation
  *
- * This approach avoids global scope pollution and works properly in ESM environments.
+ * All extensions are loaded via the extension loader.
  *
- * @see https://github.com/pie-framework/mathquill
+ * Migrated: 2026-02-03
+ * Base: github:desmosinc/mathquill
  */
-import jQuery from 'jquery';
 
-// Import the concatenated legacy bundle function
-// This contains all MathQuill source: intro + sources + outro
-// The IIFE accepts jQuery as parameter and returns MathQuill
-import mathquillFactory from './legacy/mathquill-bundle.js';
+// Use the extension loader which initializes Desmos + all patches
+import MQ from './extensions/index.js';
 
-// Import CSS
-import './css/main.less';
+// Re-export for backward compatibility with consuming packages
+export default MQ;
+export const getInterface = MQ.getInterface;
 
-// Initialize MathQuill by passing jQuery to the factory function
-const MathQuill = mathquillFactory(jQuery);
-
-// Export the MathQuill interface
-export default MathQuill;
-
-// Also export the getInterface function for versioned API access
-export const getInterface = MathQuill?.getInterface;
-
-// Re-export types for TypeScript users
+// Re-export types from Desmos MathQuill
 export type {
   MathQuillInterface,
-  MathField,
-  StaticMath,
+  MathFieldInterface,
+  StaticMathInterface,
   MathFieldConfig,
-} from './types';
+} from 'mathquill';

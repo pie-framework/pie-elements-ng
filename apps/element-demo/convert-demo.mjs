@@ -1,5 +1,5 @@
 import config from './packages/elements-react/multiple-choice/docs/demo/config.mjs';
-import { writeFileSync } from 'fs';
+import { writeFileSync } from 'node:fs';
 
 writeFileSync(
   './apps/element-demo/src/lib/data/sample-configs/react/multiple-choice.json',

@@ -1,7 +1,7 @@
 {
   "name": "@pie-element/shared-mathquill",
   "version": "0.0.0-test.1769993634241",
-  "description": "MathQuill fork for PIE Framework - modernized ESM version with matrix support, accessibility, and custom symbols",
+  "description": "MathQuill for PIE - Desmos fork with Khan patches, Learnosity features, and PIE extensions",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,10 +18,12 @@
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && bun x tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
   },
   "dependencies": {
-    "jquery": "^3.7.1"
+    "mathquill": "github:desmosinc/mathquill"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -34,5 +36,33 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "mathquillMigration": {
+    "version": "2.0",
+    "date": "2026-02-03T21:15:35.188Z",
+    "base": {
+      "fork": "desmosinc/mathquill",
+      "repo": "https://github.com/desmosinc/mathquill"
+    },
+    "patches": {
+      "khan": [
+        "mobile-keyboard",
+        "i18n-aria"
+      ],
+      "learnosity": [
+        "recurring-decimal",
+        "not-symbols",
+        "empty-method"
+      ],
+      "pie": [
+        "matrices",
+        "lrn-exponent"
+      ]
+    },
+    "migratedFrom": {
+      "version": "0.0.0-test.1769993634241",
+      "fork": "pie-framework/mathquill",
+      "baseVersion": "0.10.1"
+    }
+  }
 }

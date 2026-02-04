@@ -22,9 +22,9 @@ export const mkItem = (models: Model[], resolutions: PkgResolution[], elements: 
 
   models.forEach((o) => {
     const res = resolutions.find((r) => r.tagName === o.element || r.printTagName === o.element);
-    if (res) {
-      o.element = res.printTagName!;
-      const node = document.createElement(res.printTagName!);
+    if (res?.printTagName) {
+      o.element = res.printTagName;
+      const node = document.createElement(res.printTagName);
       node.setAttribute('id', o.id);
       f.appendChild(node);
     }

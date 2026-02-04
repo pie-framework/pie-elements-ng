@@ -10,8 +10,8 @@ const error = $derived($page.error as any);
 const status = $derived($page.status);
 
 // Parse the error message to extract suggestions
-const errorMessage = error?.message || 'Unknown error occurred';
-const lines = errorMessage.split('\n');
+const errorMessage = $derived(error?.message || 'Unknown error occurred');
+const lines = $derived(errorMessage.split('\n'));
 </script>
 
 <div class="error-container">

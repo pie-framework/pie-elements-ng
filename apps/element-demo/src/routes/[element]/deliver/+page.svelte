@@ -7,7 +7,6 @@ import { onMount } from 'svelte';
 import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
 import DeliveryView from '$lib/element-player/components/DeliveryView.svelte';
 import {
-  elementName,
   model,
   session,
   mode,
@@ -140,7 +139,7 @@ function handleSessionChanged(event: CustomEvent) {
 </script>
 
 <DeliveryPlayerLayout
-  elementName={$elementName}
+  elementName={data.elementName}
   model={$model}
   session={$session}
   bind:mode={$mode}
@@ -152,7 +151,7 @@ function handleSessionChanged(event: CustomEvent) {
 >
   {#snippet children()}
     <DeliveryView
-      elementName={$elementName}
+      elementName={data.elementName}
       {elementModel}
       bind:session={$session}
       {debug}

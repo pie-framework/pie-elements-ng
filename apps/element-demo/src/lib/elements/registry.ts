@@ -295,6 +295,6 @@ export function getElement(name: string): ElementMetadata | undefined {
   return ELEMENT_REGISTRY.find((el) => el.name === name);
 }
 
-export function getAllElements(): ElementMetadata[] {
+export function getAllElements(): readonly ElementMetadata[] {
   return ELEMENT_REGISTRY;
 }

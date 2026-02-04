@@ -1,40 +1,18 @@
 <script lang="ts">
 /**
  * Session Panel Component
- * Displays the current session state as formatted JSON
+ * Displays the current session state as formatted JSON using TipTap editor
  */
+import JsonEditor from './JsonEditor.svelte';
 
 let { session = {} }: { session?: any } = $props();
 
 const formattedSession = $derived(JSON.stringify(session, null, 2));
 </script>
 
-<div class="session-panel panel">
-  <h3>Session State</h3>
-  <pre>{formattedSession}</pre>
+<div class="card bg-base-100 border border-base-300">
+  <div class="card-body p-4">
+    <h3 class="card-title text-sm uppercase text-base-content/60">Session State</h3>
+    <JsonEditor value={formattedSession} readonly={true} minHeight={300} />
+  </div>
 </div>
-
-<style>
-  .session-panel {
-    max-height: 300px;
-    overflow: auto;
-  }
-
-  h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: #666;
-    font-weight: 600;
-  }
-
-  pre {
-    margin: 0;
-    padding: 0.75rem;
-    background: #f5f5f5;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    overflow-x: auto;
-  }
-</style>

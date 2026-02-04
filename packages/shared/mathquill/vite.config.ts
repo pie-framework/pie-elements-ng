@@ -1,6 +1,5 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   build: {
@@ -9,9 +8,9 @@ export default defineConfig({
       formats: ['es'],
       fileName: 'index',
     },
-    minify: false, // Don't minify - the bundle contains pre-concatenated code
+    minify: false,
     rollupOptions: {
-      external: ['jquery'], // Don't bundle jQuery
+      external: ['mathquill'], // Desmos fork is external dependency
       output: {
         assetFileNames: (assetInfo) => {
           // Rename CSS to mathquill.css
@@ -25,19 +24,8 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       less: {
-        math: 'always', // Required for LESS math operations
+        math: 'always', // Required for LESS math operations (matrix styles)
       },
     },
   },
-  plugins: [
-    // Copy font files to dist
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'src/fonts/*',
-          dest: 'fonts',
-        },
-      ],
-    }),
-  ],
 });

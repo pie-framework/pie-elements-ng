@@ -23,9 +23,9 @@ const debug = false;
 </script>
 
 <PlayerLayout
-  elementName={$elementName}
+  elementName={data.elementName}
   bind:controller={$controller}
-  capabilities={$capabilities}
+  capabilities={data.capabilities}
   {debug}
 >
   {#snippet children()}

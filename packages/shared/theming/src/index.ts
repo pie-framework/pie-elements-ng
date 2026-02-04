@@ -11,6 +11,16 @@ export type {
 // Constants
 export { PIE_COLOR_DEFAULTS, DEFAULT_CSS_MAPPINGS } from './constants';
 
+// PIE Default Themes
+export {
+  PIE_ORANGE,
+  PIE_LIGHT_THEME,
+  PIE_DARK_THEME,
+  getPieTheme,
+  PIE_THEME_NAMES,
+  type PieThemeName,
+} from './pie-themes';
+
 // CSS Variable utilities
 export {
   generateCssVariables,

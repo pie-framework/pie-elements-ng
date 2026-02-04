@@ -62,7 +62,7 @@ $effect(() => {
     element-name={elementName}
     {role}
     model={model}
-  />
+  ></pie-esm-print-player>
 </div>
 
 <style>

@@ -41,57 +41,21 @@ const reset = () => {
 };
 </script>
 
-<div class="model-panel panel">
-  <h3>Model</h3>
-  <textarea value={text} rows="10" oninput={handleInput}></textarea>
-  {#if error}
-    <div class="error-text">{error}</div>
-  {/if}
-  <div class="actions">
-    <button class="btn" onclick={apply} disabled={!dirty}>Apply</button>
-    <button class="btn secondary" onclick={reset} disabled={!dirty}>Reset</button>
+<div class="card bg-base-100 border border-base-300">
+  <div class="card-body p-4">
+    <h3 class="card-title text-sm uppercase text-base-content/60 mb-2">Model</h3>
+    <textarea
+      class="textarea textarea-bordered font-mono text-sm w-full"
+      value={text}
+      rows="10"
+      oninput={handleInput}
+    ></textarea>
+    {#if error}
+      <div class="text-error text-sm mt-2">{error}</div>
+    {/if}
+    <div class="flex gap-2 mt-3">
+      <button class="btn btn-primary btn-sm" onclick={apply} disabled={!dirty}>Apply</button>
+      <button class="btn btn-sm" onclick={reset} disabled={!dirty}>Reset</button>
+    </div>
   </div>
 </div>
-
-<style>
-  textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    resize: vertical;
-  }
-
-  .error-text {
-    margin-top: 0.5rem;
-    color: #c62828;
-    font-size: 0.85rem;
-  }
-
-  .actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-  }
-
-  .btn {
-    padding: 0.5rem 0.75rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background: #fff;
-    cursor: pointer;
-    font-size: 0.85rem;
-  }
-
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn.secondary {
-    background: #f6f6f6;
-  }
-</style>

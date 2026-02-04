@@ -46,6 +46,9 @@
       },
       "verify": {
         "description": "Verify builds and configurations"
+      },
+      "mathquill": {
+        "description": "MathQuill migration and management"
       }
     }
   },

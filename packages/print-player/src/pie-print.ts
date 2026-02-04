@@ -173,16 +173,19 @@ export class PiePrint extends LitElement {
         // Register missing element placeholders for failed loads
         const failed = results.filter((r) => !r.success);
         await Promise.all(
-          failed.map((f) => {
-            define(f.pkg.printTagName!, this.missingElement(f.pkg, f.message));
-            return whenDefined(f.pkg.printTagName!);
-          })
+          failed
+            .filter((f) => f.pkg.printTagName)
+            .map((f) => {
+              const tagName = f.pkg.printTagName as string;
+              define(tagName, this.missingElement(f.pkg, f.message));
+              return whenDefined(tagName);
+            })
         );
 
         // Apply data to all elements
         this._applyData(this._printItem);
 
-        if (this._floatItem && this._floatItem.markup) {
+        if (this._floatItem?.markup) {
           this._applyData(this._floatItem);
         }
       } catch (e) {

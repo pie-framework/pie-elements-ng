@@ -153,55 +153,71 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
 </script>
 
 {#if loading}
-  <div class="loading">
-    <div class="spinner"></div>
-    <p>Loading {elementName}...</p>
+  <div class="flex flex-col items-center justify-center p-12 text-base-content/60">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+    <p class="mt-4">Loading {elementName}...</p>
   </div>
 {:else if error}
-  <div class="error">
-    <h3>⚠️ Error</h3>
-    <p>{error}</p>
+  <div class="alert alert-error m-4">
+    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <div>
+      <h3 class="font-bold">Error</h3>
+      <p>{error}</p>
+    </div>
   </div>
 {:else}
   {#if controllerWarning}
-    <div class="warning">{controllerWarning}</div>
+    <div class="alert alert-warning mx-4 mt-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span>{controllerWarning}</span>
+    </div>
   {/if}
 
   <div class="player-content" style={`grid-template-columns: ${splitRatio}% 12px ${100 - splitRatio}%`}>
-    <main>
+    <main class="min-w-0 pr-3 overflow-auto">
       {@render children?.()}
     </main>
 
-    <div class="splitter" onpointerdown={handleSplitPointerDown} role="separator" aria-orientation="vertical"></div>
+    <div class="divider divider-horizontal cursor-col-resize" onpointerdown={handleSplitPointerDown} role="separator" aria-orientation="vertical"></div>
 
-    <aside class="controls">
-      <div class="panel">
-        <h3>Mode</h3>
-        <ModeSelector bind:mode evaluateDisabled={playerRole !== 'instructor'} />
+    <aside class="min-w-0 pl-3 overflow-auto space-y-4">
+      <div class="card bg-base-100 border border-base-300">
+        <div class="card-body p-4">
+          <h3 class="card-title text-sm uppercase text-base-content/60">Mode</h3>
+          <ModeSelector bind:mode evaluateDisabled={playerRole !== 'instructor'} />
+        </div>
       </div>
 
-      <div class="panel">
-        <h3>Role</h3>
-        <div class="role-selector">
-          <a
-            href={getRoleUrl('student')}
-            class="role-link"
-            class:active={playerRole === 'student'}
-            class:disabled={roleLocked}
-            aria-disabled={roleLocked}
-            tabindex={roleLocked ? -1 : 0}
-            data-sveltekit-reload
-          >
-            <span>Student</span>
-          </a>
-          <a
-            href={getRoleUrl('instructor')}
-            class="role-link"
-            class:active={playerRole === 'instructor'}
-            data-sveltekit-reload
-          >
-            <span>Instructor</span>
-          </a>
+      <div class="card bg-base-100 border border-base-300">
+        <div class="card-body p-4">
+          <h3 class="card-title text-sm uppercase text-base-content/60">Role</h3>
+          <div class="flex flex-col gap-2">
+            <a
+              href={getRoleUrl('student')}
+              class="btn btn-sm justify-start"
+              class:btn-primary={playerRole === 'student'}
+              class:btn-outline={playerRole !== 'student'}
+              class:btn-disabled={roleLocked}
+              aria-disabled={roleLocked}
+              tabindex={roleLocked ? -1 : 0}
+              data-sveltekit-reload
+            >
+              Student
+            </a>
+            <a
+              href={getRoleUrl('instructor')}
+              class="btn btn-sm justify-start"
+              class:btn-primary={playerRole === 'instructor'}
+              class:btn-outline={playerRole !== 'instructor'}
+              data-sveltekit-reload
+            >
+              Instructor
+            </a>
+          </div>
         </div>
       </div>
 
@@ -213,135 +229,10 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
 {/if}
 
 <style>
-  .loading {
-    padding: 3rem;
-    text-align: center;
-    color: #666;
-  }
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 1rem;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #0066cc;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .error {
-    padding: 2rem;
-    margin: 1rem;
-    background: #ffebee;
-    border: 2px solid #d32f2f;
-    border-radius: 4px;
-    color: #c62828;
-  }
-
-  .error h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
-  }
-
-  .error p {
-    margin: 0;
-  }
-
-  .warning {
-    margin: 0.75rem 1rem 1rem;
-    padding: 0.75rem 1rem;
-    background: #fff8e1;
-    border: 1px solid #f1c232;
-    border-radius: 4px;
-    color: #8a6d3b;
-    font-size: 0.9rem;
-  }
-
   .player-content {
     display: grid;
     height: 100%;
     overflow: hidden;
-  }
-
-  main {
-    min-width: 0;
-    padding-right: 0.75rem;
-    overflow: auto;
-  }
-
-  aside {
-    min-width: 0;
-    padding-left: 0.75rem;
-    overflow: auto;
-  }
-
-  .splitter {
-    width: 2px;
-    cursor: col-resize;
-    border-radius: 4px;
-    background-color: #e5e7eb;
-    align-self: stretch;
-    z-index: 1;
-    touch-action: none;
-  }
-
-  .splitter:hover {
-    background-color: #cbd5e1;
-  }
-
-  .panel {
-    padding: 1rem;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-  }
-
-  .panel h3 {
-    margin: 0 0 0.75rem 0;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: #666;
-    font-weight: 600;
-  }
-
-  .role-selector {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .role-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .role-link:hover:not(.disabled) {
-    background: #f5f5f5;
-  }
-
-  .role-link.active {
-    background: #e3f2fd;
-    border-color: #0066cc;
-  }
-
-  .role-link.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
   }
 
   /* Responsive */
@@ -350,12 +241,8 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
       grid-template-columns: 1fr !important;
     }
 
-    .splitter {
+    .divider-horizontal {
       display: none;
-    }
-
-    aside {
-      width: 100%;
     }
   }
 </style>

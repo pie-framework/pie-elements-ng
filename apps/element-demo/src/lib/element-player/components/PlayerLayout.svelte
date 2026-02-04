@@ -6,7 +6,7 @@
  * Handles element loading and controller initialization.
  */
 import { onMount } from 'svelte';
-import { loadElement, loadController, loadAuthor, loadPrint } from '../lib/demo-element-loader';
+import { loadController, loadAuthor, loadPrint } from '../lib/demo-element-loader';
 import type { PieController } from '../lib/types';
 
 // Props
@@ -32,6 +32,7 @@ let hasPrint = $state(false);
 let configureWarning = $state<string | null>(null);
 let controllerWarning = $state<string | null>(null);
 
+// Simple onMount - no complex reactivity
 onMount(async () => {
   try {
     if (!elementName) {
@@ -104,81 +105,39 @@ onMount(async () => {
 </script>
 
 {#if loading}
-  <div class="loading">
-    <div class="spinner"></div>
-    <p>Loading {elementName}...</p>
+  <div class="flex flex-col items-center justify-center p-12 text-base-content/60">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+    <p class="mt-4">Loading {elementName}...</p>
   </div>
 {:else if error}
-  <div class="error">
-    <h3>⚠️ Error</h3>
-    <p>{error}</p>
+  <div class="alert alert-error m-4">
+    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <div>
+      <h3 class="font-bold">Error</h3>
+      <p>{error}</p>
+    </div>
   </div>
 {:else}
   {#if controllerWarning}
-    <div class="warning">{controllerWarning}</div>
+    <div class="alert alert-warning mx-4 mt-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span>{controllerWarning}</span>
+    </div>
   {/if}
   {#if configureWarning}
-    <div class="warning">{configureWarning}</div>
+    <div class="alert alert-warning mx-4 mt-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span>{configureWarning}</span>
+    </div>
   {/if}
 
-  <div class="player-content">
+  <div class="h-full overflow-auto p-4">
     {@render children?.()}
   </div>
 {/if}
-
-<style>
-  .loading {
-    padding: 3rem;
-    text-align: center;
-    color: #666;
-  }
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 1rem;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #0066cc;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .error {
-    padding: 2rem;
-    margin: 1rem;
-    background: #ffebee;
-    border: 2px solid #d32f2f;
-    border-radius: 4px;
-    color: #c62828;
-  }
-
-  .error h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
-  }
-
-  .error p {
-    margin: 0;
-  }
-
-  .warning {
-    margin: 0.75rem 1rem 1rem;
-    padding: 0.75rem 1rem;
-    background: #fff8e1;
-    border: 1px solid #f1c232;
-    border-radius: 4px;
-    color: #8a6d3b;
-    font-size: 0.9rem;
-  }
-
-  .player-content {
-    height: 100%;
-    overflow: auto;
-    padding: 1rem;
-  }
-</style>
