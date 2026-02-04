@@ -4,7 +4,7 @@
  * Tests for Khan, Learnosity, and PIE extensions
  */
 
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from 'vitest';
 
 describe('Learnosity Extensions', () => {
   describe('Not-Symbols', () => {
