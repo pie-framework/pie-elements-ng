@@ -101,7 +101,9 @@ const copyToClipboard = async () => {
     </button>
   </div>
 
-  <JsonEditor bind:value={jsonText} onInput={handleInput} minHeight={600} />
+  <div class="editor-wrapper">
+    <JsonEditor bind:value={jsonText} onInput={handleInput} minHeight={600} />
+  </div>
 
   {#if error}
     <div class="error-banner">
@@ -117,6 +119,7 @@ const copyToClipboard = async () => {
     flex-direction: column;
     height: 100%;
     gap: 1rem;
+    min-height: 0; /* Allow flex children to shrink below content size */
   }
 
   .toolbar {
@@ -131,6 +134,12 @@ const copyToClipboard = async () => {
 
   .spacer {
     flex: 1;
+  }
+
+  .editor-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
   }
 
   .dirty-badge {
