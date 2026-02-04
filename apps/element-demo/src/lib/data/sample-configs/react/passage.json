@@ -3,8 +3,11 @@
     {
       "id": "default",
       "title": "Default Demo",
-      "description": "Default configuration",
-      "tags": [],
+      "description": "Basic passage configuration",
+      "tags": [
+        "passage",
+        "default"
+      ],
       "model": {
         "id": "1",
         "element": "passage",
@@ -23,7 +26,8 @@
         ]
       },
       "session": {
-        "value": []
+        "id": "1",
+        "element": "passage"
       }
     }
   ]

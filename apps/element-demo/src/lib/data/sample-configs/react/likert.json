@@ -3,8 +3,11 @@
     {
       "id": "default",
       "title": "Default Demo",
-      "description": "Default configuration",
-      "tags": [],
+      "description": "Basic likert configuration",
+      "tags": [
+        "likert",
+        "default"
+      ],
       "model": {
         "id": "1",
         "element": "likert",
@@ -28,7 +31,8 @@
         "prompt": "How likely are you to report a problem?"
       },
       "session": {
-        "value": []
+        "id": "1",
+        "element": "likert"
       }
     }
   ]

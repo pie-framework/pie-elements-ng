@@ -95,13 +95,13 @@ const copyToClipboard = async () => {
       <span>↺</span>
       <span class="label">Reset</span>
     </button>
-    <button class="btn btn-sm btn-primary" onclick={apply} disabled={!dirty} title="Apply changes">
+    <button class="btn btn-sm btn-primary" onclick={apply} disabled={!dirty} title="Apply changes" data-testid="apply-changes">
       <span>✓</span>
       <span class="label">Apply</span>
     </button>
   </div>
 
-  <div class="editor-wrapper">
+  <div class="editor-wrapper" data-testid="source-editor">
     <JsonEditor bind:value={jsonText} onInput={handleInput} minHeight={600} />
   </div>
 

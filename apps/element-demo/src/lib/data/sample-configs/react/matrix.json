@@ -3,8 +3,11 @@
     {
       "id": "default",
       "title": "Default Demo",
-      "description": "Default configuration",
-      "tags": [],
+      "description": "Basic matrix configuration",
+      "tags": [
+        "matrix",
+        "default"
+      ],
       "model": {
         "id": "1",
         "element": "matrix",
@@ -22,7 +25,8 @@
         "prompt": "How interested are you in the following domains?"
       },
       "session": {
-        "value": []
+        "id": "1",
+        "element": "matrix"
       }
     }
   ]

@@ -3,8 +3,11 @@
     {
       "id": "default",
       "title": "Default Demo",
-      "description": "Default configuration",
-      "tags": [],
+      "description": "Basic rubric configuration",
+      "tags": [
+        "rubric",
+        "default"
+      ],
       "model": {
         "id": "1",
         "element": "rubric",
@@ -24,7 +27,8 @@
         "excludeZero": false
       },
       "session": {
-        "value": []
+        "id": "1",
+        "element": "rubric"
       }
     }
   ]

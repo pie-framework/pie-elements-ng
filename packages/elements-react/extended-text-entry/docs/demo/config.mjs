@@ -1,117 +1,29 @@
 export default {
   demos: [
     {
-      id: 'basic-essay',
-      title: 'Basic Essay Response',
-      description: 'Simple extended text entry for essay writing with standard dimensions',
-      tags: ['basic', 'essay', 'writing'],
+      id: 'default',
+      title: 'Default Demo',
+      description: 'Basic extended text entry configuration',
+      tags: ['extended-text-entry', 'default'],
       model: {
         id: '1',
         element: 'extended-text-entry',
-        prompt: '<p><strong>Essay Question:</strong> Describe the water cycle and explain how it affects weather patterns. Use specific examples in your response.</p>',
+        customKeys: ['\\square'],
+        feedback: { type: 'default', default: 'this is default feedback' },
+        prompt: 'This is the question prompt',
         promptEnabled: true,
-        dimensions: { height: 200, width: 600 },
-        mathInput: false,
-        spanishInput: false,
-        specialInput: false,
-        playerSpellCheckDisabled: false,
-        playersToolbarPosition: 'bottom',
-        toolbarEditorPosition: 'bottom',
-        feedbackEnabled: true,
-        feedback: { type: 'default', default: 'Your response has been submitted for review.' },
-        annotationsEnabled: false,
-        rubricEnabled: false
-      },
-      session: { value: '', annotations: [], comment: '' }
-    },
-    {
-      id: 'math-problem-solving',
-      title: 'Math Problem with LaTeX Support',
-      description: 'Extended response with math input enabled and equation editor for algebra',
-      tags: ['math', 'algebra', 'latex', 'equation-editor'],
-      model: {
-        id: '2',
-        element: 'extended-text-entry',
-        prompt: '<p><strong>Math Problem:</strong> Solve the quadratic equation <em>x</em><sup>2</sup> - 5<em>x</em> + 6 = 0 and show all your work. Explain each step of your solution process.</p><p>Use the equation editor to enter mathematical expressions.</p>',
-        promptEnabled: true,
-        teacherInstructions: '<p><strong>Scoring Guide:</strong> Award full credit if students correctly factor the equation or use the quadratic formula, showing work for each step. The solutions should be x = 2 and x = 3.</p>',
-        teacherInstructionsEnabled: true,
-        dimensions: { height: 250, width: 700 },
         mathInput: true,
-        equationEditor: 'Grade 8 - HS',
-        customKeys: ['\\sqrt{x}', 'x^2', '\\frac{a}{b}'],
-        spanishInput: false,
-        specialInput: false,
-        playerSpellCheckDisabled: true,
         playersToolbarPosition: 'bottom',
         toolbarEditorPosition: 'bottom',
-        feedbackEnabled: true,
-        feedback: { type: 'default', default: 'Your mathematical solution has been submitted. Your teacher will review your work and provide feedback.' },
+        spellCheckEnabled: true,
+        rubricEnabled: false,
         annotationsEnabled: false,
-        rubricEnabled: false
       },
-      session: { value: '', annotations: [], comment: '' }
-    },
-    {
-      id: 'spanish-language-response',
-      title: 'Spanish Language Essay',
-      description: 'Text entry with Spanish character support for language learners',
-      tags: ['spanish', 'language', 'special-characters', 'writing'],
-      model: {
-        id: '3',
+      session: {
+        id: '1',
         element: 'extended-text-entry',
-        prompt: '<p><strong>Pregunta de Ensayo:</strong> Describe tu rutina diaria. ¿Qué haces por la mañana, por la tarde y por la noche?</p><p><em>Essay Question: Describe your daily routine. What do you do in the morning, afternoon, and evening?</em></p>',
-        promptEnabled: true,
-        dimensions: { height: 180, width: 650 },
-        mathInput: false,
-        spanishInput: true,
-        specialInput: true,
-        playerSpellCheckDisabled: false,
-        playersToolbarPosition: 'bottom',
-        toolbarEditorPosition: 'bottom',
-        feedbackEnabled: true,
-        feedback: { type: 'default', default: '¡Gracias! Tu respuesta ha sido enviada. / Thank you! Your response has been submitted.' },
-        annotationsEnabled: false,
-        rubricEnabled: false
-      },
-      session: { value: '', annotations: [], comment: '' }
-    },
-    {
-      id: 'annotated-writing-sample',
-      title: 'Writing Sample with Instructor Annotations',
-      description: 'Extended text with annotation mode enabled for teacher feedback on student writing',
-      tags: ['annotations', 'feedback', 'writing', 'instructor', 'advanced'],
-      model: {
-        id: '4',
-        element: 'extended-text-entry',
-        prompt: '<p><strong>Persuasive Writing:</strong> Write a persuasive paragraph arguing for or against year-round schooling. Include a clear thesis statement, at least three supporting reasons, and a conclusion.</p>',
-        promptEnabled: true,
-        teacherInstructions: '<p><strong>Teacher Instructions:</strong> Use the annotation tools to mark specific areas of the student\'s writing. Focus on thesis clarity, argument strength, and use of evidence. Provide constructive feedback using predefined annotations or custom comments.</p>',
-        teacherInstructionsEnabled: true,
-        dimensions: { height: 300, width: 750 },
-        mathInput: false,
-        spanishInput: false,
-        specialInput: false,
-        playerSpellCheckDisabled: false,
-        playersToolbarPosition: 'bottom',
-        toolbarEditorPosition: 'bottom',
-        feedbackEnabled: false,
-        annotationsEnabled: true,
-        predefinedAnnotations: [
-          { label: 'good', text: 'good', type: 'positive' },
-          { label: '★', text: '★', type: 'positive' },
-          { label: 'creative', text: 'creative', type: 'positive' },
-          { label: 'strong argument', text: 'strong argument', type: 'positive' },
-          { label: 'run-on', text: 'run-on sentence', type: 'negative' },
-          { label: 'frag', text: 'fragment', type: 'negative' },
-          { label: 'tran', text: 'needs transition', type: 'negative' },
-          { label: 'supp', text: 'support needed', type: 'negative' },
-          { label: 'unclear', text: 'unclear', type: 'negative' },
-          { label: 'thesis', text: 'strengthen thesis', type: 'negative' }
-        ],
-        rubricEnabled: false
-      },
-      session: { value: '', annotations: [], comment: '' }
+        value: ''
+      }
     }
   ]
 };

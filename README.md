@@ -26,11 +26,10 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed explanations of ea
 
 - Bun >= 1.3.7
 - Node.js >= 20.0.0
-- The `pie-elements` repository checked out as a sibling directory (for upstream sync)
 
 ### Initial Setup (First Time)
 
-**Note:** `packages/elements-react` and `packages/lib-react` are synced from the upstream `pie-elements` repository using the CLI tool. These packages **are now committed to git** to simplify the bootstrap process.
+**Note:** `packages/elements-react` and `packages/lib-react` are synced from the upstream `pie-elements` repository and **committed to git**. You don't need to check out the upstream repositories unless you're a maintainer syncing new changes.
 
 ```bash
 # 1. Clone the repository
@@ -44,20 +43,24 @@ bun install
 bun run build
 ```
 
-That's it! The synced packages are already in the repository, so you can get started immediately.
+That's it! All packages are already in the repository, so you can get started immediately.
 
 ### Syncing from Upstream (Maintainers Only)
 
 **Note:** Only maintainers need to sync from upstream. Regular developers can just `git pull` to get updated packages.
 
-When you need to sync changes from the upstream `pie-elements` repository:
+If you're a maintainer and need to sync changes from the upstream `pie-elements` repository:
 
 ```bash
-# 1. Ensure pie-elements is checked out as a sibling directory
-ls ../pie-elements/package.json || echo "Need to clone pie-elements!"
+# 1. Clone upstream repositories as siblings (one-time setup)
+cd ..
+git clone https://github.com/PieLabs/pie-elements.git
+git clone https://github.com/PieLabs/pie-lib.git
+cd pie-elements-ng
 
 # 2. Pull latest upstream changes
 cd ../pie-elements && git pull && cd -
+cd ../pie-lib && git pull && cd -
 
 # 3. Sync packages (dry run first to see changes)
 bun cli upstream:sync --dry-run --verbose
@@ -77,9 +80,17 @@ git push
 
 ### Development Commands
 
-`bun cli upstream:sync` - Syncs packages from the upstream pie-elements project. Analyzes the current state of that project and copies over what is ready for ESM packaging, including rewrites and restructuring to fit the new project layout.
+`bun run build` - Build all packages in the monorepo
 
-`bun cli dev:demo multiple-choice` - Test one of the migrated PIE elements in this project. Besides starting a simple demo server, it also starts what is basically an ESM proxy so that references to @pie-element and @pie-lib load from the local system and all other dependencies go to esm.sh.
+`bun run dev` - Start the demo application in development mode
+
+`bun run test` - Run all tests
+
+`bun run typecheck` - TypeScript type checking across all packages
+
+### Maintainer Commands
+
+`bun cli upstream:sync` - (Maintainers only) Syncs packages from the upstream pie-elements project. Requires pie-elements and pie-lib checked out as sibling directories. Analyzes the current state of those projects and copies over what is ready for ESM packaging, including rewrites and restructuring to fit the new project layout.
 
 ## Print Support
 

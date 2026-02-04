@@ -25,6 +25,7 @@ let {
       disabled={tab.disabled}
       onclick={() => !tab.disabled && (active = tab.id)}
       title={tab.description}
+      data-testid="tab-{tab.id}"
     >
       <div class="flex flex-col items-center gap-1">
         <span class="font-medium">{tab.label}</span>

@@ -1,90 +1,27 @@
 export default {
   demos: [
     {
-      id: 'geometry-sketch',
-      title: 'Geometry Sketch',
-      description: 'Draw geometric shapes to solve a math problem',
-      tags: ['math', 'geometry', 'shapes', 'education'],
+      id: 'default',
+      title: 'Default Demo',
+      description: 'Basic drawing response configuration',
+      tags: ['drawing', 'default'],
       model: {
         id: '1',
         element: 'drawing-response',
-        prompt: '<p><strong>Geometry Problem:</strong> Draw a right triangle with one leg measuring 3 units and the other leg measuring 4 units. Then draw and label the hypotenuse.</p><p>Use the line tool to draw the triangle and the text tool to add labels.</p>',
-        promptEnabled: true,
-        backgroundImageEnabled: false,
-        toolbarEditorPosition: 'bottom',
-        imageUrl: '',
-        imageDimensions: {
-          height: 0,
-          width: 0
-        },
-        rubricEnabled: false,
-        teacherInstructions: 'Look for accurate right angle construction and proper labeling of all sides. The hypotenuse should be approximately 5 units based on the Pythagorean theorem.',
-        teacherInstructionsEnabled: true,
-        spellCheckEnabled: true
-      },
-      session: {
-        id: '1',
-        element: 'drawing-response',
-        drawables: [],
-        texts: []
-      }
-    },
-    {
-      id: 'free-drawing',
-      title: 'Creative Free Drawing',
-      description: 'Open-ended drawing canvas for creative expression',
-      tags: ['art', 'creative', 'free-draw', 'open-ended'],
-      model: {
-        id: '2',
-        element: 'drawing-response',
-        prompt: '<p><strong>Creative Drawing:</strong> Use the drawing tools to create an illustration of your favorite animal in its natural habitat.</p><p>You can use circles, rectangles, lines, and free drawing to create your artwork. Use the text tool to label your drawing.</p>',
-        promptEnabled: true,
-        backgroundImageEnabled: false,
-        toolbarEditorPosition: 'bottom',
-        imageUrl: '',
-        imageDimensions: {
-          height: 0,
-          width: 0
-        },
-        rubricEnabled: false,
-        teacherInstructions: 'Assess creativity, use of multiple drawing tools, and whether the student has attempted to show the animal in a habitat context.',
-        teacherInstructionsEnabled: true,
-        spellCheckEnabled: true
-      },
-      session: {
-        id: '2',
-        element: 'drawing-response',
-        drawables: [],
-        texts: []
-      }
-    },
-    {
-      id: 'diagram-annotation',
-      title: 'Plant Cell Diagram Annotation',
-      description: 'Label and annotate a scientific diagram with background image',
-      tags: ['science', 'biology', 'annotation', 'diagram', 'background-image'],
-      model: {
-        id: '3',
-        element: 'drawing-response',
-        prompt: '<p><strong>Biology - Cell Structure:</strong> Using the plant cell diagram provided, add labels to identify at least 5 major organelles.</p><p>Use the text tool to add labels and the line tool to draw arrows pointing to each organelle you identify.</p>',
+        prompt: 'This is the question prompt',
         promptEnabled: true,
         backgroundImageEnabled: true,
         toolbarEditorPosition: 'bottom',
-        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Plant_cell_structure-en.svg/500px-Plant_cell_structure-en.svg.png',
+        imageUrl: '',
         imageDimensions: {
-          height: 500,
-          width: 500
+          height: 0,
+          width: 0,
         },
         rubricEnabled: false,
-        teacherInstructions: 'Students should correctly identify at least 5 organelles such as: nucleus, cell wall, chloroplast, vacuole, mitochondria, cell membrane, endoplasmic reticulum, or Golgi apparatus. Labels should be clear and arrows should point accurately to the structures.',
-        teacherInstructionsEnabled: true,
-        spellCheckEnabled: true
       },
       session: {
-        id: '3',
+        id: '1',
         element: 'drawing-response',
-        drawables: [],
-        texts: []
       }
     }
   ]

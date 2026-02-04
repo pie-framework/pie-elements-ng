@@ -1,7 +1,8 @@
 # Upstream Sync Guide: PIE Elements Migration
 
 **Status:** ✅ Active (CLI-based)
-**Last Updated:** 2025-01-08
+**Last Updated:** 2025-02-04
+**Audience:** Maintainers who sync from upstream
 
 ## Table of Contents
 
@@ -20,7 +21,15 @@
 
 ## Overview
 
+**Note:** This guide is for maintainers who sync code from upstream repositories. Regular developers don't need to run these commands - synced packages are already committed to git, so just `git pull` to get updates.
+
 This guide describes the complete process for migrating PIE elements from the upstream [pie-elements](https://github.com/PieLabs/pie-elements) and [pie-lib](https://github.com/PieLabs/pie-lib) repositories to this modern TypeScript/Svelte/React implementation.
+
+**Key Points:**
+
+- Synced packages (`packages/elements-react/*` and `packages/lib-react/*`) are committed to git
+- Regular developers don't need pie-elements or pie-lib checked out
+- Only maintainers need to run `upstream:sync` commands
 
 ### Key Principle
 
@@ -416,7 +425,9 @@ bun run cli upstream:analyze-esm
 
 ## Syncing Code from Upstream
 
-### Prerequisites
+### Prerequisites (Maintainers Only)
+
+**Note:** Only needed if you're syncing from upstream. Regular developers can skip this.
 
 **1. Clone upstream repositories as siblings:**
 
@@ -429,13 +440,13 @@ git clone https://github.com/PieLabs/pie-lib.git
 # ~/projects/
 #   pie-elements/
 #   pie-lib/
-#   pie-element/
+#   pie-elements-ng/
 ```
 
 **2. Build the CLI:**
 
 ```bash
-cd pie-element/tools/cli
+cd pie-elements-ng/tools/cli
 bun install
 bun run build
 ```

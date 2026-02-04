@@ -13,6 +13,8 @@ const formattedSession = $derived(JSON.stringify(session, null, 2));
 <div class="card bg-base-100 border border-base-300">
   <div class="card-body p-4">
     <h3 class="card-title text-sm uppercase text-base-content/60">Session State</h3>
-    <JsonEditor value={formattedSession} readonly={true} minHeight={300} />
+    <div data-testid="session-panel-content">
+      <JsonEditor value={formattedSession} readonly={true} minHeight={300} />
+    </div>
   </div>
 </div>

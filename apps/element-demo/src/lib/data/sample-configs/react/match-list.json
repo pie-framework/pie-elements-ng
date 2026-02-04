@@ -3,8 +3,11 @@
     {
       "id": "default",
       "title": "Default Demo",
-      "description": "Default configuration",
-      "tags": [],
+      "description": "Basic match list configuration",
+      "tags": [
+        "match-list",
+        "default"
+      ],
       "model": {
         "id": "1",
         "element": "match-list",
@@ -61,7 +64,8 @@
         ]
       },
       "session": {
-        "value": []
+        "id": "1",
+        "element": "match-list"
       }
     }
   ]

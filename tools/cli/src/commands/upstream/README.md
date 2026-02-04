@@ -2,6 +2,8 @@
 
 This directory contains commands for managing the synchronization between the upstream PIE repositories and this project.
 
+**Audience:** These commands are for maintainers who sync from upstream. Regular developers don't need these commands - synced packages are already committed to git, so just `git pull` to get updates.
+
 ## Overview
 
 The PIE Elements NG project syncs code from two upstream repositories:
@@ -10,6 +12,8 @@ The PIE Elements NG project syncs code from two upstream repositories:
 - **pie-lib** - Contains shared library packages
 
 These commands help manage that synchronization process, analyze ESM compatibility, and track what's been synced.
+
+Synced packages (`packages/elements-react/*` and `packages/lib-react/*`) are committed to git, so regular developers can work without checking out the upstream repositories.
 
 At a high level, the update workflow does more than copy files. It:
 
@@ -155,7 +159,9 @@ bun cli upstream:track --element=multiple-choice
 
 ## Workflow
 
-### Initial Setup
+### Initial Setup (Maintainers Only)
+
+**Note:** Only needed if you're a maintainer syncing from upstream. Regular developers can skip this.
 
 1. Clone the upstream repositories as siblings to this repo:
 
@@ -163,13 +169,13 @@ bun cli upstream:track --element=multiple-choice
    cd /path/to/projects
    git clone https://github.com/PieLabs/pie-elements.git
    git clone https://github.com/PieLabs/pie-lib.git
-   git clone https://github.com/your-org/pie-element.git
+   git clone https://github.com/pie-framework/pie-elements-ng.git
+   cd pie-elements-ng
    ```
 
 2. Run initial analysis to see what's available:
 
    ```bash
-   cd pie-element
    bun cli upstream:analyze-esm --verbose
    ```
 

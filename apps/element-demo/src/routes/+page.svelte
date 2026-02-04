@@ -4,6 +4,22 @@ import { theme } from '$lib/stores/demo-state';
 
 let { data }: { data: PageData } = $props();
 
+// Filter state
+let filterText = $state('');
+
+// Filtered elements based on search
+const filteredElements = $derived(
+  data.elements.filter((element) => {
+    if (!filterText.trim()) return true;
+    const searchLower = filterText.toLowerCase();
+    return (
+      element.name.toLowerCase().includes(searchLower) ||
+      element.title.toLowerCase().includes(searchLower) ||
+      element.packageName.toLowerCase().includes(searchLower)
+    );
+  })
+);
+
 // Handle theme toggle checkbox
 function handleThemeToggle(event: Event) {
   const checkbox = event.target as HTMLInputElement;
@@ -55,9 +71,56 @@ function handleThemeToggle(event: Event) {
         </p>
       </div>
 
+      <!-- Filter Section -->
+      <div class="mb-8 max-w-2xl mx-auto">
+        <div class="form-control">
+          <div class="input-group flex">
+            <input
+              type="text"
+              placeholder="Filter elements by name..."
+              class="input input-bordered flex-1"
+              bind:value={filterText}
+              data-testid="element-filter"
+            />
+            {#if filterText}
+              <button
+                class="btn btn-square"
+                onclick={() => (filterText = '')}
+                aria-label="Clear filter"
+                data-testid="clear-filter"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            {/if}
+          </div>
+          {#if filterText && filteredElements.length === 0}
+            <div class="text-center mt-4 text-sm opacity-70">
+              No elements found matching "{filterText}"
+            </div>
+          {:else if filterText}
+            <div class="text-center mt-2 text-sm opacity-70">
+              Showing {filteredElements.length} of {data.elements.length} elements
+            </div>
+          {/if}
+        </div>
+      </div>
+
       <!-- Element Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {#each data.elements as element}
+        {#each filteredElements as element}
           <a
             href="/{element.name}"
             class="card bg-base-100 shadow-lg hover:shadow-2xl transition-shadow duration-200"

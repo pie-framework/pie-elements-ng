@@ -9,7 +9,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "generate-imports": "bun run scripts/generate-element-imports.ts",
-    "predev": "bun run generate-imports"
+    "predev": "bun run generate-imports",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@pie-element/bundler-shared": "workspace:*",

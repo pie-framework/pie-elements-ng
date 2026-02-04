@@ -1,19 +1,17 @@
 {
   "demos": [
     {
-      "id": "basic-sentence",
-      "title": "Basic Sentence Completion",
-      "description": "Simple fill-in-the-blank with alternate correct answers",
+      "id": "default",
+      "title": "Default Demo",
+      "description": "Basic explicit constructed response configuration",
       "tags": [
-        "basic",
-        "grammar",
-        "alternates"
+        "explicit-constructed-response",
+        "default"
       ],
       "model": {
         "id": "1",
-        "element": "explicit-constructed-response",
-        "markup": "<p>The {{0}} jumped {{1}} the {{2}}.</p>",
-        "displayType": "block",
+        "markup": "<p>The {{0}} jumped {{1}} the {{2}}</p>",
+        "disabled": false,
         "choices": {
           "0": [
             {
@@ -50,286 +48,32 @@
             }
           ]
         },
-        "maxLengthPerChoice": [
-          8,
-          8,
-          6
-        ],
-        "maxLengthPerChoiceEnabled": true,
-        "prompt": "<p><strong>Complete the sentence:</strong> Fill in the blanks to complete the famous nursery rhyme.</p>",
+        "prompt": "<div>Complete the sentence</div>",
         "promptEnabled": true,
-        "playerSpellCheckEnabled": true,
-        "rationale": "<p>This is a reference to the nursery rhyme \"Hey Diddle Diddle\" where the cow jumped over the moon.</p>",
-        "rationaleEnabled": true,
-        "teacherInstructions": "<p>Accept any of the alternate answers shown. The primary answer is \"cow jumped over the moon\" but alternates like \"cattle\" are also correct.</p>",
-        "teacherInstructionsEnabled": true,
-        "toolbarEditorPosition": "bottom",
-        "rubricEnabled": false
-      },
-      "session": {
-        "id": "1",
-        "element": "explicit-constructed-response"
-      }
-    },
-    {
-      "id": "math-equation",
-      "title": "Math Equation with LaTeX",
-      "description": "Fill-in-the-blank for algebraic expressions with math notation",
-      "tags": [
-        "math",
-        "algebra",
-        "latex",
-        "equations"
-      ],
-      "model": {
-        "id": "2",
-        "element": "explicit-constructed-response",
-        "markup": "<p>The quadratic formula is <em>x</em> = {{0}} / {{1}}</p>",
         "displayType": "block",
-        "choices": {
-          "0": [
-            {
-              "label": "-b ± √(b² - 4ac)",
-              "value": "0"
-            },
-            {
-              "label": "-b ± √(b² - 4·a·c)",
-              "value": "1"
-            },
-            {
-              "label": "-b ± √(b*b - 4*a*c)",
-              "value": "2"
-            }
-          ],
-          "1": [
-            {
-              "label": "2a",
-              "value": "0"
-            },
-            {
-              "label": "2·a",
-              "value": "1"
-            },
-            {
-              "label": "2*a",
-              "value": "2"
-            }
-          ]
-        },
-        "maxLengthPerChoice": [
-          25,
-          8
-        ],
         "maxLengthPerChoiceEnabled": true,
-        "prompt": "<p><strong>Complete the quadratic formula:</strong> Fill in the missing parts of the formula used to solve quadratic equations of the form <em>ax</em><sup>2</sup> + <em>bx</em> + <em>c</em> = 0.</p>",
-        "promptEnabled": true,
-        "playerSpellCheckEnabled": false,
-        "rationale": "<p>The quadratic formula is one of the most important formulas in algebra. It gives the solutions to any quadratic equation. The discriminant (b² - 4ac) under the square root determines the nature of the solutions.</p>",
+        "playerSpellCheckEnabled": true,
+        "rationale": "<div></div>",
         "rationaleEnabled": true,
-        "teacherInstructions": "<p>Accept various notations for multiplication (·, *, or implied). The key components are the negative b, plus-or-minus square root, discriminant, and denominator of 2a.</p>",
+        "spellCheckEnabled": true,
+        "studentInstructionsEnabled": true,
+        "teacherInstructions": "<div></div>",
         "teacherInstructionsEnabled": true,
         "toolbarEditorPosition": "bottom",
         "responseAreaInputConfiguration": {
-          "inputConfiguration": {
-            "characters": {
-              "disabled": false
-            }
+          "characters": {
+            "disabled": true
           }
         },
-        "rubricEnabled": false
-      },
-      "session": {
-        "id": "2",
-        "element": "explicit-constructed-response"
-      }
-    },
-    {
-      "id": "science-multi-blank",
-      "title": "Science Concept (Multiple Blanks)",
-      "description": "Biology question with multiple response areas demonstrating photosynthesis",
-      "tags": [
-        "science",
-        "biology",
-        "photosynthesis",
-        "multi-blank"
-      ],
-      "model": {
-        "id": "3",
-        "element": "explicit-constructed-response",
-        "markup": "<p>During photosynthesis, plants absorb {{0}} from the air and {{1}} from the soil. Using energy from {{2}}, they produce {{3}} (sugar) and release {{4}} as a byproduct.</p>",
-        "displayType": "block",
-        "choices": {
-          "0": [
-            {
-              "label": "carbon dioxide",
-              "value": "0"
-            },
-            {
-              "label": "CO₂",
-              "value": "1"
-            },
-            {
-              "label": "CO2",
-              "value": "2"
-            }
-          ],
-          "1": [
-            {
-              "label": "water",
-              "value": "0"
-            },
-            {
-              "label": "H₂O",
-              "value": "1"
-            },
-            {
-              "label": "H2O",
-              "value": "2"
-            }
-          ],
-          "2": [
-            {
-              "label": "sunlight",
-              "value": "0"
-            },
-            {
-              "label": "the sun",
-              "value": "1"
-            },
-            {
-              "label": "light",
-              "value": "2"
-            },
-            {
-              "label": "solar energy",
-              "value": "3"
-            }
-          ],
-          "3": [
-            {
-              "label": "glucose",
-              "value": "0"
-            },
-            {
-              "label": "C₆H₁₂O₆",
-              "value": "1"
-            },
-            {
-              "label": "C6H12O6",
-              "value": "2"
-            }
-          ],
-          "4": [
-            {
-              "label": "oxygen",
-              "value": "0"
-            },
-            {
-              "label": "O₂",
-              "value": "1"
-            },
-            {
-              "label": "O2",
-              "value": "2"
-            }
-          ]
-        },
+        "slateMarkup": "<p>The <span data-type=\"explicit_constructed_response\" data-index=\"0\" data-value=\"cow\"></span> jumped <span data-type=\"explicit_constructed_response\" data-index=\"1\" data-value=\"over\"></span> the <span data-type=\"explicit_constructed_response\" data-index=\"2\" data-value=\"moon\"></span></p>",
         "maxLengthPerChoice": [
-          18,
           10,
-          15,
-          12,
-          10
-        ],
-        "maxLengthPerChoiceEnabled": true,
-        "prompt": "<p><strong>Photosynthesis Process:</strong> Complete the description of photosynthesis by filling in the blanks. You may use either common names or chemical formulas.</p>",
-        "promptEnabled": true,
-        "playerSpellCheckEnabled": true,
-        "rationale": "<p>Photosynthesis is the process by which plants convert light energy into chemical energy. The overall equation is: 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. This process occurs primarily in the chloroplasts of plant cells.</p>",
-        "rationaleEnabled": true,
-        "teacherInstructions": "<p>Accept both common names (carbon dioxide, water, oxygen, glucose) and chemical formulas (CO₂, H₂O, O₂, C₆H₁₂O₆). Multiple representations demonstrate understanding.</p>",
-        "teacherInstructionsEnabled": true,
-        "toolbarEditorPosition": "bottom",
-        "rubricEnabled": false
+          10,
+          7
+        ]
       },
       "session": {
-        "id": "3",
-        "element": "explicit-constructed-response"
-      }
-    },
-    {
-      "id": "grammar-context",
-      "title": "Grammar in Context",
-      "description": "Parts of speech identification with contextual examples",
-      "tags": [
-        "grammar",
-        "language-arts",
-        "parts-of-speech",
-        "short-answer"
-      ],
-      "model": {
-        "id": "4",
-        "element": "explicit-constructed-response",
-        "markup": "<p><em>\"The cat quickly climbed the tall tree.\"</em></p><p>In this sentence:</p><ul><li>\"quickly\" is a/an {{0}}</li><li>\"tall\" is a/an {{1}}</li><li>\"climbed\" is a/an {{2}}</li></ul>",
-        "displayType": "block",
-        "choices": {
-          "0": [
-            {
-              "label": "adverb",
-              "value": "0"
-            },
-            {
-              "label": "Adverb",
-              "value": "1"
-            }
-          ],
-          "1": [
-            {
-              "label": "adjective",
-              "value": "0"
-            },
-            {
-              "label": "Adjective",
-              "value": "1"
-            }
-          ],
-          "2": [
-            {
-              "label": "verb",
-              "value": "0"
-            },
-            {
-              "label": "Verb",
-              "value": "1"
-            },
-            {
-              "label": "action verb",
-              "value": "2"
-            },
-            {
-              "label": "Action verb",
-              "value": "3"
-            }
-          ]
-        },
-        "maxLengthPerChoice": [
-          12,
-          12,
-          14
-        ],
-        "maxLengthPerChoiceEnabled": true,
-        "prompt": "<p><strong>Identify the parts of speech:</strong> Read the sentence and identify the grammatical function of each underlined word.</p>",
-        "promptEnabled": true,
-        "playerSpellCheckEnabled": true,
-        "rationale": "<p><strong>Explanation:</strong></p><ul><li>\"quickly\" modifies the verb \"climbed,\" telling <em>how</em> the cat climbed, making it an <strong>adverb</strong></li><li>\"tall\" describes the noun \"tree,\" making it an <strong>adjective</strong></li><li>\"climbed\" shows action, making it a <strong>verb</strong></li></ul>",
-        "rationaleEnabled": true,
-        "teacherInstructions": "<p>Accept answers with or without capitalization. For the verb, accept both \"verb\" and \"action verb\" as both are correct classifications.</p>",
-        "teacherInstructionsEnabled": true,
-        "toolbarEditorPosition": "bottom",
-        "rubricEnabled": false
-      },
-      "session": {
-        "id": "4",
+        "id": "1",
         "element": "explicit-constructed-response"
       }
     }

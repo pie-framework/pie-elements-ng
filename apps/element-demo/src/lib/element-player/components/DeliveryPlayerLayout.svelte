@@ -204,6 +204,7 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
               class:btn-disabled={roleLocked}
               aria-disabled={roleLocked}
               tabindex={roleLocked ? -1 : 0}
+              data-testid="role-student"
             >
               Student
             </a>
@@ -212,6 +213,7 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
               class="btn btn-sm justify-start"
               class:btn-primary={playerRole === 'instructor'}
               class:btn-outline={playerRole !== 'instructor'}
+              data-testid="role-instructor"
             >
               Instructor
             </a>

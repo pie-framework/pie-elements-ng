@@ -37,7 +37,7 @@ function selectDemo(demoId: string) {
 {#if demos.length >= 1}
   <div class="demo-selector dropdown" class:single-demo={demos.length === 1}>
     {#if demos.length > 1}
-      <div tabindex="0" role="button" class="btn btn-sm btn-outline gap-2">
+      <div tabindex="0" role="button" class="btn btn-sm btn-outline gap-2" data-testid="demo-selector-button">
         <!-- Icon -->
         <svg
           class="w-4 h-4"
@@ -94,6 +94,7 @@ function selectDemo(demoId: string) {
     <!-- Dropdown menu -->
     <ul
       class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-96 max-h-[80vh] overflow-y-auto mt-2"
+      data-testid="demo-selector-dropdown"
     >
       {#each demos as demo (demo.id)}
         <li class="w-full">
@@ -102,6 +103,7 @@ function selectDemo(demoId: string) {
             class:active={demo.id === currentActiveDemoId}
             onclick={() => selectDemo(demo.id)}
             type="button"
+            data-demo-id={demo.id}
           >
             <!-- Demo title -->
             <div class="font-semibold text-sm">{demo.title}</div>

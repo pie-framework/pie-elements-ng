@@ -2,6 +2,8 @@
 
 This document explains what gets committed to git when syncing from upstream `pie-elements`.
 
+**Audience:** This guide is for maintainers who sync from upstream. Regular developers don't need to run `upstream:sync` - synced packages are already committed to git, so just `git pull` to get updates.
+
 ## What Gets Committed ✅
 
 ### `packages/elements-react/*/` and `packages/lib-react/*/`
