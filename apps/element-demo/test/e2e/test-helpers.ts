@@ -8,23 +8,25 @@ import { type Page, type Locator, expect } from '@playwright/test';
  * Wait for MathJax to finish rendering LaTeX content
  */
 export async function waitForMathRendering(page: Page, timeout = 5000) {
-  await page.waitForFunction(
-    () => {
-      // Check if MathJax is present and idle
-      const mathJax = (window as any).MathJax;
-      if (!mathJax) return true; // No MathJax, consider done
+  await page
+    .waitForFunction(
+      () => {
+        // Check if MathJax is present and idle
+        const mathJax = (window as any).MathJax;
+        if (!mathJax) return true; // No MathJax, consider done
 
-      // MathJax 3.x check
-      if (mathJax.startup && mathJax.startup.promise) {
-        return mathJax.startup.promise.then(() => true).catch(() => true);
-      }
+        // MathJax 3.x check
+        if (mathJax.startup && mathJax.startup.promise) {
+          return mathJax.startup.promise.then(() => true).catch(() => true);
+        }
 
-      return true;
-    },
-    { timeout }
-  ).catch(() => {
-    // If timeout, continue anyway - math might not be present
-  });
+        return true;
+      },
+      { timeout }
+    )
+    .catch(() => {
+      // If timeout, continue anyway - math might not be present
+    });
 
   // Additional wait for any mutations to settle
   await page.waitForTimeout(500);
@@ -173,11 +175,9 @@ export async function hasUnsavedChanges(page: Page): Promise<boolean> {
  * Wait for element to be loaded and ready
  */
 export async function waitForElementReady(page: Page, elementName: string) {
-  await page.waitForFunction(
-    (name) => customElements.get(name) !== undefined,
-    elementName,
-    { timeout: 10_000 }
-  );
+  await page.waitForFunction((name) => customElements.get(name) !== undefined, elementName, {
+    timeout: 10_000,
+  });
 
   await page.waitForSelector(elementName, { state: 'attached', timeout: 10_000 });
 }

@@ -149,7 +149,9 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     expect(sessionState.value).toContain(CORRECT_ANSWER);
   });
 
-  test('4. In evaluate mode as instructor, correct answer is marked and "Show correct answer" button works', async ({ page }) => {
+  test('4. In evaluate mode as instructor, correct answer is marked and "Show correct answer" button works', async ({
+    page,
+  }) => {
     await selectDemo(page, DEMO_ID);
 
     // Make a selection (any answer)
@@ -271,7 +273,9 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     expect(await correctIndicator.count()).toBeGreaterThan(0);
   });
 
-  test('7. Switching between author, print, and source tabs works (session state not maintained)', async ({ page }) => {
+  test('7. Switching between author, print, and source tabs works (session state not maintained)', async ({
+    page,
+  }) => {
     await selectDemo(page, DEMO_ID);
 
     // Start on deliver tab
