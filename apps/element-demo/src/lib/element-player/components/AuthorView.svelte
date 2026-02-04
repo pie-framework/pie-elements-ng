@@ -69,18 +69,22 @@ $effect(() => {
 });
 
 /**
- * Handle model-changed event from configure
+ * Handle model.updated event from configure
  */
 function handleModelChange(event: CustomEvent) {
-  if (debug) console.log('[author-view] Model changed:', event.detail);
-  dispatch('model-changed', event.detail);
+  if (debug) console.log('[author-view] Model updated:', event.detail);
+  // ModelUpdatedEvent detail contains { update, reset }
+  // Extract the update which is the actual model
+  const newModel = event.detail?.update || event.detail;
+  dispatch('model-changed', newModel);
 }
 
 onMount(() => {
   // Create configure instance
   if (configureContainer) {
     configureInstance = document.createElement(configureTag);
-    configureInstance.addEventListener('model-changed', handleModelChange as EventListener);
+    // Configure components fire 'model.updated' event, not 'model-changed'
+    configureInstance.addEventListener('model.updated', handleModelChange as EventListener);
     configureContainer.appendChild(configureInstance);
 
     // Set initial model
@@ -93,7 +97,7 @@ onMount(() => {
 
 onDestroy(() => {
   if (configureInstance) {
-    configureInstance.removeEventListener('model-changed', handleModelChange as EventListener);
+    configureInstance.removeEventListener('model.updated', handleModelChange as EventListener);
     configureInstance.remove();
   }
 });

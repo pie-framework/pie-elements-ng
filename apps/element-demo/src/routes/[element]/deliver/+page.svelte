@@ -118,6 +118,8 @@ $effect(() => {
   const currentModelVersion = $modelVersion;
   // Explicitly NOT including sessionVersion - session updates should not trigger model rebuild
 
+  console.log('[deliver] Effect triggered, modelVersion:', currentModelVersion);
+
   modelRequestId += 1;
   const requestId = modelRequestId;
 

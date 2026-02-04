@@ -15,6 +15,7 @@ import {
   controller,
   capabilities,
   updateModel,
+  sessionVersion,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -25,9 +26,10 @@ let syncing = $state(false);
 
 // Handle model changes from configure component
 function handleModelChanged(event: CustomEvent) {
-  if (debug) console.log('[author] Model changed:', event.detail);
+  console.log('[author] Model changed event received:', event.detail);
   syncing = true;
   updateModel(event.detail);
+  console.log('[author] updateModel() called, model store should be updated');
   setTimeout(() => {
     syncing = false;
   }, 300);

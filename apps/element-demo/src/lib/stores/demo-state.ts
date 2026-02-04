@@ -120,10 +120,20 @@ export function updateSession(newSession: any) {
 export function updateModel(newModel: any) {
   const current = get(model);
 
+  console.log('[demo-state] updateModel called', {
+    newModel,
+    current,
+    changed: JSON.stringify(newModel) !== JSON.stringify(current),
+  });
+
   // Check if model actually changed
   if (JSON.stringify(newModel) !== JSON.stringify(current)) {
     model.set(newModel);
+    const newVersion = get(modelVersion) + 1;
     modelVersion.update((v) => v + 1);
+    console.log('[demo-state] Model updated, modelVersion incremented to', newVersion);
+  } else {
+    console.log('[demo-state] Model unchanged, not updating');
   }
 }
 
