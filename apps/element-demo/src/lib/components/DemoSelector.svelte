@@ -29,7 +29,7 @@ function selectDemo(demoId: string) {
 
   const url = new URL($page.url);
   url.searchParams.set('demo', demoId);
-  // Force full page reload to ensure clean state
+  // Force full page reload to load fresh demo data from server
   window.location.href = url.toString();
 }
 </script>

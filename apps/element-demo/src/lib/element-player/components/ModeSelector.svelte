@@ -28,8 +28,7 @@ function getModeUrl(newMode: 'gather' | 'view' | 'evaluate'): string {
     class="btn btn-sm justify-start"
     class:btn-primary={mode === 'gather'}
     class:btn-outline={mode !== 'gather'}
-    data-sveltekit-reload
-  >
+      >
     Gather
   </a>
 
@@ -38,8 +37,7 @@ function getModeUrl(newMode: 'gather' | 'view' | 'evaluate'): string {
     class="btn btn-sm justify-start"
     class:btn-primary={mode === 'view'}
     class:btn-outline={mode !== 'view'}
-    data-sveltekit-reload
-  >
+      >
     View
   </a>
 
@@ -51,8 +49,7 @@ function getModeUrl(newMode: 'gather' | 'view' | 'evaluate'): string {
     class:btn-disabled={evaluateDisabled}
     aria-disabled={evaluateDisabled}
     tabindex={evaluateDisabled ? -1 : 0}
-    data-sveltekit-reload
-  >
+      >
     Evaluate
   </a>
 </div>

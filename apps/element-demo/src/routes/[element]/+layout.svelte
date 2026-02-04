@@ -155,22 +155,38 @@ onMount(() => {
   }
 });
 
-// Subscribe to mode/role changes and update URL
+// Bidirectional sync: URL ↔ stores
 $effect(() => {
   const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
   if (isDeliverRoute) {
-    const url = new URL($page.url);
-    const currentMode = url.searchParams.get('mode');
-    const currentRole = url.searchParams.get('role');
+    const modeParam = $page.url.searchParams.get('mode');
+    const roleParam = $page.url.searchParams.get('role');
 
+    // Sync URL → stores (when URL changes from navigation)
+    if (modeParam && ['gather', 'view', 'evaluate'].includes(modeParam)) {
+      const newMode = modeParam as 'gather' | 'view' | 'evaluate';
+      if (newMode !== $mode) {
+        mode.set(newMode);
+      }
+    }
+
+    if (roleParam && ['student', 'instructor'].includes(roleParam)) {
+      const newRole = roleParam as 'student' | 'instructor';
+      if (newRole !== $role) {
+        role.set(newRole);
+      }
+    }
+
+    // Sync stores → URL (when stores change programmatically)
+    const url = new URL($page.url);
     let needsUpdate = false;
 
-    if (currentMode !== $mode) {
+    if (modeParam !== $mode) {
       url.searchParams.set('mode', $mode);
       needsUpdate = true;
     }
 
-    if (currentRole !== $role) {
+    if (roleParam !== $role) {
       url.searchParams.set('role', $role);
       needsUpdate = true;
     }
@@ -243,7 +259,6 @@ function handleThemeToggle(event: Event) {
         class:tab-disabled={isDisabled}
         aria-disabled={isDisabled}
         tabindex={isDisabled ? -1 : 0}
-        data-sveltekit-reload
       >
         {tab.label}
       </a>

@@ -204,7 +204,6 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
               class:btn-disabled={roleLocked}
               aria-disabled={roleLocked}
               tabindex={roleLocked ? -1 : 0}
-              data-sveltekit-reload
             >
               Student
             </a>
@@ -213,7 +212,6 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
               class="btn btn-sm justify-start"
               class:btn-primary={playerRole === 'instructor'}
               class:btn-outline={playerRole !== 'instructor'}
-              data-sveltekit-reload
             >
               Instructor
             </a>

@@ -3,7 +3,7 @@
  * Delivery View - Shows the rendered PIE element for student/instructor interaction
  */
 import DemoElementPlayer from './DemoElementPlayer.svelte';
-import { onMount, createEventDispatcher, untrack } from 'svelte';
+import { onMount, createEventDispatcher } from 'svelte';
 import { sessionsEqual } from '@pie-element/shared-utils';
 import {
   renderMathInContainer,
@@ -39,17 +39,15 @@ let mathObserver: MutationObserver | null = null;
 // Update element session when session prop changes
 $effect(() => {
   // Guard against re-entry when element fires session-changed
-  if (!elementPlayer || updatingFromElement) return;
+  if (!elementPlayer || updatingFromElement) {
+    return;
+  }
 
   if (session && !sessionsEqual(session, lastElementSessionRef)) {
     lastElementSessionRef = session;
     // Don't modify reactive state inside effect - causes infinite loop
     try {
       (elementPlayer as any).session = session;
-      if (debug)
-        console.log('[delivery-view] session updated', {
-          value: session?.value,
-        });
     } catch (err) {
       console.error('[delivery-view] Error setting element session:', err);
     }
@@ -128,11 +126,8 @@ $effect(() => {
 function handleSessionChange(event: CustomEvent) {
   // Guard against re-entry when we're updating the element from our effect
   if (updatingFromElement) {
-    if (debug) console.log('[delivery-view] Ignoring session-changed (updating from element)');
     return;
   }
-
-  if (debug) console.log('[delivery-view] Session changed:', event.detail);
 
   // Set guard flag to prevent infinite loop
   updatingFromElement = true;
@@ -151,19 +146,13 @@ function handleSessionChange(event: CustomEvent) {
     newSession = (elementPlayer as any).session;
   }
 
-  // Only update if session actually changed
-  if (newSession && !sessionsEqual(newSession, session)) {
-    // Update ref BEFORE updating session to prevent effect from running
+  // Always update when element fires session-changed event
+  // The element knows best when session has changed
+  if (newSession) {
+    // Update session directly - this will be reactive and flow up to parent
+    session = newSession;
     lastElementSessionRef = newSession;
-    // Use untrack to prevent triggering the effect when updating bindable session
-    untrack(() => {
-      session = newSession;
-    });
-    if (debug) console.log('[delivery-view] Session updated from element');
     dispatch('session-changed', session);
-  } else {
-    // Even if session didn't change, update the ref to prevent effect from running
-    lastElementSessionRef = session;
   }
 
   // Clear guard flag after a longer delay to ensure effect has completed

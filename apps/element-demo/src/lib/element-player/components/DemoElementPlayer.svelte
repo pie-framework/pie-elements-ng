@@ -27,7 +27,6 @@ let loading = $state(true);
 
 // Watch for elementName changes and load element
 $effect(() => {
-  console.log('[demo-player] Element name changed:', elementName);
   if (elementName) {
     loadElementInstance();
   } else {
@@ -60,7 +59,6 @@ async function loadElementInstance() {
     error = null;
 
     const packageName = `@pie-element/${elementName}`;
-    console.log(`[demo-player] Loading element: ${packageName}`);
 
     // Register custom element if not already registered
     const tagName = `${elementName}-element`;
@@ -84,12 +82,11 @@ async function loadElementInstance() {
 
     // Reuse existing element instance when possible
     if (elementInstance && currentTagName === tagName) {
-      console.log(`[demo-player] Reusing element instance: ${tagName}`);
+      // Reuse existing instance
     } else {
       if (elementInstance) {
         elementInstance.remove();
       }
-      console.log(`[demo-player] Creating element instance: ${tagName}`);
       elementInstance = document.createElement(tagName);
       currentTagName = tagName;
     }
@@ -108,7 +105,6 @@ async function loadElementInstance() {
       e.stopPropagation();
       const customEvent = e as CustomEvent;
       const nextSession = (elementInstance as any).session;
-      console.log('[demo-player] Session changed:', customEvent.detail);
 
       dispatch('session-changed', {
         session: nextSession,
@@ -125,7 +121,6 @@ async function loadElementInstance() {
       }
     }
 
-    console.log(`[demo-player] Element ${elementName} loaded successfully`);
     loading = false;
   } catch (err) {
     console.error(`[demo-player] Failed to load element ${elementName}:`, err);

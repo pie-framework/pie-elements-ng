@@ -110,7 +110,6 @@ export function updateSession(newSession: any) {
   if (JSON.stringify(normalized) !== JSON.stringify(current)) {
     session.set(normalized);
     sessionVersion.update((v) => v + 1);
-    console.log('[demo-state] session updated', normalized);
   }
 }
 
@@ -125,7 +124,6 @@ export function updateModel(newModel: any) {
   if (JSON.stringify(newModel) !== JSON.stringify(current)) {
     model.set(newModel);
     modelVersion.update((v) => v + 1);
-    console.log('[demo-state] model updated', newModel);
   }
 }
 
@@ -154,8 +152,5 @@ export function switchDemo(demoId: string) {
     session.set(demo.session || { value: [] });
     modelVersion.update((v) => v + 1);
     sessionVersion.update((v) => v + 1);
-    console.log('[demo-state] switched to demo:', demoId);
-  } else {
-    console.warn('[demo-state] demo not found:', demoId);
   }
 }
