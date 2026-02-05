@@ -19,6 +19,7 @@ import {
   transformConfigureUtilsImports,
   transformSelfReferentialImports,
   transformPackageJsonLodash,
+  transformPackageJsonRecharts,
   transformPackageJsonPieEvents,
   transformPackageJsonControllerUtils,
   transformPackageJsonSharedPackages,
@@ -119,6 +120,7 @@ export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   let transformed = pkg;
 
   transformed = transformPackageJsonLodash(transformed);
+  transformed = transformPackageJsonRecharts(transformed);
   transformed = transformPackageJsonPieEvents(transformed);
   transformed = transformPackageJsonControllerUtils(transformed);
   transformed = transformPackageJsonSharedPackages(transformed);

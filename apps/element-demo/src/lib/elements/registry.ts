@@ -127,7 +127,7 @@ export const ELEMENT_REGISTRY: readonly ElementMetadata[] = [
     "hasPrint": false,
     "hasConfig": true,
     "hasSession": true,
-    "demoCount": 3
+    "demoCount": 1
   },
   {
     "name": "hotspot",

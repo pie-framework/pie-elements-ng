@@ -34,6 +34,9 @@ export function isExternal(id: string, variant: 'element' | 'pielib'): boolean {
   // D3 visualization modules - always external
   if (/^d3-/.test(id)) return true;
 
+  // Recharts charting library - external for fraction-model
+  if (id === 'recharts' || /^recharts\//.test(id)) return true;
+
   // Testing libraries - always external
   if (/^@testing-library\//.test(id)) return true;
 
@@ -108,6 +111,7 @@ export function createExternalFunction(variant: 'element' | 'pielib'): string {
           /^@dnd-kit\\//.test(id) ||
           id === '@mdi/react' || /^@mdi\\/react\\//.test(id) ||
           id === '@mdi/js' || /^@mdi\\/js\\//.test(id) ||
+          id === 'recharts' || /^recharts\\//.test(id) ||
           ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)
         );
       }`;
@@ -136,6 +140,8 @@ export function createKonvaExternalFunction(): string {
         if (id.startsWith('@mui/')) return true;
         if (id.startsWith('@emotion/')) return true;
         if (id.startsWith('d3-')) return true;
+        // Keep recharts external
+        if (id === 'recharts' || id.startsWith('recharts/')) return true;
         // Keep lodash external even with preserveModules: false
         // It will be resolved via import map in demo HTML
         if (id === 'lodash' || id.startsWith('lodash/')) return true;

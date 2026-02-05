@@ -69,10 +69,12 @@ These were incorrectly listed as runtime dependencies and have been removed:
 - `katex` - In math rendering packages
 
 ### React (peer dependency)
+
 - `react`, `react-dom` - Elements declare these as peer deps, not needed in demo
 
-### Unused libraries
-- `recharts` - Elements use `@visx/*` instead
+### Element-specific dependencies
+
+- `recharts` - Used by fraction-model element (upgraded to 3.x for ESM compatibility)
 
 ## Migration Path
 

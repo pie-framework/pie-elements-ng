@@ -11,19 +11,23 @@
  *    - Upstream uses CommonJS `lodash` package
  *    - ESM requires `lodash-es` for proper tree-shaking
  *
- * 2. **@pie-framework Events → Internal Packages**:
+ * 2. **Recharts 2.x → 3.x**:
+ *    - Upstream uses recharts 2.x which has lodash dependency
+ *    - Recharts 3.x is fully ESM-compatible with no lodash dependency
+ *
+ * 3. **@pie-framework Events → Internal Packages**:
  *    - Upstream references external @pie-framework packages
  *    - Monorepo uses internal @pie-element/shared-* packages
  *
- * 3. **Editable-HTML Constants Inlining**:
+ * 4. **Editable-HTML Constants Inlining**:
  *    - `editable-html` package is not ESM-compatible (Slate v0.x dependencies)
  *    - We only need constants, so inline them to avoid the dependency
  *
- * 4. **TokenTypes Re-export**:
+ * 5. **TokenTypes Re-export**:
  *    - Upstream code works in CommonJS/Webpack (looser module resolution)
  *    - ESM requires explicit re-exports for proper module graph
  *
- * 5. **Configure Defaults Inlining**:
+ * 6. **Configure Defaults Inlining**:
  *    - Configure package is not ESM-compatible (Slate v0.x dependencies)
  *    - Student-facing UI only needs minimal fallback configuration
  *    - Inline empty defaults object to avoid the dependency
@@ -296,6 +300,27 @@ export function transformPackageJsonLodash<T extends Record<string, any>>(packag
   }
   if (transformed.devDependencies?.['@types/lodash']) {
     delete transformed.devDependencies['@types/lodash'];
+  }
+
+  return transformed;
+}
+
+/**
+ * Transform recharts version in package.json
+ *
+ * Upgrades recharts from 2.x to 3.x for ESM compatibility.
+ * Recharts 3.x removes the lodash dependency and is fully ESM-compatible.
+ */
+export function transformPackageJsonRecharts<T extends Record<string, any>>(packageJson: T): T {
+  const transformed = { ...packageJson };
+
+  // Upgrade recharts to 3.x in dependencies
+  if (transformed.dependencies?.recharts) {
+    // Only upgrade if it's 2.x
+    const version = transformed.dependencies.recharts;
+    if (version.includes('2.')) {
+      transformed.dependencies.recharts = '^3.7.0';
+    }
   }
 
   return transformed;

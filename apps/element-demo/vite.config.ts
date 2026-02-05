@@ -52,7 +52,8 @@ export default defineConfig({
 
   optimizeDeps: {
     // Include React in pre-bundling to avoid issues
-    include: ['react', 'react-dom', 'react/jsx-runtime'],
+    // Include d3-shape for recharts 3.x compatibility
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'd3-shape'],
     // Exclude workspace packages and @pie-framework packages to prevent dependency scanning errors
     // These are marked as external in the build config
     exclude: ['@pie-element/*', '@pie-lib/*', '@pie-framework/*'],
@@ -101,6 +102,8 @@ export default defineConfig({
           /^@mdi\/react\//.test(id) ||
           id === '@mdi/js' ||
           /^@mdi\/js\//.test(id) ||
+          id === 'recharts' ||
+          /^recharts\//.test(id) ||
           [
             'prop-types',
             'classnames',
