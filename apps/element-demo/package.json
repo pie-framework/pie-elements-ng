@@ -17,23 +17,12 @@
   },
   "dependencies": {
     "@pie-element/bundler-shared": "workspace:*",
-    "@pie-element/element-player": "workspace:*",
+    "@pie-element/element-player": "workspace:*"
+  },
+  "devDependencies": {
     "@pie-element/multiple-choice": "workspace:*",
     "@pie-element/shared-math-rendering-core": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@tiptap/core": "3.18.0",
-    "@tiptap/extension-code-block-lowlight": "3.18.0",
-    "@tiptap/extension-document": "3.18.0",
-    "@tiptap/extension-history": "3.18.0",
-    "@tiptap/extension-text": "3.18.0",
-    "highlight.js": "^11.11.1",
-    "katex": "^0.16.27",
-    "lowlight": "^3.3.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "recharts": "2.15.1"
-  },
-  "devDependencies": {
     "@sveltejs/adapter-auto": "^3.3.1",
     "@sveltejs/kit": "^2.50.1",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
