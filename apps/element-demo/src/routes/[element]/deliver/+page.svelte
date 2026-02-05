@@ -101,11 +101,12 @@ const buildModel = async (
 
     if (requestId === modelRequestId) {
       elementModel = { ...nextModel, mode: currentMode };
-      elementSession = sessionForController;  // Use controller-modified session
+      elementSession = sessionForController; // Use controller-modified session
 
       // If controller modified the session (e.g., initialized answer array), update the store
       // This ensures the session panel shows the initialized session
-      const sessionChanged = JSON.stringify(sessionForController) !== JSON.stringify(currentSession);
+      const sessionChanged =
+        JSON.stringify(sessionForController) !== JSON.stringify(currentSession);
       if (sessionChanged) {
         updateSession(sessionForController);
       }
@@ -149,7 +150,7 @@ $effect(() => {
   buildModel(
     requestId,
     currentModel,
-    $session,  // Read directly, don't track in effect
+    $session, // Read directly, don't track in effect
     currentMode,
     currentRole,
     currentPartialScoring,
