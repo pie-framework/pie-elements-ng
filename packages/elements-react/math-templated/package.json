@@ -12,7 +12,7 @@
     "@pie-lib/mask-markup": "workspace:*",
     "@pie-lib/math-input": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",

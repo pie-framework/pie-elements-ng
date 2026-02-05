@@ -13,7 +13,7 @@
     "@pie-lib/drag": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",

@@ -12,7 +12,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/test-utils": "workspace:*",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "recharts": "^3.7.0",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

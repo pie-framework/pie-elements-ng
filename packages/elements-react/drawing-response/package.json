@@ -14,7 +14,7 @@
     "@pie-lib/translator": "workspace:*",
     "konva": "8.3.0",
     "prop-types": "^15.6.1",
-    "react-konva": "18.1.0",
+    "react-konva": "^18.2.14",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

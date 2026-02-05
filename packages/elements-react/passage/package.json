@@ -9,7 +9,7 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

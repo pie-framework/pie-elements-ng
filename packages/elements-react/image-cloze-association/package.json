@@ -15,7 +15,7 @@
     "@pie-lib/translator": "workspace:*",
     "classnames": "^2.2.6",
     "humps": "^2.0.1",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

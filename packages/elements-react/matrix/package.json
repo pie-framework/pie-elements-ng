@@ -10,7 +10,7 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "styled-components": "^5.2.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",

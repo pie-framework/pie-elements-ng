@@ -72,7 +72,7 @@ const getPrompt = (dragData) => {
     // DraggableChoice format
     return dragData.value;
   }
-  
+
   // Legacy format support
   switch (dragData.itemType) {
     case 'MaskBlank':
@@ -145,7 +145,7 @@ const PreviewComponent = () => {
     <DragOverlay>
       {isActive && prompt && (
         <div ref={root} style={customStyle}>
-          <PreviewPrompt className="label" prompt={prompt} tagName="span" />
+          <PreviewPrompt className="prompt-label" prompt={prompt} tagName="span" />
         </div>
       )}
     </DragOverlay>
