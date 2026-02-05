@@ -815,7 +815,6 @@ export function transformSelfReferentialImports(
       // Named imports - keep them as a single import from the index
       const replacement = `import { ${namedImports} } from '${targetPath}'`;
       transformed = transformed.replace(fullMatch, replacement);
-
     } else if (defaultImport) {
       // Default import - reference main index
       const replacement = `import ${defaultImport} from '${targetPath}'`;
@@ -955,7 +954,8 @@ export function addInlineMenuExport(content: string, sourcePath?: string): strin
   }
 
   // Add InlineMenu export at the end of the file
-  const exportStatement = '\n// Non-synced pie-elements-ng exports\nexport { InlineMenu } from \'./inline-menu\';\n';
+  const exportStatement =
+    "\n// Non-synced pie-elements-ng exports\nexport { InlineMenu } from './inline-menu';\n";
 
   return content.trimEnd() + exportStatement;
 }
