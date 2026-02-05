@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Menu from '@mui/material/Menu';
+import { InlineMenu as Menu } from '@pie-lib/render-ui';
 import MenuItem from '@mui/material/MenuItem';
 import ActionFeedback from '@mui/icons-material/Feedback';
 import IconButton from '@mui/material/IconButton';

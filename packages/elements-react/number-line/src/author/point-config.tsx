@@ -10,7 +10,7 @@
 
 import Button from '@mui/material/Button';
 import React from 'react';
-import { pointChooser } from '@pie-element/number-line';
+import { pointChooser  } from '../delivery';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 const { Point } = pointChooser;

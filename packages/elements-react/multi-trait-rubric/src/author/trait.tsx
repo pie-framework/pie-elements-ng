@@ -21,7 +21,7 @@ import { Block, BlockWidth, ExpandedInput, PrimaryBlock, Row, SecondaryBlock, Un
 
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import Menu from '@mui/material/Menu';
+import { InlineMenu as Menu } from '@pie-lib/render-ui';
 import MenuItem from '@mui/material/MenuItem';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 

@@ -174,7 +174,15 @@ export class PieLibStrategy implements SyncStrategy {
   }
 
   private async cleanTargetDir(targetDir: string, label: string, logger: any): Promise<void> {
-    await cleanDirectory(targetDir, label, { dryRun: false, verbose: false }, logger);
+    // Preserve non-synced pie-elements-ng files
+    const preserve: string[] = [];
+
+    // Preserve inline-menu.tsx in render-ui (not from upstream)
+    if (label.includes('render-ui')) {
+      preserve.push('inline-menu.tsx');
+    }
+
+    await cleanDirectory(targetDir, label, { dryRun: false, verbose: false, preserve }, logger);
   }
 
   private async syncDirectory(

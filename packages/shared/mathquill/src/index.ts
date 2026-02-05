@@ -13,12 +13,14 @@
  * Base: github:desmosinc/mathquill
  */
 
-// Use the extension loader which initializes Desmos + all patches
-import MQ from './extensions/index.js';
+// Import extensions which initializes window.MathQuill with all patches
+import './extensions/index.js';
 
-// Re-export for backward compatibility with consuming packages
-export default MQ;
-export const getInterface = MQ.getInterface;
+// Export the base MathQuill object from window (has getInterface method)
+// This maintains backward compatibility with code that calls MathQuill.getInterface()
+const MathQuill = (typeof window !== 'undefined' && window.MathQuill) as any;
+
+export default MathQuill;
 
 // Re-export types from Desmos MathQuill
 export type {

@@ -107,7 +107,7 @@ function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, respon
             .toggleBold()
             .run() ?? false,
         isTable: ctx.editor.isActive('table') ?? false,
-        tableHasBorder: (ctx.editor.getAttributes('table')?.border ?? '') === '1',
+        tableHasBorder: ctx.editor.getAttributes('table')?.border === '1' ?? false,
         canTable:
           ctx.editor
             .can()

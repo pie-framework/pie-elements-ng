@@ -11,7 +11,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import Menu from '@mui/material/Menu';
+import { InlineMenu as Menu } from '@pie-lib/render-ui';
 import MenuItem from '@mui/material/MenuItem';
 import PropTypes from 'prop-types';
 

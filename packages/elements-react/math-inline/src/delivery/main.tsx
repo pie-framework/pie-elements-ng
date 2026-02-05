@@ -142,8 +142,7 @@ export class Main extends React.Component {
 
   UNSAFE_componentWillMount() {
     if (typeof window !== 'undefined') {
-      // PIE wrapper exports v3 interface directly (no jQuery required)
-      let MQ = MathQuill;
+      let MQ = MathQuill.getInterface(3);
 
       if (!registered) {
         MQ.registerEmbed('answerBlock', (data) => {
@@ -177,8 +176,7 @@ export class Main extends React.Component {
         // const correct = model.correctness && model.correctness.correct;
 
         if (el) {
-          // PIE wrapper exports v3 interface directly (no jQuery required)
-          let MQ = MathQuill;
+          let MQ = MathQuill.getInterface(3);
           const answer = answers[answerId];
 
           el.textContent = (answer && answer.value) || '';

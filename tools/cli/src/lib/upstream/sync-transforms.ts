@@ -17,6 +17,7 @@ import {
   transformSsrRequireToReactLazy,
   inlineConfigureDefaults,
   transformConfigureUtilsImports,
+  transformSelfReferentialImports,
   transformPackageJsonLodash,
   transformPackageJsonPieEvents,
   transformPackageJsonControllerUtils,
@@ -24,6 +25,9 @@ import {
   transformPackageJsonMathquill,
   fixStyledComponentTypes,
   fixExportedFunctionTypes,
+  transformMenuToInlineMenu,
+  addInlineMenuExport,
+  transformMathQuillInterface,
 } from './sync-imports.js';
 import type { PackageJson } from '../../utils/package-json.js';
 
@@ -32,6 +36,8 @@ export interface TransformOptions {
   relativePath?: string;
   /** Source file path for context (e.g., "/path/to/file.js") */
   sourcePath?: string;
+  /** Package name (e.g., "@pie-element/fraction-model") */
+  packageName?: string;
   /** Whether to include configure-specific transforms */
   includeConfigure?: boolean;
   /** Whether to include pie-lib-specific transforms */
@@ -47,9 +53,11 @@ export interface TransformOptions {
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
  * 5. @pie-framework/mathquill → @pie-element/shared-mathquill
- * 7. Configure-specific transforms (if enabled)
- * 8. Pie-lib-specific transforms (if enabled)
- * 9. Fix styled component TypeScript type inference errors
+ * 6. @mui/material/Menu → InlineMenu from @pie-lib/render-ui
+ * 7. Self-referential imports → relative imports
+ * 8. Configure-specific transforms (if enabled)
+ * 9. Pie-lib-specific transforms (if enabled)
+ * 10. Fix styled component TypeScript type inference errors
  */
 export function applySourceTransforms(content: string, options: TransformOptions = {}): string {
   let transformed = content;
@@ -60,6 +68,17 @@ export function applySourceTransforms(content: string, options: TransformOptions
   transformed = transformControllerUtilsImports(transformed);
   transformed = transformSharedPackageImports(transformed);
   transformed = transformMathquillImports(transformed);
+  transformed = transformMathQuillInterface(transformed);
+  transformed = transformMenuToInlineMenu(transformed);
+
+  // Transform self-referential imports to relative paths
+  if (options.packageName && options.relativePath) {
+    transformed = transformSelfReferentialImports(
+      transformed,
+      options.packageName,
+      options.relativePath
+    );
+  }
 
   // Configure-specific transforms
   if (options.includeConfigure) {
@@ -74,6 +93,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
     transformed = inlineEditableHtmlConstants(transformed);
     if (options.sourcePath) {
       transformed = reexportTokenTypes(transformed, options.sourcePath);
+      transformed = addInlineMenuExport(transformed, options.sourcePath);
     }
     transformed = transformSsrRequireToReactLazy(transformed);
   }
@@ -110,17 +130,17 @@ export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
 /**
  * Create a transform pipeline for controller files
  */
-export function createControllerTransformPipeline() {
+export function createControllerTransformPipeline(packageName?: string) {
   return (content: string, relativePath?: string) =>
-    applySourceTransforms(content, { relativePath, includeConfigure: false });
+    applySourceTransforms(content, { relativePath, packageName, includeConfigure: false });
 }
 
 /**
  * Create a transform pipeline for React component files
  */
-export function createReactComponentTransformPipeline() {
+export function createReactComponentTransformPipeline(packageName?: string) {
   return (content: string, relativePath?: string) =>
-    applySourceTransforms(content, { relativePath, includeConfigure: true });
+    applySourceTransforms(content, { relativePath, packageName, includeConfigure: true });
 }
 
 /**

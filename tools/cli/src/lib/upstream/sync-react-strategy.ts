@@ -277,7 +277,8 @@ export class ReactComponentsStrategy implements SyncStrategy {
       let sourceContent = await readFile(srcPath, 'utf-8');
 
       // Apply all standard transformations
-      const transformPipeline = createReactComponentTransformPipeline();
+      const packageName = `@pie-element/${pkg}`;
+      const transformPipeline = createReactComponentTransformPipeline(packageName);
       sourceContent = transformPipeline(sourceContent, join(relativePath, item));
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
@@ -379,7 +380,8 @@ export class ReactComponentsStrategy implements SyncStrategy {
       let sourceContent = await readFile(srcPath, 'utf-8');
 
       // Apply all standard transformations
-      const transformPipeline = createReactComponentTransformPipeline();
+      const packageName = `@pie-element/${pkg}`;
+      const transformPipeline = createReactComponentTransformPipeline(packageName);
       sourceContent = transformPipeline(sourceContent);
 
       const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
@@ -444,7 +446,8 @@ export class ReactComponentsStrategy implements SyncStrategy {
     let sourceContent = await readFile(sourceFile, 'utf-8');
 
     // Apply all standard transformations
-    const transformPipeline = createReactComponentTransformPipeline();
+    const packageName = `@pie-element/${pkg}`;
+    const transformPipeline = createReactComponentTransformPipeline(packageName);
     sourceContent = transformPipeline(sourceContent);
 
     // Transform imports from './' to '../delivery/' since print is now in print/

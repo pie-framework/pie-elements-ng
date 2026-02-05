@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 
 import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
+import { InlineMenu as Menu } from '@pie-lib/render-ui';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { color } from '@pie-lib/render-ui';

@@ -741,6 +741,92 @@ export function fixStyledComponentTypes(content: string): string {
 }
 
 /**
+ * Transform self-referential package imports to relative imports
+ *
+ * In upstream pie-elements, configure files sometimes import from their own package
+ * using the package name (e.g., import { X } from '@pie-element/fraction-model').
+ * This creates circular dependency issues in the build.
+ *
+ * This transform converts these self-referential imports to relative paths based on
+ * the package structure:
+ * - @pie-element/{name} → relative path to delivery component
+ *
+ * Example:
+ * In configure/src/main.jsx:
+ *   import { FractionModelChart } from '@pie-element/fraction-model'
+ * Becomes:
+ *   import FractionModelChart from '../delivery/fraction-model-chart'
+ *
+ * @param content - The file content
+ * @param packageName - The current package name (e.g., '@pie-element/fraction-model')
+ * @param sourceFilePath - The source file path relative to package root
+ * @returns Transformed content with relative imports
+ */
+export function transformSelfReferentialImports(
+  content: string,
+  packageName: string,
+  sourceFilePath: string
+): string {
+  let transformed = content;
+
+  // Extract element name from package name (@pie-element/fraction-model → fraction-model)
+  const elementName = packageName.replace('@pie-element/', '');
+
+  // Pattern: import { X } from '@pie-element/element-name' or import X from '@pie-element/element-name'
+  const selfImportPattern = new RegExp(
+    `import\\s+(?:\\{\\s*([^}]+)\\s*\\}|([\\w]+))\\s+from\\s+['"]@pie-element/${elementName}['"]`,
+    'g'
+  );
+
+  const matches = Array.from(transformed.matchAll(selfImportPattern));
+
+  for (const match of matches) {
+    const [fullMatch, namedImports, defaultImport] = match;
+
+    // Determine source directory (configure/src → author, src → delivery)
+    let targetPath = '';
+
+    if (sourceFilePath.startsWith('configure/src/')) {
+      // Configure files reference delivery components
+      // configure/src/main.jsx → author/main.tsx
+      // Relative path from author/ to delivery/
+      targetPath = '../delivery';
+    } else if (sourceFilePath.startsWith('src/')) {
+      // Main src files shouldn't self-reference, but handle it anyway
+      targetPath = '.';
+    } else {
+      // Unknown structure, skip
+      continue;
+    }
+
+    // Strategy: Self-referential imports typically come from the package's main
+    // index file which re-exports from various locations. Rather than trying to
+    // guess individual file locations (which often fails for namespace exports
+    // and re-exports), we keep the import pointing to the index (delivery folder)
+    // which handles all re-exports correctly.
+    //
+    // Examples:
+    // - import { NumberLineComponent, dataConverter, tickUtils } from '@pie-element/number-line'
+    //   → import { NumberLineComponent, dataConverter, tickUtils } from '../delivery'
+    // - import FractionModel from '@pie-element/fraction-model'
+    //   → import FractionModel from '../delivery'
+
+    if (namedImports) {
+      // Named imports - keep them as a single import from the index
+      const replacement = `import { ${namedImports} } from '${targetPath}'`;
+      transformed = transformed.replace(fullMatch, replacement);
+
+    } else if (defaultImport) {
+      // Default import - reference main index
+      const replacement = `import ${defaultImport} from '${targetPath}'`;
+      transformed = transformed.replace(fullMatch, replacement);
+    }
+  }
+
+  return transformed;
+}
+
+/**
  * Fix type inference errors for exported functions with complex return types
  *
  * TypeScript can't infer types for some exported functions that have complex dependencies,
@@ -794,4 +880,96 @@ const translatorModule: TranslatorModule = `;
   }
 
   return transformed;
+}
+
+/**
+ * Transform MUI Menu imports to use InlineMenu from @pie-lib/render-ui
+ *
+ * Replaces direct imports of Menu from '@mui/material/Menu' with InlineMenu
+ * from '@pie-lib/render-ui', which includes fixes for the backdrop overlay issue.
+ *
+ * This addresses a common issue where MUI's Menu component covers the entire screen
+ * with a white background when used in inline contexts (dropdowns within text).
+ *
+ * Transformations:
+ * - import Menu from '@mui/material/Menu' → import { InlineMenu as Menu } from '@pie-lib/render-ui'
+ * - import Menu, { MenuProps } from '@mui/material/Menu' → import { InlineMenu as Menu } from '@pie-lib/render-ui'; import type { MenuProps } from '@mui/material/Menu'
+ * - styled(Menu) continues to work as Menu is aliased to InlineMenu
+ *
+ * @param content - Source code content
+ * @returns Transformed content with Menu imports replaced
+ */
+export function transformMenuToInlineMenu(content: string): string {
+  let transformed = content;
+
+  // Pattern 1: import Menu from '@mui/material/Menu'
+  // → import { InlineMenu as Menu } from '@pie-lib/render-ui'
+  if (/import\s+Menu\s+from\s+['"]@mui\/material\/Menu['"]/.test(transformed)) {
+    transformed = transformed.replace(
+      /import\s+Menu\s+from\s+['"]@mui\/material\/Menu['"]/g,
+      "import { InlineMenu as Menu } from '@pie-lib/render-ui'"
+    );
+  }
+
+  // Pattern 2: import Menu, { MenuProps } from '@mui/material/Menu'
+  // → import { InlineMenu as Menu } from '@pie-lib/render-ui'
+  //   import type { MenuProps } from '@mui/material/Menu'
+  const namedImportMatch = transformed.match(
+    /import\s+Menu\s*,\s*\{([^}]+)\}\s+from\s+['"]@mui\/material\/Menu['"]/
+  );
+  if (namedImportMatch) {
+    const namedImports = namedImportMatch[1];
+    transformed = transformed.replace(
+      /import\s+Menu\s*,\s*\{([^}]+)\}\s+from\s+['"]@mui\/material\/Menu['"]/,
+      `import { InlineMenu as Menu } from '@pie-lib/render-ui';\nimport type {${namedImports}} from '@mui/material/Menu'`
+    );
+  }
+
+  return transformed;
+}
+
+/**
+ * Add InlineMenu export to render-ui index file
+ *
+ * The InlineMenu component is a pie-elements-ng specific component that wraps
+ * MUI's Menu to fix the backdrop overlay issue. Since it doesn't exist in the
+ * upstream pie-lib, we need to add its export after the sync completes.
+ *
+ * This transform adds the InlineMenu export to the end of the render-ui index
+ * file if it's not already present.
+ *
+ * @param content - Source code content
+ * @param sourcePath - Path to the source file (to identify render-ui index)
+ * @returns Transformed content with InlineMenu export added if needed
+ */
+export function addInlineMenuExport(content: string, sourcePath?: string): string {
+  // Only apply to render-ui root index file (not subdirectories like collapsible/index.tsx)
+  // sourcePath format: pie-lib/packages/render-ui/src/index.js
+  if (!sourcePath?.includes('render-ui/src/index.js')) {
+    return content;
+  }
+
+  // Check if InlineMenu export already exists
+  if (content.includes('InlineMenu')) {
+    return content;
+  }
+
+  // Add InlineMenu export at the end of the file
+  const exportStatement = '\n// Non-synced pie-elements-ng exports\nexport { InlineMenu } from \'./inline-menu\';\n';
+
+  return content.trimEnd() + exportStatement;
+}
+
+/**
+ * Transform MathQuill.getInterface(2) to getInterface(3)
+ *
+ * Interface version 2 requires jQuery, but pie-elements-ng uses interface version 3
+ * which has a jQuery-free API. This transform updates calls to use version 3.
+ *
+ * @param content - Source code content
+ * @returns Transformed content with getInterface(3) instead of getInterface(2)
+ */
+export function transformMathQuillInterface(content: string): string {
+  // Replace MathQuill.getInterface(2) with MathQuill.getInterface(3)
+  return content.replace(/MathQuill\.getInterface\(2\)/g, 'MathQuill.getInterface(3)');
 }

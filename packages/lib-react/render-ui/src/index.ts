@@ -41,3 +41,5 @@ export {
   hasMedia,
   EnableAudioAutoplayImage,
 };
+// Non-synced pie-elements-ng exports
+export { InlineMenu } from './inline-menu';
