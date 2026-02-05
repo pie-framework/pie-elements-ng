@@ -152,87 +152,102 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
 }
 </script>
 
-{#if loading}
-  <div class="flex flex-col items-center justify-center p-12 text-base-content/60">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
-    <p class="mt-4">Loading {elementName}...</p>
-  </div>
-{:else if error}
-  <div class="alert alert-error m-4">
-    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    <div>
-      <h3 class="font-bold">Error</h3>
-      <p>{error}</p>
+<div class="layout-container">
+  {#if loading}
+    <div class="flex flex-col items-center justify-center p-12 text-base-content/60">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+      <p class="mt-4">Loading {elementName}...</p>
     </div>
-  </div>
-{:else}
-  {#if controllerWarning}
-    <div class="alert alert-warning mx-4 mt-3">
+  {:else if error}
+    <div class="alert alert-error m-4">
       <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <span>{controllerWarning}</span>
-    </div>
-  {/if}
-
-  <div class="player-content" style={`grid-template-columns: ${splitRatio}% 12px ${100 - splitRatio}%`}>
-    <main class="min-w-0 pr-3 overflow-auto">
-      {@render children?.()}
-    </main>
-
-    <div class="divider divider-horizontal cursor-col-resize" onpointerdown={handleSplitPointerDown} role="separator" aria-orientation="vertical"></div>
-
-    <aside class="min-w-0 pl-3 overflow-auto space-y-4">
-      <div class="card bg-base-100 border border-base-300">
-        <div class="card-body p-4">
-          <h3 class="card-title text-sm uppercase text-base-content/60">Mode</h3>
-          <ModeSelector bind:mode evaluateDisabled={playerRole !== 'instructor'} />
-        </div>
+      <div>
+        <h3 class="font-bold">Error</h3>
+        <p>{error}</p>
       </div>
+    </div>
+  {:else}
+    {#if controllerWarning}
+      <div class="alert alert-warning mx-4 mt-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span>{controllerWarning}</span>
+      </div>
+    {/if}
 
-      <div class="card bg-base-100 border border-base-300">
-        <div class="card-body p-4">
-          <h3 class="card-title text-sm uppercase text-base-content/60">Role</h3>
-          <div class="flex flex-col gap-2">
-            <a
-              href={getRoleUrl('student')}
-              class="btn btn-sm justify-start"
-              class:btn-primary={playerRole === 'student'}
-              class:btn-outline={playerRole !== 'student'}
-              class:btn-disabled={roleLocked}
-              aria-disabled={roleLocked}
-              tabindex={roleLocked ? -1 : 0}
-              data-testid="role-student"
-            >
-              Student
-            </a>
-            <a
-              href={getRoleUrl('instructor')}
-              class="btn btn-sm justify-start"
-              class:btn-primary={playerRole === 'instructor'}
-              class:btn-outline={playerRole !== 'instructor'}
-              data-testid="role-instructor"
-            >
-              Instructor
-            </a>
+    <div class="player-content" style={`grid-template-columns: ${splitRatio}% 12px ${100 - splitRatio}%`}>
+      <main class="min-w-0 pr-3 overflow-auto">
+        {@render children?.()}
+      </main>
+
+      <div class="divider divider-horizontal cursor-col-resize" onpointerdown={handleSplitPointerDown} role="separator" aria-orientation="vertical"></div>
+
+      <aside class="min-w-0 pl-3 overflow-auto space-y-4">
+        <div class="card bg-base-100 border border-base-300">
+          <div class="card-body p-4">
+            <h3 class="card-title text-sm uppercase text-base-content/60">Mode</h3>
+            <ModeSelector bind:mode evaluateDisabled={playerRole !== 'instructor'} />
           </div>
         </div>
-      </div>
 
-      <SessionPanel {session} />
+        <div class="card bg-base-100 border border-base-300">
+          <div class="card-body p-4">
+            <h3 class="card-title text-sm uppercase text-base-content/60">Role</h3>
+            <div class="flex flex-col gap-2">
+              <a
+                href={getRoleUrl('student')}
+                class="btn btn-sm justify-start"
+                class:btn-primary={playerRole === 'student'}
+                class:btn-outline={playerRole !== 'student'}
+                class:btn-disabled={roleLocked}
+                aria-disabled={roleLocked}
+                tabindex={roleLocked ? -1 : 0}
+                data-testid="role-student"
+              >
+                Student
+              </a>
+              <a
+                href={getRoleUrl('instructor')}
+                class="btn btn-sm justify-start"
+                class:btn-primary={playerRole === 'instructor'}
+                class:btn-outline={playerRole !== 'instructor'}
+                data-testid="role-instructor"
+              >
+                Instructor
+              </a>
+            </div>
+          </div>
+        </div>
 
-      <ScoringPanel {score} />
-    </aside>
-  </div>
-{/if}
+        <SessionPanel {session} />
+
+        <ScoringPanel {score} />
+      </aside>
+    </div>
+  {/if}
+</div>
 
 <style>
+  .layout-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
   .player-content {
     display: grid;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
+  }
+
+  .player-content > main,
+  .player-content > aside {
+    min-height: 0; /* Allow grid children to shrink below content size */
   }
 
   /* Responsive */

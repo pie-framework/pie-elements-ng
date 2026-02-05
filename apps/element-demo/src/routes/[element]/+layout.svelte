@@ -266,7 +266,7 @@ function handleThemeToggle(event: Event) {
   </div>
 
   <!-- Page Content -->
-  <div class="flex-1 overflow-auto bg-base-200">
+  <div class="flex-1 overflow-hidden bg-base-200">
     {@render children()}
   </div>
 </div>

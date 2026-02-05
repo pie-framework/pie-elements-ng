@@ -24,17 +24,14 @@ let { data }: { data: LayoutData } = $props();
 
 // Build element model from controller
 let elementModel = $state<any>({});
+let elementSession = $state<any>({});
 let modelError = $state<string | null>(null);
 let modelRequestId = 0;
 const debug = false;
 
-// Normalize session
+// Normalize session - ensure it's an object without imposing specific structure
 const normalizeSession = (nextSession: any) => {
-  const normalized = nextSession && typeof nextSession === 'object' ? nextSession : {};
-  if ((normalized as any).value === undefined) {
-    (normalized as any).value = [];
-  }
-  return normalized;
+  return nextSession && typeof nextSession === 'object' ? nextSession : {};
 };
 
 // Apply session update callback for controller
@@ -71,30 +68,52 @@ const buildModel = async (
 
   if (!currentModel) {
     elementModel = {};
-    modelError = null;
+    modelError = 'No model configuration found';
+    console.error('[deliver] No model provided');
     return;
   }
 
   const modelFn = currentController?.model;
   if (!modelFn || typeof modelFn !== 'function') {
     elementModel = { ...currentModel, mode: currentMode };
-    modelError = currentController ? 'Controller model() required' : null;
+    modelError = currentController
+      ? 'Controller model() function is required but not found'
+      : 'Controller not loaded yet';
+    if (currentController) {
+      console.error('[deliver] Controller missing model() function');
+    }
     return;
   }
 
   try {
-    const modelSession = normalizeSession(currentSession);
+    // Pass session as-is to controller - each element knows its own session structure
+    // Don't normalize to {value: []} as different elements use different structures
+    // (e.g., graphing-solution-set uses {answer: []})
+    // IMPORTANT: Create a copy so we can detect if controller modifies it
+    const sessionForController = JSON.parse(JSON.stringify(currentSession || {}));
+
     const nextModel = await modelFn(
       currentModel,
-      modelSession,
+      sessionForController,
       { mode: currentMode, role: currentRole, partialScoring: currentPartialScoring },
       applySessionUpdate
     );
 
     if (requestId === modelRequestId) {
       elementModel = { ...nextModel, mode: currentMode };
+      elementSession = sessionForController;  // Use controller-modified session
+
+      // If controller modified the session (e.g., initialized answer array), update the store
+      // This ensures the session panel shows the initialized session
+      const sessionChanged = JSON.stringify(sessionForController) !== JSON.stringify(currentSession);
+      if (sessionChanged) {
+        updateSession(sessionForController);
+      }
+
       modelError = null;
-      if (debug) console.log('[deliver] Model built successfully');
+      if (debug) {
+        console.log('[deliver] Model built successfully');
+      }
     }
   } catch (err) {
     console.error('[deliver] Controller model error:', err);
@@ -110,7 +129,8 @@ const buildModel = async (
 // Only rebuild when model, mode, role, partialScoring, or controller changes
 $effect(() => {
   const currentModel = $model;
-  const currentSession = $session;
+  // DON'T track currentSession here - we'll get it inside buildModel
+  // Tracking it here causes the effect to re-run when session changes
   const currentMode = $mode;
   const currentRole = $role;
   const currentPartialScoring = $partialScoring;
@@ -118,15 +138,18 @@ $effect(() => {
   const currentModelVersion = $modelVersion;
   // Explicitly NOT including sessionVersion - session updates should not trigger model rebuild
 
-  console.log('[deliver] Effect triggered, modelVersion:', currentModelVersion);
+  if (debug) {
+    console.log('[deliver] Effect triggered, modelVersion:', currentModelVersion);
+  }
 
   modelRequestId += 1;
   const requestId = modelRequestId;
 
+  // Get current session value without tracking it in the effect
   buildModel(
     requestId,
     currentModel,
-    currentSession,
+    $session,  // Read directly, don't track in effect
     currentMode,
     currentRole,
     currentPartialScoring,
@@ -136,7 +159,9 @@ $effect(() => {
 
 // Handle session changes from the element
 function handleSessionChanged(event: CustomEvent) {
-  updateSession(event.detail);
+  const newSession = event.detail;
+  elementSession = newSession;
+  updateSession(newSession);
 }
 </script>
 
@@ -155,7 +180,7 @@ function handleSessionChanged(event: CustomEvent) {
     <DeliveryView
       elementName={data.elementName}
       {elementModel}
-      bind:session={$session}
+      session={elementSession}
       {debug}
       on:session-changed={handleSessionChanged}
     />

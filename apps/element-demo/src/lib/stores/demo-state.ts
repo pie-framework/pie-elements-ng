@@ -89,13 +89,13 @@ export function initializeDemo(data: {
 
 /**
  * Normalize session to ensure it has required structure
+/**
+ * Normalize session to ensure it's an object
+ * Note: Don't impose a specific structure like {value: []} as different elements
+ * use different session structures (e.g., graphing-solution-set uses {answer: []})
  */
 function normalizeSession(nextSession: any) {
-  const normalized = nextSession && typeof nextSession === 'object' ? nextSession : {};
-  if ((normalized as any).value === undefined) {
-    (normalized as any).value = [];
-  }
-  return normalized;
+  return nextSession && typeof nextSession === 'object' ? nextSession : {};
 }
 
 /**
@@ -139,12 +139,12 @@ export function updateModel(newModel: any) {
 
 /**
  * Reset session to initial state
+/**
+ * Reset session to initial state
+ * Note: This clears the session but keeps its structure
  */
 export function resetSession() {
-  session.update(($session) => ({
-    ...$session,
-    value: [],
-  }));
+  session.set({});
   sessionVersion.update((v) => v + 1);
 }
 
@@ -159,7 +159,7 @@ export function switchDemo(demoId: string) {
   if (demo) {
     activeDemoId.set(demoId);
     model.set(demo.model || {});
-    session.set(demo.session || { value: [] });
+    session.set(demo.session || {});
     modelVersion.update((v) => v + 1);
     sessionVersion.update((v) => v + 1);
   }

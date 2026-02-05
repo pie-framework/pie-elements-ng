@@ -54,17 +54,8 @@ $effect(() => {
   }
 });
 
-// Update element model when elementModel prop changes
-$effect(() => {
-  if (!elementPlayer || !elementModel) return;
-
-  try {
-    (elementPlayer as any).model = elementModel;
-    if (debug) console.log('[delivery-view] model updated', { prompt: elementModel?.prompt });
-  } catch (err) {
-    console.error('[delivery-view] Error setting element model:', err);
-  }
-});
+// Model is passed to DemoElementPlayer which handles setting it on the element
+// Don't set it here on elementPlayer since that's just the container div
 
 // Setup parent-level math rendering to catch rationales, feedback, and dynamic content
 // Elements handle their own internal math rendering, but parent catches:
@@ -185,10 +176,13 @@ onMount(() => {
 <style>
   .delivery-view {
     height: 100%;
+    max-height: 100%;
     overflow: auto;
   }
 
   .element-container {
     padding: 1rem;
+    /* Prevent element from growing beyond container */
+    max-width: 100%;
   }
 </style>

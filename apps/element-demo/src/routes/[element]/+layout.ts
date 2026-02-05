@@ -41,7 +41,7 @@ export const load: LayoutLoad = async ({
   let demos: DemoConfig[] = [];
   let activeDemoId = 'default';
   let initialModel: any = {};
-  let initialSession: any = { value: [] };
+  let initialSession: any = {};
 
   // Discover available views from package.json exports
   try {
@@ -80,7 +80,7 @@ export const load: LayoutLoad = async ({
           if (activeDemo) {
             activeDemoId = activeDemo.id;
             initialModel = activeDemo.model || {};
-            initialSession = activeDemo.session || { value: [] };
+            initialSession = activeDemo.session || {};
             console.log(`[+layout.ts] Active demo: ${activeDemoId}`);
           }
         }

@@ -39,6 +39,12 @@ $effect(() => {
   if (elementInstance && model !== undefined) {
     try {
       (elementInstance as any).model = model;
+      // Re-set session after model to ensure runtime state is reinitialized
+      // The session setter initializes runtime state (like gssData) from the model
+      const currentSession = (elementInstance as any).session;
+      if (currentSession) {
+        (elementInstance as any).session = currentSession;
+      }
     } catch (err) {
       console.error('[demo-player] Error setting model:', err);
     }
