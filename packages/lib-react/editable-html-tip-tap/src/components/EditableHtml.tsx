@@ -36,7 +36,7 @@ import { CSSMark } from '../extensions/css';
 
 import EditorContainer from './TiptapContainer';
 import { valueToSize } from '../utils/size';
-import { buildExtensions } from '../extensions';
+import { buildExtensions, PLUGINS_MAP } from '../extensions';
 
 const defaultToolbarOpts = {
   position: 'bottom',
@@ -115,17 +115,20 @@ export const EditableHtml = (props) => {
     customPlugins = customPlugins || [];
 
     const filteredActivePlugins = (props.activePlugins || DEFAULT_ACTIVE_PLUGINS)?.filter((pluginName) => {
-      const pluginInfo = otherPluginProps[pluginName] || {};
+      const nameToUse = PLUGINS_MAP[pluginName] || pluginName;
+      const pluginInfo = otherPluginProps[nameToUse] || {};
 
       return !pluginInfo || !pluginInfo.disabled;
     });
 
     return buildExtensions(filteredActivePlugins, customPlugins, {
       math: {},
-      textAlign: {},
+      textAlign: props.textAlign,
       html: {},
       extraCSSRules: props.extraCSSRules || {},
-      image: {},
+      image: {
+        ...props.imageSupport,
+      },
       toolbar: {},
       table: {},
       responseArea: {
@@ -170,7 +173,7 @@ export const EditableHtml = (props) => {
         onDelete:
           props.imageSupport &&
           props.imageSupport.delete &&
-          ((node, done) => {
+          ((node) => {
             const { src } = node.attrs;
 
             props.imageSupport.delete(src, (e) => {
@@ -182,7 +185,6 @@ export const EditableHtml = (props) => {
 
               setPendingImages(newState.pendingImages);
               setScheduled(newState.scheduled);
-              done();
             });
           }),
         insertImageRequested:

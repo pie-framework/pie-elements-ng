@@ -16,7 +16,7 @@ export async function waitForMathRendering(page: Page, timeout = 5000) {
         if (!mathJax) return true; // No MathJax, consider done
 
         // MathJax 3.x check
-        if (mathJax.startup && mathJax.startup.promise) {
+        if (mathJax.startup?.promise) {
           return mathJax.startup.promise.then(() => true).catch(() => true);
         }
 

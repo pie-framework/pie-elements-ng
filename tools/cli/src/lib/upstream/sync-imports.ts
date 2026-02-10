@@ -372,7 +372,6 @@ export function transformControllerUtilsImports(content: string): string {
  *
  * Handles:
  * - @pie-lib/math-rendering → @pie-element/shared-math-rendering-mathjax
- * - @pie-lib/mathml-to-latex → @pie-element/shared-mathml-to-latex
  *
  * These packages have been moved to shared/ for better version control and consistency.
  */
@@ -383,12 +382,6 @@ export function transformSharedPackageImports(content: string): string {
   transformed = transformed.replace(
     /from\s+['"]@pie-lib\/math-rendering['"]/g,
     "from '@pie-element/shared-math-rendering-mathjax'"
-  );
-
-  // Transform mathml-to-latex
-  transformed = transformed.replace(
-    /from\s+['"]@pie-lib\/mathml-to-latex['"]/g,
-    "from '@pie-element/shared-mathml-to-latex'"
   );
 
   // Transform feedback
@@ -482,7 +475,6 @@ export function transformPackageJsonSharedPackages<T extends Record<string, any>
 
   const sharedPackages = {
     '@pie-lib/math-rendering': '@pie-element/shared-math-rendering-mathjax',
-    '@pie-lib/mathml-to-latex': '@pie-element/shared-mathml-to-latex',
     '@pie-lib/feedback': '@pie-element/shared-feedback',
   };
 

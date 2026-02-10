@@ -35,6 +35,7 @@ const rubriclessDefaultModel = {
 
 const multiTraitDefaultConfiguration = {
   baseInputConfiguration: {
+    h3: { disabled: true },
     audio: { disabled: false },
     video: { disabled: false },
     image: { disabled: false },
@@ -151,6 +152,7 @@ const multiTraitDefaultConfiguration = {
 
 const rubricDefaultConfiguration = {
   baseInputConfiguration: {
+    h3: { disabled: true },
     audio: { disabled: false },
     video: { disabled: false },
     image: { disabled: false },
@@ -171,6 +173,7 @@ const rubricDefaultConfiguration = {
 
 const rubriclessDefaultConfiguration = {
   baseInputConfiguration: {
+    h3: { disabled: true },
     audio: { disabled: false },
     video: { disabled: false },
     image: { disabled: false },

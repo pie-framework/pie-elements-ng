@@ -2,7 +2,13 @@
 
 ## Overview
 
-This is a modern implementation of the PIE (Platform Independent Elements) specification, built with TypeScript, ESM, and contemporary tooling. The project currently syncs React-based elements from the upstream [pie-elements](https://github.com/PieLabs/pie-elements) repository while providing modern ESM packaging, Vite builds, and improved developer experience. Future plans include native Svelte 5 implementations for smaller bundle sizes and better performance.
+This is a modern implementation of the PIE (Platform Independent Elements) specification, built with TypeScript, ESM, and contemporary tooling. The project currently syncs React-based elements from the upstream [pie-elements](https://github.com/PieLabs/pie-elements) repository while providing modern ESM packaging, Vite builds, and improved developer experience.
+
+**Current Status**: Early development (v0.1.0)
+- 28 React elements synced from upstream
+- Core infrastructure and build tooling established
+- Elements are private packages (not yet published to npm)
+- Future plans include native Svelte 5 implementations and public npm releases
 
 ## Core Philosophy
 
@@ -43,9 +49,9 @@ This project differs fundamentally from the legacy pie-elements in eight key way
 - **Controllers** are pure TypeScript business logic (completely framework-independent)
 - **UI implementations** can use any framework (React, Svelte, Vue, Angular) as long as they produce web components
 - **Element Player** loads elements via custom element registry, regardless of underlying framework
-- **Coexistence**: React and Svelte elements work side-by-side in the same application
+- **Current State**: All 28 elements use React; architecture supports future multi-framework implementations
 
-This flexibility allows choosing the right framework for each use case (e.g., Svelte for smaller bundles, React for ecosystem compatibility).
+This architectural flexibility will allow choosing the right framework for each use case (e.g., Svelte for smaller bundles, React for ecosystem compatibility).
 
 ### 2. ESM-First Build System
 
@@ -428,16 +434,20 @@ $ git push
 
 **Publishing strategy:**
 
-Not all packages in the monorepo are published to npm:
+**Current Status**: All packages are currently marked as `"private": true` and are not published to npm. This is an early development phase decision.
 
-- **Element packages** (`@pie-element/*`) - Published for external consumption
-- **Library packages** (`@pie-lib/*`) - **NOT published independently**
+**Future Publishing Plan**:
+
+Once the project reaches a stable release (v1.0.0+):
+
+- **Element packages** (`@pie-element/*`) - Will be published for external consumption
+- **Library packages** (`@pie-lib/*`) - Will **NOT** be published independently
   - These are internal implementation details of the elements
   - Bundled into element packages during build
-  - External consumers never import `@pie-lib` packages directly
+  - External consumers will never import `@pie-lib` packages directly
   - Simplifies the public API surface
 
-This differs from the legacy approach where `@pie-lib` packages were independently published and consumed. In pie-elements-ng, `@pie-lib` packages exist purely for internal code organization within the monorepo.
+This will differ from the legacy approach where `@pie-lib` packages were independently published and consumed. In pie-elements-ng, `@pie-lib` packages exist purely for internal code organization within the monorepo.
 
 **Trade-offs:**
 
@@ -489,7 +499,7 @@ This project maintains compatibility with the existing PIE ecosystem by syncing 
 ### Source Repositories
 
 - **[pie-elements](https://github.com/PieLabs/pie-elements)** → `packages/elements-react/`
-  - 50+ production-tested React element implementations
+  - 28 React element implementations synced from upstream
   - Controllers (business logic)
   - UI components (delivery, authoring, print modes)
 
@@ -499,7 +509,7 @@ This project maintains compatibility with the existing PIE ecosystem by syncing 
 
 ### Why Sync?
 
-1. **Leverage existing work** - Reuse 50+ production-tested elements
+1. **Leverage existing work** - Reuse production-tested elements from upstream
 2. **Maintain compatibility** - Ensure consistency with existing PIE consumers
 3. **Modernize existing code** - Transform to ESM, TypeScript, and modern tooling
 4. **Stable baseline** - Synced React elements provide production-ready implementations
@@ -1160,7 +1170,9 @@ Note: `'unsafe-inline'` for styles is required for Svelte scoped styles.
 
 ### NPM Publishing
 
-Packages are published to npm via GitHub Actions:
+**Current Status**: Packages are not yet published to npm (all marked as `"private": true`).
+
+**Future Publishing Strategy**: Once ready for public release, packages will be published via GitHub Actions:
 
 1. Developer creates changeset: `bun run changeset`
 2. PR merged to main
@@ -1168,11 +1180,15 @@ Packages are published to npm via GitHub Actions:
 4. Maintainer merges Version PR
 5. Packages automatically published to npm
 
-See [PUBLISHING.md](./PUBLISHING.md) for details.
+See [PUBLISHING.md](./PUBLISHING.md) for details (when available).
 
 ### Versioning
 
-This project uses **workspace-wide versioning** where all packages share the same version number. This is a deliberate architectural decision that differs from the upstream pie-elements/pie-lib projects. See [section 8 above](#8-workspace-wide-versioning) for a detailed explanation of why this approach was chosen and the problems it solves.
+This project is designed to use **workspace-wide versioning** where all packages share the same version number. This is a deliberate architectural decision that differs from the upstream pie-elements/pie-lib projects.
+
+**Current Status**: All packages are at version `0.1.0` and marked as `"private": true` (not published). Workspace-wide versioning will be enforced when packages are published publicly.
+
+See [section 8 above](#8-workspace-wide-versioning) for a detailed explanation of why this approach was chosen and the problems it solves.
 
 **Semantic Versioning (SemVer)**:
 
@@ -1190,7 +1206,7 @@ All packages follow semantic versioning as a coordinated unit:
 4. All element packages are released together with the same new version
 5. Internal dependencies automatically updated to the new version
 
-**Example release:**
+**Example release (future, when published):**
 
 ```bash
 # Before: All element packages at 1.4.0
@@ -1199,13 +1215,15 @@ $ bun run changeset
 # PR merged
 
 # After: All element packages bumped to 1.5.0
-@pie-element/multiple-choice: 1.5.0     # Published to npm
-@pie-element/drag-in-the-blank: 1.5.0   # Published to npm (even though unchanged)
+@pie-element/multiple-choice: 1.5.0     # Will be published to npm
+@pie-element/drag-in-the-blank: 1.5.0   # Will be published to npm (even though unchanged)
 
 # Internal packages are versioned but NOT published:
 @pie-lib/render-ui: 1.5.0               # Internal only (bundled into elements)
 @pie-lib/math-rendering: 1.5.0          # Internal only (bundled into elements)
 ```
+
+**Current Reality**: All packages are at `0.1.0` and private (not published).
 
 This ensures all packages are always compatible and tested together. External consumers only interact with `@pie-element/*` packages, which bundle all necessary dependencies.
 

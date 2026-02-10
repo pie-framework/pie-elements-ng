@@ -74,7 +74,9 @@ Where `itemConfig` includes:
 
 ## Print Element Architecture
 
-Each element package includes a print export:
+**Current Coverage**: Print support is available for 10 out of 28 elements. Print components are being added incrementally as elements are developed.
+
+Each element package can include a print export:
 
 ```
 packages/elements-react/multiple-choice/

@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/extensions/component.jsx
+ * @synced-from pie-lib/packages/editable-html-tip-tap/src/extensions/image-component.jsx
  * @auto-generated
  *
  * This file is automatically synced from pie-elements and converted to TypeScript.
@@ -90,6 +90,7 @@ function ImageComponent(props) {
 
   const [showToolbar, setShowToolbar] = useState(false);
 
+  const latestNodeRef = useRef(node);
   const imgRef = useRef(null);
   const resizeRef = useRef(null);
   const toolbarRef = useRef(null);
@@ -111,6 +112,11 @@ function ImageComponent(props) {
       editor.commands.updateAttributes('imageUploadNode', update);
     }
   }, [editor, node.attrs, getPercentFromWidth]);
+
+  // keep ref in sync with latest node
+  useEffect(() => {
+    latestNodeRef.current = node;
+  }, [node]);
 
   useEffect(() => {
     const { selection } = editor.state;
@@ -134,7 +140,11 @@ function ImageComponent(props) {
       resizeHandle.addEventListener('mousedown', initResize, false);
     }
     return () => {
-      if (resizeHandle) resizeHandle.removeEventListener('mousedown', initResize, false);
+      if (resizeHandle) {
+        resizeHandle.removeEventListener('mousedown', initResize, false);
+      }
+
+      options.imageHandling.onDelete(latestNodeRef.current);
     };
   }, []);
 

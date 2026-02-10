@@ -2,13 +2,15 @@
 
 A modern, ESM-first implementation of the PIE (Platform Independent Elements) specification. This is a **new project** (not a refactor) that provides a clean foundation for future PIE development while maintaining backwards compatibility through the legacy pie-elements project.
 
+**Current Status**: Early development (v0.1.0) - 28 React-based elements synced from upstream, core infrastructure in place.
+
 ## Why a New Project?
 
 The PIE team's work on upstream library modernization (React 18, MUI 7, Tiptap editor) now enables full ESM adoption and modern tooling. This new project takes advantage of those improvements while keeping the legacy pie-elements available for existing consumers.
 
 ## Key Improvements Over Legacy pie-elements
 
-1. **Framework-agnostic architecture** - Supports multiple frameworks (React, Svelte, future Vue/Angular) via web components, not just React
+1. **Framework-agnostic architecture** - Architecture designed to support multiple frameworks (React, Svelte, future Vue/Angular) via web components. Currently: React implementations synced from upstream.
 2. **ESM-first build system** - Browser-managed dependencies, better caching, smaller bundles (vs CommonJS + webpack IIFE bundles)
 3. **Unified player approach** - Element-level players for development (interactive + print), item-level players in pie-players for production
 4. **Symmetric package organization** - Peer folders (delivery/author/controller/print) vs asymmetric legacy structure

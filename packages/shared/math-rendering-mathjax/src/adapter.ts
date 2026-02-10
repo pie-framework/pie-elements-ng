@@ -1,11 +1,10 @@
 /**
- * MathJax math renderer adapter
+ * MathJax math renderer
  *
- * Wraps the upstream PIE MathJax implementation (~2.7MB bundle)
- * Provides full-featured math rendering with accessibility support.
+ * Loads MathJax v4 from CDN and provides math rendering functionality.
+ * Supports LaTeX and MathML with full accessibility features.
  */
 
-import type { MathRenderer } from '@pie-element/shared-math-rendering-core';
 import type { MathjaxOptions } from './types';
 
 interface MathJaxTexConfig {
@@ -128,8 +127,8 @@ function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
 /**
  * Create a MathJax-based math renderer
  *
- * This is the full-featured renderer used by upstream PIE (~2.7MB).
- * Provides best accessibility and compatibility, but larger bundle size.
+ * Loads MathJax v4 from CDN (~2.7MB, cached) and returns a function
+ * that can render math expressions in DOM elements.
  *
  * @param options - MathJax configuration options
  * @returns Math renderer function
@@ -144,7 +143,9 @@ function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
  * renderer(document.body);
  * ```
  */
-export function createMathjaxRenderer(options: MathjaxOptions = {}): MathRenderer {
+export function createMathjaxRenderer(
+  options: MathjaxOptions = {}
+): (element: HTMLElement) => Promise<void> {
   return async (element: HTMLElement): Promise<void> => {
     await ensureMathjaxLoaded(options);
 

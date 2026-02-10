@@ -11,7 +11,7 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import React from 'react';
-import ImageComponent from './component';
+import ImageComponent from './image-component';
 
 export const ImageUploadNode = Node.create({
   name: 'imageUploadNode',
@@ -52,11 +52,13 @@ export const ImageUploadNode = Node.create({
 
   addCommands() {
     return {
-      setImageUploadNode: () => ({ commands }) => {
-        return commands.insertContent({
-          type: this.name,
-        });
-      },
+      setImageUploadNode:
+        () =>
+        ({ commands }) => {
+          return commands.insertContent({
+            type: this.name,
+          });
+        },
     };
   },
 });

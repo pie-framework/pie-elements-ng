@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "@pie-element/multiple-choice": "workspace:*",
-    "@pie-element/shared-math-rendering-core": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@sveltejs/adapter-auto": "^3.3.1",
     "@sveltejs/kit": "^2.50.1",

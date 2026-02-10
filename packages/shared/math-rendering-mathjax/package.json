@@ -20,9 +20,7 @@
     "test": "vitest",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "@pie-element/shared-math-rendering-core": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^5.9.3",
     "vite": "^7.2.2",
