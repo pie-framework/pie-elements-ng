@@ -9,9 +9,7 @@
  */
 
 import * as math from 'mathjs';
-import { uniqWith } from 'lodash-es';
-import { isObject } from 'lodash-es';
-import { isNumber } from 'lodash-es';
+import { isNumber, isObject, uniqWith } from 'lodash-es';
 
 // All these functions are duplicated in  controller/src/tickUtils
 

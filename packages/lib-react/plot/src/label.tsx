@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Readable } from '@pie-lib/render-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import PropTypes from 'prop-types';

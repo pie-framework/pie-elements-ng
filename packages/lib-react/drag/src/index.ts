@@ -9,7 +9,7 @@
  */
 
 import PlaceHolder from './placeholder';
-import DraggableChoice   from './draggable-choice';
+import DraggableChoice from './draggable-choice';
 import DragProvider from './drag-provider';
 import swap from './swap';
 import * as uid from './uid-context';

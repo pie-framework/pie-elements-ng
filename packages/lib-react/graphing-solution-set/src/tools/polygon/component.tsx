@@ -11,16 +11,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { ToolPropTypeFields } from '../shared/types';
-import { chunk } from 'lodash-es';
-import { initial } from 'lodash-es';
+import { chunk, initial, isEmpty } from 'lodash-es';
 import debug from 'debug';
 import DraggablePolygon from './polygon';
 import { types } from '@pie-lib/plot';
 import invariant from 'invariant';
 import ReactDOM from 'react-dom';
 import MarkLabel from '../../mark-label';
-import { isEmpty } from 'lodash-es';
-import { getMiddleOfTwoPoints, getRightestPoints, equalPoints } from '../../utils';
+import { equalPoints, getMiddleOfTwoPoints, getRightestPoints } from '../../utils';
 
 const log = debug('pie-lib:graphing-solution-set:polygon');
 
@@ -171,16 +169,8 @@ export class RawBaseComponent extends React.Component {
   };
 
   clickPoint: any = (point, index, data) => {
-    const {
-      closed,
-      disabled,
-      onClick,
-      isToolActive,
-      labelModeEnabled,
-      onChangeProps,
-      onChangeLabelProps,
-      points,
-    } = this.props;
+    const { closed, disabled, onClick, isToolActive, labelModeEnabled, onChangeProps, onChangeLabelProps, points } =
+      this.props;
 
     if (labelModeEnabled) {
       if (disabled) {

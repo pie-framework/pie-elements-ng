@@ -30,7 +30,7 @@ class InsertImageHandler {
     editor.state.doc.descendants((node, pos) => {
       if (node === this.node) {
         nodePos = pos;
-        return false
+        return false;
       }
     });
 

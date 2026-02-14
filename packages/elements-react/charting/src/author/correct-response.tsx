@@ -12,8 +12,7 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { Chart } from '@pie-lib/charting';
-import { isEqual } from 'lodash-es';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isEqual } from 'lodash-es';
 
 import Typography from '@mui/material/Typography';
 
@@ -215,7 +214,7 @@ export class CorrectResponse extends React.Component {
               <span>Use the tools below to define the correct answer.</span>
             </Typography>
 
-            {(identicalError || categoriesError) ? (
+            {identicalError || categoriesError ? (
               <ChartError key={`correct-response-graph-${model.correctAnswer.name}`}>
                 <Chart
                   chartType={model.chartType}

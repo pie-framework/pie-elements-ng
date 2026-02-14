@@ -175,7 +175,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -208,7 +208,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -239,7 +239,7 @@
         "@pie-lib/rubric": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
       },
       "devDependencies": {
@@ -272,7 +272,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -305,7 +305,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "konva": "8.3.0",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
         "react-konva": "^18.2.14",
       },
@@ -333,7 +333,7 @@
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -367,7 +367,7 @@
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.5",
         "he": "^1.2.0",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -596,7 +596,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -627,7 +627,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
         "react-test-renderer": "18.2.0",
         "react-transition-group": "^2.3.1",
@@ -665,7 +665,7 @@
         "@pie-lib/test-utils": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -697,7 +697,7 @@
         "@pie-lib/drag": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -735,7 +735,7 @@
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -865,7 +865,7 @@
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
         "react-transition-group": "^4.4.5",
       },
@@ -903,7 +903,7 @@
         "classnames": "^2.2.5",
         "d3-scale": "^4.0.2",
         "d3-selection": "^3.0.0",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "mathjs": "^7.5.1",
         "react-jss": "^10.10.0",
         "react-transition-group": "^4.4.5",
@@ -970,7 +970,7 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
         "decimal.js": "^10.0.0",
-        "lodash-es": "^4.17.22",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
         "react-transition-group": "^4.4.5",
       },
@@ -1050,7 +1050,7 @@
       "version": "0.1.0",
       "dependencies": {
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
       },
     },
     "packages/lib-react/charting": {
@@ -1078,7 +1078,7 @@
         "d3-selection": "^3.0.0",
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "react": "^18.2.0",
         "react-draggable": "^3.3.0",
         "react-input-autosize": "^2.2.1",
@@ -1097,7 +1097,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "assert": "^1.4.1",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "mathjs": "^7.0.1",
         "prop-types": "^15.6.2",
         "react-measure": "^2.2.2",
@@ -1108,7 +1108,7 @@
       "version": "0.1.0",
       "dependencies": {
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
       },
     },
     "packages/lib-react/correct-answer-toggle": {
@@ -1122,7 +1122,7 @@
         "@pie-lib/icons": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
         "react-transition-group": "^4.4.5",
       },
@@ -1141,7 +1141,7 @@
         "@pie-lib/math-rendering": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.6",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
       },
@@ -1150,7 +1150,7 @@
       "name": "@pie-lib/editable-html-tip-tap",
       "version": "0.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.1.0",
+        "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
         "@dnd-kit/utilities": "3.2.2",
         "@mui/icons-material": "^7.3.4",
@@ -1181,7 +1181,7 @@
         "debug": "^4.1.1",
         "immutable": "^4.0.0-rc.12",
         "keycode": "^2.2.0",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
         "react-attr-converter": "^0.3.1",
         "react-jss": "^8.6.1",
@@ -1219,7 +1219,7 @@
         "d3-selection": "^3.0.0",
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -1260,7 +1260,7 @@
         "d3-selection": "^3.0.0",
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -1277,7 +1277,7 @@
       "dependencies": {
         "@mapbox/point-geometry": "^1.1.0",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
       },
     },
     "packages/lib-react/icons": {
@@ -1305,7 +1305,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.6",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -1322,7 +1322,7 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-mathquill": "workspace:*",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
       },
     },
@@ -1341,7 +1341,7 @@
         "@pie-lib/math-input": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
       },
     },
@@ -1361,7 +1361,7 @@
         "d3-selection": "^3.0.0",
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
         "react-draggable": "^3.3.0",
@@ -1381,7 +1381,7 @@
         "@pie-lib/math-rendering": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react-transition-group": "^4.4.5",
       },
@@ -1397,7 +1397,7 @@
         "@mui/material": "^7.3.4",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -1431,7 +1431,7 @@
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.6",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
       },
     },
@@ -1447,7 +1447,7 @@
         "@pie-lib/style-utils": "workspace:*",
         "assert": "^1.4.1",
         "debug": "^4.1.1",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react-portal": "^4.2.0",
         "trigonometry-calculator": "^2.0.0",
@@ -1459,7 +1459,7 @@
       "dependencies": {
         "debug": "^4.1.1",
         "i18next": "^25.7.0",
-        "lodash": "^4.17.23",
+        "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -3208,7 +3208,7 @@
 
     "mathjs": ["mathjs@7.6.0", "", { "dependencies": { "complex.js": "^2.0.11", "decimal.js": "^10.2.1", "escape-latex": "^1.2.0", "fraction.js": "^4.0.12", "javascript-natural-sort": "^0.7.1", "seed-random": "^2.2.0", "tiny-emitter": "^2.1.0", "typed-function": "^2.0.0" }, "bin": { "mathjs": "bin/cli.js" } }, "sha512-abywR28hUpKF4at5jE8Ys+Kigk40eKMT5mcBLD0/dtsqjfOLbtzd3WjlRqIopNo7oQ6FME51qph6lb8h/bhpUg=="],
 
-    "mathquill": ["mathquill@github:desmosinc/mathquill#c54634a", {}, "desmosinc-mathquill-c54634a"],
+    "mathquill": ["mathquill@github:desmosinc/mathquill#d6c4822", {}, "desmosinc-mathquill-d6c4822"],
 
     "mdurl": ["mdurl@2.0.0", "", {}, "sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w=="],
 
@@ -3924,9 +3924,17 @@
 
     "@pie-element/select-text/vite": ["vite@6.4.1", "", { "dependencies": { "esbuild": "^0.25.0", "fdir": "^6.4.4", "picomatch": "^4.0.2", "postcss": "^8.5.3", "rollup": "^4.34.9", "tinyglobby": "^0.2.13" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^18.0.0 || ^20.0.0 || >=22.0.0", "jiti": ">=1.21.0", "less": "*", "lightningcss": "^1.21.0", "sass": "*", "sass-embedded": "*", "stylus": "*", "sugarss": "*", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "jiti", "less", "lightningcss", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-+Oxm7q9hDoLMyJOYfUYBuHQo+dkAloi33apOPP56pzj+vsdJDzr+j1NISE5pyaAuKL4A3UD34qd0lx5+kfKp2g=="],
 
-    "@pie-framework/math-validation/mathjs": ["mathjs@9.5.2", "", { "dependencies": { "@babel/runtime": "^7.15.4", "complex.js": "^2.0.15", "decimal.js": "^10.3.1", "escape-latex": "^1.2.0", "fraction.js": "^4.1.1", "javascript-natural-sort": "^0.7.1", "seedrandom": "^3.0.5", "tiny-emitter": "^2.1.0", "typed-function": "^2.0.0" }, "bin": { "mathjs": "bin/cli.js" } }, "sha512-c0erTq0GP503/Ch2OtDOAn50GIOsuxTMjmE00NI/vKJFSWrDaQHRjx6ai+16xYv70yBSnnpUgHZGNf9FR9IwmA=="],
+    "@pie-element/shared-configure-events/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
 
-    "@pie-lib/editable-html-tip-tap/@dnd-kit/core": ["@dnd-kit/core@6.1.0", "", { "dependencies": { "@dnd-kit/accessibility": "^3.1.0", "@dnd-kit/utilities": "^3.2.2", "tslib": "^2.0.0" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-J3cQBClB4TVxwGo3KEjssGEXNJqGVWx17aRTZ1ob0FliR5IjYgTxl5YJbKTzA6IzrtelotH19v6y7uoIRUZPSg=="],
+    "@pie-element/shared-controller-utils/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
+
+    "@pie-element/shared-feedback/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
+
+    "@pie-element/shared-mathquill/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
+
+    "@pie-element/shared-player-events/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
+
+    "@pie-framework/math-validation/mathjs": ["mathjs@9.5.2", "", { "dependencies": { "@babel/runtime": "^7.15.4", "complex.js": "^2.0.15", "decimal.js": "^10.3.1", "escape-latex": "^1.2.0", "fraction.js": "^4.1.1", "javascript-natural-sort": "^0.7.1", "seedrandom": "^3.0.5", "tiny-emitter": "^2.1.0", "typed-function": "^2.0.0" }, "bin": { "mathjs": "bin/cli.js" } }, "sha512-c0erTq0GP503/Ch2OtDOAn50GIOsuxTMjmE00NI/vKJFSWrDaQHRjx6ai+16xYv70yBSnnpUgHZGNf9FR9IwmA=="],
 
     "@pie-lib/editable-html-tip-tap/@tiptap/core": ["@tiptap/core@3.0.9", "", { "peerDependencies": { "@tiptap/pm": "^3.0.9" } }, "sha512-1zdDyILerBcD3P0fu8kCtPLOFj0R5utjexCQ2CZ46pckn/Wk4V+WUBARzhG5Yz2JDkmJIUIcmLBVrL6G1rjJWg=="],
 

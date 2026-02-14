@@ -10,10 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { cloneDeep } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
-import { pick } from 'lodash-es';
-import { throttle } from 'lodash-es';
+import { cloneDeep, isEmpty, pick, throttle } from 'lodash-es';
 import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 import { InputContainer, layout, settings } from '@pie-lib/config-ui';
 import { styled } from '@mui/material/styles';
@@ -404,15 +401,8 @@ export class Main extends React.Component {
         )}
 
         <FlexContainer>
-          <StyledText component="div">
-            Define Template, Choices, and Correct Responses
-          </StyledText>
-          <StyledTooltip
-            disableFocusListener
-            disableTouchListener
-            placement={'right'}
-            title={validationMessage}
-          >
+          <StyledText component="div">Define Template, Choices, and Correct Responses</StyledText>
+          <StyledTooltip disableFocusListener disableTouchListener placement={'right'} title={validationMessage}>
             <Info fontSize={'small'} color={'primary'} style={{ marginLeft: '8px' }} />
           </StyledTooltip>
         </FlexContainer>

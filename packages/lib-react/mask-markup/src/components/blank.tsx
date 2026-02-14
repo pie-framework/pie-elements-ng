@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
@@ -97,6 +97,8 @@ const StyledChipLabel: any = styled('span')(() => ({
     position: 'absolute',
     left: 16,
     maxWidth: '60px',
+    top: '50%',
+    transform: 'translateY(-50%)',
   },
 }));
 
@@ -306,7 +308,11 @@ function DragDropBlank({
   });
 
   // Setup droppable functionality
-  const { setNodeRef: setDropNodeRef, isOver, active: dragItem } = useDroppable({
+  const {
+    setNodeRef: setDropNodeRef,
+    isOver,
+    active: dragItem,
+  } = useDroppable({
     id: `mask-blank-drop-${id}`,
     data: {
       id: id,

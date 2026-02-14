@@ -11,7 +11,7 @@
     "@pie-lib/icons": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "lodash": "^4.17.23",
+    "lodash-es": "^4.17.23",
     "prop-types": "^15.6.2",
     "react-transition-group": "^4.4.5"
   },

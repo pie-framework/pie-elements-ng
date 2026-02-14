@@ -11,15 +11,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { swap } from '@pie-lib/drag';
-import {
-  DndContext,
-} from '@dnd-kit/core';
+import { DndContext } from '@dnd-kit/core';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { color, Feedback, PreviewPrompt } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
-import { uniqueId } from 'lodash-es';
-import { isUndefined } from 'lodash-es';
-import { findKey } from 'lodash-es';
+import { findKey, isUndefined, uniqueId } from 'lodash-es';
 import AnswerArea from './answer-area';
 import ChoicesList from './choices-list';
 
@@ -68,7 +64,9 @@ export class Main extends React.Component {
 
     if (activeData && overData) {
       const { session, onSessionChange, model } = this.props;
-      const { config: { duplicates } } = model;
+      const {
+        config: { duplicates },
+      } = model;
 
       if (isUndefined(session.value)) {
         session.value = {};

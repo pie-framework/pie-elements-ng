@@ -10,7 +10,7 @@ export default defineConfig({
     },
     minify: false,
     rollupOptions: {
-      external: ['mathquill'], // Desmos fork is external dependency
+      external: ['mathquill', 'mathquill/build/mathquill.js'], // Desmos fork is external dependency
       output: {
         assetFileNames: (assetInfo) => {
           // Rename CSS to mathquill.css

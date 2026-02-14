@@ -54,7 +54,6 @@ export const dataToXBand: any = (scaleX, data, width, type) => {
   }
 };
 
-
 export const getTickValues = (prop = {}) => {
   const tickValues = [];
   let tickVal = prop.min;

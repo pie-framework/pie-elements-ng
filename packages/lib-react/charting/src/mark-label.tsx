@@ -8,14 +8,14 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { styled } from '@mui/material/styles';
 import AutosizeInput from 'react-input-autosize';
 import PropTypes from 'prop-types';
 
 import { types } from '@pie-lib/plot';
-import { correct, incorrect, disabled } from './common/styles';
+import { correct, disabled, incorrect } from './common/styles';
 import { color } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
@@ -184,7 +184,7 @@ export const MarkLabel = (props) => {
               externalInputRef(r);
             }
           }}
-          name='mark-label-input'
+          name="mark-label-input"
           autoFocus={isEditing || autoFocus}
           disabled={disabled}
           inputClassName={classNames(

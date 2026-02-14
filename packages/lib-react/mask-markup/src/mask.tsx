@@ -16,8 +16,8 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { MARK_TAGS } from './serialization';
 
 const Paragraph: any = styled('div')(({ theme }) => ({
-  paddingTop: theme.spacing(2),
-  paddingBottom: theme.spacing(2),
+  paddingTop: theme.spacing(0.5),
+  paddingBottom: theme.spacing(0.5),
 }));
 
 const Spacer: any = styled('span')(() => ({
@@ -144,7 +144,7 @@ const MaskContainer: any = styled('div')(() => ({
 export default class Mask extends React.Component {
   constructor(props) {
     super(props);
-       this.internalContainerRef = React.createRef();
+    this.internalContainerRef = React.createRef();
   }
 
   static propTypes = {
@@ -153,10 +153,7 @@ export default class Mask extends React.Component {
     value: PropTypes.object,
     onChange: PropTypes.func,
     elementType: PropTypes.string,
-    containerRef: PropTypes.oneOfType([
-      PropTypes.func,
-      PropTypes.shape({ current: PropTypes.instanceOf(Element) }),
-    ]),
+    containerRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
   };
 
   componentDidMount() {

@@ -9,8 +9,8 @@
  */
 
 import debug from 'debug';
-import { buildDataPoints, absoluteFromTwoPoints } from '@pie-lib/graphing-utils';
-import { withRootEdge, rootEdgeComponent } from '../shared/line/with-root-edge';
+import { absoluteFromTwoPoints, buildDataPoints } from '@pie-lib/graphing-utils';
+import { rootEdgeComponent, withRootEdge } from '../shared/line/with-root-edge';
 
 const log = debug('pie-lib:graphing:absolute');
 

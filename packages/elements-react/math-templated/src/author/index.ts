@@ -11,8 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
-import { defaults } from 'lodash-es';
-import { isArray } from 'lodash-es';
+import { defaults, isArray } from 'lodash-es';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
@@ -48,7 +47,7 @@ export default class MathTemplateConfigure extends HTMLElement {
     const joinedObj = {
       ...sensibleDefaults.model,
       ...model,
-      responses: updatedResponses
+      responses: updatedResponses,
     };
 
     const slateMarkup = joinedObj.slateMarkup || createSlateMarkup(joinedObj.markup, joinedObj.responses);
@@ -111,7 +110,7 @@ export default class MathTemplateConfigure extends HTMLElement {
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find(option => option.value === this._model.language)) {
+      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
         this._configuration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,

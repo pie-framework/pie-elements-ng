@@ -13,11 +13,11 @@
     "@pie-lib/rubric": "workspace:*",
     "classnames": "^2.2.5",
     "debug": "^4.1.1",
+    "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "lodash-es": "^4.17.22",
     "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {

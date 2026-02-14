@@ -11,10 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import debug from 'debug';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isEmpty } from 'lodash-es';
 import { get, set } from 'nested-property';
 import pluralize from 'pluralize';
-import { isEmpty } from 'lodash-es';
 import { styled } from '@mui/material/styles';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
@@ -32,13 +31,13 @@ const { Panel, toggle, radio, dropdown } = settings;
 const getSingularAndPlural = (label) =>
   !pluralize.isPlural(label)
     ? {
-      singularLabel: label,
-      pluralLabel: pluralize(label),
-    }
+        singularLabel: label,
+        pluralLabel: pluralize(label),
+      }
     : {
-      singularLabel: pluralize.singular(label),
-      pluralLabel: label,
-    };
+        singularLabel: pluralize.singular(label),
+        pluralLabel: label,
+      };
 
 const StyledInputContainer: any = styled(InputContainer)(({ theme }) => ({
   width: '100%',
@@ -143,23 +142,23 @@ export class Design extends React.Component {
 
     const target = over.data.current;
     const source = active.data.current;
-    const rawFrom = ordering.tiles.find(t => t.id === source.id && t.type === source.type);
+    const rawFrom = ordering.tiles.find((t) => t.id === source.id && t.type === source.type);
     const rawTo = target;
 
     const from = {
-     ...rawFrom,
-      index: normalizeIndex(rawFrom, ordering)
+      ...rawFrom,
+      index: normalizeIndex(rawFrom, ordering),
     };
     const to = {
       ...rawTo,
-      index: normalizeIndex(rawTo, ordering)
+      index: normalizeIndex(rawTo, ordering),
     };
 
     const { response, choices: updatedChoices } = updateResponseOrChoices(
       ordering.response,
       ordering.choices,
       from,
-      to
+      to,
     );
 
     this.onChoiceEditorChange(updatedChoices, response);
@@ -212,7 +211,7 @@ export class Design extends React.Component {
       teacherInstructions: teacherInstructionsError,
     } = errors || {};
 
-     const ordering = {
+    const ordering = {
       choices: model.choices,
       response: !correctResponse || isEmpty(correctResponse) ? new Array(model.choices.length) : correctResponse,
       tiles: buildTiles(model.choices, correctResponse),
@@ -323,23 +322,18 @@ export class Design extends React.Component {
             </StyledInputContainer>
           )}
 
-          <StyledChoicesWrapper
-            label={`Define ${pluralLabel}`}
-            labelExtraStyle={{ display: 'inline-flex' }}
-          >
+          <StyledChoicesWrapper label={`Define ${pluralLabel}`} labelExtraStyle={{ display: 'inline-flex' }}>
             <InlineFlexContainer>
               <Tooltip
-                slotProps={
-                  {
-                    tooltip: {
-                      sx: {
-                        fontSize: 14,
-                        whiteSpace: 'pre',
-                        maxWidth: '500px',
-                      },
+                slotProps={{
+                  tooltip: {
+                    sx: {
+                      fontSize: 14,
+                      whiteSpace: 'pre',
+                      maxWidth: '500px',
                     },
-                  }
-                }
+                  },
+                }}
                 disableFocusListener
                 disableTouchListener
                 placement={'right'}
@@ -351,9 +345,7 @@ export class Design extends React.Component {
 
             <StyledRow>
               {choiceLabelEnabled && (
-                <StyledInputContainer
-                  label={choiceLabel && choiceLabel.label && `${singularLabel} label`}
-                >
+                <StyledInputContainer label={choiceLabel && choiceLabel.label && `${singularLabel} label`}>
                   <EditableHtml
                     {...(model.placementArea && { autoWidthToolbar: true })}
                     className="prompt"
@@ -372,9 +364,7 @@ export class Design extends React.Component {
               )}
 
               {targetLabel.settings && model.placementArea && (
-                <StyledInputContainer
-                  label={targetLabel && targetLabel.label && targetLabel.label}
-                >
+                <StyledInputContainer label={targetLabel && targetLabel.label && targetLabel.label}>
                   <EditableHtml
                     autoWidthToolbar
                     className="prompt"
@@ -450,8 +440,8 @@ export class Design extends React.Component {
 }
 
 Design.defaultProps = {
-  onModelChanged: () => { },
-  onConfigurationChanged: () => { },
+  onModelChanged: () => {},
+  onConfigurationChanged: () => {},
 };
 
 Design.propTypes = {

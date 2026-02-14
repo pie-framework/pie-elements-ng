@@ -10,7 +10,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { DragOverlay, useDndContext } from '@dnd-kit/core';
-import { PreviewPrompt, color } from '@pie-lib/render-ui';
+import { color, PreviewPrompt } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const styles = {

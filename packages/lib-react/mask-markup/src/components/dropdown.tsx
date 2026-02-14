@@ -80,9 +80,19 @@ const StyledMenu: any = styled(Menu)(() => ({
 }));
 
 const StyledMenuItem: any = styled(MenuItem)(() => ({
+  // base text/layout styles (from old JSS - before mui v5 migration)
+  height: 24,
+  overflow: 'hidden',
+  fontSize: '1rem',
+  fontWeight: 400,
+  fontFamily: 'inherit',
+  lineHeight: '1.5em',
+  whiteSpace: 'nowrap',
+
+  // custom styles
   color: color.text(),
   backgroundColor: color.background(),
-  '&.Mui-focused': {
+  '&.Mui-focusVisible': {
     outline: `3px solid ${color.tertiary()}`,
     outlineOffset: '-1px', // keeps it inside the item
     color: color.text(),
@@ -319,11 +329,7 @@ class Dropdown extends React.Component {
           aria-hidden="true"
         >
           {(choices || []).map((c, index) => (
-            <StyledMenuItem
-              key={index}
-              tabIndex={-1}
-              aria-hidden="true"
-            >
+            <StyledMenuItem key={index} tabIndex={-1} aria-hidden="true">
               <StyledLabel dangerouslySetInnerHTML={{ __html: c.label }} />
             </StyledMenuItem>
           ))}
@@ -358,8 +364,8 @@ class Dropdown extends React.Component {
               __html: correctValue
                 ? correctValue
                 : open && this.state.previewValue
-                ? this.getLabel(choices, this.state.previewValue)
-                : this.getLabel(choices, value) || '',
+                  ? this.getLabel(choices, this.state.previewValue)
+                  : this.getLabel(choices, value) || '',
             }}
           />
           {open ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
@@ -401,9 +407,7 @@ class Dropdown extends React.Component {
                   ref={(ref) => (this.elementRefs[index] = ref)}
                   dangerouslySetInnerHTML={{ __html: c.label }}
                 />
-                <StyledSelectedIndicator
-                  dangerouslySetInnerHTML={{ __html: c.value === value ? ' &check;' : '' }}
-                />
+                <StyledSelectedIndicator dangerouslySetInnerHTML={{ __html: c.value === value ? ' &check;' : '' }} />
               </StyledMenuItem>
             );
           })}

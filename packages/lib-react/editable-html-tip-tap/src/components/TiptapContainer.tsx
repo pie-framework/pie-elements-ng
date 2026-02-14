@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 import { valueToSize } from '../utils/size';
@@ -92,6 +92,9 @@ const StyledRoot: any = styled('div', {
     borderTop: '1px solid var(--gray-2)',
     margin: '2rem 0',
   },
+  '& p': {
+    margin: '0',
+  },
   '& table': {
     tableLayout: 'fixed',
     width: '100%',
@@ -134,10 +137,12 @@ const StyledEditorHolder: any = styled('div', {
 const StyledChildren: any = styled('div', {
   shouldForwardProp: (prop) => prop !== 'noPadding',
 })(({ noPadding }) => ({
-  padding: noPadding ? 0 : '10px 16px',
+  padding: noPadding ? 0 : '10px 8px',
 }));
 
 function TiptapContainer(props) {
+  const [adjustedWidth, setAdjustedWidth] = useState(null);
+  const rootRef = useRef(null);
   const {
     editor,
     disabled,
@@ -153,6 +158,7 @@ function TiptapContainer(props) {
     minHeight,
     height,
     maxHeight,
+    ref,
   } = props;
 
   useEffect(() => {
@@ -163,16 +169,32 @@ function TiptapContainer(props) {
     }
   }, [editor, autoFocus]);
 
+  useEffect(() => {
+    if (props.adjustWidthForLimit) {
+      const el = document.createElement('p');
+
+      el.style.visibility = 'hidden';
+      el.style.position = 'absolute';
+      el.textContent = 'W'.repeat(props.charactersLimit);
+
+      rootRef.current.appendChild(el);
+
+      setAdjustedWidth(`${el.offsetWidth + 27}px`);
+
+      el.remove();
+    }
+  }, [props.adjustWidthForLimit, props.charactersLimit]);
+
   const sizeStyle = useMemo(
     () => ({
-      width: valueToSize(width),
+      width: valueToSize(adjustedWidth || width),
       minWidth: valueToSize(minWidth),
       maxWidth: valueToSize(maxWidth),
       height: valueToSize(height),
       minHeight: valueToSize(minHeight),
       maxHeight: valueToSize(maxHeight),
     }),
-    [minWidth, width, maxWidth, minHeight, height, maxHeight],
+    [adjustedWidth, minWidth, width, maxWidth, minHeight, height, maxHeight],
   );
 
   return (
@@ -181,6 +203,7 @@ function TiptapContainer(props) {
       error={toolbarOpts && toolbarOpts.error}
       className={props.className}
       style={{ width: sizeStyle.width, minWidth: sizeStyle.minWidth, maxWidth: sizeStyle.maxWidth }}
+      ref={rootRef}
     >
       <StyledEditorHolder disableScrollbar={disableScrollbar}>
         <StyledChildren noPadding={toolbarOpts && toolbarOpts.noPadding}>{children}</StyledChildren>

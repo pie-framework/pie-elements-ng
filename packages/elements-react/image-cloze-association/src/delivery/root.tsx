@@ -18,8 +18,7 @@ import { styled } from '@mui/material/styles';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import Translator from '@pie-lib/translator';
-import { groupBy } from 'lodash-es';
-import { flatMap } from 'lodash-es';
+import { flatMap, groupBy } from 'lodash-es';
 
 const { translator } = Translator;
 import Image from './image-container';

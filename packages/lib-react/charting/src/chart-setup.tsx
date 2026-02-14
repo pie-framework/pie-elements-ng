@@ -8,14 +8,13 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { color } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import ChartType from './chart-type';
-import { NumberTextFieldCustom } from '@pie-lib/config-ui';
-import { AlertDialog } from '@pie-lib/config-ui';
+import { AlertDialog, NumberTextFieldCustom } from '@pie-lib/config-ui';
 
 export const resetValues = (data, updateModel, range, onChange, model) => {
   (data || []).forEach((d) => {
@@ -139,12 +138,10 @@ const ConfigureChartPanel = (props) => {
   );
 
   const handleAlertDialog = (openStatus) => {
-    setAlertDialog(
-      (prevState) => ({
-        ...prevState,
-        open: openStatus,
-      }),
-    );
+    setAlertDialog((prevState) => ({
+      ...prevState,
+      open: openStatus,
+    }));
 
     setOpen(openStatus);
   };

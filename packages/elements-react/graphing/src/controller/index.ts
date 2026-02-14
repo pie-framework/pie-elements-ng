@@ -10,9 +10,7 @@
 
 import debug from 'debug';
 
-import { cloneDeep } from 'lodash-es';
-import { uniqWith } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
+import { cloneDeep, isEmpty, uniqWith } from 'lodash-es';
 import defaults from './defaults';
 import { equalMarks, sortedAnswers } from './utils';
 

@@ -9,11 +9,8 @@
  */
 
 import invariant from 'invariant';
-import { range } from 'lodash-es';
+import { head, isEqual, range, tail } from 'lodash-es';
 import Point from '@mapbox/point-geometry';
-import { head } from 'lodash-es';
-import { tail } from 'lodash-es';
-import { isEqual } from 'lodash-es';
 
 export const xy = (x, y) => ({ x, y });
 

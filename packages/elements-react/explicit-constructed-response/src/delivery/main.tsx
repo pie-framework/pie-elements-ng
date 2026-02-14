@@ -10,9 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { debounce } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
-import { isEqual } from 'lodash-es';
+import { isEmpty, isEqual, debounce } from 'lodash-es';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { ConstructedResponse } from '@pie-lib/mask-markup';
 import { color, Collapsible, hasText, hasMedia, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';

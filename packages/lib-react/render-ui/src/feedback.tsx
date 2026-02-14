@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import * as color from './color';
 
 const FeedbackContainer: any = styled('div')({
@@ -72,18 +72,10 @@ export class Feedback extends React.Component {
     if (!correctness || !feedback) return null;
 
     return (
-      <CSSTransition
-        key="hasFeedback"
-        nodeRef={this.nodeRef}
-        timeout={{ enter: 500, exit: 200 }}
-        classNames="feedback"
-      >
+      <CSSTransition key="hasFeedback" nodeRef={this.nodeRef} timeout={{ enter: 500, exit: 200 }} classNames="feedback">
         <TransitionWrapper ref={this.nodeRef}>
           <FeedbackContainer>
-            <FeedbackContent
-              className={correctness}
-              dangerouslySetInnerHTML={{ __html: feedback }}
-            />
+            <FeedbackContent className={correctness} dangerouslySetInnerHTML={{ __html: feedback }} />
           </FeedbackContainer>
         </TransitionWrapper>
       </CSSTransition>
@@ -93,9 +85,7 @@ export class Feedback extends React.Component {
   render() {
     return (
       <div>
-        <TransitionGroup>
-          {this.renderFeedback()}
-        </TransitionGroup>
+        <TransitionGroup>{this.renderFeedback()}</TransitionGroup>
       </div>
     );
   }

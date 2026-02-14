@@ -27,11 +27,7 @@ const StyledRadio: any = styled(Radio)(() => ({
 }));
 
 const RadioWithLabel = ({ label, value, checked, onChange }) => (
-  <StyledFormControlLabel
-    value={value}
-    control={<StyledRadio checked={checked} onChange={onChange} />}
-    label={label}
-  />
+  <StyledFormControlLabel value={value} control={<StyledRadio checked={checked} onChange={onChange} />} label={label} />
 );
 
 RadioWithLabel.propTypes = {

@@ -36,7 +36,7 @@ export class AltDialog extends React.Component {
   closeDialog: any = () => {
     const allDialogs = document.querySelectorAll('#text-dialog');
 
-    allDialogs.forEach(function(s) {
+    allDialogs.forEach(function (s) {
       return s.remove();
     });
   };

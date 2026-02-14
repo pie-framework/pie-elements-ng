@@ -10,10 +10,7 @@
 
 import React from 'react';
 import Toggle from '@pie-lib/correct-answer-toggle';
-import { cloneDeep } from 'lodash-es';
-import { isArray } from 'lodash-es';
-import { isNumber } from 'lodash-es';
-import { isEqual } from 'lodash-es';
+import { cloneDeep, isArray, isEqual, isNumber } from 'lodash-es';
 import Translator from '@pie-lib/translator';
 import { Collapsible, color, hasMedia, hasText, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';

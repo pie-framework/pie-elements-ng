@@ -8,13 +8,13 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { lineToolComponent, lineBase, styles } from '../shared/line';
+import { lineBase, lineToolComponent, styles } from '../shared/line';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { trig, types } from '@pie-lib/plot';
 import { styled } from '@mui/material/styles';
 import { ArrowMarker, genUid } from '../shared/arrow-head';
-import { thinnerShapesNeeded, getAdjustedGraphLimits } from '../../utils';
+import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils';
 
 const StyledLine: any = styled('line', {
   shouldForwardProp: (prop) => !['fill', 'disabled', 'correctness'].includes(prop),

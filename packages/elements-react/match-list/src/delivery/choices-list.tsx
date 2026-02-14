@@ -11,9 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { isEmpty } from 'lodash-es';
-import { isUndefined } from 'lodash-es';
-import { find } from 'lodash-es';
+import { find, isEmpty, isUndefined } from 'lodash-es';
 import DragAndDropAnswer from './answer';
 import { MatchDroppablePlaceholder } from '@pie-lib/drag';
 
@@ -67,7 +65,7 @@ export class ChoicesList extends React.Component {
 
     return (
       <ChoicesContainer>
-         {MatchDroppablePlaceholder ? (
+        {MatchDroppablePlaceholder ? (
           <MatchDroppablePlaceholder disabled={disabled} onRemoveAnswer={onRemoveAnswer}>
             {filteredAnswers}
           </MatchDroppablePlaceholder>

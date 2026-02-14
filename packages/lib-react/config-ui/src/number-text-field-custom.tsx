@@ -312,7 +312,8 @@ export class NumberTextFieldCustom extends React.Component {
               <StyledIconButton
                 disabled={disabled ? disabled : disabledStart}
                 onClick={(e) => this.changeValue(e, -1, true)}
-                size="large">
+                size="large"
+              >
                 <Remove fontSize="small" />
               </StyledIconButton>
             </InputAdornment>
@@ -322,7 +323,8 @@ export class NumberTextFieldCustom extends React.Component {
               <StyledIconButton
                 disabled={disabled ? disabled : disabledEnd}
                 onClick={(e) => this.changeValue(e, 1, true)}
-                size="large">
+                size="large"
+              >
                 <Add fontSize="small" />
               </StyledIconButton>
             </InputAdornment>

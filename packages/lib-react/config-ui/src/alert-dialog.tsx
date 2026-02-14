@@ -21,8 +21,25 @@ const StyledDialogContentText: any = styled(DialogContentText)(() => ({
   fontSize: 'max(1rem, 14px)',
 }));
 
-const AlertDialog = ({ text, title, onClose, onConfirm, open, onCloseText, onConfirmText, disableAutoFocus, disableEnforceFocus, disableRestoreFocus }) => (
-  <Dialog open={open} disableAutoFocus={disableAutoFocus} disableEnforceFocus={disableEnforceFocus} disableRestoreFocus={disableRestoreFocus} onClose={onClose}>
+const AlertDialog = ({
+  text,
+  title,
+  onClose,
+  onConfirm,
+  open,
+  onCloseText,
+  onConfirmText,
+  disableAutoFocus,
+  disableEnforceFocus,
+  disableRestoreFocus,
+}) => (
+  <Dialog
+    open={open}
+    disableAutoFocus={disableAutoFocus}
+    disableEnforceFocus={disableEnforceFocus}
+    disableRestoreFocus={disableRestoreFocus}
+    onClose={onClose}
+  >
     {title && <StyledDialogTitle>{title}</StyledDialogTitle>}
     {text && (
       <DialogContent>

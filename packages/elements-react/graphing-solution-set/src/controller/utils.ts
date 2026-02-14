@@ -8,10 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { isEqual } from 'lodash-es';
-import lodash from 'lodash-es';
-import { uniqWith } from 'lodash-es';
-import { differenceWith } from 'lodash-es';
+import { isEqual, differenceWith, uniq, uniqWith } from 'lodash-es';
 
 /*
  * Constant to check equal segments
@@ -94,7 +91,7 @@ export const equalLine = (line1, line2) => {
   } else if (c1 !== c2) {
     return false;
   }
-  return lodash.uniq(proportions).length === 1 && line1.fill === line2.fill;
+  return uniq(proportions).length === 1 && line1.fill === line2.fill;
   // (y2 - y1)/(x2 - x1) = (y4 - y3)/(x4 - x3);
   // return ((Math.abs((line1.to.y - line1.from.y) / (line1.to.x - line1.from.x))) === (Math.abs((line2.to.y - line2.from.y) / (line2.to.x - line2.from.x))));
 };

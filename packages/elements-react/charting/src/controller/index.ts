@@ -9,9 +9,7 @@
  */
 
 import debug from 'debug';
-import { isEqual } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
-import { pick } from 'lodash-es';
+import { isEmpty, isEqual, pick } from 'lodash-es';
 import defaults from './defaults';
 
 import { partialScoring } from '@pie-element/shared-controller-utils';
@@ -26,12 +24,12 @@ export const checkLabelsEquality = (givenAnswerLabel, correctAnswerLabel) =>
 export const setCorrectness = (answers, partialScoring) =>
   answers
     ? answers.map((answer) => ({
-      ...answer,
-      correctness: {
-        value: partialScoring ? 'incorrect' : 'correct',
-        label: partialScoring ? 'incorrect' : 'correct',
-      },
-    }))
+        ...answer,
+        correctness: {
+          value: partialScoring ? 'incorrect' : 'correct',
+          label: partialScoring ? 'incorrect' : 'correct',
+        },
+      }))
     : [];
 
 export const normalize = (question) => ({ ...defaults, ...question });

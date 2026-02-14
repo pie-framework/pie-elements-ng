@@ -8,7 +8,6 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React from 'react';
 // import Input from './components/input';
 import { withMask } from './with-mask';
 

@@ -17,17 +17,10 @@ const preventInteractionStyle = {
   flex: 1,
 };
 
-export function DroppablePlaceholder({ 
-  id,
-  children, 
-  disabled, 
-  classes, 
-  isVerticalPool, 
-  minHeight 
-}) {
-  const { setNodeRef, isOver } = useDroppable({ 
+export function DroppablePlaceholder({ id, children, disabled, classes, isVerticalPool, minHeight }) {
+  const { setNodeRef, isOver } = useDroppable({
     id,
-    disabled 
+    disabled,
   });
 
   return (

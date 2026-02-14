@@ -8,9 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { isEqual } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, isEmpty, isEqual } from 'lodash-es';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
 import debug from 'debug';
@@ -143,8 +141,8 @@ const getOutComeScore = (question, env, answers = {}) => {
   return correctness === 'correct'
     ? 1
     : correctness === 'partial' && isPartialScoring
-    ? getPartialScore(question, answers)
-    : 0;
+      ? getPartialScore(question, answers)
+      : 0;
 };
 
 export const outcome = (question, session, env) => {
@@ -220,8 +218,14 @@ export async function model(question, session, env, updateSession) {
       ? await getFeedbackForCorrectness(correctInfo.correctness, normalizedQuestion.feedback)
       : undefined;
 
-  const { extraCSSRules, feedbackEnabled, promptEnabled, prompt, lockChoiceOrder: _, ...essentials } =
-    normalizedQuestion;
+  const {
+    extraCSSRules,
+    feedbackEnabled,
+    promptEnabled,
+    prompt,
+    lockChoiceOrder: _,
+    ...essentials
+  } = normalizedQuestion;
   const out = {
     ...essentials,
     extraCSSRules,

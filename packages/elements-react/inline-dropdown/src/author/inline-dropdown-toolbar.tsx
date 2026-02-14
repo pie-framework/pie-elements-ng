@@ -15,8 +15,7 @@ import PropTypes from 'prop-types';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
-import { isEqual } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
+import { isEmpty, isEqual } from 'lodash-es';
 import { color } from '@pie-lib/render-ui';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -301,7 +300,6 @@ class RespAreaToolbar extends React.Component {
   };
 
   onBlur: any = () => {
-
     if (this.clickedInside) {
       this.clickedInside = false;
       return;

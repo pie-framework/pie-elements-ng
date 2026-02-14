@@ -113,7 +113,7 @@ export class RawLine extends React.Component {
             const r = 6;
             const enableDraggable = defineChart || point.interactive;
             const Component = enableDraggable ? DraggableHandle : DragHandle;
-                        
+
             return (
               <Component
                 key={`point-${point.x}-${i}`}

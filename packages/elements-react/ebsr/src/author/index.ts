@@ -114,7 +114,7 @@ export default class EbsrConfigure extends HTMLElement {
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find(option => option.value === this._model.language)) {
+      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
         this._configuration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,

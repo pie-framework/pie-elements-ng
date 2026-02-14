@@ -23,7 +23,7 @@ const DisplaySize = ({ size, label, onChange }) => {
   const updateSize = (key, v) => {
     onChange({ ...size, [key]: v });
   };
-  
+
   return (
     <div>
       <Typography>{label}</Typography>

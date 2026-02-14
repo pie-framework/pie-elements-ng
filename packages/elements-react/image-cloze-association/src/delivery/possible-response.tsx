@@ -53,6 +53,7 @@ const BaseContainer: any = styled('div')(() => ({
 }));
 
 const StyledSpan: any = styled(StaticHTMLSpan)(() => ({
+  cursor: 'grab',
   backgroundColor: color.background(),
   '&.hiddenSpan': {
     visibility: 'hidden',

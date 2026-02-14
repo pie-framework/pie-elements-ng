@@ -10,14 +10,14 @@
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 
 export function DragProvider({ children, onDragEnd, onDragStart, collisionDetection, modifiers, autoScroll }) {
   const [activeId, setActiveId] = useState(null);
-  
+
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 }}),
-    useSensor(KeyboardSensor)
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor),
   );
 
   const handleDragStart = (event) => {
@@ -35,8 +35,8 @@ export function DragProvider({ children, onDragEnd, onDragStart, collisionDetect
   };
 
   return (
-    <DndContext 
-      sensors={sensors} 
+    <DndContext
+      sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       collisionDetection={collisionDetection}

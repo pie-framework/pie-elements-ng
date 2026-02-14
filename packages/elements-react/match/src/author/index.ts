@@ -105,7 +105,7 @@ export default class MatchConfigure extends HTMLElement {
      * if rows.inputConfiguration is not defined we try to default to the old enableImages flag
      * This flag 'enableImages' will be removed in the future
      */
-    
+
     if (isEmpty(c?.rows?.inputConfiguration)) {
       set(this._configuration.rows, 'inputConfiguration.image.disabled', !this._model?.enableImages);
       set(this._configuration.rows, 'inputConfiguration.video.disabled', true);

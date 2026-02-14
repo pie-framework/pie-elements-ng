@@ -114,16 +114,8 @@ const LikertOrientation = (props) => {
         value={model.likertOrientation}
         onChange={onChangeLikertOrientation}
       >
-        <FormControlLabel
-          value={LIKERT_ORIENTATION.horizontal}
-          control={<CustomColorRadio />}
-          label="Horizontal"
-        />
-        <FormControlLabel
-          value={LIKERT_ORIENTATION.vertical}
-          control={<CustomColorRadio />}
-          label="Vertical"
-        />
+        <FormControlLabel value={LIKERT_ORIENTATION.horizontal} control={<CustomColorRadio />} label="Horizontal" />
+        <FormControlLabel value={LIKERT_ORIENTATION.vertical} control={<CustomColorRadio />} label="Vertical" />
       </RadioGroup>
     </RadioButtonsWrapper>
   );
@@ -145,21 +137,9 @@ const LikertScale = (props) => {
     <RadioButtonsWrapper>
       <RadioButtonsColumnHeader>Likert Scale</RadioButtonsColumnHeader>
       <RadioGroup aria-label="likertScale" name="likertScale" value={model.likertScale} onChange={onChangeLikertScale}>
-        <FormControlLabel
-          value={LIKERT_SCALE.likert3}
-          control={<CustomColorRadio />}
-          label="Likert 3"
-        />
-        <FormControlLabel
-          value={LIKERT_SCALE.likert5}
-          control={<CustomColorRadio />}
-          label="Likert 5"
-        />
-        <FormControlLabel
-          value={LIKERT_SCALE.likert7}
-          control={<CustomColorRadio />}
-          label="Likert 7"
-        />
+        <FormControlLabel value={LIKERT_SCALE.likert3} control={<CustomColorRadio />} label="Likert 3" />
+        <FormControlLabel value={LIKERT_SCALE.likert5} control={<CustomColorRadio />} label="Likert 5" />
+        <FormControlLabel value={LIKERT_SCALE.likert7} control={<CustomColorRadio />} label="Likert 7" />
       </RadioGroup>
     </RadioButtonsWrapper>
   );
@@ -188,21 +168,9 @@ const LikertType = (props) => {
           value={model.likertType}
           onChange={onChangeLikertType}
         >
-          <FormControlLabel
-            value={LIKERT_TYPE.agreement}
-            control={<CustomColorRadio />}
-            label="Agreement"
-          />
-          <FormControlLabel
-            value={LIKERT_TYPE.frequency}
-            control={<CustomColorRadio />}
-            label="Frequency"
-          />
-          <FormControlLabel
-            value={LIKERT_TYPE.yesNo}
-            control={<CustomColorRadio />}
-            label="Yes/No"
-          />
+          <FormControlLabel value={LIKERT_TYPE.agreement} control={<CustomColorRadio />} label="Agreement" />
+          <FormControlLabel value={LIKERT_TYPE.frequency} control={<CustomColorRadio />} label="Frequency" />
+          <FormControlLabel value={LIKERT_TYPE.yesNo} control={<CustomColorRadio />} label="Yes/No" />
         </RadioGroup>
 
         <RadioGroup
@@ -211,16 +179,8 @@ const LikertType = (props) => {
           value={model.likertType}
           onChange={onChangeLikertType}
         >
-          <FormControlLabel
-            value={LIKERT_TYPE.importance}
-            control={<CustomColorRadio />}
-            label="Importance"
-          />
-          <FormControlLabel
-            value={LIKERT_TYPE.likelihood}
-            control={<CustomColorRadio />}
-            label="Likelihood"
-          />
+          <FormControlLabel value={LIKERT_TYPE.importance} control={<CustomColorRadio />} label="Importance" />
+          <FormControlLabel value={LIKERT_TYPE.likelihood} control={<CustomColorRadio />} label="Likelihood" />
           <FormControlLabel value={LIKERT_TYPE.like} control={<CustomColorRadio />} label="Like" />
         </RadioGroup>
       </FlexRow>

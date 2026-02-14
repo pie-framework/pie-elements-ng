@@ -8,13 +8,13 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Extension, Node, mergeAttributes } from '@tiptap/core';
-import { NodeViewWrapper, ReactRenderer, ReactNodeViewRenderer } from '@tiptap/react';
-import { Plugin, PluginKey, NodeSelection, TextSelection } from 'prosemirror-state';
+import { Node } from '@tiptap/core';
+import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
+import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
-import { wrapMath, mmlToLatex, renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { wrapMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const ensureTextAfterMathPluginKey = new PluginKey('ensureTextAfterMath');
 
@@ -128,30 +128,32 @@ export const MathNode = Node.create({
 
   addCommands() {
     return {
-      insertMath: (latex = '') => ({ tr, editor, dispatch }) => {
-        const { state } = editor.view;
-        const node = state.schema.nodes.math.create({
-          latex,
-        });
-        const { selection } = state;
+      insertMath:
+        (latex = '') =>
+        ({ tr, editor, dispatch }) => {
+          const { state } = editor.view;
+          const node = state.schema.nodes.math.create({
+            latex,
+          });
+          const { selection } = state;
 
-        // The inserted node is typically just before the cursor
-        const pos = selection.$from.pos;
+          // The inserted node is typically just before the cursor
+          const pos = selection.$from.pos;
 
-        tr.insert(pos, node);
+          tr.insert(pos, node);
 
-        if (node?.type?.name === this.name) {
-          // Create a NodeSelection from the current doc
-          const sel = NodeSelection.create(tr.doc, selection.$from.pos);
+          if (node?.type?.name === this.name) {
+            // Create a NodeSelection from the current doc
+            const sel = NodeSelection.create(tr.doc, selection.$from.pos);
 
-          // Build a fresh transaction from the current state and set the selection
-          tr.setSelection(sel);
-        }
+            // Build a fresh transaction from the current state and set the selection
+            tr.setSelection(sel);
+          }
 
-        dispatch(tr);
+          dispatch(tr);
 
-        return true;
-      },
+          return true;
+        },
       // insertMath: (latex = '') => ({ commands }) => {
       //   return commands.insertContent({
       //     type: this.name,

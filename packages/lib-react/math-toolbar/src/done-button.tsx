@@ -33,12 +33,7 @@ const StyledIconButton: any = styled(IconButton)(({ theme, hideBackground }) => 
 }));
 
 export const RawDoneButton = ({ onClick, hideBackground }) => (
-  <StyledIconButton
-    aria-label="Done"
-    onClick={onClick}
-    hideBackground={hideBackground}
-    size="large"
-  >
+  <StyledIconButton aria-label="Done" onClick={onClick} hideBackground={hideBackground} size="large">
     <Check />
   </StyledIconButton>
 );

@@ -42,11 +42,7 @@ const StyledSwitch: any = styled(Switch)(({ checked }) => ({
 const Toggle = ({ checked, disabled, label, toggle }) => (
   <StyledToggle>
     <StyledInputLabel>{label}</StyledInputLabel>
-    <StyledSwitch
-      checked={checked}
-      disabled={disabled}
-      onChange={(e) => toggle(e.target.checked)}
-    />
+    <StyledSwitch checked={checked} disabled={disabled} onChange={(e) => toggle(e.target.checked)} />
   </StyledToggle>
 );
 

@@ -8,13 +8,9 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { head } from 'lodash-es';
-import { tail } from 'lodash-es';
 import { utils } from '@pie-lib/plot';
 import invariant from 'invariant';
-import { isEqual } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, head, isEmpty, isEqual, tail } from 'lodash-es';
 
 export const tickCount = utils.tickCount;
 export const bounds = utils.bounds;

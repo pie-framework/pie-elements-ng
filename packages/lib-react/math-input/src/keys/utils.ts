@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import _ from 'lodash-es';
+import { flatten, times } from 'lodash-es';
 
 export const mkSet = (category) => (o) => ({ ...o, category });
 
@@ -33,9 +33,7 @@ export const toKey = (category) => (v) => {
 export const transformToKeySetStructure = (data = []) => {
   const structure = [];
 
-  _.times(5, () => {
-    structure.push([]);
-  });
+  times(5, () => structure.push([]));
 
   let ln = data.length;
   let i = 0;
@@ -53,9 +51,10 @@ export const transformToKeySetStructure = (data = []) => {
 };
 
 const latexAndNameDontExist = (base) => (k) => {
-  const flattened = _.flatten(base);
+  const flattened = flatten(base);
   const latexExists = flattened.some((b) => b.latex === k.latex);
   const nameExists = flattened.some((b) => b.name === k.name);
+
   return !latexExists && !nameExists;
 };
 
@@ -64,12 +63,8 @@ export const extendKeySet = (base = [], keySetData = []) => {
 
   const final = [];
 
-  _.times(5 - base.length, () => {
-    base.push([]);
-  });
-  _.times(5, () => {
-    final.push([]);
-  });
+  times(5 - base.length, () => base.push([]));
+  times(5, () => final.push([]));
 
   const extra = transformToKeySetStructure(keySetData);
 

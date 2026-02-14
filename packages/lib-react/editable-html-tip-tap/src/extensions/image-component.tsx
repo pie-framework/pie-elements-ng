@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { isEqual } from 'lodash-es';
 import debug from 'debug';

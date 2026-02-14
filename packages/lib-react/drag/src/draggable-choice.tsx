@@ -39,14 +39,9 @@ export function DraggableChoice({
   choiceIndex,
   onRemoveChoice,
   type,
-  id
+  id,
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    isDragging
-  } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: id || choice.id, // id to be used for dnd-kit
     disabled: disabled,
     categoryId: category?.id,
@@ -60,18 +55,12 @@ export function DraggableChoice({
       alternateResponseIndex,
       choiceIndex,
       onRemoveChoice,
-      type
-    }
+      type,
+    },
   });
 
   return (
-    <StyledChoice
-      ref={setNodeRef}
-      className={className}
-      isDragging={isDragging}
-      {...attributes}
-      {...listeners}
-    >
+    <StyledChoice ref={setNodeRef} className={className} isDragging={isDragging} {...attributes} {...listeners}>
       {children}
     </StyledChoice>
   );

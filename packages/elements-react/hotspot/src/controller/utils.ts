@@ -8,8 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { isEqual } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
+import { isEmpty, isEqual } from 'lodash-es';
 
 export const getCorrectResponse = (choices) =>
   choices

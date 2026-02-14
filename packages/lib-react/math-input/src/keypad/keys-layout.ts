@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import * as _ from 'lodash-es';
+import { times, zip } from 'lodash-es';
 
 /**
  * Sort additional keys.
@@ -18,10 +18,9 @@ import * as _ from 'lodash-es';
  */
 export const sortKeys = (keys) => {
   // add any missing rows
-  _.times(5 - keys.length, () => {
-    keys.push([]);
-  });
+  times(5 - keys.length, () => keys.push([]));
 
-  const out = _.zip.apply(null, keys);
+  const out = zip.apply(null, keys);
+
   return out;
 };

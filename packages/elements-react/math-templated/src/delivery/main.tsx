@@ -10,8 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { isEqual } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
+import { isEmpty, isEqual } from 'lodash-es';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { mq, HorizontalKeypad, updateSpans } from '@pie-lib/math-input';
@@ -673,7 +672,8 @@ export class Main extends React.Component {
             );
 
             return (
-              <Expression ref={tooltipContainerRef}
+              <Expression
+                ref={tooltipContainerRef}
                 $incorrect={!emptyResponse && !responseIsCorrect && !showCorrect}
                 $correct={!emptyResponse && (responseIsCorrect || showCorrect)}
                 $showCorrectness={!emptyResponse && disabled && correctness && !view}
@@ -735,13 +735,7 @@ export class Main extends React.Component {
                       null,
                   )}
                 >
-                  {studentPrintMode ? (
-                    <PrintContainer>{MQStatic}</PrintContainer>
-                  ) : (
-                    <div>
-                      {MQStatic}
-                    </div>
-                  )}
+                  {studentPrintMode ? <PrintContainer>{MQStatic}</PrintContainer> : <div>{MQStatic}</div>}
                 </Tooltip>
               </Expression>
             );
@@ -784,12 +778,7 @@ export class Main extends React.Component {
 
           <MainContainer>
             {showCorrectAnswerToggle && (
-              <StyledToggle
-                language={language}
-                show
-                toggled={showCorrect}
-                onToggle={this.toggleShowCorrect}
-              />
+              <StyledToggle language={language} show toggled={showCorrect} onToggle={this.toggleShowCorrect} />
             )}
           </MainContainer>
 

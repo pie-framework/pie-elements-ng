@@ -10,8 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { debounce } from 'lodash-es';
-import { isEqual } from 'lodash-es';
+import { debounce, isEqual } from 'lodash-es';
 import Button from '@mui/material/Button';
 import Delete from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -152,10 +151,7 @@ export class Choice extends React.Component {
             }}
             {...inputProps}
           />
-          <StyledDeleteButton
-            aria-label="delete"
-            onClick={onDelete}
-            size="large">
+          <StyledDeleteButton aria-label="delete" onClick={onDelete} size="large">
             <Delete />
           </StyledDeleteButton>
         </ChoiceWrapper>
@@ -232,7 +228,7 @@ export class AlternateSection extends React.Component {
     const { choiceChanged, lengthChanged, maxLength, choices } = this.props;
 
     const labelLengthsArr = choices.map((choice) => decodeHTML(choice.label || '').length);
-    labelLengthsArr[index] =  decodeHTML(value).length;
+    labelLengthsArr[index] = decodeHTML(value).length;
 
     const newLength = Math.max(...labelLengthsArr);
 
@@ -289,7 +285,7 @@ export class AlternateSection extends React.Component {
             value={value || ''}
             readOnly={showMaxLength}
             MenuProps={{
-              transitionDuration: { enter: 225, exit: 195 }
+              transitionDuration: { enter: 225, exit: 195 },
             }}
           >
             <MenuItem value="">

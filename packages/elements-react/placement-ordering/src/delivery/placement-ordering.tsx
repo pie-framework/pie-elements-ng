@@ -12,10 +12,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import debug from 'debug';
-import { uniqueId } from 'lodash-es';
-import { isEqual } from 'lodash-es';
-import { difference } from 'lodash-es';
+import { difference, isEqual, uniqueId } from 'lodash-es';
 import { styled } from '@mui/material/styles';
+import { closestCenter } from '@dnd-kit/core';
 
 import { Collapsible, color, Feedback, hasMedia, hasText, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
@@ -253,18 +252,18 @@ export class PlacementOrdering extends React.Component {
 
     return showingCorrect
       ? buildState(
-        model.choices,
-        model.correctResponse,
-        model.correctResponse.map((id) => ({ id, outcome: 'correct' })),
-        {
+          model.choices,
+          model.correctResponse,
+          model.correctResponse.map((id) => ({ id, outcome: 'correct' })),
+          {
+            includeTargets,
+            allowSameChoiceInTargets: model.config.allowSameChoiceInTargets,
+          },
+        )
+      : buildState(model.choices, session.value, model.outcomes, {
           includeTargets,
           allowSameChoiceInTargets: model.config.allowSameChoiceInTargets,
-        },
-      )
-      : buildState(model.choices, session.value, model.outcomes, {
-        includeTargets,
-        allowSameChoiceInTargets: model.config.allowSameChoiceInTargets,
-      });
+        });
   };
 
   onDragEnd: any = (event) => {
@@ -289,7 +288,7 @@ export class PlacementOrdering extends React.Component {
         this.onRemoveChoice(draggedItem, ordering);
       }
     }
-  }
+  };
 
   render() {
     const { model } = this.props;
@@ -335,7 +334,7 @@ export class PlacementOrdering extends React.Component {
     };
 
     return (
-      <DragProvider onDragStart={() => { }} onDragEnd={this.onDragEnd}>
+      <DragProvider onDragStart={() => { }} onDragEnd={this.onDragEnd} collisionDetection={closestCenter}>
         <PlacementOrderingContainer>
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>
             {showTeacherInstructions && (
@@ -352,7 +351,6 @@ export class PlacementOrdering extends React.Component {
             </StyledPrompt>
 
             <StyledToggle
-              className="toggle"
               show={showToggle}
               toggled={showingCorrect}
               onToggle={this.toggleCorrect}
@@ -375,7 +373,10 @@ export class PlacementOrdering extends React.Component {
             {displayNote && <StyledNote dangerouslySetInnerHTML={{ __html: note }} />}
 
             {showRationale && (
-              <StyledCollapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }} className="collapsible">
+              <StyledCollapsible
+                labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}
+                className="collapsible"
+              >
                 <PreviewPrompt prompt={rationale} />
               </StyledCollapsible>
             )}

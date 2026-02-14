@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { lineToolComponent, lineBase, styles } from '../shared/line';
+import { lineBase, lineToolComponent, styles } from '../shared/line';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';

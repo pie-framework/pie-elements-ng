@@ -9,8 +9,7 @@
  */
 
 import debug from 'debug';
-import { clone } from 'lodash-es';
-import { remove } from 'lodash-es';
+import { clone, remove } from 'lodash-es';
 import { score } from './scoring';
 
 export { score };

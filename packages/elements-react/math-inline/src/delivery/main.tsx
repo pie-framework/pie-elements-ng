@@ -17,11 +17,10 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { ResponseTypes } from './utils';
-import { isEqual } from 'lodash-es';
+import { isEmpty, isEqual } from 'lodash-es';
 import SimpleQuestionBlock from './simple-question-block';
 import MathQuill from '@pie-element/shared-mathquill';
 import { color } from '@pie-lib/render-ui';
-import { isEmpty } from 'lodash-es';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
 const { translator } = Translator;
@@ -647,9 +646,7 @@ export class Main extends React.Component {
         {viewMode &&
           showTeacherInstructions &&
           (!animationsDisabled ? (
-            <StyledCollapsible
-              labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
-            >
+            <StyledCollapsible labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}>
               <div dangerouslySetInnerHTML={{ __html: teacherInstructions }} />
             </StyledCollapsible>
           ) : (
@@ -786,9 +783,7 @@ export class Main extends React.Component {
           </Readable>
         )}
 
-        {viewMode && displayNote && (
-          <Note dangerouslySetInnerHTML={{ __html: `<strong>Note:</strong> ${note}` }} />
-        )}
+        {viewMode && displayNote && <Note dangerouslySetInnerHTML={{ __html: `<strong>Note:</strong> ${note}` }} />}
 
         {viewMode &&
           showRationale &&
@@ -804,7 +799,15 @@ export class Main extends React.Component {
 
     if (tooltipModeEnabled && (showCorrectAnswerToggle || showTeacherInstructions || showRationale || feedback)) {
       return (
-        <UiLayout extraCSSRules={extraCSSRules}>
+        <StyledUiLayout
+          extraCSSRules={extraCSSRules}
+          ref={(r) => {
+            // eslint-disable-next-line react/no-find-dom-node
+            const domNode = ReactDOM.findDOMNode(r);
+
+            this.root = domNode || this.root;
+          }}
+        >
           <StyledTooltip
             interactive
             enterTouchDelay={0}
@@ -890,16 +893,14 @@ export class Main extends React.Component {
               </div>
             }
           >
-            <MainContainer ref={(r) => (this.root = r || this.root)}>
-              {midContent}
-            </MainContainer>
+            {midContent}
           </StyledTooltip>
-        </UiLayout>
+        </StyledUiLayout>
       );
     }
 
     return (
-      <UiLayout
+      <StyledUiLayout
         id={id}
         extraCSSRules={extraCSSRules}
         ref={(r) => {
@@ -909,10 +910,8 @@ export class Main extends React.Component {
           this.root = domNode || this.root;
         }}
       >
-        <MainContainer>
-          {midContent}
-        </MainContainer>
-      </UiLayout>
+        {midContent}
+      </StyledUiLayout>
     );
   }
 }
@@ -979,11 +978,11 @@ if (typeof document !== 'undefined') {
   }
 }
 
-const MainContainer: any = styled('div')({
+const StyledUiLayout: any = styled(UiLayout)(() => ({
   color: color.text(),
   backgroundColor: color.background(),
   display: 'inline-block',
-});
+}));
 
 const StyledTooltip: any = styled(Tooltip)({
   // Styles applied via slotProps.sx below
@@ -1015,13 +1014,10 @@ const ResponseContainer: any = styled('div')(({ theme }) => ({
 }));
 
 const Expression: any = styled('div', {
-  shouldForwardProp: (prop) => !['isIncorrect', 'isCorrect', 'showCorrectness', 'correctAnswerShown', 'printCorrect'].includes(prop),
+  shouldForwardProp: (prop) =>
+    !['isIncorrect', 'isCorrect', 'showCorrectness', 'correctAnswerShown', 'printCorrect'].includes(prop),
 })(({ theme, isIncorrect, isCorrect, showCorrectness, correctAnswerShown, printCorrect }) => {
-  const borderColor = isIncorrect
-    ? color.incorrect()
-    : isCorrect
-      ? color.correct()
-      : undefined;
+  const borderColor = isIncorrect ? color.incorrect() : isCorrect ? color.correct() : undefined;
 
   return {
     maxWidth: 'fit-content',
@@ -1029,9 +1025,10 @@ const Expression: any = styled('div', {
     ...(showCorrectness && {
       border: borderColor ? `2px solid ${borderColor} !important` : '2px solid',
     }),
-    ...(!showCorrectness && borderColor && {
-      borderColor: `${borderColor} !important`,
-    }),
+    ...(!showCorrectness &&
+      borderColor && {
+        borderColor: `${borderColor} !important`,
+      }),
     ...(correctAnswerShown && {
       padding: theme.spacing(1),
       letterSpacing: '0.5px',

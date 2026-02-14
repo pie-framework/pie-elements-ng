@@ -8,9 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { connect } from 'react-redux';
+import { connect, Provider } from 'react-redux';
 import React from 'react';
-import { Provider } from 'react-redux';
 import { applyMiddleware, createStore } from 'redux';
 import reducer from './reducer';
 import { changeMarks } from './actions';

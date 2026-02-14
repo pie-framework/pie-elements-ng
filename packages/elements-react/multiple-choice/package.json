@@ -13,6 +13,7 @@
     "@pie-lib/translator": "workspace:*",
     "classnames": "^2.2.5",
     "debug": "^4.1.1",
+    "lodash-es": "^4.17.23",
     "prop-types": "^15.8.1",
     "react-transition-group": "^4.4.5",
     "@pie-element/shared-configure-events": "workspace:*",
@@ -20,8 +21,7 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "lodash-es": "^4.17.22"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",

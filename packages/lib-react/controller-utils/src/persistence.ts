@@ -8,9 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { get } from 'lodash-es';
-import { shuffle } from 'lodash-es';
-import { isEmpty } from 'lodash-es';
+import { get, isEmpty, shuffle } from 'lodash-es';
 
 // eslint-disable-next-line no-console
 const lg = (n) => console[n].bind(console, 'controller-utils:');

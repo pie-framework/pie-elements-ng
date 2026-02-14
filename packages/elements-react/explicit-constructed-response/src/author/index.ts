@@ -11,8 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
-import { defaults } from 'lodash-es';
-import { isArray } from 'lodash-es';
+import { defaults, isArray } from 'lodash-es';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
@@ -73,7 +72,8 @@ export default class ExplicitConstructedResponse extends HTMLElement {
   set model(s) {
     this._model = ExplicitConstructedResponse.prepareModel(s);
     if (this._model.responseAreaInputConfiguration) {
-      this._model.responseAreaInputConfiguration = this._configuration.responseAreaInputConfiguration?.inputConfiguration;
+      this._model.responseAreaInputConfiguration =
+        this._configuration.responseAreaInputConfiguration?.inputConfiguration;
     }
     this._render();
   }
@@ -98,7 +98,7 @@ export default class ExplicitConstructedResponse extends HTMLElement {
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find(option => option.value === this._model.language)) {
+      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
         this._configuration.languageChoices.options.push({
           value: this._model.language,
           label: this._model.language,
@@ -135,12 +135,11 @@ export default class ExplicitConstructedResponse extends HTMLElement {
 
     this._model = {
       ...this._model,
-      responseAreaInputConfiguration: newInputConfig
+      responseAreaInputConfiguration: newInputConfig,
     };
 
     this.onModelChanged(this._model);
   }
-
 
   /** @param {done, progress, file} handler */
   insertImage(handler) {

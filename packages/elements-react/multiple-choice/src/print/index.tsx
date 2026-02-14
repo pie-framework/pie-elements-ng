@@ -10,8 +10,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { debounce } from 'lodash-es';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, debounce } from 'lodash-es';
 import Main from '../delivery/main';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';

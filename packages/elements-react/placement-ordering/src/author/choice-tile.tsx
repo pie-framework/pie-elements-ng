@@ -33,7 +33,6 @@ const StyledChoiceTile: any = styled('div')(({ theme }) => ({
 
 const StyledEditableHtml: any = styled(EditableHtml)(({ theme, isTargetPrompt }) => ({
   width: '80%',
-  border: 'none',
   borderRadius: '4px',
   ...(isTargetPrompt && {
     backgroundColor: theme.palette.error.light,
