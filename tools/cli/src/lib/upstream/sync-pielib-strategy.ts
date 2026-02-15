@@ -146,7 +146,10 @@ export class PieLibStrategy implements SyncStrategy {
       }
 
       // Keep local compatibility exports that upstream plot package currently misses.
-      const wroteCompatibilityPatch = await this.ensurePlotTypesCompatibilityPatch(pkg, targetSrcDir);
+      const wroteCompatibilityPatch = await this.ensurePlotTypesCompatibilityPatch(
+        pkg,
+        targetSrcDir
+      );
 
       // Ensure package.json has ESM module support and expected exports
       let wrotePkgJson = false;
@@ -158,7 +161,13 @@ export class PieLibStrategy implements SyncStrategy {
       // Ensure tsconfig.json exists
       const wroteTsConfig = await this.ensureTsConfig(pkg, targetDir, logger);
 
-      if (libChanged || wroteCompatibilityPatch || wrotePkgJson || wroteViteConfig || wroteTsConfig) {
+      if (
+        libChanged ||
+        wroteCompatibilityPatch ||
+        wrotePkgJson ||
+        wroteViteConfig ||
+        wroteTsConfig
+      ) {
         this.touchedPieLibPackages.add(pkg);
       }
     }

@@ -22,7 +22,11 @@ const createConfig = (rootDir: string) =>
 
 const createElementBase = async (elementDir: string) => {
   await mkdir(join(elementDir, 'src'), { recursive: true });
-  await writeFile(join(elementDir, 'src', 'index.ts'), 'export default class TestElement {}\n', 'utf-8');
+  await writeFile(
+    join(elementDir, 'src', 'index.ts'),
+    'export default class TestElement {}\n',
+    'utf-8'
+  );
 };
 
 const readBuildScript = async (elementDir: string): Promise<string> => {
@@ -38,7 +42,11 @@ describe('ensureElementPackageJson iife build script generation', () => {
     await createElementBase(elementDir);
     await writeFile(join(elementDir, 'vite.config.iife.ts'), 'export default {};\n', 'utf-8');
 
-    const changed = await ensureElementPackageJson('test-element', elementDir, createConfig(rootDir));
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
     expect(changed).toBe(true);
 
     const buildScript = await readBuildScript(elementDir);
@@ -51,7 +59,11 @@ describe('ensureElementPackageJson iife build script generation', () => {
 
     await createElementBase(elementDir);
 
-    const changed = await ensureElementPackageJson('test-element', elementDir, createConfig(rootDir));
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
     expect(changed).toBe(true);
 
     const buildScript = await readBuildScript(elementDir);

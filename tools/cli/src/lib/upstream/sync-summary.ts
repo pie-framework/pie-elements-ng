@@ -29,7 +29,11 @@ function getAllSyncedElements(pieElementsNgPath: string): string[] {
         if (!entry.isDirectory() || entry.name.startsWith('.')) {
           return false;
         }
-        if (EXCLUDED_UPSTREAM_ELEMENTS.includes(entry.name as (typeof EXCLUDED_UPSTREAM_ELEMENTS)[number])) {
+        if (
+          EXCLUDED_UPSTREAM_ELEMENTS.includes(
+            entry.name as (typeof EXCLUDED_UPSTREAM_ELEMENTS)[number]
+          )
+        ) {
           return false;
         }
         return existsSync(join(elementsReactPath, entry.name, 'package.json'));
