@@ -39,8 +39,8 @@ export async function loadElement(
   try {
     let module: any;
 
-    // Extract element name from package path (e.g., "@pie-element/multiple-choice" -> "multiple-choice")
-    const elementName = packagePath.replace('@pie-element/', '');
+    // Extract element name from package path
+    const elementName = packagePath.replace(/^@pie-element\//, '');
 
     // Check if we have a static import for this element
     const hasStaticImport = hasElementModule(elementName);
@@ -95,7 +95,7 @@ export async function loadController(
     let module: any;
 
     // Extract element name from package name
-    const elementName = packageName.replace('@pie-element/', '');
+    const elementName = packageName.replace(/^@pie-element\//, '');
 
     // Check if we have a static import for this controller
     const controllerImporter = getControllerModule(elementName);
@@ -138,7 +138,7 @@ export async function loadAuthor(
     let module: any;
 
     // Extract element name from package name
-    const elementName = packageName.replace('@pie-element/', '');
+    const elementName = packageName.replace(/^@pie-element\//, '');
 
     // Check if we have a static import for this author view
     const authorImporter = getAuthorModule(elementName);
@@ -181,7 +181,7 @@ export async function loadPrint(
     let module: any;
 
     // Extract element name from package name
-    const elementName = packageName.replace('@pie-element/', '');
+    const elementName = packageName.replace(/^@pie-element\//, '');
 
     // Check if we have a static import for this print view
     const printImporter = getPrintModule(elementName);

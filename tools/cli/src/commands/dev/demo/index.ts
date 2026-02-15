@@ -129,7 +129,16 @@ export default class DevDemo extends Command {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', './packages/elements-react/*'],
+        [
+          'run',
+          'turbo',
+          'build',
+          '--force',
+          '--filter',
+          './packages/elements-react/*',
+          '--filter',
+          './packages/elements-svelte/*',
+        ],
         {
           stdio: 'inherit',
           cwd,

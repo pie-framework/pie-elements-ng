@@ -109,7 +109,7 @@ const tabs = $derived.by(() => {
 
 // Determine active tab from current path (use $derived in Svelte 5)
 const activeTab = $derived($page.url.pathname.split('/')[2] || 'deliver');
-const packageName = $derived(`@pie-element/${data.elementName}`);
+const packageName = $derived(data.packageName || `@pie-element/${data.elementName}`);
 
 // Import stores for mode, role, and theme
 import { mode, role, theme } from '$lib/stores/demo-state';
@@ -259,6 +259,7 @@ function handleThemeToggle(event: Event) {
         class:tab-disabled={isDisabled}
         aria-disabled={isDisabled}
         tabindex={isDisabled ? -1 : 0}
+        data-testid="tab-{tab.id}"
       >
         {tab.label}
       </a>

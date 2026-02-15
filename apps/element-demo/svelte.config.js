@@ -7,6 +7,13 @@ const config = {
   kit: {
     adapter: adapter(),
   },
+  // Configure vite-plugin-svelte to not process pre-compiled element packages
+  vitePlugin: {
+    // Exclude pre-compiled Svelte files from processing
+    exclude: [
+      /\/dist\//, // Don't process anything in dist directories
+    ],
+  },
 };
 
 export default config;

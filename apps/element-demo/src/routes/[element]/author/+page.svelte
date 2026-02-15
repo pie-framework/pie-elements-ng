@@ -38,6 +38,7 @@ function handleModelChanged(event: CustomEvent) {
 
 <PlayerLayout
   elementName={data.elementName}
+  packageName={data.packageName}
   bind:controller={$controller}
   capabilities={data.capabilities}
   {debug}

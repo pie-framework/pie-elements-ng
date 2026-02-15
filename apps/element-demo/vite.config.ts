@@ -19,6 +19,24 @@ export default defineConfig({
       debug: false,
     }),
     tailwindcss({ optimize: false }),
+    // Add custom plugin BEFORE sveltekit to intercept and disable Svelte processing for pre-compiled files
+    {
+      name: 'skip-compiled-svelte-elements',
+      enforce: 'pre',
+      async transform(code, id) {
+        // If this is a pre-compiled Svelte file from element packages, return it as-is
+        if (
+          id.includes('/dist/') &&
+          (id.includes('/elements-svelte/') || id.includes('/lib-svelte/'))
+        ) {
+          // Return the code without transformation to bypass Svelte plugin
+          return {
+            code,
+            map: null,
+          };
+        }
+      },
+    },
     sveltekit(),
   ],
 
@@ -77,12 +95,13 @@ export default defineConfig({
   build: {
     rollupOptions: {
       external: (id) => {
-        // Mark common dependencies that React elements mark as external
+        // Mark common dependencies that React and Svelte elements mark as external
         // These match the external configuration in element vite configs
         // to prevent "failed to resolve import" errors during build
         return (
           /^react($|\/)/.test(id) ||
           /^react-dom($|\/)/.test(id) ||
+          /^svelte($|\/)/.test(id) ||
           /^@pie-lib\//.test(id) ||
           /^@pie-element\//.test(id) ||
           /^@pie-framework\//.test(id) ||

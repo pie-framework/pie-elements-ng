@@ -23,14 +23,14 @@ A PIE-specific wrapper around MathQuill (Desmos fork) that provides a jQuery-fre
 ## Usage
 
 ```typescript
-import MathQuill from '@pie-element/shared-mathquill';
-import '@pie-element/shared-mathquill/mathquill.css';
+import MathQuill from "@pie-element/shared-mathquill";
+import "@pie-element/shared-mathquill/mathquill.css";
 
 // MathQuill is ready to use - no getInterface() call needed
 const field = MathQuill.MathField(element, {
   handlers: {
-    edit: () => console.log('edited!')
-  }
+    edit: () => console.log("edited!"),
+  },
 });
 ```
 
@@ -38,12 +38,12 @@ const field = MathQuill.MathField(element, {
 
 ```typescript
 // ❌ OLD (requires jQuery)
-import MathQuill from '@pie-element/shared-mathquill';
+import MathQuill from "@pie-element/shared-mathquill";
 const MQ = MathQuill.getInterface(2);
 
 // ✅ NEW (no jQuery)
-import MathQuill from '@pie-element/shared-mathquill';
-const MQ = MathQuill;  // Direct use
+import MathQuill from "@pie-element/shared-mathquill";
+const MQ = MathQuill; // Direct use
 ```
 
 ## Implementation
@@ -58,10 +58,12 @@ The wrapper is implemented in [packages/shared/mathquill/src/extensions/index.ts
 ## Files Updated
 
 **Package:**
+
 - `packages/shared/mathquill/src/extensions/index.ts` - Main wrapper
 - `packages/shared/mathquill/package.json` - Removed jQuery dependency
 
 **Consumers (5 files):**
+
 - `packages/lib-react/math-input/src/mq/input.tsx`
 - `packages/lib-react/math-input/src/mq/static.tsx`
 - `packages/elements-react/math-inline/src/author/general-config-block.tsx`
@@ -78,6 +80,7 @@ bun test
 ```
 
 **Results:** 53/53 tests passing
+
 - 40 matrix tests
 - 13 extension tests
 
@@ -86,6 +89,7 @@ bun test
 ## Why v3 Instead of v2?
 
 MathQuill provides two interfaces:
+
 - **v2**: Requires jQuery, uses `MQ.MathField($(element), config)`
 - **v3**: No jQuery, uses `MQ.MathField(element, config)` (vanilla JS)
 

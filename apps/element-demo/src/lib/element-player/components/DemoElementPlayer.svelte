@@ -67,7 +67,7 @@ async function loadElementInstance() {
     const packageName = `@pie-element/${elementName}`;
 
     // Register custom element if not already registered
-    const tagName = `${elementName}-element`;
+    const tagName = elementName;
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(
         () =>

@@ -47,17 +47,32 @@ function loadRegistry(): ElementMetadata[] {
 }
 
 /**
- * Check if an element has a built dist file
+ * Check if an element exists and get its base path
+ * Both React and Svelte elements follow the same conventions:
+ * - Delivery: dist/index.js
+ * - Controller: dist/controller/index.js
+ * - Author: dist/author/index.js
+ * - Print: dist/print/index.js
  */
-function checkElementExists(elementName: string, subpath: string): boolean {
-  const elementPath = resolve(
-    workspaceRoot,
-    'packages/elements-react',
-    elementName,
-    'dist',
-    subpath
-  );
-  return existsSync(elementPath);
+function checkElementExists(
+  elementName: string,
+  subpath: string
+): { exists: boolean; basePath: string | null } {
+  // Check React elements first
+  let elementPath = resolve(workspaceRoot, 'packages/elements-react', elementName, 'dist', subpath);
+
+  if (existsSync(elementPath)) {
+    return { exists: true, basePath: 'packages/elements-react' };
+  }
+
+  // Check Svelte elements
+  elementPath = resolve(workspaceRoot, 'packages/elements-svelte', elementName, 'dist', subpath);
+
+  if (existsSync(elementPath)) {
+    return { exists: true, basePath: 'packages/elements-svelte' };
+  }
+
+  return { exists: false, basePath: null };
 }
 
 /**
@@ -67,16 +82,23 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
   const lines: string[] = [];
   const elementName = element.name;
 
-  // Check which files exist
-  const hasDelivery = checkElementExists(elementName, 'index.js');
-  const hasController = checkElementExists(elementName, 'controller/index.js');
-  const hasAuthor = element.hasAuthor && checkElementExists(elementName, 'author/index.js');
-  const hasPrint = element.hasPrint && checkElementExists(elementName, 'print/index.js');
-
-  if (!hasDelivery) {
+  // Check if element delivery component exists
+  const deliveryInfo = checkElementExists(elementName, 'index.js');
+  if (!deliveryInfo.exists || !deliveryInfo.basePath) {
     // Skip elements without a delivery component
     return [];
   }
+
+  const basePath = deliveryInfo.basePath;
+
+  // Check for other components
+  const controllerInfo = checkElementExists(elementName, 'controller/index.js');
+  const authorInfo = element.hasAuthor
+    ? checkElementExists(elementName, 'author/index.js')
+    : { exists: false };
+  const printInfo = element.hasPrint
+    ? checkElementExists(elementName, 'print/index.js')
+    : { exists: false };
 
   lines.push(`${indent}// Register element: ${elementName}`);
 
@@ -84,43 +106,41 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
   lines.push(`${indent}registerElement('${elementName}', () =>`);
   lines.push(`${indent}  import(`);
   lines.push(`${indent}    /* @vite-ignore */`);
-  lines.push(
-    `${indent}    '/@fs${workspaceRoot}/packages/elements-react/${elementName}/dist/index.js'`
-  );
+  lines.push(`${indent}    '/@fs${workspaceRoot}/${basePath}/${elementName}/dist/index.js'`);
   lines.push(`${indent}  )`);
   lines.push(`${indent});`);
 
   // Controller
-  if (hasController) {
+  if (controllerInfo.exists) {
     lines.push(`${indent}registerController('${elementName}', () =>`);
     lines.push(`${indent}  import(`);
     lines.push(`${indent}    /* @vite-ignore */`);
     lines.push(
-      `${indent}    '/@fs${workspaceRoot}/packages/elements-react/${elementName}/dist/controller/index.js'`
+      `${indent}    '/@fs${workspaceRoot}/${basePath}/${elementName}/dist/controller/index.js'`
     );
     lines.push(`${indent}  )`);
     lines.push(`${indent});`);
   }
 
   // Author
-  if (hasAuthor) {
+  if (authorInfo.exists) {
     lines.push(`${indent}registerAuthor('${elementName}', () =>`);
     lines.push(`${indent}  import(`);
     lines.push(`${indent}    /* @vite-ignore */`);
     lines.push(
-      `${indent}    '/@fs${workspaceRoot}/packages/elements-react/${elementName}/dist/author/index.js'`
+      `${indent}    '/@fs${workspaceRoot}/${basePath}/${elementName}/dist/author/index.js'`
     );
     lines.push(`${indent}  )`);
     lines.push(`${indent});`);
   }
 
   // Print
-  if (hasPrint) {
+  if (printInfo.exists) {
     lines.push(`${indent}registerPrint('${elementName}', () =>`);
     lines.push(`${indent}  import(`);
     lines.push(`${indent}    /* @vite-ignore */`);
     lines.push(
-      `${indent}    '/@fs${workspaceRoot}/packages/elements-react/${elementName}/dist/print/index.js'`
+      `${indent}    '/@fs${workspaceRoot}/${basePath}/${elementName}/dist/print/index.js'`
     );
     lines.push(`${indent}  )`);
     lines.push(`${indent});`);

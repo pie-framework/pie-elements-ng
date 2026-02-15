@@ -42,6 +42,7 @@ export const load: LayoutLoad = async ({
   let activeDemoId = 'default';
   let initialModel: any = {};
   let initialSession: any = {};
+  let packageName = `@pie-element/${elementName}`; // Default, will be overridden if found in registry
 
   // Discover available views from package.json exports
   try {
@@ -56,6 +57,7 @@ export const load: LayoutLoad = async ({
 
     if (elementInfo) {
       elementTitle = elementInfo.title;
+      packageName = elementInfo.packageName; // Use the actual package name from registry
 
       // Convert registry metadata to capabilities array
       if (elementInfo.hasAuthor) {
@@ -95,6 +97,7 @@ export const load: LayoutLoad = async ({
   return {
     elementName,
     elementTitle,
+    packageName,
     capabilities,
     availableViews,
     demos,

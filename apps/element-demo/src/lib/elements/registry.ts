@@ -288,6 +288,16 @@ export const ELEMENT_REGISTRY: readonly ElementMetadata[] = [
     "hasConfig": true,
     "hasSession": true,
     "demoCount": 1
+  },
+  {
+    "name": "simple-cloze",
+    "title": "Simple Cloze",
+    "packageName": "@pie-element/simple-cloze",
+    "hasAuthor": true,
+    "hasPrint": true,
+    "hasConfig": true,
+    "hasSession": true,
+    "demoCount": 1
   }
 ];
 

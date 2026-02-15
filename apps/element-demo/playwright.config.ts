@@ -81,13 +81,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1, // Run serially for state management tests
-  reporter: [['html', { outputFolder: 'test-results/playwright' }], ['list']],
+  reporter: [['html', { outputFolder: 'playwright-report' }], ['list']],
   timeout: 30_000,
   expect: {
     timeout: 10_000,
   },
   use: {
-    baseURL: 'http://localhost:5174',
+    baseURL: 'http://localhost:5222',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -103,8 +103,8 @@ export default defineConfig({
   ],
   webServer: {
     command: 'bun run dev',
-    url: 'http://localhost:5174',
-    reuseExistingServer: !process.env.CI,
+    url: 'http://localhost:5222',
+    reuseExistingServer: true, // Use existing dev server
     timeout: 120_000,
   },
 });

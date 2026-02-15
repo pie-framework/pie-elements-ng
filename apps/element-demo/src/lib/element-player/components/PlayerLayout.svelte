@@ -12,12 +12,14 @@ import type { PieController } from '../lib/types';
 // Props
 let {
   elementName = '',
+  packageName = undefined,
   controller = $bindable<PieController | null>(null),
   capabilities = undefined,
   debug = false,
   children,
 }: {
   elementName: string;
+  packageName?: string;
   controller?: PieController | null;
   capabilities?: string[];
   debug?: boolean;
@@ -39,14 +41,14 @@ onMount(async () => {
       throw new Error('element-name is required');
     }
 
-    const packageName = `@pie-element/${elementName}`;
+    const resolvedPackageName = packageName || `@pie-element/${elementName}`;
 
     if (debug) console.log(`[player-layout] Loading element: ${elementName}`);
 
     // Load controller if not provided
     if (!controller) {
       try {
-        const ctrl = await loadController(packageName, '', debug);
+        const ctrl = await loadController(resolvedPackageName, '', debug);
         controller = ctrl;
       } catch (e) {
         controllerWarning = `Controller not available for "${elementName}".`;
@@ -58,8 +60,8 @@ onMount(async () => {
     const configureTag = `${elementName}-configure`;
     if (capabilities?.includes('author')) {
       try {
-        console.log(`[player-layout] Loading author component for ${packageName}`);
-        const AuthorComponent = await loadAuthor(packageName, '', debug);
+        console.log(`[player-layout] Loading author component for ${resolvedPackageName}`);
+        const AuthorComponent = await loadAuthor(resolvedPackageName, '', debug);
 
         // Register as custom element if not already registered
         if (!customElements.get(configureTag)) {
@@ -78,8 +80,8 @@ onMount(async () => {
     const printTag = `${elementName}-print`;
     if (capabilities?.includes('print')) {
       try {
-        console.log(`[player-layout] Loading print component for ${packageName}`);
-        const PrintComponent = await loadPrint(packageName, '', debug);
+        console.log(`[player-layout] Loading print component for ${resolvedPackageName}`);
+        const PrintComponent = await loadPrint(resolvedPackageName, '', debug);
 
         // Register as custom element if not already registered
         if (!customElements.get(printTag)) {

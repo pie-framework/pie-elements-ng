@@ -18,12 +18,14 @@ export interface ElementView {
   description?: string;
 }
 
-// Use Vite's import.meta.glob to statically analyze package.json files
-// This is evaluated at build time and avoids dynamic import issues
-// Path is relative to this file: apps/element-demo/src/lib/utils/view-discovery.ts
-// Need to go up 5 levels to reach root, then down to packages/elements-react
+// Use Vite's import.meta.glob to statically analyze package.json files at build time
+// IMPORTANT: The path MUST be a literal string (Vite requirement for static analysis)
+// If this file moves or the workspace structure changes, update this path:
+//   Current file: apps/element-demo/src/lib/utils/view-discovery.ts
+//   Target: <workspace-root>/packages/elements-{react,svelte}/*/package.json
+//   Levels up: ../../../../../ (from utils/ -> lib/ -> src/ -> element-demo/ -> apps/ -> root/)
 const packageJsonModules = import.meta.glob<{ exports?: Record<string, unknown> }>(
-  '../../../../../packages/elements-react/*/package.json',
+  '../../../../../packages/elements-{react,svelte}/*/package.json',
   { eager: false }
 );
 
@@ -38,8 +40,17 @@ export async function discoverElementViews(elementName: string): Promise<Element
 
   try {
     // Find the matching package.json using the glob result
-    const packagePath = `../../../../../packages/elements-react/${elementName}/package.json`;
-    const loader = packageJsonModules[packagePath];
+    // The glob pattern matches both React and Svelte elements, so we need to check both paths
+    const reactPath = `../../../../../packages/elements-react/${elementName}/package.json`;
+    const sveltePath = `../../../../../packages/elements-svelte/${elementName}/package.json`;
+
+    let packagePath = reactPath;
+    let loader = packageJsonModules[reactPath];
+
+    if (!loader) {
+      packagePath = sveltePath;
+      loader = packageJsonModules[sveltePath];
+    }
 
     if (!loader) {
       console.warn(`Could not find package.json for ${elementName}`);

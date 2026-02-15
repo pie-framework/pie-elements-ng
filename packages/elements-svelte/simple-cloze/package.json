@@ -1,0 +1,65 @@
+{
+  "name": "@pie-element/simple-cloze",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Simple cloze (text entry) demo/template PIE element built with Svelte 5",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/delivery/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./delivery": {
+      "development": "./src/delivery/index.ts",
+      "types": "./dist/delivery/index.d.ts",
+      "default": "./dist/delivery/index.js"
+    },
+    "./controller": {
+      "development": "./src/controller/index.ts",
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller/index.js"
+    },
+    "./author": {
+      "development": "./src/author/index.ts",
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    },
+    "./print": {
+      "development": "./src/print/index.ts",
+      "types": "./dist/print/index.d.ts",
+      "default": "./dist/print/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && tsc --emitDeclarationOnly",
+    "dev": "vite",
+    "demo": "vite --mode demo",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
+    "@pie-lib-svelte/styling": "workspace:*",
+    "lodash-es": "^4.17.21"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "@tiptap/core": "^3.19.0",
+    "@tiptap/pm": "^3.19.0",
+    "@tiptap/starter-kit": "^3.19.0",
+    "@types/lodash-es": "^4.17.12",
+    "svelte": "^5.51.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}
