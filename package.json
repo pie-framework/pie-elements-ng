@@ -31,6 +31,8 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "bun run build && bun run cli verify:controllers && changeset publish",
+    "release:label": "node ./scripts/create-release-label.mjs",
+    "release:label:push": "node ./scripts/create-release-label.mjs --push",
     "clean": "turbo run clean && rm -rf node_modules",
     "dev:demo": "bun run cli:dev dev:demo",
     "examples": "turbo run dev --filter=@pie-examples/*",

@@ -65,7 +65,7 @@
     "@types/react-dom": "^18.2.0"
   },
   "scripts": {
-    "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
+    "build": "bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"

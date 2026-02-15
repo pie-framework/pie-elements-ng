@@ -28,7 +28,9 @@
     "lodash-es": "^4.17.23",
     "react": "^18.2.0",
     "react-draggable": "^3.3.0",
-    "react-input-autosize": "^2.2.1"
+    "react-input-autosize": "^2.2.1",
+    "@pie-lib/config-ui": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

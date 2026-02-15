@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "description": "math rendering utilities",
-  "dependencies": {},
+  "dependencies": {
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

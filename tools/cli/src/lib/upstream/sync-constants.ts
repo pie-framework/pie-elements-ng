@@ -17,6 +17,10 @@ export const WORKSPACE = {
   PIE_FRAMEWORK_PREFIX: '@pie-framework/',
 } as const;
 
+// Upstream element packages intentionally excluded from sync.
+// These templates are not used in pie-elements-ng runtime.
+export const EXCLUDED_UPSTREAM_ELEMENTS = ['boilerplate-item-type'] as const;
+
 // Build tool versions
 export const BUILD_TOOLS = {
   VITE: '^6.0.0',

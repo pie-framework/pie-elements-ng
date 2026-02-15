@@ -16,6 +16,7 @@ import { createExternalFunction } from './sync-externals.js';
 import { createControllerTransformPipeline } from './sync-transforms.js';
 import { ensureElementPackageJson } from './sync-package-manager.js';
 import { isSubdirectoryCompatible } from './sync-compatibility.js';
+import { EXCLUDED_UPSTREAM_ELEMENTS } from './sync-constants.js';
 
 interface InternalSyncResult {
   filesChecked: number;
@@ -69,6 +70,10 @@ export class ControllersStrategy implements SyncStrategy {
     const packages = await readdir(upstreamElementsDir);
 
     for (const pkg of packages) {
+      if (EXCLUDED_UPSTREAM_ELEMENTS.includes(pkg as (typeof EXCLUDED_UPSTREAM_ELEMENTS)[number])) {
+        continue;
+      }
+
       if (context.packageFilter && pkg !== context.packageFilter) {
         continue;
       }

@@ -11,7 +11,8 @@
     "@pie-element/shared-mathquill": "workspace:*",
     "debug": "^4.1.1",
     "lodash-es": "^4.17.23",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "@pie-lib/render-ui": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

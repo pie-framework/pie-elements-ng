@@ -90,6 +90,16 @@ git push
 
 `bun run typecheck` - TypeScript type checking across all packages
 
+### Release Labels
+
+Use release labels to tag a coordinated release wave across packages while keeping package versions independent.
+
+`bun run release:label` - Create an annotated tag (default: `pie-elements-ng-YYYY.MM.DD`)
+
+`bun run release:label -- --label elements-ng-2026.02` - Create a custom release tag name
+
+`bun run release:label:push` - Create and push the release tag to origin
+
 ### Maintainer Commands
 
 `bun cli upstream:sync` - (Maintainers only) Syncs packages from the upstream pie-elements project. Requires pie-elements and pie-lib checked out as sibling directories. Analyzes the current state of those projects and copies over what is ready for ESM packaging, including rewrites and restructuring to fit the new project layout.

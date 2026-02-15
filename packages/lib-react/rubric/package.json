@@ -14,7 +14,9 @@
     "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@pie-lib/config-ui": "workspace:*",
+    "@pie-lib/render-ui": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

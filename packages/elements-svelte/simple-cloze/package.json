@@ -39,7 +39,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && tsc --emitDeclarationOnly",
+    "build": "vite build && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
     "dev": "vite",
     "demo": "vite --mode demo",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"

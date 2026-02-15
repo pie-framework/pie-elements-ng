@@ -145,6 +145,9 @@ export class PieLibStrategy implements SyncStrategy {
         logger.success(`  ✨ ${pkg}: ${filesProcessed} file(s) synced`);
       }
 
+      // Keep local compatibility exports that upstream plot package currently misses.
+      const wroteCompatibilityPatch = await this.ensurePlotTypesCompatibilityPatch(pkg, targetSrcDir);
+
       // Ensure package.json has ESM module support and expected exports
       let wrotePkgJson = false;
       wrotePkgJson = await ensurePieLibPackageJson(pkg, targetDir, config);
@@ -155,7 +158,7 @@ export class PieLibStrategy implements SyncStrategy {
       // Ensure tsconfig.json exists
       const wroteTsConfig = await this.ensureTsConfig(pkg, targetDir, logger);
 
-      if (libChanged || wrotePkgJson || wroteViteConfig || wroteTsConfig) {
+      if (libChanged || wroteCompatibilityPatch || wrotePkgJson || wroteViteConfig || wroteTsConfig) {
         this.touchedPieLibPackages.add(pkg);
       }
     }
@@ -351,6 +354,42 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
     if (logger.isVerbose()) {
       logger.success(`  📝 ${pkgName}: generated vite.config.ts`);
     }
+    return true;
+  }
+
+  private async ensurePlotTypesCompatibilityPatch(
+    pkgName: string,
+    targetSrcDir: string
+  ): Promise<boolean> {
+    if (pkgName !== 'plot') {
+      return false;
+    }
+
+    const typesPath = join(targetSrcDir, 'types.ts');
+    if (!existsSync(typesPath)) {
+      return false;
+    }
+
+    const current = await readFile(typesPath, 'utf-8');
+    if (current.includes('ToolPropTypeFields')) {
+      return false;
+    }
+
+    const patch = `
+
+// Local compatibility export used by graphing tool components.
+export const ToolPropTypeFields = {
+  graphProps: GraphPropsType.isRequired,
+  mark: PropTypes.object,
+  onChange: PropTypes.func,
+  onDelete: PropTypes.func,
+  onClick: PropTypes.func,
+};
+
+export const ToolPropType = PropTypes.shape(ToolPropTypeFields);
+`;
+
+    await writeFile(typesPath, `${current}${patch}`, 'utf-8');
     return true;
   }
 

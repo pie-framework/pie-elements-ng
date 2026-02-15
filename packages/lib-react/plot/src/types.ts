@@ -49,3 +49,15 @@ export const GraphPropsType = PropTypes.shape({
   range: RangeType.isRequired,
   size: SizeType.isRequired,
 });
+
+
+// Local compatibility export used by graphing tool components.
+export const ToolPropTypeFields = {
+  graphProps: GraphPropsType.isRequired,
+  mark: PropTypes.object,
+  onChange: PropTypes.func,
+  onDelete: PropTypes.func,
+  onClick: PropTypes.func,
+};
+
+export const ToolPropType = PropTypes.shape(ToolPropTypeFields);

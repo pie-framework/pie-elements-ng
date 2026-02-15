@@ -7,7 +7,7 @@
 
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
 import { existsAny } from './sync-filesystem.js';
@@ -194,6 +194,97 @@ export async function extractImportsFromSources(elementDir: string): Promise<Set
   return imports;
 }
 
+async function findInstalledPackageJson(
+  packageName: string,
+  fromDir: string
+): Promise<PackageJson | null> {
+  try {
+    const { createRequire } = await import('node:module');
+    const req = createRequire(join(fromDir, 'package.json'));
+    const resolvedEntry = req.resolve(packageName);
+
+    let currentDir = dirname(resolvedEntry);
+    while (true) {
+      const candidate = join(currentDir, 'package.json');
+      if (existsSync(candidate)) {
+        const pkg = await loadPackageJson(candidate).catch(() => null);
+        if (pkg && pkg.name === packageName) {
+          return pkg;
+        }
+      }
+
+      const parent = dirname(currentDir);
+      if (parent === currentDir) {
+        break;
+      }
+      currentDir = parent;
+    }
+  } catch {
+    // Package not resolvable from this location.
+  }
+  return null;
+}
+
+async function addTransitivePeerDependencies(
+  deps: Record<string, string>,
+  fromDir: string
+): Promise<void> {
+  const depNames = Object.keys(deps);
+
+  for (const depName of depNames) {
+    if (
+      depName.startsWith(WORKSPACE.PIE_LIB_PREFIX) ||
+      depName.startsWith(WORKSPACE.PIE_ELEMENT_PREFIX) ||
+      depName.startsWith(WORKSPACE.PIE_FRAMEWORK_PREFIX)
+    ) {
+      continue;
+    }
+
+    const installedPkg = await findInstalledPackageJson(depName, fromDir);
+    const peerDeps = (installedPkg?.peerDependencies as Record<string, string> | undefined) ?? {};
+
+    for (const [peerName, peerVersion] of Object.entries(peerDeps)) {
+      if (deps[peerName]) {
+        continue;
+      }
+
+      if (
+        peerName.startsWith(WORKSPACE.PIE_LIB_PREFIX) ||
+        peerName.startsWith(WORKSPACE.PIE_ELEMENT_PREFIX) ||
+        peerName.startsWith(WORKSPACE.PIE_FRAMEWORK_PREFIX)
+      ) {
+        deps[peerName] = WORKSPACE.VERSION;
+      } else {
+        deps[peerName] = peerVersion;
+      }
+    }
+  }
+}
+
+async function inferPeerVersionFromDeclaredDeps(
+  targetDep: string,
+  deps: Record<string, string>,
+  fromDir: string
+): Promise<string | null> {
+  for (const depName of Object.keys(deps)) {
+    if (
+      depName.startsWith(WORKSPACE.PIE_LIB_PREFIX) ||
+      depName.startsWith(WORKSPACE.PIE_ELEMENT_PREFIX) ||
+      depName.startsWith(WORKSPACE.PIE_FRAMEWORK_PREFIX)
+    ) {
+      continue;
+    }
+
+    const installedPkg = await findInstalledPackageJson(depName, fromDir);
+    const peerDeps = (installedPkg?.peerDependencies as Record<string, string> | undefined) ?? {};
+    if (peerDeps[targetDep]) {
+      return peerDeps[targetDep];
+    }
+  }
+
+  return null;
+}
+
 /**
  * Extract and normalize dependencies from upstream package.json
  */
@@ -317,6 +408,7 @@ export async function ensureElementPackageJson(
       }
     }
   }
+  await addTransitivePeerDependencies(expectedDeps, elementDir);
 
   // Create minimal package.json if missing
   if (!pkg) {
@@ -422,7 +514,9 @@ export async function ensureElementPackageJson(
   }
 
   const scripts = pkg.scripts as Record<string, string>;
-  const hasIifeEntry = existsSync(join(elementDir, 'src/index.iife.ts'));
+  const hasIifeEntry =
+    existsSync(join(elementDir, 'src/index.iife.ts')) ||
+    existsSync(join(elementDir, 'vite.config.iife.ts'));
 
   scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE : SCRIPTS.BUILD;
   scripts.dev = SCRIPTS.DEV;
@@ -483,6 +577,45 @@ export async function ensurePieLibPackageJson(
     }
   }
 
+  const importedPackages = await extractImportsFromSources(pkgDir);
+  for (const importedPkg of importedPackages) {
+    if (importedPkg === '@pie-framework/mathquill') {
+      expectedDeps['@pie-element/shared-mathquill'] = WORKSPACE.VERSION;
+      continue;
+    }
+    if (importedPkg.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+      expectedDeps[importedPkg] = WORKSPACE.VERSION;
+      continue;
+    }
+    if (importedPkg.startsWith(WORKSPACE.PIE_ELEMENT_PREFIX)) {
+      expectedDeps[importedPkg] = WORKSPACE.VERSION;
+      continue;
+    }
+
+    // Keep pie-lib package.json aligned with actual runtime imports from src/.
+    // Upstream package.json can miss some third-party dependencies.
+    if (!expectedDeps[importedPkg]) {
+      const installedPkg = await findInstalledPackageJson(importedPkg, pkgDir);
+      if (installedPkg?.version) {
+        expectedDeps[importedPkg] = `^${installedPkg.version}`;
+      } else {
+        const inferredPeerVersion = await inferPeerVersionFromDeclaredDeps(
+          importedPkg,
+          expectedDeps,
+          pkgDir
+        );
+        if (inferredPeerVersion) {
+          expectedDeps[importedPkg] = inferredPeerVersion;
+        }
+      }
+    }
+  }
+
+  // graphing imports @dnd-kit/core directly in source but upstream metadata can omit it.
+  if (pkgName === 'graphing' && !expectedDeps['@dnd-kit/core']) {
+    expectedDeps['@dnd-kit/core'] = '^6.3.0';
+  }
+
   // Create minimal package.json if missing
   if (!pkg) {
     pkg = {
@@ -504,7 +637,7 @@ export async function ensurePieLibPackageJson(
   // Special handling for math-rendering: reference MathJax adapter package
   if (pkgName === 'math-rendering') {
     pkg.dependencies = {
-      [`${WORKSPACE.PIE_ELEMENT_PREFIX}math-rendering-mathjax`]: WORKSPACE.VERSION,
+      [`${WORKSPACE.PIE_ELEMENT_PREFIX}shared-math-rendering-mathjax`]: WORKSPACE.VERSION,
     };
   }
 

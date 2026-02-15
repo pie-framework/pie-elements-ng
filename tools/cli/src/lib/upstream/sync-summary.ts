@@ -1,10 +1,11 @@
 /**
  * Summary utilities for sync operations
  */
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Logger } from '../../utils/logger.js';
 import type { CompatibilityReport } from '../../utils/compatibility.js';
+import { EXCLUDED_UPSTREAM_ELEMENTS } from './sync-constants.js';
 
 export interface SyncSummary {
   controllersSync: number;
@@ -24,7 +25,15 @@ function getAllSyncedElements(pieElementsNgPath: string): string[] {
     const elementsReactPath = join(pieElementsNgPath, 'packages', 'elements-react');
     const entries = readdirSync(elementsReactPath, { withFileTypes: true });
     return entries
-      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+      .filter((entry) => {
+        if (!entry.isDirectory() || entry.name.startsWith('.')) {
+          return false;
+        }
+        if (EXCLUDED_UPSTREAM_ELEMENTS.includes(entry.name as (typeof EXCLUDED_UPSTREAM_ELEMENTS)[number])) {
+          return false;
+        }
+        return existsSync(join(elementsReactPath, entry.name, 'package.json'));
+      })
       .map((entry) => entry.name)
       .sort();
   } catch (error) {
