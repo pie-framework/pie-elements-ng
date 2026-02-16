@@ -44,6 +44,56 @@ interface WebpackConfigOptions {
   elements: string[];
 }
 
+interface ControllerWebpackConfigOptions {
+  context: string;
+  entry: Record<string, string>;
+  outputPath: string;
+  workspaceDir: string;
+}
+
+const moduleRules: webpack.RuleSetRule[] = [
+  {
+    test: /\.(ts|tsx|js|jsx)$/,
+    exclude: (filePath: string) => {
+      if (!filePath.includes('/node_modules/')) {
+        return false;
+      }
+      // Bun stores packages under node_modules/.bun/<pkg>@<ver>/node_modules/<pkg>.
+      // We still need to transpile PIE packages (including @pie-lib) inside that tree.
+      if (filePath.includes('/node_modules/.bun/@pie-')) {
+        return false;
+      }
+      if (/\/node_modules\/@pie-[^/]+\//.test(filePath)) {
+        return false;
+      }
+      return true;
+    },
+    use: [
+      {
+        loader: 'esbuild-loader',
+        options: {
+          loader: 'tsx',
+          target: 'es2015',
+          legalComments: 'none',
+        },
+      },
+    ],
+  },
+  {
+    test: /\.css$/,
+    use: ['style-loader', 'css-loader'],
+  },
+  {
+    test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2|otf)$/,
+    type: 'asset',
+    parser: {
+      dataUrlCondition: {
+        maxSize: 10000,
+      },
+    },
+  },
+];
+
 export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configuration {
   const libPackagePathMap = getLibPackagePathMap(opts.workspaceDir, opts.elements);
 
@@ -71,48 +121,7 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
     devtool: false,
 
     module: {
-      rules: [
-        {
-          test: /\.(ts|tsx|js|jsx)$/,
-          exclude: (filePath: string) => {
-            if (!filePath.includes('/node_modules/')) {
-              return false;
-            }
-            // Bun stores packages under node_modules/.bun/<pkg>@<ver>/node_modules/<pkg>.
-            // We still need to transpile PIE packages (including @pie-lib) inside that tree.
-            if (filePath.includes('/node_modules/.bun/@pie-')) {
-              return false;
-            }
-            if (/\/node_modules\/@pie-[^/]+\//.test(filePath)) {
-              return false;
-            }
-            return true;
-          },
-          use: [
-            {
-              loader: 'esbuild-loader',
-              options: {
-                loader: 'tsx',
-                target: 'es2015',
-                legalComments: 'none',
-              },
-            },
-          ],
-        },
-        {
-          test: /\.css$/,
-          use: ['style-loader', 'css-loader'],
-        },
-        {
-          test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2|otf)$/,
-          type: 'asset',
-          parser: {
-            dataUrlCondition: {
-              maxSize: 10000,
-            },
-          },
-        },
-      ],
+      rules: moduleRules,
     },
 
     resolve: {
@@ -171,6 +180,38 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
       library: 'pie',
       path: opts.outputPath,
       libraryTarget: 'window',
+      publicPath: '',
+    },
+  };
+}
+
+export function createControllerWebpackConfig(
+  opts: ControllerWebpackConfigOptions
+): webpack.Configuration {
+  return {
+    target: 'web',
+    context: opts.context,
+    entry: opts.entry,
+    mode: 'production',
+    optimization: {
+      minimizer: [new EsbuildPlugin({ target: 'es2015' })],
+      minimize: true,
+    },
+    devtool: false,
+    module: {
+      rules: moduleRules,
+    },
+    resolve: {
+      alias: {
+        '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
+      },
+      extensions: ['.ts', '.tsx', '.js', '.jsx'],
+      modules: [join(opts.workspaceDir, 'node_modules'), 'node_modules'],
+    },
+    output: {
+      filename: '[name].js',
+      libraryTarget: 'commonjs2',
+      path: opts.outputPath,
       publicPath: '',
     },
   };
