@@ -3,14 +3,38 @@
  * Simplified from pie-api-aws/packages/bundler/src/webpack/player.ts
  */
 
-import { join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import webpack from 'webpack';
 import { EsbuildPlugin } from 'esbuild-loader';
 import { getLibPackagePathMap } from './dependency-resolver.js';
 
 const BUNDLE_LIB_PACKAGES = ['@pie-lib/pie-toolbox', '@pie-lib/math-rendering'];
-const SHIM_DIR = fileURLToPath(new URL('./shims', import.meta.url));
+const SHIM_DIR = resolveShimDir();
+
+function resolveShimDir(): string {
+  try {
+    const moduleUrl = new URL(import.meta.url);
+    if (moduleUrl.protocol === 'file:') {
+      const modulePath = fileURLToPath(moduleUrl);
+      return join(dirname(modulePath), 'shims');
+    }
+  } catch {
+    // Fall through to CWD heuristics below.
+  }
+
+  // Some test transforms can provide non-file URLs; fall back to CWD heuristics.
+  const candidates = [
+    join(process.cwd(), 'src', 'shims'),
+    join(process.cwd(), 'dist', 'shims'),
+    join(process.cwd(), 'packages', 'shared', 'bundler-shared', 'src', 'shims'),
+    join(process.cwd(), 'packages', 'shared', 'bundler-shared', 'dist', 'shims'),
+  ];
+
+  const resolved = candidates.find((candidate) => existsSync(candidate));
+  return resolved || candidates[0];
+}
 
 interface WebpackConfigOptions {
   context: string;

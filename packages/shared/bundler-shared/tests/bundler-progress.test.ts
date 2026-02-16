@@ -30,7 +30,10 @@ describe('Bundler progress events', () => {
 
     const events: BuildProgressEvent[] = [];
     const bundler = new Bundler(outputDir, cacheDir);
-    const result = await bundler.build({ dependencies: deps }, (e) => events.push(e));
+    const result = await bundler.build(
+      { dependencies: deps, options: { requestedBundles: ['player'] } },
+      (e) => events.push(e)
+    );
 
     expect(result.success).toBe(true);
     expect(result.cached).toBe(true);
