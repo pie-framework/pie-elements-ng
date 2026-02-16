@@ -16,6 +16,7 @@
       "!**/.turbo",
       "!**/coverage",
       "!**/.svelte-kit",
+      "!**/.changeset",
       "!**/packages/apps/examples",
       "!**/packages/lib-svelte/config-ui",
       "!**/packages/elements-svelte/multiple-choice/src/configure",
