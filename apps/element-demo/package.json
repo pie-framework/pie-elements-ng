@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "prebuild": "bun run generate-imports",
+    "prebuild": "bun run generate-imports && biome check --write src/lib/element-imports.js src/lib/element-imports.d.ts",
     "build": "vite build",
     "preview": "vite preview",
     "generate-imports": "bun run scripts/generate-element-imports.ts",
