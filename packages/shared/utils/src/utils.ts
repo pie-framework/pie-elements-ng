@@ -2,7 +2,7 @@
  * Common utilities for PIE elements
  */
 
-import type { PieEnvironment, PieSession } from '@pie-elements-ng/shared-types';
+import type { PieEnvironment, PieSession } from '@pie-element/shared-types';
 
 /**
  * Simple debug logger factory
@@ -126,4 +126,69 @@ export function assignProps(
     if (skipUndefined && value === undefined) continue;
     (node as unknown as Record<string, unknown>)[key] = value;
   }
+}
+
+/**
+ * Smart equality check for PIE sessions
+ * Optimized for common drag-drop session structures to avoid expensive JSON.stringify
+ * comparisons in reactive effects.
+ *
+ * @param a - First session to compare
+ * @param b - Second session to compare
+ * @returns true if sessions are equal, false otherwise
+ */
+export function sessionsEqual(a: unknown, b: unknown): boolean {
+  // Fast path: reference equality
+  if (a === b) return true;
+
+  // Handle null/undefined
+  if (!a || !b) return a === b;
+
+  // Type check
+  if (typeof a !== 'object' || typeof b !== 'object') return a === b;
+
+  const objA = a as Record<string, unknown>;
+  const objB = b as Record<string, unknown>;
+
+  // Check answers array (categorize, image-cloze-association, match)
+  if ('answers' in objA && 'answers' in objB) {
+    const answersA = objA.answers;
+    const answersB = objB.answers;
+
+    if (!Array.isArray(answersA) || !Array.isArray(answersB)) return false;
+    if (answersA.length !== answersB.length) return false;
+
+    // Use JSON.stringify for answers array (complex nested structure)
+    return JSON.stringify(answersA) === JSON.stringify(answersB);
+  }
+
+  // Check value property (match-list, placement-ordering, drag-in-the-blank)
+  if ('value' in objA && 'value' in objB) {
+    const valueA = objA.value;
+    const valueB = objB.value;
+
+    // Handle array values
+    if (Array.isArray(valueA) && Array.isArray(valueB)) {
+      if (valueA.length !== valueB.length) return false;
+
+      // For simple arrays (primitives), use direct comparison
+      if (valueA.length === 0 || typeof valueA[0] !== 'object') {
+        return valueA.every((v, i) => v === valueB[i]);
+      }
+
+      // For complex arrays, use JSON.stringify
+      return JSON.stringify(valueA) === JSON.stringify(valueB);
+    }
+
+    // Handle object values
+    if (typeof valueA === 'object' && typeof valueB === 'object') {
+      return JSON.stringify(valueA) === JSON.stringify(valueB);
+    }
+
+    // Handle primitive values
+    return valueA === valueB;
+  }
+
+  // Fallback to JSON.stringify for unknown session structures
+  return JSON.stringify(a) === JSON.stringify(b);
 }

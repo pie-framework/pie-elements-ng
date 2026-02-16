@@ -1,0 +1,172 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/complex-rubric/configure/src/main.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { RUBRIC_TYPES } from '@pie-lib/rubric';
+import { layout } from '@pie-lib/config-ui';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { styled } from '@mui/material/styles';
+import { color } from '@pie-lib/render-ui';
+
+const StyledFormControlLabel: any = styled(FormControlLabel)({
+  '&.MuiFormControlLabel-root': {
+    width: 'fit-content',
+    paddingRight: '24px',
+    boxSizing: 'border-box',
+    '&:hover': {
+      background: 'var(--pie-secondary-background, rgba(241,241,241,1))',
+    },
+  },
+});
+
+const StyledRadio: any = styled(Radio)({
+  '&.MuiRadio-root': {
+    color: `${color.tertiary()} !important`,
+  },
+});
+
+const rubricLabels = {
+  [RUBRIC_TYPES.MULTI_TRAIT_RUBRIC]: 'Multi Trait Rubric',
+  [RUBRIC_TYPES.SIMPLE_RUBRIC]: 'Simple Rubric',
+  [RUBRIC_TYPES.RUBRICLESS]: 'Rubricless',
+};
+
+export class Main extends React.Component {
+  static propTypes = {
+    canUpdateModel: PropTypes.bool,
+    configuration: PropTypes.object,
+    model: PropTypes.object,
+    onModelChanged: PropTypes.func,
+    onConfigurationChanged: PropTypes.func,
+  };
+
+  onModelChanged: any = (model) => {
+    const { onModelChanged } = this.props;
+
+    return onModelChanged(model);
+  };
+
+  onChangeRubricType: any = (e) => {
+    const { model } = this.props;
+
+    const rubricType = e.target.value;
+    this.onModelChanged({ ...model, rubricType });
+  };
+
+  render() {
+    const { model, configuration, canUpdateModel } = this.props;
+
+    const { extraCSSRules, rubrics = {} } = model || {};
+    let { rubricType } = model;
+    const {
+      contentDimensions = {},
+      rubricOptions = [],
+      multiTraitRubric,
+      simpleRubric,
+      rubricless,
+      width,
+    } = configuration;
+    let rubricTag = '';
+
+    if (!rubricType) {
+      rubricType = RUBRIC_TYPES.SIMPLE_RUBRIC;
+    }
+
+    const isRubricTypeAvailable = rubricOptions.indexOf(rubricType) > -1;
+
+    if (canUpdateModel) {
+      switch (rubricType) {
+        case RUBRIC_TYPES.SIMPLE_RUBRIC:
+        default:
+          rubricTag: any = (
+            <rubric-configure
+              id="simpleRubric"
+              key="simple-rubric"
+              ref={(ref) => {
+                if (ref) {
+                  this.simpleRubric = ref;
+                  this.simpleRubric.model = { ...rubrics.simpleRubric, errors: model.errors || {} };
+                  this.simpleRubric.configuration = { ...simpleRubric, width };
+                }
+              }}
+            />
+          );
+          break;
+
+        case RUBRIC_TYPES.MULTI_TRAIT_RUBRIC:
+          rubricTag: any = (
+            <multi-trait-rubric-configure
+              id="multiTraitRubric"
+              key="multi-trait-rubric"
+              ref={(ref) => {
+                if (ref) {
+                  this.multiTraitRubric = ref;
+
+                  this.multiTraitRubric.model = { ...rubrics.multiTraitRubric, errors: model.errors || {} };
+                  this.multiTraitRubric.configuration = { ...multiTraitRubric, width: width || multiTraitRubric.width };
+                }
+              }}
+            />
+          );
+          break;
+
+        case RUBRIC_TYPES.RUBRICLESS:
+          rubricTag: any = (
+            <rubric-configure
+              id="rubricless"
+              key="rubricless"
+              ref={(ref) => {
+                if (ref) {
+                  this.rubricless = ref;
+
+                  this.rubricless.model = rubrics.rubricless;
+                  this.rubricless.configuration = { ...rubricless, width };
+                }
+              }}
+            />
+          );
+          break;
+      }
+    }
+
+    return (
+      <layout.ConfigLayout
+        extraCSSRules={extraCSSRules}
+        dimensions={contentDimensions}
+        hideSettings={true}
+        settings={null}
+      >
+        <RadioGroup
+          aria-label="rubric-type"
+          name="rubricType"
+          value={model.rubricType}
+          onChange={this.onChangeRubricType}
+        >
+          {rubricOptions.length > 1 &&
+            rubricOptions.map((availableRubric, i) => (
+              <StyledFormControlLabel
+                key={i}
+                value={availableRubric}
+                control={<StyledRadio checked={rubricType === availableRubric} />}
+                label={rubricLabels[availableRubric]}
+              />
+            ))}
+        </RadioGroup>
+
+        {isRubricTypeAvailable && rubricTag}
+      </layout.ConfigLayout>
+    );
+  }
+}
+
+export default Main;

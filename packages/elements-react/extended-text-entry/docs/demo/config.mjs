@@ -1,0 +1,29 @@
+export default {
+  demos: [
+    {
+      id: 'default',
+      title: 'Default Demo',
+      description: 'Basic extended text entry configuration',
+      tags: ['extended-text-entry', 'default'],
+      model: {
+        id: '1',
+        element: 'extended-text-entry',
+        customKeys: ['\\square'],
+        feedback: { type: 'default', default: 'this is default feedback' },
+        prompt: 'This is the question prompt',
+        promptEnabled: true,
+        mathInput: true,
+        playersToolbarPosition: 'bottom',
+        toolbarEditorPosition: 'bottom',
+        spellCheckEnabled: true,
+        rubricEnabled: false,
+        annotationsEnabled: false,
+      },
+      session: {
+        id: '1',
+        element: 'extended-text-entry',
+        value: ''
+      }
+    }
+  ]
+};

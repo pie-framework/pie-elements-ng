@@ -1,6 +1,6 @@
 {
-  "name": "@pie-elements-ng/shared-configure-events",
-  "version": "1.0.0",
+  "name": "@pie-element/shared-configure-events",
+  "version": "0.1.0",
   "description": "PIE Configure Events (ESM) - internalized from @pie-framework/pie-configure-events",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && vite build && tsc --emitDeclarationOnly",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
     "test": "vitest",
     "clean": "rm -rf dist"
@@ -29,5 +29,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

@@ -38,16 +38,7 @@ Extracted functions:
 
 **Impact**: Improved reusability for build configuration
 
-### 4. Extracted Demo Generation Utilities
-**File**: `src/commands/upstream/sync-demo.ts`
-
-Extracted functions:
-- `generateDemoModule()` - Generate demo.mjs with dynamic imports
-- `generateDemoHtml()` - Generate demo.html page
-
-**Impact**: Removed 36+ lines of inline template code
-
-### 5. Extracted Import Utilities
+### 4. Extracted Import Utilities
 **File**: `src/commands/upstream/sync-imports.ts`
 
 Extracted functions:

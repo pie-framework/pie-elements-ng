@@ -1,0 +1,124 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/likert/configure/src/index.js
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import debug from 'debug';
+import { ModelUpdatedEvent, InsertSoundEvent, DeleteSoundEvent } from '@pie-element/shared-configure-events';
+
+import Main from './main';
+import { defaults } from 'lodash-es';
+
+import sensibleDefaults from './defaults';
+
+const log = debug('likert:configure');
+
+const prepareCustomizationObject = (config, model) => {
+  const configuration = defaults(config, sensibleDefaults.configuration);
+
+  return {
+    configuration,
+    model,
+  };
+};
+
+export default class Likert extends HTMLElement {
+  static createDefaultModel = (model = {}) => ({
+    ...sensibleDefaults.model,
+    ...model,
+    choices: (model && model.choices) || [],
+  });
+
+  constructor() {
+    super();
+    this._root = null;
+    this._model = Likert.createDefaultModel();
+    this._configuration = sensibleDefaults.configuration;
+    this.onModelChanged = this.onModelChanged.bind(this);
+    this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
+  }
+
+  set model(s) {
+    this._model = Likert.createDefaultModel(s);
+    this._model = {
+      ...this._model,
+      choices: this._model.choices.map((choice) => ({ ...choice, value: parseInt(choice.value) })),
+    };
+    this._render();
+  }
+
+  set configuration(c) {
+    const info = prepareCustomizationObject(c, this._model);
+
+    this.onModelChanged(info.model);
+    this._configuration = info.configuration;
+    this._render();
+  }
+
+  set disableSidePanel(s) {
+    this._disableSidePanel = s;
+    this._render();
+  }
+
+  dispatchModelUpdated(reset) {
+    const resetValue = !!reset;
+
+    this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
+  }
+
+  onModelChanged(m, reset) {
+    this._model = m;
+    this._render();
+    this.dispatchModelUpdated(reset);
+  }
+
+  onConfigurationChanged(c) {
+    this._configuration = prepareCustomizationObject(c, this._model).configuration;
+
+    if (this._model) {
+      this.onModelChanged(this._model);
+    }
+
+    this._render();
+  }
+
+  insertSound(handler) {
+    this.dispatchEvent(new InsertSoundEvent(handler));
+  }
+
+  onDeleteSound(src, done) {
+    this.dispatchEvent(new DeleteSoundEvent(src, done));
+  }
+
+  _render() {
+    log('_render');
+    let element = React.createElement(Main, {
+      model: this._model,
+      configuration: this._configuration,
+      onModelChanged: this.onModelChanged,
+      onConfigurationChanged: this.onConfigurationChanged,
+      disableSidePanel: this._disableSidePanel,
+      uploadSoundSupport: {
+        add: this.insertSound.bind(this),
+        delete: this.onDeleteSound.bind(this),
+      },
+    });
+    if (!this._root) {
+      this._root = createRoot(this);
+    }
+    this._root.render(element);
+  }
+
+  disconnectedCallback() {
+    if (this._root) {
+      this._root.unmount();
+    }
+  }
+}

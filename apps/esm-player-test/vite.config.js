@@ -9,7 +9,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    port: 5173,
+    port: 5300,
     open: true,
     fs: {
       // Allow serving files from monorepo root and pie-players workspace

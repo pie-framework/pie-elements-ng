@@ -1,0 +1,244 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/charting/src/mark-label.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import classNames from 'classnames';
+import { styled } from '@mui/material/styles';
+import AutosizeInput from 'react-input-autosize';
+import PropTypes from 'prop-types';
+
+import { types } from '@pie-lib/plot';
+import { correct, disabled, incorrect } from './common/styles';
+import { color } from '@pie-lib/render-ui';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+
+const StyledContainer: any = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+});
+
+// eslint-disable-next-line no-unused-vars
+const StyledInput: any = styled('input')(({ theme }) => ({
+  float: 'right',
+  fontFamily: theme.typography.fontFamily,
+  fontSize: theme.typography.fontSize,
+  border: 'none',
+  '&.correct': correct('color'),
+  '&.incorrect': incorrect('color'),
+  '&.disabled': {
+    backgroundColor: 'transparent !important',
+  },
+  '&.error': { border: `2px solid ${theme.palette.error.main}` },
+}));
+
+const StyledMathInput: any = styled('div')(({ theme }) => ({
+  pointerEvents: 'auto',
+  textAlign: 'center',
+  fontSize: theme.typography.fontSize + 2,
+  fontFamily: theme.typography.fontFamily,
+  color: color.primaryDark(),
+  paddingTop: theme.typography.fontSize / 2,
+  '&.disabled': {
+    ...disabled('color'),
+    backgroundColor: 'transparent !important',
+  },
+  '&.error': {
+    border: `2px solid ${theme.palette.error.main}`,
+  },
+  '&.correct': {
+    ...correct('color'),
+  },
+  '&.incorrect': {
+    ...incorrect('color'),
+  },
+}));
+
+function isFractionFormat(label) {
+  const trimmedLabel = label?.trim() || '';
+  const fracRegex = new RegExp(/^[1-9]*[0-9]*\s?[1-9][0-9]*\/[1-9][0-9]*$/);
+  return fracRegex.test(trimmedLabel);
+}
+
+function getLabelMathFormat(label) {
+  const trimmedLabel = label?.trim() || '';
+  let fraction;
+  let mixedNr = '';
+  let improperFraction = trimmedLabel.split(' ');
+  if (improperFraction[1] && improperFraction[1].includes('/')) {
+    fraction = improperFraction[1].split('/') || '';
+  } else {
+    fraction = trimmedLabel?.split('/') || '';
+  }
+
+  let formattedLLabel;
+  if (isFractionFormat(label)) {
+    if (improperFraction[0] && improperFraction[1]) {
+      mixedNr = improperFraction[0];
+    }
+    formattedLLabel = `\\(${mixedNr}\\frac{${fraction[0]}}{${fraction[1]}}\\)`;
+    return formattedLLabel;
+  }
+  return undefined;
+}
+
+export const MarkLabel = (props) => {
+  // eslint-disable-next-line no-unused-vars
+  const [input, setInput] = useState(null);
+  const _ref = useCallback((node) => setInput(node), null);
+
+  const {
+    mark = {},
+    disabled,
+    inputRef: externalInputRef,
+    barWidth,
+    rotate,
+    correctness,
+    autoFocus,
+    error,
+    isHiddenLabel,
+    limitCharacters,
+    correctnessIndicator,
+  } = props;
+
+  const [label, setLabel] = useState(mark.label);
+  const [mathLabel, setMathLabel] = useState(getLabelMathFormat(mark.label));
+  const [isEditing, setIsEditing] = useState(false);
+  let root = useRef(null);
+
+  const onChange = (e) => {
+    if (limitCharacters && e.target.value && e.target.value.length > 20) {
+      return;
+    }
+
+    setLabel(e.target.value);
+  };
+
+  const isMathRendering = () => {
+    return isEditing === false && mathLabel !== undefined;
+  };
+
+  const onChangeProp = (e) => {
+    setMathLabel(getLabelMathFormat(mark.label));
+    setIsEditing(false);
+    props.onChange(e.target.value);
+  };
+  let extraStyle = {};
+
+  if (rotate) {
+    extraStyle = {
+      width: 'unset',
+      textAlign: 'left',
+    };
+  }
+
+  // useState only sets the value once, to synch props to state need useEffect
+  useEffect(() => {
+    setLabel(mark.label);
+  }, [mark.label]);
+
+  useEffect(() => {
+    renderMath(root);
+  }, []);
+
+  return (
+    <StyledContainer>
+      {correctnessIndicator}
+      {isMathRendering() ? (
+        <StyledMathInput
+          ref={(r) => {
+            root = r;
+            if (typeof externalInputRef === 'function') {
+              externalInputRef(r);
+            }
+          }}
+          dangerouslySetInnerHTML={{ __html: getLabelMathFormat(label) }}
+          className={classNames({
+            disabled: disabled,
+            error: error,
+            correct: mark.editable && correctness?.label === 'correct',
+            incorrect: mark.editable && correctness?.label === 'incorrect',
+          })}
+          onClick={() => setIsEditing(true)}
+          style={{
+            minWidth: barWidth,
+            position: 'fixed',
+            transformOrigin: 'left',
+            transform: `rotate(${rotate}deg)`,
+            visibility: isHiddenLabel ? 'hidden' : 'unset',
+            marginTop: correctnessIndicator ? '24px' : '0',
+          }}
+        ></StyledMathInput>
+      ) : (
+        <AutosizeInput
+          inputRef={(r) => {
+            _ref(r);
+            if (typeof externalInputRef === 'function') {
+              externalInputRef(r);
+            }
+          }}
+          name="mark-label-input"
+          autoFocus={isEditing || autoFocus}
+          disabled={disabled}
+          inputClassName={classNames(
+            correctness && mark.editable ? correctness.label : null,
+            disabled && 'disabled',
+            error && 'error',
+          )}
+          inputStyle={{
+            minWidth: barWidth,
+            textAlign: 'center',
+            background: 'transparent',
+            boxSizing: 'border-box',
+            paddingLeft: 0,
+            paddingRight: 0,
+            border: 'none',
+            ...extraStyle,
+          }}
+          value={label}
+          style={{
+            position: 'fixed',
+            pointerEvents: 'auto',
+            top: 0,
+            left: 0,
+            minWidth: barWidth,
+            transformOrigin: 'left',
+            transform: `rotate(${rotate}deg)`,
+            visibility: isHiddenLabel ? 'hidden' : 'unset',
+            marginTop: correctnessIndicator ? '24px' : '0',
+          }}
+          onChange={onChange}
+          onBlur={onChangeProp}
+        />
+      )}
+    </StyledContainer>
+  );
+};
+
+MarkLabel.propTypes = {
+  autoFocus: PropTypes.bool,
+  disabled: PropTypes.bool,
+  error: PropTypes.any,
+  onChange: PropTypes.func,
+  graphProps: types.GraphPropsType,
+  inputRef: PropTypes.func,
+  mark: PropTypes.object,
+  barWidth: PropTypes.number,
+  rotate: PropTypes.number,
+  correctness: PropTypes.shape({
+    value: PropTypes.string,
+    label: PropTypes.string,
+  }),
+  isHiddenLabel: PropTypes.bool,
+  limitCharacters: PropTypes.bool,
+  correctnessIndicator: PropTypes.node,
+};
+
+export default MarkLabel;

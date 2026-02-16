@@ -1,8 +1,8 @@
 import { Command, Flags } from '@oclif/core';
-import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import AnalyzeEsm from './analyze-esm.js';
 import Sync from './sync.js';
+import { assertReposExist } from '../../lib/upstream/repo-utils.js';
 
 export default class Update extends Command {
   static override description =
@@ -49,18 +49,21 @@ export default class Update extends Command {
     const pieElementsPath = resolve(process.cwd(), '../pie-elements');
     const pieLibPath = resolve(process.cwd(), '../pie-lib');
 
-    if (!existsSync(pieElementsPath)) {
-      this.error(
-        `pie-elements repository not found at ${pieElementsPath}\n` +
-          'Expected upstream repository as a sibling directory.'
-      );
-    }
-
-    if (!existsSync(pieLibPath)) {
-      this.error(
-        `pie-lib repository not found at ${pieLibPath}\n` +
-          'Expected upstream repository as a sibling directory.'
-      );
+    try {
+      assertReposExist([
+        {
+          label: 'pie-elements repository',
+          path: pieElementsPath,
+          extraMessage: 'Expected upstream repository as a sibling directory.',
+        },
+        {
+          label: 'pie-lib repository',
+          path: pieLibPath,
+          extraMessage: 'Expected upstream repository as a sibling directory.',
+        },
+      ]);
+    } catch (error) {
+      this.error(error instanceof Error ? error.message : String(error));
     }
 
     if (flags.verbose) {

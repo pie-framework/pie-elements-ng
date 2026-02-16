@@ -2,18 +2,20 @@ import { Command, Flags } from '@oclif/core';
 import { Logger } from '../../utils/logger.js';
 import { loadCompatibilityReport, type CompatibilityReport } from '../../utils/compatibility.js';
 import { getCurrentCommit } from '../../utils/git.js';
-import { printSyncSummary, createEmptySummary } from './sync-summary.js';
+import { printSyncSummary, createEmptySummary } from '../../lib/upstream/sync-summary.js';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { rm as fsRm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { readdir } from './sync-filesystem.js';
-import { getAllDeps } from './sync-package-json.js';
-import { ControllersStrategy } from './sync-controllers-strategy.js';
-import { ReactComponentsStrategy } from './sync-react-strategy.js';
-import { PieLibStrategy } from './sync-pielib-strategy.js';
-import type { SyncStrategy, SyncContext } from './sync-strategy.js';
+import { readdir } from '../../lib/upstream/sync-filesystem.js';
+import { getAllDeps } from '../../lib/upstream/sync-package-json.js';
+import { ControllersStrategy } from '../../lib/upstream/sync-controllers-strategy.js';
+import { ReactComponentsStrategy } from '../../lib/upstream/sync-react-strategy.js';
+import { PieLibStrategy } from '../../lib/upstream/sync-pielib-strategy.js';
+import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy.js';
+import { DEFAULT_PATHS, COMPATIBILITY_FILE, WORKSPACE } from '../../lib/upstream/sync-constants.js';
+import { assertReposExist } from '../../lib/upstream/repo-utils.js';
+import { addDevelopmentExports } from '../../lib/upstream/sync-dev-exports.js';
 
 interface SyncConfig {
   pieElements: string;
@@ -88,14 +90,14 @@ export default class Sync extends Command {
     this.logger = new Logger(flags.verbose);
 
     const config: SyncConfig = {
-      pieElements: '../pie-elements',
-      pieLib: '../pie-lib',
-      pieElementsNg: '.',
+      pieElements: DEFAULT_PATHS.PIE_ELEMENTS,
+      pieLib: DEFAULT_PATHS.PIE_LIB,
+      pieElementsNg: DEFAULT_PATHS.PIE_ELEMENTS_NG,
       syncControllers: true,
       syncReactComponents: true,
       syncPieLibPackages: false,
       useEsmFilter: true,
-      compatibilityFile: './.compatibility/report.json',
+      compatibilityFile: COMPATIBILITY_FILE,
       dryRun: flags['dry-run'],
       verbose: flags.verbose,
       rewritePackageJson: true,
@@ -134,16 +136,8 @@ export default class Sync extends Command {
     this.logger.info(`   Destination: ${config.pieElementsNg}/packages/`);
     this.logger.info(`   Mode:        ${config.dryRun ? 'DRY RUN' : 'LIVE'}\n`);
 
-    // Apply ESM compatibility filter and load report for summary
-    let compatibilityReport: CompatibilityReport | null = null;
-    if (config.useEsmFilter) {
-      try {
-        compatibilityReport = await loadCompatibilityReport(config.compatibilityFile);
-      } catch {
-        // Report loading handled in applyEsmFilter
-      }
-    }
-    await this.applyEsmFilter(config);
+    // Apply ESM compatibility filter (also returns report for summary)
+    const compatibilityReport = await this.applyEsmFilter(config);
 
     // Auto-sync pie-lib dependencies for selected elements (unless explicit pie-lib mode)
     if (config.autoSyncPieLibDeps) {
@@ -162,24 +156,39 @@ export default class Sync extends Command {
 
     // Merge with ESM-compatible pie-lib packages from compatibility report
     // (This ensures packages like controller-utils that are imported in controllers but not declared in package.json get synced)
+    // BUT: Only merge ALL packages when doing a full sync (no specific elements specified)
+    // When syncing specific elements, only sync the required deps (don't merge all 23 compat packages)
     if (compatibilityReport?.pieLibPackages && compatibilityReport.pieLibPackages.length > 0) {
       config.syncPieLibPackages = true;
       const autoDeps = new Set(config.pieLibPackages || []);
-      const compatiblePkgs = compatibilityReport.pieLibPackages;
-      const merged = new Set([...autoDeps, ...compatiblePkgs]);
-      config.pieLibPackages = Array.from(merged);
 
-      const additionalCount = config.pieLibPackages.length - autoDeps.size;
-      if (config.verbose && additionalCount > 0) {
-        this.logger.info(
-          `   Additional ESM-compatible pie-lib: ${additionalCount} package(s) from compatibility report`
-        );
+      // Only merge all compatible packages when doing a full sync
+      if (!config.elementsSpecifiedByUser) {
+        const compatiblePkgs = compatibilityReport.pieLibPackages;
+        const merged = new Set([...autoDeps, ...compatiblePkgs]);
+        config.pieLibPackages = Array.from(merged);
+
+        const additionalCount = config.pieLibPackages.length - autoDeps.size;
+        if (config.verbose && additionalCount > 0) {
+          this.logger.info(
+            `   Additional ESM-compatible pie-lib: ${additionalCount} package(s) from compatibility report`
+          );
+        }
+      } else {
+        // For targeted element sync, only sync required deps (don't bloat with all 23 packages)
+        if (config.verbose && autoDeps.size > 0) {
+          this.logger.info(
+            `   Targeted sync: ${autoDeps.size} pie-lib package(s) required by ${config.elements?.[0]}`
+          );
+        }
       }
     }
 
     // Verify repos exist
-    if (!existsSync(config.pieElements)) {
-      this.logger.error(`pie-elements not found at ${config.pieElements}`);
+    try {
+      assertReposExist([{ label: 'pie-elements', path: config.pieElements }]);
+    } catch (error) {
+      this.logger.error(error instanceof Error ? error.message : String(error));
       this.error('Sync failed', { exit: 1 });
     }
 
@@ -201,6 +210,7 @@ export default class Sync extends Command {
         syncControllers: config.syncControllers,
         syncReactComponents: config.syncReactComponents,
         syncPieLib: config.syncPieLibPackages,
+        pieLibPackages: config.pieLibPackages,
         skipDemos: true,
         upstreamCommit: getCurrentCommit(config.pieElements),
       },
@@ -252,6 +262,11 @@ export default class Sync extends Command {
       await this.rewriteWorkspaceDependencies(config);
     }
 
+    // Add development export conditions for HMR support
+    if (!config.dryRun && this.touchedElementPackages.size > 0) {
+      await this.addDevelopmentExportsToPackages(config);
+    }
+
     // Build by default (unless dry-run or explicitly skipped)
     if (!config.dryRun && !config.skipBuild) {
       await this.buildTouchedPackages(config, result);
@@ -265,6 +280,9 @@ export default class Sync extends Command {
       ).length;
     }
 
+    // Demo metadata generation removed - demos are now tracked in git
+    // and managed directly in this repository (not synced from upstream)
+
     // Print summary and handle errors
     printSyncSummary(syncSummary, compatibilityReport, config.pieElementsNg, this.logger);
 
@@ -273,9 +291,9 @@ export default class Sync extends Command {
     }
   }
 
-  private async applyEsmFilter(config: SyncConfig): Promise<void> {
+  private async applyEsmFilter(config: SyncConfig): Promise<CompatibilityReport | null> {
     if (!config.useEsmFilter) {
-      return;
+      return null;
     }
 
     let report: CompatibilityReport | null = null;
@@ -285,11 +303,11 @@ export default class Sync extends Command {
       this.logger.warn(`⚠️  ESM compatibility file not found at ${config.compatibilityFile}`);
       this.logger.warn('   Run: bun cli upstream:analyze-esm to generate it');
       this.logger.warn('   Proceeding without ESM filter...\n');
-      return;
+      return null;
     }
 
     if (!report) {
-      return;
+      return null;
     }
 
     this.logger.info(`📋 Using ESM compatibility filter from ${config.compatibilityFile}`);
@@ -323,6 +341,8 @@ export default class Sync extends Command {
     if (config.syncPieLibPackages && !config.pieLibPackages) {
       config.pieLibPackages = report.pieLibPackages;
     }
+
+    return report;
   }
 
   private async listElementPackages(config: SyncConfig): Promise<string[]> {
@@ -348,8 +368,8 @@ export default class Sync extends Command {
       const pkg = (await loadPackageJson(pkgPath)) as PackageJson | null;
       const pkgDeps = getAllDeps(pkg);
       for (const name of Object.keys(pkgDeps)) {
-        if (name.startsWith('@pie-lib/')) {
-          deps.add(name.replace('@pie-lib/', ''));
+        if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+          deps.add(name.replace(WORKSPACE.PIE_LIB_PREFIX, ''));
         }
       }
     }
@@ -371,8 +391,8 @@ export default class Sync extends Command {
       const pkgJson = (await loadPackageJson(pkgPath)) as PackageJson | null;
       const deps = getAllDeps(pkgJson);
       for (const name of Object.keys(deps)) {
-        if (name.startsWith('@pie-lib/')) {
-          const depName = name.replace('@pie-lib/', '');
+        if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+          const depName = name.replace(WORKSPACE.PIE_LIB_PREFIX, '');
           if (!seen.has(depName)) queue.push(depName);
         }
       }
@@ -384,23 +404,16 @@ export default class Sync extends Command {
   private async cleanTargetDirectories(config: SyncConfig): Promise<void> {
     if (!config.useEsmFilter || config.dryRun) return;
 
-    // Only remove entire directories when doing a "full compatible sync" (no explicit package filters),
-    // otherwise a targeted sync would unexpectedly delete unrelated packages.
-    if ((config.syncControllers || config.syncReactComponents) && !config.elementsSpecifiedByUser) {
-      const baseDir = join(config.pieElementsNg, 'packages/elements-react');
-      if (existsSync(baseDir)) {
-        await fsRm(baseDir, { recursive: true, force: true });
-        this.logger.info('  🧹 Removed packages/elements-react/ for clean sync');
-      }
-    }
-
-    if (config.syncPieLibPackages && !config.pieLibPackagesSpecifiedByUser) {
-      const baseDir = join(config.pieElementsNg, 'packages/lib-react');
-      if (existsSync(baseDir)) {
-        await fsRm(baseDir, { recursive: true, force: true });
-        this.logger.info('  🧹 Removed packages/lib-react/ for clean sync');
-      }
-    }
+    // NOTE: We intentionally do NOT delete the entire packages/elements-react/ directory
+    // because that would delete locally-maintained content like docs/demo/config.mjs files.
+    // Instead, each sync strategy (ReactComponentsStrategy, PieLibStrategy, etc.) handles
+    // cleaning individual package directories while preserving specific subdirectories
+    // (like docs/ and controller/).
+    //
+    // This approach ensures:
+    // 1. Demo configs (docs/demo/*.mjs) are preserved across syncs
+    // 2. Controllers (src/controller/) are preserved during React component sync
+    // 3. Only the files that need updating are touched
   }
 
   private async checkViteAvailable(config: SyncConfig): Promise<boolean> {
@@ -432,6 +445,7 @@ export default class Sync extends Command {
     // Discover available packages in the workspace
     const libReactDir = join(config.pieElementsNg, 'packages/lib-react');
     const elementsReactDir = join(config.pieElementsNg, 'packages/elements-react');
+    const sharedDir = join(config.pieElementsNg, 'packages/shared');
 
     const availableLibPackages = new Set<string>();
     const availableElementPackages = new Set<string>();
@@ -454,14 +468,43 @@ export default class Sync extends Command {
       }
     }
 
+    // Also scan shared packages - these are @pie-element/shared-* packages
+    if (existsSync(sharedDir)) {
+      const sharedPackages = await readdir(sharedDir);
+      for (const pkg of sharedPackages) {
+        if (existsSync(join(sharedDir, pkg, 'package.json'))) {
+          // Shared packages use the pattern @pie-element/shared-{name}
+          // But the directory is just {name}, so we need to add the "shared-" prefix
+          availableElementPackages.add(`shared-${pkg}`);
+        }
+      }
+    }
+
     this.logger.info(`   Found ${availableLibPackages.size} lib-react packages`);
-    this.logger.info(`   Found ${availableElementPackages.size} elements-react packages\n`);
+    this.logger.info(
+      `   Found ${availableElementPackages.size} elements-react packages (including shared)\n`
+    );
 
     // Scan and rewrite package.json files
-    const packagesToCheck = [
-      ...Array.from(availableLibPackages).map((pkg) => join(libReactDir, pkg)),
-      ...Array.from(availableElementPackages).map((pkg) => join(elementsReactDir, pkg)),
-    ];
+    const packagesToCheck: string[] = [];
+
+    // Add lib-react packages
+    for (const pkg of availableLibPackages) {
+      packagesToCheck.push(join(libReactDir, pkg));
+    }
+
+    // Add elements-react packages (non-shared)
+    if (existsSync(elementsReactDir)) {
+      const elementPackages = await readdir(elementsReactDir);
+      for (const pkg of elementPackages) {
+        if (existsSync(join(elementsReactDir, pkg, 'package.json'))) {
+          packagesToCheck.push(join(elementsReactDir, pkg));
+        }
+      }
+    }
+
+    // Note: We don't check shared packages because they are managed separately
+    // and don't have dependencies on synced packages
 
     let totalRemoved = 0;
     const removedDeps: Array<{ pkg: string; dep: string }> = [];
@@ -485,8 +528,8 @@ export default class Sync extends Command {
         }
 
         // Check @pie-lib/* dependencies
-        if (dep.startsWith('@pie-lib/')) {
-          const libName = dep.replace('@pie-lib/', '');
+        if (dep.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+          const libName = dep.replace(WORKSPACE.PIE_LIB_PREFIX, '');
           if (!availableLibPackages.has(libName)) {
             depsToRemove.push(dep);
             removedDeps.push({ pkg: pkgName, dep });
@@ -495,8 +538,8 @@ export default class Sync extends Command {
         }
 
         // Check @pie-element/* dependencies
-        if (dep.startsWith('@pie-element/')) {
-          const elementName = dep.replace('@pie-element/', '');
+        if (dep.startsWith(WORKSPACE.PIE_ELEMENT_PREFIX)) {
+          const elementName = dep.replace(WORKSPACE.PIE_ELEMENT_PREFIX, '');
           if (!availableElementPackages.has(elementName)) {
             depsToRemove.push(dep);
             removedDeps.push({ pkg: pkgName, dep });
@@ -544,6 +587,26 @@ export default class Sync extends Command {
       this.logger.warn('   ⚠️  bun install failed');
     } else {
       this.logger.info('   ✓ bun install completed successfully\n');
+    }
+  }
+
+  private async addDevelopmentExportsToPackages(config: SyncConfig): Promise<void> {
+    this.logger.section('🔧 Adding development export conditions');
+
+    const elementsDir = join(config.pieElementsNg, 'packages/elements-react');
+    const packageNames = Array.from(this.touchedElementPackages);
+
+    if (packageNames.length === 0) {
+      this.logger.debug('   No element packages to process');
+      return;
+    }
+
+    const updated = await addDevelopmentExports(elementsDir, packageNames, this.logger);
+
+    if (updated > 0) {
+      this.logger.info(`   ✓ Added development exports to ${updated} package(s)\n`);
+    } else {
+      this.logger.debug('   → No changes needed\n');
     }
   }
 
@@ -599,7 +662,8 @@ export default class Sync extends Command {
     // turbo filters are passed through the root build script:
     // package.json: "build": "turbo run build"
     // bun run requires `--` to forward args to the script.
-    const args = ['run', 'build', '--', ...filters];
+    // Always use --force to disable Turbo cache for consistency
+    const args = ['run', 'build', '--', '--force', ...filters];
 
     const exitCode = await new Promise<number>((resolve) => {
       const child = spawn('bun', args, {

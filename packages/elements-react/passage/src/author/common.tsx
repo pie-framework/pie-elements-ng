@@ -1,0 +1,74 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/passage/configure/src/common.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import { Button } from '@mui/material';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+
+export const RemoveAddButton = ({ label, type = 'add', onClick }) => {
+  const Tag = type === 'add' ? AddCircleIcon : RemoveCircleIcon;
+  return (
+    <Button color="primary" size="small" onClick={onClick}>
+      <Tag fontSize="small" color="primary" style={{ marginRight: 4 }} />
+      {label}
+    </Button>
+  );
+};
+
+export const PassageButton: any = styled(RemoveAddButton)({
+  textDecoration: 'underline',
+  '&:hover': {
+    textDecoration: 'underline',
+    backgroundColor: 'transparent',
+  },
+  display: 'flex',
+  alignItems: 'center',
+});
+
+export const ConfirmationDialog = ({ content, cancel, title, ok, open, onOk, onCancel }) => (
+  <Dialog open={open}>
+    <DialogTitle>{title}</DialogTitle>
+
+    <DialogContent>
+      <DialogContentText>{content}</DialogContentText>
+    </DialogContent>
+
+    <DialogActions>
+      {onOk && (
+        <Button onClick={onOk} color="primary">
+          {ok}
+        </Button>
+      )}
+      {onCancel && (
+        <Button onClick={onCancel} color="primary">
+          {cancel}
+        </Button>
+      )}
+    </DialogActions>
+  </Dialog>
+);
+
+ConfirmationDialog.propTypes = {
+  content: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  cancel: PropTypes.string.isRequired,
+  ok: PropTypes.string.isRequired,
+  open: PropTypes.bool.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onOk: PropTypes.func.isRequired,
+};

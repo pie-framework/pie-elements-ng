@@ -1,0 +1,46 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/config-ui/src/with-stateful-model.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+
+const withStatefulModel = (Component) => {
+  class Stateful extends React.Component {
+    static propTypes = {
+      model: PropTypes.object.isRequired,
+      onChange: PropTypes.func.isRequired,
+    };
+
+    constructor(props) {
+      super(props);
+      this.state = {
+        model: props.model,
+      };
+    }
+
+    UNSAFE_componentWillReceiveProps(props) {
+      this.setState({ model: props.model });
+    }
+
+    onChange: any = (model) => {
+      this.setState({ model }, () => {
+        this.props.onChange(this.state.model);
+      });
+    };
+
+    render() {
+      return <Component model={this.state.model} onChange={this.onChange} />;
+    }
+  }
+
+  return Stateful;
+};
+
+export default withStatefulModel;

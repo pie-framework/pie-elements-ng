@@ -1,0 +1,40 @@
+{
+  "name": "@pie-lib/config-ui",
+  "private": true,
+  "version": "0.1.0",
+  "description": "React implementation of @pie-lib/config-ui synced from pie-lib",
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/style": "^0.8.0",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@pie-lib/editable-html-tip-tap": "workspace:*",
+    "@pie-lib/icons": "workspace:*",
+    "@pie-lib/render-ui": "workspace:*",
+    "assert": "^1.4.1",
+    "debug": "^4.1.1",
+    "lodash-es": "^4.17.23",
+    "mathjs": "^7.0.1",
+    "prop-types": "^15.6.2",
+    "react-measure": "^2.2.2"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
+    "dev": "bun x vite",
+    "test": "bun x vitest run"
+  }
+}

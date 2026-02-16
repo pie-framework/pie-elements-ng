@@ -1,0 +1,42 @@
+{
+  "name": "@pie-element/bundler-shared",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Shared bundler for PIE elements - creates IIFE bundles compatible with pie-player-components",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "webpack": "^5.99.9",
+    "esbuild-loader": "^4.3.0",
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0",
+    "pacote": "^21.1.0",
+    "string-hash": "^1.1.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/pacote": "^11.1.8",
+    "@types/string-hash": "^1.1.3",
+    "@types/webpack": "^5.28.5",
+    "typescript": "^5.9.3"
+  }
+}

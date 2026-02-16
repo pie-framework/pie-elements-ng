@@ -2,13 +2,27 @@
 
 This directory contains commands for managing the synchronization between the upstream PIE repositories and this project.
 
+**Audience:** These commands are for maintainers who sync from upstream. Regular developers don't need these commands - synced packages are already committed to git, so just `git pull` to get updates.
+
 ## Overview
 
 The PIE Elements NG project syncs code from two upstream repositories:
+
 - **pie-elements** - Contains element controllers and React components
 - **pie-lib** - Contains shared library packages
 
 These commands help manage that synchronization process, analyze ESM compatibility, and track what's been synced.
+
+Synced packages (`packages/elements-react/*` and `packages/lib-react/*`) are committed to git, so regular developers can work without checking out the upstream repositories.
+
+At a high level, the update workflow does more than copy files. It:
+
+- Filters upstream packages via ESM compatibility analysis
+- Syncs controllers, React UI, and pie-lib sources into local packages
+- Converts source files to TypeScript (`.js`→`.ts`, `.jsx`→`.tsx`)
+- Rewrites package metadata (exports, entrypoints, sideEffects)
+- Generates element-specific Vite config and demo metadata
+- Cleans workspace deps and installs updated dependencies
 
 ## Commands
 
@@ -17,6 +31,7 @@ These commands help manage that synchronization process, analyze ESM compatibili
 **The main command you should use!** Combines ESM analysis and syncing in one step.
 
 **Usage:**
+
 ```bash
 # Update everything (analyze + sync)
 bun cli upstream:update
@@ -32,6 +47,7 @@ bun cli upstream:update --verbose
 ```
 
 **What it does:**
+
 1. **Analyzes** ESM compatibility of all upstream packages
 2. **Syncs** all compatible packages automatically
 3. **Builds** touched packages (unless --skip-build)
@@ -47,6 +63,7 @@ Analyzes ESM compatibility of upstream packages to determine what can be safely 
 **When to use:** When you only want to check compatibility without syncing, or for debugging.
 
 **Usage:**
+
 ```bash
 # Analyze all packages
 bun cli upstream:analyze-esm
@@ -62,6 +79,7 @@ bun cli upstream:analyze-esm --validate
 ```
 
 **What it does:**
+
 1. Scans all upstream packages for ESM blockers (CommonJS-only dependencies)
 2. Checks element-to-element dependencies for transitive compatibility
 3. Tracks @pie-lib dependencies used by elements
@@ -69,6 +87,7 @@ bun cli upstream:analyze-esm --validate
 5. Optional: Runtime validation by actually loading packages
 
 **Output:**
+
 - Lists ESM-compatible elements
 - Lists blocked elements with reasons
 - Shows @pie-lib package compatibility
@@ -84,6 +103,7 @@ Synchronizes ESM-compatible code from upstream repositories to this project.
 **When to use:** When you've already run `analyze-esm` and want to sync without re-analyzing, or for advanced workflows.
 
 **Usage:**
+
 ```bash
 # Sync everything (automatically filters to ESM-compatible packages)
 bun cli upstream:sync
@@ -99,6 +119,7 @@ bun cli upstream:sync --verbose
 ```
 
 **What it does:**
+
 1. **Reads compatibility report** from `analyze-esm` to filter packages
 2. **Controllers**: Syncs from `pie-elements/packages/{element}/controller/src/` to `packages/elements-react/{element}/src/controller/`
 3. **React Components**: Syncs from `pie-elements/packages/{element}/src/` to `packages/elements-react/{element}/src/`
@@ -109,6 +130,7 @@ bun cli upstream:sync --verbose
 
 **Strategy Pattern:**
 The sync command uses the strategy pattern for clean separation:
+
 - `ControllersStrategy` - Handles controller syncing
 - `ReactComponentsStrategy` - Handles React component syncing
 - `PieLibStrategy` - Handles pie-lib package syncing
@@ -120,6 +142,7 @@ Each strategy is self-contained and independently testable.
 Tracks synced packages and their upstream status.
 
 **Usage:**
+
 ```bash
 # Show sync status for all packages
 bun cli upstream:track
@@ -129,25 +152,30 @@ bun cli upstream:track --element=multiple-choice
 ```
 
 **What it does:**
+
 1. Shows which packages have been synced
 2. Displays upstream commit hash for each package
 3. Identifies packages that may need updates
 
 ## Workflow
 
-### Initial Setup
+### Initial Setup (Maintainers Only)
+
+**Note:** Only needed if you're a maintainer syncing from upstream. Regular developers can skip this.
 
 1. Clone the upstream repositories as siblings to this repo:
+
    ```bash
    cd /path/to/projects
    git clone https://github.com/PieLabs/pie-elements.git
    git clone https://github.com/PieLabs/pie-lib.git
-   git clone https://github.com/your-org/pie-elements-ng.git
+   git clone https://github.com/pie-framework/pie-elements-ng.git
+   cd pie-elements-ng
    ```
 
 2. Run initial analysis to see what's available:
+
    ```bash
-   cd pie-elements-ng
    bun cli upstream:analyze-esm --verbose
    ```
 
@@ -156,23 +184,27 @@ bun cli upstream:track --element=multiple-choice
 The simplest workflow using the combined `update` command:
 
 1. **Pull upstream changes:**
+
    ```bash
    cd ../pie-elements && git pull
    cd ../pie-lib && git pull
-   cd ../pie-elements-ng
+   cd ../pie-element
    ```
 
 2. **Check what would change** (dry run):
+
    ```bash
    bun cli upstream:update --dry-run --verbose
    ```
 
 3. **Update everything:**
+
    ```bash
    bun cli upstream:update
    ```
 
 4. **Review, test, and commit:**
+
    ```bash
    git diff
    bun test
@@ -186,29 +218,34 @@ The simplest workflow using the combined `update` command:
 For testing changes to individual elements first:
 
 1. **Pull upstream changes:**
+
    ```bash
    cd ../pie-elements && git pull
    cd ../pie-lib && git pull
-   cd ../pie-elements-ng
+   cd ../pie-element
    ```
 
 2. **Update specific element** (with dry run first):
+
    ```bash
    bun cli upstream:update --element=multiple-choice --dry-run
    bun cli upstream:update --element=multiple-choice
    ```
 
 3. **Test the element:**
+
    ```bash
    bun test packages/elements-react/multiple-choice
    ```
 
 4. **If good, update all:**
+
    ```bash
    bun cli upstream:update
    ```
 
 5. **Commit and push:**
+
    ```bash
    git add .
    git commit -m "sync: update from upstream"
@@ -220,6 +257,7 @@ For testing changes to individual elements first:
 If an element is blocked from ESM compatibility:
 
 1. **Check why it's blocked:**
+
    ```bash
    bun cli upstream:analyze-esm --verbose | grep element-name
    ```
@@ -251,7 +289,7 @@ Some @pie-lib packages (like `controller-utils`) are imported directly in contro
 // These are packages that may be imported directly in code (e.g., controllers)
 // but not declared in package.json dependencies
 const ALWAYS_INCLUDE_PIE_LIB = [
-  'controller-utils', // Used in controller code via direct imports
+  "controller-utils", // Used in controller code via direct imports
 ];
 ```
 
@@ -271,7 +309,7 @@ Elements using konva/react-konva (like hotspot, drawing-response) bundle these l
 
 ```typescript
 // In sync-react-strategy.ts
-const konvaElements = ['hotspot', 'drawing-response'];
+const konvaElements = ["hotspot", "drawing-response"];
 const shouldBundleKonva = konvaElements.includes(elementName);
 ```
 
@@ -302,7 +340,10 @@ Elements with a `docs/demo` directory automatically get demo mode support in the
 export default defineConfig(({ mode, command }) => ({
   plugins: [react()],
   // Only change root for demo mode when serving (not building)
-  root: mode === 'demo' && command === 'serve' ? resolve(__dirname, 'docs/demo') : __dirname,
+  root:
+    mode === "demo" && command === "serve"
+      ? resolve(__dirname, "docs/demo")
+      : __dirname,
   // ... rest of config
 }));
 ```
@@ -354,6 +395,7 @@ tools/cli/src/commands/upstream/
 ### Sync fails with "file not found"
 
 Check that upstream repositories are at the expected locations:
+
 ```bash
 ls -la ../pie-elements ../pie-lib
 ```
@@ -367,6 +409,7 @@ ls -la ../pie-elements ../pie-lib
 ### Element marked as incompatible
 
 Run detailed analysis:
+
 ```bash
 bun cli upstream:analyze-esm --verbose --element=element-name
 ```
@@ -376,17 +419,18 @@ Fix the blockers (see "Working with Blocked Elements" above).
 ### Import errors after sync
 
 The sync automatically fixes default exports, but some edge cases may require manual fixes:
+
 ```typescript
 // If you see errors like "X is not exported from Y"
 // Check if the import needs to be a named import
-import { something } from './file'; // Instead of default import
+import { something } from "./file"; // Instead of default import
 ```
 
 ## Contributing
 
 When adding new functionality to the sync process:
 
-1. **Utilities** → Add to appropriate utility file (sync-*.ts)
+1. **Utilities** → Add to appropriate utility file (sync-\*.ts)
 2. **New sync type** → Create a new strategy file
 3. **Strategy changes** → Modify the specific strategy file
 4. **Orchestration** → Update sync.ts (main command)

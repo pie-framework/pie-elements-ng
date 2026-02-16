@@ -1,44 +1,34 @@
-import { Args, Command, Flags } from '@oclif/core';
+import { Command, Flags } from '@oclif/core';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 
 /**
- * Start development server for element demos using the new embedded local-esm-cdn architecture.
+ * Start unified demo application for all PIE elements.
  *
- * This command:
- * 1. Builds the element player (if needed)
- * 2. Builds the specified element (if needed)
- * 3. Starts a single Vite dev server with embedded local-esm-cdn
- *
- * Unlike dev:serve, this uses the new architecture where local-esm-cdn
- * is embedded as a Vite plugin, not a separate server.
+ * This command starts the apps/element-demo SvelteKit application which provides
+ * a unified demo experience for all 27 PIE elements with multiple demo configurations.
  */
 export default class DevDemo extends Command {
-  static override description = 'Start demo server with embedded local-esm-cdn (new architecture)';
+  static override description = 'Start unified demo app for all PIE elements (apps/element-demo)';
 
   static override examples = [
-    '<%= config.bin %> <%= command.id %> hotspot',
-    '<%= config.bin %> <%= command.id %> multiple-choice --port 5180',
-    '<%= config.bin %> <%= command.id %> math-inline --skip-build --no-open',
+    '<%= config.bin %> <%= command.id %>',
+    '<%= config.bin %> <%= command.id %> --port 5180',
+    '<%= config.bin %> <%= command.id %> --open',
+    '<%= config.bin %> <%= command.id %> --build',
   ];
 
   static override flags = {
     port: Flags.integer({
       char: 'p',
       description: 'Vite dev server port',
-      default: 5174,
+      default: 5222,
     }),
-    'skip-build': Flags.boolean({
-      description: 'Skip building element and element-player',
-      default: false,
-    }),
-    'skip-element-build': Flags.boolean({
-      description: 'Skip building the element only',
-      default: false,
-    }),
-    'skip-player-build': Flags.boolean({
-      description: 'Skip building the element-player only',
+    build: Flags.boolean({
+      char: 'b',
+      description: 'Build all elements before starting',
       default: false,
     }),
     open: Flags.boolean({
@@ -49,71 +39,82 @@ export default class DevDemo extends Command {
     }),
   };
 
-  static override args = {
-    element: Args.string({
-      required: true,
-      description: 'Element name (e.g., hotspot, multiple-choice, math-inline)',
-    }),
-  };
+  static override args = {};
 
   private viteProcess: ChildProcess | null = null;
+  private lockFilePath = '';
+  private bundlerInstanceDir = '';
 
   public async run(): Promise<void> {
-    const { args, flags } = await this.parse(DevDemo);
+    const { flags } = await this.parse(DevDemo);
 
-    // Resolve element path
-    const elementPath = this.resolveElementPath(args.element);
-    if (!elementPath) {
-      this.error(`Element not found: ${args.element}`);
+    // Find monorepo root - check if we're already at root or need to traverse up
+    let monorepoRoot = process.cwd();
+    const rootPackageJson = path.join(monorepoRoot, 'package.json');
+
+    // If package.json doesn't exist at current level, we're in a subdirectory (like tools/cli)
+    // Traverse up to find the root
+    if (!existsSync(rootPackageJson) || !existsSync(path.join(monorepoRoot, 'apps'))) {
+      monorepoRoot = path.resolve(monorepoRoot, '../..');
     }
 
-    // Check if demo exists
-    const demoPath = path.join(elementPath, 'docs/demo');
-    if (!existsSync(demoPath)) {
-      this.error(
-        `No demo found at ${demoPath}. Please create a demo using the templates in docs/DEMO_SYSTEM.md`
-      );
-    }
+    const demoAppPath = path.join(monorepoRoot, 'apps', 'element-demo');
 
-    this.log(`Starting demo for ${args.element}...`);
+    this.lockFilePath = this.getLockFilePath(flags.port);
+    this.acquireLock(flags.port);
+    this.bundlerInstanceDir = this.createBundlerInstanceDir(flags.port);
+
+    this.log('Starting unified demo app for all PIE elements...');
+    this.log('');
+    this.log('Bundler mode: local (default)');
+    this.log(`Bundler workspace: ${this.bundlerInstanceDir}`);
     this.log('');
 
     try {
-      const skipElementBuild = flags['skip-build'] || flags['skip-element-build'];
-      const skipPlayerBuild = flags['skip-build'] || flags['skip-player-build'];
-
-      // 1. Build element-player if needed
-      if (!skipPlayerBuild) {
-        await this.buildElementPlayer();
+      // 1. Build all elements if requested
+      if (flags.build) {
+        this.log('Building all React elements...');
+        await this.buildAllElements(monorepoRoot);
       }
 
-      // 2. Build element if needed
-      if (!skipElementBuild) {
-        await this.buildElement(args.element);
+      // 2. Install workspace dependencies (only if building)
+      if (flags.build) {
+        this.log('Installing workspace dependencies...');
+        await this.installDependencies(monorepoRoot);
+        this.log('✓ Dependencies installed\n');
       }
 
-      // 3. Start Vite dev server (with embedded local-esm-cdn)
+      // 3. Start Vite dev server
       this.log(`Starting Vite dev server on port ${flags.port}...`);
-      this.viteProcess = await this.startVite(elementPath, flags.port);
+      if (!existsSync(demoAppPath)) {
+        this.error(`Demo app not found at ${demoAppPath}`);
+      }
+      this.viteProcess = await this.startVite(demoAppPath, flags.port, {
+        DEMO_BUNDLER_INSTANCE_DIR: this.bundlerInstanceDir,
+      });
 
       // 4. Open browser
       if (flags.open) {
-        await this.sleep(2000); // Wait for Vite to start
+        await this.sleep(3000); // Wait for Vite to start
         const url = `http://localhost:${flags.port}`;
         this.log(`Opening ${url}...`);
         await this.openBrowser(url);
       }
 
       this.log('');
-      this.log('✓ Demo server running');
-      this.log(`  Demo: http://localhost:${flags.port}`);
+      this.log('✓ Demo app running');
+      this.log(`  URL: http://localhost:${flags.port}`);
       this.log('');
-      this.log('📖 The demo uses embedded local-esm-cdn (Vite plugin)');
-      this.log('   PIE packages are served via /@pie-* URLs');
+      if (!flags.build) {
+        this.log('ℹ️  Running without rebuild. Use --build to rebuild all elements first.');
+        this.log('');
+      }
+      this.log('📖 The demo app showcases all 27 PIE elements with multiple demos');
+      this.log('   Navigate to any element to see available demo configurations');
       this.log('');
       this.log('Press Ctrl+C to stop');
 
-      // 5. Handle graceful shutdown
+      // 7. Handle graceful shutdown
       process.on('SIGINT', () => {
         this.log('\nShutting down...');
         this.cleanup();
@@ -133,59 +134,32 @@ export default class DevDemo extends Command {
     }
   }
 
-  private resolveElementPath(element: string): string | null {
-    // Check compatibility report to determine the correct implementation
-    const compatReportPath = path.join(process.cwd(), '.compatibility/report.json');
-    let preferReact = true; // Default to React
-
-    if (existsSync(compatReportPath)) {
-      try {
-        const report = JSON.parse(readFileSync(compatReportPath, 'utf-8'));
-        // If element is in compatibility report, it should use React
-        // If not, it might be a legacy Svelte-only element
-        preferReact = report.elements?.includes(element) ?? true;
-      } catch {
-        // If report can't be read, default to React
-        preferReact = true;
-      }
-    }
-
-    // Try preferred implementation first
-    const implementations = preferReact
-      ? ['elements-react', 'elements-svelte']
-      : ['elements-svelte', 'elements-react'];
-
-    for (const impl of implementations) {
-      const elementPath = path.join(process.cwd(), 'packages', impl, element);
-      const demoPath = path.join(elementPath, 'docs/demo');
-
-      if (existsSync(elementPath) && existsSync(demoPath)) {
-        return elementPath;
-      }
-    }
-
-    return null;
-  }
-
-  private async buildElementPlayer(): Promise<void> {
-    this.log('Building element-player...');
-
+  private async buildAllElements(cwd: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const build = spawn(
         'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', '@pie-elements-ng/element-player'],
+        [
+          'run',
+          'turbo',
+          'build',
+          '--force',
+          '--filter',
+          './packages/elements-react/*',
+          '--filter',
+          './packages/elements-svelte/*',
+        ],
         {
           stdio: 'inherit',
-          cwd: process.cwd(),
+          cwd,
         }
       );
 
       build.on('close', (code) => {
         if (code === 0) {
-          this.log('✓ Element player built\n');
+          this.log('✓ All elements built\n');
           resolve();
         } else {
-          reject(new Error(`Element player build failed with code ${code}`));
+          reject(new Error(`Build failed with code ${code}`));
         }
       });
 
@@ -193,36 +167,19 @@ export default class DevDemo extends Command {
     });
   }
 
-  private async buildElement(element: string): Promise<void> {
-    this.log(`Building ${element}...`);
-
-    return new Promise((resolve, reject) => {
-      const build = spawn(
-        'bun',
-        ['run', 'turbo', 'build', '--force', '--filter', `@pie-element/${element}`],
-        {
-          stdio: 'inherit',
-          cwd: process.cwd(),
-        }
-      );
-
-      build.on('close', (code) => {
-        if (code === 0) {
-          this.log('✓ Element built\n');
-          resolve();
-        } else {
-          reject(new Error(`Element build failed with code ${code}`));
-        }
-      });
-
-      build.on('error', reject);
-    });
-  }
-
-  private async startVite(elementPath: string, port: number): Promise<ChildProcess> {
-    const proc = spawn('bunx', ['vite', 'docs/demo', '--port', port.toString(), '--host'], {
-      cwd: elementPath,
+  private async startVite(
+    demoPath: string,
+    port: number,
+    env: Record<string, string>
+  ): Promise<ChildProcess> {
+    const proc = spawn('bunx', ['vite', '--port', port.toString(), '--host'], {
+      cwd: demoPath,
       stdio: 'inherit',
+      env: {
+        ...process.env,
+        PORT: port.toString(),
+        ...env,
+      },
     });
 
     proc.on('error', (error) => {
@@ -242,6 +199,25 @@ export default class DevDemo extends Command {
     }
   }
 
+  private async installDependencies(cwd: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const install = spawn('bun', ['install'], {
+        cwd, // Run from monorepo root to resolve all workspaces
+        stdio: 'inherit',
+      });
+
+      install.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Dependency installation failed with code ${code}`));
+        }
+      });
+
+      install.on('error', reject);
+    });
+  }
+
   private cleanup(): void {
     if (this.viteProcess) {
       try {
@@ -251,9 +227,87 @@ export default class DevDemo extends Command {
       }
       this.viteProcess = null;
     }
+
+    if (this.bundlerInstanceDir) {
+      try {
+        rmSync(this.bundlerInstanceDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors.
+      }
+      this.bundlerInstanceDir = '';
+    }
+
+    this.releaseLock();
   }
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private acquireLock(port: number): void {
+    if (existsSync(this.lockFilePath)) {
+      try {
+        const raw = readFileSync(this.lockFilePath, 'utf-8');
+        const lock = JSON.parse(raw);
+        if (lock?.pid && this.isProcessRunning(lock.pid)) {
+          this.error(
+            `A demo server is already running (port: ${lock.port ?? 'unknown'}, pid: ${
+              lock.pid
+            }). Stop it or use --port to run on a different port.`
+          );
+        }
+      } catch (error) {
+        // If the lock is unreadable, remove it and continue.
+      }
+
+      try {
+        unlinkSync(this.lockFilePath);
+      } catch {
+        // Ignore cleanup errors.
+      }
+    }
+
+    const lockInfo = {
+      pid: process.pid,
+      port,
+      startedAt: new Date().toISOString(),
+    };
+    writeFileSync(this.lockFilePath, `${JSON.stringify(lockInfo, null, 2)}\n`);
+  }
+
+  private getLockFilePath(port: number): string {
+    return path.join(process.cwd(), `.demo-server.${port}.lock`);
+  }
+
+  private createBundlerInstanceDir(port: number): string {
+    // New run => new temp dir, so local cache is fresh after every restart.
+    const instanceId = `demo-${port}-${process.pid}-${Date.now()}`;
+    return path.join(tmpdir(), 'pie-element-demo-bundler', instanceId);
+  }
+
+  private releaseLock(): void {
+    if (!existsSync(this.lockFilePath)) return;
+    try {
+      const raw = readFileSync(this.lockFilePath, 'utf-8');
+      const lock = JSON.parse(raw);
+      if (lock?.pid !== process.pid) return;
+    } catch {
+      // If parsing fails, still attempt to remove stale lock.
+    }
+
+    try {
+      unlinkSync(this.lockFilePath);
+    } catch {
+      // Ignore cleanup errors.
+    }
+  }
+
+  private isProcessRunning(pid: number): boolean {
+    try {
+      process.kill(pid, 0);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

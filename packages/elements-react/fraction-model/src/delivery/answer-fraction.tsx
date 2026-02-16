@@ -1,0 +1,113 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/fraction-model/src/answer-fraction.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import { TextField } from '@mui/material';
+
+const GroupInline: any = styled('div')({
+  alignItems: 'center',
+  display: 'flex',
+  gap: '20px',
+});
+
+const Group: any = styled('div')({
+  margin: '12px 0',
+});
+
+const InputLabel: any = styled('label')({
+  display: 'block',
+  marginBottom: '4px',
+});
+
+const StyledTextField: any = styled(TextField)({
+  width: '120px',
+  maxHeight: '40px',
+  '& [class^="MuiInputBase-root"]': {
+    height: 40,
+    fontSize: '14px',
+  },
+});
+
+export class AnswerFraction extends React.Component {
+  static propTypes = {
+    model: PropTypes.object.isRequired,
+    disabled: PropTypes.bool.isRequired,
+    showCorrect: PropTypes.bool.isRequired,
+    onAnswerChange: PropTypes.func.isRequired,
+    answers: PropTypes.object.isRequired,
+  };
+
+  /**
+   * Function to trigger when value change from number selection
+   * @param {string} key contains event change object
+   * @returns updated answer change object
+   */
+  onValueChange = (key) => (event) => {
+    let value = parseInt(event?.target?.value);
+    const { model, onAnswerChange, answers } = this.props;
+    const newAnswers = { ...answers };
+    const min = 1;
+    const max = (key === 'noOfModel') ? model.maxModelSelected : 9;
+    if(value > max) {
+      value = max;
+    } else if(value < min) {
+      value = min;
+    }
+    newAnswers[key] = value;
+    onAnswerChange(newAnswers);
+  };
+
+  render() {
+    const { model, showCorrect, answers, disabled } = this.props;
+
+    return (
+      <div>
+        {model.allowedStudentConfig && (
+          <GroupInline>
+            <Group>
+              <InputLabel htmlFor={'preview_number-of-models'}>
+                Number of Models
+              </InputLabel>
+              <StyledTextField
+                id="preview_number-of-models"
+                inputProps={{ min: 1, max: model.maxModelSelected }}
+                name="preview_number-of-models"
+                onChange={this.onValueChange('noOfModel')}
+                type="number"
+                variant="outlined"
+                disabled={disabled}
+                value={showCorrect ? model.maxModelSelected : answers.noOfModel}
+              />
+            </Group>
+            <Group>
+              <InputLabel htmlFor={'preview_parts-per-model'}>
+                Parts per Model
+              </InputLabel>
+              <StyledTextField
+                id="preview_parts-per-model"
+                inputProps={{ min: 1, max: 9 }}
+                name="preview_parts-per-model"
+                onChange={this.onValueChange('partsPerModel')}
+                type="number"
+                variant="outlined"
+                disabled={disabled}
+                value={showCorrect ? model.partsPerModel : answers.partsPerModel}
+              />
+            </Group>
+          </GroupInline>
+        )}
+      </div>
+    );
+  }
+}
+
+export default AnswerFraction;

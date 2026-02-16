@@ -2,326 +2,195 @@
 
 ## Overview
 
-This document describes the new demo system for PIE React elements, built with Svelte 5 and an embedded local ESM CDN.
+The demo system uses a single shared app and picks the element to load at runtime.
 
-## Architecture
+- **`dev:demo`**: runs `apps/element-demo` and loads an element via `VITE_*` env vars.
 
-### Single Server Design
-
-Each element demo runs as a **single Vite development server** with an embedded local ESM CDN:
-
-```
-Browser Request → Vite Dev Server (localhost:5174)
-                  ├─ Regular files (HTML, JS, CSS)
-                  └─ Vite Plugin intercepts /@pie-* requests
-                     └─ Serves from local dist/ folders with import rewriting
-```
-
-### Key Components
-
-1. **Element Player** (`packages/shared/element-player/`)
-   - Svelte 5 web component: `<pie-element-player>`
-   - Custom element with shadow: none
-   - Props: elementName, cdnUrl, model, session, mode, showConfigure, debug
-   - Dynamically loads PIE elements and registers them as custom HTML elements
-   - Integrates controller for scoring in evaluate mode
-
-2. **Local ESM CDN** (`apps/local-esm-cdn/`)
-   - Embedded as Vite plugin via `@pie-elements-ng/local-esm-cdn/adapters/vite`
-   - Intercepts requests to `/@pie-*` URLs
-   - Serves PIE packages from local `dist/` folders
-   - Rewrites imports:
-     - `@pie-element/foo` → `/@pie-element/foo`
-     - `@pie-lib/bar` → `/@pie-lib/bar`
-     - External packages → `https://esm.sh/package`
-
-3. **Per-Element Demos** (`packages/elements-react/*/docs/demo/`)
-   - Complete Vite app per element
-   - Uses existing config.mjs and session.mjs
-   - No central demo app
-
-## File Structure
-
-### Shared Element Player
-
-```
-packages/shared/element-player/
-├── package.json
-├── vite.config.ts              # Build config for web component
-├── tsconfig.json
-├── src/
-│   ├── index.ts                # Exports web component
-│   ├── PieElementPlayer.svelte # Main web component
-│   ├── lib/
-│   │   ├── element-loader.ts   # Dynamic element loading
-│   │   └── types.ts            # TypeScript types
-│   └── components/
-│       ├── ModeSelector.svelte
-│       ├── SessionPanel.svelte
-│       ├── ScoringPanel.svelte
-│       └── Tabs.svelte
-└── dist/
-    └── pie-element-player.js   # Built output (87 KB)
-```
-
-### Per-Element Demo
-
-```
-packages/elements-react/{element}/docs/demo/
-├── vite.config.ts              # Vite config with local-esm-cdn plugin
-├── index.html                  # Entry HTML with <pie-element-player>
-├── src/
-│   └── main.ts                 # Demo initialization
-├── config.mjs                  # Model configurations (existing)
-└── session.mjs                 # Session data (existing)
-```
-
-## Usage
-
-### Running a Demo
-
-**From the repo root** (recommended):
+## Quick Start
 
 ```bash
-bun react-demo --element hotspot
-```
+# Default demo (shared app)
+bun run dev:demo categorize
 
-This will:
-
-1. Build the element-player and all dependencies
-2. Build the specified element
-3. Start the Vite dev server with embedded local-esm-cdn
-4. Open the demo in your browser
-
-**From the element directory** (alternative):
-
-```bash
-cd packages/elements-react/hotspot
-bun run demo
-```
-
-Note: You may need to manually build the element-player first if it hasn't been built yet.
-
-### Demo HTML Template
-
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PIE Demo - {Element Name}</title>
-</head>
-<body>
-  <h1>{Element} Demo</h1>
-  <pie-element-player
-    element-name="{element}"
-    cdn-url=""
-    show-configure="false"
-    debug="true"
-  ></pie-element-player>
-
-  <script type="module" src="./src/main.ts"></script>
-</body>
-</html>
-```
-
-### Demo Main Script Template
-
-```typescript
-import '../../../../../shared/element-player/dist/pie-element-player.js';
-import config from '../config.mjs';
-import sessions from '../session.mjs';
-
-customElements.whenDefined('pie-element-player').then(() => {
-  const player = document.querySelector('pie-element-player');
-  if (player) {
-    const model = Array.isArray(config?.models) ? config.models[0] : config;
-    const session = Array.isArray(sessions) ? sessions[0] : sessions;
-
-    (player as any).model = model;
-    (player as any).session = session;
-
-    player.addEventListener('session-changed', (e: Event) => {
-      console.log('Session changed:', (e as CustomEvent).detail);
-    });
-  }
-});
-```
-
-### Vite Config Template
-
-```typescript
-import { defineConfig } from 'vite';
-import { createVitePlugin as createLocalEsmCdnPlugin } from '@pie-elements-ng/local-esm-cdn/adapters/vite';
-import path from 'node:path';
-
-export default defineConfig({
-  plugins: [
-    createLocalEsmCdnPlugin({
-      repoRoot: path.resolve(__dirname, '../../../../..'),
-      esmShBaseUrl: 'https://esm.sh',
-      buildScope: 'none'
-    })
-  ],
-  server: { port: 5174 },
-  preview: { port: 5174 }
-});
-```
-
-### Package.json Scripts
-
-```json
-{
-  "scripts": {
-    "demo": "cd docs/demo && vite",
-    "demo:build": "cd docs/demo && vite build",
-    "demo:preview": "cd docs/demo && vite preview"
-  },
-  "devDependencies": {
-    "@pie-elements-ng/element-player": "workspace:*",
-    "@pie-elements-ng/local-esm-cdn": "workspace:*"
-  }
-}
 ```
 
 ## How It Works
 
-### 1. Element Loading
+`apps/element-demo` reads:
 
-When the page loads:
+- `VITE_ELEMENT_NAME`
+- `VITE_ELEMENT_PATH`
+- `VITE_ELEMENT_TYPE`
 
-1. Browser loads `<pie-element-player>` custom element
-2. Element player calls `loadElement('@pie-element/hotspot', 'hotspot-element', '', true)`
-3. Element loader converts `@pie-element/hotspot` → `/@pie-element/hotspot`
-4. Browser requests `/@pie-element/hotspot`
-5. Vite plugin intercepts and serves from `packages/elements-react/hotspot/dist/index.js`
-6. Plugin rewrites all imports in the served file:
-   - `@pie-lib/math-rendering` → `/@pie-lib/math-rendering`
-   - `react` → `https://esm.sh/react`
-7. Element class is registered: `customElements.define('hotspot-element', HotspotElement)`
-8. Element instance created: `<hotspot-element>` inserted in DOM
-9. Props set: `element.model = {...}`, `element.session = {...}`
+The CLI commands set these env vars and start a single Vite dev server.
+The app loads the element from the workspace using the resolver plugin.
 
-### 2. Controller Loading
+## Per-Element Demo Data
 
-When switching to evaluate mode:
+Each element supplies demo data under:
 
-1. Element player calls `loadController('@pie-element/hotspot', '', true)`
-2. Controller loader converts to `/@pie-element/hotspot/controller`
-3. Vite plugin serves from `packages/elements-react/hotspot/dist/controller/index.js`
-4. Controller methods available: `model()`, `score()`, `outcome()`
-
-### 3. Import Rewriting
-
-The local-esm-cdn plugin rewrites imports in served files:
-
-**Input** (in dist/index.js):
-```javascript
-import { renderMath } from "@pie-lib/math-rendering";
-import React from "react";
-import { jsx } from "react/jsx-runtime";
+```text
+packages/elements-{react|svelte}/{element}/docs/demo/
+├── config.mjs
+└── session.mjs
 ```
 
-**Output** (served to browser):
-```javascript
-import { renderMath } from "/@pie-lib/math-rendering";
-import React from "https://esm.sh/react";
-import { jsx } from "https://esm.sh/react/jsx-runtime";
+The shared app reads those files to populate the model and session.
+
+## Known Issues & Solutions
+
+### Infinite Loop / HMR Reconnection Issue
+
+**Problem:** The demo app was experiencing an infinite loop with continuous Vite HMR reconnections (`[vite] connecting/connected` repeating endlessly), causing thousands of network requests.
+
+**Root Cause:** The combination of these Vite config settings created the loop:
+
+```js
+// ❌ PROBLEMATIC CONFIGURATION
+resolve: {
+  conditions: ['development', 'import', 'default'],
+},
+optimizeDeps: {
+  exclude: ['@pie-element/*', '@pie-lib/*'],
+}
 ```
 
-## Key Design Decisions
+This configuration:
 
-### Why Svelte 5?
+1. Resolved workspace packages to their **source files** (via 'development' condition)
+2. Did not pre-bundle them (via exclude)
+3. Made Vite watch all source files for changes
+4. Any HMR update triggered the player layout's load function, creating new objects
+5. This caused another HMR cycle, creating an infinite loop
 
-- Modern reactive system with runes ($state, $effect, $bindable)
-- Custom element support built-in
-- Small bundle size (87 KB for entire player)
-- Fast compilation
+**Solution:** Remove both problematic settings from `vite.config.ts`:
 
-### Why Embedded CDN?
+```js
+// ✅ WORKING CONFIGURATION
+export default defineConfig({
+  plugins: [tailwindcss({ optimize: false }), sveltekit()],
 
-- Single server = simpler setup
-- No CORS issues
-- Faster reload during development
-- No need to manage multiple processes
+  // Don't use 'development' condition - causes infinite HMR loops
+  // resolve: { conditions: ['development', ...] },
 
-### Why Per-Element Demos?
+  server: {
+    port: Number(process.env.PORT ?? 5222),
+    fs: { allow: [workspaceRoot] },
+  },
 
-- Elements own their demos (no central coordination)
-- Easy to add new element demos (copy template)
-- Can customize per element if needed
-- Matches existing config.mjs/session.mjs pattern
-
-### Why Custom Elements?
-
-- Matches PIE ecosystem patterns (like ESM player)
-- Elements are already built as web components
-- Native browser API, no framework lock-in
-- Clean encapsulation
-
-## Implementation Status
-
-### ✅ Completed (Phase 1-6)
-
-- [x] Element player package structure
-- [x] Core element-loader logic
-- [x] UI components (ModeSelector, SessionPanel, etc.)
-- [x] PieElementPlayer.svelte main component
-- [x] Standalone element player testing
-- [x] Local-esm-cdn TypeScript fixes
-- [x] Local-esm-cdn import rewriting for PIE packages
-- [x] Hotspot demo integration
-
-### ⏳ Pending (Phase 7-8)
-
-- [ ] Root demo script (`bun react-demo --element <name>`)
-- [ ] Demo templates and documentation
-- [ ] Script to auto-generate demos for all elements
-- [ ] Integration with 2-3 more elements for testing
-
-## Troubleshooting
-
-### Module resolution errors
-
-**Problem:** `Failed to resolve module specifier "@pie-lib/something"`
-
-**Solution:** Ensure local-esm-cdn is built:
-```bash
-cd apps/local-esm-cdn
-bun run build
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react/jsx-runtime'],
+    // Don't exclude workspace packages - use built versions instead
+    // exclude: ['@pie-element/*', '@pie-lib/*'],
+  },
+});
 ```
 
-### Element not loading
+**Additional Fixes Applied:**
 
-**Problem:** Element player shows loading forever
+1. **Disabled preload on hover** in `app.html`:
 
-**Solution:** Check that element is built:
-```bash
-cd packages/elements-react/{element}
-bun run build
+   ```html
+   <body data-sveltekit-preload-data="off">
+   ```
+
+2. **Cached math renderer** in `player/+layout.ts` to prevent creating new objects:
+
+   ```ts
+   let cachedMathRenderer: any = null;
+   if (!cachedMathRenderer) {
+     cachedMathRenderer = createKatexRenderer();
+   }
+   ```
+
+3. **Used `onMount` instead of `$effect`** in `player/+layout.svelte` for one-time initialization:
+
+   ```ts
+   onMount(() => {
+     if (data) {
+       initializeDemo({...});
+     }
+   });
+   ```
+
+4. **Converted reactive statements to `$derived`** for Svelte 5 runes mode:
+
+   ```ts
+   // Old: $: activeTab = ...
+   // New:
+   const activeTab = $derived($page.url.pathname.split("/")[2] || "deliver");
+   ```
+
+**Trade-off:** Without the 'development' condition, Vite uses the **built/dist** versions of workspace packages instead of watching source files directly. This means:
+
+- ✅ Demo app loads successfully without infinite loops
+- ✅ Element packages (`@pie-element/multiple-choice`, etc.) load from their `dist/` folders
+- ⚠️ Changes to element source code require rebuilding the package before they appear in the demo
+- ⚠️ No HMR for workspace package changes during development
+
+**Workflow:** When developing an element, you need to:
+
+1. Make changes to element source code
+2. Run `bun run build` in the element package
+3. Refresh the demo to see changes
+
+**Alternative (Advanced):** To enable HMR for development on specific packages:
+
+The `upstream:sync` command already adds 'development' export conditions to synced element packages via `addDevelopmentExports()`. To use this:
+
+1. **Sync a specific element:**
+
+   ```bash
+   bun run upstream:sync:element multiple-choice
+   ```
+
+   This adds 'development' exports pointing to `src/` files in that element's package.json.
+
+2. **Enable the development condition in Vite config:**
+
+   ```js
+   // vite.config.ts
+   resolve: {
+     conditions: ['development', 'import', 'default'],
+   },
+   optimizeDeps: {
+     include: ['react', 'react-dom', 'react/jsx-runtime'],
+     // IMPORTANT: Only exclude the specific package you're developing
+     exclude: ['@pie-element/multiple-choice'],  // Not all packages!
+   },
+   ```
+
+3. **⚠️ Warning:** This approach can still trigger infinite loops if:
+   - You exclude too many packages (use `exclude` sparingly)
+   - Your element has many source files that change frequently
+   - The element imports other workspace packages that also use 'development' exports
+
+**Recommendation:** For most development, use the stable configuration (no 'development' condition) and rebuild packages as needed. Only use HMR for rapid iteration when absolutely necessary.
+
+---
+
+### Drag-and-Drop Lockups
+
+**Symptom:** Browser lockup after dragging items in interactive elements.
+
+**Cause:** Bidirectional `$bindable` on session creates infinite loops - player updates element, element fires session-changed, player updates element again.
+
+**Solution:** Session flows ONE WAY only (element → player):
+
+```ts
+// ❌ Wrong: bidirectional binding creates loops
+let { session = $bindable({}) } = $props();
+
+// ✅ Correct: read-only, no loop possible
+let { session = {} } = $props();
+let internalSession = $state(session);  // Internal tracking if needed
+
+function handleSessionChange(event) {
+  internalSession = event.detail.session;
+  dispatch('session-changed', event.detail);
+}
 ```
 
-### Vite plugin not intercepting requests
+**Key Rule:** Elements own session state. Players observe via events, never push back.
 
-**Problem:** 404 errors for `/@pie-*` requests
-
-**Solution:** Restart Vite dev server to pick up plugin changes:
-```bash
-# Stop the demo
-# Ctrl+C or: lsof -ti :5174 | xargs kill
-
-# Start again
-bun run demo
-```
-
-## Future Enhancements
-
-1. **Auto-generate demos** for all elements
-2. **Demo gallery** - index page listing all element demos
-3. **Embed mode** - hide controls for iframe embedding
-4. **Comparison view** - side-by-side modes
-5. **Model editor** - in-app config editor
-6. **Snapshot/restore** - save and load demo states
-7. **Dark mode** support
-8. **Mobile responsive** improvements
+---

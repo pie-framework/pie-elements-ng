@@ -238,7 +238,7 @@ export default defineConfig({
           /^react($|\\/)/.test(id) ||
           /^react-dom($|\\/)/.test(id) ||
           /^@pie-lib\\//.test(id) ||
-          /^@pie-elements-ng\\//.test(id) ||
+          /^@pie-element\\//.test(id) ||
           /^@pie-framework\\//.test(id) ||
           /^@mui\\//.test(id) ||
           /^d3-/.test(id) ||

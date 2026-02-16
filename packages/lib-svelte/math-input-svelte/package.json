@@ -1,0 +1,40 @@
+{
+  "name": "@pie-lib/math-input-svelte",
+  "private": true,
+  "version": "0.1.0",
+  "description": "MathQuill wrapper components for Svelte 5",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "svelte": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./MathField.svelte": "./src/MathField.svelte",
+    "./StaticMath.svelte": "./src/StaticMath.svelte"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "dev": "vite build --watch",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@pie-element/shared-mathquill": "workspace:*"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "svelte": "^5.51.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  }
+}

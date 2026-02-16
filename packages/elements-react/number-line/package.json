@@ -1,0 +1,77 @@
+{
+  "name": "@pie-element/number-line",
+  "private": true,
+  "version": "0.1.0",
+  "description": "",
+  "dependencies": {
+    "@dnd-kit/core": "6.3.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/style": "^0.8.0",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@pie-lib/correct-answer-toggle": "workspace:*",
+    "@pie-lib/icons": "workspace:*",
+    "@pie-lib/render-ui": "workspace:*",
+    "@pie-lib/translator": "workspace:*",
+    "classnames": "^2.2.5",
+    "d3-scale": "^4.0.2",
+    "d3-selection": "^3.0.0",
+    "lodash-es": "^4.17.23",
+    "mathjs": "^7.5.1",
+    "react-jss": "^10.10.0",
+    "react-transition-group": "^4.4.5",
+    "@pie-lib/config-ui": "workspace:*",
+    "@pie-element/shared-configure-events": "workspace:*",
+    "@pie-lib/editable-html-tip-tap": "workspace:*",
+    "@pie-element/shared-feedback": "workspace:*",
+    "@pie-element/shared-controller-utils": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./delivery": {
+      "development": "./src/delivery/index.ts",
+      "types": "./dist/delivery/index.d.ts",
+      "default": "./dist/delivery/index.js"
+    },
+    "./author": {
+      "development": "./src/author/index.ts",
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    },
+    "./controller": {
+      "development": "./src/controller/index.ts",
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller/index.js"
+    }
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "typescript": "^5.9.3",
+    "@vitejs/plugin-react": "^4.2.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
+  },
+  "scripts": {
+    "build": "bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
+    "dev": "bun x vite",
+    "demo": "bun x vite --mode demo",
+    "test": "bun x vitest run"
+  }
+}

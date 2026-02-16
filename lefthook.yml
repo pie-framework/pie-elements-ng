@@ -9,7 +9,7 @@ pre-commit:
       run: bunx tsc --noEmit
 
 pre-push:
-  parallel: true
+  parallel: false
   commands:
     test:
       run: bun run test

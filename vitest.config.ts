@@ -19,6 +19,8 @@ export default defineConfig({
       '**/e2e/**', // Exclude E2E tests (use Playwright for those)
       '**/tests/e2e/**', // Exclude E2E tests in tests directory
       '**/*.spec.ts', // Exclude Playwright spec files
+      'packages/elements-react/**',
+      'packages/lib-react/**',
     ],
     coverage: {
       provider: 'v8',

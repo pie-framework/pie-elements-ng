@@ -4,6 +4,8 @@ import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { getCurrentCommit, getFileModifiedDate } from '../../utils/git.js';
 import { Logger } from '../../utils/logger.js';
+import { DEFAULT_PATHS } from '../../lib/upstream/sync-constants.js';
+import { formatRepoNotFound } from '../../lib/upstream/repo-utils.js';
 
 interface CheckConfig {
   pieElements: string;
@@ -60,9 +62,9 @@ export default class Check extends Command {
     this.logger = new Logger(flags.verbose);
 
     const config: CheckConfig = {
-      pieElements: '../pie-elements',
-      pieLib: '../pie-lib',
-      pieElementsNg: '.',
+      pieElements: DEFAULT_PATHS.PIE_ELEMENTS,
+      pieLib: DEFAULT_PATHS.PIE_LIB,
+      pieElementsNg: DEFAULT_PATHS.PIE_ELEMENTS_NG,
       elements: flags.element ? [flags.element] : undefined,
       verbose: flags.verbose,
     };
@@ -93,11 +95,11 @@ export default class Check extends Command {
 
     // Verify upstream repos exist
     if (!existsSync(config.pieElements)) {
-      result.errors.push(`pie-elements not found at ${config.pieElements}`);
+      result.errors.push(formatRepoNotFound('pie-elements', config.pieElements));
       return result;
     }
     if (!existsSync(config.pieLib)) {
-      result.errors.push(`pie-lib not found at ${config.pieLib}`);
+      result.errors.push(formatRepoNotFound('pie-lib', config.pieLib));
       return result;
     }
 
@@ -121,7 +123,7 @@ export default class Check extends Command {
     this.logger.info('📦 Checking controllers...\n');
 
     const upstreamElementsDir = join(config.pieElements, 'packages');
-    const localElementsDir = join(config.pieElementsNg, 'packages/elements-svelte');
+    const localElementsDir = join(config.pieElementsNg, 'packages/elements-react');
 
     // Get list of elements that exist in both repos
     const upstreamPackages = await readdir(upstreamElementsDir);

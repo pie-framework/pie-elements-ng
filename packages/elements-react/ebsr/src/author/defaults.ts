@@ -1,0 +1,183 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/ebsr/configure/src/defaults.js
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import { cloneDeep } from 'lodash-es';
+
+const defaultConfig = {
+  addChoiceButton: {
+    settings: true,
+    label: 'Add a Choice',
+  },
+  choiceMode: {
+    settings: true,
+    label: 'Response Type',
+  },
+  choicePrefix: {
+    settings: true,
+    label: 'Choice Labels',
+  },
+  deleteChoice: {
+    settings: true,
+  },
+  feedback: {
+    settings: true,
+    label: 'Feedback',
+  },
+  lockChoiceOrder: {
+    settings: true,
+    label: 'Lock Choice Order',
+  },
+  prompt: {
+    settings: true,
+    label: 'Prompt',
+    inputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+    },
+    required: false,
+  },
+  rationale: {
+    settings: true,
+    label: 'Rationale',
+    inputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+    },
+    required: false,
+  },
+  settingsPanelDisabled: true,
+  studentInstructions: {
+    settings: false,
+    label: 'Student Instructions',
+  },
+  teacherInstructions: {
+    settings: true,
+    label: 'Teacher Instructions',
+    inputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+    },
+    required: false,
+  },
+  choicesLayout: {
+    settings: false,
+    label: 'Choices Layout',
+  },
+  gridColumns: {
+    label: 'Grid columns',
+  },
+  spellCheck: {
+    label: 'Spellcheck',
+    settings: false,
+    enabled: true,
+  },
+  maxImageWidth: {
+    teacherInstructions: 300,
+    prompt: 300,
+    rationale: 636,
+    choices: 636,
+  },
+  maxImageHeight: {
+    teacherInstructions: 300,
+    prompt: 300,
+    rationale: 300,
+    choices: 300,
+  },
+  mathMlOptions: {
+    mmlOutput: false,
+    mmlEditing: false,
+  },
+  choices: {
+    inputConfiguration: {
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+    },
+  },
+  baseInputConfiguration: {
+    h3: { disabled: true },
+    audio: { disabled: false },
+    video: { disabled: false },
+    image: { disabled: false },
+    textAlign: { disabled: true },
+    showParagraphs: { disabled: false },
+    separateParagraphs: { disabled: true },
+  },
+};
+
+const partModel = (base) => ({
+  choiceMode: 'radio',
+  choicePrefix: 'letters',
+  choices: [],
+  choicesLayout: 'vertical',
+  feedbackEnabled: false,
+  gridColumns: 2,
+  prompt: '',
+  promptEnabled: true,
+  rationale: '',
+  rationaleEnabled: true,
+  spellCheckEnabled: true,
+  studentInstructionsEnabled: true,
+  teacherInstructions: '',
+  teacherInstructionsEnabled: true,
+  toolbarEditorPosition: 'bottom',
+  ...base,
+});
+
+export default {
+  model: {
+    partLabels: true,
+    partLabelType: 'Letters',
+    // partialScoring: false,
+    partA: partModel(),
+    partB: partModel(),
+  },
+  configuration: {
+    baseInputConfiguration: {
+      h3: { disabled: true },
+      audio: { disabled: false },
+      video: { disabled: false },
+      image: { disabled: false },
+      textAlign: { disabled: true },
+      showParagraphs: { disabled: false },
+      separateParagraphs: { disabled: true },
+    },
+    partialScoring: {
+      label: 'Allow Partial Scoring',
+      // this will turn off partial scoring toggle in the settings tab by default for the interaction
+      // as we'd like partial scoring to be controlled from the environment entirely
+      // if any other consumers would like to enable it for themselves, they can do so from their model directly.
+      settings: false,
+    },
+    scoringType: {
+      settings: false,
+      label: 'Scoring Type',
+    },
+    partA: cloneDeep(defaultConfig),
+    partB: cloneDeep(defaultConfig),
+    partLabels: {
+      settings: true,
+      label: 'Part Labels',
+    },
+    settingsPanelDisabled: false,
+    language: {
+      settings: false,
+      label: 'Specify Language',
+      enabled: false,
+    },
+    languageChoices: {
+      label: 'Language Choices',
+      options: [],
+    },
+  },
+};

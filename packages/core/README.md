@@ -1,11 +1,11 @@
-# @pie-elements-ng/core
+# @pie-element/core
 
 Core PIE specification types, events, and utilities.
 
 ## Installation
 
 ```bash
-bun add @pie-elements-ng/core
+bun add @pie-element/core
 ```
 
 ## Usage
@@ -13,19 +13,19 @@ bun add @pie-elements-ng/core
 ### Types
 
 ```typescript
-import type { PieModel, PieEnvironment, PieSession, PieController } from '@pie-elements-ng/core';
+import type { PieModel, PieEnvironment, PieSession, PieController } from '@pie-element/core';
 ```
 
 ### Events
 
 ```typescript
-import { ModelSetEvent, SessionChangedEvent, ModelUpdatedEvent } from '@pie-elements-ng/core';
+import { ModelSetEvent, SessionChangedEvent, ModelUpdatedEvent } from '@pie-element/core';
 ```
 
 ### Utilities
 
 ```typescript
-import { isEmpty, showFeedback, showRationale, uuid, shuffle } from '@pie-elements-ng/core';
+import { isEmpty, showFeedback, showRationale, uuid, shuffle } from '@pie-element/core';
 ```
 
 ## Documentation

@@ -1,6 +1,6 @@
 {
-  "name": "@pie-elements-ng/shared-utils",
-  "version": "1.0.0",
+  "name": "@pie-element/shared-utils",
+  "version": "0.1.0",
   "description": "Shared utilities for PIE elements",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,13 +15,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && vite build && tsc --emitDeclarationOnly",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
     "test": "vitest",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-elements-ng/shared-types": "workspace:*"
+    "@pie-element/shared-types": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -31,5 +31,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

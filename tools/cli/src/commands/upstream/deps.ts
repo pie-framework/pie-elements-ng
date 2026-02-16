@@ -15,7 +15,6 @@ interface DependencyReport {
 // Libraries we care about tracking
 const TRACKED_DEPS = [
   // Math rendering
-  'katex',
   'mathjax-full',
   'mathlive',
 
@@ -26,7 +25,6 @@ const TRACKED_DEPS = [
   '@tiptap/core',
   '@tiptap/pm',
   '@tiptap/starter-kit',
-  '@tiptap/extension-mathematics',
   '@tiptap/extension-image',
   '@tiptap/extension-link',
   '@tiptap/extension-table',

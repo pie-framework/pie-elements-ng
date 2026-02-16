@@ -1,1 +1,0 @@
-export { convertMathMLToLaTeX } from './main';

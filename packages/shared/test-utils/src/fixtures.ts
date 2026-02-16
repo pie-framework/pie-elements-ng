@@ -4,8 +4,8 @@
  * Common test data and fixture generators.
  */
 
-import type { PieModel, PieSession } from '@pie-elements-ng/shared-types';
-import { uuid } from '@pie-elements-ng/shared-utils';
+import type { PieModel, PieSession } from '@pie-element/shared-types';
+import { uuid } from '@pie-element/shared-utils';
 
 /**
  * Create a basic PIE model for testing

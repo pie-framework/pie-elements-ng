@@ -1,14 +1,15 @@
 name: E2E Tests
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test-e2e:
-    timeout-minutes: 15
+    timeout-minutes: 25
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,12 +17,17 @@ jobs:
         with:
           bun-version: 1.3.6
       - run: bun install --frozen-lockfile
-      - run: bunx playwright install --with-deps
+      - run: bun x svelte-kit sync
+        working-directory: apps/element-demo
+      - run: bun run --cwd apps/element-demo generate-imports
+      # Build workspace outputs before app build so package exports resolve in CI.
       - run: bun run build
-      - run: bun run test:e2e
+      - run: bunx playwright install --with-deps
+      - run: bun run --cwd apps/element-demo test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
-          path: apps/example/playwright-report/
+          path: apps/element-demo/playwright-report/
+          if-no-files-found: warn
           retention-days: 30

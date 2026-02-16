@@ -58,7 +58,7 @@ export default class CreateReactElements extends Command {
       const { deps, peerDeps } = await this.scanElement(elementDir);
 
       // Add controller package as a dependency
-      const controllerPkg = `@pie-elements-ng/${element}-controller`;
+      const controllerPkg = `@pie-element/${element}-controller`;
       deps.add(controllerPkg);
 
       // Generate package.json
@@ -154,7 +154,7 @@ export default class CreateReactElements extends Command {
         deps.add(dep.split('/').slice(0, 2).join('/'));
       }
       // Add @pie-element packages (controller packages)
-      else if (dep.startsWith('@pie-elements-ng/')) {
+      else if (dep.startsWith('@pie-element/')) {
         deps.add(dep.split('/').slice(0, 2).join('/'));
       }
       // Add other scoped packages
@@ -183,7 +183,7 @@ export default class CreateReactElements extends Command {
     // Add dependencies (use * for external deps, they're in root package.json)
     for (const dep of deps) {
       // Use workspace protocol for internal packages
-      if (dep.startsWith('@pie-elements-ng/')) {
+      if (dep.startsWith('@pie-element/')) {
         dependencies[dep] = 'workspace:*';
       } else {
         dependencies[dep] = '*';
@@ -274,7 +274,7 @@ export default defineConfig({
         /^react($|\\/)/,
         /^react-dom($|\\/)/,
         /^@pie-lib/,
-        /^@pie-elements-ng/,
+        /^@pie-element/,
         /^@pie-framework/,
         /^@mui/,
       ],

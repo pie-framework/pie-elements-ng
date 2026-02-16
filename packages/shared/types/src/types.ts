@@ -8,6 +8,22 @@ export interface PieModel {
   element: string; // e.g., "@pie-element/multiple-choice"
 }
 
+// Theme configuration (from DaisyUI or custom)
+export interface PieTheme {
+  primary?: string; // Primary brand color
+  secondary?: string; // Secondary color
+  accent?: string; // Accent color
+  neutral?: string; // Neutral color
+  'base-100'?: string; // Base background color
+  'base-200'?: string; // Secondary background
+  'base-300'?: string; // Tertiary background
+  'base-content'?: string; // Base text color
+  info?: string; // Info color
+  success?: string; // Success/correct color
+  warning?: string; // Warning color
+  error?: string; // Error/incorrect color
+}
+
 // Environment configuration
 export interface PieEnvironment {
   mode: 'gather' | 'view' | 'evaluate';
@@ -15,6 +31,8 @@ export interface PieEnvironment {
   // Optional advanced features
   lockChoiceOrder?: boolean;
   partialScoring?: boolean;
+  // Optional theme configuration
+  theme?: PieTheme;
 }
 
 // Session data (student responses)

@@ -1,0 +1,152 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/explicit-constructed-response/configure/src/ecr-toolbar.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import EditableHtml from '@pie-lib/editable-html-tip-tap';
+import { stripHtmlTags } from './markupUtils';
+
+const findSlateNode = (key) => {
+  return window.document.querySelector('[data-key="' + key + '"]');
+};
+
+const StyledEditableHtml: any = styled(EditableHtml)(({ theme }) => ({
+  backgroundColor: theme.palette.common.white,
+  outline: 'none',
+  lineHeight: '15px',
+}));
+
+export class ECRToolbar extends React.Component {
+  static propTypes = {
+    correctChoice: PropTypes.object,
+    node: PropTypes.object,
+    onDone: PropTypes.func,
+    onChangeResponse: PropTypes.func.isRequired,
+    onToolbarDone: PropTypes.func.isRequired,
+    value: PropTypes.shape({
+      change: PropTypes.func.isRequired,
+      document: PropTypes.shape({
+        getNextText: PropTypes.func.isRequired,
+      }),
+    }),
+    editor: PropTypes.object,
+    maxLengthPerChoiceEnabled: PropTypes.bool,
+    pluginProps: PropTypes.object,
+    spellCheck: PropTypes.bool,
+  };
+
+  state = {
+    markup: '',
+    toolbarStyle: {},
+  };
+
+  componentDidMount() {
+    const { correctChoice, node, editor } = this.props;
+    const choice = correctChoice || {};
+
+    const domNode = editor.view.nodeDOM(editor.state.selection.from);
+
+    if (domNode?.nodeType === 1) {
+      //eslint-disable-next-line
+      const domNodeRect = domNode.getBoundingClientRect();
+      const editor = domNode.closest('.tiptap');
+      const editorRect = editor.getBoundingClientRect();
+      const top = domNodeRect.top - editorRect.top;
+      const left = domNodeRect.left - editorRect.left;
+
+      this.setState({
+        markup: choice.label,
+        toolbarStyle: {
+          position: 'absolute',
+          // top: `${top + domNodeRect.height + 17}px`,
+          top: 0,
+          // left: `${left + 20}px`,
+          left: 0,
+          width: `${domNodeRect.width - 4}px`,
+        },
+      });
+    }
+  }
+
+  onDone: any = (markup) => {
+    const { node, editor, onToolbarDone, onChangeResponse } = this.props;
+    const sanitizedMarkup = stripHtmlTags(markup);
+    this.setState({ markup: sanitizedMarkup });
+
+    editor.commands.updateAttributes('explicit_constructed_response', { value: sanitizedMarkup });
+
+    onToolbarDone(true);
+    onChangeResponse(sanitizedMarkup);
+  };
+
+  onRespAreaChange: any = (respAreaMarkup) => {
+    this.setState({ respAreaMarkup });
+  };
+
+  onKeyDown: any = (event) => {
+    if (event.key === 'Enter') {
+      return true;
+    }
+  };
+
+  onBlur: any = () => {
+    if (this.clickedInside) {
+      this.clickedInside = false;
+    }
+  };
+
+  render() {
+    const { maxLengthPerChoiceEnabled, pluginProps, spellCheck } = this.props;
+    const { markup, toolbarStyle } = this.state;
+    const inputProps = maxLengthPerChoiceEnabled ? {} : { maxLength: 25 };
+
+    return (
+      <div style={toolbarStyle}>
+        <StyledEditableHtml
+          autoFocus={true}
+          disableUnderline
+          onChange={(respAreaMarkup) => {
+            if (this.preventDone) {
+              return;
+            }
+            this.onRespAreaChange(respAreaMarkup);
+          }}
+          onDone={(val) => {
+            if (this.preventDone) {
+              return;
+            }
+            this.onDone(val);
+          }}
+          onBlur={(e) => {
+            this.preventDone = e.relatedTarget && e.relatedTarget.closest('.insert-character-dialog');
+            this.onBlur(e);
+          }}
+          onKeyDown={this.onKeyDown}
+          markup={markup || ''}
+          activePlugins={['languageCharacters']}
+          pluginProps={pluginProps}
+          languageCharactersProps={[{ language: 'spanish' }]}
+          minHeight={'15px'}
+          maxHeight={'15px'}
+          spellCheck={spellCheck}
+          autoWidthToolbar
+          toolbarOpts={{
+            minWidth: 'auto',
+            isHidden: !!pluginProps?.characters?.disabled,
+          }}
+          {...inputProps}
+        />
+      </div>
+    );
+  }
+}
+
+export default ECRToolbar;

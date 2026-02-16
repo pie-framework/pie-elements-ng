@@ -522,7 +522,7 @@ import type {
   ViewModel,
   OutcomeResult,
   PieController
-} from '@pie-elements-ng/core';
+} from '@pie-element/core';
 ```
 
 Or from element-specific packages:
@@ -540,7 +540,7 @@ import type {
 ### Session Utilities
 
 ```typescript
-import { isEmptySession, validateSession } from '@pie-elements-ng/core';
+import { isEmptySession, validateSession } from '@pie-element/core';
 
 // Check if session is empty
 const isEmpty = isEmptySession(session);
@@ -552,7 +552,7 @@ const isValid = validateSession(session, model);
 ### Model Utilities
 
 ```typescript
-import { cloneModel, mergeModels } from '@pie-elements-ng/core';
+import { cloneModel, mergeModels } from '@pie-element/core';
 
 // Deep clone a model
 const copy = cloneModel(model);
@@ -568,7 +568,7 @@ const updated = mergeModels(model, { prompt: 'New prompt' });
 Always use TypeScript and import types:
 
 ```typescript
-import type { PieEnvironment, PieSession } from '@pie-elements-ng/core';
+import type { PieEnvironment, PieSession } from '@pie-element/core';
 import type { MultipleChoiceModel } from '@pie-element/multiple-choice';
 
 const env: PieEnvironment = { mode: 'gather', role: 'student' };

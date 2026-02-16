@@ -1,0 +1,39 @@
+{
+  "name": "@pie-lib/text-select",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Some react components for text selection",
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/style": "^0.8.0",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@pie-framework/parse-english": "^1.0.0",
+    "@pie-lib/render-ui": "workspace:*",
+    "@pie-lib/style-utils": "workspace:*",
+    "@pie-lib/translator": "workspace:*",
+    "classnames": "^2.2.6",
+    "debug": "^4.1.1",
+    "lodash-es": "^4.17.23",
+    "prop-types": "^15.6.2"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
+    "dev": "bun x vite",
+    "test": "bun x vitest run"
+  }
+}

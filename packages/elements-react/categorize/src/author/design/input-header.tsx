@@ -1,0 +1,113 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/categorize/configure/src/design/input-header.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import { getPluginProps } from './utils';
+import React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@mui/material/styles';
+import EditableHtml from '@pie-lib/editable-html-tip-tap';
+
+const StyledEditableHtml: any = styled(EditableHtml)(({ theme }) => ({
+  flex: '1',
+  paddingBottom: theme.spacing(1),
+  maxWidth: '100%',
+}));
+
+const InputHeaderContainer: any = styled('div')({
+  display: 'flex',
+  justifyContent: 'space-between',
+});
+
+export class InputHeader extends React.Component {
+  static propTypes = {
+    configuration: PropTypes.object.isRequired,
+    deleteFocusedEl: PropTypes.func,
+    disabled: PropTypes.bool,
+    focusedEl: PropTypes.number,
+    index: PropTypes.number,
+    label: PropTypes.string,
+    maxImageWidth: PropTypes.object,
+    maxImageHeight: PropTypes.object,
+    onChange: PropTypes.func,
+    onDelete: PropTypes.func,
+    imageSupport: PropTypes.shape({
+      add: PropTypes.func.isRequired,
+      delete: PropTypes.func.isRequired,
+    }),
+    uploadSoundSupport: PropTypes.shape({
+      add: PropTypes.func.isRequired,
+      delete: PropTypes.func.isRequired,
+    }),
+    toolbarOpts: PropTypes.object,
+    error: PropTypes.string,
+    spellCheck: PropTypes.bool,
+  };
+
+  static defaultProps = {};
+
+  constructor(props) {
+    super(props);
+  }
+
+  componentDidMount() {
+    const { focusedEl, index } = this.props;
+    if (focusedEl && index && focusedEl === index) {
+      this.inputRef.focus('end', null, true);
+    }
+  }
+
+  render() {
+    const {
+      onChange,
+      configuration,
+      label,
+      deleteFocusedEl,
+      disabled,
+      imageSupport,
+      toolbarOpts,
+      spellCheck,
+      error,
+      maxImageWidth,
+      maxImageHeight,
+      uploadSoundSupport,
+      mathMlOptions = {},
+    } = this.props;
+
+    const { headers, baseInputConfiguration } = configuration;
+
+    return (
+      <InputHeaderContainer>
+        <StyledEditableHtml
+          imageSupport={imageSupport}
+          disabled={disabled}
+          ref={(ref) => (this.inputRef = ref)}
+          autoWidthToolbar
+          label={'label'}
+          markup={label}
+          onChange={onChange}
+          pluginProps={getPluginProps(headers?.inputConfiguration, baseInputConfiguration)}
+          toolbarOpts={toolbarOpts}
+          spellCheck={spellCheck}
+          error={error}
+          maxImageWidth={maxImageWidth}
+          maxImageHeight={maxImageHeight}
+          uploadSoundSupport={uploadSoundSupport}
+          languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
+          onDone={() => {
+            deleteFocusedEl && deleteFocusedEl();
+          }}
+          mathMlOptions={mathMlOptions}
+        />
+      </InputHeaderContainer>
+    );
+  }
+}
+
+export default InputHeader;

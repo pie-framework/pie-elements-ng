@@ -1,0 +1,54 @@
+{
+  "name": "@pie-lib/charting",
+  "private": true,
+  "version": "0.1.0",
+  "description": "charting",
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/style": "^0.8.0",
+    "@mapbox/point-geometry": "^1.1.0",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@pie-lib/math-rendering": "workspace:*",
+    "@pie-lib/plot": "workspace:*",
+    "@pie-lib/render-ui": "workspace:*",
+    "@pie-lib/translator": "workspace:*",
+    "@visx/axis": "^3.0.0",
+    "@visx/event": "^3.0.0",
+    "@visx/grid": "^3.0.0",
+    "@visx/group": "^3.0.0",
+    "@visx/point": "^3.0.0",
+    "@visx/scale": "^3.0.0",
+    "@visx/shape": "^3.0.0",
+    "classnames": "^2.2.6",
+    "d3-scale": "^4.0.2",
+    "d3-selection": "^3.0.0",
+    "debug": "^4.1.1",
+    "invariant": "^2.2.4",
+    "lodash-es": "^4.17.23",
+    "react": "^18.2.0",
+    "react-draggable": "^3.3.0",
+    "react-input-autosize": "^2.2.1",
+    "@pie-lib/config-ui": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
+    "dev": "bun x vite",
+    "test": "bun x vitest run"
+  }
+}

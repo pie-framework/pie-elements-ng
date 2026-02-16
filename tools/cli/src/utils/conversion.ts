@@ -5,7 +5,6 @@
 export interface ConversionMetadata {
   sourcePath: string;
   commit: string;
-  date: string;
 }
 
 export interface ConversionResult {
@@ -30,18 +29,9 @@ export function convertJsToTs(jsCode: string, metadata: ConversionMetadata): Con
   // We keep synced files buildable even when upstream JS has type issues.
   const tsNoCheck = `// @ts-nocheck\n`;
 
-  // Sync version: increment this when transformation logic changes to force re-sync
-  // v1: Initial sync
-  // v2: Added lodash -> lodash-es transformation
-  // v3: Added @pie-framework event package transformations
-  const SYNC_VERSION = 'v3';
-
   // Add sync metadata header
   const header = `/**
  * @synced-from ${metadata.sourcePath}
- * @synced-commit ${metadata.commit}
- * @synced-date ${metadata.date}
- * @sync-version ${SYNC_VERSION}
  * @auto-generated
  *
  * This file is automatically synced from pie-elements and converted to TypeScript.
@@ -121,18 +111,9 @@ export function convertJsxToTsx(jsxCode: string, metadata: ConversionMetadata): 
   // We keep synced files buildable even when upstream JSX has type issues.
   const tsNoCheck = `// @ts-nocheck\n`;
 
-  // Sync version: increment this when transformation logic changes to force re-sync
-  // v1: Initial sync
-  // v2: Added lodash -> lodash-es transformation
-  // v3: Added @pie-framework event package transformations
-  const SYNC_VERSION = 'v3';
-
   // Add sync metadata header
   const header = `/**
  * @synced-from ${metadata.sourcePath}
- * @synced-commit ${metadata.commit}
- * @synced-date ${metadata.date}
- * @sync-version ${SYNC_VERSION}
  * @auto-generated
  *
  * This file is automatically synced from pie-elements and converted to TypeScript.

@@ -1,6 +1,6 @@
 {
-  "name": "@pie-elements-ng/core",
-  "version": "0.0.0",
+  "name": "@pie-element/core",
+  "version": "0.1.0",
   "description": "Core PIE interfaces and utilities",
   "type": "module",
   "main": "./dist/index.js",
@@ -28,5 +28,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

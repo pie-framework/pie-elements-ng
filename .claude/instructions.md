@@ -12,14 +12,18 @@
 - **Feature parity**: Must match all 21 QTI 2.2 interaction types from original pie-elements
 - **Strict TypeScript**: No `any` allowed (enforced by Biome)
 
-## Sibling Project Dependencies
+## Upstream Sync (Maintainers Only)
 
-**IMPORTANT**: This project relies on sibling repositories during the migration phase:
+**For maintainers syncing from upstream:**
 
 - **pie-elements**: Must be checked out at `../pie-elements` (sibling directory)
 - **pie-lib**: Must be checked out at `../pie-lib` (sibling directory)
 
-The project should always attempt to read from these sibling directories when they exist. CLI upstream commands (`upstream:update`, `upstream:check`, `upstream:sync`, etc.) depend on finding `pie-elements` and `pie-lib` as a siblings. This is a temporary requirement during migration and will be removed once the migration is complete. The `upstream:update` command will copy the files that are ready from `../pie-elements` to `elements-react` and from `../pie-lib` to `lib-react`, which are both ignored by git for now. Once we officialy migrated, these directories will be included in git. That also means that until then, any fixes this project need to the `../pie-elements` and `../pie-lib` projects should go into the upstream script(s), though to test things out changing code directly in the target directories is acceptable.
+CLI upstream commands (`upstream:update`, `upstream:check`, `upstream:sync`, etc.) depend on finding `pie-elements` and `pie-lib` as siblings. These commands copy files from `../pie-elements` to `packages/elements-react` and from `../pie-lib` to `packages/lib-react`.
+
+**For regular developers:**
+
+The synced packages (`packages/elements-react/*` and `packages/lib-react/*`) are committed to git. You don't need to check out pie-elements or pie-lib - just `git pull` to get the latest synced packages.
 
 ## Technology Stack
 
@@ -35,7 +39,7 @@ The project should always attempt to read from these sibling directories when th
 ## Monorepo Structure
 
 ```text
-pie-elements-ng/
+pie-element/
 ├── packages/
 │   ├── core/                      # Core PIE interfaces & types
 │   ├── cli/                       # oclif-based CLI tools
@@ -62,8 +66,7 @@ pie-elements-ng/
 │   │   └── ui/                  # General UI components
 │   └── lib-react/                # React shared libraries (25+ packages)
 └── apps/
-    ├── examples-svelte/          # SvelteKit demo
-    ├── examples-react/           # React demo
+    ├── element-demo/            # Shared element demo
     └── esm-player-test/         # ESM player testing
 ```
 
@@ -73,7 +76,7 @@ pie-elements-ng/
 
 1. Run Biome with auto-fix: `bun run lint:fix` or `npx @biomejs/biome check --write .`
 2. Run TypeScript type checking: `bunx tsc --noEmit`
-3. Run Svelte type checking: `bunx svelte-check --workspace packages/components`
+3. Run Svelte type checking: `bunx svelte-check` (from `apps/element-demo`)
 4. Fix all errors and warnings before marking the task as complete
 
 These checks ensure:

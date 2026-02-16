@@ -1,0 +1,183 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-elements/packages/match/src/main.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import PropTypes from 'prop-types';
+import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
+import { Collapsible, Feedback, hasText, PreviewPrompt, UiLayout, hasMedia } from '@pie-lib/render-ui';
+import AnswerGrid from './answer-grid';
+import { styled } from '@mui/material/styles';
+
+const StyledPrompt: any = styled('div')({
+  verticalAlign: 'middle',
+});
+
+const StyledCollapsible: any = styled(Collapsible)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+}));
+
+export class Main extends React.Component {
+  static propTypes = {
+    session: PropTypes.object.isRequired,
+    onSessionChange: PropTypes.func,
+    model: PropTypes.object.isRequired,
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      session: {
+        ...props.session,
+        answers: (props.session && props.session.answers) || this.generateAnswers(props.model),
+      },
+      showCorrect: false,
+    };
+
+    this.callOnSessionChange();
+  }
+
+  generateAnswers: any = (model) => {
+    const answers = {};
+
+    model.rows?.forEach((row) => {
+      answers[row.id] = new Array(model.layout - 1).fill(false);
+    });
+
+    return answers;
+  };
+
+  isAnswerRegenerationRequired: any = (nextProps) => {
+    const { model: { choiceMode, layout, rows } = {} } = this.props;
+    const { session: { answers } = {} } = nextProps;
+    let isRequired = false;
+
+    if (choiceMode !== nextProps.model.choiceMode) {
+      isRequired = true;
+    }
+
+    if (layout !== nextProps.model.layout) {
+      isRequired = true;
+    }
+
+    if (
+      rows.length !== nextProps.model.rows.length ||
+      (answers && nextProps.model.rows.length !== Object.keys(answers).length)
+    ) {
+      isRequired = true;
+    }
+
+    return isRequired || !answers;
+  };
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    const regenAnswers = this.isAnswerRegenerationRequired(nextProps);
+
+    this.setState(
+      (state) => ({
+        session: {
+          ...nextProps.session,
+          // regenerate answers if layout or choiceMode change
+          answers: regenAnswers ? this.generateAnswers(nextProps.model) : nextProps.session.answers,
+        },
+        showCorrect:
+          this.props.model.disabled && !nextProps.model.disabled && state.showCorrect ? false : state.showCorrect,
+      }),
+      () => {
+        if (regenAnswers) this.callOnSessionChange();
+      },
+    );
+  }
+
+  callOnSessionChange: any = () => {
+    const { onSessionChange } = this.props;
+
+    if (onSessionChange) {
+      onSessionChange(this.state.session);
+    }
+  };
+
+  toggleShowCorrect: any = (show) => {
+    this.setState({ showCorrect: show });
+  };
+
+  onAnswerChange: any = (newAnswers) => {
+    this.setState(
+      (state) => ({
+        session: {
+          ...state.session,
+          answers: newAnswers,
+        },
+      }),
+      this.callOnSessionChange,
+    );
+  };
+
+  render() {
+    const { model } = this.props;
+    const { showCorrect, session } = this.state;
+    const { correctness = {}, extraCSSRules, language } = model;
+    const showCorrectAnswerToggle = correctness.correctness && correctness.correctness !== 'correct';
+
+    const showRationale = model.rationale && (hasText(model.rationale) || hasMedia(model.rationale));
+    const showTeacherInstructions =
+      model.teacherInstructions && (hasText(model.teacherInstructions) || hasMedia(model.teacherInstructions));
+
+    return (
+      <UiLayout extraCSSRules={extraCSSRules}>
+        {showTeacherInstructions && (
+          <StyledCollapsible
+            labels={{
+              hidden: 'Show Teacher Instructions',
+              visible: 'Hide Teacher Instructions',
+            }}
+          >
+            <PreviewPrompt prompt={model.teacherInstructions} />
+          </StyledCollapsible>
+        )}
+
+        {model.prompt && (
+          <StyledPrompt>
+            <PreviewPrompt prompt={model.prompt} />
+          </StyledPrompt>
+        )}
+
+        <CorrectAnswerToggle
+          language={language}
+          show={showCorrectAnswerToggle}
+          toggled={showCorrect}
+          onToggle={this.toggleShowCorrect}
+        />
+
+        <AnswerGrid
+          showCorrect={showCorrect}
+          correctAnswers={model.correctResponse}
+          disabled={model.disabled}
+          view={model.view}
+          onAnswerChange={this.onAnswerChange}
+          choiceMode={model.choiceMode}
+          answers={showCorrect ? model.correctResponse || {} : session.answers}
+          headers={model.headers}
+          rows={model.rows}
+        />
+
+        {showRationale && (
+          <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+            <PreviewPrompt prompt={model.rationale} />
+          </Collapsible>
+        )}
+
+        {model.feedback && <Feedback correctness={correctness.correctness} feedback={model.feedback} />}
+      </UiLayout>
+    );
+  }
+}
+
+export default Main;

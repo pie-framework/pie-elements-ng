@@ -1,6 +1,6 @@
 {
-  "name": "@pie-elements-ng/shared-test-utils",
-  "version": "0.0.0",
+  "name": "@pie-element/shared-test-utils",
+  "version": "0.1.0",
   "description": "Testing utilities for PIE elements",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,8 +22,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-elements-ng/shared-types": "workspace:*",
-    "@pie-elements-ng/shared-utils": "workspace:*"
+    "@pie-element/shared-types": "workspace:*",
+    "@pie-element/shared-utils": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -31,5 +31,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "license": "MIT"
 }

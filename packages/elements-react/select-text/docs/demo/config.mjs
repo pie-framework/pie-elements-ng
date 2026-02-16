@@ -1,0 +1,92 @@
+export default {
+  demos: [
+    {
+      id: 'default',
+      title: 'Default Demo',
+      description: 'Basic select text configuration',
+      tags: ['select-text', 'default'],
+      model: {
+        id: '1',
+        element: 'select-text',
+        highlightChoices: false,
+        feedback: {
+          correct: {
+            type: 'default',
+            default: 'Correct',
+          },
+          incorrect: {
+            type: 'default',
+            default: 'Incorrect',
+          },
+          partial: {
+            type: 'default',
+            default: 'Nearly',
+          },
+        },
+        partialScoring: false,
+        maxSelections: 2,
+        mode: 'sentence',
+        rationale: 'Rationale goes here.',
+        prompt: 'What sentences contain the character 6 in them?',
+        promptEnabled: true,
+        toolbarEditorPosition: 'bottom',
+        text: `<p>If 'tweren't for sight and sound and smell,<br />
+I'd like the city pretty well,<br />
+But when it comes to getting rest,<br />
+I like the country lots the best.</p>
+
+<p>Sometimes it seems to me I must<br />
+Just quit the city's din and dust,<br />
+And get out where the sky is blue,<br />
+And say, now, how does it seem to you?</p>`,
+        tokens: [
+          {
+            text: "If 'tweren't for sight and sound and smell,",
+            start: 0,
+            end: 43,
+          },
+          {
+            text: "I'd like the city pretty well,",
+            start: 44,
+            end: 74,
+          },
+          {
+            text: 'But when it comes to getting rest,',
+            start: 75,
+            end: 109,
+          },
+          {
+            text: 'I like the country lots the best.',
+            start: 110,
+            end: 143,
+          },
+          {
+            text: 'Sometimes it seems to me I must',
+            start: 145,
+            end: 176,
+          },
+          {
+            text: "Just quit the city's din and dust,",
+            start: 177,
+            end: 211,
+          },
+          {
+            text: 'And get out where the sky is blue,',
+            start: 212,
+            end: 246,
+          },
+          {
+            text: 'And say, now, how does it seem to you?',
+            start: 247,
+            end: 285,
+          },
+        ],
+        rubricEnabled: false,
+      },
+      session: {
+        id: '1',
+        element: 'select-text',
+      }
+    }
+  ]
+};

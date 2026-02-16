@@ -11,6 +11,7 @@ import type {
   EsmRuntimeValidationResult,
   EsmValidationResult,
 } from '../../utils/compatibility.js';
+import { assertReposExist } from '../../lib/upstream/repo-utils.js';
 
 // PIE elements that are actively used in pie-elements-ng
 // Only these elements will be analyzed
@@ -147,11 +148,13 @@ export default class AnalyzeEsm extends Command {
     }
 
     // Verify repos exist
-    if (!existsSync(flags['pie-elements'])) {
-      this.error(`pie-elements not found at ${flags['pie-elements']}`);
-    }
-    if (!existsSync(flags['pie-lib'])) {
-      this.error(`pie-lib not found at ${flags['pie-lib']}`);
+    try {
+      assertReposExist([
+        { label: 'pie-elements', path: flags['pie-elements'] },
+        { label: 'pie-lib', path: flags['pie-lib'] },
+      ]);
+    } catch (error) {
+      this.error(error instanceof Error ? error.message : String(error));
     }
 
     const report = await this.analyzeCompatibility(
@@ -628,7 +631,7 @@ export default class AnalyzeEsm extends Command {
     return (
       spec.startsWith('@pie-lib/') ||
       spec.startsWith('@pie-element/') ||
-      spec.startsWith('@pie-elements-ng/')
+      spec.startsWith('@pie-element/')
     );
   }
 
@@ -1298,7 +1301,7 @@ export default class AnalyzeEsm extends Command {
       if (
         transitiveDep.startsWith('@pie-lib/') ||
         transitiveDep.startsWith('@pie-element/') ||
-        transitiveDep.startsWith('@pie-elements-ng/')
+        transitiveDep.startsWith('@pie-element/')
       ) {
         continue;
       }

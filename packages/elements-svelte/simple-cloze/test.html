@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Math Cloze Test</title>
+</head>
+<body>
+  <h1>Math Cloze Element Test</h1>
+
+  <math-cloze id="test-element"></math-cloze>
+
+  <div id="output"></div>
+
+  <script type="module">
+    // Import the element
+    await import('./dist/math-cloze.js');
+
+    const element = document.getElementById('test-element');
+    const output = document.getElementById('output');
+
+    // Set model and session
+    element.model = {
+      id: '1',
+      element: 'math-cloze',
+      prompt: '<p><strong>Enter your answer:</strong></p><p>What is 2 + 2?</p>'
+    };
+
+    element.session = {
+      id: '1',
+      element: 'math-cloze',
+      response: ''
+    };
+
+    // Listen for session changes
+    element.addEventListener('session-changed', (e) => {
+      output.innerHTML = `<pre>${JSON.stringify(e.detail, null, 2)}</pre>`;
+    });
+
+    output.innerHTML = '<p>Element loaded successfully!</p>';
+  </script>
+</body>
+</html>

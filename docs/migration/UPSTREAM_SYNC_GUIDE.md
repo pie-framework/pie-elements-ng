@@ -1,7 +1,8 @@
 # Upstream Sync Guide: PIE Elements Migration
 
 **Status:** ✅ Active (CLI-based)
-**Last Updated:** 2025-01-08
+**Last Updated:** 2025-02-04
+**Audience:** Maintainers who sync from upstream
 
 ## Table of Contents
 
@@ -20,7 +21,15 @@
 
 ## Overview
 
+**Note:** This guide is for maintainers who sync code from upstream repositories. Regular developers don't need to run these commands - synced packages are already committed to git, so just `git pull` to get updates.
+
 This guide describes the complete process for migrating PIE elements from the upstream [pie-elements](https://github.com/PieLabs/pie-elements) and [pie-lib](https://github.com/PieLabs/pie-lib) repositories to this modern TypeScript/Svelte/React implementation.
+
+**Key Points:**
+
+- Synced packages (`packages/elements-react/*` and `packages/lib-react/*`) are committed to git
+- Regular developers don't need pie-elements or pie-lib checked out
+- Only maintainers need to run `upstream:sync` commands
 
 ### Key Principle
 
@@ -58,19 +67,19 @@ This guide describes the complete process for migrating PIE elements from the up
                   │    (UI + controllers + deps)
                   │
 ┌─────────────────▼───────────────────────────────────────────────┐
-│                    pie-elements-ng                              │
+│                    pie-element                              │
 │                                                                 │
 │  📦 REACT PACKAGES (copied from upstream):                      │
 │  ├── packages/elements-react/{element}/                         │
 │  │   ├── src/delivery/         ← React UI (synced)               │
-│  │   ├── src/authoring/       ← React UI (synced)               │
+│  │   ├── src/author/           ← React UI (synced)               │
 │  │   └── src/controller/      ← Logic (synced)                  │
 │  └── packages/lib-react/{lib}/ ← Shared libs (synced)           │
 │                                                                 │
 │  ✨ SVELTE PACKAGES (written from scratch):                     │
 │  └── packages/elements-svelte/{element}/                        │
 │      ├── src/delivery/         ← Svelte UI (new)                 │
-│      ├── src/authoring/       ← Svelte UI (new)                 │
+│      ├── src/author/           ← Svelte UI (new)                 │
 │      └── src/controller/      ← Symlink to React controller     │
 │                                                                 │
 │  🔧 MODERN INFRASTRUCTURE:                                       │
@@ -183,7 +192,7 @@ The sync command automatically respects the ESM compatibility report and will wa
 
 Common packages that prevent ESM builds:
 
-- **Slate v0.x** (`slate@0.36.x`): Old rich text editor (replaced by TipTap in pie-elements-ng)
+- **Slate v0.x** (`slate@0.36.x`): Old rich text editor (replaced by TipTap in pie-element)
 - **Enzyme**: React testing library (replaced by React Testing Library)
 - **Old build tools**: Webpack plugins, outdated Babel presets
 
@@ -407,7 +416,7 @@ bun add --dev @testing-library/react @testing-library/jest-dom
 **After fixing upstream:**
 
 ```bash
-cd pie-elements-ng
+cd pie-element
 bun run cli upstream:analyze-esm
 # Check if more elements are now compatible
 ```
@@ -416,7 +425,9 @@ bun run cli upstream:analyze-esm
 
 ## Syncing Code from Upstream
 
-### Prerequisites
+### Prerequisites (Maintainers Only)
+
+**Note:** Only needed if you're syncing from upstream. Regular developers can skip this.
 
 **1. Clone upstream repositories as siblings:**
 
@@ -460,10 +471,12 @@ bun run build
 
 **React components ARE the point - they should be synced:**
 
-- ✅ Synced to `packages/elements-react/{element}/src/`
-- ✅ Includes `student/`, `authoring/`, and other UI code
+- ✅ Synced to `packages/elements-react/{element}/src/delivery/` (student/teacher UI)
+- ✅ Synced to `packages/elements-react/{element}/src/author/` (authoring UI)
+- ✅ Synced to `packages/elements-react/{element}/src/print/` (print rendering, if exists)
 - ✅ Converted from `.jsx` to `.tsx`
-- ✅ Updated imports to use pie-elements-ng libraries
+- ✅ Updated imports to use pie-element libraries
+- ✅ Print imports automatically transformed (`'./main'` → `'../delivery/main'`)
 
 **Philosophy:** React packages are COPIES of upstream (not custom implementations).
 
@@ -722,7 +735,7 @@ export PIE_LIB_PATH=/custom/path/pie-lib
 #### 1. Analyze ESM Compatibility
 
 ```bash
-cd pie-elements-ng
+cd pie-element
 
 # Run analysis
 bun run cli upstream:analyze-esm --verbose
@@ -749,10 +762,12 @@ bun run cli upstream:sync --element=multiple-choice
 # packages/elements-react/multiple-choice/
 # ├── src/
 # │   ├── delivery/          ← React UI (synced)
-# │   ├── authoring/        ← React UI (synced)
-# │   └── controller/       ← Business logic (synced)
-# ├── package.json          ← Dependencies (synced)
-# └── vite.config.ts        ← Our build config
+# │   ├── author/            ← React UI (synced)
+# │   ├── controller/        ← Business logic (synced)
+# │   ├── print/             ← Print rendering (synced if exists)
+# │   └── index.ts           ← Main entry (generated)
+# ├── package.json           ← Dependencies (synced)
+# └── vite.config.ts         ← Our build config
 ```
 
 #### 3. Review and Test React Package
@@ -774,13 +789,13 @@ bun test
 
 #### 4. Implement Svelte UI (Optional)
 
-**Svelte is written from scratch, not synced:**
+**Svelte is written from scratch, not synced. Note the new directory structure with delivery/ and author/ subdirectories:**
 
 ```svelte
 <!-- packages/elements-svelte/multiple-choice/src/delivery/index.svelte -->
 <script lang="ts">
   import type { MultipleChoiceModel, SessionData } from '../types';
-  import type { PieEnvironment } from '@pie-elements-ng/core';
+  import type { PieEnvironment } from '@pie-element/core';
 
   interface Props {
     model: MultipleChoiceModel;
@@ -791,7 +806,7 @@ bun test
   let { model, session = $bindable({ value: null }), env }: Props = $props();
 
   // Use same controller as React (symlink or shared)
-  import { model as controllerModel } from '../../elements-react/multiple-choice/controller';
+  import { model as controllerModel } from '../../../elements-react/multiple-choice/src/controller';
 
   let viewModel = $derived.by(async () => {
     return await controllerModel(model, session, env);
@@ -996,7 +1011,7 @@ git show <commit-sha>
 # ⚠️ Breaking changes → Evaluate carefully
 
 # 4. Re-run ESM analysis if dependencies changed
-cd ../pie-elements-ng
+cd ../pie-element
 bun run cli upstream:analyze-esm --element=multiple-choice
 
 # 5. Sync if still compatible
@@ -1206,7 +1221,7 @@ For significant changes:
 ```bash
 # Ensure repos are cloned as siblings
 ls -la ..
-# Should show: pie-elements/, pie-lib/, pie-elements-ng/
+# Should show: pie-elements/, pie-lib/, pie-element/
 
 # Or set environment variables
 export PIE_ELEMENTS_PATH=/custom/path/pie-elements
@@ -1232,7 +1247,7 @@ bun remove slate
 bun add @tiptap/core  # or other ESM-compatible alternative
 
 # 4. Re-analyze
-cd ../../../pie-elements-ng
+cd ../../../pie-element
 bun run cli upstream:analyze-esm
 
 # 5. Sync if now compatible
@@ -1254,7 +1269,7 @@ cd ../pie-elements/packages/your-element
 cat package.json | jq '.dependencies'
 
 # 3. If blocker pattern is wrong, update CLI
-cd ../../../pie-elements-ng/tools/cli
+cd ../../../pie-element/tools/cli
 # Edit src/commands/upstream/analyze-esm.ts
 # Update ESM_BLOCKERS array
 
@@ -1344,7 +1359,7 @@ cd ../pie-elements/packages/multiple-choice
 cat package.json | jq '.dependencies.react'
 
 # 2. Match upstream version
-cd ../../../pie-elements-ng/packages/elements-react/multiple-choice
+cd ../../../pie-element/packages/elements-react/multiple-choice
 bun add react@<upstream-version>
 
 # 3. Update lockfile

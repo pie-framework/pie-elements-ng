@@ -1,0 +1,39 @@
+{
+  "name": "@pie-lib/render-ui",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Some shared ui elements when rendering - but not worthy of their own package yet.",
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@pie-lib/icons": "workspace:*",
+    "@pie-lib/math-rendering": "workspace:*",
+    "@pie-lib/test-utils": "workspace:*",
+    "debug": "^4.1.1",
+    "lodash-es": "^4.17.23",
+    "prop-types": "^15.7.2",
+    "react-transition-group": "^4.4.5",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
+    "dev": "bun x vite",
+    "test": "bun x vitest run"
+  }
+}

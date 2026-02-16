@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -22,8 +22,7 @@
       "!packages/elements-react",
       "!packages/lib-react",
       "!packages/shared/*/src/index.ts",
-      "!apps/examples-react/src/index.css",
-      "!packages/shared/element-player/templates"
+      "!packages/shared/mathquill"
     ]
   },
   "formatter": {
@@ -58,5 +57,22 @@
       "semicolons": "always",
       "arrowParentheses": "always"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.svelte"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUndeclaredVariables": "off"
+          }
+        }
+      },
+      "javascript": {
+        "parser": {
+          "unsafeParameterDecoratorsEnabled": true
+        }
+      }
+    }
+  ]
 }

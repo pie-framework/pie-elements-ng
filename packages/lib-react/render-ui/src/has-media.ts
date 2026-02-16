@@ -1,0 +1,26 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/render-ui/src/has-media.js
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+let parser;
+
+if (typeof window !== 'undefined') {
+  parser = new DOMParser();
+}
+
+/*
+ * Check if the string contains at least one media element.
+ */
+export const hasMedia = (s) => {
+  if (!s) {
+    return false;
+  }
+  const root = parser.parseFromString(s, 'text/html');
+  return !!root.body.querySelector('img') || !!root.body.querySelector('video') || !!root.body.querySelector('audio');
+};

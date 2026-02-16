@@ -1,0 +1,129 @@
+// @ts-nocheck
+/**
+ * @synced-from pie-lib/packages/graphing/src/tools/point/component.jsx
+ * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
+ */
+
+import React from 'react';
+import { BasePoint } from '../shared/point';
+import { ToolPropTypeFields } from '../shared/types';
+import { types } from '@pie-lib/plot';
+import ReactDOM from 'react-dom';
+import MarkLabel from '../../mark-label';
+import { isEmpty, isEqual } from 'lodash-es';
+
+export class Point extends React.Component {
+  static propTypes = {
+    graphProps: types.GraphPropsType.isRequired,
+    ...ToolPropTypeFields,
+  };
+
+  static defaultProps = {};
+
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  move: any = (p) => {
+    const mark = { ...this.state.mark, ...p };
+    this.setState({ mark });
+  };
+
+  startDrag: any = () => {
+    const update = { ...this.props.mark };
+
+    if (update.label === '') {
+      delete update.label;
+    }
+    this.setState({ mark: update });
+  };
+
+  stopDrag: any = () => {
+    const { onChange } = this.props;
+    const mark = { ...this.state.mark };
+    this.setState({ mark: undefined }, () => {
+      if (!isEqual(this.props.mark, mark)) {
+        onChange(this.props.mark, mark);
+      }
+    });
+  };
+
+  labelChange: any = (label) => {
+    const { onChange } = this.props;
+    const update = { ...this.props.mark, label };
+
+    if (!label || isEmpty(label)) {
+      delete update.label;
+    }
+
+    this.setState({ mark: update }, () => {
+      onChange(this.props.mark, update);
+    });
+  };
+
+  clickPoint: any = () => {
+    const { labelModeEnabled, onChange, onClick, mark } = this.props;
+
+    if (!labelModeEnabled) {
+      onClick(mark);
+      return;
+    }
+
+    if (mark.disabled) {
+      return;
+    }
+
+    onChange(mark, { label: '', ...mark });
+
+    if (this.input) {
+      this.input.focus();
+    }
+  };
+
+  render() {
+    const { coordinatesOnHover, graphProps, labelNode, labelModeEnabled } = this.props;
+    const mark = this.state.mark ? this.state.mark : this.props.mark;
+
+    return (
+      <React.Fragment>
+        <BasePoint
+          {...mark}
+          coordinatesOnHover={coordinatesOnHover}
+          graphProps={graphProps}
+          labelNode={labelNode}
+          onDrag={this.move}
+          onDragStart={this.startDrag}
+          onDragStop={this.stopDrag}
+          onClick={this.clickPoint}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            this.clickPoint();
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+            this.clickPoint();
+          }}
+        />
+        {labelNode &&
+          Object.prototype.hasOwnProperty.call(mark, 'label') &&
+          ReactDOM.createPortal(
+            <MarkLabel
+              inputRef={(r) => (this.input = r)}
+              disabled={!labelModeEnabled}
+              mark={mark}
+              graphProps={graphProps}
+              onChange={this.labelChange}
+            />,
+            labelNode,
+          )}
+      </React.Fragment>
+    );
+  }
+}
+
+export default Point;

@@ -571,8 +571,8 @@ When reporting issues, include:
 
 ### Community Resources
 
-- **GitHub Issues**: [Report bugs](https://github.com/your-org/pie-elements-ng/issues)
-- **Discussions**: [Ask questions](https://github.com/your-org/pie-elements-ng/discussions)
+- **GitHub Issues**: [Report bugs](https://github.com/your-org/pie-element/issues)
+- **Discussions**: [Ask questions](https://github.com/your-org/pie-element/discussions)
 - **Documentation**: [Read full docs](../README.md)
 
 ## See Also

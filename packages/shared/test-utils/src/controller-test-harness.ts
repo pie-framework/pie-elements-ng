@@ -10,7 +10,7 @@ import type {
   PieEnvironment,
   PieModel,
   PieSession,
-} from '@pie-elements-ng/shared-types';
+} from '@pie-element/shared-types';
 
 export interface ControllerTestCase {
   name: string;

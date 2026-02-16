@@ -1,0 +1,36 @@
+export default {
+  demos: [
+    {
+      id: 'default',
+      title: 'Default Demo',
+      description: 'Basic likert configuration',
+      tags: ['likert', 'default'],
+      model: {
+        id: '1',
+        element: 'likert',
+        likertScale: 'likert3',
+        likertType: 'agreement',
+        likertOrientation: 'horizontal',
+        choices: [
+          {
+            label: 'Disagree',
+            value: -1,
+          },
+          {
+            label: 'Unsure',
+            value: 0,
+          },
+          {
+            label: 'Agree',
+            value: 1,
+          },
+        ],
+        prompt: 'How likely are you to report a problem?',
+      },
+      session: {
+        id: '1',
+        element: 'likert',
+      }
+    }
+  ]
+};

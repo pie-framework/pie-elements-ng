@@ -1,0 +1,41 @@
+{
+  "name": "@pie-lib/drag",
+  "private": true,
+  "version": "0.1.0",
+  "description": "",
+  "dependencies": {
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/style": "^0.8.0",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@pie-lib/math-rendering": "workspace:*",
+    "@pie-lib/render-ui": "workspace:*",
+    "classnames": "^2.2.6",
+    "lodash-es": "^4.17.23",
+    "prop-types": "^15.7.2",
+    "react": "^18.2.0",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
+    "dev": "bun x vite",
+    "test": "bun x vitest run"
+  }
+}

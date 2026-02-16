@@ -499,10 +499,10 @@ class ESMPlayerTestApp {
       if (config.source === 'npm') {
         // NPM elements: add with version for ESM loader
         const version = config.version === 'latest' ? 'latest' : config.version;
-        elements[`pie-${elementType}`] = `@pie-elements-ng/${elementType}@${version}`;
+        elements[`pie-${elementType}`] = `@pie-element/${elementType}@${version}`;
       } else {
-        // Local elements: add with @pie-elements-ng package name so initializePiesFromLoadedBundle can find them in window.pie.default
-        elements[`pie-${elementType}`] = `@pie-elements-ng/${elementType}`;
+        // Local elements: add with @pie-element package name so initializePiesFromLoadedBundle can find them in window.pie.default
+        elements[`pie-${elementType}`] = `@pie-element/${elementType}`;
       }
     }
 
