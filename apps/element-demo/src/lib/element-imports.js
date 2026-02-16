@@ -17,7 +17,7 @@
  * The workspace resolver plugin handles resolving dependencies that the
  * element dist files import (like @pie-element/shared-math-rendering-katex)
  *
- * Generated: 2026-02-16T02:23:34.395Z
+ * Generated: 2026-02-16T03:32:35.209Z
  */
 
 // Element module registry
@@ -69,809 +69,621 @@ export function hasElementModule(name) {
 // ============================================================================
 
 // Register element: categorize
-registerElement(
-  'categorize',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/categorize/dist/index.js'
-    )
+registerElement('categorize', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/categorize/dist/index.js'
+  )
 );
-registerController(
-  'categorize',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/categorize/dist/controller/index.js'
-    )
+registerController('categorize', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/categorize/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'categorize',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/categorize/dist/author/index.js'
-    )
+registerAuthor('categorize', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/categorize/dist/author/index.js'
+  )
 );
 
 // Register element: charting
-registerElement(
-  'charting',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/charting/dist/index.js'
-    )
+registerElement('charting', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/charting/dist/index.js'
+  )
 );
-registerController(
-  'charting',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/charting/dist/controller/index.js'
-    )
+registerController('charting', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/charting/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'charting',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/charting/dist/author/index.js'
-    )
+registerAuthor('charting', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/charting/dist/author/index.js'
+  )
 );
 
 // Register element: complex-rubric
-registerElement(
-  'complex-rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/complex-rubric/dist/index.js'
-    )
+registerElement('complex-rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/complex-rubric/dist/index.js'
+  )
 );
-registerController(
-  'complex-rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/complex-rubric/dist/controller/index.js'
-    )
+registerController('complex-rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/complex-rubric/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'complex-rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/complex-rubric/dist/author/index.js'
-    )
+registerAuthor('complex-rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/complex-rubric/dist/author/index.js'
+  )
 );
-registerPrint(
-  'complex-rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/complex-rubric/dist/print/index.js'
-    )
+registerPrint('complex-rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/complex-rubric/dist/print/index.js'
+  )
 );
 
 // Register element: drag-in-the-blank
-registerElement(
-  'drag-in-the-blank',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drag-in-the-blank/dist/index.js'
-    )
+registerElement('drag-in-the-blank', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drag-in-the-blank/dist/index.js'
+  )
 );
-registerController(
-  'drag-in-the-blank',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drag-in-the-blank/dist/controller/index.js'
-    )
+registerController('drag-in-the-blank', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drag-in-the-blank/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'drag-in-the-blank',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drag-in-the-blank/dist/author/index.js'
-    )
+registerAuthor('drag-in-the-blank', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drag-in-the-blank/dist/author/index.js'
+  )
 );
 
 // Register element: drawing-response
-registerElement(
-  'drawing-response',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drawing-response/dist/index.js'
-    )
+registerElement('drawing-response', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drawing-response/dist/index.js'
+  )
 );
-registerController(
-  'drawing-response',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drawing-response/dist/controller/index.js'
-    )
+registerController('drawing-response', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drawing-response/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'drawing-response',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drawing-response/dist/author/index.js'
-    )
+registerAuthor('drawing-response', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/drawing-response/dist/author/index.js'
+  )
 );
 
 // Register element: ebsr
-registerElement(
-  'ebsr',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/ebsr/dist/index.js'
-    )
+registerElement('ebsr', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/ebsr/dist/index.js'
+  )
 );
-registerController(
-  'ebsr',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/ebsr/dist/controller/index.js'
-    )
+registerController('ebsr', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/ebsr/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'ebsr',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/ebsr/dist/author/index.js'
-    )
+registerAuthor('ebsr', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/ebsr/dist/author/index.js'
+  )
 );
-registerPrint(
-  'ebsr',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/ebsr/dist/print/index.js'
-    )
+registerPrint('ebsr', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/ebsr/dist/print/index.js'
+  )
 );
 
 // Register element: explicit-constructed-response
-registerElement(
-  'explicit-constructed-response',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/explicit-constructed-response/dist/index.js'
-    )
+registerElement('explicit-constructed-response', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/explicit-constructed-response/dist/index.js'
+  )
 );
-registerController(
-  'explicit-constructed-response',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/explicit-constructed-response/dist/controller/index.js'
-    )
+registerController('explicit-constructed-response', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/explicit-constructed-response/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'explicit-constructed-response',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/explicit-constructed-response/dist/author/index.js'
-    )
+registerAuthor('explicit-constructed-response', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/explicit-constructed-response/dist/author/index.js'
+  )
 );
-registerPrint(
-  'explicit-constructed-response',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/explicit-constructed-response/dist/print/index.js'
-    )
+registerPrint('explicit-constructed-response', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/explicit-constructed-response/dist/print/index.js'
+  )
 );
 
 // Register element: extended-text-entry
-registerElement(
-  'extended-text-entry',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/extended-text-entry/dist/index.js'
-    )
+registerElement('extended-text-entry', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/extended-text-entry/dist/index.js'
+  )
 );
-registerController(
-  'extended-text-entry',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/extended-text-entry/dist/controller/index.js'
-    )
+registerController('extended-text-entry', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/extended-text-entry/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'extended-text-entry',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/extended-text-entry/dist/author/index.js'
-    )
+registerAuthor('extended-text-entry', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/extended-text-entry/dist/author/index.js'
+  )
 );
-registerPrint(
-  'extended-text-entry',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/extended-text-entry/dist/print/index.js'
-    )
+registerPrint('extended-text-entry', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/extended-text-entry/dist/print/index.js'
+  )
 );
 
 // Register element: fraction-model
-registerElement(
-  'fraction-model',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/fraction-model/dist/index.js'
-    )
+registerElement('fraction-model', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/fraction-model/dist/index.js'
+  )
 );
-registerController(
-  'fraction-model',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/fraction-model/dist/controller/index.js'
-    )
+registerController('fraction-model', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/fraction-model/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'fraction-model',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/fraction-model/dist/author/index.js'
-    )
+registerAuthor('fraction-model', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/fraction-model/dist/author/index.js'
+  )
 );
 
 // Register element: graphing
-registerElement(
-  'graphing',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing/dist/index.js'
-    )
+registerElement('graphing', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing/dist/index.js'
+  )
 );
-registerController(
-  'graphing',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing/dist/controller/index.js'
-    )
+registerController('graphing', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'graphing',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing/dist/author/index.js'
-    )
+registerAuthor('graphing', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing/dist/author/index.js'
+  )
 );
 
 // Register element: graphing-solution-set
-registerElement(
-  'graphing-solution-set',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing-solution-set/dist/index.js'
-    )
+registerElement('graphing-solution-set', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing-solution-set/dist/index.js'
+  )
 );
-registerController(
-  'graphing-solution-set',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing-solution-set/dist/controller/index.js'
-    )
+registerController('graphing-solution-set', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing-solution-set/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'graphing-solution-set',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing-solution-set/dist/author/index.js'
-    )
+registerAuthor('graphing-solution-set', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/graphing-solution-set/dist/author/index.js'
+  )
 );
 
 // Register element: hotspot
-registerElement(
-  'hotspot',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/hotspot/dist/index.js'
-    )
+registerElement('hotspot', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/hotspot/dist/index.js'
+  )
 );
-registerController(
-  'hotspot',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/hotspot/dist/controller/index.js'
-    )
+registerController('hotspot', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/hotspot/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'hotspot',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/hotspot/dist/author/index.js'
-    )
+registerAuthor('hotspot', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/hotspot/dist/author/index.js'
+  )
 );
 
 // Register element: image-cloze-association
-registerElement(
-  'image-cloze-association',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/image-cloze-association/dist/index.js'
-    )
+registerElement('image-cloze-association', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/image-cloze-association/dist/index.js'
+  )
 );
-registerController(
-  'image-cloze-association',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/image-cloze-association/dist/controller/index.js'
-    )
+registerController('image-cloze-association', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/image-cloze-association/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'image-cloze-association',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/image-cloze-association/dist/author/index.js'
-    )
+registerAuthor('image-cloze-association', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/image-cloze-association/dist/author/index.js'
+  )
 );
 
 // Register element: inline-dropdown
-registerElement(
-  'inline-dropdown',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/inline-dropdown/dist/index.js'
-    )
+registerElement('inline-dropdown', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/inline-dropdown/dist/index.js'
+  )
 );
-registerController(
-  'inline-dropdown',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/inline-dropdown/dist/controller/index.js'
-    )
+registerController('inline-dropdown', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/inline-dropdown/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'inline-dropdown',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/inline-dropdown/dist/author/index.js'
-    )
+registerAuthor('inline-dropdown', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/inline-dropdown/dist/author/index.js'
+  )
 );
 
 // Register element: likert
-registerElement(
-  'likert',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/likert/dist/index.js'
-    )
+registerElement('likert', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/likert/dist/index.js'
+  )
 );
-registerController(
-  'likert',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/likert/dist/controller/index.js'
-    )
+registerController('likert', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/likert/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'likert',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/likert/dist/author/index.js'
-    )
+registerAuthor('likert', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/likert/dist/author/index.js'
+  )
 );
 
 // Register element: match
-registerElement(
-  'match',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match/dist/index.js'
-    )
+registerElement('match', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match/dist/index.js'
+  )
 );
-registerController(
-  'match',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match/dist/controller/index.js'
-    )
+registerController('match', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'match',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match/dist/author/index.js'
-    )
+registerAuthor('match', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match/dist/author/index.js'
+  )
 );
 
 // Register element: match-list
-registerElement(
-  'match-list',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match-list/dist/index.js'
-    )
+registerElement('match-list', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match-list/dist/index.js'
+  )
 );
-registerController(
-  'match-list',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match-list/dist/controller/index.js'
-    )
+registerController('match-list', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/match-list/dist/controller/index.js'
+  )
 );
 
 // Register element: math-inline
-registerElement(
-  'math-inline',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-inline/dist/index.js'
-    )
+registerElement('math-inline', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-inline/dist/index.js'
+  )
 );
-registerController(
-  'math-inline',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-inline/dist/controller/index.js'
-    )
+registerController('math-inline', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-inline/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'math-inline',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-inline/dist/author/index.js'
-    )
+registerAuthor('math-inline', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-inline/dist/author/index.js'
+  )
 );
-registerPrint(
-  'math-inline',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-inline/dist/print/index.js'
-    )
+registerPrint('math-inline', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-inline/dist/print/index.js'
+  )
 );
 
 // Register element: math-templated
-registerElement(
-  'math-templated',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-templated/dist/index.js'
-    )
+registerElement('math-templated', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-templated/dist/index.js'
+  )
 );
-registerController(
-  'math-templated',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-templated/dist/controller/index.js'
-    )
+registerController('math-templated', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-templated/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'math-templated',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-templated/dist/author/index.js'
-    )
+registerAuthor('math-templated', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-templated/dist/author/index.js'
+  )
 );
-registerPrint(
-  'math-templated',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-templated/dist/print/index.js'
-    )
+registerPrint('math-templated', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/math-templated/dist/print/index.js'
+  )
 );
 
 // Register element: matrix
-registerElement(
-  'matrix',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/matrix/dist/index.js'
-    )
+registerElement('matrix', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/matrix/dist/index.js'
+  )
 );
-registerController(
-  'matrix',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/matrix/dist/controller/index.js'
-    )
+registerController('matrix', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/matrix/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'matrix',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/matrix/dist/author/index.js'
-    )
+registerAuthor('matrix', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/matrix/dist/author/index.js'
+  )
 );
 
 // Register element: multi-trait-rubric
-registerElement(
-  'multi-trait-rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multi-trait-rubric/dist/index.js'
-    )
+registerElement('multi-trait-rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multi-trait-rubric/dist/index.js'
+  )
 );
-registerController(
-  'multi-trait-rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multi-trait-rubric/dist/controller/index.js'
-    )
+registerController('multi-trait-rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multi-trait-rubric/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'multi-trait-rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multi-trait-rubric/dist/author/index.js'
-    )
+registerAuthor('multi-trait-rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multi-trait-rubric/dist/author/index.js'
+  )
 );
 
 // Register element: multiple-choice
-registerElement(
-  'multiple-choice',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice/dist/index.js'
-    )
+registerElement('multiple-choice', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice/dist/index.js'
+  )
 );
-registerController(
-  'multiple-choice',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice/dist/controller/index.js'
-    )
+registerController('multiple-choice', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'multiple-choice',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice/dist/author/index.js'
-    )
+registerAuthor('multiple-choice', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice/dist/author/index.js'
+  )
 );
-registerPrint(
-  'multiple-choice',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice/dist/print/index.js'
-    )
+registerPrint('multiple-choice', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/multiple-choice/dist/print/index.js'
+  )
 );
 
 // Register element: number-line
-registerElement(
-  'number-line',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/number-line/dist/index.js'
-    )
+registerElement('number-line', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/number-line/dist/index.js'
+  )
 );
-registerController(
-  'number-line',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/number-line/dist/controller/index.js'
-    )
+registerController('number-line', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/number-line/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'number-line',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/number-line/dist/author/index.js'
-    )
+registerAuthor('number-line', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/number-line/dist/author/index.js'
+  )
 );
 
 // Register element: passage
-registerElement(
-  'passage',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/passage/dist/index.js'
-    )
+registerElement('passage', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/passage/dist/index.js'
+  )
 );
-registerController(
-  'passage',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/passage/dist/controller/index.js'
-    )
+registerController('passage', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/passage/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'passage',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/passage/dist/author/index.js'
-    )
+registerAuthor('passage', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/passage/dist/author/index.js'
+  )
 );
-registerPrint(
-  'passage',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/passage/dist/print/index.js'
-    )
+registerPrint('passage', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/passage/dist/print/index.js'
+  )
 );
 
 // Register element: placement-ordering
-registerElement(
-  'placement-ordering',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/placement-ordering/dist/index.js'
-    )
+registerElement('placement-ordering', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/placement-ordering/dist/index.js'
+  )
 );
-registerController(
-  'placement-ordering',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/placement-ordering/dist/controller/index.js'
-    )
+registerController('placement-ordering', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/placement-ordering/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'placement-ordering',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/placement-ordering/dist/author/index.js'
-    )
+registerAuthor('placement-ordering', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/placement-ordering/dist/author/index.js'
+  )
 );
 
 // Register element: rubric
-registerElement(
-  'rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/rubric/dist/index.js'
-    )
+registerElement('rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/rubric/dist/index.js'
+  )
 );
-registerController(
-  'rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/rubric/dist/controller/index.js'
-    )
+registerController('rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/rubric/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/rubric/dist/author/index.js'
-    )
+registerAuthor('rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/rubric/dist/author/index.js'
+  )
 );
-registerPrint(
-  'rubric',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/rubric/dist/print/index.js'
-    )
+registerPrint('rubric', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/rubric/dist/print/index.js'
+  )
 );
 
 // Register element: select-text
-registerElement(
-  'select-text',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/select-text/dist/index.js'
-    )
+registerElement('select-text', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/select-text/dist/index.js'
+  )
 );
-registerController(
-  'select-text',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/select-text/dist/controller/index.js'
-    )
+registerController('select-text', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/select-text/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'select-text',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/select-text/dist/author/index.js'
-    )
+registerAuthor('select-text', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/select-text/dist/author/index.js'
+  )
 );
-registerPrint(
-  'select-text',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/select-text/dist/print/index.js'
-    )
+registerPrint('select-text', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/select-text/dist/print/index.js'
+  )
 );
 
 // Register element: simple-cloze
-registerElement(
-  'simple-cloze',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/index.js'
-    )
+registerElement('simple-cloze', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/index.js'
+  )
 );
-registerController(
-  'simple-cloze',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/controller/index.js'
-    )
+registerController('simple-cloze', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/controller/index.js'
+  )
 );
-registerAuthor(
-  'simple-cloze',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/author/index.js'
-    )
+registerAuthor('simple-cloze', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/author/index.js'
+  )
 );
-registerPrint(
-  'simple-cloze',
-  () =>
-    import(
-      /* @vite-ignore */
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/print/index.js'
-    )
+registerPrint('simple-cloze', () =>
+  import(
+    /* @vite-ignore */
+    '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/print/index.js'
+  )
 );

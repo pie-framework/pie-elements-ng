@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "prebuild": "bun run generate-imports",
     "build": "vite build",
     "preview": "vite preview",
     "generate-imports": "bun run scripts/generate-element-imports.ts",
