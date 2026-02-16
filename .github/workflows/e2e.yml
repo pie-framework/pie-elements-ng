@@ -23,6 +23,9 @@ jobs:
       - run: bun x svelte-kit sync
         working-directory: apps/element-demo
       - run: bun run --cwd apps/element-demo generate-imports
+      # Build workspace dependencies that element-demo imports via package exports.
+      - run: bun run --cwd packages/shared/bundler-shared build
+      - run: bun run --cwd packages/element-player build
       - run: bunx playwright install --with-deps
       - run: bun run --cwd apps/element-demo build
       - run: bun run --cwd apps/element-demo test:e2e

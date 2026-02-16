@@ -11,6 +11,7 @@
     "packages/lib-react/*",
     "packages/lib-svelte/*",
     "packages/element-player",
+    "packages/print-player",
     "packages/core",
     "tools/cli",
     "apps/element-demo",
