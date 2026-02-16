@@ -17,7 +17,7 @@
  * The workspace resolver plugin handles resolving dependencies that the
  * element dist files import (like @pie-element/shared-math-rendering-katex)
  *
- * Generated: 2026-02-16T01:17:32.861Z
+ * Generated: 2026-02-16T02:23:34.395Z
  */
 
 // Element module registry
@@ -857,5 +857,21 @@ registerController(
     import(
       /* @vite-ignore */
       '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/controller/index.js'
+    )
+);
+registerAuthor(
+  'simple-cloze',
+  () =>
+    import(
+      /* @vite-ignore */
+      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/author/index.js'
+    )
+);
+registerPrint(
+  'simple-cloze',
+  () =>
+    import(
+      /* @vite-ignore */
+      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/simple-cloze/dist/print/index.js'
     )
 );
