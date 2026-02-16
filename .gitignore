@@ -49,8 +49,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Changesets
-.changeset/*.md
-!.changeset/README.md
+# Track changeset markdown files (release metadata)
 
 # Upstream sync tracking (local only)
 .upstream-sync-history.json
