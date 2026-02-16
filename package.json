@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build",
+    "build": "turbo run build --filter=!@pie-element/math-inline --filter=!@pie-element/math-templated",
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:watch": "vitest watch",
