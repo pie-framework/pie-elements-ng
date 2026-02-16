@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/bundler-shared",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Shared bundler for PIE elements - creates IIFE bundles compatible with pie-player-components",
   "main": "./dist/index.js",
