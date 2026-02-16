@@ -13,6 +13,13 @@
  * Base: github:desmosinc/mathquill
  */
 
+// IMPORTANT: jQuery MUST be set up before MathQuill imports
+// This import has side effects that set window.jQuery
+import './jquery-setup.js';
+
+// Now import MathQuill UMD bundle - it will find jQuery on window
+import 'mathquill/build/mathquill.js';
+
 // Import extensions which initializes window.MathQuill with all patches
 import './extensions/index.js';
 

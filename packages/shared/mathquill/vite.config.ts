@@ -10,13 +10,15 @@ export default defineConfig({
     },
     minify: false,
     rollupOptions: {
-      external: ['mathquill', 'mathquill/build/mathquill.js'], // MathQuill UMD bundle is external dependency
+      external: [], // Don't externalize anything - we need to control the order
       output: {
         assetFileNames: (assetInfo) => {
           // Rename CSS to mathquill.css
           if (assetInfo.name?.endsWith('.css')) return 'mathquill.css';
           return assetInfo.name || 'asset';
         },
+        // Remove hoisted imports - inline everything
+        hoistTransitiveImports: false,
       },
     },
     cssCodeSplit: false, // Bundle all CSS into one file

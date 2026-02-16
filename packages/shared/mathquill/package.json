@@ -23,7 +23,8 @@
     "test:watch": "bun test --watch"
   },
   "dependencies": {
-    "mathquill": "0.10.1"
+    "jquery": "^3.7.1",
+    "mathquill": "github:desmosinc/mathquill"
   },
   "devDependencies": {
     "@types/bun": "latest",

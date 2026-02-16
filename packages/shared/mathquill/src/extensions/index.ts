@@ -2,7 +2,7 @@
  * MathQuill Extensions Loader
  *
  * Loads all extensions in the correct order:
- * 1. Desmos base (via npm package)
+ * 1. Desmos base (loaded in main index.ts)
  * 2. Khan Academy patches
  * 3. Learnosity features
  * 4. PIE features
@@ -13,8 +13,6 @@
  * DO NOT EDIT MANUALLY - Regenerate with: pie mathquill:migrate
  */
 
-// Import MathQuill - this loads the UMD bundle which sets up window.MathQuill
-import 'mathquill/build/mathquill.js';
 import type { MathQuillInterface } from 'mathquill';
 
 // Note: Consumers must import Desmos MathQuill CSS themselves:
@@ -44,6 +42,7 @@ import {
 } from './pie/index.js';
 
 // Import PIE matrix styles
+// @ts-ignore
 import './pie/styles.css';
 
 /**
