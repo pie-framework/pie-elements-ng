@@ -7,9 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "esm-player-test",
-    "@pie-element/math-inline",
-    "@pie-element/math-templated"
-  ]
+  "ignore": ["esm-player-test", "@pie-element/math-inline", "@pie-element/math-templated"]
 }
