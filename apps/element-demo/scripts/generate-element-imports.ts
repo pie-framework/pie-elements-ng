@@ -47,33 +47,40 @@ function loadRegistry(): ElementMetadata[] {
   return JSON.parse(registryJson);
 }
 
-/**
- * Check if an element exists and get its base path
- * Both React and Svelte elements follow the same conventions:
- * - Delivery: dist/index.js
- * - Controller: dist/controller/index.js
- * - Author: dist/author/index.js
- * - Print: dist/print/index.js
- */
-function checkElementExists(
+function findSourceEntry(
+  baseDir: string,
   elementName: string,
-  subpath: string
-): { exists: boolean; basePath: string | null } {
-  // Check React elements first
-  let elementPath = resolve(workspaceRoot, 'packages/elements-react', elementName, 'dist', subpath);
+  entryBase: string
+): { exists: boolean; fullPath: string | null } {
+  const extensions = ['.ts', '.tsx', '.js', '.jsx', '.svelte'];
+  for (const ext of extensions) {
+    const fullPath = resolve(workspaceRoot, baseDir, elementName, `${entryBase}${ext}`);
+    if (existsSync(fullPath)) {
+      return { exists: true, fullPath };
+    }
+  }
+  return { exists: false, fullPath: null };
+}
 
-  if (existsSync(elementPath)) {
-    return { exists: true, basePath: 'packages/elements-react' };
+/**
+ * Resolve element source entry from React or Svelte package trees.
+ * We load source files for portability and to avoid build-order coupling on dist artifacts.
+ */
+function resolveElementSourceEntry(
+  elementName: string,
+  entryBase: string
+): { exists: boolean; fullPath: string | null; basePath: string | null } {
+  const reactEntry = findSourceEntry('packages/elements-react', elementName, entryBase);
+  if (reactEntry.exists) {
+    return { exists: true, fullPath: reactEntry.fullPath, basePath: 'packages/elements-react' };
   }
 
-  // Check Svelte elements
-  elementPath = resolve(workspaceRoot, 'packages/elements-svelte', elementName, 'dist', subpath);
-
-  if (existsSync(elementPath)) {
-    return { exists: true, basePath: 'packages/elements-svelte' };
+  const svelteEntry = findSourceEntry('packages/elements-svelte', elementName, entryBase);
+  if (svelteEntry.exists) {
+    return { exists: true, fullPath: svelteEntry.fullPath, basePath: 'packages/elements-svelte' };
   }
 
-  return { exists: false, basePath: null };
+  return { exists: false, fullPath: null, basePath: null };
 }
 
 /**
@@ -84,21 +91,19 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
   const elementName = element.name;
 
   // Check if element delivery component exists
-  const deliveryInfo = checkElementExists(elementName, 'index.js');
-  if (!deliveryInfo.exists || !deliveryInfo.basePath) {
+  const deliveryInfo = resolveElementSourceEntry(elementName, 'src/index');
+  if (!deliveryInfo.exists || !deliveryInfo.basePath || !deliveryInfo.fullPath) {
     // Skip elements without a delivery component
     return [];
   }
 
-  const basePath = deliveryInfo.basePath;
-
   // Check for other components
-  const controllerInfo = checkElementExists(elementName, 'controller/index.js');
+  const controllerInfo = resolveElementSourceEntry(elementName, 'src/controller/index');
   const authorInfo = element.hasAuthor
-    ? checkElementExists(elementName, 'author/index.js')
+    ? resolveElementSourceEntry(elementName, 'src/author/index')
     : { exists: false };
   const printInfo = element.hasPrint
-    ? checkElementExists(elementName, 'print/index.js')
+    ? resolveElementSourceEntry(elementName, 'src/print/index')
     : { exists: false };
 
   lines.push(`${indent}// Register element: ${elementName}`);
@@ -107,7 +112,7 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
   lines.push(`${indent}registerElement('${elementName}', () =>`);
   lines.push(`${indent}  import(`);
   lines.push(`${indent}    /* @vite-ignore */`);
-  lines.push(`${indent}    '/@fs${workspaceRoot}/${basePath}/${elementName}/dist/index.js'`);
+  lines.push(`${indent}    '/@fs${deliveryInfo.fullPath}'`);
   lines.push(`${indent}  )`);
   lines.push(`${indent});`);
 
@@ -116,9 +121,7 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
     lines.push(`${indent}registerController('${elementName}', () =>`);
     lines.push(`${indent}  import(`);
     lines.push(`${indent}    /* @vite-ignore */`);
-    lines.push(
-      `${indent}    '/@fs${workspaceRoot}/${basePath}/${elementName}/dist/controller/index.js'`
-    );
+    lines.push(`${indent}    '/@fs${controllerInfo.fullPath}'`);
     lines.push(`${indent}  )`);
     lines.push(`${indent});`);
   }
@@ -128,9 +131,7 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
     lines.push(`${indent}registerAuthor('${elementName}', () =>`);
     lines.push(`${indent}  import(`);
     lines.push(`${indent}    /* @vite-ignore */`);
-    lines.push(
-      `${indent}    '/@fs${workspaceRoot}/${basePath}/${elementName}/dist/author/index.js'`
-    );
+    lines.push(`${indent}    '/@fs${authorInfo.fullPath}'`);
     lines.push(`${indent}  )`);
     lines.push(`${indent});`);
   }
@@ -140,9 +141,7 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
     lines.push(`${indent}registerPrint('${elementName}', () =>`);
     lines.push(`${indent}  import(`);
     lines.push(`${indent}    /* @vite-ignore */`);
-    lines.push(
-      `${indent}    '/@fs${workspaceRoot}/${basePath}/${elementName}/dist/print/index.js'`
-    );
+    lines.push(`${indent}    '/@fs${printInfo.fullPath}'`);
     lines.push(`${indent}  )`);
     lines.push(`${indent});`);
   }
@@ -163,15 +162,15 @@ function generateRuntimeFile(elements: ElementMetadata[]): string {
   lines.push(' *');
   lines.push(' * AUTO-GENERATED by scripts/generate-element-imports.ts - DO NOT EDIT MANUALLY');
   lines.push(' *');
-  lines.push(' * This file registers all available PIE elements with absolute paths.');
+  lines.push(' * This file registers all available PIE elements with absolute source paths.');
   lines.push(' * Using absolute /@fs/ paths bypasses package.json export conditions');
-  lines.push(' * and ensures we load BUILT dist files for elements.');
+  lines.push(' * and ensures dynamic imports remain portable across environments.');
   lines.push(' *');
   lines.push(' * IMPORTANT: We use absolute paths here instead of bare specifiers because:');
   lines.push(" * 1. Dynamic imports with variable paths (like in demo-element-loader.ts) don't");
   lines.push(" *    benefit from Vite's alias resolution");
   lines.push(' * 2. Absolute /@fs/ paths work correctly in dynamic imports');
-  lines.push(' * 3. This ensures we load DIST files (fully built) instead of source files');
+  lines.push(' * 3. Source paths avoid build-order coupling on prebuilt dist artifacts');
   lines.push(' *');
   lines.push(' * The workspace resolver plugin handles resolving dependencies that the');
   lines.push(' * element dist files import (like @pie-element/shared-math-rendering-katex)');
