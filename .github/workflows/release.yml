@@ -179,11 +179,13 @@ jobs:
                   ]
                 },
                 {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Published Packages:*\n```\n${{ toJSON(fromJSON(steps.changesets.outputs.publishedPackages)) }}\n```"
-                  }
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "See the workflow summary for the full published package list."
+                    }
+                  ]
                 }
               ]
             }
