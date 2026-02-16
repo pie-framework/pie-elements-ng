@@ -20,7 +20,8 @@ jobs:
         with:
           bun-version: 1.3.6
       - run: bun install --frozen-lockfile
-      - run: bun x svelte-kit sync --cwd apps/element-demo
+      - run: bun x svelte-kit sync
+        working-directory: apps/element-demo
       - run: bun run --cwd apps/element-demo generate-imports
       - run: bunx playwright install --with-deps
       - run: bun run --cwd apps/element-demo build
