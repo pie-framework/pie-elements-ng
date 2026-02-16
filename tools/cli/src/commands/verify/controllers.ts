@@ -3,6 +3,7 @@ import { Logger } from '../../utils/logger.js';
 import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { EXCLUDED_UPSTREAM_ELEMENTS } from '../../lib/upstream/sync-constants.js';
 
 type CheckResult = {
   element: string;
@@ -53,7 +54,11 @@ export default class VerifyControllers extends Command {
     this.logger.section('🧩 Verifying published controller modules');
 
     const items = await readdir(ELEMENTS_REACT_DIR, { withFileTypes: true });
-    let elements = items.filter((d) => d.isDirectory()).map((d) => d.name);
+    const excludedElements = new Set<string>(EXCLUDED_UPSTREAM_ELEMENTS as readonly string[]);
+    let elements = items
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .filter((name) => !excludedElements.has(name));
 
     if (flags.element) {
       if (!elements.includes(flags.element)) {
