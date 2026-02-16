@@ -17,7 +17,14 @@
   },
   "dependencies": {
     "@pie-element/bundler-shared": "workspace:*",
-    "@pie-element/element-player": "workspace:*"
+    "@pie-element/element-player": "workspace:*",
+    "@tiptap/core": "3.18.0",
+    "@tiptap/extension-code-block-lowlight": "3.18.0",
+    "@tiptap/extension-document": "3.18.0",
+    "@tiptap/extension-history": "3.18.0",
+    "@tiptap/extension-text": "3.18.0",
+    "highlight.js": "^11.11.1",
+    "lowlight": "^3.3.0"
   },
   "devDependencies": {
     "@pie-element/multiple-choice": "workspace:*",

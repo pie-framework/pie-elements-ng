@@ -23,7 +23,7 @@
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-mathquill": "workspace:*",
-    "mathquill": "github:desmosinc/mathquill"
+    "mathquill": "0.10.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

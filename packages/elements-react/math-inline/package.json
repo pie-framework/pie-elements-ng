@@ -25,7 +25,7 @@
     "@pie-framework/math-validation": "^1.0.0",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "mathquill": "github:desmosinc/mathquill"
+    "mathquill": "0.10.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

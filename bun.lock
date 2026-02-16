@@ -9,7 +9,7 @@
         "@dnd-kit/utilities": "^3.2.2",
         "@pie-framework/math-validation": "^1.4.2",
         "@tiptap/core": "^3.18.0",
-        "mathquill": "github:desmosinc/mathquill",
+        "mathquill": "0.10.1",
         "nested-property": "^4.0.0",
         "pluralize": "^8.0.0",
         "react-transition-group": "^4.4.5",
@@ -70,6 +70,13 @@
       "dependencies": {
         "@pie-element/bundler-shared": "workspace:*",
         "@pie-element/element-player": "workspace:*",
+        "@tiptap/core": "3.18.0",
+        "@tiptap/extension-code-block-lowlight": "3.18.0",
+        "@tiptap/extension-document": "3.18.0",
+        "@tiptap/extension-history": "3.18.0",
+        "@tiptap/extension-text": "3.18.0",
+        "highlight.js": "^11.11.1",
+        "lowlight": "^3.3.0",
       },
       "devDependencies": {
         "@pie-element/multiple-choice": "workspace:*",
@@ -713,7 +720,7 @@
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "mathquill": "github:desmosinc/mathquill",
+        "mathquill": "0.10.1",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -750,7 +757,7 @@
         "@pie-lib/math-toolbar": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "mathquill": "github:desmosinc/mathquill",
+        "mathquill": "0.10.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1599,7 +1606,7 @@
       "name": "@pie-element/shared-mathquill",
       "version": "0.0.0-test.1769993634241",
       "dependencies": {
-        "mathquill": "github:desmosinc/mathquill",
+        "mathquill": "0.10.1",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -3112,6 +3119,8 @@
 
     "jiti": ["jiti@2.6.1", "", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ=="],
 
+    "jquery": ["jquery@1.12.4", "", {}, "sha512-UEVp7PPK9xXYSk8xqXCJrkXnKZtlgWkd2GsAQbMRFK6S/ePU2JN5G2Zum8hIVjzR3CpdfSqdqAzId/xd4TJHeg=="],
+
     "js-tokens": ["js-tokens@4.0.0", "", {}, "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="],
 
     "js-yaml": ["js-yaml@4.1.1", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA=="],
@@ -3282,7 +3291,7 @@
 
     "mathjs": ["mathjs@7.6.0", "", { "dependencies": { "complex.js": "^2.0.11", "decimal.js": "^10.2.1", "escape-latex": "^1.2.0", "fraction.js": "^4.0.12", "javascript-natural-sort": "^0.7.1", "seed-random": "^2.2.0", "tiny-emitter": "^2.1.0", "typed-function": "^2.0.0" }, "bin": { "mathjs": "bin/cli.js" } }, "sha512-abywR28hUpKF4at5jE8Ys+Kigk40eKMT5mcBLD0/dtsqjfOLbtzd3WjlRqIopNo7oQ6FME51qph6lb8h/bhpUg=="],
 
-    "mathquill": ["mathquill@github:desmosinc/mathquill#d6c4822", {}, "desmosinc-mathquill-d6c4822"],
+    "mathquill": ["mathquill@0.10.1", "", { "dependencies": { "jquery": "^1.12.3" } }, "sha512-dGtVAUDyKIoS2BPYYgQK7aZAarKQB6oEEWItS5WKmMjYexPOVDm4vYL+I1puYiLvpD4auFUi2z8FeQZP4+FYOA=="],
 
     "mdurl": ["mdurl@2.0.0", "", {}, "sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w=="],
 
@@ -3900,6 +3909,8 @@
 
     "@pie-element/element-demo/@sveltejs/adapter-auto": ["@sveltejs/adapter-auto@3.3.1", "", { "dependencies": { "import-meta-resolve": "^4.1.0" }, "peerDependencies": { "@sveltejs/kit": "^2.0.0" } }, "sha512-5Sc7WAxYdL6q9j/+D0jJKjGREGlfIevDyHSQ2eNETHcB1TKlQWHcAo8AS8H1QdjNvSXpvOwNjykDUHPEAyGgdQ=="],
 
+    "@pie-element/element-demo/@tiptap/core": ["@tiptap/core@3.18.0", "", { "peerDependencies": { "@tiptap/pm": "^3.18.0" } }, "sha512-Gczd4GbK1DNgy/QUPElMVozoa0GW9mW8E31VIi7Q4a9PHHz8PcrxPmuWwtJ2q0PF8MWpOSLuBXoQTWaXZRPRnQ=="],
+
     "@pie-element/element-player/@tiptap/core": ["@tiptap/core@3.18.0", "", { "peerDependencies": { "@tiptap/pm": "^3.18.0" } }, "sha512-Gczd4GbK1DNgy/QUPElMVozoa0GW9mW8E31VIi7Q4a9PHHz8PcrxPmuWwtJ2q0PF8MWpOSLuBXoQTWaXZRPRnQ=="],
 
     "@pie-element/explicit-constructed-response/@vitejs/plugin-react": ["@vitejs/plugin-react@4.7.0", "", { "dependencies": { "@babel/core": "^7.28.0", "@babel/plugin-transform-react-jsx-self": "^7.27.1", "@babel/plugin-transform-react-jsx-source": "^7.27.1", "@rolldown/pluginutils": "1.0.0-beta.27", "@types/babel__core": "^7.20.5", "react-refresh": "^0.17.0" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0" } }, "sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA=="],
@@ -3995,8 +4006,6 @@
     "@pie-element/shared-feedback/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
 
     "@pie-element/shared-mathquill/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
-
-    "@pie-element/shared-mathquill/mathquill": ["mathquill@github:desmosinc/mathquill#d6c4822", {}, "desmosinc-mathquill-d6c4822"],
 
     "@pie-element/shared-player-events/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
 
