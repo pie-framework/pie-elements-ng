@@ -69,7 +69,7 @@ describe('ESM build outputs', () => {
       const exportTargets = collectExportTargets(pkg.exports);
       const mainTargets = [pkg.main, pkg.module].filter(Boolean) as string[];
       const targets = [...exportTargets, ...mainTargets];
-      const distTargets = targets.filter((target) => /\/(dist|esm)\//.test(target));
+      const distTargets = [...new Set(targets.filter((target) => /\/(dist|esm)\//.test(target)))];
 
       if (distTargets.length === 0) {
         continue;
