@@ -9,6 +9,8 @@ import { goto } from '$app/navigation';
 import { onMount } from 'svelte';
 import { initializeDemo, hasConfigure, hasPrint } from '$lib/stores/demo-state';
 import DemoSelector from '$lib/components/DemoSelector.svelte';
+import IifeBuildPanel from '$lib/components/IifeBuildPanel.svelte';
+import { parsePlayerType } from '$lib/config/player-runtime';
 import type { LayoutData } from './$types';
 
 let { data, children }: { data: LayoutData; children: any } = $props();
@@ -36,9 +38,17 @@ function formatElementName(name: string): string {
 }
 
 // Tab configuration - paths are derived from element name and preserve demo/mode/role parameters
-const currentDemoParam = $derived($page.url.searchParams.get('demo'));
+const currentDemoParamRaw = $derived($page.url.searchParams.get('demo'));
 const currentModeParam = $derived($page.url.searchParams.get('mode'));
 const currentRoleParam = $derived($page.url.searchParams.get('role'));
+const currentPlayerType = $derived(parsePlayerType($page.url.searchParams.get('player')));
+const knownDemoIds = $derived(new Set((data.demos || []).map((d) => d.id)));
+const currentDemoParam = $derived.by(() => {
+  if (!currentDemoParamRaw) {
+    return data.activeDemoId || null;
+  }
+  return knownDemoIds.has(currentDemoParamRaw) ? currentDemoParamRaw : data.activeDemoId || null;
+});
 
 // Build query string with all relevant parameters
 const buildQueryString = $derived((includeDeliveryParams: boolean) => {
@@ -54,6 +64,7 @@ const buildQueryString = $derived((includeDeliveryParams: boolean) => {
       params.set('role', currentRoleParam);
     }
   }
+  params.set('player', currentPlayerType);
   const str = params.toString();
   return str ? `?${str}` : '';
 });
@@ -119,16 +130,65 @@ onMount(() => {
   const url = new URL($page.url);
   let needsUpdate = false;
 
+  // Recover from malformed query strings where the full query was encoded as a key, e.g.:
+  // ?demo%3Dmath-equations%26mode%3Dgather%26role%3Dstudent%26player%3Diife=
+  for (const [key] of url.searchParams.entries()) {
+    if (!key.startsWith('demo=')) continue;
+
+    const recoveredParams = new URLSearchParams(key);
+    for (const name of ['demo', 'mode', 'role', 'player']) {
+      const recovered = recoveredParams.get(name);
+      if (recovered && !url.searchParams.get(name)) {
+        url.searchParams.set(name, recovered);
+      }
+    }
+    url.searchParams.delete(key);
+    needsUpdate = true;
+  }
+
   // Demo parameter
   const currentDemoParam = url.searchParams.get('demo');
   const hasMultipleDemos = data.demos && data.demos.length > 1;
-  if (hasMultipleDemos && !currentDemoParam && data.activeDemoId) {
-    url.searchParams.set('demo', data.activeDemoId);
+  if (hasMultipleDemos && (!currentDemoParam || !knownDemoIds.has(currentDemoParam))) {
+    let recoveredDemoId: string | null = null;
+
+    // Recover from malformed demo values like:
+    // demo=math-equations&mode=gather&role=student&player=iife
+    if (currentDemoParam?.includes('&')) {
+      const candidateDemoId = currentDemoParam.split('&')[0];
+      if (knownDemoIds.has(candidateDemoId)) {
+        recoveredDemoId = candidateDemoId;
+      }
+
+      const malformedParts = new URLSearchParams(currentDemoParam);
+      for (const key of ['mode', 'role', 'player']) {
+        if (!url.searchParams.get(key)) {
+          const recovered = malformedParts.get(key);
+          if (recovered) {
+            url.searchParams.set(key, recovered);
+          }
+        }
+      }
+    }
+
+    url.searchParams.set('demo', recoveredDemoId || data.activeDemoId || 'default');
     needsUpdate = true;
   }
 
   // Mode parameter (only for deliver route)
   const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
+  const playerParam = url.searchParams.get('player');
+
+  if (!playerParam || !['esm', 'iife'].includes(playerParam)) {
+    url.searchParams.set('player', 'esm');
+    needsUpdate = true;
+  }
+  if (url.searchParams.has('iifeSource')) {
+    // Backward compatibility: remove deprecated remote/local source selector.
+    url.searchParams.delete('iifeSource');
+    needsUpdate = true;
+  }
+
   if (isDeliverRoute) {
     const modeParam = url.searchParams.get('mode');
     if (modeParam && ['gather', 'view', 'evaluate'].includes(modeParam)) {
@@ -154,6 +214,14 @@ onMount(() => {
     goto(url.toString(), { replaceState: true, noScroll: true });
   }
 });
+
+function updatePlayerUrl(updates: { player?: 'esm' | 'iife' }) {
+  const url = new URL($page.url);
+  const nextPlayer = updates.player || currentPlayerType;
+  url.searchParams.set('player', nextPlayer);
+  url.searchParams.delete('iifeSource');
+  window.location.assign(url.toString());
+}
 
 // Bidirectional sync: URL ↔ stores
 $effect(() => {
@@ -222,8 +290,34 @@ function handleThemeToggle(event: Event) {
         </div>
       </a>
     </div>
-    <div class="navbar-center flex-shrink-0">
-      <DemoSelector demos={data.demos || []} activeDemoId={data.activeDemoId || 'default'} />
+    <div class="navbar-center flex-shrink-0 flex items-center gap-3">
+      <div class="flex flex-col items-center gap-2">
+        <div class="flex items-center gap-3">
+          <div class="join">
+            <button
+              class="btn btn-sm join-item"
+              class:btn-active={currentPlayerType === 'esm'}
+              onclick={() => updatePlayerUrl({ player: 'esm' })}
+              title="Use ESM player"
+            >
+              ESM
+            </button>
+            <button
+              class="btn btn-sm join-item"
+              class:btn-active={currentPlayerType === 'iife'}
+              onclick={() => updatePlayerUrl({ player: 'iife' })}
+              title="Use IIFE player"
+            >
+              IIFE
+            </button>
+          </div>
+          <DemoSelector demos={data.demos || []} activeDemoId={data.activeDemoId || 'default'} />
+        </div>
+
+        {#if currentPlayerType === 'iife'}
+          <IifeBuildPanel />
+        {/if}
+      </div>
     </div>
     <div class="navbar-end flex-shrink-0">
       <label class="swap swap-rotate">

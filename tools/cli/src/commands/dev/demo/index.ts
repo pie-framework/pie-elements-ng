@@ -1,7 +1,8 @@
 import { Command, Flags } from '@oclif/core';
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 
 /**
  * Start unified demo application for all PIE elements.
@@ -41,7 +42,8 @@ export default class DevDemo extends Command {
   static override args = {};
 
   private viteProcess: ChildProcess | null = null;
-  private lockFilePath = path.join(process.cwd(), '.demo-server.lock');
+  private lockFilePath = '';
+  private bundlerInstanceDir = '';
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(DevDemo);
@@ -58,9 +60,14 @@ export default class DevDemo extends Command {
 
     const demoAppPath = path.join(monorepoRoot, 'apps', 'element-demo');
 
+    this.lockFilePath = this.getLockFilePath(flags.port);
     this.acquireLock(flags.port);
+    this.bundlerInstanceDir = this.createBundlerInstanceDir(flags.port);
 
     this.log('Starting unified demo app for all PIE elements...');
+    this.log('');
+    this.log('Bundler mode: local (default)');
+    this.log(`Bundler workspace: ${this.bundlerInstanceDir}`);
     this.log('');
 
     try {
@@ -82,7 +89,9 @@ export default class DevDemo extends Command {
       if (!existsSync(demoAppPath)) {
         this.error(`Demo app not found at ${demoAppPath}`);
       }
-      this.viteProcess = await this.startVite(demoAppPath, flags.port, {});
+      this.viteProcess = await this.startVite(demoAppPath, flags.port, {
+        DEMO_BUNDLER_INSTANCE_DIR: this.bundlerInstanceDir,
+      });
 
       // 4. Open browser
       if (flags.open) {
@@ -219,6 +228,15 @@ export default class DevDemo extends Command {
       this.viteProcess = null;
     }
 
+    if (this.bundlerInstanceDir) {
+      try {
+        rmSync(this.bundlerInstanceDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors.
+      }
+      this.bundlerInstanceDir = '';
+    }
+
     this.releaseLock();
   }
 
@@ -255,6 +273,16 @@ export default class DevDemo extends Command {
       startedAt: new Date().toISOString(),
     };
     writeFileSync(this.lockFilePath, `${JSON.stringify(lockInfo, null, 2)}\n`);
+  }
+
+  private getLockFilePath(port: number): string {
+    return path.join(process.cwd(), `.demo-server.${port}.lock`);
+  }
+
+  private createBundlerInstanceDir(port: number): string {
+    // New run => new temp dir, so local cache is fresh after every restart.
+    const instanceId = `demo-${port}-${process.pid}-${Date.now()}`;
+    return path.join(tmpdir(), 'pie-element-demo-bundler', instanceId);
   }
 
   private releaseLock(): void {

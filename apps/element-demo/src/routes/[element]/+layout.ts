@@ -21,10 +21,13 @@ interface DemoConfig {
 export const load: LayoutLoad = async ({
   params,
   url,
+  parent,
 }: {
   params: { element: string };
   url: URL;
+  parent: () => Promise<Record<string, any>>;
 }) => {
+  const parentData = await parent();
   const elementName = params.element || 'multiple-choice';
   const requestedDemoId = url.searchParams.get('demo') || 'default';
 
@@ -95,6 +98,7 @@ export const load: LayoutLoad = async ({
   }
 
   return {
+    ...parentData,
     elementName,
     elementTitle,
     packageName,

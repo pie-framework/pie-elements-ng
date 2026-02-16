@@ -5,17 +5,17 @@
  */
 import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
 import AuthorView from '$lib/element-player/components/AuthorView.svelte';
+import IifeAuthorPlayer from '$lib/element-player/components/IifeAuthorPlayer.svelte';
+import { page } from '$app/stores';
+import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
 import {
   elementName,
   model,
-  session,
-  mode,
-  role,
-  partialScoring,
   controller,
-  capabilities,
   updateModel,
-  sessionVersion,
+  iifeBuildMeta,
+  iifeBuildLoading,
+  iifeBuildRequestVersion,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -23,6 +23,7 @@ let { data }: { data: LayoutData } = $props();
 
 const debug = false;
 let syncing = $state(false);
+const playerType = $derived<PlayerType>(parsePlayerType($page.url.searchParams.get('player')));
 
 // Handle model changes from configure component
 function handleModelChanged(event: CustomEvent) {
@@ -34,30 +35,94 @@ function handleModelChanged(event: CustomEvent) {
     syncing = false;
   }, 300);
 }
+
+function handleIifeControllerChanged(event: CustomEvent) {
+  const nextController = event.detail;
+  if (nextController) {
+    controller.set(nextController);
+  }
+}
+
+function handleBundleMeta(event: CustomEvent) {
+  iifeBuildMeta.set({ ...(event.detail || {}), stage: 'completed', error: null });
+}
+
+function handleBuildState(event: CustomEvent) {
+  const detail = (event.detail || {}) as {
+    loading?: boolean;
+    error?: string | null;
+    stage?: string;
+  };
+  iifeBuildLoading.set(!!detail.loading);
+  if (detail.stage) {
+    iifeBuildMeta.update((prev) => ({
+      source: prev?.source ?? 'local',
+      url: prev?.url ?? '',
+      hash: prev?.hash,
+      duration: prev?.duration,
+      cached: prev?.cached,
+      stage: detail.stage,
+      error: prev?.error ?? null,
+    }));
+  }
+  if (detail.error) {
+    iifeBuildMeta.update((prev) => ({
+      source: prev?.source ?? 'local',
+      url: prev?.url ?? '',
+      hash: prev?.hash,
+      duration: prev?.duration,
+      cached: prev?.cached,
+      stage: prev?.stage,
+      error: detail.error,
+    }));
+  }
+}
 </script>
 
-<PlayerLayout
-  elementName={data.elementName}
-  packageName={data.packageName}
-  bind:controller={$controller}
-  capabilities={data.capabilities}
-  {debug}
->
-  {#snippet children()}
-    {#if syncing}
-      <div class="sync-indicator">
-        <span class="spinner-small"></span>
-        Synchronizing...
-      </div>
-    {/if}
-    <AuthorView
-      elementName={$elementName}
+{#if playerType === 'iife'}
+  {#if syncing}
+    <div class="sync-indicator">
+      <span class="spinner-small"></span>
+      Synchronizing...
+    </div>
+  {/if}
+  <div class="h-full overflow-auto p-4">
+    <IifeAuthorPlayer
+      elementName={data.elementName}
+      packageName={data.packageName}
+      elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
       model={$model}
-      {debug}
+      rebuildVersion={$iifeBuildRequestVersion}
       on:model-changed={handleModelChanged}
+      on:controller-changed={handleIifeControllerChanged}
+      on:bundle-meta={handleBundleMeta}
+      on:build-state={handleBuildState}
     />
-  {/snippet}
-</PlayerLayout>
+  </div>
+{:else}
+  <PlayerLayout
+    elementName={data.elementName}
+    packageName={data.packageName}
+    bind:controller={$controller}
+    capabilities={data.capabilities}
+    {debug}
+  >
+    {#snippet children()}
+      {#if syncing}
+        <div class="sync-indicator">
+          <span class="spinner-small"></span>
+          Synchronizing...
+        </div>
+      {/if}
+      <AuthorView
+        elementName={$elementName}
+        model={$model}
+        {debug}
+        on:model-changed={handleModelChanged}
+      />
+    {/snippet}
+  </PlayerLayout>
+{/if}
 
 <style>
   .sync-indicator {

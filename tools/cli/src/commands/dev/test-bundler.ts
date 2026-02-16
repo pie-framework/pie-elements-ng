@@ -253,11 +253,16 @@ export default class TestBundler extends Command {
     const entryDir = join(workspaceDir, 'entries');
     mkdirSync(entryDir, { recursive: true });
 
-    const entries = generateEntries(dependencies, workspaceDir);
+    const requestedBundles: Array<'player' | 'client-player' | 'editor'> = [
+      'player',
+      'client-player',
+      'editor',
+    ];
+    const entries = generateEntries(dependencies, workspaceDir, requestedBundles);
 
-    writeFileSync(join(entryDir, 'player.js'), entries.player);
-    writeFileSync(join(entryDir, 'client-player.js'), entries['client-player']);
-    writeFileSync(join(entryDir, 'editor.js'), entries.editor);
+    writeFileSync(join(entryDir, 'player.js'), entries.player || '');
+    writeFileSync(join(entryDir, 'client-player.js'), entries['client-player'] || '');
+    writeFileSync(join(entryDir, 'editor.js'), entries.editor || '');
 
     // Create webpack config
     const bundleOutputPath = join(outputDir, hash);

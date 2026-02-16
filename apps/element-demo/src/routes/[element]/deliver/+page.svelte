@@ -3,9 +3,11 @@
  * Delivery Route
  * Shows the rendered PIE element for interaction
  */
-import { onMount } from 'svelte';
+import { page } from '$app/stores';
 import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
 import DeliveryView from '$lib/element-player/components/DeliveryView.svelte';
+import IifeElementPlayer from '$lib/element-player/components/IifeElementPlayer.svelte';
+import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
 import {
   model,
   session,
@@ -16,7 +18,9 @@ import {
   capabilities,
   updateSession,
   modelVersion,
-  sessionVersion,
+  iifeBuildMeta,
+  iifeBuildLoading,
+  iifeBuildRequestVersion,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -28,6 +32,7 @@ let elementSession = $state<any>({});
 let modelError = $state<string | null>(null);
 let modelRequestId = 0;
 const debug = false;
+const playerType = $derived<PlayerType>(parsePlayerType($page.url.searchParams.get('player')));
 
 // Normalize session - ensure it's an object without imposing specific structure
 const normalizeSession = (nextSession: any) => {
@@ -160,9 +165,52 @@ $effect(() => {
 
 // Handle session changes from the element
 function handleSessionChanged(event: CustomEvent) {
-  const newSession = event.detail;
+  const detail = event.detail as any;
+  const newSession = detail?.session ?? detail;
   elementSession = newSession;
   updateSession(newSession);
+}
+
+function handleIifeControllerChanged(event: CustomEvent) {
+  const nextController = event.detail;
+  if (nextController) {
+    controller.set(nextController);
+  }
+}
+
+function handleBundleMeta(event: CustomEvent) {
+  iifeBuildMeta.set({ ...(event.detail || {}), stage: 'completed', error: null });
+}
+
+function handleBuildState(event: CustomEvent) {
+  const detail = (event.detail || {}) as {
+    loading?: boolean;
+    error?: string | null;
+    stage?: string;
+  };
+  iifeBuildLoading.set(!!detail.loading);
+  if (detail.stage) {
+    iifeBuildMeta.update((prev) => ({
+      source: prev?.source ?? 'local',
+      url: prev?.url ?? '',
+      hash: prev?.hash,
+      duration: prev?.duration,
+      cached: prev?.cached,
+      stage: detail.stage,
+      error: prev?.error ?? null,
+    }));
+  }
+  if (detail.error) {
+    iifeBuildMeta.update((prev) => ({
+      source: prev?.source ?? 'local',
+      url: prev?.url ?? '',
+      hash: prev?.hash,
+      duration: prev?.duration,
+      cached: prev?.cached,
+      stage: prev?.stage,
+      error: detail.error,
+    }));
+  }
 }
 </script>
 
@@ -170,6 +218,7 @@ function handleSessionChanged(event: CustomEvent) {
   elementName={data.elementName}
   model={$model}
   session={$session}
+  {playerType}
   bind:mode={$mode}
   bind:playerRole={$role}
   bind:partialScoring={$partialScoring}
@@ -178,13 +227,28 @@ function handleSessionChanged(event: CustomEvent) {
   {debug}
 >
   {#snippet children()}
-    <DeliveryView
-      elementName={data.elementName}
-      {elementModel}
-      session={elementSession}
-      {debug}
-      on:session-changed={handleSessionChanged}
-    />
+    {#if playerType === 'iife'}
+      <IifeElementPlayer
+        elementName={data.elementName}
+        packageName={data.packageName}
+        elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+        model={elementModel}
+        session={elementSession}
+        rebuildVersion={$iifeBuildRequestVersion}
+        on:session-changed={handleSessionChanged}
+        on:controller-changed={handleIifeControllerChanged}
+        on:bundle-meta={handleBundleMeta}
+        on:build-state={handleBuildState}
+      />
+    {:else}
+      <DeliveryView
+        elementName={data.elementName}
+        {elementModel}
+        session={elementSession}
+        {debug}
+        on:session-changed={handleSessionChanged}
+      />
+    {/if}
     {#if modelError}
       <div class="model-error">{modelError}</div>
     {/if}

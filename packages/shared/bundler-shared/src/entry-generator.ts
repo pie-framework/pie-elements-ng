@@ -5,15 +5,15 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { BuildDependency } from './types.js';
+import type { BuildBundleName, BuildDependency } from './types.js';
 
-interface EntryFiles {
-  player: string;
-  'client-player': string;
-  editor: string;
-}
+type EntryFiles = Partial<Record<BuildBundleName, string>>;
 
-export function generateEntries(deps: BuildDependency[], workspaceDir: string): EntryFiles {
+export function generateEntries(
+  deps: BuildDependency[],
+  workspaceDir: string,
+  requestedBundles: BuildBundleName[]
+): EntryFiles {
   const imports: string[] = [];
   const playerExports: string[] = [];
   const clientExports: string[] = [];
@@ -38,9 +38,20 @@ export function generateEntries(deps: BuildDependency[], workspaceDir: string): 
     // Import main element
     imports.push(`import ${elementName} from '${dep.name}';`);
 
-    // Player: just Element
+    // Player: Element (+ optional Print)
     playerExports.push(`  '${dep.name}': { Element: ${elementName} },`);
     playerExports.push(`  '${dep.name}@${dep.version}': { Element: ${elementName} },`);
+
+    // Check for print component
+    const hasPrint = pkgJson.exports?.['./print'];
+    if (hasPrint) {
+      const printName = `${elementName}Print`;
+      imports.push(`import ${printName} from '${dep.name}/print';`);
+      playerExports[playerExports.length - 2] =
+        `  '${dep.name}': { Element: ${elementName}, Print: ${printName} },`;
+      playerExports[playerExports.length - 1] =
+        `  '${dep.name}@${dep.version}': { Element: ${elementName}, Print: ${printName} },`;
+    }
 
     // Check for controller
     const hasController = pkgJson.exports?.['./controller'];
@@ -92,31 +103,38 @@ export function generateEntries(deps: BuildDependency[], workspaceDir: string): 
     }
   }
 
-  return {
-    player: `
+  const output: EntryFiles = {};
+  if (requestedBundles.includes('player')) {
+    output.player = `
 ${imports.join('\n')}
 
 export default {
 ${playerExports.join('\n')}
 };
-    `.trim(),
+    `.trim();
+  }
 
-    'client-player': `
+  if (requestedBundles.includes('client-player')) {
+    output['client-player'] = `
 ${imports.join('\n')}
 
 export default {
 ${clientExports.join('\n')}
 };
-    `.trim(),
+    `.trim();
+  }
 
-    editor: `
+  if (requestedBundles.includes('editor')) {
+    output.editor = `
 ${imports.join('\n')}
 
 export default {
 ${editorExports.join('\n')}
 };
-    `.trim(),
-  };
+    `.trim();
+  }
+
+  return output;
 }
 
 function toElementName(pkgName: string): string {

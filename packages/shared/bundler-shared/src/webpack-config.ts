@@ -4,11 +4,13 @@
  */
 
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import webpack from 'webpack';
 import { EsbuildPlugin } from 'esbuild-loader';
 import { getLibPackagePathMap } from './dependency-resolver.js';
 
 const BUNDLE_LIB_PACKAGES = ['@pie-lib/pie-toolbox', '@pie-lib/math-rendering'];
+const SHIM_DIR = fileURLToPath(new URL('./shims', import.meta.url));
 
 interface WebpackConfigOptions {
   context: string;
@@ -42,13 +44,26 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
       minimize: true,
     },
 
-    devtool: 'source-map',
+    devtool: false,
 
     module: {
       rules: [
         {
           test: /\.(ts|tsx|js|jsx)$/,
-          exclude: /node_modules\/(?!(@pie-.*)\/).*/,
+          exclude: (filePath: string) => {
+            if (!filePath.includes('/node_modules/')) {
+              return false;
+            }
+            // Bun stores packages under node_modules/.bun/<pkg>@<ver>/node_modules/<pkg>.
+            // We still need to transpile PIE packages (including @pie-lib) inside that tree.
+            if (filePath.includes('/node_modules/.bun/@pie-')) {
+              return false;
+            }
+            if (/\/node_modules\/@pie-[^/]+\//.test(filePath)) {
+              return false;
+            }
+            return true;
+          },
           use: [
             {
               loader: 'esbuild-loader',
@@ -66,12 +81,12 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
         },
         {
           test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2|otf)$/,
-          use: [
-            {
-              loader: 'url-loader',
-              options: { limit: 10000 },
+          type: 'asset',
+          parser: {
+            dataUrlCondition: {
+              maxSize: 10000,
             },
-          ],
+          },
         },
       ],
     },
@@ -79,6 +94,11 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
     resolve: {
       alias: {
         '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
+        // Some linked workspace packages emit jsxDEV calls.
+        // In production bundles React's jsx-dev-runtime can end up without a callable jsxDEV.
+        // Route both import forms to a tiny shim backed by react/jsx-runtime.
+        'react/jsx-dev-runtime$': join(SHIM_DIR, 'react-jsx-dev-runtime.js'),
+        'react/jsx-dev-runtime.js$': join(SHIM_DIR, 'react-jsx-dev-runtime.js'),
         ...libPackagePathMap,
       },
       extensions: ['.ts', '.tsx', '.js', '.jsx'],

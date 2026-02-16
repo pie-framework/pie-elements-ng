@@ -12,6 +12,7 @@ import ScoringPanel from './ScoringPanel.svelte';
 import ModelPanel from './ModelPanel.svelte';
 import { loadController } from '../lib/demo-element-loader';
 import type { PieController } from '../lib/types';
+import type { PlayerType } from '$lib/config/player-runtime';
 
 // Props
 let {
@@ -20,6 +21,7 @@ let {
   session = {},
   mode = $bindable('gather'),
   playerRole = $bindable('student'),
+  playerType = 'esm',
   partialScoring = $bindable(true),
   controller = $bindable<PieController | null>(null),
   capabilities = undefined,
@@ -31,6 +33,7 @@ let {
   session: any;
   mode?: 'gather' | 'view' | 'evaluate';
   playerRole?: 'student' | 'instructor';
+  playerType?: PlayerType;
   partialScoring?: boolean;
   controller?: PieController | null;
   capabilities?: string[];
@@ -89,8 +92,9 @@ onMount(async () => {
 
     if (debug) console.log(`[delivery-player-layout] Loading element: ${elementName}`);
 
-    // Load controller if not provided
-    if (!controller) {
+    // For ESM mode, load controller from local modules if not provided.
+    // In IIFE mode, controller is supplied by the IIFE bundle loader.
+    if (playerType === 'esm' && !controller) {
       try {
         const ctrl = await loadController(packageName, '', debug);
         controller = ctrl;

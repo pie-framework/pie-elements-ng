@@ -40,6 +40,19 @@ export const model = writable<any>({});
 export const session = writable<any>({});
 export const controller = writable<any>(null);
 
+export interface IifeBuildMeta {
+  hash?: string;
+  duration?: number;
+  cached?: boolean;
+  source: 'local';
+  url: string;
+  stage?: string;
+  error?: string | null;
+}
+export const iifeBuildMeta = writable<IifeBuildMeta | null>(null);
+export const iifeBuildLoading = writable<boolean>(false);
+export const iifeBuildRequestVersion = writable<number>(0);
+
 // View mode and role
 export const mode = writable<'gather' | 'view' | 'evaluate'>('gather');
 export const role = writable<'student' | 'instructor'>('student');
@@ -85,6 +98,13 @@ export function initializeDemo(data: {
   if (data.activeDemoId) {
     activeDemoId.set(data.activeDemoId);
   }
+  iifeBuildMeta.set(null);
+  iifeBuildLoading.set(false);
+  iifeBuildRequestVersion.set(0);
+}
+
+export function requestIifeRebuild() {
+  iifeBuildRequestVersion.update((v) => v + 1);
 }
 
 /**
