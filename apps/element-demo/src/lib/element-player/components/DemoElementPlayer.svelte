@@ -25,6 +25,22 @@ let currentTagName = $state<string | null>(null);
 let error = $state<string | null>(null);
 let loading = $state(true);
 
+function cloneModelForElement<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+}
+
 // Watch for elementName changes and load element
 $effect(() => {
   if (elementName) {
@@ -38,7 +54,7 @@ $effect(() => {
 $effect(() => {
   if (elementInstance && model !== undefined) {
     try {
-      (elementInstance as any).model = model;
+      (elementInstance as any).model = cloneModelForElement(model);
       // Re-set session after model to ensure runtime state is reinitialized
       // The session setter initializes runtime state (like gssData) from the model
       const currentSession = (elementInstance as any).session;
@@ -99,7 +115,7 @@ async function loadElementInstance() {
 
     // Set initial properties
     if (model !== undefined) {
-      (elementInstance as any).model = model;
+      (elementInstance as any).model = cloneModelForElement(model);
     }
     const nextSession = session ?? (elementInstance as any).session;
     if (nextSession !== undefined) {

@@ -13,7 +13,8 @@
     "@pie-lib/translator": "workspace:*",
     "lodash-es": "^4.17.23",
     "prop-types": "^15.6.2",
-    "react-transition-group": "^4.4.5"
+    "react-transition-group": "^4.4.5",
+    "react": "^18.2.0"
   },
   "type": "module",
   "main": "./dist/index.js",

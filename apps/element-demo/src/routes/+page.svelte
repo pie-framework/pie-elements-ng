@@ -123,6 +123,7 @@ function handleThemeToggle(event: Event) {
         {#each filteredElements as element}
           <a
             href="/{element.name}"
+            data-sveltekit-reload
             class="card bg-base-100 shadow-lg hover:shadow-2xl transition-shadow duration-200"
           >
             <div class="card-body">

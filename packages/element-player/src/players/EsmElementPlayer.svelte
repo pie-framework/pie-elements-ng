@@ -57,6 +57,22 @@ let renderInFlight = false;
 let renderQueued = false;
 let sessionChangedHandler: ((e: Event) => void) | null = null;
 
+function cloneModelForElement<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+}
+
 const observerOptions: MutationObserverInit = {
   childList: true,
   subtree: true,
@@ -116,7 +132,7 @@ $effect(() => {
 $effect(() => {
   if (elementInstance && model !== undefined) {
     try {
-      (elementInstance as any).model = model;
+      (elementInstance as any).model = cloneModelForElement(model);
     } catch (err) {
       console.error('[esm-player] Error setting model:', err);
     }
@@ -246,7 +262,7 @@ async function loadElement() {
 
     // Set initial properties
     if (model !== undefined) {
-      (elementInstance as any).model = model;
+      (elementInstance as any).model = cloneModelForElement(model);
     }
     const nextSession = session ?? (elementInstance as any).session;
     if (nextSession !== undefined) {

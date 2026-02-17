@@ -56,6 +56,23 @@ let renderTimeout: number | null = null;
 let renderInFlight = false;
 let renderQueued = false;
 
+function cloneModelForPrint<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      // Last-resort fallback to avoid hard-failing render if cloning is not possible.
+      return value;
+    }
+  }
+}
+
 const observerOptions: MutationObserverInit = {
   childList: true,
   subtree: true,
@@ -116,7 +133,7 @@ $effect(() => {
 $effect(() => {
   if (elementInstance && model !== undefined) {
     try {
-      (elementInstance as any).model = model;
+      (elementInstance as any).model = cloneModelForPrint(model);
     } catch (err) {
       console.error('[esm-print-player] Error setting model:', err);
     }
@@ -253,7 +270,7 @@ async function loadElement() {
 
     // Set initial properties
     if (model !== undefined) {
-      (elementInstance as any).model = model;
+      (elementInstance as any).model = cloneModelForPrint(model);
     }
     if (role !== undefined) {
       (elementInstance as any).options = { role };

@@ -1,12 +1,18 @@
-<script lang="ts">
-import { onMount } from 'svelte';
+<svelte:options
+  customElement={{
+    shadow: 'none',
+    props: {
+      model: { type: 'Object' }
+    }
+  }}
+/>
 
+<script lang="ts">
 // Destructure props so Svelte can infer what to expose as custom element properties
 let { model = null }: { model?: any } = $props();
 
 let prompt = $state('');
-
-onMount(() => {
+$effect(() => {
   prompt = model?.prompt || '';
 });
 </script>

@@ -197,6 +197,21 @@ Verify that all React elements build successfully.
 bun run cli verify:react-build
 ```
 
+#### `verify:dependency-integrity`
+
+Inspect package imports and classify dependency usage as direct, transitive, hoist-reliant, or broken.
+
+```bash
+# Scan all element/lib-react packages
+bun run cli verify:dependency-integrity
+
+# Scan one package
+bun run cli verify:dependency-integrity --package @pie-element/ebsr
+
+# Fail on hoist-reliant imports too (not only broken)
+bun run cli verify:dependency-integrity --fail-on-hoist
+```
+
 ## CLI Development
 
 ```bash

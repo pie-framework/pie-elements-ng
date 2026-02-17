@@ -129,6 +129,12 @@ export async function loadIifePackage(opts: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       dependencies: [{ name: opts.packageName, version: opts.version }],
+      requestedBundles:
+        bundleTarget === 'editor'
+          ? ['editor']
+          : bundleTarget === 'player'
+            ? ['player']
+            : ['client-player'],
       forceRebuild: !!opts.forceRebuild,
       clearCache: !!opts.clearCache,
       wait: false,

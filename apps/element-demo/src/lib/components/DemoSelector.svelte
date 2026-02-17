@@ -4,7 +4,6 @@
  * Dropdown to select from multiple demo configurations
  */
 import { page } from '$app/stores';
-import { goto } from '$app/navigation';
 import type { DemoConfig } from '$lib/stores/demo-state';
 
 interface Props {

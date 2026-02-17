@@ -30,7 +30,8 @@
     "react-draggable": "^3.3.0",
     "react-input-autosize": "^2.2.1",
     "@pie-lib/config-ui": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "prop-types": "^15.6.1"
   },
   "type": "module",
   "main": "./dist/index.js",

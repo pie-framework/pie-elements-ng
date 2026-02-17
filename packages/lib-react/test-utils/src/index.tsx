@@ -10,7 +10,7 @@
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { render } from '@testing-library/react';
+import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 /**
@@ -31,7 +31,7 @@ const defaultTheme = createTheme();
  * const { getByRole } = renderWithTheme(<Button>Click me</Button>);
  * expect(getByRole('button')).toBeInTheDocument();
  */
-export function renderWithTheme(ui, options = {}) {
+export function renderWithTheme(ui: React.ReactElement, options: RenderOptions & { theme?: unknown } = {}): RenderResult {
   const { theme = defaultTheme, ...renderOptions } = options;
 
   function Wrapper({ children }) {
@@ -61,7 +61,7 @@ export function renderWithTheme(ui, options = {}) {
  *   { providers: [ReduxProvider, RouterProvider] }
  * );
  */
-export function renderWithProviders(ui, options = {}) {
+export function renderWithProviders(ui: React.ReactElement, options: RenderOptions & { theme?: unknown; providers?: React.ComponentType<{ children?: React.ReactNode }>[] } = {}): RenderResult {
   const { theme = defaultTheme, providers = [], ...renderOptions } = options;
 
   function Wrapper({ children }) {

@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "prebuild": "bun run generate-imports && biome check --write src/lib/element-imports.js src/lib/element-imports.d.ts",
+    "prebuild": "bun run generate-imports && bun run --cwd ../.. verify:no-local-paths apps/element-demo/src/lib/element-imports.js apps/element-demo/src/lib/element-imports.d.ts",
     "build": "vite build",
     "preview": "vite preview",
     "generate-imports": "bun run scripts/generate-element-imports.ts",
-    "predev": "bun run generate-imports",
+    "predev": "bun run generate-imports && bun run --cwd ../.. verify:no-local-paths apps/element-demo/src/lib/element-imports.js apps/element-demo/src/lib/element-imports.d.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",

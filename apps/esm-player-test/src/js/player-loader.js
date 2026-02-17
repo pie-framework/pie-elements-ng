@@ -9,6 +9,45 @@
 
 const JSDELIVR_BASE = 'https://cdn.jsdelivr.net/npm';
 
+function trimTrailingSlash(value = '') {
+  return value.replace(/\/+$/, '');
+}
+
+function readLocalFsRoots() {
+  const configured = globalThis.__PIE_LOCAL_FS__ || {};
+  return {
+    playersRoot: trimTrailingSlash(configured.playersRoot || ''),
+    elementsRoot: trimTrailingSlash(configured.elementsRoot || ''),
+  };
+}
+
+function assertLocalFsRoot(value, key) {
+  if (!value) {
+    throw new Error(
+      `Missing local fs root "${key}". Set window.__PIE_LOCAL_FS__.${key} to an absolute path.`
+    );
+  }
+  return value;
+}
+
+function toFsUrl(absolutePath) {
+  return `/@fs${absolutePath}`;
+}
+
+function getPlayersRoot() {
+  const { playersRoot } = readLocalFsRoots();
+  return assertLocalFsRoot(playersRoot, 'playersRoot');
+}
+
+function getElementsRoot() {
+  const { elementsRoot } = readLocalFsRoots();
+  return assertLocalFsRoot(elementsRoot, 'elementsRoot');
+}
+
+export function getLocalPlayersSharedUrl() {
+  return toFsUrl(`${getPlayersRoot()}/packages/players-shared/dist/index.js`);
+}
+
 /**
  * Load the PIE player
  * @param {Object} config - Player configuration
@@ -20,10 +59,8 @@ export async function loadPlayer(config) {
   let url;
 
   if (config.source === 'local') {
-    // Load from local pie-players workspace
-    // Use Vite's /@fs/ prefix to access files outside project root
-    url =
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-players/packages/pie-esm-player/dist/pie-esm-player.js';
+    // Load from local pie-players workspace (configured via window.__PIE_LOCAL_FS__).
+    url = toFsUrl(`${getPlayersRoot()}/packages/pie-esm-player/dist/pie-esm-player.js`);
   } else {
     // Load from npm via jsDelivr CDN
     const version = config.version === 'latest' ? '' : `@${config.version}`;
@@ -60,9 +97,9 @@ export async function loadElement(elementType, config) {
     const framework = config.framework || 'svelte';
 
     if (framework === 'react') {
-      url = `/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-react/${elementType}/dist/index.js`;
+      url = toFsUrl(`${getElementsRoot()}/packages/elements-react/${elementType}/dist/index.js`);
     } else {
-      url = `/@fs/Users/eelco.hillenius/dev/prj/pie/pie-elements-ng/packages/elements-svelte/${elementType}/dist/element.js`;
+      url = toFsUrl(`${getElementsRoot()}/packages/elements-svelte/${elementType}/dist/element.js`);
     }
   } else {
     // Load from npm via jsDelivr CDN
@@ -171,11 +208,9 @@ export async function preloadElements(item, elementConfigs) {
  */
 export async function checkLocalPlayerBuild() {
   try {
-    // Try to fetch the local player file using Vite's /@fs/ prefix
-    const response = await fetch(
-      '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-players/packages/pie-esm-player/dist/pie-esm-player.js',
-      { method: 'HEAD' }
-    );
+    const response = await fetch(toFsUrl(`${getPlayersRoot()}/packages/pie-esm-player/dist/pie-esm-player.js`), {
+      method: 'HEAD',
+    });
     return response.ok;
   } catch {
     return false;

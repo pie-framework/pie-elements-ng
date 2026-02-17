@@ -50,6 +50,10 @@
     "upstream:sync": "bun run cli upstream:sync",
     "upstream:sync:dry": "bun run cli upstream:sync --dry-run",
     "upstream:sync:element": "bun run cli upstream:sync --element",
+    "upstream:update": "bun run cli upstream:update",
+    "upstream:update:dry": "bun run cli upstream:update --dry-run",
+    "verify:no-local-paths": "node scripts/check-no-local-paths.mjs",
+    "verify:dependency-integrity": "bun run cli verify:dependency-integrity",
     "evals": "turbo run test:evals",
     "evals:ui": "turbo run test:evals:ui",
     "evals:headed": "turbo run test:evals:headed"

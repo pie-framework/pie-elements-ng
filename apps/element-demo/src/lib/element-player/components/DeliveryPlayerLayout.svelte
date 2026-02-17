@@ -203,6 +203,7 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
             <div class="flex flex-col gap-2">
               <a
                 href={getRoleUrl('student')}
+                data-sveltekit-reload
                 class="btn btn-sm justify-start"
                 class:btn-primary={playerRole === 'student'}
                 class:btn-outline={playerRole !== 'student'}
@@ -215,6 +216,7 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
               </a>
               <a
                 href={getRoleUrl('instructor')}
+                data-sveltekit-reload
                 class="btn btn-sm justify-start"
                 class:btn-primary={playerRole === 'instructor'}
                 class:btn-outline={playerRole !== 'instructor'}

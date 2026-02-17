@@ -14,7 +14,9 @@ export function generateEntries(
   workspaceDir: string,
   requestedBundles: BuildBundleName[]
 ): EntryFiles {
-  const imports: string[] = [];
+  const playerImports: string[] = [];
+  const clientImports: string[] = [];
+  const editorImports: string[] = [];
   const playerExports: string[] = [];
   const clientExports: string[] = [];
   const editorExports: string[] = [];
@@ -36,7 +38,9 @@ export function generateEntries(
     const elementName = toElementName(dep.name);
 
     // Import main element
-    imports.push(`import ${elementName} from '${dep.name}';`);
+    playerImports.push(`import ${elementName} from '${dep.name}';`);
+    clientImports.push(`import ${elementName} from '${dep.name}';`);
+    editorImports.push(`import ${elementName} from '${dep.name}';`);
 
     // Player: Element (+ optional Print)
     playerExports.push(`  '${dep.name}': { Element: ${elementName} },`);
@@ -46,7 +50,7 @@ export function generateEntries(
     const hasPrint = pkgJson.exports?.['./print'];
     if (hasPrint) {
       const printName = `${elementName}Print`;
-      imports.push(`import ${printName} from '${dep.name}/print';`);
+      playerImports.push(`import ${printName} from '${dep.name}/print';`);
       playerExports[playerExports.length - 2] =
         `  '${dep.name}': { Element: ${elementName}, Print: ${printName} },`;
       playerExports[playerExports.length - 1] =
@@ -57,7 +61,8 @@ export function generateEntries(
     const hasController = pkgJson.exports?.['./controller'];
     if (hasController) {
       const controllerName = `${elementName}Controller`;
-      imports.push(`import * as ${controllerName} from '${dep.name}/controller';`);
+      clientImports.push(`import * as ${controllerName} from '${dep.name}/controller';`);
+      editorImports.push(`import * as ${controllerName} from '${dep.name}/controller';`);
 
       // Client-player: Element + controller
       clientExports.push(
@@ -80,7 +85,7 @@ export function generateEntries(
     const hasAuthor = pkgJson.exports?.['./author'];
     if (hasAuthor) {
       const configureName = `${elementName}Configure`;
-      imports.push(`import ${configureName} from '${dep.name}/author';`);
+      editorImports.push(`import ${configureName} from '${dep.name}/author';`);
 
       // Editor: Add Configure
       if (hasController) {
@@ -106,7 +111,7 @@ export function generateEntries(
   const output: EntryFiles = {};
   if (requestedBundles.includes('player')) {
     output.player = `
-${imports.join('\n')}
+${playerImports.join('\n')}
 
 export default {
 ${playerExports.join('\n')}
@@ -116,7 +121,7 @@ ${playerExports.join('\n')}
 
   if (requestedBundles.includes('client-player')) {
     output['client-player'] = `
-${imports.join('\n')}
+${clientImports.join('\n')}
 
 export default {
 ${clientExports.join('\n')}
@@ -126,7 +131,7 @@ ${clientExports.join('\n')}
 
   if (requestedBundles.includes('editor')) {
     output.editor = `
-${imports.join('\n')}
+${editorImports.join('\n')}
 
 export default {
 ${editorExports.join('\n')}

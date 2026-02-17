@@ -29,6 +29,22 @@ let loading = $state(false);
 let error = $state<string | null>(null);
 let requestId = 0;
 
+function cloneModelForElement<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+}
+
 function getTagName(name: string): string {
   return `pie-iife-${name}`.replace(/[^a-z0-9-]/g, '-');
 }
@@ -93,7 +109,7 @@ async function loadElement() {
       currentTagName = tagName;
     }
 
-    (elementInstance as any).model = model ?? {};
+    (elementInstance as any).model = cloneModelForElement(model ?? {});
     (elementInstance as any).session = session ?? {};
 
     if (container && elementInstance.parentElement !== container) {
@@ -125,7 +141,7 @@ $effect(() => {
   if (!elementInstance) {
     return;
   }
-  (elementInstance as any).model = model ?? {};
+  (elementInstance as any).model = cloneModelForElement(model ?? {});
   (elementInstance as any).session = session ?? {};
 });
 </script>

@@ -18,7 +18,8 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "debug": "^4.1.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

@@ -58,13 +58,15 @@ yarn-error.log*
 esm-compatible-elements.json
 /.compatibility
 
-# Demo app - generated files (regenerated on upstream:sync)
-apps/element-demo/src/lib/element-imports.ts
+# Demo app - generated files
+apps/element-demo/src/lib/element-imports.js
+apps/element-demo/src/lib/element-imports.d.ts
 apps/element-demo/src/lib/elements/registry.ts
 apps/element-demo/src/lib/data/sample-configs/
 
 # Demo server lock file
 .demo-server.lock
+.demo-server.*.lock
 
 # Bundler outputs
 static/bundles/

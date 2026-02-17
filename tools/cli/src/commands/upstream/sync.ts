@@ -3,9 +3,10 @@ import { Logger } from '../../utils/logger.js';
 import { loadCompatibilityReport, type CompatibilityReport } from '../../utils/compatibility.js';
 import { getCurrentCommit } from '../../utils/git.js';
 import { printSyncSummary, createEmptySummary } from '../../lib/upstream/sync-summary.js';
-import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
+import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readdir } from '../../lib/upstream/sync-filesystem.js';
 import { getAllDeps } from '../../lib/upstream/sync-package-json.js';
@@ -16,6 +17,11 @@ import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy
 import { DEFAULT_PATHS, COMPATIBILITY_FILE, WORKSPACE } from '../../lib/upstream/sync-constants.js';
 import { assertReposExist } from '../../lib/upstream/repo-utils.js';
 import { addDevelopmentExports } from '../../lib/upstream/sync-dev-exports.js';
+import {
+  analyzePackageDependencyIntegrity,
+  collectWorkspacePackageDirs,
+  type ImportIntegrityStatus,
+} from '../../utils/dependency-integrity.js';
 
 interface SyncConfig {
   pieElements: string;
@@ -56,6 +62,19 @@ interface SyncResult {
   warnings: string[];
 }
 
+interface DependencyIntegrityRegression {
+  packageName: string;
+  packagePath: string;
+  dependency: string;
+  status: Exclude<ImportIntegrityStatus, 'direct' | 'transitive'>;
+}
+
+interface DependencyAutoFixResult {
+  packagesUpdated: number;
+  dependenciesAdded: number;
+  unresolved: Array<{ packageName: string; dependency: string }>;
+}
+
 export default class Sync extends Command {
   static override description = 'Synchronize code from upstream pie-elements repository';
 
@@ -83,6 +102,7 @@ export default class Sync extends Command {
   private logger = new Logger();
   private touchedElementPackages = new Set<string>();
   private touchedPieLibPackages = new Set<string>();
+  private preSyncProblemIntegrityByImport = new Map<string, ImportIntegrityStatus>();
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Sync);
@@ -130,6 +150,7 @@ export default class Sync extends Command {
     // Reset touched packages for this run
     this.touchedElementPackages = new Set<string>();
     this.touchedPieLibPackages = new Set<string>();
+    this.preSyncProblemIntegrityByImport = new Map<string, ImportIntegrityStatus>();
 
     this.logger.section('🔄 Syncing from upstream');
     this.logger.info(`   Source:      ${config.pieElements}`);
@@ -191,6 +212,9 @@ export default class Sync extends Command {
       this.logger.error(error instanceof Error ? error.message : String(error));
       this.error('Sync failed', { exit: 1 });
     }
+
+    // Capture current dependency integrity gaps before sync so we only fail on new regressions.
+    this.preSyncProblemIntegrityByImport = await this.captureCurrentProblemIntegrityBaseline(config);
 
     // Clean target directories first (ensures a clean slate for full syncs)
     await this.cleanTargetDirectories(config);
@@ -262,13 +286,44 @@ export default class Sync extends Command {
       await this.rewriteWorkspaceDependencies(config);
     }
 
+    // Auto-fix missing direct dependency declarations in touched package manifests.
+    // This makes sync resilient to upstream package.json drift.
+    if (!config.dryRun) {
+      const autoFix = await this.autoFixTouchedPackageDependencyDeclarations(config);
+      if (autoFix.unresolved.length > 0) {
+        for (const unresolved of autoFix.unresolved) {
+          result.warnings.push(
+            `Could not infer version for ${unresolved.dependency} in ${unresolved.packageName}`
+          );
+        }
+      }
+    }
+
+    // Apply targeted post-sync source patches for known declaration-emit issues.
+    if (!config.dryRun) {
+      await this.applyPostSyncBuildStabilizers(config);
+    }
+
+    // Verify synced packages for dependency integrity regressions (broken/hoist-reliant imports).
+    // This catches runtime failures like unresolved "prop-types" and newly introduced hoist reliance.
+    if (!config.dryRun) {
+      const integrityRegressions = await this.verifyTouchedPackageDependencyIntegrity(config);
+      if (integrityRegressions.length > 0) {
+        for (const issue of integrityRegressions) {
+          result.errors.push(
+            `${issue.packageName} (${issue.packagePath}) has new ${issue.status} dependency: ${issue.dependency}`
+          );
+        }
+      }
+    }
+
     // Add development export conditions for HMR support
     if (!config.dryRun && this.touchedElementPackages.size > 0) {
       await this.addDevelopmentExportsToPackages(config);
     }
 
     // Build by default (unless dry-run or explicitly skipped)
-    if (!config.dryRun && !config.skipBuild) {
+    if (!config.dryRun && !config.skipBuild && result.errors.length === 0) {
       await this.buildTouchedPackages(config, result);
     }
 
@@ -285,6 +340,14 @@ export default class Sync extends Command {
 
     // Print summary and handle errors
     printSyncSummary(syncSummary, compatibilityReport, config.pieElementsNg, this.logger);
+
+    if (result.warnings.length > 0) {
+      this.logger.warn('Sync completed with warnings:');
+      for (const warning of result.warnings) {
+        this.logger.warn(`  - ${warning}`);
+      }
+      this.log('');
+    }
 
     if (result.errors.length > 0) {
       this.error('Sync completed with errors', { exit: 1 });
@@ -437,6 +500,316 @@ export default class Sync extends Command {
         resolve(false);
       });
     });
+  }
+
+  private async verifyTouchedPackageDependencyIntegrity(
+    config: SyncConfig
+  ): Promise<DependencyIntegrityRegression[]> {
+    this.logger.section('🔎 Verifying dependency integrity regressions');
+
+    const packageDirs: string[] = [];
+    for (const element of this.touchedElementPackages) {
+      packageDirs.push(join(config.pieElementsNg, 'packages/elements-react', element));
+    }
+    for (const pieLib of this.touchedPieLibPackages) {
+      packageDirs.push(join(config.pieElementsNg, 'packages/lib-react', pieLib));
+    }
+
+    if (packageDirs.length === 0) {
+      this.logger.info('   No touched packages to verify\n');
+      return [];
+    }
+
+    const regressions: DependencyIntegrityRegression[] = [];
+    let existingIssuesIgnored = 0;
+
+    for (const packageDir of packageDirs) {
+      const analysis = await analyzePackageDependencyIntegrity(packageDir);
+      if (!analysis) {
+        continue;
+      }
+
+      for (const issue of analysis.issues) {
+        if (issue.status !== 'broken' && issue.status !== 'hoist') {
+          continue;
+        }
+
+        const key = this.integrityIssueKey(analysis.packageName, issue.dependency);
+        const previous = this.preSyncProblemIntegrityByImport.get(key);
+
+        if (previous === issue.status) {
+          existingIssuesIgnored++;
+          continue;
+        }
+
+        regressions.push({
+          packageName: analysis.packageName,
+          packagePath: analysis.packagePath,
+          dependency: issue.dependency,
+          status: issue.status,
+        });
+      }
+    }
+
+    if (regressions.length === 0) {
+      if (existingIssuesIgnored > 0) {
+        this.logger.info(
+          `   ✓ No new broken/hoist regressions (ignored ${existingIssuesIgnored} pre-existing issue(s))\n`
+        );
+      } else {
+        this.logger.info(`   ✓ No broken/hoist dependency integrity regressions\n`);
+      }
+      return [];
+    }
+
+    this.logger.error(`   Found ${regressions.length} new dependency integrity regression(s):\n`);
+    for (const regression of regressions) {
+      this.logger.error(
+        `   - ${regression.packageName}: ${regression.status} -> ${regression.dependency}`
+      );
+    }
+    this.log('');
+
+    return regressions;
+  }
+
+  private async captureCurrentProblemIntegrityBaseline(
+    config: SyncConfig
+  ): Promise<Map<string, ImportIntegrityStatus>> {
+    const baseline = new Map<string, ImportIntegrityStatus>();
+    const packageDirs = await collectWorkspacePackageDirs(config.pieElementsNg);
+
+    for (const packageDir of packageDirs) {
+      const analysis = await analyzePackageDependencyIntegrity(packageDir);
+      if (!analysis) {
+        continue;
+      }
+
+      for (const issue of analysis.issues) {
+        if (issue.status === 'broken' || issue.status === 'hoist') {
+          baseline.set(this.integrityIssueKey(analysis.packageName, issue.dependency), issue.status);
+        }
+      }
+    }
+
+    return baseline;
+  }
+
+  private integrityIssueKey(packageName: string, dependency: string): string {
+    return `${packageName}::${dependency}`;
+  }
+
+  private async autoFixTouchedPackageDependencyDeclarations(
+    config: SyncConfig
+  ): Promise<DependencyAutoFixResult> {
+    this.logger.section('🛠️  Auto-fixing dependency declarations');
+
+    const packageDirs = this.getTouchedPackageDirs(config);
+    if (packageDirs.length === 0) {
+      this.logger.info('   No touched packages to auto-fix\n');
+      return { packagesUpdated: 0, dependenciesAdded: 0, unresolved: [] };
+    }
+
+    const catalog = await this.buildDependencyVersionCatalog(config.pieElementsNg);
+    let packagesUpdated = 0;
+    let dependenciesAdded = 0;
+    const unresolved: Array<{ packageName: string; dependency: string }> = [];
+
+    for (const packageDir of packageDirs) {
+      const analysis = await analyzePackageDependencyIntegrity(packageDir);
+      if (!analysis) continue;
+
+      const pkgJsonPath = join(packageDir, 'package.json');
+      const pkgJson = (await loadPackageJson(pkgJsonPath)) as PackageJson | null;
+      if (!pkgJson) continue;
+
+      const declared = new Set<string>([
+        ...Object.keys(pkgJson.dependencies || {}),
+        ...Object.keys(pkgJson.devDependencies || {}),
+        ...Object.keys((pkgJson.peerDependencies as Record<string, string> | undefined) || {}),
+        ...Object.keys((pkgJson.optionalDependencies as Record<string, string> | undefined) || {}),
+      ]);
+
+      let modified = false;
+      if (!pkgJson.dependencies) {
+        pkgJson.dependencies = {};
+      }
+
+      for (const issue of analysis.issues) {
+        const dep = issue.dependency;
+        if (declared.has(dep)) {
+          continue;
+        }
+
+        const version = this.resolveDependencyVersion(config, dep, catalog);
+        if (!version) {
+          unresolved.push({ packageName: analysis.packageName, dependency: dep });
+          continue;
+        }
+
+        pkgJson.dependencies[dep] = version;
+        declared.add(dep);
+        modified = true;
+        dependenciesAdded++;
+      }
+
+      if (modified) {
+        await writePackageJson(pkgJsonPath, pkgJson);
+        packagesUpdated++;
+      }
+    }
+
+    if (dependenciesAdded === 0 && unresolved.length === 0) {
+      this.logger.info('   ✓ No missing declarations detected in touched packages\n');
+      return { packagesUpdated, dependenciesAdded, unresolved };
+    }
+
+    if (dependenciesAdded > 0) {
+      this.logger.info(
+        `   ✓ Added ${dependenciesAdded} dependency declaration(s) in ${packagesUpdated} package(s)`
+      );
+    }
+    if (unresolved.length > 0) {
+      this.logger.warn(`   Could not infer ${unresolved.length} dependency version(s)`);
+    }
+    this.log('');
+
+    return { packagesUpdated, dependenciesAdded, unresolved };
+  }
+
+  private getTouchedPackageDirs(config: SyncConfig): string[] {
+    const dirs: string[] = [];
+    for (const element of this.touchedElementPackages) {
+      dirs.push(join(config.pieElementsNg, 'packages/elements-react', element));
+    }
+    for (const pieLib of this.touchedPieLibPackages) {
+      dirs.push(join(config.pieElementsNg, 'packages/lib-react', pieLib));
+    }
+    return dirs.sort();
+  }
+
+  private async buildDependencyVersionCatalog(rootDir: string): Promise<Map<string, string>> {
+    const catalog = new Map<string, string>();
+
+    const addVersions = (record?: Record<string, string>) => {
+      if (!record) return;
+      for (const [name, version] of Object.entries(record)) {
+        if (!catalog.has(name)) {
+          catalog.set(name, version);
+        }
+      }
+    };
+
+    // Root package.json has the canonical versions we prefer.
+    const rootPkgPath = join(rootDir, 'package.json');
+    if (existsSync(rootPkgPath)) {
+      const rootPkg = (await loadPackageJson(rootPkgPath)) as PackageJson | null;
+      if (rootPkg) {
+        addVersions(rootPkg.dependencies as Record<string, string> | undefined);
+        addVersions(rootPkg.devDependencies as Record<string, string> | undefined);
+      }
+    }
+
+    // Add versions seen across workspace package manifests as fallback.
+    const workspacePackageDirs = await collectWorkspacePackageDirs(rootDir);
+    for (const packageDir of workspacePackageDirs) {
+      const pkgPath = join(packageDir, 'package.json');
+      if (!existsSync(pkgPath)) continue;
+      const pkg = (await loadPackageJson(pkgPath)) as PackageJson | null;
+      if (!pkg) continue;
+      addVersions(pkg.dependencies as Record<string, string> | undefined);
+      addVersions(pkg.devDependencies as Record<string, string> | undefined);
+      addVersions(pkg.peerDependencies as Record<string, string> | undefined);
+      addVersions(pkg.optionalDependencies as Record<string, string> | undefined);
+    }
+
+    return catalog;
+  }
+
+  private resolveDependencyVersion(
+    config: SyncConfig,
+    dep: string,
+    catalog: Map<string, string>
+  ): string | null {
+    const fallbackVersions: Record<string, string> = {
+      'js-combinatorics': '^2.1.2',
+      '@testing-library/react': '^16.3.0',
+    };
+
+    // Internal workspace packages should stay workspace-linked.
+    if (dep.startsWith('@pie-lib/')) {
+      const libName = dep.replace('@pie-lib/', '');
+      const localPath = join(config.pieElementsNg, 'packages/lib-react', libName, 'package.json');
+      if (existsSync(localPath)) {
+        return 'workspace:*';
+      }
+    }
+
+    if (dep.startsWith('@pie-element/')) {
+      const elementName = dep.replace('@pie-element/', '');
+      const elementPath = join(
+        config.pieElementsNg,
+        'packages/elements-react',
+        elementName,
+        'package.json'
+      );
+      if (existsSync(elementPath)) {
+        return 'workspace:*';
+      }
+
+      // Shared packages map @pie-element/shared-foo -> packages/shared/foo.
+      if (elementName.startsWith('shared-')) {
+        const sharedName = elementName.replace('shared-', '');
+        const sharedPath = join(config.pieElementsNg, 'packages/shared', sharedName, 'package.json');
+        if (existsSync(sharedPath)) {
+          return 'workspace:*';
+        }
+      }
+    }
+
+    return catalog.get(dep) || fallbackVersions[dep] || null;
+  }
+
+  private async applyPostSyncBuildStabilizers(config: SyncConfig): Promise<void> {
+    // @pie-lib/test-utils currently syncs JS that converts to TS with untyped exported render helpers.
+    // During declaration emit this can trigger TS2742 (non-portable inferred type paths).
+    // We patch signatures post-sync so upstream:update remains reliable.
+    const testUtilsIndex = join(config.pieElementsNg, 'packages/lib-react/test-utils/src/index.tsx');
+    if (!existsSync(testUtilsIndex)) {
+      return;
+    }
+
+    let content = await readFile(testUtilsIndex, 'utf-8');
+    let changed = false;
+
+    const oldImport = "import { render } from '@testing-library/react';";
+    const newImport =
+      "import { render, type RenderOptions, type RenderResult } from '@testing-library/react';";
+    if (content.includes(oldImport)) {
+      content = content.replace(oldImport, newImport);
+      changed = true;
+    }
+
+    const oldThemeFn = 'export function renderWithTheme(ui, options = {}) {';
+    const newThemeFn =
+      'export function renderWithTheme(ui: React.ReactElement, options: RenderOptions & { theme?: unknown } = {}): RenderResult {';
+    if (content.includes(oldThemeFn)) {
+      content = content.replace(oldThemeFn, newThemeFn);
+      changed = true;
+    }
+
+    const oldProvidersFn = 'export function renderWithProviders(ui, options = {}) {';
+    const newProvidersFn =
+      'export function renderWithProviders(ui: React.ReactElement, options: RenderOptions & { theme?: unknown; providers?: React.ComponentType<{ children?: React.ReactNode }>[] } = {}): RenderResult {';
+    if (content.includes(oldProvidersFn)) {
+      content = content.replace(oldProvidersFn, newProvidersFn);
+      changed = true;
+    }
+
+    if (changed) {
+      await writeFile(testUtilsIndex, content, 'utf-8');
+      this.logger.info('   ✓ Applied post-sync declaration fix for @pie-lib/test-utils');
+    }
   }
 
   private async rewriteWorkspaceDependencies(config: SyncConfig): Promise<void> {

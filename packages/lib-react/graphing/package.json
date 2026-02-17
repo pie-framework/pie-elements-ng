@@ -39,7 +39,8 @@
     "redux": "^4.0.1",
     "redux-undo": "^1.1.0",
     "@pie-lib/config-ui": "workspace:*",
-    "@dnd-kit/core": "^6.3.0"
+    "@dnd-kit/core": "^6.3.0",
+    "@dnd-kit/utilities": "^3.2.2"
   },
   "type": "module",
   "main": "./dist/index.js",

@@ -31,11 +31,27 @@ let mathObserver: MutationObserver | null = null;
 // Derived values
 const configureTag = $derived(`${elementName}-configure`);
 
+function cloneModelForConfigure<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+}
+
 // Update configure properties when model changes
 $effect(() => {
   if (configureInstance && model) {
     try {
-      (configureInstance as any).model = model;
+      (configureInstance as any).model = cloneModelForConfigure(model);
       if (debug) console.log('[author-view] model updated', model);
     } catch (err) {
       console.error('[author-view] Error updating configure model:', err);
@@ -89,7 +105,7 @@ onMount(() => {
 
     // Set initial model
     if (model) {
-      (configureInstance as any).model = model;
+      (configureInstance as any).model = cloneModelForConfigure(model);
       if (debug) console.log('[author-view] Initial model set:', model);
     }
   }

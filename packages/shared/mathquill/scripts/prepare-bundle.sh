@@ -12,7 +12,9 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PKG_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-UPSTREAM_DIR="${UPSTREAM_DIR:-/Users/eelco.hillenius/dev/prj/pie/mathquill}"
+REPO_ROOT="$(cd "$PKG_DIR/../../.." && pwd)"
+DEFAULT_UPSTREAM_DIR="$(cd "$REPO_ROOT/.." && pwd)/mathquill"
+UPSTREAM_DIR="${UPSTREAM_DIR:-$DEFAULT_UPSTREAM_DIR}"
 
 echo "📦 Preparing MathQuill bundle..."
 echo "   Package: $PKG_DIR"

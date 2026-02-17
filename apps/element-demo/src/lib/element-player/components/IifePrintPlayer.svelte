@@ -33,6 +33,22 @@ let error = $state<string | null>(null);
 let requestId = 0;
 let mathObserver: MutationObserver | null = null;
 
+function cloneModelForPrint<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+}
+
 function getPrintTagName(name: string): string {
   return `${name}-print`;
 }
@@ -75,7 +91,7 @@ async function loadPrintBundle() {
     if (!printInstance) {
       printInstance = document.createElement(printTag);
     }
-    (printInstance as any).model = model ?? {};
+    (printInstance as any).model = cloneModelForPrint(model ?? {});
     (printInstance as any).role = role;
 
     if (container && printInstance.parentElement !== container) {
@@ -99,7 +115,7 @@ $effect(() => {
   if (!printInstance) {
     return;
   }
-  (printInstance as any).model = model ?? {};
+  (printInstance as any).model = cloneModelForPrint(model ?? {});
   (printInstance as any).role = role;
 });
 

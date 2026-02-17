@@ -22,7 +22,6 @@ import InputLabel from '@mui/material/InputLabel';
 import { HorizontalKeypad, mq, updateSpans } from '@pie-lib/math-input';
 import { color } from '@pie-lib/render-ui';
 import { markFractionBaseSuperscripts } from './utils';
-import { countResponseAreas } from './response-area-count';
 
 const { commonMqFontStyles, commonMqKeyboardStyles, longdivStyles, supsubStyles } = mq.CommonMqStyles;
 const log = debug('@pie-lib:math-toolbar:editor-and-pad');
@@ -263,7 +262,6 @@ export class EditorAndPad extends React.Component {
     onFocus: PropTypes.func,
     onBlur: PropTypes.func,
     onChange: PropTypes.func.isRequired,
-    onDone: PropTypes.func,
     setKeypadInteraction: PropTypes.func,
   };
 
@@ -401,7 +399,7 @@ export class EditorAndPad extends React.Component {
     const { latex } = (this.input && this.input.props) || {};
 
     if (latex) {
-      const count = countResponseAreas(latex);
+      const count = (latex.match(/answerBlock/g) || []).length;
 
       return isEdit ? count === maxResponseAreas - 1 : count === maxResponseAreas;
     }
@@ -419,7 +417,6 @@ export class EditorAndPad extends React.Component {
       controlledKeypadMode,
       showKeypad,
       setKeypadInteraction,
-      onDone,
       noDecimal,
       hideInput,
       layoutForKeyPad,
@@ -501,7 +498,6 @@ export class EditorAndPad extends React.Component {
             onClick={this.onClick}
             noDecimal={noDecimal}
             setKeypadInteraction={setKeypadInteraction}
-            onRequestClose={onDone}
           />
         )}
       </MathToolbarContainer>

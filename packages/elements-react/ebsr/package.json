@@ -12,7 +12,9 @@
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "@mui/material": "^7.3.4",
+    "prop-types": "^15.6.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

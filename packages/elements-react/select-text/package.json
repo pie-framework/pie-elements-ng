@@ -18,7 +18,9 @@
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "debug": "^4.1.1",
+    "lodash-es": "^4.17.21"
   },
   "peerDependencies": {
     "react": "^18.0.0",

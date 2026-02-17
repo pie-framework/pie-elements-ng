@@ -25,7 +25,8 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "prop-types": "^15.6.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

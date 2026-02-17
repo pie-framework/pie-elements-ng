@@ -53,7 +53,7 @@ interface ControllerWebpackConfigOptions {
 
 const moduleRules: webpack.RuleSetRule[] = [
   {
-    test: /\.(ts|tsx|js|jsx)$/,
+    test: /\.(ts|tsx)$/,
     exclude: (filePath: string) => {
       if (!filePath.includes('/node_modules/')) {
         return false;
@@ -73,6 +73,31 @@ const moduleRules: webpack.RuleSetRule[] = [
         loader: 'esbuild-loader',
         options: {
           loader: 'tsx',
+          target: 'es2015',
+          legalComments: 'none',
+        },
+      },
+    ],
+  },
+  {
+    test: /\.(js|jsx)$/,
+    exclude: (filePath: string) => {
+      if (!filePath.includes('/node_modules/')) {
+        return false;
+      }
+      if (filePath.includes('/node_modules/.bun/@pie-')) {
+        return false;
+      }
+      if (/\/node_modules\/@pie-[^/]+\//.test(filePath)) {
+        return false;
+      }
+      return true;
+    },
+    use: [
+      {
+        loader: 'esbuild-loader',
+        options: {
+          loader: 'jsx',
           target: 'es2015',
           legalComments: 'none',
         },
@@ -114,8 +139,10 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
     ),
 
     optimization: {
+      // Dev/demo bundling prioritizes correctness and debuggability over size.
+      // Some large mixed ESM/CJS dependency graphs can break under aggressive minification.
       minimizer: [new EsbuildPlugin({ target: 'es2015' })],
-      minimize: true,
+      minimize: false,
     },
 
     devtool: false,
@@ -139,6 +166,12 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
     },
 
     plugins: [
+      // Some legacy PIE dependencies (notably MathQuill) expect global jQuery.
+      // Provide it consistently so mixed module/global consumers resolve `jQuery`.
+      new webpack.ProvidePlugin({
+        $: 'jquery',
+        jQuery: 'jquery',
+      }),
       // Version resolution plugin - handles different @pie-lib versions per element
       new webpack.NormalModuleReplacementPlugin(
         new RegExp(BUNDLE_LIB_PACKAGES.map((p) => `(${p})`).join('|')),
@@ -195,7 +228,7 @@ export function createControllerWebpackConfig(
     mode: 'production',
     optimization: {
       minimizer: [new EsbuildPlugin({ target: 'es2015' })],
-      minimize: true,
+      minimize: false,
     },
     devtool: false,
     module: {

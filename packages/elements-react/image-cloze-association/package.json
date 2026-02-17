@@ -21,7 +21,10 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "debug": "^4.1.1",
+    "lodash-es": "^4.17.21",
+    "react-transition-group": "^4.4.5"
   },
   "peerDependencies": {
     "react": "^18.0.0",

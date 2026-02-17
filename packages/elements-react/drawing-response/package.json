@@ -20,7 +20,8 @@
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "debug": "^4.1.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

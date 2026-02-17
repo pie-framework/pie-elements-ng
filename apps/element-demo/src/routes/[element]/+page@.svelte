@@ -57,7 +57,7 @@ const hasPrint = $derived(data.capabilities.includes('print'));
           <!-- Left Column: Actions -->
           <div class="space-y-6">
             <div>
-              <a href="/{data.elementName}/deliver" class="btn btn-primary btn-lg btn-block gap-2">
+              <a href="/{data.elementName}/deliver" data-sveltekit-reload class="btn btn-primary btn-lg btn-block gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -73,17 +73,17 @@ const hasPrint = $derived(data.capabilities.includes('print'));
               </a>
 
               <div class="flex items-center justify-center gap-2 text-sm mt-3">
-                <a href="/{data.elementName}/deliver" class="link link-primary">Delivery</a>
+                <a href="/{data.elementName}/deliver" data-sveltekit-reload class="link link-primary">Delivery</a>
                 {#if hasAuthor}
                   <span class="text-base-content/40">•</span>
-                  <a href="/{data.elementName}/author" class="link link-primary">Author</a>
+                  <a href="/{data.elementName}/author" data-sveltekit-reload class="link link-primary">Author</a>
                 {/if}
                 {#if hasPrint}
                   <span class="text-base-content/40">•</span>
-                  <a href="/{data.elementName}/print" class="link link-primary">Print</a>
+                  <a href="/{data.elementName}/print" data-sveltekit-reload class="link link-primary">Print</a>
                 {/if}
                 <span class="text-base-content/40">•</span>
-                <a href="/{data.elementName}/source" class="link link-primary">Source</a>
+                <a href="/{data.elementName}/source" data-sveltekit-reload class="link link-primary">Source</a>
               </div>
             </div>
 
@@ -98,7 +98,7 @@ const hasPrint = $derived(data.capabilities.includes('print'));
             </div>
 
             <div>
-              <a href="/" class="link link-neutral text-sm">← Back to Home</a>
+              <a href="/" data-sveltekit-reload class="link link-neutral text-sm">← Back to Home</a>
             </div>
           </div>
 
@@ -113,6 +113,7 @@ const hasPrint = $derived(data.capabilities.includes('print'));
                 {#each data.demos ?? [] as demo}
                   <a
                     href="/{data.elementName}/deliver?demo={demo.id}"
+                    data-sveltekit-reload
                     class="block p-3 rounded-lg hover:bg-base-300 transition-colors border border-base-300"
                   >
                     <div class="font-semibold text-sm">{demo.title}</div>
