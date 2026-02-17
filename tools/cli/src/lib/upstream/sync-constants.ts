@@ -25,6 +25,10 @@ export const EXCLUDED_UPSTREAM_ELEMENTS = [
   'math-templated',
 ] as const;
 
+// Upstream @pie-lib packages intentionally excluded from sync.
+// These are owned locally in pie-elements-ng while ESM/math behavior is stabilized.
+export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = ['math-input', 'math-rendering'] as const;
+
 // Build tool versions
 export const BUILD_TOOLS = {
   VITE: '^6.0.0',

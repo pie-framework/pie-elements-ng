@@ -1,15 +1,23 @@
 # MathQuill Package Maintenance Guide
 
-This package is a modernized ESM wrapper around the PIE Framework fork of MathQuill.
+This package is a legacy compatibility wrapper around MathQuill with PIE-specific extensions.
 
 ## Overview
 
-- **Upstream Source**: `../../../mathquill` (PIE fork)
+- **Runtime Dependency**: `mathquill@0.10.1` (npm package)
 - **Package Location**: `packages/shared/mathquill`
 - **Package Name**: `@pie-element/shared-mathquill`
 - **Version**: 1.1.4 (ESM modernized)
 - **Module Format**: ESM with TypeScript declarations
 - **Build System**: Vite + TypeScript
+
+## Current Ownership Model
+
+This package is currently treated as **locally owned** in `pie-elements-ng`:
+
+- Upstream sync for `packages/shared/mathquill` is intentionally blocked by default.
+- `pie upstream:sync-mathquill` requires an explicit `--force` override.
+- We optimize for local stability and reproducibility before considering upstream pulls.
 
 ## Package Structure
 
@@ -47,10 +55,25 @@ packages/shared/mathquill/
 
 The package uses a hybrid approach:
 
-1. **Legacy Bundle**: Source files are concatenated into an IIFE bundle
-2. **ESM Wrapper**: `src/index.ts` imports the bundle and exports the API
-3. **Vite Build**: Bundles everything into ESM format
-4. **TypeScript**: Generates type declarations for the wrapper
+1. **Legacy Runtime**: `mathquill/build/mathquill.js` (UMD/global runtime)
+2. **ESM Wrapper**: `src/index.ts` and `src/extensions/index.ts` expose a stable API
+3. **Global Setup**: jQuery is set on `window` before MathQuill initialization
+4. **Runtime Backports**: `src/extensions/pie/fork-backports.ts` patches selected unpublished fork fixes
+5. **Vite Build**: Bundles wrapper/extensions into ESM output
+6. **TypeScript**: Generates type declarations for wrapper APIs
+
+### Runtime Backports (Local)
+
+The current runtime baseline is `mathquill@0.10.1`, but we also apply local patches for
+behavior that exists in `pie-framework/mathquill` commits that were never published from
+upstream MathQuill:
+
+- Reflow trigger when editing text blocks (`TextBlock.write`)
+- LaTeX sanitization for repeated backslashes before parse (`renderLatexMath`)
+- Defensive horizontal scroll guard (`scrollHoriz`)
+
+When upgrading the runtime baseline, verify these behaviors still exist (natively or via patch)
+before removing `fork-backports.ts`.
 
 ### Build Commands
 
@@ -65,54 +88,23 @@ bun run dev
 bun run build
 ```
 
-## Updating from Upstream
+## Updating Dependency Baseline
 
-When the upstream PIE mathquill fork (`../../../mathquill`) is updated:
+When updating the MathQuill runtime dependency:
 
-### 1. Sync Source Files
+### 1. Update dependency and lockfile
 
-Copy updated files from upstream:
+Edit `package.json` dependency and run `bun install` from repo root.
 
-```bash
-cd packages/shared/mathquill
+### 2. Validate wrapper compatibility
 
-# Copy JavaScript sources
-cp -r ../../../mathquill/src/*.js src/
-cp -r ../../../mathquill/src/services src/
-cp -r ../../../mathquill/src/commands src/
+Confirm extension hooks and global setup still work:
 
-# Copy CSS
-cp -r ../../../mathquill/src/css src/
+- `src/extensions/index.ts`
+- `src/index.ts`
+- `src/mathquill.d.ts` / `src/types.ts`
 
-# Copy fonts
-cp -r ../../../mathquill/src/fonts src/
-
-# Copy documentation
-cp ../../../mathquill/README.md .
-cp ../../../mathquill/CHANGELOG.md .
-```
-
-### 2. Regenerate Bundle
-
-Run the bundle preparation script:
-
-```bash
-bun run cli upstream:sync-mathquill
-```
-
-This concatenates all source files in the correct order into `src/legacy/mathquill-bundle.js`.
-
-### 3. Update Version
-
-Update `package.json` version to match upstream + patch increment:
-
-```json
-{
-  "version": "1.1.5"  // If upstream is 1.1.3, use 1.1.4, 1.1.5, etc.
-}
-```
-
-### 4. Build and Test
+### 3. Build and test
 
 ```bash
 # Build the package
@@ -126,9 +118,9 @@ cd ../../elements-react/math-inline
 bun run build
 ```
 
-### 5. Update Changelog
+### 4. Update changelog/notes
 
-Document changes in `CHANGELOG.md` with the upstream version referenced.
+Document dependency and behavior changes in `CHANGELOG.md` and migration metadata.
 
 ## TypeScript Definitions
 
@@ -157,21 +149,22 @@ import '@pie-element/shared-mathquill/mathquill.css';
 
 ## jQuery Dependency
 
-MathQuill has a deep dependency on jQuery (~171 usages). This modernization keeps jQuery as a dependency for pragmatic reasons:
+MathQuill has a deep dependency on jQuery. This wrapper keeps jQuery as a runtime dependency for pragmatic compatibility:
 
-- **Kept**: jQuery as production dependency (^3.7.1)
+- **Kept**: jQuery as production dependency
 - **Global**: Made available via `window.jQuery` and `window.$`
-- **Bundle**: jQuery is externalized (not bundled with mathquill)
+- **Order-sensitive**: jQuery must be initialized before MathQuill UMD evaluates
 
 **Future consideration**: Gradually replace jQuery with native DOM APIs, but this is non-trivial.
 
 ## Workspace Integration
 
-This package is used by:
+This package is used by legacy/non-migrated paths:
 
-- `@pie-lib/math-input` (lib-react)
 - `@pie-element/math-inline` (elements-react)
-- `@pie-element/math-templated` (elements-react)
+- selected authoring/configure surfaces that still rely on MathQuill internals
+
+The modern delivery/input path now uses `@pie-element/shared-math-engine`.
 
 All consuming packages reference it as:
 ```json
@@ -184,13 +177,8 @@ All consuming packages reference it as:
 
 ## Sync Scripts Integration
 
-The upstream sync scripts in `tools/cli/src/lib/upstream/` automatically handle mathquill as a workspace package:
-
-**File**: `sync-package-manager.ts`
-
-The `isPieFrameworkWorkspacePackage()` function checks if `@pie-element/shared-mathquill` exists in `packages/shared/mathquill/package.json` and treats it as a workspace dependency (not external npm).
-
-**No changes needed** to sync scripts when updating mathquill - it's treated as a shared package, not synced from upstream.
+The upstream sync tooling treats this as a shared workspace package, and MathQuill upstream sync is
+blocked by default for local ownership.
 
 ## Troubleshooting
 
@@ -245,9 +233,9 @@ If you need to publish:
 ## Support
 
 For issues with:
-- **Upstream features**: Report to PIE mathquill fork: https://github.com/pie-framework/mathquill
-- **Build/packaging**: Check this MAINTENANCE.md or tools/cli sync scripts
-- **Type definitions**: Update `src/types.ts` and rebuild
+- **Dependency/runtime behavior**: check `package.json` + `src/extensions/index.ts` initialization
+- **Build/packaging**: check this MAINTENANCE.md and local sync guard configuration
+- **Type definitions**: update `src/types.ts` and rebuild
 
 ---
 

@@ -24,6 +24,7 @@
     "@tiptap/extension-document": "3.18.0",
     "@tiptap/extension-history": "3.18.0",
     "@tiptap/extension-text": "3.18.0",
+    "debug": "^4.4.3",
     "highlight.js": "^11.11.1",
     "lowlight": "^3.3.0"
   },

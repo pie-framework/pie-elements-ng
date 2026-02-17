@@ -215,6 +215,7 @@ export class RawPureToolbar extends React.Component {
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
+          onDone={onDone}
           error={error}
           maxResponseAreas={maxResponseAreas}
           setKeypadInteraction={setKeypadInteraction}

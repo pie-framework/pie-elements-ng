@@ -13,12 +13,35 @@
  * Base: github:desmosinc/mathquill
  */
 
-// Import extensions which initializes window.MathQuill with all patches
-import './extensions/index.js';
+import MQ from './extensions/index.js';
 
-// Export the base MathQuill object from window (has getInterface method)
-// This maintains backward compatibility with code that calls MathQuill.getInterface()
-const MathQuill = (typeof window !== 'undefined' && window.MathQuill) as any;
+type CompatMathQuill = typeof MQ & {
+  getInterface?: (version: number) => typeof MQ;
+};
+
+const MathQuill = MQ as CompatMathQuill;
+
+// Temporary compatibility shim while consumers migrate from getInterface(3) to direct API.
+const originalGetInterface = MathQuill.getInterface;
+MathQuill.getInterface = (version: number) => {
+  if (!originalGetInterface) {
+    return MQ;
+  }
+
+  try {
+    return originalGetInterface(version);
+  } catch {
+    // Older runtimes may not support the requested interface (for example v3).
+    for (const fallbackVersion of [2, 1]) {
+      try {
+        return originalGetInterface(fallbackVersion);
+      } catch {
+        // Continue trying lower versions.
+      }
+    }
+    return MQ;
+  }
+};
 
 export default MathQuill;
 

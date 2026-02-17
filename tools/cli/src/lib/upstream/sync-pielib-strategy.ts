@@ -16,6 +16,7 @@ import { fixImportsInFile, containsJsx } from './sync-imports.js';
 import { generatePieLibViteConfig } from './sync-vite-config.js';
 import { createPieLibTransformPipeline } from './sync-transforms.js';
 import { ensurePieLibPackageJson } from './sync-package-manager.js';
+import { EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES } from './sync-constants.js';
 
 interface InternalSyncResult {
   filesChecked: number;
@@ -107,6 +108,17 @@ export class PieLibStrategy implements SyncStrategy {
     }
 
     for (const pkg of packagesToSync) {
+      if (
+        EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES.includes(
+          pkg as (typeof EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES)[number]
+        )
+      ) {
+        if (logger.isVerbose()) {
+          logger.info(`  ⏭️  ${pkg}: skipping (locally owned package)`);
+        }
+        continue;
+      }
+
       // Skip if package doesn't exist
       const pkgSrcDir = join(upstreamLibDir, pkg, 'src');
       if (!existsSync(pkgSrcDir)) {

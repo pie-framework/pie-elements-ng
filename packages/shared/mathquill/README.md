@@ -6,7 +6,7 @@ MathQuill for PIE - Desmos fork with Khan patches, Learnosity features, and PIE 
 
 This package provides a **PIE-specific wrapper** around MathQuill that:
 
-- ✅ **No jQuery dependency** - Uses MathQuill v3 interface (jQuery-free)
+- ✅ **Direct PIE API** - Consumers use `MathField`/`StaticMath` directly
 - ✅ **All PIE extensions pre-loaded** - Matrix support, recurring decimals, LRN exponents
 - ✅ **Khan Academy patches** - Mobile keyboard fixes, i18n ARIA support
 - ✅ **Learnosity features** - Not-symbols (≮, ≯), empty detection
@@ -58,21 +58,25 @@ MathQuill.registerEmbed('myEmbed', (data) => ({
 }));
 ```
 
-## Important: No jQuery Required!
+## Important: jQuery is an internal runtime dependency
 
-**For PIE elements:** Do NOT call `getInterface(2)` - this wrapper exports the v3 interface directly:
+`mathquill/build/mathquill.js` is still a legacy UMD/global bundle and expects `window.jQuery` at
+module evaluation time. This package sets up jQuery globals internally, so consumers do not need to
+manage that manually.
+
+**For PIE elements:** Do NOT call `getInterface(2)` - this wrapper exports direct APIs:
 
 ```typescript
 // ❌ OLD (requires jQuery)
 import MathQuill from '@pie-element/shared-mathquill';
 const MQ = MathQuill.getInterface(2);
 
-// ✅ NEW (no jQuery needed)
+// ✅ NEW (direct API)
 import MathQuill from '@pie-element/shared-mathquill';
 const MQ = MathQuill;
 ```
 
-The v3 interface provides the same API without requiring jQuery:
+The wrapper provides these APIs:
 - `MathQuill.MathField()`
 - `MathQuill.StaticMath()`
 - `MathQuill.registerEmbed()`
@@ -131,7 +135,7 @@ interface MathQuillInterface {
 }
 ```
 
-All methods work identically to v2, but **without jQuery dependency**.
+All methods are exposed through the wrapper in a stable ESM package API.
 
 ## Migration from jQuery Version
 
@@ -158,6 +162,14 @@ if (typeof window !== 'undefined') {
 - **346KB** (63KB gzipped) - MathQuill + all extensions, no jQuery
 - Includes all PIE extensions pre-configured
 - CSS: 0.82KB (0.34KB gzipped)
+
+## Dependency Source and Version Policy
+
+- Runtime dependency is currently pinned to `mathquill@0.10.1`.
+- Migration provenance is tracked in `package.json` (`mathquillMigration`) and
+  `migration-config.json` (Desmos base + PIE/Khan/Learnosity patch layering).
+- Prefer fixed package versions for reproducible workspace builds. Avoid switching to floating fork
+  refs unless there is a specific, documented need.
 
 ## Testing
 

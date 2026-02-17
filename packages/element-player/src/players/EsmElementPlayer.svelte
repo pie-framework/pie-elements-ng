@@ -52,6 +52,55 @@ let error = $state<string | null>(null);
 let loading = $state(true);
 let mathRenderer: MathRenderer | null = null;
 let mathObserver: MutationObserver | null = null;
+let renderTimeout: number | null = null;
+let renderInFlight = false;
+let renderQueued = false;
+let sessionChangedHandler: ((e: Event) => void) | null = null;
+
+const observerOptions: MutationObserverInit = {
+  childList: true,
+  subtree: true,
+  attributes: false,
+  characterData: false,
+};
+
+const reconnectMathObserver = () => {
+  if (mathObserver && container) {
+    mathObserver.observe(container, observerOptions);
+  }
+};
+
+const renderMathSafely = async () => {
+  if (!mathRenderer || !container) {
+    return;
+  }
+
+  if (renderInFlight) {
+    renderQueued = true;
+    return;
+  }
+
+  renderInFlight = true;
+  if (mathObserver) {
+    mathObserver.disconnect();
+  }
+
+  try {
+    await mathRenderer(container);
+  } catch (err) {
+    console.error('[esm-player] Math rendering error:', err);
+  } finally {
+    renderInFlight = false;
+    reconnectMathObserver();
+
+    if (renderQueued) {
+      renderQueued = false;
+      queueMicrotask(() => {
+        void renderMathSafely();
+      });
+    }
+  }
+};
 
 // Watch for elementName changes and load element
 $effect(() => {
@@ -95,8 +144,15 @@ onMount(() => {
   }
 
   return () => {
+    if (renderTimeout) {
+      clearTimeout(renderTimeout);
+      renderTimeout = null;
+    }
     if (mathObserver) {
       mathObserver.disconnect();
+    }
+    if (sessionChangedHandler && elementInstance) {
+      elementInstance.removeEventListener('session-changed', sessionChangedHandler);
     }
   };
 });
@@ -108,9 +164,10 @@ $effect(() => {
     if (mathObserver) {
       mathObserver.disconnect();
     }
-
-    // Create observer to catch dynamic content changes
-    let renderTimeout: number | null = null;
+    if (renderTimeout) {
+      clearTimeout(renderTimeout);
+      renderTimeout = null;
+    }
 
     mathObserver = new MutationObserver(() => {
       if (renderTimeout) {
@@ -118,25 +175,14 @@ $effect(() => {
       }
 
       renderTimeout = window.setTimeout(() => {
-        if (mathRenderer && container) {
-          mathRenderer(container).catch((err) => {
-            console.error('[esm-player] Math rendering error:', err);
-          });
-        }
+        void renderMathSafely();
       }, 100);
     });
 
-    mathObserver.observe(container, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-      characterData: false,
-    });
+    reconnectMathObserver();
 
     // Initial render
-    mathRenderer(container).catch((err) => {
-      console.error('[esm-player] Initial math rendering error:', err);
-    });
+    void renderMathSafely();
   }
 });
 
@@ -146,11 +192,7 @@ $effect(() => {
     // Use requestAnimationFrame to render after React/element updates DOM
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (mathRenderer && container) {
-          mathRenderer(container).catch((err) => {
-            console.error('[esm-player] Math rendering error:', err);
-          });
-        }
+        void renderMathSafely();
       });
     });
   }
@@ -212,7 +254,10 @@ async function loadElement() {
     }
 
     // Listen for session changes - simple dispatch up (no loop risk)
-    elementInstance.addEventListener('session-changed', (e: Event) => {
+    if (sessionChangedHandler && elementInstance) {
+      elementInstance.removeEventListener('session-changed', sessionChangedHandler);
+    }
+    sessionChangedHandler = (e: Event) => {
       e.stopPropagation();
       const customEvent = e as CustomEvent;
       const nextSession = (elementInstance as any).session;
@@ -223,7 +268,8 @@ async function loadElement() {
         complete: (customEvent.detail as any)?.complete,
         component: (customEvent.detail as any)?.component,
       });
-    });
+    };
+    elementInstance.addEventListener('session-changed', sessionChangedHandler);
 
     // Clear container and add element if not already attached
     if (container) {

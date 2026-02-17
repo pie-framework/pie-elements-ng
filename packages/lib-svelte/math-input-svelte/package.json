@@ -26,7 +26,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@pie-element/shared-mathquill": "workspace:*"
+    "@pie-element/shared-math-engine": "workspace:*"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"

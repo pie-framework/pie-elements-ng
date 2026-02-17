@@ -1,49 +1,35 @@
-# MathQuill Integration for PIE Elements
+# MathQuill Integration for PIE Elements (Legacy Path)
 
 **Package:** `@pie-element/shared-mathquill`
-**Version:** jQuery-free v3 wrapper
-**Status:** ✅ Complete
+**Version:** compatibility wrapper around `mathquill@0.10.1`
+**Status:** Transitional legacy path (being phased out)
 
 ## What This Is
 
-A PIE-specific wrapper around MathQuill (Desmos fork) that provides a jQuery-free interface with all PIE extensions pre-loaded.
+A PIE-specific wrapper around MathQuill (Desmos fork) that provides a compatibility interface with PIE extensions pre-loaded.
 
-## Key Features
+The modern path is now `@pie-element/shared-math-engine` (see `docs/MATH_ENGINE.md`), which is ESM-native and does not rely on the MathQuill runtime.
 
-- ✅ **No jQuery dependency** - Uses MathQuill v3 interface (saves 198KB)
-- ✅ **Bundle: 346KB** (down from 544KB with jQuery)
-- ✅ **All extensions pre-loaded:**
-  - Matrices with keyboard shortcuts (Shift-Enter, Shift-Space)
-  - Khan Academy mobile keyboard fixes
-  - Khan Academy i18n ARIA support
-  - Learnosity recurring decimals (`\dot`)
-  - Learnosity not-symbols (`\nless`, `\ngtr`)
-  - PIE LRN exponents (`\lrnexponent`, `\lrnsquaredexponent`)
+## Legacy Scope
 
-## Usage
+- Uses MathQuill UMD runtime and compatibility patches.
+- Depends on `jquery` at runtime for UMD initialization.
+- Keeps legacy behavior stable while modern consumers move to `@pie-element/shared-math-engine`.
+
+## Legacy Usage
 
 ```typescript
-import MathQuill from "@pie-element/shared-mathquill";
-import "@pie-element/shared-mathquill/mathquill.css";
+import MathQuill from '@pie-element/shared-mathquill';
+import '@pie-element/shared-mathquill/mathquill.css';
 
-// MathQuill is ready to use - no getInterface() call needed
-const field = MathQuill.MathField(element, {
-  handlers: {
-    edit: () => console.log("edited!"),
-  },
-});
+const field = MathQuill.MathField(element, { handlers: { edit: () => {} } });
 ```
 
-### Migration from Old Pattern
+### Modern Path
 
 ```typescript
-// ❌ OLD (requires jQuery)
-import MathQuill from "@pie-element/shared-mathquill";
-const MQ = MathQuill.getInterface(2);
-
-// ✅ NEW (no jQuery)
-import MathQuill from "@pie-element/shared-mathquill";
-const MQ = MathQuill; // Direct use
+// Prefer the modern runtime for new work:
+import { createField } from '@pie-element/shared-math-engine';
 ```
 
 ## Implementation
@@ -105,10 +91,8 @@ During integration, simplified the demo app's reactivity patterns (see [SVELTE_R
 
 **Key lesson:** Keep reactivity simple for web components that do DOM mutations.
 
-## Benefits
+## Migration Direction
 
-- **198KB smaller bundle** (36% reduction)
-- **No jQuery dependency** across all PIE elements
-- **Consistent API** - Single wrapper for all elements
-- **Pre-configured** - All extensions loaded automatically
-- **Maintainable** - One place to update MathQuill for entire project
+- New implementation work should target `@pie-element/shared-math-engine`.
+- `@pie-element/shared-mathquill` should only be used where migration is still pending.
+- Once authoring and any remaining legacy flows are migrated, this package can be removed.

@@ -13,6 +13,8 @@
  * DO NOT EDIT MANUALLY - Regenerate with: pie mathquill:migrate
  */
 
+import './setup-jquery-global.js';
+
 // Import MathQuill - this loads the UMD bundle which sets up window.MathQuill
 import 'mathquill/build/mathquill.js';
 import type { MathQuillInterface } from 'mathquill';
@@ -23,6 +25,8 @@ import type { MathQuillInterface } from 'mathquill';
 // Access the global MathQuill object that the UMD bundle creates
 // Type is defined in types.ts
 const MathQuill = window.MathQuill!;
+const PIE_PATCH_FLAG = '__pieExtensionsApplied';
+let initializedMQ: MathQuillInterface | null = null;
 
 // Khan Academy patches
 import {
@@ -41,6 +45,7 @@ import {
 import {
   addMatrixCommands,
   addLRNExponent,
+  applyForkBackports,
 } from './pie/index.js';
 
 // Import PIE matrix styles
@@ -58,23 +63,63 @@ import './pie/styles.css';
  * @returns Initialized MathQuill interface
  */
 export function initializeMathQuill(): MathQuillInterface {
-  // Get MathQuill v3 interface (no jQuery in public API)
-  const MQ = MathQuill.getInterface(3);
+  if (initializedMQ) {
+    return initializedMQ;
+  }
+
+  // Prefer v3 API when available, but gracefully fall back for older runtimes.
+  const MQ = getSupportedInterface(MathQuill as any);
+  const patchTarget = getPatchTarget(MathQuill as any, MQ as any);
+
+  // Avoid patching internals repeatedly when the module graph is loaded more than once.
+  if ((patchTarget as any)[PIE_PATCH_FLAG]) {
+    initializedMQ = MQ as unknown as MathQuillInterface;
+    return initializedMQ;
+  }
 
   // Apply Khan Academy patches (use any since they access internals)
-  applyMobileKeyboardFixes(MQ as any);
-  applyI18nAriaSupport(MQ as any);
+  applyMobileKeyboardFixes(patchTarget as any);
+  applyI18nAriaSupport(patchTarget as any);
 
   // Add Learnosity features
-  addRecurringDecimal(MQ as any);
-  addNotSymbols(MQ as any);
-  applyEmptyMethod(MQ as any);
+  addRecurringDecimal(patchTarget as any);
+  addNotSymbols(patchTarget as any);
+  applyEmptyMethod(patchTarget as any);
 
   // Add PIE features
-  addMatrixCommands(MQ as any);
-  addLRNExponent(MQ as any);
+  applyForkBackports(patchTarget as any);
+  addMatrixCommands(patchTarget as any);
+  addLRNExponent(patchTarget as any);
 
-  return MQ as unknown as MathQuillInterface;
+  (patchTarget as any)[PIE_PATCH_FLAG] = true;
+  initializedMQ = MQ as unknown as MathQuillInterface;
+  return initializedMQ;
+}
+
+function getSupportedInterface(mathQuillGlobal: any): any {
+  if (typeof mathQuillGlobal?.getInterface !== 'function') {
+    return mathQuillGlobal;
+  }
+
+  for (const version of [3, 2, 1]) {
+    try {
+      return mathQuillGlobal.getInterface(version);
+    } catch {
+      // Try the next lower interface version.
+    }
+  }
+
+  return mathQuillGlobal;
+}
+
+function getPatchTarget(mathQuillGlobal: any, mathQuillInterface: any): any {
+  if (mathQuillInterface?.L) {
+    return mathQuillInterface;
+  }
+  if (mathQuillGlobal?.L) {
+    return mathQuillGlobal;
+  }
+  return mathQuillInterface;
 }
 
 // Create and export initialized instance (v3 API - no jQuery required)
@@ -83,7 +128,7 @@ const MQ = initializeMathQuill();
 /**
  * PIE-specific MathQuill wrapper
  *
- * This provides a v3 interface without jQuery dependency.
+ * This provides a v3 interface without requiring consumers to manage jQuery globals.
  * All PIE elements should use this instead of calling getInterface() directly.
  *
  * Features:

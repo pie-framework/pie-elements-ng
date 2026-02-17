@@ -1,0 +1,43 @@
+{
+  "name": "@pie-element/shared-math-engine",
+  "version": "0.1.0",
+  "description": "Modern ESM math engine for PIE input and static rendering",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./svelte/PopupKeypad.svelte": "./src/svelte/PopupKeypad.svelte"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
+    "dev": "vite build --watch",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "react": "^18.2.0",
+    "svelte": "^5.51.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.17"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

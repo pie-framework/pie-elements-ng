@@ -52,6 +52,54 @@ let error = $state<string | null>(null);
 let loading = $state(true);
 let mathRenderer: MathRenderer | null = null;
 let mathObserver: MutationObserver | null = null;
+let renderTimeout: number | null = null;
+let renderInFlight = false;
+let renderQueued = false;
+
+const observerOptions: MutationObserverInit = {
+  childList: true,
+  subtree: true,
+  attributes: false,
+  characterData: false,
+};
+
+const reconnectMathObserver = () => {
+  if (mathObserver && container) {
+    mathObserver.observe(container, observerOptions);
+  }
+};
+
+const renderMathSafely = async () => {
+  if (!mathRenderer || !container) {
+    return;
+  }
+
+  if (renderInFlight) {
+    renderQueued = true;
+    return;
+  }
+
+  renderInFlight = true;
+  if (mathObserver) {
+    mathObserver.disconnect();
+  }
+
+  try {
+    await mathRenderer(container);
+  } catch (err) {
+    console.error('[esm-print-player] Math rendering error:', err);
+  } finally {
+    renderInFlight = false;
+    reconnectMathObserver();
+
+    if (renderQueued) {
+      renderQueued = false;
+      queueMicrotask(() => {
+        void renderMathSafely();
+      });
+    }
+  }
+};
 
 // Watch for elementName changes and load element
 $effect(() => {
@@ -107,6 +155,10 @@ onMount(() => {
   }
 
   return () => {
+    if (renderTimeout) {
+      clearTimeout(renderTimeout);
+      renderTimeout = null;
+    }
     if (mathObserver) {
       mathObserver.disconnect();
     }
@@ -120,9 +172,10 @@ $effect(() => {
     if (mathObserver) {
       mathObserver.disconnect();
     }
-
-    // Create observer to catch dynamic content changes in print view
-    let renderTimeout: number | null = null;
+    if (renderTimeout) {
+      clearTimeout(renderTimeout);
+      renderTimeout = null;
+    }
 
     mathObserver = new MutationObserver(() => {
       if (renderTimeout) {
@@ -130,25 +183,14 @@ $effect(() => {
       }
 
       renderTimeout = window.setTimeout(() => {
-        if (mathRenderer && container) {
-          mathRenderer(container).catch((err) => {
-            console.error('[esm-print-player] Math rendering error:', err);
-          });
-        }
+        void renderMathSafely();
       }, 150); // Longer debounce for print (less interactive)
     });
 
-    mathObserver.observe(container, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-      characterData: false,
-    });
+    reconnectMathObserver();
 
     // Initial render
-    mathRenderer(container).catch((err) => {
-      console.error('[esm-print-player] Initial math rendering error:', err);
-    });
+    void renderMathSafely();
   }
 });
 
@@ -158,11 +200,7 @@ $effect(() => {
     // Use requestAnimationFrame to render after element updates DOM
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (mathRenderer && container) {
-          mathRenderer(container).catch((err) => {
-            console.error('[esm-print-player] Math rendering error:', err);
-          });
-        }
+        void renderMathSafely();
       });
     });
   }

@@ -42,11 +42,23 @@ After running this command, you should:
       description: 'Show detailed output',
       default: false,
     }),
+    force: Flags.boolean({
+      description: 'Bypass local ownership guard and sync anyway',
+      default: false,
+    }),
   };
 
   async run(): Promise<void> {
     const { flags } = await this.parse(SyncMathQuill);
     const logger = new Logger(flags.verbose);
+
+    if (!flags.force) {
+      logger.warn(
+        '⛔ MathQuill upstream sync is blocked: packages/shared/mathquill is locally owned in pie-elements-ng.'
+      );
+      logger.info('   Use --force only for intentional one-off recovery operations.');
+      return;
+    }
 
     // Resolve paths
     const workspaceRoot = process.cwd();

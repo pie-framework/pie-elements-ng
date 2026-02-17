@@ -10,6 +10,7 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/math-input": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "debug": "^4.1.1",
     "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2"

@@ -10,7 +10,7 @@ export default defineConfig({
     },
     minify: false,
     rollupOptions: {
-      external: ['mathquill', 'mathquill/build/mathquill.js'], // MathQuill UMD bundle is external dependency
+      external: ['jquery', 'mathquill', 'mathquill/build/mathquill.js'], // Runtime deps stay external in ESM output
       output: {
         assetFileNames: (assetInfo) => {
           // Rename CSS to mathquill.css

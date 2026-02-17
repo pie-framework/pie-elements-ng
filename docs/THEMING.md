@@ -241,6 +241,19 @@ Used by: `number-line` element
 | `--pie-zoom` | `drawing-response`, `hotspot` | Zoom scale factor (read from inline styles) |
 | `--pie-primary-text` | `likert` | Primary text color (nested fallback: `var(--pie-text, #000000)`) |
 
+### Math Keypad Theming (New)
+
+The refreshed keypad in `@pie-lib/math-input` now relies on PIE semantic tokens rather than hardcoded palette values:
+
+- key text: `--pie-text`
+- standard/template lane key background/hover: `--pie-blue-grey-100` / `--pie-blue-grey-300`
+- operator lane key background/hover: `--pie-blue-grey-300` / `--pie-blue-grey-600`
+- deterministic placeholder fill (template pink boxes): `--pie-secondary-light`
+- focus ring: `--pie-focus-checked-border`
+- key borders: `--pie-border-light`
+
+All deterministic keycap primitives (fraction bars, root bars, geometry overlays, placeholder boxes) use these tokens, so keypad theming follows PIE light/dark theme packs without MathJax-specific overrides.
+
 ---
 
 **Total: 60+ CSS variables** (43 core + 17 component-specific)
