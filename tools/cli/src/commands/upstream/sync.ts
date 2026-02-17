@@ -214,7 +214,8 @@ export default class Sync extends Command {
     }
 
     // Capture current dependency integrity gaps before sync so we only fail on new regressions.
-    this.preSyncProblemIntegrityByImport = await this.captureCurrentProblemIntegrityBaseline(config);
+    this.preSyncProblemIntegrityByImport =
+      await this.captureCurrentProblemIntegrityBaseline(config);
 
     // Clean target directories first (ensures a clean slate for full syncs)
     await this.cleanTargetDirectories(config);
@@ -587,7 +588,10 @@ export default class Sync extends Command {
 
       for (const issue of analysis.issues) {
         if (issue.status === 'broken' || issue.status === 'hoist') {
-          baseline.set(this.integrityIssueKey(analysis.packageName, issue.dependency), issue.status);
+          baseline.set(
+            this.integrityIssueKey(analysis.packageName, issue.dependency),
+            issue.status
+          );
         }
       }
     }
@@ -760,7 +764,12 @@ export default class Sync extends Command {
       // Shared packages map @pie-element/shared-foo -> packages/shared/foo.
       if (elementName.startsWith('shared-')) {
         const sharedName = elementName.replace('shared-', '');
-        const sharedPath = join(config.pieElementsNg, 'packages/shared', sharedName, 'package.json');
+        const sharedPath = join(
+          config.pieElementsNg,
+          'packages/shared',
+          sharedName,
+          'package.json'
+        );
         if (existsSync(sharedPath)) {
           return 'workspace:*';
         }
@@ -774,7 +783,10 @@ export default class Sync extends Command {
     // @pie-lib/test-utils currently syncs JS that converts to TS with untyped exported render helpers.
     // During declaration emit this can trigger TS2742 (non-portable inferred type paths).
     // We patch signatures post-sync so upstream:update remains reliable.
-    const testUtilsIndex = join(config.pieElementsNg, 'packages/lib-react/test-utils/src/index.tsx');
+    const testUtilsIndex = join(
+      config.pieElementsNg,
+      'packages/lib-react/test-utils/src/index.tsx'
+    );
     if (!existsSync(testUtilsIndex)) {
       return;
     }

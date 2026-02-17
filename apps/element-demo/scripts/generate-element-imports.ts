@@ -31,7 +31,10 @@ interface ElementMetadata {
   hasSession: boolean;
 }
 
-function packageSpecifier(elementName: string, entryPoint: 'delivery' | 'controller' | 'author' | 'print'): string {
+function packageSpecifier(
+  elementName: string,
+  entryPoint: 'delivery' | 'controller' | 'author' | 'print'
+): string {
   if (entryPoint === 'delivery') {
     return `@pie-element/${elementName}`;
   }
@@ -116,7 +119,9 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
   lines.push(`${indent}// Register element: ${elementName}`);
 
   // Delivery component
-  lines.push(`${indent}registerElement('${elementName}', () => import('${packageSpecifier(elementName, 'delivery')}'));`);
+  lines.push(
+    `${indent}registerElement('${elementName}', () => import('${packageSpecifier(elementName, 'delivery')}'));`
+  );
 
   // Controller
   if (controllerInfo.exists) {
@@ -127,12 +132,16 @@ function generateElementImport(element: ElementMetadata, indent: string = ''): s
 
   // Author
   if (authorInfo.exists) {
-    lines.push(`${indent}registerAuthor('${elementName}', () => import('${packageSpecifier(elementName, 'author')}'));`);
+    lines.push(
+      `${indent}registerAuthor('${elementName}', () => import('${packageSpecifier(elementName, 'author')}'));`
+    );
   }
 
   // Print
   if (printInfo.exists) {
-    lines.push(`${indent}registerPrint('${elementName}', () => import('${packageSpecifier(elementName, 'print')}'));`);
+    lines.push(
+      `${indent}registerPrint('${elementName}', () => import('${packageSpecifier(elementName, 'print')}'));`
+    );
   }
 
   return lines;

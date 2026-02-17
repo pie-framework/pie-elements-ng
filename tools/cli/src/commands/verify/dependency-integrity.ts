@@ -89,7 +89,8 @@ export default class VerifyDependencyIntegrity extends Command {
     this.printIssueGroup('⚠️  Hoist-reliant imports', byStatus.hoist);
     this.printIssueGroup('ℹ️  Transitive imports (currently resolvable)', byStatus.transitive);
 
-    const shouldFail = byStatus.broken.length > 0 || (flags['fail-on-hoist'] && byStatus.hoist.length > 0);
+    const shouldFail =
+      byStatus.broken.length > 0 || (flags['fail-on-hoist'] && byStatus.hoist.length > 0);
     if (shouldFail) {
       const failReason =
         byStatus.broken.length > 0
@@ -106,7 +107,9 @@ export default class VerifyDependencyIntegrity extends Command {
 
     this.log(`${title}:`);
     for (const row of rows) {
-      const extra = row.issue.resolvedPath ? ` -> ${this.toRepoRelative(row.issue.resolvedPath)}` : '';
+      const extra = row.issue.resolvedPath
+        ? ` -> ${this.toRepoRelative(row.issue.resolvedPath)}`
+        : '';
       this.log(`  - ${row.packageName}: ${row.issue.dependency}${extra}`);
     }
     this.log('');

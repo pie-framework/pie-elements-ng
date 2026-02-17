@@ -53,7 +53,10 @@ export async function analyzePackageDependencyIntegrity(
   ]);
 
   const resolveFromPackage = createRequire(pkgJsonPath);
-  const transitiveNames = await collectTransitiveDependencyNames(resolveFromPackage, declaredDirect);
+  const transitiveNames = await collectTransitiveDependencyNames(
+    resolveFromPackage,
+    declaredDirect
+  );
 
   const issues: ImportIntegrityIssue[] = [];
 
@@ -170,9 +173,7 @@ async function listSourceFiles(dir: string): Promise<string[]> {
   return files;
 }
 
-function extractBareImports(
-  content: string
-): Array<{ packageName: string; rawSpecifier: string }> {
+function extractBareImports(content: string): Array<{ packageName: string; rawSpecifier: string }> {
   const imports = new Map<string, Set<string>>();
   const patterns = [
     /import\s+[^'"]*?\s+from\s+['"]([^'"]+)['"]/g,
@@ -271,7 +272,10 @@ async function collectTransitiveDependencyNames(
   return transitive;
 }
 
-async function resolvePackageRoot(resolveFromPackage: NodeRequire, dep: string): Promise<string | null> {
+async function resolvePackageRoot(
+  resolveFromPackage: NodeRequire,
+  dep: string
+): Promise<string | null> {
   let resolvedFile: string;
   try {
     resolvedFile = resolveFromPackage.resolve(dep);

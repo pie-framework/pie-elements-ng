@@ -208,9 +208,12 @@ export async function preloadElements(item, elementConfigs) {
  */
 export async function checkLocalPlayerBuild() {
   try {
-    const response = await fetch(toFsUrl(`${getPlayersRoot()}/packages/pie-esm-player/dist/pie-esm-player.js`), {
-      method: 'HEAD',
-    });
+    const response = await fetch(
+      toFsUrl(`${getPlayersRoot()}/packages/pie-esm-player/dist/pie-esm-player.js`),
+      {
+        method: 'HEAD',
+      }
+    );
     return response.ok;
   } catch {
     return false;
