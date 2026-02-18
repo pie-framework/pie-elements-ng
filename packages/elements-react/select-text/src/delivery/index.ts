@@ -11,9 +11,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent, ModelSetEvent } from '@pie-element/shared-player-events';
-import Main from './main';
+import Main from './main.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import generateModel from './utils';
+import generateModel from './utils.js';
 
 export default class SelectText extends HTMLElement {
   constructor() {

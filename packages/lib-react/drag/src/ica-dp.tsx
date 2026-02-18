@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { DroppablePlaceholder } from './droppable-placeholder';
+import { DroppablePlaceholder } from './droppable-placeholder.js';
 
 // With @dnd-kit, the drop logic is handled in the DragProvider's onDragEnd callback
 // This component now just wraps DroppablePlaceholder with ICA specific logic

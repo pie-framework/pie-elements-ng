@@ -5,7 +5,7 @@
  * MathJax handles LaTeX and MathML natively, so most functions are simple.
  */
 
-import { createMathjaxRenderer } from './adapter';
+import { createMathjaxRenderer } from './adapter.js';
 
 // Singleton renderer instance
 let renderer: ReturnType<typeof createMathjaxRenderer> | null = null;

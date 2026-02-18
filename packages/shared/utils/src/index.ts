@@ -4,4 +4,4 @@
  * Framework-agnostic utility functions for PIE elements.
  */
 
-export * from './utils';
+export * from './utils.js';

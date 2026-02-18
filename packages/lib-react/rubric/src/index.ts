@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Authoring from './authoring';
+import Authoring from './authoring.js';
 
 const RUBRIC_TYPES = {
   SIMPLE_RUBRIC: 'simpleRubric',

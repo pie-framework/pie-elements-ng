@@ -1,11 +1,11 @@
-import { normalizeLatex } from './core/latex';
+import { normalizeLatex } from './core/latex.js';
 import type {
   MathEngineCommand,
   MathEngineField,
   MathEngineHandlers,
   MathEngineSelection,
-} from './types';
-import { commandToLatex } from './commands/utils';
+} from './types.js';
+import { commandToLatex } from './commands/utils.js';
 
 export function createField(initialLatex = '', handlers: MathEngineHandlers = {}): MathEngineField {
   let element: HTMLInputElement | null = null;

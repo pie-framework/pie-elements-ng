@@ -13,7 +13,7 @@ import { Text } from 'react-konva';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
-import Transformer from './drawable-transformer';
+import Transformer from './drawable-transformer.js';
 
 export const generateId = () => Math.random().toString(36).substring(2) + new Date().getTime().toString(36);
 

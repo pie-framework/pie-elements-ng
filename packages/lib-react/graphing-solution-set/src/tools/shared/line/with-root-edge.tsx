@@ -11,9 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';
-import { LinePath } from './line-path';
+import { LinePath } from './line-path.js';
 import { curveMonotoneX } from '@visx/curve';
-import { lineBase, lineToolComponent } from './index';
+import { lineBase, lineToolComponent } from './index.js';
 
 const toRootEdge = (m) => {
   const out = { ...m };

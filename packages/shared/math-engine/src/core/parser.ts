@@ -1,6 +1,6 @@
-import type { StaticToken } from '../types';
-import { normalizeLatex } from './latex';
-import { MatrixModel } from '../commands/matrix-model';
+import type { StaticToken } from '../types.js';
+import { normalizeLatex } from './latex.js';
+import { MatrixModel } from '../commands/matrix-model.js';
 
 const FIELD_REGEX = /\\MathQuillMathField\[(r\d+)\]\{([\s\S]*?)\}/g;
 const EMBED_ANSWER_REGEX = /\\embed\{answerBlock\}\[(r\d+)\]/g;

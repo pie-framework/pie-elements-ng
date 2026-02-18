@@ -13,8 +13,8 @@ import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import * as math from 'mathjs';
 
-import defaults from './defaults';
-import { reloadTicksData } from './utils';
+import defaults from './defaults.js';
+import { reloadTicksData } from './utils.js';
 
 const score = (number) => {
   return {

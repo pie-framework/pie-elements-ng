@@ -12,7 +12,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 
-import Button from './button';
+import Button from './button.js';
 
 const isImage = (file) => {
   const imageType = /image.*/;

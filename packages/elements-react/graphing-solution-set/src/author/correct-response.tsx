@@ -17,7 +17,7 @@ import { set } from 'lodash-es';
 import { RadioGroup, Typography } from '@mui/material';
 import Radio from '@mui/material/Radio';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { findSectionsInSolutionSet, pointInsidePolygon, checkIfLinesAreAdded } from './utils';
+import { findSectionsInSolutionSet, pointInsidePolygon, checkIfLinesAreAdded } from './utils.js';
 
 const SubtitleText: any = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(1.5),

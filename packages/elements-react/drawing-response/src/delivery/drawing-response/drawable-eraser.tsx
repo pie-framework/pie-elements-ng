@@ -11,7 +11,7 @@
 import React from 'react';
 import { Line } from 'react-konva';
 
-import DrawableHelper from './drawable-helper';
+import DrawableHelper from './drawable-helper.js';
 
 export default class EraserDrawable extends DrawableHelper {
   static TYPE = 'EraserDrawable';

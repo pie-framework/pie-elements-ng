@@ -18,7 +18,7 @@ import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
 
-import { generateValidationMessage } from './utils';
+import { generateValidationMessage } from './utils.js';
 
 const Container: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),

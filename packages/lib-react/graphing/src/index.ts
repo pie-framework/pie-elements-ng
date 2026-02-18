@@ -8,10 +8,10 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Graph from './graph';
-import GraphContainer from './container';
-import GridSetup from './grid-setup';
-import * as tools from './tools';
-import ToolMenu from './tool-menu';
-import KeyLegend from './key-legend';
+import Graph from './graph.js';
+import GraphContainer from './container/index.js';
+import GridSetup from './grid-setup.js';
+import * as tools from './tools/index.js';
+import ToolMenu from './tool-menu.js';
+import KeyLegend from './key-legend.js';
 export { Graph, GraphContainer, GridSetup, ToolMenu, tools, KeyLegend };

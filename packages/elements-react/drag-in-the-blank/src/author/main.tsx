@@ -21,10 +21,10 @@ import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
 import { DragOverlay } from '@dnd-kit/core';
 
-import Choice from './choice';
-import Choices from './choices';
-import { createSlateMarkup } from './markupUtils';
-import { generateValidationMessage } from './utils';
+import Choice from './choice.js';
+import Choices from './choices.js';
+import { createSlateMarkup } from './markupUtils.js';
+import { generateValidationMessage } from './utils.js';
 
 class DragPreviewWrapper extends React.Component {
   containerRef = React.createRef();

@@ -11,9 +11,9 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
-import { valueToSize } from '../utils/size';
+import { valueToSize } from '../utils/size.js';
 
-import StyledMenuBar from './MenuBar';
+import StyledMenuBar from './MenuBar.js';
 
 const StyledRoot: any = styled('div', {
   shouldForwardProp: (prop) => !['noBorder', 'error'].includes(prop),

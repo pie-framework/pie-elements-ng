@@ -14,9 +14,9 @@ import { styled } from '@mui/material/styles';
 
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import { dataToXBand } from '../utils';
-import RawLine from './common/line';
-import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators';
+import { dataToXBand } from '../utils.js';
+import RawLine from './common/line.js';
+import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators.js';
 
 const StyledHandle: any = styled('circle')(() => ({}));
 

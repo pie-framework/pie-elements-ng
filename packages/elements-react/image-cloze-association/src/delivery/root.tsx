@@ -21,11 +21,11 @@ import Translator from '@pie-lib/translator';
 import { flatMap, groupBy } from 'lodash-es';
 
 const { translator } = Translator;
-import Image from './image-container';
-import InteractiveSection from './interactive-section';
-import PossibleResponses from './possible-responses';
-import { getUnansweredAnswers, getAnswersCorrectness } from './utils-correctness';
-import PossibleResponse from './possible-response';
+import Image from './image-container.js';
+import InteractiveSection from './interactive-section.js';
+import PossibleResponses from './possible-responses.js';
+import { getUnansweredAnswers, getAnswersCorrectness } from './utils-correctness.js';
+import PossibleResponse from './possible-response.js';
 
 const generateId = () => Math.random().toString(36).substring(2) + new Date().getTime().toString(36);
 

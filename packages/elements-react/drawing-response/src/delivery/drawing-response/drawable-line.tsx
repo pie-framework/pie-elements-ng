@@ -11,7 +11,7 @@
 import React from 'react';
 import { Arrow } from 'react-konva';
 
-import DrawableHelper from './drawable-helper';
+import DrawableHelper from './drawable-helper.js';
 
 export default class LineDrawable extends DrawableHelper {
   static TYPE = 'LineDrawable';

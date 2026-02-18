@@ -13,14 +13,14 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
-import InputHeader from '../input-header';
+import InputHeader from '../input-header.js';
 import { Checkbox } from '@pie-lib/config-ui';
-import { DeleteButton } from '../buttons';
+import { DeleteButton } from '../buttons.js';
 import DragHandle from '@mui/icons-material/DragHandle';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import debug from 'debug';
 import { uid } from '@pie-lib/drag';
-import { multiplePlacements } from '../../utils';
+import { multiplePlacements } from '../../utils.js';
 
 const log = debug('@pie-element:categorize:configure:choice');
 

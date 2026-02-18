@@ -1,6 +1,6 @@
-import { composeStaticLatex, parseStaticLatex } from './core/parser';
-import type { StaticFieldHandle, StaticToken } from './types';
-import { commandToLatex } from './commands/utils';
+import { composeStaticLatex, parseStaticLatex } from './core/parser.js';
+import type { StaticFieldHandle, StaticToken } from './types.js';
+import { commandToLatex } from './commands/utils.js';
 
 type StaticHandlers = {
   onFieldChange?: (fieldId: string, value: string) => void;

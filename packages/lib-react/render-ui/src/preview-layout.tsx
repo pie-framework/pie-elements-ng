@@ -11,7 +11,7 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import UiLayout from './ui-layout';
+import UiLayout from './ui-layout.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   display: 'flex',

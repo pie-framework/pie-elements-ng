@@ -18,7 +18,7 @@ import { Feedback, color, PreviewPrompt } from '@pie-lib/render-ui';
 import Radio from '@mui/material/Radio';
 import classNames from 'classnames';
 
-import FeedbackTick from './feedback-tick';
+import FeedbackTick from './feedback-tick.js';
 
 const CLASS_NAME = 'multiple-choice-component';
 

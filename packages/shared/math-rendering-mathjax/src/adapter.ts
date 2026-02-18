@@ -5,7 +5,7 @@
  * Supports LaTeX and MathML with full accessibility features.
  */
 
-import type { MathjaxOptions } from './types';
+import type { MathjaxOptions } from './types.js';
 
 interface MathJaxTexConfig {
   inlineMath?: [string, string][];

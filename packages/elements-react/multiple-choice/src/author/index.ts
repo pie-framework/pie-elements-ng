@@ -19,11 +19,11 @@ import {
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
 
-import Main from './main';
+import Main from './main.js';
 import { choiceUtils as utils } from '@pie-lib/config-ui';
 import { defaults } from 'lodash-es';
 
-import sensibleDefaults from './defaults';
+import sensibleDefaults from './defaults.js';
 
 const log = debug('multiple-choice:configure');
 

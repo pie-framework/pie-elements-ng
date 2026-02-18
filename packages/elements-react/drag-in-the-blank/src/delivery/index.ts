@@ -13,7 +13,7 @@ import { createRoot } from 'react-dom/client';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { EnableAudioAutoplayImage } from '@pie-lib/render-ui';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
-import Main from './main';
+import Main from './main.js';
 
 export const isComplete = (session, model, audioComplete, elementContext) => {
   const { autoplayAudioEnabled, completeAudioEnabled, responseAreasToBeFilled } = model || {};

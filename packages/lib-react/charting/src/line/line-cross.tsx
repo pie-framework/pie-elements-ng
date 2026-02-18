@@ -15,10 +15,10 @@ import { Group } from '@visx/group';
 import { styled } from '@mui/material/styles';
 
 import { color } from '@pie-lib/render-ui';
-import { dataToXBand } from '../utils';
+import { dataToXBand } from '../utils.js';
 import { types } from '@pie-lib/plot';
-import RawLine from './common/line';
-import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators';
+import RawLine from './common/line.js';
+import { CorrectnessIndicator, SmallCorrectPointIndicator } from '../common/correctness-indicators.js';
 
 const StyledLinePath: any = styled(LinePath)(() => ({
   stroke: color.defaults.TEXT,

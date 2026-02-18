@@ -16,8 +16,8 @@ import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { color, Feedback, PreviewPrompt } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
 import { findKey, isUndefined, uniqueId } from 'lodash-es';
-import AnswerArea from './answer-area';
-import ChoicesList from './choices-list';
+import AnswerArea from './answer-area.js';
+import ChoicesList from './choices-list.js';
 
 const MainContainer: any = styled('div')({
   display: 'flex',

@@ -15,9 +15,9 @@ import debug from 'debug';
 import LinearProgress from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
 import { NodeViewWrapper } from '@tiptap/react';
-import InsertImageHandler from '../components/image/InsertImageHandler';
-import ImageToolbar from '../components/image/ImageToolbar';
-import CustomToolbarWrapper from './custom-toolbar-wrapper';
+import InsertImageHandler from '../components/image/InsertImageHandler.js';
+import ImageToolbar from '../components/image/ImageToolbar.js';
+import CustomToolbarWrapper from './custom-toolbar-wrapper.js';
 
 const log = debug('@pie-lib:editable-html:plugins:image:component');
 

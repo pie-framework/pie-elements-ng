@@ -13,7 +13,7 @@ import debug from 'debug';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import { mq } from '@pie-lib/math-input';
-import { markFractionBaseSuperscripts } from './utils';
+import { markFractionBaseSuperscripts } from './utils.js';
 
 const { commonMqFontStyles, longdivStyles, supsubStyles } = mq.CommonMqStyles;
 

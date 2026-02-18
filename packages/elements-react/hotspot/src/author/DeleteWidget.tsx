@@ -11,9 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Group } from 'react-konva';
-import { faDelete } from './icons';
-import ImageComponent from './image-konva';
-import { calculate } from './utils';
+import { faDelete } from './icons.js';
+import ImageComponent from './image-konva.js';
+import { calculate } from './utils.js';
 
 const DeleteWidget = ({ height, id, width, x, y, points, isCircle, radius, handleWidgetClick }) => {
   let positionX, positionY;

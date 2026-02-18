@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { Collapsible, Feedback, hasText, PreviewPrompt, UiLayout, hasMedia } from '@pie-lib/render-ui';
-import AnswerGrid from './answer-grid';
+import AnswerGrid from './answer-grid.js';
 import { styled } from '@mui/material/styles';
 
 const StyledPrompt: any = styled('div')({

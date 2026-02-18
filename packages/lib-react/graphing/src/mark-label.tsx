@@ -12,10 +12,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
 import AutosizeInput from 'react-input-autosize';
-import { useDebounce } from './use-debounce';
+import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import SvgIcon from './label-svg-icon';
+import SvgIcon from './label-svg-icon.js';
 
 const StyledInputCorrect: any = styled('div')(({ theme }) => ({
   float: 'right',

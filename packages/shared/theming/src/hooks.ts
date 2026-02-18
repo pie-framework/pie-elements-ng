@@ -1,8 +1,8 @@
 import { useContext, useMemo } from 'react';
 import type { Theme } from '@mui/material/styles';
-import { PieThemeContext } from './provider';
-import type { PieThemeExtended, ThemeContextValue } from './types';
-import { cssVariablesToReactStyle } from './css-variables';
+import { PieThemeContext } from './provider.js';
+import type { PieThemeExtended, ThemeContextValue } from './types.js';
+import { cssVariablesToReactStyle } from './css-variables.js';
 
 /**
  * Hook to access the PIE theme context

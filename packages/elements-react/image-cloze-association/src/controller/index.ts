@@ -13,8 +13,8 @@ import { camelizeKeys } from 'humps';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import { cloneDeep, isEmpty, shuffle } from 'lodash-es';
 
-import defaults from './defaults';
-import { getAllUniqueCorrectness, getCompleteResponseDetails } from './utils';
+import defaults from './defaults.js';
+import { getAllUniqueCorrectness, getCompleteResponseDetails } from './utils.js';
 
 const log = debug('pie-elements:image-cloze-association:controller');
 

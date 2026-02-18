@@ -13,17 +13,17 @@ import { scaleLinear } from 'd3-scale';
 import { select, pointer } from 'd3-selection';
 import { color } from '@pie-lib/render-ui';
 import { DndContext } from '@dnd-kit/core';
-import Point from './elements/point';
-import Line from './elements/line';
-import Ray from './elements/ray';
-import BaseLine from './line';
-import Arrow from './arrow';
-import Ticks from './ticks';
-import { snapTo } from './tick-utils';
-import Stacks from './stacks';
+import Point from './elements/point.js';
+import Line from './elements/line.js';
+import Ray from './elements/ray.js';
+import BaseLine from './line.js';
+import Arrow from './arrow.js';
+import Ticks from './ticks.js';
+import { snapTo } from './tick-utils.js';
+import Stacks from './stacks.js';
 import { TransitionGroup } from 'react-transition-group';
 import PropTypes from 'prop-types';
-import { Fade } from '../transitions';
+import { Fade } from '../transitions/index.js';
 
 const getXScale = (min, max, width, padding) => {
   if (min === undefined || max === undefined || width === undefined) {

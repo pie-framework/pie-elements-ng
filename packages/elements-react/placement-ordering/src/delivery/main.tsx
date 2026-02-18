@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import PlacementOrdering from './placement-ordering';
+import PlacementOrdering from './placement-ordering.js';
 
 class Main extends React.Component {
   static propTypes = {

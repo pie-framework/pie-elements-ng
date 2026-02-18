@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Main from './main';
+import Main from './main.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { debounce } from 'lodash-es';
@@ -16,7 +16,7 @@ import debug from 'debug';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { EnableAudioAutoplayImage } from '@pie-lib/render-ui';
-import { updateSessionValue, updateSessionMetadata } from './session-updater';
+import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
 
 const log = debug('pie-ui:multiple-choice');
 

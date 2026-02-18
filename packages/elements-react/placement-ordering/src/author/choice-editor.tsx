@@ -17,7 +17,7 @@ import { styled } from '@mui/material/styles';
 import { InputContainer } from '@pie-lib/render-ui';
 import { AlertDialog } from '@pie-lib/config-ui';
 
-import ChoiceTile from './choice-tile';
+import ChoiceTile from './choice-tile.js';
 
 function findFreeChoiceSlot(choices) {
   let slot = 1;

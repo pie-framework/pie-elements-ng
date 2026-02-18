@@ -12,7 +12,7 @@ import { styled } from '@mui/material/styles';
 import { CSSTransition } from 'react-transition-group';
 import { CorrectResponse } from '@pie-lib/icons';
 import { color, Readable } from '@pie-lib/render-ui';
-import Expander from './expander';
+import Expander from './expander.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import Translator from '@pie-lib/translator';

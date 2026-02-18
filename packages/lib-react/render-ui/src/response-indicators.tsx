@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import * as icons from '@pie-lib/icons';
 import Popover from '@mui/material/Popover';
 import { styled } from '@mui/material/styles';
-import Feedback from './feedback';
+import Feedback from './feedback.js';
 import debug from 'debug';
 
 const log = debug('pie-libs:render-ui:response-indicators');

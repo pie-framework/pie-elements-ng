@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { types } from '@pie-lib/plot';
 import { isEqual } from 'lodash-es';
-import { arrowDimensions, getAngleDeg } from '../../../utils';
+import { arrowDimensions, getAngleDeg } from '../../../utils.js';
 
 export class RawArrow extends React.Component {
   static propTypes = {

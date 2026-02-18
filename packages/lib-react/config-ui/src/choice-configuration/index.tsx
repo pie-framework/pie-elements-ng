@@ -17,8 +17,8 @@ import ArrowRight from '@mui/icons-material/SubdirectoryArrowRight';
 import IconButton from '@mui/material/IconButton';
 import { InputContainer } from '@pie-lib/render-ui';
 // import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { InputCheckbox, InputRadio } from '../inputs';
-import FeedbackMenu from './feedback-menu';
+import { InputCheckbox, InputRadio } from '../inputs.js';
+import FeedbackMenu from './feedback-menu.js';
 
 // - mathquill error window not defined
 import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';

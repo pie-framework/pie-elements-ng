@@ -11,7 +11,7 @@
 import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import * as color from './color';
+import * as color from './color.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({

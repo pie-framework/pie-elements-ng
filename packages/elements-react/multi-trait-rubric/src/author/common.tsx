@@ -17,7 +17,7 @@ import InputBase from '@mui/material/InputBase';
 import { color, InputContainer } from '@pie-lib/render-ui';
 import { grey } from '@mui/material/colors';
 
-import { filteredDefaultPlugins } from './utils';
+import { filteredDefaultPlugins } from './utils.js';
 
 const InputHeight = '120px';
 export const BlockWidth = 200;

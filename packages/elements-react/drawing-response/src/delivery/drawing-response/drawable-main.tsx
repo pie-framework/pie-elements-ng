@@ -16,9 +16,9 @@ import { styled } from '@mui/material/styles';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
-import ImageBackground from './drawable-image';
-import Button from './button';
-import factory from './factory';
+import ImageBackground from './drawable-image.js';
+import Button from './button.js';
+import factory from './factory.js';
 
 const Wrapper: any = styled('div')({
   display: 'flex',

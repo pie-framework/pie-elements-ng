@@ -11,8 +11,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';
-import { dataToXBand } from '../utils';
-import Bars from './common/bars';
+import { dataToXBand } from '../utils.js';
+import Bars from './common/bars.js';
 
 export class Bar extends React.Component {
   static propTypes = {

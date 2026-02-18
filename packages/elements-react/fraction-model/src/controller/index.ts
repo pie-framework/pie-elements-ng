@@ -9,7 +9,7 @@
  */
 
 import { isEmpty } from 'lodash-es';
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 /*
  * Function to check the correctness of the response

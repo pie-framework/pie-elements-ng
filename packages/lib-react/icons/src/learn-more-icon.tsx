@@ -10,7 +10,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import Sized from './sized';
+import Sized from './sized.js';
 
 const Glint = ({ fill }) => (
   <path

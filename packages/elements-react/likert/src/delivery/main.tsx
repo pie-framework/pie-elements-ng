@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { PreviewLayout } from '@pie-lib/render-ui';
-import Likert from './likert';
+import Likert from './likert.js';
 
 class Main extends React.Component {
   static propTypes = {

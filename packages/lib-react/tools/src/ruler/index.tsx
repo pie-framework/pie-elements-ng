@@ -10,10 +10,10 @@
 
 import React from 'react';
 import { styled } from '@mui/material/styles';
-import Rotatable from '../rotatable';
-import RulerGraphic from './graphic';
+import Rotatable from '../rotatable.js';
+import RulerGraphic from './graphic.js';
 import PropTypes from 'prop-types';
-import Anchor from '../anchor';
+import Anchor from '../anchor.js';
 
 const StyledRuler: any = styled('div')(({ theme }) => ({
   cursor: 'move',

@@ -11,14 +11,14 @@
 import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import Button from './button';
-import { CircleButton } from './buttons/circle';
-import { PolygonButton } from './buttons/polygon';
-import { RectangleButton } from './buttons/rectangle';
-import { SUPPORTED_SHAPES } from './shapes';
-import Drawable from './hotspot-drawable';
-import UploadControl from './upload-control';
-import { getAllShapes, groupShapes } from './utils';
+import Button from './button.js';
+import { CircleButton } from './buttons/circle.js';
+import { PolygonButton } from './buttons/polygon.js';
+import { RectangleButton } from './buttons/rectangle.js';
+import { SUPPORTED_SHAPES } from './shapes/index.js';
+import Drawable from './hotspot-drawable.js';
+import UploadControl from './upload-control.js';
+import { getAllShapes, groupShapes } from './utils.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(1.5),

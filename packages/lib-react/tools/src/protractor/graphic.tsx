@@ -11,7 +11,7 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { range } from 'lodash-es';
-import { noSelect, strokeColor } from '../style-utils';
+import { noSelect, strokeColor } from '../style-utils.js';
 
 const StyledLine: any = styled('line')(({ theme }) => ({
   strokeWidth: '0.2',

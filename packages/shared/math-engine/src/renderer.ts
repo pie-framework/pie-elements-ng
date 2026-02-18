@@ -1,5 +1,5 @@
 import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
-import type { RendererAdapter, RendererFeature, RenderRequest } from './types';
+import type { RendererAdapter, RendererFeature, RenderRequest } from './types.js';
 
 type MathJaxAdapterOptions = {
   useSingleDollar?: boolean;

@@ -15,7 +15,7 @@ import { styled } from '@mui/material/styles';
 
 import { gridDraggable, types, utils } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import { disabled } from '../../common/styles';
+import { disabled } from '../../common/styles.js';
 
 const StyledDragHandle: any = styled('g')(({ theme }) => ({
   color: 'black',

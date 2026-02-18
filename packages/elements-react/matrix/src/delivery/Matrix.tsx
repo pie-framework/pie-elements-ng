@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
-import ChoiceInput from './ChoiceInput';
+import ChoiceInput from './ChoiceInput.js';
 import { color, Collapsible, PreviewPrompt } from '@pie-lib/render-ui';
 
 const MatrixWrapper = styled.div`

@@ -13,8 +13,8 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { isEmpty, isUndefined, reduce } from 'lodash-es';
 
-import Arrow from './arrow';
-import DragAndDropAnswer from './answer';
+import Arrow from './arrow.js';
+import DragAndDropAnswer from './answer.js';
 
 const ArrowEntry: any = styled('div')({
   alignItems: 'normal',

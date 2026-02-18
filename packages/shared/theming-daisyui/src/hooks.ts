@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { PieTheme } from '@pie-element/shared-types';
 import type { PieThemeExtended } from '@pie-element/shared-theming';
-import { extractDaisyUiTheme, watchDaisyUiTheme } from './extract';
-import { daisyUiToPieTheme } from './convert';
+import { extractDaisyUiTheme, watchDaisyUiTheme } from './extract.js';
+import { daisyUiToPieTheme } from './convert.js';
 
 /**
  * Hook to extract and watch DaisyUI theme from DOM

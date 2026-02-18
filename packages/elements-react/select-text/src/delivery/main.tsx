@@ -14,7 +14,7 @@ import { TextSelect, Legend } from '@pie-lib/text-select';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { color, Feedback, Collapsible, hasText, hasMedia, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
-import generateModel from './utils';
+import generateModel from './utils.js';
 
 import debug from 'debug';
 

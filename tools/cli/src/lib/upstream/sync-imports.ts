@@ -32,7 +32,9 @@
  *    - Student-facing UI only needs minimal fallback configuration
  *    - Inline empty defaults object to avoid the dependency
  */
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 
 /**
  * Fix import statements in a file to handle default export conversions
@@ -64,6 +66,82 @@ export async function fixImportsInFile(
       modified = true;
     }
   }
+
+  if (modified) {
+    await writeFile(filePath, content, 'utf-8');
+  }
+
+  return modified;
+}
+
+/**
+ * Rewrite relative ESM specifiers to explicit `.js` extensions for NodeNext compatibility.
+ *
+ * This is applied after sync so TypeScript source uses runtime-valid ESM specifiers:
+ * - `./foo` -> `./foo.js`
+ * - `./bar` (directory with index file) -> `./bar/index.js`
+ */
+export async function rewriteRelativeSpecifiersForNodeEsm(filePath: string): Promise<boolean> {
+  let content = await readFile(filePath, 'utf-8');
+  let modified = false;
+
+  const rewriteSpecifier = (specifier: string): string => {
+    if (!specifier.startsWith('./') && !specifier.startsWith('../')) {
+      return specifier;
+    }
+
+    // Keep explicit extensions as-is (css/json/svg/js/etc.).
+    if (/\.[a-z0-9]+$/i.test(specifier)) {
+      return specifier;
+    }
+
+    const basePath = join(dirname(filePath), specifier);
+    const moduleFileExtensions = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'];
+    const indexFileExtensions = moduleFileExtensions.map((ext) => `/index${ext}`);
+
+    const hasModuleFile = moduleFileExtensions.some((ext) => existsSync(`${basePath}${ext}`));
+    if (hasModuleFile) {
+      return `${specifier}.js`;
+    }
+
+    const hasIndexFile = indexFileExtensions.some((suffix) => existsSync(`${basePath}${suffix}`));
+    if (hasIndexFile) {
+      return `${specifier.replace(/\/$/, '')}/index.js`;
+    }
+
+    // Do not guess unresolved paths.
+    return specifier;
+  };
+
+  content = content.replace(/(from\s+)(['"])(\.\.?\/[^'"]+)\2/g, (match, prefix, quote, specifier) => {
+    const rewritten = rewriteSpecifier(specifier);
+    if (rewritten !== specifier) {
+      modified = true;
+      return `${prefix}${quote}${rewritten}${quote}`;
+    }
+    return match;
+  });
+
+  content = content.replace(
+    /(import\(\s*)(['"])(\.\.?\/[^'"]+)\2(\s*\))/g,
+    (match, start, quote, specifier, end) => {
+      const rewritten = rewriteSpecifier(specifier);
+      if (rewritten !== specifier) {
+        modified = true;
+        return `${start}${quote}${rewritten}${quote}${end}`;
+      }
+      return match;
+    }
+  );
+
+  content = content.replace(/\bimport\s+(['"])(\.\.?\/[^'"]+)\1/g, (match, quote, specifier) => {
+    const rewritten = rewriteSpecifier(specifier);
+    if (rewritten !== specifier) {
+      modified = true;
+      return `import ${quote}${rewritten}${quote}`;
+    }
+    return match;
+  });
 
   if (modified) {
     await writeFile(filePath, content, 'utf-8');

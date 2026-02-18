@@ -12,9 +12,9 @@ import React from 'react';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
 import { Extension } from '@tiptap/core';
 import { Node, ReactNodeViewRenderer } from '@tiptap/react';
-import ExplicitConstructedResponse from '../components/respArea/ExplicitConstructedResponse';
-import DragInTheBlank from '../components/respArea/DragInTheBlank/DragInTheBlank';
-import InlineDropdown from '../components/respArea/InlineDropdown';
+import ExplicitConstructedResponse from '../components/respArea/ExplicitConstructedResponse.js';
+import DragInTheBlank from '../components/respArea/DragInTheBlank/DragInTheBlank.js';
+import InlineDropdown from '../components/respArea/InlineDropdown.js';
 
 const lastIndexMap = {};
 

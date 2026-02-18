@@ -13,7 +13,7 @@ import { createRoot } from 'react-dom/client';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { EnableAudioAutoplayImage } from '@pie-lib/render-ui';
 import { SessionChangedEvent, ModelSetEvent } from '@pie-element/shared-player-events';
-import CategorizeComponent from './categorize';
+import CategorizeComponent from './categorize/index.js';
 
 export default class Categorize extends HTMLElement {
   constructor() {

@@ -11,13 +11,13 @@
 import { connect, Provider } from 'react-redux';
 import React from 'react';
 import { applyMiddleware, createStore } from 'redux';
-import reducer from './reducer';
-import { changeMarks } from './actions';
+import reducer from './reducer.js';
+import { changeMarks } from './actions.js';
 import PropTypes from 'prop-types';
 import { isEqual } from 'lodash-es';
 import { ActionCreators } from 'redux-undo';
-import GraphWithControls from '../graph-with-controls';
-import { lastActionMiddleware } from './middleware';
+import GraphWithControls from '../graph-with-controls.js';
+import { lastActionMiddleware } from './middleware.js';
 
 const mapStateToProps = (s) => ({
   marks: s.marks.present,

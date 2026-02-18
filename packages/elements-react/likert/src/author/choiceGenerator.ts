@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { LIKERT_TYPE, LIKERT_SCALE } from './likertEntities';
+import { LIKERT_TYPE, LIKERT_SCALE } from './likertEntities.js';
 
 const likert3Agreement = [
   {

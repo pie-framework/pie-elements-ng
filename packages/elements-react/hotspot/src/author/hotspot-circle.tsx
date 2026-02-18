@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Circle, Group, Transformer } from 'react-konva';
-import DeleteWidget from './DeleteWidget';
+import DeleteWidget from './DeleteWidget.js';
 
 class CircleComponent extends React.Component {
   constructor(props) {

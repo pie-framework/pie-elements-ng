@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-export * from './circle';
-export * from './rectagle';
-export * from './polygon';
-export * from './utils';
+export * from './circle.js';
+export * from './rectagle.js';
+export * from './polygon.js';
+export * from './utils.js';

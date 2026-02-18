@@ -8,17 +8,17 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import * as dataConverter from './data-converter';
-import * as pointChooser from './number-line/point-chooser';
-import * as tickUtils from './number-line/graph/tick-utils';
+import * as dataConverter from './data-converter.js';
+import * as pointChooser from './number-line/point-chooser/index.js';
+import * as tickUtils from './number-line/graph/tick-utils.js';
 
-import { lineIsSwitched, switchGraphLine, toGraphFormat, toSessionFormat } from './data-converter';
+import { lineIsSwitched, switchGraphLine, toGraphFormat, toSessionFormat } from './data-converter.js';
 
-import Graph from './number-line/graph';
-import NumberLineComponent from './number-line';
+import Graph from './number-line/graph/index.js';
+import NumberLineComponent from './number-line/index.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import RootComponent from './number-line';
+import RootComponent from './number-line/index.js';
 import { cloneDeep } from 'lodash-es';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 

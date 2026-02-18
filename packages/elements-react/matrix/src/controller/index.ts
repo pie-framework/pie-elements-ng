@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 import { isEmpty } from 'lodash-es';
 
 export const createDefaultModel = (model = {}) => new Promise((resolve) => resolve({ ...defaults, ...model }));

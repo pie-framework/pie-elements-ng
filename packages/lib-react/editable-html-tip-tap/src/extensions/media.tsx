@@ -12,8 +12,8 @@ import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
-import MediaDialog from '../components/media/MediaDialog';
-import MediaToolbar from '../components/media/MediaToolbar';
+import MediaDialog from '../components/media/MediaDialog.js';
+import MediaToolbar from '../components/media/MediaToolbar.js';
 
 export const Media = Node.create({
   name: 'media',

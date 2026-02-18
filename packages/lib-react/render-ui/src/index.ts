@@ -8,21 +8,21 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import * as indicators from './response-indicators';
-import Feedback from './feedback';
-import Collapsible from './collapsible';
-import withUndoReset from './withUndoReset';
-import PreviewLayout from './preview-layout';
-import UiLayout from './ui-layout';
-import HtmlAndMath from './html-and-math';
-import InputContainer from './input-container';
-import PreviewPrompt from './preview-prompt';
-import Readable from './readable';
-import Purpose from './purpose';
-import * as color from './color';
-import { hasText } from './has-text';
-import { hasMedia } from './has-media';
-import EnableAudioAutoplayImage from './assets/enableAudioAutoplayImage';
+import * as indicators from './response-indicators.js';
+import Feedback from './feedback.js';
+import Collapsible from './collapsible/index.js';
+import withUndoReset from './withUndoReset.js';
+import PreviewLayout from './preview-layout.js';
+import UiLayout from './ui-layout.js';
+import HtmlAndMath from './html-and-math.js';
+import InputContainer from './input-container.js';
+import PreviewPrompt from './preview-prompt.js';
+import Readable from './readable.js';
+import Purpose from './purpose.js';
+import * as color from './color.js';
+import { hasText } from './has-text.js';
+import { hasMedia } from './has-media.js';
+import EnableAudioAutoplayImage from './assets/enableAudioAutoplayImage.js';
 
 export {
   HtmlAndMath,
@@ -42,4 +42,4 @@ export {
   EnableAudioAutoplayImage,
 };
 // Non-synced pie-elements-ng exports
-export { InlineMenu } from './inline-menu';
+export { InlineMenu } from './inline-menu.js';

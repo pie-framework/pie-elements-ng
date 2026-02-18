@@ -11,10 +11,10 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { gridDraggable } from '@pie-lib/plot';
-import * as utils from '../../../utils';
-import { RawBp } from './base-point';
-import { RawArrow } from './arrow-point';
-import { BaseArrow } from './arrow';
+import * as utils from '../../../utils.js';
+import { RawBp } from './base-point.js';
+import { RawArrow } from './arrow-point.js';
+import { BaseArrow } from './arrow.js';
 
 // Drag & bounds options
 const opts = {

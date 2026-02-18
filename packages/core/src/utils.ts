@@ -2,7 +2,7 @@
  * Common utilities for PIE elements
  */
 
-import type { PieEnvironment, PieSession } from './types';
+import type { PieEnvironment, PieSession } from './types.js';
 
 /**
  * Check if session is empty

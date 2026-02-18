@@ -8,12 +8,12 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { buildLayoutFromMarkup, withMask } from './with-mask';
-import DragInTheBlank from './drag-in-the-blank';
-import ConstructedResponse from './constructed-response';
-import Customizable from './customizable';
-import InlineDropdown from './inline-dropdown';
-import componentize from './componentize';
+import { buildLayoutFromMarkup, withMask } from './with-mask.js';
+import DragInTheBlank from './drag-in-the-blank.js';
+import ConstructedResponse from './constructed-response.js';
+import Customizable from './customizable.js';
+import InlineDropdown from './inline-dropdown.js';
+import componentize from './componentize.js';
 
 export {
   withMask,

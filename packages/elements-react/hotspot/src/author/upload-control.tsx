@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Button from './button';
+import Button from './button.js';
 
 const UploadControl = ({ label, onInputClick, onUploadImage, setRef }) => (
   <>

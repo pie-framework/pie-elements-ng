@@ -15,7 +15,7 @@ import debug from 'debug';
 
 const log = debug('@pie-element:match:controller');
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const getResponseCorrectness = (model, answers, env = {}) => {
   const isPartialScoring = partialScoring.enabled(model, env);

@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import NumberTextField from '../number-text-field';
+import NumberTextField from '../number-text-field.js';
 
 const StyledDisplaySize: any = styled('div')(({ theme }) => ({
   display: 'flex',

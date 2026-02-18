@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { getPluginProps } from './utils';
+import { getPluginProps } from './utils.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
@@ -28,14 +28,14 @@ import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { DragProvider, uid } from '@pie-lib/drag';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
-import Categories from './categories';
-import AlternateResponses from './categories/alternateResponses';
-import Choices from './choices';
-import Choice from './choices/choice';
-import ChoicePreview from './categories/choice-preview';
-import { buildAlternateResponses, buildCategories } from './builder';
-import Header from './header';
-import { getMaxCategoryChoices, multiplePlacements } from '../utils';
+import Categories from './categories/index.js';
+import AlternateResponses from './categories/alternateResponses.js';
+import Choices from './choices/index.js';
+import Choice from './choices/choice.js';
+import ChoicePreview from './categories/choice-preview.js';
+import { buildAlternateResponses, buildCategories } from './builder.js';
+import Header from './header.js';
+import { getMaxCategoryChoices, multiplePlacements } from '../utils.js';
 import { AlertDialog } from '@pie-lib/config-ui';
 import Translator from '@pie-lib/translator';
 

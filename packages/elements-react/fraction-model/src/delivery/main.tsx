@@ -11,9 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import AnswerFraction from './answer-fraction';
+import AnswerFraction from './answer-fraction.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import FractionModelChart from './fraction-model-chart';
+import FractionModelChart from './fraction-model-chart.js';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
 import { cloneDeep } from 'lodash-es';

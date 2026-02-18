@@ -8,11 +8,11 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Tokenizer from './tokenizer';
-import TokenSelect, { TokenTypes } from './token-select';
-import TextSelect from './text-select';
-import { Legend } from './legend';
-import Token from './token-select/token';
-import { prepareText } from './utils';
+import Tokenizer from './tokenizer/index.js';
+import TokenSelect, { TokenTypes } from './token-select/index.js';
+import TextSelect from './text-select.js';
+import { Legend } from './legend.js';
+import Token from './token-select/token.js';
+import { prepareText } from './utils.js';
 
 export { TextSelect, TokenTypes, Tokenizer, TokenSelect, Token, prepareText, Legend };

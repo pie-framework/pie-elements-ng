@@ -10,10 +10,10 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import EditorAndPad from './editor-and-pad';
-import { DoneButton } from './done-button';
+import EditorAndPad from './editor-and-pad.js';
+import { DoneButton } from './done-button.js';
 import { styled } from '@mui/material/styles';
-import MathPreview from './math-preview';
+import MathPreview from './math-preview.js';
 
 export { MathPreview };
 

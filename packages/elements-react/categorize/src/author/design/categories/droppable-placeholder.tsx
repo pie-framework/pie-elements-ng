@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import ChoicePreview from './choice-preview';
+import ChoicePreview from './choice-preview.js';
 import { useDroppable } from '@dnd-kit/core';
 import { uid, PlaceHolder } from '@pie-lib/drag';
 import debug from 'debug';

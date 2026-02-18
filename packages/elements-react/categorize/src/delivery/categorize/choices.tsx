@@ -11,8 +11,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import Choice, { ChoiceType } from './choice';
-import DroppablePlaceholder from './droppable-placeholder';
+import Choice, { ChoiceType } from './choice.js';
+import DroppablePlaceholder from './droppable-placeholder.js';
 export { ChoiceType };
 
 const Wrapper: any = styled('div')({

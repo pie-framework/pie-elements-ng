@@ -16,9 +16,9 @@ import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
-import HotspotPalette from './hotspot-palette';
-import HotspotContainer from './hotspot-container';
-import { updateImageDimensions, generateValidationMessage, getUpdatedShapes, getAllShapes, groupShapes } from './utils';
+import HotspotPalette from './hotspot-palette.js';
+import HotspotContainer from './hotspot-container.js';
+import { updateImageDimensions, generateValidationMessage, getUpdatedShapes, getAllShapes, groupShapes } from './utils.js';
 
 const { Panel, toggle, dropdown } = settings;
 

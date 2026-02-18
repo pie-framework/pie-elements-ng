@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { nextPopupState, type PopupState } from './popup-state';
+import { nextPopupState, type PopupState } from './popup-state.js';
 
 export function usePopupState(initialOpen = false): {
   state: PopupState;

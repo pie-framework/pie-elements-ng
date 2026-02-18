@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import * as vx from '@visx/grid';
 import { types } from '@pie-lib/plot';
-import { getTickValues } from './utils';
+import { getTickValues } from './utils.js';
 
 export class Grid extends React.Component {
   static propTypes = {

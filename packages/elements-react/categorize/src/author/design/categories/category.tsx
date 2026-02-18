@@ -14,9 +14,9 @@ import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 
-import InputHeader from '../input-header';
-import { DeleteButton } from '../buttons';
-import PlaceHolder from './droppable-placeholder';
+import InputHeader from '../input-header.js';
+import { DeleteButton } from '../buttons.js';
+import PlaceHolder from './droppable-placeholder.js';
 
 const StyledCard: any = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'isDuplicated',

@@ -15,8 +15,8 @@ import { AlertDialog } from '@pie-lib/config-ui';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 
-import Choice from './choice';
-import { choiceIsEmpty } from './markupUtils';
+import Choice from './choice.js';
+import { choiceIsEmpty } from './markupUtils.js';
 
 const StyledDesign: any = styled('div')(({ theme }) => ({
   display: 'flex',

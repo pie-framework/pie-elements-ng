@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import CorrectInput from './correct-input';
+import CorrectInput from './correct-input.js';
 
 const Input = ({
   disabled,

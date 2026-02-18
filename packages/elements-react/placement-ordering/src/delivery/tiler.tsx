@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { styled } from '@mui/material/styles';
 
-import Tile from './tile';
+import Tile from './tile.js';
 
 const types = {
   choiceLabel: PropTypes.string,

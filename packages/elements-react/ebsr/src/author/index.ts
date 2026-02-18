@@ -13,9 +13,9 @@ import { createRoot } from 'react-dom/client';
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import MultipleChoiceConfigure from '@pie-element/multiple-choice/configure/lib';
 import { defaults } from 'lodash-es';
-import Main from './main';
+import Main from './main.js';
 
-import sensibleDefaults from './defaults';
+import sensibleDefaults from './defaults.js';
 
 const MODEL_UPDATED = ModelUpdatedEvent.TYPE;
 const MC_TAG_NAME = 'ebsr-multiple-choice-configure';

@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Polygon from './component';
-import { equalPoints } from '../../utils';
+import Polygon from './component.js';
+import { equalPoints } from '../../utils.js';
 
 export const addPointToArray = (point, arr) => {
   arr = arr || [];

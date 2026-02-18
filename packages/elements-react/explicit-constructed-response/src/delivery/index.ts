@@ -13,7 +13,7 @@ import { createRoot } from 'react-dom/client';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
-import Main from './main';
+import Main from './main.js';
 
 export default class InlineDropdown extends HTMLElement {
   constructor() {

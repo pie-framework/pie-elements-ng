@@ -20,7 +20,7 @@ import Info from '@mui/icons-material/Info';
 import debug from 'debug';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import Tooltip from '@mui/material/Tooltip';
-import { generateValidationMessage } from './utils';
+import { generateValidationMessage } from './utils.js';
 
 const { Panel, toggle, radio, dropdown } = settings;
 

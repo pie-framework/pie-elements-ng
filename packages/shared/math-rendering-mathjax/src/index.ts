@@ -16,8 +16,8 @@
  * ```
  */
 
-export { createMathjaxRenderer, getMathjaxCssUrls } from './adapter';
-export type { MathjaxOptions } from './types';
+export { createMathjaxRenderer, getMathjaxCssUrls } from './adapter.js';
+export type { MathjaxOptions } from './types.js';
 
 // Legacy @pie-lib/math-rendering API for backward compatibility
-export { renderMath, wrapMath, unWrapMath, mmlToLatex } from './render-math';
+export { renderMath, wrapMath, unWrapMath, mmlToLatex } from './render-math.js';

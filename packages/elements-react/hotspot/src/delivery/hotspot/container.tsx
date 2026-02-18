@@ -13,9 +13,9 @@ import PropTypes from 'prop-types';
 import { Layer, Stage } from 'react-konva';
 import { styled } from '@mui/material/styles';
 
-import Rectangle from './rectangle';
-import Polygon from './polygon';
-import Circle from './circle';
+import Rectangle from './rectangle.js';
+import Polygon from './polygon.js';
+import Circle from './circle.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),

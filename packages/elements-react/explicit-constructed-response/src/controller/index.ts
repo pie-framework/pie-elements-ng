@@ -13,7 +13,7 @@ import { find, isEmpty, map, reduce } from 'lodash-es';
 import { decode } from 'he';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import Translator from '@pie-lib/translator';
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const { translator } = Translator;
 

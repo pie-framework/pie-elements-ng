@@ -11,12 +11,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';
-import CoordinatesLabel from '../../../coordinates-label';
+import CoordinatesLabel from '../../../coordinates-label.js';
 import ReactDOM from 'react-dom';
-import { thinnerShapesNeeded } from '../../../utils';
+import { thinnerShapesNeeded } from '../../../utils.js';
 import { color } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
-import { correct, disabled as disabledStyle, incorrect, missing } from '../styles';
+import { correct, disabled as disabledStyle, incorrect, missing } from '../styles.js';
 
 const StyledPointGroup: any = styled('g')(({ disabled, correctness }) => ({
   cursor: 'pointer',

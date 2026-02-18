@@ -10,10 +10,10 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import ChoiceInput from './choice-input';
+import ChoiceInput from './choice-input.js';
 import { styled } from '@mui/material/styles';
 import { color, Collapsible, PreviewPrompt } from '@pie-lib/render-ui';
-import { LIKERT_ORIENTATION } from './likertEntities';
+import { LIKERT_ORIENTATION } from './likertEntities.js';
 
 const Main: any = styled('div')({
   color: color.text(),

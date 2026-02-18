@@ -6,7 +6,7 @@ import { printSyncSummary, createEmptySummary } from '../../lib/upstream/sync-su
 import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, stat as fsStat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readdir } from '../../lib/upstream/sync-filesystem.js';
 import { getAllDeps } from '../../lib/upstream/sync-package-json.js';
@@ -17,6 +17,7 @@ import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy
 import { DEFAULT_PATHS, COMPATIBILITY_FILE, WORKSPACE } from '../../lib/upstream/sync-constants.js';
 import { assertReposExist } from '../../lib/upstream/repo-utils.js';
 import { addDevelopmentExports } from '../../lib/upstream/sync-dev-exports.js';
+import { rewriteRelativeSpecifiersForNodeEsm } from '../../lib/upstream/sync-imports.js';
 import {
   analyzePackageDependencyIntegrity,
   collectWorkspacePackageDirs,
@@ -303,6 +304,11 @@ export default class Sync extends Command {
     // Apply targeted post-sync source patches for known declaration-emit issues.
     if (!config.dryRun) {
       await this.applyPostSyncBuildStabilizers(config);
+    }
+
+    // Normalize relative ESM specifiers to explicit .js paths for NodeNext.
+    if (!config.dryRun) {
+      await this.applyNodeEsmSpecifierRewrites(config);
     }
 
     // Verify synced packages for dependency integrity regressions (broken/hoist-reliant imports).
@@ -822,6 +828,60 @@ export default class Sync extends Command {
       await writeFile(testUtilsIndex, content, 'utf-8');
       this.logger.info('   ✓ Applied post-sync declaration fix for @pie-lib/test-utils');
     }
+  }
+
+  private async applyNodeEsmSpecifierRewrites(config: SyncConfig): Promise<void> {
+    this.logger.section('🔧 Rewriting relative ESM specifiers');
+
+    const packageDirs = this.getTouchedPackageDirs(config);
+    if (packageDirs.length === 0) {
+      this.logger.info('   No touched packages to rewrite\n');
+      return;
+    }
+
+    let checkedFiles = 0;
+    let rewrittenFiles = 0;
+
+    for (const packageDir of packageDirs) {
+      const sourceDir = join(packageDir, 'src');
+      const sourceFiles = await this.collectTypeScriptSourceFiles(sourceDir);
+      for (const filePath of sourceFiles) {
+        checkedFiles++;
+        if (await rewriteRelativeSpecifiersForNodeEsm(filePath)) {
+          rewrittenFiles++;
+        }
+      }
+    }
+
+    if (rewrittenFiles === 0) {
+      this.logger.info(`   ✓ Specifiers already normalized (${checkedFiles} file(s) checked)\n`);
+      return;
+    }
+
+    this.logger.info(`   ✓ Rewrote ${rewrittenFiles} file(s) out of ${checkedFiles} checked\n`);
+  }
+
+  private async collectTypeScriptSourceFiles(dir: string): Promise<string[]> {
+    if (!existsSync(dir)) {
+      return [];
+    }
+
+    const files: string[] = [];
+    const items = await readdir(dir);
+    for (const item of items) {
+      const fullPath = join(dir, item);
+      const stats = await fsStat(fullPath);
+      if (stats.isDirectory()) {
+        files.push(...(await this.collectTypeScriptSourceFiles(fullPath)));
+        continue;
+      }
+
+      if (item.endsWith('.ts') || item.endsWith('.tsx')) {
+        files.push(fullPath);
+      }
+    }
+
+    return files;
   }
 
   private async rewriteWorkspaceDependencies(config: SyncConfig): Promise<void> {

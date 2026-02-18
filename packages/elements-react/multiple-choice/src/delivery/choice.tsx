@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 
-import ChoiceInput from './choice-input';
+import ChoiceInput from './choice-input.js';
 
 const ChoiceContainer: any = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'noBorder' && prop !== 'horizontalLayout',

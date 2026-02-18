@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import IconBase from './icon-base';
+import IconBase from './icon-base.js';
 import PropTypes from 'prop-types';
 import React from 'react';
 

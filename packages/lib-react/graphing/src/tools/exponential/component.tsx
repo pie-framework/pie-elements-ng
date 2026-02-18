@@ -10,7 +10,7 @@
 
 import debug from 'debug';
 import { buildDataPoints, exponentialFromTwoPoints } from '@pie-lib/graphing-utils';
-import { rootEdgeComponent, withRootEdge } from '../shared/line/with-root-edge';
+import { rootEdgeComponent, withRootEdge } from '../shared/line/with-root-edge.js';
 
 const log = debug('pie-lib:graphing:exponential');
 

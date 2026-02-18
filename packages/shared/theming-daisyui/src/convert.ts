@@ -1,6 +1,6 @@
 import type { PieTheme } from '@pie-element/shared-types';
 import type { PieThemeExtended } from '@pie-element/shared-theming';
-import { lighten, darken, rgba } from './colors';
+import { lighten, darken, rgba } from './colors.js';
 
 /**
  * Convert DaisyUI theme to extended PIE theme

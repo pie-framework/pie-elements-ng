@@ -13,8 +13,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
 
-import Main from './main';
-import defaults from './defaults';
+import Main from './main.js';
+import defaults from './defaults.js';
 
 const modelWithDefaults = (m) => ({ ...defaults.model, ...m });
 

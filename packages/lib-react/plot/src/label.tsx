@@ -12,7 +12,7 @@ import React, { useState } from 'react';
 import { Readable } from '@pie-lib/render-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import PropTypes from 'prop-types';
-import { extractTextFromHTML, isEmptyString } from './utils';
+import { extractTextFromHTML, isEmptyString } from './utils.js';
 
 const styles = {
   axisLabel: {

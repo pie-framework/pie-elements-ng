@@ -7,13 +7,13 @@
  * Ported from @pie-lib/feedback with TypeScript types and improved structure
  */
 
-export * from './types';
-export * from './defaults';
-export * from './utils';
+export * from './types.js';
+export * from './defaults.js';
+export * from './utils.js';
 
-import type { Correctness, Feedback, FeedbackConfig } from './types';
-import { defaultFeedback } from './defaults';
-import { normalizeCorrectness } from './utils';
+import type { Correctness, Feedback, FeedbackConfig } from './types.js';
+import { defaultFeedback } from './defaults.js';
+import { normalizeCorrectness } from './utils.js';
 
 /**
  * Get the feedback message for a specific correctness level (async)

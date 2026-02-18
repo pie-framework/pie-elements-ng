@@ -8,5 +8,5 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Fade from './fade';
+import Fade from './fade.js';
 export { Fade };

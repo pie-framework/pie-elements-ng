@@ -12,12 +12,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { gridDraggable } from '@pie-lib/plot';
-import * as utils from '../../../utils';
-import { correct, disabled, incorrect, missing } from '../styles';
-import { RawBp } from './base-point';
-import { RawArrow } from './arrow-point';
+import * as utils from '../../../utils.js';
+import { correct, disabled, incorrect, missing } from '../styles.js';
+import { RawBp } from './base-point.js';
+import { RawArrow } from './arrow-point.js';
 import { color } from '@pie-lib/render-ui';
-import BaseArrow from './arrow';
+import BaseArrow from './arrow.js';
 
 const opts = {
   bounds: (props, { domain, range }) => {

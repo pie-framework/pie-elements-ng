@@ -11,7 +11,7 @@
 import React from 'react';
 import { Rect } from 'react-konva';
 
-import DrawableHelper from './drawable-helper';
+import DrawableHelper from './drawable-helper.js';
 
 export default class RectangleDrawable extends DrawableHelper {
   static TYPE = 'RectangleDrawable';

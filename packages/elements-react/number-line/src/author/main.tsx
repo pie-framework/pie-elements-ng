@@ -11,22 +11,22 @@
 import React from 'react';
 import { FormSection, InputContainer, AlertDialog, settings, layout } from '@pie-lib/config-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { NumberLineComponent, dataConverter, tickUtils  } from '../delivery';
-import NumberTextField from './number-text-field';
-import CardBar from './card-bar';
-import Size from './size';
+import { NumberLineComponent, dataConverter, tickUtils  } from '../delivery/index.js';
+import NumberTextField from './number-text-field.js';
+import CardBar from './card-bar.js';
+import Size from './size.js';
 import PropTypes from 'prop-types';
-import Domain from './domain';
-import Arrows from './arrows';
-import PointConfig from './point-config';
+import Domain from './domain.js';
+import Arrows from './arrows.js';
+import PointConfig from './point-config.js';
 import { cloneDeep } from 'lodash-es';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
-import Ticks from './ticks';
-import { model as defaultModel } from './defaults';
-import { generateValidationMessage } from './utils';
+import Ticks from './ticks.js';
+import { model as defaultModel } from './defaults.js';
+import { generateValidationMessage } from './utils.js';
 import * as math from 'mathjs';
 
 const trimModel = (model) => ({

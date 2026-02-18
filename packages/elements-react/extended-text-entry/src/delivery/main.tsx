@@ -19,7 +19,7 @@ import { styled } from '@mui/material/styles';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { color, Feedback, Collapsible, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
 
-import AnnotationEditor from './annotation/annotation-editor';
+import AnnotationEditor from './annotation/annotation-editor.js';
 
 const log = debug('@pie-ui:extended-text-entry');
 

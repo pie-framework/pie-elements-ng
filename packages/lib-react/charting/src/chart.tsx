@@ -16,11 +16,11 @@ import { cloneDeep } from 'lodash-es';
 
 import { createGraphProps, Root } from '@pie-lib/plot';
 import { AlertDialog } from '@pie-lib/config-ui';
-import ChartGrid from './grid';
-import ChartAxes from './axes';
-import { dataToXBand, getDomainAndRangeByChartType, getGridLinesAndAxisByChartType, getTopPadding } from './utils';
-import chartTypes from './chart-types';
-import ActionsButton from './actions-button';
+import ChartGrid from './grid.js';
+import ChartAxes from './axes.js';
+import { dataToXBand, getDomainAndRangeByChartType, getGridLinesAndAxisByChartType, getTopPadding } from './utils.js';
+import chartTypes from './chart-types.js';
+import ActionsButton from './actions-button.js';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;

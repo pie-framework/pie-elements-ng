@@ -13,7 +13,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-import StimulusTabs from './stimulus-tabs';
+import StimulusTabs from './stimulus-tabs.js';
 
 export default class PiePassage extends HTMLElement {
   constructor() {

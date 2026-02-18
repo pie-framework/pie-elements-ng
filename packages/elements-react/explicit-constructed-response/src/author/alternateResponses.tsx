@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { cloneDeep, isEqual, map, reduce } from 'lodash-es';
 
-import AlternateSection from './alternateSection';
+import AlternateSection from './alternateSection.js';
 
 export class AlternateResponses extends React.Component {
   static propTypes = {

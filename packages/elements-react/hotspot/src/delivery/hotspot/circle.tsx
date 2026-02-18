@@ -11,8 +11,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Circle, Group, Rect } from 'react-konva';
-import ImageComponent from './image-konva-tooltip';
-import { faCorrect, faWrong } from './icons';
+import ImageComponent from './image-konva-tooltip.js';
+import { faCorrect, faWrong } from './icons.js';
 
 class CircleComponent extends React.Component {
   constructor(props) {

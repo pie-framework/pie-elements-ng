@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { PreviewLayout } from '@pie-lib/render-ui';
-import MultipleChoice from './multiple-choice';
+import MultipleChoice from './multiple-choice.js';
 
 class Main extends React.Component {
   static propTypes = {

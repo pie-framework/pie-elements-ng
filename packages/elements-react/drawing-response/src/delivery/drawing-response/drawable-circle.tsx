@@ -11,7 +11,7 @@
 import React from 'react';
 import { Circle } from 'react-konva';
 
-import DrawableHelper from './drawable-helper';
+import DrawableHelper from './drawable-helper.js';
 
 export default class CircleDrawable extends DrawableHelper {
   static TYPE = 'CircleDrawable';

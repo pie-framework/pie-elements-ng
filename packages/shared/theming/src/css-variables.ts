@@ -1,5 +1,5 @@
-import type { PieThemeExtended, CssVariableMapping } from './types';
-import { DEFAULT_CSS_MAPPINGS } from './constants';
+import type { PieThemeExtended, CssVariableMapping } from './types.js';
+import { DEFAULT_CSS_MAPPINGS } from './constants.js';
 
 /**
  * Generate CSS variables from a PIE theme

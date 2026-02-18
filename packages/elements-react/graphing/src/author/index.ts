@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Configure from './configure';
+import Configure from './configure.js';
 import {
   DeleteImageEvent,
   DeleteSoundEvent,
@@ -19,7 +19,7 @@ import {
   ModelUpdatedEvent,
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
-import defaultValues from './defaults';
+import defaultValues from './defaults.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { cloneDeep } from 'lodash-es';
 

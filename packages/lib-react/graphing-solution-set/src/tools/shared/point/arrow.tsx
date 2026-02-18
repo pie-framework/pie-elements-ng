@@ -12,8 +12,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { types } from '@pie-lib/plot';
-import { ArrowHead } from '../arrow-head';
-import { thinnerShapesNeeded } from '../../../utils';
+import { ArrowHead } from '../arrow-head.js';
+import { thinnerShapesNeeded } from '../../../utils.js';
 
 export default class Arrow extends React.Component {
   static propTypes = {

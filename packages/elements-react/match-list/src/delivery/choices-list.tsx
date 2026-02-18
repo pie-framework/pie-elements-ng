@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { find, isEmpty, isUndefined } from 'lodash-es';
-import DragAndDropAnswer from './answer';
+import DragAndDropAnswer from './answer.js';
 import { MatchDroppablePlaceholder } from '@pie-lib/drag';
 
 const ChoicesContainer: any = styled('div')(({ theme }) => ({

@@ -11,13 +11,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { BasePoint } from '../shared/point';
-import BgCircle from './bg-circle';
-import { equalPoints, getMiddleOfTwoPoints, point } from '../../utils';
+import { BasePoint } from '../shared/point/index.js';
+import BgCircle from './bg-circle.js';
+import { equalPoints, getMiddleOfTwoPoints, point } from '../../utils.js';
 import { types } from '@pie-lib/plot';
-import { rootEdgeComponent } from '../shared/line/with-root-edge';
+import { rootEdgeComponent } from '../shared/line/with-root-edge.js';
 import ReactDOM from 'react-dom';
-import MarkLabel from '../../mark-label';
+import MarkLabel from '../../mark-label.js';
 import { isEmpty } from 'lodash-es';
 import { color } from '@pie-lib/render-ui';
 import { keyframes, styled } from '@mui/material/styles';

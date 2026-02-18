@@ -5,5 +5,5 @@
  * and choice persistence/shuffling.
  */
 
-export { lockChoices, getShuffledChoices } from './persistence';
-export * as partialScoring from './partial-scoring';
+export { lockChoices, getShuffledChoices } from './persistence.js';
+export * as partialScoring from './partial-scoring.js';

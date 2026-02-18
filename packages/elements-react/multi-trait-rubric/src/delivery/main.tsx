@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import Scale from './scale';
+import Scale from './scale.js';
 import Link from '@mui/material/Link';
 import Collapse from '@mui/material/Collapse';
 import { color, UiLayout } from '@pie-lib/render-ui';

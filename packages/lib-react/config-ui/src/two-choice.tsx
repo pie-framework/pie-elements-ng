@@ -10,7 +10,7 @@
 
 import { InputContainer } from '@pie-lib/render-ui';
 import PropTypes from 'prop-types';
-import RadioWithLabel from './radio-with-label';
+import RadioWithLabel from './radio-with-label.js';
 import React from 'react';
 import { styled } from '@mui/material/styles';
 

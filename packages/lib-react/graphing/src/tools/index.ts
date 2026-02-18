@@ -8,17 +8,17 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { tool as point } from './point';
-import { tool as circle } from './circle';
-import { tool as polygon } from './polygon';
-import { tool as sine } from './sine';
-import { tool as parabola } from './parabola';
-import { tool as line } from './line';
-import { tool as segment } from './segment';
-import { tool as ray } from './ray';
-import { tool as vector } from './vector';
-import { tool as absolute } from './absolute';
-import { tool as exponential } from './exponential';
+import { tool as point } from './point/index.js';
+import { tool as circle } from './circle/index.js';
+import { tool as polygon } from './polygon/index.js';
+import { tool as sine } from './sine/index.js';
+import { tool as parabola } from './parabola/index.js';
+import { tool as line } from './line/index.js';
+import { tool as segment } from './segment/index.js';
+import { tool as ray } from './ray/index.js';
+import { tool as vector } from './vector/index.js';
+import { tool as absolute } from './absolute/index.js';
+import { tool as exponential } from './exponential/index.js';
 
 const allTools = [
   'circle',

@@ -12,9 +12,9 @@ import debug from 'debug';
 import { isEmpty } from 'lodash-es';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 
-import { isResponseCorrect } from './utils';
+import { isResponseCorrect } from './utils.js';
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const log = debug('pie-elements:hotspot:controller');
 

@@ -13,10 +13,10 @@
 import './app.css';
 
 // Export ESM players (recommended)
-export { EsmElementPlayer, EsmPrintPlayer } from './players';
+export { EsmElementPlayer, EsmPrintPlayer } from './players/index.js';
 
 // Import players to register them as custom elements
-import './players';
+import './players/index.js';
 
 // Re-export types
-export type { ElementPlayerProps, PieController, Tab } from './lib/types';
+export type { ElementPlayerProps, PieController, Tab } from './lib/types.js';

@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { findKey } from 'lodash-es';
-import Choice from './choice';
+import Choice from './choice.js';
 import { DragDroppablePlaceholder } from '@pie-lib/drag';
 
 export default class Choices extends React.Component {

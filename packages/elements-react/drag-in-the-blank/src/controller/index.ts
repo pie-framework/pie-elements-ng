@@ -9,9 +9,9 @@
  */
 
 import { isEmpty } from 'lodash-es';
-import { getAllCorrectResponses, choiceIsEmpty } from './utils';
+import { getAllCorrectResponses, choiceIsEmpty } from './utils.js';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 export const normalize = (question) => ({
   ...defaults,

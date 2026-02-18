@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { buildTickData } from './tick-utils';
+import { buildTickData } from './tick-utils.js';
 import { color } from '@pie-lib/render-ui';
 
 const StyledText: any = styled('text')({

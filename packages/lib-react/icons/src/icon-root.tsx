@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Sized from './sized';
+import Sized from './sized.js';
 
 export const normalizeSize = (size) => {
   return typeof size === 'string' ? size : typeof size === 'number' ? `${size}px` : '30px';

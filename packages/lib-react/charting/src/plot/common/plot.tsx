@@ -16,10 +16,10 @@ import { Group } from '@visx/group';
 import debug from 'debug';
 
 import { types } from '@pie-lib/plot';
-import DraggableHandle, { DragHandle } from '../../common/drag-handle';
+import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
 import { color } from '@pie-lib/render-ui';
-import { bandKey } from '../../utils';
-import { correct, incorrect } from '../../common/styles';
+import { bandKey } from '../../utils.js';
+import { correct, incorrect } from '../../common/styles.js';
 
 const log = debug('pie-lib:chart:bars');
 const ICON_SIZE = 16; // 10px icon + 2px padding on all sides + 1px border

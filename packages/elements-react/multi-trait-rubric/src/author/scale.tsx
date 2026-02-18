@@ -17,10 +17,10 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 import { DragProvider } from '@pie-lib/drag';
 
-import TraitsHeader from './traitsHeader';
-import TraitTile from './trait';
-import { Arrow, BlockWidth, DragHandleSpace, MultiTraitButton, PrimaryBlockWidth } from './common';
-import { DecreaseMaxPoints, DeleteScale, DeleteTrait, InfoDialog } from './modals';
+import TraitsHeader from './traitsHeader.js';
+import TraitTile from './trait.js';
+import { Arrow, BlockWidth, DragHandleSpace, MultiTraitButton, PrimaryBlockWidth } from './common.js';
+import { DecreaseMaxPoints, DeleteScale, DeleteTrait, InfoDialog } from './modals.js';
 
 const AdjustedBlockWidth = BlockWidth + 2 * 8; // 8 is padding
 

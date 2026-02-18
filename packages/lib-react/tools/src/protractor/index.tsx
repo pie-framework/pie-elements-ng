@@ -11,9 +11,9 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import Graphic from './graphic';
-import Anchor from '../anchor';
-import Rotatable from '../rotatable';
+import Graphic from './graphic.js';
+import Anchor from '../anchor.js';
+import Rotatable from '../rotatable.js';
 
 const StyledProtractor: any = styled('div')(() => ({
   position: 'relative',

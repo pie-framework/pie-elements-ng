@@ -8,13 +8,13 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { lineBase, lineToolComponent, styles } from '../shared/line';
-import { Arrow } from '../shared/point';
+import { lineBase, lineToolComponent, styles } from '../shared/line/index.js';
+import { Arrow } from '../shared/point/index.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';
 import { styled } from '@mui/material/styles';
-import { getDistanceBetweenTwoPoints } from '../../utils';
+import { getDistanceBetweenTwoPoints } from '../../utils.js';
 
 const StyledLine: any = styled('line')(({ theme, disabled, correctness }) => ({
   ...styles.line(theme),

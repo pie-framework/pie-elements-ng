@@ -11,9 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import TokenSelect from './token-select';
-import { normalize } from './tokenizer/builder';
-import { TokenTypes } from './token-select/token';
+import TokenSelect from './token-select/index.js';
+import { normalize } from './tokenizer/builder.js';
+import { TokenTypes } from './token-select/token.js';
 import debug from 'debug';
 
 const log = debug('@pie-lib:text-select');

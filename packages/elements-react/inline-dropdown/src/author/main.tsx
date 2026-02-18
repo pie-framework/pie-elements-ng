@@ -25,9 +25,9 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Info from '@mui/icons-material/Info';
 
-import InlineDropdownToolbar from './inline-dropdown-toolbar';
-import { generateValidationMessage } from './utils';
-import ResponseAreaComponent from './response-area';
+import InlineDropdownToolbar from './inline-dropdown-toolbar.js';
+import { generateValidationMessage } from './utils.js';
+import ResponseAreaComponent from './response-area.js';
 
 const { toggle, Panel, dropdown } = settings;
 

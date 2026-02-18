@@ -1,5 +1,5 @@
 import { createTheme, type Theme } from '@mui/material/styles';
-import type { PieThemeExtended, MuiThemeOptions } from './types';
+import type { PieThemeExtended, MuiThemeOptions } from './types.js';
 
 /**
  * Create MUI theme from PIE theme

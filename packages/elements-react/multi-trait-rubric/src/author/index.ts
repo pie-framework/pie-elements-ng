@@ -19,10 +19,10 @@ import {
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-import Main from './main';
-import defaults from './defaults';
-import { addOrRemoveScaleColumn } from './utils';
-import { excludeZeroTypes } from './modals';
+import Main from './main.js';
+import defaults from './defaults.js';
+import { addOrRemoveScaleColumn } from './utils.js';
+import { excludeZeroTypes } from './modals.js';
 
 const modelWithDefaults = (m) => ({ ...defaults.model, ...m });
 const configurationWithDefaults = (c) => ({ ...defaults.configuration, ...c });

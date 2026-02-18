@@ -11,9 +11,9 @@
 import React from 'react';
 import IconButton from '@mui/material/IconButton';
 import Delete from '@mui/icons-material/Delete';
-import { PIE_TOOLBAR__CLASS } from '../constants';
+import { PIE_TOOLBAR__CLASS } from '../constants.js';
 import { styled } from '@mui/material/styles';
-import { DoneButton } from '../components/common/done-button';
+import { DoneButton } from '../components/common/done-button.js';
 
 const StyledToolbar: any = styled('div', {
   shouldForwardProp: (prop) => !['showDone', 'toolbarAlignment', 'isFocused', 'autoWidth', 'isHidden'].includes(prop),

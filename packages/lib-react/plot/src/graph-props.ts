@@ -9,7 +9,7 @@
  */
 
 import invariant from 'invariant';
-import { snapTo } from './utils';
+import { snapTo } from './utils.js';
 import { scaleLinear } from 'd3-scale';
 
 const createSnapMinAndMax = ({ min, max, step }) => {

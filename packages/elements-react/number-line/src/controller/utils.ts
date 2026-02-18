@@ -9,7 +9,7 @@
  */
 
 import * as math from 'mathjs';
-import { generateMajorValuesForMinor, generateMinorValues, getMinorLimits } from './tickUtils';
+import { generateMajorValuesForMinor, generateMinorValues, getMinorLimits } from './tickUtils.js';
 
 /*
  * This function is duplicated in configure/main.js

@@ -20,9 +20,9 @@ import { color, Feedback, Collapsible, hasText, hasMedia, PreviewPrompt, UiLayou
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
 import { AlertDialog } from '@pie-lib/config-ui';
-import Choices from './choices';
-import Choice from './choice';
-import Categories from './categories';
+import Choices from './choices.js';
+import Choice from './choice.js';
+import Categories from './categories.js';
 
 const { translator } = Translator;
 const log = debug('@pie-ui:categorize');

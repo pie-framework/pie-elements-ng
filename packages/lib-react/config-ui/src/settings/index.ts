@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Panel from './panel';
+import Panel from './panel.js';
 
 export { Panel };
 

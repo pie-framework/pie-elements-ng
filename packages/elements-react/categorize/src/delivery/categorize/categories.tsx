@@ -13,8 +13,8 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 
-import GridContent from './grid-content';
-import Category, { CategoryType } from './category';
+import GridContent from './grid-content.js';
+import Category, { CategoryType } from './category.js';
 
 export { CategoryType };
 

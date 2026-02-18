@@ -15,8 +15,8 @@ import { InlineMenu as Menu } from '@pie-lib/render-ui';
 import MenuItem from '@mui/material/MenuItem';
 import PropTypes from 'prop-types';
 
-import NumberInput from './NumberInput';
-import isNumeric from './isNumeric';
+import NumberInput from './NumberInput.js';
+import isNumeric from './isNumeric.js';
 
 const MatrixEditableButtonWrapper = styled.div`
   width: 100%;

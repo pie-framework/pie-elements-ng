@@ -20,7 +20,7 @@ import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
 import { max } from 'lodash-es';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { stripHtmlTags, getAdjustedLength, decodeHTML } from './markupUtils';
+import { stripHtmlTags, getAdjustedLength, decodeHTML } from './markupUtils.js';
 
 const DesignContainer: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(0.5),

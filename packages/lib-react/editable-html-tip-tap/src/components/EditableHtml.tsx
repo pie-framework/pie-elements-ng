@@ -19,7 +19,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
 import { styled } from '@mui/material/styles';
 
-import ExtendedTable from '../extensions/extended-table';
+import ExtendedTable from '../extensions/extended-table.js';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
@@ -28,15 +28,15 @@ import {
   ExplicitConstructedResponseNode,
   InlineDropdownNode,
   ResponseAreaExtension,
-} from '../extensions/responseArea';
-import { MathNode } from '../extensions/math';
-import { ImageUploadNode } from '../extensions/image';
-import { Media } from '../extensions/media';
-import { CSSMark } from '../extensions/css';
+} from '../extensions/responseArea.js';
+import { MathNode } from '../extensions/math.js';
+import { ImageUploadNode } from '../extensions/image.js';
+import { Media } from '../extensions/media.js';
+import { CSSMark } from '../extensions/css.js';
 
-import EditorContainer from './TiptapContainer';
-import { valueToSize } from '../utils/size';
-import { buildExtensions, PLUGINS_MAP } from '../extensions';
+import EditorContainer from './TiptapContainer.js';
+import { valueToSize } from '../utils/size.js';
+import { buildExtensions, PLUGINS_MAP } from '../extensions/index.js';
 
 const defaultToolbarOpts = {
   position: 'bottom',

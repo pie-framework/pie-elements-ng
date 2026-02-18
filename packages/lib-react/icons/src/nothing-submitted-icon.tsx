@@ -10,7 +10,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import { IconRoot } from './icon-root';
+import { IconRoot } from './icon-root.js';
 
 // Exclamation mark
 const Exclamation = ({ fill }) => (

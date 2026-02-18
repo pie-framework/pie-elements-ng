@@ -15,11 +15,11 @@ import Translator from '@pie-lib/translator';
 import { Collapsible, color, hasMedia, hasText, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
 
-import Feedback from './feedback';
-import Graph from './graph';
+import Feedback from './feedback.js';
+import Graph from './graph/index.js';
 import PropTypes from 'prop-types';
-import PointChooser from './point-chooser';
-import { buildElementModel } from './graph/elements/builder';
+import PointChooser from './point-chooser/index.js';
+import { buildElementModel } from './graph/elements/builder.js';
 
 const { translator } = Translator;
 

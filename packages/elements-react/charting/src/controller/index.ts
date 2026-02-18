@@ -10,7 +10,7 @@
 
 import debug from 'debug';
 import { isEmpty, isEqual, pick } from 'lodash-es';
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 import { partialScoring } from '@pie-element/shared-controller-utils';
 

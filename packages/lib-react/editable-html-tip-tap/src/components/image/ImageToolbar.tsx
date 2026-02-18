@@ -14,8 +14,8 @@ import debug from 'debug';
 import ReactDOM from 'react-dom';
 import { styled } from '@mui/material/styles';
 
-import AltDialog from './AltDialog';
-import { MarkButton } from '../common/toolbar-buttons';
+import AltDialog from './AltDialog.js';
+import { MarkButton } from '../common/toolbar-buttons.js';
 
 const log = debug('@pie-lib:editable-html:plugins:image:image-toolbar');
 

@@ -21,9 +21,9 @@ import {
   getRangeDetails,
   removeElemsWrapping,
   wrapRange,
-} from './annotation-utils';
-import FreeformEditor from './freeform-editor';
-import AnnotationMenu from './annotation-menu';
+} from './annotation-utils.js';
+import FreeformEditor from './freeform-editor.js';
+import AnnotationMenu from './annotation-menu.js';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer } from '@pie-lib/config-ui';
 

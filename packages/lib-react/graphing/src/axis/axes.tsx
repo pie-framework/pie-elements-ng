@@ -12,9 +12,9 @@ import React from 'react';
 import { Axis } from '@visx/axis';
 import { types } from '@pie-lib/plot';
 import PropTypes from 'prop-types';
-import Arrow from './arrow';
+import Arrow from './arrow.js';
 import { styled } from '@mui/material/styles';
-import { amountToIncreaseWidth, countWords, findLongestWord, getTickValues } from '../utils';
+import { amountToIncreaseWidth, countWords, findLongestWord, getTickValues } from '../utils.js';
 import { color, Readable } from '@pie-lib/render-ui';
 
 export const AxisPropTypes = {

@@ -177,6 +177,35 @@ import { assignProps } from '@pie-element/shared-utils';
 assignProps(element, props);
 ```
 
+### 8. Relative Import Specifiers to Node ESM Paths
+**File**: `tools/cli/src/lib/upstream/sync-imports.ts`
+**Function**: `rewriteRelativeSpecifiersForNodeEsm()`
+
+After sync writes converted TypeScript files, we normalize relative module specifiers to explicit
+runtime ESM paths that work with `NodeNext`:
+
+```javascript
+// Before
+import { x } from './utils';
+export * from '../types';
+const mod = await import('./lazy');
+
+// After
+import { x } from './utils.js';
+export * from '../types.js';
+const mod = await import('./lazy.js');
+```
+
+Directory/barrel imports are resolved to `index.js` when an index file exists:
+
+```javascript
+// Before
+export * from './commands';
+
+// After
+export * from './commands/index.js';
+```
+
 ## How Transforms Are Applied
 
 ### Transform Order

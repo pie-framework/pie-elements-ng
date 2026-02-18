@@ -12,10 +12,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DragProvider } from '@pie-lib/drag';
 import { DragOverlay, rectIntersection } from '@dnd-kit/core';
-import Choices from './choices';
-import Choice from './choices/choice';
-import Blank from './components/blank';
-import { withMask } from './with-mask';
+import Choices from './choices/index.js';
+import Choice from './choices/choice.js';
+import Blank from './components/blank.js';
+import { withMask } from './with-mask.js';
 
 const Masked = withMask('blank', (props) => (node, data, onChange) => {
   const dataset = node.data?.dataset || {};

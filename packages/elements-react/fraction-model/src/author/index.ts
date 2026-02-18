@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Main from './main';
+import Main from './main.js';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
@@ -18,7 +18,7 @@ import {
   InsertSoundEvent,
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
-import defaultValues from './defaults';
+import defaultValues from './defaults.js';
 
 export default class FractionModelConfigure extends HTMLElement {
   /**

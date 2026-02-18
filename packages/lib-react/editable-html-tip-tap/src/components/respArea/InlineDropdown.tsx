@@ -11,7 +11,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { NodeViewWrapper } from '@tiptap/react';
-import { Chevron } from '../icons/RespArea';
+import { Chevron } from '../icons/RespArea.js';
 import ReactDOM from 'react-dom';
 
 const InlineDropdown = (props) => {

@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { NodeViewWrapper } from '@tiptap/react';
-import DragDropTile from './choice';
+import DragDropTile from './choice.js';
 import { omit } from 'lodash-es';
 
 export const onValueChange = (editor, node, pos, choice) => {

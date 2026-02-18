@@ -10,14 +10,14 @@
 
 import React from 'react';
 import { cloneDeep, isEmpty, isEqual } from 'lodash-es';
-import { BasePoint } from '../point';
+import { BasePoint } from '../point/index.js';
 import { gridDraggable, trig, types, utils } from '@pie-lib/plot';
 import PropTypes from 'prop-types';
-import { correct, disabled, disabledSecondary, incorrect, missing } from '../styles';
+import { correct, disabled, disabledSecondary, incorrect, missing } from '../styles.js';
 import ReactDOM from 'react-dom';
-import MarkLabel from '../../../mark-label';
+import MarkLabel from '../../../mark-label.js';
 import { color } from '@pie-lib/render-ui';
-import { equalPoints, getMiddleOfTwoPoints, sameAxes } from '../../../utils';
+import { equalPoints, getMiddleOfTwoPoints, sameAxes } from '../../../utils.js';
 import { styled } from '@mui/material/styles';
 
 const StyledLineGroup: any = styled('g')(({ disabled, correctness }) => ({

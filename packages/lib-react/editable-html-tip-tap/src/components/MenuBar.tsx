@@ -31,15 +31,15 @@ import BorderAll from '@mui/icons-material/BorderAll';
 
 import { useEditorState } from '@tiptap/react';
 
-import { PIE_TOOLBAR__CLASS } from '../constants';
-import { ToolbarIcon } from './respArea/ToolbarIcon';
-import { spanishConfig, specialConfig } from './characters/characterUtils';
-import TextAlignIcon from './icons/TextAlign';
-import CSSIcon from './icons/CssIcon';
-import { AddColumn, AddRow, RemoveColumn, RemoveRow, RemoveTable } from './icons/TableIcons';
+import { PIE_TOOLBAR__CLASS } from '../constants.js';
+import { ToolbarIcon } from './respArea/ToolbarIcon.js';
+import { spanishConfig, specialConfig } from './characters/characterUtils.js';
+import TextAlignIcon from './icons/TextAlign.js';
+import CSSIcon from './icons/CssIcon.js';
+import { AddColumn, AddRow, RemoveColumn, RemoveRow, RemoveTable } from './icons/TableIcons.js';
 
-import { CharacterIcon, CharacterPicker } from './CharacterPicker';
-import { DoneButton } from './common/done-button';
+import { CharacterIcon, CharacterPicker } from './CharacterPicker.js';
+import { DoneButton } from './common/done-button.js';
 
 const SuperscriptIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="none">

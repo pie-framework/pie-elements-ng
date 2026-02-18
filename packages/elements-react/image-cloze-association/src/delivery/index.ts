@@ -14,7 +14,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { EnableAudioAutoplayImage } from '@pie-lib/render-ui';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 
-import ImageClozeAssociationComponent from './root';
+import ImageClozeAssociationComponent from './root.js';
 
 export default class ImageClozeAssociation extends HTMLElement {
   constructor() {

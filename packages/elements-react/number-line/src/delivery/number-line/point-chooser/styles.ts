@@ -11,7 +11,7 @@
 const iconHeight = 41;
 const iconWidth = 42;
 
-import img from './img';
+import img from './img.js';
 
 const noselect = () => ({
   '-webkit-touch-callout': 'none' /* iOS Safari */,

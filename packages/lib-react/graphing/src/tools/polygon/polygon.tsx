@@ -12,9 +12,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { alpha, styled } from '@mui/material/styles';
 import { gridDraggable, types } from '@pie-lib/plot';
-import * as utils from '../../utils';
+import * as utils from '../../utils.js';
 import { color } from '@pie-lib/render-ui';
-import { correct, disabled, incorrect, missing } from '../shared/styles';
+import { correct, disabled, incorrect, missing } from '../shared/styles.js';
 
 const StyledPolygon: any = styled('polygon')(({ theme, disabled: isDisabled, correctness }) => ({
   fill: alpha(theme.palette.primary.light, 0.2),

@@ -9,7 +9,7 @@
  */
 
 import debug from 'debug';
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const log = debug('pie-elements:drawing-response:controller');
 

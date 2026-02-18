@@ -1,4 +1,4 @@
-import type { MatrixCellLocation, MatrixType } from '../types';
+import type { MatrixCellLocation, MatrixType } from '../types.js';
 
 const MAX_ROWS = 5;
 const MAX_COLUMNS = 5;

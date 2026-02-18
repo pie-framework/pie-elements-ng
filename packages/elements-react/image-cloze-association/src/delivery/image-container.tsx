@@ -12,7 +12,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 
-import ImageDropTarget from './image-drop-target';
+import ImageDropTarget from './image-drop-target.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   margin: theme.spacing(2),

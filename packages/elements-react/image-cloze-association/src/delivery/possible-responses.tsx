@@ -14,7 +14,7 @@ import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 import { ICADroppablePlaceholder } from '@pie-lib/drag';
 
-import PossibleResponse from './possible-response';
+import PossibleResponse from './possible-response.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   backgroundColor: color.background(),

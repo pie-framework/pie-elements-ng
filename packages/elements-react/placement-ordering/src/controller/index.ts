@@ -8,14 +8,14 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { flattenCorrect, getAllCorrectResponses, score } from './scoring';
+import { flattenCorrect, getAllCorrectResponses, score } from './scoring.js';
 
 import { every, isArray, isEmpty, isEqual, map, reduce } from 'lodash-es';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import debug from 'debug';
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const log = debug('@pie-element:placement-ordering:controller');
 import Translator from '@pie-lib/translator';

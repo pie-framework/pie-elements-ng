@@ -8,9 +8,9 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
-import { isResponseCorrect } from './utils';
+import { isResponseCorrect } from './utils.js';
 import { get, isEmpty } from 'lodash-es';
 import Translator from '@pie-lib/translator';
 

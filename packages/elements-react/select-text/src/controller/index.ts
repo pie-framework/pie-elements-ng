@@ -12,7 +12,7 @@ import debug from 'debug';
 import { isEmpty } from 'lodash-es';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const log = debug('@pie-element:select-text:controller');
 

@@ -16,7 +16,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import classnames from 'classnames';
 
-import { GripIcon } from '../../icons/RespArea';
+import { GripIcon } from '../../icons/RespArea.js';
 
 const StyledContent: any = styled('span')(({ theme }) => ({
   border: `solid 0px ${theme.palette.primary.main}`,

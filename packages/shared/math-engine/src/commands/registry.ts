@@ -2,8 +2,8 @@ import type {
   MathCommandDescriptor,
   MathEngineCommand,
   MathEngineStructuredCommand,
-} from '../types';
-import { MatrixModel } from './matrix-model';
+} from '../types.js';
+import { MatrixModel } from './matrix-model.js';
 
 function hasType<TType extends MathEngineStructuredCommand['type']>(
   value: MathEngineCommand,

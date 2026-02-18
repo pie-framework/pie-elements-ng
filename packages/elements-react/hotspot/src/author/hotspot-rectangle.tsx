@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Rect, Group, Transformer } from 'react-konva';
-import DeleteWidget from './DeleteWidget';
+import DeleteWidget from './DeleteWidget.js';
 
 class RectComponent extends React.Component {
   constructor(props) {

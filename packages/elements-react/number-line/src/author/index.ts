@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Main from './main';
+import Main from './main.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -18,7 +18,7 @@ import {
   InsertImageEvent,
   DeleteImageEvent,
 } from '@pie-element/shared-configure-events';
-import * as defaults from './defaults';
+import * as defaults from './defaults.js';
 import * as math from 'mathjs';
 import { cloneDeep } from 'lodash-es';
 

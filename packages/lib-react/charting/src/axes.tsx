@@ -19,9 +19,9 @@ import { color } from '@pie-lib/render-ui';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
-import { TickCorrectnessIndicator } from './common/correctness-indicators';
-import { bandKey, getRotateAngle, getTickValues } from './utils';
-import MarkLabel from './mark-label';
+import { TickCorrectnessIndicator } from './common/correctness-indicators.js';
+import { bandKey, getRotateAngle, getTickValues } from './utils.js';
+import MarkLabel from './mark-label.js';
 
 const StyledErrorText: any = styled('text')(({ theme }) => ({
   fontSize: theme.typography.fontSize - 2,

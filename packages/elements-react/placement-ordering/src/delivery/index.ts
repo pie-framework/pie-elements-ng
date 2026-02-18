@@ -14,7 +14,7 @@ import { compact } from 'lodash-es';
 import debug from 'debug';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
-import Main from './main';
+import Main from './main.js';
 
 const log = debug('pie-elements:placement-ordering');
 

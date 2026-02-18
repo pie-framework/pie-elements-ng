@@ -22,9 +22,9 @@ import Translator from '@pie-lib/translator';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { DragProvider } from '@pie-lib/drag';
 
-import { HorizontalTiler, VerticalTiler } from './tiler';
-import { buildState, reducer } from './ordering';
-import { haveSameValuesButDifferentOrder } from './utils';
+import { HorizontalTiler, VerticalTiler } from './tiler.js';
+import { buildState, reducer } from './ordering.js';
+import { haveSameValuesButDifferentOrder } from './utils.js';
 
 const { translator } = Translator;
 

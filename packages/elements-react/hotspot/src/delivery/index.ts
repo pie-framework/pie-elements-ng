@@ -14,8 +14,8 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { EnableAudioAutoplayImage } from '@pie-lib/render-ui';
 import { SessionChangedEvent, ModelSetEvent } from '@pie-element/shared-player-events';
 
-import HotspotComponent from './hotspot';
-import { updateSessionValue, updateSessionMetadata } from './session-updater';
+import HotspotComponent from './hotspot/index.js';
+import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
 
 export default class Hotspot extends HTMLElement {
   constructor() {

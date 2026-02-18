@@ -13,10 +13,10 @@ import PropTypes from 'prop-types';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer, settings, layout } from '@pie-lib/config-ui';
 import { styled } from '@mui/material/styles';
-import MatrixColumnsSizeHeaderInput from './MatrixColumnsSizeHeaderInput';
-import MatrixRowsSizeHeaderInput from './MatrixRowsSizeHeaderInput';
-import MatrixLabelTypeHeaderInput from './MatrixLabelTypeHeaderInput';
-import MatrixValues from './MatrixValues';
+import MatrixColumnsSizeHeaderInput from './MatrixColumnsSizeHeaderInput.js';
+import MatrixRowsSizeHeaderInput from './MatrixRowsSizeHeaderInput.js';
+import MatrixLabelTypeHeaderInput from './MatrixLabelTypeHeaderInput.js';
+import MatrixValues from './MatrixValues.js';
 
 const { Panel, toggle, radio } = settings;
 

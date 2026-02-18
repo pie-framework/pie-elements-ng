@@ -14,12 +14,12 @@ import { types } from '@pie-lib/plot';
 import ReactDOM from 'react-dom';
 import { styled } from '@mui/material/styles';
 
-import CoordinatesLabel from '../../../coordinates-label';
-import { thinnerShapesNeeded } from '../../../utils';
-import MissingSVG from '../icons/MissingSVG';
-import CorrectSVG from '../icons/CorrectSVG';
-import IncorrectSVG from '../icons/IncorrectSVG';
-import * as styles from '../styles';
+import CoordinatesLabel from '../../../coordinates-label.js';
+import { thinnerShapesNeeded } from '../../../utils.js';
+import MissingSVG from '../icons/MissingSVG.js';
+import CorrectSVG from '../icons/CorrectSVG.js';
+import IncorrectSVG from '../icons/IncorrectSVG.js';
+import * as styles from '../styles.js';
 
 const StyledPointGroup: any = styled('g')(({ disabled, correctness }) => ({
   cursor: 'pointer',

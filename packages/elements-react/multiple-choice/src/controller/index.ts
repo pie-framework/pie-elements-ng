@@ -10,8 +10,8 @@
 
 /* eslint-disable no-console */
 import { isEmpty } from 'lodash-es';
-import { isResponseCorrect } from './utils';
-import defaults from './defaults';
+import { isResponseCorrect } from './utils.js';
+import defaults from './defaults.js';
 import { lockChoices, partialScoring, getShuffledChoices } from '@pie-element/shared-controller-utils';
 
 const prepareChoice = (model, env, defaultFeedback) => (choice) => {

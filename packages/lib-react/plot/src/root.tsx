@@ -15,9 +15,9 @@ import { pointer, select } from 'd3-selection';
 
 import { color, Readable } from '@pie-lib/render-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { ChildrenType, GraphPropsType } from './types';
-import Label from './label';
-import { extractTextFromHTML, isEmptyObject, isEmptyString } from './utils';
+import { ChildrenType, GraphPropsType } from './types.js';
+import Label from './label.js';
+import { extractTextFromHTML, isEmptyObject, isEmptyString } from './utils.js';
 
 const StyledRoot: any = styled('div')(({ theme }) => ({
   border: `solid 1px ${color.primaryLight()}`,

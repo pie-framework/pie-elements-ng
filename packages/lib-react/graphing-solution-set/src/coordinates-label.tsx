@@ -14,7 +14,7 @@ import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
-import { roundNumber } from './utils';
+import { roundNumber } from './utils.js';
 
 const StyledInputBase: any = styled(InputBase)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,

@@ -12,9 +12,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { gridDraggable, types } from '@pie-lib/plot';
-import * as utils from '../../utils';
+import * as utils from '../../utils.js';
 import { color } from '@pie-lib/render-ui';
-import { correct, incorrect } from '../shared/styles';
+import { correct, incorrect } from '../shared/styles.js';
 
 const StyledPolygon: any = styled('polygon', {
   shouldForwardProp: (prop) => !['isSolution', 'correctness'].includes(prop),

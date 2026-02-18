@@ -18,8 +18,8 @@ import {
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
-import Configure from './configure';
-import defaultValues from './defaults';
+import Configure from './configure.js';
+import defaultValues from './defaults.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const log = debug('pie-elements:graphing:configure');

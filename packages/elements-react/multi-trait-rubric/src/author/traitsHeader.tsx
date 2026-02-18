@@ -29,7 +29,7 @@ import {
   ScaleSettings,
   HeaderHeight,
   HeaderHeightLarge,
-} from './common';
+} from './common.js';
 
 const Label: any = styled('div')({
   width: '140px',

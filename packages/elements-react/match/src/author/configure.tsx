@@ -8,15 +8,15 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { getPluginProps } from './utils';
+import { getPluginProps } from './utils.js';
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { FeedbackConfig, settings, layout, InputContainer, AlertDialog } from '@pie-lib/config-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import PropTypes from 'prop-types';
 import debug from 'debug';
-import GeneralConfigBlock from './general-config-block';
-import AnswerConfigBlock from './answer-config-block';
+import GeneralConfigBlock from './general-config-block.js';
+import AnswerConfigBlock from './answer-config-block.js';
 
 const log = debug('@pie-element:match:configure');
 const { Panel, toggle, radio, dropdown } = settings;

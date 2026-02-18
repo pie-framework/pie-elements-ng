@@ -14,11 +14,11 @@ import { cloneDeep, isEqual } from 'lodash-es';
 import { createGraphProps, Root, types } from '@pie-lib/plot';
 import debug from 'debug';
 
-import { Axes, AxisPropTypes } from './axis';
-import Grid from './grid';
-import { LabelType } from './labels';
-import Bg from './bg';
-import { isDuplicatedMark } from './utils';
+import { Axes, AxisPropTypes } from './axis/index.js';
+import Grid from './grid.js';
+import { LabelType } from './labels.js';
+import Bg from './bg.js';
+import { isDuplicatedMark } from './utils.js';
 
 const log = debug('pie-lib:graphing:graph');
 

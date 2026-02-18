@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { removeChoiceFromAlternate } from '@pie-lib/categorize';
 
-import Category from './category';
+import Category from './category.js';
 
 const CategoriesContainer: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2.5),

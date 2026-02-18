@@ -12,14 +12,14 @@ import React from 'react';
 
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import Button from './button';
+import Button from './button.js';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
 
 const iconHeight = 41;
 const iconWidth = 42;
-import img from './img';
+import img from './img.js';
 
 const StyledDeleteIcon: any = styled('svg')({
   fill: 'black',

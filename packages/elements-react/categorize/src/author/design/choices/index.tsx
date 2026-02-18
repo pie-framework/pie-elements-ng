@@ -11,9 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import Choice from './choice';
-import Header from '../header';
-import Config from './config';
+import Choice from './choice.js';
+import Header from '../header.js';
+import Config from './config.js';
 import { choiceUtils as utils } from '@pie-lib/config-ui';
 import { removeAllChoices } from '@pie-lib/categorize';
 

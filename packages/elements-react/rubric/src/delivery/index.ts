@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Rubric from './main';
+import Rubric from './main.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';

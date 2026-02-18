@@ -10,9 +10,9 @@
 
 import { isEmpty, map, reduce } from 'lodash-es';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
-import defaults from './defaults';
+import defaults from './defaults.js';
 
-import { getAllCorrectResponses } from './utils';
+import { getAllCorrectResponses } from './utils.js';
 
 const getFeedback = (correct) => {
   if (correct) {

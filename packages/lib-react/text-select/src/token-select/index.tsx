@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Token, { TokenTypes } from './token';
+import Token, { TokenTypes } from './token.js';
 import { styled } from '@mui/material/styles';
 import { clone, isEqual } from 'lodash-es';
 import debug from 'debug';

@@ -17,7 +17,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 
-import { Block, BlockWidth, ExpandedInput, PrimaryBlock, Row, SecondaryBlock, UnderlinedInput } from './common';
+import { Block, BlockWidth, ExpandedInput, PrimaryBlock, Row, SecondaryBlock, UnderlinedInput } from './common.js';
 
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';

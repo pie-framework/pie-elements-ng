@@ -15,8 +15,8 @@ import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/sh
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
-import defaults from './defaults';
-import { getCompleteResponseDetails, isAlternateDuplicated, isCorrectResponseDuplicated } from './utils';
+import defaults from './defaults.js';
+import { getCompleteResponseDetails, isAlternateDuplicated, isCorrectResponseDuplicated } from './utils.js';
 
 // eslint-disable-next-line no-console
 

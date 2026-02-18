@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import StyledEditor, { EditableHtml } from './components/EditableHtml';
-import { ALL_PLUGINS, DEFAULT_PLUGINS } from './extensions';
+import StyledEditor, { EditableHtml } from './components/EditableHtml.js';
+import { ALL_PLUGINS, DEFAULT_PLUGINS } from './extensions/index.js';
 
 export { EditableHtml, ALL_PLUGINS, DEFAULT_PLUGINS };
 export default StyledEditor;

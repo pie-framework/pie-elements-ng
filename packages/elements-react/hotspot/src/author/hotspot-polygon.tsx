@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Group, Line, Circle } from 'react-konva';
 import { Rect } from 'react-konva/lib/ReactKonvaCore';
-import DeleteWidget from './DeleteWidget';
+import DeleteWidget from './DeleteWidget.js';
 
 const HOVERED_COLOR = '#00BFFF';
 

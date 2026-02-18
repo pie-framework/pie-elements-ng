@@ -14,7 +14,7 @@ import { styled } from '@mui/material/styles';
 import { GraphContainer } from '@pie-lib/graphing-solution-set';
 import { color, Collapsible, hasText, hasMedia, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { findSectionsInSolutionSet, pointInsidePolygon, checkIfLinesAreAdded } from './utils';
+import { findSectionsInSolutionSet, pointInsidePolygon, checkIfLinesAreAdded } from './utils.js';
 import { AlertDialog } from '@pie-lib/config-ui';
 
 const MainContainer: any = styled(UiLayout)({

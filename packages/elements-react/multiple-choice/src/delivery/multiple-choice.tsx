@@ -17,7 +17,7 @@ import Box from '@mui/material/Box';
 import { color, Collapsible, PreviewPrompt } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 
-import Choice from './choice';
+import Choice from './choice.js';
 
 const { translator } = Translator;
 

@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Main from './main';
+import Main from './main.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';

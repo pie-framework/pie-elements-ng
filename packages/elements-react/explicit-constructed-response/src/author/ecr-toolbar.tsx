@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { stripHtmlTags } from './markupUtils';
+import { stripHtmlTags } from './markupUtils.js';
 
 const findSlateNode = (key) => {
   return window.document.querySelector('[data-key="' + key + '"]');

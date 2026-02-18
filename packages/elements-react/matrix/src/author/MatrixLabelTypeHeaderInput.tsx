@@ -14,9 +14,9 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
-import { MATRIX_LABEL_TYPE } from './matrixEntities';
-import { ColumnsWrapper, ColumnsHeader } from './HeaderCommon';
-import columnLabelsGenerator from './columnLabelsGenerator';
+import { MATRIX_LABEL_TYPE } from './matrixEntities.js';
+import { ColumnsWrapper, ColumnsHeader } from './HeaderCommon.js';
+import columnLabelsGenerator from './columnLabelsGenerator.js';
 import PropTypes from 'prop-types';
 import { color } from '@pie-lib/render-ui';
 

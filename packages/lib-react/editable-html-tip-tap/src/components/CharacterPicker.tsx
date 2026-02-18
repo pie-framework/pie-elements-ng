@@ -15,8 +15,8 @@ import { get } from 'lodash-es';
 
 import { PureToolbar } from '@pie-lib/math-toolbar';
 
-import CustomPopper from './characters/custom-popper';
-import { spanishConfig, specialConfig } from './characters/characterUtils';
+import CustomPopper from './characters/custom-popper.js';
+import { spanishConfig, specialConfig } from './characters/characterUtils.js';
 
 const CharacterIcon = ({ letter }) => (
   <div

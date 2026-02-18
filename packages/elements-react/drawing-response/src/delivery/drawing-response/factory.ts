@@ -8,11 +8,11 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import FreePathDrawable from './drawable-free-path';
-import LineDrawable from './drawable-line';
-import RectangleDrawable from './drawable-rectangle';
-import CircleDrawable from './drawable-circle';
-import EraserDrawable from './drawable-eraser';
+import FreePathDrawable from './drawable-free-path.js';
+import LineDrawable from './drawable-line.js';
+import RectangleDrawable from './drawable-rectangle.js';
+import CircleDrawable from './drawable-circle.js';
+import EraserDrawable from './drawable-eraser.js';
 
 const DRAWABLES = [FreePathDrawable, LineDrawable, RectangleDrawable, CircleDrawable, EraserDrawable];
 

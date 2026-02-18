@@ -14,7 +14,7 @@ import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { color, Collapsible, hasText, PreviewPrompt, UiLayout, hasMedia } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
 
-import Container from './container';
+import Container from './container.js';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),

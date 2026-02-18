@@ -25,7 +25,7 @@ import Typography from '@mui/material/Typography';
 import DragIndicator from '@mui/icons-material/DragIndicator';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import debug from 'debug';
-import PointMenu from './point-menu';
+import PointMenu from './point-menu.js';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer } from '@pie-lib/config-ui';
 import { grey } from '@mui/material/colors';

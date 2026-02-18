@@ -132,7 +132,7 @@ export {
   typeAndSubmit,
   clearAndType,
   navigateWithKeys,
-} from './keyboard';
+} from './keyboard.js';
 
 /**
  * Web component testing utilities
@@ -145,5 +145,5 @@ export {
   waitForEvent,
   isCustomElementDefined,
   createCustomElement,
-} from './web-components';
+} from './web-components.js';
 

@@ -10,9 +10,9 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Mask from './mask';
-import componentize from './componentize';
-import { deserialize } from './serialization';
+import Mask from './mask.js';
+import componentize from './componentize.js';
+import { deserialize } from './serialization.js';
 
 export const buildLayoutFromMarkup = (markup, type) => {
   const { markup: processed } = componentize(markup, type);

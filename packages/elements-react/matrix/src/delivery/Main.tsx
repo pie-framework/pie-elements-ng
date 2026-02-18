@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { PreviewLayout } from '@pie-lib/render-ui';
-import Matrix from './Matrix';
+import Matrix from './Matrix.js';
 
 class Main extends React.Component {
   static propTypes = {

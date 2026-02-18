@@ -14,7 +14,7 @@ import { isEmpty } from 'lodash-es';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 
-import DrawingResponseComponent from './drawing-response';
+import DrawingResponseComponent from './drawing-response/index.js';
 
 export default class DrawingResponse extends HTMLElement {
   constructor() {

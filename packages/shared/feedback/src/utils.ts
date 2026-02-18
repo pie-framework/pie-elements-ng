@@ -1,4 +1,4 @@
-import type { Correctness } from './types';
+import type { Correctness } from './types.js';
 
 /**
  * Normalize correctness value to standard format

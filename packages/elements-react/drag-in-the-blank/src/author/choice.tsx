@@ -14,7 +14,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import Delete from '@mui/icons-material/Delete';
 import { useDraggable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
-import { choiceIsEmpty } from './markupUtils';
+import { choiceIsEmpty } from './markupUtils.js';
 
 const GripIcon = ({ style }) => (
   <span style={style}>

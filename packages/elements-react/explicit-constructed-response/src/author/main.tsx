@@ -18,10 +18,10 @@ import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
 
-import ECRToolbar from './ecr-toolbar';
-import AlternateResponses from './alternateResponses';
-import { decodeHTML, getAdjustedLength } from './markupUtils';
-import { generateValidationMessage } from './utils';
+import ECRToolbar from './ecr-toolbar.js';
+import AlternateResponses from './alternateResponses.js';
+import { decodeHTML, getAdjustedLength } from './markupUtils.js';
+import { generateValidationMessage } from './utils.js';
 
 const { toggle, Panel, dropdown } = settings;
 

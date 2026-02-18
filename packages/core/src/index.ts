@@ -4,6 +4,6 @@
  * Exports all PIE specification types, events, and utilities.
  */
 
-export * from './events';
-export * from './types';
-export * from './utils';
+export * from './events.js';
+export * from './types.js';
+export * from './utils.js';

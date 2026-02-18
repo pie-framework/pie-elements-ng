@@ -16,10 +16,10 @@ import {
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
 
-import Main from './design';
+import Main from './design.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import defaultValues from './defaults';
+import defaultValues from './defaults.js';
 import { defaults } from 'lodash-es';
 
 const prepareCustomizationObject = (config, model) => {

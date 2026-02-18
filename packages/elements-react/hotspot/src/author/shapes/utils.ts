@@ -8,9 +8,9 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { CircleShape } from './circle';
-import { PolygonShape } from './polygon';
-import { RectangleShape } from './rectagle';
+import { CircleShape } from './circle.js';
+import { PolygonShape } from './polygon.js';
+import { RectangleShape } from './rectagle.js';
 
 export const SUPPORTED_SHAPES = {
   CIRCLE: CircleShape.name,

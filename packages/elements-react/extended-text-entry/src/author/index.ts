@@ -17,9 +17,9 @@ import {
 } from '@pie-element/shared-configure-events';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Main from './main';
+import Main from './main.js';
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 export default class ExtendedTextEntry extends HTMLElement {
   static createDefaultModel = (model = {}, config) => {

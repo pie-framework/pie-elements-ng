@@ -11,10 +11,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import UnitType from './unit-type';
+import UnitType from './unit-type.js';
 import { range } from 'lodash-es';
-import Unit from './unit';
-import { fillColor, strokeColor } from '../style-utils';
+import Unit from './unit.js';
+import { fillColor, strokeColor } from '../style-utils.js';
 
 const StyledBg: any = styled('rect')(({ theme }) => ({
   stroke: strokeColor(theme),

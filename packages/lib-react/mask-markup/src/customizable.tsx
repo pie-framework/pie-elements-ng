@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-// import Input from './components/input';
-import { withMask } from './with-mask';
+// import Input from './components/input.js';
+import { withMask } from './with-mask.js';
 
 // eslint-disable-next-line react/display-name
 export default withMask('input', (props) => (node, data, onChange) => {

@@ -15,8 +15,8 @@ import { styled } from '@mui/material/styles';
 import { useDraggable } from '@dnd-kit/core';
 import { color } from '@pie-lib/render-ui';
 
-import EvaluationIcon from './evaluation-icon';
-import StaticHTMLSpan from './static-html-span';
+import EvaluationIcon from './evaluation-icon.js';
+import StaticHTMLSpan from './static-html-span.js';
 
 const BaseContainer: any = styled('div')(() => ({
   position: 'relative',

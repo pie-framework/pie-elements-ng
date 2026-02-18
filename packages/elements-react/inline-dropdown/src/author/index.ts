@@ -18,12 +18,12 @@ import {
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Main from './main';
+import Main from './main.js';
 import debug from 'debug';
 import { defaults } from 'lodash-es';
 
-import sensibleDefaults from './defaults';
-import { processMarkup, createSlateMarkup } from './markupUtils';
+import sensibleDefaults from './defaults.js';
+import { processMarkup, createSlateMarkup } from './markupUtils.js';
 
 const log = debug('multiple-choice:configure');
 

@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import ConfigLayout from './config-layout';
-import LayoutContents from './layout-contents';
+import ConfigLayout from './config-layout.js';
+import LayoutContents from './layout-contents.js';
 
 export { LayoutContents, ConfigLayout };

@@ -10,17 +10,17 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ToolPropTypeFields } from '../shared/types';
-import { BasePoint } from '../shared/point';
+import { ToolPropTypeFields } from '../shared/types.js';
+import { BasePoint } from '../shared/point/index.js';
 import { chunk, initial, isEmpty } from 'lodash-es';
 import debug from 'debug';
-import Line from './line';
-import DraggablePolygon, { Polygon } from './polygon';
+import Line from './line.js';
+import DraggablePolygon, { Polygon } from './polygon.js';
 import { types } from '@pie-lib/plot';
 import invariant from 'invariant';
 import ReactDOM from 'react-dom';
-import MarkLabel from '../../mark-label';
-import { equalPoints, getMiddleOfTwoPoints, getRightestPoints } from '../../utils';
+import MarkLabel from '../../mark-label.js';
+import { equalPoints, getMiddleOfTwoPoints, getRightestPoints } from '../../utils.js';
 
 const log = debug('pie-lib:graphing:polygon');
 

@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Circle from './component';
-import { equalPoints } from '../../utils';
+import Circle from './component.js';
+import { equalPoints } from '../../utils.js';
 
 export const tool = () => ({
   type: 'circle',

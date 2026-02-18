@@ -10,10 +10,10 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { GraphPropsType } from './types';
-import { DraggableCore } from './draggable';
+import { GraphPropsType } from './types.js';
+import { DraggableCore } from './draggable.js';
 import debug from 'debug';
-import * as utils from './utils';
+import * as utils from './utils.js';
 import { isFunction } from 'lodash-es';
 import invariant from 'invariant';
 import { pointer } from 'd3-selection';

@@ -8,30 +8,30 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import AlertDialog from './alert-dialog';
-import FeedbackConfig, { buildDefaults as feedbackConfigDefaults, FeedbackSelector } from './feedback-config';
-import { InputCheckbox, InputRadio, InputSwitch } from './inputs';
-import Langs, { LanguageControls } from './langs';
-import Tabs from './tabs';
-import Checkbox from './checkbox';
-import FormSection from './form-section';
-import Help from './help';
-import Input from './input';
+import AlertDialog from './alert-dialog.js';
+import FeedbackConfig, { buildDefaults as feedbackConfigDefaults, FeedbackSelector } from './feedback-config/index.js';
+import { InputCheckbox, InputRadio, InputSwitch } from './inputs.js';
+import Langs, { LanguageControls } from './langs.js';
+import Tabs from './tabs/index.js';
+import Checkbox from './checkbox.js';
+import FormSection from './form-section.js';
+import Help from './help.js';
+import Input from './input.js';
 import { InputContainer } from '@pie-lib/render-ui';
-import NumberTextField from './number-text-field';
-import NumberTextFieldCustom from './number-text-field-custom';
-import TwoChoice, { NChoice } from './two-choice';
-import TagsInput from './tags-input';
-import MuiBox from './mui-box';
-import ChoiceConfiguration from './choice-configuration';
-import * as layout from './layout';
+import NumberTextField from './number-text-field.js';
+import NumberTextFieldCustom from './number-text-field-custom.js';
+import TwoChoice, { NChoice } from './two-choice.js';
+import TagsInput from './tags-input/index.js';
+import MuiBox from './mui-box/index.js';
+import ChoiceConfiguration from './choice-configuration/index.js';
+import * as layout from './layout/index.js';
 
-import * as choiceUtils from './choice-utils';
-import withStatefulModel from './with-stateful-model';
-import Toggle from './settings/toggle';
-import DisplaySize from './settings/display-size';
+import * as choiceUtils from './choice-utils.js';
+import withStatefulModel from './with-stateful-model.js';
+import Toggle from './settings/toggle.js';
+import DisplaySize from './settings/display-size.js';
 
-import * as settings from './settings';
+import * as settings from './settings/index.js';
 
 export {
   AlertDialog,

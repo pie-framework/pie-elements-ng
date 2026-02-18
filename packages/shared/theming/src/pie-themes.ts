@@ -8,7 +8,7 @@
  */
 
 import { orange, green, red, grey, blue, indigo } from '@mui/material/colors';
-import type { PieThemeExtended } from './types';
+import type { PieThemeExtended } from './types.js';
 
 /**
  * PIE Orange - Primary brand color

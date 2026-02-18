@@ -11,7 +11,7 @@
 import { trigCalculator } from 'trigonometry-calculator';
 import Point from '@mapbox/point-geometry';
 import debug from 'debug';
-import { parse as parseOrigin } from './transform-origin';
+import { parse as parseOrigin } from './transform-origin.js';
 
 const log = debug('@pie-lib:tools:anchor-utils');
 

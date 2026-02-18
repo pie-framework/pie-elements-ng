@@ -11,8 +11,8 @@
 import debug from 'debug';
 
 import { cloneDeep, isEmpty, uniqWith } from 'lodash-es';
-import defaults from './defaults';
-import { equalMarks, sortedAnswers } from './utils';
+import defaults from './defaults.js';
+import { equalMarks, sortedAnswers } from './utils.js';
 
 import { partialScoring } from '@pie-element/shared-controller-utils';
 
