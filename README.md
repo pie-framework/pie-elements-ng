@@ -41,6 +41,10 @@ cd pie-elements-ng
 # 2. Install dependencies
 bun install
 
+# Hooks are installed automatically via postinstall.
+# If needed, you can reinstall them manually:
+bun run hooks:install
+
 # 3. Build all packages
 bun run build
 ```
