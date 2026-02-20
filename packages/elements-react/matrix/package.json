@@ -12,12 +12,12 @@
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
     "styled-components": "^5.2.1",
-    "react-is": "^19.2.0",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "react-is": "^19.2.0",
     "lodash-es": "^4.17.21"
   },
   "peerDependencies": {

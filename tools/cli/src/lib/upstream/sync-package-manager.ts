@@ -298,6 +298,27 @@ async function inferPeerVersionFromDeclaredDeps(
   return null;
 }
 
+function addKnownPeerFallbacks(deps: Record<string, string>): void {
+  // Some widely used packages rely on peers that upstream metadata can omit
+  // or that may not be inferable from local resolution during sync.
+  if ((deps.recharts || deps['styled-components']) && !deps['react-is']) {
+    deps['react-is'] = '^19.2.0';
+  }
+
+  if (deps['@tiptap/extension-character-count'] && !deps['@tiptap/extensions']) {
+    deps['@tiptap/extensions'] = '^3.20.0';
+  }
+
+  if (deps['@tiptap/extension-list-item'] && !deps['@tiptap/extension-list']) {
+    const tiptapVersion = deps['@tiptap/extension-list-item'];
+    deps['@tiptap/extension-list'] = tiptapVersion;
+  }
+
+  if (deps['@testing-library/user-event'] && !deps['@testing-library/dom']) {
+    deps['@testing-library/dom'] = '^10.4.1';
+  }
+}
+
 /**
  * Extract and normalize dependencies from upstream package.json
  */
@@ -422,6 +443,7 @@ export async function ensureElementPackageJson(
     }
   }
   await addTransitivePeerDependencies(expectedDeps, elementDir);
+  addKnownPeerFallbacks(expectedDeps);
 
   // Create minimal package.json if missing
   if (!pkg) {
@@ -628,6 +650,9 @@ export async function ensurePieLibPackageJson(
       }
     }
   }
+
+  await addTransitivePeerDependencies(expectedDeps, pkgDir);
+  addKnownPeerFallbacks(expectedDeps);
 
   // graphing imports @dnd-kit/core directly in source but upstream metadata can omit it.
   if (pkgName === 'graphing' && !expectedDeps['@dnd-kit/core']) {

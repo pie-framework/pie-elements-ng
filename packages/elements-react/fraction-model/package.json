@@ -14,11 +14,11 @@
     "@pie-lib/test-utils": "workspace:*",
     "prop-types": "^15.8.1",
     "recharts": "^3.7.0",
-    "react-is": "^19.2.0",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "react-is": "^19.2.0",
     "lodash-es": "^4.17.21"
   },
   "peerDependencies": {
