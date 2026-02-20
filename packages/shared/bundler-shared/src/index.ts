@@ -62,7 +62,8 @@ export class Bundler {
     const hash = mkDependencyHash(request.dependencies);
     const requestedBundles = normalizeRequestedBundles(request.options?.requestedBundles);
     const includeControllers = request.options?.includeControllers === true;
-    const buildKey = `${hash}:${requestedBundles.join(',')}:controllers=${includeControllers}`;
+    const sourceMaps = request.options?.sourceMaps === true;
+    const buildKey = `${hash}:${requestedBundles.join(',')}:controllers=${includeControllers}:sourcemaps=${sourceMaps}`;
     const buildId = request.options?.buildId || hash;
     const emit = (stage: Parameters<BuildProgressListener>[0]['stage'], message?: string) => {
       onProgress?.({
@@ -78,7 +79,7 @@ export class Bundler {
     console.log(`[bundler] Building bundle ${hash} with ${request.dependencies.length} dependencies`);
 
     return this.buildManager.run(buildKey, async () =>
-      this.runBuild(request, hash, requestedBundles, includeControllers, startTime, emit)
+      this.runBuild(request, hash, requestedBundles, includeControllers, sourceMaps, startTime, emit)
     );
   }
 
@@ -87,6 +88,7 @@ export class Bundler {
     hash: string,
     requestedBundles: BuildBundleName[],
     includeControllers: boolean,
+    sourceMaps: boolean,
     startTime: number,
     emit: (stage: Parameters<BuildProgressListener>[0]['stage'], message?: string) => void
   ): Promise<BuildResult> {
@@ -158,6 +160,7 @@ export class Bundler {
         outputPath,
         workspaceDir,
         elements,
+        sourceMaps,
       });
 
       // 4. Run webpack
@@ -180,7 +183,11 @@ export class Bundler {
       let controllerUrls: Record<string, string> | undefined;
       if (includeControllers) {
         emit('bundling_controllers');
-        controllerUrls = await this.buildStandaloneControllers(request.dependencies, workspaceDir);
+        controllerUrls = await this.buildStandaloneControllers(
+          request.dependencies,
+          workspaceDir,
+          sourceMaps
+        );
         this.writeControllerManifest(
           join(outputPath, 'controller-manifest.json'),
           controllerUrls
@@ -230,7 +237,8 @@ export class Bundler {
 
   private async buildStandaloneControllers(
     dependencies: BuildDependency[],
-    workspaceDir: string
+    workspaceDir: string,
+    sourceMaps: boolean
   ): Promise<Record<string, string>> {
     const controllers: Record<string, string> = {};
 
@@ -259,6 +267,7 @@ export class Bundler {
         },
         outputPath,
         workspaceDir,
+        sourceMaps,
       });
       const stats = await this.runWebpack(config);
       const statsJson = stats.toJson();

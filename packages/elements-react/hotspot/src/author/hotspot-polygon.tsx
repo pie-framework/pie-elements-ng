@@ -10,8 +10,31 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Group, Line, Circle } from 'react-konva';
-import { Rect } from 'react-konva/lib/ReactKonvaCore';
+import { Group as GroupImport, Line as LineImport, Circle as CircleImport } from 'react-konva';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Circle = unwrapReactInteropSymbol(CircleImport, 'Circle');
+const Line = unwrapReactInteropSymbol(LineImport, 'Line');
+const Group = unwrapReactInteropSymbol(GroupImport, 'Group');
+import { Rect } from 'react-konva/lib/ReactKonvaCore.js';
 import DeleteWidget from './DeleteWidget.js';
 
 const HOVERED_COLOR = '#00BFFF';

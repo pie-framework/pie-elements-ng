@@ -10,12 +10,10 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-element/shared-math-engine": "workspace:*",
-    "@pie-element/shared-mathquill": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
     "lodash-es": "^4.17.23",
-    "mathquill": "0.10.1",
     "prop-types": "^15.7.2",
     "react": "^18.2.0"
   },

@@ -6,8 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import { flatten } from 'lodash-es';
-import MathQuill from '@pie-element/shared-mathquill';
-import 'mathquill/build/mathquill.css';
+import { createStatic } from '@pie-element/shared-math-engine';
 import { color } from '@pie-lib/render-ui';
 import { commonMqKeyboardStyles } from '../mq/common-mq-styles';
 import { baseSet } from '../keys';
@@ -247,6 +246,7 @@ class LegacyMathquillPreview extends React.Component {
   }
 
   componentWillUnmount() {
+    this.field?.destroy?.();
     this.field = null;
   }
 
@@ -255,10 +255,11 @@ class LegacyMathquillPreview extends React.Component {
       return;
     }
     if (!this.field) {
-      this.field = MathQuill.StaticMath(this.root);
+      this.field = createStatic('', {});
+      this.field.mount(this.root);
     }
     const normalizedLatex = (this.props.latex || '').replace(/\$\$/g, '').replace(/^\$|\$$/g, '').trim();
-    this.field?.latex?.(normalizedLatex);
+    this.field?.setLatex?.(normalizedLatex);
   };
 
   render() {

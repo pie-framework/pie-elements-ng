@@ -40,7 +40,7 @@ bun cli dev:test-bundler --element hotspot
 The test command:
 
 1. **Builds Local Packages**
-   - Builds `packages/shared/mathquill` (shared dependency)
+   - Builds `packages/shared/math-engine` (shared dependency)
    - Builds the target element package
 
 2. **Creates Test Workspace**
@@ -68,11 +68,11 @@ The test command:
 ├── workspace/
 │   ├── package.json (workspace config)
 │   ├── packages/
-│   │   ├── shared-mathquill/ (symlink)
+│   │   ├── shared-math-engine/ (symlink)
 │   │   └── multiple-choice/ (symlink)
 │   ├── node_modules/
 │   │   ├── @pie-element/
-│   │   │   ├── shared-mathquill/ (symlink)
+│   │   │   ├── shared-math-engine/ (symlink)
 │   │   │   └── multiple-choice/ (symlink)
 │   │   ├── esbuild-loader/
 │   │   └── ... (webpack loaders)
@@ -92,7 +92,7 @@ The test command:
 
 The current test implementation has one known limitation:
 
-**Missing Transitive Dependencies**: The test workspace only symlinks the target element and `shared-mathquill`. Other `@pie-element/*` packages that the element depends on (like `shared-math-rendering-mathjax`, `shared-player-events`, etc.) are not automatically linked.
+**Missing Transitive Dependencies**: The test workspace only symlinks the target element and `shared-math-engine`. Other `@pie-element/*` packages that the element depends on (like `shared-math-rendering-mathjax`, `shared-player-events`, etc.) are not automatically linked.
 
 **Workaround**: The webpack config adds the repo's root `node_modules` to the resolve paths, allowing webpack to find these packages from the main repository.
 

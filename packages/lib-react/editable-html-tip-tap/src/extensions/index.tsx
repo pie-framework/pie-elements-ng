@@ -8,7 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { compact, isEmpty } from 'lodash-es';
+import compact from 'lodash-es/compact.js';
+import isEmpty from 'lodash-es/isEmpty.js';
 import debug from 'debug';
 
 const log = debug('@pie-lib:editable-html:plugins');

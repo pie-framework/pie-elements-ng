@@ -32,7 +32,7 @@ This git repository returns **404 (not found)**, causing `bun install` to fail.
 ### Solution in pie-elements-ng
 
 This repository has already fixed the issue:
-- Created `@pie-element/shared-mathquill` package
+- Created `@pie-element/shared-math-engine` package
 - All elements modernized to use the new package
 - No more git dependencies
 

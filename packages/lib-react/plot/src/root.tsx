@@ -13,7 +13,28 @@ import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import { pointer, select } from 'd3-selection';
 
-import { color, Readable } from '@pie-lib/render-ui';
+import { color, Readable as ReadableImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable');
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { ChildrenType, GraphPropsType } from './types.js';
 import Label from './label.js';
@@ -326,11 +347,9 @@ export class Root extends React.Component {
               {isChart ? (
                 <ChartTitle className={showPixelGuides ? 'rightMargin' : ''}>
                   <EditableHtml
-                    style={
-                      isChart && {
-                        width: finalWidth,
-                      }
-                    }
+                    {...(isChart && {
+                      width: finalWidth,
+                    })}
                     markup={title || ''}
                     onChange={onChangeTitle}
                     placeholder={
@@ -346,11 +365,9 @@ export class Root extends React.Component {
               ) : (
                 <GraphTitle className={showPixelGuides ? 'rightMargin' : ''}>
                   <EditableHtml
-                    style={
-                      isChart && {
-                        width: finalWidth,
-                      }
-                    }
+                    {...(isChart && {
+                      width: finalWidth,
+                    })}
                     markup={title || ''}
                     onChange={onChangeTitle}
                     placeholder={

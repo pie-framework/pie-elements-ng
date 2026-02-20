@@ -167,7 +167,8 @@ export async function extractImportsFromSources(elementDir: string): Promise<Set
               const importPath = match[1];
               // Only track package imports (not relative imports)
               if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
-                imports.add(importPath);
+                const normalized = normalizePackageImport(importPath);
+                if (normalized) imports.add(normalized);
               }
               match = importRegex.exec(content);
             }
@@ -176,7 +177,8 @@ export async function extractImportsFromSources(elementDir: string): Promise<Set
             while (match !== null) {
               const importPath = match[1];
               if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
-                imports.add(importPath);
+                const normalized = normalizePackageImport(importPath);
+                if (normalized) imports.add(normalized);
               }
               match = dynamicImportRegex.exec(content);
             }
@@ -192,6 +194,17 @@ export async function extractImportsFromSources(elementDir: string): Promise<Set
 
   await scanDirectory(srcDir);
   return imports;
+}
+
+function normalizePackageImport(specifier: string): string | null {
+  if (!specifier || specifier.startsWith('.') || specifier.startsWith('/')) {
+    return null;
+  }
+  if (specifier.startsWith('@')) {
+    const parts = specifier.split('/');
+    return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : null;
+  }
+  return specifier.split('/')[0] || null;
 }
 
 async function findInstalledPackageJson(
@@ -329,8 +342,8 @@ export function ensureBuildToolDependencies(pkg: PackageJson): void {
  * Check if a @pie-framework or @pie-element/shared- package exists in the workspace
  *
  * Supports both legacy @pie-framework naming and new @pie-element/shared- naming:
- * - @pie-framework/mathquill → packages/shared/mathquill (legacy, should migrate)
- * - @pie-element/shared-mathquill → packages/shared/mathquill (new convention)
+ * - @pie-framework/mathquill → packages/shared/math-engine (legacy alias)
+ * - @pie-element/shared-math-engine → packages/shared/math-engine
  */
 function isPieFrameworkWorkspacePackage(packageName: string, config: SyncConfig): boolean {
   let pkgName: string;
@@ -567,9 +580,11 @@ export async function ensurePieLibPackageJson(
   const expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
-    // Transform @pie-framework/mathquill to @pie-element/shared-mathquill
+    // Transform legacy mathquill dependencies to shared-math-engine
     if (name === '@pie-framework/mathquill') {
-      expectedDeps['@pie-element/shared-mathquill'] = WORKSPACE.VERSION;
+      expectedDeps['@pie-element/shared-math-engine'] = WORKSPACE.VERSION;
+    } else if (name === '@pie-element/shared-mathquill' || name === 'mathquill') {
+      expectedDeps['@pie-element/shared-math-engine'] = WORKSPACE.VERSION;
     } else if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[name] = WORKSPACE.VERSION;
     } else {
@@ -579,8 +594,11 @@ export async function ensurePieLibPackageJson(
 
   const importedPackages = await extractImportsFromSources(pkgDir);
   for (const importedPkg of importedPackages) {
-    if (importedPkg === '@pie-framework/mathquill') {
-      expectedDeps['@pie-element/shared-mathquill'] = WORKSPACE.VERSION;
+    if (
+      importedPkg === '@pie-framework/mathquill' ||
+      importedPkg === '@pie-element/shared-mathquill'
+    ) {
+      expectedDeps['@pie-element/shared-math-engine'] = WORKSPACE.VERSION;
       continue;
     }
     if (importedPkg.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
@@ -614,6 +632,15 @@ export async function ensurePieLibPackageJson(
   // graphing imports @dnd-kit/core directly in source but upstream metadata can omit it.
   if (pkgName === 'graphing' && !expectedDeps['@dnd-kit/core']) {
     expectedDeps['@dnd-kit/core'] = '^6.3.0';
+  }
+
+  // charting pulls in @visx packages whose ESM modules rely on d3 peer deps that
+  // upstream metadata can omit. Keep these declared locally to avoid demo IIFE bundling
+  // failures (missing d3-time/d3-interpolate/d3-shape at runtime resolution time).
+  if (pkgName === 'charting') {
+    if (!expectedDeps['d3-time']) expectedDeps['d3-time'] = '^3.1.0';
+    if (!expectedDeps['d3-interpolate']) expectedDeps['d3-interpolate'] = '^3.0.1';
+    if (!expectedDeps['d3-shape']) expectedDeps['d3-shape'] = '^3.2.0';
   }
 
   // Create minimal package.json if missing

@@ -121,14 +121,6 @@ Recommended wrapper that runs analyze + sync.
 bun run cli upstream:update
 ```
 
-#### `upstream:sync-mathquill`
-
-Sync the MathQuill fork used by the project.
-
-```bash
-bun run cli upstream:sync-mathquill
-```
-
 ### Package Management
 
 #### `packages:enable-publishing`

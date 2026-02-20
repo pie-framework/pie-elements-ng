@@ -42,6 +42,7 @@ interface WebpackConfigOptions {
   outputPath: string;
   workspaceDir: string;
   elements: string[];
+  sourceMaps?: boolean;
 }
 
 interface ControllerWebpackConfigOptions {
@@ -49,6 +50,7 @@ interface ControllerWebpackConfigOptions {
   entry: Record<string, string>;
   outputPath: string;
   workspaceDir: string;
+  sourceMaps?: boolean;
 }
 
 const moduleRules: webpack.RuleSetRule[] = [
@@ -145,7 +147,7 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
       minimize: false,
     },
 
-    devtool: false,
+    devtool: opts.sourceMaps ? 'source-map' : false,
 
     module: {
       rules: moduleRules,
@@ -161,17 +163,14 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
         'react/jsx-dev-runtime.js$': join(SHIM_DIR, 'react-jsx-dev-runtime.js'),
         ...libPackagePathMap,
       },
+      // Prefer workspace package development exports in demo builds.
+      // This keeps IIFE behavior aligned with the Vite dev player and avoids stale dist-only mismatches.
+      conditionNames: ['development', '...'],
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
       modules: [join(opts.workspaceDir, 'node_modules'), 'node_modules'],
     },
 
     plugins: [
-      // Some legacy PIE dependencies (notably MathQuill) expect global jQuery.
-      // Provide it consistently so mixed module/global consumers resolve `jQuery`.
-      new webpack.ProvidePlugin({
-        $: 'jquery',
-        jQuery: 'jquery',
-      }),
       // Version resolution plugin - handles different @pie-lib versions per element
       new webpack.NormalModuleReplacementPlugin(
         new RegExp(BUNDLE_LIB_PACKAGES.map((p) => `(${p})`).join('|')),
@@ -230,7 +229,7 @@ export function createControllerWebpackConfig(
       minimizer: [new EsbuildPlugin({ target: 'es2015' })],
       minimize: false,
     },
-    devtool: false,
+    devtool: opts.sourceMaps ? 'source-map' : false,
     module: {
       rules: moduleRules,
     },
@@ -238,6 +237,7 @@ export function createControllerWebpackConfig(
       alias: {
         '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
       },
+      conditionNames: ['development', '...'],
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
       modules: [join(opts.workspaceDir, 'node_modules'), 'node_modules'],
     },

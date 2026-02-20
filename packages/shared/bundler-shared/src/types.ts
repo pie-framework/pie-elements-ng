@@ -25,6 +25,8 @@ export interface BuildOptions {
   resolutionMode?: BuildResolutionMode;
   workspaceRoot?: string;
   requestedBundles?: BuildBundleName[];
+  /** Emit source maps for local debugging (larger/slower bundles). */
+  sourceMaps?: boolean;
   /**
    * When true, also emit standalone controller artifacts compatible with
    * pie-api-aws `/controllers/<dep>_at_<version>/controller.js` layout.

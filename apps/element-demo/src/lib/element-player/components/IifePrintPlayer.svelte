@@ -103,6 +103,13 @@ async function loadPrintBundle() {
       return;
     }
     error = err?.message || String(err);
+    console.error('[IifePrintPlayer] Failed to load print bundle', {
+      elementName,
+      packageName,
+      elementVersion,
+      error,
+      rawError: err,
+    });
   } finally {
     if (currentRequest === requestId) {
       loading = false;

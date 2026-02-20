@@ -70,8 +70,8 @@ These directories are cleaned up automatically after tests complete.
 3. Bun install fails when trying to resolve this missing git dependency
 
 **This has been fixed in pie-elements-ng:**
-- This repo includes `@pie-element/shared-mathquill` which replaces the broken git dependency
-- All elements in this repo have been modernized to use `@pie-element/shared-mathquill`
+- This repo includes `@pie-element/shared-math-engine` which replaces the broken git dependency
+- All elements in this repo have been modernized to use `@pie-element/shared-math-engine`
 - Once these modernized elements are published to NPM, the integration tests will work
 
 **Status:**
@@ -110,7 +110,7 @@ bun run tests/run-verdaccio-test.ts
 ```
 
 The script will:
-1. Build local packages (`@pie-element/shared-mathquill`, `@pie-element/multiple-choice`, etc.)
+1. Build local packages (`@pie-element/shared-math-engine`, `@pie-element/multiple-choice`, etc.)
 2. Publish them to Verdaccio with a test version (e.g., `0.0.0-test.1234567890`)
 3. Run the bundler using Verdaccio as the registry
 4. Verify the bundles are created correctly

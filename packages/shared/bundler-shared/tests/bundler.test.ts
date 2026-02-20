@@ -13,7 +13,7 @@
  * packages (v2.0.0+) have a broken dependency on a git repo that no longer exists:
  *   mathquill@git+https://github.com/pie-framework/mathquill-webpack.git (404)
  *
- * This repo has fixed the issue by using @pie-element/shared-mathquill, but the
+ * This repo has fixed the issue by using @pie-element/shared-math-engine, but the
  * NPM packages haven't been republished yet.
  *
  * Alternative: Use `bun cli dev:test-bundler` to test with local workspace packages.

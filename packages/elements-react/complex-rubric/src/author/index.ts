@@ -11,8 +11,8 @@
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import RubricConfigure from '@pie-element/rubric/configure/lib';
-import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric/configure/lib';
+import RubricConfigure from '@pie-element/rubric';
+import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric';
 import debug from 'debug';
 import { defaults } from 'lodash-es';
 import Main from './main.js';

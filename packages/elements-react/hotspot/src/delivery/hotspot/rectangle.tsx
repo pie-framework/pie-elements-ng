@@ -10,7 +10,29 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Rect, Group } from 'react-konva';
+import { Rect as RectImport, Group as GroupImport } from 'react-konva';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Group = unwrapReactInteropSymbol(GroupImport, 'Group');
+const Rect = unwrapReactInteropSymbol(RectImport, 'Rect');
 import ImageComponent from './image-konva-tooltip.js';
 import { faCorrect, faWrong } from './icons.js';
 

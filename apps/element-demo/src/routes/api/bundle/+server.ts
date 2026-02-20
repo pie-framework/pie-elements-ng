@@ -18,6 +18,7 @@ const instanceDir = process.env.DEMO_BUNDLER_INSTANCE_DIR || DEFAULT_INSTANCE_DI
 const localWorkspaceRoot = join(process.cwd(), '..', '..');
 const resolutionMode =
   process.env.DEMO_BUNDLER_RESOLUTION_MODE === 'prod-faithful' ? 'prod-faithful' : 'workspace-fast';
+const enableSourceMaps = process.env.DEMO_BUNDLER_SOURCEMAPS !== '0';
 const VALID_BUNDLES = new Set<BuildBundleName>(['player', 'client-player', 'editor']);
 const INIT_MARKER_PATH = join(instanceDir, '.demo-bundler-initialized');
 
@@ -107,10 +108,11 @@ export const POST: RequestHandler = async ({ request }) => {
       requestedBundles: requestedBundles || ['player', 'client-player', 'editor'],
       forceRebuild: !!buildRequest.forceRebuild,
       clearCache: !!buildRequest.clearCache,
+      sourceMaps: enableSourceMaps,
       wait: buildRequest.wait !== false,
     });
     const hash = mkDependencyHash(dependencies);
-    const buildKey = `${hash}:${(requestedBundles || ['player', 'client-player', 'editor']).join(',')}`;
+    const buildKey = `${hash}:${(requestedBundles || ['player', 'client-player', 'editor']).join(',')}:sourcemaps=${enableSourceMaps}`;
     const waitForResult = buildRequest.wait !== false;
     console.log('[api/bundle] Build key:', { hash, buildKey });
     const build = createOrJoinBuild(
@@ -121,6 +123,7 @@ export const POST: RequestHandler = async ({ request }) => {
           resolutionMode,
           workspaceRoot: resolutionMode === 'workspace-fast' ? localWorkspaceRoot : undefined,
           requestedBundles,
+          sourceMaps: enableSourceMaps,
         },
       },
       hash,

@@ -365,7 +365,7 @@ export class EditorAndPad extends React.Component {
   /** Only render if the mathquill instance's latex is different
    * or the keypad state changed from one state to the other (shown / hidden) */
   shouldComponentUpdate(nextProps, nextState) {
-    const inputIsDifferent = this.input.mathField.latex() !== nextProps.latex;
+    const inputIsDifferent = this.input.mathField.getLatex?.() !== nextProps.latex;
     log('[shouldComponentUpdate] ', 'inputIsDifferent: ', inputIsDifferent);
 
     if (!isEqual(this.props.error, nextProps.error)) {

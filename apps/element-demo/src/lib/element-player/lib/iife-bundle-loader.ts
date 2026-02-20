@@ -60,6 +60,30 @@ interface BuildStatusResponse {
 
 const scriptLoads = new Map<string, Promise<Record<string, IifePackageExports>>>();
 
+function formatWindowErrorDetails(event: ErrorEvent): string {
+  const parts: string[] = [];
+  if (event.message) {
+    parts.push(event.message);
+  }
+  if (event.filename) {
+    parts.push(`file=${event.filename}`);
+  }
+  if (event.lineno || event.colno) {
+    parts.push(`line=${event.lineno ?? 0},col=${event.colno ?? 0}`);
+  }
+  if (event.error?.stack) {
+    parts.push(`stack:\n${event.error.stack}`);
+  }
+  return parts.join(' | ');
+}
+
+function formatUnhandledRejectionDetails(reason: unknown): string {
+  if (reason instanceof Error) {
+    return `${reason.message}${reason.stack ? `\n${reason.stack}` : ''}`;
+  }
+  return String(reason);
+}
+
 function loadScript(url: string): Promise<Record<string, IifePackageExports>> {
   const existing = scriptLoads.get(url);
   if (existing) {
@@ -67,6 +91,43 @@ function loadScript(url: string): Promise<Record<string, IifePackageExports>> {
   }
 
   const promise = new Promise<Record<string, IifePackageExports>>((resolve, reject) => {
+    const scriptUrl = new URL(url, window.location.origin);
+    const scriptPath = scriptUrl.pathname;
+    let capturedRuntimeError: string | null = null;
+
+    const cleanup = () => {
+      window.removeEventListener('error', onWindowError);
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
+    };
+
+    const captureError = (message: string) => {
+      if (!capturedRuntimeError) {
+        capturedRuntimeError = message;
+      }
+    };
+
+    const onWindowError = (event: ErrorEvent) => {
+      const eventPath = event.filename
+        ? new URL(event.filename, window.location.origin).pathname
+        : '';
+      const matchesBundlePath = eventPath === scriptPath;
+      const stack = event.error?.stack || '';
+      const matchesBundleStack = stack.includes(scriptPath);
+      if (matchesBundlePath || matchesBundleStack) {
+        captureError(formatWindowErrorDetails(event));
+      }
+    };
+
+    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const message = formatUnhandledRejectionDetails(event.reason);
+      if (message.includes(scriptPath)) {
+        captureError(message);
+      }
+    };
+
+    window.addEventListener('error', onWindowError);
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
+
     const script = document.createElement('script');
     script.src = url;
     script.defer = true;
@@ -77,13 +138,34 @@ function loadScript(url: string): Promise<Record<string, IifePackageExports>> {
         // a different bundle right after this and overwrite window.pie.
         resolve(resolvePieRegistry());
       } catch (error) {
+        cleanup();
         scriptLoads.delete(url);
-        reject(error);
+        const base = error instanceof Error ? error.message : String(error);
+        const message = capturedRuntimeError
+          ? `${base}\nRoot cause: ${capturedRuntimeError}`
+          : base;
+        console.error('[iife-bundle-loader] Script executed but bundle registry missing', {
+          url,
+          scriptPath,
+          error: message,
+        });
+        reject(new Error(message));
+        return;
       }
+      cleanup();
     };
     script.onerror = () => {
+      cleanup();
       scriptLoads.delete(url);
-      reject(new Error(`Failed to load IIFE bundle: ${url}`));
+      const message = capturedRuntimeError
+        ? `Failed to load IIFE bundle: ${url}\nRoot cause: ${capturedRuntimeError}`
+        : `Failed to load IIFE bundle: ${url}`;
+      console.error('[iife-bundle-loader] Script load failed', {
+        url,
+        scriptPath,
+        error: message,
+      });
+      reject(new Error(message));
     };
     document.head.appendChild(script);
   });
@@ -152,6 +234,12 @@ export async function loadIifePackage(opts: {
   }
 
   clientPlayerUrl = getBundleUrl(payload.bundles, bundleTarget);
+  if (clientPlayerUrl) {
+    const separator = clientPlayerUrl.includes('?') ? '&' : '?';
+    // Always cache-bust by build id so each build request executes a fresh script.
+    // This avoids stale browser-cached bundle scripts when URL path is unchanged.
+    clientPlayerUrl = `${clientPlayerUrl}${separator}buildId=${encodeURIComponent(startPayload.buildId)}`;
+  }
   if (opts.forceRebuild && clientPlayerUrl) {
     const separator = clientPlayerUrl.includes('?') ? '&' : '?';
     clientPlayerUrl = `${clientPlayerUrl}${separator}rebuild=${Date.now()}`;

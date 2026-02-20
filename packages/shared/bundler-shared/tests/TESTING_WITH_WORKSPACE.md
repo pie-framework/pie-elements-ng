@@ -1,6 +1,6 @@
 # Testing Bundler with Workspace Packages
 
-Since the bundler is designed to download packages from NPM, but our local workspace packages have the fixed dependencies (using `@pie-element/shared-mathquill` instead of the broken git dependency), we need a way to test with local packages.
+Since the bundler is designed to download packages from NPM, but our local workspace packages have the fixed dependencies (using `@pie-element/shared-math-engine` instead of the broken git dependency), we need a way to test with local packages.
 
 ## Simple Approach: Manual Workspace Setup
 
@@ -11,7 +11,7 @@ The easiest way is to manually create a workspace that the bundler can use:
 mkdir -p /tmp/pie-test-workspace/packages
 
 # 2. Copy (or symlink) local packages
-cp -r packages/shared/mathquill /tmp/pie-test-workspace/packages/
+cp -r packages/shared/math-engine /tmp/pie-test-workspace/packages/
 cp -r packages/elements-react/multiple-choice /tmp/pie-test-workspace/packages/
 
 # 3. Create workspace package.json
@@ -55,7 +55,7 @@ This script:
 ## Why This Works
 
 The local packages in this workspace:
-- ✅ Use `@pie-element/shared-mathquill` (no broken git dependencies)
+- ✅ Use `@pie-element/shared-math-engine` (no broken git dependencies)
 - ✅ Have all dependencies properly defined
 - ✅ Are built and ready to bundle
 

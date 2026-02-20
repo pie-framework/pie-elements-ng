@@ -14,8 +14,28 @@ import PropTypes from 'prop-types';
 import Scale from './scale.js';
 import Link from '@mui/material/Link';
 import Collapse from '@mui/material/Collapse';
-import { color, UiLayout } from '@pie-lib/render-ui';
+import { color, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout');
 class Main extends React.Component {
   constructor(props) {
     super(props);
