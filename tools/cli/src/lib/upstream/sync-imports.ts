@@ -1301,11 +1301,41 @@ export function transformReactInteropComponentImports(content: string): string {
         `import { ${rewrittenSpecs.join(', ')} } from '@pie-lib/render-ui';`
       );
 
+      // Add a namespace import so wrapped component imports can fall back to module members
+      // when named import interop resolves unexpectedly in IIFE bundles.
+      if (
+        !/^import\s+\*\s+as\s+RenderUiNamespace\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m.test(
+          transformed
+        )
+      ) {
+        transformed = transformed.replace(
+          /^import\s+\{[^}]+\}\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m,
+          (line) => `${line}\nimport * as RenderUiNamespace from '@pie-lib/render-ui';`
+        );
+      }
+
+      const renderUiInteropPrelude = `const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;`;
+      if (!transformed.includes('const renderUiNamespaceAny = RenderUiNamespace as any;')) {
+        transformed = transformed.replace(
+          /^import\s+\*\s+as\s+RenderUiNamespace\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m,
+          (line) => `${line}\n${renderUiInteropPrelude}`
+        );
+      }
+
       for (const declaration of declarations) {
-        if (!transformed.includes(declaration)) {
+        const withFallback = declaration.replace(
+          /unwrapReactInteropSymbol\((\w+)Import, '(\w+)'\);$/,
+          "unwrapReactInteropSymbol($1Import, '$2') || unwrapReactInteropSymbol(renderUi.$2, '$2');"
+        );
+        if (!transformed.includes(declaration) && !transformed.includes(withFallback)) {
           transformed = transformed.replace(
             /^import\s+\{[^}]+\}\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m,
-            (line) => `${line}\n${declaration}`
+            (line) => `${line}\n${withFallback}`
           );
         }
       }

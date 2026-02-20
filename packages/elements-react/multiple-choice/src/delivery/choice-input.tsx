@@ -35,8 +35,15 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');
-const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import Radio from '@mui/material/Radio';
 import classNames from 'classnames';
 

@@ -33,7 +33,14 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable');
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 
 const rotations = {

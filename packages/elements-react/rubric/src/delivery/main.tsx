@@ -34,7 +34,14 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout');
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import PropTypes from 'prop-types';
 
 const StyledUiLayout: any = styled(UiLayout)({

@@ -32,7 +32,14 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable');
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import Expander from './expander.js';
 import React from 'react';
 import PropTypes from 'prop-types';

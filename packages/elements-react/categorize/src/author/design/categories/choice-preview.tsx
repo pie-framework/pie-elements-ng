@@ -35,7 +35,14 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const HtmlAndMath = unwrapReactInteropSymbol(HtmlAndMathImport, 'HtmlAndMath');
+const HtmlAndMath = unwrapReactInteropSymbol(HtmlAndMathImport, 'HtmlAndMath') || unwrapReactInteropSymbol(renderUi.HtmlAndMath, 'HtmlAndMath');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import { color } from '@pie-lib/render-ui';
 
 const ChoicePreviewContainer: any = styled('div')({

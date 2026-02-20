@@ -19,6 +19,8 @@ interface SmokeFailure {
 
 const CRITICAL_CONSOLE_PATTERNS = [
   /Minified React error #130/i,
+  /effect_update_depth_exceeded/i,
+  /Maximum update depth exceeded/i,
   /window\.pie not found/i,
   /Module not found:/i,
   /Can't resolve/i,
@@ -54,6 +56,15 @@ function buildCases(): SmokeCase[] {
         element: element.name,
         view: 'print',
         url: `/${element.name}/print?role=student&player=iife`,
+      });
+    }
+
+    // Keep an explicit regression case for known number-line IIFE/runtime interactions.
+    if (element.name === 'number-line') {
+      cases.push({
+        element: element.name,
+        view: 'deliver',
+        url: `/${element.name}/deliver?demo=basic-points&mode=gather&role=student&player=iife`,
       });
     }
   }

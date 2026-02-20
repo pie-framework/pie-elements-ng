@@ -55,11 +55,12 @@ export const Foo = () => (
     expect(output).toContain(
       "import { Collapsible as CollapsibleImport, color, PreviewPrompt as PreviewPromptImport, hasText } from '@pie-lib/render-ui';"
     );
+    expect(output).toContain("import * as RenderUiNamespace from '@pie-lib/render-ui';");
     expect(output).toContain(
-      "const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible');"
+      "const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');"
     );
     expect(output).toContain(
-      "const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');"
+      "const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');"
     );
     expect(output).toContain('function unwrapReactInteropSymbol(');
   });
@@ -80,8 +81,9 @@ export const Foo = () => <InputContainer />;
     expect(output).toContain(
       "import { InputContainer as InputContainerImport, color } from '@pie-lib/render-ui';"
     );
+    expect(output).toContain("import * as RenderUiNamespace from '@pie-lib/render-ui';");
     expect(output).toContain(
-      "const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer');"
+      "const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');"
     );
     expect(output).not.toContain('import { InputCo\nfunction isRenderableReactInteropType');
   });

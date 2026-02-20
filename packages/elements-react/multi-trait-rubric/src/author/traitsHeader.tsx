@@ -34,7 +34,14 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const Menu = unwrapReactInteropSymbol(MenuImport, 'InlineMenu');
+const Menu = unwrapReactInteropSymbol(MenuImport, 'InlineMenu') || unwrapReactInteropSymbol(renderUi.InlineMenu, 'InlineMenu');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import MenuItem from '@mui/material/MenuItem';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { color } from '@pie-lib/render-ui';

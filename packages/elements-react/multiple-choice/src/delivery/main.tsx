@@ -31,7 +31,14 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const PreviewLayout = unwrapReactInteropSymbol(PreviewLayoutImport, 'PreviewLayout');
+const PreviewLayout = unwrapReactInteropSymbol(PreviewLayoutImport, 'PreviewLayout') || unwrapReactInteropSymbol(renderUi.PreviewLayout, 'PreviewLayout');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import MultipleChoice from './multiple-choice.js';
 
 class Main extends React.Component {

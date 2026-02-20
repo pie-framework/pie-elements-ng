@@ -34,10 +34,17 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
   }
   return maybeSymbol;
 }
-const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout');
-const Purpose = unwrapReactInteropSymbol(PurposeImport, 'Purpose');
-const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');
-const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible');
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const Purpose = unwrapReactInteropSymbol(PurposeImport, 'Purpose') || unwrapReactInteropSymbol(renderUi.Purpose, 'Purpose');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 const PassagesContainer: any = styled('div')({
   flexGrow: 1,
   backgroundColor: color.background(),

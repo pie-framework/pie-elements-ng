@@ -218,11 +218,19 @@ onMount(() => {
 function updatePlayerUrl(updates: { player?: 'esm' | 'iife' }) {
   const url = new URL($page.url);
   const nextPlayer = updates.player || currentPlayerType;
+  const switchedPlayerType = currentPlayerType !== nextPlayer;
   const switchingToIife = currentPlayerType !== 'iife' && nextPlayer === 'iife';
   url.searchParams.set('player', nextPlayer);
   url.searchParams.delete('iifeSource');
   if (switchingToIife) {
     requestIifeRebuild();
+  }
+  // Switching player runtime can leave stale in-memory state in mounted views.
+  // Force a full document reload for ESM<->IIFE transitions to guarantee fresh
+  // route data + component remounting semantics.
+  if (switchedPlayerType && typeof window !== 'undefined') {
+    window.location.assign(url.toString());
+    return;
   }
   void goto(url.toString(), {
     invalidateAll: true,

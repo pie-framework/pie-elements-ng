@@ -28,6 +28,9 @@ let currentTagName = $state<string | null>(null);
 let loading = $state(false);
 let error = $state<string | null>(null);
 let requestId = 0;
+let suppressSessionEvents = false;
+let lastAppliedModelRef: any = null;
+let lastAppliedSessionRef: any = null;
 
 function cloneModelForElement<T>(value: T): T {
   if (value === null || typeof value !== 'object') {
@@ -51,6 +54,9 @@ function getTagName(name: string): string {
 
 function bindSessionHandler(instance: HTMLElement) {
   instance.addEventListener('session-changed', (e: Event) => {
+    if (suppressSessionEvents) {
+      return;
+    }
     e.stopPropagation();
     const detail = e as CustomEvent;
     const nextSession = (instance as any).session;
@@ -60,6 +66,33 @@ function bindSessionHandler(instance: HTMLElement) {
       component: (detail.detail as any)?.component,
     });
   });
+}
+
+function applyModel(nextModel: any) {
+  if (!elementInstance) {
+    return;
+  }
+  if (nextModel === lastAppliedModelRef) {
+    return;
+  }
+  (elementInstance as any).model = cloneModelForElement(nextModel ?? {});
+  lastAppliedModelRef = nextModel;
+}
+
+function applySession(nextSession: any) {
+  if (!elementInstance) {
+    return;
+  }
+  if (nextSession === lastAppliedSessionRef) {
+    return;
+  }
+  suppressSessionEvents = true;
+  try {
+    (elementInstance as any).session = nextSession ?? {};
+    lastAppliedSessionRef = nextSession;
+  } finally {
+    suppressSessionEvents = false;
+  }
 }
 
 async function loadElement() {
@@ -107,10 +140,12 @@ async function loadElement() {
       elementInstance = document.createElement(tagName);
       bindSessionHandler(elementInstance);
       currentTagName = tagName;
+      lastAppliedModelRef = null;
+      lastAppliedSessionRef = null;
     }
 
-    (elementInstance as any).model = cloneModelForElement(model ?? {});
-    (elementInstance as any).session = session ?? {};
+    applyModel(model);
+    applySession(session);
 
     if (container && elementInstance.parentElement !== container) {
       container.innerHTML = '';
@@ -148,8 +183,8 @@ $effect(() => {
   if (!elementInstance) {
     return;
   }
-  (elementInstance as any).model = cloneModelForElement(model ?? {});
-  (elementInstance as any).session = session ?? {};
+  applyModel(model);
+  applySession(session);
 });
 </script>
 
