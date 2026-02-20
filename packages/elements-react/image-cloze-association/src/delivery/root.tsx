@@ -13,7 +13,30 @@ import PropTypes from 'prop-types';
 import { DragOverlay } from '@dnd-kit/core';
 import { DragProvider } from '@pie-lib/drag';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { color, Collapsible, PreviewPrompt, UiLayout, hasText, hasMedia } from '@pie-lib/render-ui';
+import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible');
 import { styled } from '@mui/material/styles';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';

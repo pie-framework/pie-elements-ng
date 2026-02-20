@@ -1,16 +1,18 @@
 import { createRequire, builtinModules } from 'node:module';
 import { existsSync } from 'node:fs';
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
+import { init, parse } from 'es-module-lexer';
 import { loadPackageJson, type PackageJson } from './package-json.js';
 
-export type ImportIntegrityStatus = 'direct' | 'transitive' | 'hoist' | 'broken';
+export type ImportIntegrityStatus = 'direct' | 'transitive' | 'hoist' | 'broken' | 'peer';
 
 export interface ImportIntegrityIssue {
   dependency: string;
   status: ImportIntegrityStatus;
   declaredDirect: boolean;
   resolvedPath?: string;
+  requiredBy?: string;
 }
 
 export interface PackageIntegrityResult {
@@ -20,9 +22,53 @@ export interface PackageIntegrityResult {
 }
 
 const BUILTIN_SET = new Set([...builtinModules, ...builtinModules.map((m) => `node:${m}`)]);
+const VALID_BARE_SPECIFIER = /^(@[a-z0-9._-]+\/[a-z0-9._-]+|[a-z0-9._-]+)(\/[a-z0-9._-]+)*$/i;
+const WORKSPACE_SCAN_PREFIXES = ['packages/', 'apps/', 'tools/'];
+const PLACEHOLDER_IMPORT_SPECIFIERS = new Set(['package', 'x']);
+const IGNORED_PEER_DEPENDENCIES = new Set([
+  'react',
+  'react-dom',
+  '@emotion/react',
+  '@emotion/styled',
+  '@emotion/core',
+]);
+const FALLBACK_DEPENDENCY_VERSIONS: Record<string, string> = {
+  'js-combinatorics': '^2.1.2',
+  'nested-property': '^4.0.0',
+  'prosemirror-state': '^1.4.4',
+  '@testing-library/react': '^16.3.2',
+  '@testing-library/dom': '^10.4.1',
+  '@tiptap/extensions': '^3.20.0',
+  '@tiptap/extension-list': '^3.20.0',
+  '@tiptap/extension-code-block': '^3.20.0',
+  'react-is': '^19.2.0',
+  pluralize: '^8.0.0',
+};
+
+interface CollectWorkspaceOptions {
+  includeNonPackageWorkspaces?: boolean;
+}
+
+interface AnalyzeIntegrityOptions {
+  includePeerGaps?: boolean;
+}
+
+export interface AutoFixDependencyOptions extends CollectWorkspaceOptions {
+  packageName?: string;
+  includeTransitive?: boolean;
+  includePeerGaps?: boolean;
+}
+
+export interface AutoFixDependencyResult {
+  packagesScanned: number;
+  packagesUpdated: number;
+  dependenciesAdded: number;
+  unresolved: Array<{ packageName: string; dependency: string }>;
+}
 
 export async function analyzePackageDependencyIntegrity(
-  packagePath: string
+  packagePath: string,
+  options: AnalyzeIntegrityOptions = {}
 ): Promise<PackageIntegrityResult | null> {
   const absPackagePath = resolve(packagePath);
   const pkgJsonPath = join(absPackagePath, 'package.json');
@@ -61,11 +107,21 @@ export async function analyzePackageDependencyIntegrity(
   const issues: ImportIntegrityIssue[] = [];
 
   for (const dep of Array.from(importedPackages.keys()).sort()) {
+    if (dep === pkgJson.name) {
+      continue;
+    }
+
     const direct = declaredDirect.has(dep);
     const specifiers = importedPackages.get(dep) || new Set<string>([dep]);
     const resolvedPath = resolveDependencyFromPackage(resolveFromPackage, dep, specifiers);
 
     if (!resolvedPath) {
+      if (direct) {
+        const declaredManifest = resolveDeclaredPackageManifest(resolveFromPackage, dep);
+        if (declaredManifest) {
+          continue;
+        }
+      }
       issues.push({
         dependency: dep,
         status: 'broken',
@@ -95,6 +151,20 @@ export async function analyzePackageDependencyIntegrity(
     }
   }
 
+  if (options.includePeerGaps) {
+    const peerIssues = await collectMissingPeerDependencyIssues(
+      pkgJson,
+      declaredDirect,
+      resolveFromPackage
+    );
+    for (const peerIssue of peerIssues) {
+      const alreadyReported = issues.some((issue) => issue.dependency === peerIssue.dependency);
+      if (!alreadyReported) {
+        issues.push(peerIssue);
+      }
+    }
+  }
+
   return {
     packageName: pkgJson.name,
     packagePath: absPackagePath,
@@ -102,23 +172,63 @@ export async function analyzePackageDependencyIntegrity(
   };
 }
 
-export async function collectWorkspacePackageDirs(root: string): Promise<string[]> {
+export async function collectWorkspacePackageDirs(
+  root: string,
+  options: CollectWorkspaceOptions = {}
+): Promise<string[]> {
   const absRoot = resolve(root);
-  const out: string[] = [];
-  const roots = [join(absRoot, 'packages/elements-react'), join(absRoot, 'packages/lib-react')];
+  const out = new Set<string>();
+  const rootPkgPath = join(absRoot, 'package.json');
+  const rootPkg = (await loadPackageJson(rootPkgPath)) as
+    | (PackageJson & { workspaces?: string[] })
+    | null;
+  const workspaces = rootPkg?.workspaces || [];
 
-  for (const parent of roots) {
-    if (!existsSync(parent)) continue;
-    const names = await readdir(parent);
-    for (const name of names) {
-      const pkgDir = join(parent, name);
-      if (existsSync(join(pkgDir, 'package.json'))) {
-        out.push(pkgDir);
+  for (const pattern of workspaces) {
+    if (!WORKSPACE_SCAN_PREFIXES.some((prefix) => pattern.startsWith(prefix))) {
+      continue;
+    }
+    const isPackagesWorkspace = pattern.startsWith('packages/');
+    if (!isPackagesWorkspace && !options.includeNonPackageWorkspaces) {
+      continue;
+    }
+    const matches = await expandWorkspacePattern(absRoot, pattern);
+    for (const match of matches) {
+      if (existsSync(join(match, 'package.json'))) {
+        out.add(match);
       }
     }
   }
 
-  return out.sort();
+  return Array.from(out).sort();
+}
+
+async function expandWorkspacePattern(root: string, pattern: string): Promise<string[]> {
+  const normalized = pattern.replace(/\\/g, '/').replace(/\/$/, '');
+  if (!normalized.includes('*')) {
+    return [join(root, normalized)];
+  }
+
+  const [prefix, suffix = ''] = normalized.split('*');
+  const prefixPath = join(root, prefix);
+  if (!existsSync(prefixPath)) {
+    return [];
+  }
+
+  const dirEntries = await readdir(prefixPath, { withFileTypes: true });
+  const matches: string[] = [];
+
+  for (const entry of dirEntries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    const candidate = join(prefixPath, entry.name, suffix);
+    if (existsSync(candidate)) {
+      matches.push(candidate);
+    }
+  }
+
+  return matches;
 }
 
 function resolveDependencyFromPackage(
@@ -137,13 +247,89 @@ function resolveDependencyFromPackage(
   return null;
 }
 
+function resolveDeclaredPackageManifest(
+  resolveFromPackage: NodeRequire,
+  dep: string
+): string | null {
+  const searchPaths = resolveFromPackage.resolve.paths(dep) || [];
+  for (const basePath of searchPaths) {
+    const manifestPath = join(basePath, dep, 'package.json');
+    if (existsSync(manifestPath)) {
+      return manifestPath;
+    }
+  }
+  return null;
+}
+
+async function collectMissingPeerDependencyIssues(
+  pkgJson: PackageJson,
+  declaredDirect: Set<string>,
+  resolveFromPackage: NodeRequire
+): Promise<ImportIntegrityIssue[]> {
+  const issues: ImportIntegrityIssue[] = [];
+  const checkedPeers = new Set<string>();
+
+  for (const directDep of Array.from(declaredDirect)) {
+    if (!directDep || directDep === pkgJson.name) continue;
+
+    const depRoot = await resolvePackageRoot(resolveFromPackage, directDep);
+    const depPkgPath =
+      depRoot && existsSync(join(depRoot, 'package.json'))
+        ? join(depRoot, 'package.json')
+        : resolveDeclaredPackageManifest(resolveFromPackage, directDep);
+    if (!depPkgPath || !existsSync(depPkgPath)) {
+      continue;
+    }
+
+    const depPkg = (await loadPackageJson(depPkgPath).catch(() => null)) as PackageJson | null;
+    if (!depPkg?.peerDependencies || typeof depPkg.peerDependencies !== 'object') {
+      continue;
+    }
+
+    const optionalPeers = new Set<string>(
+      Object.entries((depPkg.peerDependenciesMeta as Record<string, { optional?: boolean }>) || {})
+        .filter(([, meta]) => meta?.optional)
+        .map(([name]) => name)
+    );
+
+    for (const peerDep of Object.keys(depPkg.peerDependencies)) {
+      if (!peerDep || peerDep === pkgJson.name || optionalPeers.has(peerDep)) continue;
+      if (IGNORED_PEER_DEPENDENCIES.has(peerDep)) continue;
+      if (declaredDirect.has(peerDep) || checkedPeers.has(peerDep)) continue;
+      checkedPeers.add(peerDep);
+
+      const resolvedPath = resolveDependencyFromPackage(
+        resolveFromPackage,
+        peerDep,
+        new Set([peerDep])
+      );
+      issues.push({
+        dependency: peerDep,
+        status: 'peer',
+        declaredDirect: false,
+        resolvedPath: resolvedPath || undefined,
+        requiredBy: directDep,
+      });
+    }
+  }
+
+  return issues;
+}
+
 async function collectImportedPackages(sourceDir: string): Promise<Map<string, Set<string>>> {
   const files = await listSourceFiles(sourceDir);
   const imported = new Map<string, Set<string>>();
 
   for (const file of files) {
     const content = await readFile(file, 'utf-8');
-    for (const importedSpec of extractBareImports(content)) {
+    if (
+      file.includes('/src/lib/element-imports.') ||
+      content.includes('AUTO-GENERATED') ||
+      content.includes('DO NOT EDIT MANUALLY')
+    ) {
+      continue;
+    }
+    for (const importedSpec of await extractBareImports(content)) {
       if (!imported.has(importedSpec.packageName)) {
         imported.set(importedSpec.packageName, new Set<string>());
       }
@@ -173,29 +359,60 @@ async function listSourceFiles(dir: string): Promise<string[]> {
   return files;
 }
 
-function extractBareImports(content: string): Array<{ packageName: string; rawSpecifier: string }> {
+async function extractBareImports(
+  content: string
+): Promise<Array<{ packageName: string; rawSpecifier: string }>> {
   const imports = new Map<string, Set<string>>();
-  const patterns = [
-    /import\s+[^'"]*?\s+from\s+['"]([^'"]+)['"]/g,
-    /import\s*['"]([^'"]+)['"]/g,
-    /export\s+[^'"]*?\s+from\s+['"]([^'"]+)['"]/g,
-    /import\(\s*['"]([^'"]+)['"]\s*\)/g,
-    /require\(\s*['"]([^'"]+)['"]\s*\)/g,
-  ];
-
-  for (const pattern of patterns) {
-    let match: RegExpExecArray | null = pattern.exec(content);
-    while (match !== null) {
-      const rawSpecifier = match[1];
+  try {
+    await init;
+    const [parsedImports] = parse(content);
+    for (const parsed of parsedImports) {
+      const rawSpecifier = (parsed as { n?: string }).n;
+      if (!rawSpecifier) continue;
       const dep = normalizeBarePackageSpecifier(rawSpecifier);
-      if (dep) {
-        if (!imports.has(dep)) {
-          imports.set(dep, new Set<string>());
-        }
-        imports.get(dep)?.add(rawSpecifier);
+      if (!dep) continue;
+      if (!imports.has(dep)) {
+        imports.set(dep, new Set<string>());
       }
-      match = pattern.exec(content);
+      imports.get(dep)?.add(rawSpecifier);
     }
+  } catch {
+    const staticPatterns = [
+      /^\s*import\s+[^'"]*?\s+from\s+['"]([^'"]+)['"]/gm,
+      /^\s*import\s*['"]([^'"]+)['"]/gm,
+      /^\s*export\s+[^'"]*?\s+from\s+['"]([^'"]+)['"]/gm,
+      /(?:^|[^\w$"'`])import\(\s*['"]([^'"]+)['"]\s*\)/gm,
+    ];
+    for (const pattern of staticPatterns) {
+      let match: RegExpExecArray | null = pattern.exec(content);
+      while (match !== null) {
+        const rawSpecifier = match[1];
+        const dep = normalizeBarePackageSpecifier(rawSpecifier);
+        if (dep) {
+          if (!imports.has(dep)) {
+            imports.set(dep, new Set<string>());
+          }
+          imports.get(dep)?.add(rawSpecifier);
+        }
+        match = pattern.exec(content);
+      }
+    }
+  }
+
+  const requireContent = stripComments(content);
+  const requirePattern =
+    /^\s*(?:const|let|var)?[\w${}\s,*=:.[\]-]*\brequire\(\s*['"]([^'"]+)['"]\s*\)/gm;
+  let requireMatch: RegExpExecArray | null = requirePattern.exec(requireContent);
+  while (requireMatch !== null) {
+    const rawSpecifier = requireMatch[1];
+    const dep = normalizeBarePackageSpecifier(rawSpecifier);
+    if (dep) {
+      if (!imports.has(dep)) {
+        imports.set(dep, new Set<string>());
+      }
+      imports.get(dep)?.add(rawSpecifier);
+    }
+    requireMatch = requirePattern.exec(requireContent);
   }
 
   const out: Array<{ packageName: string; rawSpecifier: string }> = [];
@@ -207,12 +424,17 @@ function extractBareImports(content: string): Array<{ packageName: string; rawSp
   return out;
 }
 
+function stripComments(content: string): string {
+  return content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^\\:])\/\/.*$/gm, '$1');
+}
+
 function normalizeBarePackageSpecifier(specifier: string): string | null {
   if (
     !specifier ||
     specifier.startsWith('.') ||
     specifier.startsWith('/') ||
-    specifier.startsWith('node:')
+    specifier.startsWith('node:') ||
+    specifier.startsWith('$')
   ) {
     return null;
   }
@@ -223,6 +445,13 @@ function normalizeBarePackageSpecifier(specifier: string): string | null {
 
   // Ignore virtual modules and URL/protocol specifiers.
   if (specifier.includes(':')) {
+    return null;
+  }
+
+  if (!VALID_BARE_SPECIFIER.test(specifier)) {
+    return null;
+  }
+  if (PLACEHOLDER_IMPORT_SPECIFIERS.has(specifier)) {
     return null;
   }
 
@@ -270,6 +499,192 @@ async function collectTransitiveDependencyNames(
   }
 
   return transitive;
+}
+
+export async function autoFixWorkspaceDependencyDeclarations(
+  root: string,
+  options: AutoFixDependencyOptions = {}
+): Promise<AutoFixDependencyResult> {
+  const absRoot = resolve(root);
+  const packageDirs = await collectWorkspacePackageDirs(absRoot, {
+    includeNonPackageWorkspaces: options.includeNonPackageWorkspaces,
+  });
+  const catalog = await buildDependencyVersionCatalog(absRoot, packageDirs);
+  const workspacePackages = await buildWorkspacePackageNameMap(packageDirs);
+
+  let packagesScanned = 0;
+  let packagesUpdated = 0;
+  let dependenciesAdded = 0;
+  const unresolved: Array<{ packageName: string; dependency: string }> = [];
+
+  for (const packageDir of packageDirs) {
+    const analysis = await analyzePackageDependencyIntegrity(packageDir, {
+      includePeerGaps: options.includePeerGaps,
+    });
+    if (!analysis) continue;
+    if (options.packageName && analysis.packageName !== options.packageName) {
+      continue;
+    }
+    packagesScanned++;
+
+    const pkgJsonPath = join(packageDir, 'package.json');
+    const pkgJson = (await loadPackageJson(pkgJsonPath)) as PackageJson | null;
+    if (!pkgJson) continue;
+
+    const needs = analysis.issues.filter((issue) => {
+      if (issue.declaredDirect) {
+        return false;
+      }
+      if (issue.status === 'hoist' || issue.status === 'broken' || issue.status === 'peer') {
+        return true;
+      }
+      return options.includeTransitive === true && issue.status === 'transitive';
+    });
+
+    if (needs.length === 0) {
+      continue;
+    }
+
+    if (!pkgJson.dependencies || typeof pkgJson.dependencies !== 'object') {
+      pkgJson.dependencies = {};
+    }
+    const deps = pkgJson.dependencies as Record<string, string>;
+
+    let modified = false;
+    for (const issue of needs) {
+      if (deps[issue.dependency]) {
+        continue;
+      }
+
+      const version = await resolveDependencyVersionForPackage(
+        issue.dependency,
+        pkgJsonPath,
+        absRoot,
+        catalog,
+        workspacePackages
+      );
+      if (!version) {
+        unresolved.push({ packageName: analysis.packageName, dependency: issue.dependency });
+        continue;
+      }
+
+      deps[issue.dependency] = version;
+      modified = true;
+      dependenciesAdded++;
+    }
+
+    if (modified) {
+      await writeFile(pkgJsonPath, `${JSON.stringify(pkgJson, null, 2)}\n`, 'utf-8');
+      packagesUpdated++;
+    }
+  }
+
+  return {
+    packagesScanned,
+    packagesUpdated,
+    dependenciesAdded,
+    unresolved,
+  };
+}
+
+async function buildWorkspacePackageNameMap(packageDirs: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  for (const packageDir of packageDirs) {
+    const pkgPath = join(packageDir, 'package.json');
+    if (!existsSync(pkgPath)) continue;
+    const pkg = (await loadPackageJson(pkgPath)) as PackageJson | null;
+    if (pkg?.name) {
+      map.set(pkg.name, packageDir);
+    }
+  }
+  return map;
+}
+
+async function buildDependencyVersionCatalog(
+  rootDir: string,
+  packageDirs: string[]
+): Promise<Map<string, string>> {
+  const catalog = new Map<string, string>();
+
+  const addVersions = (record?: Record<string, string>) => {
+    if (!record) return;
+    for (const [name, version] of Object.entries(record)) {
+      if (!catalog.has(name)) {
+        catalog.set(name, version);
+      }
+    }
+  };
+
+  const rootPkgPath = join(rootDir, 'package.json');
+  if (existsSync(rootPkgPath)) {
+    const rootPkg = (await loadPackageJson(rootPkgPath)) as PackageJson | null;
+    if (rootPkg) {
+      addVersions(rootPkg.dependencies as Record<string, string> | undefined);
+      addVersions(rootPkg.devDependencies as Record<string, string> | undefined);
+      addVersions(rootPkg.peerDependencies as Record<string, string> | undefined);
+      addVersions(rootPkg.optionalDependencies as Record<string, string> | undefined);
+    }
+  }
+
+  for (const packageDir of packageDirs) {
+    const pkgPath = join(packageDir, 'package.json');
+    if (!existsSync(pkgPath)) continue;
+    const pkg = (await loadPackageJson(pkgPath)) as PackageJson | null;
+    if (!pkg) continue;
+    addVersions(pkg.dependencies as Record<string, string> | undefined);
+    addVersions(pkg.devDependencies as Record<string, string> | undefined);
+    addVersions(pkg.peerDependencies as Record<string, string> | undefined);
+    addVersions(pkg.optionalDependencies as Record<string, string> | undefined);
+  }
+
+  return catalog;
+}
+
+async function resolveDependencyVersionForPackage(
+  dep: string,
+  pkgJsonPath: string,
+  rootDir: string,
+  catalog: Map<string, string>,
+  workspacePackages: Map<string, string>
+): Promise<string | null> {
+  if (workspacePackages.has(dep)) {
+    return 'workspace:*';
+  }
+
+  const catalogVersion = catalog.get(dep);
+  if (catalogVersion) {
+    return catalogVersion;
+  }
+
+  if (FALLBACK_DEPENDENCY_VERSIONS[dep]) {
+    return FALLBACK_DEPENDENCY_VERSIONS[dep];
+  }
+
+  const requireFromPackage = createRequire(pkgJsonPath);
+  const packageRoot = await resolvePackageRoot(requireFromPackage, dep);
+  if (!packageRoot) {
+    return null;
+  }
+
+  const depPkgPath = join(packageRoot, 'package.json');
+  if (!existsSync(depPkgPath)) {
+    return null;
+  }
+
+  const depPkg = (await loadPackageJson(depPkgPath)) as PackageJson | null;
+  if (!depPkg?.version) {
+    return null;
+  }
+
+  // Keep workspace references if dependency resolves to local workspace package path.
+  if (
+    packageRoot.startsWith(join(rootDir, 'packages')) ||
+    packageRoot.startsWith(join(rootDir, 'apps'))
+  ) {
+    return 'workspace:*';
+  }
+
+  return `^${depPkg.version}`;
 }
 
 async function resolvePackageRoot(

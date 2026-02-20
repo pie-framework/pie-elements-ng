@@ -17,7 +17,28 @@ import Checkbox from './checkbox.js';
 import FormSection from './form-section.js';
 import Help from './help.js';
 import Input from './input.js';
-import { InputContainer } from '@pie-lib/render-ui';
+import { InputContainer as InputContainerImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer');
 import NumberTextField from './number-text-field.js';
 import NumberTextFieldCustom from './number-text-field-custom.js';
 import TwoChoice, { NChoice } from './two-choice.js';

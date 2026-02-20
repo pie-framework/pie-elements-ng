@@ -19,7 +19,6 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import ReactDOM from 'react-dom';
-import 'mathquill/build/mathquill.css';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),

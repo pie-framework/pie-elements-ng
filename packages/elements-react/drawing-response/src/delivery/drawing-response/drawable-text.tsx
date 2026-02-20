@@ -9,7 +9,28 @@
  */
 
 import React from 'react';
-import { Text } from 'react-konva';
+import { Text as TextImport } from 'react-konva';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Text = unwrapReactInteropSymbol(TextImport, 'Text');
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;

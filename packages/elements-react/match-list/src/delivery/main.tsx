@@ -13,7 +13,29 @@ import PropTypes from 'prop-types';
 import { swap } from '@pie-lib/drag';
 import { DndContext } from '@dnd-kit/core';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { color, Feedback, PreviewPrompt } from '@pie-lib/render-ui';
+import { color, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');
+const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback');
 import { styled } from '@mui/material/styles';
 import { findKey, isUndefined, uniqueId } from 'lodash-es';
 import AnswerArea from './answer-area.js';

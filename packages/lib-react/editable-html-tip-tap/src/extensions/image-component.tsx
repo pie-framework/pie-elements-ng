@@ -10,7 +10,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { isEqual } from 'lodash-es';
+import isEqual from 'lodash-es/isEqual.js';
 import debug from 'debug';
 import LinearProgress from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';

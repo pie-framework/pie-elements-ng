@@ -118,11 +118,22 @@ export default class Static extends React.Component {
     this.setState({ inputSource: 'mathKeyboard' });
   };
 
+  getInnerFields: any = () => {
+    if (!this.mathField?.getFields) {
+      return [];
+    }
+    const fields = this.mathField.getFields();
+    fields.forEach((field) => {
+      fields[`r${field.id}`] = field;
+    });
+    return fields;
+  };
+
   onInputEdit: any = (field) => {
     if (!this.mathField || !field) {
       return;
     }
-    const name = this.props.getFieldName(field, this.mathField.innerFields || []);
+    const name = this.props.getFieldName(field, this.getInnerFields());
 
     if (this.props.onSubFieldChange) {
       this.props.onSubFieldChange(name, field.latex());
@@ -178,14 +189,6 @@ export default class Static extends React.Component {
   };
 
   update: any = () => {
-    const buildInnerFields = () => {
-      const fields = this.mathField.getFields();
-      fields.forEach((field) => {
-        fields[`r${field.id}`] = field;
-      });
-      return fields;
-    };
-
     if (!this.mathField) {
       this.mathField = createStatic(this.props.latex || '', {
         onFieldChange: (fieldId) => {
@@ -197,7 +200,6 @@ export default class Static extends React.Component {
         },
       });
       this.mathField.mount(this.inputRef?.current);
-      this.mathField.innerFields = buildInnerFields();
     }
 
     const nextLatex = this.props.latex ?? '';
@@ -208,7 +210,6 @@ export default class Static extends React.Component {
     }
 
     this.mathField.setLatex(nextLatex);
-    this.mathField.innerFields = buildInnerFields();
   };
 
   blur: any = () => {
@@ -233,7 +234,7 @@ export default class Static extends React.Component {
 
       const out =
         stripped !== stripSpaces(this.mathField.getLatex().trim()) ||
-        newFieldCount !== Object.keys(this.mathField.innerFields || {}).length;
+        newFieldCount !== this.getInnerFields().length;
 
       log('[shouldComponentUpdate] ', out);
       return out;
@@ -270,10 +271,11 @@ export default class Static extends React.Component {
       };
 
       const id = resolveBlockId(e?.target as HTMLElement);
-      const innerField = (this.mathField.innerFields || []).find((f) => f.id === id);
+      const innerFields = this.getInnerFields();
+      const innerField = innerFields.find((f) => f.id === id);
 
       if (innerField) {
-        const name = this.props.getFieldName(innerField, this.mathField.innerFields);
+        const name = this.props.getFieldName(innerField, innerFields);
         if (this.props.setInput) {
           this.props.setInput(innerField);
         }

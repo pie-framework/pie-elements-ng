@@ -574,6 +574,44 @@
   "esmRuntimeValidationEnabled": true,
   "esmRuntimeCdnBaseUrl": "https://esm.sh",
   "esmRuntimeValidation": {
+    "categorize": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "12.1.0-next.1",
+      "entryOk": false,
+      "controllerOk": false,
+      "entryParseOk": false,
+      "controllerParseOk": false,
+      "errors": [
+        "fetch https://esm.sh/@pie-element/categorize@12.1.0-next.1 -> 404 (version 12.1.0-next.1 of '@pie-element/categorize' not found)",
+        "fetch https://esm.sh/@pie-element/categorize@12.1.0-next.1/controller -> 404 (version 12.1.0-next.1 of '@pie-element/categorize' not found)"
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 2,
+      "fetchedOk": 0,
+      "firstFailingUrl": "https://esm.sh/@pie-element/categorize@12.1.0-next.1"
+    },
+    "charting": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.1.0-next.1",
+      "entryOk": false,
+      "controllerOk": false,
+      "entryParseOk": false,
+      "controllerParseOk": false,
+      "errors": [
+        "fetch https://esm.sh/@pie-element/charting@11.1.0-next.1 -> 404 (version 11.1.0-next.1 of '@pie-element/charting' not found)",
+        "fetch https://esm.sh/@pie-element/charting@11.1.0-next.1/controller -> 404 (version 11.1.0-next.1 of '@pie-element/charting' not found)"
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 2,
+      "fetchedOk": 0,
+      "firstFailingUrl": "https://esm.sh/@pie-element/charting@11.1.0-next.1"
+    },
     "drawing-response": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
@@ -612,62 +650,24 @@
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/drag-in-the-blank@9.1.0-next.1"
     },
-    "charting": {
+    "extended-text-entry": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "11.1.0-next.1",
+      "version": "14.1.0-next.1",
       "entryOk": false,
       "controllerOk": false,
       "entryParseOk": false,
       "controllerParseOk": false,
       "errors": [
-        "fetch https://esm.sh/@pie-element/charting@11.1.0-next.1 -> 404 (version 11.1.0-next.1 of '@pie-element/charting' not found)",
-        "fetch https://esm.sh/@pie-element/charting@11.1.0-next.1/controller -> 404 (version 11.1.0-next.1 of '@pie-element/charting' not found)"
+        "fetch https://esm.sh/@pie-element/extended-text-entry@14.1.0-next.1 -> 404 (version 14.1.0-next.1 of '@pie-element/extended-text-entry' not found)",
+        "fetch https://esm.sh/@pie-element/extended-text-entry@14.1.0-next.1/controller -> 404 (version 14.1.0-next.1 of '@pie-element/extended-text-entry' not found)"
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 2,
       "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/charting@11.1.0-next.1"
-    },
-    "explicit-constructed-response": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "10.1.0-next.1",
-      "entryOk": false,
-      "controllerOk": false,
-      "entryParseOk": false,
-      "controllerParseOk": false,
-      "errors": [
-        "fetch https://esm.sh/@pie-element/explicit-constructed-response@10.1.0-next.1 -> 404 (version 10.1.0-next.1 of '@pie-element/explicit-constructed-response' not found)",
-        "fetch https://esm.sh/@pie-element/explicit-constructed-response@10.1.0-next.1/controller -> 404 (version 10.1.0-next.1 of '@pie-element/explicit-constructed-response' not found)"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 2,
-      "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/explicit-constructed-response@10.1.0-next.1"
-    },
-    "categorize": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "12.1.0-next.1",
-      "entryOk": false,
-      "controllerOk": false,
-      "entryParseOk": false,
-      "controllerParseOk": false,
-      "errors": [
-        "fetch https://esm.sh/@pie-element/categorize@12.1.0-next.1 -> 404 (version 12.1.0-next.1 of '@pie-element/categorize' not found)",
-        "fetch https://esm.sh/@pie-element/categorize@12.1.0-next.1/controller -> 404 (version 12.1.0-next.1 of '@pie-element/categorize' not found)"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 2,
-      "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/categorize@12.1.0-next.1"
+      "firstFailingUrl": "https://esm.sh/@pie-element/extended-text-entry@14.1.0-next.1"
     },
     "complex-rubric": {
       "compatible": false,
@@ -688,24 +688,24 @@
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/complex-rubric@6.1.0-next.1"
     },
-    "extended-text-entry": {
+    "explicit-constructed-response": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "14.1.0-next.1",
+      "version": "10.1.0-next.1",
       "entryOk": false,
       "controllerOk": false,
       "entryParseOk": false,
       "controllerParseOk": false,
       "errors": [
-        "fetch https://esm.sh/@pie-element/extended-text-entry@14.1.0-next.1 -> 404 (version 14.1.0-next.1 of '@pie-element/extended-text-entry' not found)",
-        "fetch https://esm.sh/@pie-element/extended-text-entry@14.1.0-next.1/controller -> 404 (version 14.1.0-next.1 of '@pie-element/extended-text-entry' not found)"
+        "fetch https://esm.sh/@pie-element/explicit-constructed-response@10.1.0-next.1 -> 404 (version 10.1.0-next.1 of '@pie-element/explicit-constructed-response' not found)",
+        "fetch https://esm.sh/@pie-element/explicit-constructed-response@10.1.0-next.1/controller -> 404 (version 10.1.0-next.1 of '@pie-element/explicit-constructed-response' not found)"
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 2,
       "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/extended-text-entry@14.1.0-next.1"
+      "firstFailingUrl": "https://esm.sh/@pie-element/explicit-constructed-response@10.1.0-next.1"
     },
     "ebsr": {
       "compatible": false,
@@ -745,6 +745,25 @@
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/fraction-model@5.1.0-next.1"
     },
+    "graphing": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "9.1.0-next.1",
+      "entryOk": false,
+      "controllerOk": false,
+      "entryParseOk": false,
+      "controllerParseOk": false,
+      "errors": [
+        "fetch https://esm.sh/@pie-element/graphing@9.1.0-next.1 -> 404 (version 9.1.0-next.1 of '@pie-element/graphing' not found)",
+        "fetch https://esm.sh/@pie-element/graphing@9.1.0-next.1/controller -> 404 (version 9.1.0-next.1 of '@pie-element/graphing' not found)"
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 2,
+      "fetchedOk": 0,
+      "firstFailingUrl": "https://esm.sh/@pie-element/graphing@9.1.0-next.1"
+    },
     "graphing-solution-set": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
@@ -763,25 +782,6 @@
       "fetchedModules": 2,
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/graphing-solution-set@5.1.0-next.1"
-    },
-    "image-cloze-association": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "9.1.0-next.1",
-      "entryOk": false,
-      "controllerOk": false,
-      "entryParseOk": false,
-      "controllerParseOk": false,
-      "errors": [
-        "fetch https://esm.sh/@pie-element/image-cloze-association@9.1.0-next.1 -> 404 (version 9.1.0-next.1 of '@pie-element/image-cloze-association' not found)",
-        "fetch https://esm.sh/@pie-element/image-cloze-association@9.1.0-next.1/controller -> 404 (version 9.1.0-next.1 of '@pie-element/image-cloze-association' not found)"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 2,
-      "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/image-cloze-association@9.1.0-next.1"
     },
     "hotspot": {
       "compatible": false,
@@ -802,24 +802,24 @@
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/hotspot@10.1.0-next.1"
     },
-    "likert": {
+    "image-cloze-association": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "3.1.0-next.1",
+      "version": "9.1.0-next.1",
       "entryOk": false,
       "controllerOk": false,
       "entryParseOk": false,
       "controllerParseOk": false,
       "errors": [
-        "fetch https://esm.sh/@pie-element/likert@3.1.0-next.1 -> 404 (version 3.1.0-next.1 of '@pie-element/likert' not found)",
-        "fetch https://esm.sh/@pie-element/likert@3.1.0-next.1/controller -> 404 (version 3.1.0-next.1 of '@pie-element/likert' not found)"
+        "fetch https://esm.sh/@pie-element/image-cloze-association@9.1.0-next.1 -> 404 (version 9.1.0-next.1 of '@pie-element/image-cloze-association' not found)",
+        "fetch https://esm.sh/@pie-element/image-cloze-association@9.1.0-next.1/controller -> 404 (version 9.1.0-next.1 of '@pie-element/image-cloze-association' not found)"
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 2,
       "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/likert@3.1.0-next.1"
+      "firstFailingUrl": "https://esm.sh/@pie-element/image-cloze-association@9.1.0-next.1"
     },
     "inline-dropdown": {
       "compatible": false,
@@ -840,24 +840,24 @@
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/inline-dropdown@9.1.0-next.1"
     },
-    "graphing": {
+    "likert": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "9.1.0-next.1",
+      "version": "3.1.0-next.1",
       "entryOk": false,
       "controllerOk": false,
       "entryParseOk": false,
       "controllerParseOk": false,
       "errors": [
-        "fetch https://esm.sh/@pie-element/graphing@9.1.0-next.1 -> 404 (version 9.1.0-next.1 of '@pie-element/graphing' not found)",
-        "fetch https://esm.sh/@pie-element/graphing@9.1.0-next.1/controller -> 404 (version 9.1.0-next.1 of '@pie-element/graphing' not found)"
+        "fetch https://esm.sh/@pie-element/likert@3.1.0-next.1 -> 404 (version 3.1.0-next.1 of '@pie-element/likert' not found)",
+        "fetch https://esm.sh/@pie-element/likert@3.1.0-next.1/controller -> 404 (version 3.1.0-next.1 of '@pie-element/likert' not found)"
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 2,
       "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/graphing@9.1.0-next.1"
+      "firstFailingUrl": "https://esm.sh/@pie-element/likert@3.1.0-next.1"
     },
     "match": {
       "compatible": false,
@@ -877,25 +877,6 @@
       "fetchedModules": 2,
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/match@11.1.0-next.1"
-    },
-    "math-templated": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "6.1.0-next.1",
-      "entryOk": false,
-      "controllerOk": false,
-      "entryParseOk": false,
-      "controllerParseOk": false,
-      "errors": [
-        "fetch https://esm.sh/@pie-element/math-templated@6.1.0-next.1 -> 404 (version 6.1.0-next.1 of '@pie-element/math-templated' not found)",
-        "fetch https://esm.sh/@pie-element/math-templated@6.1.0-next.1/controller -> 404 (version 6.1.0-next.1 of '@pie-element/math-templated' not found)"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 2,
-      "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/math-templated@6.1.0-next.1"
     },
     "match-list": {
       "compatible": false,
@@ -935,6 +916,44 @@
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/math-inline@11.1.0-next.1"
     },
+    "math-templated": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "6.1.0-next.1",
+      "entryOk": false,
+      "controllerOk": false,
+      "entryParseOk": false,
+      "controllerParseOk": false,
+      "errors": [
+        "fetch https://esm.sh/@pie-element/math-templated@6.1.0-next.1 -> 404 (version 6.1.0-next.1 of '@pie-element/math-templated' not found)",
+        "fetch https://esm.sh/@pie-element/math-templated@6.1.0-next.1/controller -> 404 (version 6.1.0-next.1 of '@pie-element/math-templated' not found)"
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 2,
+      "fetchedOk": 0,
+      "firstFailingUrl": "https://esm.sh/@pie-element/math-templated@6.1.0-next.1"
+    },
+    "matrix": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "3.1.0-next.1",
+      "entryOk": false,
+      "controllerOk": false,
+      "entryParseOk": false,
+      "controllerParseOk": false,
+      "errors": [
+        "fetch https://esm.sh/@pie-element/matrix@3.1.0-next.1 -> 404 (version 3.1.0-next.1 of '@pie-element/matrix' not found)",
+        "fetch https://esm.sh/@pie-element/matrix@3.1.0-next.1/controller -> 404 (version 3.1.0-next.1 of '@pie-element/matrix' not found)"
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 2,
+      "fetchedOk": 0,
+      "firstFailingUrl": "https://esm.sh/@pie-element/matrix@3.1.0-next.1"
+    },
     "multi-trait-rubric": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
@@ -972,25 +991,6 @@
       "fetchedModules": 2,
       "fetchedOk": 0,
       "firstFailingUrl": "https://esm.sh/@pie-element/multiple-choice@12.1.0-next.1"
-    },
-    "matrix": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "3.1.0-next.1",
-      "entryOk": false,
-      "controllerOk": false,
-      "entryParseOk": false,
-      "controllerParseOk": false,
-      "errors": [
-        "fetch https://esm.sh/@pie-element/matrix@3.1.0-next.1 -> 404 (version 3.1.0-next.1 of '@pie-element/matrix' not found)",
-        "fetch https://esm.sh/@pie-element/matrix@3.1.0-next.1/controller -> 404 (version 3.1.0-next.1 of '@pie-element/matrix' not found)"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 2,
-      "fetchedOk": 0,
-      "firstFailingUrl": "https://esm.sh/@pie-element/matrix@3.1.0-next.1"
     },
     "number-line": {
       "compatible": false,
@@ -2385,7 +2385,7 @@
       "blockers": []
     }
   },
-  "lastAnalyzed": "2026-02-18T00:48:33.389Z",
+  "lastAnalyzed": "2026-02-20T06:10:33.426Z",
   "summary": {
     "totalElements": 27,
     "compatibleElements": 27,

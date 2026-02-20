@@ -22,7 +22,6 @@ import SimpleQuestionBlock from './simple-question-block';
 import { color } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
-import 'mathquill/build/mathquill.css';
 const { translator } = Translator;
 
 const NEWLINE_LATEX = /\\newline/g;
@@ -209,7 +208,7 @@ export class Main extends React.Component {
         (state) => ({
           session: {
             ...state.session,
-            completeAnswer: this.mqStatic && this.mqStatic.mathField.latex(),
+            completeAnswer: this.mqStatic?.mathField?.getLatex?.(),
             answers: newAnswers,
           },
         }),
@@ -249,7 +248,9 @@ export class Main extends React.Component {
       selectableElements.forEach((elem) => elem.setAttribute('aria-hidden', 'true'));
 
       // Update aria-label for textarea elements and add aria-describedby
-      const textareaElements = this.root.querySelectorAll('textarea');
+      const textareaElements = this.root.querySelectorAll(
+        'textarea, input.pie-math-engine-static-field-input'
+      );
       textareaElements.forEach((elem, index) => {
         elem.setAttribute('aria-label', 'Enter answer.');
 
@@ -423,7 +424,7 @@ export class Main extends React.Component {
         (state) => ({
           session: {
             ...state.session,
-            completeAnswer: this.mqStatic && this.mqStatic.mathField.latex(),
+            completeAnswer: this.mqStatic?.mathField?.getLatex?.(),
             answers: {
               ...state.session.answers,
               [name]: { value: subfieldValue },

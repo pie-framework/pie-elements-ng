@@ -68,6 +68,13 @@ async function loadAuthorBundle() {
       return;
     }
     error = err?.message || String(err);
+    console.error('[IifeAuthorPlayer] Failed to load author bundle', {
+      elementName,
+      packageName,
+      elementVersion,
+      error,
+      rawError: err,
+    });
   } finally {
     if (currentRequest === requestId) {
       loading = false;

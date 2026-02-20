@@ -121,6 +121,13 @@ async function loadElement() {
       return;
     }
     error = err?.message || String(err);
+    console.error('[IifeElementPlayer] Failed to load delivery bundle', {
+      elementName,
+      packageName,
+      elementVersion,
+      error,
+      rawError: err,
+    });
   } finally {
     if (currentRequest === requestId) {
       loading = false;

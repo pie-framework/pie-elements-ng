@@ -171,7 +171,7 @@ No tests should be added under `src/`.
 
 - `@pie-lib/math-input` now depends on `@pie-element/shared-math-engine` for `mq.Input` and `mq.Static`.
 - Delivery paths in `math-inline` and `math-templated` no longer require direct MathQuill runtime calls.
-- Legacy `@pie-element/shared-mathquill` remains available for non-migrated authoring paths during transition.
+- Legacy MathQuill package has been removed; upstream transforms now rewrite old imports to `@pie-element/shared-math-engine`.
 
 ## Keypad Architecture (UX/A11y Refresh)
 

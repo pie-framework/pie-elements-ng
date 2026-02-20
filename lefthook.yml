@@ -1,6 +1,8 @@
 pre-commit:
   parallel: true
   commands:
+    dependency-integrity-fast:
+      run: bun run verify:dependency-integrity --fail-on-hoist
     lint:
       glob: "*.{js,ts,svelte}"
       run: bun run lint:fix {staged_files}
@@ -11,6 +13,8 @@ pre-commit:
 pre-push:
   parallel: false
   commands:
+    dependency-integrity-full:
+      run: bun run verify:dependency-integrity --check-peer-gaps --fail-on-hoist --fail-on-peer
     test:
       run: bun run test
     build:

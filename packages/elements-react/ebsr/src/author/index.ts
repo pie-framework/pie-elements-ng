@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
-import MultipleChoiceConfigure from '@pie-element/multiple-choice/configure/lib';
+import MultipleChoiceConfigure from '@pie-element/multiple-choice';
 import { defaults } from 'lodash-es';
 import Main from './main.js';
 

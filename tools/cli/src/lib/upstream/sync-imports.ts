@@ -113,14 +113,17 @@ export async function rewriteRelativeSpecifiersForNodeEsm(filePath: string): Pro
     return specifier;
   };
 
-  content = content.replace(/(from\s+)(['"])(\.\.?\/[^'"]+)\2/g, (match, prefix, quote, specifier) => {
-    const rewritten = rewriteSpecifier(specifier);
-    if (rewritten !== specifier) {
-      modified = true;
-      return `${prefix}${quote}${rewritten}${quote}`;
+  content = content.replace(
+    /(from\s+)(['"])(\.\.?\/[^'"]+)\2/g,
+    (match, prefix, quote, specifier) => {
+      const rewritten = rewriteSpecifier(specifier);
+      if (rewritten !== specifier) {
+        modified = true;
+        return `${prefix}${quote}${rewritten}${quote}`;
+      }
+      return match;
     }
-    return match;
-  });
+  );
 
   content = content.replace(
     /(import\(\s*)(['"])(\.\.?\/[^'"]+)\2(\s*\))/g,
@@ -352,6 +355,38 @@ export function transformLodashToLodashEs(content: string): string {
 }
 
 /**
+ * Ensure deep lodash-es imports are fully specified for strict ESM resolution.
+ *
+ * Webpack (with fullySpecified ESM resolution) and other strict ESM loaders
+ * require file extensions for deep package specifiers:
+ * - lodash-es/isEqual -> lodash-es/isEqual.js
+ */
+export function transformLodashEsDeepImportsToFullySpecified(content: string): string {
+  return content.replace(
+    /(from\s+['"]|import\(\s*['"])lodash-es\/([^'")]+)(['"]\)?)/g,
+    (match, prefix, path, suffix) => {
+      if (/\.[a-z0-9]+$/i.test(path)) {
+        return match;
+      }
+      return `${prefix}lodash-es/${path}.js${suffix}`;
+    }
+  );
+}
+
+/**
+ * Ensure known strict-ESM deep imports include explicit file extensions.
+ *
+ * Webpack's fully-specified ESM resolution requires `.js` on deep imports like:
+ * - react-konva/lib/ReactKonvaCore -> react-konva/lib/ReactKonvaCore.js
+ */
+export function transformKnownDeepImportsToFullySpecified(content: string): string {
+  return content.replace(
+    /(from\s+['"]|import\(\s*['"])react-konva\/lib\/ReactKonvaCore(['"]\)?)/g,
+    '$1react-konva/lib/ReactKonvaCore.js$2'
+  );
+}
+
+/**
  * Transform package.json dependencies from lodash to lodash-es
  *
  * Replaces lodash with lodash-es version 4.17.22 (latest ESM version)
@@ -472,19 +507,51 @@ export function transformSharedPackageImports(content: string): string {
 }
 
 /**
- * Transform @pie-framework/mathquill imports to internal @pie-element/shared-mathquill
+ * Transform legacy mathquill imports to @pie-element/shared-math-engine
  *
  * Handles:
- * - @pie-framework/mathquill → @pie-element/shared-mathquill
- *
- * Our internal mathquill package is a fork from the PIE org with matrix support,
- * accessibility features, and modernized ESM code.
+ * - @pie-framework/mathquill → @pie-element/shared-math-engine
+ * - @pie-element/shared-mathquill → @pie-element/shared-math-engine
  */
 export function transformMathquillImports(content: string): string {
-  return content.replace(
-    /from\s+['"]@pie-framework\/mathquill['"]/g,
-    "from '@pie-element/shared-mathquill'"
-  );
+  return content
+    .replace(/from\s+['"]@pie-framework\/mathquill['"]/g, "from '@pie-element/shared-math-engine'")
+    .replace(
+      /from\s+['"]@pie-element\/shared-mathquill['"]/g,
+      "from '@pie-element/shared-math-engine'"
+    );
+}
+
+/**
+ * Rewrite legacy configure subpath imports to package roots.
+ *
+ * Upstream sometimes imports configure elements via:
+ * - @pie-element/<element-name>/configure/lib
+ *
+ * In this repo, package exports do not expose that subpath. Importing the package root
+ * resolves correctly via the package `exports` map and works for demo/Vite resolution.
+ */
+export function transformLegacyConfigureLibImports(content: string): string {
+  return content.replace(/from\s+['"](@pie-element\/[^/'"]+)\/configure\/lib['"]/g, "from '$1'");
+}
+
+/**
+ * Remove legacy MathQuill stylesheet imports.
+ *
+ * We now use shared-math-engine styles and should not pull MathQuill CSS.
+ */
+export function removeLegacyMathquillCssImports(content: string): string {
+  return content.replace(/^\s*import\s+['"]mathquill\/build\/mathquill\.css['"];?\s*$/gm, '');
+}
+
+/**
+ * Rewrite legacy Static wrapper access to modern shared-math-engine API.
+ *
+ * Handles:
+ * - this.mqStatic.mathField.latex() -> this.mqStatic.mathField.getLatex?.()
+ */
+export function transformLegacyMathFieldLatexCalls(content: string): string {
+  return content.replace(/(\.\s*mathField)\s*\.\s*latex\s*\(\s*\)/g, '$1.getLatex?.()');
 }
 
 /**
@@ -573,22 +640,35 @@ export function transformPackageJsonSharedPackages<T extends Record<string, any>
 }
 
 /**
- * Transform package.json dependencies for @pie-framework/mathquill
+ * Transform package.json dependencies for legacy mathquill packages
  *
- * Replaces @pie-framework/mathquill with internal @pie-element/shared-mathquill
+ * Replaces:
+ * - @pie-framework/mathquill
+ * - @pie-element/shared-mathquill
+ * - mathquill
+ * With: @pie-element/shared-math-engine
  */
 export function transformPackageJsonMathquill<T extends Record<string, any>>(packageJson: T): T {
   const transformed = { ...packageJson };
 
-  // Replace @pie-framework/mathquill with internal package
-  if (transformed.dependencies?.['@pie-framework/mathquill']) {
-    transformed.dependencies['@pie-element/shared-mathquill'] = 'workspace:*';
-    delete transformed.dependencies['@pie-framework/mathquill'];
-  }
-  if (transformed.devDependencies?.['@pie-framework/mathquill']) {
-    transformed.devDependencies['@pie-element/shared-mathquill'] = 'workspace:*';
-    delete transformed.devDependencies['@pie-framework/mathquill'];
-  }
+  const normalizeMathDeps = (deps?: Record<string, string>) => {
+    if (!deps) {
+      return;
+    }
+    if (
+      deps['@pie-framework/mathquill'] ||
+      deps['@pie-element/shared-mathquill'] ||
+      deps.mathquill
+    ) {
+      deps['@pie-element/shared-math-engine'] = 'workspace:*';
+    }
+    delete deps['@pie-framework/mathquill'];
+    delete deps['@pie-element/shared-mathquill'];
+    delete deps.mathquill;
+  };
+
+  normalizeMathDeps(transformed.dependencies);
+  normalizeMathDeps(transformed.devDependencies);
 
   return transformed;
 }
@@ -1067,4 +1147,210 @@ export function addInlineMenuExport(content: string, sourcePath?: string): strin
 export function transformMathQuillInterface(content: string): string {
   // Replace MathQuill.getInterface(2) with MathQuill.getInterface(3)
   return content.replace(/MathQuill\.getInterface\(2\)/g, 'MathQuill.getInterface(3)');
+}
+
+/**
+ * Transform React component imports that may resolve as module objects in IIFE builds.
+ *
+ * Some libraries export React components as objects (e.g. forwardRef) or wrapped modules,
+ * which can trigger React invariant #130 in certain bundled interop paths.
+ *
+ * This transform rewrites known-risk imports to pass through a small runtime unwrap helper:
+ * - `@mdi/react` default import
+ * - `react-konva` named imports
+ */
+export function transformReactInteropComponentImports(content: string): string {
+  let transformed = content;
+  let touched = false;
+
+  // Handle default import from @mdi/react:
+  // import Icon from '@mdi/react'
+  // ->
+  // import IconImport from '@mdi/react'
+  // const Icon = unwrapReactInteropSymbol(IconImport, 'Icon');
+  transformed = transformed.replace(
+    /^import\s+([A-Za-z_$][\w$]*)\s+from\s+['"]@mdi\/react['"];?\s*$/m,
+    (match, localName: string) => {
+      if (localName.endsWith('Import')) {
+        return match;
+      }
+      touched = true;
+      return `import ${localName}Import from '@mdi/react';`;
+    }
+  );
+
+  const mdiMatch = transformed.match(
+    /^import\s+([A-Za-z_$][\w$]*)Import\s+from\s+['"]@mdi\/react['"];?\s*$/m
+  );
+  if (mdiMatch) {
+    const localName = mdiMatch[1];
+    const declaration = `const ${localName} = unwrapReactInteropSymbol(${localName}Import, '${localName}');`;
+    if (!transformed.includes(declaration)) {
+      touched = true;
+      transformed = transformed.replace(mdiMatch[0], `${mdiMatch[0]}\n${declaration}`);
+    }
+  }
+
+  // Handle named imports from react-konva:
+  // import { Stage, Layer } from 'react-konva'
+  // ->
+  // import { Stage as StageImport, Layer as LayerImport } from 'react-konva'
+  // const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
+  // const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
+  const konvaImportRegex = /^import\s+\{([^}]+)\}\s+from\s+['"]react-konva['"];?\s*$/m;
+  const konvaMatch = transformed.match(konvaImportRegex);
+  if (konvaMatch) {
+    const rawSpec = konvaMatch[1]
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const parsed = rawSpec
+      .map((entry) => {
+        const aliasMatch = entry.match(/^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/);
+        if (aliasMatch) {
+          return { exported: aliasMatch[1], local: aliasMatch[2] };
+        }
+        const singleMatch = entry.match(/^([A-Za-z_$][\w$]*)$/);
+        if (singleMatch) {
+          return { exported: singleMatch[1], local: singleMatch[1] };
+        }
+        return null;
+      })
+      .filter((v): v is { exported: string; local: string } => !!v);
+
+    if (parsed.length) {
+      const rewrittenSpecs = parsed.map(({ exported, local }) => `${exported} as ${local}Import`);
+      const declarations = parsed.map(
+        ({ exported, local }) =>
+          `const ${local} = unwrapReactInteropSymbol(${local}Import, '${exported}');`
+      );
+
+      transformed = transformed.replace(
+        konvaImportRegex,
+        `import { ${rewrittenSpecs.join(', ')} } from 'react-konva';`
+      );
+
+      for (const declaration of declarations) {
+        if (!transformed.includes(declaration)) {
+          transformed = transformed.replace(
+            /^import\s+\{[^}]+\}\s+from\s+['"]react-konva['"];?\s*$/m,
+            (line) => `${line}\n${declaration}`
+          );
+        }
+      }
+      touched = true;
+    }
+  }
+
+  // Handle mixed named imports from @pie-lib/render-ui where React components
+  // may resolve through nested/default interop in IIFE bundles.
+  // Example:
+  // import { Collapsible, color, PreviewPrompt } from '@pie-lib/render-ui'
+  // ->
+  // import { Collapsible as CollapsibleImport, color, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+  // const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible');
+  // const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');
+  const renderUiImportRegex = /^import\s+\{([^}]+)\}\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m;
+  const renderUiMatch = transformed.match(renderUiImportRegex);
+  if (renderUiMatch) {
+    const rawSpec = renderUiMatch[1]
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const parsed = rawSpec
+      .map((entry) => {
+        const aliasMatch = entry.match(/^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/);
+        if (aliasMatch) {
+          return { exported: aliasMatch[1], local: aliasMatch[2] };
+        }
+        const singleMatch = entry.match(/^([A-Za-z_$][\w$]*)$/);
+        if (singleMatch) {
+          return { exported: singleMatch[1], local: singleMatch[1] };
+        }
+        return null;
+      })
+      .filter((v): v is { exported: string; local: string } => !!v);
+
+    // Heuristic: only wrap React component-like imports (PascalCase symbols).
+    const componentLike = parsed.filter(
+      ({ exported, local }) =>
+        /^[A-Z]/.test(exported) && /^[A-Z]/.test(local) && !local.endsWith('Import')
+    );
+
+    if (componentLike.length) {
+      const rewrittenSpecs = parsed.map(({ exported, local }) => {
+        const shouldWrap = componentLike.some(
+          (entry) => entry.exported === exported && entry.local === local
+        );
+        return shouldWrap
+          ? `${exported} as ${local}Import`
+          : exported === local
+            ? local
+            : `${exported} as ${local}`;
+      });
+
+      const declarations = componentLike.map(
+        ({ exported, local }) =>
+          `const ${local} = unwrapReactInteropSymbol(${local}Import, '${exported}');`
+      );
+
+      transformed = transformed.replace(
+        renderUiImportRegex,
+        `import { ${rewrittenSpecs.join(', ')} } from '@pie-lib/render-ui';`
+      );
+
+      for (const declaration of declarations) {
+        if (!transformed.includes(declaration)) {
+          transformed = transformed.replace(
+            /^import\s+\{[^}]+\}\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m,
+            (line) => `${line}\n${declaration}`
+          );
+        }
+      }
+      touched = true;
+    }
+  }
+
+  if (!touched) {
+    return transformed;
+  }
+
+  if (!transformed.includes('function isRenderableReactInteropType(')) {
+    const helperBlock = `function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+`;
+
+    // Capture top-of-file import blocks, including multiline imports.
+    const importBlockMatch = transformed.match(
+      /^(?:(?:\s*\/\/[^\n]*\n|\s*\/\*[\s\S]*?\*\/\s*\n|\s*\n)*)((?:import[\s\S]*?;\s*\n)+)/
+    );
+    if (importBlockMatch) {
+      const insertAt = importBlockMatch[0].length;
+      transformed =
+        transformed.slice(0, insertAt) + '\n' + helperBlock + transformed.slice(insertAt);
+    } else {
+      transformed = `${helperBlock}\n${transformed}`;
+    }
+  }
+
+  return transformed;
 }

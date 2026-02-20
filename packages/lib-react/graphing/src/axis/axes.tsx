@@ -15,8 +15,28 @@ import PropTypes from 'prop-types';
 import Arrow from './arrow.js';
 import { styled } from '@mui/material/styles';
 import { amountToIncreaseWidth, countWords, findLongestWord, getTickValues } from '../utils.js';
-import { color, Readable } from '@pie-lib/render-ui';
+import { color, Readable as ReadableImport } from '@pie-lib/render-ui';
 
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable');
 export const AxisPropTypes = {
   includeArrows: PropTypes.object,
   graphProps: PropTypes.object,

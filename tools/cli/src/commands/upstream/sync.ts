@@ -290,7 +290,7 @@ export default class Sync extends Command {
 
     // Auto-fix missing direct dependency declarations in touched package manifests.
     // This makes sync resilient to upstream package.json drift.
-    if (!config.dryRun) {
+    {
       const autoFix = await this.autoFixTouchedPackageDependencyDeclarations(config);
       if (autoFix.unresolved.length > 0) {
         for (const unresolved of autoFix.unresolved) {
@@ -313,7 +313,7 @@ export default class Sync extends Command {
 
     // Verify synced packages for dependency integrity regressions (broken/hoist-reliant imports).
     // This catches runtime failures like unresolved "prop-types" and newly introduced hoist reliance.
-    if (!config.dryRun) {
+    {
       const integrityRegressions = await this.verifyTouchedPackageDependencyIntegrity(config);
       if (integrityRegressions.length > 0) {
         for (const issue of integrityRegressions) {
@@ -744,6 +744,14 @@ export default class Sync extends Command {
     const fallbackVersions: Record<string, string> = {
       'js-combinatorics': '^2.1.2',
       '@testing-library/react': '^16.3.0',
+      '@testing-library/dom': '^10.4.1',
+      '@tiptap/extensions': '^3.20.0',
+      '@tiptap/extension-list': '^3.20.0',
+      '@tiptap/extension-code-block': '^3.20.0',
+      'nested-property': '^4.0.0',
+      'prosemirror-state': '^1.4.4',
+      'react-is': '^19.2.0',
+      pluralize: '^8.0.0',
     };
 
     // Internal workspace packages should stay workspace-linked.

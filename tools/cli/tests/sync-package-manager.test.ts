@@ -109,4 +109,38 @@ describe('ensurePieLibPackageJson', () => {
       '@pie-lib/render-ui': 'workspace:*',
     });
   });
+
+  it('maps legacy mathquill deps to shared math-engine workspace package', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'math-input');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'math-input');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(join(libDir, 'src', 'index.ts'), 'export {};\n', 'utf-8');
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/math-input',
+          dependencies: {
+            '@pie-framework/mathquill': '^1.0.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensurePieLibPackageJson('math-input', libDir, createConfig(rootDir));
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toMatchObject({
+      '@pie-element/shared-math-engine': 'workspace:*',
+    });
+    expect(pkgJson.dependencies['@pie-framework/mathquill']).toBeUndefined();
+    expect(pkgJson.dependencies['@pie-element/shared-mathquill']).toBeUndefined();
+  });
 });

@@ -16,7 +16,31 @@ import { difference, isEqual, uniqueId } from 'lodash-es';
 import { styled } from '@mui/material/styles';
 import { closestCenter } from '@dnd-kit/core';
 
-import { Collapsible, color, Feedback, hasMedia, hasText, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
+import { Collapsible as CollapsibleImport, color, Feedback as FeedbackImport, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');
+const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible');
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';

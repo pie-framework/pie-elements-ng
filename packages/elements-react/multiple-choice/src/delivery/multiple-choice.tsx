@@ -14,7 +14,29 @@ import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import classNames from 'classnames';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { color, Collapsible, PreviewPrompt } from '@pie-lib/render-ui';
+import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible');
 import Translator from '@pie-lib/translator';
 
 import Choice from './choice.js';

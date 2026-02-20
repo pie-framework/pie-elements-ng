@@ -7,7 +7,7 @@
 import { page } from '$app/stores';
 import { goto } from '$app/navigation';
 import { onMount } from 'svelte';
-import { initializeDemo, hasConfigure, hasPrint } from '$lib/stores/demo-state';
+import { initializeDemo, hasConfigure, hasPrint, requestIifeRebuild } from '$lib/stores/demo-state';
 import DemoSelector from '$lib/components/DemoSelector.svelte';
 import IifeBuildPanel from '$lib/components/IifeBuildPanel.svelte';
 import { parsePlayerType } from '$lib/config/player-runtime';
@@ -218,9 +218,17 @@ onMount(() => {
 function updatePlayerUrl(updates: { player?: 'esm' | 'iife' }) {
   const url = new URL($page.url);
   const nextPlayer = updates.player || currentPlayerType;
+  const switchingToIife = currentPlayerType !== 'iife' && nextPlayer === 'iife';
   url.searchParams.set('player', nextPlayer);
   url.searchParams.delete('iifeSource');
-  window.location.assign(url.toString());
+  if (switchingToIife) {
+    requestIifeRebuild();
+  }
+  void goto(url.toString(), {
+    invalidateAll: true,
+    noScroll: true,
+    replaceState: false,
+  });
 }
 
 // Bidirectional sync: URL ↔ stores

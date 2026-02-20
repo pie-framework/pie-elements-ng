@@ -8,10 +8,15 @@
 
 import {
   transformLodashToLodashEs,
+  transformLodashEsDeepImportsToFullySpecified,
+  transformKnownDeepImportsToFullySpecified,
   transformPieFrameworkEventImports,
   transformControllerUtilsImports,
   transformSharedPackageImports,
   transformMathquillImports,
+  transformLegacyConfigureLibImports,
+  removeLegacyMathquillCssImports,
+  transformLegacyMathFieldLatexCalls,
   inlineEditableHtmlConstants,
   reexportTokenTypes,
   transformSsrRequireToReactLazy,
@@ -29,6 +34,7 @@ import {
   transformMenuToInlineMenu,
   addInlineMenuExport,
   transformMathQuillInterface,
+  transformReactInteropComponentImports,
 } from './sync-imports.js';
 import type { PackageJson } from '../../utils/package-json.js';
 
@@ -53,7 +59,7 @@ export interface TransformOptions {
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
- * 5. @pie-framework/mathquill → @pie-element/shared-mathquill
+ * 5. Legacy mathquill packages → @pie-element/shared-math-engine
  * 6. @mui/material/Menu → InlineMenu from @pie-lib/render-ui
  * 7. Self-referential imports → relative imports
  * 8. Configure-specific transforms (if enabled)
@@ -65,12 +71,18 @@ export function applySourceTransforms(content: string, options: TransformOptions
 
   // Core transforms (always applied)
   transformed = transformLodashToLodashEs(transformed);
+  transformed = transformLodashEsDeepImportsToFullySpecified(transformed);
+  transformed = transformKnownDeepImportsToFullySpecified(transformed);
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
   transformed = transformSharedPackageImports(transformed);
   transformed = transformMathquillImports(transformed);
+  transformed = transformLegacyConfigureLibImports(transformed);
   transformed = transformMathQuillInterface(transformed);
+  transformed = removeLegacyMathquillCssImports(transformed);
+  transformed = transformLegacyMathFieldLatexCalls(transformed);
   transformed = transformMenuToInlineMenu(transformed);
+  transformed = transformReactInteropComponentImports(transformed);
 
   // Transform self-referential imports to relative paths
   if (options.packageName && options.relativePath) {
@@ -114,7 +126,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
- * 5. @pie-framework/mathquill → @pie-element/shared-mathquill
+ * 5. Legacy mathquill packages → @pie-element/shared-math-engine
  */
 export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   let transformed = pkg;
