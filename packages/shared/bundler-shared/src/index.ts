@@ -183,7 +183,11 @@ export class Bundler {
       let controllerUrls: Record<string, string> | undefined;
       if (includeControllers) {
         emit('bundling_controllers');
-        controllerUrls = await this.buildStandaloneControllers(request.dependencies, workspaceDir);
+        controllerUrls = await this.buildStandaloneControllers(
+          request.dependencies,
+          workspaceDir,
+          sourceMaps
+        );
         this.writeControllerManifest(
           join(outputPath, 'controller-manifest.json'),
           controllerUrls
@@ -233,7 +237,8 @@ export class Bundler {
 
   private async buildStandaloneControllers(
     dependencies: BuildDependency[],
-    workspaceDir: string
+    workspaceDir: string,
+    sourceMaps: boolean
   ): Promise<Record<string, string>> {
     const controllers: Record<string, string> = {};
 
@@ -262,7 +267,7 @@ export class Bundler {
         },
         outputPath,
         workspaceDir,
-        sourceMaps: request.options?.sourceMaps === true,
+        sourceMaps,
       });
       const stats = await this.runWebpack(config);
       const statsJson = stats.toJson();
