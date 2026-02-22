@@ -1,42 +1,43 @@
 {
-  "name": "@pie-element/shared-controller-utils",
+  "name": "@pie-element/element-theme-daisyui",
   "version": "0.1.0",
-  "description": "Controller utility functions for PIE elements",
+  "description": "DaisyUI-powered web component theme wrapper for PIE players",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/pie-element-theme-daisyui.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "development": "./src/index.ts",
+      "default": "./dist/pie-element-theme-daisyui.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
-    "dev": "vite build --watch",
-    "test": "vitest",
-    "clean": "rm -rf dist"
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "dev": "vite",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@pie-element/element-theme": "workspace:*",
+    "@pie-element/shared-theming": "workspace:*",
     "@pie-element/shared-types": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "latest",
     "typescript": "^5.9.3",
-    "vite": "^7.2.2",
+    "vite": "^7.3.1",
     "vitest": "^4.0.17"
   },
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/pie-framework/pie-elements-ng.git",
-    "directory": "packages/shared/controller-utils"
+    "directory": "packages/element-theme-daisyui"
   },
   "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
   "bugs": {

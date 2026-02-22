@@ -1,26 +1,10 @@
 import { createTheme, type Theme } from '@mui/material/styles';
-import type { PieThemeExtended, MuiThemeOptions } from './types.js';
+import type { PieThemeExtended } from '@pie-element/shared-theming';
+import type { MuiThemeOptions } from './types.js';
 
 /**
  * Create MUI theme from PIE theme
  * Uses CSS variables in component overrides for compatibility
- *
- * This function creates a Material-UI theme that works alongside PIE's CSS variable system.
- * By default, it preserves MUI's existing styles and optionally injects CSS variables.
- *
- * @param pieTheme - PIE theme with color values
- * @param options - MUI theme configuration options
- * @returns MUI Theme object
- *
- * @example
- * ```typescript
- * const pieTheme = { primary: '#3F51B5', 'base-content': '#000' };
- * const muiTheme = createPieMuiTheme(pieTheme, {
- *   useThemePalette: true,
- *   injectCssVariables: true,
- *   preserveMuiDefaults: false
- * });
- * ```
  */
 export function createPieMuiTheme(
   pieTheme: Partial<PieThemeExtended>,
@@ -45,7 +29,6 @@ export function createPieMuiTheme(
       : {},
   };
 
-  // Optional: Override MUI palette with PIE colors
   if (useThemePalette) {
     themeOptions.palette = {
       ...themeOptions.palette,
@@ -81,7 +64,6 @@ export function createPieMuiTheme(
     };
   }
 
-  // Inject CSS variables into MUI component overrides
   if (injectCssVariables) {
     themeOptions.components = {
       MuiTypography: {
@@ -134,17 +116,7 @@ export function createPieMuiTheme(
 }
 
 /**
- * Update existing MUI theme with PIE colors
- * Useful for dynamically updating a theme without recreating it
- *
- * @param existingTheme - Existing MUI theme
- * @param pieTheme - New PIE theme colors
- * @returns Updated MUI theme
- *
- * @example
- * ```typescript
- * const updated = updateMuiThemeFromPie(currentTheme, newPieTheme);
- * ```
+ * Update existing MUI theme with PIE colors.
  */
 export function updateMuiThemeFromPie(
   existingTheme: Theme,

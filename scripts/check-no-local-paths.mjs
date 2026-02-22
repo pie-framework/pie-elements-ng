@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
+import { execSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 
 const root = process.cwd();
-const defaultTargets = ['apps', 'packages', 'dist', 'build', 'esm'];
 const targets = process.argv.slice(2);
-const scanTargets = (targets.length ? targets : defaultTargets)
+const scanTargets = targets
   .map((target) => resolve(root, target))
   .filter((target) => existsSync(target));
 
@@ -89,8 +89,19 @@ function walk(path) {
   scanFile(path);
 }
 
-for (const target of scanTargets) {
-  walk(target);
+if (scanTargets.length > 0) {
+  for (const target of scanTargets) {
+    walk(target);
+  }
+} else {
+  // Default mode: scan checked-in files only.
+  const trackedFiles = execSync('git ls-files -z', { cwd: root, encoding: 'utf8' })
+    .split('\u0000')
+    .filter(Boolean)
+    .map((file) => resolve(root, file));
+  for (const trackedFile of trackedFiles) {
+    scanFile(trackedFile);
+  }
 }
 
 if (violations.length > 0) {

@@ -1,7 +1,7 @@
 {
   "name": "@pie-element/shared-theming",
   "version": "0.1.0",
-  "description": "Base theming system for PIE elements with MUI integration",
+  "description": "Core theming system for PIE elements",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,11 +21,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-element/shared-types": "workspace:*",
-    "@mui/material": "^7.3.4",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "react": "^18.3.0"
+    "@pie-element/shared-types": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
@@ -33,11 +29,17 @@
     "vite": "^7.2.2",
     "vitest": "^4.0.17"
   },
-  "peerDependencies": {
-    "react": "^18.0.0"
-  },
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/shared/theming"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
 }

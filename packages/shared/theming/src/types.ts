@@ -1,5 +1,4 @@
 import type { PieTheme } from '@pie-element/shared-types';
-import type { Theme } from '@mui/material/styles';
 
 /**
  * Extended PIE theme with all 45+ color properties
@@ -84,40 +83,3 @@ export interface CssVariableMapping {
   fallback: string; // From PIE_COLOR_DEFAULTS
 }
 
-/**
- * MUI theme integration options
- */
-export interface MuiThemeOptions {
-  useThemePalette?: boolean; // Override MUI palette colors
-  injectCssVariables?: boolean; // Use CSS vars in MUI components
-  preserveMuiDefaults?: boolean; // Keep existing button styles
-}
-
-/**
- * Theme configuration for PieThemeProvider
- */
-export interface ThemeConfig {
-  theme: Partial<PieThemeExtended>;
-  muiOptions?: MuiThemeOptions;
-  injectGlobally?: boolean; // Inject CSS variables to document.documentElement
-  prefix?: string; // CSS variable prefix (default: 'pie')
-  mappings?: CssVariableMapping[]; // Custom mappings
-}
-
-/**
- * Theme context value
- */
-export interface ThemeContextValue {
-  theme: Partial<PieThemeExtended>;
-  cssVariables: Record<string, string>;
-  muiTheme: Theme;
-  setTheme: (theme: Partial<PieThemeExtended>) => void;
-}
-
-/**
- * PieThemeProvider props
- */
-export interface PieThemeProviderProps {
-  children: React.ReactNode;
-  config: ThemeConfig;
-}

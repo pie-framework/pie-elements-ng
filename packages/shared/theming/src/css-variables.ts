@@ -68,8 +68,10 @@ export function cssVariablesToStyleString(cssVars: Record<string, string>): stri
  * <div style={style}>...</div>
  * ```
  */
-export function cssVariablesToReactStyle(cssVars: Record<string, string>): React.CSSProperties {
-  return cssVars as React.CSSProperties;
+export function cssVariablesToReactStyle(
+  cssVars: Record<string, string>
+): Record<string, string | number | undefined> {
+  return cssVars as Record<string, string | number | undefined>;
 }
 
 /**

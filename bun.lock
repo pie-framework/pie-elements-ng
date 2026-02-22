@@ -41,6 +41,7 @@
       "dependencies": {
         "@pie-element/bundler-shared": "workspace:*",
         "@pie-element/element-player": "workspace:*",
+        "@pie-element/element-theme-daisyui": "workspace:*",
         "@tiptap/core": "3.18.0",
         "@tiptap/extension-code-block-lowlight": "3.18.0",
         "@tiptap/extension-document": "3.18.0",
@@ -85,8 +86,6 @@
       "version": "0.1.1",
       "dependencies": {
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-        "@pie-element/shared-theming": "workspace:*",
-        "@pie-element/shared-theming-daisyui": "workspace:*",
         "@tiptap/core": "3.18.0",
         "@tiptap/extension-code-block": "^3.20.0",
         "@tiptap/extension-code-block-lowlight": "3.18.0",
@@ -110,6 +109,32 @@
       },
       "peerDependencies": {
         "svelte": "^5.49.0",
+      },
+    },
+    "packages/element-theme": {
+      "name": "@pie-element/element-theme",
+      "version": "0.1.0",
+      "dependencies": {
+        "@pie-element/shared-theming": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.9.3",
+        "vite": "^7.3.1",
+        "vitest": "^4.0.17",
+      },
+    },
+    "packages/element-theme-daisyui": {
+      "name": "@pie-element/element-theme-daisyui",
+      "version": "0.1.0",
+      "dependencies": {
+        "@pie-element/element-theme": "workspace:*",
+        "@pie-element/shared-theming": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.9.3",
+        "vite": "^7.3.1",
+        "vitest": "^4.0.17",
       },
     },
     "packages/elements-react/categorize": {
@@ -1652,16 +1677,24 @@
       "version": "0.1.0",
       "dependencies": {
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-        "react": "^18.2.0",
-        "svelte": "^5.51.0",
       },
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^6.2.4",
         "@types/react": "^18.3.0",
+        "react": "^18.2.0",
+        "svelte": "^5.51.0",
         "typescript": "^5.9.3",
         "vite": "^7.3.1",
         "vitest": "^4.0.17",
       },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "svelte": "^5.0.0",
+      },
+      "optionalPeers": [
+        "react",
+        "svelte",
+      ],
     },
     "packages/shared/math-rendering-mathjax": {
       "name": "@pie-element/shared-math-rendering-mathjax",
@@ -1698,11 +1731,7 @@
       "name": "@pie-element/shared-theming",
       "version": "0.1.0",
       "dependencies": {
-        "@emotion/react": "^11.14.0",
-        "@emotion/styled": "^11.14.1",
-        "@mui/material": "^7.3.4",
         "@pie-element/shared-types": "workspace:*",
-        "react": "^18.3.0",
       },
       "devDependencies": {
         "@types/react": "^18.3.0",
@@ -1710,46 +1739,18 @@
         "vite": "^7.2.2",
         "vitest": "^4.0.17",
       },
-      "peerDependencies": {
-        "react": "^18.0.0",
-      },
-    },
-    "packages/shared/theming-daisyui": {
-      "name": "@pie-element/shared-theming-daisyui",
-      "version": "0.1.0",
-      "dependencies": {
-        "@pie-element/shared-theming": "workspace:*",
-        "@pie-element/shared-types": "workspace:*",
-        "react": "^18.3.0",
-      },
-      "devDependencies": {
-        "@types/react": "^18.3.0",
-        "typescript": "^5.9.3",
-        "vite": "^7.2.2",
-        "vitest": "^4.0.17",
-      },
-      "peerDependencies": {
-        "daisyui": "^4.0.0",
-        "react": "^18.0.0",
-        "tailwindcss": "^4.0.0",
-      },
-      "optionalPeers": [
-        "daisyui",
-        "tailwindcss",
-      ],
     },
     "packages/shared/theming-mui": {
       "name": "@pie-element/shared-theming-mui",
       "version": "0.1.0",
       "dependencies": {
         "@pie-element/shared-theming": "workspace:*",
-        "@pie-element/shared-theming-daisyui": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
-        "react": "^18.3.0",
       },
       "devDependencies": {
         "@mui/material": "^7.3.4",
         "@types/react": "^18.3.0",
+        "react": "^18.3.0",
         "typescript": "^5.9.3",
         "vite": "^7.2.2",
         "vitest": "^4.0.17",
@@ -2124,6 +2125,10 @@
 
     "@pie-element/element-player": ["@pie-element/element-player@workspace:packages/element-player"],
 
+    "@pie-element/element-theme": ["@pie-element/element-theme@workspace:packages/element-theme"],
+
+    "@pie-element/element-theme-daisyui": ["@pie-element/element-theme-daisyui@workspace:packages/element-theme-daisyui"],
+
     "@pie-element/explicit-constructed-response": ["@pie-element/explicit-constructed-response@workspace:packages/elements-react/explicit-constructed-response"],
 
     "@pie-element/extended-text-entry": ["@pie-element/extended-text-entry@workspace:packages/elements-react/extended-text-entry"],
@@ -2183,8 +2188,6 @@
     "@pie-element/shared-test-utils": ["@pie-element/shared-test-utils@workspace:packages/shared/test-utils"],
 
     "@pie-element/shared-theming": ["@pie-element/shared-theming@workspace:packages/shared/theming"],
-
-    "@pie-element/shared-theming-daisyui": ["@pie-element/shared-theming-daisyui@workspace:packages/shared/theming-daisyui"],
 
     "@pie-element/shared-theming-mui": ["@pie-element/shared-theming-mui@workspace:packages/shared/theming-mui"],
 

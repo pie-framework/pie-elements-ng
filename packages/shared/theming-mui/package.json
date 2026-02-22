@@ -22,13 +22,12 @@
   },
   "dependencies": {
     "@pie-element/shared-types": "workspace:*",
-    "@pie-element/shared-theming": "workspace:*",
-    "@pie-element/shared-theming-daisyui": "workspace:*",
-    "react": "^18.3.0"
+    "@pie-element/shared-theming": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
     "@mui/material": "^7.3.4",
+    "react": "^18.3.0",
     "typescript": "^5.9.3",
     "vite": "^7.2.2",
     "vitest": "^4.0.17"
@@ -40,5 +39,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/shared/theming-mui"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
 }

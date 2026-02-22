@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@pie-element/bundler-shared": "workspace:*",
+    "@pie-element/element-theme-daisyui": "workspace:*",
     "@pie-element/element-player": "workspace:*",
     "@tiptap/core": "3.18.0",
     "@tiptap/extension-code-block-lowlight": "3.18.0",

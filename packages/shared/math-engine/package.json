@@ -25,19 +25,40 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "react": "^18.2.0",
-    "svelte": "^5.51.0"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
   },
   "devDependencies": {
+    "react": "^18.2.0",
+    "svelte": "^5.51.0",
     "@types/react": "^18.3.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vitest": "^4.0.17"
   },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "svelte": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/shared/math-engine"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
 }

@@ -16,6 +16,7 @@ import {
   iifeBuildMeta,
   iifeBuildLoading,
   iifeBuildRequestVersion,
+  theme,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -62,16 +63,18 @@ function handleBuildState(event: CustomEvent) {
 
 {#if playerType === 'iife'}
   <div class="h-full overflow-auto p-4">
-    <IifePrintPlayer
-      elementName={data.elementName}
-      packageName={data.packageName}
-      elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-      model={$model}
-      role={$role}
-      rebuildVersion={$iifeBuildRequestVersion}
-      on:bundle-meta={handleBundleMeta}
-      on:build-state={handleBuildState}
-    />
+    <pie-element-theme-daisyui theme={$theme}>
+      <IifePrintPlayer
+        elementName={data.elementName}
+        packageName={data.packageName}
+        elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+        model={$model}
+        role={$role}
+        rebuildVersion={$iifeBuildRequestVersion}
+        on:bundle-meta={handleBundleMeta}
+        on:build-state={handleBuildState}
+      />
+    </pie-element-theme-daisyui>
   </div>
 {:else}
   <PlayerLayout
@@ -82,12 +85,14 @@ function handleBuildState(event: CustomEvent) {
     {debug}
   >
     {#snippet children()}
-      <PrintView
-        elementName={$elementName}
-        model={$model}
-        role={$role}
-        {debug}
-      />
+      <pie-element-theme-daisyui theme={$theme}>
+        <PrintView
+          elementName={$elementName}
+          model={$model}
+          role={$role}
+          {debug}
+        />
+      </pie-element-theme-daisyui>
     {/snippet}
   </PlayerLayout>
 {/if}

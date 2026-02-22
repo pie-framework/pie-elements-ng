@@ -1,9 +1,10 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { ThemeProvider as MuiThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
-import type { PieThemeExtended, ThemeContextValue, PieThemeProviderProps } from './types';
-import { generateCssVariables, injectCssVariables } from './css-variables';
-import { createPieMuiTheme } from './mui-integration';
+import type { PieThemeExtended } from '@pie-element/shared-theming';
+import { generateCssVariables, injectCssVariables } from '@pie-element/shared-theming';
+import { createPieMuiTheme } from './mui-integration.js';
+import type { ThemeContextValue, PieThemeProviderProps } from './types.js';
 
 /**
  * PIE Theme Context
@@ -14,23 +15,6 @@ export const PieThemeContext = createContext<ThemeContextValue | undefined>(unde
 /**
  * PIE Theme Provider
  * Manages theme state and generates CSS variables + MUI theme
- *
- * @example
- * ```typescript
- * function App() {
- *   const config: ThemeConfig = {
- *     theme: { primary: '#3F51B5', 'base-content': '#000' },
- *     injectGlobally: true,
- *     muiOptions: { preserveMuiDefaults: true }
- *   };
- *
- *   return (
- *     <PieThemeProvider config={config}>
- *       <YourApp />
- *     </PieThemeProvider>
- *   );
- * }
- * ```
  */
 export function PieThemeProvider({ children, config }: PieThemeProviderProps): JSX.Element {
   const [theme, setTheme] = useState<Partial<PieThemeExtended>>(config.theme);
@@ -41,7 +25,6 @@ export function PieThemeProvider({ children, config }: PieThemeProviderProps): J
     createPieMuiTheme(config.theme, config.muiOptions)
   );
 
-  // Update CSS variables and MUI theme when theme changes
   useEffect(() => {
     const vars = generateCssVariables(theme, {
       prefix: config.prefix,
@@ -50,7 +33,6 @@ export function PieThemeProvider({ children, config }: PieThemeProviderProps): J
     setCssVariables(vars);
     setMuiTheme(createPieMuiTheme(theme, config.muiOptions));
 
-    // Optionally inject globally to document root
     if (config.injectGlobally) {
       injectCssVariables(vars);
     }

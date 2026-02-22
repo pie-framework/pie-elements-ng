@@ -14,7 +14,6 @@ export default defineConfig({
         'react-dom',
         '@pie-element/shared-types',
         '@pie-element/shared-theming',
-        '@pie-element/shared-theming-daisyui',
         '@mui/material',
         '@mui/material/styles',
       ],

@@ -21,6 +21,7 @@ import {
   iifeBuildMeta,
   iifeBuildLoading,
   iifeBuildRequestVersion,
+  theme,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -227,28 +228,30 @@ function handleBuildState(event: CustomEvent) {
   {debug}
 >
   {#snippet children()}
-    {#if playerType === 'iife'}
-      <IifeElementPlayer
-        elementName={data.elementName}
-        packageName={data.packageName}
-        elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-        model={elementModel}
-        session={elementSession}
-        rebuildVersion={$iifeBuildRequestVersion}
-        on:session-changed={handleSessionChanged}
-        on:controller-changed={handleIifeControllerChanged}
-        on:bundle-meta={handleBundleMeta}
-        on:build-state={handleBuildState}
-      />
-    {:else}
-      <DeliveryView
-        elementName={data.elementName}
-        {elementModel}
-        session={elementSession}
-        {debug}
-        on:session-changed={handleSessionChanged}
-      />
-    {/if}
+    <pie-element-theme-daisyui theme={$theme}>
+      {#if playerType === 'iife'}
+        <IifeElementPlayer
+          elementName={data.elementName}
+          packageName={data.packageName}
+          elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+          model={elementModel}
+          session={elementSession}
+          rebuildVersion={$iifeBuildRequestVersion}
+          on:session-changed={handleSessionChanged}
+          on:controller-changed={handleIifeControllerChanged}
+          on:bundle-meta={handleBundleMeta}
+          on:build-state={handleBuildState}
+        />
+      {:else}
+        <DeliveryView
+          elementName={data.elementName}
+          {elementModel}
+          session={elementSession}
+          {debug}
+          on:session-changed={handleSessionChanged}
+        />
+      {/if}
+    </pie-element-theme-daisyui>
     {#if modelError}
       <div class="model-error">{modelError}</div>
     {/if}

@@ -16,6 +16,7 @@ import {
   iifeBuildMeta,
   iifeBuildLoading,
   iifeBuildRequestVersion,
+  theme,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -87,17 +88,19 @@ function handleBuildState(event: CustomEvent) {
     </div>
   {/if}
   <div class="h-full overflow-auto p-4">
-    <IifeAuthorPlayer
-      elementName={data.elementName}
-      packageName={data.packageName}
-      elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-      model={$model}
-      rebuildVersion={$iifeBuildRequestVersion}
-      on:model-changed={handleModelChanged}
-      on:controller-changed={handleIifeControllerChanged}
-      on:bundle-meta={handleBundleMeta}
-      on:build-state={handleBuildState}
-    />
+    <pie-element-theme-daisyui theme={$theme}>
+      <IifeAuthorPlayer
+        elementName={data.elementName}
+        packageName={data.packageName}
+        elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+        model={$model}
+        rebuildVersion={$iifeBuildRequestVersion}
+        on:model-changed={handleModelChanged}
+        on:controller-changed={handleIifeControllerChanged}
+        on:bundle-meta={handleBundleMeta}
+        on:build-state={handleBuildState}
+      />
+    </pie-element-theme-daisyui>
   </div>
 {:else}
   <PlayerLayout
@@ -114,12 +117,14 @@ function handleBuildState(event: CustomEvent) {
           Synchronizing...
         </div>
       {/if}
-      <AuthorView
-        elementName={$elementName}
-        model={$model}
-        {debug}
-        on:model-changed={handleModelChanged}
-      />
+      <pie-element-theme-daisyui theme={$theme}>
+        <AuthorView
+          elementName={$elementName}
+          model={$model}
+          {debug}
+          on:model-changed={handleModelChanged}
+        />
+      </pie-element-theme-daisyui>
     {/snippet}
   </PlayerLayout>
 {/if}

@@ -2,10 +2,6 @@
 export type {
   PieThemeExtended,
   CssVariableMapping,
-  MuiThemeOptions,
-  ThemeConfig,
-  ThemeContextValue,
-  PieThemeProviderProps,
 } from './types.js';
 
 // Constants
@@ -30,18 +26,3 @@ export {
   removeCssVariables,
 } from './css-variables.js';
 
-// MUI Integration
-export { createPieMuiTheme, updateMuiThemeFromPie } from './mui-integration.js';
-
-// React Provider and Context
-export { PieThemeProvider, PieThemeContext } from './provider.js';
-
-// React Hooks
-export {
-  usePieTheme,
-  usePieThemeVariables,
-  usePieThemeStyle,
-  usePieThemeColors,
-  usePieMuiTheme,
-  useSetPieTheme,
-} from './hooks.js';
