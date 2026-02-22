@@ -26,8 +26,6 @@
   },
   "dependencies": {
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-theming": "workspace:*",
-    "@pie-element/shared-theming-daisyui": "workspace:*",
     "@tiptap/core": "3.18.0",
     "@tiptap/extension-code-block-lowlight": "3.18.0",
     "@tiptap/extension-document": "3.18.0",
@@ -52,5 +50,17 @@
     "vite": "^7.3.1",
     "typescript": "^5.9.3"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/element-player"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
 }
