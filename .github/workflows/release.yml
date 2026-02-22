@@ -79,16 +79,26 @@ jobs:
             echo "has_changesets=false" >> "$GITHUB_OUTPUT"
           fi
 
-          # Did this push include version/changelog changes (i.e. merged release PR)?
+          # Did this push include actual package version bumps (i.e. merged release PR)?
           before="${{ github.event.before }}"
           after="${{ github.sha }}"
-          changed="$(git diff --name-only "$before" "$after" || true)"
+          changed_manifests="$(git diff --name-only "$before" "$after" -- 'packages/**/package.json' 'tools/**/package.json' || true)"
 
-          if echo "$changed" | grep -Eq '^packages/[^/]+/(package\.json|CHANGELOG\.md)$'; then
-            echo "has_version_bumps=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_version_bumps=false" >> "$GITHUB_OUTPUT"
-          fi
+          has_version_bumps=false
+          for manifest in $changed_manifests; do
+            if ! node -e 'const fs=require("fs"); const p=process.argv[1]; try { const pkg=JSON.parse(fs.readFileSync(p, "utf8")); process.exit(pkg.private ? 1 : 0); } catch { process.exit(1); }' "$manifest"; then
+              continue
+            fi
+            manifest_diff="$(git diff -U0 "$before" "$after" -- "$manifest" || true)"
+            # Require both removed and added "version" lines to avoid treating
+            # metadata-only package.json edits as publish intents.
+            if echo "$manifest_diff" | grep -Eq '^-\\s*"version"\\s*:' && echo "$manifest_diff" | grep -Eq '^\\+\\s*"version"\\s*:'; then
+              has_version_bumps=true
+              break
+            fi
+          done
+
+          echo "has_version_bumps=${has_version_bumps}" >> "$GITHUB_OUTPUT"
 
       - name: Stop early (no changesets / no version bumps)
         if: github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_changesets != 'true' && steps.detect.outputs.has_version_bumps != 'true'
