@@ -22,16 +22,17 @@
   },
   "dependencies": {
     "@pie-element/shared-types": "workspace:*",
-    "@pie-element/shared-theming": "workspace:*",
-    "react": "^18.3.0"
+    "@pie-element/shared-theming": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
+    "react": "^18.3.0",
     "typescript": "^5.9.3",
     "vite": "^7.2.2",
     "vitest": "^4.0.17"
   },
   "peerDependencies": {
+    "@mui/material": "^7.0.0",
     "react": "^18.0.0",
     "daisyui": "^4.0.0",
     "tailwindcss": "^4.0.0"
@@ -47,5 +48,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/shared/theming-daisyui"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
 }
