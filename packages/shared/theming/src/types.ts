@@ -82,4 +82,3 @@ export interface CssVariableMapping {
   themeKey: keyof PieThemeExtended;
   fallback: string; // From PIE_COLOR_DEFAULTS
 }
-

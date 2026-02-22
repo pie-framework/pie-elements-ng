@@ -10,7 +10,11 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['@pie-element/element-theme', '@pie-element/shared-theming', '@pie-element/shared-types'],
+      external: [
+        '@pie-element/element-theme',
+        '@pie-element/shared-theming',
+        '@pie-element/shared-types',
+      ],
     },
   },
   test: {

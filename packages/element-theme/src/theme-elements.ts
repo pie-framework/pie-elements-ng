@@ -5,9 +5,7 @@ type ThemeScope = 'self' | 'document';
 
 type VariableMap = Record<string, string>;
 const HTMLElementBase =
-  typeof HTMLElement === 'undefined'
-    ? (class {} as unknown as typeof HTMLElement)
-    : HTMLElement;
+  typeof HTMLElement === 'undefined' ? (class {} as unknown as typeof HTMLElement) : HTMLElement;
 
 function isThemeMode(value: string | null): value is ThemeMode {
   return value === 'light' || value === 'dark' || value === 'auto';

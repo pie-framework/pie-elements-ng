@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  definePieElementTheme,
-  PieElementThemeElement,
-} from '../src/theme-elements.js';
+import { definePieElementTheme, PieElementThemeElement } from '../src/theme-elements.js';
 
 function appendAndConnect<T extends HTMLElement>(el: T): T {
   document.body.appendChild(el);
