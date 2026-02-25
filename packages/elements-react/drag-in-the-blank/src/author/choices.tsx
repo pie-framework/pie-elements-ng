@@ -17,6 +17,7 @@ import { styled } from '@mui/material/styles';
 
 import Choice from './choice.js';
 import { choiceIsEmpty } from './markupUtils.js';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const StyledDesign: any = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -63,11 +64,14 @@ export class Choices extends React.Component {
 
   state = { warning: { open: false } };
   preventDone = false;
+  wrapperRef = React.createRef(null);
 
   componentDidUpdate() {
     if (this.focusedNodeRef) {
       this.focusedNodeRef.focus('end');
     }
+
+    renderMath(this.wrapperRef.current);
   }
 
   onChoiceChanged: any = (prevValue, val, key) => {
@@ -223,7 +227,7 @@ export class Choices extends React.Component {
     } = this.props;
     const visibleChoices = this.getVisibleChoices() || [];
     return (
-      <StyledDesign>
+      <StyledDesign ref={this.wrapperRef}>
         <StyledAddButton
           variant="contained"
           color="primary"

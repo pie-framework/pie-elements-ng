@@ -193,7 +193,6 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -243,7 +242,6 @@
       "name": "@pie-element/drag-in-the-blank",
       "version": "0.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -258,7 +256,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
       },
@@ -291,7 +288,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "debug": "^4.1.1",
         "konva": "8.3.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
@@ -313,7 +309,6 @@
       "name": "@pie-element/ebsr",
       "version": "0.1.0",
       "dependencies": {
-        "@mui/material": "^7.3.4",
         "@pie-element/multiple-choice": "workspace:*",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
@@ -323,7 +318,6 @@
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -356,7 +350,6 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.5",
-        "debug": "^4.1.1",
         "he": "^1.2.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
@@ -390,7 +383,6 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "lodash.throttle": "^4.1.1",
         "prop-types": "^15.6.1",
       },
@@ -422,7 +414,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-is": "^19.2.0",
         "recharts": "^3.7.0",
@@ -460,8 +451,6 @@
         "classnames": "^2.2.5",
         "core-js": "^3.40.0",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
-        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -494,8 +483,6 @@
         "classnames": "^2.2.5",
         "core-js": "^3.40.0",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
-        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -526,9 +513,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
-        "debug": "^4.1.1",
         "konva": "8.3.0",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-konva": "^18.2.14",
       },
@@ -564,11 +549,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.6",
-        "debug": "^4.1.1",
         "humps": "^2.0.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
-        "react-transition-group": "^2.3.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -599,7 +581,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
       },
@@ -652,7 +633,6 @@
       "name": "@pie-element/match",
       "version": "0.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -806,7 +786,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-is": "^19.2.0",
         "styled-components": "^5.2.1",
@@ -827,7 +806,6 @@
       "name": "@pie-element/multi-trait-rubric",
       "version": "0.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -840,8 +818,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "clsx": "^1.1.1",
-        "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -915,7 +891,6 @@
         "d3-selection": "^3.0.0",
         "lodash-es": "^4.17.23",
         "mathjs": "^7.5.1",
-        "prop-types": "^15.6.1",
         "react-jss": "^10.10.0",
         "react-transition-group": "^4.4.5",
       },
@@ -945,8 +920,6 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -983,10 +956,7 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
         "decimal.js": "^10.0.0",
-        "js-combinatorics": "^2.1.2",
         "lodash-es": "^4.17.23",
-        "nested-property": "^4.0.0",
-        "pluralize": "^8.0.0",
         "prop-types": "^15.8.1",
         "react-transition-group": "^4.4.5",
       },
@@ -1015,8 +985,6 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/rubric": "workspace:*",
-        "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1049,8 +1017,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/text-select": "workspace:*",
-        "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1126,7 +1092,6 @@
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
         "react": "^18.2.0",
         "react-draggable": "^3.3.0",
         "react-input-autosize": "^2.2.1",
@@ -1148,7 +1113,6 @@
         "lodash-es": "^4.17.23",
         "mathjs": "^7.0.1",
         "prop-types": "^15.6.2",
-        "react": "^18.2.0",
         "react-measure": "^2.2.2",
       },
     },
@@ -1173,7 +1137,6 @@
         "@pie-lib/translator": "workspace:*",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
-        "react": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
     },
@@ -1238,10 +1201,7 @@
         "keycode": "^2.2.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
-        "prosemirror-state": "^1.4.4",
-        "react": "^18.2.0",
         "react-attr-converter": "^0.3.1",
-        "react-dom": "^18.2.0",
         "react-jss": "^8.6.1",
         "react-portal": "^4.2.0",
         "tippy.js": "latest",
@@ -1254,7 +1214,6 @@
       "dependencies": {
         "@dnd-kit/core": "^6.3.0",
         "@dnd-kit/sortable": "10.0.0",
-        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mapbox/point-geometry": "^1.1.0",
@@ -1295,9 +1254,7 @@
       "name": "@pie-lib/graphing-solution-set",
       "version": "0.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "10.0.0",
-        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mapbox/point-geometry": "^1.1.0",
@@ -1353,15 +1310,12 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "prop-types": "^15.6.2",
-        "react": "^18.2.0",
       },
     },
     "packages/lib-react/mask-markup": {
       "name": "@pie-lib/mask-markup",
       "version": "0.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
-        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -1418,7 +1372,6 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
       },
     },
     "packages/lib-react/plot": {
@@ -1460,7 +1413,6 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
     },
@@ -1493,13 +1445,9 @@
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.11.0",
-        "@mui/material": "^7.3.4",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/jest-dom": "^5.16.5",
-        "@testing-library/react": "^16.3.0",
         "@testing-library/user-event": "^14.5.2",
-        "prop-types": "^15.6.1",
-        "react": "^18.2.0",
       },
     },
     "packages/lib-react/text-select": {
@@ -1518,7 +1466,6 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
-        "react": "^18.2.0",
       },
     },
     "packages/lib-react/tools": {
@@ -1535,7 +1482,6 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
         "react-portal": "^4.2.0",
         "trigonometry-calculator": "^2.0.0",
       },
@@ -2377,8 +2323,6 @@
 
     "@testing-library/jest-dom": ["@testing-library/jest-dom@6.9.1", "", { "dependencies": { "@adobe/css-tools": "^4.4.0", "aria-query": "^5.0.0", "css.escape": "^1.5.1", "dom-accessibility-api": "^0.6.3", "picocolors": "^1.1.1", "redent": "^3.0.0" } }, "sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA=="],
 
-    "@testing-library/react": ["@testing-library/react@16.3.2", "", { "dependencies": { "@babel/runtime": "^7.12.5" }, "peerDependencies": { "@testing-library/dom": "^10.0.0", "@types/react": "^18.0.0 || ^19.0.0", "@types/react-dom": "^18.0.0 || ^19.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g=="],
-
     "@testing-library/user-event": ["@testing-library/user-event@14.6.1", "", { "peerDependencies": { "@testing-library/dom": ">=7.21.4" } }, "sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw=="],
 
     "@tiptap/core": ["@tiptap/core@3.18.0", "", { "peerDependencies": { "@tiptap/pm": "^3.18.0" } }, "sha512-Gczd4GbK1DNgy/QUPElMVozoa0GW9mW8E31VIi7Q4a9PHHz8PcrxPmuWwtJ2q0PF8MWpOSLuBXoQTWaXZRPRnQ=="],
@@ -3173,8 +3117,6 @@
 
     "jiti": ["jiti@2.6.1", "", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ=="],
 
-    "js-combinatorics": ["js-combinatorics@2.1.2", "", {}, "sha512-/1AY2bYwxajoaKjPzvgQ80U7lcucU71ubzFPVgZGmzbDGn3R18ZQUZfD69+4Idg4JfNcq6trwD6I+dRfVnr/tg=="],
-
     "js-tokens": ["js-tokens@10.0.0", "", {}, "sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q=="],
 
     "js-yaml": ["js-yaml@4.1.1", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA=="],
@@ -3397,8 +3339,6 @@
 
     "neo-async": ["neo-async@2.6.2", "", {}, "sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw=="],
 
-    "nested-property": ["nested-property@4.0.0", "", {}, "sha512-yFehXNWRs4cM0+dz7QxCd06hTbWbSkV0ISsqBfkntU6TOY4Qm3Q88fRRLOddkGh2Qq6dZvnKVAahfhjcUvLnyA=="],
-
     "nlcst-to-string": ["nlcst-to-string@2.0.4", "", {}, "sha512-3x3jwTd6UPG7vi5k4GEzvxJ5rDA7hVUIRNHPblKuMVP9Z3xmlsd9cgLcpAMkc5uPOBna82EeshROFhsPkbnTZg=="],
 
     "no-case": ["no-case@2.3.2", "", { "dependencies": { "lower-case": "^1.1.1" } }, "sha512-rmTZ9kz+f3rCvK2TD1Ue/oZlns7OGoIWP4fc3llxxRXlOkHKoWPPWJOfFYpITabSow43QJbRIoHQXtt10VldyQ=="],
@@ -3486,8 +3426,6 @@
     "playwright": ["playwright@1.58.2", "", { "dependencies": { "playwright-core": "1.58.2" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-vA30H8Nvkq/cPBnNw4Q8TWz1EJyqgpuinBcHET0YVJVFldr8JDNiU9LaWAE1KqSkRYazuaBhTpB5ZzShOezQ6A=="],
 
     "playwright-core": ["playwright-core@1.58.2", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-yZkEtftgwS8CsfYo7nm0KE8jsvm6i/PTgVtB8DL726wNf6H2IMsDuxCpJj59KDaxCtSnrWan2AeDqM7JBaultg=="],
-
-    "pluralize": ["pluralize@8.0.0", "", {}, "sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA=="],
 
     "postcss": ["postcss@8.5.6", "", { "dependencies": { "nanoid": "^3.3.11", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg=="],
 
