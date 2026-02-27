@@ -600,6 +600,9 @@ class AnnotationEditor extends React.Component {
               textAlign: {
                 disabled: true,
               },
+              h3: {
+                disabled: true,
+              },
             }}
           />
         </CommentContainer>

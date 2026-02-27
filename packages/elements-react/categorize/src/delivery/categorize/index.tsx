@@ -364,6 +364,7 @@ class CategorizeProvider extends React.Component {
     this.uid = uid.generateId();
     this.state = {
       activeDragItem: null,
+      isValidDrop: false,
     };
   }
 
@@ -378,6 +379,7 @@ class CategorizeProvider extends React.Component {
     if (active?.data?.current) {
       this.setState({
         activeDragItem: active.data.current,
+        isValidDrop: false,
       });
     }
   };
@@ -386,7 +388,21 @@ class CategorizeProvider extends React.Component {
     const { active, over } = event;
     const { resumeMathObserver } = this.props;
 
-    this.setState({ activeDragItem: null });
+    // Check if drop is valid
+    const draggedItem = active?.data?.current;
+    const overData = over?.data?.current;
+    const isValidDrop = 
+      over && 
+      active && 
+      draggedItem && 
+      draggedItem.type === 'choice' && 
+      overData && 
+      overData.itemType === 'categorize';
+
+    this.setState({ 
+      activeDragItem: null,
+      isValidDrop: isValidDrop,
+    });
 
     if (resumeMathObserver) {
       resumeMathObserver();
@@ -395,8 +411,6 @@ class CategorizeProvider extends React.Component {
     if (!over || !active) {
       return;
     }
-
-    const draggedItem = active.data.current;
 
     if (draggedItem && draggedItem.type === 'choice') {
       const choiceData = {
@@ -438,11 +452,16 @@ class CategorizeProvider extends React.Component {
   };
 
   render() {
+    const { isValidDrop } = this.state;
+    // Disable drop animation for valid drops to prevent visual snap-back
+    // Keep default animation for invalid drops to show visual feedback
+    const dropAnimation = isValidDrop ? null : undefined;
+    
     return (
       <DragProvider onDragStart={this.onDragStart} onDragEnd={this.onDragEnd}>
         <uid.Provider value={this.uid}>
           <Categorize ref={(ref) => (this.categorizeRef = ref)} {...this.props} />
-          <DragOverlay>
+          <DragOverlay dropAnimation={dropAnimation}>
             <DragPreviewWrapper>{this.renderDragOverlay()}</DragPreviewWrapper>
           </DragOverlay>
         </uid.Provider>

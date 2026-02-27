@@ -27,7 +27,7 @@ const MIN_WIDTH = '650px';
 
 const StyledDiv: any = styled('div')(({ theme }) => ({
   fontFamily: 'Cerebri Sans',
-  fontSize: theme.typography.fontSize,
+  fontSize: theme.typography.fontSize + 2, // current font size is 14px, so this will make it 16px
   padding: '16px 0',
 }));
 

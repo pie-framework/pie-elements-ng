@@ -75,7 +75,15 @@ const HeadingIcon = () => (
   </svg>
 );
 
-function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, responseAreaProps, onChange }) {
+function MenuBar({
+  editor,
+  classes,
+  activePlugins,
+  toolbarOpts: toolOpts,
+  responseAreaProps,
+  onChange,
+  autoWidthToolbar,
+}) {
   const [showPicker, setShowPicker] = useState(false);
   const toolbarOpts = toolOpts ?? {};
 
@@ -132,7 +140,7 @@ function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, respon
   });
 
   const hasDoneButton = false;
-  const autoWidth = false;
+  const autoWidth = !!autoWidthToolbar;
 
   const names = classNames(classes.toolbar, PIE_TOOLBAR__CLASS, {
     [classes.toolbarWithNoDone]: !hasDoneButton,

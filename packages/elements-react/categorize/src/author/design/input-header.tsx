@@ -56,13 +56,6 @@ export class InputHeader extends React.Component {
     super(props);
   }
 
-  componentDidMount() {
-    const { focusedEl, index } = this.props;
-    if (focusedEl && index && focusedEl === index) {
-      this.inputRef.focus('end', null, true);
-    }
-  }
-
   render() {
     const {
       onChange,
@@ -78,16 +71,19 @@ export class InputHeader extends React.Component {
       maxImageHeight,
       uploadSoundSupport,
       mathMlOptions = {},
+      focusedEl,
+      index,
     } = this.props;
 
     const { headers, baseInputConfiguration } = configuration;
+    const shouldAutoFocus = focusedEl !== null && focusedEl !== undefined && focusedEl === index;
 
     return (
       <InputHeaderContainer>
         <StyledEditableHtml
           imageSupport={imageSupport}
           disabled={disabled}
-          ref={(ref) => (this.inputRef = ref)}
+          autoFocus={shouldAutoFocus}
           autoWidthToolbar
           label={'label'}
           markup={label}

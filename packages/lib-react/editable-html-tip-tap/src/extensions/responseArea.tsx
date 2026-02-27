@@ -15,6 +15,7 @@ import { Node, ReactNodeViewRenderer } from '@tiptap/react';
 import ExplicitConstructedResponse from '../components/respArea/ExplicitConstructedResponse.js';
 import DragInTheBlank from '../components/respArea/DragInTheBlank/DragInTheBlank.js';
 import InlineDropdown from '../components/respArea/InlineDropdown.js';
+import MathTemplated from '../components/respArea/MathTemplated.js';
 
 const lastIndexMap = {};
 
@@ -315,7 +316,7 @@ export const MathTemplatedNode = Node.create({
     ];
   },
   addNodeView() {
-    return ReactNodeViewRenderer(() => <div></div>);
+    return ReactNodeViewRenderer((props) => <MathTemplated {...{ ...props, options: this.options }} />);
   },
 });
 

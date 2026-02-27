@@ -64,7 +64,10 @@ class CircleComponent extends React.Component {
   };
 
   handleMouseLeave: any = () => {
-    this.setState({ hovered: false });
+    // Don't hide transformer if user is actively dragging/resizing
+    if (!this.state.isDragging) {
+      this.setState({ hovered: false });
+    }
     document.body.style.cursor = 'default';
   };
 
