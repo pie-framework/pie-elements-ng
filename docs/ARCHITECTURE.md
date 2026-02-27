@@ -1180,6 +1180,10 @@ Note: `'unsafe-inline'` for styles is required for Svelte scoped styles.
 4. Maintainer merges Version PR
 5. Packages automatically published to npm
 
+If a publish fails after merge, maintainers can manually rerun the Release workflow
+with `release_intent=publish` and `force_publish=true` to recover without creating a
+new version-bump commit.
+
 See [PUBLISHING.md](./PUBLISHING.md) for details (when available).
 
 ### Versioning

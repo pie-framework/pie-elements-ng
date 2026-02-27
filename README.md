@@ -104,6 +104,17 @@ Use release labels to tag a coordinated release wave across packages while keepi
 
 `bun run release:label:push` - Create and push the release tag to origin
 
+### Manual Publish Recovery (GitHub Actions)
+
+If a publish fails after the version PR was already merged, rerun the Release workflow manually:
+
+1. Actions → **Release** → **Run workflow**
+2. Branch: `master`
+3. `release_intent`: `publish`
+4. `force_publish`: `true`
+
+This is intended for recovery/rerun scenarios only.
+
 ### Maintainer Commands
 
 `bun cli upstream:sync` - (Maintainers only) Syncs packages from the upstream pie-elements project. Requires pie-elements and pie-lib checked out as sibling directories. Analyzes the current state of those projects and copies over what is ready for ESM packaging, including rewrites and restructuring to fit the new project layout.

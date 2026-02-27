@@ -17,6 +17,19 @@ on:
       - ".github/workflows/release.yml"
   workflow_dispatch:
     inputs:
+      release_intent:
+        description: "What should this manual run do?"
+        required: true
+        type: choice
+        options:
+          - version-pr
+          - publish
+        default: version-pr
+      force_publish:
+        description: "Allow manual publish even when version-bump detection is false (use for reruns/recovery)"
+        required: false
+        type: boolean
+        default: false
       version_type:
         description: 'Version bump type (major/minor/patch)'
         required: false
@@ -100,6 +113,27 @@ jobs:
 
           echo "has_version_bumps=${has_version_bumps}" >> "$GITHUB_OUTPUT"
 
+      - name: Validate manual release intent prerequisites
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+          intent="${{ inputs.release_intent }}"
+          has_changesets="${{ steps.detect.outputs.has_changesets }}"
+          has_version_bumps="${{ steps.detect.outputs.has_version_bumps }}"
+          force_publish="${{ inputs.force_publish }}"
+
+          if [ "$intent" = "version-pr" ] && [ "$has_changesets" != "true" ]; then
+            echo "Manual intent 'version-pr' requires at least one .changeset/*.md file in this commit."
+            exit 1
+          fi
+
+          if [ "$intent" = "publish" ] && [ "$has_version_bumps" != "true" ] && [ "$force_publish" != "true" ]; then
+            echo "Manual intent 'publish' requires package.json/CHANGELOG.md version bump changes."
+            echo "If you are rerunning/recovering a failed publish from master, re-run with force_publish=true."
+            exit 1
+          fi
+
       - name: Stop early (no changesets / no version bumps)
         if: github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_changesets != 'true' && steps.detect.outputs.has_version_bumps != 'true'
         run: |
@@ -107,11 +141,11 @@ jobs:
           exit 0
 
       - name: Build packages (publish runs only)
-        if: github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_version_bumps == 'true'
+        if: (github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true')
         run: bun run build
 
       - name: Run tests (publish runs only)
-        if: github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_version_bumps == 'true'
+        if: (github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true')
         run: bun run test
 
       - name: Create Release Pull Request or Publish to NPM
