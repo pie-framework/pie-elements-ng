@@ -43,7 +43,11 @@ const DragDrop = (props) => {
 
   // console.log({nodeProps.children})
   return (
-    <NodeViewWrapper className="drag-in-the-blank" data-selected={selected}>
+    <NodeViewWrapper
+      className="drag-in-the-blank"
+      data-selected={selected}
+      style={{ display: 'inline', whiteSpace: 'normal' }}
+    >
       <span
         {...attributes}
         style={{
@@ -62,6 +66,7 @@ const DragDrop = (props) => {
           pos={pos}
           value={attributes}
           duplicates={options.duplicates}
+          selected={selected}
           onChange={(choice) => onValueChange(editor, node, pos, choice)}
           removeResponse={(choice) => onRemoveResponse(editor, node, choice)}
         ></DragDropTile>

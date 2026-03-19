@@ -29,12 +29,9 @@ mathquill@git+https://github.com/pie-framework/mathquill-webpack.git
 
 This git repository returns **404 (not found)**, causing `bun install` to fail.
 
-### Solution in pie-elements-ng
+### Current workaround in pie-elements-ng
 
-This repository has already fixed the issue:
-- Created `@pie-element/shared-math-engine` package
-- All elements modernized to use the new package
-- No more git dependencies
+This repository can test through local workspace packages while upstream NPM dependencies are being fixed.
 
 ### When Will Integration Tests Pass?
 

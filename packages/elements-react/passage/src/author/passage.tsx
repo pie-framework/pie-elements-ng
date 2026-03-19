@@ -94,6 +94,13 @@ export class PassageComponent extends React.Component {
 
     const getPluginProps = (customConfiguration) => ({ ...baseInputConfiguration, ...customConfiguration });
 
+    const basicPlugins = (ALL_PLUGINS || []).filter(plugin => ![
+      'math',
+      'table',
+      'bulleted-list',
+      'numbered-list',
+    ].includes(plugin));
+
     return (
       <React.Fragment>
         {teacherInstructionsEnabled && (
@@ -117,7 +124,7 @@ export class PassageComponent extends React.Component {
         {titleEnabled && (
           <StyledInputContainer label={title.label}>
             <EditableHtml
-              activePlugins={ALL_PLUGINS}
+              activePlugins={basicPlugins}
               markup={passages[passageIndex].title || ''}
               onChange={(value) => this.handleChange('title', value)}
               nonEmpty={false}
@@ -133,7 +140,7 @@ export class PassageComponent extends React.Component {
         {subtitleEnabled && (
           <StyledInputContainer label={subtitle.label}>
             <EditableHtml
-              activePlugins={ALL_PLUGINS}
+              activePlugins={basicPlugins}
               markup={passages[passageIndex].subtitle || ''}
               onChange={(value) => this.handleChange('subtitle', value)}
               nonEmpty={false}
@@ -149,7 +156,7 @@ export class PassageComponent extends React.Component {
         {authorEnabled && (
           <StyledInputContainer label={author.label}>
             <EditableHtml
-              activePlugins={ALL_PLUGINS}
+              activePlugins={basicPlugins}
               markup={passages[passageIndex].author || ''}
               onChange={(value) => this.handleChange('author', value)}
               nonEmpty={false}

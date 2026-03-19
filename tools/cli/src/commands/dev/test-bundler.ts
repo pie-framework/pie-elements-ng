@@ -131,7 +131,7 @@ export default class TestBundler extends Command {
   }
 
   private async buildLocalPackages(element: string): Promise<void> {
-    const packages = ['packages/shared/math-engine', `packages/elements-react/${element}`];
+    const packages = [`packages/elements-react/${element}`];
 
     for (const pkg of packages) {
       if (!existsSync(pkg)) {
@@ -184,7 +184,6 @@ export default class TestBundler extends Command {
 
     // Symlink local packages
     const localPackages = {
-      'shared-math-engine': 'packages/shared/math-engine',
       [element]: `packages/elements-react/${element}`,
     };
 
@@ -218,14 +217,6 @@ export default class TestBundler extends Command {
     const nodeModulesDir = join(workspaceDir, 'node_modules');
     const pieElementDir = join(nodeModulesDir, '@pie-element');
     mkdirSync(pieElementDir, { recursive: true });
-
-    // Link shared-math-engine
-    const mathEngineLink = join(pieElementDir, 'shared-math-engine');
-    if (existsSync(mathEngineLink)) {
-      rmSync(mathEngineLink, { recursive: true, force: true });
-    }
-    symlinkSync(join(packagesDir, 'shared-math-engine'), mathEngineLink, 'dir');
-    this.logger.info('Linked @pie-element/shared-math-engine in node_modules');
 
     // Link element package
     const elementLink = join(pieElementDir, element);

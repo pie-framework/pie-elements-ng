@@ -160,9 +160,7 @@ export class Choices extends React.Component {
     } = this.props;
 
     // find the maximum existing id and add 1 to generate the new id so we avoid duplicates
-    const maxId = oldChoices.length > 0
-      ? Math.max(...oldChoices.map(choice => parseInt(choice.id, 10) || 0))
-      : -1;
+    const maxId = oldChoices.length > 0 ? Math.max(...oldChoices.map((choice) => parseInt(choice.id, 10) || 0)) : -1;
     const newId = `${maxId + 1}`;
 
     this.setState(
@@ -253,6 +251,7 @@ export class Choices extends React.Component {
               >
                 <EditableHtml
                   ref={(ref) => (this.focusedNodeRef = ref)}
+                  autoFocus
                   imageSupport={imageSupport}
                   markup={choice.value}
                   pluginProps={pluginProps}

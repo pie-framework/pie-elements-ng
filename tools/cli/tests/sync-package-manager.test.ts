@@ -154,7 +154,7 @@ describe('ensurePieLibPackageJson', () => {
     });
   });
 
-  it('maps legacy mathquill deps to shared math-engine workspace package', async () => {
+  it('preserves upstream mathquill deps without remapping', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const libDir = join(rootDir, 'packages', 'lib-react', 'math-input');
     const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'math-input');
@@ -182,10 +182,8 @@ describe('ensurePieLibPackageJson', () => {
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
     expect(pkgJson.dependencies).toMatchObject({
-      '@pie-element/shared-math-engine': 'workspace:*',
+      '@pie-framework/mathquill': '^1.0.0',
     });
-    expect(pkgJson.dependencies['@pie-framework/mathquill']).toBeUndefined();
-    expect(pkgJson.dependencies['@pie-element/shared-mathquill']).toBeUndefined();
   });
 
   it('adds known tiptap and testing-library peer fallback deps', async () => {

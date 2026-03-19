@@ -10,8 +10,10 @@
 
 import { color } from '@pie-lib/render-ui';
 
+export const graphingShapeFill = () => color.visualElementsColors.SHAPES_FILL_COLOR;
+
 export const disabled = (key = 'fill') => ({
-  [key]: color.disabled(),
+  [key]: color.disabledSecondary(), // this is needed to match previous disabled color for backward compatibility
   pointerEvents: 'none',
 });
 

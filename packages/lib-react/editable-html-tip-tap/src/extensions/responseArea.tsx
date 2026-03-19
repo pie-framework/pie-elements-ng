@@ -198,14 +198,9 @@ export const ResponseAreaExtension = Extension.create({
           // tr.setSelection(NodeSelection.create(tr.doc, usedPos))
 
           // --- Cursor move behavior for certain types (Slate: moveFocusTo next text) ---
-          if (
-            ['math_templated', 'inline_dropdown', 'drag_in_the_blank', 'explicit_constructed_response'].includes(
-              typeName,
-            )
-          ) {
+          if (['math_templated', 'inline_dropdown', 'explicit_constructed_response'].includes(typeName)) {
             tr.setSelection(NodeSelection.create(tr.doc, usedPos));
           } else {
-            // Default: put cursor after inserted node
             const after = usedPos + newInline.nodeSize;
             tr.setSelection(selectionAfterPos(tr.doc, after));
           }
@@ -224,7 +219,7 @@ export const ResponseAreaExtension = Extension.create({
           const node = selection.$from.nodeAfter;
           const nodePos = selection.from;
 
-          tr.setNodeMarkup(nodePos, undefined, { ...node.attrs, updated: `${Date.now()}` });
+          tr.setNodeMarkup(nodePos, undefined, { ...node?.attrs, updated: `${Date.now()}` });
           tr.setSelection(NodeSelection.create(tr.doc, nodePos));
 
           if (dispatch) {

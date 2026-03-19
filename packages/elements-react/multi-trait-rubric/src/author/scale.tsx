@@ -48,7 +48,7 @@ export class Scale extends React.Component {
 
   componentDidMount() {
     if (this.state.showRight === null && this.secondaryBlockRef) {
-      this.setState({ showRight: this.secondaryBlockRef.scrollWidth - this.secondaryBlockRef.offsetWidth });
+      this.setState({ showRight: this.getMaxScroll() });
     }
   }
 
@@ -58,7 +58,7 @@ export class Scale extends React.Component {
       prevProps.showDescription !== this.props.showDescription ||
       prevProps.excludeZero !== this.props.excludeZero
     ) {
-      this.setState({ showRight: this.secondaryBlockRef.scrollWidth - this.secondaryBlockRef.offsetWidth });
+      this.setState({ showRight: this.getMaxScroll() });
     }
   }
 
@@ -71,7 +71,7 @@ export class Scale extends React.Component {
       this.setState({
         currentPosition: 0,
         showLeft: false,
-        showRight: this.secondaryBlockRef && this.secondaryBlockRef.scrollWidth - this.secondaryBlockRef.offsetWidth,
+        showRight: this.getMaxScroll(),
       });
     }
   }
@@ -86,7 +86,7 @@ export class Scale extends React.Component {
     this.setState({
       currentPosition: 0,
       showLeft: false,
-      showRight: this.secondaryBlockRef && this.secondaryBlockRef.scrollWidth - this.secondaryBlockRef.offsetWidth,
+      showRight: this.getMaxScroll(),
     });
 
     if (numberValue < maxPoints) {
@@ -213,23 +213,46 @@ export class Scale extends React.Component {
 
   decreasePosition: any = () => {
     const { currentPosition } = this.state;
-    const decreasedPosition =
-      currentPosition - (currentPosition === AdjustedBlockWidth / 2 ? AdjustedBlockWidth / 2 : AdjustedBlockWidth);
+    const decreasedPosition = Math.max(currentPosition - AdjustedBlockWidth, 0);
+    const maxScroll = this.getMaxScroll();
 
     this.setState({
       currentPosition: decreasedPosition,
-      showRight: decreasedPosition < this.secondaryBlockRef.scrollWidth - this.secondaryBlockRef.offsetWidth,
+      showRight: decreasedPosition < maxScroll,
       showLeft: decreasedPosition > 0,
     });
   };
 
+  getMaxScroll: any = () => {
+    if (!this.secondaryBlockRef) return 0;
+
+    // block count * BlockWidth
+    // the header may have slightly larger scrollWidth due to inner component styling (borders, padding),
+    // so we use the minimum to keep header and trait rows aligned.
+    const headerScrollWidth = this.secondaryBlockRef.scrollWidth;
+    const numberOfBlocks = this.getNumberOfBlocks();
+    const expectedContentWidth = numberOfBlocks * BlockWidth;
+    const scrollWidth = Math.min(headerScrollWidth, expectedContentWidth);
+
+    return Math.max(0, scrollWidth - this.secondaryBlockRef.offsetWidth);
+  };
+
+  getNumberOfBlocks: any = () => {
+    const { scale, showStandards, showDescription, excludeZero } = this.props;
+    const { maxPoints } = scale || {};
+    const scorePointCount = maxPoints - (excludeZero ? 1 : 0) + 1;
+
+    return (showStandards ? 1 : 0) + (showDescription ? 1 : 0) + scorePointCount;
+  };
+
   increasePosition: any = () => {
     const { currentPosition } = this.state;
-    const increasedPosition = currentPosition + (currentPosition === 0 ? AdjustedBlockWidth / 2 : AdjustedBlockWidth);
+    const maxScroll = this.getMaxScroll();
+    const increasedPosition = Math.min(currentPosition + AdjustedBlockWidth, maxScroll);
 
     this.setState({
       currentPosition: increasedPosition,
-      showRight: increasedPosition < this.secondaryBlockRef.scrollWidth - this.secondaryBlockRef.offsetWidth,
+      showRight: increasedPosition < maxScroll,
       showLeft: increasedPosition > 0,
     });
   };

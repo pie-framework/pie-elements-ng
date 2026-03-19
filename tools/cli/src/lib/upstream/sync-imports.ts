@@ -507,22 +507,6 @@ export function transformSharedPackageImports(content: string): string {
 }
 
 /**
- * Transform legacy mathquill imports to @pie-element/shared-math-engine
- *
- * Handles:
- * - @pie-framework/mathquill → @pie-element/shared-math-engine
- * - @pie-element/shared-mathquill → @pie-element/shared-math-engine
- */
-export function transformMathquillImports(content: string): string {
-  return content
-    .replace(/from\s+['"]@pie-framework\/mathquill['"]/g, "from '@pie-element/shared-math-engine'")
-    .replace(
-      /from\s+['"]@pie-element\/shared-mathquill['"]/g,
-      "from '@pie-element/shared-math-engine'"
-    );
-}
-
-/**
  * Rewrite legacy configure subpath imports to package roots.
  *
  * Upstream sometimes imports configure elements via:
@@ -533,25 +517,6 @@ export function transformMathquillImports(content: string): string {
  */
 export function transformLegacyConfigureLibImports(content: string): string {
   return content.replace(/from\s+['"](@pie-element\/[^/'"]+)\/configure\/lib['"]/g, "from '$1'");
-}
-
-/**
- * Remove legacy MathQuill stylesheet imports.
- *
- * We now use shared-math-engine styles and should not pull MathQuill CSS.
- */
-export function removeLegacyMathquillCssImports(content: string): string {
-  return content.replace(/^\s*import\s+['"]mathquill\/build\/mathquill\.css['"];?\s*$/gm, '');
-}
-
-/**
- * Rewrite legacy Static wrapper access to modern shared-math-engine API.
- *
- * Handles:
- * - this.mqStatic.mathField.latex() -> this.mqStatic.mathField.getLatex?.()
- */
-export function transformLegacyMathFieldLatexCalls(content: string): string {
-  return content.replace(/(\.\s*mathField)\s*\.\s*latex\s*\(\s*\)/g, '$1.getLatex?.()');
 }
 
 /**
@@ -635,40 +600,6 @@ export function transformPackageJsonSharedPackages<T extends Record<string, any>
       delete transformed.devDependencies[oldPkg];
     }
   }
-
-  return transformed;
-}
-
-/**
- * Transform package.json dependencies for legacy mathquill packages
- *
- * Replaces:
- * - @pie-framework/mathquill
- * - @pie-element/shared-mathquill
- * - mathquill
- * With: @pie-element/shared-math-engine
- */
-export function transformPackageJsonMathquill<T extends Record<string, any>>(packageJson: T): T {
-  const transformed = { ...packageJson };
-
-  const normalizeMathDeps = (deps?: Record<string, string>) => {
-    if (!deps) {
-      return;
-    }
-    if (
-      deps['@pie-framework/mathquill'] ||
-      deps['@pie-element/shared-mathquill'] ||
-      deps.mathquill
-    ) {
-      deps['@pie-element/shared-math-engine'] = 'workspace:*';
-    }
-    delete deps['@pie-framework/mathquill'];
-    delete deps['@pie-element/shared-mathquill'];
-    delete deps.mathquill;
-  };
-
-  normalizeMathDeps(transformed.dependencies);
-  normalizeMathDeps(transformed.devDependencies);
 
   return transformed;
 }
@@ -1133,20 +1064,6 @@ export function addInlineMenuExport(content: string, sourcePath?: string): strin
     "\n// Non-synced pie-elements-ng exports\nexport { InlineMenu } from './inline-menu';\n";
 
   return content.trimEnd() + exportStatement;
-}
-
-/**
- * Transform MathQuill.getInterface(2) to getInterface(3)
- *
- * Interface version 2 requires jQuery, but pie-elements-ng uses interface version 3
- * which has a jQuery-free API. This transform updates calls to use version 3.
- *
- * @param content - Source code content
- * @returns Transformed content with getInterface(3) instead of getInterface(2)
- */
-export function transformMathQuillInterface(content: string): string {
-  // Replace MathQuill.getInterface(2) with MathQuill.getInterface(3)
-  return content.replace(/MathQuill\.getInterface\(2\)/g, 'MathQuill.getInterface(3)');
 }
 
 /**

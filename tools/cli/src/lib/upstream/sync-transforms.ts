@@ -13,10 +13,7 @@ import {
   transformPieFrameworkEventImports,
   transformControllerUtilsImports,
   transformSharedPackageImports,
-  transformMathquillImports,
   transformLegacyConfigureLibImports,
-  removeLegacyMathquillCssImports,
-  transformLegacyMathFieldLatexCalls,
   inlineEditableHtmlConstants,
   reexportTokenTypes,
   transformSsrRequireToReactLazy,
@@ -28,12 +25,10 @@ import {
   transformPackageJsonPieEvents,
   transformPackageJsonControllerUtils,
   transformPackageJsonSharedPackages,
-  transformPackageJsonMathquill,
   fixStyledComponentTypes,
   fixExportedFunctionTypes,
   transformMenuToInlineMenu,
   addInlineMenuExport,
-  transformMathQuillInterface,
   transformReactInteropComponentImports,
 } from './sync-imports.js';
 import type { PackageJson } from '../../utils/package-json.js';
@@ -59,12 +54,11 @@ export interface TransformOptions {
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
- * 5. Legacy mathquill packages → @pie-element/shared-math-engine
- * 6. @mui/material/Menu → InlineMenu from @pie-lib/render-ui
- * 7. Self-referential imports → relative imports
- * 8. Configure-specific transforms (if enabled)
- * 9. Pie-lib-specific transforms (if enabled)
- * 10. Fix styled component TypeScript type inference errors
+ * 5. @mui/material/Menu → InlineMenu from @pie-lib/render-ui
+ * 6. Self-referential imports → relative imports
+ * 7. Configure-specific transforms (if enabled)
+ * 8. Pie-lib-specific transforms (if enabled)
+ * 9. Fix styled component TypeScript type inference errors
  */
 export function applySourceTransforms(content: string, options: TransformOptions = {}): string {
   let transformed = content;
@@ -76,11 +70,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
   transformed = transformSharedPackageImports(transformed);
-  transformed = transformMathquillImports(transformed);
   transformed = transformLegacyConfigureLibImports(transformed);
-  transformed = transformMathQuillInterface(transformed);
-  transformed = removeLegacyMathquillCssImports(transformed);
-  transformed = transformLegacyMathFieldLatexCalls(transformed);
   transformed = transformMenuToInlineMenu(transformed);
   transformed = transformReactInteropComponentImports(transformed);
 
@@ -126,7 +116,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
- * 5. Legacy mathquill packages → @pie-element/shared-math-engine
+ * 5. Preserve upstream MathQuill dependencies as-is
  */
 export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   let transformed = pkg;
@@ -136,7 +126,6 @@ export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   transformed = transformPackageJsonPieEvents(transformed);
   transformed = transformPackageJsonControllerUtils(transformed);
   transformed = transformPackageJsonSharedPackages(transformed);
-  transformed = transformPackageJsonMathquill(transformed);
 
   return transformed;
 }

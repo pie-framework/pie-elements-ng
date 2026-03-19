@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import { flatten } from 'lodash-es';
-import { createStatic } from '@pie-element/shared-math-engine';
 import { color } from '@pie-lib/render-ui';
 import { commonMqKeyboardStyles } from '../mq/common-mq-styles';
 import { baseSet } from '../keys';
@@ -233,98 +232,6 @@ const MathKey: any = styled(Button, { shouldForwardProp: (prop) => prop !== 'ope
     zIndex: 2,
   },
 }));
-
-class LegacyMathquillPreview extends React.Component {
-  componentDidMount() {
-    this.renderLatex();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.latex !== this.props.latex) {
-      this.renderLatex();
-    }
-  }
-
-  componentWillUnmount() {
-    this.field?.destroy?.();
-    this.field = null;
-  }
-
-  renderLatex = () => {
-    if (!this.root || typeof window === 'undefined') {
-      return;
-    }
-    if (!this.field) {
-      this.field = createStatic('', {});
-      this.field.mount(this.root);
-    }
-    const normalizedLatex = (this.props.latex || '').replace(/\$\$/g, '').replace(/^\$|\$$/g, '').trim();
-    this.field?.setLatex?.(normalizedLatex);
-  };
-
-  render() {
-    return <span ref={(r) => (this.root = r)} className="mq-keycap-static" />;
-  }
-}
-
-LegacyMathquillPreview.propTypes = {
-  latex: PropTypes.string.isRequired,
-};
-
-const LegacyLatexButtonContent = styled(LegacyMathquillPreview)(({ latex }) => {
-  const baseStyles = {
-    pointerEvents: 'none',
-    textTransform: 'none !important',
-    color: color.text(),
-    '& .mq-scaled.mq-sqrt-prefix': {
-      transform: 'scale(1, 0.9) !important',
-    },
-    '& .mq-sup-only .mq-sup': {
-      marginBottom: '0.9px !important',
-    },
-    '& .mq-empty': {
-      // Use token directly; MUI alpha() cannot parse CSS var() colors.
-      backgroundColor: `${color.secondaryLight()} !important`,
-    },
-    '& .mq-overline .mq-overline-inner': {
-      borderTop: `2px solid ${color.text()}`,
-    },
-    '& .mq-non-leaf.mq-overline': {
-      borderTop: 'none !important',
-    },
-    '& .mq-overarrow': {
-      width: '30px',
-      marginTop: '0 !important',
-      borderTop: `2px solid ${color.text()}`,
-      fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
-    },
-    '& .mq-root-block': {
-      padding: '5px !important',
-    },
-    '& .mq-longdiv-inner': {
-      borderTop: `1px solid ${color.text()} !important`,
-      paddingTop: '1.5px !important',
-    },
-    '& .mq-overarc': {
-      borderTop: `2px solid ${color.text()} !important`,
-      '& .mq-overline': {
-        borderTop: 'none !important',
-      },
-      '& .mq-overline-inner': {
-        borderTop: 'none !important',
-        paddingTop: '0 !important',
-      },
-    },
-  };
-
-  if (latex === '\\parallel') {
-    return {
-      ...baseStyles,
-      fontStyle: 'italic !important',
-    };
-  }
-  return baseStyles;
-});
 
 const LATEX_SYMBOL_MAP = {
   '\\theta': 'θ',
@@ -771,7 +678,9 @@ export default class AccessibleKeypad extends React.Component {
           {...common}
           operator={operator}
         >
-          <LegacyLatexButtonContent latex={key.latex} />
+          <MathPreviewRoot>
+            <KeyVisual definition={definition} />
+          </MathPreviewRoot>
         </MathKey>
       );
     }

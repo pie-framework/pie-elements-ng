@@ -9,7 +9,7 @@
     "@fontsource/stix-two-text": "^5.2.8",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
-    "@pie-element/shared-math-engine": "workspace:*",
+    "@pie-framework/mathquill": "^1.1.4",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",

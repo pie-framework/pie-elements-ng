@@ -362,9 +362,7 @@ export function ensureBuildToolDependencies(pkg: PackageJson): void {
 /**
  * Check if a @pie-framework or @pie-element/shared- package exists in the workspace
  *
- * Supports both legacy @pie-framework naming and new @pie-element/shared- naming:
- * - @pie-framework/mathquill → packages/shared/math-engine (legacy alias)
- * - @pie-element/shared-math-engine → packages/shared/math-engine
+ * Supports both legacy @pie-framework naming and new @pie-element/shared- naming.
  */
 function isPieFrameworkWorkspacePackage(packageName: string, config: SyncConfig): boolean {
   let pkgName: string;
@@ -602,12 +600,7 @@ export async function ensurePieLibPackageJson(
   const expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
-    // Transform legacy mathquill dependencies to shared-math-engine
-    if (name === '@pie-framework/mathquill') {
-      expectedDeps['@pie-element/shared-math-engine'] = WORKSPACE.VERSION;
-    } else if (name === '@pie-element/shared-mathquill' || name === 'mathquill') {
-      expectedDeps['@pie-element/shared-math-engine'] = WORKSPACE.VERSION;
-    } else if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+    if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[name] = WORKSPACE.VERSION;
     } else {
       expectedDeps[name] = version;
@@ -616,13 +609,6 @@ export async function ensurePieLibPackageJson(
 
   const importedPackages = await extractImportsFromSources(pkgDir);
   for (const importedPkg of importedPackages) {
-    if (
-      importedPkg === '@pie-framework/mathquill' ||
-      importedPkg === '@pie-element/shared-mathquill'
-    ) {
-      expectedDeps['@pie-element/shared-math-engine'] = WORKSPACE.VERSION;
-      continue;
-    }
     if (importedPkg.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[importedPkg] = WORKSPACE.VERSION;
       continue;

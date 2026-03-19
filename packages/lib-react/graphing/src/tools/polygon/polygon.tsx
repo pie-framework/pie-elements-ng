@@ -12,15 +12,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { alpha, styled } from '@mui/material/styles';
 import { gridDraggable, types } from '@pie-lib/plot';
-import * as utils from '../../utils.js';
 import { color } from '@pie-lib/render-ui';
-import { correct, disabled, incorrect, missing } from '../shared/styles.js';
 
-const StyledPolygon: any = styled('polygon')(({ theme, disabled: isDisabled, correctness }) => ({
-  fill: alpha(theme.palette.primary.light, 0.2),
+import * as utils from '../../utils.js';
+import { correct, disabledSecondary, incorrect, missing, graphingShapeFill } from '../shared/styles.js';
+
+const StyledPolygon: any = styled('polygon')(({ disabled: isDisabled, correctness }) => ({
+  fill: alpha(graphingShapeFill(), 0.2),
   strokeWidth: 2,
   stroke: color.defaults.BLACK,
-  ...(isDisabled && disabled('stroke')),
+  ...(isDisabled && disabledSecondary('stroke')),
   ...(correctness === 'correct' && correct('stroke')),
   ...(correctness === 'incorrect' && incorrect('stroke')),
   ...(correctness === 'missing' && {
@@ -29,12 +30,12 @@ const StyledPolygon: any = styled('polygon')(({ theme, disabled: isDisabled, cor
   }),
 }));
 
-const StyledPolyline: any = styled('polyline')(({ theme, disabled: isDisabled, correctness }) => ({
-  fill: alpha(theme.palette.primary.light, 0.0),
+const StyledPolyline: any = styled('polyline')(({ disabled: isDisabled, correctness }) => ({
+  fill: alpha(graphingShapeFill(), 0.0),
   strokeWidth: 2,
   stroke: color.defaults.BLACK,
   pointerEvents: 'none',
-  ...(isDisabled && disabled('stroke')),
+  ...(isDisabled && disabledSecondary('stroke')),
   ...(correctness === 'correct' && correct('stroke')),
   ...(correctness === 'incorrect' && incorrect('stroke')),
   ...(correctness === 'missing' && {

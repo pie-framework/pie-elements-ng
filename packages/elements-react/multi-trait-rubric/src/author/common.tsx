@@ -155,6 +155,7 @@ export const Block: any = styled('div')(({ theme }) => ({
 const StyledSecondaryBlock: any = styled('div')({
   display: 'flex',
   overflowX: 'hidden',
+  overflowY: 'hidden',
   alignItems: 'flex-end',
   // this is needed to show the editor toolbar!!!
   paddingBottom: '30px',
@@ -242,6 +243,7 @@ export const ScorePoint = ({
               languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
               mathMlOptions={mathMlOptions}
               imageSupport={imageSupport}
+              autoWidthToolbar
             />
           ) : null}
         </ScorePointBoxComponent>
@@ -329,6 +331,7 @@ export const SimpleInput = ({
         languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
         mathMlOptions={mathMlOptions}
         imageSupport={imageSupport}
+        autoWidthToolbar
       />
     </SimpleInputWrapper>
   </GlobalStyles>
@@ -370,6 +373,7 @@ export const UnderlinedInput = ({
         languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
         mathMlOptions={mathMlOptions}
         imageSupport={imageSupport}
+        autoWidthToolbar
       />
     </UnderlinedInputWrapper>
   </GlobalStyles>

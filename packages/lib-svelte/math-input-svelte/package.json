@@ -25,9 +25,7 @@
     "dev": "vite build --watch",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
-  "dependencies": {
-    "@pie-element/shared-math-engine": "workspace:*"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "svelte": "^5.0.0"
   },

@@ -2,20 +2,38 @@
 /**
  * @synced-from pie-lib/packages/math-input/src/mq/static.jsx
  * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
 import PropTypes from 'prop-types';
 import React from 'react';
 import debug from 'debug';
+import MathQuill from '@pie-framework/mathquill';
 import { updateSpans } from '../updateSpans';
-import { countBraces, createStatic, stripSpaces } from '@pie-element/shared-math-engine';
+
+let MQ;
+if (typeof window !== 'undefined') {
+  MQ = MathQuill.getInterface(2);
+}
 
 const log = debug('pie-lib:math-input:mq:static');
 const REGEX = /\\MathQuillMathField\[r\d*\]\{(.*?)\}/g;
+const WHITESPACE_REGEX = / /g;
+
+function stripSpaces(string = '') {
+  return string.replace(WHITESPACE_REGEX, '');
+}
+
+function countBraces(latex) {
+  let count = 0;
+
+  for (let i = 0; i < (latex || '').length; i++) {
+    if (latex[i] === '{') {
+      count++;
+    }
+  }
+
+  return count;
+}
 
 /**
  * Wrapper for MathQuill MQ.MathField.
@@ -50,7 +68,7 @@ export default class Static extends React.Component {
 
   componentDidMount() {
     this.update();
-    updateSpans(this.inputRef?.current || undefined);
+    updateSpans();
 
     this.createLiveRegion();
     this.addEventListeners();
@@ -58,12 +76,10 @@ export default class Static extends React.Component {
 
   componentDidUpdate() {
     this.update();
-    updateSpans(this.inputRef?.current || undefined);
+    updateSpans();
   }
 
   componentWillUnmount() {
-    this.mathField?.destroy?.();
-    this.mathField = null;
     this.removeLiveRegion();
     this.removeEventListeners();
   }
@@ -118,25 +134,26 @@ export default class Static extends React.Component {
     this.setState({ inputSource: 'mathKeyboard' });
   };
 
-  getInnerFields: any = () => {
-    if (!this.mathField?.getFields) {
-      return [];
-    }
-    const fields = this.mathField.getFields();
-    fields.forEach((field) => {
-      fields[`r${field.id}`] = field;
-    });
-    return fields;
-  };
-
   onInputEdit: any = (field) => {
-    if (!this.mathField || !field) {
+    if (!this.mathField) {
       return;
     }
-    const name = this.props.getFieldName(field, this.getInnerFields());
+    const name = this.props.getFieldName(field, this.mathField.innerFields);
 
     if (this.props.onSubFieldChange) {
-      this.props.onSubFieldChange(name, field.latex());
+      const regexMatch = field.latex().match(/[0-9]\\ \\frac\{[^\{]*\}\{ \}/);
+
+      if (this.inputRef?.current && regexMatch && regexMatch?.length) {
+        try {
+          field.__controller.cursor.insLeftOf(field.__controller.cursor.parent[-1].parent);
+          field.el().dispatchEvent(new KeyboardEvent('keydown', { keyCode: 8 }));
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e.toString());
+        }
+      } else {
+        this.props.onSubFieldChange(name, field.latex());
+      }
     }
 
     this.announceLatexConversion(field.latex());
@@ -160,6 +177,9 @@ export default class Static extends React.Component {
         this.announceMessage(announcement);
       } else {
         try {
+          this.mathField.parseLatex(previousLatex);
+          this.mathField.parseLatex(newLatex);
+
           if (newLatex == previousLatex) {
             this.announceMessage(announcement);
           }
@@ -181,7 +201,6 @@ export default class Static extends React.Component {
     if (this.liveRegion) {
       this.liveRegion.textContent = message;
 
-      // Clear the message after it is announced
       setTimeout(() => {
         this.liveRegion.textContent = '';
       }, 500);
@@ -189,52 +208,44 @@ export default class Static extends React.Component {
   };
 
   update: any = () => {
+    if (!MQ) {
+      throw new Error('MQ is not defined - but component has mounted?');
+    }
     if (!this.mathField) {
-      this.mathField = createStatic(this.props.latex || '', {
-        onFieldChange: (fieldId) => {
-          const field = this.mathField.getFieldById(fieldId);
-          this.onInputEdit(field);
-        },
-        onFieldFocus: (fieldId) => {
-          this.onFocus({ target: this.mathField.getFieldById(fieldId)?.el() });
+      this.mathField = MQ.StaticMath(this.inputRef?.current, {
+        handlers: {
+          edit: this.onInputEdit.bind(this),
         },
       });
-      this.mathField.mount(this.inputRef?.current);
     }
 
-    const nextLatex = this.props.latex ?? '';
-    const currentLatex = this.mathField.getLatex();
-
-    if (stripSpaces(nextLatex) === stripSpaces(currentLatex)) {
-      return;
+    try {
+      this.mathField.parseLatex(this.props.latex);
+      this.mathField.latex(this.props.latex);
+    } catch (e) {
+      this.mathField.latex('\\MathQuillMathField[r1]{}');
     }
-
-    this.mathField.setLatex(nextLatex);
   };
 
   blur: any = () => {
     log('blur mathfield');
-    this.mathField?.getFields?.().forEach((field) => field.blur());
+    this.mathField.blur();
   };
 
   focus: any = () => {
     log('focus mathfield...');
-    this.mathField?.getFields?.()?.[0]?.focus?.();
+    this.mathField.focus();
   };
 
   shouldComponentUpdate(nextProps) {
-    if (!this.mathField) {
-      return true;
-    }
-
     try {
-      const parsedLatex = nextProps.latex;
+      const parsedLatex = this.mathField.parseLatex(nextProps.latex);
       const stripped = stripSpaces(parsedLatex);
       const newFieldCount = (nextProps.latex.match(REGEX) || []).length;
 
       const out =
-        stripped !== stripSpaces(this.mathField.getLatex().trim()) ||
-        newFieldCount !== this.getInnerFields().length;
+        stripped !== stripSpaces(this.mathField.latex().trim()) ||
+        newFieldCount !== Object.keys(this.mathField.innerFields).length / 2;
 
       log('[shouldComponentUpdate] ', out);
       return out;
@@ -249,33 +260,18 @@ export default class Static extends React.Component {
 
   onFocus: any = (e) => {
     try {
-      const resolveBlockId = (target: HTMLElement | null): number | null => {
-        if (!target) return null;
+      let rootBlock = e.target.parentElement.nextSibling;
+      let id = parseInt(rootBlock.getAttribute('mathquill-block-id'), 10);
 
-        const direct = target.closest('[mathquill-block-id]') as HTMLElement | null;
-        const fromDirect = direct?.getAttribute('mathquill-block-id');
-        if (fromDirect) {
-          const parsed = parseInt(fromDirect, 10);
-          if (!Number.isNaN(parsed)) return parsed;
-        }
+      if (!id) {
+        rootBlock = rootBlock.parentElement;
+        id = parseInt(rootBlock.getAttribute('mathquill-block-id'), 10);
+      }
 
-        const sibling = (target.parentElement?.nextElementSibling ||
-          target.nextElementSibling) as HTMLElement | null;
-        const fromSibling = sibling?.getAttribute('mathquill-block-id');
-        if (fromSibling) {
-          const parsed = parseInt(fromSibling, 10);
-          if (!Number.isNaN(parsed)) return parsed;
-        }
-
-        return null;
-      };
-
-      const id = resolveBlockId(e?.target as HTMLElement);
-      const innerFields = this.getInnerFields();
-      const innerField = innerFields.find((f) => f.id === id);
+      const innerField = this.mathField.innerFields.find((f) => f.id === id);
 
       if (innerField) {
-        const name = this.props.getFieldName(innerField, innerFields);
+        const name = this.props.getFieldName(innerField, this.mathField.innerFields);
         if (this.props.setInput) {
           this.props.setInput(innerField);
         }

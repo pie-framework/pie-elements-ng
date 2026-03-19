@@ -2,17 +2,23 @@
 /**
  * @synced-from pie-lib/packages/math-input/src/mq/input.jsx
  * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import debug from 'debug';
-import { createField } from '@pie-element/shared-math-engine';
+import { registerLineBreak } from './custom-elements';
+import MathQuill from '@pie-framework/mathquill';
+
+let MQ;
+if (typeof window !== 'undefined') {
+  MQ = MathQuill.getInterface(2);
+
+  if (MQ && MQ.registerEmbed) {
+    registerLineBreak(MQ);
+  }
+}
 
 const log = debug('math-input:mq:input');
 
@@ -34,17 +40,15 @@ export class Input extends React.Component {
   };
 
   componentDidMount() {
-    this.mathField = createField(this.props.latex || '', {
-      onChange: (nextLatex) => {
-        const { onChange } = this.props;
-        if (onChange && nextLatex !== this.props.latex) {
-          onChange(nextLatex);
-        }
+    if (!MQ) {
+      throw new Error('MQ is not defined - but component has mounted?');
+    }
+
+    this.mathField = MQ.MathField(this.input, {
+      handlers: {
+        edit: this.onInputEdit.bind(this),
       },
-      onFocus: () => this.props.onFocus?.(),
-      onBlur: () => this.props.onBlur?.(),
     });
-    this.mathField.mount(this.input);
 
     this.updateLatex();
   }
@@ -53,26 +57,20 @@ export class Input extends React.Component {
     this.updateLatex();
   }
 
-  componentWillUnmount() {
-    this.mathField?.destroy?.();
-    this.mathField = null;
-  }
-
   updateLatex() {
     if (!this.mathField) {
       return;
     }
 
     const { latex } = this.props;
-    const currentLatex = this.mathField.getLatex();
 
-    if (latex !== undefined && latex !== null && latex !== currentLatex) {
-      this.mathField.setLatex(latex);
+    if (latex !== undefined && latex !== null) {
+      this.mathField.latex(latex);
     }
   }
 
   clear() {
-    this.mathField.clear();
+    this.mathField.latex('');
 
     return '';
   }
@@ -89,16 +87,45 @@ export class Input extends React.Component {
 
   command(v) {
     log('command: ', v);
-    return this.mathField.command(v);
+    if (Array.isArray(v)) {
+      v.forEach((vv) => {
+        this.mathField.cmd(vv);
+      });
+    } else {
+      this.mathField.cmd(v);
+    }
+
+    this.mathField.focus();
+
+    return this.mathField.latex();
   }
 
   keystroke(v) {
-    return this.mathField.keystroke(v);
+    this.mathField.keystroke(v);
+    this.mathField.focus();
+
+    return this.mathField.latex();
   }
 
   write(v) {
     log('write: ', v);
-    return this.mathField.write(v);
+    this.mathField.write(v);
+    this.mathField.focus();
+
+    return this.mathField.latex();
+  }
+
+  onInputEdit: any = () => {
+    log('[onInputEdit] ...');
+    const { onChange } = this.props;
+
+    if (!this.mathField) {
+      return;
+    }
+
+    if (onChange) {
+      onChange(this.mathField.latex());
+    }
   };
 
   refresh: any = () => {
@@ -107,6 +134,12 @@ export class Input extends React.Component {
   };
 
   onKeyPress: any = (event) => {
+    const keys = Object.keys(this.mathField.__controller.options);
+
+    if (keys.indexOf('ignoreNextMousedown') < 0) {
+      this.refresh();
+    }
+
     if (event.charCode === 13) {
       event.preventDefault();
       return;
@@ -121,23 +154,22 @@ export class Input extends React.Component {
   };
 
   shouldComponentUpdate(nextProps) {
-    if (!this.mathField) {
-      return true;
-    }
     log('next: ', nextProps.latex);
-    log('current: ', this.mathField.getLatex());
+    log('current: ', this.mathField.latex());
 
-    return nextProps.latex !== this.mathField.getLatex();
+    return nextProps.latex !== this.mathField.latex();
   }
 
   render() {
-    const { className } = this.props;
+    const { onFocus, onBlur, className } = this.props;
 
     return (
       <StyledSpan
         className={className}
         onKeyDown={this.onKeyPress}
         onClick={this.onClick}
+        onFocus={onFocus}
+        onBlur={onBlur}
         ref={(r) => (this.input = r)}
       />
     );

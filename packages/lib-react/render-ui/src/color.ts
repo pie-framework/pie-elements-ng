@@ -55,6 +55,13 @@ export const defaults = {
   BLUE_GREY900: '#152452',
   // this is used for charting
   FADED_PRIMARY: '#DCDAFB',
+  // these are used for the math keypad buttons
+  KEYPAD_BUTTON: 'rgb(188, 194, 229)',
+  KEYPAD_BUTTON_OPERATOR: 'rgb(255, 159, 192)',
+  KEYPAD_EMPTY_PLACEHOLDER: 'rgba(245, 0, 87, 0.4)',
+  // these are used for graphing UI elements
+  BUTTON_BORDER: 'rgba(0, 0, 0, 0.23)',
+  BUTTON_HOVER_BG: 'rgba(0, 0, 0, 0.08)',
 };
 
 Object.freeze(defaults);
@@ -121,9 +128,16 @@ export const blueGrey300 = () => pv('blue-grey-300', defaults.BLUE_GREY300);
 export const blueGrey600 = () => pv('blue-grey-600', defaults.BLUE_GREY600);
 export const blueGrey900 = () => pv('blue-grey-900', defaults.BLUE_GREY900);
 
+export const keypadButton = () => pv('keypad-button', defaults.KEYPAD_BUTTON);
+export const keypadButtonOperator = () => pv('keypad-button-operator', defaults.KEYPAD_BUTTON_OPERATOR);
+export const keypadEmptyPlaceholder = () => pv('keypad-empty-placeholder', defaults.KEYPAD_EMPTY_PLACEHOLDER);
+export const buttonBorder = () => pv('button-border', defaults.BUTTON_BORDER);
+export const buttonHoverBg = () => pv('button-hover-bg', defaults.BUTTON_HOVER_BG);
+
 export const visualElementsColors = {
   AXIS_LINE_COLOR: '#5A53C9',
   ROLLOVER_FILL_BAR_COLOR: '#050F2D',
   GRIDLINES_COLOR: '#8E88EA',
   PLOT_FILL_COLOR: '#1463B3',
+  SHAPES_FILL_COLOR: '#7986cb',
 };

@@ -36,6 +36,7 @@ const StyledPrimaryBlock: any = styled(PrimaryBlock)(({ theme }) => ({
   flexDirection: 'column',
   justifyContent: 'space-between',
   marginBottom: theme.spacing(5),
+  touchAction: 'none',
 }));
 
 const Controls: any = styled('div')({
@@ -108,13 +109,12 @@ function TraitTile({
     },
   });
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (
       currentPosition !== undefined &&
-      secondaryBlockRef.current &&
-      secondaryBlockRef.current.scrollLeft !== currentPosition
+      secondaryBlockRef.current
     ) {
-      scrollToPosition(currentPosition);
+      secondaryBlockRef.current.scrollTo({ left: currentPosition });
     }
   }, [currentPosition]);
 
@@ -137,8 +137,6 @@ function TraitTile({
   const handleClick = (event) => setAnchorEl(event.currentTarget);
 
   const handleClose = () => setAnchorEl(null);
-
-  const scrollToPosition = (position) => secondaryBlockRef.current?.scrollTo({ left: position });
 
   const openMenu = () => {
     onTraitRemoved();

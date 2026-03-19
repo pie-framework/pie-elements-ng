@@ -62,10 +62,16 @@ const CheckboxHolder: any = styled(Box)({
   alignItems: 'center',
   backgroundColor: color.background(),
   flex: 1,
+  '& .MuiFormControlLabel-root': {
+    marginLeft: '-14px', // to be consistent to previous versions before MUI v5 upgrade  
+  },
   '& label': {
     color: color.text(),
     '& > span': {
       fontSize: 'inherit',
+    },
+    '& > .MuiButtonBase-root': {
+      padding: '12px', // to be consistent to previous versions before MUI v5 upgrade  
     },
   },
 });
@@ -107,7 +113,7 @@ const colorStyle = (varName, fallback) => ({
 
 const getInputStyles = (correctness) => {
   const key = (k) => (correctness ? `${correctness}-${k}` : k);
-  
+
   return {
     [key('root')]: {
       ...colorStyle('color', color.text()),
@@ -146,7 +152,7 @@ const StyledCheckboxBase: any = styled(Checkbox, {
 })(({ correctness }) => {
   const styles = getInputStyles(correctness);
   const key = (k) => (correctness ? `${correctness}-${k}` : k);
-  
+
   return {
     [`&.${CLASS_NAME}`]: {
       ...styles[key('root')],
@@ -169,7 +175,6 @@ export const StyledCheckbox = (props) => {
     <StyledCheckboxBase
       id={id}
       slotProps={{ input: { ref: inputRef } }}
-      aria-checked={checked}
       onKeyDown={onKeyDown}
       disableRipple
       {...miniProps}
@@ -184,7 +189,7 @@ const StyledRadioBase: any = styled(Radio, {
 })(({ correctness }) => {
   const styles = getInputStyles(correctness);
   const key = (k) => (correctness ? `${correctness}-${k}` : k);
-  
+
   return {
     [`&.${CLASS_NAME}`]: {
       ...styles[key('root')],
@@ -207,7 +212,6 @@ export const StyledRadio = (props) => {
     <StyledRadioBase
       id={id}
       slotProps={{ input: { ref: inputRef } }}
-      aria-checked={checked}
       disableRipple
       {...miniProps}
       correctness={correctness}

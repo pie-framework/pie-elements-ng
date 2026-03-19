@@ -43,7 +43,7 @@ The integration tests download packages from NPM, but NPM packages (v2.0.0+) hav
 mathquill@git+https://github.com/pie-framework/mathquill-webpack.git (404)
 ```
 
-This repo has fixed the issue by using `@pie-element/shared-math-engine`, but NPM packages haven't been republished yet.
+This repo uses local workspace testing to bypass the broken historical NPM dependency path, but NPM packages haven't been republished yet.
 
 **Tests (19 total)**:
 - Basic Bundle Creation (3 tests)
@@ -83,7 +83,7 @@ This repo has fixed the issue by using `@pie-element/shared-math-engine`, but NP
 **Status**: Fully functional
 
 **What it does**:
-1. Builds local packages (math-engine, test element)
+1. Builds local packages (test element)
 2. Creates test workspace with symlinked packages
 3. Runs bundler without downloading from NPM
 4. Verifies bundle outputs

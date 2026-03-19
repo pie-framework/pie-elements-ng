@@ -12,7 +12,6 @@
     "@pie-lib/graphing": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "classnames": "^2.2.5",
-    "core-js": "^3.40.0",
     "debug": "^4.1.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

@@ -25,6 +25,9 @@ const StyledButton: any = styled(Button)(({ theme }) => ({
   '&:not(:last-of-type)': {
     marginRight: theme.spacing(0.5),
   },
+  '&:hover': {
+    backgroundColor: color.buttonHoverBg(),
+  },
 }));
 
 export class UndoRedo extends React.Component {

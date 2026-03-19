@@ -23,12 +23,45 @@ export default class PiePassage extends HTMLElement {
     };
     this._session = null;
     this._root = null;
+    this._mathObserver = null;
+    this._mathRenderPending = false;
   }
 
   setLangAttribute() {
     const language = this._model && typeof this._model.language ? this._model.language : '';
     const lang = language ? language.slice(0, 2) : 'en';
     this.setAttribute('lang', lang);
+  }
+
+  _scheduleMathRender: any = () => {
+    if (this._mathRenderPending) return;
+    this._mathRenderPending = true;
+
+    requestAnimationFrame(() => {
+      if (this._mathObserver) {
+        this._mathObserver.disconnect();
+      }
+      renderMath(this);
+      this._mathRenderPending = false;
+      setTimeout(() => {
+        if (this._mathObserver) {
+          this._mathObserver.observe(this, { childList: true, subtree: true });
+        }
+      }, 50);
+    });
+  };
+
+  _initMathObserver() {
+    if (this._mathObserver) return;
+    this._mathObserver = new MutationObserver(this._scheduleMathRender);
+    this._mathObserver.observe(this, { childList: true, subtree: true });
+  }
+
+  _disconnectMathObserver() {
+    if (this._mathObserver) {
+      this._mathObserver.disconnect();
+      this._mathObserver = null;
+    }
   }
 
   set model(s) {
@@ -46,6 +79,7 @@ export default class PiePassage extends HTMLElement {
   connectedCallback() {
     this.setAttribute('aria-label', 'Passage');
     this.setAttribute('role', 'region');
+    this._initMathObserver();
     this._render();
   }
 
@@ -66,13 +100,13 @@ export default class PiePassage extends HTMLElement {
         this._root = createRoot(this);
       }
       this._root.render(elem);
-      queueMicrotask(() => {
-        renderMath(this);
-      });
+
+      this._initMathObserver();
     }
   }
 
   disconnectedCallback() {
+    this._disconnectMathObserver();
     if (this._root) {
       this._root.unmount();
     }

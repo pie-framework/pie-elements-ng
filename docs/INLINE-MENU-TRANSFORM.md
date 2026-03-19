@@ -62,7 +62,6 @@ export function applySourceTransforms(content: string, options: TransformOptions
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
   transformed = transformSharedPackageImports(transformed);
-  transformed = transformMathquillImports(transformed);
   transformed = transformMenuToInlineMenu(transformed);  // ← Menu transform
 
   // ... rest of transforms

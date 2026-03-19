@@ -48,6 +48,7 @@ import { color } from '@pie-lib/render-ui';
 const ChoicePreviewContainer: any = styled('div')({
   position: 'relative',
   overflow: 'auto',
+  touchAction: 'none',
 });
 
 const DeleteIconButton: any = styled(IconButton)({

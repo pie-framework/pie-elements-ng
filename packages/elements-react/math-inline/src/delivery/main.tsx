@@ -19,10 +19,12 @@ import Tooltip from '@mui/material/Tooltip';
 import { ResponseTypes } from './utils';
 import { isEmpty, isEqual } from 'lodash-es';
 import SimpleQuestionBlock from './simple-question-block';
+import MathQuill from '@pie-framework/mathquill';
 import { color } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
 const { translator } = Translator;
+let registered = false;
 
 const NEWLINE_LATEX = /\\newline/g;
 const REGEX = /{{response}}/gm;
@@ -85,6 +87,10 @@ function prepareForStatic(model, state) {
           return `\\MathQuillMathField[r${answerBlocks++}]{${blankSpace.repeat(3)}}`;
         }
 
+        if (disabled) {
+          return `\\embed{answerBlock}[r${answerBlocks++}]`;
+        }
+
         return `\\MathQuillMathField[r${answerBlocks++}]{${(answer && answer.value) || ''}}`;
       })
       .replace(NEWLINE_LATEX, '\\embed{newLine}[]');
@@ -134,7 +140,60 @@ export class Main extends React.Component {
     };
   }
 
+  UNSAFE_componentWillMount() {
+    if (typeof window !== 'undefined') {
+      let MQ = MathQuill.getInterface(2);
+
+      if (!registered) {
+        MQ.registerEmbed('answerBlock', (data) => {
+          const classNames = getBlockClassNames();
+          return {
+            htmlString: `<div class="${classNames.blockContainer}">
+                <div class="${classNames.blockResponse}" id="${data}Index">R</div>
+                <div class="${classNames.blockMath}">
+                  <span id="${data}"></span>
+                </div>
+              </div>`,
+            text: () => 'text',
+            latex: () => `\\embed{answerBlock}[${data}]`,
+          };
+        });
+
+        registered = true;
+      }
+    }
+  }
+
   handleAnswerBlockDomUpdate: any = () => {
+    const { model } = this.props;
+    const { session, showCorrect } = this.state;
+    const answers = session.answers;
+
+    if (this.root && model.disabled && !showCorrect) {
+      Object.keys(answers).forEach((answerId) => {
+        const el = this.root.querySelector(`#${answerId}`);
+        const indexEl = this.root.querySelector(`#${answerId}Index`);
+
+        if (el) {
+          let MQ = MathQuill.getInterface(2);
+          const answer = answers[answerId];
+
+          el.textContent = (answer && answer.value) || '';
+
+          if (!model.view) {
+            // for now, we're not going to be showing individual response correctness
+            // TODO re-attach the classes once we are
+          } else {
+            el.parentElement.parentElement.classList.remove('correct');
+            el.parentElement.parentElement.classList.remove('incorrect');
+          }
+
+          MQ.StaticMath(el);
+          indexEl.textContent = 'R';
+        }
+      });
+    }
+
     if (this.root) {
       renderMath(this.root);
     }
@@ -208,7 +267,7 @@ export class Main extends React.Component {
         (state) => ({
           session: {
             ...state.session,
-            completeAnswer: this.mqStatic?.mathField?.getLatex?.(),
+            completeAnswer: this.mqStatic && this.mqStatic.mathField.latex(),
             answers: newAnswers,
           },
         }),
@@ -248,9 +307,7 @@ export class Main extends React.Component {
       selectableElements.forEach((elem) => elem.setAttribute('aria-hidden', 'true'));
 
       // Update aria-label for textarea elements and add aria-describedby
-      const textareaElements = this.root.querySelectorAll(
-        'textarea, input.pie-math-engine-static-field-input'
-      );
+      const textareaElements = this.root.querySelectorAll('textarea');
       textareaElements.forEach((elem, index) => {
         elem.setAttribute('aria-label', 'Enter answer.');
 
@@ -424,7 +481,7 @@ export class Main extends React.Component {
         (state) => ({
           session: {
             ...state.session,
-            completeAnswer: this.mqStatic?.mathField?.getLatex?.(),
+            completeAnswer: this.mqStatic && this.mqStatic.mathField.latex(),
             answers: {
               ...state.session.answers,
               [name]: { value: subfieldValue },

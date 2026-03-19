@@ -152,12 +152,19 @@ const Container: any = styled('div')(({ theme }) => ({
   padding: theme.spacing(2),
   margin: theme.spacing(1),
 }));
-const InputContainerWrapper: any = styled('div')(({ theme }) => ({
+
+const StyledInputContainer: any = styled(InputContainer)(({ theme }) => ({
   width: '100%',
-  paddingTop: theme.spacing(2),
+  paddingTop: theme.spacing(2.5),
   marginBottom: theme.spacing(2),
-  '& MuiFormControl-root': { width: '100%' },
+  marginTop: theme.spacing(1),
+  '& .MuiFormControl-root': { width: '100%' },
+  '& > .MuiFormLabel-root.MuiInputLabel-shrink': {
+    fontSize: theme.typography.fontSize + 2,
+    transform: 'translate(0, 1.5px) scale(0.75)',
+  },
 }));
+
 const Rubricless: any = styled('div')(() => ({ display: 'none' }));
 const ConfigHolder: any = styled('div')(({ theme }) => ({ paddingTop: theme.spacing(1), paddingBottom: theme.spacing(1) }));
 const RubricTitle: any = styled(Typography)(({ theme }) => ({ paddingLeft: theme.spacing(1), margin: theme.spacing(1) }));
@@ -243,18 +250,16 @@ export class RawAuthoring extends React.Component {
     onChange({ ...value, excludeZero: !value.excludeZero });
   };
 
-  shouldRenderPoint: any = (index, value) => {
-    if (!value.excludeZero) {
-      return true;
-    } else {
-      if (index < value.points.length - 1) {
-        return true;
-      } else if (index === value.points.length - 1) {
-        return false;
-      }
+  getPointForIndex: any = (index, value) => {
+    const maxPoint = value.excludeZero ? value.points.length - 1 + 1 : value.points.length - 1;
+    return maxPoint - index;
+  };
 
-      return true;
-    }
+  getMaxPoint = (value) => (value.excludeZero ? value.points.length : value.points.length - 1);
+
+  shouldRenderPoint: any = (index, value) => {
+    const point = this.getPointForIndex(index, value);
+    return point > 0 || !value.excludeZero;
   };
 
   onPointMenuChange: any = (index, clickedItem) => {
@@ -290,7 +295,7 @@ export class RawAuthoring extends React.Component {
     }
 
     // for rubric value is computed based on points
-    const maxPointsValue = !rubricless ? value.points.length - 1 : maxPoints;
+    const maxPointsValue = rubricless ? maxPoints : value.excludeZero ? value.points.length : value.points.length - 1;
 
     return (
       <div>
@@ -313,19 +318,18 @@ export class RawAuthoring extends React.Component {
         </FormGroup>
 
         {rubriclessInstructionEnabled && rubricless && (
-          <InputContainerWrapper>
-            <InputContainer label={rubriclessInstruction.label}>
-              <EditableHtml
-                markup={value.rubriclessInstruction || ''}
-                onChange={this.changeRubriclessInstruction}
-                pluginProps={pluginOpts}
-                nonEmpty={false}
-                disableUnderline
-                languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
-                mathMlOptions={mathMlOptions}
-              />
-            </InputContainer>
-          </InputContainerWrapper>
+          <StyledInputContainer label={rubriclessInstruction.label}>
+            <EditableHtml
+              markup={value.rubriclessInstruction || ''}
+              onChange={this.changeRubriclessInstruction}
+              pluginProps={pluginOpts}
+              nonEmpty={false}
+              disableUnderline
+              languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
+              mathMlOptions={mathMlOptions}
+              autoWidthToolbar
+            />
+          </StyledInputContainer>
         )}
 
         <div>
@@ -348,7 +352,7 @@ export class RawAuthoring extends React.Component {
                                   {...provided.dragHandleProps}
                                 >
                                   <PointConfig
-                                    points={value.points.length - 1 - index}
+                                    points={this.getPointForIndex(index, value)}
                                     content={p}
                                     error={
                                       pointsDescriptorsErrors &&

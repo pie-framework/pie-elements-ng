@@ -9,7 +9,9 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
+import debounce from 'lodash-es/debounce.js';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
+import { styled } from '@mui/material/styles';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyleKit } from '@tiptap/extension-text-style';
 import { CharacterCount } from '@tiptap/extension-character-count';
@@ -18,10 +20,10 @@ import SubScript from '@tiptap/extension-subscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { styled } from '@mui/material/styles';
-import debounce from 'lodash-es/debounce.js';
+import { normalizeInitialMarkup } from '../utils/helper.js';
 
 import ExtendedTable from '../extensions/extended-table.js';
+import { DivNode } from '../extensions/div-node.js';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
@@ -145,11 +147,21 @@ export const EditableHtml = (props) => {
   }, [props]);
 
   const extensions = [
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+      alignments: ['left', 'right', 'center', 'justify'],
+    }),
     TextStyleKit,
     CharacterCount.configure({
       limit: props.charactersLimit || 1000000,
     }),
-    StarterKit,
+    StarterKit.configure({
+      trailingNode: {
+        node: 'paragraph',
+        notAfter: ['paragraph', 'div'],
+      },
+    }),
+    DivNode,
     Placeholder.configure({
       placeholder: props.placeholder,
       // show placeholder even when editor is focused
@@ -171,10 +183,6 @@ export const EditableHtml = (props) => {
     }),
     SubScript,
     SuperScript,
-    TextAlign.configure({
-      types: ['heading', 'paragraph'],
-      alignments: ['left', 'right', 'center'],
-    }),
     Image,
     ImageUploadNode.configure({
       toolbarOpts: toolbarOptsToUse,
@@ -262,7 +270,7 @@ export const EditableHtml = (props) => {
         },
       },
       editable: !props.disabled,
-      content: props.markup,
+      content: normalizeInitialMarkup(props.markup),
       onUpdate: ({ editor, transaction }) => {
         if (transaction.isDone) {
           props.onChange?.(editor.getHTML());
@@ -291,6 +299,12 @@ export const EditableHtml = (props) => {
   );
 
   useEffect(() => {
+    if (props.editorRef) {
+      props.editorRef(editor);
+    }
+  }, [props.editorRef, editor]);
+
+  useEffect(() => {
     editor?.setEditable(!props.disabled);
   }, [props.disabled, editor]);
 
@@ -298,9 +312,10 @@ export const EditableHtml = (props) => {
     if (!editor) {
       return;
     }
+    const nextMarkup = normalizeInitialMarkup(props.markup);
 
-    if (props.markup !== editor.getHTML()) {
-      editor.commands.setContent(props.markup, false); // false = don’t emit update
+    if (nextMarkup !== editor.getHTML()) {
+      editor.commands.setContent(nextMarkup, false);
     }
   }, [props.markup, editor]);
 
@@ -359,26 +374,31 @@ export const EditableHtml = (props) => {
 const StyledEditorContent: any = styled(EditorContent, {
   shouldForwardProp: (prop) => !['showParagraph', 'separateParagraph'].includes(prop),
 })(({ showParagraph, separateParagraph }) => ({
+  display: 'flex',
   outline: 'none !important',
   '& .ProseMirror': {
+    flex: 1,
     padding: '5px',
     maxHeight: '500px',
     outline: 'none !important',
     position: 'initial',
-    '& > p': {
+
+    // reset default margins for all block paragraphs/divs in the editor
+    '& > p, & > div': {
       margin: '0',
     },
 
-    '& p.is-editor-empty:first-child::before': {
+    '& p.is-editor-empty:first-child::before, & div.is-editor-empty:first-child::before': {
       content: 'attr(data-placeholder)',
-      display: 'block',
+      float: 'left',
+      height: 0,
       color: '#9CA3AF',
       pointerEvents: 'none',
       whiteSpace: 'pre-wrap',
     },
 
     ...(showParagraph && {
-      '& > p:has(+ p)::after': {
+      '& > p:has(+ p)::after, & > div:has(+ div)::after': {
         display: 'block',
         content: '"¶"',
         fontSize: '1em',

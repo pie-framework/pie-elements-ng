@@ -51,6 +51,7 @@ const DragHandleContainer: any = styled('span', {
   shouldForwardProp: (prop) => prop !== 'draggable',
 })(({ draggable }) => ({
   cursor: draggable ? 'move' : 'inherit',
+  touchAction: 'none',
 }));
 
 const ErrorText: any = styled('div')(({ theme }) => ({

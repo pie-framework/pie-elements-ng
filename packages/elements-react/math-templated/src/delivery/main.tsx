@@ -19,6 +19,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import ReactDOM from 'react-dom';
+import MathQuill from '@pie-framework/mathquill';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -206,6 +207,7 @@ if (typeof document !== 'undefined') {
 // Define a regex pattern to match {{number}}
 const REGEX = /(\{\{\d+\}\})/gm;
 const DEFAULT_KEYPAD_VARIANT = 6;
+let registered = false;
 
 // !!! If you're using Chrome but have selected the "iPad" device in Chrome Developer Tools, the navigator.userAgent string may still report as
 //  Safari because Chrome on iOS actually uses the Safari rendering engine under the hood due to Apple's restrictions on third-party browser engines.
@@ -264,6 +266,13 @@ function prepareForStatic(model, state) {
           };
         }
 
+        if (disabled) {
+          return {
+            ...acc,
+            [responseKey]: `\\embed{answerBlock}[r${responseKey}]`,
+          };
+        }
+
         return {
           ...acc,
           [responseKey]: `\\MathQuillMathField[r${responseKey}]{${(answer && answer.value) || ''}}`,
@@ -311,7 +320,54 @@ export class Main extends React.Component {
     };
   }
 
+  UNSAFE_componentWillMount() {
+    if (typeof window !== 'undefined') {
+      let MQ = MathQuill.getInterface(2);
+
+      if (!registered) {
+        MQ.registerEmbed('answerBlock', (data) => ({
+          htmlString: `<div class="block-container">
+              <div class="block-response" id="${data}Index">R</div>
+              <div class="block-math">
+                <span id="${data}"></span>
+              </div>
+            </div>`,
+          text: () => 'text',
+          latex: () => `\\embed{answerBlock}[${data}]`,
+        }));
+
+        registered = true;
+      }
+    }
+  }
+
   handleAnswerBlockDomUpdate: any = () => {
+    const { model } = this.props;
+    const { session, showCorrect } = this.state;
+    const answers = session.answers;
+
+    if (this.root && model.disabled && !showCorrect) {
+      Object.keys(answers).forEach((answerId) => {
+        const el = this.root.querySelector(`#${answerId}`);
+        const indexEl = this.root.querySelector(`#${answerId}Index`);
+
+        if (el) {
+          let MQ = MathQuill.getInterface(2);
+          const answer = answers[answerId];
+
+          el.textContent = (answer && answer.value) || '';
+
+          if (model.view) {
+            el.parentElement.parentElement.classList.remove('correct');
+            el.parentElement.parentElement.classList.remove('incorrect');
+          }
+
+          MQ.StaticMath(el);
+          indexEl.textContent = 'R';
+        }
+      });
+    }
+
     if (this.root) {
       renderMath(this.root);
     }

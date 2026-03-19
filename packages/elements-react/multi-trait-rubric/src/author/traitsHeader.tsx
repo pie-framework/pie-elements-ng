@@ -125,7 +125,11 @@ export class TraitsHeaderTile extends React.Component {
 
   handleClose = () => this.setState({ anchorEl: null });
 
-  scrollToPosition = (position) => this.secondaryBlock.scrollTo({ left: position });
+  scrollToPosition: any = (position) => {
+    if (this.secondaryBlock) {
+      this.secondaryBlock.scrollTo({ left: position });
+    }
+  };
 
   openMenu: any = () => {
     this.props.showDeleteScaleModal();
