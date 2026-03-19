@@ -100,57 +100,25 @@ const defaults = {
 };
 ```
 
-### 6. SSR-Unsafe require() to React.lazy() + Suspense
+### 6. SSR-gated `require()` to ESM default import
 
-**File**: `tools/cli/src/commands/upstream/sync-imports.ts`
-**Function**: `transformSsrRequireToReactLazy()`
+**File**: `tools/cli/src/lib/upstream/sync-imports.ts`  
+**Function**: `transformSsrRequireToEsmImport()`
 
-**Why needed**: Upstream `pie-lib` code uses `require()` inside SSR checks for MathQuill compatibility. This pattern fails in browser ESM environments where `require` is not defined. We transform to React.lazy() with dynamic imports and automatically wrap usage in React.Suspense.
+**Why needed**: Some legacy pie-lib files gate `require('@pie-lib/editable-html-tip-tap')` behind `typeof window !== 'undefined'`. That pattern fails in browser bundles where `require` does not exist. The sync rewrites matching blocks to a static `import … from '…'` and keeps the styled wrapper when present.
 
-**Applied to**: `config-ui/feedback-selector.jsx`, `config-ui/choice-configuration/index.jsx`, `mask-markup/constructed-response.jsx`
+**After transform** (conceptually):
 
-**Transform 1: Convert require() to React.lazy()**
+```tsx
+import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
 
-```javascript
-// Before (upstream)
-// - mathquill error window not defined
-let EditableHtml;
-let StyledEditableHTML;
-if (typeof window !== 'undefined') {
-  EditableHtml = require('@pie-lib/editable-html-tip-tap')['default'];
-  StyledEditableHTML = styled(EditableHtml)(({ theme }) => ({
-    fontFamily: theme.typography.fontFamily,
-  }));
-}
-
-// After (synced)
-// Lazy load EditableHtml to avoid SSR issues with mathquill
-const EditableHtmlLazy = React.lazy(() =>
-  import('@pie-lib/editable-html-tip-tap').then(module => ({ default: module.default }))
-);
-
-const StyledEditableHTML = styled(EditableHtmlLazy)(({ theme }) => ({
+const EditableHtml = EditableHtmlImport;
+const StyledEditableHTML = styled(EditableHtml)(({ theme }) => ({
   fontFamily: theme.typography.fontFamily,
 }));
 ```
 
-**Transform 2: Automatically wrap usage in React.Suspense**
-
-```tsx
-// Before (after Transform 1)
-<StyledEditableHTML {...props} />
-
-// After (Transform 2 - fully automatic)
-<React.Suspense fallback={<div>Loading editor...</div>}>
-  <StyledEditableHTML {...props} />
-</React.Suspense>
-```
-
-**Benefits**:
-- ✅ Fully automatic - no manual Suspense wrapping needed
-- ✅ Handles both self-closing and paired JSX tags
-- ✅ Skips components already wrapped in Suspense
-- ✅ Works for both styled and unstyled components
+Bundlers and current `@pie-framework/mathquill` handle the editor stack without extra lazy/Suspense wiring in this repo.
 
 ### 7. Property Assignment to assignProps (Available, Not Enabled)
 
@@ -223,7 +191,7 @@ sourceContent = transformLodashToLodashEs(sourceContent);
 sourceContent = transformPieFrameworkEventImports(sourceContent);
 sourceContent = inlineEditableHtmlConstants(sourceContent);
 sourceContent = reexportTokenTypes(sourceContent, filePath);
-sourceContent = transformSsrRequireToReactLazy(sourceContent);  // ← Convert require() to React.lazy()
+sourceContent = transformSsrRequireToEsmImport(sourceContent);  // ← Legacy require() → ESM import
 // sourceContent = transformToAssignProps(sourceContent);  // ← Available but not enabled
 
 // Convert to TypeScript and write

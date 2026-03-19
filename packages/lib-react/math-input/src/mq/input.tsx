@@ -134,15 +134,8 @@ export class Input extends React.Component {
   };
 
   onKeyPress: any = (event) => {
-    const keys = Object.keys(this.mathField.__controller.options);
-
-    if (keys.indexOf('ignoreNextMousedown') < 0) {
-      this.refresh();
-    }
-
     if (event.charCode === 13) {
       event.preventDefault();
-      return;
     }
   };
 

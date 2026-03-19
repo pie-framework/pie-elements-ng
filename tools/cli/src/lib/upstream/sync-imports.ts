@@ -709,45 +709,18 @@ export function transformConfigureUtilsImports(content: string, relativePath: st
 }
 
 /**
- * Transform SSR-unsafe require() calls to standard ESM imports
+ * Transform legacy SSR-gated `require()` for pie-lib editors into static ESM imports.
  *
- * Upstream pie-lib code uses this pattern for SSR compatibility with MathQuill:
- *
- * ```js
- * // - mathquill error window not defined
- * let EditableHtml;
- * let StyledEditableHTML;
- * if (typeof window !== 'undefined') {
- *   EditableHtml = require('@pie-lib/editable-html-tip-tap')['default'];
- *   StyledEditableHTML = styled(EditableHtml)(({ theme }) => ({
- *     fontFamily: theme.typography.fontFamily,
- *   }));
- * }
- * ```
- *
- * This doesn't work in browser ESM (require is not defined). Transform to:
- *
- * ```tsx
- * import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
- *
- * const EditableHtml = EditableHtmlImport;
- * const StyledEditableHTML = styled(EditableHtml)(({ theme }) => ({
- *   fontFamily: theme.typography.fontFamily,
- * }));
- * ```
- *
- * We use direct imports instead of React.lazy because:
- * - Simpler code (no Suspense wrapper needed)
- * - No loading flicker
- * - Modern bundlers handle ESM imports correctly for SSR
- * - The component is always needed (no code-splitting benefit)
+ * Older upstream pie-lib used `typeof window` + `require()` so heavy editor code did not
+ * run under SSR. That breaks in browser ESM where `require` is undefined. When this pattern
+ * is still present in synced sources, rewrite it to a normal default import plus styled()
+ * wrapper. If upstream has already moved to ESM imports, this is a no-op.
  */
-export function transformSsrRequireToReactLazy(content: string): string {
+export function transformSsrRequireToEsmImport(content: string): string {
   let transformed = content;
 
   // Pattern 1: SSR check with require() for editable-html-tip-tap with styled wrapper
   // Matches:
-  //   // - mathquill error window not defined
   //   let EditableHtml;
   //   let StyledEditableHTML;
   //   if (typeof window !== 'undefined') {
@@ -765,7 +738,6 @@ export function transformSsrRequireToReactLazy(content: string): string {
   if (match) {
     const [fullMatch, componentVar, styledVar, importPath, styleParams] = match;
 
-    // Generate direct import replacement (better than React.lazy - simpler, no Suspense needed)
     const importVarName = `${componentVar}Import`;
     const replacement = `import ${importVarName} from '${importPath}';
 
@@ -792,7 +764,6 @@ const ${styledVar} = styled(${componentVar})(${styleParams});`;
     // Only apply if we didn't already match the styled pattern
     const [fullMatch, componentVar, importPath] = simpleMatch;
 
-    // Generate direct import replacement (better than React.lazy - simpler, no Suspense needed)
     const importVarName = `${componentVar}Import`;
     const replacement = `import ${importVarName} from '${importPath}';
 

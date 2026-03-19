@@ -62,7 +62,7 @@ Where `itemConfig` includes:
 - `item.markup` - HTML with multiple elements
 - `item.elements` - Package version map
 - `item.models` - Array of element models
-- `options.role` - student/instructor
+- `options.mode` - student/instructor
 
 **Use Cases:**
 - Production applications (pieoneer, content delivery)
@@ -97,7 +97,7 @@ Print components are **self-contained** and handle their own transformations:
 // packages/elements-react/multiple-choice/src/print/index.tsx
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.role === 'instructor';
+  const instr = opts.mode === 'instructor';
 
   return {
     ...model,
@@ -126,7 +126,7 @@ export default class MultipleChoicePrint extends HTMLElement {
 - Each print component exports a custom element class
 - `preparePrintModel()` handles print-specific transformations
 - Renders using the existing delivery component
-- Respects `options.role` for answer visibility
+- Respects `options.mode` for answer visibility
 - No external orchestration needed for single elements
 
 ## When to Use Which Approach
@@ -231,18 +231,10 @@ player.resolve = (tagName, pkg) => {
 };
 ```
 
-### Backwards Compatibility
+### Print player options
 
-✅ **Print exports are backwards compatible**
-- Same custom element pattern
-- Same `model` and `options` API
-- Same `preparePrintModel()` pattern
-- Works with both old and new print players
-
-✅ **No changes needed in elements**
-- Print components sync from upstream pie-elements
-- Existing print logic preserved
-- Only path changes from `module/print.js` to `dist/print/index.js`
+- Custom elements use the same `model` / `options` pattern and `preparePrintModel(model, opts)`.
+- Use `opts.mode` (`'student'` | `'instructor'`) for answer visibility and similar behavior.
 
 ## Development Workflow
 

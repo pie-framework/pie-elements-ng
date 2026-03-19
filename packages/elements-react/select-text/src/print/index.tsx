@@ -26,7 +26,7 @@ const log = debug('pie-element:select-text:print');
  */
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.role === 'instructor';
+  const instr = opts.mode === 'instructor';
 
   model.prompt = model.promptEnabled !== false ? model.prompt : undefined;
   model.teacherInstructions =

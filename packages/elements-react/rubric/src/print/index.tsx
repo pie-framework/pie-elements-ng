@@ -18,7 +18,7 @@ import debug from 'debug';
 const log = debug('pie-element:rubric:print');
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.role === 'instructor';
+  const instr = opts.mode === 'instructor';
 
   if (!instr) {
     return {};

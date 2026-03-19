@@ -54,7 +54,7 @@ bun add @pie-element/print-player
           }]
         },
         options: {
-          role: 'student' // or 'instructor' to show answers
+          mode: 'student' // or 'instructor' to show answers
         }
       };
     </script>
@@ -129,13 +129,13 @@ interface Config {
 // Student worksheet
 player.config = {
   item: { /* ... */ },
-  options: { role: 'student' }
+  options: { mode: 'student' }
 };
 
 // Answer key
 player.config = {
   item: { /* ... */ },
-  options: { role: 'instructor' }
+  options: { mode: 'instructor' }
 };
 ```
 

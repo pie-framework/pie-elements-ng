@@ -26,7 +26,7 @@ const log = debug('pie-element:math-templated:print');
  */
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.role === 'instructor';
+  const instr = opts.mode === 'instructor';
 
   model.prompt = model.promptEnabled !== false ? model.prompt : undefined;
   model.teacherInstructions =
@@ -41,7 +41,7 @@ const preparePrintModel = (model, opts) => {
   return {
     ...model,
     disabled: true,
-    env: { mode: instr ? 'evaluate' : model.mode, role: opts.role },
+    env: { mode: instr ? 'evaluate' : model.mode, role: opts.mode },
   };
 };
 

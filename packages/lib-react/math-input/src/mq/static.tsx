@@ -141,19 +141,7 @@ export default class Static extends React.Component {
     const name = this.props.getFieldName(field, this.mathField.innerFields);
 
     if (this.props.onSubFieldChange) {
-      const regexMatch = field.latex().match(/[0-9]\\ \\frac\{[^\{]*\}\{ \}/);
-
-      if (this.inputRef?.current && regexMatch && regexMatch?.length) {
-        try {
-          field.__controller.cursor.insLeftOf(field.__controller.cursor.parent[-1].parent);
-          field.el().dispatchEvent(new KeyboardEvent('keydown', { keyCode: 8 }));
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error(e.toString());
-        }
-      } else {
-        this.props.onSubFieldChange(name, field.latex());
-      }
+      this.props.onSubFieldChange(name, field.latex());
     }
 
     this.announceLatexConversion(field.latex());

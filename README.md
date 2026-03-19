@@ -135,7 +135,7 @@ For development and testing of individual elements:
 ### Item-Level Print Player (pie-players)
 For production rendering of complete assessment items:
 ```html
-<pie-print config={{ item: {...}, options: { role: 'student' } }}></pie-print>
+<pie-print config={{ item: {...}, options: { mode: 'student' } }}></pie-print>
 ```
 - **Package:** `@pie-player/print` (in pie-players repository)
 - **Use for:** Production apps, multi-element items, markup-driven rendering

@@ -16,7 +16,7 @@ import {
   transformLegacyConfigureLibImports,
   inlineEditableHtmlConstants,
   reexportTokenTypes,
-  transformSsrRequireToReactLazy,
+  transformSsrRequireToEsmImport,
   inlineConfigureDefaults,
   transformConfigureUtilsImports,
   transformSelfReferentialImports,
@@ -91,14 +91,14 @@ export function applySourceTransforms(content: string, options: TransformOptions
     }
   }
 
-  // Pie-lib-specific transforms
+  // Pie-lib-specific transforms (run only when syncing upstream pie-lib sources)
   if (options.includePieLib) {
     transformed = inlineEditableHtmlConstants(transformed);
     if (options.sourcePath) {
       transformed = reexportTokenTypes(transformed, options.sourcePath);
       transformed = addInlineMenuExport(transformed, options.sourcePath);
     }
-    transformed = transformSsrRequireToReactLazy(transformed);
+    transformed = transformSsrRequireToEsmImport(transformed);
   }
 
   // TypeScript fixes (always applied)
@@ -116,7 +116,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
- * 5. Preserve upstream MathQuill dependencies as-is
+ * 5. Preserve upstream @pie-framework/mathquill dependency versions from synced package.json
  */
 export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   let transformed = pkg;

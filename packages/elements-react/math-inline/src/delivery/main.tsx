@@ -138,29 +138,23 @@ export class Main extends React.Component {
       showCorrect: this.props.model.config.alwaysShowCorrect || false,
       tooltipContainerRef: React.createRef(),
     };
-  }
 
-  UNSAFE_componentWillMount() {
-    if (typeof window !== 'undefined') {
-      let MQ = MathQuill.getInterface(2);
-
-      if (!registered) {
-        MQ.registerEmbed('answerBlock', (data) => {
-          const classNames = getBlockClassNames();
-          return {
-            htmlString: `<div class="${classNames.blockContainer}">
+    if (typeof window !== 'undefined' && !registered) {
+      const MQ = MathQuill.getInterface(2);
+      MQ.registerEmbed('answerBlock', (data) => {
+        const classNames = getBlockClassNames();
+        return {
+          htmlString: `<div class="${classNames.blockContainer}">
                 <div class="${classNames.blockResponse}" id="${data}Index">R</div>
                 <div class="${classNames.blockMath}">
                   <span id="${data}"></span>
                 </div>
               </div>`,
-            text: () => 'text',
-            latex: () => `\\embed{answerBlock}[${data}]`,
-          };
-        });
-
-        registered = true;
-      }
+          text: () => 'text',
+          latex: () => `\\embed{answerBlock}[${data}]`,
+        };
+      });
+      registered = true;
     }
   }
 

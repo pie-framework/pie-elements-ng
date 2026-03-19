@@ -94,28 +94,13 @@ const styles = {
 
 const getPrompt = (dragData) => {
   if (!dragData) return undefined;
-
-  // Handle different drag data structures based on the component type
   if (dragData.choiceId) {
-    // DraggableChoice format
     return dragData.value;
   }
-
-  // Legacy format support
-  switch (dragData.itemType) {
-    case 'MaskBlank':
-      return dragData.choice?.value;
-    case 'dnd-kit-response':
-      return dragData.value;
-    case 'Answer':
-      return dragData.value;
-    case 'Tile':
-      return dragData.value;
-    case 'categorize':
-      return dragData.value;
-    default:
-      return dragData.value;
+  if (dragData.itemType === 'MaskBlank') {
+    return dragData.choice?.value;
   }
+  return dragData.value;
 };
 
 const getCustomStyle = (dragData) => {

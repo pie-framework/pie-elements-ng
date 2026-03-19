@@ -19,7 +19,7 @@ import debug from 'debug';
 const log = debug('pie-element:extended-text-entry:print');
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.role === 'instructor';
+  const instr = opts.mode === 'instructor';
 
   model.prompt = model.promptEnabled !== false ? model.prompt : undefined;
   model.teacherInstructions =

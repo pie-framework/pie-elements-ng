@@ -18,7 +18,8 @@ import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-e
 
 const log = debug('@pie-elements:extended-text-entry');
 
-const domParser = typeof window !== undefined ? new DOMParser() : { parseFromString: (v) => v };
+const domParser =
+  typeof window !== 'undefined' ? new DOMParser() : { parseFromString: (v) => ({ body: { textContent: v } }) };
 
 export function textContent(value) {
   if (typeof value !== 'string') {
