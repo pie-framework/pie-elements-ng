@@ -19,6 +19,10 @@ import { correct, disabled, incorrect } from './common/styles.js';
 import { color } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
+// Vite/ESM interop can sometimes surface CJS default exports as namespace objects.
+// Normalize once so JSX always receives a component function.
+const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
+
 const StyledContainer: any = styled('div')({
   display: 'flex',
   flexDirection: 'column',
@@ -177,7 +181,7 @@ export const MarkLabel = (props) => {
           }}
         ></StyledMathInput>
       ) : (
-        <AutosizeInput
+        <AutosizeInputComponent
           inputRef={(r) => {
             _ref(r);
             if (typeof externalInputRef === 'function') {

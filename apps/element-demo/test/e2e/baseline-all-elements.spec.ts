@@ -42,12 +42,75 @@ type BaselineAdapter = {
 
 const ERROR_PATTERNS = [/build failed/i, /module not found/i, /can't resolve/i, /uncaught/i];
 const CORRECT_PATTERNS = [/correct answer/i, /\bcorrect\b/i, /\bsolution\b/i, /\bexpected\b/i];
-const NON_ACTIONABLE_ELEMENTS = new Set(['passage', 'rubric']);
+const CRITICAL_RUNTIME_PATTERNS = [
+  /Element type is invalid/i,
+  /React\.jsx: type is invalid/i,
+  /Minified React error #130/i,
+  /Maximum update depth exceeded/i,
+  /Cannot read properties of/i,
+  /TypeError:/i,
+  /ReferenceError:/i,
+  /Uncaught Error:/i,
+];
+const IGNORE_RUNTIME_PATTERNS = [
+  /i18next is maintained with support from locize/i,
+  /i18next: languageChanged/i,
+  /i18next: initialized/i,
+  /Download the React DevTools for a better development experience/i,
+];
+const NON_ACTIONABLE_DELIVERY_ELEMENTS = new Set(['passage', 'rubric', 'complex-rubric']);
+const NON_ACTIONABLE_AUTHOR_ELEMENTS = new Set(['rubric', 'complex-rubric']);
 const ELEMENT_FILTER = process.env.E2E_BASELINE_ELEMENT?.trim();
 const MULTIPLE_CHOICE_DEMO_ID = 'math-algebra-quadratic';
 const MULTIPLE_CHOICE_TAG = 'pie-multiple-choice';
-// Temporarily excluded while we design dedicated rubric-specific baseline assertions.
-const TEMP_EXCLUDED_ELEMENTS = new Set(['complex-rubric', 'rubric']);
+const TEMP_EXCLUDED_ELEMENTS = new Set<string>();
+
+type RuntimeTracker = {
+  consoleMessages: string[];
+  pageErrors: string[];
+  dispose: () => void;
+};
+
+function createRuntimeTracker(page: Page): RuntimeTracker {
+  const consoleMessages: string[] = [];
+  const pageErrors: string[] = [];
+
+  const onConsole = (msg: { text: () => string }) => {
+    const text = msg.text();
+    if (IGNORE_RUNTIME_PATTERNS.some((pattern) => pattern.test(text))) {
+      return;
+    }
+    consoleMessages.push(text);
+  };
+
+  const onPageError = (error: Error) => {
+    const message = error?.message || String(error);
+    pageErrors.push(message);
+  };
+
+  page.on('console', onConsole as any);
+  page.on('pageerror', onPageError);
+
+  return {
+    consoleMessages,
+    pageErrors,
+    dispose: () => {
+      page.off('console', onConsole as any);
+      page.off('pageerror', onPageError);
+    },
+  };
+}
+
+function assertNoCriticalRuntimeErrors(runtime: RuntimeTracker, context: string) {
+  const combined = [...runtime.consoleMessages, ...runtime.pageErrors];
+  const critical = combined.filter((message) =>
+    CRITICAL_RUNTIME_PATTERNS.some((pattern) => pattern.test(message))
+  );
+  if (critical.length === 0) {
+    return;
+  }
+  throw new Error(`${context}: critical runtime errors detected: ${critical.slice(0, 4).join(' | ')}`);
+}
 
 function elementTagCandidates(name: string): string[] {
   return [name, `pie-${name}`, `${name}-element`];
@@ -315,7 +378,7 @@ async function attemptInput(scope: Locator, marker: string): Promise<string> {
 }
 
 async function assertGatherAcceptsInput(page: Page, element: string) {
-  if (NON_ACTIONABLE_ELEMENTS.has(element)) {
+  if (NON_ACTIONABLE_DELIVERY_ELEMENTS.has(element)) {
     return;
   }
   await page.click('[data-testid="mode-gather"]');
@@ -375,7 +438,7 @@ async function detectCorrectAnswerSignal(scope: Locator): Promise<boolean> {
 }
 
 async function assertEvaluateShowsCorrectAnswers(page: Page, element: string) {
-  if (NON_ACTIONABLE_ELEMENTS.has(element)) {
+  if (NON_ACTIONABLE_DELIVERY_ELEMENTS.has(element)) {
     return;
   }
   await page.click('[data-testid="role-instructor"]');
@@ -443,7 +506,7 @@ async function assertAuthorVisible(page: Page, element: string) {
 }
 
 async function assertAuthorAcceptsInput(page: Page, element: string) {
-  if (NON_ACTIONABLE_ELEMENTS.has(element)) {
+  if (NON_ACTIONABLE_AUTHOR_ELEMENTS.has(element)) {
     return;
   }
   const authorScope = page.locator('.author-view .configure-container').first();
@@ -470,6 +533,20 @@ async function assertMathGatherInput(page: Page, elementName: string) {
 }
 
 const ADAPTERS: Record<string, BaselineAdapter> = {
+  rubric: {
+    prepareDeliver: async (page) => {
+      // Rubric delivery content is intentionally instructor-facing.
+      await switchRole(page, 'instructor');
+      await page.waitForTimeout(400);
+    },
+  },
+  'complex-rubric': {
+    prepareDeliver: async (page) => {
+      // Complex rubric delivery content is intentionally instructor-facing.
+      await switchRole(page, 'instructor');
+      await page.waitForTimeout(400);
+    },
+  },
   'multiple-choice': {
     prepareDeliver: async (page) => {
       await selectDemo(page, MULTIPLE_CHOICE_DEMO_ID);
@@ -509,15 +586,24 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
     assertGatherAcceptsInput: async (page) => {
       await switchMode(page, 'gather');
       const chartScope = page.locator('.delivery-view .element-container').first();
-      const chartButton = chartScope.locator('button.MuiButtonBase-root').first();
-      if (await chartButton.isVisible().catch(() => false)) {
-        await chartButton.click({ force: true });
-      } else {
-        const method = await attemptInput(chartScope, `charting-${Date.now()}`);
-        if (!method) {
-          throw new Error('charting gather: no interactive controls detected');
-        }
+      const primitive = chartScope.locator('svg circle, svg path, svg rect, svg line').first();
+      if (await primitive.isVisible().catch(() => false)) {
+        await primitive.click({ force: true });
+        return;
       }
+
+      const canvas = chartScope.locator('canvas').first();
+      if (await canvas.isVisible().catch(() => false)) {
+        await canvas.click({ position: { x: 20, y: 20 }, force: true });
+        return;
+      }
+
+      const method = await attemptInput(chartScope, `charting-${Date.now()}`);
+      if (!method) {
+        throw new Error('charting gather: no interactive controls detected');
+      }
+      // Some charting controls open an MUI popover that can block top-nav interactions.
+      await page.keyboard.press('Escape').catch(() => {});
     },
     assertDeliveryVisible: async (page, element) => {
       try {
@@ -675,63 +761,82 @@ test.describe('Baseline minimum coverage across all elements', () => {
       const element = entry.name;
       const adapter = getAdapter(element);
       const results: CheckResult[] = [];
+      const runtime = createRuntimeTracker(page);
 
-      await test.step(`${element}: delivery baseline`, async () => {
-        results.push(
-          await runCheck(element, 'esm deliver route loads', async () => {
-            await loadDeliver(page, element);
-            if (adapter.prepareDeliver) {
-              await adapter.prepareDeliver(page, element);
-            }
-          })
-        );
-        results.push(
-          await runCheck(element, 'delivery view visible', async () =>
-            adapter.assertDeliveryVisible
-              ? adapter.assertDeliveryVisible(page, element)
-              : assertDeliveryVisible(page, element)
-          )
-        );
-        results.push(
-          await runCheck(element, 'gather mode accepts input', async () =>
-            adapter.assertGatherAcceptsInput
-              ? adapter.assertGatherAcceptsInput(page, element)
-              : assertGatherAcceptsInput(page, element)
-          )
-        );
-        results.push(
-          await runCheck(element, 'evaluate mode shows correct answers', async () =>
-            adapter.assertEvaluateShowsCorrectAnswers
-              ? adapter.assertEvaluateShowsCorrectAnswers(page, element)
-              : assertEvaluateShowsCorrectAnswers(page, element)
-          )
-        );
-      });
-
-      if (entry.hasAuthor) {
-        await test.step(`${element}: author baseline`, async () => {
+      try {
+        await test.step(`${element}: delivery baseline`, async () => {
           results.push(
-            await runCheck(element, 'author view visible', async () => {
-              await loadAuthor(page, element);
-              if (adapter.prepareAuthor) {
-                await adapter.prepareAuthor(page, element);
+            await runCheck(element, 'esm deliver route loads', async () => {
+              await loadDeliver(page, element);
+              if (adapter.prepareDeliver) {
+                await adapter.prepareDeliver(page, element);
               }
+              assertNoCriticalRuntimeErrors(runtime, `${element} deliver load`);
             })
           );
           results.push(
-            await runCheck(element, 'author view accepts input', async () =>
-              adapter.assertAuthorAcceptsInput
-                ? adapter.assertAuthorAcceptsInput(page, element)
-                : assertAuthorAcceptsInput(page, element)
-            )
+            await runCheck(element, 'delivery view visible', async () => {
+              if (adapter.assertDeliveryVisible) {
+                await adapter.assertDeliveryVisible(page, element);
+              } else {
+                await assertDeliveryVisible(page, element);
+              }
+              assertNoCriticalRuntimeErrors(runtime, `${element} delivery visibility`);
+            })
+          );
+          results.push(
+            await runCheck(element, 'gather mode accepts input', async () => {
+              if (adapter.assertGatherAcceptsInput) {
+                await adapter.assertGatherAcceptsInput(page, element);
+              } else {
+                await assertGatherAcceptsInput(page, element);
+              }
+              assertNoCriticalRuntimeErrors(runtime, `${element} gather mode`);
+            })
+          );
+          results.push(
+            await runCheck(element, 'evaluate mode shows correct answers', async () => {
+              if (adapter.assertEvaluateShowsCorrectAnswers) {
+                await adapter.assertEvaluateShowsCorrectAnswers(page, element);
+              } else {
+                await assertEvaluateShowsCorrectAnswers(page, element);
+              }
+              assertNoCriticalRuntimeErrors(runtime, `${element} evaluate mode`);
+            })
           );
         });
-      }
 
-      const summary = results
-        .map((r) => `[${r.ok ? 'PASS' : 'FAIL'}] ${r.check}${r.message ? ` :: ${r.message}` : ''}`)
-        .join('\n');
-      console.log(`[baseline] ${element}\n${summary}`);
+        if (entry.hasAuthor) {
+          await test.step(`${element}: author baseline`, async () => {
+            results.push(
+              await runCheck(element, 'author view visible', async () => {
+                await loadAuthor(page, element);
+                if (adapter.prepareAuthor) {
+                  await adapter.prepareAuthor(page, element);
+                }
+                assertNoCriticalRuntimeErrors(runtime, `${element} author visibility`);
+              })
+            );
+            results.push(
+              await runCheck(element, 'author view accepts input', async () => {
+                if (adapter.assertAuthorAcceptsInput) {
+                  await adapter.assertAuthorAcceptsInput(page, element);
+                } else {
+                  await assertAuthorAcceptsInput(page, element);
+                }
+                assertNoCriticalRuntimeErrors(runtime, `${element} author input`);
+              })
+            )
+          });
+        }
+
+        const summary = results
+          .map((r) => `[${r.ok ? 'PASS' : 'FAIL'}] ${r.check}${r.message ? ` :: ${r.message}` : ''}`)
+          .join('\n');
+        console.log(`[baseline] ${element}\n${summary}`);
+      } finally {
+        runtime.dispose();
+      }
     }
 
     if (failures.length > 0) {
