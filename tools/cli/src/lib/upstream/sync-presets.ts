@@ -81,6 +81,10 @@ export function getPostSyncTextPatches(projectRoot: string): PostSyncTextPatch[]
           from: '<AutosizeInput',
           to: '<AutosizeInputComponent',
         },
+        {
+          from: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;\nconst AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;',
+          to: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;',
+        },
       ],
     },
     {
@@ -95,6 +99,10 @@ export function getPostSyncTextPatches(projectRoot: string): PostSyncTextPatch[]
         {
           from: '<AutosizeInput',
           to: '<AutosizeInputComponent',
+        },
+        {
+          from: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;\nconst AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;',
+          to: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;',
         },
       ],
     },

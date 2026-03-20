@@ -115,7 +115,7 @@ export const coordinates = (graphProps, mark, rect = { width: 0, height: 0 }, po
 };
 
 const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, onChange }) => (
-  <AutosizeInputComponent
+  <AutosizeInputComponentComponent
     inputRef={(r) => {
       _ref(r);
       externalInputRef(r);

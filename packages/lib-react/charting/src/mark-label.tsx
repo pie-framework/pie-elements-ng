@@ -13,7 +13,6 @@ import classNames from 'classnames';
 import { styled } from '@mui/material/styles';
 import AutosizeInput from 'react-input-autosize';
 const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
-const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
 import PropTypes from 'prop-types';
 
 import { types } from '@pie-lib/plot';
@@ -179,7 +178,7 @@ export const MarkLabel = (props) => {
           }}
         ></StyledMathInput>
       ) : (
-        <AutosizeInputComponentComponent
+        <AutosizeInputComponent
           inputRef={(r) => {
             _ref(r);
             if (typeof externalInputRef === 'function') {
