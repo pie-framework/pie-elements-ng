@@ -113,6 +113,53 @@ describe('ensureElementPackageJson iife build script generation', () => {
       'react-is': '^19.2.0',
     });
   });
+
+  it('preserves existing development export conditions', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'controller'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'controller', 'index.ts'),
+      'export default class Controller {}\n',
+      'utf-8'
+    );
+    await writeFile(
+      join(elementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          exports: {
+            '.': {
+              development: './src/index.ts',
+              types: './dist/index.d.ts',
+              default: './dist/index.js',
+            },
+            './controller': {
+              development: './src/controller/index.ts',
+              types: './dist/controller/index.d.ts',
+              default: './dist/controller/index.js',
+            },
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.exports['.'].development).toBe('./src/index.ts');
+    expect(pkgJson.exports['./controller'].development).toBe('./src/controller/index.ts');
+  });
 });
 
 describe('ensurePieLibPackageJson', () => {

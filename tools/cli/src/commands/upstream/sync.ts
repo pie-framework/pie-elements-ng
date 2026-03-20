@@ -214,6 +214,36 @@ export default class Sync extends Command {
       this.error('Sync failed', { exit: 1 });
     }
 
+    if (config.dryRun) {
+      this.logger.section('🧪 Dry run');
+      this.logger.info('   No files will be modified.');
+
+      const elementsPlanned = config.syncReactComponents
+        ? await this.listElementPackages(config)
+        : [];
+      const pieLibPlanned =
+        config.syncPieLibPackages && config.pieLibPackages ? [...config.pieLibPackages] : [];
+
+      syncSummary.controllersSync = config.syncControllers ? elementsPlanned.length : 0;
+      syncSummary.reactComponentsSynced = elementsPlanned.length;
+      syncSummary.pieLibPackagesSynced = pieLibPlanned.length;
+      syncSummary.totalPackagesSynced = elementsPlanned.length + pieLibPlanned.length;
+      syncSummary.syncedPackageNames = [
+        ...elementsPlanned,
+        ...pieLibPlanned.map((pkg) => `@pie-lib/${pkg}`),
+      ];
+
+      if (compatibilityReport) {
+        syncSummary.blockedElements = Object.keys(compatibilityReport.blockedElements).length;
+        syncSummary.blockedPieLib = Object.values(compatibilityReport.pieLibDetails).filter(
+          (d) => !d.compatible
+        ).length;
+      }
+
+      printSyncSummary(syncSummary, compatibilityReport, config.pieElementsNg, this.logger);
+      return;
+    }
+
     // Capture current dependency integrity gaps before sync so we only fail on new regressions.
     this.preSyncProblemIntegrityByImport =
       await this.captureCurrentProblemIntegrityBaseline(config);
@@ -238,6 +268,7 @@ export default class Sync extends Command {
         syncPieLib: config.syncPieLibPackages,
         pieLibPackages: config.pieLibPackages,
         skipDemos: true,
+        dryRun: config.dryRun,
         upstreamCommit: getCurrentCommit(config.pieElements),
       },
       logger: this.logger,

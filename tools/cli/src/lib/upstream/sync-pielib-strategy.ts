@@ -130,7 +130,7 @@ export class PieLibStrategy implements SyncStrategy {
       const targetSrcDir = join(targetDir, 'src');
 
       // Clean target src subtree first so removed upstream files don't linger
-      await this.cleanTargetDir(targetSrcDir, `lib-react/${pkg}/src`, logger);
+      await this.cleanTargetDir(targetSrcDir, `lib-react/${pkg}/src`, logger, config.dryRun);
 
       // Special handling for math-rendering - generate wrapper instead of full sync
       let filesProcessed: number;
@@ -197,7 +197,12 @@ export class PieLibStrategy implements SyncStrategy {
     };
   }
 
-  private async cleanTargetDir(targetDir: string, label: string, logger: any): Promise<void> {
+  private async cleanTargetDir(
+    targetDir: string,
+    label: string,
+    logger: any,
+    dryRun: boolean
+  ): Promise<void> {
     // Preserve non-synced pie-elements-ng files
     const preserve: string[] = [];
 
@@ -206,7 +211,7 @@ export class PieLibStrategy implements SyncStrategy {
       preserve.push('inline-menu.tsx');
     }
 
-    await cleanDirectory(targetDir, label, { dryRun: false, verbose: false, preserve }, logger);
+    await cleanDirectory(targetDir, label, { dryRun, verbose: false, preserve }, logger);
   }
 
   private async syncDirectory(

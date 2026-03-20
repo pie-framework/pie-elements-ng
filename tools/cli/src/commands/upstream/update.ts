@@ -76,14 +76,19 @@ export default class Update extends Command {
       this.log('');
     }
 
-    const analyzeFlags = [
-      '--output=.compatibility/report.json',
-      flags.verbose ? '--verbose' : '',
-      flags['include-dev-deps'] ? '--include-dev-deps' : '',
-      flags.validate ? '--validate' : '',
-    ].filter(Boolean);
+    if (!flags['dry-run']) {
+      const analyzeFlags = [
+        '--output=.compatibility/report.json',
+        flags.verbose ? '--verbose' : '',
+        flags['include-dev-deps'] ? '--include-dev-deps' : '',
+        flags.validate ? '--validate' : '',
+      ].filter(Boolean);
 
-    await AnalyzeEsm.run(analyzeFlags);
+      await AnalyzeEsm.run(analyzeFlags);
+    } else if (flags.verbose) {
+      this.log('ℹ️  Dry-run: skipping compatibility report write from analyze-esm');
+      this.log('   Using existing .compatibility/report.json for filtering.\n');
+    }
 
     if (flags.verbose) {
       this.log('');

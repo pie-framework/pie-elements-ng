@@ -701,9 +701,10 @@ export function transformConfigureUtilsImports(content: string, relativePath: st
     return content;
   }
 
-  // Transform '../utils' to './utils' (only exact match, not '../utils/something')
+  // Transform '../utils' to './utils.js' (only exact match, not '../utils/something')
+  // Keep explicit runtime extension for Node ESM consistency.
   let transformed = content;
-  transformed = transformed.replace(/from\s+['"]\.\.\/utils['"]/g, "from './utils'");
+  transformed = transformed.replace(/from\s+['"]\.\.\/utils['"]/g, "from './utils.js'");
 
   return transformed;
 }
@@ -890,11 +891,11 @@ export function transformSelfReferentialImports(
 
     if (namedImports) {
       // Named imports - keep them as a single import from the index
-      const replacement = `import { ${namedImports} } from '${targetPath}'`;
+      const replacement = `import { ${namedImports} } from '${targetPath}/index.js'`;
       transformed = transformed.replace(fullMatch, replacement);
     } else if (defaultImport) {
       // Default import - reference main index
-      const replacement = `import ${defaultImport} from '${targetPath}'`;
+      const replacement = `import ${defaultImport} from '${targetPath}/index.js'`;
       transformed = transformed.replace(fullMatch, replacement);
     }
   }

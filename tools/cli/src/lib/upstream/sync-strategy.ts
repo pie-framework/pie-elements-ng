@@ -19,6 +19,7 @@ export interface SyncConfig {
 
   // Options
   skipDemos: boolean;
+  dryRun: boolean;
   upstreamCommit: string;
 }
 

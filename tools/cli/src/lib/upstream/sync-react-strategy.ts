@@ -110,7 +110,8 @@ export class ReactComponentsStrategy implements SyncStrategy {
         targetSrcDir,
         ['controller'],
         `elements-react/${pkg}/src`,
-        logger
+        logger,
+        config.dryRun
       );
 
       // Recursively sync all files from src/ directory to delivery/ subdirectory
@@ -224,12 +225,13 @@ export class ReactComponentsStrategy implements SyncStrategy {
     targetDir: string,
     preserveDirs: string[],
     label: string,
-    logger: any
+    logger: any,
+    dryRun: boolean
   ): Promise<void> {
     await cleanDirectory(
       targetDir,
       label,
-      { dryRun: false, verbose: false, preserve: preserveDirs },
+      { dryRun, verbose: false, preserve: preserveDirs },
       logger
     );
   }
