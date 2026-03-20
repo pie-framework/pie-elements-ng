@@ -29,7 +29,7 @@ const log = debug('pie-element:ebsr:print');
  */
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.mode === 'instructor';
+  const instr = opts.role === 'instructor';
 
   model.prompt = model.promptEnabled !== false ? model.prompt : undefined;
   model.teacherInstructions =

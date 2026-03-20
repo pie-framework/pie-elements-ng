@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { findWorkspaceRoot, workspaceResolver } from './src/vite-plugin-workspace-resolver';
@@ -7,8 +8,9 @@ import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const workspaceRoot = findWorkspaceRoot(process.cwd());
-const bundlerInstanceDir = process.env.DEMO_BUNDLER_INSTANCE_DIR || '';
-const bundlerOutputDir = bundlerInstanceDir ? join(bundlerInstanceDir, 'bundles') : '';
+const bundlerInstanceDir =
+  process.env.DEMO_BUNDLER_INSTANCE_DIR || join(process.cwd(), '.cache', 'demo-bundler');
+const bundlerOutputDir = join(bundlerInstanceDir, 'bundles');
 
 /**
  * Vite config for element demo app.
@@ -42,6 +44,13 @@ export default defineConfig({
         }
       },
     },
+    // Transform React TSX/JSX from workspace element packages (SvelteKit does not enable this by default).
+    react({
+      include: [
+        /\/elements-react\/.*\.(jsx|tsx)(?:\?.*)?$/,
+        /\/lib-react\/.*\.(jsx|tsx)(?:\?.*)?$/,
+      ],
+    }),
     {
       name: 'serve-demo-iife-bundles',
       apply: 'serve',
@@ -119,26 +128,17 @@ export default defineConfig({
   },
 
   optimizeDeps: {
-    // Include React in pre-bundling to avoid issues
-    // Include d3-shape for recharts 3.x compatibility
-    include: ['react', 'react-dom', 'react/jsx-runtime', 'd3-shape'],
+    // Include React in pre-bundling to avoid issues.
+    // Do not list d3-shape here: it is not a direct dependency of this app and Vite cannot resolve it
+    // until a charting import pulls it in (via @pie-lib/charting / recharts).
+    include: ['react', 'react-dom', 'react/jsx-runtime'],
     // Exclude workspace packages and @pie-framework packages to prevent dependency scanning errors
     // These are marked as external in the build config
     exclude: ['@pie-element/*', '@pie-lib/*', '@pie-framework/*'],
-    // Tell esbuild not to scan controller dist files or other problematic paths
-    esbuildOptions: {
-      plugins: [
-        {
-          name: 'exclude-controller-dist',
-          setup(build) {
-            // Ignore controller dist files from dependency scanning
-            build.onResolve({ filter: /.*\/dist\/controller\/.*/ }, () => ({
-              path: 'ignored',
-              external: true,
-            }));
-          },
-        },
-      ],
+    // Vite 8 uses Rolldown for dep optimization.
+    // Keep controller dist files external to avoid optimizer scan issues.
+    rolldownOptions: {
+      external: [/\/dist\/controller\//],
     },
   },
 

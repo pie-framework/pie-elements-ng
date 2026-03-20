@@ -21,7 +21,7 @@ jobs:
           node-version: 20.x
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.6
+          bun-version: 1.3.11
       - run: bun install --frozen-lockfile
       - run: bun run verify:no-local-paths
       - run: bun run lint
@@ -36,7 +36,7 @@ jobs:
           node-version: 20.x
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.6
+          bun-version: 1.3.11
       - run: bun install --frozen-lockfile
       - run: bun run verify:dependency-integrity --fail-on-hoist
 
@@ -50,7 +50,7 @@ jobs:
           node-version: 20.x
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.6
+          bun-version: 1.3.11
       - run: bun install --frozen-lockfile
       - run: bun run build
       - uses: actions/upload-artifact@v4
@@ -72,7 +72,7 @@ jobs:
           node-version: 20.x
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.6
+          bun-version: 1.3.11
       - run: bun install --frozen-lockfile
       - run: bun x svelte-kit sync
         working-directory: apps/element-demo

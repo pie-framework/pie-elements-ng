@@ -48,6 +48,7 @@ const renderUi =
 import { InputCheckbox, InputRadio } from '../inputs.js';
 import FeedbackMenu from './feedback-menu.js';
 
+// - mathquill error window not defined
 import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
 
 const EditableHtml = EditableHtmlImport;

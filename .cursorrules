@@ -5,4 +5,7 @@ IE elements-ng project rules
 - When changing model/session, reassign a new object if needed to trigger reactivity.
 - Element player should rebuild the view model via controller.model(...) on mode or session changes.
 - Avoid reactive loops when controller updates session; guard against re-setting identical session objects.
-- Many element packages are synced from upstream; avoid manual edits in auto-generated files unless requested.
+- `packages/elements-react/*` and `packages/lib-react/*` are synced from upstream (`../pie-elements`, `../pie-lib`).
+- Do not directly edit synced files in those directories.
+- Make source changes in upstream repos first, then run `bun run upstream:update` (or `bun run upstream:sync --element=<name>`) to regenerate local files.
+- Only make temporary direct edits in synced files if the user explicitly approves an emergency local-only debugging patch.

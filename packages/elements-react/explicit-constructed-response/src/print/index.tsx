@@ -18,7 +18,7 @@ import debug from 'debug';
 const log = debug('pie-element:explicit-constructed-response:print');
 
 const preparePrintModel = (model, opts) => {
-  const isInstructor = opts.mode === 'instructor';
+  const isInstructor = opts.role === 'instructor';
 
   model.prompt = model.promptEnabled !== false ? model.prompt : undefined;
   model.teacherInstructions =

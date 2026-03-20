@@ -25,6 +25,12 @@ CLI upstream commands (`upstream:update`, `upstream:check`, `upstream:sync`, etc
 
 The synced packages (`packages/elements-react/*` and `packages/lib-react/*`) are committed to git. You don't need to check out pie-elements or pie-lib - just `git pull` to get the latest synced packages.
 
+**Edit policy for synced packages:**
+
+- Do not directly edit files under `packages/elements-react/*` or `packages/lib-react/*`.
+- Make source fixes in upstream repos (`../pie-elements`, `../pie-lib`) and sync them into this repo using `upstream:update` or targeted `upstream:sync`.
+- Only use direct local edits in those synced folders when explicitly approved as an emergency local-only debugging patch.
+
 ## Technology Stack
 
 - **Runtime**: Bun 1.1.42+ (Node.js 20.0+ also supported)

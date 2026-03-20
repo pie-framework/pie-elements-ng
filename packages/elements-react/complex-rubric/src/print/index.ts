@@ -27,7 +27,7 @@ const rubricTags = {
 };
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.mode === 'instructor';
+  const instr = opts.role === 'instructor';
 
   if (!instr) {
     return {};

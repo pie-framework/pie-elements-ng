@@ -26,8 +26,8 @@
   "devDependencies": {
     "@types/react": "^18.3.0",
     "typescript": "^5.9.3",
-    "vite": "^7.2.2",
-    "vitest": "^4.0.17"
+    "vite": "^8.0.1",
+    "vitest": "^4.1.0"
   },
   "publishConfig": {
     "access": "public"

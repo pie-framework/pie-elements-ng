@@ -1,0 +1,23 @@
+---
+description: Enforce upstream sync workflow for synced React packages
+alwaysApply: true
+---
+
+# Upstream Sync Edit Policy
+
+The following directories are synced outputs and must not be edited directly:
+
+- `packages/elements-react/*`
+- `packages/lib-react/*`
+
+When a fix is needed in those areas:
+
+1. Apply the change in upstream source repos:
+   - `../pie-elements` for element-level React sources
+   - `../pie-lib` for shared lib React sources
+2. Sync changes into this repository:
+   - Prefer `bun run upstream:update`
+   - For targeted updates, use `bun run upstream:sync --element=<name>`
+3. Re-verify behavior in `apps/element-demo` and run diagnostics on touched files.
+
+Do not bypass this workflow unless the user explicitly asks for a temporary emergency local patch.

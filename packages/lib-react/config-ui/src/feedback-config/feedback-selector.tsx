@@ -43,6 +43,7 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 import Group from './group.js';
 
+// - mathquill error window not defined
 import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
 
 const EditableHtml = EditableHtmlImport;

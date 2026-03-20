@@ -22,7 +22,7 @@ const checkNullish = (value) => value !== null && value !== undefined;
 const isEnabled = (value, defaultValue) => (checkNullish(value) ? value : defaultValue);
 
 const preparePrintPassage = (model, opts) => {
-  const isInstructor = opts.mode === 'instructor';
+  const isInstructor = opts.role === 'instructor';
 
   // TODO: also update '../../configure/src/defaults.js' and '../../controller/src/defaults.js' when updating defaultValue
   const teacherInstructionsEnabled = isEnabled(model.teacherInstructionsEnabled, true);

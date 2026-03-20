@@ -18,7 +18,7 @@ jobs:
           node-version: 20.x
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.6
+          bun-version: 1.3.11
       - run: bun install --frozen-lockfile
       - run: bun x svelte-kit sync
         working-directory: apps/element-demo

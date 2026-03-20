@@ -28,9 +28,7 @@ export default defineConfig({
         '$lib/element-imports',
       ],
       output: {
-        // Enable code splitting for lazy-loaded math renderers
-        inlineDynamicImports: false,
-        // Put dynamic imports in separate chunks
+        // Put lazy math renderer dynamic imports in dedicated chunks.
         manualChunks: (id) => {
           if (id.includes('math-rendering-katex')) {
             return 'math-katex';

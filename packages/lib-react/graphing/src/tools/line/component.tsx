@@ -46,8 +46,9 @@ export const ArrowedLine = (props) => {
         <ArrowMarker
           size={thinnerShapesNeeded(graphProps) ? 4 : 5}
           id={`${finalMarkerId}-${suffix}`}
-          disabled={disabled}
-          correctness={correctness}
+          className={classNames(
+            suffix === 'enabled' ? 'enabledArrow' : suffix === 'disabled' ? 'disabledArrow' : `${suffix}Arrow`,
+          )}
         />
       </defs>
       <line
