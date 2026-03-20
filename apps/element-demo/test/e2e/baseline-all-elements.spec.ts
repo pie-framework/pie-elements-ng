@@ -109,7 +109,9 @@ function assertNoCriticalRuntimeErrors(runtime: RuntimeTracker, context: string)
   if (critical.length === 0) {
     return;
   }
-  throw new Error(`${context}: critical runtime errors detected: ${critical.slice(0, 4).join(' | ')}`);
+  throw new Error(
+    `${context}: critical runtime errors detected: ${critical.slice(0, 4).join(' | ')}`
+  );
 }
 
 function elementTagCandidates(name: string): string[] {
@@ -826,12 +828,14 @@ test.describe('Baseline minimum coverage across all elements', () => {
                 }
                 assertNoCriticalRuntimeErrors(runtime, `${element} author input`);
               })
-            )
+            );
           });
         }
 
         const summary = results
-          .map((r) => `[${r.ok ? 'PASS' : 'FAIL'}] ${r.check}${r.message ? ` :: ${r.message}` : ''}`)
+          .map(
+            (r) => `[${r.ok ? 'PASS' : 'FAIL'}] ${r.check}${r.message ? ` :: ${r.message}` : ''}`
+          )
           .join('\n');
         console.log(`[baseline] ${element}\n${summary}`);
       } finally {
