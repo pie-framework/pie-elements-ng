@@ -29,6 +29,55 @@ Comprehensive test suite for the `math-algebra-quadratic` demo (multiple-choice 
 9. **Author Changes** - Editing in author tab and seeing changes in other views
 10. **Complete Workflow** - End-to-end scenario combining multiple operations
 
+### [phase1-spatial-dnd.spec.ts](./phase1-spatial-dnd.spec.ts)
+
+Dedicated interaction coverage for high-risk spatial and drag/drop elements:
+
+- `categorize`
+- `drag-in-the-blank`
+- `match-list`
+- `image-cloze-association`
+- `placement-ordering`
+- `hotspot`
+- `graphing`
+- `graphing-solution-set`
+- `charting`
+- `number-line`
+- `drawing-response`
+- `fraction-model`
+
+Each element test asserts:
+- Gather-mode interaction path
+- Session mutation signal (when session-supported)
+- Evaluate-mode rendering/scoring/correctness signal
+
+### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
+
+Dedicated interaction coverage for structured response and matching elements:
+
+- `match`
+- `matrix`
+- `likert`
+- `inline-dropdown`
+- `select-text`
+- `ebsr`
+- `math-templated`
+- `math-inline`
+
+Each element test asserts:
+- Element-specific interaction path (radio/checkbox/dropdown/token/math entry)
+- Session mutation
+- Evaluate-mode correctness/feedback/scoring signal
+
+### [phase3-text-and-hardening.spec.ts](./phase3-text-and-hardening.spec.ts)
+
+Dedicated text-response coverage and hardening for existing deep specs:
+
+- `extended-text-entry`
+- `explicit-constructed-response`
+- `multiple-choice` hardening (checkbox + view-mode guard)
+- `simple-cloze` evaluate-signal hardening
+
 ### [test-helpers.ts](./test-helpers.ts)
 
 Reusable utility functions for tests:
