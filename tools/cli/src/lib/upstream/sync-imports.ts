@@ -35,6 +35,25 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { PRESET_IDS } from './sync-presets.js';
+
+const SOURCE_PATH_PRESET_RULES = {
+  [PRESET_IDS.transformTextSelectTokenTypesReexport]: (sourcePath: string) =>
+    sourcePath.includes('text-select') && sourcePath.includes('token-select/index'),
+  [PRESET_IDS.transformChartingUtilsTypeFix]: (sourcePath: string) =>
+    sourcePath.includes('charting') && sourcePath.includes('utils'),
+  [PRESET_IDS.transformTranslatorIndexTypeFix]: (sourcePath: string) =>
+    sourcePath.includes('translator') && sourcePath.includes('/src/index'),
+  [PRESET_IDS.transformRenderUiInlineMenuExport]: (sourcePath: string) =>
+    sourcePath.includes('render-ui/src/index.js'),
+} as const;
+
+function sourcePathMatchesPreset(
+  sourcePath: string | undefined,
+  presetId: keyof typeof SOURCE_PATH_PRESET_RULES
+): boolean {
+  return !!sourcePath && SOURCE_PATH_PRESET_RULES[presetId](sourcePath);
+}
 
 /**
  * Fix import statements in a file to handle default export conversions
@@ -195,7 +214,7 @@ const ${importName} = {
  */
 export function reexportTokenTypes(code: string, filePath: string): string {
   // Only apply to text-select token-select/index file
-  if (!filePath.includes('text-select') || !filePath.includes('token-select/index')) {
+  if (!sourcePathMatchesPreset(filePath, PRESET_IDS.transformTextSelectTokenTypesReexport)) {
     return code;
   }
 
@@ -915,7 +934,7 @@ export function fixExportedFunctionTypes(content: string, sourcePath?: string): 
   let transformed = content;
 
   // Only apply to specific files that are known to have issues
-  if (sourcePath?.includes('charting') && sourcePath.includes('utils')) {
+  if (sourcePathMatchesPreset(sourcePath, PRESET_IDS.transformChartingUtilsTypeFix)) {
     // Fix: export const dataToXBand = (...) => { ... }
     // Pattern: export const functionName = (params) => {
     transformed = transformed.replace(
@@ -926,7 +945,7 @@ export function fixExportedFunctionTypes(content: string, sourcePath?: string): 
 
   // Fix translator package default export type inference issue
   // The spread operator `...i18next` causes TypeScript to require a reference to i18next types
-  if (sourcePath?.includes('translator') && sourcePath?.includes('/src/index')) {
+  if (sourcePathMatchesPreset(sourcePath, PRESET_IDS.transformTranslatorIndexTypeFix)) {
     // Add type imports
     if (!transformed.includes('type i18n')) {
       transformed = transformed.replace(
@@ -1022,7 +1041,7 @@ export function transformMenuToInlineMenu(content: string): string {
 export function addInlineMenuExport(content: string, sourcePath?: string): string {
   // Only apply to render-ui root index file (not subdirectories like collapsible/index.tsx)
   // sourcePath format: pie-lib/packages/render-ui/src/index.js
-  if (!sourcePath?.includes('render-ui/src/index.js')) {
+  if (!sourcePathMatchesPreset(sourcePath, PRESET_IDS.transformRenderUiInlineMenuExport)) {
     return content;
   }
 

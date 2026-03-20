@@ -23,6 +23,7 @@ import {
   collectWorkspacePackageDirs,
   type ImportIntegrityStatus,
 } from '../../utils/dependency-integrity.js';
+import { getPostSyncTextPatches } from '../../lib/upstream/sync-presets.js';
 
 interface SyncConfig {
   pieElements: string;
@@ -825,47 +826,43 @@ export default class Sync extends Command {
   }
 
   private async applyPostSyncBuildStabilizers(config: SyncConfig): Promise<void> {
-    // @pie-lib/test-utils currently syncs JS that converts to TS with untyped exported render helpers.
-    // During declaration emit this can trigger TS2742 (non-portable inferred type paths).
-    // We patch signatures post-sync so upstream:update remains reliable.
-    const testUtilsIndex = join(
-      config.pieElementsNg,
-      'packages/lib-react/test-utils/src/index.tsx'
-    );
-    if (!existsSync(testUtilsIndex)) {
-      return;
+    let appliedPatches = 0;
+
+    const patchFile = async (
+      filePath: string,
+      replacements: Array<{ from: string; to: string }>,
+      label: string
+    ): Promise<boolean> => {
+      if (!existsSync(filePath)) {
+        return false;
+      }
+
+      let content = await readFile(filePath, 'utf-8');
+      let changed = false;
+      for (const replacement of replacements) {
+        if (content.includes(replacement.from)) {
+          content = content.replace(replacement.from, replacement.to);
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        await writeFile(filePath, content, 'utf-8');
+        this.logger.info(`   ✓ Applied post-sync patch: ${label}`);
+      }
+
+      return changed;
+    };
+
+    const patches = getPostSyncTextPatches(config.pieElementsNg);
+    for (const patch of patches) {
+      if (await patchFile(patch.file, patch.replacements, patch.label)) {
+        appliedPatches++;
+      }
     }
 
-    let content = await readFile(testUtilsIndex, 'utf-8');
-    let changed = false;
-
-    const oldImport = "import { render } from '@testing-library/react';";
-    const newImport =
-      "import { render, type RenderOptions, type RenderResult } from '@testing-library/react';";
-    if (content.includes(oldImport)) {
-      content = content.replace(oldImport, newImport);
-      changed = true;
-    }
-
-    const oldThemeFn = 'export function renderWithTheme(ui, options = {}) {';
-    const newThemeFn =
-      'export function renderWithTheme(ui: React.ReactElement, options: RenderOptions & { theme?: unknown } = {}): RenderResult {';
-    if (content.includes(oldThemeFn)) {
-      content = content.replace(oldThemeFn, newThemeFn);
-      changed = true;
-    }
-
-    const oldProvidersFn = 'export function renderWithProviders(ui, options = {}) {';
-    const newProvidersFn =
-      'export function renderWithProviders(ui: React.ReactElement, options: RenderOptions & { theme?: unknown; providers?: React.ComponentType<{ children?: React.ReactNode }>[] } = {}): RenderResult {';
-    if (content.includes(oldProvidersFn)) {
-      content = content.replace(oldProvidersFn, newProvidersFn);
-      changed = true;
-    }
-
-    if (changed) {
-      await writeFile(testUtilsIndex, content, 'utf-8');
-      this.logger.info('   ✓ Applied post-sync declaration fix for @pie-lib/test-utils');
+    if (appliedPatches === 0) {
+      this.logger.info('   ✓ No post-sync stabilizer patches needed');
     }
   }
 

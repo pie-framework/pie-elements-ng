@@ -77,10 +77,10 @@ export class PreviewPrompt extends Component {
     onClick: PropTypes.func,
     defaultClassName: PropTypes.string,
     autoplayAudioEnabled: PropTypes.bool,
-    customAudioButton: {
+    customAudioButton: PropTypes.shape({
       playImage: PropTypes.string,
       pauseImage: PropTypes.string,
-    },
+    }),
   };
 
   static defaultProps = {

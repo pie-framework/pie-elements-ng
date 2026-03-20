@@ -48,12 +48,12 @@ import Translator from '@pie-lib/translator';
 const { translator } = Translator;
 
 const noTouch = {
-  '-webkit-touchCcallout': 'none',
-  '-webkit-user-select': 'none',
-  '-khtml-user-select': 'none',
-  '-moz-user-select': 'none',
-  '-ms-user-select': 'none',
-  'user-select': 'none',
+  WebkitTouchCallout: 'none',
+  WebkitUserSelect: 'none',
+  KhtmlUserSelect: 'none',
+  MozUserSelect: 'none',
+  msUserSelect: 'none',
+  userSelect: 'none',
 };
 
 const StyledRoot: any = styled('div')(() => ({

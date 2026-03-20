@@ -73,8 +73,7 @@ export class RawBp extends React.Component {
       labelNode,
       onClick,
       onTouchStart,
-      onTouchEnd,
-      ...rest
+      onTouchEnd
     } = this.props;
 
     const { showCoordinates } = this.state;
@@ -118,7 +117,7 @@ export class RawBp extends React.Component {
           onMouseEnter={() => this.setState({ showCoordinates: true })}
           onMouseLeave={() => this.setState({ showCoordinates: false })}
         >
-          <circle {...rest} r={r} cx={scale.x(x)} cy={scale.y(y)} />
+          <circle r={r} cx={scale.x(x)} cy={scale.y(y)} />
           {SvgComponent && <SvgComponent scale={scale} x={x} y={y} />}
           {labelNode &&
             coordinatesOnHover &&

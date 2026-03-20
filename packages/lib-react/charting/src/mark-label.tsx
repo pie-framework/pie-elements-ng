@@ -12,16 +12,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { styled } from '@mui/material/styles';
 import AutosizeInput from 'react-input-autosize';
+const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
 import PropTypes from 'prop-types';
 
 import { types } from '@pie-lib/plot';
 import { correct, disabled, incorrect } from './common/styles.js';
 import { color } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-
-// Vite/ESM interop can sometimes surface CJS default exports as namespace objects.
-// Normalize once so JSX always receives a component function.
-const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
 
 const StyledContainer: any = styled('div')({
   display: 'flex',

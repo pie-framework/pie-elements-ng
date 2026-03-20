@@ -13,6 +13,7 @@ import type { SyncConfig } from './sync-strategy.js';
 import { existsAny } from './sync-filesystem.js';
 import { applyPackageJsonTransforms } from './sync-transforms.js';
 import { BUILD_TOOLS, REACT, PACKAGE_DEFAULTS, SCRIPTS, WORKSPACE } from './sync-constants.js';
+import { getPieLibDependencyAugmentations, getPieLibDependencyOverride } from './sync-presets.js';
 
 interface EntryPointMap {
   hasIndex: boolean;
@@ -698,18 +699,11 @@ export async function ensurePieLibPackageJson(
   await addTransitivePeerDependencies(expectedDeps, pkgDir);
   addKnownPeerFallbacks(expectedDeps);
 
-  // graphing imports @dnd-kit/core directly in source but upstream metadata can omit it.
-  if (pkgName === 'graphing' && !expectedDeps['@dnd-kit/core']) {
-    expectedDeps['@dnd-kit/core'] = '^6.3.0';
-  }
-
-  // charting pulls in @visx packages whose ESM modules rely on d3 peer deps that
-  // upstream metadata can omit. Keep these declared locally to avoid demo IIFE bundling
-  // failures (missing d3-time/d3-interpolate/d3-shape at runtime resolution time).
-  if (pkgName === 'charting') {
-    if (!expectedDeps['d3-time']) expectedDeps['d3-time'] = '^3.1.0';
-    if (!expectedDeps['d3-interpolate']) expectedDeps['d3-interpolate'] = '^3.0.1';
-    if (!expectedDeps['d3-shape']) expectedDeps['d3-shape'] = '^3.2.0';
+  const dependencyAugmentations = getPieLibDependencyAugmentations(pkgName);
+  for (const [depName, version] of Object.entries(dependencyAugmentations)) {
+    if (!expectedDeps[depName]) {
+      expectedDeps[depName] = version;
+    }
   }
 
   // Create minimal package.json if missing
@@ -730,11 +724,9 @@ export async function ensurePieLibPackageJson(
     pkg.dependencies = expectedDeps;
   }
 
-  // Special handling for math-rendering: reference MathJax adapter package
-  if (pkgName === 'math-rendering') {
-    pkg.dependencies = {
-      [`${WORKSPACE.PIE_ELEMENT_PREFIX}shared-math-rendering-mathjax`]: WORKSPACE.VERSION,
-    };
+  const dependencyOverride = getPieLibDependencyOverride(pkgName);
+  if (dependencyOverride) {
+    pkg.dependencies = dependencyOverride;
   }
 
   // Generate exports and preserve existing/upstream dev conditions where applicable.

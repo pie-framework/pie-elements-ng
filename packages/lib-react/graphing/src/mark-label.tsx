@@ -113,8 +113,12 @@ export const coordinates = (graphProps, mark, rect = { width: 0, height: 0 }, po
   }
 };
 
+const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
+
+const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
+
 const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, onChange }) => (
-  <AutosizeInput
+  <AutosizeInputComponentComponent
     inputRef={(r) => {
       _ref(r);
       externalInputRef(r);
