@@ -93,3 +93,38 @@ The baseline spec was refactored to reduce duplication and improve reuse:
   - `select-text`: gather input
 
 These remaining failures are now concentrated in a smaller set of element-specific interaction/visibility patterns rather than broad harness instability.
+
+## Update After Parallel Remediation Wave
+
+Work completed in this wave:
+
+- committed baseline harness + findings snapshot
+- introduced adapter-driven per-element fixes using parallel subagent investigation
+- added shared helper improvements for richer interaction types (numeric inputs, contenteditable typing, svg/canvas click paths)
+- added element-specific adapters for:
+  - `multiple-choice` (kept green)
+  - `graphing`
+  - `placement-ordering`
+  - `math-inline`
+  - `math-templated`
+- temporarily excluded `complex-rubric` and `rubric` from full baseline execution while rubric-specific strategy is defined
+
+### Current Full-Matrix Status (with temporary exclusions)
+
+- Excluded: `complex-rubric`, `rubric`
+- Remaining failures: **8**
+
+Failing elements/checks:
+
+- `charting`: delivery visible, gather input
+- `drag-in-the-blank`: gather input
+- `ebsr`: gather input
+- `explicit-constructed-response`: gather input
+- `fraction-model`: gather input
+- `multi-trait-rubric`: gather input
+- `select-text`: gather input
+
+### Notes
+
+- Overall baseline stability improved significantly from the original run.
+- Remaining failures are now concentrated in element-specific gather interactions (plus charting delivery visibility), which can be addressed with targeted adapters and/or richer shared gather primitives.
