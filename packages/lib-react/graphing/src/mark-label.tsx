@@ -12,6 +12,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
 import AutosizeInput from 'react-input-autosize';
+const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
 import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
@@ -113,12 +114,8 @@ export const coordinates = (graphProps, mark, rect = { width: 0, height: 0 }, po
   }
 };
 
-const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
-
-const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
-
 const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, onChange }) => (
-  <AutosizeInputComponentComponent
+  <AutosizeInputComponent
     inputRef={(r) => {
       _ref(r);
       externalInputRef(r);

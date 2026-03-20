@@ -74,8 +74,8 @@ export function getPostSyncTextPatches(projectRoot: string): PostSyncTextPatch[]
       file: join(projectRoot, 'packages/lib-react/graphing/src/mark-label.tsx'),
       replacements: [
         {
-          from: 'const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, onChange }) => (',
-          to: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;\n\nconst LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, onChange }) => (',
+          from: "import AutosizeInput from 'react-input-autosize';",
+          to: "import AutosizeInput from 'react-input-autosize';\nconst AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;",
         },
         {
           from: '<AutosizeInput',
