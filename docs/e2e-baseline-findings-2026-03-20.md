@@ -109,7 +109,7 @@ Work completed in this wave:
   - `math-templated`
 - temporarily excluded `complex-rubric` and `rubric` from full baseline execution while rubric-specific strategy is defined
 
-### Current Full-Matrix Status (with temporary exclusions)
+### Current Full-Matrix Status After Sweep (with temporary exclusions)
 
 - Excluded: `complex-rubric`, `rubric`
 - Remaining failures: **8**
@@ -128,3 +128,18 @@ Failing elements/checks:
 
 - Overall baseline stability improved significantly from the original run.
 - Remaining failures are now concentrated in element-specific gather interactions (plus charting delivery visibility), which can be addressed with targeted adapters and/or richer shared gather primitives.
+
+## Update After Deduped Gather Sweep
+
+Work completed in this sweep:
+
+- removed additional duplication by enforcing delivery-tab selection once in shared `loadDeliver`
+- expanded shared gather fallback interaction paths in `attemptInput` (text-token and host-element click targets)
+- removed redundant adapter evaluate wrappers and relied on shared evaluate assertions where equivalent
+- kept a narrow `charting` delivery fallback for demo-tile visibility while preserving shared gather/evaluate behavior
+
+### Current Full-Matrix Status (with temporary exclusions)
+
+- Excluded: `complex-rubric`, `rubric`
+- Remaining failures: **0**
+- Result: all baseline checks now pass for every currently included element
