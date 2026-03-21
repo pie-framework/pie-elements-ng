@@ -24,6 +24,15 @@ let elementInstance = $state<HTMLElement | null>(null);
 let currentTagName = $state<string | null>(null);
 let error = $state<string | null>(null);
 let loading = $state(true);
+let lastAppliedModelSignature = $state<string | null>(null);
+
+function toStableSignature(value: unknown): string | null {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return null;
+  }
+}
 
 function cloneModelForElement<T>(value: T): T {
   if (value === null || typeof value !== 'object') {
@@ -54,13 +63,12 @@ $effect(() => {
 $effect(() => {
   if (elementInstance && model !== undefined) {
     try {
-      (elementInstance as any).model = cloneModelForElement(model);
-      // Re-set session after model to ensure runtime state is reinitialized
-      // The session setter initializes runtime state (like gssData) from the model
-      const currentSession = (elementInstance as any).session;
-      if (currentSession) {
-        (elementInstance as any).session = currentSession;
+      const nextSignature = toStableSignature(model);
+      if (nextSignature !== null && nextSignature === lastAppliedModelSignature) {
+        return;
       }
+      (elementInstance as any).model = cloneModelForElement(model);
+      lastAppliedModelSignature = nextSignature;
     } catch (err) {
       console.error('[demo-player] Error setting model:', err);
     }
@@ -116,6 +124,7 @@ async function loadElementInstance() {
     // Set initial properties
     if (model !== undefined) {
       (elementInstance as any).model = cloneModelForElement(model);
+      lastAppliedModelSignature = toStableSignature(model);
     }
     const nextSession = session ?? (elementInstance as any).session;
     if (nextSession !== undefined) {

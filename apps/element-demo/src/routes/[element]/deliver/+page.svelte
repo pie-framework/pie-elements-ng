@@ -8,6 +8,7 @@ import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerL
 import DeliveryView from '$lib/element-player/components/DeliveryView.svelte';
 import IifeElementPlayer from '$lib/element-player/components/IifeElementPlayer.svelte';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
+import { get } from 'svelte/store';
 import {
   model,
   session,
@@ -43,20 +44,20 @@ const normalizeSession = (nextSession: any) => {
 // Apply session update callback for controller
 const applySessionUpdate = (patch: Record<string, unknown> | null | undefined) => {
   if (!patch || typeof patch !== 'object') {
-    return Promise.resolve($session);
+    return Promise.resolve(get(session));
   }
 
-  const baseSession = normalizeSession($session);
+  const baseSession = normalizeSession(get(session));
   const hasChanges = Object.entries(patch).some(
     ([key, value]) => (baseSession as Record<string, unknown>)[key] !== value
   );
   if (!hasChanges) {
-    return Promise.resolve($session);
+    return Promise.resolve(get(session));
   }
 
   const nextSession = { ...(baseSession as Record<string, unknown>), ...patch };
   updateSession(nextSession);
-  return Promise.resolve($session);
+  return Promise.resolve(get(session));
 };
 
 // Build the view model using the controller
@@ -156,7 +157,7 @@ $effect(() => {
   buildModel(
     requestId,
     currentModel,
-    $session, // Read directly, don't track in effect
+    get(session), // Read store imperatively; session changes should not retrigger model rebuild
     currentMode,
     currentRole,
     currentPartialScoring,

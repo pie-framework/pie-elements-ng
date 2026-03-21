@@ -55,11 +55,7 @@ const CRITICAL_RUNTIME_PATTERNS = [
   /ReferenceError:/i,
   /Uncaught Error:/i,
 ];
-const ELEMENT_SPECIFIC_RUNTIME_IGNORES: Record<string, RegExp[]> = {
-  // number-line currently emits a known Svelte loop warning in the demo shell.
-  // We still enforce visible delivery/author content and interaction checks.
-  'number-line': [/effect_update_depth_exceeded/i, /Maximum update depth exceeded/i],
-};
+const ELEMENT_SPECIFIC_RUNTIME_IGNORES: Record<string, RegExp[]> = {};
 const IGNORE_RUNTIME_PATTERNS = [
   /i18next is maintained with support from locize/i,
   /i18next: languageChanged/i,

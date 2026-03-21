@@ -15,6 +15,16 @@ The current suite is stabilized for **ESM mode** and validates delivery/author u
   - evaluate-mode signal path
   - runtime safety guardrails (with narrowly scoped per-element guards where needed)
 
+## ESM Follow-up Backlog
+
+The baseline and phase suites are green, but the following hardening work is intentionally tracked for a later pass:
+
+- Remove `number-line` runtime-error ignore by fixing the underlying update-depth loop in demo integration.
+- Tighten evaluate assertions for fallback-heavy elements (`graphing`, `graphing-solution-set`, `charting`, `fraction-model`, `placement-ordering`) to prefer explicit correctness/scoring signals over visibility-only checks.
+- Increase strict session-mutation guarantees for elements currently treated as interaction-only in dedicated specs.
+- Expand element coverage across additional demos (beyond one representative demo path per element) for broader regression detection.
+- Add broader author-to-delivery propagation checks so source/config changes are validated consistently across more elements.
+
 ## Overview
 
 The test suite validates critical functionality of the demo application, including:
