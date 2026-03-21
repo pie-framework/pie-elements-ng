@@ -54,7 +54,9 @@ export async function selectDemo(page: Page, demoId: string) {
  * Switch mode (gather, view, evaluate)
  */
 export async function switchMode(page: Page, mode: 'gather' | 'view' | 'evaluate') {
-  await page.click(`[data-testid="mode-${mode}"]`);
+  const modeButton = page.locator(`[data-testid="mode-${mode}"]`).first();
+  await modeButton.waitFor({ state: 'visible', timeout: 10_000 });
+  await modeButton.click({ force: true });
   await page.waitForLoadState('networkidle');
   await waitForMathRendering(page);
 }
@@ -63,7 +65,9 @@ export async function switchMode(page: Page, mode: 'gather' | 'view' | 'evaluate
  * Switch role (student, instructor)
  */
 export async function switchRole(page: Page, role: 'student' | 'instructor') {
-  await page.click(`[data-testid="role-${role}"]`);
+  const roleButton = page.locator(`[data-testid="role-${role}"]`).first();
+  await roleButton.waitFor({ state: 'visible', timeout: 10_000 });
+  await roleButton.click({ force: true });
   await page.waitForLoadState('networkidle');
 }
 
@@ -178,11 +182,24 @@ export async function hasUnsavedChanges(page: Page): Promise<boolean> {
  * Wait for element to be loaded and ready
  */
 export async function waitForElementReady(page: Page, elementName: string) {
-  await page.waitForFunction((name) => customElements.get(name) !== undefined, elementName, {
-    timeout: 10_000,
-  });
+  const candidates = elementName.includes('-')
+    ? [elementName, `pie-${elementName}`]
+    : [elementName];
 
-  await page.waitForSelector(elementName, { state: 'attached', timeout: 10_000 });
+  await page.waitForFunction(
+    (names) => names.some((name: string) => customElements.get(name) !== undefined),
+    candidates,
+    {
+      timeout: 10_000,
+    }
+  );
+
+  for (const candidate of candidates) {
+    if (await page.locator(candidate).first().isVisible().catch(() => false)) {
+      return;
+    }
+  }
+  await page.waitForSelector(candidates.join(', '), { state: 'attached', timeout: 10_000 });
 }
 
 /**

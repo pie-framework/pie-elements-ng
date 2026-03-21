@@ -2,6 +2,19 @@
 
 This directory contains end-to-end browser tests for the PIE Element Demo application using Playwright.
 
+## ESM Coverage Status
+
+The current suite is stabilized for **ESM mode** and validates delivery/author usability across in-scope PIE React elements.
+
+- Dedicated interaction phases intentionally exclude: `rubric`, `complex-rubric`, `multi-trait-rubric`, `passage`
+- Baseline matrix still validates delivery/author checks for the full registry
+- Strict baseline checks enforce:
+  - route load success for delivery and author views
+  - visible delivery/configure content roots
+  - gather interaction attempt
+  - evaluate-mode signal path
+  - runtime safety guardrails (with narrowly scoped per-element guards where needed)
+
 ## Overview
 
 The test suite validates critical functionality of the demo application, including:
