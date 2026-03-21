@@ -195,7 +195,13 @@ export async function waitForElementReady(page: Page, elementName: string) {
   );
 
   for (const candidate of candidates) {
-    if (await page.locator(candidate).first().isVisible().catch(() => false)) {
+    if (
+      await page
+        .locator(candidate)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       return;
     }
   }

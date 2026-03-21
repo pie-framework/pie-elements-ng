@@ -109,10 +109,7 @@ async function runSpatialInteraction(page: Page, element: string, root: Locator)
     }
   }
 
-  if (
-    element === 'graphing' ||
-    element === 'graphing-solution-set'
-  ) {
+  if (element === 'graphing' || element === 'graphing-solution-set') {
     const toolbarButton = root
       .locator(
         'button.MuiButtonBase-root, button[aria-label*="tool" i], button[aria-label*="line" i], button[aria-label*="point" i]'

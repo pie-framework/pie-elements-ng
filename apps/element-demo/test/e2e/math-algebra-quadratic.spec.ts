@@ -238,7 +238,8 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     const incorrectIndicator = page.locator('.incorrect, [data-correct="false"]');
     const hasIncorrectIndicator = (await incorrectIndicator.count()) > 0;
     const hasScoringSignal =
-      (await page.locator('[data-testid="score-value"], [data-testid="scoring-panel"]').count()) > 0;
+      (await page.locator('[data-testid="score-value"], [data-testid="scoring-panel"]').count()) >
+      0;
     expect(hasIncorrectIndicator || hasScoringSignal || score !== null).toBeTruthy();
   });
 
@@ -279,7 +280,8 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     const correctIndicator = page.locator('.correct, [data-correct="true"]');
     const hasCorrectIndicator = (await correctIndicator.count()) > 0;
     const hasScoringSignal =
-      (await page.locator('[data-testid="score-value"], [data-testid="scoring-panel"]').count()) > 0;
+      (await page.locator('[data-testid="score-value"], [data-testid="scoring-panel"]').count()) >
+      0;
     expect(hasCorrectIndicator || hasScoringSignal || score !== null).toBeTruthy();
   });
 

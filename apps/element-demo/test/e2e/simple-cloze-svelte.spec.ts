@@ -35,12 +35,16 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
     await expect(page).toHaveURL(/\/author/);
     const configureRoot = page.locator('.author-view .configure-container').first();
     await expect(configureRoot).toBeVisible();
-    await expect(configureRoot.locator('input, textarea, [contenteditable="true"]').first()).toBeVisible();
+    await expect(
+      configureRoot.locator('input, textarea, [contenteditable="true"]').first()
+    ).toBeVisible();
   });
 
   test('3. EditableHtml toolbar buttons work correctly', async ({ page }) => {
     await switchTab(page, 'author');
-    const editable = page.locator('.author-view [contenteditable="true"], .author-view textarea').first();
+    const editable = page
+      .locator('.author-view [contenteditable="true"], .author-view textarea')
+      .first();
     await expect(editable).toBeVisible();
     await editable.click();
     await page.keyboard.type(`author-edit-${Date.now()}`);
@@ -74,7 +78,9 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
     await switchTab(page, 'author');
     await page.waitForTimeout(500);
     await switchTab(page, 'deliver');
-    const inputAfter = page.locator(`${ELEMENT_NAME} input[type="text"], ${ELEMENT_NAME} input`).first();
+    const inputAfter = page
+      .locator(`${ELEMENT_NAME} input[type="text"], ${ELEMENT_NAME} input`)
+      .first();
     expect(await inputAfter.inputValue()).toBeTruthy();
     const after = await getSessionState(page);
     expect(JSON.stringify(after ?? {})).toBe(JSON.stringify(before ?? {}));

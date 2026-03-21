@@ -10,7 +10,10 @@ import {
   waitForSessionMutation,
 } from './test-helpers';
 
-async function selectMultipleChoiceValue(root: ReturnType<typeof deliveryContainer>, value: string) {
+async function selectMultipleChoiceValue(
+  root: ReturnType<typeof deliveryContainer>,
+  value: string
+) {
   const label = root.locator(`label[data-value="${value}"]`).first();
   if (await label.isVisible().catch(() => false)) {
     await label.click({ force: true });
