@@ -27,6 +27,10 @@ describe('Bundler progress events', () => {
     const bundleDir = join(outputDir, hash);
     mkdirSync(bundleDir, { recursive: true });
     writeFileSync(join(bundleDir, 'player.js'), '// cached');
+    writeFileSync(
+      join(bundleDir, 'build-metadata.json'),
+      JSON.stringify({ schemaVersion: 1, createdAt: new Date().toISOString() }, null, 2)
+    );
 
     const events: BuildProgressEvent[] = [];
     const bundler = new Bundler(outputDir, cacheDir);
