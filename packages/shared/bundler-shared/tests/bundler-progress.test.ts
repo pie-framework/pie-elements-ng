@@ -29,7 +29,15 @@ describe('Bundler progress events', () => {
     writeFileSync(join(bundleDir, 'player.js'), '// cached');
     writeFileSync(
       join(bundleDir, 'build-metadata.json'),
-      JSON.stringify({ schemaVersion: 1, createdAt: new Date().toISOString() }, null, 2)
+      JSON.stringify(
+        {
+          schemaVersion: 3,
+          createdAt: new Date().toISOString(),
+          builtBundles: ['player'],
+        },
+        null,
+        2
+      )
     );
 
     const events: BuildProgressEvent[] = [];
