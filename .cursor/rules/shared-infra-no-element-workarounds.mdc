@@ -1,0 +1,24 @@
+---
+description: Keep shared infra generic and avoid element-specific workarounds
+alwaysApply: true
+---
+
+# Shared Infra Must Stay Generic
+
+Do not introduce element-specific or package-specific workarounds in shared infrastructure, including:
+
+- `packages/shared/bundler-shared/**`
+- `packages/element-player/**`
+- shared sync/runtime infrastructure used across elements
+
+## Required approach
+
+1. Prefer generic fixes (resolver rules, transforms, compatibility hooks) that apply by pattern or capability, not by one element/package name.
+2. If a problem affects synced outputs, fix it in sync tooling (`tools/cli/**`) using reusable transforms or guarded generic post-sync stabilizers.
+3. Do not add one-off aliases/branches for a single element/package in shared infra unless the user explicitly requests a temporary exception.
+
+## If an exception is explicitly requested
+
+- Keep it temporary and clearly marked.
+- Add a removal follow-up task and explain exit criteria.
+- Do not silently retain the workaround once a generic fix exists.

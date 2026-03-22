@@ -35,6 +35,13 @@ interface StandaloneControllerStats {
   warnings?: string[];
 }
 
+interface BuildMetadata {
+  schemaVersion: number;
+  createdAt: string;
+}
+
+const BUILD_OUTPUT_SCHEMA_VERSION = 1;
+
 export class Bundler {
   private outputDir: string;
   private cacheDir: string;
@@ -96,10 +103,17 @@ export class Bundler {
       // Check if bundle already exists
       const outputPath = join(this.outputDir, hash);
       const manifestPath = join(outputPath, 'controller-manifest.json');
+      const metadataPath = join(outputPath, 'build-metadata.json');
+      const metadata = this.readBuildMetadata(metadataPath);
+      const hasCurrentMetadata = metadata?.schemaVersion === BUILD_OUTPUT_SCHEMA_VERSION;
       const hasAllRequestedBundles = requestedBundles.every((bundle) =>
         existsSync(join(outputPath, `${bundle}.js`))
       );
-      if (hasAllRequestedBundles && (!includeControllers || existsSync(manifestPath))) {
+      if (
+        hasCurrentMetadata &&
+        hasAllRequestedBundles &&
+        (!includeControllers || existsSync(manifestPath))
+      ) {
         console.log(
           `[bundler][cache-hit] ${hash} bundles=${requestedBundles.join(',')} outputPath=${outputPath}`
         );
@@ -117,6 +131,11 @@ export class Bundler {
       console.log(
         `[bundler][cache-miss] ${hash} bundles=${requestedBundles.join(',')} outputPath=${outputPath}`
       );
+      if (!hasCurrentMetadata) {
+        console.log(
+          `[bundler][cache-miss] invalid or missing metadata at ${metadataPath}; rebuilding output`
+        );
+      }
 
       // 1. Install packages to temp directory
       const workspaceDir = join(this.cacheDir, hash);
@@ -196,6 +215,7 @@ export class Bundler {
 
       // 6. Return success
       const warnings = stats.hasWarnings() ? stats.toJson().warnings : undefined;
+      this.writeBuildMetadata(metadataPath);
 
       console.log(`[bundler] Build complete in ${Date.now() - startTime}ms`);
       emit('completed');
@@ -316,6 +336,22 @@ export class Bundler {
 
   private writeStandaloneControllerStats(path: string, stats: StandaloneControllerStats): void {
     writeFileSync(path, JSON.stringify(stats, null, 2), 'utf-8');
+  }
+
+  private readBuildMetadata(path: string): BuildMetadata | undefined {
+    try {
+      return JSON.parse(readFileSync(path, 'utf-8')) as BuildMetadata;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private writeBuildMetadata(path: string): void {
+    const metadata: BuildMetadata = {
+      schemaVersion: BUILD_OUTPUT_SCHEMA_VERSION,
+      createdAt: new Date().toISOString(),
+    };
+    writeFileSync(path, JSON.stringify(metadata, null, 2), 'utf-8');
   }
 
   /**

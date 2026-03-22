@@ -306,6 +306,20 @@ function waitForBuildWithSse(
     source.onmessage = (msg) => {
       try {
         const payload = JSON.parse(msg.data);
+        if (payload.type === 'snapshot') {
+          onProgress?.({ stage: payload.stage, message: payload.message });
+          if (payload.done) {
+            source.close();
+            if (payload.result?.success) {
+              resolve(payload.result);
+            } else {
+              reject(
+                new Error(payload.error || payload.result?.errors?.join('\n') || 'Build failed')
+              );
+            }
+          }
+          return;
+        }
         if (payload.type === 'progress') {
           onProgress?.({ stage: payload.stage, message: payload.message });
           return;

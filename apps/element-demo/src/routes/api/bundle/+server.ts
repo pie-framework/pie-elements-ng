@@ -29,6 +29,22 @@ function isBuildBundleName(value: unknown): value is BuildBundleName {
 let initialized = false;
 let bundler: Bundler | null = null;
 
+function logApi(message: string, data?: Record<string, unknown>) {
+  if (data) {
+    console.log(`[api/bundle] ${message}`, data);
+    return;
+  }
+  console.log(`[api/bundle] ${message}`);
+}
+
+function logBuildApi(buildId: string, message: string, data?: Record<string, unknown>) {
+  if (data) {
+    console.log(`[api/bundle][${buildId}] ${message}`, data);
+    return;
+  }
+  console.log(`[api/bundle][${buildId}] ${message}`);
+}
+
 function clearWorkspacePaths() {
   const outputDir = join(instanceDir, 'bundles');
   const cacheDir = join(instanceDir, 'cache');
@@ -103,7 +119,7 @@ export const POST: RequestHandler = async ({ request }) => {
       ? Array.from(new Set(buildRequest.requestedBundles.filter(isBuildBundleName))).sort()
       : undefined;
 
-    console.log('[api/bundle] Build request:', {
+    logApi('build request', {
       deps: dependencies,
       requestedBundles: requestedBundles || ['player', 'client-player', 'editor'],
       forceRebuild: !!buildRequest.forceRebuild,
@@ -114,7 +130,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const hash = mkDependencyHash(dependencies);
     const buildKey = `${hash}:${(requestedBundles || ['player', 'client-player', 'editor']).join(',')}:sourcemaps=${enableSourceMaps}`;
     const waitForResult = buildRequest.wait !== false;
-    console.log('[api/bundle] Build key:', { hash, buildKey });
+    logApi('build key', { hash, buildKey });
     const build = createOrJoinBuild(
       buildKey,
       {
@@ -139,9 +155,14 @@ export const POST: RequestHandler = async ({ request }) => {
           (event) => emitBuildEvent(buildId, event)
         )
     );
-    console.log('[api/bundle] Build state:', { buildId: build.buildId, joined: build.joined });
+    logBuildApi(build.buildId, build.joined ? 'joined existing build' : 'started new build', {
+      hash,
+      requestedBundles: requestedBundles || ['player', 'client-player', 'editor'],
+      waitForResult,
+    });
 
     if (!waitForResult) {
+      logBuildApi(build.buildId, 'returning async response (202)');
       return json(
         {
           buildId: build.buildId,
@@ -156,8 +177,7 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const result = await build.promise;
-    console.log('[api/bundle] Build result:', {
-      buildId: build.buildId,
+    logBuildApi(build.buildId, 'returning build result', {
       success: result.success,
       cached: !!result.cached,
       duration: result.duration,
@@ -172,7 +192,7 @@ export const POST: RequestHandler = async ({ request }) => {
       { status: result.success ? 200 : 500 }
     );
   } catch (error: any) {
-    console.error('[api/bundle] Error:', error);
+    console.error('[api/bundle] unhandled POST error:', error);
     return json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 };
@@ -182,8 +202,14 @@ export const GET: RequestHandler = async ({ url }) => {
   if (buildId) {
     const snapshot = getBuildSnapshot(buildId);
     if (!snapshot) {
+      logBuildApi(buildId, 'status requested but build not found');
       return json({ error: 'buildId not found' }, { status: 404 });
     }
+    logBuildApi(buildId, 'status requested', {
+      stage: snapshot.stage,
+      done: snapshot.done,
+      success: snapshot.success,
+    });
     return json({
       ...snapshot,
       source: 'local',
@@ -197,6 +223,7 @@ export const GET: RequestHandler = async ({ url }) => {
   }
 
   const exists = getBundler().exists(hash);
+  logApi('hash lookup', { hash, exists });
 
   if (exists) {
     return json({

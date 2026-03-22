@@ -3,7 +3,7 @@
  * Simplified from pie-api-aws/packages/bundler/src/webpack/player.ts
  */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import webpack from 'webpack';
@@ -51,6 +51,31 @@ interface ControllerWebpackConfigOptions {
   outputPath: string;
   workspaceDir: string;
   sourceMaps?: boolean;
+}
+
+function resolvePieLibSourceAliases(workspaceDir: string): Record<string, string> {
+  const aliases: Record<string, string> = {};
+  const pieLibRoot = join(workspaceDir, 'node_modules', '@pie-lib');
+
+  if (!existsSync(pieLibRoot)) {
+    return aliases;
+  }
+
+  for (const entry of readdirSync(pieLibRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    const packageName = entry.name;
+    const sourcePath = join(pieLibRoot, packageName, 'src/index.ts');
+    if (!existsSync(sourcePath)) {
+      continue;
+    }
+
+    aliases[`@pie-lib/${packageName}$`] = sourcePath;
+  }
+
+  return aliases;
 }
 
 const moduleRules: webpack.RuleSetRule[] = [
@@ -123,6 +148,7 @@ const moduleRules: webpack.RuleSetRule[] = [
 
 export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configuration {
   const libPackagePathMap = getLibPackagePathMap(opts.workspaceDir, opts.elements);
+  const pieLibSourceAliases = resolvePieLibSourceAliases(opts.workspaceDir);
 
   console.log('[webpack-config] Creating config for elements:', opts.elements);
 
@@ -156,6 +182,7 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
     resolve: {
       alias: {
         '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
+        ...pieLibSourceAliases,
         // Some linked workspace packages emit jsxDEV calls.
         // In production bundles React's jsx-dev-runtime can end up without a callable jsxDEV.
         // Route both import forms to a tiny shim backed by react/jsx-runtime.

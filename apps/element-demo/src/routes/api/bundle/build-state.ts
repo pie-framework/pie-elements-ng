@@ -32,6 +32,27 @@ function randomId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function formatDuration(startedAt: number): string {
+  return `${Date.now() - startedAt}ms`;
+}
+
+function summarizeRequest(request: BuildRequest): Record<string, unknown> {
+  return {
+    deps: request.dependencies.map((d) => `${d.name}@${d.version}`),
+    requestedBundles: request.options?.requestedBundles || ['player', 'client-player', 'editor'],
+    resolutionMode: request.options?.resolutionMode,
+    sourceMaps: request.options?.sourceMaps,
+  };
+}
+
+function logBuild(buildId: string, message: string, data?: Record<string, unknown>) {
+  if (data) {
+    console.log(`[api/bundle][${buildId}] ${message}`, data);
+    return;
+  }
+  console.log(`[api/bundle][${buildId}] ${message}`);
+}
+
 export function getBuildSnapshot(buildId: string): BuildSnapshot | null {
   return byBuildId.get(buildId)?.snapshot || null;
 }
@@ -64,6 +85,11 @@ export function createOrJoinBuild(
   if (activeId) {
     const activeRecord = byBuildId.get(activeId);
     if (activeRecord) {
+      logBuild(activeId, 'joined existing build', {
+        buildKey,
+        stage: activeRecord.snapshot.stage,
+        elapsed: formatDuration(activeRecord.snapshot.startedAt),
+      });
       return { buildId: activeId, joined: true, promise: activeRecord.promise };
     }
     activeByHash.delete(buildKey);
@@ -88,6 +114,11 @@ export function createOrJoinBuild(
   };
   byBuildId.set(buildId, record);
   activeByHash.set(buildKey, buildId);
+  logBuild(buildId, 'created build', {
+    hash,
+    buildKey,
+    ...summarizeRequest(request),
+  });
 
   const runPromise = runner(buildId, request)
     .then((result) => {
@@ -100,6 +131,12 @@ export function createOrJoinBuild(
         result,
         error: result.success ? undefined : result.errors?.join('\n') || 'build_failed',
       };
+      logBuild(buildId, result.success ? 'build completed' : 'build failed', {
+        elapsed: formatDuration(record.snapshot.startedAt),
+        cached: result.cached,
+        bundles: result.bundles ? Object.keys(result.bundles) : [],
+        errors: result.errors,
+      });
       return result;
     })
     .catch((error: any) => {
@@ -119,10 +156,15 @@ export function createOrJoinBuild(
         result,
         error: message,
       };
+      logBuild(buildId, 'build threw unhandled error', {
+        elapsed: formatDuration(record.snapshot.startedAt),
+        error: message,
+      });
       return result;
     })
     .finally(() => {
       activeByHash.delete(buildKey);
+      logBuild(buildId, 'released build key', { buildKey });
     });
 
   record.promise = runPromise;
@@ -142,6 +184,10 @@ export function emitBuildEvent(buildId: string, event: BuildProgressEvent) {
     stage: event.stage,
     updatedAt: event.timestamp,
   };
+  logBuild(buildId, `stage -> ${event.stage}`, {
+    hash: event.hash,
+    message: event.message,
+  });
 
   for (const listener of record.listeners) {
     listener(event);
