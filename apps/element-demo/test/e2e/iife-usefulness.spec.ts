@@ -34,7 +34,11 @@ async function waitForIifeViewReady(page: Page, view: 'deliver' | 'author') {
   }
 }
 
-async function assertCustomElementMounted(page: Page, elementName: string, view: 'deliver' | 'author') {
+async function assertCustomElementMounted(
+  page: Page,
+  elementName: string,
+  view: 'deliver' | 'author'
+) {
   const tagName = view === 'author' ? `${elementName}-configure` : `pie-iife-${elementName}`;
   await page.waitForFunction(
     (name) => {
