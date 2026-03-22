@@ -43,15 +43,17 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     await page.keyboard.type(marker);
     await page.keyboard.press('Tab').catch(() => {});
     const after = await waitForSessionMutation(page, before, 10_000);
-    const sessionChanged = JSON.stringify(after ?? {}) !== JSON.stringify(before ?? {});
-    if (!sessionChanged) {
-      const editorText = ((await editor.textContent().catch(() => '')) || '').trim();
-      const editorValue = await editor.inputValue().catch(() => '');
-      expect(editorText.includes(marker) || editorValue.includes(marker)).toBeTruthy();
-    }
+    expect(JSON.stringify(after ?? {})).not.toBe(JSON.stringify(before ?? {}));
+    expect(JSON.stringify(after ?? {})).toContain('extended-text-');
 
     await switchToEvaluate(page);
     await expect(root).toBeVisible();
+    const evaluateSignal = root
+      .locator('input[readonly], textarea[readonly], [contenteditable="false"]')
+      .or(page.locator('[data-testid="scoring-panel"], [data-testid="score-value"]'))
+      .or(root.getByText(/show correct answer|hide correct answer/i))
+      .first();
+    await expect(evaluateSignal).toBeVisible({ timeout: 15_000 });
   });
 
   test('explicit-constructed-response: fill response area and evaluate renders signals', async ({
@@ -71,20 +73,16 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     await page.keyboard.type(marker);
     await page.keyboard.press('Tab').catch(() => {});
     const after = await waitForSessionMutation(page, before, 10_000);
-    const sessionChanged = JSON.stringify(after ?? {}) !== JSON.stringify(before ?? {});
-    if (!sessionChanged) {
-      const textContent = ((await field.textContent().catch(() => '')) || '').trim();
-      const inputValue = await field.inputValue().catch(() => '');
-      expect(textContent.includes(marker) || inputValue.includes(marker)).toBeTruthy();
-    }
+    expect(JSON.stringify(after ?? {})).not.toBe(JSON.stringify(before ?? {}));
+    expect(JSON.stringify(after ?? {})).toContain('ecr-');
 
     await switchToEvaluate(page);
     const evaluateSignal = page
       .locator(
-        '[data-testid="score-value"], [data-testid="scoring-panel"], .feedback, .correct, .incorrect, button:has-text("Show correct answer")'
+        '[data-testid="score-value"], [data-testid="scoring-panel"], [data-testid="show-correct-answer"], button:has-text("Show correct answer"), button:has-text("Hide correct answer")'
       )
       .first();
-    await expect(evaluateSignal).toBeVisible();
+    await expect(evaluateSignal).toBeVisible({ timeout: 15_000 });
   });
 
   test('multiple-choice: checkbox demo accepts selection and evaluate scoring', async ({
@@ -112,16 +110,18 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     let checkedCount = await root.locator('input[type="checkbox"]:checked').count();
     if (selectedCount < 2 && checkedCount < 2) {
       await selectMultipleChoiceValue(root, 'cellular-respiration');
-      await page.waitForTimeout(500);
-      after = await getSessionState(page);
+      after = await waitForSessionMutation(page, before, 8_000);
       selectedCount = (after?.value || []).length;
       checkedCount = await root.locator('input[type="checkbox"]:checked').count();
     }
     expect(Array.isArray(after?.value)).toBeTruthy();
-    expect(selectedCount >= 1 || checkedCount >= 1).toBeTruthy();
+    expect(selectedCount).toBeGreaterThanOrEqual(2);
+    expect(selectedCount >= 2 || checkedCount >= 2).toBeTruthy();
 
     await switchToEvaluate(page);
-    await expect(page.locator('[data-testid="score-value"]').first()).toBeVisible();
+    const scoreValue = page.locator('[data-testid="score-value"]').first();
+    await expect(scoreValue).toBeVisible();
+    await expect(scoreValue).toContainText(/\S/);
   });
 
   test('multiple-choice: view mode prevents response change', async ({ page }) => {
@@ -133,15 +133,13 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     const option1 = root.locator('input[value="mercury"], label[data-value="mercury"]').first();
     const option2 = root.locator('input[value="jupiter"], label[data-value="jupiter"]').first();
     await selectMultipleChoiceValue(root, 'mercury');
-    await page.waitForTimeout(300);
-    const before = await getSessionState(page);
+    const before = await waitForSessionMutation(page, {}, 5_000);
 
     await switchMode(page, 'view');
     if (await option2.isVisible().catch(() => false)) {
       await option2.click({ force: true });
     }
-    await page.waitForTimeout(500);
-    const after = await getSessionState(page);
+    const after = await waitForSessionMutation(page, before, 2_000);
     expect(JSON.stringify(after ?? {})).toBe(JSON.stringify(before ?? {}));
   });
 
@@ -161,6 +159,7 @@ test.describe('Phase 3: Text interactions and hardening', () => {
 
     const signal = root
       .locator('.correctness-icon, .incorrect, button:has-text("Show correct answer")')
+      .or(page.locator('[data-testid="scoring-panel"], [data-testid="score-value"]'))
       .first();
     await expect(signal).toBeVisible();
   });

@@ -234,8 +234,9 @@ export async function getSelectedValue(page: Page): Promise<string | null> {
 /**
  * Navigate to an element deliver route and wait for shell.
  */
-export async function openDeliverRoute(page: Page, element: string) {
-  await page.goto(`/${element}/deliver?mode=gather&role=student`);
+export async function openDeliverRoute(page: Page, element: string, demoId?: string) {
+  const demoQuery = demoId ? `&demo=${encodeURIComponent(demoId)}` : '';
+  await page.goto(`/${element}/deliver?mode=gather&role=student${demoQuery}`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
   await page.waitForSelector('[data-testid="mode-gather"]', { timeout: 20_000 });
@@ -244,8 +245,9 @@ export async function openDeliverRoute(page: Page, element: string) {
 /**
  * Navigate to an element author route and wait for shell.
  */
-export async function openAuthorRoute(page: Page, element: string) {
-  await page.goto(`/${element}/author`);
+export async function openAuthorRoute(page: Page, element: string, demoId?: string) {
+  const demoQuery = demoId ? `?demo=${encodeURIComponent(demoId)}` : '';
+  await page.goto(`/${element}/author${demoQuery}`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
   await page.waitForSelector('.author-view', { timeout: 20_000 });

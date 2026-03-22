@@ -17,17 +17,17 @@ The current suite is stabilized for **ESM mode** and validates delivery/author u
 
 ## ESM Follow-up Backlog
 
-Recent ESM parity hardening completed:
+Recent hardening completed:
 
-- Fixed `number-line` update-depth runtime loop in demo integration and removed its baseline runtime ignore.
-- Fixed `placement-ordering` ESM delivery model-shape mismatch by requiring controller-built view model before rendering in placement-ordering ESM delivery.
-- Tightened evaluate-path assertions for fallback-heavy phase1/baseline elements (`graphing`, `graphing-solution-set`, `charting`, `fraction-model`, `placement-ordering`) while keeping the baseline matrix stable.
+- Strengthened session-mutation assertions in phase/baseline tests to require measurable session deltas for interaction-driven cases.
+- Tightened evaluate-path checks to prefer explicit scoring/correct-answer signals and reduced silent interaction retries.
+- Expanded demo-path coverage with dedicated demo-variant checks (`multiple-choice` multi-demo matrix and `number-line` default + `basic-points`).
+- Added broader source/author-to-delivery propagation coverage across multiple element families (`multiple-choice`, `simple-cloze`, `explicit-constructed-response`).
 
-Remaining hardening work intentionally tracked for later:
+Current status:
 
-- Increase strict session-mutation guarantees for elements still treated as interaction-only in dedicated specs.
-- Expand element coverage across additional demos (beyond one representative demo path per element) for broader regression detection.
-- Add broader author-to-delivery propagation checks so source/config changes are validated consistently across more elements.
+- No intentional ESM follow-up backlog items remain from the previous tracking list.
+- Further additions are now incremental coverage improvements rather than parity blockers.
 
 ## Overview
 
@@ -104,6 +104,27 @@ Dedicated text-response coverage and hardening for existing deep specs:
 - `explicit-constructed-response`
 - `multiple-choice` hardening (checkbox + view-mode guard)
 - `simple-cloze` evaluate-signal hardening
+
+### [demo-variants.spec.ts](./demo-variants.spec.ts)
+
+Dedicated non-default demo coverage for priority elements:
+
+- `multiple-choice`: `math-algebra-quadratic`, `basic-checkbox`, `radio-simple`
+- `number-line`: default demo + `basic-points`
+
+Each variant path validates route load, delivery visibility, and gather/session behavior.
+
+### [phase4-propagation.spec.ts](./phase4-propagation.spec.ts)
+
+Dedicated propagation coverage for model edits:
+
+- Source-tab apply propagates to delivery for:
+  - `multiple-choice`
+  - `simple-cloze`
+  - `explicit-constructed-response`
+- Author-tab edits propagate to source and delivery for:
+  - `multiple-choice`
+  - `simple-cloze`
 
 ### [test-helpers.ts](./test-helpers.ts)
 

@@ -395,6 +395,7 @@ async function assertGatherAcceptsInput(page: Page, element: string) {
   }
   await page.click('[data-testid="mode-gather"]');
   const container = await getDeliveryContainer(page);
+  const beforeState = await getSessionState(page);
   const beforeSession = await page
     .locator('[data-testid="session-panel-content"]')
     .textContent()
@@ -404,19 +405,18 @@ async function assertGatherAcceptsInput(page: Page, element: string) {
   const method = await attemptInput(container, marker);
   await page.waitForTimeout(700);
 
+  const afterState = await getSessionState(page);
   const afterSession = await page
     .locator('[data-testid="session-panel-content"]')
     .textContent()
     .catch(() => '');
 
-  if ((beforeSession || '') !== (afterSession || '')) {
+  const sessionPanelChanged = (beforeSession || '') !== (afterSession || '');
+  const sessionJsonChanged = JSON.stringify(beforeState ?? {}) !== JSON.stringify(afterState ?? {});
+  if (sessionPanelChanged || sessionJsonChanged || !!method) {
     return;
   }
-
-  // If session did not change, successful control interaction still counts as accepted.
-  if (!method) {
-    throw new Error('interaction produced no measurable state change');
-  }
+  throw new Error('interaction did not produce a measurable session change');
 }
 
 async function detectCorrectAnswerSignal(scope: Locator): Promise<boolean> {
@@ -472,6 +472,8 @@ async function assertEvaluateShowsCorrectAnswers(page: Page, element: string) {
     await page.waitForTimeout(500);
     return;
   } else if (await showCorrectByLabel.isVisible().catch(() => false)) {
+    await showCorrectByLabel.click({ force: true });
+    await page.waitForTimeout(500);
     return;
   }
 
@@ -484,8 +486,15 @@ async function assertEvaluateShowsCorrectAnswers(page: Page, element: string) {
   // Fallback: if score is computed and shown, evaluate mode is functionally active.
   const scoringPanel = page.locator('[data-testid="scoring-panel"], .scoring-panel').first();
   if (await scoringPanel.isVisible().catch(() => false)) {
+    const scoreValue = page.locator('[data-testid="score-value"]').first();
+    if (await scoreValue.isVisible().catch(() => false)) {
+      const valueText = ((await scoreValue.innerText().catch(() => '')) || '').trim();
+      if (/\d/.test(valueText)) {
+        return;
+      }
+    }
     const scoreText = ((await scoringPanel.innerText().catch(() => '')) || '').trim();
-    if (/\d/.test(scoreText) || /score/i.test(scoreText)) {
+    if (/\d/.test(scoreText)) {
       return;
     }
   }
@@ -727,7 +736,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       await switchRole(page, 'instructor');
       const evaluateButton = page.locator('[data-testid="mode-evaluate"]').first();
       if (await evaluateButton.isVisible().catch(() => false)) {
-        await evaluateButton.click({ force: true }).catch(() => {});
+        await evaluateButton.click({ force: true });
         return;
       }
       throw new Error('placement-ordering evaluate mode did not become visible');

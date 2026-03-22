@@ -89,20 +89,22 @@ test.describe('Phase 2: Structured and matching interactions', () => {
 
       const before = await getSessionState(page);
       await interactStructured(page, element, root);
-      const after = await waitForSessionMutation(page, before, 10_000);
+      let after = await waitForSessionMutation(page, before, 10_000);
       if (JSON.stringify(after ?? {}) === JSON.stringify(before ?? {})) {
-        await interactOnce(page, root).catch(() => {});
+        await interactOnce(page, root);
+        after = await waitForSessionMutation(page, before, 8_000);
       }
-      expect(await getSessionState(page)).not.toBeUndefined();
+      expect(JSON.stringify(after ?? {})).not.toBe(JSON.stringify(before ?? {}));
+      expect(await getSessionState(page)).not.toBeNull();
 
       await switchToEvaluate(page);
       await expect(root).toBeVisible();
       const evaluateSignal = page
         .locator(
-          '[data-testid="score-value"], [data-testid="scoring-panel"], .feedback, .correct, .incorrect, button:has-text("Show correct answer")'
+          '[data-testid="score-value"], [data-testid="scoring-panel"], [data-testid="show-correct-answer"], button:has-text("Show correct answer"), button:has-text("Hide correct answer")'
         )
         .first();
-      await expect(evaluateSignal).toBeVisible();
+      await expect(evaluateSignal).toBeVisible({ timeout: 15_000 });
     });
   }
 });
