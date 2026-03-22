@@ -64,7 +64,9 @@ test.describe('Phase 4: Source/author propagation', () => {
 
     const marker = `prop-author-cloze-${Date.now()}`;
     const editable = page
-      .locator('.author-view [contenteditable="true"], .author-view textarea, .author-view input[type="text"]')
+      .locator(
+        '.author-view [contenteditable="true"], .author-view textarea, .author-view input[type="text"]'
+      )
       .first();
     await expect(editable).toBeVisible();
     await editable.click();

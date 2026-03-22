@@ -153,7 +153,9 @@ async function runSpatialInteraction(page: Page, element: string, root: Locator)
 test.describe('Phase 1: Spatial and DnD element interactions', () => {
   for (const item of CASES) {
     const caseLabel = item.demoId ? `${item.element} [demo=${item.demoId}]` : item.element;
-    test(`${caseLabel}: gather interaction updates state and evaluate renders`, async ({ page }) => {
+    test(`${caseLabel}: gather interaction updates state and evaluate renders`, async ({
+      page,
+    }) => {
       await openDeliverRoute(page, item.element, item.demoId);
       const root = deliveryContainer(page);
       await expect(root).toBeVisible();
