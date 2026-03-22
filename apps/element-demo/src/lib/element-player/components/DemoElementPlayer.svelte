@@ -12,11 +12,11 @@ import { loadElement } from '../lib/demo-element-loader';
 
 interface Props {
   elementName?: string;
-  model?: any;
+  model: unknown;
   session?: any;
 }
 
-let { elementName = '', model = $bindable(), session = {} }: Props = $props(); // Remove session $bindable
+let { elementName = '', model, session = {} }: Props = $props();
 const dispatch = createEventDispatcher();
 
 let container: HTMLElement;
@@ -25,6 +25,10 @@ let currentTagName = $state<string | null>(null);
 let error = $state<string | null>(null);
 let loading = $state(true);
 let lastAppliedModelSignature = $state<string | null>(null);
+
+function isValidModel(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
 
 function toStableSignature(value: unknown): string | null {
   try {
@@ -61,7 +65,13 @@ $effect(() => {
 });
 
 $effect(() => {
-  if (elementInstance && model !== undefined) {
+  if (!isValidModel(model)) {
+    error = 'A valid model object is required';
+    loading = false;
+    return;
+  }
+
+  if (elementInstance) {
     try {
       const nextSignature = toStableSignature(model);
       if (nextSignature !== null && nextSignature === lastAppliedModelSignature) {
@@ -69,8 +79,12 @@ $effect(() => {
       }
       (elementInstance as any).model = cloneModelForElement(model);
       lastAppliedModelSignature = nextSignature;
+      error = null;
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       console.error('[demo-player] Error setting model:', err);
+      error = `Failed to set required model: ${message}`;
+      loading = false;
     }
   }
 });
@@ -80,6 +94,11 @@ $effect(() => {
 async function loadElementInstance() {
   if (!elementName) {
     error = 'No element name provided';
+    loading = false;
+    return;
+  }
+  if (!isValidModel(model)) {
+    error = 'A valid model object is required';
     loading = false;
     return;
   }
@@ -122,10 +141,8 @@ async function loadElementInstance() {
     }
 
     // Set initial properties
-    if (model !== undefined) {
-      (elementInstance as any).model = cloneModelForElement(model);
-      lastAppliedModelSignature = toStableSignature(model);
-    }
+    (elementInstance as any).model = cloneModelForElement(model);
+    lastAppliedModelSignature = toStableSignature(model);
     const nextSession = session ?? (elementInstance as any).session;
     if (nextSession !== undefined) {
       (elementInstance as any).session = nextSession;

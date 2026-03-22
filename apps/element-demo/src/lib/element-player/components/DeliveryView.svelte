@@ -15,12 +15,12 @@ const dispatch = createEventDispatcher();
 // Props
 let {
   elementName = '',
-  elementModel = {},
+  elementModel,
   session = $bindable({}),
   debug = false,
 }: {
   elementName: string;
-  elementModel: any;
+  elementModel: unknown;
   session?: any;
   debug?: boolean;
 } = $props();

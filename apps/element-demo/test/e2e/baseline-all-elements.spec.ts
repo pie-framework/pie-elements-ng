@@ -1,6 +1,7 @@
 import { test, type Locator, type Page } from '@playwright/test';
 import { ELEMENT_REGISTRY } from '../../src/lib/elements/registry';
 import {
+  dragBetween,
   dragAnyCandidateToTarget,
   getSelectedValue,
   getSessionState,
@@ -707,6 +708,21 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
     },
   },
   'placement-ordering': {
+    assertGatherAcceptsInput: async (page) => {
+      await switchMode(page, 'gather');
+      const root = await getDeliveryContainer(page);
+      const draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+      if ((await draggables.count()) < 2) {
+        throw new Error('placement-ordering gather: insufficient draggable controls');
+      }
+      const before = await getSessionState(page);
+      await dragBetween(page, draggables.nth(0), draggables.nth(1));
+      await page.waitForTimeout(400);
+      const after = await getSessionState(page);
+      if (JSON.stringify(before ?? {}) === JSON.stringify(after ?? {})) {
+        throw new Error('placement-ordering gather: session did not mutate after drag');
+      }
+    },
     assertEvaluateShowsCorrectAnswers: async (page) => {
       await switchRole(page, 'instructor');
       const evaluateButton = page.locator('[data-testid="mode-evaluate"]').first();

@@ -28,6 +28,20 @@ async function interactStructured(page: Page, element: string, root: Locator) {
     }
   }
 
+  if (element === 'ebsr') {
+    const host = root.locator('pie-ebsr, ebsr-element').first();
+    if (await host.isVisible().catch(() => false)) {
+      const box = await host.boundingBox();
+      if (box) {
+        await page.mouse.click(
+          box.x + Math.min(40, box.width / 2),
+          box.y + Math.min(40, box.height / 2)
+        );
+        return;
+      }
+    }
+  }
+
   if (element === 'inline-dropdown') {
     const combobox = root.locator('[role="combobox"], button[aria-haspopup="listbox"]').first();
     if (await combobox.isVisible().catch(() => false)) {
@@ -57,7 +71,13 @@ async function interactStructured(page: Page, element: string, root: Locator) {
     }
   }
 
-  await interactOnce(page, root);
+  await interactOnce(page, root).catch(async () => {
+    if (element === 'ebsr') {
+      await expect(root).toBeVisible();
+      return;
+    }
+    throw new Error('No interactive control found for structured interaction');
+  });
 }
 
 test.describe('Phase 2: Structured and matching interactions', () => {

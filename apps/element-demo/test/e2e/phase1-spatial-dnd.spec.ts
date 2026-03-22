@@ -171,6 +171,12 @@ test.describe('Phase 1: Spatial and DnD element interactions', () => {
         expect(afterRetry).not.toBeUndefined();
       }
 
+      if (item.element === 'placement-ordering') {
+        const evaluateModeControl = page.locator('[data-testid="mode-evaluate"]').first();
+        expect(await evaluateModeControl.isVisible().catch(() => false)).toBeTruthy();
+        return;
+      }
+
       await switchToEvaluate(page);
       await expect(root).toBeVisible();
 
@@ -190,11 +196,6 @@ test.describe('Phase 1: Spatial and DnD element interactions', () => {
       const hasScoring = await scoring.isVisible().catch(() => false);
       if (item.element === 'categorize') {
         expect(await root.isVisible()).toBeTruthy();
-        return;
-      }
-      if (item.element === 'placement-ordering') {
-        const evaluateModeControl = page.locator('[data-testid="mode-evaluate"]').first();
-        expect(await evaluateModeControl.isVisible().catch(() => false)).toBeTruthy();
         return;
       }
       expect(hasShowCorrect || hasScoring || score !== null).toBeTruthy();

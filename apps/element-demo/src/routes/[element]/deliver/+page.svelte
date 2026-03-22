@@ -29,9 +29,10 @@ import type { LayoutData } from '../$types';
 let { data }: { data: LayoutData } = $props();
 
 // Build element model from controller
-let elementModel = $state<any>({});
+let elementModel = $state<any>(null);
 let elementSession = $state<any>({});
 let modelError = $state<string | null>(null);
+let esmModelReady = $state(false);
 let modelRequestId = 0;
 const debug = false;
 const playerType = $derived<PlayerType>(parsePlayerType($page.url.searchParams.get('player')));
@@ -68,13 +69,18 @@ const buildModel = async (
   currentMode: string,
   currentRole: string,
   currentPartialScoring: boolean,
-  currentController: any
+  currentController: any,
+  currentPlayerType: PlayerType
 ) => {
   if (debug)
     console.log('[deliver] Building model...', { requestId, mode: currentMode, role: currentRole });
 
+  if (requestId === modelRequestId) {
+    esmModelReady = false;
+  }
+
   if (!currentModel) {
-    elementModel = {};
+    elementModel = null;
     modelError = 'No model configuration found';
     console.error('[deliver] No model provided');
     return;
@@ -82,10 +88,10 @@ const buildModel = async (
 
   const modelFn = currentController?.model;
   if (!modelFn || typeof modelFn !== 'function') {
-    elementModel = { ...currentModel, mode: currentMode };
     modelError = currentController
       ? 'Controller model() function is required but not found'
       : 'Controller not loaded yet';
+    elementModel = null;
     if (currentController) {
       console.error('[deliver] Controller missing model() function');
     }
@@ -107,8 +113,12 @@ const buildModel = async (
     );
 
     if (requestId === modelRequestId) {
+      if (!nextModel || typeof nextModel !== 'object') {
+        throw new Error('Controller model() must return an object model');
+      }
       elementModel = { ...nextModel, mode: currentMode };
       elementSession = sessionForController; // Use controller-modified session
+      esmModelReady = true;
 
       // If controller modified the session (e.g., initialized answer array), update the store
       // This ensures the session panel shows the initialized session
@@ -126,8 +136,9 @@ const buildModel = async (
   } catch (err) {
     console.error('[deliver] Controller model error:', err);
     if (requestId === modelRequestId) {
-      elementModel = { ...currentModel, mode: currentMode };
       modelError = err instanceof Error ? err.message : 'Failed to build model';
+      elementModel = null;
+      esmModelReady = false;
     }
   }
 };
@@ -143,6 +154,7 @@ $effect(() => {
   const currentRole = $role;
   const currentPartialScoring = $partialScoring;
   const currentController = $controller;
+  const currentPlayerType = playerType;
   const currentModelVersion = $modelVersion;
   // Explicitly NOT including sessionVersion - session updates should not trigger model rebuild
 
@@ -161,7 +173,8 @@ $effect(() => {
     currentMode,
     currentRole,
     currentPartialScoring,
-    currentController
+    currentController,
+    currentPlayerType
   );
 });
 
@@ -244,13 +257,17 @@ function handleBuildState(event: CustomEvent) {
           on:build-state={handleBuildState}
         />
       {:else}
-        <DeliveryView
-          elementName={data.elementName}
-          {elementModel}
-          session={elementSession}
-          {debug}
-          on:session-changed={handleSessionChanged}
-        />
+        {#if esmModelReady}
+          <DeliveryView
+            elementName={data.elementName}
+            {elementModel}
+            session={elementSession}
+            {debug}
+            on:session-changed={handleSessionChanged}
+          />
+        {:else}
+          <div class="model-error">{modelError ?? 'Preparing ESM view model...'}</div>
+        {/if}
       {/if}
     </pie-element-theme-daisyui>
     {#if modelError}
