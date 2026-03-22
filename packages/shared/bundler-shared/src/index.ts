@@ -7,7 +7,7 @@
 
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'fs';
+import { mkdirSync, writeFileSync, existsSync, readFileSync, rmSync } from 'fs';
 import webpack from 'webpack';
 import type {
   BuildBundleName,
@@ -38,9 +38,11 @@ interface StandaloneControllerStats {
 interface BuildMetadata {
   schemaVersion: number;
   createdAt: string;
+  builtBundles?: BuildBundleName[];
 }
 
-const BUILD_OUTPUT_SCHEMA_VERSION = 1;
+// Bump when bundle output compatibility changes so stale cached assets are rebuilt.
+const BUILD_OUTPUT_SCHEMA_VERSION = 3;
 
 export class Bundler {
   private outputDir: string;
@@ -106,8 +108,9 @@ export class Bundler {
       const metadataPath = join(outputPath, 'build-metadata.json');
       const metadata = this.readBuildMetadata(metadataPath);
       const hasCurrentMetadata = metadata?.schemaVersion === BUILD_OUTPUT_SCHEMA_VERSION;
+      const builtBundles = new Set(metadata?.builtBundles || []);
       const hasAllRequestedBundles = requestedBundles.every((bundle) =>
-        existsSync(join(outputPath, `${bundle}.js`))
+        existsSync(join(outputPath, `${bundle}.js`)) && builtBundles.has(bundle)
       );
       if (
         hasCurrentMetadata &&
@@ -135,6 +138,9 @@ export class Bundler {
         console.log(
           `[bundler][cache-miss] invalid or missing metadata at ${metadataPath}; rebuilding output`
         );
+        // Ensure stale bundles from older schema/config do not satisfy future
+        // partial bundle requests (e.g. editor cache-hit after client-only rebuild).
+        rmSync(outputPath, { recursive: true, force: true });
       }
 
       // 1. Install packages to temp directory
@@ -215,7 +221,8 @@ export class Bundler {
 
       // 6. Return success
       const warnings = stats.hasWarnings() ? stats.toJson().warnings : undefined;
-      this.writeBuildMetadata(metadataPath);
+      const nextBuiltBundles = Array.from(new Set([...(metadata?.builtBundles || []), ...requestedBundles]));
+      this.writeBuildMetadata(metadataPath, nextBuiltBundles);
 
       console.log(`[bundler] Build complete in ${Date.now() - startTime}ms`);
       emit('completed');
@@ -346,10 +353,11 @@ export class Bundler {
     }
   }
 
-  private writeBuildMetadata(path: string): void {
+  private writeBuildMetadata(path: string, builtBundles: BuildBundleName[]): void {
     const metadata: BuildMetadata = {
       schemaVersion: BUILD_OUTPUT_SCHEMA_VERSION,
       createdAt: new Date().toISOString(),
+      builtBundles,
     };
     writeFileSync(path, JSON.stringify(metadata, null, 2), 'utf-8');
   }

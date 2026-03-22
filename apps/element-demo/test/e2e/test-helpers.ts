@@ -132,7 +132,7 @@ export async function clickShowCorrectAnswer(page: Page) {
  */
 export async function switchTab(page: Page, tab: 'deliver' | 'author' | 'print' | 'source') {
   await page.click(`[data-testid="tab-${tab}"]`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(200);
 
   if (tab === 'deliver' || tab === 'print') {
     await waitForMathRendering(page);
@@ -161,7 +161,7 @@ export async function updateModelInSource(page: Page, model: any) {
   await page.click('[data-testid="source-editor"]');
 
   // Select all and replace
-  await page.keyboard.press('Meta+A'); // Cmd+A on Mac
+  await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.type(JSON.stringify(model, null, 2));
 
   // Click apply button

@@ -21,10 +21,12 @@ interface DemoConfig {
 export const load: LayoutLoad = async ({
   params,
   url,
+  data,
   parent,
 }: {
   params: { element: string };
   url: URL;
+  data: Record<string, unknown>;
   parent: () => Promise<Record<string, any>>;
 }) => {
   const parentData = await parent();
@@ -99,6 +101,7 @@ export const load: LayoutLoad = async ({
 
   return {
     ...parentData,
+    elementVersion: (data?.elementVersion as string | undefined) || 'latest',
     elementName,
     elementTitle,
     packageName,

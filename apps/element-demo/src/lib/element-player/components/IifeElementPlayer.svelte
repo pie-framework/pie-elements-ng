@@ -86,10 +86,21 @@ function applySession(nextSession: any) {
   if (nextSession === lastAppliedSessionRef) {
     return;
   }
+  // Some legacy elements assume model is present before session assignment.
+  // Guard against session-first updates by ensuring a model object exists.
+  if ((elementInstance as any)._model === undefined) {
+    (elementInstance as any).model = cloneModelForElement(model ?? {});
+  }
   suppressSessionEvents = true;
   try {
     (elementInstance as any).session = nextSession ?? {};
     lastAppliedSessionRef = nextSession;
+  } catch (error) {
+    console.warn('[IifeElementPlayer] Delaying session assignment until model is ready', {
+      elementName,
+      packageName,
+      error,
+    });
   } finally {
     suppressSessionEvents = false;
   }
