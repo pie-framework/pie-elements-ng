@@ -458,6 +458,10 @@ async function assertEvaluateShowsCorrectAnswers(page: Page, element: string) {
 
   const showCorrectById = page.locator('[data-testid="show-correct-answer"]').first();
   const showCorrectByText = page.locator('button:has-text("Show correct answer")').first();
+  const showCorrectByLabel = page
+    .locator('.delivery-view')
+    .getByText(/show correct answer|hide correct answer/i)
+    .first();
   if (await showCorrectById.isVisible().catch(() => false)) {
     await showCorrectById.click();
     await page.waitForTimeout(500);
@@ -465,6 +469,8 @@ async function assertEvaluateShowsCorrectAnswers(page: Page, element: string) {
   } else if (await showCorrectByText.isVisible().catch(() => false)) {
     await showCorrectByText.click();
     await page.waitForTimeout(500);
+    return;
+  } else if (await showCorrectByLabel.isVisible().catch(() => false)) {
     return;
   }
 
@@ -622,65 +628,6 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       }
     },
   },
-  charting: {
-    prepareDeliver: async (page) => {
-      await page
-        .locator('.delivery-view .demo-element-player .loading')
-        .waitFor({ state: 'detached', timeout: 25_000 })
-        .catch(() => {
-          // Loading indicator may not always appear.
-        });
-    },
-    assertGatherAcceptsInput: async (page) => {
-      await switchMode(page, 'gather');
-      const chartScope = page.locator('.delivery-view .element-container').first();
-      const primitive = chartScope.locator('svg circle, svg path, svg rect, svg line').first();
-      if (await primitive.isVisible().catch(() => false)) {
-        await primitive.click({ force: true });
-        return;
-      }
-
-      const canvas = chartScope.locator('canvas').first();
-      if (await canvas.isVisible().catch(() => false)) {
-        await canvas.click({ position: { x: 20, y: 20 }, force: true });
-        return;
-      }
-
-      const method = await attemptInput(chartScope, `charting-${Date.now()}`);
-      if (!method) {
-        throw new Error('charting gather: no interactive controls detected');
-      }
-      // Some charting controls open an MUI popover that can block top-nav interactions.
-      await page.keyboard.press('Escape').catch(() => {});
-    },
-    assertDeliveryVisible: async (page, element) => {
-      try {
-        await assertDeliveryVisible(page, element);
-        return;
-      } catch {
-        // Charting may present an always-visible demo tile shell instead of mounted chart DOM.
-        const demoTile = page.getByRole('button', { name: /bar chart/i }).first();
-        if (await demoTile.isVisible().catch(() => false)) {
-          return;
-        }
-        throw new Error('charting delivery root not visible');
-      }
-    },
-    assertAuthorAcceptsInput: async (page) => {
-      const scope = page.locator('.author-view .configure-container');
-      const gridInterval = scope.getByRole('textbox', { name: /grid interval/i }).first();
-      if (await gridInterval.isVisible().catch(() => false)) {
-        await gridInterval.fill('2');
-        return;
-      }
-      try {
-        await attemptInput(scope, `author-charting-${Date.now()}`);
-      } catch {
-        // Some charting configure UIs are not directly automatable through generic controls.
-        // Author visibility check guarantees the configure view rendered.
-      }
-    },
-  },
   graphing: {
     assertGatherAcceptsInput: async (page) => {
       await switchMode(page, 'gather');
@@ -722,6 +669,42 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
         // Some graphing configure controls are not exposed as generic form controls.
       }
     },
+    assertEvaluateShowsCorrectAnswers: async (page) => {
+      await switchRole(page, 'instructor');
+      await switchMode(page, 'evaluate');
+      const scoring = page
+        .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
+        .first();
+      const toggle = page
+        .locator('.delivery-view')
+        .getByText(/show correct answer|hide correct answer/i)
+        .first();
+      const hasScoring = await scoring.isVisible().catch(() => false);
+      const hasToggle = await toggle.isVisible().catch(() => false);
+      if (!hasScoring && !hasToggle) {
+        throw new Error('graphing evaluate: no scoring or correct-answer toggle signal');
+      }
+    },
+  },
+  'graphing-solution-set': {
+    assertEvaluateShowsCorrectAnswers: async (page) => {
+      await switchRole(page, 'instructor');
+      await switchMode(page, 'evaluate');
+      const scoring = page
+        .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
+        .first();
+      const toggle = page
+        .locator('.delivery-view')
+        .getByText(/show correct answer|hide correct answer/i)
+        .first();
+      const hasScoring = await scoring.isVisible().catch(() => false);
+      const hasToggle = await toggle.isVisible().catch(() => false);
+      if (!hasScoring && !hasToggle) {
+        throw new Error(
+          'graphing-solution-set evaluate: no scoring or correct-answer toggle signal'
+        );
+      }
+    },
   },
   'placement-ordering': {
     assertEvaluateShowsCorrectAnswers: async (page) => {
@@ -732,6 +715,96 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
         return;
       }
       throw new Error('placement-ordering evaluate mode did not become visible');
+    },
+  },
+  charting: {
+    prepareDeliver: async (page) => {
+      await page
+        .locator('.delivery-view .demo-element-player .loading')
+        .waitFor({ state: 'detached', timeout: 25_000 })
+        .catch(() => {
+          // Loading indicator may not always appear.
+        });
+    },
+    assertGatherAcceptsInput: async (page) => {
+      await switchMode(page, 'gather');
+      const chartScope = page.locator('.delivery-view .element-container').first();
+      const primitive = chartScope.locator('svg circle, svg path, svg rect, svg line').first();
+      if (await primitive.isVisible().catch(() => false)) {
+        await primitive.click({ force: true });
+      } else {
+        const canvas = chartScope.locator('canvas').first();
+        if (await canvas.isVisible().catch(() => false)) {
+          await canvas.click({ position: { x: 20, y: 20 }, force: true });
+        } else {
+          const method = await attemptInput(chartScope, `charting-${Date.now()}`);
+          if (!method) {
+            throw new Error('charting gather: no interactive controls detected');
+          }
+        }
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+    },
+    assertDeliveryVisible: async (page, element) => {
+      try {
+        await assertDeliveryVisible(page, element);
+        return;
+      } catch {
+        // Charting may present an always-visible demo tile shell instead of mounted chart DOM.
+        const demoTile = page.getByRole('button', { name: /bar chart/i }).first();
+        if (await demoTile.isVisible().catch(() => false)) {
+          return;
+        }
+        throw new Error('charting delivery root not visible');
+      }
+    },
+    assertAuthorAcceptsInput: async (page) => {
+      const scope = page.locator('.author-view .configure-container');
+      const gridInterval = scope.getByRole('textbox', { name: /grid interval/i }).first();
+      if (await gridInterval.isVisible().catch(() => false)) {
+        await gridInterval.fill('2');
+        return;
+      }
+      try {
+        await attemptInput(scope, `author-charting-${Date.now()}`);
+      } catch {
+        // Some charting configure UIs are not directly automatable through generic controls.
+        // Author visibility check guarantees the configure view rendered.
+      }
+    },
+    assertEvaluateShowsCorrectAnswers: async (page) => {
+      await switchRole(page, 'instructor');
+      await switchMode(page, 'evaluate');
+      const scoring = page
+        .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
+        .first();
+      const toggle = page
+        .locator('.delivery-view')
+        .getByText(/show correct answer|hide correct answer/i)
+        .first();
+      const hasScoring = await scoring.isVisible().catch(() => false);
+      const hasToggle = await toggle.isVisible().catch(() => false);
+      if (!hasScoring && !hasToggle) {
+        throw new Error('charting evaluate: no scoring or correct-answer toggle signal');
+      }
+    },
+  },
+  'fraction-model': {
+    assertEvaluateShowsCorrectAnswers: async (page) => {
+      await switchRole(page, 'instructor');
+      await switchMode(page, 'evaluate');
+      const scoring = page
+        .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
+        .first();
+      const toggle = page
+        .locator('.delivery-view')
+        .getByText(/show correct answer|hide correct answer/i)
+        .first();
+      const hasScoring = await scoring.isVisible().catch(() => false);
+      const hasToggle = await toggle.isVisible().catch(() => false);
+      if (!hasScoring && !hasToggle) {
+        throw new Error('fraction-model evaluate: no scoring or correct-answer toggle signal');
+      }
     },
   },
   'match-list': {

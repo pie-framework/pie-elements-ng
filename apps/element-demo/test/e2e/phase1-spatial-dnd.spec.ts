@@ -3,6 +3,7 @@ import {
   clickCanvas,
   clickSvgCenter,
   dragAnyCandidateToTarget,
+  dragBetween,
   deliveryContainer,
   getScore,
   getSessionState,
@@ -22,7 +23,7 @@ const CASES: SpatialCase[] = [
   { element: 'drag-in-the-blank', expectsSessionMutation: true },
   { element: 'match-list', expectsSessionMutation: true },
   { element: 'image-cloze-association', expectsSessionMutation: true },
-  { element: 'placement-ordering', expectsSessionMutation: false },
+  { element: 'placement-ordering', expectsSessionMutation: true },
   { element: 'hotspot', expectsSessionMutation: true },
   { element: 'graphing', expectsSessionMutation: false },
   { element: 'graphing-solution-set', expectsSessionMutation: false },
@@ -37,6 +38,12 @@ async function interactCategorize(page: Page, root: Locator) {
 }
 
 async function interactPlacementOrdering(page: Page, root: Locator) {
+  const draggables = root.locator('[role="button"][aria-roledescription="draggable"]');
+  if ((await draggables.count()) >= 2) {
+    await dragBetween(page, draggables.nth(0), draggables.nth(1));
+    await page.waitForTimeout(300);
+    return;
+  }
   await interactOnce(page, root);
 }
 
@@ -110,15 +117,25 @@ async function runSpatialInteraction(page: Page, element: string, root: Locator)
   }
 
   if (element === 'graphing' || element === 'graphing-solution-set') {
-    const toolbarButton = root
+    const graphRoot = root
+      .locator('pie-graphing, graphing-element, graphing-solution-set-element')
+      .first();
+    const toolbarButton = graphRoot
       .locator(
-        'button.MuiButtonBase-root, button[aria-label*="tool" i], button[aria-label*="line" i], button[aria-label*="point" i]'
+        'button.MuiButtonBase-root, button[aria-label*="tool" i], button[aria-label*="line" i]'
       )
       .first();
     if (await toolbarButton.isVisible().catch(() => false)) {
       await toolbarButton.click({ force: true });
-      return;
     }
+    const svg = graphRoot.locator('svg').first();
+    if (await svg.isVisible().catch(() => false)) {
+      const box = await svg.boundingBox();
+      if (box) {
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      }
+    }
+    return;
   }
 
   if (element === 'charting' || element === 'number-line') {
@@ -126,16 +143,6 @@ async function runSpatialInteraction(page: Page, element: string, root: Locator)
       await interactOnce(page, root);
     });
     await page.keyboard.press('Escape').catch(() => {});
-    return;
-  }
-
-  if (element === 'graphing' || element === 'graphing-solution-set') {
-    const fallback = root.locator('button, [role="button"]').first();
-    if (await fallback.isVisible().catch(() => false)) {
-      await fallback.click({ force: true });
-      return;
-    }
-    await expect(root).toBeVisible();
     return;
   }
 
@@ -168,23 +175,26 @@ test.describe('Phase 1: Spatial and DnD element interactions', () => {
       await expect(root).toBeVisible();
 
       const showCorrect = page
-        .locator('[data-testid="show-correct-answer"], button:has-text("Show correct answer")')
+        .locator(
+          '[data-testid="show-correct-answer"], button:has-text("Show correct answer"), button:has-text("Hide correct answer")'
+        )
         .first();
       const scoring = page
         .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
         .first();
+      const toggleText = root.getByText(/show correct answer|hide correct answer/i).first();
       const score = await getScore(page);
-      const hasShowCorrect = await showCorrect.isVisible().catch(() => false);
+      const hasShowCorrect =
+        (await showCorrect.isVisible().catch(() => false)) ||
+        (await toggleText.isVisible().catch(() => false));
       const hasScoring = await scoring.isVisible().catch(() => false);
-      if (
-        item.element === 'categorize' ||
-        item.element === 'placement-ordering' ||
-        item.element === 'graphing' ||
-        item.element === 'graphing-solution-set' ||
-        item.element === 'charting' ||
-        item.element === 'fraction-model'
-      ) {
+      if (item.element === 'categorize') {
         expect(await root.isVisible()).toBeTruthy();
+        return;
+      }
+      if (item.element === 'placement-ordering') {
+        const evaluateModeControl = page.locator('[data-testid="mode-evaluate"]').first();
+        expect(await evaluateModeControl.isVisible().catch(() => false)).toBeTruthy();
         return;
       }
       expect(hasShowCorrect || hasScoring || score !== null).toBeTruthy();
