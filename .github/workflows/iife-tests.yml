@@ -1,0 +1,52 @@
+name: IIFE Optional Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  iife-bundle-contract:
+    timeout-minutes: 40
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - run: bun run test:iife:bundle
+
+  iife-usefulness-e2e:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    needs: iife-bundle-contract
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+      - run: bun install --frozen-lockfile
+      - run: bun x svelte-kit sync
+        working-directory: apps/element-demo
+      - run: bun run --cwd apps/element-demo generate-imports
+      - run: bun run build
+      - run: bunx playwright install --with-deps
+      - run: bun run test:iife:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iife-playwright-report
+          path: apps/element-demo/playwright-report/
+          if-no-files-found: warn
+          retention-days: 30

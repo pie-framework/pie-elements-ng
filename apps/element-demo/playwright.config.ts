@@ -37,6 +37,7 @@ function resolveLocalBrowsersDir(): string | undefined {
 }
 
 const localBrowsersDir = resolveLocalBrowsersDir();
+const runIifeE2e = process.env.RUN_IIFE_E2E === '1';
 
 function resolveLocalChromium(): string | undefined {
   if (!localBrowsersDir || !existsSync(localBrowsersDir)) {
@@ -77,6 +78,7 @@ const localChromium = resolveLocalChromium();
 export default defineConfig({
   testDir: './test/e2e',
   testMatch: ['**/*.spec.ts'],
+  testIgnore: runIifeE2e ? [] : ['**/iife-usefulness.spec.ts'],
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

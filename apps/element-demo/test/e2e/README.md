@@ -15,6 +15,26 @@ The current suite is stabilized for **ESM mode** and validates delivery/author u
   - evaluate-mode signal path
   - runtime safety guardrails (with narrowly scoped per-element guards where needed)
 
+## IIFE Optional Coverage
+
+IIFE coverage is intentionally optional and split into two layers:
+
+- `bun run test:iife:bundle` (from repo root): fast bundle-contract checks across all React elements.
+- `bun run test:e2e:iife` (from `apps/element-demo`): browser usefulness checks for IIFE delivery/controller and author paths.
+
+These checks are excluded from default `bun run test:e2e` runs.
+
+Expected runtime:
+
+- `test:iife:bundle`: typically 5-20 minutes depending on cache state.
+- `test:e2e:iife`: typically 15-45 minutes for the full matrix.
+
+Failure triage flow:
+
+1. Re-run a single element first: `IIFE_E2E_ELEMENT=<name> bun run test:e2e:iife`.
+2. If it fails before rendering, run `bun run test:iife:bundle` and inspect bundle-contract errors.
+3. Use Playwright artifacts (`playwright-report`) from local run or CI workflow for screenshots/trace.
+
 ## ESM Follow-up Backlog
 
 Recent hardening completed:
@@ -175,6 +195,16 @@ bun run test:e2e:headed
 
 # Run in debug mode (step through)
 bun run test:e2e:debug
+```
+
+### Run Optional IIFE E2E
+
+```bash
+# From apps/element-demo
+bun run test:e2e:iife
+
+# Narrow run while debugging
+IIFE_E2E_ELEMENT=multiple-choice bun run test:e2e:iife
 ```
 
 ### Run Specific Test File

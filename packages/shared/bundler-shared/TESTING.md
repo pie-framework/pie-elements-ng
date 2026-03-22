@@ -12,6 +12,30 @@ The bundler creates IIFE (Immediately Invoked Function Expression) bundles for P
 bun cli dev:test-bundler [--element <name>] [--verbose] [--keep-workspace] [--clean]
 ```
 
+## Optional Full React Matrix Contract Test
+
+For all React elements, run the optional IIFE contract suite:
+
+```bash
+# From repo root
+bun run test:iife:bundle
+```
+
+This suite verifies, per element, that requested IIFE bundles are created and include expected runtime contract markers (`window.pie`, package keys, `Element`, `controller`, and `Configure` where applicable).
+
+Expected runtime:
+
+- Warm cache: ~5-10 minutes.
+- Cold cache: ~15-25 minutes.
+
+Failure triage:
+
+1. Run a single element contract check:
+   `IIFE_ELEMENTS=multiple-choice bun run --cwd apps/element-demo test:iife:bundle`
+2. Inspect logs for stage transitions (`queued`, `installing`, `bundling`, `completed/failed`) and bundle hash.
+3. If contract checks pass but UI still fails, run IIFE Playwright checks:
+   `IIFE_E2E_ELEMENT=multiple-choice bun run --cwd apps/element-demo test:e2e:iife`
+
 ### Options
 
 - `--element <name>` - Element to test (default: multiple-choice)
