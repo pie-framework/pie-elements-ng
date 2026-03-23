@@ -143,8 +143,8 @@ test.describe('Phase 3: Text interactions and hardening', () => {
 
     const allInputsDisabled = await root
       .locator('input[type="radio"], input[type="checkbox"]')
-      .evaluateAll((nodes) =>
-        nodes.length > 0 && nodes.every((node) => (node as HTMLInputElement).disabled)
+      .evaluateAll(
+        (nodes) => nodes.length > 0 && nodes.every((node) => (node as HTMLInputElement).disabled)
       );
     expect(allInputsDisabled).toBeTruthy();
 

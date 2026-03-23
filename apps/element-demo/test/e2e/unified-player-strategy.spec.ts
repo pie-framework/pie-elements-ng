@@ -220,7 +220,8 @@ test.describe('Unified element player strategy host', () => {
   test('multiple-choice keeps user selection across mode/role switches', async ({ page }) => {
     test.setTimeout(120_000);
 
-    const multipleChoiceDemo = process.env.UNIFIED_PLAYER_E2E_MC_DEMO?.trim() || 'math-algebra-quadratic';
+    const multipleChoiceDemo =
+      process.env.UNIFIED_PLAYER_E2E_MC_DEMO?.trim() || 'math-algebra-quadratic';
     await page.goto(
       `/multiple-choice/deliver?mode=gather&role=student&player=esm&demo=${multipleChoiceDemo}`
     );
@@ -304,7 +305,7 @@ test.describe('Unified element player strategy host', () => {
     expect(selectionVisibleReadOnly).toBeTruthy();
 
     const sessionStillContainsSelection = await page.evaluate((value) => {
-        const host = document.querySelector('pie-element-player') as any;
+      const host = document.querySelector('pie-element-player') as any;
       const sessionValue = host?.session?.value;
       if (!Array.isArray(sessionValue) || !Array.isArray(value) || value.length === 0) {
         return false;
