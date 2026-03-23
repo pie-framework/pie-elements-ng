@@ -80,6 +80,7 @@ const buildModel = async (
 
   if (!currentModel) {
     elementModel = null;
+    esmModelReady = false;
     modelError = 'No model configuration found';
     console.error('[deliver] No model provided');
     return;
@@ -87,19 +88,11 @@ const buildModel = async (
 
   const modelFn = currentController?.model;
   if (!modelFn || typeof modelFn !== 'function') {
-    if (currentPlayerType === 'iife' && currentModel && typeof currentModel === 'object') {
-      // In IIFE mode the delivery host can bootstrap with raw model while controller arrives.
-      // This avoids passing an empty placeholder model to elements that require full shape.
-      elementModel = { ...currentModel, mode: currentMode };
-      elementSession = normalizeSession(currentSession);
-      esmModelReady = true;
-      modelError = null;
-      return;
-    }
     modelError = currentController
       ? 'Controller model() function is required but not found'
       : 'Controller not loaded yet';
     elementModel = null;
+    esmModelReady = false;
     if (currentController) {
       console.error('[deliver] Controller missing model() function');
     }
@@ -255,32 +248,28 @@ function handleBuildState(event: CustomEvent) {
 >
   {#snippet children()}
     <pie-element-theme-daisyui theme={$theme}>
-      {#if esmModelReady || playerType === 'iife'}
-        <div class="delivery-view">
-          <div class="element-container">
-            <pie-element-player
-              strategy={playerType}
-              view="delivery"
-              element-name={data.elementName}
-              package-name={data.packageName}
-              element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-              model={elementModel}
-              session={elementSession}
-              rebuildVersion={$iifeBuildRequestVersion}
-              onsession-changed={handleSessionChanged}
-              oncontroller-changed={handleIifeControllerChanged}
-              onbundle-meta={handleBundleMeta}
-              onbuild-state={handleBuildState}
-            ></pie-element-player>
-          </div>
+      <div class="delivery-view">
+        <div class="element-container">
+          <pie-element-player
+            strategy={playerType}
+            view="delivery"
+            element-name={data.elementName}
+            package-name={data.packageName}
+            element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+            model={esmModelReady ? elementModel : undefined}
+            session={esmModelReady ? elementSession : undefined}
+            rebuildVersion={$iifeBuildRequestVersion}
+            onsession-changed={handleSessionChanged}
+            oncontroller-changed={handleIifeControllerChanged}
+            onbundle-meta={handleBundleMeta}
+            onbuild-state={handleBuildState}
+          ></pie-element-player>
+          {#if !esmModelReady}
+            <div class="model-error">{modelError ?? 'Preparing view model...'}</div>
+          {/if}
         </div>
-      {:else}
-        <div class="model-error">{modelError ?? 'Preparing ESM view model...'}</div>
-      {/if}
+      </div>
     </pie-element-theme-daisyui>
-    {#if modelError}
-      <div class="model-error">{modelError}</div>
-    {/if}
   {/snippet}
 </DeliveryPlayerLayout>
 

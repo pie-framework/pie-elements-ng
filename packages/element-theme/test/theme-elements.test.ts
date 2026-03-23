@@ -26,17 +26,19 @@ describe('pie-element-theme', () => {
     expect(wrapper.style.getPropertyValue('--pie-primary').trim()).toBe('#123456');
   });
 
-  it('supports wrapping local player tags', () => {
+  it('supports wrapping unified player tags', () => {
     definePieElementTheme();
 
     const wrapper = appendAndConnect(document.createElement('pie-element-theme'));
-    const esmPlayer = document.createElement('pie-esm-element-player');
-    const printPlayer = document.createElement('pie-esm-print-player');
+    const deliveryPlayer = document.createElement('pie-element-player');
+    deliveryPlayer.setAttribute('view', 'delivery');
+    const printPlayer = document.createElement('pie-element-player');
+    printPlayer.setAttribute('view', 'print');
 
-    wrapper.appendChild(esmPlayer);
+    wrapper.appendChild(deliveryPlayer);
     wrapper.appendChild(printPlayer);
 
-    expect(wrapper.querySelector('pie-esm-element-player')).toBeTruthy();
-    expect(wrapper.querySelector('pie-esm-print-player')).toBeTruthy();
+    expect(wrapper.querySelector('pie-element-player[view="delivery"]')).toBeTruthy();
+    expect(wrapper.querySelector('pie-element-player[view="print"]')).toBeTruthy();
   });
 });

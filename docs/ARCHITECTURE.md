@@ -86,12 +86,12 @@ This was enabled by the PIE team's work on upstream library updates (React 18, M
 
 ![Unified Player: One Player, All Views, Any Framework](img/unified-player-architecture-1-1769801208629.jpg)
 
-**Element-Level Players** (this repository):
+**Element-Level Player** (this repository):
 
-- `<pie-esm-element-player>` - Interactive delivery and authoring
-- `<pie-esm-print-player>` - Print views for development/testing
+- `<pie-element-player>` - Unified delivery, authoring, and print views
 - **Package**: `@pie-element/element-player`
-- **Use for**: Element development, testing, documentation
+- **Use for**: Element development, testing, documentation, and optional composable embedding
+- **Positioning**: Not the default production orchestration path; production usage typically relies on the standard players in upstream `pie-elements` and `pie-players`
 
 **Item-Level Players** (pie-players repository):
 

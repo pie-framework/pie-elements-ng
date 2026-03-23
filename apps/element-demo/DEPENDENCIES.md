@@ -17,7 +17,7 @@ In production ESM mode, the demo app loads elements from a CDN (like esm.sh, jsp
 
 ```typescript
 // Production: Load from CDN
-<pie-esm-element-player
+<pie-element-player
   element-name="multiple-choice"
   cdn-url="https://esm.sh"
 />

@@ -32,9 +32,36 @@ The package has a dependency resolution issue that prevents it from building as 
 
 The element player is a **standalone web component bundle** (`pie-element-player.js`) that can be dropped into any HTML page with a simple `<script>` tag. It loads PIE elements via dynamic ESM imports.
 
+## Recommendation
+
+Use the player as a **Node package dependency** in modern applications.
+
+- Recommended: install/import via package manager and bundle with your app.
+- Secondary/fallback: dynamic script/import-map loading for environments that cannot bundle.
+
+Positioning note:
+
+- In normal production integrations, use the standard production player stacks from the upstream PIE projects (`../pie-elements` and `../pie-players`).
+- Treat `@pie-element/element-player` as a flexible element-level host for development, testing, and composable/advanced embedding scenarios.
+
+Why this is preferred:
+
+- Better build-time optimization and dependency deduplication
+- More reliable versioning through lockfiles
+- Better TypeScript/IDE support and compile-time validation
+- Fewer runtime resolution issues (CDN/import-map/config drift)
+
 ## Usage
 
-### ESM Player
+### Recommended: Node package integration
+
+```ts
+import '@pie-element/element-player/players';
+```
+
+Then render the host component and set `model`/`session` via properties in your framework/runtime.
+
+### Dynamic loading fallback (supported)
 
 For elements with import maps:
 
@@ -45,10 +72,11 @@ For elements with import maps:
   <title>PIE Element Demo</title>
 </head>
 <body>
-  <pie-esm-element-player
+  <pie-element-player
     id="player"
     element-name="hotspot"
-  ></pie-esm-element-player>
+    view="delivery"
+  ></pie-element-player>
 
   <!-- Import map for module resolution -->
   <script type="importmap">
@@ -60,7 +88,7 @@ For elements with import maps:
   </script>
 
   <!-- Load the player bundle -->
-  <script type="module" src="/packages/shared/element-player/dist/pie-element-player.js"></script>
+  <script type="module" src="/packages/element-player/dist/pie-element-player.js"></script>
 
   <script type="module">
     const player = document.getElementById('player');
@@ -73,9 +101,9 @@ For elements with import maps:
 
 ## Architecture
 
-### ESM Players
+### Unified Player
 
-**Interactive Player (`<pie-esm-element-player>`):**
+**Delivery view (`<pie-element-player view="delivery">`):**
 
 - Loads elements via dynamic ESM imports: `import('@pie-element/hotspot')`
 - Handles session state and user interactions
@@ -83,7 +111,7 @@ For elements with import maps:
 - Emits `session-changed` events
 - Works with both React and Svelte elements
 
-**Print Player (`<pie-esm-print-player>`):**
+**Print view (`<pie-element-player view="print">`):**
 
 - Loads print exports: `import('@pie-element/hotspot/print')`
 - Stateless (no session management)
@@ -91,7 +119,7 @@ For elements with import maps:
 - Manages math rendering internally (MathJax)
 - Role-based rendering (student/instructor)
 
-**Both players:**
+**All views:**
 
 - Use import maps for module resolution
 - Self-contained (no external setup needed)
@@ -120,10 +148,10 @@ To test changes to player components:
 
 ```bash
 # Build element-player
-cd packages/shared/element-player
+cd packages/element-player
 bun run build
 
 # Run element demo
-cd ../../../
+cd ../..
 bun cli dev:demo hotspot
 ```

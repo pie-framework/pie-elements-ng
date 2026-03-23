@@ -117,11 +117,20 @@ async function loadIife(
   }
   await customElements.whenDefined(tagName);
 
+  let controller = pkg.controller;
+  if (!controller && (view === 'delivery' || view === 'author')) {
+    try {
+      controller = await loadController(req.packageName, req.cdnUrl || '');
+    } catch {
+      controller = undefined;
+    }
+  }
+
   return {
     strategy: 'iife',
     view,
     tagName,
-    controller: pkg.controller,
+    controller,
     bundleMeta: meta,
   };
 }

@@ -5,15 +5,12 @@
  * Handles element loading, math rendering, and session management internally.
  *
  * Usage:
- *   <pie-esm-element-player element-name="hotspot"></pie-esm-element-player>
- *   <pie-esm-print-player element-name="hotspot" role="student"></pie-esm-print-player>
+ *   <pie-element-player element-name="hotspot" view="delivery"></pie-element-player>
+ *   <pie-element-player element-name="hotspot" view="print" role="student"></pie-element-player>
  */
 
 // Import Tailwind CSS + DaisyUI
 import './app.css';
-
-// Export unified player plus compatibility wrappers.
-export { PieElementPlayer, EsmElementPlayer, EsmPrintPlayer } from './players/index.js';
 
 // Import players to register them as custom elements
 import './players/index.js';

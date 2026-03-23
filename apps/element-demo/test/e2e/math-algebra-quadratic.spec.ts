@@ -308,7 +308,7 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     await expect(page).toHaveURL(/\/print/);
 
     // Verify print view loads
-    const printPlayer = page.locator('pie-esm-print-player');
+    const printPlayer = page.locator('pie-element-player[view="print"]');
     if ((await printPlayer.count()) > 0) {
       await expect(printPlayer).toBeVisible();
     }

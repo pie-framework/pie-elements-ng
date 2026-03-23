@@ -126,11 +126,13 @@ PIE elements include print views for generating paper-based assessments and answ
 ### Element-Level Print Player (This Project)
 For development and testing of individual elements:
 ```html
-<pie-esm-print-player element-name="multiple-choice" role="student" model={...} />
+<pie-element-player view="print" element-name="multiple-choice" role="student"></pie-element-player>
 ```
 - **Package:** `@pie-element/element-player`
-- **Use for:** Element development, testing, documentation
-- **Location:** `packages/element-player/src/players/EsmPrintPlayer.svelte`
+- **Use for:** Element development, testing, documentation, and optional composable embedding
+- **Location:** `packages/element-player/src/players/PieElementPlayer.svelte`
+
+For most production app flows, prefer the standard upstream player stacks in `../pie-elements` and `../pie-players`.
 
 ### Item-Level Print Player (pie-players)
 For production rendering of complete assessment items:

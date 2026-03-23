@@ -89,7 +89,7 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
   test('7. Print tab renders correctly', async ({ page }) => {
     await switchTab(page, 'print');
     await expect(page).toHaveURL(/\/print/);
-    const printPlayer = page.locator('pie-esm-print-player');
+    const printPlayer = page.locator('pie-element-player[view="print"]');
     const printContent = page.locator('[data-testid="print-view"]');
     const hasPrintPlayer = (await printPlayer.count()) > 0;
     const hasPrintContent = (await printContent.count()) > 0;

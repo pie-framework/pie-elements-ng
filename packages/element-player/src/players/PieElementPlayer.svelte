@@ -27,7 +27,7 @@
 <script lang="ts">
 import { createEventDispatcher, onMount } from 'svelte';
 import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
-import type { MathRenderer } from '@pie-element/shared-math-rendering-core';
+import type { MathRenderer } from '../lib/math-rendering-types';
 import { loadUnifiedPlayer } from '../lib/unified-player-loader';
 import {
   normalizeElementPlayerStrategy,
@@ -84,10 +84,13 @@ let renderQueued = false;
 let sessionHandler: ((e: Event) => void) | null = null;
 let modelHandler: ((e: Event) => void) | null = null;
 let suppressSessionEvents = false;
+let isForwardingSessionEvent = false;
+let lastForwardedSessionDetailSignature = '';
+let lastForwardedSessionSignature = '';
 
-let lastAppliedModelRef: any = null;
-let lastAppliedSessionRef: any = null;
 let lastAppliedRole: string | null = null;
+let lastAppliedModelSignature = '';
+let lastAppliedSessionSignature = '';
 
 const resolvedStrategy = $derived(normalizeElementPlayerStrategy(strategy, 'esm'));
 const resolvedView = $derived(resolveElementPlayerView({ mode, view }, 'delivery'));
@@ -108,6 +111,38 @@ function cloneValue<T>(value: T): T {
       return value;
     }
   }
+}
+
+function createValueSignature(value: unknown): string {
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized === undefined ? '__undefined__' : serialized;
+  } catch {
+    return `__unserializable__:${String(value)}`;
+  }
+}
+
+function hasResponseValue(value: unknown): boolean {
+  if (value == null) return false;
+  if (Array.isArray(value)) {
+    return value.some((entry) => hasResponseValue(entry));
+  }
+  if (typeof value !== 'object') return false;
+  if ('value' in (value as Record<string, unknown>)) return true;
+  return Object.values(value as Record<string, unknown>).some((nested) => hasResponseValue(nested));
+}
+
+function hasExplicitResponseField(value: unknown): boolean {
+  if (value == null) return false;
+  if (Array.isArray(value)) {
+    return value.some((entry) => hasExplicitResponseField(entry));
+  }
+  if (typeof value !== 'object') return false;
+  for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+    if (key === 'value') return true;
+    if (hasExplicitResponseField(nested)) return true;
+  }
+  return false;
 }
 
 function reconnectMathObserver() {
@@ -156,7 +191,7 @@ function detachInstanceHandlers() {
     sessionHandler = null;
   }
   if (modelHandler) {
-    elementInstance.removeEventListener('model.updated', modelHandler);
+    elementInstance.removeEventListener('model.updated', modelHandler, true);
     modelHandler = null;
   }
 }
@@ -168,22 +203,54 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
   detachInstanceHandlers();
   if (viewMode === 'delivery') {
     sessionHandler = (event: Event) => {
-      if (suppressSessionEvents) {
+      if (suppressSessionEvents || isForwardingSessionEvent) {
         return;
       }
-      event.stopPropagation();
       const customEvent = event as CustomEvent;
       const detail = customEvent.detail as any;
+      const detailObj =
+        detail && typeof detail === 'object' ? (detail as Record<string, unknown>) : null;
+      if (!detailObj) {
+        return;
+      }
+      if (
+        !('session' in detailObj) &&
+        !hasResponseValue(detailObj) &&
+        !hasExplicitResponseField(detailObj)
+      ) {
+        return;
+      }
+
       const nextSession = detail?.session ?? (elementInstance as any).session ?? detail;
       if (nextSession === undefined) {
         return;
       }
-      session = nextSession;
-      lastAppliedSessionRef = nextSession;
-      dispatch('session-changed', {
-        ...detail,
+      const sessionSignature = createValueSignature(nextSession);
+      if (sessionSignature === lastForwardedSessionSignature) {
+        return;
+      }
+      const forwardedDetail = {
+        ...detailObj,
         session: nextSession,
-      });
+      };
+      const detailSignature = createValueSignature(forwardedDetail);
+      if (detailSignature === lastForwardedSessionDetailSignature) {
+        return;
+      }
+      lastForwardedSessionDetailSignature = detailSignature;
+      lastForwardedSessionSignature = sessionSignature;
+
+      event.stopPropagation();
+      isForwardingSessionEvent = true;
+      session = nextSession;
+      lastAppliedSessionSignature = createValueSignature(nextSession);
+      try {
+        dispatch('session-changed', forwardedDetail);
+      } finally {
+        setTimeout(() => {
+          isForwardingSessionEvent = false;
+        }, 0);
+      }
     };
     elementInstance.addEventListener('session-changed', sessionHandler);
   }
@@ -192,35 +259,60 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
     modelHandler = (event: Event) => {
       const customEvent = event as CustomEvent;
       const detail = customEvent.detail as any;
-      // Many elements emit partial updates in model.updated detail;
-      // emit a full model snapshot to keep host state consistent.
-      const nextModel =
-        (elementInstance as any)?.model ?? detail?.model ?? detail?.update ?? detail;
+      const currentModel = (elementInstance as any)?.model ?? model;
+      let nextModel = (elementInstance as any)?.model ?? detail?.model ?? detail?.update ?? detail;
+      // Many elements emit partial updates in model.updated detail.
+      // Merge with the latest known model so hosts receive a full snapshot.
+      if (
+        detail?.update &&
+        typeof detail.update === 'object' &&
+        currentModel &&
+        typeof currentModel === 'object'
+      ) {
+        nextModel = { ...currentModel, ...detail.update };
+      }
       dispatch('model-changed', nextModel);
     };
-    elementInstance.addEventListener('model.updated', modelHandler);
+    elementInstance.addEventListener('model.updated', modelHandler, true);
   }
 }
 
 function applyModel(nextModel: any) {
-  if (!elementInstance || nextModel === lastAppliedModelRef) {
+  if (!elementInstance) {
+    return;
+  }
+  if (nextModel === null || nextModel === undefined) {
+    return;
+  }
+  const nextSignature = createValueSignature(nextModel ?? {});
+  if (nextSignature === lastAppliedModelSignature) {
     return;
   }
   (elementInstance as any).model = cloneValue(nextModel ?? {});
-  lastAppliedModelRef = nextModel;
+  lastAppliedModelSignature = nextSignature;
 }
 
 function applySession(nextSession: any) {
-  if (!elementInstance || resolvedView !== 'delivery' || nextSession === lastAppliedSessionRef) {
+  if (!elementInstance || resolvedView !== 'delivery') {
+    return;
+  }
+  if (nextSession === null || nextSession === undefined) {
+    return;
+  }
+  const nextSignature = createValueSignature(nextSession ?? {});
+  if (nextSignature === lastAppliedSessionSignature) {
     return;
   }
   if ((elementInstance as any)._model === undefined) {
+    if (model === null || model === undefined) {
+      return;
+    }
     (elementInstance as any).model = cloneValue(model ?? {});
   }
   suppressSessionEvents = true;
   try {
     (elementInstance as any).session = nextSession ?? {};
-    lastAppliedSessionRef = nextSession;
+    lastAppliedSessionSignature = nextSignature;
   } finally {
     suppressSessionEvents = false;
   }
@@ -276,9 +368,11 @@ async function ensureLoaded() {
       }
       elementInstance = document.createElement(loaded.tagName);
       currentTagName = loaded.tagName;
-      lastAppliedModelRef = null;
-      lastAppliedSessionRef = null;
       lastAppliedRole = null;
+      lastAppliedModelSignature = '';
+      lastAppliedSessionSignature = '';
+      lastForwardedSessionDetailSignature = '';
+      lastForwardedSessionSignature = '';
     }
 
     attachInstanceHandlers(loaded.view);
@@ -348,7 +442,7 @@ onMount(() => {
     void mathRenderer(document.createElement('div'));
   }
 
-  if (container && mathRenderer) {
+  if (container) {
     mathObserver = new MutationObserver(() => {
       if (renderTimeout) {
         clearTimeout(renderTimeout);

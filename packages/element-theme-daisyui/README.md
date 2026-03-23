@@ -10,7 +10,7 @@ DaisyUI-focused theme wrapper package for PIE players.
 
 ```html
 <pie-element-theme-daisyui theme="dark">
-  <pie-esm-element-player element-name="hotspot"></pie-esm-element-player>
+  <pie-element-player element-name="hotspot"></pie-element-player>
 </pie-element-theme-daisyui>
 ```
 

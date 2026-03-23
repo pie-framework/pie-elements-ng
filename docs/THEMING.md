@@ -37,7 +37,7 @@ Generic wrapper:
 
 ```html
 <pie-element-theme theme="light">
-  <pie-esm-element-player element-name="multiple-choice"></pie-esm-element-player>
+  <pie-element-player element-name="multiple-choice"></pie-element-player>
 </pie-element-theme>
 ```
 
@@ -45,7 +45,7 @@ DaisyUI wrapper:
 
 ```html
 <pie-element-theme-daisyui theme="auto">
-  <pie-esm-element-player element-name="multiple-choice"></pie-esm-element-player>
+  <pie-element-player element-name="multiple-choice"></pie-element-player>
 </pie-element-theme-daisyui>
 ```
 
