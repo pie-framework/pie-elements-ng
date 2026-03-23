@@ -1,7 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const ELEMENT = process.env.UNIFIED_PLAYER_E2E_ELEMENT?.trim() || 'multiple-choice';
-const DEMO_QUERY = ELEMENT === 'multiple-choice' ? '&demo=math-algebra-quadratic' : '';
+const DEMO_ID =
+  process.env.UNIFIED_PLAYER_E2E_DEMO?.trim() ||
+  (ELEMENT === 'multiple-choice' ? 'math-algebra-quadratic' : ELEMENT === 'graphing' ? 'parabola-vertex' : '');
+const DEMO_QUERY = DEMO_ID ? `&demo=${DEMO_ID}` : '';
+const STRATEGIES = (process.env.UNIFIED_PLAYER_E2E_STRATEGIES?.trim() || 'esm,iife')
+  .split(',')
+  .map((s) => s.trim())
+  .filter((s): s is 'esm' | 'iife' => s === 'esm' || s === 'iife');
 
 async function waitForHostSettled(page: Page) {
   await page.waitForFunction(
@@ -26,7 +33,7 @@ test.describe('Unified element player strategy host', () => {
   test('delivery uses one host for esm and iife', async ({ page }) => {
     test.setTimeout(120_000);
 
-    for (const strategy of ['esm', 'iife'] as const) {
+    for (const strategy of STRATEGIES) {
       await page.goto(
         `/${ELEMENT}/deliver?mode=gather&role=student&player=${strategy}${DEMO_QUERY}`
       );
@@ -52,7 +59,7 @@ test.describe('Unified element player strategy host', () => {
   test('author and print mount through one host', async ({ page }) => {
     test.setTimeout(120_000);
 
-    for (const strategy of ['esm', 'iife'] as const) {
+    for (const strategy of STRATEGIES) {
       await page.goto(`/${ELEMENT}/author?player=${strategy}`);
       await page.waitForSelector('pie-element-player[view="author"]', { timeout: 45_000 });
       await waitForHostSettled(page);
