@@ -4,12 +4,10 @@
  * Shows the configure component for authoring questions
  */
 import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
-import AuthorView from '$lib/element-player/components/AuthorView.svelte';
-import IifeAuthorPlayer from '$lib/element-player/components/IifeAuthorPlayer.svelte';
 import { page } from '$app/stores';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
+import '@pie-element/element-player/players';
 import {
-  elementName,
   model,
   controller,
   updateModel,
@@ -35,13 +33,6 @@ function handleModelChanged(event: CustomEvent) {
   setTimeout(() => {
     syncing = false;
   }, 300);
-}
-
-function handleIifeControllerChanged(event: CustomEvent) {
-  const nextController = event.detail;
-  if (nextController) {
-    controller.set(nextController);
-  }
 }
 
 function handleBundleMeta(event: CustomEvent) {
@@ -80,54 +71,43 @@ function handleBuildState(event: CustomEvent) {
 }
 </script>
 
-{#if playerType === 'iife'}
-  {#if syncing}
-    <div class="sync-indicator">
-      <span class="spinner-small"></span>
-      Synchronizing...
-    </div>
-  {/if}
-  <div class="h-full overflow-auto p-4">
+<PlayerLayout
+  elementName={data.elementName}
+  packageName={data.packageName}
+  bind:controller={$controller}
+  capabilities={data.capabilities}
+  preloadController={playerType === 'esm'}
+  preloadAuthor={false}
+  preloadPrint={false}
+  {debug}
+>
+  {#snippet children()}
+    {#if syncing}
+      <div class="sync-indicator">
+        <span class="spinner-small"></span>
+        Synchronizing...
+      </div>
+    {/if}
     <pie-element-theme-daisyui theme={$theme}>
-      <IifeAuthorPlayer
-        elementName={data.elementName}
-        packageName={data.packageName}
-        elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-        model={$model}
-        rebuildVersion={$iifeBuildRequestVersion}
-        on:model-changed={handleModelChanged}
-        on:controller-changed={handleIifeControllerChanged}
-        on:bundle-meta={handleBundleMeta}
-        on:build-state={handleBuildState}
-      />
-    </pie-element-theme-daisyui>
-  </div>
-{:else}
-  <PlayerLayout
-    elementName={data.elementName}
-    packageName={data.packageName}
-    bind:controller={$controller}
-    capabilities={data.capabilities}
-    {debug}
-  >
-    {#snippet children()}
-      {#if syncing}
-        <div class="sync-indicator">
-          <span class="spinner-small"></span>
-          Synchronizing...
+      <div class="author-view" class:iife-author-player={playerType === 'iife'}>
+        <div class="configure-container">
+          <pie-element-player
+            strategy={playerType}
+            view="author"
+            element-name={data.elementName}
+            package-name={data.packageName}
+            element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+            model={$model}
+            rebuildVersion={$iifeBuildRequestVersion}
+            onmodel-changed={handleModelChanged}
+            onbundle-meta={handleBundleMeta}
+            onbuild-state={handleBuildState}
+          ></pie-element-player>
         </div>
-      {/if}
-      <pie-element-theme-daisyui theme={$theme}>
-        <AuthorView
-          elementName={$elementName}
-          model={$model}
-          {debug}
-          on:model-changed={handleModelChanged}
-        />
-      </pie-element-theme-daisyui>
-    {/snippet}
-  </PlayerLayout>
-{/if}
+      </div>
+    </pie-element-theme-daisyui>
+  {/snippet}
+</PlayerLayout>
 
 <style>
   .sync-indicator {
@@ -170,5 +150,15 @@ function handleBuildState(event: CustomEvent) {
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+  }
+
+  .author-view {
+    height: 100%;
+    overflow: auto;
+  }
+
+  .configure-container {
+    padding: 1rem;
+    height: 100%;
   }
 </style>

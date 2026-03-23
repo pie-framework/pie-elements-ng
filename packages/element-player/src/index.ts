@@ -12,11 +12,17 @@
 // Import Tailwind CSS + DaisyUI
 import './app.css';
 
-// Export ESM players (recommended)
-export { EsmElementPlayer, EsmPrintPlayer } from './players/index.js';
+// Export unified player plus compatibility wrappers.
+export { PieElementPlayer, EsmElementPlayer, EsmPrintPlayer } from './players/index.js';
 
 // Import players to register them as custom elements
 import './players/index.js';
 
 // Re-export types
 export type { ElementPlayerProps, PieController, Tab } from './lib/types.js';
+export type { ElementPlayerStrategy, ElementPlayerView } from './lib/player-strategy.js';
+export {
+  normalizeElementPlayerStrategy,
+  normalizeElementPlayerView,
+  resolveElementPlayerView,
+} from './lib/player-strategy.js';

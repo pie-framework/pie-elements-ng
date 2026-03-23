@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { mkDependencyHash } from '../src/dependency-hash';
+import { mkBundleCacheKey, mkDependencyHash } from '../src/dependency-hash';
 import type { BuildDependency } from '../src/types';
 
 describe('mkDependencyHash', () => {
@@ -93,5 +93,28 @@ describe('mkDependencyHash', () => {
     // Known hash value for this specific input (from string-hash)
     // This ensures the hash algorithm is stable
     expect(hash).toBe('1091131105');
+  });
+});
+
+describe('mkBundleCacheKey', () => {
+  const deps: BuildDependency[] = [{ name: '@pie-element/multiple-choice', version: '2.0.0' }];
+
+  it('returns dependency hash when salt missing', () => {
+    expect(mkBundleCacheKey(deps)).toBe(mkDependencyHash(deps));
+    expect(mkBundleCacheKey(deps, '')).toBe(mkDependencyHash(deps));
+    expect(mkBundleCacheKey(deps, '   ')).toBe(mkDependencyHash(deps));
+  });
+
+  it('returns deterministic salted key when salt provided', () => {
+    const key1 = mkBundleCacheKey(deps, 'workspace:abc');
+    const key2 = mkBundleCacheKey(deps, 'workspace:abc');
+    expect(key1).toBe(key2);
+    expect(key1).toMatch(/^\d+-[a-f0-9]{16}$/);
+  });
+
+  it('changes key when salt changes', () => {
+    const key1 = mkBundleCacheKey(deps, 'workspace:abc');
+    const key2 = mkBundleCacheKey(deps, 'workspace:def');
+    expect(key1).not.toBe(key2);
   });
 });

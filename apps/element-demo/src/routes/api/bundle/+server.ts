@@ -10,8 +10,9 @@ import { Bundler } from '@pie-element/bundler-shared';
 import type { BuildBundleName } from '@pie-element/bundler-shared';
 import { join } from 'node:path';
 import { mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
-import { mkDependencyHash } from '@pie-element/bundler-shared';
+import { mkBundleCacheKey } from '@pie-element/bundler-shared';
 import { createOrJoinBuild, emitBuildEvent, getBuildSnapshot } from './build-state';
+import { createWorkspaceCacheSaltForDependencies } from '$lib/testing/workspace-fingerprint';
 
 const DEFAULT_INSTANCE_DIR = join(process.cwd(), '.cache', 'demo-bundler');
 const instanceDir = process.env.DEMO_BUNDLER_INSTANCE_DIR || DEFAULT_INSTANCE_DIR;
@@ -54,8 +55,11 @@ function clearWorkspacePaths() {
   mkdirSync(cacheDir, { recursive: true });
 }
 
-function clearBundleForDependencies(dependencies: Array<{ name: string; version: string }>) {
-  const hash = mkDependencyHash(dependencies);
+function clearBundleForDependencies(
+  dependencies: Array<{ name: string; version: string }>,
+  cacheSalt?: string
+) {
+  const hash = mkBundleCacheKey(dependencies, cacheSalt);
   rmSync(join(instanceDir, 'bundles', hash), { recursive: true, force: true });
   rmSync(join(instanceDir, 'cache', hash), { recursive: true, force: true });
 }
@@ -111,24 +115,38 @@ export const POST: RequestHandler = async ({ request }) => {
 
     if (buildRequest.clearCache === true) {
       clearWorkspacePaths();
-    } else if (buildRequest.forceRebuild === true) {
-      clearBundleForDependencies(dependencies);
     }
 
     const requestedBundles = Array.isArray(buildRequest.requestedBundles)
       ? Array.from(new Set(buildRequest.requestedBundles.filter(isBuildBundleName))).sort()
       : undefined;
+    const effectiveRequestedBundles = requestedBundles || ['player', 'client-player', 'editor'];
+    const cacheSalt =
+      resolutionMode === 'workspace-fast'
+        ? createWorkspaceCacheSaltForDependencies({
+            workspaceRoot: localWorkspaceRoot,
+            dependencies,
+            requestedBundles: effectiveRequestedBundles,
+            resolutionMode,
+            sourceMaps: enableSourceMaps,
+            extraFiles: [join('packages', 'shared', 'bundler-shared', 'src', 'index.ts')],
+          })
+        : undefined;
 
     logApi('build request', {
       deps: dependencies,
-      requestedBundles: requestedBundles || ['player', 'client-player', 'editor'],
+      requestedBundles: effectiveRequestedBundles,
       forceRebuild: !!buildRequest.forceRebuild,
       clearCache: !!buildRequest.clearCache,
       sourceMaps: enableSourceMaps,
       wait: buildRequest.wait !== false,
+      cacheSalt: cacheSalt?.slice(0, 20),
     });
-    const hash = mkDependencyHash(dependencies);
-    const buildKey = `${hash}:${(requestedBundles || ['player', 'client-player', 'editor']).join(',')}:sourcemaps=${enableSourceMaps}`;
+    if (buildRequest.forceRebuild === true) {
+      clearBundleForDependencies(dependencies, cacheSalt);
+    }
+    const hash = mkBundleCacheKey(dependencies, cacheSalt);
+    const buildKey = `${hash}:${effectiveRequestedBundles.join(',')}:sourcemaps=${enableSourceMaps}`;
     const waitForResult = buildRequest.wait !== false;
     logApi('build key', { hash, buildKey });
     const build = createOrJoinBuild(
@@ -140,6 +158,7 @@ export const POST: RequestHandler = async ({ request }) => {
           workspaceRoot: resolutionMode === 'workspace-fast' ? localWorkspaceRoot : undefined,
           requestedBundles,
           sourceMaps: enableSourceMaps,
+          cacheSalt,
         },
       },
       hash,
@@ -157,7 +176,7 @@ export const POST: RequestHandler = async ({ request }) => {
     );
     logBuildApi(build.buildId, build.joined ? 'joined existing build' : 'started new build', {
       hash,
-      requestedBundles: requestedBundles || ['player', 'client-player', 'editor'],
+      requestedBundles: effectiveRequestedBundles,
       waitForResult,
     });
 

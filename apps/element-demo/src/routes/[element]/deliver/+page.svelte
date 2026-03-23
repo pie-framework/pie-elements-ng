@@ -5,10 +5,9 @@
  */
 import { page } from '$app/stores';
 import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
-import DeliveryView from '$lib/element-player/components/DeliveryView.svelte';
-import IifeElementPlayer from '$lib/element-player/components/IifeElementPlayer.svelte';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
 import { get } from 'svelte/store';
+import '@pie-element/element-player/players';
 import {
   model,
   session,
@@ -88,6 +87,15 @@ const buildModel = async (
 
   const modelFn = currentController?.model;
   if (!modelFn || typeof modelFn !== 'function') {
+    if (currentPlayerType === 'iife' && currentModel && typeof currentModel === 'object') {
+      // In IIFE mode the delivery host can bootstrap with raw model while controller arrives.
+      // This avoids passing an empty placeholder model to elements that require full shape.
+      elementModel = { ...currentModel, mode: currentMode };
+      elementSession = normalizeSession(currentSession);
+      esmModelReady = true;
+      modelError = null;
+      return;
+    }
     modelError = currentController
       ? 'Controller model() function is required but not found'
       : 'Controller not loaded yet';
@@ -144,7 +152,7 @@ const buildModel = async (
 };
 
 // Rebuild model when dependencies change
-// Note: Session changes do NOT trigger rebuild - they're handled by DeliveryView
+// Note: Session changes do NOT trigger rebuild - they're handled by pie-element-player events
 // Only rebuild when model, mode, role, partialScoring, or controller changes
 $effect(() => {
   const currentModel = $model;
@@ -187,7 +195,11 @@ function handleSessionChanged(event: CustomEvent) {
 }
 
 function handleIifeControllerChanged(event: CustomEvent) {
-  const nextController = event.detail;
+  if (playerType !== 'iife') {
+    return;
+  }
+  const detail = event.detail as any;
+  const nextController = detail?.controller ?? detail;
   if (nextController) {
     controller.set(nextController);
   }
@@ -243,31 +255,27 @@ function handleBuildState(event: CustomEvent) {
 >
   {#snippet children()}
     <pie-element-theme-daisyui theme={$theme}>
-      {#if playerType === 'iife'}
-        <IifeElementPlayer
-          elementName={data.elementName}
-          packageName={data.packageName}
-          elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-          model={elementModel}
-          session={elementSession}
-          rebuildVersion={$iifeBuildRequestVersion}
-          on:session-changed={handleSessionChanged}
-          on:controller-changed={handleIifeControllerChanged}
-          on:bundle-meta={handleBundleMeta}
-          on:build-state={handleBuildState}
-        />
+      {#if esmModelReady || playerType === 'iife'}
+        <div class="delivery-view">
+          <div class="element-container">
+            <pie-element-player
+              strategy={playerType}
+              view="delivery"
+              element-name={data.elementName}
+              package-name={data.packageName}
+              element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+              model={elementModel}
+              session={elementSession}
+              rebuildVersion={$iifeBuildRequestVersion}
+              onsession-changed={handleSessionChanged}
+              oncontroller-changed={handleIifeControllerChanged}
+              onbundle-meta={handleBundleMeta}
+              onbuild-state={handleBuildState}
+            ></pie-element-player>
+          </div>
+        </div>
       {:else}
-        {#if esmModelReady}
-          <DeliveryView
-            elementName={data.elementName}
-            {elementModel}
-            session={elementSession}
-            {debug}
-            on:session-changed={handleSessionChanged}
-          />
-        {:else}
-          <div class="model-error">{modelError ?? 'Preparing ESM view model...'}</div>
-        {/if}
+        <div class="model-error">{modelError ?? 'Preparing ESM view model...'}</div>
       {/if}
     </pie-element-theme-daisyui>
     {#if modelError}
@@ -285,5 +293,16 @@ function handleBuildState(event: CustomEvent) {
     border-radius: 4px;
     color: #8a6d3b;
     font-size: 0.9rem;
+  }
+
+  .delivery-view {
+    height: 100%;
+    max-height: 100%;
+    overflow: auto;
+  }
+
+  .element-container {
+    padding: 1rem;
+    max-width: 100%;
   }
 </style>

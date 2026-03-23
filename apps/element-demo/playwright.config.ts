@@ -38,6 +38,7 @@ function resolveLocalBrowsersDir(): string | undefined {
 
 const localBrowsersDir = resolveLocalBrowsersDir();
 const runIifeE2e = process.env.RUN_IIFE_E2E === '1';
+const useExternalServer = process.env.PIE_IIFE_EXTERNAL_SERVER === '1';
 
 function resolveLocalChromium(): string | undefined {
   if (!localBrowsersDir || !existsSync(localBrowsersDir)) {
@@ -103,10 +104,12 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'bun run dev',
-    url: 'http://localhost:5222',
-    reuseExistingServer: true, // Use existing dev server
-    timeout: 120_000,
-  },
+  webServer: useExternalServer
+    ? undefined
+    : {
+        command: 'bun run dev',
+        url: 'http://localhost:5222',
+        reuseExistingServer: true, // Use existing dev server
+        timeout: 120_000,
+      },
 });

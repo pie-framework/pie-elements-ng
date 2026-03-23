@@ -3,6 +3,7 @@
  * Copied from pie-api-aws/packages/datastore/src/dependency.ts
  */
 
+import { createHash } from 'node:crypto';
 import hash from 'string-hash';
 import type { BuildDependency } from './types.js';
 
@@ -17,4 +18,21 @@ export function mkDependencyHash(deps: BuildDependency[]): string {
     .join('+');
 
   return String(hash(depString));
+}
+
+export function mkBundleCacheKey(deps: BuildDependency[], cacheSalt?: string): string {
+  const dependencyHash = mkDependencyHash(deps);
+  const normalizedSalt = cacheSalt?.trim();
+  if (!normalizedSalt) {
+    return dependencyHash;
+  }
+
+  const saltedHash = createHash('sha256')
+    .update(dependencyHash)
+    .update('\0')
+    .update(normalizedSalt)
+    .digest('hex')
+    .slice(0, 16);
+
+  return `${dependencyHash}-${saltedHash}`;
 }

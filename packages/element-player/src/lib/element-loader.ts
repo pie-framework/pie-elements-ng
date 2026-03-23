@@ -49,10 +49,22 @@ export async function loadElement(
         }
       }
 
-      if (staticImports?.hasElementModule(packagePath)) {
-        module = await staticImports.getElementModule(packagePath);
+      const elementName = packagePath
+        .replace(/^@pie-element\//, '')
+        .replace(/\/(author|print|controller)$/, '');
+      let importer: (() => Promise<any>) | undefined;
+      if (packagePath.endsWith('/author')) {
+        importer = staticImports?.getAuthorModule?.(elementName);
+      } else if (packagePath.endsWith('/print')) {
+        importer = staticImports?.getPrintModule?.(elementName);
       } else {
-        // Fallback to dynamic import (will fail in Vite but kept for compatibility)
+        importer = staticImports?.getElementModule?.(elementName);
+      }
+
+      if (importer) {
+        module = await importer();
+      } else {
+        // Fallback to dynamic import for environments without generated local import maps.
         module = await import(/* @vite-ignore */ packagePath);
       }
     } else {
@@ -125,10 +137,12 @@ export async function loadController(
         }
       }
 
-      if (staticImports?.hasElementModule(controllerPath)) {
-        module = await staticImports.getElementModule(controllerPath);
+      const elementName = packageName.replace(/^@pie-element\//, '');
+      const importer = staticImports?.getControllerModule?.(elementName);
+      if (importer) {
+        module = await importer();
       } else {
-        // Fallback to dynamic import (will fail in Vite but kept for compatibility)
+        // Fallback to dynamic import for environments without generated local import maps.
         module = await import(/* @vite-ignore */ controllerPath);
       }
     } else {

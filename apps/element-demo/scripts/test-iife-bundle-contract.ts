@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { Bundler, mkDependencyHash, type BuildBundleName } from '@pie-element/bundler-shared';
 import { loadReactElementMatrix } from '../src/lib/testing/react-element-matrix';
+import { createWorkspaceCacheSalt } from '../src/lib/testing/workspace-fingerprint';
 
 interface ContractFailure {
   element: string;
@@ -56,7 +57,7 @@ function assertBundleContract(
 async function main() {
   const workspaceRoot = join(process.cwd(), '..', '..');
   const elementFilter = normalizeElementFilter(process.env.IIFE_ELEMENTS);
-  const clearCache = process.env.IIFE_CLEAR_CACHE !== '0';
+  const clearCache = process.env.IIFE_CLEAR_CACHE === '1';
   const instanceDir = join(process.cwd(), '.cache', 'iife-contract-tests');
   const outputDir = join(instanceDir, 'bundles');
   const cacheDir = join(instanceDir, 'cache');
@@ -86,10 +87,19 @@ async function main() {
     const requestedBundles: BuildBundleName[] = entry.hasAuthor
       ? ['client-player', 'editor']
       : ['client-player'];
-    const hash = mkDependencyHash([dependency]);
+    const baseHash = mkDependencyHash([dependency]);
+    const cacheSalt = createWorkspaceCacheSalt({
+      workspaceRoot,
+      dependencies: [dependency],
+      packageDirs: [entry.packageDir],
+      requestedBundles,
+      resolutionMode: 'workspace-fast',
+      sourceMaps: false,
+      extraFiles: [join('packages', 'shared', 'bundler-shared', 'src', 'index.ts')],
+    });
 
     console.log(
-      `[iife-contract][${entry.name}] building bundles=${requestedBundles.join(',')} hash=${hash}`
+      `[iife-contract][${entry.name}] building bundles=${requestedBundles.join(',')} hash=${baseHash} salt=${cacheSalt.slice(0, 20)}`
     );
 
     const result = await bundler.build({
@@ -99,6 +109,7 @@ async function main() {
         workspaceRoot,
         requestedBundles,
         sourceMaps: false,
+        cacheSalt,
       },
     });
 
@@ -110,6 +121,8 @@ async function main() {
       });
       continue;
     }
+
+    const hash = result.hash;
 
     if (result.cached) {
       cacheHits += 1;

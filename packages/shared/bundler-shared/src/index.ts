@@ -19,7 +19,7 @@ import type {
 import { createControllerWebpackConfig, createWebpackConfig } from './webpack-config.js';
 import { installPackages } from './installer.js';
 import { generateEntries } from './entry-generator.js';
-import { mkDependencyHash } from './dependency-hash.js';
+import { mkBundleCacheKey } from './dependency-hash.js';
 import { BuildManager } from './build-manager.js';
 
 interface ControllerManifest {
@@ -68,7 +68,7 @@ export class Bundler {
 
   async build(request: BuildRequest, onProgress?: BuildProgressListener): Promise<BuildResult> {
     const startTime = Date.now();
-    const hash = mkDependencyHash(request.dependencies);
+    const hash = mkBundleCacheKey(request.dependencies, request.options?.cacheSalt);
     const requestedBundles = normalizeRequestedBundles(request.options?.requestedBundles);
     const includeControllers = request.options?.includeControllers === true;
     const sourceMaps = request.options?.sourceMaps === true;
@@ -418,6 +418,7 @@ function normalizeRequestedBundles(requested?: BuildBundleName[]): BuildBundleNa
 
 // Export utilities
 export { mkDependencyHash } from './dependency-hash.js';
+export { mkBundleCacheKey } from './dependency-hash.js';
 export { generateEntries } from './entry-generator.js';
 export { createWebpackConfig, createControllerWebpackConfig } from './webpack-config.js';
 

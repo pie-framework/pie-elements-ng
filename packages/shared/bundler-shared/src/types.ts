@@ -25,6 +25,11 @@ export interface BuildOptions {
   resolutionMode?: BuildResolutionMode;
   workspaceRoot?: string;
   requestedBundles?: BuildBundleName[];
+  /**
+   * Optional cache discriminator mixed into the bundle cache key.
+   * Use for workspace/source-aware invalidation while preserving per-dependency caching.
+   */
+  cacheSalt?: string;
   /** Emit source maps for local debugging (larger/slower bundles). */
   sourceMaps?: boolean;
   /**
