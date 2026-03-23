@@ -3,7 +3,11 @@ import { expect, test, type Page } from '@playwright/test';
 const ELEMENT = process.env.UNIFIED_PLAYER_E2E_ELEMENT?.trim() || 'multiple-choice';
 const DEMO_ID =
   process.env.UNIFIED_PLAYER_E2E_DEMO?.trim() ||
-  (ELEMENT === 'multiple-choice' ? 'math-algebra-quadratic' : ELEMENT === 'graphing' ? 'parabola-vertex' : '');
+  (ELEMENT === 'multiple-choice'
+    ? 'math-algebra-quadratic'
+    : ELEMENT === 'graphing'
+      ? 'parabola-vertex'
+      : '');
 const DEMO_QUERY = DEMO_ID ? `&demo=${DEMO_ID}` : '';
 const STRATEGIES = (process.env.UNIFIED_PLAYER_E2E_STRATEGIES?.trim() || 'esm,iife')
   .split(',')

@@ -194,7 +194,8 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
       const detail = customEvent.detail as any;
       // Many elements emit partial updates in model.updated detail;
       // emit a full model snapshot to keep host state consistent.
-      const nextModel = (elementInstance as any)?.model ?? detail?.model ?? detail?.update ?? detail;
+      const nextModel =
+        (elementInstance as any)?.model ?? detail?.model ?? detail?.update ?? detail;
       dispatch('model-changed', nextModel);
     };
     elementInstance.addEventListener('model.updated', modelHandler);
