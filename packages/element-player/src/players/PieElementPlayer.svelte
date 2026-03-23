@@ -145,6 +145,17 @@ function hasExplicitResponseField(value: unknown): boolean {
   return false;
 }
 
+function hasUsableSessionPayload(value: unknown): boolean {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const detailObj = value as Record<string, unknown>;
+  if ('session' in detailObj) {
+    return true;
+  }
+  return hasResponseValue(detailObj) || hasExplicitResponseField(detailObj);
+}
+
 function reconnectMathObserver() {
   if (mathObserver && container) {
     mathObserver.observe(container, {
@@ -204,37 +215,37 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
   if (viewMode === 'delivery') {
     sessionHandler = (event: Event) => {
       if (suppressSessionEvents || isForwardingSessionEvent) {
+        event.stopPropagation();
         return;
       }
       const customEvent = event as CustomEvent;
       const detail = customEvent.detail as any;
       const detailObj =
         detail && typeof detail === 'object' ? (detail as Record<string, unknown>) : null;
-      if (!detailObj) {
-        return;
-      }
-      if (
-        !('session' in detailObj) &&
-        !hasResponseValue(detailObj) &&
-        !hasExplicitResponseField(detailObj)
-      ) {
-        return;
-      }
+      const hasUsableDetail = hasUsableSessionPayload(detailObj);
+      const liveSession = (elementInstance as any)?.session;
+      const nextSession = detail?.session ?? liveSession;
 
-      const nextSession = detail?.session ?? (elementInstance as any).session ?? detail;
       if (nextSession === undefined) {
+        event.stopPropagation();
+        return;
+      }
+      if (!hasUsableDetail && liveSession === undefined) {
+        event.stopPropagation();
         return;
       }
       const sessionSignature = createValueSignature(nextSession);
       if (sessionSignature === lastForwardedSessionSignature) {
+        event.stopPropagation();
         return;
       }
       const forwardedDetail = {
-        ...detailObj,
+        ...(detailObj ?? {}),
         session: nextSession,
       };
       const detailSignature = createValueSignature(forwardedDetail);
       if (detailSignature === lastForwardedSessionDetailSignature) {
+        event.stopPropagation();
         return;
       }
       lastForwardedSessionDetailSignature = detailSignature;

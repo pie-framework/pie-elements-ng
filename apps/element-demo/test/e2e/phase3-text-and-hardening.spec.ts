@@ -136,11 +136,28 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     const before = await waitForSessionMutation(page, {}, 5_000);
 
     await switchMode(page, 'view');
+    const checkedBeforeAttempt = await root
+      .locator('input[type="radio"]:checked, input[type="checkbox"]:checked')
+      .evaluateAll((nodes) => nodes.map((node) => (node as HTMLInputElement).value));
+    expect(checkedBeforeAttempt.some((value) => value.includes('mercury'))).toBeTruthy();
+
+    const allInputsDisabled = await root
+      .locator('input[type="radio"], input[type="checkbox"]')
+      .evaluateAll((nodes) =>
+        nodes.length > 0 && nodes.every((node) => (node as HTMLInputElement).disabled)
+      );
+    expect(allInputsDisabled).toBeTruthy();
+
     if (await option2.isVisible().catch(() => false)) {
       await option2.click({ force: true });
     }
     const after = await waitForSessionMutation(page, before, 2_000);
     expect(JSON.stringify(after ?? {})).toBe(JSON.stringify(before ?? {}));
+
+    const checkedAfterAttempt = await root
+      .locator('input[type="radio"]:checked, input[type="checkbox"]:checked')
+      .evaluateAll((nodes) => nodes.map((node) => (node as HTMLInputElement).value));
+    expect(checkedAfterAttempt.some((value) => value.includes('mercury'))).toBeTruthy();
   });
 
   test('simple-cloze: evaluate mode exposes correct/feedback signal for wrong answer', async ({

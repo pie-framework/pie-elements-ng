@@ -106,13 +106,15 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
     const root = deliveryContainer(page);
     await expect(root).toBeVisible();
     const input = root.locator('input[type="text"], input').first();
-    await input.fill('5');
+    const responseValue = '5';
+    await input.fill(responseValue);
     await page.waitForTimeout(500);
     const before = await getSessionState(page);
 
     await switchRole(page, 'instructor');
     await switchMode(page, 'evaluate');
     await expect(root).toBeVisible();
+    await expect(root.locator('input[type="text"], input').first()).toHaveValue(responseValue);
     const score = await getScore(page);
     expect(score === null || typeof score === 'number').toBeTruthy();
 
@@ -121,6 +123,7 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
     expect(sourceModel?.element).toBe('simple-cloze');
     await switchTab(page, 'deliver');
     await switchMode(page, 'gather');
+    await expect(root.locator('input[type="text"], input').first()).toHaveValue(responseValue);
     const after = await getSessionState(page);
     expect(JSON.stringify(after ?? {})).toBe(JSON.stringify(before ?? {}));
   });

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { switchMode, switchRole } from './test-helpers';
 
 const ELEMENT = process.env.UNIFIED_PLAYER_E2E_ELEMENT?.trim() || 'multiple-choice';
 const DEMO_ID =
@@ -211,6 +212,106 @@ test.describe('Unified element player strategy host', () => {
 
     expect(eventResult.count).toBeGreaterThan(0);
     expect(eventResult.lastDetail?.session).toEqual({ value: ['A'] });
+    // Metadata-only events (e.g. {complete, component}) must not overwrite forwarded session.
+    expect(eventResult.lastDetail?.complete).toBeUndefined();
+    expect(eventResult.lastDetail?.component).toBeUndefined();
+  });
+
+  test('multiple-choice keeps user selection across mode/role switches', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    const multipleChoiceDemo = process.env.UNIFIED_PLAYER_E2E_MC_DEMO?.trim() || 'math-algebra-quadratic';
+    await page.goto(
+      `/multiple-choice/deliver?mode=gather&role=student&player=esm&demo=${multipleChoiceDemo}`
+    );
+    await page.waitForSelector('pie-element-player[view="delivery"]', { timeout: 45_000 });
+    await waitForHostSettled(page);
+
+    const beforeSessionSignature = await page.evaluate(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      return JSON.stringify(host?.session ?? {});
+    });
+
+    await page.waitForSelector(
+      'pie-element-player .demo-element-player input[type="radio"], pie-element-player .demo-element-player input[type="checkbox"]',
+      { timeout: 15_000 }
+    );
+    const interactionWorked = await page.evaluate(() => {
+      const inputs = Array.from(
+        document.querySelectorAll<HTMLInputElement>(
+          'pie-element-player .demo-element-player input[type="radio"], pie-element-player .demo-element-player input[type="checkbox"]'
+        )
+      ).filter((input) => !input.disabled);
+      const target = inputs.find((input) => !input.checked) || inputs[0];
+      if (!target) {
+        return false;
+      }
+      const id = target.id;
+      const label =
+        id && document.querySelector(`pie-element-player .demo-element-player label[for="${id}"]`);
+      if (label instanceof HTMLElement) {
+        label.click();
+        return true;
+      }
+      target.click();
+      return true;
+    });
+    expect(interactionWorked).toBeTruthy();
+
+    await page.waitForFunction(
+      (beforeSignature) => {
+        const host = document.querySelector('pie-element-player') as any;
+        const current = JSON.stringify(host?.session ?? {});
+        return current !== beforeSignature;
+      },
+      beforeSessionSignature,
+      { timeout: 15_000 }
+    );
+
+    const selectedSession = await page.evaluate(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      const session = host?.session && typeof host.session === 'object' ? host.session : {};
+      const value = (session as any).value;
+      return {
+        session,
+        value: Array.isArray(value) ? value : [],
+      };
+    });
+    expect(Array.isArray(selectedSession.value)).toBeTruthy();
+    expect(selectedSession.value.length).toBeGreaterThan(0);
+
+    await switchMode(page, 'view');
+    await switchRole(page, 'instructor');
+    await waitForHostSettled(page);
+
+    const selectionVisibleReadOnly = await page.evaluate((value) => {
+      if (!Array.isArray(value) || value.length === 0) {
+        return false;
+      }
+      const inputs = Array.from(
+        document.querySelectorAll<HTMLInputElement>(
+          'pie-element-player .demo-element-player input[type="radio"], pie-element-player .demo-element-player input[type="checkbox"]'
+        )
+      );
+      if (inputs.length === 0) {
+        return false;
+      }
+      const checkedValues = inputs.filter((input) => input.checked).map((input) => input.value);
+      const allDisabled = inputs.every((input) => input.disabled);
+      const matchesSelection = value.every((entry) => checkedValues.includes(entry));
+      return matchesSelection && allDisabled;
+    }, selectedSession.value);
+    expect(selectionVisibleReadOnly).toBeTruthy();
+
+    const sessionStillContainsSelection = await page.evaluate((value) => {
+        const host = document.querySelector('pie-element-player') as any;
+      const sessionValue = host?.session?.value;
+      if (!Array.isArray(sessionValue) || !Array.isArray(value) || value.length === 0) {
+        return false;
+      }
+      return value.every((entry) => sessionValue.includes(entry));
+    }, selectedSession.value);
+    expect(sessionStillContainsSelection).toBeTruthy();
   });
 
   test('session remains stable across esm/iife strategy switches', async ({ page }) => {

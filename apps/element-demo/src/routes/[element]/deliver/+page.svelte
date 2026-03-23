@@ -41,6 +41,27 @@ const normalizeSession = (nextSession: any) => {
   return nextSession && typeof nextSession === 'object' ? nextSession : {};
 };
 
+const extractSessionFromEventDetail = (detail: unknown) => {
+  if (!detail || typeof detail !== 'object') {
+    return null;
+  }
+
+  const detailObj = detail as Record<string, unknown>;
+  if ('session' in detailObj) {
+    const sessionValue = detailObj.session;
+    return sessionValue && typeof sessionValue === 'object' ? sessionValue : null;
+  }
+
+  const keys = Object.keys(detailObj);
+  const metadataOnlyKeys = new Set(['complete', 'component']);
+  const isMetadataOnly = keys.length > 0 && keys.every((key) => metadataOnlyKeys.has(key));
+  if (isMetadataOnly) {
+    return null;
+  }
+
+  return detailObj;
+};
+
 // Apply session update callback for controller
 const applySessionUpdate = (patch: Record<string, unknown> | null | undefined) => {
   if (!patch || typeof patch !== 'object') {
@@ -181,8 +202,10 @@ $effect(() => {
 
 // Handle session changes from the element
 function handleSessionChanged(event: CustomEvent) {
-  const detail = event.detail as any;
-  const newSession = detail?.session ?? detail;
+  const newSession = extractSessionFromEventDetail(event.detail);
+  if (!newSession) {
+    return;
+  }
   elementSession = newSession;
   updateSession(newSession);
 }
@@ -256,8 +279,8 @@ function handleBuildState(event: CustomEvent) {
             element-name={data.elementName}
             package-name={data.packageName}
             element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-            model={esmModelReady ? elementModel : undefined}
-            session={esmModelReady ? elementSession : undefined}
+            model={elementModel ?? undefined}
+            session={elementSession ?? undefined}
             rebuildVersion={$iifeBuildRequestVersion}
             onsession-changed={handleSessionChanged}
             oncontroller-changed={handleIifeControllerChanged}
