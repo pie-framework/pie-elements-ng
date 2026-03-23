@@ -18,7 +18,7 @@
   "dependencies": {
     "@oclif/core": "^4.0.0",
     "@oclif/plugin-help": "^6.2.0",
-    "@pie-element/bundler-shared": "workspace:*",
+    "@pie-element/element-bundler": "workspace:*",
     "es-module-lexer": "^1.7.0",
     "glob": "^13.0.0",
     "open": "^10.0.3",

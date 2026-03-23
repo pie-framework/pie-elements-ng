@@ -3,7 +3,7 @@ import type {
   BuildRequest,
   BuildResult,
   BuildStage,
-} from '@pie-element/bundler-shared';
+} from '@pie-element/element-bundler';
 
 export interface BuildSnapshot {
   buildId: string;

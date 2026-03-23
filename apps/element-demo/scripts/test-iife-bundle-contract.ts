@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { Bundler, mkDependencyHash, type BuildBundleName } from '@pie-element/bundler-shared';
+import { Bundler, mkDependencyHash, type BuildBundleName } from '@pie-element/element-bundler';
 import { loadReactElementMatrix } from '../src/lib/testing/react-element-matrix';
 import { createWorkspaceCacheSalt } from '../src/lib/testing/workspace-fingerprint';
 

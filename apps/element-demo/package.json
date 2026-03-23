@@ -21,7 +21,7 @@
     "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
-    "@pie-element/bundler-shared": "workspace:*",
+    "@pie-element/element-bundler": "workspace:*",
     "@pie-element/element-theme-daisyui": "workspace:*",
     "@pie-element/element-player": "workspace:*",
     "@tiptap/core": "3.18.0",

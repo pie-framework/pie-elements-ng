@@ -1,8 +1,8 @@
 {
-  "name": "@pie-element/bundler-shared",
+  "name": "@pie-element/element-bundler",
   "version": "0.1.1",
   "type": "module",
-  "description": "Shared bundler for PIE elements - creates IIFE bundles compatible with pie-player-components",
+  "description": "PIE element bundler that produces IIFE bundles compatible with pie-player-components",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -19,7 +19,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && mkdir -p dist/shims && cp src/shims/*.js dist/shims/",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

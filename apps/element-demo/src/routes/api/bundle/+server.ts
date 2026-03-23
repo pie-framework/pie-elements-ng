@@ -6,11 +6,11 @@
 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { Bundler } from '@pie-element/bundler-shared';
-import type { BuildBundleName } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
+import type { BuildBundleName } from '@pie-element/element-bundler';
 import { join } from 'node:path';
 import { mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
-import { mkBundleCacheKey } from '@pie-element/bundler-shared';
+import { mkBundleCacheKey } from '@pie-element/element-bundler';
 import { createOrJoinBuild, emitBuildEvent, getBuildSnapshot } from './build-state';
 import { createWorkspaceCacheSaltForDependencies } from '$lib/testing/workspace-fingerprint';
 

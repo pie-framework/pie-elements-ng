@@ -1,6 +1,19 @@
-# @pie-element/bundler-shared
+# @pie-element/element-bundler
 
-Shared bundler for PIE elements - creates IIFE bundles compatible with pie-player-components.
+PIE bundler for element IIFE outputs compatible with pie-player-components.
+
+This package is for IIFE bundle generation only. ESM bundle workflows do not depend on this package.
+Runtime note: this bundler invokes `bun install` during workspace preparation, so Bun must be available in the execution environment.
+
+## Migration from `@pie-element/bundler-shared`
+
+```ts
+// before
+import { Bundler } from '@pie-element/bundler-shared';
+
+// after
+import { Bundler } from '@pie-element/element-bundler';
+```
 
 ## Features
 
@@ -16,7 +29,7 @@ Shared bundler for PIE elements - creates IIFE bundles compatible with pie-playe
 ### Basic Example
 
 ```typescript
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const bundler = new Bundler('./bundles');
 
@@ -44,7 +57,7 @@ console.log(result);
 ```typescript
 // src/routes/api/bundle/+server.ts
 import { json } from '@sveltejs/kit';
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const bundler = new Bundler('./static/bundles');
 
@@ -59,7 +72,7 @@ export const POST = async ({ request }) => {
 
 ```typescript
 import express from 'express';
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const app = express();
 const bundler = new Bundler('./public/bundles');
@@ -73,7 +86,7 @@ app.post('/api/bundle', async (req, res) => {
 ### With AWS Lambda
 
 ```typescript
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const bundler = new Bundler('/tmp/bundles');
 
@@ -106,6 +119,7 @@ new Bundler(outputDir?: string, cacheDir?: string, registry?: string, controller
 Build an IIFE bundle from the specified dependencies.
 
 **Request:**
+
 ```typescript
 {
   dependencies: Array<{
@@ -122,7 +136,7 @@ Build an IIFE bundle from the specified dependencies.
 ### Build with standalone controller artifacts
 
 ```typescript
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const bundler = new Bundler('./bundles', './cache', undefined, './controllers');
 
@@ -146,6 +160,7 @@ When `includeControllers` is enabled, the bundler emits:
 - `controllers/<dep>_at_<version>/stats.json`
 
 **Response:**
+
 ```typescript
 {
   success: boolean;

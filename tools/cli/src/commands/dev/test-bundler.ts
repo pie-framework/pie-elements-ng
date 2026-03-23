@@ -5,7 +5,7 @@ import {
   generateEntries,
   createWebpackConfig,
   type BuildDependency,
-} from '@pie-element/bundler-shared';
+} from '@pie-element/element-bundler';
 import webpack from 'webpack';
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync, symlinkSync, mkdirSync, writeFileSync } from 'node:fs';
