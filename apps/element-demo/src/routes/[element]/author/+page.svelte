@@ -6,7 +6,7 @@
 import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
 import { page } from '$app/stores';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
-import '@pie-element/element-player/players';
+import '@pie-element/element-player';
 import {
   model,
   controller,

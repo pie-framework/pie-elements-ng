@@ -7,7 +7,7 @@ import { page } from '$app/stores';
 import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
 import { get } from 'svelte/store';
-import '@pie-element/element-player/players';
+import '@pie-element/element-player';
 import {
   model,
   session,

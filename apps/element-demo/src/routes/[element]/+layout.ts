@@ -6,7 +6,8 @@
 import type { LayoutLoad } from './$types';
 import { discoverElementViews, type ElementView } from '$lib/utils/view-discovery';
 
-// SSR enabled for server-side validation - web components will hydrate on client
+// Player routes are client-rendered only; CE bundles reference browser-only globals (customElements/window).
+export const ssr = false;
 
 // Demo configuration interface
 interface DemoConfig {
