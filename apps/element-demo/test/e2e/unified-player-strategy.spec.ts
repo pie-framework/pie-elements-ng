@@ -143,6 +143,174 @@ test.describe('Unified element player strategy host', () => {
     expect(eventResult.detail?.parityMarker).toBe(marker);
   });
 
+  test('author resolves image and sound insert/delete events', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    await page.goto('/multiple-choice/author?player=esm');
+    await page.waitForSelector('pie-element-player[view="author"]', { timeout: 45_000 });
+    await waitForHostSettled(page);
+    await page.waitForSelector('multiple-choice-configure', { timeout: 45_000 });
+
+    const result = await page.evaluate(async () => {
+      const host = document.querySelector('pie-element-player');
+      if (!(host instanceof HTMLElement)) {
+        return { ok: false, reason: 'host-missing' };
+      }
+      const configure = host.querySelector('multiple-choice-configure');
+      if (!(configure instanceof HTMLElement)) {
+        return { ok: false, reason: 'configure-missing' };
+      }
+
+      const insert = await new Promise<{ ok: boolean; src?: string; err?: string }>((resolve) => {
+        let finished = false;
+        const timeout = window.setTimeout(() => {
+          if (!finished) {
+            finished = true;
+            resolve({ ok: false, err: 'insert-timeout' });
+          }
+        }, 4_000);
+
+        const file = new File(['pixel'], 'pixel.png', { type: 'image/png' });
+        const handler = {
+          isPasted: true,
+          cancel: () => {},
+          fileChosen: () => {},
+          getChosenFile: () => file,
+          progress: () => {},
+          done: (err?: unknown, src?: string) => {
+            if (finished) {
+              return;
+            }
+            finished = true;
+            clearTimeout(timeout);
+            resolve({
+              ok: !err && typeof src === 'string' && src.startsWith('data:image/png;base64,'),
+              src,
+              err: err ? String(err) : undefined,
+            });
+          },
+        };
+        configure.dispatchEvent(
+          new CustomEvent('insert.image', {
+            detail: handler,
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+
+      const remove = await new Promise<{ ok: boolean; err?: string }>((resolve) => {
+        let finished = false;
+        const timeout = window.setTimeout(() => {
+          if (!finished) {
+            finished = true;
+            resolve({ ok: false, err: 'delete-timeout' });
+          }
+        }, 4_000);
+
+        configure.dispatchEvent(
+          new CustomEvent('delete.image', {
+            detail: {
+              src: insert.src ?? 'data:image/png;base64,AAAA',
+              done: (err?: unknown) => {
+                if (finished) {
+                  return;
+                }
+                finished = true;
+                clearTimeout(timeout);
+                resolve({ ok: !err, err: err ? String(err) : undefined });
+              },
+            },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+
+      const insertSound = await new Promise<{ ok: boolean; src?: string; err?: string }>(
+        (resolve) => {
+          let finished = false;
+          const timeout = window.setTimeout(() => {
+            if (!finished) {
+              finished = true;
+              resolve({ ok: false, err: 'insert-sound-timeout' });
+            }
+          }, 4_000);
+
+          const file = new File(['tone'], 'tone.wav', { type: 'audio/wav' });
+          const handler = {
+            isPasted: true,
+            cancel: () => {},
+            fileChosen: () => {},
+            getChosenFile: () => file,
+            progress: () => {},
+            done: (err?: unknown, src?: string) => {
+              if (finished) {
+                return;
+              }
+              finished = true;
+              clearTimeout(timeout);
+              resolve({
+                ok: !err && typeof src === 'string' && src.startsWith('data:audio/'),
+                src,
+                err: err ? String(err) : undefined,
+              });
+            },
+          };
+          configure.dispatchEvent(
+            new CustomEvent('insert.sound', {
+              detail: handler,
+              bubbles: true,
+              composed: true,
+            })
+          );
+        }
+      );
+
+      const deleteSound = await new Promise<{ ok: boolean; err?: string }>((resolve) => {
+        let finished = false;
+        const timeout = window.setTimeout(() => {
+          if (!finished) {
+            finished = true;
+            resolve({ ok: false, err: 'delete-sound-timeout' });
+          }
+        }, 4_000);
+
+        configure.dispatchEvent(
+          new CustomEvent('delete.sound', {
+            detail: {
+              src: insertSound.src ?? 'data:audio/wav;base64,AAAA',
+              done: (err?: unknown) => {
+                if (finished) {
+                  return;
+                }
+                finished = true;
+                clearTimeout(timeout);
+                resolve({ ok: !err, err: err ? String(err) : undefined });
+              },
+            },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+
+      return {
+        ok: insert.ok && remove.ok && insertSound.ok && deleteSound.ok,
+        insert,
+        remove,
+        insertSound,
+        deleteSound,
+      };
+    });
+
+    expect(result.ok).toBeTruthy();
+    expect(result.insert?.ok).toBeTruthy();
+    expect(result.remove?.ok).toBeTruthy();
+    expect(result.insertSound?.ok).toBeTruthy();
+    expect(result.deleteSound?.ok).toBeTruthy();
+  });
+
   test('delivery forwards stable session payloads for repeated updates', async ({ page }) => {
     test.setTimeout(120_000);
 
