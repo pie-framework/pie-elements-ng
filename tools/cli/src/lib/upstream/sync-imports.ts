@@ -526,16 +526,19 @@ export function transformSharedPackageImports(content: string): string {
 }
 
 /**
- * Rewrite legacy configure subpath imports to package roots.
+ * Rewrite legacy configure subpath imports to author entrypoints.
  *
  * Upstream sometimes imports configure elements via:
  * - @pie-element/<element-name>/configure/lib
  *
- * In this repo, package exports do not expose that subpath. Importing the package root
- * resolves correctly via the package `exports` map and works for demo/Vite resolution.
+ * In this repo, configure code is synced into `src/author` and packages expose that via
+ * the `./author` export. Rewriting to `/author` preserves author-vs-delivery boundaries.
  */
 export function transformLegacyConfigureLibImports(content: string): string {
-  return content.replace(/from\s+['"](@pie-element\/[^/'"]+)\/configure\/lib['"]/g, "from '$1'");
+  return content.replace(
+    /from\s+['"](@pie-element\/[^/'"]+)\/configure\/lib['"]/g,
+    "from '$1/author'"
+  );
 }
 
 /**

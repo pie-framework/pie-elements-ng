@@ -6,7 +6,7 @@ import {
 } from '../src/lib/upstream/sync-imports';
 
 describe('transformLegacyConfigureLibImports', () => {
-  it('rewrites @pie-element configure/lib imports to package roots', () => {
+  it('rewrites @pie-element configure/lib imports to author entrypoints', () => {
     const input = `
 import RubricConfigure from '@pie-element/rubric/configure/lib';
 import MultiTraitRubricConfigure from "@pie-element/multi-trait-rubric/configure/lib";
@@ -14,9 +14,9 @@ import MultiTraitRubricConfigure from "@pie-element/multi-trait-rubric/configure
 
     const output = transformLegacyConfigureLibImports(input);
 
-    expect(output).toContain("import RubricConfigure from '@pie-element/rubric';");
+    expect(output).toContain("import RubricConfigure from '@pie-element/rubric/author';");
     expect(output).toContain(
-      "import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric';"
+      "import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric/author';"
     );
   });
 
