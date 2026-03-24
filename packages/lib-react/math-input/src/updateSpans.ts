@@ -9,9 +9,8 @@
  */
 
 // increase the font of parallel notation
-const updateSpans = (root?: ParentNode) => {
-  const scope = root ?? document;
-  const spans = Array.from(scope.querySelectorAll('span[mathquill-command-id]'));
+const updateSpans = () => {
+  const spans = Array.from(document.querySelectorAll('span[mathquill-command-id]'));
   (spans || []).forEach((span) => {
     if (span && span.innerText === '∥' && span.className !== 'mq-editable-field') {
       span.style.fontSize = '32px';

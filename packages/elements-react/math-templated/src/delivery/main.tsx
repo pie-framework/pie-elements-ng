@@ -320,7 +320,7 @@ export class Main extends React.Component {
     };
 
     if (typeof window !== 'undefined' && !registered) {
-      const MQ = MathQuill.getInterface(2);
+      const MQ = MathQuill.getInterface(3);
       MQ.registerEmbed('answerBlock', (data) => ({
         htmlString: `<div class="block-container">
               <div class="block-response" id="${data}Index">R</div>
@@ -346,7 +346,7 @@ export class Main extends React.Component {
         const indexEl = this.root.querySelector(`#${answerId}Index`);
 
         if (el) {
-          let MQ = MathQuill.getInterface(2);
+          let MQ = MathQuill.getInterface(3);
           const answer = answers[answerId];
 
           el.textContent = (answer && answer.value) || '';

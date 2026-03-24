@@ -8,14 +8,14 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import digits from './digits';
-import * as nav from './navigation';
-import * as edit from './edit';
-import { divide, equals, minus, multiply, plus } from './basic-operators';
-import * as comparison from './comparison';
-import * as fractions from './fractions';
-import * as exponent from './exponent';
-import * as misc from './misc';
+import digits from './digits.js';
+import * as nav from './navigation.js';
+import * as edit from './edit.js';
+import { divide, equals, minus, multiply, plus } from './basic-operators.js';
+import * as comparison from './comparison.js';
+import * as fractions from './fractions.js';
+import * as exponent from './exponent.js';
+import * as misc from './misc.js';
 
 const { one, two, three, four, five, six, seven, eight, nine, zero, comma, decimalPoint } = digits;
 

@@ -8,13 +8,13 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { keysForGrade } from './keys/grades';
-import { updateSpans } from './updateSpans';
-import * as keys from './keys';
+import { keysForGrade } from './keys/grades.js';
+import { updateSpans } from './updateSpans.js';
+import * as keys from './keys/index.js';
 
-import HorizontalKeypad from './horizontal-keypad';
+import HorizontalKeypad from './horizontal-keypad.js';
 
-import * as mq from './mq';
+import * as mq from './mq/index.js';
 
 const addLeftBracket = (s) => (s.indexOf('\\(') === 0 ? s : `\\(${s}`);
 const addRightBracket = (s) => (s.indexOf('\\)') === s.length - 2 ? s : `${s}\\)`);

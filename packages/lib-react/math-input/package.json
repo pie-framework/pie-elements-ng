@@ -6,15 +6,13 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",
-    "@fontsource/stix-two-text": "^5.2.8",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
-    "@pie-framework/mathquill": "^1.1.4",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-lib/render-ui": "workspace:*",
+    "@pie-framework/mathquill": "1.2.1-beta.0",
     "debug": "^4.1.1",
     "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
+    "@pie-lib/render-ui": "workspace:*",
     "react": "^18.2.0"
   },
   "type": "module",

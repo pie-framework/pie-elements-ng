@@ -83,6 +83,7 @@ export default class Sync extends Command {
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dry-run',
     '<%= config.bin %> <%= command.id %> --element=multiple-choice',
+    '<%= config.bin %> <%= command.id %> --pie-lib-package=math-input --skip-build',
     '<%= config.bin %> <%= command.id %>',
   ];
 
@@ -98,6 +99,14 @@ export default class Sync extends Command {
     }),
     element: Flags.string({
       description: 'Sync only specified element (if ESM-compatible)',
+    }),
+    'pie-lib-package': Flags.string({
+      description:
+        'Sync only these pie-lib packages (comma-separated), e.g. math-input. Skips element sync.',
+    }),
+    'skip-build': Flags.boolean({
+      description: 'Skip turbo build of touched packages after sync',
+      default: false,
     }),
   };
 
@@ -123,7 +132,7 @@ export default class Sync extends Command {
       dryRun: flags['dry-run'],
       verbose: flags.verbose,
       rewritePackageJson: true,
-      skipBuild: false,
+      skipBuild: flags['skip-build'],
       autoSyncPieLibDeps: true,
       elementsSpecifiedByUser: !!flags.element,
       pieLibPackagesSpecifiedByUser: false,
@@ -132,6 +141,20 @@ export default class Sync extends Command {
     // Configure filters
     if (flags.element) {
       config.elements = [flags.element];
+    }
+
+    const pieLibOnly = flags['pie-lib-package']?.trim();
+    if (pieLibOnly) {
+      const pkgs = pieLibOnly
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      config.syncControllers = false;
+      config.syncReactComponents = false;
+      config.syncPieLibPackages = true;
+      config.pieLibPackages = pkgs;
+      config.pieLibPackagesSpecifiedByUser = true;
+      config.autoSyncPieLibDeps = false;
     }
 
     await this.syncUpstream(config);
@@ -185,8 +208,8 @@ export default class Sync extends Command {
       config.syncPieLibPackages = true;
       const autoDeps = new Set(config.pieLibPackages || []);
 
-      // Only merge all compatible packages when doing a full sync
-      if (!config.elementsSpecifiedByUser) {
+      // Only merge all compatible packages when doing a full sync (not pie-lib-only mode)
+      if (!config.elementsSpecifiedByUser && !config.pieLibPackagesSpecifiedByUser) {
         const compatiblePkgs = compatibilityReport.pieLibPackages;
         const merged = new Set([...autoDeps, ...compatiblePkgs]);
         config.pieLibPackages = Array.from(merged);
@@ -198,11 +221,16 @@ export default class Sync extends Command {
           );
         }
       } else {
-        // For targeted element sync, only sync required deps (don't bloat with all 23 packages)
         if (config.verbose && autoDeps.size > 0) {
-          this.logger.info(
-            `   Targeted sync: ${autoDeps.size} pie-lib package(s) required by ${config.elements?.[0]}`
-          );
+          if (config.pieLibPackagesSpecifiedByUser) {
+            this.logger.info(
+              `   Pie-lib-only sync: ${Array.from(autoDeps).join(', ')}`
+            );
+          } else {
+            this.logger.info(
+              `   Targeted sync: ${autoDeps.size} pie-lib package(s) required by ${config.elements?.[0]}`
+            );
+          }
         }
       }
     }
@@ -422,10 +450,10 @@ export default class Sync extends Command {
     }
     this.log('');
 
-    // If user hasn't specified elements, use the compatible list
-    if (!config.elements) {
+    // If user hasn't specified elements, use the compatible list (skip for --pie-lib-package-only runs)
+    if (!config.elements && !config.pieLibPackagesSpecifiedByUser) {
       config.elements = report.elements;
-    } else {
+    } else if (config.elements && config.elements.length > 0) {
       // User specified elements - filter to only compatible ones
       const incompatible = config.elements.filter((el) => !report.elements.includes(el));
       if (incompatible.length > 0) {
