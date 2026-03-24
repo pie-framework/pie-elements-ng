@@ -118,6 +118,22 @@ export default defineConfig({
       // Force Vite to use the main field (lib/index.js) instead
       '@pie-framework/math-validation': '@pie-framework/math-validation/lib/index.js',
     },
+    // Keep a single ProseMirror instance across workspace packages.
+    // Without this, mixed tiptap/prosemirror imports can register duplicate
+    // selection IDs (e.g. gapcursor) and crash module evaluation.
+    dedupe: [
+      '@tiptap/pm',
+      'prosemirror-state',
+      'prosemirror-model',
+      'prosemirror-view',
+      'prosemirror-transform',
+      'prosemirror-history',
+      'prosemirror-commands',
+      'prosemirror-keymap',
+      'prosemirror-inputrules',
+      'prosemirror-gapcursor',
+      'prosemirror-schema-list',
+    ],
   },
 
   server: {

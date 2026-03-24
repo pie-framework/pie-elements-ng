@@ -821,12 +821,11 @@ export function fixStyledComponentTypes(content: string): string {
   const constStyledRegex = /const (\w+) = styled\(/g;
   transformed = transformed.replace(constStyledRegex, 'const $1: any = styled(');
 
-  // Pattern 3: Class methods/arrow functions that might return styled components
-  // Add `: any` return type to methods that are missing type annotations
-  // Match: methodName = () => { or methodName = (params) => {
-  // But only at start of line (class methods), not property assignments like reader.onload =
-  // And only if they don't already have a type annotation
-  const methodRegex = /^(\s*)(\w+)\s*=\s*\([^)]*\)\s*=>\s*\{/gm;
+  // Pattern 3: Class field arrow functions that might return styled components
+  // Add `: any` return type to class fields missing type annotations.
+  // IMPORTANT: keep this line-scoped so we do not accidentally match multiline JSX
+  // assignments such as `foo = (<Component ref={(r) => { ... }} />)`.
+  const methodRegex = /^(\s*)(\w+)\s*=\s*\([^)\n]*\)\s*=>\s*\{/gm;
   transformed = transformed.replace(methodRegex, (match) => {
     // Check if already has type annotation (: type = )
     const hasTypeAnnotation = match.includes(':');

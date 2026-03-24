@@ -35,6 +35,9 @@ const CRITICAL_CONSOLE_PATTERNS = [
   /window\.pie not found/i,
   /Module not found:/i,
   /Can't resolve/i,
+  /Failed to resolve module specifier/i,
+  /\[element-player\/demo\] Failed registry import/i,
+  /\[element-loader\] Failed to load element/i,
   /Cannot update an unmounted root/i,
 ];
 

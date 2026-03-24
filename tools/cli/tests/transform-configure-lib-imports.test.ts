@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  fixStyledComponentTypes,
   transformConfigureUtilsImports,
   transformLegacyConfigureLibImports,
   transformSelfReferentialImports,
@@ -63,5 +64,37 @@ import { FractionModelChart } from '@pie-element/fraction-model';
       'configure/src/main.jsx'
     );
     expect(output).toContain("from '../delivery/index.js'");
+  });
+});
+
+describe('fixStyledComponentTypes', () => {
+  it('does not rewrite multiline JSX assignments that contain inline arrow functions', () => {
+    const input = `
+class Main {
+  onModelChanged = (model) => {
+    return model;
+  };
+
+  render() {
+    let rubricTag = '';
+    rubricTag = (
+      <rubric-configure
+        ref={(ref) => {
+          if (ref) {
+            this.simpleRubric = ref;
+          }
+        }}
+      />
+    );
+    return rubricTag;
+  }
+}
+`;
+
+    const output = fixStyledComponentTypes(input);
+
+    expect(output).toContain('onModelChanged: any = (model) => {');
+    expect(output).toContain('rubricTag = (');
+    expect(output).not.toContain('rubricTag: any = (');
   });
 });

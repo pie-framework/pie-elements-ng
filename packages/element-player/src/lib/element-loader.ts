@@ -44,7 +44,11 @@ async function resolveModule(
   const modulePath = request.cdnUrl
     ? `${request.cdnUrl}/${request.packagePath}`
     : request.packagePath;
-  return import(/* @vite-ignore */ modulePath);
+  if (request.cdnUrl) {
+    return import(/* @vite-ignore */ modulePath);
+  }
+  // Let Vite resolve local workspace specifiers in ESM mode.
+  return import(modulePath);
 }
 
 /**

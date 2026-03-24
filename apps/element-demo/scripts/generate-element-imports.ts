@@ -36,7 +36,7 @@ function packageSpecifier(
   entryPoint: 'delivery' | 'controller' | 'author' | 'print'
 ): string {
   if (entryPoint === 'delivery') {
-    return `@pie-element/${elementName}`;
+    return `@pie-element/${elementName}/delivery`;
   }
   return `@pie-element/${elementName}/${entryPoint}`;
 }
