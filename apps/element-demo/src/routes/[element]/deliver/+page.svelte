@@ -42,6 +42,89 @@ const normalizeSession = (nextSession: any) => {
   return nextSession && typeof nextSession === 'object' ? nextSession : {};
 };
 
+const cloneValue = <T,>(value: T): T => {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+};
+
+const createSessionSignature = (value: unknown) => {
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized === undefined ? '__undefined__' : serialized;
+  } catch {
+    return `__unserializable__:${String(value)}`;
+  }
+};
+
+const maxNestedArrayLength = (value: unknown, seen = new WeakSet<object>()): number => {
+  if (Array.isArray(value)) {
+    return Math.max(value.length, ...value.map((entry) => maxNestedArrayLength(entry, seen)));
+  }
+  if (!value || typeof value !== 'object') {
+    return 0;
+  }
+  if (seen.has(value as object)) {
+    return 0;
+  }
+  seen.add(value as object);
+  return Math.max(
+    0,
+    ...Object.values(value as Record<string, unknown>).map((entry) =>
+      maxNestedArrayLength(entry, seen)
+    )
+  );
+};
+
+const shouldRejectNonInteractiveSessionReplacement = (
+  currentSession: Record<string, unknown>,
+  nextSession: Record<string, unknown>
+) => {
+  const currentSignature = createSessionSignature(currentSession);
+  const nextSignature = createSessionSignature(nextSession);
+  if (currentSignature === nextSignature) {
+    return false;
+  }
+  const currentKeys = Object.keys(currentSession);
+  const nextKeys = Object.keys(nextSession);
+  if (currentKeys.length > 0 && nextKeys.length === 0) {
+    return true;
+  }
+  const currentArrayMax = maxNestedArrayLength(currentSession);
+  const nextArrayMax = maxNestedArrayLength(nextSession);
+  if (currentArrayMax > 0 && nextArrayMax === 0) {
+    return true;
+  }
+  if (currentArrayMax > 1 && nextArrayMax < currentArrayMax) {
+    return true;
+  }
+  return false;
+};
+
+const shouldCommitSession = ({
+  currentMode,
+  currentSession,
+  nextSession,
+}: {
+  currentMode: string;
+  currentSession: Record<string, unknown>;
+  nextSession: Record<string, unknown>;
+}) => {
+  if (currentMode === 'gather') {
+    return true;
+  }
+  return !shouldRejectNonInteractiveSessionReplacement(currentSession, nextSession);
+};
+
 const extractSessionFromEventDetail = (detail: unknown) => {
   if (!detail || typeof detail !== 'object') {
     return null;
@@ -64,12 +147,29 @@ const extractSessionFromEventDetail = (detail: unknown) => {
 };
 
 // Apply session update callback for controller
-const applySessionUpdate = (patch: Record<string, unknown> | null | undefined) => {
+const applySessionUpdate = (
+  patchOrSessionId: Record<string, unknown> | string | null | undefined,
+  maybeElementOrPatch?: Record<string, unknown> | string | null,
+  maybePatch?: Record<string, unknown> | null
+) => {
+  const hasControllerSessionContext =
+    typeof patchOrSessionId === 'string' &&
+    typeof maybeElementOrPatch === 'string' &&
+    !!maybePatch &&
+    typeof maybePatch === 'object';
+  const patch =
+    patchOrSessionId && typeof patchOrSessionId === 'object'
+      ? patchOrSessionId
+      : maybePatch && typeof maybePatch === 'object'
+        ? maybePatch
+        : maybeElementOrPatch && typeof maybeElementOrPatch === 'object'
+          ? maybeElementOrPatch
+          : null;
   if (!patch || typeof patch !== 'object') {
     return Promise.resolve(get(session));
   }
 
-  const baseSession = normalizeSession(get(session));
+  const baseSession = normalizeSession(cloneValue(get(session)));
   const hasChanges = Object.entries(patch).some(
     ([key, value]) => (baseSession as Record<string, unknown>)[key] !== value
   );
@@ -77,7 +177,30 @@ const applySessionUpdate = (patch: Record<string, unknown> | null | undefined) =
     return Promise.resolve(get(session));
   }
 
-  const nextSession = { ...(baseSession as Record<string, unknown>), ...patch };
+  const patchWithCompatData = hasControllerSessionContext
+    ? {
+        ...patch,
+        data: {
+          ...(((baseSession as Record<string, unknown>).data as Record<string, unknown>) ?? {}),
+          ...patch,
+        },
+      }
+    : patch;
+
+  const nextSession = cloneValue({
+    ...(baseSession as Record<string, unknown>),
+    ...patchWithCompatData,
+  });
+  const currentMode = get(mode);
+  if (
+    !shouldCommitSession({
+      currentMode,
+      currentSession: baseSession as Record<string, unknown>,
+      nextSession: normalizeSession(nextSession) as Record<string, unknown>,
+    })
+  ) {
+    return Promise.resolve(get(session));
+  }
   updateSession(nextSession);
   return Promise.resolve(get(session));
 };
@@ -140,15 +263,24 @@ const buildModel = async (
         throw new Error('Controller model() must return an object model');
       }
       elementModel = { ...nextModel, mode: currentMode };
-      elementSession = sessionForController; // Use controller-modified session
+      const currentSessionSnapshot = normalizeSession(cloneValue(get(session)));
+      const nextSessionSnapshot = normalizeSession(cloneValue(sessionForController));
+      const commitControllerSession = shouldCommitSession({
+        currentMode,
+        currentSession: currentSessionSnapshot as Record<string, unknown>,
+        nextSession: nextSessionSnapshot as Record<string, unknown>,
+      });
+      elementSession = commitControllerSession
+        ? cloneValue(nextSessionSnapshot)
+        : cloneValue(currentSessionSnapshot);
       esmModelReady = true;
 
       // If controller modified the session (e.g., initialized answer array), update the store
       // This ensures the session panel shows the initialized session
       const sessionChanged =
-        JSON.stringify(sessionForController) !== JSON.stringify(currentSession);
-      if (sessionChanged) {
-        updateSession(sessionForController);
+        createSessionSignature(nextSessionSnapshot) !== createSessionSignature(currentSessionSnapshot);
+      if (sessionChanged && commitControllerSession) {
+        updateSession(nextSessionSnapshot);
       }
 
       modelError = null;
@@ -207,8 +339,20 @@ function handleSessionChanged(event: CustomEvent) {
   if (!newSession) {
     return;
   }
-  elementSession = newSession;
-  updateSession(newSession);
+  const currentSessionSnapshot = normalizeSession(cloneValue(get(session)));
+  const nextSessionSnapshot = normalizeSession(cloneValue(newSession));
+  if (
+    !shouldCommitSession({
+      currentMode: $mode,
+      currentSession: currentSessionSnapshot as Record<string, unknown>,
+      nextSession: nextSessionSnapshot as Record<string, unknown>,
+    })
+  ) {
+    elementSession = cloneValue(currentSessionSnapshot);
+    return;
+  }
+  elementSession = cloneValue(nextSessionSnapshot);
+  updateSession(nextSessionSnapshot);
 }
 
 function handleIifeControllerChanged(event: CustomEvent) {

@@ -89,6 +89,30 @@ function normalizeModel(nextModel: any) {
   return nextModel && typeof nextModel === 'object' ? nextModel : {};
 }
 
+function cloneValue<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+}
+
+function createValueSignature(value: unknown): string {
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized === undefined ? '__undefined__' : serialized;
+  } catch {
+    return `__unserializable__:${String(value)}`;
+  }
+}
+
 function readPersistedModel(storageKey: string): any | null {
   if (typeof window === 'undefined') {
     return null;
@@ -161,8 +185,8 @@ export function initializeDemo(data: {
   currentSessionStorageKey = getSessionStorageKey(data.elementName, resolvedDemoId);
   const persistedModel = readPersistedModel(currentModelStorageKey);
   const persistedSession = readPersistedSession(currentSessionStorageKey);
-  const nextModel = persistedModel ?? normalizeModel(data.model);
-  const nextSession = persistedSession ?? normalizeSession(data.session);
+  const nextModel = cloneValue(persistedModel ?? normalizeModel(data.model));
+  const nextSession = cloneValue(persistedSession ?? normalizeSession(data.session));
 
   elementName.set(data.elementName);
   elementTitle.set(data.elementTitle);
@@ -203,11 +227,11 @@ function normalizeSession(nextSession: any) {
  * This propagates changes from deliver tab to all other tabs
  */
 export function updateSession(newSession: any) {
-  const normalized = normalizeSession(newSession);
-  const current = get(session);
+  const normalized = cloneValue(normalizeSession(newSession));
+  const current = cloneValue(normalizeSession(get(session)));
 
   // Check if session actually changed
-  if (JSON.stringify(normalized) !== JSON.stringify(current)) {
+  if (createValueSignature(normalized) !== createValueSignature(current)) {
     session.set(normalized);
     writePersistedSession(normalized);
     sessionVersion.update((v) => v + 1);
@@ -267,8 +291,8 @@ export function switchDemo(demoId: string) {
     currentSessionStorageKey = getSessionStorageKey(currentElement, demoId);
     const persistedModel = readPersistedModel(currentModelStorageKey);
     const persistedSession = readPersistedSession(currentSessionStorageKey);
-    const nextModel = persistedModel ?? normalizeModel(demo.model || {});
-    const nextSession = persistedSession ?? normalizeSession(demo.session || {});
+    const nextModel = cloneValue(persistedModel ?? normalizeModel(demo.model || {}));
+    const nextSession = cloneValue(persistedSession ?? normalizeSession(demo.session || {}));
     activeDemoId.set(demoId);
     model.set(nextModel);
     session.set(nextSession);

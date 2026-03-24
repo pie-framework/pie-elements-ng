@@ -7,7 +7,13 @@
 import { page } from '$app/stores';
 import { goto } from '$app/navigation';
 import { onMount } from 'svelte';
-import { initializeDemo, hasConfigure, hasPrint, requestIifeRebuild } from '$lib/stores/demo-state';
+import {
+  initializeDemo,
+  hasConfigure,
+  hasPrint,
+  requestIifeRebuild,
+  resetSession,
+} from '$lib/stores/demo-state';
 import DemoSelector from '$lib/components/DemoSelector.svelte';
 import IifeBuildPanel from '$lib/components/IifeBuildPanel.svelte';
 import { parsePlayerType } from '$lib/config/player-runtime';
@@ -239,6 +245,15 @@ function updatePlayerUrl(updates: { player?: 'esm' | 'iife' }) {
   });
 }
 
+function resetDemoSessionFromToolbar() {
+  resetSession();
+  if (typeof window !== 'undefined') {
+    // Force a hard refresh so mounted custom elements and route state
+    // immediately reflect cleared session input.
+    window.location.assign($page.url.toString());
+  }
+}
+
 // Bidirectional sync: URL ↔ stores
 $effect(() => {
   const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
@@ -328,6 +343,16 @@ function handleThemeToggle(event: Event) {
             </button>
           </div>
           <DemoSelector demos={data.demos || []} activeDemoId={data.activeDemoId || 'default'} />
+          {#if activeTab === 'deliver'}
+            <button
+              class="btn btn-sm btn-outline"
+              onclick={resetDemoSessionFromToolbar}
+              title="Clear session input and reload"
+              data-testid="toolbar-reset-session"
+            >
+              Reset Input
+            </button>
+          {/if}
         </div>
 
         {#if currentPlayerType === 'iife'}

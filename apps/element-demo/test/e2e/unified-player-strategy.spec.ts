@@ -38,6 +38,10 @@ function hasBothStrategies(): boolean {
   return STRATEGIES.includes('esm') && STRATEGIES.includes('iife');
 }
 
+function uniqueStrings(values: unknown[]): string[] {
+  return Array.from(new Set(values.filter((value): value is string => typeof value === 'string')));
+}
+
 test.describe('Unified element player strategy host', () => {
   test('delivery uses one host for esm and iife', async ({ page }) => {
     test.setTimeout(120_000);
@@ -481,6 +485,159 @@ test.describe('Unified element player strategy host', () => {
       return value.every((entry) => sessionValue.includes(entry));
     }, selectedSession.value);
     expect(sessionStillContainsSelection).toBeTruthy();
+  });
+
+  test('hotspot multi-select survives mode/role switches and reload (user repro)', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    await page.goto('/hotspot/deliver?mode=gather&role=student&player=esm&demo=default');
+    await page.waitForSelector('pie-element-player[view="delivery"]', { timeout: 45_000 });
+    await waitForHostSettled(page);
+
+    const initialSelection = await page.evaluate(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      const innerElement = host?.querySelector('.demo-element-player > *:not(.loading):not(.error)');
+      if (!(host instanceof HTMLElement) || !(innerElement instanceof HTMLElement)) {
+        return { ok: false, reason: 'host-or-inner-missing' };
+      }
+      const baseSession =
+        host.session && typeof host.session === 'object'
+          ? JSON.parse(JSON.stringify(host.session))
+          : {};
+      const nextSession = {
+        ...baseSession,
+        answers: [{ id: '3' }, { id: '7' }],
+        selector: 'Mouse',
+      };
+      innerElement.dispatchEvent(
+        new CustomEvent('session-changed', {
+          detail: { session: nextSession },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      return { ok: true };
+    });
+    expect(initialSelection.ok).toBeTruthy();
+
+    await page.waitForFunction(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      const ids = Array.isArray(host?.session?.answers)
+        ? host.session.answers.map((answer: any) => String(answer?.id ?? ''))
+        : [];
+      return ids.includes('3') && ids.includes('7');
+    });
+
+    const selectedIdsBeforeSwitch = await page.evaluate(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      const ids = Array.isArray(host?.session?.answers)
+        ? host.session.answers.map((answer: any) => String(answer?.id ?? ''))
+        : [];
+      return Array.from(new Set(ids));
+    });
+    expect(selectedIdsBeforeSwitch.length).toBeGreaterThan(1);
+
+    await switchMode(page, 'view');
+    await switchRole(page, 'instructor');
+    await waitForHostSettled(page);
+
+    const selectedIdsAfterSwitch = await page.evaluate(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      const ids = Array.isArray(host?.session?.answers)
+        ? host.session.answers.map((answer: any) => String(answer?.id ?? ''))
+        : [];
+      return Array.from(new Set(ids));
+    });
+    expect(selectedIdsAfterSwitch).toEqual(expect.arrayContaining(selectedIdsBeforeSwitch));
+
+    await page.reload();
+    await page.waitForSelector('pie-element-player[view="delivery"]', { timeout: 45_000 });
+    await waitForHostSettled(page);
+
+    const selectedIdsAfterReload = await page.evaluate(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      const ids = Array.isArray(host?.session?.answers)
+        ? host.session.answers.map((answer: any) => String(answer?.id ?? ''))
+        : [];
+      return Array.from(new Set(ids));
+    });
+    expect(selectedIdsAfterReload).toEqual(expect.arrayContaining(selectedIdsBeforeSwitch));
+  });
+
+  test('demo switch does not leak prior demo session', async ({ page }) => {
+    test.setTimeout(120_000);
+    const multipleChoiceDemo =
+      process.env.UNIFIED_PLAYER_E2E_MC_DEMO?.trim() || 'math-algebra-quadratic';
+    await page.goto(
+      `/multiple-choice/deliver?mode=gather&role=student&player=esm&demo=${multipleChoiceDemo}`
+    );
+    await page.waitForSelector('pie-element-player[view="delivery"]', { timeout: 45_000 });
+    await waitForHostSettled(page);
+
+    await page.waitForSelector(
+      'pie-element-player .demo-element-player input[type="radio"], pie-element-player .demo-element-player input[type="checkbox"]',
+      { timeout: 15_000 }
+    );
+    const interactionWorked = await page.evaluate(() => {
+      const inputs = Array.from(
+        document.querySelectorAll<HTMLInputElement>(
+          'pie-element-player .demo-element-player input[type="radio"], pie-element-player .demo-element-player input[type="checkbox"]'
+        )
+      ).filter((input) => !input.disabled);
+      const target = inputs.find((input) => !input.checked) || inputs[0];
+      if (!target) {
+        return false;
+      }
+      const id = target.id;
+      const label =
+        id && document.querySelector(`pie-element-player .demo-element-player label[for="${id}"]`);
+      if (label instanceof HTMLElement) {
+        label.click();
+        return true;
+      }
+      target.click();
+      return true;
+    });
+    expect(interactionWorked).toBeTruthy();
+
+    await page.waitForFunction(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      return Array.isArray(host?.session?.value) && host.session.value.length > 0;
+    });
+
+    const previousDemoValues = await page.evaluate(() => {
+      const host = document.querySelector('pie-element-player') as any;
+      return Array.isArray(host?.session?.value)
+        ? Array.from(new Set(host.session.value.map((entry: unknown) => String(entry))))
+        : [];
+    });
+    const uniquePreviousDemoValues = uniqueStrings(previousDemoValues ?? []);
+    expect(uniquePreviousDemoValues.length).toBeGreaterThan(0);
+
+    const availableDemoIds = await page.evaluate(() =>
+      Array.from(document.querySelectorAll<HTMLButtonElement>('button[data-demo-id]')).map(
+        (button) => button.dataset.demoId || ''
+      )
+    );
+    const activeDemoId = await page.evaluate(
+      () => new URL(window.location.href).searchParams.get('demo') || 'default'
+    );
+    const nextDemoId = availableDemoIds.find((id) => id && id !== activeDemoId);
+    test.skip(!nextDemoId, 'Need at least two demos to validate demo-switch isolation');
+
+    await page.click('[data-testid="demo-selector-button"]');
+    await page.click(`button[data-demo-id="${nextDemoId}"]`);
+    await page.waitForSelector('pie-element-player[view="delivery"]', { timeout: 45_000 });
+    await waitForHostSettled(page);
+
+    const hasLeakAfterSwitch = await page.evaluate((oldValues: string[]) => {
+      const host = document.querySelector('pie-element-player') as any;
+      const sessionValue = Array.isArray(host?.session?.value)
+        ? host.session.value.map((entry: unknown) => String(entry))
+        : [];
+      return oldValues.some((entry) => sessionValue.includes(entry));
+    }, uniquePreviousDemoValues);
+    expect(hasLeakAfterSwitch).toBeFalsy();
   });
 
   test('session remains stable across esm/iife strategy switches', async ({ page }) => {
