@@ -70,6 +70,7 @@ let {
 
 const dispatch = createEventDispatcher();
 let container: HTMLElement;
+let elementMount: HTMLElement;
 let elementInstance = $state<HTMLElement | null>(null);
 let currentTagName = $state<string | null>(null);
 let loading = $state(true);
@@ -87,6 +88,7 @@ let suppressSessionEvents = false;
 let isForwardingSessionEvent = false;
 let lastForwardedSessionDetailSignature = '';
 let lastForwardedSessionSignature = '';
+const metadataOnlySessionKeys = new Set(['complete', 'component']);
 
 let lastAppliedRole: string | null = null;
 let lastAppliedModelSignature = '';
@@ -122,29 +124,6 @@ function createValueSignature(value: unknown): string {
   }
 }
 
-function hasResponseValue(value: unknown): boolean {
-  if (value == null) return false;
-  if (Array.isArray(value)) {
-    return value.some((entry) => hasResponseValue(entry));
-  }
-  if (typeof value !== 'object') return false;
-  if ('value' in (value as Record<string, unknown>)) return true;
-  return Object.values(value as Record<string, unknown>).some((nested) => hasResponseValue(nested));
-}
-
-function hasExplicitResponseField(value: unknown): boolean {
-  if (value == null) return false;
-  if (Array.isArray(value)) {
-    return value.some((entry) => hasExplicitResponseField(entry));
-  }
-  if (typeof value !== 'object') return false;
-  for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
-    if (key === 'value') return true;
-    if (hasExplicitResponseField(nested)) return true;
-  }
-  return false;
-}
-
 function hasUsableSessionPayload(value: unknown): boolean {
   if (!value || typeof value !== 'object') {
     return false;
@@ -153,7 +132,11 @@ function hasUsableSessionPayload(value: unknown): boolean {
   if ('session' in detailObj) {
     return true;
   }
-  return hasResponseValue(detailObj) || hasExplicitResponseField(detailObj);
+  const keys = Object.keys(detailObj);
+  if (keys.length === 0) {
+    return false;
+  }
+  return !keys.every((key) => metadataOnlySessionKeys.has(key));
 }
 
 function reconnectMathObserver() {
@@ -314,12 +297,6 @@ function applySession(nextSession: any) {
   if (nextSignature === lastAppliedSessionSignature) {
     return;
   }
-  if ((elementInstance as any)._model === undefined) {
-    if (model === null || model === undefined) {
-      return;
-    }
-    (elementInstance as any).model = cloneValue(model ?? {});
-  }
   suppressSessionEvents = true;
   try {
     (elementInstance as any).session = nextSession ?? {};
@@ -368,6 +345,9 @@ async function ensureLoaded() {
     if (loaded.bundleMeta) {
       dispatch('bundle-meta', loaded.bundleMeta);
     }
+    if (loaded.controllerDiagnostic) {
+      dispatch('controller-load', loaded.controllerDiagnostic);
+    }
     if (loaded.controller && loaded.view === 'delivery' && loaded.strategy === 'iife') {
       dispatch('controller-changed', loaded.controller);
     }
@@ -391,9 +371,8 @@ async function ensureLoaded() {
     applySession(session);
     applyRole(role);
 
-    if (container && elementInstance.parentElement !== container) {
-      container.innerHTML = '';
-      container.appendChild(elementInstance);
+    if (elementMount && elementInstance.parentElement !== elementMount) {
+      elementMount.replaceChildren(elementInstance);
     }
 
     dispatch('build-state', { loading: false, error: null, stage: 'completed' });
@@ -475,12 +454,16 @@ onMount(() => {
       mathObserver.disconnect();
       mathObserver = null;
     }
+    if (elementMount) {
+      elementMount.replaceChildren();
+    }
     detachInstanceHandlers();
   };
 });
 </script>
 
 <div bind:this={container} class="demo-element-player element-player-host">
+  <div bind:this={elementMount} class="element-player-mount"></div>
   {#if loading}
     <div class="loading">Loading {elementName} ({resolvedStrategy}/{resolvedView})...</div>
   {/if}
@@ -496,6 +479,10 @@ onMount(() => {
   .element-player-host {
     width: 100%;
     min-height: 100px;
+  }
+
+  .element-player-mount {
+    width: 100%;
   }
 
   .loading {

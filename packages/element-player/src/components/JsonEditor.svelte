@@ -32,19 +32,21 @@ let editor = $state<Editor | null>(null);
 const lowlight = createLowlight();
 lowlight.register('json', json);
 
-// Convert JSON string to Tiptap HTML format
-function formatContentAsHtml(text: string): string {
-  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return `<pre><code data-language="json">${escaped}</code></pre>`;
+function createJsonDoc(text: string) {
+  return {
+    type: 'doc',
+    content: [
+      {
+        type: 'codeBlock',
+        attrs: { language: 'json' },
+        content: text ? [{ type: 'text', text }] : [],
+      },
+    ],
+  };
 }
 
-// Extract JSON string from Tiptap HTML
-function extractTextFromHtml(html: string): string {
-  const codeBlockMatch = html.match(/<code[^>]*>([\s\S]*?)<\/code>/);
-  if (codeBlockMatch) {
-    return codeBlockMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-  }
-  return '';
+function readEditorText(currentEditor: Editor): string {
+  return currentEditor.state.doc.textBetween(0, currentEditor.state.doc.content.size, '\n');
 }
 
 onMount(() => {
@@ -61,7 +63,7 @@ onMount(() => {
       Text,
       History,
     ],
-    content: formatContentAsHtml(value),
+    content: createJsonDoc(value),
     editable: !readonly,
     editorProps: {
       attributes: {
@@ -73,24 +75,19 @@ onMount(() => {
       },
     },
     onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      const extracted = extractTextFromHtml(html);
+      const extracted = readEditorText(editor);
       value = extracted;
       onInput?.(extracted);
     },
   });
-
-  return () => {
-    editor?.destroy();
-  };
 });
 
 // Sync external changes to editor
 $effect(() => {
   if (editor && value !== undefined) {
-    const currentContent = extractTextFromHtml(editor.getHTML());
+    const currentContent = readEditorText(editor);
     if (currentContent !== value) {
-      editor.commands.setContent(formatContentAsHtml(value));
+      editor.commands.setContent(createJsonDoc(value));
     }
   }
 });

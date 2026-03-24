@@ -23,3 +23,14 @@ export {
   normalizeElementPlayerView,
   resolveElementPlayerView,
 } from './lib/player-strategy.js';
+export {
+  configureUnifiedPlayerResolver,
+  type ControllerLoadDiagnostic,
+} from './lib/unified-player-loader.js';
+export {
+  configureIifeBundleLoader,
+  IifeBundleLoadError,
+  type IifeBuildClient,
+  type IifeRegistryClient,
+  type IifeBundleLoaderAdapters,
+} from './lib/iife-bundle-loader.js';

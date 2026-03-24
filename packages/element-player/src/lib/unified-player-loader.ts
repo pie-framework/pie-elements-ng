@@ -1,5 +1,14 @@
-import { loadController, loadElement } from './element-loader';
-import { loadIifePackage, type LocalBundleMeta } from './iife-bundle-loader';
+import {
+  configureElementModuleResolver,
+  loadController,
+  loadElement,
+  type ElementModuleResolver,
+} from './element-loader';
+import {
+  loadIifePackage,
+  type IifeBundleLoadError,
+  type LocalBundleMeta,
+} from './iife-bundle-loader';
 import {
   normalizeElementPlayerStrategy,
   normalizeElementPlayerView,
@@ -19,12 +28,25 @@ export interface UnifiedPlayerLoadRequest {
   preloadedFallbackStrategy?: ElementPlayerStrategy;
 }
 
+export interface ControllerLoadDiagnostic {
+  status: 'loaded' | 'missing' | 'failed' | 'not-required';
+  source: 'module' | 'bundle' | 'none';
+  packageName: string;
+  strategy: ElementPlayerStrategy;
+  view: ElementPlayerView;
+  message?: string;
+}
+
 export interface UnifiedPlayerLoadResult {
   strategy: ElementPlayerStrategy;
   view: ElementPlayerView;
   tagName: string;
   controller?: any;
   bundleMeta?: LocalBundleMeta;
+  controllerDiagnostic?: ControllerLoadDiagnostic;
+  diagnostics?: {
+    iife?: IifeBundleLoadError;
+  };
 }
 
 const iifeTagName = (elementName: string, view: ElementPlayerView): string => {
@@ -58,6 +80,65 @@ function resolveExpectedTagName(
   return esmTagName(elementName, view);
 }
 
+function createNotRequiredControllerDiagnostic(
+  packageName: string,
+  strategy: ElementPlayerStrategy,
+  view: ElementPlayerView
+): ControllerLoadDiagnostic {
+  return {
+    status: 'not-required',
+    source: 'none',
+    packageName,
+    strategy,
+    view,
+  };
+}
+
+async function resolveModuleController(
+  req: UnifiedPlayerLoadRequest,
+  strategy: ElementPlayerStrategy,
+  view: ElementPlayerView
+): Promise<{ controller?: any; diagnostic: ControllerLoadDiagnostic }> {
+  if (view !== 'delivery' && view !== 'author') {
+    return {
+      controller: undefined,
+      diagnostic: createNotRequiredControllerDiagnostic(req.packageName, strategy, view),
+    };
+  }
+
+  try {
+    const controller = await loadController(req.packageName, req.cdnUrl || '');
+    return {
+      controller,
+      diagnostic: {
+        status: controller ? 'loaded' : 'missing',
+        source: 'module',
+        packageName: req.packageName,
+        strategy,
+        view,
+        message: controller ? undefined : 'Controller module resolved without exports',
+      },
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      controller: undefined,
+      diagnostic: {
+        status: 'failed',
+        source: 'module',
+        packageName: req.packageName,
+        strategy,
+        view,
+        message,
+      },
+    };
+  }
+}
+
+export function configureUnifiedPlayerResolver(resolver?: ElementModuleResolver): void {
+  configureElementModuleResolver(resolver);
+}
+
 async function loadEsm(
   req: UnifiedPlayerLoadRequest,
   view: ElementPlayerView
@@ -73,20 +154,14 @@ async function loadEsm(
   await loadElement(packagePath, tagName, req.cdnUrl || '');
   await customElements.whenDefined(tagName);
 
-  let controller: any;
-  if (view === 'delivery' || view === 'author') {
-    try {
-      controller = await loadController(req.packageName, req.cdnUrl || '');
-    } catch {
-      controller = undefined;
-    }
-  }
+  const { controller, diagnostic } = await resolveModuleController(req, 'esm', view);
 
   return {
     strategy: 'esm',
     view,
     tagName,
     controller,
+    controllerDiagnostic: diagnostic,
   };
 }
 
@@ -118,12 +193,19 @@ async function loadIife(
   await customElements.whenDefined(tagName);
 
   let controller = pkg.controller;
-  if (!controller && (view === 'delivery' || view === 'author')) {
-    try {
-      controller = await loadController(req.packageName, req.cdnUrl || '');
-    } catch {
-      controller = undefined;
-    }
+  let controllerDiagnostic: ControllerLoadDiagnostic;
+  if (controller) {
+    controllerDiagnostic = {
+      status: 'loaded',
+      source: 'bundle',
+      packageName: req.packageName,
+      strategy: 'iife',
+      view,
+    };
+  } else {
+    const moduleController = await resolveModuleController(req, 'iife', view);
+    controller = moduleController.controller;
+    controllerDiagnostic = moduleController.diagnostic;
   }
 
   return {
@@ -132,6 +214,7 @@ async function loadIife(
     tagName,
     controller,
     bundleMeta: meta,
+    controllerDiagnostic,
   };
 }
 

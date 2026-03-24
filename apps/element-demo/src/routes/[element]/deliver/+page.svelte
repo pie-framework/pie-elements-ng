@@ -5,6 +5,7 @@
  */
 import { page } from '$app/stores';
 import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
+import '$lib/element-player/configure-loader';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
 import { get } from 'svelte/store';
 import '@pie-element/element-player';
@@ -90,7 +91,7 @@ const buildModel = async (
   currentRole: string,
   currentPartialScoring: boolean,
   currentController: any,
-  currentPlayerType: PlayerType
+  _currentPlayerType: PlayerType
 ) => {
   if (debug)
     console.log('[deliver] Building model...', { requestId, mode: currentMode, role: currentRole });

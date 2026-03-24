@@ -22,11 +22,6 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: [
-        // Mark app-specific imports as external to prevent build errors
-        // This import only exists in element-demo app, not in this library
-        '$lib/element-imports',
-      ],
       output: {
         // Put lazy math renderer dynamic imports in dedicated chunks.
         manualChunks: (id) => {

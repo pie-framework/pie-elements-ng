@@ -5,8 +5,47 @@
  * Based on the ESM loader pattern from pie-players.
  */
 
-// Import helper for static workspace imports (only in development)
-let staticImports: any = null;
+export type ElementModuleKind = 'delivery' | 'author' | 'print' | 'controller';
+
+export interface ElementModuleResolveRequest {
+  packagePath: string;
+  packageName: string;
+  elementName: string;
+  kind: ElementModuleKind;
+  cdnUrl: string;
+}
+
+export type ElementModuleResolver = (
+  request: ElementModuleResolveRequest
+) => Promise<unknown | null | undefined> | unknown | null | undefined;
+
+let moduleResolver: ElementModuleResolver | null = null;
+
+export function configureElementModuleResolver(resolver?: ElementModuleResolver): void {
+  moduleResolver = resolver ?? null;
+}
+
+async function resolveModule(
+  request: ElementModuleResolveRequest,
+  debug: boolean = false
+): Promise<any> {
+  if (!request.cdnUrl && moduleResolver) {
+    const resolved = await moduleResolver(request);
+    if (resolved != null) {
+      if (debug) {
+        console.log(
+          `[element-loader] Resolved ${request.kind} module via injected resolver for ${request.packagePath}`
+        );
+      }
+      return resolved;
+    }
+  }
+
+  const modulePath = request.cdnUrl
+    ? `${request.cdnUrl}/${request.packagePath}`
+    : request.packagePath;
+  return import(/* @vite-ignore */ modulePath);
+}
 
 /**
  * Load and register a PIE element as a custom element
@@ -34,44 +73,24 @@ export async function loadElement(
     console.log(`[element-loader] Loading element ${packagePath} (cdnUrl: ${cdnUrl || 'local'})`);
 
   try {
-    let module: any;
-
-    if (!cdnUrl || cdnUrl === '') {
-      // Local development mode - use static imports
-      // Lazy load the static imports module
-      if (!staticImports) {
-        try {
-          // This dynamic import is OK because it's a constant string
-          // @ts-expect-error - This module only exists in element-demo app, not in this library
-          staticImports = await import('$lib/element-imports');
-        } catch (e) {
-          console.warn('[element-loader] Static imports module not found, trying direct import');
-        }
-      }
-
-      const elementName = packagePath
-        .replace(/^@pie-element\//, '')
-        .replace(/\/(author|print|controller)$/, '');
-      let importer: (() => Promise<any>) | undefined;
-      if (packagePath.endsWith('/author')) {
-        importer = staticImports?.getAuthorModule?.(elementName);
-      } else if (packagePath.endsWith('/print')) {
-        importer = staticImports?.getPrintModule?.(elementName);
-      } else {
-        importer = staticImports?.getElementModule?.(elementName);
-      }
-
-      if (importer) {
-        module = await importer();
-      } else {
-        // Fallback to dynamic import for environments without generated local import maps.
-        module = await import(/* @vite-ignore */ packagePath);
-      }
-    } else {
-      // External CDN mode with full URL
-      const modulePath = `${cdnUrl}/${packagePath}`;
-      module = await import(/* @vite-ignore */ modulePath);
-    }
+    const elementName = packagePath
+      .replace(/^@pie-element\//, '')
+      .replace(/\/(author|print|controller)$/, '');
+    const kind: ElementModuleKind = packagePath.endsWith('/author')
+      ? 'author'
+      : packagePath.endsWith('/print')
+        ? 'print'
+        : 'delivery';
+    const module = await resolveModule(
+      {
+        packagePath,
+        packageName: `@pie-element/${elementName}`,
+        elementName,
+        kind,
+        cdnUrl: cdnUrl || '',
+      },
+      debug
+    );
 
     // Get element class (try default export first, then Element export)
     const ElementClass = module.default || module.Element;
@@ -123,33 +142,17 @@ export async function loadController(
     );
 
   try {
-    let module: any;
-
-    if (!cdnUrl || cdnUrl === '') {
-      // Local development mode - use static imports
-      // Lazy load the static imports module if not already loaded
-      if (!staticImports) {
-        try {
-          // @ts-expect-error - This module only exists in element-demo app, not in this library
-          staticImports = await import('$lib/element-imports');
-        } catch (e) {
-          console.warn('[element-loader] Static imports module not found, trying direct import');
-        }
-      }
-
-      const elementName = packageName.replace(/^@pie-element\//, '');
-      const importer = staticImports?.getControllerModule?.(elementName);
-      if (importer) {
-        module = await importer();
-      } else {
-        // Fallback to dynamic import for environments without generated local import maps.
-        module = await import(/* @vite-ignore */ controllerPath);
-      }
-    } else {
-      // External CDN mode with full URL
-      const fullPath = `${cdnUrl}/${controllerPath}`;
-      module = await import(/* @vite-ignore */ fullPath);
-    }
+    const elementName = packageName.replace(/^@pie-element\//, '');
+    const module = await resolveModule(
+      {
+        packagePath: controllerPath,
+        packageName,
+        elementName,
+        kind: 'controller',
+        cdnUrl: cdnUrl || '',
+      },
+      debug
+    );
 
     const controller = module.default || module;
 

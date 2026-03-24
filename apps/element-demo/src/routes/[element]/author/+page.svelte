@@ -4,6 +4,7 @@
  * Shows the configure component for authoring questions
  */
 import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
+import '$lib/element-player/configure-loader';
 import { page } from '$app/stores';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
 import '@pie-element/element-player';
