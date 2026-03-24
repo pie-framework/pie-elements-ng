@@ -42,7 +42,7 @@ const normalizeSession = (nextSession: any) => {
   return nextSession && typeof nextSession === 'object' ? nextSession : {};
 };
 
-const cloneValue = <T,>(value: T): T => {
+const cloneValue = <T>(value: T): T => {
   if (value === null || typeof value !== 'object') {
     return value;
   }
@@ -278,7 +278,8 @@ const buildModel = async (
       // If controller modified the session (e.g., initialized answer array), update the store
       // This ensures the session panel shows the initialized session
       const sessionChanged =
-        createSessionSignature(nextSessionSnapshot) !== createSessionSignature(currentSessionSnapshot);
+        createSessionSignature(nextSessionSnapshot) !==
+        createSessionSignature(currentSessionSnapshot);
       if (sessionChanged && commitControllerSession) {
         updateSession(nextSessionSnapshot);
       }

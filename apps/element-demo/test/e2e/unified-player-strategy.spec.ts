@@ -487,7 +487,9 @@ test.describe('Unified element player strategy host', () => {
     expect(sessionStillContainsSelection).toBeTruthy();
   });
 
-  test('hotspot multi-select survives mode/role switches and reload (user repro)', async ({ page }) => {
+  test('hotspot multi-select survives mode/role switches and reload (user repro)', async ({
+    page,
+  }) => {
     test.setTimeout(120_000);
 
     await page.goto('/hotspot/deliver?mode=gather&role=student&player=esm&demo=default');
@@ -496,7 +498,9 @@ test.describe('Unified element player strategy host', () => {
 
     const initialSelection = await page.evaluate(() => {
       const host = document.querySelector('pie-element-player') as any;
-      const innerElement = host?.querySelector('.demo-element-player > *:not(.loading):not(.error)');
+      const innerElement = host?.querySelector(
+        '.demo-element-player > *:not(.loading):not(.error)'
+      );
       if (!(host instanceof HTMLElement) || !(innerElement instanceof HTMLElement)) {
         return { ok: false, reason: 'host-or-inner-missing' };
       }
