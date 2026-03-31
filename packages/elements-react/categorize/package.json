@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/categorize",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {

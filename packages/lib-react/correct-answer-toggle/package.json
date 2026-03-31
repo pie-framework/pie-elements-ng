@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/correct-answer-toggle",
-  "private": true,
   "version": "0.1.0",
   "description": "A react based toggle component",
   "dependencies": {

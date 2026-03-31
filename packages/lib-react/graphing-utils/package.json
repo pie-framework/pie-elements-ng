@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/graphing-utils",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {

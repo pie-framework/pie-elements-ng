@@ -16,15 +16,13 @@ interface ChangesetConfig {
   ignore: string[];
 }
 
-const REACT_PACKAGE_PATTERNS = [
-  'packages/elements-react/*/package.json',
-  'packages/lib-react/*/package.json',
-];
+const PACKAGE_MANIFEST_PATTERN = 'packages/**/package.json';
 
 const CHANGESET_CONFIG_PATH = '.changeset/config.json';
 
 export default class EnablePublishing extends Command {
-  static override description = 'Enable React package publishing by removing private flags';
+  static override description =
+    'Enable @pie-element/* and @pie-lib/* package publishing by removing private flags';
 
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dry-run',
@@ -43,7 +41,7 @@ export default class EnablePublishing extends Command {
   public async run(): Promise<void> {
     const { flags } = await this.parse(EnablePublishing);
 
-    this.logger.section('🔄 React Package Publishing Migration');
+    this.logger.section('🔄 Element/Lib Package Publishing Migration');
 
     if (flags['dry-run']) {
       this.logger.info('🔍 DRY RUN MODE - No changes will be made\n');
@@ -52,24 +50,30 @@ export default class EnablePublishing extends Command {
     const changes: string[] = [];
     let totalPackages = 0;
 
-    // Step 1: Find all React packages
-    this.logger.info('📦 Finding React packages...');
+    // Step 1: Find all element/lib packages
+    this.logger.info('📦 Finding @pie-element/* and @pie-lib/* packages...');
+    const allPackagePaths = await glob(PACKAGE_MANIFEST_PATTERN, { ignore: ['**/node_modules/**'] });
     const packagePaths: string[] = [];
-    for (const pattern of REACT_PACKAGE_PATTERNS) {
-      const matches = await glob(pattern);
-      packagePaths.push(...matches);
+    const packageNames: string[] = [];
+
+    for (const pkgPath of allPackagePaths) {
+      const pkg = await loadPackageJson(pkgPath);
+      if (
+        typeof pkg.name === 'string' &&
+        (pkg.name.startsWith('@pie-element/') || pkg.name.startsWith('@pie-lib/'))
+      ) {
+        packagePaths.push(pkgPath);
+        packageNames.push(pkg.name);
+      }
     }
 
-    this.logger.info(`   Found ${packagePaths.length} React packages\n`);
+    this.logger.info(`   Found ${packagePaths.length} targeted packages\n`);
 
     // Step 2: Remove "private": true from package.json files
-    this.logger.info('🔓 Removing private flag from React packages...');
-    const packageNames: string[] = [];
+    this.logger.info('🔓 Removing private flag from targeted packages...');
 
     for (const pkgPath of packagePaths) {
       const pkg = await loadPackageJson(pkgPath);
-
-      packageNames.push(pkg.name);
 
       if (pkg.private === true) {
         totalPackages++;
@@ -93,14 +97,14 @@ export default class EnablePublishing extends Command {
     const changesetContent = await readFile(CHANGESET_CONFIG_PATH, 'utf-8');
     const changesetConfig = JSON.parse(changesetContent) as ChangesetConfig;
 
-    // Filter out React packages from ignore list
-    const reactPackageSet = new Set(packageNames);
+    // Filter out targeted packages from ignore list
+    const targetPackageSet = new Set(packageNames);
     const originalIgnoreCount = changesetConfig.ignore.length;
-    const newIgnore = changesetConfig.ignore.filter((name) => !reactPackageSet.has(name));
+    const newIgnore = changesetConfig.ignore.filter((name) => !targetPackageSet.has(name));
 
     const removedCount = originalIgnoreCount - newIgnore.length;
     this.logger.info(`   Removing ${removedCount} packages from ignore list`);
-    changes.push(`Remove ${removedCount} React packages from changeset ignore list`);
+    changes.push(`Remove ${removedCount} element/lib packages from changeset ignore list`);
 
     if (!flags['dry-run']) {
       changesetConfig.ignore = newIgnore;
@@ -127,11 +131,11 @@ export default class EnablePublishing extends Command {
       this.logger.success('\n✅ Migration complete!');
       this.logger.info('\nNext steps:');
       this.logger.info('1. Review the changes with: git diff');
-      this.logger.info('2. Create changesets for the React packages you want to publish:');
+      this.logger.info('2. Create changesets for the packages you want to publish:');
       this.logger.info('   bun run changeset');
       this.logger.info('3. Commit and push the changes:');
       this.logger.info('   git add .');
-      this.logger.info('   git commit -m "chore: enable React package publishing"');
+      this.logger.info('   git commit -m "chore: enable element/lib package publishing"');
       this.logger.info('   git push');
       this.logger.info('4. Wait for the automated Version Packages PR and merge it to publish\n');
     }
@@ -143,7 +147,7 @@ export default class EnablePublishing extends Command {
     const libPackages = packageNames.filter((name) => name.startsWith('@pie-lib/'));
 
     if (elementPackages.length > 0) {
-      this.logger.info('React Elements:');
+      this.logger.info('Element packages:');
       for (const name of elementPackages.sort()) {
         this.logger.info(`   • ${name}`);
       }
@@ -151,7 +155,7 @@ export default class EnablePublishing extends Command {
     }
 
     if (libPackages.length > 0) {
-      this.logger.info('React Libraries:');
+      this.logger.info('Lib packages:');
       for (const name of libPackages.sort()) {
         this.logger.info(`   • ${name}`);
       }

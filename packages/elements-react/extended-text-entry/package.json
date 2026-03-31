@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/extended-text-entry",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {

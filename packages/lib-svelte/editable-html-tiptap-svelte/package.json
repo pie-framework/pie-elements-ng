@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/editable-html-tiptap-svelte",
-  "private": true,
   "version": "0.1.0",
   "description": "Tiptap-based rich text editor component for Svelte PIE elements",
   "type": "module",

@@ -186,6 +186,7 @@ const ItemBuilder: any = styled('div')(({ theme }) => ({
 class RespAreaToolbar extends React.Component {
   static propTypes = {
     node: PropTypes.object,
+    pos: PropTypes.number,
     uploadSoundSupport: PropTypes.object,
     onDone: PropTypes.func,
     choices: PropTypes.array,

@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/graphing-solution-set",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {

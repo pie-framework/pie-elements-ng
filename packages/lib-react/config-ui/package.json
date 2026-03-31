@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/config-ui",
-  "private": true,
   "version": "0.1.0",
   "description": "React implementation of @pie-lib/config-ui synced from pie-lib",
   "dependencies": {

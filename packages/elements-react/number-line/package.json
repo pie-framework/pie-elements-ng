@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/number-line",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {

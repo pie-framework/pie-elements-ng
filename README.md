@@ -106,6 +106,8 @@ Use release labels to tag a coordinated release wave across packages while keepi
 
 ### Manual Publish Recovery (GitHub Actions)
 
+`@pie-element/*` and `@pie-lib/*` packages are configured as publishable and are released through this workflow.
+
 If a publish fails after the version PR was already merged, rerun the Release workflow manually:
 
 1. Actions → **Release** → **Run workflow**

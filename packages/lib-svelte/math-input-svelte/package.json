@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/math-input-svelte",
-  "private": true,
   "version": "0.1.0",
   "description": "MathQuill wrapper components for Svelte 5",
   "type": "module",

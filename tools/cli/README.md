@@ -125,7 +125,7 @@ bun run cli upstream:update
 
 #### `packages:enable-publishing`
 
-Enable React package publishing (remove private flags).
+Enable publishing for all `@pie-element/*` and `@pie-lib/*` packages (remove private flags and clear matching Changesets ignore entries).
 
 ```bash
 # Dry run

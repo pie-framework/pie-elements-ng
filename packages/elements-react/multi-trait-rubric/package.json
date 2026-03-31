@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/multi-trait-rubric",
-  "private": true,
   "version": "0.1.0",
   "description": "React implementation of multi-trait-rubric element synced from pie-elements",
   "dependencies": {

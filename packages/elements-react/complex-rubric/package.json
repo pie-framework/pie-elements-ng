@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/complex-rubric",
-  "private": true,
   "version": "0.1.0",
   "description": "Complex Rubric Scoring Interaction",
   "dependencies": {

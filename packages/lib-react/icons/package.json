@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/icons",
-  "private": true,
   "version": "0.1.0",
   "description": "Some simple icons",
   "dependencies": {

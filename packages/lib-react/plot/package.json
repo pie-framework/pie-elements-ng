@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/plot",
-  "private": true,
   "version": "0.1.0",
   "description": "Some underlying components for building charts/graphs",
   "dependencies": {

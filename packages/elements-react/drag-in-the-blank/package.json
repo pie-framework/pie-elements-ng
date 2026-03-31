@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/drag-in-the-blank",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {

@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/rubric",
-  "private": true,
   "version": "0.1.0",
   "description": "Rubric Scoring Interaction",
   "dependencies": {

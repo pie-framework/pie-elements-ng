@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/text-select",
-  "private": true,
   "version": "0.1.0",
   "description": "Some react components for text selection",
   "dependencies": {

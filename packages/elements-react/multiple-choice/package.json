@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/multiple-choice",
-  "private": true,
   "version": "0.1.0",
   "description": "React implementation of multiple-choice element synced from pie-elements",
   "dependencies": {

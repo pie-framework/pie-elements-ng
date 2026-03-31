@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/image-cloze-association",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {

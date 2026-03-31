@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/math-rendering",
-  "private": true,
   "version": "0.1.0",
   "description": "math rendering utilities",
   "dependencies": {
