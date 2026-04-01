@@ -52,7 +52,9 @@ export default class EnablePublishing extends Command {
 
     // Step 1: Find all element/lib packages
     this.logger.info('📦 Finding @pie-element/* and @pie-lib/* packages...');
-    const allPackagePaths = await glob(PACKAGE_MANIFEST_PATTERN, { ignore: ['**/node_modules/**'] });
+    const allPackagePaths = await glob(PACKAGE_MANIFEST_PATTERN, {
+      ignore: ['**/node_modules/**'],
+    });
     const packagePaths: string[] = [];
     const packageNames: string[] = [];
 
