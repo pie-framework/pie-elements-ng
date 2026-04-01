@@ -33,11 +33,8 @@ function collectExportTargets(exportsField: PackageJson['exports']): string[] {
 }
 
 function isLikelyEsm(source: string): boolean {
-  if (
-    source.includes('module.exports') ||
-    source.includes('exports.') ||
-    source.includes('require(')
-  ) {
+  // Avoid treating Svelte custom-element output like `exports.forEach(...)` as CJS.
+  if (/\bmodule\.exports\b/.test(source) || /\brequire\s*\(/.test(source)) {
     return false;
   }
   return /\bexport\b|\bimport\b|import\.meta/.test(source);
