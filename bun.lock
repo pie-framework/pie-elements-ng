@@ -191,6 +191,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
+        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -240,6 +241,7 @@
       "name": "@pie-element/drag-in-the-blank",
       "version": "0.1.0",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -254,6 +256,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
+        "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
       },
@@ -286,6 +289,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
+        "debug": "^4.1.1",
         "konva": "8.3.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
@@ -307,6 +311,7 @@
       "name": "@pie-element/ebsr",
       "version": "0.1.0",
       "dependencies": {
+        "@mui/material": "^7.3.4",
         "@pie-element/multiple-choice": "workspace:*",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
@@ -316,6 +321,7 @@
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
+        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -348,6 +354,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.5",
+        "debug": "^4.1.1",
         "he": "^1.2.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
@@ -381,6 +388,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "lodash.throttle": "^4.1.1",
         "prop-types": "^15.6.1",
       },
@@ -412,6 +420,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-is": "^19.2.0",
         "recharts": "^3.7.0",
@@ -448,6 +457,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
+        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -479,6 +490,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
+        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -509,7 +522,9 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
+        "debug": "^4.1.1",
         "konva": "8.3.0",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-konva": "^18.2.14",
       },
@@ -545,8 +560,11 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.6",
+        "debug": "^4.1.1",
         "humps": "^2.0.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
+        "react-transition-group": "^2.3.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -577,6 +595,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
+        "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
       },
@@ -629,6 +648,7 @@
       "name": "@pie-element/match",
       "version": "0.1.0",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -785,6 +805,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-is": "^19.2.0",
         "styled-components": "^5.2.1",
@@ -805,6 +826,7 @@
       "name": "@pie-element/multi-trait-rubric",
       "version": "0.1.0",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -817,6 +839,8 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "clsx": "^1.1.1",
+        "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -890,6 +914,7 @@
         "d3-selection": "^3.0.0",
         "lodash-es": "^4.17.23",
         "mathjs": "^7.5.1",
+        "prop-types": "^15.6.1",
         "react-jss": "^10.10.0",
         "react-transition-group": "^4.4.5",
       },
@@ -919,6 +944,8 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
+        "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -955,7 +982,10 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
         "decimal.js": "^10.0.0",
+        "js-combinatorics": "^2.1.2",
         "lodash-es": "^4.17.23",
+        "nested-property": "^4.0.0",
+        "pluralize": "^8.0.0",
         "prop-types": "^15.8.1",
         "react-transition-group": "^4.4.5",
       },
@@ -984,6 +1014,8 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/rubric": "workspace:*",
+        "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1016,6 +1048,8 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/text-select": "workspace:*",
+        "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1028,6 +1062,28 @@
       "peerDependencies": {
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
+      },
+    },
+    "packages/elements-svelte/mc-populated-blank": {
+      "name": "@pie-element/mc-populated-blank",
+      "version": "0.1.0",
+      "dependencies": {
+        "@pie-lib-svelte/styling": "workspace:*",
+        "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
+        "lodash-es": "^4.17.21",
+      },
+      "devDependencies": {
+        "@sveltejs/vite-plugin-svelte": "^7.0.0",
+        "@tiptap/core": "^3.19.0",
+        "@tiptap/pm": "^3.19.0",
+        "@tiptap/starter-kit": "^3.19.0",
+        "@types/lodash-es": "^4.17.12",
+        "svelte": "^5.54.0",
+        "typescript": "^5.9.3",
+        "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "svelte": "^5.0.0",
       },
     },
     "packages/elements-svelte/simple-cloze": {
@@ -1091,6 +1147,7 @@
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
         "lodash-es": "^4.17.23",
+        "prop-types": "^15.6.1",
         "react": "^18.2.0",
         "react-draggable": "^3.3.0",
         "react-input-autosize": "^2.2.1",
@@ -1112,6 +1169,7 @@
         "lodash-es": "^4.17.23",
         "mathjs": "^7.0.1",
         "prop-types": "^15.6.2",
+        "react": "^18.2.0",
         "react-measure": "^2.2.2",
       },
     },
@@ -1136,6 +1194,7 @@
         "@pie-lib/translator": "workspace:*",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
+        "react": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
     },
@@ -1200,7 +1259,10 @@
         "keycode": "^2.2.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
+        "prosemirror-state": "^1.4.4",
+        "react": "^18.2.0",
         "react-attr-converter": "^0.3.1",
+        "react-dom": "^18.2.0",
         "react-jss": "^8.6.1",
         "react-portal": "^4.2.0",
         "tippy.js": "latest",
@@ -1213,6 +1275,7 @@
       "dependencies": {
         "@dnd-kit/core": "^6.3.0",
         "@dnd-kit/sortable": "10.0.0",
+        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mapbox/point-geometry": "^1.1.0",
@@ -1253,7 +1316,9 @@
       "name": "@pie-lib/graphing-solution-set",
       "version": "0.1.0",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "10.0.0",
+        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mapbox/point-geometry": "^1.1.0",
@@ -1309,12 +1374,15 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "prop-types": "^15.6.2",
+        "react": "^18.2.0",
       },
     },
     "packages/lib-react/mask-markup": {
       "name": "@pie-lib/mask-markup",
       "version": "0.1.0",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
+        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -1371,6 +1439,7 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
+        "react": "^18.2.0",
       },
     },
     "packages/lib-react/plot": {
@@ -1412,6 +1481,7 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
+        "react": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
     },
@@ -1444,9 +1514,13 @@
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.11.0",
+        "@mui/material": "^7.3.4",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/jest-dom": "^5.16.5",
+        "@testing-library/react": "^16.3.0",
         "@testing-library/user-event": "^14.5.2",
+        "prop-types": "^15.6.1",
+        "react": "^18.2.0",
       },
     },
     "packages/lib-react/text-select": {
@@ -1465,6 +1539,7 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
+        "react": "^18.2.0",
       },
     },
     "packages/lib-react/tools": {
@@ -1481,6 +1556,7 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
+        "react": "^18.2.0",
         "react-portal": "^4.2.0",
         "trigonometry-calculator": "^2.0.0",
       },
@@ -1571,6 +1647,8 @@
         "react": "^18.2.0",
         "string-hash": "^1.1.3",
         "style-loader": "^4.0.0",
+        "svelte": "^5.55.1",
+        "svelte-loader": "^3.2.4",
         "webpack": "^5.99.9",
       },
       "devDependencies": {
@@ -2090,6 +2168,8 @@
 
     "@pie-element/matrix": ["@pie-element/matrix@workspace:packages/elements-react/matrix"],
 
+    "@pie-element/mc-populated-blank": ["@pie-element/mc-populated-blank@workspace:packages/elements-svelte/mc-populated-blank"],
+
     "@pie-element/multi-trait-rubric": ["@pie-element/multi-trait-rubric@workspace:packages/elements-react/multi-trait-rubric"],
 
     "@pie-element/multiple-choice": ["@pie-element/multiple-choice@workspace:packages/elements-react/multiple-choice"],
@@ -2287,6 +2367,8 @@
     "@testing-library/dom": ["@testing-library/dom@10.4.1", "", { "dependencies": { "@babel/code-frame": "^7.10.4", "@babel/runtime": "^7.12.5", "@types/aria-query": "^5.0.1", "aria-query": "5.3.0", "dom-accessibility-api": "^0.5.9", "lz-string": "^1.5.0", "picocolors": "1.1.1", "pretty-format": "^27.0.2" } }, "sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg=="],
 
     "@testing-library/jest-dom": ["@testing-library/jest-dom@6.9.1", "", { "dependencies": { "@adobe/css-tools": "^4.4.0", "aria-query": "^5.0.0", "css.escape": "^1.5.1", "dom-accessibility-api": "^0.6.3", "picocolors": "^1.1.1", "redent": "^3.0.0" } }, "sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA=="],
+
+    "@testing-library/react": ["@testing-library/react@16.3.2", "", { "dependencies": { "@babel/runtime": "^7.12.5" }, "peerDependencies": { "@testing-library/dom": "^10.0.0", "@types/react": "^18.0.0 || ^19.0.0", "@types/react-dom": "^18.0.0 || ^19.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g=="],
 
     "@testing-library/user-event": ["@testing-library/user-event@14.6.1", "", { "peerDependencies": { "@testing-library/dom": ">=7.21.4" } }, "sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw=="],
 
@@ -2499,6 +2581,8 @@
     "@types/yargs": ["@types/yargs@17.0.35", "", { "dependencies": { "@types/yargs-parser": "*" } }, "sha512-qUHkeCyQFxMXg79wQfTtfndEC+N9ZZg76HJftDJp+qH2tV7Gj4OJi7l+PiWwJ+pWtW8GwSmqsDj/oymhrTWXjg=="],
 
     "@types/yargs-parser": ["@types/yargs-parser@21.0.3", "", {}, "sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ=="],
+
+    "@typescript-eslint/types": ["@typescript-eslint/types@8.58.0", "", {}, "sha512-O9CjxypDT89fbHxRfETNoAnHj/i6IpRK0CvbVN3qibxlLdo5p5hcLmUuCCrHMpxiWSwKyI8mCP7qRNYuOJ0Uww=="],
 
     "@visx/axis": ["@visx/axis@3.12.0", "", { "dependencies": { "@types/react": "*", "@visx/group": "3.12.0", "@visx/point": "3.12.0", "@visx/scale": "3.12.0", "@visx/shape": "3.12.0", "@visx/text": "3.12.0", "classnames": "^2.3.1", "prop-types": "^15.6.0" }, "peerDependencies": { "react": "^16.3.0-0 || ^17.0.0-0 || ^18.0.0-0" } }, "sha512-8MoWpfuaJkhm2Yg+HwyytK8nk+zDugCqTT/tRmQX7gW4LYrHYLXFUXOzbDyyBakCVaUbUaAhVFxpMASJiQKf7A=="],
 
@@ -3068,6 +3152,8 @@
 
     "jquery": ["jquery@3.7.1", "", {}, "sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg=="],
 
+    "js-combinatorics": ["js-combinatorics@2.1.2", "", {}, "sha512-/1AY2bYwxajoaKjPzvgQ80U7lcucU71ubzFPVgZGmzbDGn3R18ZQUZfD69+4Idg4JfNcq6trwD6I+dRfVnr/tg=="],
+
     "js-tokens": ["js-tokens@10.0.0", "", {}, "sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q=="],
 
     "js-yaml": ["js-yaml@4.1.1", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA=="],
@@ -3284,6 +3370,8 @@
 
     "neo-async": ["neo-async@2.6.2", "", {}, "sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw=="],
 
+    "nested-property": ["nested-property@4.0.0", "", {}, "sha512-yFehXNWRs4cM0+dz7QxCd06hTbWbSkV0ISsqBfkntU6TOY4Qm3Q88fRRLOddkGh2Qq6dZvnKVAahfhjcUvLnyA=="],
+
     "nlcst-to-string": ["nlcst-to-string@2.0.4", "", {}, "sha512-3x3jwTd6UPG7vi5k4GEzvxJ5rDA7hVUIRNHPblKuMVP9Z3xmlsd9cgLcpAMkc5uPOBna82EeshROFhsPkbnTZg=="],
 
     "no-case": ["no-case@2.3.2", "", { "dependencies": { "lower-case": "^1.1.1" } }, "sha512-rmTZ9kz+f3rCvK2TD1Ue/oZlns7OGoIWP4fc3llxxRXlOkHKoWPPWJOfFYpITabSow43QJbRIoHQXtt10VldyQ=="],
@@ -3369,6 +3457,8 @@
     "playwright": ["playwright@1.58.2", "", { "dependencies": { "playwright-core": "1.58.2" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-vA30H8Nvkq/cPBnNw4Q8TWz1EJyqgpuinBcHET0YVJVFldr8JDNiU9LaWAE1KqSkRYazuaBhTpB5ZzShOezQ6A=="],
 
     "playwright-core": ["playwright-core@1.58.2", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-yZkEtftgwS8CsfYo7nm0KE8jsvm6i/PTgVtB8DL726wNf6H2IMsDuxCpJj59KDaxCtSnrWan2AeDqM7JBaultg=="],
+
+    "pluralize": ["pluralize@8.0.0", "", {}, "sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA=="],
 
     "postcss": ["postcss@8.5.8", "", { "dependencies": { "nanoid": "^3.3.11", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-OW/rX8O/jXnm82Ey1k44pObPtdblfiuWnrd8X7GJ7emImCOstunGbXUpp7HdBrFQX6rJzn3sPT397Wp5aCwCHg=="],
 
@@ -3616,6 +3706,12 @@
 
     "svelte": ["svelte@5.54.0", "", { "dependencies": { "@jridgewell/remapping": "^2.3.4", "@jridgewell/sourcemap-codec": "^1.5.0", "@sveltejs/acorn-typescript": "^1.0.5", "@types/estree": "^1.0.5", "@types/trusted-types": "^2.0.7", "acorn": "^8.12.1", "aria-query": "5.3.1", "axobject-query": "^4.1.0", "clsx": "^2.1.1", "devalue": "^5.6.4", "esm-env": "^1.2.1", "esrap": "^2.2.2", "is-reference": "^3.0.3", "locate-character": "^3.0.0", "magic-string": "^0.30.11", "zimmerframe": "^1.1.2" } }, "sha512-TTDxwYnHkova6Wsyj1PGt9TByuWqvMoeY1bQiuAf2DM/JeDSMw7FjRKzk8K/5mJ99vGOKhbCqTDpyAKwjp4igg=="],
 
+    "svelte-dev-helper": ["svelte-dev-helper@1.1.9", "", {}, "sha512-oU+Xv7Dl4kRU2kdFjsoPLfJfnt5hUhsFUZtuzI3Ku/f2iAFZqBoEuXOqK3N9ngD4dxQOmN4OKWPHVi3NeAeAfQ=="],
+
+    "svelte-hmr": ["svelte-hmr@0.14.12", "", { "peerDependencies": { "svelte": ">=3.19.0" } }, "sha512-4QSW/VvXuqVcFZ+RhxiR8/newmwOCTlbYIezvkeN6302YFRE8cXy0naamHcjz8Y9Ce3ITTZtrHrIL0AGfyo61w=="],
+
+    "svelte-loader": ["svelte-loader@3.2.4", "", { "dependencies": { "loader-utils": "^2.0.4", "svelte-dev-helper": "^1.1.9", "svelte-hmr": "^0.14.2" }, "peerDependencies": { "svelte": "^3.0.0 || ^4.0.0-next.0 || ^5.0.0-next.1" } }, "sha512-e0HdDnkYH/MDx4/IfTSka5AOFg9yYJcPuoZJB5x0l60fkHjVjNvrrxr+rJegDG9J7ZymmdHt00/hdLw+QF299w=="],
+
     "swap-case": ["swap-case@1.1.2", "", { "dependencies": { "lower-case": "^1.1.1", "upper-case": "^1.1.1" } }, "sha512-BAmWG6/bx8syfc6qXPprof3Mn5vQgf5dwdUNJhsNqU9WdPt5P+ES/wQ5bxfijy8zwZgZZHslC3iAsxsuQMCzJQ=="],
 
     "symbol-observable": ["symbol-observable@1.2.0", "", {}, "sha512-e900nM8RRtGhlV36KGEU9k65K3mPb1WV70OdjfxlG2EAuM1noi/E/BaW/uMhL7bPEssK8QV57vN3esixjUvcXQ=="],
@@ -3809,6 +3905,12 @@
     "@oclif/core/minimatch": ["minimatch@9.0.5", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
     "@pie-element/element-bundler/@types/node": ["@types/node@22.19.10", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-tF5VOugLS/EuDlTBijk0MqABfP8UxgYazTLo3uIn3b4yJgg26QRbVYJYsDtHrjdDUIRfP70+VfhTTc+CE1yskw=="],
+
+    "@pie-element/element-bundler/svelte": ["svelte@5.55.1", "", { "dependencies": { "@jridgewell/remapping": "^2.3.4", "@jridgewell/sourcemap-codec": "^1.5.0", "@sveltejs/acorn-typescript": "^1.0.5", "@types/estree": "^1.0.5", "@types/trusted-types": "^2.0.7", "acorn": "^8.12.1", "aria-query": "5.3.1", "axobject-query": "^4.1.0", "clsx": "^2.1.1", "devalue": "^5.6.4", "esm-env": "^1.2.1", "esrap": "^2.2.4", "is-reference": "^3.0.3", "locate-character": "^3.0.0", "magic-string": "^0.30.11", "zimmerframe": "^1.1.2" } }, "sha512-QjvU7EFemf6mRzdMGlAFttMWtAAVXrax61SZYHdkD6yoVGQ89VeyKfZD4H1JrV1WLmJBxWhFch9H6ig/87VGjw=="],
+
+    "@pie-element/mc-populated-blank/@tiptap/core": ["@tiptap/core@3.19.0", "", { "peerDependencies": { "@tiptap/pm": "^3.19.0" } }, "sha512-bpqELwPW+DG8gWiD8iiFtSl4vIBooG5uVJod92Qxn3rA9nFatyXRr4kNbMJmOZ66ezUvmCjXVe/5/G4i5cyzKA=="],
+
+    "@pie-element/mc-populated-blank/@tiptap/starter-kit": ["@tiptap/starter-kit@3.19.0", "", { "dependencies": { "@tiptap/core": "^3.19.0", "@tiptap/extension-blockquote": "^3.19.0", "@tiptap/extension-bold": "^3.19.0", "@tiptap/extension-bullet-list": "^3.19.0", "@tiptap/extension-code": "^3.19.0", "@tiptap/extension-code-block": "^3.19.0", "@tiptap/extension-document": "^3.19.0", "@tiptap/extension-dropcursor": "^3.19.0", "@tiptap/extension-gapcursor": "^3.19.0", "@tiptap/extension-hard-break": "^3.19.0", "@tiptap/extension-heading": "^3.19.0", "@tiptap/extension-horizontal-rule": "^3.19.0", "@tiptap/extension-italic": "^3.19.0", "@tiptap/extension-link": "^3.19.0", "@tiptap/extension-list": "^3.19.0", "@tiptap/extension-list-item": "^3.19.0", "@tiptap/extension-list-keymap": "^3.19.0", "@tiptap/extension-ordered-list": "^3.19.0", "@tiptap/extension-paragraph": "^3.19.0", "@tiptap/extension-strike": "^3.19.0", "@tiptap/extension-text": "^3.19.0", "@tiptap/extension-underline": "^3.19.0", "@tiptap/extensions": "^3.19.0", "@tiptap/pm": "^3.19.0" } }, "sha512-dTCkHEz+Y8ADxX7h+xvl6caAj+3nII/wMB1rTQchSuNKqJTOrzyUsCWm094+IoZmLT738wANE0fRIgziNHs/ug=="],
 
     "@pie-element/multiple-choice/react-transition-group": ["react-transition-group@4.4.5", "", { "dependencies": { "@babel/runtime": "^7.5.5", "dom-helpers": "^5.0.1", "loose-envify": "^1.4.0", "prop-types": "^15.6.2" }, "peerDependencies": { "react": ">=16.6.0", "react-dom": ">=16.6.0" } }, "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="],
 
@@ -4101,6 +4203,24 @@
     "@mui/material/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
 
     "@pie-element/element-bundler/@types/node/undici-types": ["undici-types@6.21.0", "", {}, "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="],
+
+    "@pie-element/element-bundler/svelte/aria-query": ["aria-query@5.3.1", "", {}, "sha512-Z/ZeOgVl7bcSYZ/u/rh0fOpvEpq//LZmdbkXyc7syVzjPAhfOa9ebsdTSjEBDU4vs5nC98Kfduj1uFo0qyET3g=="],
+
+    "@pie-element/element-bundler/svelte/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
+
+    "@pie-element/element-bundler/svelte/esrap": ["esrap@2.2.4", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.4.15", "@typescript-eslint/types": "^8.2.0" } }, "sha512-suICpxAmZ9A8bzJjEl/+rLJiDKC0X4gYWUxT6URAWBLvlXmtbZd5ySMu/N2ZGEtMCAmflUDPSehrP9BQcsGcSg=="],
+
+    "@pie-element/mc-populated-blank/@tiptap/starter-kit/@tiptap/extension-code-block": ["@tiptap/extension-code-block@3.19.0", "", { "peerDependencies": { "@tiptap/core": "^3.19.0", "@tiptap/pm": "^3.19.0" } }, "sha512-b/2qR+tMn8MQb+eaFYgVk4qXnLNkkRYmwELQ8LEtEDQPxa5Vl7J3eu8+4OyoIFhZrNDZvvoEp80kHMCP8sI6rg=="],
+
+    "@pie-element/mc-populated-blank/@tiptap/starter-kit/@tiptap/extension-document": ["@tiptap/extension-document@3.19.0", "", { "peerDependencies": { "@tiptap/core": "^3.19.0" } }, "sha512-AOf0kHKSFO0ymjVgYSYDncRXTITdTcrj1tqxVazrmO60KNl1Rc2dAggDvIVTEBy5NvceF0scc7q3sE/5ZtVV7A=="],
+
+    "@pie-element/mc-populated-blank/@tiptap/starter-kit/@tiptap/extension-list": ["@tiptap/extension-list@3.19.0", "", { "peerDependencies": { "@tiptap/core": "^3.19.0", "@tiptap/pm": "^3.19.0" } }, "sha512-N6nKbFB2VwMsPlCw67RlAtYSK48TAsAUgjnD+vd3ieSlIufdQnLXDFUP6hFKx9mwoUVUgZGz02RA6bkxOdYyTw=="],
+
+    "@pie-element/mc-populated-blank/@tiptap/starter-kit/@tiptap/extension-list-item": ["@tiptap/extension-list-item@3.19.0", "", { "peerDependencies": { "@tiptap/extension-list": "^3.19.0" } }, "sha512-VsSKuJz4/Tb6ZmFkXqWpDYkRzmaLTyE6dNSEpNmUpmZ32sMqo58mt11/huADNwfBFB0Ve7siH/VnFNIJYY3xvg=="],
+
+    "@pie-element/mc-populated-blank/@tiptap/starter-kit/@tiptap/extension-text": ["@tiptap/extension-text@3.19.0", "", { "peerDependencies": { "@tiptap/core": "^3.19.0" } }, "sha512-K95+SnbZy0h6hNFtfy23n8t/nOcTFEf69In9TSFVVmwn/Nwlke+IfiESAkqbt1/7sKJeegRXYO7WzFEmFl9Q/g=="],
+
+    "@pie-element/mc-populated-blank/@tiptap/starter-kit/@tiptap/extensions": ["@tiptap/extensions@3.19.0", "", { "peerDependencies": { "@tiptap/core": "^3.19.0", "@tiptap/pm": "^3.19.0" } }, "sha512-ZmGUhLbMWaGqnJh2Bry+6V4M6gMpUDYo4D1xNux5Gng/E/eYtc+PMxMZ/6F7tNTAuujLBOQKj6D+4SsSm457jw=="],
 
     "@pie-element/multiple-choice/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
 

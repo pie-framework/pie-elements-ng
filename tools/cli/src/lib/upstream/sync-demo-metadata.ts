@@ -129,7 +129,7 @@ export function getAllElements(): ElementMetadata[] {
 async function copySampleConfigs(elements: ElementMetadata[]): Promise<void> {
   for (const element of elements) {
     const sourcePath = join(ELEMENTS_REACT_PATH, element.name, 'docs/demo');
-    const targetDir = join(DEMO_APP_PATH, 'src/lib/data/sample-configs/react');
+    const targetDir = join(DEMO_APP_PATH, 'src/lib/samples');
     await mkdir(targetDir, { recursive: true });
 
     // Convert config.mjs to JSON

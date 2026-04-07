@@ -2,20 +2,7 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { resolve } from 'node:path';
 
-export default defineConfig(({ mode, command }) => {
-  if (mode === 'demo' && command === 'serve') {
-    return {
-      root: resolve(__dirname, 'docs/demo'),
-      plugins: [
-        svelte({
-          compilerOptions: {
-            customElement: true,
-          },
-        }),
-      ],
-    };
-  }
-
+export default defineConfig(() => {
   // Build delivery element with Svelte bundled, controller separately
   return {
     plugins: [
@@ -29,7 +16,7 @@ export default defineConfig(({ mode, command }) => {
     build: {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
-        name: 'SimpleCloze',
+        name: 'McPopulatedBlank',
         fileName: () => 'index.js',
         formats: ['es'],
       },

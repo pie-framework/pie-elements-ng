@@ -115,6 +115,14 @@ function resolvePieLibSourceAliases(workspaceDir: string): Record<string, string
 
 const moduleRules: webpack.RuleSetRule[] = [
   {
+    test: /\.svelte$/,
+    use: [
+      {
+        loader: 'svelte-loader',
+      },
+    ],
+  },
+  {
     test: /\.(ts|tsx)$/,
     exclude: (filePath: string) => {
       if (!filePath.includes('/node_modules/')) {
@@ -246,7 +254,8 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
       // Prefer workspace package development exports in demo builds.
       // This keeps IIFE behavior aligned with the Vite dev player and avoids stale dist-only mismatches.
       conditionNames: ['development', '...'],
-      extensions: ['.ts', '.tsx', '.js', '.jsx'],
+      mainFields: ['svelte', 'browser', 'module', 'main'],
+      extensions: ['.svelte', '.ts', '.tsx', '.js', '.jsx'],
       extensionAlias: {
         '.js': ['.ts', '.tsx', '.js'],
         '.mjs': ['.mts', '.mjs'],
@@ -324,7 +333,8 @@ export function createControllerWebpackConfig(
         '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
       },
       conditionNames: ['development', '...'],
-      extensions: ['.ts', '.tsx', '.js', '.jsx'],
+      mainFields: ['svelte', 'browser', 'module', 'main'],
+      extensions: ['.svelte', '.ts', '.tsx', '.js', '.jsx'],
       extensionAlias: {
         '.js': ['.ts', '.tsx', '.js'],
         '.mjs': ['.mts', '.mjs'],

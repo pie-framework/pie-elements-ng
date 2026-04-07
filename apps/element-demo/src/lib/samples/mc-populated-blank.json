@@ -1,0 +1,400 @@
+{
+  "demos": [
+    {
+      "id": "variant-sel-r1-plusggg",
+      "title": "sel_r1-_plusggg (canonical CQT sample)",
+      "description": "Canonical sample from item 000eb0e6-92a0-43cd-bb1f-89ddb52da2e5 and question 49d6bda1-4614-447d-8c2e-d4a317e13540.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "sel_r1-_plusgggv0.0.1"],
+      "model": {
+        "id": "1",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:1.8em;\">louk</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:1.8em;\">lok</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:1.8em;\">look</span>"
+          }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "",
+        "audioTranscript": "The word is look. Pick the correct spelling of the word look.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
+          "learnosityItemReference": "000eb0e6-92a0-43cd-bb1f-89ddb52da2e5",
+          "learnosityQuestionReference": "49d6bda1-4614-447d-8c2e-d4a317e13540"
+        }
+      },
+      "session": {
+        "id": "1",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
+      "id": "variant-sr-vic",
+      "title": "sr-vic (canonical CQT sample)",
+      "description": "Canonical sample from item 00293f60-334f-48d0-b145-f7cb9f02a0fe and question a546c0a3-3d68-4d5c-994f-262e788f486c.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sr-vic", "sr-vicv0.0.1"],
+      "model": {
+        "id": "2",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>He will heat up the water in the {{blank}}.</p>",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "<p>teapot</p>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<p>flytrap</p>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<p>coffee</p>"
+          },
+          {
+            "id": "distractor_4",
+            "labelHtml": "<p>freezer</p>"
+          }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": false,
+        "audioUrl": "",
+        "audioTranscript": "",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "inline_sentence",
+        "choiceLayout": "vertical",
+        "locale": "",
+        "autoplayAudioEnabled": false,
+        "completeAudioEnabled": false,
+        "source": {
+          "csvQuestionTypeTag": "sr-vicv0.0.1",
+          "learnosityItemReference": "00293f60-334f-48d0-b145-f7cb9f02a0fe",
+          "learnosityQuestionReference": "a546c0a3-3d68-4d5c-994f-262e788f486c"
+        }
+      },
+      "session": {
+        "id": "2",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
+      "id": "variant-sel-vic",
+      "title": "sel_vic (canonical CQT sample)",
+      "description": "Canonical sample from item 04973d1a-0557-4963-937d-7ac76ee3baeb and question 11e9862e-cab1-415e-87a3-0f32fedcedfc.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_vic", "sel_vicv0.0.1"],
+      "model": {
+        "id": "3",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>Bill will have to {{blank}} fast to get the ball.</p>",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "<p>run</p>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<p>do</p>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<p>toy</p>"
+          }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "",
+        "audioTranscript": "Read the sentence. Then pick the word that best completes the sentence.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "inline_sentence",
+        "choiceLayout": "vertical",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "source": {
+          "csvQuestionTypeTag": "sel_vicv0.0.1",
+          "learnosityItemReference": "04973d1a-0557-4963-937d-7ac76ee3baeb",
+          "learnosityQuestionReference": "11e9862e-cab1-415e-87a3-0f32fedcedfc"
+        }
+      },
+      "session": {
+        "id": "3",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
+      "id": "variant-sel-r1-gplusggg",
+      "title": "sel_r1-_gplusggg (canonical CQT sample)",
+      "description": "Canonical sample from item 0e7c3f32-9dfe-40d7-bbc4-0a6eea0e7874 and question a2837d4f-cdd0-4285-8352-a10a96e6564d.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "sel_r1-_gplusgggv0.0.1"],
+      "model": {
+        "id": "4",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:1.8em;\">jump</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:1.8em;\">fast</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:1.8em;\">just</span>"
+          }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "",
+        "audioTranscript": "Look at the words. Pick the word \"just\" . . . \"just.\"",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
+          "learnosityItemReference": "0e7c3f32-9dfe-40d7-bbc4-0a6eea0e7874",
+          "learnosityQuestionReference": "a2837d4f-cdd0-4285-8352-a10a96e6564d"
+        }
+      },
+      "session": {
+        "id": "4",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
+      "id": "variant-sel-r1-g-stem",
+      "title": "sel_r1-g_plusggg (canonical CQT sample)",
+      "description": "Canonical sample from item 0060b039-2605-47a6-8305-96e0463fcfd0 and question b78bf2ff-8d6e-4a6f-a0c9-9e188020b50e.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "sel_r1-g_plusgggv0.0.1"],
+      "model": {
+        "id": "5",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<span style=\"font-size:1.8em;\">will</span> {{blank}}",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:1.8em;\">fill</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:1.8em;\">mill</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:1.8em;\">tall</span>"
+          }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "",
+        "audioTranscript": "Look at the word. Pick the word that does not rhyme.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
+          "learnosityItemReference": "0060b039-2605-47a6-8305-96e0463fcfd0",
+          "learnosityQuestionReference": "b78bf2ff-8d6e-4a6f-a0c9-9e188020b50e"
+        }
+      },
+      "session": {
+        "id": "5",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
+      "id": "variant-sel-r1-gg-plus",
+      "title": "sel_r1-gg_plusggg (canonical CQT sample)",
+      "description": "Canonical sample from item 0d42ee84-b291-4336-b689-6912199fa81f and question a32aa886-0153-46a5-a31c-fdab5fd5165a.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "sel_r1-gg_plusgggv0.0.1"],
+      "model": {
+        "id": "6",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<span style=\"font-size:3em;\">l</span> <span style=\"font-size:3em;\">m</span> {{blank}}",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:3em;\">n</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:3em;\">k</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:3em;\">ñ</span>"
+          }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "",
+        "audioTranscript": "Estas letras son l y m. Elige la letra que sigue en el alfabeto.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
+          "learnosityItemReference": "0d42ee84-b291-4336-b689-6912199fa81f",
+          "learnosityQuestionReference": "a32aa886-0153-46a5-a31c-fdab5fd5165a"
+        }
+      },
+      "session": {
+        "id": "6",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
+      "id": "variant-sel-r1-ggplus",
+      "title": "sel_r1-_ggplusggg (canonical CQT sample)",
+      "description": "Canonical sample from item 0291a767-2334-4742-a899-e4178e85fc02 and question a469c1cf-fc1c-4cef-ae9f-04cc3f0cfc49.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "sel_r1-_ggplusgggv0.0.1"],
+      "model": {
+        "id": "7",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "{{blank}} <span style=\"font-size:3em;\">m</span> <span style=\"font-size:3em;\">n</span>",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:3em;\">o</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:3em;\">k</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:3em;\">l</span>"
+          }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "",
+        "audioTranscript": "These letters are m and n. Pick the letter that comes just before them in the alphabet.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
+          "learnosityItemReference": "0291a767-2334-4742-a899-e4178e85fc02",
+          "learnosityQuestionReference": "a469c1cf-fc1c-4cef-ae9f-04cc3f0cfc49"
+        }
+      },
+      "session": {
+        "id": "7",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
+      "id": "variant-sel-r1-s3",
+      "title": "sel_r1-s3_plusggg (canonical CQT sample)",
+      "description": "Canonical sample from item 003dcbf8-ff38-4930-84ee-26ca8be834b9 and question 480b51c4-e8dd-4fed-8ddc-2e0667947326.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "sel_r1-s3_plusgggv0.0.1"],
+      "model": {
+        "id": "8",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:1.8em;\">1 ten</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:1.8em;\">2 tens</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:1.8em;\">3 tens</span>"
+          }
+        ],
+        "correctChoiceId": "distractor_2",
+        "hasAudio": true,
+        "audioUrl": "",
+        "audioTranscript": "Pick how many tens are in the number twenty.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "<img alt=\"The picture shows groups of ten. The groups are\n* 10, 10,\n* The number 20 is below the groups. \" height=\"225\" src=\"https://assets.learnosity.com/organisations/844/863bd024-5883-40d7-a34c-178bedda8ccd.svg\" width=\"343\">",
+        "layoutProfile": "stimulus_image_blank",
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
+          "learnosityItemReference": "003dcbf8-ff38-4930-84ee-26ca8be834b9",
+          "learnosityQuestionReference": "480b51c4-e8dd-4fed-8ddc-2e0667947326"
+        }
+      },
+      "session": {
+        "id": "8",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    }
+  ]
+}

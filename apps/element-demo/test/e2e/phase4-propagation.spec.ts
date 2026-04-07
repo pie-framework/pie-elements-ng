@@ -15,6 +15,7 @@ type SourcePropagationCase = {
 const SOURCE_PROPAGATION_CASES: SourcePropagationCase[] = [
   { element: 'multiple-choice', demoId: 'math-algebra-quadratic' },
   { element: 'simple-cloze' },
+  { element: 'mc-populated-blank' },
   { element: 'explicit-constructed-response' },
 ];
 
