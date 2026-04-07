@@ -2,14 +2,9 @@
 /**
  * Delivery Player Layout Component
  *
- * Extended layout with mode/role/session/model controls for delivery view.
+ * Delivery layout wrapper for the element player.
  */
 import { onMount } from 'svelte';
-import { page } from '$app/stores';
-import ModeSelector from './ModeSelector.svelte';
-import SessionPanel from './SessionPanel.svelte';
-import ScoringPanel from './ScoringPanel.svelte';
-import ModelPanel from './ModelPanel.svelte';
 import { loadController } from '../lib/demo-element-loader';
 import type { PieController } from '../lib/types';
 import type { PlayerType } from '$lib/config/player-runtime';
@@ -44,41 +39,12 @@ let {
 // State
 let loading = $state(true);
 let error = $state<string | null>(null);
-let score = $state<any>(null);
 let controllerWarning = $state<string | null>(null);
-let roleLocked = $state(false);
-let splitRatio = $state(50);
 
 // Effects
 $effect(() => {
-  roleLocked = mode === 'evaluate';
   if (playerRole !== 'instructor' && mode === 'evaluate') {
     mode = 'view';
-  }
-});
-
-// Call controller in evaluate mode
-$effect(() => {
-  if (mode === 'evaluate' && controller && model && session) {
-    if (debug) console.log('[delivery-player-layout] Calling controller.score()');
-
-    const scoreMethod = controller.score || controller.outcome;
-
-    if (scoreMethod) {
-      scoreMethod(model, session, { mode, role: playerRole, partialScoring })
-        .then((result: any) => {
-          score = result;
-          if (debug) console.log('[delivery-player-layout] Score result:', result);
-        })
-        .catch((err: any) => {
-          console.error('[delivery-player-layout] Scoring error:', err);
-          if (debug) score = { error: err.message };
-        });
-    } else {
-      console.warn('[delivery-player-layout] Controller has no score or outcome method');
-    }
-  } else {
-    score = null;
   }
 });
 
@@ -113,46 +79,9 @@ onMount(async () => {
   }
 });
 
-function handleSplitPointerDown(event: PointerEvent) {
-  const container = (event.currentTarget as HTMLElement)?.parentElement;
-  if (!container) return;
-
-  event.preventDefault();
-  const target = event.currentTarget as HTMLElement;
-  target.setPointerCapture(event.pointerId);
-
-  const startX = event.clientX;
-  const startRatio = splitRatio;
-  const rect = container.getBoundingClientRect();
-
-  const onMove = (moveEvent: PointerEvent) => {
-    const delta = moveEvent.clientX - startX;
-    const next = ((startRatio / 100) * rect.width + delta) / rect.width;
-    splitRatio = Math.min(80, Math.max(20, Math.round(next * 100)));
-  };
-
-  const onUp = () => {
-    target.releasePointerCapture(event.pointerId);
-    document.body.style.cursor = '';
-    window.removeEventListener('pointermove', onMove);
-    window.removeEventListener('pointerup', onUp);
-  };
-
-  document.body.style.cursor = 'col-resize';
-  window.addEventListener('pointermove', onMove);
-  window.addEventListener('pointerup', onUp);
-}
-
 function handleModelApply(nextModel: any) {
   // Model updates are handled by the store in parent routes
   console.log('[delivery-player-layout] Model apply requested:', nextModel);
-}
-
-// Build URL for role change, preserving other params
-function getRoleUrl(newRole: 'student' | 'instructor'): string {
-  const url = new URL($page.url);
-  url.searchParams.set('role', newRole);
-  return url.pathname + url.search;
 }
 </script>
 
@@ -182,56 +111,10 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
       </div>
     {/if}
 
-    <div class="player-content" style={`grid-template-columns: ${splitRatio}% 12px ${100 - splitRatio}%`}>
-      <main class="min-w-0 pr-3 overflow-auto">
+    <div class="player-content">
+      <main class="flex-1 min-w-0 overflow-auto">
         {@render children?.()}
       </main>
-
-      <div class="divider divider-horizontal cursor-col-resize" onpointerdown={handleSplitPointerDown} role="separator" aria-orientation="vertical"></div>
-
-      <aside class="min-w-0 pl-3 overflow-auto space-y-4">
-        <div class="card bg-base-100 border border-base-300">
-          <div class="card-body p-4">
-            <h3 class="card-title text-sm uppercase text-base-content/60">Mode</h3>
-            <ModeSelector bind:mode evaluateDisabled={playerRole !== 'instructor'} />
-          </div>
-        </div>
-
-        <div class="card bg-base-100 border border-base-300">
-          <div class="card-body p-4">
-            <h3 class="card-title text-sm uppercase text-base-content/60">Role</h3>
-            <div class="flex flex-col gap-2">
-              <a
-                href={getRoleUrl('student')}
-                data-sveltekit-reload
-                class="btn btn-sm justify-start"
-                class:btn-primary={playerRole === 'student'}
-                class:btn-outline={playerRole !== 'student'}
-                class:btn-disabled={roleLocked}
-                aria-disabled={roleLocked}
-                tabindex={roleLocked ? -1 : 0}
-                data-testid="role-student"
-              >
-                Student
-              </a>
-              <a
-                href={getRoleUrl('instructor')}
-                data-sveltekit-reload
-                class="btn btn-sm justify-start"
-                class:btn-primary={playerRole === 'instructor'}
-                class:btn-outline={playerRole !== 'instructor'}
-                data-testid="role-instructor"
-              >
-                Instructor
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <SessionPanel {session} />
-
-        <ScoringPanel {score} />
-      </aside>
     </div>
   {/if}
 </div>
@@ -245,25 +128,9 @@ function getRoleUrl(newRole: 'student' | 'instructor'): string {
   }
 
   .player-content {
-    display: grid;
+    display: flex;
     flex: 1;
     min-height: 0;
     overflow: hidden;
-  }
-
-  .player-content > main,
-  .player-content > aside {
-    min-height: 0; /* Allow grid children to shrink below content size */
-  }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .player-content {
-      grid-template-columns: 1fr !important;
-    }
-
-    .divider-horizontal {
-      display: none;
-    }
   }
 </style>

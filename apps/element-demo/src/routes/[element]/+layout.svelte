@@ -254,6 +254,18 @@ function resetDemoSessionFromToolbar() {
   }
 }
 
+function getDeliveryRoleModeUrl(viewMode: 'student' | 'scorer') {
+  const url = new URL($page.url);
+  if (viewMode === 'student') {
+    url.searchParams.set('role', 'student');
+    url.searchParams.set('mode', 'gather');
+  } else {
+    url.searchParams.set('role', 'instructor');
+    url.searchParams.set('mode', 'evaluate');
+  }
+  return url.pathname + url.search;
+}
+
 // Bidirectional sync: URL ↔ stores
 $effect(() => {
   const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
@@ -352,6 +364,30 @@ function handleThemeToggle(event: Event) {
             >
               Reset Input
             </button>
+            <div class="join" aria-label="Demo role mode">
+              <a
+                href={getDeliveryRoleModeUrl('student')}
+                data-sveltekit-reload
+                class="btn btn-sm join-item"
+                class:btn-active={$role === 'student' && $mode === 'gather'}
+                aria-current={$role === 'student' && $mode === 'gather' ? 'page' : undefined}
+                title="Student view - gather mode"
+                data-testid="role-student"
+              >
+                Student
+              </a>
+              <a
+                href={getDeliveryRoleModeUrl('scorer')}
+                data-sveltekit-reload
+                class="btn btn-sm join-item"
+                class:btn-active={$role === 'instructor' && $mode === 'evaluate'}
+                aria-current={$role === 'instructor' && $mode === 'evaluate' ? 'page' : undefined}
+                title="Scorer view - evaluate mode"
+                data-testid="role-instructor"
+              >
+                Scorer
+              </a>
+            </div>
           {/if}
         </div>
 
