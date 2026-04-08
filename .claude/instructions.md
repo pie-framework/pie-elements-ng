@@ -223,6 +223,8 @@ oclif-based CLI for:
 - **Changesets**: Version management
 - **CI/CD**: GitHub Actions (ci.yml, e2e.yml, release.yml)
 - **Automated releases**: Via GitHub Actions
+- **Default bump policy**: Always use `patch` by default for releases/versioning.
+- Use `minor` or `major` only when the user explicitly requests it.
 
 ## Current Work Focus
 

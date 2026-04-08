@@ -1,4 +1,4 @@
-IE elements-ng project rules
+# IE elements-ng project rules
 
 - Web components: set data via element properties, not attributes.
 - For custom elements, prefer imperative property updates (element.model = ..., element.session = ...).
@@ -9,3 +9,5 @@ IE elements-ng project rules
 - Do not directly edit synced files in those directories.
 - Make source changes in upstream repos first, then run `bun run upstream:update` (or `bun run upstream:sync --element=<name>`) to regenerate local files.
 - Only make temporary direct edits in synced files if the user explicitly approves an emergency local-only debugging patch.
+- Release/versioning default: always use a patch bump by default.
+- For Changesets-driven releases, default to `patch` unless the user explicitly asks for `minor` or `major`.
