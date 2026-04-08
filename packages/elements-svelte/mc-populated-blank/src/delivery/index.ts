@@ -68,6 +68,7 @@ class McPopulatedBlankElement extends SvelteElementClass {
 
   onSessionChange = (updatedSession: any) => {
     this._internalSession = updatedSession;
+    super.session = updatedSession;
     this._dispatchSessionChanged();
   };
 

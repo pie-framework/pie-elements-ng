@@ -51,9 +51,9 @@
     },
     {
       "id": "variant-sr-vic",
-      "title": "sr-vic (canonical CQT sample)",
+      "title": "VIC (canonical CQT sample)",
       "description": "Canonical sample from item 00293f60-334f-48d0-b145-f7cb9f02a0fe and question a546c0a3-3d68-4d5c-994f-262e788f486c.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sr-vic", "sr-vicv0.0.1"],
+      "tags": ["mc-populated-blank", "cqt-sample", "VIC", "sr-vic", "sr-vicv0.0.1"],
       "model": {
         "id": "2",
         "element": "mc-populated-blank",
@@ -104,9 +104,9 @@
     },
     {
       "id": "variant-sel-vic",
-      "title": "sel_vic (canonical CQT sample)",
+      "title": "SEL VIC (canonical CQT sample)",
       "description": "Canonical sample from item 04973d1a-0557-4963-937d-7ac76ee3baeb and question 11e9862e-cab1-415e-87a3-0f32fedcedfc.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_vic", "sel_vicv0.0.1"],
+      "tags": ["mc-populated-blank", "cqt-sample", "SEL VIC", "sel_vic", "sel_vicv0.0.1"],
       "model": {
         "id": "3",
         "element": "mc-populated-blank",

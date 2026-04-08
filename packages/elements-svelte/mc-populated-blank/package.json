@@ -30,6 +30,9 @@
       "development": "./src/print/index.ts",
       "types": "./dist/print/index.d.ts",
       "default": "./dist/print/index.js"
+    },
+    "./iife": {
+      "default": "./dist/index.iife.js"
     }
   },
   "files": [
@@ -43,8 +46,6 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
-    "@pie-lib-svelte/styling": "workspace:*",
     "lodash-es": "^4.17.21"
   },
   "peerDependencies": {
@@ -52,9 +53,6 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "@tiptap/core": "^3.19.0",
-    "@tiptap/pm": "^3.19.0",
-    "@tiptap/starter-kit": "^3.19.0",
     "@types/lodash-es": "^4.17.12",
     "svelte": "^5.54.0",
     "typescript": "^5.9.3",

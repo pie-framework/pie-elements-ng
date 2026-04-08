@@ -42,78 +42,154 @@ export const isComplete = (question: any, session: any, audioComplete = false) =
 export const outcome = (question: any, session: any, env: any) =>
   new Promise((resolve) => {
     if (!session || isEmpty(session)) {
-      resolve({ score: 0, empty: true });
+      resolve({
+        score: 0,
+        empty: true,
+        traceLog: ['Student did not select any answers. Score is 0.'],
+      });
       return;
     }
 
     session = normalizeSession(session);
+    const correctness = getCorrectness(question, session);
 
-    if (env.mode !== 'evaluate') {
-      resolve({ score: undefined, completed: undefined });
-    } else {
-      const correctness = getCorrectness(question, session);
-      if (correctness === 'unanswered') {
-        resolve({ score: 0, empty: true });
-        return;
-      }
-      const score = correctness === 'correct' ? 1 : 0;
-      resolve({ score, empty: false });
+    if (correctness === 'unanswered') {
+      resolve({
+        score: 0,
+        empty: true,
+        traceLog: ['Student did not select any answers. Score is 0.'],
+      });
+      return;
     }
+
+    const score = correctness === 'correct' ? 1 : 0;
+    const traceLog = [
+      `Mode: ${env?.mode || 'unknown'}.`,
+      `Student selected choice: ${session.choiceId}.`,
+      `Correct choice: ${question?.correctChoiceId || 'none'}.`,
+      `Final score: ${score}.`,
+    ];
+    resolve({ score, empty: false, traceLog });
   });
 
 export const createDefaultModel = (model: any = {}) => ({ ...defaults.model, ...model });
 
 export const normalizeSession = (s: any) => ({ ...s });
 
-export const model = (question: any, session: any, env: any) => {
-  return new Promise((resolve) => {
-    session = session || {};
-    const normalizedQuestion = createDefaultModel(question);
+const shouldShuffleChoices = (question: any) => !!question?.shuffle;
 
-    const out: any = {
-      prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
-      interactionMode: normalizedQuestion.interactionMode || 'populate_blank',
-      layoutProfile: normalizedQuestion.layoutProfile || '',
-      choiceLayout: normalizedQuestion.choiceLayout || '',
-      sentenceHtml: normalizedQuestion.sentenceHtml || null,
-      template: normalizedQuestion.template,
-      choiceMode: normalizedQuestion.choiceMode,
-      choices: normalizedQuestion.choices,
-      correctChoiceId: normalizedQuestion.correctChoiceId,
-      hasAudio: normalizedQuestion.hasAudio,
-      autoplayAudioEnabled: !!normalizedQuestion.autoplayAudioEnabled,
-      completeAudioEnabled: !!normalizedQuestion.completeAudioEnabled,
-      audioUrl: normalizedQuestion.hasAudio ? normalizedQuestion.audioUrl : null,
-      audioTranscript: normalizedQuestion.hasAudio ? normalizedQuestion.audioTranscript : null,
-      showVisibleTranscript: !!normalizedQuestion.showVisibleTranscript,
-      locale: normalizedQuestion.locale || '',
-      disabled: env.mode !== 'gather',
-      view: env.mode === 'view',
-      env,
-    };
+const shouldLockChoices = (question: any, env: any) => {
+  if (question?.lockChoiceOrder) return true;
+  if (env?.['@pie-element']?.lockChoiceOrder) return true;
+  return env?.role === 'instructor';
+};
 
-    if (env.mode === 'evaluate') {
-      const correctness = getCorrectness(normalizedQuestion, session);
-      out.correctness = correctness;
+const shuffleArray = <T>(items: T[]): T[] => {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
+
+const getStoredShuffle = (session: any): string[] =>
+  Array.isArray(session?.data?.shuffledValues)
+    ? session.data.shuffledValues
+    : Array.isArray(session?.shuffledValues)
+      ? session.shuffledValues
+      : [];
+
+const applyShuffledValues = (choices: any[], shuffledValues: string[], choiceKey: string) => {
+  const orderedChoices = shuffledValues
+    .map((value) => choices.find((choice) => choice?.[choiceKey] === value))
+    .filter(Boolean);
+
+  if (orderedChoices.length === choices.length) {
+    return orderedChoices;
+  }
+
+  const orderedValues = new Set(orderedChoices.map((choice: any) => choice[choiceKey]));
+  const leftovers = choices.filter((choice) => !orderedValues.has(choice?.[choiceKey]));
+  return [...orderedChoices, ...leftovers];
+};
+
+const getOrderedChoices = async (question: any, session: any, env: any, updateSession?: any) => {
+  const choices = Array.isArray(question?.choices) ? [...question.choices] : [];
+  if (!choices.length || !shouldShuffleChoices(question)) {
+    return choices;
+  }
+
+  if (shouldLockChoices(question, env || {})) {
+    return choices;
+  }
+
+  const shuffledValues = getStoredShuffle(session);
+  if (shuffledValues.length) {
+    return applyShuffledValues(choices, shuffledValues, 'id');
+  }
+
+  const shuffledChoices = shuffleArray(choices);
+
+  if (updateSession && typeof updateSession === 'function' && session?.id && session?.element) {
+    const shuffledIds = shuffledChoices.map((choice) => choice?.id).filter(Boolean);
+    if (shuffledIds.length) {
+      await updateSession(session.id, session.element, { shuffledValues: shuffledIds });
     }
+  }
 
-    if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
-      out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
-        ? normalizedQuestion.teacherInstructions
-        : null;
-    } else {
-      out.teacherInstructions = null;
-    }
+  return shuffledChoices;
+};
 
-    resolve(out);
-  });
+export const model = async (question: any, session: any, env: any, updateSession?: any) => {
+  session = session || {};
+  const normalizedQuestion = createDefaultModel(question);
+  const choices = await getOrderedChoices(normalizedQuestion, session, env, updateSession);
+
+  const out: any = {
+    prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
+    interactionMode: normalizedQuestion.interactionMode || 'populate_blank',
+    layoutProfile: normalizedQuestion.layoutProfile || '',
+    choiceLayout: normalizedQuestion.choiceLayout || '',
+    sentenceHtml: normalizedQuestion.sentenceHtml || null,
+    template: normalizedQuestion.template,
+    choiceMode: normalizedQuestion.choiceMode,
+    choices,
+    hasAudio: normalizedQuestion.hasAudio,
+    autoplayAudioEnabled: !!normalizedQuestion.autoplayAudioEnabled,
+    completeAudioEnabled: !!normalizedQuestion.completeAudioEnabled,
+    audioUrl: normalizedQuestion.hasAudio ? normalizedQuestion.audioUrl : null,
+    audioTranscript: normalizedQuestion.hasAudio ? normalizedQuestion.audioTranscript : null,
+    showVisibleTranscript: !!normalizedQuestion.showVisibleTranscript,
+    locale: normalizedQuestion.locale || '',
+    disabled: env.mode !== 'gather',
+    view: env.mode === 'view',
+    mode: env.mode,
+  };
+
+  if (env.mode === 'evaluate') {
+    const correctness = getCorrectness(normalizedQuestion, session);
+    out.correctness = correctness;
+    out.responseCorrect = correctness === 'correct';
+    out.correctChoiceId = normalizedQuestion.correctChoiceId;
+  }
+
+  if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
+    out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
+      ? normalizedQuestion.teacherInstructions
+      : null;
+  } else {
+    out.teacherInstructions = null;
+  }
+
+  return out;
 };
 
 export const createCorrectResponseSession = (question: any, env: any) => {
   return new Promise((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       resolve({
-        id: question?.id || '1',
+        id: '1',
         element: 'mc-populated-blank',
         choiceId: question?.correctChoiceId || '',
       });

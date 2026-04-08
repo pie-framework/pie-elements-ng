@@ -29,6 +29,7 @@ const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
 const correct = $derived(model?.choices?.find((c: any) => c.id === model?.correctChoiceId));
 const mode = $derived(model?.choiceMode || 'text');
 const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
+const showAnswerKey = $derived(model?.printAnswerKey !== false);
 </script>
 
 <div class="p-4 print:p-0">
@@ -44,9 +45,9 @@ const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
     <div class="mb-4 prose prose-sm">
       {@html parts.before}
       <span class="inline-block min-w-[6rem] border-b-2 border-gray-600 print:border-black px-1">
-        {#if mode === 'image' && correct?.imageUrl}
+        {#if showAnswerKey && mode === 'image' && correct?.imageUrl}
           <img src={correct.imageUrl} alt={correct.imageAlt || ''} class="max-h-14 object-contain" />
-        {:else if correct?.labelHtml}
+        {:else if showAnswerKey && correct?.labelHtml}
           {@html correct.labelHtml}
         {:else}
           ________
@@ -72,10 +73,10 @@ const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
       <li>
         {#if mode === 'image'}
           <span class="font-medium">{c.id}</span>
-          {#if c.id === model?.correctChoiceId}(key){/if}
+          {#if showAnswerKey && c.id === model?.correctChoiceId}(key){/if}
         {:else}
           {@html c.labelHtml || ''}
-          {#if c.id === model?.correctChoiceId}
+          {#if showAnswerKey && c.id === model?.correctChoiceId}
             <span class="font-medium"> (key)</span>
           {/if}
         {/if}

@@ -5,6 +5,9 @@
       model: { type: 'Object' },
       session: { type: 'Object' },
       options: { type: 'Object' },
+      onSessionChange: { type: 'Object' },
+      onAudioStarted: { type: 'Object' },
+      onAudioEnded: { type: 'Object' },
     },
   }}
 />
@@ -23,8 +26,9 @@ type McChoice = {
 };
 type McModel = {
   id?: string;
-  env?: { mode?: string };
+  mode?: string;
   correctness?: 'correct' | 'incorrect' | string;
+  responseCorrect?: boolean;
   interactionMode?: string;
   template?: string;
   layoutProfile?: string;
@@ -41,6 +45,9 @@ type McModel = {
   autoplayAudioEnabled?: boolean;
   disabled?: boolean;
   correctChoiceId?: string;
+  shuffle?: boolean;
+  lockChoiceOrder?: boolean;
+  teacherInstructions?: string | null;
 };
 type McSession = {
   id?: string;
@@ -48,14 +55,15 @@ type McSession = {
   choiceId?: string;
   [key: string]: unknown;
 };
-type McHostElement = HTMLElement & {
+
+let props = $props<{
+  model?: McModel;
+  session?: McSession;
+  options?: Record<string, unknown>;
   onSessionChange?: (session: McSession) => void;
   onAudioStarted?: () => void;
   onAudioEnded?: () => void;
-};
-
-let props = $props<{ model?: McModel; session?: McSession; options?: Record<string, unknown> }>();
-let rootEl = $state<HTMLElement | null>(null);
+}>();
 let audioEl = $state<HTMLAudioElement | null>(null);
 let activeUtterance = $state<SpeechSynthesisUtterance | null>(null);
 let isSynthSpeaking = $state(false);
@@ -65,7 +73,7 @@ let autoPlayPromptOpen = $state(false);
 let autoplayAttempted = $state(false);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
-const isEvaluateMode = $derived(props?.model?.env?.mode === 'evaluate');
+const isEvaluateMode = $derived(props?.model?.mode === 'evaluate');
 const correctness = $derived(props?.model?.correctness);
 const isCorrect = $derived(correctness === 'correct');
 const isIncorrect = $derived(correctness === 'incorrect');
@@ -84,6 +92,8 @@ const choiceLayout = $derived(
   props?.model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
 );
 const isHorizontalChoices = $derived(choiceLayout === 'horizontal');
+const isVicFamilyLayout = $derived(layoutProfile === 'inline_sentence' && !isHorizontalChoices);
+const isSelVicFamilyLayout = $derived(isVicFamilyLayout && !!props?.model?.hasAudio);
 const showVisibleTranscript = $derived(!!props?.model?.showVisibleTranscript);
 const hasPlayableAudio = $derived(!!props?.model?.hasAudio && !!props?.model?.audioUrl);
 const hasTranscriptOnlyAudio = $derived(
@@ -113,12 +123,32 @@ const templateParts = $derived.by(() => {
     after: t.slice(idx + BLANK_TOKEN.length),
   };
 });
+
+function plainTextFromHtml(value = ''): string {
+  return value
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 const blankWidth = $derived.by(() => {
   if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
     return '10rem';
   }
   if (isBlankOnlyTemplate) {
     return '7rem';
+  }
+  if (choiceMode === 'text') {
+    const modelChoices = Array.isArray(props?.model?.choices) ? props.model.choices : [];
+    const longestChoiceChars = modelChoices.reduce((max: number, choice: McChoice) => {
+      const textLength = plainTextFromHtml(choice?.labelHtml || '').length;
+      return Math.max(max, textLength);
+    }, 0);
+    if (longestChoiceChars > 0) {
+      const widthInCh = Math.min(24, Math.max(7, longestChoiceChars + 1));
+      return `${widthInCh}ch`;
+    }
   }
   return 'auto';
 });
@@ -130,6 +160,36 @@ const blankBorderWidth = $derived.by(() => {
 });
 
 const choices = $derived(Array.isArray(props?.model?.choices) ? props.model.choices : []);
+const shouldShuffleChoices = $derived.by(() => {
+  const modelShuffle = !!props?.model?.shuffle;
+  const optionsShuffle = !!props?.options?.shuffle;
+  const lockChoiceOrder = !!props?.model?.lockChoiceOrder || !!props?.options?.lockChoiceOrder;
+  return (modelShuffle || optionsShuffle) && !lockChoiceOrder;
+});
+const shuffleSeed = $derived.by(
+  () =>
+    `${props?.session?.id || props?.model?.id || instanceId}:${choices.map((c: McChoice) => c.id).join('|')}`
+);
+function hashString(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+function deterministicShuffle<T extends { id?: string }>(items: T[], seed: string): T[] {
+  return [...items]
+    .map((item, index) => ({
+      item,
+      key: hashString(`${seed}:${item?.id || index}:${index}`),
+    }))
+    .sort((a, b) => a.key - b.key)
+    .map((entry) => entry.item);
+}
+const renderedChoices = $derived.by(() =>
+  shouldShuffleChoices ? deterministicShuffle(choices, shuffleSeed) : choices
+);
 const choiceMode = $derived(props?.model?.choiceMode || 'text');
 const selectedId = $derived(props?.session?.choiceId || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${props?.model?.id || '1'}`);
@@ -143,14 +203,13 @@ const displayChoiceId = $derived.by(() => {
   return selectedId;
 });
 
-const displayChoice = $derived.by(() => choices.find((c: McChoice) => c.id === displayChoiceId));
+const displayChoice = $derived.by(() =>
+  renderedChoices.find((c: McChoice) => c.id === displayChoiceId)
+);
 
 const legendText = $derived.by(() => {
-  const plain = (props?.model?.prompt || '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return plain.length > 120 ? `${plain.slice(0, 117)}…` : plain || 'Answer choices';
+  const plain = plainTextFromHtml(props?.model?.prompt || '');
+  return plain.length > 120 ? `${plain.slice(0, 117)}…` : plain || t('answerChoices');
 });
 
 const promptId = $derived(`${instanceId}-prompt`);
@@ -174,34 +233,46 @@ const lang = $derived.by(() => {
   return locale ? locale.slice(0, 2) : 'en';
 });
 
+const uiStrings = {
+  en: {
+    answerChoices: 'Answer choices',
+    correctSelected: 'Correct answer selected',
+    incorrectSelected: 'Incorrect answer selected',
+    selectedAnswerInSentence: 'Selected answer in sentence',
+    selectedAnswerImage: 'Selected answer image',
+    showCorrect: 'Show correct answer',
+    hideCorrect: 'Hide correct answer',
+    enableAutoplay: 'Click to enable audio autoplay',
+    listen: 'Listen',
+    teacherInstructions: 'Teacher instructions',
+  },
+  es: {
+    answerChoices: 'Opciones de respuesta',
+    correctSelected: 'Respuesta correcta seleccionada',
+    incorrectSelected: 'Respuesta incorrecta seleccionada',
+    selectedAnswerInSentence: 'Respuesta seleccionada en la oración',
+    selectedAnswerImage: 'Imagen de la respuesta seleccionada',
+    showCorrect: 'Mostrar respuesta correcta',
+    hideCorrect: 'Ocultar respuesta correcta',
+    enableAutoplay: 'Haga clic para habilitar la reproducción automática de audio',
+    listen: 'Escuchar',
+    teacherInstructions: 'Instrucciones para el docente',
+  },
+} as const;
+type UiKey = keyof (typeof uiStrings)['en'];
+function t(key: UiKey): string {
+  return (lang === 'es' ? uiStrings.es[key] : uiStrings.en[key]) || uiStrings.en[key];
+}
+
 const resultText = $derived.by(() => {
   if (!isEvaluateMode || showCorrectAnswer) return '';
-  if (isCorrect) return 'Correct answer selected';
-  if (isIncorrect && selectedId) return 'Incorrect answer selected';
+  if (isCorrect) return t('correctSelected');
+  if (isIncorrect && selectedId) return t('incorrectSelected');
   return '';
 });
 
-function getHost(sourceEl?: HTMLElement | null): McHostElement | null {
-  return (
-    (sourceEl?.closest?.('mc-populated-blank-element') as McHostElement | null) ||
-    (rootEl?.closest?.('mc-populated-blank-element') as McHostElement | null) ||
-    null
-  );
-}
-
-function emitSession(updatedSession: McSession, sourceEl?: HTMLElement | null) {
-  const host = getHost(sourceEl);
-  if (host?.onSessionChange) {
-    host.onSessionChange(updatedSession);
-    return;
-  }
-  host?.dispatchEvent(
-    new CustomEvent('session-changed', {
-      bubbles: true,
-      composed: true,
-      detail: { complete: !!updatedSession?.choiceId, component: 'mc-populated-blank' },
-    })
-  );
+function emitSession(updatedSession: McSession) {
+  props?.onSessionChange?.(updatedSession);
 }
 
 function onRadioChange(e: Event) {
@@ -215,7 +286,7 @@ function onRadioChange(e: Event) {
     element: 'mc-populated-blank',
     choiceId,
   };
-  emitSession(updatedSession, input);
+  emitSession(updatedSession);
 }
 
 function toggleCorrectAnswer() {
@@ -257,21 +328,19 @@ function handleEnableAutoplayClick() {
   }
 }
 
-function onAudioPlaying(e: Event) {
-  const host = getHost(e.currentTarget as HTMLElement);
+function onAudioPlaying() {
   isMediaPlaying = true;
-  host?.onAudioStarted?.();
+  props?.onAudioStarted?.();
   autoPlayPromptOpen = false;
 }
 
-function onAudioEnded(e: Event) {
-  const host = getHost(e.currentTarget as HTMLElement);
+function onAudioEnded() {
   isMediaPlaying = false;
-  host?.onAudioEnded?.();
+  props?.onAudioEnded?.();
 }
 
-function speechButtonLabel(locale = '') {
-  return locale.toLowerCase().startsWith('es') ? 'Escuchar' : 'Listen';
+function speechButtonLabel() {
+  return t('listen');
 }
 
 const featureAudioSkin = $derived.by(() => {
@@ -312,15 +381,13 @@ function speakTranscript() {
 
   utterance.onstart = () => {
     isSynthSpeaking = true;
-    const host = getHost();
-    host?.onAudioStarted?.();
+    props?.onAudioStarted?.();
   };
 
   utterance.onend = () => {
     isSynthSpeaking = false;
     activeUtterance = null;
-    const host = getHost();
-    host?.onAudioEnded?.();
+    props?.onAudioEnded?.();
   };
 
   utterance.onerror = () => {
@@ -364,8 +431,7 @@ $effect(() => {
 </script>
 
 <div
-  bind:this={rootEl}
-  class={`p-4 mc-populated-blank-root layout-${layoutProfile} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
+  class={`p-4 mc-populated-blank-root layout-${layoutProfile} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''} ${isVicFamilyLayout ? 'vic-family-layout' : ''} ${isSelVicFamilyLayout ? 'sel-vic-family-layout' : ''}`}
   lang={lang}
 >
   {#if props?.model?.prompt}
@@ -388,7 +454,7 @@ $effect(() => {
         <button
           class="listen-button rli-feature-audio"
           type="button"
-          aria-label={speechButtonLabel(props?.model?.locale)}
+          aria-label={speechButtonLabel()}
           onclick={playFeatureAudio}
         >
           <img
@@ -419,14 +485,14 @@ $effect(() => {
         </audio>
         {#if autoPlayPromptOpen}
           <button class="mt-2 text-sm underline" type="button" onclick={handleEnableAutoplayClick}>
-            Click to enable audio autoplay
+            {t('enableAutoplay')}
           </button>
         {/if}
       {:else if hasTranscriptOnlyAudio}
         <button
           class="listen-button rli-feature-audio"
           type="button"
-          aria-label={speechButtonLabel(props?.model?.locale)}
+          aria-label={speechButtonLabel()}
           onclick={playFeatureAudio}
         >
           <img
@@ -454,6 +520,13 @@ $effect(() => {
     </div>
   {/if}
 
+  {#if props?.model?.teacherInstructions}
+    <div class="mb-4 teacher-instructions">
+      <h4 class="teacher-instructions-title">{t('teacherInstructions')}</h4>
+      <div class="prose teacher-instructions-content">{@html props.model.teacherInstructions}</div>
+    </div>
+  {/if}
+
   {#if props?.model?.sentenceHtml}
     <div class="mb-3 prose prose-p:my-1 sentence-line" aria-describedby={templateDescribedBy}>
       {@html props.model.sentenceHtml}
@@ -469,12 +542,12 @@ $effect(() => {
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        aria-label="Selected answer in sentence"
+        aria-label={t('selectedAnswerInSentence')}
       >
         {#if choiceMode === 'image' && displayChoice?.imageUrl}
           <img
             src={displayChoice.imageUrl}
-            alt={displayChoice.imageAlt || 'Selected answer image'}
+            alt={displayChoice.imageAlt || t('selectedAnswerImage')}
             class="max-h-16 w-auto object-contain"
           />
         {:else if displayChoice?.labelHtml}
@@ -495,7 +568,7 @@ $effect(() => {
       aria-pressed={showCorrectAnswer}
     >
       <span class="text-sm hover:underline">
-        {showCorrectAnswer ? 'Hide' : 'Show'} correct answer
+        {showCorrectAnswer ? t('hideCorrect') : t('showCorrect')}
       </span>
     </button>
   {/if}
@@ -513,7 +586,7 @@ $effect(() => {
       aria-describedby={resultText ? resultId : undefined}
       onkeydown={onRadioGroupKeydown}
     >
-      {#each choices as c (c.id)}
+      {#each renderedChoices as c (c.id)}
         <div
           class={`flex items-start gap-2 choice-row ${isHorizontalChoices ? 'choice-row-horizontal' : ''} ${((showCorrectAnswer && isEvaluateMode ? props?.model?.correctChoiceId : selectedId) === c.id) ? 'is-selected' : ''}`}
         >
@@ -678,15 +751,84 @@ $effect(() => {
   }
 
   .choice-row-horizontal:hover .choice-tile {
-    background: #ececec;
+    background: #f2f2f2;
   }
 
   .choice-row-horizontal.is-selected .choice-tile {
-    background: #eceabf;
+    background: #fcfcd3;
   }
 
   .choice-row-horizontal.is-selected:hover .choice-tile {
-    background: #eceabf;
+    background: #fcfcd3;
+  }
+
+  .choice-row:not(.choice-row-horizontal):hover {
+    background: #f2f2f2;
+    border-radius: 6px;
+  }
+
+  .choice-row.is-selected:not(.choice-row-horizontal) {
+    background: #fcfcd3;
+    border-radius: 6px;
+  }
+
+  :global(.access-contrast-3) .choice-row-horizontal,
+  :global(.access-contrast-6) .choice-row-horizontal {
+    border-bottom-width: 4px;
+    border-bottom-style: solid;
+    padding-bottom: 10px;
+  }
+
+  :global(.access-contrast-3) .choice-row:not(.choice-row-horizontal),
+  :global(.access-contrast-6) .choice-row:not(.choice-row-horizontal) {
+    border-left-width: 4px;
+    border-left-style: solid;
+    padding-left: 0.35rem;
+  }
+
+  :global(.access-contrast-3) .choice-row-horizontal,
+  :global(.access-contrast-3) .choice-row:not(.choice-row-horizontal) {
+    border-color: #2d4e84;
+  }
+
+  :global(.access-contrast-6) .choice-row-horizontal,
+  :global(.access-contrast-6) .choice-row:not(.choice-row-horizontal) {
+    border-color: #000;
+  }
+
+  :global(.access-contrast-3) .choice-row:hover,
+  :global(.access-contrast-6) .choice-row:hover {
+    border-radius: 0;
+  }
+
+  :global(.access-contrast-3) .choice-row:hover {
+    border-color: #fff25d;
+    color: #fff25d;
+  }
+
+  :global(.access-contrast-6) .choice-row:hover {
+    border-color: #fff;
+    color: #fff;
+  }
+
+  :global(.access-contrast-3) .choice-row:hover:not(.is-selected):not(.choice-row-horizontal),
+  :global(.access-contrast-6) .choice-row:hover:not(.is-selected):not(.choice-row-horizontal) {
+    background: inherit;
+  }
+
+  :global(.access-contrast-3) .choice-row-horizontal:hover:not(.is-selected) .choice-tile,
+  :global(.access-contrast-6) .choice-row-horizontal:hover:not(.is-selected) .choice-tile {
+    background: inherit;
+  }
+
+  :global(.access-contrast-3) .choice-row.is-selected:hover,
+  :global(.access-contrast-6) .choice-row.is-selected:hover {
+    color: #000;
+  }
+
+  :global(.access-contrast-3) .choice-row-horizontal.is-selected:hover .choice-tile,
+  :global(.access-contrast-6) .choice-row-horizontal.is-selected:hover .choice-tile {
+    background: #fcfcd3;
   }
 
   .choice-row-horizontal :global(p) {
@@ -697,6 +839,34 @@ $effect(() => {
   .choice-label :global(p),
   .blank-inner :global(p) {
     margin: 0;
+  }
+
+  .teacher-instructions {
+    border-left: 4px solid #60a5fa;
+    background: #eff6ff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+  }
+
+  .teacher-instructions-title {
+    margin: 0 0 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .vic-family-layout {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+  }
+
+  .vic-family-layout .choice-row {
+    user-select: none;
+    margin-right: 10px;
+  }
+
+  .sel-vic-family-layout {
+    font-size: 1.5em;
   }
 
   .blank-inner {
