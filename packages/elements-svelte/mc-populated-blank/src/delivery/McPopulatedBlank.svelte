@@ -1,79 +1,102 @@
 <svelte:options
   customElement={{
+    tag: 'mc-populated-blank-element',
     shadow: 'none',
     props: {
       model: { type: 'Object' },
       session: { type: 'Object' },
       options: { type: 'Object' },
-      onSessionChange: { type: 'Object' },
-      onAudioStarted: { type: 'Object' },
-      onAudioEnded: { type: 'Object' },
     },
   }}
 />
 
 <script lang="ts">
-import { onDestroy } from 'svelte';
-
 /** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
 const BLANK_TOKEN = '{{blank}}';
+const DEFAULT_LAYOUT_LIMITS = {
+  blankStandaloneWidthRem: 7,
+  blankWideWidthRem: 10,
+  blankUnderlineWidthPx: 2,
+  blankUnderlineWideWidthPx: 4,
+  horizontalChoiceWidthPx: 170,
+  horizontalChoiceWidthVw: 30,
+  horizontalChoiceTileMinHeightRem: 11,
+  horizontalChoiceContentMinHeightRem: 7.5,
+  selectedImageMaxHeightRem: 4,
+  choiceImageMaxHeightRem: 5,
+  listenButtonSizePx: 128,
+  stimulusMinColumnPx: 210,
+  textMinColumnPx: 260,
+  legendMaxChars: 120,
+  choiceGroupGapRem: 0.5,
+  choiceRowGapRem: 0.5,
+  toggleButtonGapRem: 0.5,
+  horizontalChoiceRadioTopMarginRem: 0.5,
+  audioBlankTemplateMarginTopRem: 0.8,
+  audioBlankTemplateMarginBottomRem: 1.8,
+  stimulusGridColumnGapRem: 2,
+  stimulusGridRowGapRem: 0.7,
+  stimulusSentenceMarginTopRem: 0.2,
+  stimulusChoicesMarginTopRem: 0.9,
+  tokenGridColumnGapRem: 1.5,
+  tokenGridRowGapRem: 0.8,
+  tokenTemplateMarginTopRem: 0.6,
+  tokenInlineTokenGapRem: 0.35,
+  tokenChoicesMarginTopRem: 0.2,
+  inlineGridColumnGapRem: 1.5,
+  inlineGridRowGapRem: 0.65,
+  inlineTemplateMarginTopRem: 0.45,
+  inlineChoicesMarginTopRem: 0.25,
+} as const;
+const DEFAULT_LAYOUT_PROFILE_PRESETS: Record<string, Record<string, number>> = {
+  audio_blank_only: {
+    blankWideWidthRem: 10,
+    blankUnderlineWideWidthPx: 4,
+  },
+  stimulus_image_blank: {
+    blankWideWidthRem: 10,
+    blankUnderlineWideWidthPx: 4,
+  },
+  token_sequence: {
+    blankStandaloneWidthRem: 7,
+    blankUnderlineWideWidthPx: 4,
+  },
+};
+const DEFAULT_AUDIO_BUTTON_SKINS = {
+  default: {
+    silentUrl:
+      'https://assets.learnosity.com/organisations/844/0c9f2aa3-3cd5-4de7-93ef-541c24ca35da.svg',
+    playingUrl:
+      'https://assets.learnosity.com/organisations/844/231dfdc2-c113-4be5-91fb-e75a0ca5994b.svg',
+  },
+  es: {
+    silentUrl:
+      'https://assets.learnosity.com/organisations/844/27a9d5b5-d873-4bd5-b9ba-22748782d8ba.svg',
+    playingUrl:
+      'https://assets.learnosity.com/organisations/844/120f216d-96b7-4560-94b8-1d90710216b7.svg',
+  },
+} as const;
+const DEFAULT_UI_TEXT = {
+  answerChoices: 'Answer choices',
+  selectedAnswerInSentence: 'Selected answer in sentence',
+  showCorrectAnswer: 'Show correct answer',
+  hideCorrectAnswer: 'Hide correct answer',
+  clickToEnableAutoplay: 'Click to enable audio autoplay',
+  audioResourceUnavailable: 'Audio is enabled but no playable audio URL is configured.',
+  transcriptLabel: 'Transcript',
+  listenLabelEn: 'Listen',
+  listenLabelEs: 'Escuchar',
+} as const;
 
-type McChoice = {
-  id: string;
-  labelHtml?: string;
-  imageUrl?: string;
-  imageAlt?: string;
-};
-type McModel = {
-  id?: string;
-  mode?: string;
-  correctness?: 'correct' | 'incorrect' | string;
-  responseCorrect?: boolean;
-  interactionMode?: string;
-  template?: string;
-  layoutProfile?: string;
-  choiceLayout?: 'horizontal' | 'vertical' | string;
-  showVisibleTranscript?: boolean;
-  hasAudio?: boolean;
-  audioUrl?: string;
-  audioTranscript?: string;
-  choices?: McChoice[];
-  choiceMode?: 'text' | 'image' | string;
-  prompt?: string;
-  sentenceHtml?: string;
-  locale?: string;
-  autoplayAudioEnabled?: boolean;
-  disabled?: boolean;
-  correctChoiceId?: string;
-  shuffle?: boolean;
-  lockChoiceOrder?: boolean;
-  teacherInstructions?: string | null;
-};
-type McSession = {
-  id?: string;
-  element?: string;
-  choiceId?: string;
-  [key: string]: unknown;
-};
-
-let props = $props<{
-  model?: McModel;
-  session?: McSession;
-  options?: Record<string, unknown>;
-  onSessionChange?: (session: McSession) => void;
-  onAudioStarted?: () => void;
-  onAudioEnded?: () => void;
-}>();
+let props = $props<{ model?: any; session?: any; options?: any }>();
 let audioEl = $state<HTMLAudioElement | null>(null);
-let activeUtterance = $state<SpeechSynthesisUtterance | null>(null);
-let isSynthSpeaking = $state(false);
 let isMediaPlaying = $state(false);
 let localChoiceId = $state('');
 let autoPlayPromptOpen = $state(false);
 let autoplayAttempted = $state(false);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
-const isEvaluateMode = $derived(props?.model?.mode === 'evaluate');
+const isEvaluateMode = $derived(props?.model?.env?.mode === 'evaluate');
 const correctness = $derived(props?.model?.correctness);
 const isCorrect = $derived(correctness === 'correct');
 const isIncorrect = $derived(correctness === 'incorrect');
@@ -92,17 +115,83 @@ const choiceLayout = $derived(
   props?.model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
 );
 const isHorizontalChoices = $derived(choiceLayout === 'horizontal');
-const isVicFamilyLayout = $derived(layoutProfile === 'inline_sentence' && !isHorizontalChoices);
-const isSelVicFamilyLayout = $derived(isVicFamilyLayout && !!props?.model?.hasAudio);
 const showVisibleTranscript = $derived(!!props?.model?.showVisibleTranscript);
 const hasPlayableAudio = $derived(!!props?.model?.hasAudio && !!props?.model?.audioUrl);
-const hasTranscriptOnlyAudio = $derived(
-  !!props?.model?.hasAudio && !props?.model?.audioUrl && !!props?.model?.audioTranscript
-);
+const hasAudioButMissingResource = $derived(!!props?.model?.hasAudio && !props?.model?.audioUrl);
 const hasInlineSentenceAudioLayout = $derived(
   layoutProfile === 'inline_sentence' && !!props?.model?.hasAudio
 );
+const uiText = $derived.by(() => ({
+  ...DEFAULT_UI_TEXT,
+  ...(props?.model?.uiText || {}),
+}));
+const profilePresetLimits = $derived.by(() => {
+  const profile = String(layoutProfile || '');
+  const defaults = DEFAULT_LAYOUT_PROFILE_PRESETS[profile] || {};
+  const customPresets =
+    props?.model?.layoutProfilePresets && typeof props.model.layoutProfilePresets === 'object'
+      ? props.model.layoutProfilePresets
+      : {};
+  const custom =
+    customPresets[profile] && typeof customPresets[profile] === 'object'
+      ? customPresets[profile]
+      : {};
+  return {
+    ...defaults,
+    ...custom,
+  };
+});
+const layoutLimits = $derived.by(() => {
+  const configured =
+    props?.model?.layoutLimits && typeof props.model.layoutLimits === 'object'
+      ? props.model.layoutLimits
+      : {};
+  return {
+    ...DEFAULT_LAYOUT_LIMITS,
+    ...profilePresetLimits,
+    ...configured,
+  };
+});
+const rootStyle = $derived.by(() =>
+  [
+    `--mpb-listen-button-size:${layoutLimits.listenButtonSizePx}px`,
+    `--mpb-blank-standalone-width:${layoutLimits.blankStandaloneWidthRem}rem`,
+    `--mpb-blank-wide-width:${layoutLimits.blankWideWidthRem}rem`,
+    `--mpb-blank-underline-width:${layoutLimits.blankUnderlineWidthPx}px`,
+    `--mpb-blank-underline-wide-width:${layoutLimits.blankUnderlineWideWidthPx}px`,
+    `--mpb-selected-image-max-height:${layoutLimits.selectedImageMaxHeightRem}rem`,
+    `--mpb-choice-image-max-height:${layoutLimits.choiceImageMaxHeightRem}rem`,
+    `--mpb-choice-width-px:${layoutLimits.horizontalChoiceWidthPx}px`,
+    `--mpb-choice-width-vw:${layoutLimits.horizontalChoiceWidthVw}vw`,
+    `--mpb-choice-tile-min-height:${layoutLimits.horizontalChoiceTileMinHeightRem}rem`,
+    `--mpb-choice-content-min-height:${layoutLimits.horizontalChoiceContentMinHeightRem}rem`,
+    `--mpb-stimulus-min-column:${layoutLimits.stimulusMinColumnPx}px`,
+    `--mpb-text-min-column:${layoutLimits.textMinColumnPx}px`,
+    `--mpb-choice-group-gap:${layoutLimits.choiceGroupGapRem}rem`,
+    `--mpb-choice-row-gap:${layoutLimits.choiceRowGapRem}rem`,
+    `--mpb-toggle-button-gap:${layoutLimits.toggleButtonGapRem}rem`,
+    `--mpb-horizontal-choice-radio-top-margin:${layoutLimits.horizontalChoiceRadioTopMarginRem}rem`,
+    `--mpb-audio-blank-template-margin-top:${layoutLimits.audioBlankTemplateMarginTopRem}rem`,
+    `--mpb-audio-blank-template-margin-bottom:${layoutLimits.audioBlankTemplateMarginBottomRem}rem`,
+    `--mpb-stimulus-grid-column-gap:${layoutLimits.stimulusGridColumnGapRem}rem`,
+    `--mpb-stimulus-grid-row-gap:${layoutLimits.stimulusGridRowGapRem}rem`,
+    `--mpb-stimulus-sentence-margin-top:${layoutLimits.stimulusSentenceMarginTopRem}rem`,
+    `--mpb-stimulus-choices-margin-top:${layoutLimits.stimulusChoicesMarginTopRem}rem`,
+    `--mpb-token-grid-column-gap:${layoutLimits.tokenGridColumnGapRem}rem`,
+    `--mpb-token-grid-row-gap:${layoutLimits.tokenGridRowGapRem}rem`,
+    `--mpb-token-template-margin-top:${layoutLimits.tokenTemplateMarginTopRem}rem`,
+    `--mpb-token-inline-token-gap:${layoutLimits.tokenInlineTokenGapRem}rem`,
+    `--mpb-token-choices-margin-top:${layoutLimits.tokenChoicesMarginTopRem}rem`,
+    `--mpb-inline-grid-column-gap:${layoutLimits.inlineGridColumnGapRem}rem`,
+    `--mpb-inline-grid-row-gap:${layoutLimits.inlineGridRowGapRem}rem`,
+    `--mpb-inline-template-margin-top:${layoutLimits.inlineTemplateMarginTopRem}rem`,
+    `--mpb-inline-choices-margin-top:${layoutLimits.inlineChoicesMarginTopRem}rem`,
+  ].join(';')
+);
 const useFeatureButtonAudio = $derived.by(() => {
+  if (typeof props?.model?.useFeatureButtonAudio === 'boolean') {
+    return !!props.model.useFeatureButtonAudio;
+  }
   const profile = layoutProfile || '';
   return (
     !!props?.model?.hasAudio &&
@@ -123,73 +212,23 @@ const templateParts = $derived.by(() => {
     after: t.slice(idx + BLANK_TOKEN.length),
   };
 });
-
-function plainTextFromHtml(value = ''): string {
-  return value
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 const blankWidth = $derived.by(() => {
   if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
-    return '10rem';
+    return `${layoutLimits.blankWideWidthRem}rem`;
   }
   if (isBlankOnlyTemplate) {
-    return '7rem';
-  }
-  if (choiceMode === 'text') {
-    const modelChoices = Array.isArray(props?.model?.choices) ? props.model.choices : [];
-    const longestChoiceChars = modelChoices.reduce((max: number, choice: McChoice) => {
-      const textLength = plainTextFromHtml(choice?.labelHtml || '').length;
-      return Math.max(max, textLength);
-    }, 0);
-    if (longestChoiceChars > 0) {
-      const widthInCh = Math.min(24, Math.max(7, longestChoiceChars + 1));
-      return `${widthInCh}ch`;
-    }
+    return `${layoutLimits.blankStandaloneWidthRem}rem`;
   }
   return 'auto';
 });
 const blankBorderWidth = $derived.by(() => {
   if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
-    return '4px';
+    return `${layoutLimits.blankUnderlineWideWidthPx}px`;
   }
-  return '2px';
+  return `${layoutLimits.blankUnderlineWidthPx}px`;
 });
 
 const choices = $derived(Array.isArray(props?.model?.choices) ? props.model.choices : []);
-const shouldShuffleChoices = $derived.by(() => {
-  const modelShuffle = !!props?.model?.shuffle;
-  const optionsShuffle = !!props?.options?.shuffle;
-  const lockChoiceOrder = !!props?.model?.lockChoiceOrder || !!props?.options?.lockChoiceOrder;
-  return (modelShuffle || optionsShuffle) && !lockChoiceOrder;
-});
-const shuffleSeed = $derived.by(
-  () =>
-    `${props?.session?.id || props?.model?.id || instanceId}:${choices.map((c: McChoice) => c.id).join('|')}`
-);
-function hashString(value: string): number {
-  let hash = 2166136261;
-  for (let i = 0; i < value.length; i++) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-function deterministicShuffle<T extends { id?: string }>(items: T[], seed: string): T[] {
-  return [...items]
-    .map((item, index) => ({
-      item,
-      key: hashString(`${seed}:${item?.id || index}:${index}`),
-    }))
-    .sort((a, b) => a.key - b.key)
-    .map((entry) => entry.item);
-}
-const renderedChoices = $derived.by(() =>
-  shouldShuffleChoices ? deterministicShuffle(choices, shuffleSeed) : choices
-);
 const choiceMode = $derived(props?.model?.choiceMode || 'text');
 const selectedId = $derived(props?.session?.choiceId || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${props?.model?.id || '1'}`);
@@ -203,13 +242,20 @@ const displayChoiceId = $derived.by(() => {
   return selectedId;
 });
 
-const displayChoice = $derived.by(() =>
-  renderedChoices.find((c: McChoice) => c.id === displayChoiceId)
-);
+const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
 
 const legendText = $derived.by(() => {
-  const plain = plainTextFromHtml(props?.model?.prompt || '');
-  return plain.length > 120 ? `${plain.slice(0, 117)}…` : plain || t('answerChoices');
+  const plain = (props?.model?.prompt || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const maxChars = Math.max(
+    8,
+    Number(layoutLimits.legendMaxChars) || DEFAULT_LAYOUT_LIMITS.legendMaxChars
+  );
+  return plain.length > maxChars
+    ? `${plain.slice(0, Math.max(1, maxChars - 1))}…`
+    : plain || uiText.answerChoices;
 });
 
 const promptId = $derived(`${instanceId}-prompt`);
@@ -232,47 +278,32 @@ const lang = $derived.by(() => {
   const locale = props?.model?.locale || '';
   return locale ? locale.slice(0, 2) : 'en';
 });
-
-const uiStrings = {
-  en: {
-    answerChoices: 'Answer choices',
-    correctSelected: 'Correct answer selected',
-    incorrectSelected: 'Incorrect answer selected',
-    selectedAnswerInSentence: 'Selected answer in sentence',
-    selectedAnswerImage: 'Selected answer image',
-    showCorrect: 'Show correct answer',
-    hideCorrect: 'Hide correct answer',
-    enableAutoplay: 'Click to enable audio autoplay',
-    listen: 'Listen',
-    teacherInstructions: 'Teacher instructions',
-  },
-  es: {
-    answerChoices: 'Opciones de respuesta',
-    correctSelected: 'Respuesta correcta seleccionada',
-    incorrectSelected: 'Respuesta incorrecta seleccionada',
-    selectedAnswerInSentence: 'Respuesta seleccionada en la oración',
-    selectedAnswerImage: 'Imagen de la respuesta seleccionada',
-    showCorrect: 'Mostrar respuesta correcta',
-    hideCorrect: 'Ocultar respuesta correcta',
-    enableAutoplay: 'Haga clic para habilitar la reproducción automática de audio',
-    listen: 'Escuchar',
-    teacherInstructions: 'Instrucciones para el docente',
-  },
-} as const;
-type UiKey = keyof (typeof uiStrings)['en'];
-function t(key: UiKey): string {
-  return (lang === 'es' ? uiStrings.es[key] : uiStrings.en[key]) || uiStrings.en[key];
-}
+const audioErrorMessage = $derived.by(() =>
+  hasAudioButMissingResource ? uiText.audioResourceUnavailable : ''
+);
 
 const resultText = $derived.by(() => {
   if (!isEvaluateMode || showCorrectAnswer) return '';
-  if (isCorrect) return t('correctSelected');
-  if (isIncorrect && selectedId) return t('incorrectSelected');
+  if (isCorrect) return 'Correct answer selected';
+  if (isIncorrect && selectedId) return 'Incorrect answer selected';
   return '';
 });
 
-function emitSession(updatedSession: McSession) {
-  props?.onSessionChange?.(updatedSession);
+function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
+  const host =
+    (sourceEl?.closest?.('mc-populated-blank-element') as any) ||
+    (document.querySelector('mc-populated-blank-element') as any);
+  if (host?.onSessionChange) {
+    host.onSessionChange(updatedSession);
+    return;
+  }
+  host?.dispatchEvent(
+    new CustomEvent('session-changed', {
+      bubbles: true,
+      composed: true,
+      detail: { complete: !!updatedSession?.choiceId, component: 'mc-populated-blank' },
+    })
+  );
 }
 
 function onRadioChange(e: Event) {
@@ -286,7 +317,7 @@ function onRadioChange(e: Event) {
     element: 'mc-populated-blank',
     choiceId,
   };
-  emitSession(updatedSession);
+  emitSession(updatedSession, input);
 }
 
 function toggleCorrectAnswer() {
@@ -320,45 +351,42 @@ function handleEnableAutoplayClick() {
     audioEl.play().finally(() => {
       autoPlayPromptOpen = false;
     });
-    return;
-  }
-  if (hasTranscriptOnlyAudio) {
-    speakTranscript();
-    autoPlayPromptOpen = false;
   }
 }
 
-function onAudioPlaying() {
+function onAudioPlaying(e: Event) {
+  const host = (e.currentTarget as HTMLElement)?.closest('mc-populated-blank-element') as any;
   isMediaPlaying = true;
-  props?.onAudioStarted?.();
+  host?.onAudioStarted?.();
   autoPlayPromptOpen = false;
 }
 
-function onAudioEnded() {
+function onAudioEnded(e: Event) {
+  const host = (e.currentTarget as HTMLElement)?.closest('mc-populated-blank-element') as any;
   isMediaPlaying = false;
-  props?.onAudioEnded?.();
+  host?.onAudioEnded?.();
 }
 
-function speechButtonLabel() {
-  return t('listen');
+function speechButtonLabel(locale = '') {
+  return locale.toLowerCase().startsWith('es') ? uiText.listenLabelEs : uiText.listenLabelEn;
 }
 
 const featureAudioSkin = $derived.by(() => {
   const locale = String(props?.model?.locale || '').toLowerCase();
-  if (locale.startsWith('es')) {
-    return {
-      silentUrl:
-        'https://assets.learnosity.com/organisations/844/27a9d5b5-d873-4bd5-b9ba-22748782d8ba.svg',
-      playingUrl:
-        'https://assets.learnosity.com/organisations/844/120f216d-96b7-4560-94b8-1d90710216b7.svg',
-    };
-  }
-  return {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/0c9f2aa3-3cd5-4de7-93ef-541c24ca35da.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/231dfdc2-c113-4be5-91fb-e75a0ca5994b.svg',
-  };
+  const lang = locale.slice(0, 2);
+  const byLocale =
+    props?.model?.audioButtonSkinsByLocale &&
+    typeof props.model.audioButtonSkinsByLocale === 'object'
+      ? props.model.audioButtonSkinsByLocale
+      : {};
+  const customSingle =
+    props?.model?.audioButtonSkin && typeof props.model.audioButtonSkin === 'object'
+      ? props.model.audioButtonSkin
+      : null;
+  const defaultSkin = locale.startsWith('es')
+    ? DEFAULT_AUDIO_BUTTON_SKINS.es
+    : DEFAULT_AUDIO_BUTTON_SKINS.default;
+  return byLocale[locale] || byLocale[lang] || byLocale.default || customSingle || defaultSkin;
 });
 
 function playFeatureAudio() {
@@ -366,44 +394,8 @@ function playFeatureAudio() {
     audioEl.play().catch(() => {
       // Keep behavior resilient: if playback is blocked, user can retry.
     });
-    return;
   }
-  speakTranscript();
 }
-
-function speakTranscript() {
-  const transcript = (props?.model?.audioTranscript || '').trim();
-  if (!transcript || !window?.speechSynthesis) return;
-
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(transcript);
-  utterance.lang = props?.model?.locale || 'en-US';
-
-  utterance.onstart = () => {
-    isSynthSpeaking = true;
-    props?.onAudioStarted?.();
-  };
-
-  utterance.onend = () => {
-    isSynthSpeaking = false;
-    activeUtterance = null;
-    props?.onAudioEnded?.();
-  };
-
-  utterance.onerror = () => {
-    isSynthSpeaking = false;
-    activeUtterance = null;
-  };
-
-  activeUtterance = utterance;
-  window.speechSynthesis.speak(utterance);
-}
-
-onDestroy(() => {
-  if (activeUtterance && window?.speechSynthesis) {
-    window.speechSynthesis.cancel();
-  }
-});
 
 $effect(() => {
   if (props?.session?.choiceId) {
@@ -421,50 +413,46 @@ $effect(() => {
     audioEl.play().catch(() => {
       autoPlayPromptOpen = true;
     });
-    return;
-  }
-
-  if (props?.model?.audioTranscript) {
-    autoPlayPromptOpen = true;
   }
 });
 </script>
 
 <div
-  class={`p-4 mc-populated-blank-root layout-${layoutProfile} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''} ${isVicFamilyLayout ? 'vic-family-layout' : ''} ${isSelVicFamilyLayout ? 'sel-vic-family-layout' : ''}`}
+  class={`p-4 mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
+  style={rootStyle}
 >
   {#if props?.model?.prompt}
-    <div class="mb-4 prose" id={promptId}>{@html props.model.prompt}</div>
+    <div class="mb-4 prose pie-prompt" id={promptId}>{@html props.model.prompt}</div>
   {/if}
 
   {#if props?.model?.hasAudio}
-    <div class="mb-4 audio-container">
+    <div class="mb-4 audio-container pie-audio-container">
       {#if hasPlayableAudio && useFeatureButtonAudio}
         <audio
           bind:this={audioEl}
-          class="sr-only"
+          class="sr-only pie-audio-player"
           preload="metadata"
           src={props.model.audioUrl}
           aria-hidden="true"
           tabindex="-1"
-          onplaying={onAudioPlaying}
-          onended={onAudioEnded}
+          on:playing={onAudioPlaying}
+          on:ended={onAudioEnded}
         ></audio>
         <button
-          class="listen-button rli-feature-audio"
+          class="listen-button pie-listen-button rli-feature-audio"
           type="button"
-          aria-label={speechButtonLabel()}
-          onclick={playFeatureAudio}
+          aria-label={speechButtonLabel(props?.model?.locale)}
+          on:click={playFeatureAudio}
         >
           <img
-            class={`listen-feature-icon rli-feature-listen ${isMediaPlaying || isSynthSpeaking ? '' : 'listen-active'}`}
+            class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? '' : 'listen-active'}`}
             src={featureAudioSkin.silentUrl}
             alt=""
             aria-hidden="true"
           />
           <img
-            class={`listen-feature-icon rli-feature-listen ${isMediaPlaying || isSynthSpeaking ? 'listen-active' : ''}`}
+            class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? 'listen-active' : ''}`}
             src={featureAudioSkin.playingUrl}
             alt=""
             aria-hidden="true"
@@ -474,84 +462,64 @@ $effect(() => {
         <audio
           bind:this={audioEl}
           controls
-          class="w-full max-w-md"
+          class="w-full max-w-md pie-audio-player"
           preload="metadata"
           src={props.model.audioUrl}
           aria-describedby={props?.model?.audioTranscript ? transcriptId : undefined}
-          onplaying={onAudioPlaying}
-          onended={onAudioEnded}
+          on:playing={onAudioPlaying}
+          on:ended={onAudioEnded}
         >
           <track kind="captions" />
         </audio>
         {#if autoPlayPromptOpen}
-          <button class="mt-2 text-sm underline" type="button" onclick={handleEnableAutoplayClick}>
-            {t('enableAutoplay')}
+          <button
+            class="mt-2 text-sm underline pie-audio-autoplay-enable"
+            type="button"
+            on:click={handleEnableAutoplayClick}
+          >
+            {uiText.clickToEnableAutoplay}
           </button>
         {/if}
-      {:else if hasTranscriptOnlyAudio}
-        <button
-          class="listen-button rli-feature-audio"
-          type="button"
-          aria-label={speechButtonLabel()}
-          onclick={playFeatureAudio}
-        >
-          <img
-            class={`listen-feature-icon rli-feature-listen ${isMediaPlaying || isSynthSpeaking ? '' : 'listen-active'}`}
-            src={featureAudioSkin.silentUrl}
-            alt=""
-            aria-hidden="true"
-          />
-          <img
-            class={`listen-feature-icon rli-feature-listen ${isMediaPlaying || isSynthSpeaking ? 'listen-active' : ''}`}
-            src={featureAudioSkin.playingUrl}
-            alt=""
-            aria-hidden="true"
-          />
-        </button>
+      {:else if hasAudioButMissingResource}
+        <p class="text-sm text-red-700 pie-audio-error" role="alert">{audioErrorMessage}</p>
       {/if}
       {#if props?.model?.audioTranscript}
         <p
-          class={`text-sm mt-2 text-gray-700 ${showVisibleTranscript ? '' : 'sr-only'}`}
+          class={`text-sm mt-2 text-gray-700 pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
           id={transcriptId}
         >
-          {props.model.audioTranscript}
+          <strong>{uiText.transcriptLabel}:</strong> {props.model.audioTranscript}
         </p>
       {/if}
     </div>
   {/if}
 
-  {#if props?.model?.teacherInstructions}
-    <div class="mb-4 teacher-instructions">
-      <h4 class="teacher-instructions-title">{t('teacherInstructions')}</h4>
-      <div class="prose teacher-instructions-content">{@html props.model.teacherInstructions}</div>
-    </div>
-  {/if}
-
   {#if props?.model?.sentenceHtml}
-    <div class="mb-3 prose prose-p:my-1 sentence-line" aria-describedby={templateDescribedBy}>
+    <div class="mb-3 prose prose-p:my-1 sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
       {@html props.model.sentenceHtml}
     </div>
   {/if}
 
   {#if !isAudioOnlyMode}
-    <div class="mb-4 template-line" aria-describedby={templateDescribedBy}>
+    <div class="mb-4 template-line pie-template-line" aria-describedby={templateDescribedBy}>
       {@html templateParts.before}
       <span
-        class={`inline-flex items-center min-h-[1.5em] px-2 mx-1 border-b-2 border-gray-500 align-baseline blank-slot ${isBlankOnlyTemplate ? 'blank-slot-standalone' : ''}`}
+        class={`inline-flex items-center min-h-[1.5em] px-2 mx-1 border-b-2 border-gray-500 align-baseline blank-slot pie-blank-slot ${isBlankOnlyTemplate ? 'blank-slot-standalone pie-blank-slot-standalone' : ''}`}
         style={`width:${blankWidth};border-bottom-width:${blankBorderWidth};`}
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        aria-label={t('selectedAnswerInSentence')}
+        aria-label={uiText.selectedAnswerInSentence}
       >
         {#if choiceMode === 'image' && displayChoice?.imageUrl}
           <img
             src={displayChoice.imageUrl}
-            alt={displayChoice.imageAlt || t('selectedAnswerImage')}
-            class="max-h-16 w-auto object-contain"
+            alt={displayChoice.imageAlt || 'Selected answer image'}
+            class="w-auto object-contain pie-blank-image"
+            style="max-height:var(--mpb-selected-image-max-height, 4rem);"
           />
         {:else if displayChoice?.labelHtml}
-          <span class="blank-inner choice-label">{@html displayChoice.labelHtml}</span>
+          <span class="blank-inner choice-label pie-blank-value">{@html displayChoice.labelHtml}</span>
         {:else}
           <span class="blank-inner-empty" aria-hidden="true">&nbsp;</span>
         {/if}
@@ -563,44 +531,51 @@ $effect(() => {
   {#if isEvaluateMode && isIncorrect}
     <button
       type="button"
-      class="mb-3 flex items-center gap-2 cursor-pointer select-none"
-      onclick={toggleCorrectAnswer}
+      class="mb-3 flex items-center cursor-pointer select-none pie-toggle-correct-answer"
+      style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
+      on:click={toggleCorrectAnswer}
       aria-pressed={showCorrectAnswer}
     >
       <span class="text-sm hover:underline">
-        {showCorrectAnswer ? t('hideCorrect') : t('showCorrect')}
+        {showCorrectAnswer ? uiText.hideCorrectAnswer : uiText.showCorrectAnswer}
       </span>
     </button>
   {/if}
   {#if resultText}
-    <p id={resultId} class="sr-only" role="status" aria-live="polite">{resultText}</p>
+    <p id={resultId} class="sr-only pie-result-feedback" role="status" aria-live="polite">{resultText}</p>
   {/if}
 
-  <fieldset class="border-0 p-0 m-0" disabled={props?.model?.disabled}>
-    <legend class="sr-only" id={legendId}>{legendText}</legend>
+  <fieldset class="border-0 p-0 m-0 pie-choices-fieldset" disabled={props?.model?.disabled}>
+    <legend class="sr-only pie-choices-legend" id={legendId}>{legendText}</legend>
     <div
-      class={`gap-2 ${isHorizontalChoices ? 'flex flex-row flex-wrap items-start justify-center' : 'flex flex-col'}`}
+      class={`pie-choices ${isHorizontalChoices ? 'flex flex-row flex-wrap items-start justify-center' : 'flex flex-col'}`}
+      style="gap:var(--mpb-choice-group-gap, 0.5rem);"
       role="radiogroup"
       tabindex="-1"
       aria-labelledby={choicesGroupLabelledBy}
       aria-describedby={resultText ? resultId : undefined}
-      onkeydown={onRadioGroupKeydown}
+      on:keydown={onRadioGroupKeydown}
     >
-      {#each renderedChoices as c (c.id)}
+      {#each choices as c (c.id)}
         <div
-          class={`flex items-start gap-2 choice-row ${isHorizontalChoices ? 'choice-row-horizontal' : ''} ${((showCorrectAnswer && isEvaluateMode ? props?.model?.correctChoiceId : selectedId) === c.id) ? 'is-selected' : ''}`}
+          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((showCorrectAnswer && isEvaluateMode ? props?.model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''}`}
+          style="gap:var(--mpb-choice-row-gap, 0.5rem);"
         >
           {#if isHorizontalChoices}
-            <label for={`${instanceId}-opt-${c.id}`} class="cursor-pointer choice-tile text-center">
-              <span class="choice-tile-content">
+            <label
+              for={`${instanceId}-opt-${c.id}`}
+              class="cursor-pointer choice-tile text-center pie-choice-tile"
+            >
+              <span class="choice-tile-content pie-choice-tile-content">
                 {#if choiceMode === 'image' && c.imageUrl}
                   <img
                     src={c.imageUrl}
                     alt={c.imageAlt || `Choice ${c.id}`}
-                    class="max-h-20 object-contain mx-auto"
+                    class="object-contain mx-auto pie-choice-image"
+                    style="max-height:var(--mpb-choice-image-max-height, 5rem);"
                   />
                 {:else}
-                  <span class="choice-label">{@html c.labelHtml || ''}</span>
+                  <span class="choice-label pie-choice-label">{@html c.labelHtml || ''}</span>
                 {/if}
               </span>
               <input
@@ -612,8 +587,8 @@ $effect(() => {
                   (showCorrectAnswer && isEvaluateMode ? props?.model?.correctChoiceId : selectedId) === c.id
                 }
                 disabled={props?.model?.disabled}
-                onchange={onRadioChange}
-                class="choice-radio-bottom"
+                on:change={onRadioChange}
+                class="choice-radio-bottom pie-choice-radio pie-choice-radio-bottom"
               />
             </label>
           {:else}
@@ -626,22 +601,31 @@ $effect(() => {
                 (showCorrectAnswer && isEvaluateMode ? props?.model?.correctChoiceId : selectedId) === c.id
               }
               disabled={props?.model?.disabled}
-              onchange={onRadioChange}
-              class="mt-1"
+              on:change={onRadioChange}
+              class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"
             />
-            <label for={`${instanceId}-opt-${c.id}`} class="cursor-pointer flex-1">
+            <label for={`${instanceId}-opt-${c.id}`} class="cursor-pointer flex-1 pie-choice-label-wrap">
               {#if choiceMode === 'image' && c.imageUrl}
-                <img src={c.imageUrl} alt={c.imageAlt || `Choice ${c.id}`} class="max-h-20 object-contain" />
+                <img
+                  src={c.imageUrl}
+                  alt={c.imageAlt || `Choice ${c.id}`}
+                  class="object-contain pie-choice-image"
+                  style="max-height:var(--mpb-choice-image-max-height, 5rem);"
+                />
               {:else}
-                <span class="choice-label">{@html c.labelHtml || ''}</span>
+                <span class="choice-label pie-choice-label">{@html c.labelHtml || ''}</span>
               {/if}
             </label>
           {/if}
           {#if isEvaluateMode && !showCorrectAnswer}
             {#if selectedId === c.id && isCorrect}
-              <span class="text-green-600 text-sm font-medium" aria-hidden="true">✓</span>
+              <span class="text-green-600 text-sm font-medium pie-choice-feedback-correct" aria-hidden="true">
+                ✓
+              </span>
             {:else if selectedId === c.id && isIncorrect}
-              <span class="text-red-600 text-sm font-medium" aria-hidden="true">✗</span>
+              <span class="text-red-600 text-sm font-medium pie-choice-feedback-incorrect" aria-hidden="true">
+                ✗
+              </span>
             {/if}
           {/if}
         </div>
@@ -694,12 +678,12 @@ $effect(() => {
   }
 
   .blank-slot-standalone {
-    width: 7rem;
+    width: var(--mpb-blank-standalone-width, 7rem);
   }
 
   .listen-button {
-    width: 128px;
-    height: 128px;
+    width: var(--mpb-listen-button-size, 128px);
+    height: var(--mpb-listen-button-size, 128px);
     border: 0;
     padding: 0;
     background-color: transparent;
@@ -712,8 +696,8 @@ $effect(() => {
   }
 
   .listen-feature-icon {
-    width: 128px;
-    height: 128px;
+    width: var(--mpb-listen-button-size, 128px);
+    height: var(--mpb-listen-button-size, 128px);
     object-fit: contain;
     display: none;
   }
@@ -725,7 +709,7 @@ $effect(() => {
   .choice-row-horizontal {
     flex-direction: column;
     align-items: center;
-    width: min(170px, 30vw);
+    width: min(var(--mpb-choice-width-px, 170px), var(--mpb-choice-width-vw, 30vw));
     gap: 0;
   }
 
@@ -735,7 +719,7 @@ $effect(() => {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    min-height: 11rem;
+    min-height: var(--mpb-choice-tile-min-height, 11rem);
     padding: 0.8rem 0.65rem 0.5rem;
     border-radius: 8px;
     background: transparent;
@@ -747,88 +731,19 @@ $effect(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 7.5rem;
+    min-height: var(--mpb-choice-content-min-height, 7.5rem);
   }
 
   .choice-row-horizontal:hover .choice-tile {
-    background: #f2f2f2;
+    background: #ececec;
   }
 
   .choice-row-horizontal.is-selected .choice-tile {
-    background: #fcfcd3;
+    background: #eceabf;
   }
 
   .choice-row-horizontal.is-selected:hover .choice-tile {
-    background: #fcfcd3;
-  }
-
-  .choice-row:not(.choice-row-horizontal):hover {
-    background: #f2f2f2;
-    border-radius: 6px;
-  }
-
-  .choice-row.is-selected:not(.choice-row-horizontal) {
-    background: #fcfcd3;
-    border-radius: 6px;
-  }
-
-  :global(.access-contrast-3) .choice-row-horizontal,
-  :global(.access-contrast-6) .choice-row-horizontal {
-    border-bottom-width: 4px;
-    border-bottom-style: solid;
-    padding-bottom: 10px;
-  }
-
-  :global(.access-contrast-3) .choice-row:not(.choice-row-horizontal),
-  :global(.access-contrast-6) .choice-row:not(.choice-row-horizontal) {
-    border-left-width: 4px;
-    border-left-style: solid;
-    padding-left: 0.35rem;
-  }
-
-  :global(.access-contrast-3) .choice-row-horizontal,
-  :global(.access-contrast-3) .choice-row:not(.choice-row-horizontal) {
-    border-color: #2d4e84;
-  }
-
-  :global(.access-contrast-6) .choice-row-horizontal,
-  :global(.access-contrast-6) .choice-row:not(.choice-row-horizontal) {
-    border-color: #000;
-  }
-
-  :global(.access-contrast-3) .choice-row:hover,
-  :global(.access-contrast-6) .choice-row:hover {
-    border-radius: 0;
-  }
-
-  :global(.access-contrast-3) .choice-row:hover {
-    border-color: #fff25d;
-    color: #fff25d;
-  }
-
-  :global(.access-contrast-6) .choice-row:hover {
-    border-color: #fff;
-    color: #fff;
-  }
-
-  :global(.access-contrast-3) .choice-row:hover:not(.is-selected):not(.choice-row-horizontal),
-  :global(.access-contrast-6) .choice-row:hover:not(.is-selected):not(.choice-row-horizontal) {
-    background: inherit;
-  }
-
-  :global(.access-contrast-3) .choice-row-horizontal:hover:not(.is-selected) .choice-tile,
-  :global(.access-contrast-6) .choice-row-horizontal:hover:not(.is-selected) .choice-tile {
-    background: inherit;
-  }
-
-  :global(.access-contrast-3) .choice-row.is-selected:hover,
-  :global(.access-contrast-6) .choice-row.is-selected:hover {
-    color: #000;
-  }
-
-  :global(.access-contrast-3) .choice-row-horizontal.is-selected:hover .choice-tile,
-  :global(.access-contrast-6) .choice-row-horizontal.is-selected:hover .choice-tile {
-    background: #fcfcd3;
+    background: #eceabf;
   }
 
   .choice-row-horizontal :global(p) {
@@ -841,34 +756,6 @@ $effect(() => {
     margin: 0;
   }
 
-  .teacher-instructions {
-    border-left: 4px solid #60a5fa;
-    background: #eff6ff;
-    padding: 0.5rem 0.75rem;
-    border-radius: 4px;
-  }
-
-  .teacher-instructions-title {
-    margin: 0 0 0.3rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  .vic-family-layout {
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 800px;
-  }
-
-  .vic-family-layout .choice-row {
-    user-select: none;
-    margin-right: 10px;
-  }
-
-  .sel-vic-family-layout {
-    font-size: 1.5em;
-  }
-
   .blank-inner {
     width: 100%;
     display: inline-flex;
@@ -878,7 +765,11 @@ $effect(() => {
   }
 
   .choice-radio-bottom {
-    margin-top: 0.5rem;
+    margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
+  }
+
+  .choice-radio-inline {
+    margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
   }
 
   .layout-audio_blank_only .audio-container,
@@ -890,24 +781,25 @@ $effect(() => {
   .layout-audio_blank_only .template-line,
   .layout-stimulus_image_blank .template-line {
     text-align: center;
-    margin: 0.8rem 0 1.8rem;
+    margin: var(--mpb-audio-blank-template-margin-top, 0.8rem) 0
+      var(--mpb-audio-blank-template-margin-bottom, 1.8rem);
   }
 
   .layout-audio_blank_only .blank-slot,
   .layout-stimulus_image_blank .blank-slot {
-    width: 10rem;
-    border-bottom-width: 4px;
+    width: var(--mpb-blank-wide-width, 10rem);
+    border-bottom-width: var(--mpb-blank-underline-wide-width, 4px);
   }
 
   .layout-stimulus_image_blank {
     display: grid;
-    grid-template-columns: minmax(210px, 1fr) auto;
+    grid-template-columns: minmax(var(--mpb-stimulus-min-column, 210px), 1fr) auto;
     grid-template-areas:
       'sentence audio'
       '. template'
       'choices choices';
-    column-gap: 2rem;
-    row-gap: 0.7rem;
+    column-gap: var(--mpb-stimulus-grid-column-gap, 2rem);
+    row-gap: var(--mpb-stimulus-grid-row-gap, 0.7rem);
     align-items: start;
   }
 
@@ -918,7 +810,7 @@ $effect(() => {
 
   .layout-stimulus_image_blank .sentence-line {
     grid-area: sentence;
-    margin: 0.2rem 0 0;
+    margin: var(--mpb-stimulus-sentence-margin-top, 0.2rem) 0 0;
   }
 
   .layout-stimulus_image_blank .template-line {
@@ -930,17 +822,17 @@ $effect(() => {
 
   .layout-stimulus_image_blank fieldset {
     grid-area: choices;
-    margin-top: 0.9rem;
+    margin-top: var(--mpb-stimulus-choices-margin-top, 0.9rem);
   }
 
   .layout-token_sequence {
     display: grid;
-    grid-template-columns: minmax(260px, 1fr) auto;
+    grid-template-columns: minmax(var(--mpb-text-min-column, 260px), 1fr) auto;
     grid-template-areas:
       'template audio'
       'choices choices';
-    column-gap: 1.5rem;
-    row-gap: 0.8rem;
+    column-gap: var(--mpb-token-grid-column-gap, 1.5rem);
+    row-gap: var(--mpb-token-grid-row-gap, 0.8rem);
     align-items: start;
   }
 
@@ -952,34 +844,34 @@ $effect(() => {
 
   .layout-token_sequence .template-line {
     grid-area: template;
-    margin: 0.6rem 0 0;
+    margin: var(--mpb-token-template-margin-top, 0.6rem) 0 0;
     justify-self: center;
     text-align: center;
   }
 
   .layout-token_sequence .template-line :global(span + span) {
-    margin-left: 0.35rem;
+    margin-left: var(--mpb-token-inline-token-gap, 0.35rem);
   }
 
   .layout-token_sequence .blank-slot {
-    width: 7rem;
-    border-bottom-width: 4px;
-    margin-left: 0.35rem;
+    width: var(--mpb-blank-standalone-width, 7rem);
+    border-bottom-width: var(--mpb-blank-underline-wide-width, 4px);
+    margin-left: var(--mpb-token-inline-token-gap, 0.35rem);
   }
 
   .layout-token_sequence fieldset {
     grid-area: choices;
-    margin-top: 0.2rem;
+    margin-top: var(--mpb-token-choices-margin-top, 0.2rem);
   }
 
   .layout-inline_sentence.has-inline-audio {
     display: grid;
-    grid-template-columns: minmax(260px, 1fr) auto;
+    grid-template-columns: minmax(var(--mpb-text-min-column, 260px), 1fr) auto;
     grid-template-areas:
       'template audio'
       'choices choices';
-    column-gap: 1.5rem;
-    row-gap: 0.65rem;
+    column-gap: var(--mpb-inline-grid-column-gap, 1.5rem);
+    row-gap: var(--mpb-inline-grid-row-gap, 0.65rem);
     align-items: start;
   }
 
@@ -991,13 +883,13 @@ $effect(() => {
 
   .layout-inline_sentence.has-inline-audio .template-line {
     grid-area: template;
-    margin: 0.45rem 0 0;
+    margin: var(--mpb-inline-template-margin-top, 0.45rem) 0 0;
     text-align: center;
     justify-self: center;
   }
 
   .layout-inline_sentence.has-inline-audio fieldset {
     grid-area: choices;
-    margin-top: 0.25rem;
+    margin-top: var(--mpb-inline-choices-margin-top, 0.25rem);
   }
 </style>

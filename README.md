@@ -117,6 +117,29 @@ If a publish fails after the version PR was already merged, rerun the Release wo
 
 This is intended for recovery/rerun scenarios only.
 
+### Targeted Package Release (Changesets)
+
+To release one or more specific packages, create a changeset scoped to those packages:
+
+```bash
+bun run changeset:plan -- --packages @pie-element/mc-populated-blank --type patch --summary "Fix CQT parity for VIC/SEL VIC variants"
+```
+
+For multiple packages:
+
+```bash
+bun run changeset:plan -- --packages @pie-element/mc-populated-blank,@pie-element/simple-cloze --type minor --summary "Add Svelte release updates"
+```
+
+Then run the normal Changesets flow:
+
+```bash
+# 1) Commit and merge PR with the generated .changeset file
+# 2) Let CI create/merge the version PR
+# 3) CI publishes via the same command used manually:
+bun run release:publish
+```
+
 ### Maintainer Commands
 
 `bun cli upstream:sync` - (Maintainers only) Syncs packages from the upstream pie-elements project. Requires pie-elements and pie-lib checked out as sibling directories. Analyzes the current state of those projects and copies over what is ready for ESM packaging, including rewrites and restructuring to fit the new project layout.
@@ -126,10 +149,13 @@ This is intended for recovery/rerun scenarios only.
 PIE elements include print views for generating paper-based assessments and answer keys. Two complementary players serve different use cases:
 
 ### Element-Level Print Player (This Project)
+
 For development and testing of individual elements:
+
 ```html
 <pie-element-player view="print" element-name="multiple-choice" role="student"></pie-element-player>
 ```
+
 - **Package:** `@pie-element/element-player`
 - **Use for:** Element development, testing, documentation, and optional composable embedding
 - **Location:** `packages/element-player/src/players/PieElementPlayer.svelte`
@@ -137,10 +163,13 @@ For development and testing of individual elements:
 For most production app flows, prefer the standard upstream player stacks in `../pie-elements` and `../pie-players`.
 
 ### Item-Level Print Player (pie-players)
+
 For production rendering of complete assessment items:
+
 ```html
 <pie-print config={{ item: {...}, options: { mode: 'student' } }}></pie-print>
 ```
+
 - **Package:** `@pie-player/print` (in pie-players repository)
 - **Use for:** Production apps, multi-element items, markup-driven rendering
 - **Location:** `../pie-players/packages/print-player`

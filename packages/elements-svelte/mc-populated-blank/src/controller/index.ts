@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash-es';
-import defaults, { BLANK_TOKEN } from './defaults';
+import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults';
 
 export function countBlankTokens(template: string): number {
   if (!template) return 0;
@@ -72,7 +72,14 @@ export const outcome = (question: any, session: any, env: any) =>
     resolve({ score, empty: false, traceLog });
   });
 
-export const createDefaultModel = (model: any = {}) => ({ ...defaults.model, ...model });
+export const createDefaultModel = (model: any = {}) => ({
+  ...defaults.model,
+  ...model,
+  layoutLimits: {
+    ...DEFAULT_LAYOUT_LIMITS,
+    ...(model?.layoutLimits || {}),
+  },
+});
 
 export const normalizeSession = (s: any) => ({ ...s });
 
@@ -151,6 +158,28 @@ export const model = async (question: any, session: any, env: any, updateSession
     interactionMode: normalizedQuestion.interactionMode || 'populate_blank',
     layoutProfile: normalizedQuestion.layoutProfile || '',
     choiceLayout: normalizedQuestion.choiceLayout || '',
+    layoutProfilePresets:
+      normalizedQuestion.layoutProfilePresets &&
+      typeof normalizedQuestion.layoutProfilePresets === 'object'
+        ? normalizedQuestion.layoutProfilePresets
+        : {},
+    layoutLimits: {
+      ...DEFAULT_LAYOUT_LIMITS,
+      ...(normalizedQuestion.layoutLimits || {}),
+    },
+    audioButtonSkin:
+      normalizedQuestion.audioButtonSkin && typeof normalizedQuestion.audioButtonSkin === 'object'
+        ? normalizedQuestion.audioButtonSkin
+        : null,
+    audioButtonSkinsByLocale:
+      normalizedQuestion.audioButtonSkinsByLocale &&
+      typeof normalizedQuestion.audioButtonSkinsByLocale === 'object'
+        ? normalizedQuestion.audioButtonSkinsByLocale
+        : {},
+    uiText:
+      normalizedQuestion.uiText && typeof normalizedQuestion.uiText === 'object'
+        ? normalizedQuestion.uiText
+        : {},
     sentenceHtml: normalizedQuestion.sentenceHtml || null,
     template: normalizedQuestion.template,
     choiceMode: normalizedQuestion.choiceMode,
@@ -161,6 +190,10 @@ export const model = async (question: any, session: any, env: any, updateSession
     audioUrl: normalizedQuestion.hasAudio ? normalizedQuestion.audioUrl : null,
     audioTranscript: normalizedQuestion.hasAudio ? normalizedQuestion.audioTranscript : null,
     showVisibleTranscript: !!normalizedQuestion.showVisibleTranscript,
+    useFeatureButtonAudio:
+      typeof normalizedQuestion.useFeatureButtonAudio === 'boolean'
+        ? normalizedQuestion.useFeatureButtonAudio
+        : undefined,
     locale: normalizedQuestion.locale || '',
     disabled: env.mode !== 'gather',
     view: env.mode === 'view',
@@ -263,9 +296,55 @@ export const validate = (model: any = {}, _config: any = {}) => {
 
   if (model.hasAudio) {
     const hasAudioUrl = !!model.audioUrl?.trim();
-    const hasTranscript = !!model.audioTranscript?.trim();
-    if (!hasAudioUrl && !hasTranscript) {
-      errors.audioTranscript = 'Audio transcript or audio URL is required when audio is enabled';
+    if (!hasAudioUrl) {
+      errors.audioUrl = 'A playable audio URL is required when audio is enabled';
+    }
+  }
+
+  const limits = model?.layoutLimits;
+  if (limits && typeof limits === 'object') {
+    const numericLimitKeys = [
+      'blankStandaloneWidthRem',
+      'blankWideWidthRem',
+      'blankUnderlineWidthPx',
+      'blankUnderlineWideWidthPx',
+      'horizontalChoiceWidthPx',
+      'horizontalChoiceWidthVw',
+      'horizontalChoiceTileMinHeightRem',
+      'horizontalChoiceContentMinHeightRem',
+      'selectedImageMaxHeightRem',
+      'choiceImageMaxHeightRem',
+      'listenButtonSizePx',
+      'stimulusMinColumnPx',
+      'textMinColumnPx',
+      'legendMaxChars',
+      'choiceGroupGapRem',
+      'choiceRowGapRem',
+      'toggleButtonGapRem',
+      'horizontalChoiceRadioTopMarginRem',
+      'audioBlankTemplateMarginTopRem',
+      'audioBlankTemplateMarginBottomRem',
+      'stimulusGridColumnGapRem',
+      'stimulusGridRowGapRem',
+      'stimulusSentenceMarginTopRem',
+      'stimulusChoicesMarginTopRem',
+      'tokenGridColumnGapRem',
+      'tokenGridRowGapRem',
+      'tokenTemplateMarginTopRem',
+      'tokenInlineTokenGapRem',
+      'tokenChoicesMarginTopRem',
+      'inlineGridColumnGapRem',
+      'inlineGridRowGapRem',
+      'inlineTemplateMarginTopRem',
+      'inlineChoicesMarginTopRem',
+    ];
+    for (const key of numericLimitKeys) {
+      if (limits[key] === undefined || limits[key] === null || limits[key] === '') continue;
+      const value = Number(limits[key]);
+      if (!Number.isFinite(value) || value <= 0) {
+        errors.layoutLimits = `${key} must be a positive number when provided`;
+        break;
+      }
     }
   }
 
