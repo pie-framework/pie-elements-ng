@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.2
+
+### Patch Changes
+
+- Release mc-populated-blank with unanswered evaluate correctness feedback parity and regression coverage.
+
 ## 0.2.1
 
 ### Patch Changes
