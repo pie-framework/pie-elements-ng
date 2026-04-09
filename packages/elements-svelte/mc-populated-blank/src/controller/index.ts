@@ -91,14 +91,14 @@ const shouldLockChoices = (question: any, env: any) => {
   return env?.role === 'instructor';
 };
 
-const shuffleArray = <T>(items: T[]): T[] => {
+function shuffleArray<T>(items: T[]): T[] {
   const out = [...items];
   for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
-};
+}
 
 const getStoredShuffle = (session: any): string[] =>
   Array.isArray(session?.data?.shuffledValues)

@@ -11,6 +11,7 @@
 />
 
 <script lang="ts">
+import { color } from '@pie-lib-svelte/styling';
 /** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
 const BLANK_TOKEN = '{{blank}}';
 const DEFAULT_LAYOUT_LIMITS = {
@@ -102,8 +103,12 @@ let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
-const isEvaluateMode = $derived(model?.env?.mode === 'evaluate');
+const deliveryMode = $derived((model?.mode || model?.env?.mode || '').toString());
+const isEvaluateMode = $derived(deliveryMode === 'evaluate');
 const correctness = $derived(model?.correctness);
+const isResponseCorrect = $derived(
+  typeof model?.responseCorrect === 'boolean' ? model.responseCorrect : correctness === 'correct'
+);
 const isCorrect = $derived(correctness === 'correct');
 const isIncorrect = $derived(correctness === 'incorrect');
 const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
@@ -156,6 +161,23 @@ const layoutLimits = $derived.by(() => {
     ...configured,
   };
 });
+const correctAnswerStyleVars = $derived.by(() =>
+  [
+    `--pie-correct-answer-toggle-label-color:${color.text()}`,
+    `--pie-correct-answer-toggle-icon-open-bg:${color.tertiaryLight()}`,
+    `--pie-correct-answer-toggle-icon-closed-bg:${color.backgroundDark()}`,
+    `--pie-correct-answer-toggle-icon-glyph-color:${color.tertiary()}`,
+    `--pie-correct-answer-choice-hover-bg:${color.backgroundDark()}`,
+    `--pie-correct-answer-choice-selected-bg:${color.secondaryBackground()}`,
+    `--pie-correct-answer-choice-correct-bg:${color.correctSecondary()}`,
+    `--pie-correct-answer-choice-incorrect-bg:${color.incorrectSecondary()}`,
+    `--pie-correct-answer-choice-correct-border:${color.correctTertiary()}`,
+    `--pie-correct-answer-choice-incorrect-border:${color.incorrectWithIcon()}`,
+    `--pie-correct-answer-feedback-correct-bg:${color.correctWithIcon()}`,
+    `--pie-correct-answer-feedback-incorrect-bg:${color.incorrectWithIcon()}`,
+    `--pie-correct-answer-feedback-glyph-color:${color.white()}`,
+  ].join(';')
+);
 const rootStyle = $derived.by(() =>
   [
     `--mpb-listen-button-size:${layoutLimits.listenButtonSizePx}px`,
@@ -192,6 +214,7 @@ const rootStyle = $derived.by(() =>
     `--mpb-inline-grid-row-gap:${layoutLimits.inlineGridRowGapRem}rem`,
     `--mpb-inline-template-margin-top:${layoutLimits.inlineTemplateMarginTopRem}rem`,
     `--mpb-inline-choices-margin-top:${layoutLimits.inlineChoicesMarginTopRem}rem`,
+    correctAnswerStyleVars,
   ].join(';')
 );
 const useFeatureButtonAudio = $derived.by(() => {
@@ -240,9 +263,19 @@ const selectedId = $derived(session?.choiceId || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
 
 let showCorrectAnswer = $state(false);
+const alwaysShowCorrect = $derived(
+  !!model?.alwaysShowCorrect || !!options?.alwaysShowCorrect || !!options?.addCorrectResponse
+);
+const canRevealCorrectAnswer = $derived(
+  !!model?.correctChoiceId && (isEvaluateMode || alwaysShowCorrect)
+);
+const shouldShowCorrectAnswer = $derived(alwaysShowCorrect || showCorrectAnswer);
+const shouldShowCorrectAnswerToggle = $derived(
+  isEvaluateMode && !isResponseCorrect && !!model?.correctChoiceId && !alwaysShowCorrect
+);
 
 const displayChoiceId = $derived.by(() => {
-  if (isEvaluateMode && showCorrectAnswer && model?.correctChoiceId) {
+  if (canRevealCorrectAnswer && shouldShowCorrectAnswer && model?.correctChoiceId) {
     return model.correctChoiceId;
   }
   return selectedId;
@@ -295,10 +328,37 @@ const audioErrorMessage = $derived.by(() =>
 );
 
 const resultText = $derived.by(() => {
-  if (!isEvaluateMode || showCorrectAnswer) return '';
+  if (!isEvaluateMode || shouldShowCorrectAnswer) return '';
   if (isCorrect) return 'Correct answer selected';
   if (isIncorrect && selectedId) return 'Incorrect answer selected';
   return '';
+});
+const choiceCorrectnessById = $derived.by(() => {
+  const map = new Map<string, 'correct' | 'incorrect'>();
+  const correctChoiceId = String(model?.correctChoiceId || '');
+  const activeSelectedId = String(selectedId || '');
+
+  if (!isEvaluateMode || !correctChoiceId) {
+    return map;
+  }
+
+  if (shouldShowCorrectAnswer && canRevealCorrectAnswer) {
+    map.set(correctChoiceId, 'correct');
+    return map;
+  }
+
+  if (!activeSelectedId) {
+    return map;
+  }
+
+  if (activeSelectedId === correctChoiceId) {
+    map.set(correctChoiceId, 'correct');
+    return map;
+  }
+
+  map.set(activeSelectedId, 'incorrect');
+  map.set(correctChoiceId, 'incorrect');
+  return map;
 });
 
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
@@ -331,8 +391,15 @@ function onRadioChange(e: Event) {
 }
 
 function toggleCorrectAnswer() {
+  if (!shouldShowCorrectAnswerToggle) return;
   showCorrectAnswer = !showCorrectAnswer;
 }
+
+$effect(() => {
+  if (!isEvaluateMode || isResponseCorrect || alwaysShowCorrect) {
+    showCorrectAnswer = false;
+  }
+});
 
 function onRadioGroupKeydown(e: KeyboardEvent) {
   if (model?.disabled) return;
@@ -511,6 +578,74 @@ $effect(() => {
     <div class="mb-4 prose pie-prompt" id={promptId}>{@html model.prompt}</div>
   {/if}
 
+  {#if shouldShowCorrectAnswerToggle}
+    <div class="pie-correct-answer-toggle-row">
+      <button
+        bind:this={toggleCorrectAnswerButtonEl}
+        type="button"
+        class="mb-3 pie-toggle-correct-answer"
+        style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
+        aria-pressed={shouldShowCorrectAnswer}
+        data-testid="show-correct-answer"
+      >
+        <span class="pie-correct-answer-toggle-content">
+          <span class="pie-correct-answer-toggle-icon-holder" aria-hidden="true">
+            {#if shouldShowCorrectAnswer}
+              <svg
+                class="pie-correct-answer-toggle-svg"
+                preserveAspectRatio="xMinYMin meet"
+                version="1.1"
+                viewBox="-283 359 34 35"
+              >
+                <circle cx="-266" cy="375.9" r="14" fill="var(--pie-correct-answer-toggle-icon-open-bg, #bce2ff)" />
+                <path
+                  d="M-280.5,375.9c0-8,6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5s-6.5,14.5-14.5,14.5S-280.5,383.9-280.5,375.9z M-279.5,375.9c0,7.4,6.1,13.5,13.5,13.5c7.4,0,13.5-6.1,13.5-13.5s-6.1-13.5-13.5-13.5C-273.4,362.4-279.5,368.5-279.5,375.9z"
+                  fill="var(--pie-correct-answer-toggle-icon-open-bg, #bce2ff)"
+                />
+                <polygon
+                  points="-265.4,383.1 -258.6,377.2 -261.2,374.2 -264.3,376.9 -268.9,368.7 -272.4,370.6"
+                  fill="var(--pie-correct-answer-toggle-icon-glyph-color, #1a9cff)"
+                />
+              </svg>
+            {:else}
+              <svg
+                class="pie-correct-answer-toggle-svg"
+                preserveAspectRatio="xMinYMin meet"
+                version="1.1"
+                viewBox="-129.5 127 34 35"
+              >
+                <path
+                  d="M-112.9,160.4c-8.5,0-15.5-6.9-15.5-15.5c0-8.5,6.9-15.5,15.5-15.5s15.5,6.9,15.5,15.5 C-97.4,153.5-104.3,160.4-112.9,160.4z"
+                  fill="#D0CAC5"
+                  stroke="#E6E3E0"
+                  stroke-width="0.75"
+                />
+                <path
+                  d="M-113.2,159c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-105.2,159-113.2,159z"
+                  fill="#B3ABA4"
+                  stroke="#CDC7C2"
+                  stroke-width="0.5"
+                />
+                <circle cx="-114.2" cy="143.5" r="14" fill="white" />
+                <path
+                  d="M-114.2,158c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-106.2,158-114.2,158z M-114.2,130c-7.4,0-13.5,6.1-13.5,13.5s6.1,13.5,13.5,13.5s13.5-6.1,13.5-13.5S-106.8,130-114.2,130z"
+                  fill="var(--pie-correct-answer-toggle-icon-closed-bg, #bce2ff)"
+                />
+                <polygon
+                  points="-114.8,150.7 -121.6,144.8 -119,141.8 -115.9,144.5 -111.3,136.3 -107.8,138.2"
+                  fill="var(--pie-correct-answer-toggle-icon-glyph-color, #1a9cff)"
+                />
+              </svg>
+            {/if}
+          </span>
+          <span class="pie-correct-answer-toggle-label">
+            {shouldShowCorrectAnswer ? uiText.hideCorrectAnswer : uiText.showCorrectAnswer}
+          </span>
+        </span>
+      </button>
+    </div>
+  {/if}
+
   {#if model?.hasAudio}
     <div class="mb-4 audio-container pie-audio-container">
       {#if hasPlayableAudio && useFeatureButtonAudio}
@@ -609,19 +744,6 @@ $effect(() => {
     </div>
   {/if}
 
-  {#if isEvaluateMode && isIncorrect}
-    <button
-      bind:this={toggleCorrectAnswerButtonEl}
-      type="button"
-      class="mb-3 flex items-center cursor-pointer select-none pie-toggle-correct-answer"
-      style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
-      aria-pressed={showCorrectAnswer}
-    >
-      <span class="text-sm hover:underline">
-        {showCorrectAnswer ? uiText.hideCorrectAnswer : uiText.showCorrectAnswer}
-      </span>
-    </button>
-  {/if}
   {#if resultText}
     <p id={resultId} class="sr-only pie-result-feedback" role="status" aria-live="polite">{resultText}</p>
   {/if}
@@ -639,8 +761,9 @@ $effect(() => {
       aria-describedby={resultText ? resultId : undefined}
     >
       {#each choices as c (c.id)}
+        {@const choiceCorrectness = choiceCorrectnessById.get(c.id)}
         <div
-          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((showCorrectAnswer && isEvaluateMode ? model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''}`}
+          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((shouldShowCorrectAnswer && canRevealCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
           style="gap:var(--mpb-choice-row-gap, 0.5rem);"
         >
           {#if isHorizontalChoices}
@@ -666,7 +789,7 @@ $effect(() => {
                 id={`${instanceId}-opt-${c.id}`}
                 value={c.id}
                 checked={
-                  (showCorrectAnswer && isEvaluateMode ? model?.correctChoiceId : selectedId) === c.id
+                  (shouldShowCorrectAnswer && canRevealCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
                 }
                 disabled={model?.disabled}
                 class="choice-radio-bottom pie-choice-radio pie-choice-radio-bottom"
@@ -679,7 +802,7 @@ $effect(() => {
               id={`${instanceId}-opt-${c.id}`}
               value={c.id}
               checked={
-                (showCorrectAnswer && isEvaluateMode ? model?.correctChoiceId : selectedId) === c.id
+                (shouldShowCorrectAnswer && canRevealCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
               }
               disabled={model?.disabled}
               class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"
@@ -697,16 +820,13 @@ $effect(() => {
               {/if}
             </label>
           {/if}
-          {#if isEvaluateMode && !showCorrectAnswer}
-            {#if selectedId === c.id && isCorrect}
-              <span class="text-green-600 text-sm font-medium pie-choice-feedback-correct" aria-hidden="true">
-                ✓
-              </span>
-            {:else if selectedId === c.id && isIncorrect}
-              <span class="text-red-600 text-sm font-medium pie-choice-feedback-incorrect" aria-hidden="true">
-                ✗
-              </span>
-            {/if}
+          {#if isEvaluateMode && choiceCorrectness}
+            <span
+              class={`pie-choice-feedback-badge ${choiceCorrectness === 'correct' ? 'pie-choice-feedback-correct' : 'pie-choice-feedback-incorrect'}`}
+              aria-hidden="true"
+            >
+              {choiceCorrectness === 'correct' ? '✓' : '✕'}
+            </span>
           {/if}
         </div>
       {/each}
@@ -742,6 +862,57 @@ $effect(() => {
     justify-content: center;
     text-align: center;
     vertical-align: baseline;
+  }
+
+  .pie-toggle-correct-answer {
+    width: 100%;
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    color: var(--pie-correct-answer-toggle-label-color, var(--pie-text, black));
+  }
+
+  .pie-correct-answer-toggle-row {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .pie-correct-answer-toggle-content {
+    display: flex;
+    margin: 0 auto;
+    align-items: center;
+  }
+
+  .pie-correct-answer-toggle-icon-holder {
+    width: 25px;
+    margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pie-correct-answer-toggle-svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .pie-correct-answer-toggle-label {
+    width: fit-content;
+    min-width: 140px;
+    align-self: center;
+    vertical-align: middle;
+    font-weight: 400;
+    user-select: none;
+  }
+
+  .pie-toggle-correct-answer:hover .pie-correct-answer-toggle-label,
+  .pie-toggle-correct-answer:focus-visible .pie-correct-answer-toggle-label {
+    text-decoration: underline;
   }
 
   .template-line {
@@ -815,15 +986,53 @@ $effect(() => {
   }
 
   .choice-row-horizontal:hover .choice-tile {
-    background: #ececec;
+    background: var(--pie-correct-answer-choice-hover-bg, #ececec);
   }
 
   .choice-row-horizontal.is-selected .choice-tile {
-    background: #eceabf;
+    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
   }
 
   .choice-row-horizontal.is-selected:hover .choice-tile {
-    background: #eceabf;
+    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
+  }
+
+  .pie-choice.choice-correct {
+    border-left: 3px solid var(--pie-correct-answer-choice-correct-border, #0ea449);
+  }
+
+  .pie-choice.choice-incorrect {
+    border-left: 3px solid var(--pie-correct-answer-choice-incorrect-border, #bf0d00);
+  }
+
+  .pie-choice-horizontal.choice-correct .choice-tile {
+    background: var(--pie-correct-answer-choice-correct-bg, #e8f5e9);
+  }
+
+  .pie-choice-horizontal.choice-incorrect .choice-tile {
+    background: var(--pie-correct-answer-choice-incorrect-bg, #ffebee);
+  }
+
+  .pie-choice-feedback-badge {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--pie-correct-answer-feedback-glyph-color, #fff);
+  }
+
+  .pie-choice-feedback-correct {
+    background: var(--pie-correct-answer-feedback-correct-bg, #087d38);
+  }
+
+  .pie-choice-feedback-incorrect {
+    background: var(--pie-correct-answer-feedback-incorrect-bg, #bf0d00);
   }
 
   .choice-row-horizontal :global(p) {

@@ -7,3 +7,4 @@
 
 export * from './color.js';
 export { color } from './color.js';
+export * from './correct-answer.js';

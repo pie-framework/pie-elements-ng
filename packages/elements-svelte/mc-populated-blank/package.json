@@ -43,6 +43,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
+    "@pie-lib-svelte/styling": "workspace:*",
     "lodash-es": "^4.17.21"
   },
   "peerDependencies": {
