@@ -13,5 +13,7 @@
 - Release/versioning default: always use a patch bump by default.
 - For Changesets-driven releases, default to `patch` unless the user explicitly asks for `minor` or `major`.
 - Publish policy: publish only explicitly selected packages (and packages bumped by changeset dependency propagation), never "all unpublished packages".
+- For npm publishing in this monorepo, always target a specific workspace package (for example `npm publish --workspace @pie-element/<name> --access public`) to avoid accidentally publishing the private repo root package.
+- If npm auth/publish fails in sandbox despite a valid token, retry outside sandbox with an explicit npm user config pointing at `NPM_TOKEN` (for example `NPM_CONFIG_USERCONFIG=.npmrc.publish`).
 - Versioning policy (current): packages are versioned independently; do not assume workspace-wide lockstep versions.
 - Upstream sync policy: `upstream:update` should preserve/copy package versions from upstream package.json when syncing `packages/elements-react/*` and `packages/lib-react/*`.
