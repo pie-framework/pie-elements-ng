@@ -1,5 +1,13 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.4
+
+### Patch Changes
+
+- Publish Svelte styling under a publishable npm scope and update dependent packages to consume the published library.
+- Updated dependencies
+  - @pie-lib/styling-svelte@0.1.2
+
 ## 0.2.3
 
 ### Patch Changes

@@ -1,11 +1,11 @@
-# @pie-lib-svelte/styling
+# @pie-lib/styling-svelte
 
 PIE styling utilities for Svelte components. This package mirrors the functionality of `@pie-lib/render-ui` for React components, providing consistent theming across PIE elements.
 
 ## Installation
 
 ```bash
-bun add @pie-lib-svelte/styling
+bun add @pie-lib/styling-svelte
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ Use PIE color variables directly in your component styles:
 
 ```svelte
 <script lang="ts">
-  import { color } from '@pie-lib-svelte/styling';
+  import { color } from '@pie-lib/styling-svelte';
 
   let isDarkMode = $state(false);
 </script>
@@ -45,7 +45,7 @@ You can also use the color functions programmatically:
 
 ```svelte
 <script lang="ts">
-  import { color } from '@pie-lib-svelte/styling';
+  import { color } from '@pie-lib/styling-svelte';
 
   let buttonStyle = $state('');
 
@@ -121,7 +121,7 @@ const StyledDiv = styled('div')({
 **Svelte:**
 ```svelte
 <script>
-  import { color } from '@pie-lib-svelte/styling';
+  import { color } from '@pie-lib/styling-svelte';
 </script>
 
 <style>

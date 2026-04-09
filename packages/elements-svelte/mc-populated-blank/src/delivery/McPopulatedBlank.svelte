@@ -11,7 +11,7 @@
 />
 
 <script lang="ts">
-import { color } from '@pie-lib-svelte/styling';
+import { color } from '@pie-lib/styling-svelte';
 /** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
 const BLANK_TOKEN = '{{blank}}';
 const DEFAULT_LAYOUT_LIMITS = {

@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/editable-html-tiptap-svelte",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tiptap-based rich text editor component for Svelte PIE elements",
   "type": "module",
   "main": "./dist/index.js",
@@ -25,7 +25,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@pie-lib-svelte/styling": "workspace:*",
+    "@pie-lib/styling-svelte": "workspace:*",
     "@tiptap/core": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
     "@tiptap/extension-text-style": "^3.19.0",
