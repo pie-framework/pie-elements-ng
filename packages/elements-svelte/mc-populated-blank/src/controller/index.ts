@@ -163,10 +163,7 @@ export const model = async (question: any, session: any, env: any, updateSession
       typeof normalizedQuestion.layoutProfilePresets === 'object'
         ? normalizedQuestion.layoutProfilePresets
         : {},
-    layoutLimits: {
-      ...DEFAULT_LAYOUT_LIMITS,
-      ...(normalizedQuestion.layoutLimits || {}),
-    },
+    layoutLimits: normalizedQuestion.layoutLimits || { ...DEFAULT_LAYOUT_LIMITS },
     audioButtonSkin:
       normalizedQuestion.audioButtonSkin && typeof normalizedQuestion.audioButtonSkin === 'object'
         ? normalizedQuestion.audioButtonSkin
@@ -324,6 +321,8 @@ export const validate = (model: any = {}, _config: any = {}) => {
       'horizontalChoiceRadioTopMarginRem',
       'audioBlankTemplateMarginTopRem',
       'audioBlankTemplateMarginBottomRem',
+      'audioInstructionsMaxWidthPx',
+      'narrowHorizontalChoiceMaxWidthPx',
       'stimulusGridColumnGapRem',
       'stimulusGridRowGapRem',
       'stimulusSentenceMarginTopRem',

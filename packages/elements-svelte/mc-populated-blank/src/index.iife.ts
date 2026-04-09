@@ -1,13 +1,7 @@
 /**
- * IIFE entry for mc-populated-blank delivery custom element.
+ * IIFE entry for mc-populated-blank delivery.
+ * Registration is handled by PIE players/loaders, not by the element bundle itself.
  */
 import Element from './delivery';
-
-if (typeof window !== 'undefined' && !customElements.get('mc-populated-blank-element')) {
-  customElements.define(
-    'mc-populated-blank-element',
-    Element as unknown as CustomElementConstructor
-  );
-}
 
 export default Element;

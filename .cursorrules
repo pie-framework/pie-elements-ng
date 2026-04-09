@@ -2,6 +2,7 @@
 
 - Web components: set data via element properties, not attributes.
 - For custom elements, prefer imperative property updates (element.model = ..., element.session = ...).
+- Element packages must not call `customElements.define(...)` in runtime entry points (including `index.iife.ts`); registration belongs to PIE item/element players.
 - When changing model/session, reassign a new object if needed to trigger reactivity.
 - Element player should rebuild the view model via controller.model(...) on mode or session changes.
 - Avoid reactive loops when controller updates session; guard against re-setting identical session objects.

@@ -172,6 +172,8 @@ bun run check          # Svelte component validation
 ### Web Components and Reactivity
 
 - Treat custom elements as imperative APIs: set properties, not attributes.
+- Element packages must not self-register custom elements (no `customElements.define(...)` in element runtime entries such as `index.iife.ts`).
+- Custom element registration is the responsibility of PIE item/element players, which own lifecycle and registry coordination.
 - Do not assume attribute updates are reactive for object data.
 - For model/session updates, reassign new objects when needed to trigger updates.
 - When using controller-based elements, rebuild and re-set the element model on mode/session changes.

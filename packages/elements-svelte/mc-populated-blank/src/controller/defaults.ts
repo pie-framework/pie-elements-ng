@@ -22,6 +22,8 @@ export const DEFAULT_LAYOUT_LIMITS = {
   horizontalChoiceRadioTopMarginRem: 0.5,
   audioBlankTemplateMarginTopRem: 0.8,
   audioBlankTemplateMarginBottomRem: 1.8,
+  audioInstructionsMaxWidthPx: 875,
+  narrowHorizontalChoiceMaxWidthPx: 230,
   stimulusGridColumnGapRem: 2,
   stimulusGridRowGapRem: 0.7,
   stimulusSentenceMarginTopRem: 0.2,

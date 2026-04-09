@@ -17,7 +17,7 @@ The historical Learnosity CQT names mostly describe layout/stimulus differences,
 - `sr-vic`: sentence-style vocabulary in context, typically no audio button
 - `sel_r1-g_plusggg`: lead token before blank (`before_cloze_1`) plus choice set
 - `sel_r1-_gplusggg`: blank with a shorter/token-focused stem arrangement
-- `sel_r1-_plusggg`: audio + choices only (no blank; modeled as audio-only mode)
+- `sel_r1-_plusggg`: audio-first blank + choices
 - `sel_r1-gg_plusggg`: token-sequence variant with larger glyph-like tokens
 - `sel_r1-_ggplusggg`: blank appears before trailing tokens (`after_cloze_*`)
 - `sel_r1-s3_plusggg`: stimulus-heavy variant (often image/sentence block + blank + choices)
@@ -34,7 +34,7 @@ Use this as a practical starting point when mapping Learnosity CQT payloads into
 | `sr-vic` | sentence cloze without listen button | `populate_blank` | `text` | `<p>{before} {{blank}} {after}</p>` |
 | `sel_r1-g_plusggg` | lead token before blank | `populate_blank` | `text` | `<p>{before_cloze_1} {{blank}}</p>` |
 | `sel_r1-_gplusggg` | short stem + blank | `populate_blank` | `text` | `<p>{before/after segments around {{blank}}}</p>` |
-| `sel_r1-_plusggg` | audio + choices only (no blank) | `audio_mc_only` | `text` | no blank token in template |
+| `sel_r1-_plusggg` | audio-first blank + horizontal choices | `populate_blank` | `text` | `<p>{{blank}}</p>` |
 | `sel_r1-gg_plusggg` | token-sequence style before blank | `populate_blank` | `text` | `<p>{before_1}{before_2} {{blank}}</p>` |
 | `sel_r1-_ggplusggg` | blank before trailing tokens | `populate_blank` | `text` | `<p>{{blank}} {after_1}{after_2}</p>` |
 | `sel_r1-s3_plusggg` | stimulus-heavy/image-first variant | `populate_blank` | `text` or `image` | include stimulus in `prompt`/`sentenceHtml`; keep single blank in `template` |
@@ -43,7 +43,7 @@ Notes:
 
 - `choiceMode` should be `image` only when distractors are image choices; otherwise use `text`.
 - Current model contract is single-blank for `populate_blank`; dual-cloze source shapes are normalized to one `{{blank}}`.
-- `correctChoiceId` should always map from Learnosity `valid_response.name` (`distractor_n` -> `cN`).
+- `correctChoiceId` should always map from Learnosity `valid_response.name` to canonical `distractor_n`.
 - Layout defaults are tuned from original CQT visual baselines, but they are not fixed: override through `model.layoutLimits` when host/theme requirements differ.
 
 ## Authoring model
@@ -56,10 +56,12 @@ Notes:
 - **`correctChoiceId`**
 - **`hasAudio`**, **`audioUrl`**, **`audioTranscript`** (`audioUrl` required when `hasAudio=true`)
 - **`autoplayAudioEnabled`**, **`completeAudioEnabled`** (optional integration flags)
+- **`showVisibleTranscript`** (optional): profile-driven default; override when transcript should always show/hide
 - **`layoutLimits`** (optional): numeric visual constraints; defaults are based on current CQT parity behavior and can be overridden per item
 - **`layoutProfilePresets`** (optional): named preset map by `layoutProfile`; use profile as a template and override with `layoutLimits`
 - **`audioButtonSkin`** / **`audioButtonSkinsByLocale`** (optional): override listen-button skin URLs
 - **`uiText`** (optional): override labels/messages (show/hide correct, answer choices, autoplay prompt, transcript label, missing-audio message)
+- **`choiceGroupLabel`** (optional): accessibility label used when no visible prompt is present
 
 ### `layoutLimits` keys (all optional, positive numbers)
 
@@ -83,6 +85,8 @@ Notes:
 - `horizontalChoiceRadioTopMarginRem`
 - `audioBlankTemplateMarginTopRem`
 - `audioBlankTemplateMarginBottomRem`
+- `audioInstructionsMaxWidthPx`
+- `narrowHorizontalChoiceMaxWidthPx`
 - `stimulusGridColumnGapRem`
 - `stimulusGridRowGapRem`
 - `stimulusSentenceMarginTopRem`
@@ -107,8 +111,10 @@ Notes:
 - **Choice normalization:** choices are polymorphic by `choiceMode` (text via `labelHtml`, image via `imageUrl`/`imageAlt`).
 - **Delivery rendering:** template is split around `{{blank}}`; selected choice content is rendered into the blank slot.
 - **Layout limits are model-driven:** delivery reads `model.layoutLimits` (blank widths/underline widths, choice tile sizing, image max heights, listen button size, layout column minimums); defaults are CQT-informed but overrideable.
+- **Responsive parity controls:** `audioInstructionsMaxWidthPx` and `narrowHorizontalChoiceMaxWidthPx` are explicitly configurable to tune desktop vs narrow-width CQT behavior.
 - **Evaluate mode behavior:** when evaluate/correct-answer mode is enabled, delivery can render `correctChoiceId` in the blank/choice state.
 - **Audio error behavior:** no TTS fallback is used; when `hasAudio=true` and no playable `audioUrl` is provided, delivery shows an explicit error message (configurable via `uiText.audioResourceUnavailable`).
+- **Prompt-off accessibility:** when `prompt` is empty, delivery uses `choiceGroupLabel` (or fallback UI text) as the radiogroup accessible name.
 - **Print parity:** print view mirrors prompt/template/choice presentation with the same blank-token contract.
 
 ## Theming hooks (`pie-*` classes)

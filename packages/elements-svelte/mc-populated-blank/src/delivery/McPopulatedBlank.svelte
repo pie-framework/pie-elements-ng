@@ -1,6 +1,6 @@
 <svelte:options
   customElement={{
-    tag: 'mc-populated-blank-element',
+    tag: 'mc-populated-blank',
     shadow: 'none',
     props: {
       model: { type: 'Object' },
@@ -34,6 +34,8 @@ const DEFAULT_LAYOUT_LIMITS = {
   horizontalChoiceRadioTopMarginRem: 0.5,
   audioBlankTemplateMarginTopRem: 0.8,
   audioBlankTemplateMarginBottomRem: 1.8,
+  audioInstructionsMaxWidthPx: 875,
+  narrowHorizontalChoiceMaxWidthPx: 230,
   stimulusGridColumnGapRem: 2,
   stimulusGridRowGapRem: 0.7,
   stimulusSentenceMarginTopRem: 0.2,
@@ -88,21 +90,25 @@ const DEFAULT_UI_TEXT = {
   listenLabelEs: 'Escuchar',
 } as const;
 
-let props = $props<{ model?: any; session?: any; options?: any }>();
+let { model, session, options } = $props<{ model?: any; session?: any; options?: any }>();
 let audioEl = $state<HTMLAudioElement | null>(null);
 let isMediaPlaying = $state(false);
 let localChoiceId = $state('');
 let autoPlayPromptOpen = $state(false);
 let autoplayAttempted = $state(false);
+let featureAudioButtonEl = $state<HTMLButtonElement | null>(null);
+let autoplayEnableButtonEl = $state<HTMLButtonElement | null>(null);
+let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
+let choicesGroupEl = $state<HTMLDivElement | null>(null);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
-const isEvaluateMode = $derived(props?.model?.env?.mode === 'evaluate');
-const correctness = $derived(props?.model?.correctness);
+const isEvaluateMode = $derived(model?.env?.mode === 'evaluate');
+const correctness = $derived(model?.correctness);
 const isCorrect = $derived(correctness === 'correct');
 const isIncorrect = $derived(correctness === 'incorrect');
-const isAudioOnlyMode = $derived(props?.model?.interactionMode === 'audio_mc_only');
+const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
 const isBlankOnlyTemplate = $derived.by(() => {
-  const t = props?.model?.template || '';
+  const t = model?.template || '';
   if (!t) return false;
   const plain = t
     .replace(/<[^>]+>/g, '')
@@ -110,27 +116,27 @@ const isBlankOnlyTemplate = $derived.by(() => {
     .trim();
   return plain === BLANK_TOKEN;
 });
-const layoutProfile = $derived(props?.model?.layoutProfile || '');
+const layoutProfile = $derived(model?.layoutProfile || '');
 const choiceLayout = $derived(
-  props?.model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
+  model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
 );
 const isHorizontalChoices = $derived(choiceLayout === 'horizontal');
-const showVisibleTranscript = $derived(!!props?.model?.showVisibleTranscript);
-const hasPlayableAudio = $derived(!!props?.model?.hasAudio && !!props?.model?.audioUrl);
-const hasAudioButMissingResource = $derived(!!props?.model?.hasAudio && !props?.model?.audioUrl);
+const showVisibleTranscript = $derived(!!model?.showVisibleTranscript);
+const hasPlayableAudio = $derived(!!model?.hasAudio && !!model?.audioUrl);
+const hasAudioButMissingResource = $derived(!!model?.hasAudio && !model?.audioUrl);
 const hasInlineSentenceAudioLayout = $derived(
-  layoutProfile === 'inline_sentence' && !!props?.model?.hasAudio
+  layoutProfile === 'inline_sentence' && !!model?.hasAudio
 );
 const uiText = $derived.by(() => ({
   ...DEFAULT_UI_TEXT,
-  ...(props?.model?.uiText || {}),
+  ...(model?.uiText || {}),
 }));
 const profilePresetLimits = $derived.by(() => {
   const profile = String(layoutProfile || '');
   const defaults = DEFAULT_LAYOUT_PROFILE_PRESETS[profile] || {};
   const customPresets =
-    props?.model?.layoutProfilePresets && typeof props.model.layoutProfilePresets === 'object'
-      ? props.model.layoutProfilePresets
+    model?.layoutProfilePresets && typeof model.layoutProfilePresets === 'object'
+      ? model.layoutProfilePresets
       : {};
   const custom =
     customPresets[profile] && typeof customPresets[profile] === 'object'
@@ -143,9 +149,7 @@ const profilePresetLimits = $derived.by(() => {
 });
 const layoutLimits = $derived.by(() => {
   const configured =
-    props?.model?.layoutLimits && typeof props.model.layoutLimits === 'object'
-      ? props.model.layoutLimits
-      : {};
+    model?.layoutLimits && typeof model.layoutLimits === 'object' ? model.layoutLimits : {};
   return {
     ...DEFAULT_LAYOUT_LIMITS,
     ...profilePresetLimits,
@@ -173,6 +177,8 @@ const rootStyle = $derived.by(() =>
     `--mpb-horizontal-choice-radio-top-margin:${layoutLimits.horizontalChoiceRadioTopMarginRem}rem`,
     `--mpb-audio-blank-template-margin-top:${layoutLimits.audioBlankTemplateMarginTopRem}rem`,
     `--mpb-audio-blank-template-margin-bottom:${layoutLimits.audioBlankTemplateMarginBottomRem}rem`,
+    `--mpb-audio-instructions-max-width:${layoutLimits.audioInstructionsMaxWidthPx}px`,
+    `--mpb-narrow-choice-max-width:${layoutLimits.narrowHorizontalChoiceMaxWidthPx}px`,
     `--mpb-stimulus-grid-column-gap:${layoutLimits.stimulusGridColumnGapRem}rem`,
     `--mpb-stimulus-grid-row-gap:${layoutLimits.stimulusGridRowGapRem}rem`,
     `--mpb-stimulus-sentence-margin-top:${layoutLimits.stimulusSentenceMarginTopRem}rem`,
@@ -189,12 +195,12 @@ const rootStyle = $derived.by(() =>
   ].join(';')
 );
 const useFeatureButtonAudio = $derived.by(() => {
-  if (typeof props?.model?.useFeatureButtonAudio === 'boolean') {
-    return !!props.model.useFeatureButtonAudio;
+  if (typeof model?.useFeatureButtonAudio === 'boolean') {
+    return !!model.useFeatureButtonAudio;
   }
   const profile = layoutProfile || '';
   return (
-    !!props?.model?.hasAudio &&
+    !!model?.hasAudio &&
     (profile === 'audio_blank_only' ||
       profile === 'stimulus_image_blank' ||
       profile === 'token_sequence')
@@ -202,7 +208,7 @@ const useFeatureButtonAudio = $derived.by(() => {
 });
 
 const templateParts = $derived.by(() => {
-  const t = props?.model?.template || '';
+  const t = model?.template || '';
   const idx = t.indexOf(BLANK_TOKEN);
   if (idx < 0) {
     return { before: t, after: '' };
@@ -228,16 +234,16 @@ const blankBorderWidth = $derived.by(() => {
   return `${layoutLimits.blankUnderlineWidthPx}px`;
 });
 
-const choices = $derived(Array.isArray(props?.model?.choices) ? props.model.choices : []);
-const choiceMode = $derived(props?.model?.choiceMode || 'text');
-const selectedId = $derived(props?.session?.choiceId || localChoiceId || '');
-const radioGroupName = $derived(`${instanceId}-choice-group-${props?.model?.id || '1'}`);
+const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
+const choiceMode = $derived(model?.choiceMode || 'text');
+const selectedId = $derived(session?.choiceId || localChoiceId || '');
+const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
 
 let showCorrectAnswer = $state(false);
 
 const displayChoiceId = $derived.by(() => {
-  if (isEvaluateMode && showCorrectAnswer && props?.model?.correctChoiceId) {
-    return props.model.correctChoiceId;
+  if (isEvaluateMode && showCorrectAnswer && model?.correctChoiceId) {
+    return model.correctChoiceId;
   }
   return selectedId;
 });
@@ -245,7 +251,7 @@ const displayChoiceId = $derived.by(() => {
 const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
 
 const legendText = $derived.by(() => {
-  const plain = (props?.model?.prompt || '')
+  const plain = (model?.prompt || '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -263,19 +269,25 @@ const transcriptId = $derived(`${instanceId}-transcript`);
 const legendId = $derived(`${instanceId}-choices-legend`);
 const resultId = $derived(`${instanceId}-result`);
 
-const choicesGroupLabelledBy = $derived(props?.model?.prompt ? promptId : legendId);
+const choicesGroupLabelledBy = $derived(model?.prompt ? promptId : undefined);
+const choicesGroupAriaLabel = $derived.by(() => {
+  if (model?.prompt) return undefined;
+  const explicit = String(model?.choiceGroupLabel || '').trim();
+  if (explicit) return explicit;
+  return legendText;
+});
 
 const templateDescribedBy = $derived.by(() => {
   const ids: string[] = [];
-  if (props?.model?.prompt) ids.push(promptId);
-  if (props?.model?.hasAudio && props?.model?.audioTranscript) {
+  if (model?.prompt) ids.push(promptId);
+  if (model?.hasAudio && model?.audioTranscript) {
     ids.push(transcriptId);
   }
   return ids.length ? ids.join(' ') : undefined;
 });
 
 const lang = $derived.by(() => {
-  const locale = props?.model?.locale || '';
+  const locale = model?.locale || '';
   return locale ? locale.slice(0, 2) : 'en';
 });
 const audioErrorMessage = $derived.by(() =>
@@ -290,9 +302,7 @@ const resultText = $derived.by(() => {
 });
 
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
-  const host =
-    (sourceEl?.closest?.('mc-populated-blank-element') as any) ||
-    (document.querySelector('mc-populated-blank-element') as any);
+  const host = getHostElement(sourceEl);
   if (host?.onSessionChange) {
     host.onSessionChange(updatedSession);
     return;
@@ -312,8 +322,8 @@ function onRadioChange(e: Event) {
   const choiceId = input.value;
   localChoiceId = choiceId;
   const updatedSession = {
-    ...props.session,
-    id: props.session?.id || props.model?.id || '1',
+    ...session,
+    id: session?.id || model?.id || '1',
     element: 'mc-populated-blank',
     choiceId,
   };
@@ -325,7 +335,7 @@ function toggleCorrectAnswer() {
 }
 
 function onRadioGroupKeydown(e: KeyboardEvent) {
-  if (props?.model?.disabled) return;
+  if (model?.disabled) return;
   const key = e.key;
   if (!['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft'].includes(key)) return;
   e.preventDefault();
@@ -355,16 +365,32 @@ function handleEnableAutoplayClick() {
 }
 
 function onAudioPlaying(e: Event) {
-  const host = (e.currentTarget as HTMLElement)?.closest('mc-populated-blank-element') as any;
+  const host = getHostElement(e.currentTarget as HTMLElement);
   isMediaPlaying = true;
   host?.onAudioStarted?.();
   autoPlayPromptOpen = false;
 }
 
 function onAudioEnded(e: Event) {
-  const host = (e.currentTarget as HTMLElement)?.closest('mc-populated-blank-element') as any;
+  const host = getHostElement(e.currentTarget as HTMLElement);
   isMediaPlaying = false;
   host?.onAudioEnded?.();
+}
+
+function getHostElement(sourceEl?: HTMLElement | null) {
+  let cursor: HTMLElement | null | undefined = sourceEl;
+  while (cursor) {
+    const maybeHost = cursor as any;
+    if (
+      typeof maybeHost?.onSessionChange === 'function' ||
+      typeof maybeHost?.onAudioStarted === 'function' ||
+      typeof maybeHost?.onAudioEnded === 'function'
+    ) {
+      return maybeHost;
+    }
+    cursor = cursor.parentElement;
+  }
+  return (document.querySelector('mc-populated-blank') as any) || null;
 }
 
 function speechButtonLabel(locale = '') {
@@ -372,16 +398,15 @@ function speechButtonLabel(locale = '') {
 }
 
 const featureAudioSkin = $derived.by(() => {
-  const locale = String(props?.model?.locale || '').toLowerCase();
+  const locale = String(model?.locale || '').toLowerCase();
   const lang = locale.slice(0, 2);
   const byLocale =
-    props?.model?.audioButtonSkinsByLocale &&
-    typeof props.model.audioButtonSkinsByLocale === 'object'
-      ? props.model.audioButtonSkinsByLocale
+    model?.audioButtonSkinsByLocale && typeof model.audioButtonSkinsByLocale === 'object'
+      ? model.audioButtonSkinsByLocale
       : {};
   const customSingle =
-    props?.model?.audioButtonSkin && typeof props.model.audioButtonSkin === 'object'
-      ? props.model.audioButtonSkin
+    model?.audioButtonSkin && typeof model.audioButtonSkin === 'object'
+      ? model.audioButtonSkin
       : null;
   const defaultSkin = locale.startsWith('es')
     ? DEFAULT_AUDIO_BUTTON_SKINS.es
@@ -398,17 +423,77 @@ function playFeatureAudio() {
 }
 
 $effect(() => {
-  if (props?.session?.choiceId) {
-    localChoiceId = props.session.choiceId;
+  if (session?.choiceId) {
+    localChoiceId = session.choiceId;
   }
 });
 
 $effect(() => {
-  if (!props?.model?.hasAudio || !props?.model?.autoplayAudioEnabled) return;
+  const el = audioEl;
+  if (!el) return;
+  const handlePlaying = (e: Event) => onAudioPlaying(e);
+  const handleEnded = (e: Event) => onAudioEnded(e);
+  el.addEventListener('playing', handlePlaying);
+  el.addEventListener('ended', handleEnded);
+  return () => {
+    el.removeEventListener('playing', handlePlaying);
+    el.removeEventListener('ended', handleEnded);
+  };
+});
+
+$effect(() => {
+  const btn = featureAudioButtonEl;
+  if (!btn) return;
+  const handleClick = () => playFeatureAudio();
+  btn.addEventListener('click', handleClick);
+  return () => {
+    btn.removeEventListener('click', handleClick);
+  };
+});
+
+$effect(() => {
+  const btn = autoplayEnableButtonEl;
+  if (!btn) return;
+  const handleClick = () => handleEnableAutoplayClick();
+  btn.addEventListener('click', handleClick);
+  return () => {
+    btn.removeEventListener('click', handleClick);
+  };
+});
+
+$effect(() => {
+  const btn = toggleCorrectAnswerButtonEl;
+  if (!btn) return;
+  const handleClick = () => toggleCorrectAnswer();
+  btn.addEventListener('click', handleClick);
+  return () => {
+    btn.removeEventListener('click', handleClick);
+  };
+});
+
+$effect(() => {
+  const group = choicesGroupEl;
+  if (!group) return;
+  const handleChange = (e: Event) => {
+    const target = e.target as HTMLInputElement | null;
+    if (!target || target.type !== 'radio') return;
+    onRadioChange(e);
+  };
+  const handleKeydown = (e: KeyboardEvent) => onRadioGroupKeydown(e);
+  group.addEventListener('change', handleChange);
+  group.addEventListener('keydown', handleKeydown);
+  return () => {
+    group.removeEventListener('change', handleChange);
+    group.removeEventListener('keydown', handleKeydown);
+  };
+});
+
+$effect(() => {
+  if (!model?.hasAudio || !model?.autoplayAudioEnabled) return;
   if (autoplayAttempted) return;
 
   autoplayAttempted = true;
-  if (audioEl && props?.model?.audioUrl) {
+  if (audioEl && model?.audioUrl) {
     // Browser autoplay restrictions vary. Try immediate play; if blocked show click-to-enable affordance.
     audioEl.play().catch(() => {
       autoPlayPromptOpen = true;
@@ -422,28 +507,26 @@ $effect(() => {
   lang={lang}
   style={rootStyle}
 >
-  {#if props?.model?.prompt}
-    <div class="mb-4 prose pie-prompt" id={promptId}>{@html props.model.prompt}</div>
+  {#if model?.prompt}
+    <div class="mb-4 prose pie-prompt" id={promptId}>{@html model.prompt}</div>
   {/if}
 
-  {#if props?.model?.hasAudio}
+  {#if model?.hasAudio}
     <div class="mb-4 audio-container pie-audio-container">
       {#if hasPlayableAudio && useFeatureButtonAudio}
         <audio
           bind:this={audioEl}
           class="sr-only pie-audio-player"
           preload="metadata"
-          src={props.model.audioUrl}
+          src={model.audioUrl}
           aria-hidden="true"
           tabindex="-1"
-          on:playing={onAudioPlaying}
-          on:ended={onAudioEnded}
         ></audio>
         <button
+          bind:this={featureAudioButtonEl}
           class="listen-button pie-listen-button rli-feature-audio"
           type="button"
-          aria-label={speechButtonLabel(props?.model?.locale)}
-          on:click={playFeatureAudio}
+          aria-label={speechButtonLabel(model?.locale)}
         >
           <img
             class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? '' : 'listen-active'}`}
@@ -464,18 +547,16 @@ $effect(() => {
           controls
           class="w-full max-w-md pie-audio-player"
           preload="metadata"
-          src={props.model.audioUrl}
-          aria-describedby={props?.model?.audioTranscript ? transcriptId : undefined}
-          on:playing={onAudioPlaying}
-          on:ended={onAudioEnded}
+          src={model.audioUrl}
+          aria-describedby={model?.audioTranscript ? transcriptId : undefined}
         >
           <track kind="captions" />
         </audio>
         {#if autoPlayPromptOpen}
           <button
+            bind:this={autoplayEnableButtonEl}
             class="mt-2 text-sm underline pie-audio-autoplay-enable"
             type="button"
-            on:click={handleEnableAutoplayClick}
           >
             {uiText.clickToEnableAutoplay}
           </button>
@@ -483,20 +564,20 @@ $effect(() => {
       {:else if hasAudioButMissingResource}
         <p class="text-sm text-red-700 pie-audio-error" role="alert">{audioErrorMessage}</p>
       {/if}
-      {#if props?.model?.audioTranscript}
+      {#if model?.audioTranscript}
         <p
           class={`text-sm mt-2 text-gray-700 pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
           id={transcriptId}
         >
-          <strong>{uiText.transcriptLabel}:</strong> {props.model.audioTranscript}
+          <strong>{uiText.transcriptLabel}:</strong> {model.audioTranscript}
         </p>
       {/if}
     </div>
   {/if}
 
-  {#if props?.model?.sentenceHtml}
+  {#if model?.sentenceHtml}
     <div class="mb-3 prose prose-p:my-1 sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
-      {@html props.model.sentenceHtml}
+      {@html model.sentenceHtml}
     </div>
   {/if}
 
@@ -530,10 +611,10 @@ $effect(() => {
 
   {#if isEvaluateMode && isIncorrect}
     <button
+      bind:this={toggleCorrectAnswerButtonEl}
       type="button"
       class="mb-3 flex items-center cursor-pointer select-none pie-toggle-correct-answer"
       style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
-      on:click={toggleCorrectAnswer}
       aria-pressed={showCorrectAnswer}
     >
       <span class="text-sm hover:underline">
@@ -545,20 +626,21 @@ $effect(() => {
     <p id={resultId} class="sr-only pie-result-feedback" role="status" aria-live="polite">{resultText}</p>
   {/if}
 
-  <fieldset class="border-0 p-0 m-0 pie-choices-fieldset" disabled={props?.model?.disabled}>
+  <fieldset class="border-0 p-0 m-0 pie-choices-fieldset" disabled={model?.disabled}>
     <legend class="sr-only pie-choices-legend" id={legendId}>{legendText}</legend>
     <div
+      bind:this={choicesGroupEl}
       class={`pie-choices ${isHorizontalChoices ? 'flex flex-row flex-wrap items-start justify-center' : 'flex flex-col'}`}
       style="gap:var(--mpb-choice-group-gap, 0.5rem);"
       role="radiogroup"
       tabindex="-1"
       aria-labelledby={choicesGroupLabelledBy}
+      aria-label={choicesGroupAriaLabel}
       aria-describedby={resultText ? resultId : undefined}
-      on:keydown={onRadioGroupKeydown}
     >
       {#each choices as c (c.id)}
         <div
-          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((showCorrectAnswer && isEvaluateMode ? props?.model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''}`}
+          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((showCorrectAnswer && isEvaluateMode ? model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''}`}
           style="gap:var(--mpb-choice-row-gap, 0.5rem);"
         >
           {#if isHorizontalChoices}
@@ -584,10 +666,9 @@ $effect(() => {
                 id={`${instanceId}-opt-${c.id}`}
                 value={c.id}
                 checked={
-                  (showCorrectAnswer && isEvaluateMode ? props?.model?.correctChoiceId : selectedId) === c.id
+                  (showCorrectAnswer && isEvaluateMode ? model?.correctChoiceId : selectedId) === c.id
                 }
-                disabled={props?.model?.disabled}
-                on:change={onRadioChange}
+                disabled={model?.disabled}
                 class="choice-radio-bottom pie-choice-radio pie-choice-radio-bottom"
               />
             </label>
@@ -598,10 +679,9 @@ $effect(() => {
               id={`${instanceId}-opt-${c.id}`}
               value={c.id}
               checked={
-                (showCorrectAnswer && isEvaluateMode ? props?.model?.correctChoiceId : selectedId) === c.id
+                (showCorrectAnswer && isEvaluateMode ? model?.correctChoiceId : selectedId) === c.id
               }
-              disabled={props?.model?.disabled}
-              on:change={onRadioChange}
+              disabled={model?.disabled}
               class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"
             />
             <label for={`${instanceId}-opt-${c.id}`} class="cursor-pointer flex-1 pie-choice-label-wrap">
@@ -775,6 +855,9 @@ $effect(() => {
   .layout-audio_blank_only .audio-container,
   .layout-stimulus_image_blank .audio-container {
     display: flex;
+    width: min(100%, var(--mpb-audio-instructions-max-width, 875px));
+    margin-left: auto;
+    margin-right: auto;
     justify-content: flex-end;
   }
 
@@ -891,5 +974,37 @@ $effect(() => {
   .layout-inline_sentence.has-inline-audio fieldset {
     grid-area: choices;
     margin-top: var(--mpb-inline-choices-margin-top, 0.25rem);
+  }
+
+  /* Match Learnosity responsive behavior for CQT audio-blank layouts:
+     at smaller widths, audio control shifts left and answer tiles stack. */
+  @media (max-width: 760px) {
+    .layout-audio_blank_only .audio-container,
+    .layout-stimulus_image_blank .audio-container,
+    .layout-token_sequence .audio-container,
+    .layout-inline_sentence.has-inline-audio .audio-container {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      justify-content: flex-start;
+      justify-self: start;
+    }
+
+    .layout-audio_blank_only .pie-choices,
+    .layout-token_sequence .pie-choices,
+    .layout-stimulus_image_blank .pie-choices,
+    .layout-inline_sentence.has-inline-audio .pie-choices {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    .layout-audio_blank_only .choice-row-horizontal,
+    .layout-token_sequence .choice-row-horizontal,
+    .layout-stimulus_image_blank .choice-row-horizontal,
+    .layout-inline_sentence.has-inline-audio .choice-row-horizontal {
+      width: min(100%, var(--mpb-narrow-choice-max-width, 230px));
+      align-items: flex-start;
+    }
   }
 </style>
