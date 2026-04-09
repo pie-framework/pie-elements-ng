@@ -108,6 +108,30 @@ test.describe('mc-populated-blank correct-answer parity', () => {
     await expect(root.getByText(/show correct answer|hide correct answer/i)).toHaveCount(0);
   });
 
+  test('evaluate unanswered response: missed correct choice is marked incorrect', async ({
+    page,
+  }) => {
+    await openMpbRoute(page, 'esm');
+    const root = deliveryContainer(page);
+    await expect(root).toBeVisible();
+
+    await switchTab(page, 'source');
+    const sourceModel = await getModelFromSource(page);
+    const correctChoiceId = sourceModel?.correctChoiceId as string;
+    expect(correctChoiceId).toBeTruthy();
+    await switchTab(page, 'deliver');
+
+    // Leave response empty and switch to scorer/evaluate.
+    await switchRole(page, 'instructor');
+
+    const toggle = root.locator('[data-testid="show-correct-answer"]').first();
+    await expect(toggle).toBeVisible();
+
+    await expect(
+      root.locator(`.pie-choice-incorrect input[type="radio"][value="${correctChoiceId}"]`)
+    ).toHaveCount(1);
+  });
+
   test('browse-style host intent: alwaysShowCorrect presents key while preserving session', async ({
     page,
   }) => {

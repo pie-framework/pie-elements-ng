@@ -348,6 +348,7 @@ const choiceCorrectnessById = $derived.by(() => {
   }
 
   if (!activeSelectedId) {
+    map.set(correctChoiceId, 'incorrect');
     return map;
   }
 
