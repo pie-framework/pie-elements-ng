@@ -81,6 +81,8 @@ export const createDefaultModel = (model: any = {}) => ({
   },
 });
 
+export const normalize = (question: any = {}) => createDefaultModel(question);
+
 export const normalizeSession = (s: any) => ({ ...s });
 
 const shouldShuffleChoices = (question: any) => !!question?.shuffle;
@@ -150,8 +152,9 @@ const getOrderedChoices = async (question: any, session: any, env: any, updateSe
 
 export const model = async (question: any, session: any, env: any, updateSession?: any) => {
   session = session || {};
-  const normalizedQuestion = createDefaultModel(question);
-  const choices = await getOrderedChoices(normalizedQuestion, session, env, updateSession);
+  const safeEnv = env || {};
+  const normalizedQuestion = normalize(question);
+  const choices = await getOrderedChoices(normalizedQuestion, session, safeEnv, updateSession);
 
   const out: any = {
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
@@ -192,19 +195,18 @@ export const model = async (question: any, session: any, env: any, updateSession
         ? normalizedQuestion.useFeatureButtonAudio
         : undefined,
     locale: normalizedQuestion.locale || '',
-    disabled: env.mode !== 'gather',
-    view: env.mode === 'view',
-    mode: env.mode,
+    disabled: safeEnv.mode !== 'gather',
+    mode: safeEnv.mode,
   };
 
-  if (env.mode === 'evaluate') {
+  if (safeEnv.mode === 'evaluate') {
     const correctness = getCorrectness(normalizedQuestion, session);
     out.correctness = correctness;
     out.responseCorrect = correctness === 'correct';
     out.correctChoiceId = normalizedQuestion.correctChoiceId;
   }
 
-  if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
+  if (safeEnv.role === 'instructor' && (safeEnv.mode === 'view' || safeEnv.mode === 'evaluate')) {
     out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
       ? normalizedQuestion.teacherInstructions
       : null;

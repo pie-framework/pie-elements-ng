@@ -91,7 +91,7 @@ const DEFAULT_UI_TEXT = {
   listenLabelEs: 'Escuchar',
 } as const;
 
-let { model, session, options } = $props<{ model?: any; session?: any; options?: any }>();
+let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
 let audioEl = $state<HTMLAudioElement | null>(null);
 let isMediaPlaying = $state(false);
 let localChoiceId = $state('');
@@ -263,19 +263,12 @@ const selectedId = $derived(session?.choiceId || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
 
 let showCorrectAnswer = $state(false);
-const alwaysShowCorrect = $derived(
-  !!model?.alwaysShowCorrect || !!options?.alwaysShowCorrect || !!options?.addCorrectResponse
-);
-const canRevealCorrectAnswer = $derived(
-  !!model?.correctChoiceId && (isEvaluateMode || alwaysShowCorrect)
-);
-const shouldShowCorrectAnswer = $derived(alwaysShowCorrect || showCorrectAnswer);
 const shouldShowCorrectAnswerToggle = $derived(
-  isEvaluateMode && !isResponseCorrect && !!model?.correctChoiceId && !alwaysShowCorrect
+  isEvaluateMode && !isResponseCorrect && !!model?.correctChoiceId
 );
 
 const displayChoiceId = $derived.by(() => {
-  if (canRevealCorrectAnswer && shouldShowCorrectAnswer && model?.correctChoiceId) {
+  if (isEvaluateMode && showCorrectAnswer && model?.correctChoiceId) {
     return model.correctChoiceId;
   }
   return selectedId;
@@ -328,7 +321,7 @@ const audioErrorMessage = $derived.by(() =>
 );
 
 const resultText = $derived.by(() => {
-  if (!isEvaluateMode || shouldShowCorrectAnswer) return '';
+  if (!isEvaluateMode || showCorrectAnswer) return '';
   if (isCorrect) return 'Correct answer selected';
   if (isIncorrect && selectedId) return 'Incorrect answer selected';
   return '';
@@ -342,8 +335,18 @@ const choiceCorrectnessById = $derived.by(() => {
     return map;
   }
 
-  if (shouldShowCorrectAnswer && canRevealCorrectAnswer) {
-    map.set(correctChoiceId, 'correct');
+  if (showCorrectAnswer) {
+    // In reveal mode we still reflect learner correctness:
+    // if learner did not select the correct choice (or selected nothing),
+    // keep the correct option marked incorrect.
+    if (activeSelectedId === correctChoiceId) {
+      map.set(correctChoiceId, 'correct');
+      return map;
+    }
+    if (activeSelectedId) {
+      map.set(activeSelectedId, 'incorrect');
+    }
+    map.set(correctChoiceId, 'incorrect');
     return map;
   }
 
@@ -397,7 +400,7 @@ function toggleCorrectAnswer() {
 }
 
 $effect(() => {
-  if (!isEvaluateMode || isResponseCorrect || alwaysShowCorrect) {
+  if (!isEvaluateMode || isResponseCorrect) {
     showCorrectAnswer = false;
   }
 });
@@ -586,12 +589,12 @@ $effect(() => {
         type="button"
         class="mb-3 pie-toggle-correct-answer"
         style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
-        aria-pressed={shouldShowCorrectAnswer}
+        aria-pressed={showCorrectAnswer}
         data-testid="show-correct-answer"
       >
         <span class="pie-correct-answer-toggle-content">
           <span class="pie-correct-answer-toggle-icon-holder" aria-hidden="true">
-            {#if shouldShowCorrectAnswer}
+            {#if showCorrectAnswer}
               <svg
                 class="pie-correct-answer-toggle-svg"
                 preserveAspectRatio="xMinYMin meet"
@@ -640,7 +643,7 @@ $effect(() => {
             {/if}
           </span>
           <span class="pie-correct-answer-toggle-label">
-            {shouldShowCorrectAnswer ? uiText.hideCorrectAnswer : uiText.showCorrectAnswer}
+            {showCorrectAnswer ? uiText.hideCorrectAnswer : uiText.showCorrectAnswer}
           </span>
         </span>
       </button>
@@ -764,7 +767,7 @@ $effect(() => {
       {#each choices as c (c.id)}
         {@const choiceCorrectness = choiceCorrectnessById.get(c.id)}
         <div
-          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((shouldShowCorrectAnswer && canRevealCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
+          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
           style="gap:var(--mpb-choice-row-gap, 0.5rem);"
         >
           {#if isHorizontalChoices}
@@ -790,7 +793,7 @@ $effect(() => {
                 id={`${instanceId}-opt-${c.id}`}
                 value={c.id}
                 checked={
-                  (shouldShowCorrectAnswer && canRevealCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
+                  (showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
                 }
                 disabled={model?.disabled}
                 class="choice-radio-bottom pie-choice-radio pie-choice-radio-bottom"
@@ -803,7 +806,7 @@ $effect(() => {
               id={`${instanceId}-opt-${c.id}`}
               value={c.id}
               checked={
-                (shouldShowCorrectAnswer && canRevealCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
+                (showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
               }
               disabled={model?.disabled}
               class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"
