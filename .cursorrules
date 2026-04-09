@@ -11,3 +11,6 @@
 - Only make temporary direct edits in synced files if the user explicitly approves an emergency local-only debugging patch.
 - Release/versioning default: always use a patch bump by default.
 - For Changesets-driven releases, default to `patch` unless the user explicitly asks for `minor` or `major`.
+- Publish policy: publish only explicitly selected packages (and packages bumped by changeset dependency propagation), never "all unpublished packages".
+- Versioning policy (current): packages are versioned independently; do not assume workspace-wide lockstep versions.
+- Upstream sync policy: `upstream:update` should preserve/copy package versions from upstream package.json when syncing `packages/elements-react/*` and `packages/lib-react/*`.

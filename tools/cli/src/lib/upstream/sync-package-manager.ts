@@ -396,6 +396,18 @@ export function extractUpstreamDependencies(
   return expectedDeps;
 }
 
+function resolveSyncedVersion(
+  upstreamPkg: PackageJson | null,
+  existingPkg: PackageJson | null
+): string {
+  const upstreamVersion = typeof upstreamPkg?.version === 'string' ? upstreamPkg.version : null;
+  if (upstreamVersion) {
+    return upstreamVersion;
+  }
+  const existingVersion = typeof existingPkg?.version === 'string' ? existingPkg.version : null;
+  return existingVersion || '0.1.0';
+}
+
 /**
  * Ensure devDependencies include all required build tools
  */
@@ -503,7 +515,7 @@ export async function ensureElementPackageJson(
     pkg = {
       name: `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}`,
       private: true,
-      version: '0.1.0',
+      version: resolveSyncedVersion(upstreamPkg, null),
       description:
         (upstreamPkg?.description as string | undefined) ??
         `React implementation of ${elementName} element synced from pie-elements`,
@@ -581,6 +593,7 @@ export async function ensureElementPackageJson(
 
   // Set core package.json fields
   pkg.name = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}`;
+  pkg.version = resolveSyncedVersion(upstreamPkg, pkg);
   pkg.type = PACKAGE_DEFAULTS.TYPE;
   pkg.main = './dist/index.js';
   pkg.types = './dist/index.d.ts';
@@ -711,7 +724,7 @@ export async function ensurePieLibPackageJson(
     pkg = {
       name: `${WORKSPACE.PIE_LIB_PREFIX}${pkgName}`,
       private: true,
-      version: '0.1.0',
+      version: resolveSyncedVersion(upstreamPkg, null),
       description:
         (upstreamPkg?.description as string | undefined) ??
         `React implementation of @pie-lib/${pkgName} synced from pie-lib`,
@@ -742,6 +755,7 @@ export async function ensurePieLibPackageJson(
   };
 
   pkg.name = `${WORKSPACE.PIE_LIB_PREFIX}${pkgName}`;
+  pkg.version = resolveSyncedVersion(upstreamPkg, pkg);
   pkg.type = PACKAGE_DEFAULTS.TYPE;
   pkg.main = './dist/index.js';
   pkg.types = './dist/index.d.ts';

@@ -18,6 +18,7 @@ When a fix is needed in those areas:
 2. Sync changes into this repository:
    - Prefer `bun run upstream:update`
    - For targeted updates, use `bun run upstream:sync --element=<name>`
+   - Preserve/copy upstream package versions into synced package.json files (do not reset to local defaults)
 3. Re-verify behavior in `apps/element-demo` and run diagnostics on touched files.
 
 Do not bypass this workflow unless the user explicitly asks for a temporary emergency local patch.

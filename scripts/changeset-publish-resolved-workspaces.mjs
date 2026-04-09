@@ -1,10 +1,15 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { globSync } from 'glob';
 
 const repoRoot = process.cwd();
 const depSections = ['dependencies', 'peerDependencies', 'optionalDependencies', 'devDependencies'];
+const publishAttempts = Number(process.env.RELEASE_PUBLISH_ATTEMPTS || 2);
+const explicitPackages = (process.env.RELEASE_PACKAGES || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 const rootPackage = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
 const workspacePatterns = Array.isArray(rootPackage.workspaces) ? rootPackage.workspaces : [];
@@ -116,9 +121,131 @@ const restoreWorkspaceRanges = () => {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const runChangesetPublishOnce = () =>
+const run = (cmd, args, options = {}) => {
+  const result = spawnSync(cmd, args, {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    ...options,
+  });
+  if (result.error) throw result.error;
+  return result;
+};
+
+const toLines = (value) =>
+  String(value || '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+const getCurrentPackageInfo = (packageJsonPath) => {
+  const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+  return {
+    name: pkg?.name,
+    version: pkg?.version,
+    private: pkg?.private === true,
+  };
+};
+
+const getPackageInfoAtRef = (ref, packageJsonPathRelative) => {
+  const result = run('git', ['show', `${ref}:${packageJsonPathRelative}`]);
+  if (result.status !== 0) return null;
+  try {
+    const pkg = JSON.parse(result.stdout);
+    return { name: pkg?.name, version: pkg?.version, private: pkg?.private === true };
+  } catch {
+    return null;
+  }
+};
+
+const listChangedPackageJsons = () => {
+  const unstaged = run('git', [
+    'diff',
+    '--name-only',
+    '--',
+    ':(glob)packages/**/package.json',
+    ':(glob)tools/**/package.json',
+  ]);
+  const staged = run('git', [
+    'diff',
+    '--name-only',
+    '--cached',
+    '--',
+    ':(glob)packages/**/package.json',
+    ':(glob)tools/**/package.json',
+  ]);
+
+  const paths = [...toLines(unstaged.stdout), ...toLines(staged.stdout)];
+  return [...new Set(paths)];
+};
+
+const listVersionBumpedPackages = () => {
+  const candidates = listChangedPackageJsons();
+  const bumped = new Map();
+
+  for (const relativePath of candidates) {
+    const absolutePath = join(repoRoot, relativePath);
+    const current = getCurrentPackageInfo(absolutePath);
+    const atHead = getPackageInfoAtRef('HEAD', relativePath);
+    if (!current?.name || current.private) continue;
+    if (!atHead || atHead.version !== current.version) {
+      bumped.set(current.name, current.version);
+    }
+  }
+
+  if (bumped.size > 0) return bumped;
+
+  // Fallback for CI publish commits: compare HEAD~1..HEAD
+  const rangeDiff = run('git', [
+    'diff',
+    '--name-only',
+    'HEAD~1..HEAD',
+    '--',
+    ':(glob)packages/**/package.json',
+    ':(glob)tools/**/package.json',
+  ]);
+  const rangePaths = [...new Set(toLines(rangeDiff.stdout))];
+
+  for (const relativePath of rangePaths) {
+    const current = getPackageInfoAtRef('HEAD', relativePath);
+    const previous = getPackageInfoAtRef('HEAD~1', relativePath);
+    if (!current?.name || current.private) continue;
+    if (!previous || previous.version !== current.version) {
+      bumped.set(current.name, current.version);
+    }
+  }
+
+  return bumped;
+};
+
+const resolveExplicitPackages = () => {
+  const selected = new Map();
+  for (const packageJsonPath of packageJsonPaths) {
+    const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+    if (!pkg?.name || pkg.private === true) continue;
+    if (explicitPackages.includes(pkg.name)) {
+      selected.set(pkg.name, pkg.version);
+    }
+  }
+  return selected;
+};
+
+const getPublishedVersion = (packageName) => {
+  const result = run('npm', ['view', packageName, 'version', '--json']);
+  if (result.status !== 0) return null;
+  const text = String(result.stdout || '').trim();
+  if (!text) return null;
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) return parsed[parsed.length - 1] || null;
+    return parsed || null;
+  } catch {
+    return text || null;
+  }
+};
+
+const publishWorkspaceOnce = (packageName) =>
   new Promise((resolve, reject) => {
-    const child = spawn('bunx', ['changeset', 'publish'], {
+    const child = spawn('npm', ['publish', '--workspace', packageName, '--access', 'public'], {
       cwd: repoRoot,
       stdio: 'inherit',
       env: process.env,
@@ -126,33 +253,30 @@ const runChangesetPublishOnce = () =>
 
     child.on('close', (code) => {
       if (code === 0) resolve();
-      else reject(new Error(`changeset publish exited with code ${code}`));
+      else reject(new Error(`npm publish failed for ${packageName} with code ${code}`));
     });
     child.on('error', reject);
   });
 
-const runChangesetPublish = async () => {
-  // Retry once to recover from transient npm issues or partial publishes.
-  // On retry, Changesets skips versions that are already published.
-  const maxAttempts = 2;
+const publishWorkspaceWithRetry = async (packageName) => {
   let lastError;
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 1; attempt <= publishAttempts; attempt++) {
     try {
-      console.log(`[release] Running changeset publish (attempt ${attempt}/${maxAttempts})`);
-      await runChangesetPublishOnce();
+      console.log(`[release] Publishing ${packageName} (attempt ${attempt}/${publishAttempts})`);
+      await publishWorkspaceOnce(packageName);
       return;
     } catch (error) {
       lastError = error;
-      if (attempt === maxAttempts) break;
+      if (attempt === publishAttempts) break;
       console.warn(
-        `[release] changeset publish failed on attempt ${attempt}; retrying once in 5s...`
+        `[release] publish failed for ${packageName} on attempt ${attempt}; retrying in 5s...`
       );
       await sleep(5000);
     }
   }
 
-  throw lastError;
+  throw lastError || new Error(`publish failed for ${packageName}`);
 };
 
 try {
@@ -176,7 +300,34 @@ try {
     );
   }
 
-  await runChangesetPublish();
+  const targetPackages =
+    explicitPackages.length > 0 ? resolveExplicitPackages() : listVersionBumpedPackages();
+
+  if (targetPackages.size === 0) {
+    const explicitHint =
+      explicitPackages.length > 0
+        ? ` (requested RELEASE_PACKAGES=${explicitPackages.join(',')})`
+        : '';
+    throw new Error(
+      `[release] No version-bumped publish targets found${explicitHint}. Refusing to publish all packages.`
+    );
+  }
+
+  const packageList = [...targetPackages.entries()].map(([name, version]) => ({ name, version }));
+  console.log(
+    `[release] Selected publish targets (${packageList.length}): ${packageList
+      .map((p) => `${p.name}@${p.version}`)
+      .join(', ')}`
+  );
+
+  for (const { name, version } of packageList) {
+    const published = getPublishedVersion(name);
+    if (published === version) {
+      console.log(`[release] Skipping ${name}@${version} (already published)`);
+      continue;
+    }
+    await publishWorkspaceWithRetry(name);
+  }
 } finally {
   restoreWorkspaceRanges();
   if (changedFiles.length > 0) {

@@ -225,6 +225,9 @@ oclif-based CLI for:
 - **Automated releases**: Via GitHub Actions
 - **Default bump policy**: Always use `patch` by default for releases/versioning.
 - Use `minor` or `major` only when the user explicitly requests it.
+- **Selective publish only**: Publish only selected packages and changeset-propagated dependents, never all unpublished packages.
+- **Independent versions (current policy)**: Packages version independently (no workspace-wide lockstep assumption).
+- **Upstream sync versioning**: `upstream:update` must preserve/copy upstream package versions for synced `elements-react` and `lib-react` packages.
 
 ## Current Work Focus
 
