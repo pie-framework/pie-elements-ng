@@ -84,6 +84,13 @@ export class ECRToolbar extends React.Component {
 
     const { tr } = editor.state;
 
+    // Type check before calling setNodeMarkup: if the node at the current position is a text node,
+    // missing, or not an inline atom, bail out to avoid errors after a delete.
+    const nodeAtPos = tr.doc.nodeAt(pos);
+    if (!nodeAtPos || nodeAtPos.isText || !nodeAtPos.isAtom || !nodeAtPos.isInline) {
+      return false;
+    }
+
     // Merge old and new attributes
     tr.setNodeMarkup(pos, undefined, { ...node.attrs, value: sanitizedMarkup });
     editor.view.dispatch(tr);
@@ -100,6 +107,8 @@ export class ECRToolbar extends React.Component {
     if (event.key === 'Enter') {
       return true;
     }
+
+    return false;
   };
 
   onBlur: any = () => {

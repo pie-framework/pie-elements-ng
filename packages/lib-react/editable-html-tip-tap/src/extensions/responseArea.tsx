@@ -152,10 +152,12 @@ export const ResponseAreaExtension = Extension.create({
           }
 
           // --- Slate: indexing logic (kept identical) ---
-          if (lastIndexMap[typeName] === undefined) lastIndexMap[typeName] = 0;
+          if (lastIndexMap[typeName] === undefined) {
+            lastIndexMap[typeName] = 0;
+          }
 
           const prevIndex = lastIndexMap[typeName];
-          const newIndex = prevIndex === 0 ? prevIndex : prevIndex + 1;
+          const newIndex = prevIndex + 1;
 
           // Slate increments map even if newIndex === 0
           lastIndexMap[typeName] += 1;
@@ -166,7 +168,9 @@ export const ResponseAreaExtension = Extension.create({
             index: newIndex,
           });
 
-          if (!newInline) return false;
+          if (!newInline) {
+            return false;
+          }
 
           // --- Insert logic ---
           const { selection } = state;
@@ -192,7 +196,10 @@ export const ResponseAreaExtension = Extension.create({
           if (usedPos == null) {
             usedPos = tryInsertAt(tr.doc.content.size);
           }
-          if (usedPos == null) return false;
+
+          if (usedPos == null) {
+            return false;
+          }
 
           // Optionally select the node you just inserted (like your original command)
           // tr.setSelection(NodeSelection.create(tr.doc, usedPos))

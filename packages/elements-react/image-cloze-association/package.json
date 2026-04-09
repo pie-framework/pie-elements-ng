@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/image-cloze-association",
-  "version": "0.1.0",
+  "version": "9.2.0-next.4",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

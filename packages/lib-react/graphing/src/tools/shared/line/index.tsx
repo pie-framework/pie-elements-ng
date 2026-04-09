@@ -309,10 +309,11 @@ export const lineBase = (Comp, opts) => {
     };
 
     clickPoint: any = (point, type, data) => {
-      const { changeMarkProps, disabled, from, to, labelModeEnabled, limitLabeling, onClick } = this.props;
+      const { changeMarkProps, disabled, from, to, labelModeEnabled, limitLabeling } = this.props;
 
       if (!labelModeEnabled) {
-        onClick(point || data);
+        // Clicks on existing mark points/lines should not create new marks.
+        // Moving is handled entirely by drag. Do nothing here.
         return;
       }
 
@@ -354,7 +355,7 @@ export const lineBase = (Comp, opts) => {
         labelNode,
         labelModeEnabled,
       } = this.props;
-      const common = { graphProps, onDragStart, onDragStop, disabled, correctness, onClick };
+      const common = { graphProps, onDragStart, onDragStop, disabled, correctness };
       const angle = to ? trig.toDegrees(trig.angle(from, to)) : 0;
 
       let fromLabelNode = null;

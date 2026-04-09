@@ -23,10 +23,10 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { normalizeInitialMarkup } from '../utils/helper.js';
 
 import ExtendedTable from '../extensions/extended-table.js';
+import { ExtendedTableCell, ExtendedTableHeader } from '../extensions/extended-table-cell.js';
 import { DivNode } from '../extensions/div-node.js';
+import { EnsureEmptyRootIsDiv } from '../extensions/ensure-empty-root-div.js';
 import { TableRow } from '@tiptap/extension-table-row';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
 import {
   DragInTheBlankNode,
   ExplicitConstructedResponseNode,
@@ -162,6 +162,7 @@ export const EditableHtml = (props) => {
       },
     }),
     DivNode,
+    EnsureEmptyRootIsDiv,
     Placeholder.configure({
       placeholder: props.placeholder,
       // show placeholder even when editor is focused
@@ -171,8 +172,8 @@ export const EditableHtml = (props) => {
     }),
     ExtendedTable,
     TableRow,
-    TableHeader,
-    TableCell,
+    ExtendedTableHeader,
+    ExtendedTableCell,
     ResponseAreaExtension.configure(props.responseAreaProps),
     ExplicitConstructedResponseNode.configure(props.responseAreaProps),
     DragInTheBlankNode.configure(props.responseAreaProps),
@@ -180,6 +181,7 @@ export const EditableHtml = (props) => {
     MathTemplatedNode.configure(props.responseAreaProps),
     MathNode.configure({
       toolbarOpts: toolbarOptsToUse,
+      math: props.pluginProps?.math || {},
     }),
     SubScript,
     SuperScript,
@@ -388,10 +390,15 @@ const StyledEditorContent: any = styled(EditorContent, {
       margin: '0',
     },
 
-    '& p.is-editor-empty:first-child::before, & div.is-editor-empty:first-child::before': {
+    // Out of flow so the caret stays at the start of the block; in-flow ::before pushes the caret after the hint text.
+    '& p.is-editor-empty, & div.is-editor-empty': {
+      position: 'relative',
+    },
+    '& p.is-editor-empty::before, & div.is-editor-empty::before': {
       content: 'attr(data-placeholder)',
-      float: 'left',
-      height: 0,
+      position: 'absolute',
+      left: 0,
+      top: 0,
       color: '#9CA3AF',
       pointerEvents: 'none',
       whiteSpace: 'pre-wrap',
