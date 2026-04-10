@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.9
+
+### Patch Changes
+
+- Add published root `controller.js` shim for `pie-api-aws` alias-based controller resolution compatibility.
+
 ## 0.2.8
 
 ### Patch Changes

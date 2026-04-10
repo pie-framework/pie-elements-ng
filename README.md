@@ -94,6 +94,20 @@ git push
 
 `bun run typecheck` - TypeScript type checking across all packages
 
+### Controller Shim Compatibility
+
+Some external PIE builders (including `pie-api-aws`) resolve `@pie-element/<name>/controller` through filesystem aliases instead of package subpath exports. For packages that declare:
+
+- `package.json` `pie.controller`: `@pie-element/<name>/controller`
+
+also ship a root `controller.js` shim and publish it via `files`:
+
+```js
+export * from './dist/controller/index.js';
+```
+
+This keeps compatibility with alias-based resolvers while preserving standard ESM `exports["./controller"]` for normal consumers.
+
 ### Release Labels
 
 Use release labels to tag a coordinated release wave across packages while keeping package versions independent.

@@ -17,3 +17,6 @@
 - Do not run raw `npm publish` manually for package releases in this repo; the publish script handles explicit package targeting and token auth safely.
 - Versioning policy (current): packages are versioned independently; do not assume workspace-wide lockstep versions.
 - Upstream sync policy: `upstream:update` should preserve/copy package versions from upstream package.json when syncing `packages/elements-react/*` and `packages/lib-react/*`.
+- PIE API AWS builder compatibility: when an element package sets `package.json` `pie.controller` to `@pie-element/<name>/controller`, include a top-level `controller.js` file that re-exports from `./dist/controller/index.js`.
+- Ensure the top-level `controller.js` shim is published by listing it in `package.json` `files`.
+- Keep `exports["./controller"]` pointing at `./dist/controller/index.js` (or source in development) for standard ESM consumers; the shim is only for filesystem-alias resolver compatibility.

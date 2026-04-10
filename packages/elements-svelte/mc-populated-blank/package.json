@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/mc-populated-blank",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Multiple-choice option populates an inline blank in a sentence template (Svelte 5 PIE element)",
   "type": "module",
   "main": "./dist/index.js",
@@ -37,7 +37,8 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "controller.js"
   ],
   "sideEffects": false,
   "scripts": {

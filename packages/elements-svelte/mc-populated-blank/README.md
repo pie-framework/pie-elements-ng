@@ -133,6 +133,16 @@ Delivery now exposes stable `pie-*` classes so hosts can theme this element with
 
 Same layout as `@pie-element/simple-cloze`: `delivery`, `controller`, `author`, `print`, plus IIFE bundle for script-tag loading.
 
+### Builder Compatibility Note
+
+This package intentionally ships a root `controller.js` shim:
+
+```js
+export * from './dist/controller/index.js';
+```
+
+Reason: `pie-api-aws` client/editor bundling may resolve `@pie-element/<name>/controller` as a filesystem path rooted at the element package alias. Keeping this shim in the published package ensures compatibility there while `exports["./controller"]` remains the canonical ESM subpath entry.
+
 ```bash
 bun run build
 ```

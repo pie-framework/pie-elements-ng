@@ -1,0 +1,23 @@
+# PIE API Builder Controller Compatibility
+
+The `pie-api-aws` player builder resolves controller modules via a filesystem alias strategy for `@pie-element/<name>` and may not honor package subpath exports during that step.
+
+## Rule
+
+When an element package defines:
+
+- `package.json` `pie.controller` = `@pie-element/<name>/controller`
+
+it MUST also provide a root controller shim:
+
+- `<package-root>/controller.js` with:
+  - `export * from './dist/controller/index.js';`
+
+and MUST publish that file:
+
+- include `"controller.js"` in `package.json` `files`.
+
+## Keep ESM semantics
+
+- Keep `exports["./controller"]` mapped to `./dist/controller/index.js` (and source in development if used).
+- The root `controller.js` shim exists only for builder compatibility and should remain a thin re-export.

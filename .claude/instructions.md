@@ -178,6 +178,14 @@ bun run check          # Svelte component validation
 - For model/session updates, reassign new objects when needed to trigger updates.
 - When using controller-based elements, rebuild and re-set the element model on mode/session changes.
 
+### PIE API AWS Builder Controller Compatibility
+
+- The `pie-api-aws` bundle builder may resolve `@pie-element/<name>/controller` via filesystem aliases during client/editor bundling.
+- If an element declares `package.json` `pie.controller` as `@pie-element/<name>/controller`, include a top-level `controller.js` shim in the package root:
+  - `export * from './dist/controller/index.js';`
+- Ensure that shim is published by including `"controller.js"` in `package.json` `files`.
+- Keep `exports["./controller"]` as the primary ESM entry for standard consumers; the root shim exists only for builder compatibility.
+
 ### Framework Agnostic
 
 - Can be used as web components in any framework
