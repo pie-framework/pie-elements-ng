@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.10
+
+### Patch Changes
+
+- Prepare a patch release for mc-populated-blank
+
 ## 0.2.9
 
 ### Patch Changes
