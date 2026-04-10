@@ -12,6 +12,11 @@
 
 <script lang="ts">
 import { color } from '@pie-lib/styling-svelte';
+import {
+  ensureVariantCssInjected,
+  getVariantCssConfig,
+  getVariantRootClass,
+} from './variant-css-map';
 /** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
 const BLANK_TOKEN = '{{blank}}';
 const DEFAULT_LAYOUT_LIMITS = {
@@ -122,6 +127,8 @@ const isBlankOnlyTemplate = $derived.by(() => {
   return plain === BLANK_TOKEN;
 });
 const layoutProfile = $derived(model?.layoutProfile || '');
+const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
+const variantRootClass = $derived(getVariantRootClass(model?.customType));
 const choiceLayout = $derived(
   model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
 );
@@ -275,6 +282,7 @@ const displayChoiceId = $derived.by(() => {
 });
 
 const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
+const displayChoiceLabelHtml = $derived.by(() => String(displayChoice?.labelHtml || ''));
 
 const legendText = $derived.by(() => {
   const plain = (model?.prompt || '')
@@ -562,10 +570,14 @@ $effect(() => {
     });
   }
 });
+
+$effect(() => {
+  ensureVariantCssInjected(variantCssConfig);
+});
 </script>
 
 <div
-  class={`p-4 mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
+  class={`p-4 mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
   style={rootStyle}
 >
@@ -729,8 +741,8 @@ $effect(() => {
             class="w-auto object-contain pie-blank-image"
             style="max-height:var(--mpb-selected-image-max-height, 4rem);"
           />
-        {:else if displayChoice?.labelHtml}
-          <span class="blank-inner choice-label pie-blank-value">{@html displayChoice.labelHtml}</span>
+        {:else if displayChoiceLabelHtml}
+          <span class="choice-html pie-blank-value">{@html displayChoiceLabelHtml}</span>
         {:else}
           <span class="blank-inner-empty" aria-hidden="true">&nbsp;</span>
         {/if}
@@ -775,7 +787,7 @@ $effect(() => {
                     style="max-height:var(--mpb-choice-image-max-height, 5rem);"
                   />
                 {:else}
-                  <span class="choice-label pie-choice-label">{@html c.labelHtml || ''}</span>
+                  <span class="choice-html pie-choice-label">{@html c.labelHtml || ''}</span>
                 {/if}
               </span>
               <input
@@ -811,7 +823,7 @@ $effect(() => {
                   style="max-height:var(--mpb-choice-image-max-height, 5rem);"
                 />
               {:else}
-                <span class="choice-label pie-choice-label">{@html c.labelHtml || ''}</span>
+                <span class="choice-html pie-choice-label">{@html c.labelHtml || ''}</span>
               {/if}
             </label>
           {/if}
@@ -984,11 +996,32 @@ $effect(() => {
     background: var(--pie-correct-answer-choice-hover-bg, #ececec);
   }
 
+  .pie-choice-horizontal:not(.is-selected):not(:hover) .pie-choice-tile {
+    background: transparent;
+  }
+
   .choice-row-horizontal.is-selected .choice-tile {
     background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
   }
 
   .choice-row-horizontal.is-selected:hover .choice-tile {
+    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
+  }
+
+  .pie-choice:not(.pie-choice-horizontal):hover .pie-choice-label-wrap {
+    background: var(--pie-correct-answer-choice-hover-bg, #ececec);
+  }
+
+  .pie-choice:not(.pie-choice-horizontal):not(.is-selected):not(:hover) .pie-choice-label-wrap {
+    background: transparent;
+  }
+
+  .pie-choice:not(.pie-choice-horizontal).is-selected .pie-choice-label-wrap {
+    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
+    border-radius: 6px;
+  }
+
+  .pie-choice:not(.pie-choice-horizontal).is-selected:hover .pie-choice-label-wrap {
     background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
   }
 
@@ -1035,12 +1068,11 @@ $effect(() => {
     text-align: center;
   }
 
-  .choice-label :global(p),
-  .blank-inner :global(p) {
+  .choice-html :global(p) {
     margin: 0;
   }
 
-  .blank-inner {
+  .choice-html {
     width: 100%;
     display: inline-flex;
     align-items: center;

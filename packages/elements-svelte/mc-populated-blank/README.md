@@ -129,19 +129,31 @@ Delivery now exposes stable `pie-*` classes so hosts can theme this element with
 - Choice controls: `pie-choice-radio`, `pie-choice-radio-inline`, `pie-choice-radio-bottom`
 - Evaluate/toggle feedback: `pie-toggle-correct-answer`, `pie-result-feedback`, `pie-choice-feedback-correct`, `pie-choice-feedback-incorrect`
 
+## Bundled CQT variant CSS
+
+To avoid runtime dependency on cross-origin Learnosity stylesheet loading, this element bundles variant-specific CSS in delivery:
+
+- Variant CSS files: `src/delivery/cqt-css/*.css`
+- Variant mapping: `src/delivery/variant-css-map.ts`
+- Applied by `model.customType` (for example `sel_r1-_plusggg`)
+
+Each variant CSS file is intentionally scoped with `.mc-populated-blank-root.variant-*` selectors so styles only apply to this element instance and do not leak into other PIE elements.
+
+### Maintenance workflow
+
+1. Fetch the latest Learnosity `question.css` for each supported CQT variant.
+2. Update the matching file under `src/delivery/cqt-css/`.
+3. Keep the source URL comment at the top of each CSS file current.
+4. If a new `custom_type` is introduced, add it in `src/delivery/variant-css-map.ts` with:
+   - `variantId`
+   - `variantClass`
+   - `sourceUrl`
+   - imported `cssText`
+5. Run `bun run build` in this package and validate the demo variants.
+
 ## Builds
 
 Same layout as `@pie-element/simple-cloze`: `delivery`, `controller`, `author`, `print`, plus IIFE bundle for script-tag loading.
-
-### Builder Compatibility Note
-
-This package intentionally ships a root `controller.js` shim:
-
-```js
-export * from './dist/controller/index.js';
-```
-
-Reason: `pie-api-aws` client/editor bundling may resolve `@pie-element/<name>/controller` as a filesystem path rooted at the element package alias. Keeping this shim in the published package ensures compatibility there while `exports["./controller"]` remains the canonical ESM subpath entry.
 
 ```bash
 bun run build

@@ -1,0 +1,14 @@
+/* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sr-vic/0.0.1/question.css */
+.mc-populated-blank-root.variant-sr-vic {
+  font-family: Starial, Arial, sans-serif;
+  --mpb-inline-grid-column-gap: 1rem;
+  --mpb-inline-grid-row-gap: 0.5rem;
+  --mpb-inline-template-margin-top: 0.2rem;
+  --mpb-inline-choices-margin-top: 0.2rem;
+}
+
+.mc-populated-blank-root.variant-sr-vic .pie-template-line,
+.mc-populated-blank-root.variant-sr-vic .pie-blank-value,
+.mc-populated-blank-root.variant-sr-vic .pie-choice-label {
+  line-height: 123%;
+}

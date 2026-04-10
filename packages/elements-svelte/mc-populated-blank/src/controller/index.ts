@@ -195,6 +195,7 @@ export const model = async (question: any, session: any, env: any, updateSession
     audioUrl: normalizedQuestion.hasAudio ? normalizedQuestion.audioUrl : null,
     audioTranscript: normalizedQuestion.hasAudio ? normalizedQuestion.audioTranscript : null,
     showVisibleTranscript: !!normalizedQuestion.showVisibleTranscript,
+    customType: normalizedQuestion.customType || '',
     useFeatureButtonAudio:
       typeof normalizedQuestion.useFeatureButtonAudio === 'boolean'
         ? normalizedQuestion.useFeatureButtonAudio

@@ -72,18 +72,6 @@ export const hasPrint = derived(capabilities, ($caps) => $caps.includes('print')
 // Version tracking for change detection
 export const modelVersion = writable<number>(0);
 export const sessionVersion = writable<number>(0);
-const MODEL_STORAGE_PREFIX = 'pie-element-demo-model:';
-const SESSION_STORAGE_PREFIX = 'pie-element-demo-session:';
-let currentModelStorageKey: string | null = null;
-let currentSessionStorageKey: string | null = null;
-
-function getModelStorageKey(currentElementName: string, currentDemoId: string) {
-  return `${MODEL_STORAGE_PREFIX}${currentElementName}:${currentDemoId}`;
-}
-
-function getSessionStorageKey(currentElementName: string, currentDemoId: string) {
-  return `${SESSION_STORAGE_PREFIX}${currentElementName}:${currentDemoId}`;
-}
 
 function normalizeModel(nextModel: any) {
   return nextModel && typeof nextModel === 'object' ? nextModel : {};
@@ -113,60 +101,6 @@ function createValueSignature(value: unknown): string {
   }
 }
 
-function readPersistedModel(storageKey: string): any | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  try {
-    const raw = window.sessionStorage.getItem(storageKey);
-    if (!raw) {
-      return null;
-    }
-    return normalizeModel(JSON.parse(raw));
-  } catch (error) {
-    console.warn('[demo-state] Failed to read persisted model:', error);
-    return null;
-  }
-}
-
-function readPersistedSession(storageKey: string): any | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  try {
-    const raw = window.sessionStorage.getItem(storageKey);
-    if (!raw) {
-      return null;
-    }
-    return normalizeSession(JSON.parse(raw));
-  } catch (error) {
-    console.warn('[demo-state] Failed to read persisted session:', error);
-    return null;
-  }
-}
-
-function writePersistedModel(nextModel: any) {
-  if (typeof window === 'undefined' || !currentModelStorageKey) {
-    return;
-  }
-  try {
-    window.sessionStorage.setItem(currentModelStorageKey, JSON.stringify(nextModel || {}));
-  } catch (error) {
-    console.warn('[demo-state] Failed to persist model:', error);
-  }
-}
-
-function writePersistedSession(nextSession: any) {
-  if (typeof window === 'undefined' || !currentSessionStorageKey) {
-    return;
-  }
-  try {
-    window.sessionStorage.setItem(currentSessionStorageKey, JSON.stringify(nextSession || {}));
-  } catch (error) {
-    console.warn('[demo-state] Failed to persist session:', error);
-  }
-}
-
 /**
  * Initialize stores from loaded data
  */
@@ -180,13 +114,10 @@ export function initializeDemo(data: {
   demos?: DemoConfig[];
   activeDemoId?: string;
 }) {
-  const resolvedDemoId = data.activeDemoId || 'default';
-  currentModelStorageKey = getModelStorageKey(data.elementName, resolvedDemoId);
-  currentSessionStorageKey = getSessionStorageKey(data.elementName, resolvedDemoId);
-  const persistedModel = readPersistedModel(currentModelStorageKey);
-  const persistedSession = readPersistedSession(currentSessionStorageKey);
-  const nextModel = cloneValue(persistedModel ?? normalizeModel(data.model));
-  const nextSession = cloneValue(persistedSession ?? normalizeSession(data.session));
+  const incomingModel = normalizeModel(data.model);
+  // Always start from canonical sample model so demo updates are reflected immediately.
+  const nextModel = cloneValue(incomingModel);
+  const nextSession = cloneValue(normalizeSession(data.session));
 
   elementName.set(data.elementName);
   elementTitle.set(data.elementTitle);
@@ -200,8 +131,6 @@ export function initializeDemo(data: {
   if (data.activeDemoId) {
     activeDemoId.set(data.activeDemoId);
   }
-  writePersistedModel(nextModel);
-  writePersistedSession(nextSession);
   iifeBuildMeta.set(null);
   iifeBuildLoading.set(false);
   iifeBuildRequestVersion.set(0);
@@ -233,7 +162,6 @@ export function updateSession(newSession: any) {
   // Check if session actually changed
   if (createValueSignature(normalized) !== createValueSignature(current)) {
     session.set(normalized);
-    writePersistedSession(normalized);
     sessionVersion.update((v) => v + 1);
   }
 }
@@ -255,7 +183,6 @@ export function updateModel(newModel: any) {
   // Check if model actually changed
   if (JSON.stringify(normalized) !== JSON.stringify(current)) {
     model.set(normalized);
-    writePersistedModel(normalized);
     const newVersion = get(modelVersion) + 1;
     modelVersion.update((v) => v + 1);
     console.log('[demo-state] Model updated, modelVersion incremented to', newVersion);
@@ -273,7 +200,6 @@ export function updateModel(newModel: any) {
 export function resetSession() {
   const nextSession = {};
   session.set(nextSession);
-  writePersistedSession(nextSession);
   sessionVersion.update((v) => v + 1);
 }
 
@@ -284,35 +210,21 @@ export function resetSession() {
 export function switchDemo(demoId: string) {
   const allDemos = get(demos);
   const demo = allDemos.find((d) => d.id === demoId);
-  const currentElement = get(elementName);
 
   if (demo) {
-    currentModelStorageKey = getModelStorageKey(currentElement, demoId);
-    currentSessionStorageKey = getSessionStorageKey(currentElement, demoId);
-    const persistedModel = readPersistedModel(currentModelStorageKey);
-    const persistedSession = readPersistedSession(currentSessionStorageKey);
-    const nextModel = cloneValue(persistedModel ?? normalizeModel(demo.model || {}));
-    const nextSession = cloneValue(persistedSession ?? normalizeSession(demo.session || {}));
+    const incomingModel = normalizeModel(demo.model || {});
+    // Always switch to canonical sample model for selected demo.
+    const nextModel = cloneValue(incomingModel);
+    const nextSession = cloneValue(normalizeSession(demo.session || {}));
     activeDemoId.set(demoId);
     model.set(nextModel);
     session.set(nextSession);
-    writePersistedModel(nextModel);
-    writePersistedSession(nextSession);
     modelVersion.update((v) => v + 1);
     sessionVersion.update((v) => v + 1);
   }
 }
 
 export function clearPersistedDemoStateForElement(currentElementName: string) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  const modelPrefix = `${MODEL_STORAGE_PREFIX}${currentElementName}:`;
-  const prefix = `${SESSION_STORAGE_PREFIX}${currentElementName}:`;
-  for (let i = window.sessionStorage.length - 1; i >= 0; i -= 1) {
-    const key = window.sessionStorage.key(i);
-    if (key?.startsWith(prefix) || key?.startsWith(modelPrefix)) {
-      window.sessionStorage.removeItem(key);
-    }
-  }
+  // Intentionally a no-op: demo model/session caching is disabled.
+  void currentElementName;
 }
