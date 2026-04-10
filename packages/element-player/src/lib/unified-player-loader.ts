@@ -49,6 +49,22 @@ export interface UnifiedPlayerLoadResult {
   };
 }
 
+function enforceControllerContract(
+  req: UnifiedPlayerLoadRequest,
+  strategy: ElementPlayerStrategy,
+  view: ElementPlayerView,
+  diagnostic?: ControllerLoadDiagnostic
+): void {
+  // Keep delivery flows controller-driven, matching item-player expectations.
+  if (view !== 'delivery') return;
+  if (diagnostic?.status === 'loaded') return;
+  const reason = diagnostic?.message || `controller status=${diagnostic?.status || 'missing'}`;
+  throw new Error(
+    `Controller contract violation for ${req.packageName} (${strategy}/${view}): ${reason}. ` +
+      `Delivery mode requires a loadable controller.`
+  );
+}
+
 const iifeTagName = (elementName: string, view: ElementPlayerView): string => {
   if (view === 'delivery') {
     return `pie-iife-${elementName}`.replace(/[^a-z0-9-]/g, '-');
@@ -155,6 +171,7 @@ async function loadEsm(
   await customElements.whenDefined(tagName);
 
   const { controller, diagnostic } = await resolveModuleController(req, 'esm', view);
+  enforceControllerContract(req, 'esm', view, diagnostic);
 
   return {
     strategy: 'esm',
@@ -203,10 +220,22 @@ async function loadIife(
       view,
     };
   } else {
-    const moduleController = await resolveModuleController(req, 'iife', view);
-    controller = moduleController.controller;
-    controllerDiagnostic = moduleController.diagnostic;
+    if (view === 'delivery') {
+      controllerDiagnostic = {
+        status: 'missing',
+        source: 'bundle',
+        packageName: req.packageName,
+        strategy: 'iife',
+        view,
+        message: 'client-player bundle did not include controller export',
+      };
+    } else {
+      const moduleController = await resolveModuleController(req, 'iife', view);
+      controller = moduleController.controller;
+      controllerDiagnostic = moduleController.diagnostic;
+    }
   }
+  enforceControllerContract(req, 'iife', view, controllerDiagnostic);
 
   return {
     strategy: 'iife',

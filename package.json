@@ -45,6 +45,7 @@
     "release:publish": "bun run build && bun run cli verify:controllers && node ./scripts/changeset-publish-resolved-workspaces.mjs",
     "release:manual": "bun run release:publish",
     "release:publish:packages": "node ./scripts/release-publish-selective.mjs",
+    "release:publish:packages:env-token": "sh ./scripts/publish-with-env-token.sh",
     "release:label": "node ./scripts/create-release-label.mjs",
     "release:label:push": "node ./scripts/create-release-label.mjs --push",
     "clean": "turbo run clean && rm -rf node_modules",

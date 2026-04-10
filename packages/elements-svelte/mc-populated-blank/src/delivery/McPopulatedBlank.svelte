@@ -336,17 +336,8 @@ const choiceCorrectnessById = $derived.by(() => {
   }
 
   if (showCorrectAnswer) {
-    // In reveal mode we still reflect learner correctness:
-    // if learner did not select the correct choice (or selected nothing),
-    // keep the correct option marked incorrect.
-    if (activeSelectedId === correctChoiceId) {
-      map.set(correctChoiceId, 'correct');
-      return map;
-    }
-    if (activeSelectedId) {
-      map.set(activeSelectedId, 'incorrect');
-    }
-    map.set(correctChoiceId, 'incorrect');
+    // Reveal mode should show only the canonical correct answer state.
+    map.set(correctChoiceId, 'correct');
     return map;
   }
 

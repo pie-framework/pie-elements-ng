@@ -1,5 +1,11 @@
 # @pie-element/simple-cloze
 
+## 0.1.3
+
+### Patch Changes
+
+- Add explicit pie.controller metadata for Svelte elements so client-player bundles include controllers
+
 ## 0.1.2
 
 ### Patch Changes

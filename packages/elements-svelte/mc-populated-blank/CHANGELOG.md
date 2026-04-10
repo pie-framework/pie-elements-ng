@@ -1,5 +1,29 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.8
+
+### Patch Changes
+
+- Publish latest mc-populated-blank delivery and demo updates.
+
+## 0.2.7
+
+### Patch Changes
+
+- Add explicit pie.controller metadata for Svelte elements so client-player bundles include controllers
+
+## 0.2.6
+
+### Patch Changes
+
+- Expose controller in package entry for client-player bundles so evaluate mode computes correctness
+
+## 0.2.5
+
+### Patch Changes
+
+- Align evaluate correctness contract and scorer parity for mc-populated-blank
+
 ## 0.2.4
 
 ### Patch Changes
