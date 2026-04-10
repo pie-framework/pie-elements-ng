@@ -1,5 +1,10 @@
-import { isEmpty } from 'lodash-es';
 import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults';
+
+const isEmptyObject = (value: unknown): boolean =>
+  !!value &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  Object.keys(value as Record<string, unknown>).length === 0;
 
 export function countBlankTokens(template: string): number {
   if (!template) return 0;
@@ -19,7 +24,7 @@ export const getCorrectness = (question: any, session: any) => {
 };
 
 export const getPartialScore = (_question: any, session: any) => {
-  if (!session || isEmpty(session) || !session.choiceId) {
+  if (!session || isEmptyObject(session) || !session.choiceId) {
     return 0;
   }
   return 1;
@@ -41,7 +46,7 @@ export const isComplete = (question: any, session: any, audioComplete = false) =
 
 export const outcome = (question: any, session: any, env: any) =>
   new Promise((resolve) => {
-    if (!session || isEmpty(session)) {
+    if (!session || isEmptyObject(session)) {
       resolve({
         score: 0,
         empty: true,
