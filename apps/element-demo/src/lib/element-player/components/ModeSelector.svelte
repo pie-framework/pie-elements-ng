@@ -25,7 +25,6 @@ function getModeUrl(newMode: 'gather' | 'view' | 'evaluate'): string {
 <div class="flex flex-col gap-2">
   <a
     href={getModeUrl('gather')}
-    data-sveltekit-reload
     class="btn btn-sm justify-start"
     class:btn-primary={mode === 'gather'}
     class:btn-outline={mode !== 'gather'}
@@ -36,7 +35,6 @@ function getModeUrl(newMode: 'gather' | 'view' | 'evaluate'): string {
 
   <a
     href={getModeUrl('view')}
-    data-sveltekit-reload
     class="btn btn-sm justify-start"
     class:btn-primary={mode === 'view'}
     class:btn-outline={mode !== 'view'}
@@ -47,7 +45,6 @@ function getModeUrl(newMode: 'gather' | 'view' | 'evaluate'): string {
 
   <a
     href={getModeUrl('evaluate')}
-    data-sveltekit-reload
     class="btn btn-sm justify-start"
     class:btn-primary={mode === 'evaluate'}
     class:btn-outline={mode !== 'evaluate'}

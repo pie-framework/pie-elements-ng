@@ -386,7 +386,6 @@ function handleThemeToggle(event: Event) {
             <div class="join" aria-label="Demo role mode">
               <a
                 href={getDeliveryRoleModeUrl('student')}
-                data-sveltekit-reload
                 class="btn btn-sm join-item"
                 class:btn-active={$role === 'student' && $mode === 'gather'}
                 aria-current={$role === 'student' && $mode === 'gather' ? 'page' : undefined}
@@ -397,7 +396,6 @@ function handleThemeToggle(event: Event) {
               </a>
               <a
                 href={getDeliveryRoleModeUrl('scorer')}
-                data-sveltekit-reload
                 class="btn btn-sm join-item"
                 class:btn-active={$role === 'instructor' && $mode === 'evaluate'}
                 aria-current={$role === 'instructor' && $mode === 'evaluate' ? 'page' : undefined}
