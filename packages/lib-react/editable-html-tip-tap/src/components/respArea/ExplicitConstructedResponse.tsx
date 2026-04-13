@@ -48,7 +48,10 @@ const ExplicitConstructedResponse = (props) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      const insideCharacterPicker = event.target.closest('.insert-character-dialog') || event.target.closest('[data-toolbar-for]');
+
       if (
+        !insideCharacterPicker &&
         toolbarRef.current &&
         !toolbarRef.current.contains(event.target) &&
         !event.target.closest('[data-inline-node]')

@@ -54,11 +54,11 @@ export const ImageUploadNode = Node.create({
     return {
       setImageUploadNode:
         () =>
-        ({ commands }) => {
-          return commands.insertContent({
-            type: this.name,
-          });
-        },
+          ({ commands }) => {
+            return commands.insertContent({
+              type: this.name,
+            });
+          },
     };
   },
 });

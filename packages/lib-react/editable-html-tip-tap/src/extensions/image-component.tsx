@@ -37,9 +37,8 @@ const StyledProgress: any = styled(LinearProgress, {
 
 const StyledRoot: any = styled('div', {
   shouldForwardProp: (prop) => !['active', 'loading', 'pendingDelete'].includes(prop),
-})(({ theme, active, loading, pendingDelete }) => ({
+})(({ loading, pendingDelete }) => ({
   position: 'relative',
-  border: active ? `solid 1px ${theme.palette.primary.main}` : `solid 1px ${theme.palette.common.white}`,
   display: 'flex',
   transition: 'opacity 200ms linear',
   ...(loading && {
@@ -58,6 +57,12 @@ const StyledImageContainer: any = styled('div')(({ theme }) => ({
   '&&:hover > .resize': {
     display: 'block',
   },
+}));
+
+const StyledImage: any = styled('img',{
+  shouldForwardProp: (prop) => prop !== 'active',
+})(({ theme, active }) => ({
+   border: active ? `solid 1px ${theme.palette.primary.main}` : `solid 1px transparent`,
 }));
 
 const StyledResize: any = styled('div')(({ theme }) => ({
@@ -144,8 +149,6 @@ function ImageComponent(props) {
       if (resizeHandle) {
         resizeHandle.removeEventListener('mousedown', initResize, false);
       }
-
-      options.imageHandling.onDelete(latestNodeRef.current);
     };
   }, []);
 
@@ -206,6 +209,22 @@ function ImageComponent(props) {
     [editor, node.attrs],
   );
 
+  // Helper to find this node's current position in the doc.
+  // We cannot use object identity (n === node) because ProseMirror replaces
+  // node objects after every transaction — match by src instead.
+  const findNodePos = useCallback(() => {
+    let found = null;
+    const src = latestNodeRef.current.attrs.src;
+    editor.state.doc.descendants((n, pos) => {
+      if (found !== null) return false;
+      if (n.type.name === 'imageUploadNode' && n.attrs.src === src) {
+        found = pos;
+        return false;
+      }
+    });
+    return found;
+  }, [editor]);
+
   const onChange = useCallback(
     (newValues) => {
       editor.commands.updateAttributes('imageUploadNode', newValues);
@@ -235,16 +254,17 @@ function ImageComponent(props) {
     <NodeViewWrapper>
       <StyledRoot
         onFocus={onFocus}
-        active={selected}
         loading={!node.attrs.loaded}
         pendingDelete={node.attrs.deleteStatus === 'pending'}
         style={{ justifyContent: flexAlign }}
       >
         <StyledProgress mode="determinate" value={node.attrs.percent || 0} hideProgress={node.attrs.loaded} />
 
-        <StyledImageContainer>
-          <img
+        <StyledImageContainer onDragStart={(e) => e.preventDefault()}>
+          <StyledImage
             {...attributes}
+            active={selected && node.attrs.loaded}
+            draggable={false}
             ref={imgRef}
             src={node.attrs.src}
             style={style}
@@ -268,11 +288,24 @@ function ImageComponent(props) {
         >
           <CustomToolbarWrapper
             showDone
-            {...options}
+            deletable
+            toolbarOpts={options.toolbarOpts || {}}
+            onDelete={() => {
+              const nodePos = findNodePos();
+              if (nodePos === null) return;
+
+              options.imageHandling?.onDelete?.(latestNodeRef.current);
+
+              editor.view.dispatch(
+                editor.state.tr.delete(nodePos, nodePos + editor.state.doc.nodeAt(nodePos).nodeSize),
+              );
+              setShowToolbar(false);
+              editor.commands.focus();
+            }}
             onDone={() => {
               setShowToolbar(false);
-              props.imageHandling?.onDone();
-              props.editor.commands.focus('end');
+              options.imageHandling?.onDone?.();
+              editor.commands.focus('end');
             }}
           >
             <ImageToolbar
