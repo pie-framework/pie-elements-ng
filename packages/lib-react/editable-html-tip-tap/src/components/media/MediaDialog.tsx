@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/components/media/MediaDialog.js
+ * @synced-from pie-lib/packages/editable-html-tip-tap/src/components/media/MediaDialog.jsx
  * @auto-generated
  *
  * This file is automatically synced from pie-elements and converted to TypeScript.

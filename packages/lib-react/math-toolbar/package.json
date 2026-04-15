@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-toolbar",
-  "version": "2.2.0-next.14",
+  "version": "2.2.0-next.15",
   "description": "Math toolbar for editing math equations",
   "dependencies": {
     "@emotion/react": "^11.14.0",

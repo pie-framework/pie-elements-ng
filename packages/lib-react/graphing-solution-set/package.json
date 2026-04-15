@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/graphing-solution-set",
-  "version": "3.2.0-next.28",
+  "version": "3.2.0-next.31",
   "description": "Graphing components",
   "dependencies": {
     "@dnd-kit/sortable": "10.0.0",
