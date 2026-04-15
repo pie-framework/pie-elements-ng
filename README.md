@@ -125,11 +125,14 @@ Use release labels to tag a coordinated release wave across packages while keepi
 If a publish fails after the version PR was already merged, rerun the Release workflow manually:
 
 1. Actions → **Release** → **Run workflow**
-2. Branch: `master`
+2. Branch: `master` for stable (`latest`) or `develop` for prerelease (`next`)
 3. `release_intent`: `publish`
-4. `force_publish`: `true`
+4. `release_channel`: `stable` on `master`, `next` on `develop`
+5. `force_publish`: `true`
 
 This is intended for recovery/rerun scenarios only.
+
+Release and dist-tag policy details are documented in [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 ### Targeted Package Release (Changesets)
 

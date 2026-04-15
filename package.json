@@ -46,6 +46,8 @@
     "release:manual": "bun run release:publish",
     "release:publish:packages": "node ./scripts/release-publish-selective.mjs",
     "release:publish:packages:env-token": "sh ./scripts/publish-with-env-token.sh",
+    "release:dist-tags:audit": "node ./scripts/backfill-dist-tags.mjs",
+    "release:dist-tags:apply": "node ./scripts/backfill-dist-tags.mjs --apply",
     "release:label": "node ./scripts/create-release-label.mjs",
     "release:label:push": "node ./scripts/create-release-label.mjs --push",
     "clean": "turbo run clean && rm -rf node_modules",

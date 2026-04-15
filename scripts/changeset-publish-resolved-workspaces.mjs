@@ -6,6 +6,9 @@ import { globSync } from 'glob';
 const repoRoot = process.cwd();
 const depSections = ['dependencies', 'peerDependencies', 'optionalDependencies', 'devDependencies'];
 const publishAttempts = Number(process.env.RELEASE_PUBLISH_ATTEMPTS || 2);
+const releaseChannel = String(process.env.RELEASE_CHANNEL || 'auto')
+  .trim()
+  .toLowerCase();
 const explicitPackages = (process.env.RELEASE_PACKAGES || '')
   .split(',')
   .map((s) => s.trim())
@@ -229,27 +232,84 @@ const resolveExplicitPackages = () => {
   return selected;
 };
 
-const getPublishedVersion = (packageName) => {
-  const result = run('npm', ['view', packageName, 'version', '--json']);
-  if (result.status !== 0) return null;
+const parseVersionTag = (version) => {
+  const value = String(version || '').trim();
+  const match = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/.exec(value);
+  if (!match) return null;
+  const prerelease = match[4] || '';
+  const prereleaseId = prerelease ? prerelease.split('.')[0].toLowerCase() : '';
+  return { version: value, prereleaseId };
+};
+
+const resolveTagFromVersion = (version) => {
+  const parsed = parseVersionTag(version);
+  if (!parsed) return 'latest';
+  if (!parsed.prereleaseId) return 'latest';
+  if (parsed.prereleaseId === 'next') return 'next';
+  if (parsed.prereleaseId === 'beta') return 'beta';
+  return parsed.prereleaseId;
+};
+
+const resolvePublishTag = (version) => {
+  const derivedTag = resolveTagFromVersion(version);
+
+  if (releaseChannel === 'auto') return derivedTag;
+  if (releaseChannel === 'stable') {
+    if (derivedTag !== 'latest') {
+      throw new Error(
+        `[release] RELEASE_CHANNEL=stable requires stable versions, but got ${version} (derived tag: ${derivedTag})`
+      );
+    }
+    return 'latest';
+  }
+  if (releaseChannel === 'next') {
+    if (derivedTag !== 'next') {
+      throw new Error(
+        `[release] RELEASE_CHANNEL=next requires next prerelease versions, but got ${version} (derived tag: ${derivedTag})`
+      );
+    }
+    return 'next';
+  }
+  if (releaseChannel === 'beta') {
+    if (derivedTag !== 'beta') {
+      throw new Error(
+        `[release] RELEASE_CHANNEL=beta requires beta prerelease versions, but got ${version} (derived tag: ${derivedTag})`
+      );
+    }
+    return 'beta';
+  }
+
+  throw new Error(
+    `[release] Unsupported RELEASE_CHANNEL="${releaseChannel}". Expected one of: auto, stable, next, beta`
+  );
+};
+
+const hasPublishedVersion = (packageName, version) => {
+  const result = run('npm', ['view', `${packageName}@${version}`, 'version', '--json']);
+  if (result.status !== 0) return false;
   const text = String(result.stdout || '').trim();
-  if (!text) return null;
+  if (!text) return false;
   try {
     const parsed = JSON.parse(text);
-    if (Array.isArray(parsed)) return parsed[parsed.length - 1] || null;
-    return parsed || null;
+    if (Array.isArray(parsed)) return parsed.includes(version);
+    return String(parsed || '').trim() === version;
   } catch {
-    return text || null;
+    return text === version;
   }
 };
 
-const publishWorkspaceOnce = (packageName) =>
+const publishWorkspaceOnce = ({ packageName, version, publishTag }) =>
   new Promise((resolve, reject) => {
-    const child = spawn('npm', ['publish', '--workspace', packageName, '--access', 'public'], {
-      cwd: repoRoot,
-      stdio: 'inherit',
-      env: process.env,
-    });
+    console.log(`[release] Publishing ${packageName}@${version} with npm tag "${publishTag}"`);
+    const child = spawn(
+      'npm',
+      ['publish', '--workspace', packageName, '--access', 'public', '--tag', publishTag],
+      {
+        cwd: repoRoot,
+        stdio: 'inherit',
+        env: process.env,
+      }
+    );
 
     child.on('close', (code) => {
       if (code === 0) resolve();
@@ -258,13 +318,15 @@ const publishWorkspaceOnce = (packageName) =>
     child.on('error', reject);
   });
 
-const publishWorkspaceWithRetry = async (packageName) => {
+const publishWorkspaceWithRetry = async ({ packageName, version, publishTag }) => {
   let lastError;
 
   for (let attempt = 1; attempt <= publishAttempts; attempt++) {
     try {
-      console.log(`[release] Publishing ${packageName} (attempt ${attempt}/${publishAttempts})`);
-      await publishWorkspaceOnce(packageName);
+      console.log(
+        `[release] Publishing ${packageName}@${version} (tag=${publishTag}, attempt ${attempt}/${publishAttempts})`
+      );
+      await publishWorkspaceOnce({ packageName, version, publishTag });
       return;
     } catch (error) {
       lastError = error;
@@ -319,14 +381,16 @@ try {
       .map((p) => `${p.name}@${p.version}`)
       .join(', ')}`
   );
+  console.log(`[release] Using RELEASE_CHANNEL=${releaseChannel}`);
 
   for (const { name, version } of packageList) {
-    const published = getPublishedVersion(name);
-    if (published === version) {
+    const publishTag = resolvePublishTag(version);
+    const published = hasPublishedVersion(name, version);
+    if (published === true) {
       console.log(`[release] Skipping ${name}@${version} (already published)`);
       continue;
     }
-    await publishWorkspaceWithRetry(name);
+    await publishWorkspaceWithRetry({ packageName: name, version, publishTag });
   }
 } finally {
   restoreWorkspaceRanges();

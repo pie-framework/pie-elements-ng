@@ -1168,16 +1168,24 @@ Note: `'unsafe-inline'` for styles is required for Svelte scoped styles.
 **Current Strategy**: Publishing is CI-driven via GitHub Actions and Changesets:
 
 1. Developer creates changeset: `bun run changeset`
-2. PR merged to `master`
+2. PR merged to `master` (stable) or `develop` (prerelease)
 3. GitHub Action creates "Version Packages" PR
 4. Maintainer merges Version PR
 5. Packages automatically published to npm
+
+**Dist-tag routing**:
+
+- `master` -> release channel `stable` -> npm tag `latest`
+- `develop` -> release channel `next` -> npm tag `next`
+- optional beta workflows -> release channel `beta` -> npm tag `beta`
+
+Branch/channel mismatches are guarded in CI and publish scripts.
 
 If a publish fails after merge, maintainers can manually rerun the Release workflow
 with `release_intent=publish` and `force_publish=true` to recover without creating a
 new version-bump commit.
 
-See [PUBLISHING.md](./PUBLISHING.md) for details (when available).
+See [PUBLISHING.md](./PUBLISHING.md) for policy details, backfill runbook, and verification commands.
 
 ### Versioning
 
