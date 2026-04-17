@@ -20,6 +20,7 @@
         type: "String",
         attribute: "iife-bundle-endpoint",
       },
+      iifeBundleRetry: { reflect: false, type: "Object" },
       preloadedFallbackStrategy: {
         reflect: true,
         type: "String",
@@ -42,6 +43,11 @@ import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathja
 import type { MathRenderer } from '../lib/math-rendering-types';
 import { loadUnifiedPlayer } from '../lib/unified-player-loader';
 import {
+  DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
+  type IifeBundleRetryConfig,
+  type IifeBundleRetryStatus,
+} from '../lib/iife-bundle-loader';
+import {
   normalizeElementPlayerStrategy,
   resolveElementPlayerView,
   type ElementPlayerStrategy,
@@ -58,6 +64,7 @@ interface Props {
   role?: 'student' | 'instructor';
   cdnUrl?: string;
   iifeBundleEndpoint?: string;
+  iifeBundleRetry?: IifeBundleRetryConfig;
   preloadedFallbackStrategy?: ElementPlayerStrategy;
   rebuildVersion?: number;
   model?: any;
@@ -74,6 +81,7 @@ let {
   role = 'student',
   cdnUrl = '',
   iifeBundleEndpoint = '/api/bundle',
+  iifeBundleRetry = DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
   preloadedFallbackStrategy = 'esm',
   rebuildVersion = 0,
   model = $bindable(),
@@ -87,7 +95,9 @@ let elementInstance = $state<HTMLElement | null>(null);
 let currentTagName = $state<string | null>(null);
 let loading = $state(true);
 let error = $state<string | null>(null);
+let iifeRetryStatus = $state<IifeBundleRetryStatus | null>(null);
 let requestId = 0;
+let activeLoadAbortController: AbortController | null = null;
 
 let mathRenderer: MathRenderer | null = null;
 let mathObserver: MutationObserver | null = null;
@@ -105,6 +115,22 @@ const metadataOnlySessionKeys = new Set(['complete', 'component']);
 let lastAppliedRole: string | null = null;
 let lastAppliedModelSignature = '';
 let lastAppliedSessionSignature = '';
+
+const iifeBuildWarning = $derived.by(() => {
+  if (!iifeRetryStatus || iifeRetryStatus.state !== 'retrying') return null;
+  const elapsedSeconds = Math.max(1, Math.ceil(iifeRetryStatus.elapsedMs / 1000));
+  const timeoutSeconds = Math.max(1, Math.ceil(iifeRetryStatus.timeoutMs / 1000));
+  return `Bundle is still building. Retrying attempt ${iifeRetryStatus.attempt} (${elapsedSeconds}s of ${timeoutSeconds}s).`;
+});
+
+function isLoadAbortedError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const maybeError = error as { code?: string; message?: string };
+  return (
+    maybeError.code === 'LOAD_ABORTED' ||
+    (typeof maybeError.message === 'string' && maybeError.message.includes('aborted'))
+  );
+}
 
 const resolvedStrategy = $derived(normalizeElementPlayerStrategy(strategy, 'esm'));
 const resolvedView = $derived(resolveElementPlayerView({ mode, view }, 'delivery'));
@@ -335,8 +361,34 @@ async function ensureLoaded() {
     return;
   }
   const currentRequestId = ++requestId;
+  if (activeLoadAbortController) {
+    activeLoadAbortController.abort();
+    dispatch('build-state', {
+      loading: false,
+      error: null,
+      stage: 'cancelled',
+      strategy: resolvedStrategy,
+      view: resolvedView,
+      retry: {
+        state: 'cancelled',
+        stage: 'build-status',
+        attempt: 0,
+        elapsedMs: 0,
+        timeoutMs: iifeBundleRetry?.timeoutMs ?? DEFAULT_IIFE_BUNDLE_RETRY_CONFIG.timeoutMs,
+        reason: 'superseded by new load request',
+      },
+    });
+    dispatch('load-cancelled', {
+      reason: 'superseded by new load request',
+      strategy: resolvedStrategy,
+      view: resolvedView,
+    });
+  }
+  const requestAbortController = new AbortController();
+  activeLoadAbortController = requestAbortController;
   loading = true;
   error = null;
+  iifeRetryStatus = null;
 
   try {
     const loaded = await loadUnifiedPlayer({
@@ -347,6 +399,25 @@ async function ensureLoaded() {
       elementVersion,
       cdnUrl,
       iifeBundleEndpoint,
+      iifeBundleRetry,
+      signal: requestAbortController.signal,
+      onIifeBundleRetryStatus: (status) => {
+        if (currentRequestId !== requestId) {
+          return;
+        }
+        iifeRetryStatus = status;
+        dispatch('bundle-retry-status', status);
+        const loadingState = status.state === 'retrying';
+        const detail = {
+          loading: loadingState,
+          error: null,
+          stage: status.state,
+          strategy: resolvedStrategy,
+          view: resolvedView,
+          retry: status,
+        };
+        dispatch('build-state', detail);
+      },
       preloadedFallbackStrategy,
       rebuildVersion,
     });
@@ -399,18 +470,72 @@ async function ensureLoaded() {
       tagName: loaded.tagName,
     });
     loading = false;
+    iifeRetryStatus = null;
+    if (activeLoadAbortController === requestAbortController) {
+      activeLoadAbortController = null;
+    }
   } catch (err) {
     if (currentRequestId !== requestId) {
       return;
     }
+    if (isLoadAbortedError(err) || requestAbortController.signal.aborted) {
+      const retry: IifeBundleRetryStatus =
+        iifeRetryStatus && iifeRetryStatus.state === 'cancelled'
+          ? iifeRetryStatus
+          : {
+              state: 'cancelled',
+              stage: 'build-status',
+              attempt: 0,
+              elapsedMs: 0,
+              timeoutMs: iifeBundleRetry?.timeoutMs ?? DEFAULT_IIFE_BUNDLE_RETRY_CONFIG.timeoutMs,
+              reason: err instanceof Error ? err.message : String(err),
+            };
+      error = null;
+      loading = false;
+      iifeRetryStatus = retry;
+      dispatch('bundle-retry-status', retry);
+      dispatch('build-state', {
+        loading: false,
+        error: null,
+        stage: 'cancelled',
+        strategy: resolvedStrategy,
+        view: resolvedView,
+        retry,
+      });
+      dispatch('load-cancelled', {
+        reason: retry.reason || 'load cancelled',
+        strategy: resolvedStrategy,
+        view: resolvedView,
+      });
+      if (activeLoadAbortController === requestAbortController) {
+        activeLoadAbortController = null;
+      }
+      return;
+    }
     error = err instanceof Error ? err.message : String(err);
     loading = false;
-    dispatch('build-state', { loading: false, error, stage: 'error' });
+    const terminalRetry =
+      iifeRetryStatus &&
+      (iifeRetryStatus.state === 'timeout' || iifeRetryStatus.state === 'completed')
+        ? iifeRetryStatus
+        : undefined;
+    dispatch('build-state', {
+      loading: false,
+      error,
+      stage: 'error',
+      strategy: resolvedStrategy,
+      view: resolvedView,
+      retry: terminalRetry,
+    });
     dispatch('player-error', {
       error,
       strategy: resolvedStrategy,
       view: resolvedView,
+      retry: terminalRetry,
     });
+    if (activeLoadAbortController === requestAbortController) {
+      activeLoadAbortController = null;
+    }
   }
 }
 
@@ -423,6 +548,7 @@ $effect(() => {
     resolvedView,
     cdnUrl,
     iifeBundleEndpoint,
+    JSON.stringify(iifeBundleRetry || DEFAULT_IIFE_BUNDLE_RETRY_CONFIG),
     preloadedFallbackStrategy,
     rebuildVersion,
   ].join('|');
@@ -478,6 +604,8 @@ onMount(() => {
     if (elementMount) {
       elementMount.replaceChildren();
     }
+    activeLoadAbortController?.abort();
+    activeLoadAbortController = null;
     detachInstanceHandlers();
   };
 });
@@ -488,6 +616,11 @@ onMount(() => {
   {#if loading}
     <div class="loading">
       Loading {elementName} ({resolvedStrategy}/{resolvedView})...
+      {#if iifeBuildWarning}
+        <div class="loading-warning" role="status" aria-live="polite" aria-atomic="true">
+          {iifeBuildWarning}
+        </div>
+      {/if}
     </div>
   {/if}
   {#if error}
@@ -513,6 +646,12 @@ onMount(() => {
     text-align: center;
     color: hsl(var(--bc) / 0.6);
     font-style: italic;
+  }
+
+  .loading-warning {
+    margin-top: 0.5rem;
+    color: #9a6700;
+    font-style: normal;
   }
 
   .error {

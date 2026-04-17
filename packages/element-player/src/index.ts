@@ -33,4 +33,7 @@ export {
   type IifeBuildClient,
   type IifeRegistryClient,
   type IifeBundleLoaderAdapters,
+  type IifeBundleRetryConfig,
+  type IifeBundleRetryStatus,
+  DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
 } from './lib/iife-bundle-loader.js';

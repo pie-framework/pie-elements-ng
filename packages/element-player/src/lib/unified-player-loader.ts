@@ -5,6 +5,9 @@ import {
   type ElementModuleResolver,
 } from './element-loader';
 import {
+  DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
+  type IifeBundleRetryConfig,
+  type IifeBundleRetryStatus,
   loadIifePackage,
   type IifeBundleLoadError,
   type LocalBundleMeta,
@@ -24,6 +27,9 @@ export interface UnifiedPlayerLoadRequest {
   elementVersion: string;
   cdnUrl?: string;
   iifeBundleEndpoint?: string;
+  iifeBundleRetry?: IifeBundleRetryConfig;
+  onIifeBundleRetryStatus?: (status: IifeBundleRetryStatus) => void;
+  signal?: AbortSignal;
   rebuildVersion?: number;
   preloadedFallbackStrategy?: ElementPlayerStrategy;
 }
@@ -191,6 +197,9 @@ async function loadIife(
     packageName: req.packageName,
     version: req.elementVersion,
     endpoint: req.iifeBundleEndpoint,
+    iifeBundleRetry: req.iifeBundleRetry ?? DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
+    onRetryStatus: req.onIifeBundleRetryStatus,
+    signal: req.signal,
     bundleTarget,
     forceRebuild: (req.rebuildVersion || 0) > 0,
     clearCache: (req.rebuildVersion || 0) > 0,
