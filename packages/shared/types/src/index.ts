@@ -5,4 +5,5 @@
  */
 
 export * from './events.js';
+export * from './docs-contract.js';
 export * from './types.js';

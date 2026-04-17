@@ -1,0 +1,22 @@
+{
+  "elementName": "match-list",
+  "packageName": "@pie-element/match-list",
+  "framework": "react",
+  "generatedAt": "2026-04-17T06:27:06.033Z",
+  "summary": "No summary provided.",
+  "supportedModes": [
+    "gather",
+    "view",
+    "evaluate"
+  ],
+  "views": [
+    {
+      "id": "delivery",
+      "file": "delivery.html",
+      "pieSource": "src/controller/defaults.ts",
+      "configSource": "src/controller/defaults.ts",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    }
+  ]
+}

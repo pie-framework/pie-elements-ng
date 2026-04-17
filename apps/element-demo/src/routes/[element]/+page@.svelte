@@ -46,6 +46,7 @@ const hasPrint = $derived(data.capabilities.includes('print'));
             {#if hasPrint}
               <span class="badge badge-primary">Print</span>
             {/if}
+            <span class="badge badge-primary">Docs</span>
             <span class="badge badge-primary">Source</span>
           </div>
         </div>
@@ -82,6 +83,8 @@ const hasPrint = $derived(data.capabilities.includes('print'));
                   <span class="text-base-content/40">•</span>
                   <a href="/{data.elementName}/print" data-sveltekit-reload class="link link-primary">Print</a>
                 {/if}
+                <span class="text-base-content/40">•</span>
+                <a href="/{data.elementName}/docs" data-sveltekit-reload class="link link-primary">Docs</a>
                 <span class="text-base-content/40">•</span>
                 <a href="/{data.elementName}/source" data-sveltekit-reload class="link link-primary">Source</a>
               </div>

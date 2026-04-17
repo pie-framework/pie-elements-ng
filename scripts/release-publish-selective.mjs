@@ -40,7 +40,6 @@ const parseArgs = (argv) => {
         .trim()
         .toLowerCase();
       i += 1;
-      continue;
     }
   }
   return result;

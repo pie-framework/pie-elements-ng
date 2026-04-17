@@ -115,6 +115,14 @@ const tabs = $derived.by(() => {
 
   // Always add source (code viewer)
   generatedTabs.push({
+    id: 'docs',
+    label: 'Docs',
+    path: `/${data.elementName}/docs${buildQueryString(false)}`,
+    description: 'Generated element documentation',
+  });
+
+  // Always add source (code viewer)
+  generatedTabs.push({
     id: 'source',
     label: 'Source',
     path: `/${data.elementName}/source${buildQueryString(false)}`,

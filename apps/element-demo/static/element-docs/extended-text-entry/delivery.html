@@ -1,0 +1,728 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>extended-text-entry delivery docs</title>
+    <style>
+      :root { color-scheme: light dark; font-family: Inter, system-ui, sans-serif; }
+      body { margin: 0; padding: 1.5rem; line-height: 1.55; }
+      h1,h2,h3 { line-height: 1.25; }
+      h1 { margin-top: 0; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .doc-section { margin-bottom: 2rem; }
+      .doc-property { margin: 0 0 1.25rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(128,128,128,.25); }
+      ul { padding-left: 1.25rem; }
+      .meta-list li { margin-bottom: .25rem; }
+    </style>
+  </head>
+  <body>
+    
+    <h1>extended-text-entry / delivery</h1>
+    
+  <section class="doc-section">
+    <h2>Model Defaults</h2>
+    <p><strong>Source:</strong> <code>src/author/defaults.ts#model</code></p>
+    
+  <section class="doc-property">
+    <h3><code>annotationsEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>dimensions.height</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>100</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>dimensions.width</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>500</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>equationEditor</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Grade 8 - HS</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>feedbackEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>mathInput</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>playerSpellCheckDisabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>predefinedAnnotations</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>array</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>[&#123;&quot;label&quot;:&quot;good&quot;,&quot;text&quot;:&quot;good&quot;,&quot;type&quot;:&quot;positive&quot;&#125;,&#123;&quot;label&quot;:&quot;★&quot;,&quot;text&quot;:&quot;★&quot;,&quot;type&quot;:&quot;positive&quot;&#125;,&#123;&quot;label&quot;:&quot;:-)&quot;,&quot;text&quot;:&quot;:-)&quot;,&quot;type&quot;:&quot;positive&quot;&#125;,&#123;&quot;label&quot;:&quot;creative&quot;,&quot;text&quot;:&quot;creative&quot;,&quot;type&quot;:&quot;positive&quot;&#125;,&#123;&quot;label&quot;:&quot;run-on&quot;,&quot;text&quot;:&quot;run-on&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;frag&quot;,&quot;text&quot;:&quot;fragment&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;tran&quot;,&quot;text&quot;:&quot;transition&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;supp&quot;,&quot;text&quot;:&quot;support needed&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;punc&quot;,&quot;text&quot;:&quot;punctuation&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;agr&quot;,&quot;text&quot;:&quot;agreement wrong&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;unclear&quot;,&quot;text&quot;:&quot;unclear&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;cut&quot;,&quot;text&quot;:&quot;cut&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;sp&quot;,&quot;text&quot;:&quot;spelling&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;cap&quot;,&quot;text&quot;:&quot;capitalization&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;inf&quot;,&quot;text&quot;:&quot;informal&quot;,&quot;type&quot;:&quot;negative&quot;&#125;,&#123;&quot;label&quot;:&quot;awk&quot;,&quot;text&quot;:&quot;awkward&quot;,&quot;type&quot;:&quot;negative&quot;&#125;]</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>promptEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>rationale</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>rationaleEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>spanishInput</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>specialInput</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>spellCheckEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>studentInstructionsEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructions</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructionsEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>toolbarEditorPosition</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>bottom</code></li>
+    </ul>
+  </section>
+  </section>
+    
+  <section class="doc-section">
+    <h2>Authoring/Configuration Defaults</h2>
+    <p><strong>Source:</strong> <code>src/author/defaults.ts#configuration</code></p>
+    
+  <section class="doc-property">
+    <h3><code>annotations.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Annotations</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>annotations.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.audio.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.blockquote.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.h3.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.image.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.separateParagraphs.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.showParagraphs.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.textAlign.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.video.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>dimensions.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Text-Entry Display Size</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>dimensions.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>equationEditor.enabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>equationEditor.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Equation Editor</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>equationEditor.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>feedback.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Feedback</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>feedback.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>mathInput.enabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>mathInput.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Student response can include math notation</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>mathInput.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>mathMlOptions.mmlEditing</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>mathMlOptions.mmlOutput</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>maxImageHeight.prompt</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>300</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>maxImageHeight.teacherInstructions</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>300</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>maxImageWidth.prompt</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>300</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>maxImageWidth.teacherInstructions</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>300</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>multiple.enabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>multiple.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Multiple Parts</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>multiple.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>playerSpellCheck.enabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>playerSpellCheck.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Disable Student Spellcheck</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>playerSpellCheck.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt.inputConfiguration.audio.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt.inputConfiguration.image.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt.inputConfiguration.video.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Prompt</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt.required</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>settingsPanelDisabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>spanishInput.enabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>spanishInput.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Students can insert Spanish</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>spanishInput.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>specialInput.enabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>specialInput.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Students can insert Special Characters</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>specialInput.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>spellCheck.enabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>spellCheck.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Spellcheck</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>spellCheck.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>studentInstructions.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Student Instructions</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>studentInstructions.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructions.inputConfiguration.audio.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructions.inputConfiguration.image.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructions.inputConfiguration.video.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructions.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Teacher Instructions</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructions.required</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructions.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>withRubric.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Add Rubric</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>withRubric.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+  </section>
+  
+  </body>
+</html>

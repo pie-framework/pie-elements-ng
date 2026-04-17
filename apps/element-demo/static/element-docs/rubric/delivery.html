@@ -1,0 +1,251 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>rubric delivery docs</title>
+    <style>
+      :root { color-scheme: light dark; font-family: Inter, system-ui, sans-serif; }
+      body { margin: 0; padding: 1.5rem; line-height: 1.55; }
+      h1,h2,h3 { line-height: 1.25; }
+      h1 { margin-top: 0; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .doc-section { margin-bottom: 2rem; }
+      .doc-property { margin: 0 0 1.25rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(128,128,128,.25); }
+      ul { padding-left: 1.25rem; }
+      .meta-list li { margin-bottom: .25rem; }
+    </style>
+  </head>
+  <body>
+    
+    <h1>rubric / delivery</h1>
+    
+  <section class="doc-section">
+    <h2>Model Defaults</h2>
+    <p><strong>Source:</strong> <code>src/author/defaults.ts#model</code></p>
+    
+  <section class="doc-property">
+    <h3><code>excludeZero</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>excludeZeroEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>maxPoints</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>3</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>maxPointsEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>points</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>array</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>[&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;]</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>sampleAnswers</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>array</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>[null,null,null,null]</code></li>
+    </ul>
+  </section>
+  </section>
+    
+  <section class="doc-section">
+    <h2>Authoring/Configuration Defaults</h2>
+    <p><strong>Source:</strong> <code>src/author/defaults.ts#configuration</code></p>
+    
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.audio.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.h3.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.image.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.separateParagraphs.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.showParagraphs.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.textAlign.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>baseInputConfiguration.video.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>mathMlOptions.mmlEditing</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>mathMlOptions.mmlOutput</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>maxMaxPoints</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>9</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>rubriclessInstruction.inputConfiguration.audio.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>rubriclessInstruction.inputConfiguration.image.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>rubriclessInstruction.inputConfiguration.video.disabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>settingsPanelDisabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>showExcludeZero.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Ability to exclude zero</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>showExcludeZero.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>showMaxPoint.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Show max points dropdown</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>showMaxPoint.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+  </section>
+  
+  </body>
+</html>

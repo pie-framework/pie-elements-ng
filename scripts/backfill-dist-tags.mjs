@@ -154,9 +154,7 @@ const main = () => {
   const { apply, allowlist } = parseArgs(process.argv.slice(2));
   const discovered = loadWorkspacePackageNames();
   const candidates =
-    allowlist.size > 0
-      ? discovered.filter((name) => allowlist.has(name))
-      : discovered;
+    allowlist.size > 0 ? discovered.filter((name) => allowlist.has(name)) : discovered;
 
   if (candidates.length === 0) {
     console.log('[backfill] No matching @pie-element/* packages found.');

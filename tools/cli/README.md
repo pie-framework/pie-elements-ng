@@ -171,7 +171,36 @@ Initialize package scaffolding for synced elements.
 bun run cli packages:init-synced-elements
 ```
 
+### Documentation
+
+#### `docs:generate`
+
+Generate framework-agnostic HTML docs artifacts for elements from per-element `docs.contract.json` descriptors.
+
+```bash
+# Generate docs for all elements
+bun run cli docs:generate
+
+# Generate for one framework/element
+bun run cli docs:generate --framework svelte --element simple-cloze
+
+# Seed missing contracts before generation
+bun run cli docs:generate --seed-contracts
+```
+
 ### Verification
+
+#### `docs:verify`
+
+Verify that all targeted elements have valid `docs.contract.json` descriptors and that generated docs are up to date.
+
+```bash
+# Verify all frameworks
+bun run cli docs:verify
+
+# Verify one framework/element
+bun run cli docs:verify --framework svelte --element simple-cloze
+```
 
 #### `verify:controllers`
 
@@ -223,7 +252,7 @@ The CLI is built with [oclif](https://oclif.io/), following the same architectur
 
 - **Commands**: Located in `src/commands/` organized by topic
 - **Utilities**: Shared utilities in `src/utils/`
-- **Topics**: Commands are grouped into topics (upstream, packages, verify)
+- **Topics**: Commands are grouped into topics (upstream, packages, docs, verify)
 
 ## Migration from Scripts
 

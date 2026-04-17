@@ -1,0 +1,31 @@
+{
+  "elementName": "multi-trait-rubric",
+  "packageName": "@pie-element/multi-trait-rubric",
+  "framework": "react",
+  "summary": "React implementation of multi-trait-rubric element synced from pie-elements",
+  "supportedModes": [
+    "gather",
+    "view",
+    "evaluate"
+  ],
+  "views": [
+    {
+      "view": "author",
+      "pie": {
+        "file": "src/controller/defaults.ts"
+      },
+      "config": {
+        "file": "src/controller/defaults.ts"
+      }
+    },
+    {
+      "view": "delivery",
+      "pie": {
+        "file": "src/controller/defaults.ts"
+      },
+      "config": {
+        "file": "src/controller/defaults.ts"
+      }
+    }
+  ]
+}

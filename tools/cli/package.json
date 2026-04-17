@@ -44,6 +44,9 @@
       "packages": {
         "description": "Generate and manage package configurations"
       },
+      "docs": {
+        "description": "Generate and verify framework-agnostic element documentation"
+      },
       "verify": {
         "description": "Verify builds and configurations"
       }

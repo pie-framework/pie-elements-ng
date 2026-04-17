@@ -18,6 +18,8 @@ import { createReactComponentTransformPipeline } from './sync-transforms.js';
 import { ensureElementPackageJson } from './sync-package-manager.js';
 import { isSubdirectoryCompatible } from './sync-compatibility.js';
 import { EXCLUDED_UPSTREAM_ELEMENTS } from './sync-constants.js';
+import { seedContractForElement } from '../docs/contracts.js';
+import type { ElementPackageInfo } from '../docs/types.js';
 
 interface InternalSyncResult {
   filesChecked: number;
@@ -202,6 +204,27 @@ export class ReactComponentsStrategy implements SyncStrategy {
       // Ensure demo structure
       await this.ensureElementDemoStructure(pkg, elementDir, config, logger);
       // Demo configs are maintained locally - we do NOT apply overrides from upstream
+
+      if (!config.dryRun) {
+        const packageJsonPath = join(elementDir, 'package.json');
+        const packageJsonRaw = existsSync(packageJsonPath)
+          ? (JSON.parse(await readFile(packageJsonPath, 'utf-8')) as Record<string, unknown>)
+          : {};
+        const packageInfo: ElementPackageInfo = {
+          elementName: pkg,
+          packageName:
+            typeof packageJsonRaw.name === 'string' ? packageJsonRaw.name : `@pie-element/${pkg}`,
+          framework: 'react',
+          packageDir: elementDir,
+          packageDescription:
+            typeof packageJsonRaw.description === 'string' ? packageJsonRaw.description : undefined,
+          exportsMap:
+            packageJsonRaw.exports && typeof packageJsonRaw.exports === 'object'
+              ? (packageJsonRaw.exports as Record<string, unknown>)
+              : undefined,
+        };
+        await seedContractForElement(packageInfo, config.pieElementsNg, { refresh: true });
+      }
 
       if (elementChanged || wrotePkgJson || wroteTsConfig) {
         this.touchedElementPackages.add(pkg);

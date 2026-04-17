@@ -1,0 +1,30 @@
+{
+  "elementName": "complex-rubric",
+  "packageName": "@pie-element/complex-rubric",
+  "framework": "react",
+  "generatedAt": "2026-04-17T06:27:05.896Z",
+  "summary": "Complex Rubric Scoring Interaction",
+  "supportedModes": [
+    "gather",
+    "view",
+    "evaluate"
+  ],
+  "views": [
+    {
+      "id": "delivery",
+      "file": "delivery.html",
+      "pieSource": "src/controller/defaults.ts",
+      "configSource": "src/controller/defaults.ts",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    },
+    {
+      "id": "author",
+      "file": "author.html",
+      "pieSource": "src/controller/defaults.ts",
+      "configSource": "src/controller/defaults.ts",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    }
+  ]
+}
