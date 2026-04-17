@@ -4,11 +4,7 @@
   "framework": "react",
   "generatedAt": "2026-04-17T06:27:06.097Z",
   "summary": "React implementation of multiple-choice element synced from pie-elements",
-  "supportedModes": [
-    "gather",
-    "view",
-    "evaluate"
-  ],
+  "supportedModes": ["gather", "view", "evaluate"],
   "views": [
     {
       "id": "delivery",

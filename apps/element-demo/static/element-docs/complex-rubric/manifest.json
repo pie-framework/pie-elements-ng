@@ -4,11 +4,7 @@
   "framework": "react",
   "generatedAt": "2026-04-17T06:27:05.896Z",
   "summary": "Complex Rubric Scoring Interaction",
-  "supportedModes": [
-    "gather",
-    "view",
-    "evaluate"
-  ],
+  "supportedModes": ["gather", "view", "evaluate"],
   "views": [
     {
       "id": "delivery",

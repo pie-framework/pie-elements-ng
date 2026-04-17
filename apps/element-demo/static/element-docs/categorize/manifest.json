@@ -4,11 +4,7 @@
   "framework": "react",
   "generatedAt": "2026-04-17T06:27:05.860Z",
   "summary": "No summary provided.",
-  "supportedModes": [
-    "gather",
-    "view",
-    "evaluate"
-  ],
+  "supportedModes": ["gather", "view", "evaluate"],
   "views": [
     {
       "id": "delivery",

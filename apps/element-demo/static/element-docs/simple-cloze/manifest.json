@@ -4,11 +4,7 @@
   "framework": "svelte",
   "generatedAt": "2026-04-17T06:27:06.225Z",
   "summary": "Simple cloze (text entry) demo/template PIE element built with Svelte 5",
-  "supportedModes": [
-    "gather",
-    "view",
-    "evaluate"
-  ],
+  "supportedModes": ["gather", "view", "evaluate"],
   "views": [
     {
       "id": "delivery",

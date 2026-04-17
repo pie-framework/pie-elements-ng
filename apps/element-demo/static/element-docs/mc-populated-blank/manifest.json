@@ -4,11 +4,7 @@
   "framework": "svelte",
   "generatedAt": "2026-04-17T06:27:06.069Z",
   "summary": "Svelte 5 PIE element where the learner picks a **multiple-choice** option and that choice **fills a blank** in a sentence/template.",
-  "supportedModes": [
-    "gather",
-    "view",
-    "evaluate"
-  ],
+  "supportedModes": ["gather", "view", "evaluate"],
   "views": [
     {
       "id": "delivery",
