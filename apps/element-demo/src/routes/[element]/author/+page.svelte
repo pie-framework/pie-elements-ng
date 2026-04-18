@@ -309,6 +309,7 @@ $effect(() => {
           <pie-element-player
             bind:this={authorPlayerEl}
             strategy={playerType}
+            runtime-support-check="on"
             view="author"
             element-name={data.elementName}
             package-name={data.packageName}

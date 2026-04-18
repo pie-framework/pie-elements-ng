@@ -421,6 +421,7 @@ function handleBuildState(event: CustomEvent) {
         <div class="element-container">
           <pie-element-player
             strategy={playerType}
+            runtime-support-check="on"
             view="delivery"
             element-name={data.elementName}
             package-name={data.packageName}

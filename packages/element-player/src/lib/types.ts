@@ -5,6 +5,7 @@
 export interface ElementPlayerProps {
   elementName: string;
   cdnUrl?: string;
+  runtimeSupportCheck?: 'off' | 'on';
   model?: any;
   session?: any;
   mode?: 'gather' | 'view' | 'evaluate';

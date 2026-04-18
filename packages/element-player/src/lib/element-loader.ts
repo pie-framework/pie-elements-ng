@@ -5,7 +5,14 @@
  * Based on the ESM loader pattern from pie-players.
  */
 
-export type ElementModuleKind = 'delivery' | 'author' | 'print' | 'controller';
+import type { PieElementRuntimeSupport } from './runtime-support';
+
+export type ElementModuleKind =
+  | 'delivery'
+  | 'author'
+  | 'print'
+  | 'controller'
+  | 'runtime-support';
 
 export interface ElementModuleResolveRequest {
   packagePath: string;
@@ -172,4 +179,37 @@ export async function loadController(
     console.error(`[element-loader] Failed to load controller ${packageName}:`, err);
     throw new Error(`Failed to load controller ${packageName}: ${err.message}`);
   }
+}
+
+/**
+ * Load optional runtime support metadata module.
+ * Missing module should be handled by caller as an optional capability.
+ */
+export async function loadRuntimeSupport(
+  packageName: string,
+  cdnUrl: string,
+  debug: boolean = false
+): Promise<PieElementRuntimeSupport> {
+  const runtimeSupportPath = `${packageName}/runtime-support`;
+  if (debug) {
+    console.log(
+      `[element-loader] Loading runtime support ${runtimeSupportPath} (cdnUrl: ${cdnUrl || 'local'})`
+    );
+  }
+  const elementName = packageName.replace(/^@pie-element\//, '');
+  const module = await resolveModule(
+    {
+      packagePath: runtimeSupportPath,
+      packageName,
+      elementName,
+      kind: 'runtime-support',
+      cdnUrl: cdnUrl || '',
+    },
+    debug
+  );
+  const runtimeSupport = module.default || module.runtimeSupport || module;
+  if (!runtimeSupport || typeof runtimeSupport !== 'object') {
+    throw new Error(`Invalid runtime-support export for ${packageName}`);
+  }
+  return runtimeSupport as PieElementRuntimeSupport;
 }

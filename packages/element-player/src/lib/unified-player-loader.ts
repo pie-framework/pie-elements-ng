@@ -2,6 +2,7 @@ import {
   configureElementModuleResolver,
   loadController,
   loadElement,
+  loadRuntimeSupport,
   type ElementModuleResolver,
 } from './element-loader';
 import {
@@ -18,6 +19,13 @@ import {
   type ElementPlayerStrategy,
   type ElementPlayerView,
 } from './player-strategy';
+import {
+  isRuntimeSupportEnabled,
+  isStrategySupportedForView,
+  normalizeRuntimeSupportCheck,
+  type PieElementRuntimeSupport,
+  type RuntimeSupportCheck,
+} from './runtime-support';
 
 export interface UnifiedPlayerLoadRequest {
   strategy: string | null | undefined;
@@ -32,6 +40,7 @@ export interface UnifiedPlayerLoadRequest {
   signal?: AbortSignal;
   rebuildVersion?: number;
   preloadedFallbackStrategy?: ElementPlayerStrategy;
+  runtimeSupportCheck?: RuntimeSupportCheck | string | null;
 }
 
 export interface ControllerLoadDiagnostic {
@@ -45,15 +54,30 @@ export interface ControllerLoadDiagnostic {
 
 export interface UnifiedPlayerLoadResult {
   strategy: ElementPlayerStrategy;
+  requestedStrategy?: ElementPlayerStrategy;
   view: ElementPlayerView;
   tagName: string;
   controller?: any;
   bundleMeta?: LocalBundleMeta;
   controllerDiagnostic?: ControllerLoadDiagnostic;
+  runtimeSupport?: PieElementRuntimeSupport;
+  runtimeSupportDiagnostic?: RuntimeSupportDiagnostic;
   diagnostics?: {
     iife?: IifeBundleLoadError;
   };
 }
+
+export interface RuntimeSupportDiagnostic {
+  status: 'loaded' | 'missing' | 'failed' | 'skipped';
+  packageName: string;
+  strategy: ElementPlayerStrategy;
+  view: ElementPlayerView;
+  message?: string;
+}
+
+const RUNTIME_SUPPORT_NEGATIVE_CACHE_MS = 30_000;
+const runtimeSupportCache = new Map<string, PieElementRuntimeSupport>();
+const runtimeSupportMissingCache = new Map<string, number>();
 
 function enforceControllerContract(
   req: UnifiedPlayerLoadRequest,
@@ -161,9 +185,126 @@ export function configureUnifiedPlayerResolver(resolver?: ElementModuleResolver)
   configureElementModuleResolver(resolver);
 }
 
+function resolveRuntimeSupportCacheKey(request: UnifiedPlayerLoadRequest): string {
+  return `${request.packageName}@${request.elementVersion || 'latest'}`;
+}
+
+function classifyRuntimeSupportMissing(error: unknown): boolean {
+  const message = String(error || '').toLowerCase();
+  return (
+    message.includes('cannot find module') ||
+    message.includes('no known conditions') ||
+    message.includes('failed to fetch dynamically imported module') ||
+    message.includes('404') ||
+    message.includes('/runtime-support')
+  );
+}
+
+async function resolveRuntimeSupport(
+  req: UnifiedPlayerLoadRequest,
+  strategy: ElementPlayerStrategy,
+  view: ElementPlayerView
+): Promise<{ runtimeSupport?: PieElementRuntimeSupport; diagnostic: RuntimeSupportDiagnostic }> {
+  const mode = normalizeRuntimeSupportCheck(req.runtimeSupportCheck, 'off');
+  if (!isRuntimeSupportEnabled(mode)) {
+    return {
+      runtimeSupport: undefined,
+      diagnostic: {
+        status: 'skipped',
+        packageName: req.packageName,
+        strategy,
+        view,
+      },
+    };
+  }
+
+  const key = resolveRuntimeSupportCacheKey(req);
+  const cached = runtimeSupportCache.get(key);
+  if (cached) {
+    return {
+      runtimeSupport: cached,
+      diagnostic: {
+        status: 'loaded',
+        packageName: req.packageName,
+        strategy,
+        view,
+      },
+    };
+  }
+
+  const missingAt = runtimeSupportMissingCache.get(key);
+  if (missingAt && Date.now() - missingAt < RUNTIME_SUPPORT_NEGATIVE_CACHE_MS) {
+    return {
+      runtimeSupport: undefined,
+      diagnostic: {
+        status: 'missing',
+        packageName: req.packageName,
+        strategy,
+        view,
+        message: 'runtime-support missing (negative cache)',
+      },
+    };
+  }
+
+  try {
+    const runtimeSupport = await loadRuntimeSupport(req.packageName, req.cdnUrl || '');
+    runtimeSupportCache.set(key, runtimeSupport);
+    runtimeSupportMissingCache.delete(key);
+    return {
+      runtimeSupport,
+      diagnostic: {
+        status: 'loaded',
+        packageName: req.packageName,
+        strategy,
+        view,
+      },
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (classifyRuntimeSupportMissing(error)) {
+      runtimeSupportMissingCache.set(key, Date.now());
+      return {
+        runtimeSupport: undefined,
+        diagnostic: {
+          status: 'missing',
+          packageName: req.packageName,
+          strategy,
+          view,
+          message,
+        },
+      };
+    }
+    return {
+      runtimeSupport: undefined,
+      diagnostic: {
+        status: 'failed',
+        packageName: req.packageName,
+        strategy,
+        view,
+        message,
+      },
+    };
+  }
+}
+
+function buildRuntimeSupportLoadFailureHint(
+  strategy: ElementPlayerStrategy,
+  view: ElementPlayerView,
+  packageName: string,
+  runtimeSupport?: PieElementRuntimeSupport
+): string {
+  if (!runtimeSupport || (strategy !== 'esm' && strategy !== 'iife')) return '';
+  const supported = isStrategySupportedForView(runtimeSupport, strategy, view);
+  if (supported) return '';
+  return ` Runtime support metadata indicates ${strategy}/${view} is unsupported for ${packageName}.`;
+}
+
 async function loadEsm(
   req: UnifiedPlayerLoadRequest,
-  view: ElementPlayerView
+  view: ElementPlayerView,
+  requestedStrategy?: ElementPlayerStrategy,
+  runtimeSupport?: PieElementRuntimeSupport,
+  runtimeSupportDiagnostic?: RuntimeSupportDiagnostic
 ): Promise<UnifiedPlayerLoadResult> {
   const tagName = esmTagName(req.elementName, view);
   const packagePath =
@@ -181,16 +322,22 @@ async function loadEsm(
 
   return {
     strategy: 'esm',
+    requestedStrategy,
     view,
     tagName,
     controller,
     controllerDiagnostic: diagnostic,
+    runtimeSupport,
+    runtimeSupportDiagnostic,
   };
 }
 
 async function loadIife(
   req: UnifiedPlayerLoadRequest,
-  view: ElementPlayerView
+  view: ElementPlayerView,
+  requestedStrategy?: ElementPlayerStrategy,
+  runtimeSupport?: PieElementRuntimeSupport,
+  runtimeSupportDiagnostic?: RuntimeSupportDiagnostic
 ): Promise<UnifiedPlayerLoadResult> {
   const bundleTarget = view === 'author' ? 'editor' : view === 'print' ? 'player' : 'client-player';
   const { pkg, meta } = await loadIifePackage({
@@ -248,18 +395,22 @@ async function loadIife(
 
   return {
     strategy: 'iife',
+    requestedStrategy,
     view,
     tagName,
     controller,
     bundleMeta: meta,
     controllerDiagnostic,
+    runtimeSupport,
+    runtimeSupportDiagnostic,
   };
 }
 
 export async function loadUnifiedPlayer(
   request: UnifiedPlayerLoadRequest
 ): Promise<UnifiedPlayerLoadResult> {
-  const strategy = normalizeElementPlayerStrategy(request.strategy, 'esm');
+  const requestedStrategy = normalizeElementPlayerStrategy(request.strategy, 'esm');
+  const strategy = requestedStrategy;
   const view = normalizeElementPlayerView(request.view, 'delivery');
 
   if (strategy === 'preloaded') {
@@ -276,9 +427,33 @@ export async function loadUnifiedPlayer(
     return loadUnifiedPlayer(fallbackRequest);
   }
 
-  if (strategy === 'iife') {
-    return loadIife(request, view);
-  }
+  const runtimeSupportResolution = await resolveRuntimeSupport(request, strategy, view);
+  try {
+    if (strategy === 'iife') {
+      return loadIife(
+        request,
+        view,
+        requestedStrategy,
+        runtimeSupportResolution.runtimeSupport,
+        runtimeSupportResolution.diagnostic
+      );
+    }
 
-  return loadEsm(request, view);
+    return loadEsm(
+      request,
+      view,
+      requestedStrategy,
+      runtimeSupportResolution.runtimeSupport,
+      runtimeSupportResolution.diagnostic
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const hint = buildRuntimeSupportLoadFailureHint(
+      strategy,
+      view,
+      request.packageName,
+      runtimeSupportResolution.runtimeSupport
+    );
+    throw new Error(`${message}${hint}`);
+  }
 }

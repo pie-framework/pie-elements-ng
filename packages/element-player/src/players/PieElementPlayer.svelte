@@ -26,6 +26,11 @@
         type: "String",
         attribute: "preloaded-fallback-strategy",
       },
+      runtimeSupportCheck: {
+        reflect: true,
+        type: "String",
+        attribute: "runtime-support-check",
+      },
       rebuildVersion: {
         reflect: false,
         type: "Number",
@@ -53,6 +58,7 @@ import {
   type ElementPlayerStrategy,
   type ElementPlayerView,
 } from '../lib/player-strategy';
+import { type RuntimeSupportCheck } from '../lib/runtime-support';
 
 interface Props {
   strategy?: ElementPlayerStrategy;
@@ -66,6 +72,7 @@ interface Props {
   iifeBundleEndpoint?: string;
   iifeBundleRetry?: IifeBundleRetryConfig;
   preloadedFallbackStrategy?: ElementPlayerStrategy;
+  runtimeSupportCheck?: RuntimeSupportCheck;
   rebuildVersion?: number;
   model?: any;
   session?: any;
@@ -83,6 +90,7 @@ let {
   iifeBundleEndpoint = '/api/bundle',
   iifeBundleRetry = DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
   preloadedFallbackStrategy = 'esm',
+  runtimeSupportCheck = 'off',
   rebuildVersion = 0,
   model = $bindable(),
   session = $bindable(),
@@ -401,6 +409,7 @@ async function ensureLoaded() {
       iifeBundleEndpoint,
       iifeBundleRetry,
       signal: requestAbortController.signal,
+      runtimeSupportCheck,
       onIifeBundleRetryStatus: (status) => {
         if (currentRequestId !== requestId) {
           return;
@@ -546,6 +555,7 @@ $effect(() => {
     elementVersion,
     resolvedStrategy,
     resolvedView,
+    runtimeSupportCheck,
     cdnUrl,
     iifeBundleEndpoint,
     JSON.stringify(iifeBundleRetry || DEFAULT_IIFE_BUNDLE_RETRY_CONFIG),

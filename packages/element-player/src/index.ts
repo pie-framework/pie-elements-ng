@@ -18,6 +18,13 @@ import './players/index.js';
 // Re-export types
 export type { ElementPlayerProps, PieController, Tab } from './lib/types.js';
 export type { ElementPlayerStrategy, ElementPlayerView } from './lib/player-strategy.js';
+export type {
+  RuntimeSupportCheck,
+  RuntimeSupportStrategy,
+  RuntimeSupportView,
+  PieElementRuntimeSupport,
+} from './lib/runtime-support.js';
+export { normalizeRuntimeSupportCheck } from './lib/runtime-support.js';
 export {
   normalizeElementPlayerStrategy,
   normalizeElementPlayerView,
@@ -26,6 +33,7 @@ export {
 export {
   configureUnifiedPlayerResolver,
   type ControllerLoadDiagnostic,
+  type RuntimeSupportDiagnostic,
 } from './lib/unified-player-loader.js';
 export {
   configureIifeBundleLoader,

@@ -75,6 +75,7 @@ function handleBuildState(event: CustomEvent) {
       <div class="print-view">
         <pie-element-player
           strategy={playerType}
+          runtime-support-check="on"
           view="print"
           element-name={data.elementName}
           package-name={data.packageName}
