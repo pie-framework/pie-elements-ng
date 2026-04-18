@@ -58,7 +58,7 @@ import {
   type ElementPlayerStrategy,
   type ElementPlayerView,
 } from '../lib/player-strategy';
-import { type RuntimeSupportCheck } from '../lib/runtime-support';
+import type { RuntimeSupportCheck } from '../lib/runtime-support';
 
 interface Props {
   strategy?: ElementPlayerStrategy;

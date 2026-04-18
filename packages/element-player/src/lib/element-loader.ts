@@ -7,12 +7,7 @@
 
 import type { PieElementRuntimeSupport } from './runtime-support';
 
-export type ElementModuleKind =
-  | 'delivery'
-  | 'author'
-  | 'print'
-  | 'controller'
-  | 'runtime-support';
+export type ElementModuleKind = 'delivery' | 'author' | 'print' | 'controller' | 'runtime-support';
 
 export interface ElementModuleResolveRequest {
   packagePath: string;

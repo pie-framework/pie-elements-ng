@@ -1,17 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadUnifiedPlayer } from '../src/lib/unified-player-loader';
 
-const {
-  loadElementMock,
-  loadControllerMock,
-  loadRuntimeSupportMock,
-  loadIifePackageMock,
-} = vi.hoisted(() => ({
-  loadElementMock: vi.fn(),
-  loadControllerMock: vi.fn(),
-  loadRuntimeSupportMock: vi.fn(),
-  loadIifePackageMock: vi.fn(),
-}));
+const { loadElementMock, loadControllerMock, loadRuntimeSupportMock, loadIifePackageMock } =
+  vi.hoisted(() => ({
+    loadElementMock: vi.fn(),
+    loadControllerMock: vi.fn(),
+    loadRuntimeSupportMock: vi.fn(),
+    loadIifePackageMock: vi.fn(),
+  }));
 
 vi.mock('../src/lib/element-loader', () => ({
   configureElementModuleResolver: vi.fn(),
@@ -117,5 +113,4 @@ describe('runtime-support strategy checks', () => {
     expect(loadIifePackageMock).toHaveBeenCalled();
     expect(loadElementMock).not.toHaveBeenCalled();
   });
-
 });
