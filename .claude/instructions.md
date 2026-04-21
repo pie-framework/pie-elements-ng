@@ -12,6 +12,68 @@
 - **Feature parity**: Must match all 21 QTI 2.2 interaction types from original pie-elements
 - **Strict TypeScript**: No `any` allowed (enforced by Biome)
 
+## Spec-driven workflow (PRDs)
+
+This project uses lightweight PRDs (Product Requirements Documents) under [`docs/prds/`](../docs/prds/) for significant changes. PRDs capture the *intent* of a feature; the test suite remains the source of truth for *behaviour*.
+
+**When a task has or needs a PRD**:
+
+- New elements (net-new `@pie-element/*` packages or substantial new interaction types).
+- Non-trivial extensions of existing elements (anything that adds an authoring-visible config, a new mode, or a materially new delivery surface).
+- Cross-cutting platform changes that touch model / session / event contracts across multiple elements (e.g. shared-stimulus container, parameterized items, event consistency work).
+- Authoring-surface changes that shift how authors compose item content.
+
+**When a task does not need a PRD**:
+
+- Bug fixes, refactors with no behaviour change, demo-app or e2e-test tweaks, pure docs / README changes, version bumps and dependency updates. A PR description is enough.
+
+**PRD layout in this repo**:
+
+- One subdirectory per element or feature: `docs/prds/<slug>/`.
+- The PRD body is `PRD.md` inside that subdirectory. The filename is explicit about the content and doesn't overload "README" with two meanings (the folder-level `docs/prds/README.md` is the conventions doc). Trade-off: GitHub / Cursor won't auto-render the directory to the PRD — that's accepted.
+- Optional sibling folders — `wireframes/`, `examples/`, `notes/` — hold supporting artifacts. Most PRDs stay as a single `PRD.md`; only add siblings when there is real content for them.
+- Facet files — `delivery.md`, `authoring.md`, `print.md` — are only introduced when a facet outgrows `PRD.md` (~two screens of element-specific markdown). The default is a single `PRD.md` covering all facets; don't split pre-emptively. When split, the model / session / event shape still lives in `PRD.md`, never duplicated into a facet file.
+- The copy-paste starter is `docs/prds/_template.md` (a single top-level file, not a subdir).
+
+**PRDs are functional, not project-managed**:
+
+PRDs in this repo capture **status, what we're building, what we're deliberately leaving out, the delivered surface, a worked example, and accessibility**. They deliberately **do not** include:
+
+- Owner, created-date, last-updated-date fields (git already tracks this).
+- A separate dated decision log.
+
+The information a decision log would carry — *why didn't we do the obvious alternative?* — is preserved by **inlining** it next to the relevant Non-goal or Proposed-surface bullet (e.g. "Not an extension of `categorize` — the overlap region is a first-class zone `categorize` can't represent …"). This keeps rationale co-located with the content it justifies and prevents drift.
+
+Do not re-add owner / date fields to PRDs even if a template you've seen elsewhere includes them.
+
+**Status field** (present on every PRD, inline in the meta line under the H1):
+
+- **Proposal** — circulating for review; surface may still change. Agents reading a Proposal must not treat the "Proposed surface" as fixed; surface disagreement rather than silently implement against it.
+- **Accepted** — agreed contract; safe to code against regardless of whether implementation is complete, in flight, or not yet started.
+- **Superseded** — replaced by another PRD; the status line links to the replacement.
+
+There is no `Shipped` status — once Accepted, tests own behaviour and release tags / CHANGELOG own release state.
+
+**Status log (optional)** — when a PRD transitions between status values, add a one-line entry to a `## Status log` section at the bottom. State transitions only, not content churn (git shows content changes). No dates (git has them). A fresh Proposal with no transitions does not need this section.
+
+**Working with a PRD in this codebase**:
+
+1. If a PRD exists for the task (`docs/prds/<slug>/PRD.md`, plus any `delivery.md` / `authoring.md` / `print.md` facet files), read `PRD.md` first at the start of the session; read the facet files too if the task touches their concern. Treat the "Proposed surface" section of `PRD.md` as the starting contract — do not silently substitute alternatives.
+2. If you propose changing the contract during implementation, surface it explicitly in the PR description and update the relevant section of the PRD in the same change (inline, not as a log entry).
+3. If a PRD does *not* exist for a task that meets the "needs a PRD" bar above, draft one from `docs/prds/_template.md` into `docs/prds/<slug>/PRD.md`; do not start implementation against an undocumented surface.
+4. Wireframes belong under `docs/prds/<slug>/wireframes/` (or another path under that PRD directory); link them from `PRD.md` with a repo-relative path rather than duplicating large images elsewhere, unless the PRD-specific wireframe intentionally diverges.
+5. Use the PRD's "Open questions" list for genuinely-undecided items. When a question is resolved, *remove* the bullet and inline the resolution into the relevant functional section — do not keep a "resolved" list.
+
+**Keeping PRDs healthy in an LLM-in-the-loop workflow**:
+
+- **Keep them short** — one screen of markdown. Do not auto-expand sections that add no information.
+- **Lean on examples and non-goals** rather than long acceptance-criteria lists. A worked example plus an explicit "Non-goals" list constrains agent behaviour better than dense prose.
+- **Inline the *why-we-didn't-do-the-obvious-alternative*** next to the relevant Non-goal or field. That's where rationale lives in this repo.
+- **Skip full TypeScript signatures inside PRDs** — sketch model/session shape in 4-6 fields; full TS lives in code, where it can stay accurate.
+- **Resist generic boilerplate sections** (Performance, Security, etc.) unless there is element-specific content for them. A short PRD with only true claims beats a long PRD that pads with truisms.
+
+See [`docs/prds/README.md`](../docs/prds/README.md) for the full conventions and [`docs/prds/venn-classification/PRD.md`](../docs/prds/venn-classification/PRD.md) for the canonical example PRD that anchors the expected length and tone.
+
 ## Upstream Sync (Maintainers Only)
 
 **For maintainers syncing from upstream:**
@@ -174,6 +236,7 @@ bun run check          # Svelte component validation
 - Treat custom elements as imperative APIs: set properties, not attributes.
 - Element packages must not self-register custom elements (no `customElements.define(...)` in element runtime entries such as `index.iife.ts`).
 - Custom element registration is the responsibility of PIE item/element players, which own lifecycle and registry coordination.
+- In Svelte custom-element components (`<svelte:options customElement={...}>`), never include `tag: '...'`. Svelte will auto-define that tag at module evaluation time, which conflicts with player-controlled registration and causes `CustomElementRegistry` duplicate-name errors.
 - Do not assume attribute updates are reactive for object data.
 - For model/session updates, reassign new objects when needed to trigger updates.
 - When using controller-based elements, rebuild and re-set the element model on mode/session changes.

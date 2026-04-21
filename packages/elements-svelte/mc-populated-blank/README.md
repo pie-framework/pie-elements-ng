@@ -163,5 +163,3 @@ bun run build
 
 - **element-demo:** `apps/element-demo` → `/mc-populated-blank/deliver` (sample configs under `src/lib/samples/mc-populated-blank.json`).
 - **pie-players item-demos:** `mc-populated-blank-synthetic-demos.json` (generated from the same models as element-demo).
-
-Architecture notes live in the **aces-archdocs** repo: `docs/projects/itembankviewer/learnosity-cqt-to-pie.md` (Star CQT → PIE alignment).
