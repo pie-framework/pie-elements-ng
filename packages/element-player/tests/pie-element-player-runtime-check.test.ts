@@ -70,4 +70,46 @@ describe('PieElementPlayer runtimeSupportCheck reactivity', () => {
       expect.objectContaining({ runtimeSupportCheck: 'on' })
     );
   });
+
+  it('enriches metadata-only session-changed events with live session', async () => {
+    const player = document.createElement('pie-element-player') as any;
+    player.elementName = 'simple-cloze';
+    player.packageName = '@pie-element/simple-cloze';
+    player.elementVersion = 'latest';
+    player.strategy = 'esm';
+    player.view = 'delivery';
+    player.runtimeSupportCheck = 'off';
+    document.body.appendChild(player);
+
+    await waitForAssertion(() => {
+      expect(loadUnifiedPlayerMock).toHaveBeenCalled();
+      expect(player.querySelector('pie-mock-runtime-check')).toBeTruthy();
+    });
+
+    const inner = player.querySelector('pie-mock-runtime-check') as any;
+    expect(inner).toBeTruthy();
+
+    inner.session = { value: ['A'] };
+
+    let forwardedDetail: any = null;
+    player.addEventListener('session-changed', (event: Event) => {
+      forwardedDetail = (event as CustomEvent).detail;
+    });
+
+    inner.dispatchEvent(
+      new CustomEvent('session-changed', {
+        detail: { complete: true, component: 'pie-mock-runtime-check' },
+        bubbles: true,
+        composed: true,
+      })
+    );
+
+    await waitForAssertion(() => {
+      expect(forwardedDetail).toBeTruthy();
+      expect(forwardedDetail.complete).toBe(true);
+      expect(forwardedDetail.component).toBe('pie-mock-runtime-check');
+      expect(forwardedDetail.session).toEqual({ value: ['A'] });
+      expect(player.session).toEqual({ value: ['A'] });
+    });
+  });
 });

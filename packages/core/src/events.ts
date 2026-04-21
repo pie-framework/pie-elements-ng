@@ -1,5 +1,10 @@
 /**
  * PIE Web Component events
+ *
+ * Legacy compatibility note:
+ * - These `pie.*` events are retained for historical API compatibility.
+ * - Runtime element/player interop in this repository uses
+ *   `@pie-element/shared-player-events` (`session-changed`, `model-set`).
  */
 
 // Dispatched when model is set on student view

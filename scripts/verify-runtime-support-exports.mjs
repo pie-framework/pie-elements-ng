@@ -7,7 +7,6 @@ const repoRoot = join(__dirname, '..');
 const packageRoots = [
   join(repoRoot, 'packages', 'elements-react'),
   join(repoRoot, 'packages', 'elements-svelte'),
-  join(repoRoot, 'packages', 'elements-cljs'),
 ];
 
 const errors = [];

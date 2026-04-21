@@ -1,5 +1,6 @@
 import McPopulatedBlankComponent from './McPopulatedBlank.svelte';
 import { isComplete as isControllerComplete } from '../controller';
+import { ModelSetEvent, SessionChangedEvent } from '@pie-lib/delivery-events-svelte';
 
 const SvelteElementClass = (McPopulatedBlankComponent as any).element;
 
@@ -11,29 +12,12 @@ class McPopulatedBlankElement extends SvelteElementClass {
 
   _dispatchModelSet = () => {
     this.dispatchEvent(
-      new CustomEvent('model-set', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          complete: this._isComplete(),
-          component: this.tagName.toLowerCase(),
-          hasModel: this._model !== undefined,
-        },
-      })
+      new ModelSetEvent(this.tagName.toLowerCase(), this._isComplete(), this._model !== undefined)
     );
   };
 
   _dispatchSessionChanged = () => {
-    this.dispatchEvent(
-      new CustomEvent('session-changed', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          complete: this._isComplete(),
-          component: this.tagName.toLowerCase(),
-        },
-      })
-    );
+    this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this._isComplete()));
   };
 
   set model(m: any) {

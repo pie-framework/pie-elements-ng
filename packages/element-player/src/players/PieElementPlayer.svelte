@@ -253,13 +253,13 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
         detail && typeof detail === 'object' ? (detail as Record<string, unknown>) : null;
       const hasUsableDetail = hasUsableSessionPayload(detailObj);
       const liveSession = (elementInstance as any)?.session;
-      const nextSessionRaw = detail?.session ?? liveSession;
+      const nextSessionRaw = detail?.session ?? liveSession ?? session;
 
       if (nextSessionRaw === undefined) {
         event.stopPropagation();
         return;
       }
-      if (!hasUsableDetail && liveSession === undefined) {
+      if (!hasUsableDetail && nextSessionRaw === undefined) {
         event.stopPropagation();
         return;
       }
@@ -488,9 +488,10 @@ async function ensureLoaded() {
       return;
     }
     if (isLoadAbortedError(err) || requestAbortController.signal.aborted) {
+      const existingRetry = iifeRetryStatus as IifeBundleRetryStatus | null;
       const retry: IifeBundleRetryStatus =
-        iifeRetryStatus && iifeRetryStatus.state === 'cancelled'
-          ? iifeRetryStatus
+        existingRetry?.state === 'cancelled'
+          ? existingRetry
           : {
               state: 'cancelled',
               stage: 'build-status',
@@ -523,10 +524,10 @@ async function ensureLoaded() {
     }
     error = err instanceof Error ? err.message : String(err);
     loading = false;
+    const existingRetry = iifeRetryStatus as IifeBundleRetryStatus | null;
     const terminalRetry =
-      iifeRetryStatus &&
-      (iifeRetryStatus.state === 'timeout' || iifeRetryStatus.state === 'completed')
-        ? iifeRetryStatus
+      existingRetry && (existingRetry.state === 'timeout' || existingRetry.state === 'completed')
+        ? existingRetry
         : undefined;
     dispatch('build-state', {
       loading: false,

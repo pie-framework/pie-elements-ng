@@ -47,6 +47,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
+    "@pie-lib/delivery-events-svelte": "workspace:*",
     "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
     "@pie-lib/styling-svelte": "workspace:*",
     "lodash-es": "^4.17.21"

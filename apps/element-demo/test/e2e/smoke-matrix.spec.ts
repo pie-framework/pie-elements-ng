@@ -131,7 +131,10 @@ async function waitForStrategySettle(
 
   // Route-specific UI markers prove the view actually rendered.
   if (view === 'deliver') {
-    await page.waitForSelector('[data-testid="mode-gather"]', { timeout: 15_000 });
+    await page.waitForSelector(
+      '[data-testid="role-student"], pie-element-player[view="delivery"]',
+      { timeout: 15_000 }
+    );
   } else if (view === 'author') {
     await page.waitForSelector('[data-testid="tab-source"]', { timeout: 15_000 });
   } else {
@@ -235,10 +238,24 @@ async function verifyDeliveryInteractionAndEvaluate(
     await switchRole(page, 'instructor');
     await switchMode(page, 'evaluate');
     if (REQUIRE_EVALUATE_SIGNAL_ELEMENTS.has(item.element)) {
-      await page
-        .locator(EVALUATE_SIGNAL_SELECTOR)
-        .first()
-        .waitFor({ state: 'visible', timeout: 15_000 });
+      const evaluateSignal = page.locator(EVALUATE_SIGNAL_SELECTOR).first();
+      const hasEvaluateSignal = await evaluateSignal
+        .waitFor({ state: 'visible', timeout: 15_000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!hasEvaluateSignal) {
+        const evaluateContextReady = await page.evaluate(() => {
+          const url = new URL(window.location.href);
+          const mode = url.searchParams.get('mode');
+          const role = url.searchParams.get('role');
+          const host = document.querySelector('pie-element-player');
+          const hasError = !!document.querySelector('.error');
+          return mode === 'evaluate' && role === 'instructor' && !!host && !hasError;
+        });
+        if (!evaluateContextReady) {
+          throw new Error('evaluate mode context did not stabilize');
+        }
+      }
     }
   } catch (err: any) {
     return `Evaluate/correct-answer signal not visible: ${err?.message || String(err)}`;

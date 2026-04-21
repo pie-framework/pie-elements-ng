@@ -152,8 +152,8 @@ Reusable utility functions for tests:
 
 - `waitForMathRendering()` - Wait for MathJax LaTeX rendering to complete
 - `selectDemo()` - Select a demo from the dropdown
-- `switchMode()` - Switch between gather/view/evaluate modes
-- `switchRole()` - Switch between student/instructor roles
+- `switchMode()` - Switch between gather/view/evaluate modes via URL query params
+- `switchRole()` - Switch between student/instructor roles via URL query params
 - `getSessionState()` - Get current session state from panel
 - `selectMultipleChoiceOption()` - Click a multiple choice option
 - `getScore()` - Get score from scoring panel
@@ -163,6 +163,9 @@ Reusable utility functions for tests:
 - `waitForElementReady()` - Wait for custom element to load
 - `getMultipleChoiceOptions()` - Get all available options
 - `getSelectedValue()` - Get currently selected option
+
+Mode/role/player/demo are canonicalized through URL params in e2e flows. Prefer param-driven
+navigation over toolbar/control clicks whenever route params can represent the same state.
 
 ## Running Tests
 

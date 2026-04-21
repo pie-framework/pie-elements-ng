@@ -308,6 +308,16 @@ export const ELEMENT_REGISTRY: readonly ElementMetadata[] = [
     "hasConfig": true,
     "hasSession": true,
     "demoCount": 8
+  },
+  {
+    "name": "venn-classification",
+    "title": "Venn Classification",
+    "packageName": "@pie-element/venn-classification",
+    "hasAuthor": true,
+    "hasPrint": false,
+    "hasConfig": true,
+    "hasSession": true,
+    "demoCount": 3
   }
 ];
 

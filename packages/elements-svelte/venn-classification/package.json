@@ -1,0 +1,64 @@
+{
+  "name": "@pie-element/venn-classification",
+  "version": "0.1.0",
+  "description": "Venn diagram classification PIE element (Svelte 5) with 2-set classification, tile tray, optional tile images, pointer + keyboard placement, and MathJax-rendered math tile labels",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "pie": {
+    "controller": "@pie-element/venn-classification/controller"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./delivery": {
+      "development": "./src/delivery/index.ts",
+      "types": "./dist/delivery/index.d.ts",
+      "default": "./dist/delivery/index.js"
+    },
+    "./controller": {
+      "development": "./src/controller/index.ts",
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller/index.js"
+    },
+    "./author": {
+      "development": "./src/author/index.ts",
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "controller.js"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
+    "dev": "vite",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "@pie-lib/delivery-events-svelte": "workspace:*",
+    "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
+    "@pie-lib/styling-svelte": "workspace:*"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@tiptap/core": "^3.19.0",
+    "@tiptap/pm": "^3.19.0",
+    "@tiptap/starter-kit": "^3.19.0",
+    "svelte": "^5.54.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.1",
+    "vitest": "^4.1.0"
+  }
+}

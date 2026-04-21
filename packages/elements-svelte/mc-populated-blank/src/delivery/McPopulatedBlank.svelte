@@ -1,6 +1,5 @@
 <svelte:options
   customElement={{
-    tag: 'mc-populated-blank',
     shadow: 'none',
     props: {
       model: { type: 'Object' },
@@ -12,6 +11,7 @@
 
 <script lang="ts">
 import { color } from '@pie-lib/styling-svelte';
+import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import {
   ensureVariantCssInjected,
   getVariantCssConfig,
@@ -365,18 +365,13 @@ const choiceCorrectnessById = $derived.by(() => {
 });
 
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
-  const host = getHostElement(sourceEl);
-  if (host?.onSessionChange) {
-    host.onSessionChange(updatedSession);
-    return;
-  }
-  host?.dispatchEvent(
-    new CustomEvent('session-changed', {
-      bubbles: true,
-      composed: true,
-      detail: { complete: !!updatedSession?.choiceId, component: 'mc-populated-blank' },
-    })
-  );
+  forwardSessionChange({
+    sourceEl,
+    fallbackSelector: 'mc-populated-blank',
+    component: 'mc-populated-blank',
+    session: updatedSession,
+    complete: !!updatedSession?.choiceId,
+  });
 }
 
 function onRadioChange(e: Event) {
@@ -435,32 +430,20 @@ function handleEnableAutoplayClick() {
 }
 
 function onAudioPlaying(e: Event) {
-  const host = getHostElement(e.currentTarget as HTMLElement);
+  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
+    fallbackSelector: 'mc-populated-blank',
+  });
   isMediaPlaying = true;
   host?.onAudioStarted?.();
   autoPlayPromptOpen = false;
 }
 
 function onAudioEnded(e: Event) {
-  const host = getHostElement(e.currentTarget as HTMLElement);
+  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
+    fallbackSelector: 'mc-populated-blank',
+  });
   isMediaPlaying = false;
   host?.onAudioEnded?.();
-}
-
-function getHostElement(sourceEl?: HTMLElement | null) {
-  let cursor: HTMLElement | null | undefined = sourceEl;
-  while (cursor) {
-    const maybeHost = cursor as any;
-    if (
-      typeof maybeHost?.onSessionChange === 'function' ||
-      typeof maybeHost?.onAudioStarted === 'function' ||
-      typeof maybeHost?.onAudioEnded === 'function'
-    ) {
-      return maybeHost;
-    }
-    cursor = cursor.parentElement;
-  }
-  return (document.querySelector('mc-populated-blank') as any) || null;
 }
 
 function speechButtonLabel(locale = '') {

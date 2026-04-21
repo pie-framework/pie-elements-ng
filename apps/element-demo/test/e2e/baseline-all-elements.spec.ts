@@ -195,7 +195,9 @@ async function getDeliveryContainer(page: Page): Promise<Locator> {
 async function waitForDemoShell(page: Page) {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
-  await page.waitForSelector('[data-testid="mode-gather"]', { timeout: 20_000 });
+  await page.waitForSelector('[data-testid="role-student"], pie-element-player[view="delivery"]', {
+    timeout: 20_000,
+  });
 }
 
 async function waitForAuthorShell(page: Page) {
@@ -393,7 +395,7 @@ async function assertGatherAcceptsInput(page: Page, element: string) {
   if (NON_ACTIONABLE_DELIVERY_ELEMENTS.has(element)) {
     return;
   }
-  await page.click('[data-testid="mode-gather"]');
+  await switchMode(page, 'gather');
   const container = await getDeliveryContainer(page);
   const beforeState = await getSessionState(page);
   const beforeSession = await page
@@ -453,8 +455,8 @@ async function assertEvaluateShowsCorrectAnswers(page: Page, element: string) {
   if (NON_ACTIONABLE_DELIVERY_ELEMENTS.has(element)) {
     return;
   }
-  await page.click('[data-testid="role-instructor"]');
-  await page.click('[data-testid="mode-evaluate"]');
+  await switchRole(page, 'instructor');
+  await switchMode(page, 'evaluate');
   await page.waitForTimeout(600);
 
   const showCorrectById = page.locator('[data-testid="show-correct-answer"]').first();
@@ -591,10 +593,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
     },
     assertEvaluateShowsCorrectAnswers: async (page) => {
       await switchRole(page, 'instructor');
-      const evaluateButton = page.locator('[data-testid="mode-evaluate"]').first();
-      if (!(await evaluateButton.isVisible().catch(() => false))) {
-        throw new Error('categorize evaluate control not visible');
-      }
+      await switchMode(page, 'evaluate');
     },
   },
   rubric: {
@@ -734,12 +733,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
     },
     assertEvaluateShowsCorrectAnswers: async (page) => {
       await switchRole(page, 'instructor');
-      const evaluateButton = page.locator('[data-testid="mode-evaluate"]').first();
-      if (await evaluateButton.isVisible().catch(() => false)) {
-        await evaluateButton.click({ force: true });
-        return;
-      }
-      throw new Error('placement-ordering evaluate mode did not become visible');
+      await switchMode(page, 'evaluate');
     },
   },
   charting: {

@@ -493,8 +493,12 @@ test.describe('Phase 1: Spatial and DnD element interactions', () => {
       }
 
       if (item.element === 'placement-ordering') {
-        const evaluateModeControl = page.locator('[data-testid="mode-evaluate"]').first();
-        expect(await evaluateModeControl.isVisible().catch(() => false)).toBeTruthy();
+        await switchToEvaluate(page);
+        const inEvaluateMode = await page.evaluate(() => {
+          const url = new URL(window.location.href);
+          return url.searchParams.get('mode') === 'evaluate';
+        });
+        expect(inEvaluateMode).toBeTruthy();
         return;
       }
 
@@ -513,8 +517,12 @@ test.describe('Phase 1: Spatial and DnD element interactions', () => {
         return;
       }
       if (item.element === 'number-line') {
-        const evaluateModeControl = page.locator('[data-testid="mode-evaluate"]').first();
-        expect(await evaluateModeControl.isVisible().catch(() => false)).toBeTruthy();
+        await switchToEvaluate(page);
+        const inEvaluateMode = await page.evaluate(() => {
+          const url = new URL(window.location.href);
+          return url.searchParams.get('mode') === 'evaluate';
+        });
+        expect(inEvaluateMode).toBeTruthy();
         return;
       }
 

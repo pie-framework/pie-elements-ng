@@ -27,7 +27,12 @@ async function waitForIifeViewReady(page: Page, view: 'deliver' | 'author') {
     { timeout: 45_000 }
   );
   if (view === 'deliver') {
-    await page.waitForSelector('[data-testid="mode-gather"]', { timeout: 20_000 });
+    await page.waitForSelector(
+      '[data-testid="role-student"], pie-element-player[view="delivery"]',
+      {
+        timeout: 20_000,
+      }
+    );
   } else {
     await page.waitForSelector('.iife-author-player', { timeout: 20_000 });
     await page.waitForSelector('[data-testid="tab-source"]', { timeout: 20_000 });

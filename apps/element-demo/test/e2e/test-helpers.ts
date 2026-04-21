@@ -51,31 +51,67 @@ export async function selectDemo(page: Page, demoId: string) {
 }
 
 /**
- * Switch mode (gather, view, evaluate)
+ * Navigate by query param, preserving current route state.
+ */
+async function navigateWithQueryParam(page: Page, name: string, value: string) {
+  const nextUrl = await page.evaluate(
+    ({ key, nextValue }) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set(key, nextValue);
+      return url.toString();
+    },
+    { key: name, nextValue: value }
+  );
+  await page.goto(nextUrl);
+}
+
+/**
+ * Switch mode (gather, view, evaluate) via URL params.
  */
 export async function switchMode(page: Page, mode: 'gather' | 'view' | 'evaluate') {
-  const modeButton = page.locator(`[data-testid="mode-${mode}"]`).first();
-  await modeButton.waitFor({ state: 'visible', timeout: 10_000 });
-  await modeButton.click({ force: true });
+  await navigateWithQueryParam(page, 'mode', mode);
   await page.waitForLoadState('networkidle');
   await waitForMathRendering(page);
 }
 
 /**
- * Switch role (student, instructor)
+ * Switch role (student, instructor) via URL params.
  */
 export async function switchRole(page: Page, role: 'student' | 'instructor') {
-  const roleButton = page.locator(`[data-testid="role-${role}"]`).first();
-  await roleButton.waitFor({ state: 'visible', timeout: 10_000 });
-  await roleButton.click({ force: true });
+  await navigateWithQueryParam(page, 'role', role);
   await page.waitForLoadState('networkidle');
+  await waitForMathRendering(page);
 }
 
 /**
  * Get session state from the session panel
  */
 export async function getSessionState(page: Page): Promise<any> {
-  const sessionText = await page.locator('[data-testid="session-panel-content"]').textContent();
+  // Prefer host session because some layouts no longer expose a session panel.
+  const hostSession = await page.evaluate(() => {
+    const host = document.querySelector('pie-element-player') as any;
+    if (!host || typeof host !== 'object') {
+      return undefined;
+    }
+    const raw = host.session;
+    if (raw === null || raw === undefined) {
+      return undefined;
+    }
+    try {
+      return JSON.parse(JSON.stringify(raw));
+    } catch {
+      return raw;
+    }
+  });
+  if (hostSession !== undefined) {
+    return hostSession;
+  }
+
+  const panel = page.locator('[data-testid="session-panel-content"]').first();
+  const hasPanel = await panel.isVisible().catch(() => false);
+  if (!hasPanel) return null;
+
+  const sessionText = await panel.textContent();
   if (!sessionText) return null;
 
   try {
@@ -239,7 +275,9 @@ export async function openDeliverRoute(page: Page, element: string, demoId?: str
   await page.goto(`/${element}/deliver?mode=gather&role=student${demoQuery}`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
-  await page.waitForSelector('[data-testid="mode-gather"]', { timeout: 20_000 });
+  await page.waitForSelector('[data-testid="role-student"], pie-element-player[view="delivery"]', {
+    timeout: 20_000,
+  });
 }
 
 /**

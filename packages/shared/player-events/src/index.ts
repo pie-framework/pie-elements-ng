@@ -1,8 +1,17 @@
 /**
  * PIE Player Events
  *
- * Custom events for PIE player communication between elements and the player.
- * Internalized from @pie-framework/pie-player-events for ESM compatibility.
+ * Runtime contract for communication between delivery/author elements and host players.
+ *
+ * Delivery contract:
+ * - `session-changed` carries metadata (`complete`, `component`).
+ * - Session state is sourced from the element instance `.session`; host players may enrich
+ *   forwarded events with `detail.session` snapshots for convenience.
+ * - `model-set` communicates model lifecycle readiness metadata only.
+ *
+ * This package is the canonical source for runtime event names used by element delivery/player
+ * interop (`session-changed`, `model-set`), internalized from
+ * @pie-framework/pie-player-events for ESM compatibility.
  */
 
 export type ModelSetDetail = {
