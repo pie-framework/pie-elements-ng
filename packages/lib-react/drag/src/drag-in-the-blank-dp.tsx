@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import PlaceHolder from './placeholder';
+import PlaceHolder from './placeholder.js';
 import { useDroppable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 

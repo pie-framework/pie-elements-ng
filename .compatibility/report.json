@@ -574,633 +574,534 @@
   "esmRuntimeValidationEnabled": true,
   "esmRuntimeCdnBaseUrl": "https://esm.sh",
   "esmRuntimeValidation": {
-    "categorize": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "12.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/categorize@1.1.0-next.9/es2022/categorize.mjs -> error (This operation was aborted)",
-        "fetch https://esm.sh/@pie-lib/drag@3.1.0-next.5/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.1.0-next.5/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/@pie-lib/feedback?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/feedback')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 273,
-      "fetchedOk": 264,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
     "ebsr": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "13.0.0-beta.1",
+      "version": "13.2.0-next.10",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')"
+        "fetch https://esm.sh/@pie-element/multiple-choice@^12.2.0-next.10?target=es2022 -> error (This operation was aborted)"
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 262,
-      "fetchedOk": 258,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedModules": 34,
+      "fetchedOk": 33,
+      "firstFailingUrl": "https://esm.sh/@pie-element/multiple-choice@^12.2.0-next.10?target=es2022"
     },
-    "charting": {
+    "categorize": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "11.0.0-beta.1",
+      "version": "12.2.0-next.10",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/charting@6.1.0-next.25/es2022/charting.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/correct-answer-toggle@3.1.0-next.5/es2022/correct-answer-toggle.mjs -> error (This operation was aborted)",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')"
+        "fetch https://esm.sh/@pie-lib/drag@3.2.0-next.9/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 264,
-      "fetchedOk": 257,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedModules": 278,
+      "fetchedOk": 274,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@3.2.0-next.9/es2022/drag.mjs"
     },
     "complex-rubric": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "6.0.0-beta.2",
+      "version": "6.2.0-next.7",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-element/rubric@^7.0.0-beta.1?target=es2022 -> error (This operation was aborted)",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.1.0-next.5/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/config-ui?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/config-ui')"
+        "fetch https://esm.sh/@pie-element/multi-trait-rubric@^7.2.0-next.9?target=es2022 -> error (This operation was aborted)",
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 252,
-      "fetchedOk": 246,
-      "firstFailingUrl": "https://esm.sh/@pie-element/rubric@^7.0.0-beta.1?target=es2022"
-    },
-    "drag-in-the-blank": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "9.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/correct-answer-toggle@3.1.0-next.5/es2022/correct-answer-toggle.mjs -> error (This operation was aborted)",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.1.0-next.5/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/drag@3.1.0-next.5/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 260,
-      "fetchedOk": 251,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedOk": 249,
+      "firstFailingUrl": "https://esm.sh/@pie-element/multi-trait-rubric@^7.2.0-next.9?target=es2022"
     },
     "extended-text-entry": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "14.0.0-beta.1",
+      "version": "14.2.0-next.7",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/config-ui@12.1.0-next.5/es2022/config-ui.mjs -> error (This operation was aborted)",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.1.0-next.5/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/lodash/debounce?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/feedback?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/feedback')"
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.2.0-next.35/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 262,
-      "fetchedOk": 254,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedModules": 264,
+      "fetchedOk": 260,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/editable-html-tip-tap@1.2.0-next.35/es2022/editable-html-tip-tap.mjs"
     },
-    "drawing-response": {
+    "fraction-model": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "11.0.0-beta.1",
+      "version": "5.2.0-next.8",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/math-rendering@4.1.0-next.4/es2022/math-rendering.mjs -> error (This operation was aborted)",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 256,
+      "fetchedOk": 253,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "drawing-response": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.2.0-next.7",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 260,
-      "fetchedOk": 258,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/math-rendering@4.1.0-next.4/es2022/math-rendering.mjs"
+      "fetchedOk": 259,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     },
-    "explicit-constructed-response": {
+    "drag-in-the-blank": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "10.0.0-beta.1",
+      "version": "9.2.0-next.8",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/correct-answer-toggle@3.1.0-next.5/es2022/correct-answer-toggle.mjs -> error (This operation was aborted)",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.1.0-next.5/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/drag@3.1.0-next.5/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')"
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/drag@^3.2.0-next.9?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 275,
-      "fetchedOk": 266,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedModules": 264,
+      "fetchedOk": 260,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     },
-    "fraction-model": {
+    "explicit-constructed-response": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "5.0.0-beta.1",
+      "version": "10.2.0-next.10",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/lodash/cloneDeep?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.1.0-next.5/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/drag@^3.2.0-next.9?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 277,
+      "fetchedOk": 273,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "charting": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.2.0-next.8",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/charting@6.2.0-next.36/es2022/charting.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 272,
+      "fetchedOk": 269,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/charting@6.2.0-next.36/es2022/charting.mjs"
+    },
+    "image-cloze-association": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "9.2.0-next.8",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/drag@3.2.0-next.9/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 272,
+      "fetchedOk": 269,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@3.2.0-next.9/es2022/drag.mjs"
+    },
+    "hotspot": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "10.2.0-next.8",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 270,
+      "fetchedOk": 268,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "graphing-solution-set": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "5.2.0-next.7",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 264,
+      "fetchedOk": 261,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "inline-dropdown": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "9.2.0-next.12",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/drag@^3.2.0-next.9?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 264,
+      "fetchedOk": 260,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "likert": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "3.2.0-next.7",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 254,
-      "fetchedOk": 248,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "hotspot": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "10.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/lodash/isEqual?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 263,
-      "fetchedOk": 258,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs"
-    },
-    "graphing-solution-set": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "5.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.1.0-next.5/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^5.1.0-next.5?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.1.0-next.5?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/lodash/cloneDeep?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/lodash/differenceWith?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/lodash/isEqual?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 267,
       "fetchedOk": 253,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     },
-    "graphing": {
+    "match": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "9.0.0-beta.1",
+      "version": "11.2.0-next.8",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@^5.1.0-next.5?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.1.0-next.5?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/drag@^3.1.0-next.5?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/lodash/cloneDeep?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/lodash/differenceWith?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 274,
-      "fetchedOk": 257,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedOk": 272,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     },
-    "image-cloze-association": {
+    "graphing": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "9.0.0-beta.1",
+      "version": "9.2.0-next.8",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/drag@3.1.0-next.5/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/lodash/flatMap?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/lodash/groupBy?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/react-transition-group?target=es2022 -> 500 (npm registry returned 429 for package 'react-transition-group')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/lodash?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/drag@^3.2.0-next.9?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/react-draggable@^3.3.0?target=es2022 -> 500 (cjsModuleLexer(fallback mode): exit status 1)"
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 264,
-      "fetchedOk": 256,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@3.1.0-next.5/es2022/drag.mjs"
-    },
-    "likert": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "3.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 253,
-      "fetchedOk": 249,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "match": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "11.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/@pie-lib/feedback?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/feedback')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 269,
-      "fetchedOk": 263,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "inline-dropdown": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "9.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@1.1.0-next.5/es2022/editable-html-tip-tap.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/drag@3.1.0-next.5/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@dnd-kit/utilities?target=es2022 -> 500 (npm registry returned 429 for package '@dnd-kit/utilities')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 262,
-      "fetchedOk": 254,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "math-inline": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "11.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/render-ui')",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-framework/math-validation?target=es2022 -> 500 (npm registry returned 429 for package '@pie-framework/math-validation')",
-        "fetch https://esm.sh/@pie-lib/feedback?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/feedback')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 268,
-      "fetchedOk": 261,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedModules": 277,
+      "fetchedOk": 272,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     },
     "match-list": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "6.0.0-beta.1",
+      "version": "6.2.0-next.4",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/drag@3.1.0-next.5/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/@pie-lib/feedback?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/feedback')"
+        "fetch https://esm.sh/@pie-lib/drag@3.2.0-next.9/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 265,
-      "fetchedOk": 258,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "matrix": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "3.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 254,
-      "fetchedOk": 249,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "math-templated": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "6.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-framework/mathquill?target=es2022 -> 500 (npm registry returned 429 for package '@pie-framework/mathquill')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/lodash/isEqual?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-framework/math-validation?target=es2022 -> 500 (npm registry returned 429 for package '@pie-framework/math-validation')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 268,
-      "fetchedOk": 253,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedModules": 274,
+      "fetchedOk": 271,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@3.2.0-next.9/es2022/drag.mjs"
     },
     "multi-trait-rubric": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "7.0.0-beta.1",
+      "version": "7.2.0-next.9",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 253,
-      "fetchedOk": 249,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "multiple-choice": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "12.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": true,
-      "entryParseOk": true,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 258,
-      "fetchedOk": 253,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "passage": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "6.0.0-beta.1",
-      "entryOk": false,
-      "controllerOk": true,
-      "entryParseOk": false,
-      "controllerParseOk": true,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 254,
-      "fetchedOk": 249,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedOk": 253,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     },
-    "number-line": {
+    "matrix": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "12.0.0-beta.1",
-      "entryOk": true,
-      "controllerOk": false,
-      "entryParseOk": true,
-      "controllerParseOk": false,
-      "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/@pie-lib/feedback?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/feedback')"
-      ],
-      "probeMode": "deep",
-      "maxDepth": 6,
-      "maxModules": 250,
-      "fetchedModules": 291,
-      "fetchedOk": 285,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
-    },
-    "rubric": {
-      "compatible": false,
-      "cdnBaseUrl": "https://esm.sh",
-      "version": "7.0.0-beta.1",
+      "version": "3.2.0-next.7",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')"
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 253,
-      "fetchedOk": 250,
-      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs"
+      "fetchedModules": 256,
+      "fetchedOk": 255,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     },
-    "select-text": {
+    "multiple-choice": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "12.0.0-beta.1",
+      "version": "12.2.0-next.10",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/text-select@2.1.0-next.5/es2022/text-select.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/@pie-lib/feedback?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/feedback')",
-        "fetch https://esm.sh/lodash/isEmpty?target=es2022 -> 500 (npm registry returned 429 for package 'lodash')"
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
       "fetchedModules": 264,
-      "fetchedOk": 256,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedOk": 262,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     },
-    "placement-ordering": {
+    "math-templated": {
       "compatible": false,
       "cdnBaseUrl": "https://esm.sh",
-      "version": "13.0.0-beta.1",
+      "version": "6.2.0-next.9",
       "entryOk": true,
       "controllerOk": true,
       "entryParseOk": true,
       "controllerParseOk": true,
       "errors": [
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/drag@3.1.0-next.5/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/@pie-lib/render-ui@5.1.0-next.5/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
-        "fetch https://esm.sh/speech-rule-engine/js/common/system?target=es2022 -> 500 (npm registry returned 429 for package 'speech-rule-engine')",
-        "fetch https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022 -> 500 (npm registry returned 429 for package '@babel/runtime')",
-        "fetch https://esm.sh/@pie-lib/controller-utils?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/controller-utils')",
-        "fetch https://esm.sh/@pie-lib/feedback?target=es2022 -> 500 (npm registry returned 429 for package '@pie-lib/feedback')",
-        "fetch https://esm.sh/js-combinatorics?target=es2022 -> 500 (npm registry returned 429 for package 'js-combinatorics')"
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/editable-html-tip-tap@^1.2.0-next.35?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/drag@^3.2.0-next.9?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
       ],
       "probeMode": "deep",
       "maxDepth": 6,
       "maxModules": 250,
-      "fetchedModules": 273,
-      "fetchedOk": 265,
-      "firstFailingUrl": "https://esm.sh/@babel/runtime/helpers/interopRequireDefault?target=es2022"
+      "fetchedModules": 296,
+      "fetchedOk": 292,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "math-inline": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "11.2.0-next.11",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 290,
+      "fetchedOk": 288,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "passage": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "6.2.0-next.8",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 256,
+      "fetchedOk": 255,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "number-line": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "12.2.0-next.9",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 284,
+      "fetchedOk": 282,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "placement-ordering": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "13.2.0-next.8",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/drag@3.2.0-next.9/es2022/drag.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 279,
+      "fetchedOk": 276,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/drag@3.2.0-next.9/es2022/drag.mjs"
+    },
+    "rubric": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "7.2.0-next.7",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 254,
+      "fetchedOk": 253,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
+    },
+    "select-text": {
+      "compatible": false,
+      "cdnBaseUrl": "https://esm.sh",
+      "version": "12.2.0-next.8",
+      "entryOk": true,
+      "controllerOk": true,
+      "entryParseOk": true,
+      "controllerParseOk": true,
+      "errors": [
+        "fetch https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/text-select@2.2.0-next.9/es2022/text-select.mjs -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions.",
+        "fetch https://esm.sh/@pie-lib/render-ui@^5.2.0-next.8?target=es2022 -> 500 (esbuild: The JSX syntax extension is not currently enabled) Hint: CDN failed parsing JSX in a .js/.mjs file. This usually means the published package contains uncompiled JSX; fix build output or file extensions."
+      ],
+      "probeMode": "deep",
+      "maxDepth": 6,
+      "maxModules": 250,
+      "fetchedModules": 274,
+      "fetchedOk": 271,
+      "firstFailingUrl": "https://esm.sh/@pie-lib/render-ui@5.2.0-next.8/es2022/render-ui.mjs"
     }
   },
   "elementDetails": {
@@ -1534,7 +1435,6 @@
         "@pie-lib/math-rendering",
         "@pie-lib/render-ui",
         "classnames",
-        "core-js",
         "debug",
         "react",
         "react-dom"
@@ -1570,7 +1470,6 @@
         "@pie-lib/math-rendering",
         "@pie-lib/render-ui",
         "classnames",
-        "core-js",
         "debug",
         "react",
         "react-dom"
@@ -1774,6 +1673,7 @@
       "compatible": true,
       "directDeps": [
         "@dnd-kit/core",
+        "@dnd-kit/modifiers",
         "@emotion/react",
         "@emotion/style",
         "@mui/icons-material",
@@ -1809,7 +1709,6 @@
         "@emotion/style",
         "@mui/icons-material",
         "@mui/material",
-        "@pie-framework/mathquill",
         "@pie-framework/pie-player-events",
         "@pie-lib/correct-answer-toggle",
         "@pie-lib/math-input",
@@ -2500,7 +2399,7 @@
       "blockers": []
     }
   },
-  "lastAnalyzed": "2026-02-16T03:05:25.303Z",
+  "lastAnalyzed": "2026-04-23T06:22:23.608Z",
   "summary": {
     "totalElements": 27,
     "compatibleElements": 27,

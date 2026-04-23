@@ -5,9 +5,10 @@
 This is a modern implementation of the PIE (Platform Independent Elements) specification, built with TypeScript, ESM, and contemporary tooling. The project currently syncs React-based elements from the upstream [pie-elements](https://github.com/PieLabs/pie-elements) repository while providing modern ESM packaging, Vite builds, and improved developer experience.
 
 **Current Status**: Early development (v0.1.0)
+
 - 28 React elements synced from upstream
 - Core infrastructure and build tooling established
-- Elements are private packages (not yet published to npm)
+- Element and lib packages are publish-enabled (versioned/released via Changesets + GitHub Actions)
 - Future plans include native Svelte 5 implementations and public npm releases
 
 ## Core Philosophy
@@ -86,12 +87,12 @@ This was enabled by the PIE team's work on upstream library updates (React 18, M
 
 ![Unified Player: One Player, All Views, Any Framework](img/unified-player-architecture-1-1769801208629.jpg)
 
-**Element-Level Players** (this repository):
+**Element-Level Player** (this repository):
 
-- `<pie-esm-element-player>` - Interactive delivery and authoring
-- `<pie-esm-print-player>` - Print views for development/testing
+- `<pie-element-player>` - Unified delivery, authoring, and print views
 - **Package**: `@pie-element/element-player`
-- **Use for**: Element development, testing, documentation
+- **Use for**: Element development, testing, documentation, and optional composable embedding
+- **Positioning**: Not the default production orchestration path; production usage typically relies on the standard players in upstream `pie-elements` and `pie-players`
 
 **Item-Level Players** (pie-players repository):
 
@@ -434,20 +435,14 @@ $ git push
 
 **Publishing strategy:**
 
-**Current Status**: All packages are currently marked as `"private": true` and are not published to npm. This is an early development phase decision.
+**Current Status**: `@pie-element/*` and `@pie-lib/*` packages are configured to be publishable and are managed by the Changesets release workflow.
 
-**Future Publishing Plan**:
+**Release behavior**:
 
-Once the project reaches a stable release (v1.0.0+):
+- **Element packages** (`@pie-element/*`) are versioned and published by CI.
+- **Library packages** (`@pie-lib/*`) are also versioned/publishable so internal dependency graphs stay coherent during coordinated releases.
 
-- **Element packages** (`@pie-element/*`) - Will be published for external consumption
-- **Library packages** (`@pie-lib/*`) - Will **NOT** be published independently
-  - These are internal implementation details of the elements
-  - Bundled into element packages during build
-  - External consumers will never import `@pie-lib` packages directly
-  - Simplifies the public API surface
-
-This will differ from the legacy approach where `@pie-lib` packages were independently published and consumed. In pie-elements-ng, `@pie-lib` packages exist purely for internal code organization within the monorepo.
+This differs from earlier phases where most synced packages were intentionally private.
 
 **Trade-offs:**
 
@@ -581,7 +576,7 @@ The architecture consists of three main layers:
 **Key organizational decisions**:
 
 - **@pie-lib integration**: The `@pie-lib/*` packages (formerly a separate repository) are now in `packages/lib-react/` for better version management and coordination
-- **Versioning**: Independent versioning using Changesets. Most synced packages are marked private; core packages like `@pie-element/core` are publishable
+- **Versioning**: Changesets-managed coordinated versioning and publishing for `@pie-element/*` and `@pie-lib/*` packages
 - **Workspaces**: Bun workspaces with `"workspace:*"` references ensure consistency across the monorepo
 
 ### Element Package Anatomy
@@ -1170,23 +1165,33 @@ Note: `'unsafe-inline'` for styles is required for Svelte scoped styles.
 
 ### NPM Publishing
 
-**Current Status**: Packages are not yet published to npm (all marked as `"private": true`).
-
-**Future Publishing Strategy**: Once ready for public release, packages will be published via GitHub Actions:
+**Current Strategy**: Publishing is CI-driven via GitHub Actions and Changesets:
 
 1. Developer creates changeset: `bun run changeset`
-2. PR merged to main
+2. PR merged to `master` (stable) or `develop` (prerelease)
 3. GitHub Action creates "Version Packages" PR
 4. Maintainer merges Version PR
 5. Packages automatically published to npm
 
-See [PUBLISHING.md](./PUBLISHING.md) for details (when available).
+**Dist-tag routing**:
+
+- `master` -> release channel `stable` -> npm tag `latest`
+- `develop` -> release channel `next` -> npm tag `next`
+- optional beta workflows -> release channel `beta` -> npm tag `beta`
+
+Branch/channel mismatches are guarded in CI and publish scripts.
+
+If a publish fails after merge, maintainers can manually rerun the Release workflow
+with `release_intent=publish` and `force_publish=true` to recover without creating a
+new version-bump commit.
+
+See [PUBLISHING.md](./PUBLISHING.md) for policy details, backfill runbook, and verification commands.
 
 ### Versioning
 
 This project is designed to use **workspace-wide versioning** where all packages share the same version number. This is a deliberate architectural decision that differs from the upstream pie-elements/pie-lib projects.
 
-**Current Status**: All packages are at version `0.1.0` and marked as `"private": true` (not published). Workspace-wide versioning will be enforced when packages are published publicly.
+**Current Status**: `@pie-element/*` and `@pie-lib/*` packages are publish-enabled and released through the Changesets CI flow.
 
 See [section 8 above](#8-workspace-wide-versioning) for a detailed explanation of why this approach was chosen and the problems it solves.
 
@@ -1218,12 +1223,12 @@ $ bun run changeset
 @pie-element/multiple-choice: 1.5.0     # Will be published to npm
 @pie-element/drag-in-the-blank: 1.5.0   # Will be published to npm (even though unchanged)
 
-# Internal packages are versioned but NOT published:
-@pie-lib/render-ui: 1.5.0               # Internal only (bundled into elements)
-@pie-lib/math-rendering: 1.5.0          # Internal only (bundled into elements)
+# Lib packages are versioned in the same coordinated release:
+@pie-lib/render-ui: 1.5.0
+@pie-lib/math-rendering: 1.5.0
 ```
 
-**Current Reality**: All packages are at `0.1.0` and private (not published).
+**Current Reality**: Package releases are coordinated through the CI release workflow.
 
 This ensures all packages are always compatible and tested together. External consumers only interact with `@pie-element/*` packages, which bundle all necessary dependencies.
 

@@ -10,7 +10,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
+import CustomToolbarWrapper from '../../extensions/custom-toolbar-wrapper.js';
 
 const ExplicitConstructedResponse = (props) => {
   const { editor, node, getPos, options, selected } = props;
@@ -19,7 +21,7 @@ const ExplicitConstructedResponse = (props) => {
   const { respAreaToolbar, error: errorFn } = options;
   const pos = getPos();
   const [showToolbar, setShowToolbar] = useState(false);
-  const EcrToolbar = respAreaToolbar(node, editor, () => {});
+  const EcrToolbar = respAreaToolbar([node, pos], editor, () => { });
   const toolbarRef = useRef(null);
 
   let error;
@@ -30,12 +32,6 @@ const ExplicitConstructedResponse = (props) => {
 
     error = !!errorValue?.[respIndex]?.[0];
   }
-
-  const handleDone = (newLatex) => {
-    updateAttributes({ latex: newLatex });
-    setShowToolbar(false);
-    editor.commands.focus();
-  };
 
   useEffect(() => {
     const { selection } = editor.state;
@@ -52,7 +48,10 @@ const ExplicitConstructedResponse = (props) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      const insideCharacterPicker = event.target.closest('.insert-character-dialog') || event.target.closest('[data-toolbar-for]');
+
       if (
+        !insideCharacterPicker &&
         toolbarRef.current &&
         !toolbarRef.current.contains(event.target) &&
         !event.target.closest('[data-inline-node]')
@@ -107,6 +106,26 @@ const ExplicitConstructedResponse = (props) => {
         <div ref={toolbarRef} className="absolute z-50 bg-white shadow-lg rounded p-2" style={{ zIndex: 1 }}>
           <EcrToolbar />
         </div>
+      )}
+      {showToolbar && editor._tiptapContainerEl && ReactDOM.createPortal(
+          <CustomToolbarWrapper
+            deletable
+            toolbarOpts={{ minWidth: 'auto' }}
+            autoWidth
+            style={{ top: -40, left: 0, right: 0 }}
+            onDelete={() => {
+              const { tr } = editor.state;
+              tr.delete(pos, pos + node.nodeSize);
+              // Prevent the debounced onBlur/onDone from firing into the
+              // now-deleted node's stale position
+              editor._toolbarOpened = false;
+              editor.view.dispatch(tr);
+              setShowToolbar(false);
+              editor.commands.focus();
+            }}
+            showDone={false}
+          />,
+        editor._tiptapContainerEl,
       )}
     </NodeViewWrapper>
   );

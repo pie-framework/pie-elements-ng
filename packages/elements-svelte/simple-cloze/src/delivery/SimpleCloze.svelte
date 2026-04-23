@@ -10,6 +10,7 @@
 
 <script lang="ts">
 import { onMount } from 'svelte';
+import { forwardSessionChange } from '@pie-lib/delivery-events-svelte';
 
 // Props using $props() in Svelte 5 custom element mode
 let props = $props<{ model?: any; session?: any }>();
@@ -57,25 +58,19 @@ function handleInput(event: Event) {
   const target = event.target as HTMLInputElement;
   const newValue = target.value;
 
-  // Create updated session
+  // Replace the session object so host players can detect updates reliably.
   const updatedSession = {
     ...props.session,
     response: newValue,
   };
 
-  // Find the host custom element
-  const hostElement = target.closest('simple-cloze') as any;
-  if (hostElement?._internalSession) {
-    hostElement._internalSession = updatedSession;
-  }
-
-  // Dispatch custom event for web component
-  const customEvent = new CustomEvent('session-changed', {
-    bubbles: true,
-    composed: true,
-    detail: { complete: true, component: 'simple-cloze' },
+  forwardSessionChange({
+    sourceEl: target,
+    fallbackSelector: 'simple-cloze',
+    component: 'simple-cloze',
+    session: updatedSession,
+    complete: newValue.trim().length > 0,
   });
-  hostElement?.dispatchEvent(customEvent);
 }
 
 function toggleCorrectAnswer() {

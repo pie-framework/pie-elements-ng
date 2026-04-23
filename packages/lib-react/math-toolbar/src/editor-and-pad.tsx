@@ -21,7 +21,7 @@ import InputLabel from '@mui/material/InputLabel';
 
 import { HorizontalKeypad, mq, updateSpans } from '@pie-lib/math-input';
 import { color } from '@pie-lib/render-ui';
-import { markFractionBaseSuperscripts } from './utils';
+import { markFractionBaseSuperscripts } from './utils.js';
 
 const { commonMqFontStyles, commonMqKeyboardStyles, longdivStyles, supsubStyles } = mq.CommonMqStyles;
 const log = debug('@pie-lib:math-toolbar:editor-and-pad');

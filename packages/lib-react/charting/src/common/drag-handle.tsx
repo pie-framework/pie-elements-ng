@@ -16,8 +16,8 @@ import Close from '@mui/icons-material/Close';
 
 import { gridDraggable, types, utils } from '@pie-lib/plot';
 import { color as enumColor } from '@pie-lib/render-ui';
-import { getScale } from '../utils';
-import DragIcon from './drag-icon';
+import { getScale } from '../utils.js';
+import DragIcon from './drag-icon.js';
 
 const StyledSvg: any = styled('svg')(() => ({
   overflow: 'visible !important',

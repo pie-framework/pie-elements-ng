@@ -18,10 +18,10 @@ import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
 
-import ECRToolbar from './ecr-toolbar';
-import AlternateResponses from './alternateResponses';
-import { decodeHTML, getAdjustedLength } from './markupUtils';
-import { generateValidationMessage } from './utils';
+import ECRToolbar from './ecr-toolbar.js';
+import AlternateResponses from './alternateResponses.js';
+import { decodeHTML, getAdjustedLength } from './markupUtils.js';
+import { generateValidationMessage } from './utils.js';
 
 const { toggle, Panel, dropdown } = settings;
 
@@ -418,13 +418,15 @@ export class Main extends React.Component {
               duplicates: true,
             },
             maxResponseAreas: maxResponseAreas,
-            respAreaToolbar: (node, editor, onToolbarDone) => {
+            respAreaToolbar: (nodeInfo, editor, onToolbarDone) => {
+              const [node, pos] = nodeInfo;
               const { model } = this.props;
               const correctChoice = (model.choices[node.attrs.index] || [])[0];
               return () => (
                 <ECRToolbar
                   onChangeResponse={(newVal) => this.onChangeResponse(node.attrs.index, newVal)}
                   node={node}
+                  pos={pos}
                   editor={editor}
                   onToolbarDone={onToolbarDone}
                   correctChoice={correctChoice}

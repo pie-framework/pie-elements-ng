@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
-import Main from './main';
+import Main from './main.js';
 
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';

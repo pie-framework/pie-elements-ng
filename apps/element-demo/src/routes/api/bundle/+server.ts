@@ -6,18 +6,20 @@
 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { Bundler } from '@pie-element/bundler-shared';
-import type { BuildBundleName } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
+import type { BuildBundleName } from '@pie-element/element-bundler';
 import { join } from 'node:path';
 import { mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
-import { mkDependencyHash } from '@pie-element/bundler-shared';
+import { mkBundleCacheKey } from '@pie-element/element-bundler';
 import { createOrJoinBuild, emitBuildEvent, getBuildSnapshot } from './build-state';
+import { createWorkspaceCacheSaltForDependencies } from '$lib/testing/workspace-fingerprint';
 
 const DEFAULT_INSTANCE_DIR = join(process.cwd(), '.cache', 'demo-bundler');
 const instanceDir = process.env.DEMO_BUNDLER_INSTANCE_DIR || DEFAULT_INSTANCE_DIR;
 const localWorkspaceRoot = join(process.cwd(), '..', '..');
 const resolutionMode =
   process.env.DEMO_BUNDLER_RESOLUTION_MODE === 'prod-faithful' ? 'prod-faithful' : 'workspace-fast';
+const enableSourceMaps = process.env.DEMO_BUNDLER_SOURCEMAPS !== '0';
 const VALID_BUNDLES = new Set<BuildBundleName>(['player', 'client-player', 'editor']);
 const INIT_MARKER_PATH = join(instanceDir, '.demo-bundler-initialized');
 
@@ -28,6 +30,22 @@ function isBuildBundleName(value: unknown): value is BuildBundleName {
 let initialized = false;
 let bundler: Bundler | null = null;
 
+function logApi(message: string, data?: Record<string, unknown>) {
+  if (data) {
+    console.log(`[api/bundle] ${message}`, data);
+    return;
+  }
+  console.log(`[api/bundle] ${message}`);
+}
+
+function logBuildApi(buildId: string, message: string, data?: Record<string, unknown>) {
+  if (data) {
+    console.log(`[api/bundle][${buildId}] ${message}`, data);
+    return;
+  }
+  console.log(`[api/bundle][${buildId}] ${message}`);
+}
+
 function clearWorkspacePaths() {
   const outputDir = join(instanceDir, 'bundles');
   const cacheDir = join(instanceDir, 'cache');
@@ -37,8 +55,11 @@ function clearWorkspacePaths() {
   mkdirSync(cacheDir, { recursive: true });
 }
 
-function clearBundleForDependencies(dependencies: Array<{ name: string; version: string }>) {
-  const hash = mkDependencyHash(dependencies);
+function clearBundleForDependencies(
+  dependencies: Array<{ name: string; version: string }>,
+  cacheSalt?: string
+) {
+  const hash = mkBundleCacheKey(dependencies, cacheSalt);
   rmSync(join(instanceDir, 'bundles', hash), { recursive: true, force: true });
   rmSync(join(instanceDir, 'cache', hash), { recursive: true, force: true });
 }
@@ -94,25 +115,40 @@ export const POST: RequestHandler = async ({ request }) => {
 
     if (buildRequest.clearCache === true) {
       clearWorkspacePaths();
-    } else if (buildRequest.forceRebuild === true) {
-      clearBundleForDependencies(dependencies);
     }
 
     const requestedBundles = Array.isArray(buildRequest.requestedBundles)
       ? Array.from(new Set(buildRequest.requestedBundles.filter(isBuildBundleName))).sort()
       : undefined;
+    const effectiveRequestedBundles = requestedBundles || ['player', 'client-player', 'editor'];
+    const cacheSalt =
+      resolutionMode === 'workspace-fast'
+        ? createWorkspaceCacheSaltForDependencies({
+            workspaceRoot: localWorkspaceRoot,
+            dependencies,
+            requestedBundles: effectiveRequestedBundles,
+            resolutionMode,
+            sourceMaps: enableSourceMaps,
+            extraFiles: [join('packages', 'shared', 'bundler-shared', 'src', 'index.ts')],
+          })
+        : undefined;
 
-    console.log('[api/bundle] Build request:', {
+    logApi('build request', {
       deps: dependencies,
-      requestedBundles: requestedBundles || ['player', 'client-player', 'editor'],
+      requestedBundles: effectiveRequestedBundles,
       forceRebuild: !!buildRequest.forceRebuild,
       clearCache: !!buildRequest.clearCache,
+      sourceMaps: enableSourceMaps,
       wait: buildRequest.wait !== false,
+      cacheSalt: cacheSalt?.slice(0, 20),
     });
-    const hash = mkDependencyHash(dependencies);
-    const buildKey = `${hash}:${(requestedBundles || ['player', 'client-player', 'editor']).join(',')}`;
+    if (buildRequest.forceRebuild === true) {
+      clearBundleForDependencies(dependencies, cacheSalt);
+    }
+    const hash = mkBundleCacheKey(dependencies, cacheSalt);
+    const buildKey = `${hash}:${effectiveRequestedBundles.join(',')}:sourcemaps=${enableSourceMaps}`;
     const waitForResult = buildRequest.wait !== false;
-    console.log('[api/bundle] Build key:', { hash, buildKey });
+    logApi('build key', { hash, buildKey });
     const build = createOrJoinBuild(
       buildKey,
       {
@@ -121,6 +157,8 @@ export const POST: RequestHandler = async ({ request }) => {
           resolutionMode,
           workspaceRoot: resolutionMode === 'workspace-fast' ? localWorkspaceRoot : undefined,
           requestedBundles,
+          sourceMaps: enableSourceMaps,
+          cacheSalt,
         },
       },
       hash,
@@ -136,9 +174,14 @@ export const POST: RequestHandler = async ({ request }) => {
           (event) => emitBuildEvent(buildId, event)
         )
     );
-    console.log('[api/bundle] Build state:', { buildId: build.buildId, joined: build.joined });
+    logBuildApi(build.buildId, build.joined ? 'joined existing build' : 'started new build', {
+      hash,
+      requestedBundles: effectiveRequestedBundles,
+      waitForResult,
+    });
 
     if (!waitForResult) {
+      logBuildApi(build.buildId, 'returning async response (202)');
       return json(
         {
           buildId: build.buildId,
@@ -153,8 +196,7 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const result = await build.promise;
-    console.log('[api/bundle] Build result:', {
-      buildId: build.buildId,
+    logBuildApi(build.buildId, 'returning build result', {
       success: result.success,
       cached: !!result.cached,
       duration: result.duration,
@@ -169,7 +211,7 @@ export const POST: RequestHandler = async ({ request }) => {
       { status: result.success ? 200 : 500 }
     );
   } catch (error: any) {
-    console.error('[api/bundle] Error:', error);
+    console.error('[api/bundle] unhandled POST error:', error);
     return json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 };
@@ -179,8 +221,14 @@ export const GET: RequestHandler = async ({ url }) => {
   if (buildId) {
     const snapshot = getBuildSnapshot(buildId);
     if (!snapshot) {
+      logBuildApi(buildId, 'status requested but build not found');
       return json({ error: 'buildId not found' }, { status: 404 });
     }
+    logBuildApi(buildId, 'status requested', {
+      stage: snapshot.stage,
+      done: snapshot.done,
+      success: snapshot.success,
+    });
     return json({
       ...snapshot,
       source: 'local',
@@ -194,6 +242,7 @@ export const GET: RequestHandler = async ({ url }) => {
   }
 
   const exists = getBundler().exists(hash);
+  logApi('hash lookup', { hash, exists });
 
   if (exists) {
     return json({

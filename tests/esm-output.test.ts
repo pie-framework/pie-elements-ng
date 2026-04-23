@@ -33,15 +33,20 @@ function collectExportTargets(exportsField: PackageJson['exports']): string[] {
 }
 
 function isLikelyEsm(source: string): boolean {
-  if (
-    source.includes('module.exports') ||
-    source.includes('exports.') ||
-    source.includes('require(')
-  ) {
+  // Avoid treating Svelte custom-element output like `exports.forEach(...)` as CJS.
+  if (/\bmodule\.exports\b/.test(source) || /\brequire\s*\(/.test(source)) {
     return false;
   }
   return /\bexport\b|\bimport\b|import\.meta/.test(source);
 }
+
+// Packages explicitly excluded from `bun run build` in the root package.json.
+// Keep this in sync with the `--filter=!...` flags there so the test does not
+// flag missing build outputs for packages we deliberately do not build.
+const BUILD_EXCLUDED_PACKAGES = new Set<string>([
+  '@pie-element/math-inline',
+  '@pie-element/math-templated',
+]);
 
 describe('ESM build outputs', () => {
   const root = process.cwd();
@@ -63,6 +68,10 @@ describe('ESM build outputs', () => {
       }
 
       if (pkg.name?.startsWith('@pie-wc/')) {
+        continue;
+      }
+
+      if (pkg.name && BUILD_EXCLUDED_PACKAGES.has(pkg.name)) {
         continue;
       }
 

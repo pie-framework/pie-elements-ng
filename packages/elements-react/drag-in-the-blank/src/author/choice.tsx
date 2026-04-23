@@ -14,12 +14,12 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import Delete from '@mui/icons-material/Delete';
 import { useDraggable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
-import { choiceIsEmpty } from './markupUtils';
+import { choiceIsEmpty } from './markupUtils.js';
 
 const GripIcon = ({ style }) => (
   <span style={style}>
-    <MoreVert style={{ margin: '0 -16px' }}/>
-    <MoreVert/>
+    <MoreVert style={{ margin: '0 -16px' }} />
+    <MoreVert />
   </span>
 );
 
@@ -42,7 +42,11 @@ const StyledChoice: any = styled('div', {
   cursor: 'grab',
   border: `1px solid ${error ? '#f44336' : '#C0C3CF'}`,
   '& img': {
-    display: 'flex'
+    display: 'flex',
+  },
+  // browser adds extra marrgin for p tags by default
+  '& p': {
+    margin: 0,
   },
   '& mjx-frac': {
     fontSize: '120% !important',
@@ -63,12 +67,7 @@ const StyledDeleteIcon: any = styled(Delete)(({ theme }) => ({
 
 export const BlankContent = (props) => {
   const { choice, onClick, onRemoveChoice, error, instanceId, disabled } = props;
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    isDragging,
-  } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `choice-${choice.id}-${instanceId || 'default'}`,
     data: {
       type: 'drag-in-the-blank-choice',
@@ -77,7 +76,6 @@ export const BlankContent = (props) => {
       instanceId: instanceId,
     },
     disabled: disabled || choiceIsEmpty(choice),
-
   });
 
   const handleDragStart = (e) => {

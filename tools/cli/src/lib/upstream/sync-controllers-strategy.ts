@@ -100,7 +100,12 @@ export class ControllersStrategy implements SyncStrategy {
       const targetPath = join(targetDir, 'index.ts');
 
       // Clean target controller subtree first so removed upstream files don't linger
-      await this.cleanTargetDir(targetDir, `elements-react/${pkg}/src/controller`, logger);
+      await this.cleanTargetDir(
+        targetDir,
+        `elements-react/${pkg}/src/controller`,
+        logger,
+        config.dryRun
+      );
 
       // Read source
       let sourceContent = await readFile(controllerPath, 'utf-8');
@@ -201,8 +206,13 @@ export class ControllersStrategy implements SyncStrategy {
     };
   }
 
-  private async cleanTargetDir(targetDir: string, label: string, logger: any): Promise<void> {
-    await cleanDirectory(targetDir, label, { dryRun: false, verbose: false }, logger);
+  private async cleanTargetDir(
+    targetDir: string,
+    label: string,
+    logger: any,
+    dryRun: boolean
+  ): Promise<void> {
+    await cleanDirectory(targetDir, label, { dryRun, verbose: false }, logger);
   }
 
   private async ensureElementViteConfig(

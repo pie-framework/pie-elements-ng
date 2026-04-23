@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Line from './component';
-import { lineTool } from '../shared/line';
+import Line from './component.js';
+import { lineTool } from '../shared/line/index.js';
 
 export const tool = lineTool('line', Line);

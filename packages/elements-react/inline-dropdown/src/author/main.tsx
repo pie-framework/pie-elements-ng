@@ -25,9 +25,9 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Info from '@mui/icons-material/Info';
 
-import InlineDropdownToolbar from './inline-dropdown-toolbar';
-import { generateValidationMessage } from './utils';
-import ResponseAreaComponent from './response-area';
+import InlineDropdownToolbar from './inline-dropdown-toolbar.js';
+import { generateValidationMessage } from './utils.js';
+import ResponseAreaComponent from './response-area.js';
 
 const { toggle, Panel, dropdown } = settings;
 
@@ -232,23 +232,12 @@ export class Main extends React.Component {
     });
 
     if (shouldWarn) {
-      this.setState({
-        warning: {
-          open: true,
-          text: 'Response areas with under 2 options or with no correct answers will be discarded.',
-          onClose: () => {
-            this.setState({ warning: { open: false } });
-          },
-          onConfirm: () => {
-            this.setState({ warning: { open: false } }, () =>
-              this.onModelChange({
-                choices: cloneDeep(newRespAreaChoices),
-                slateMarkup: domMarkup.innerHTML,
-              }),
-            );
-          },
-        },
-      });
+      this.onCheck(() =>
+        this.onModelChange({
+          choices: cloneDeep(newRespAreaChoices),
+          slateMarkup: domMarkup.innerHTML,
+        }),
+      );
     } else {
       this.onModelChange({
         choices: cloneDeep(newRespAreaChoices),
@@ -261,11 +250,11 @@ export class Main extends React.Component {
     const { respAreaChoices } = this.state;
     const { maxResponseAreaChoices } = this.props.configuration;
 
-    if (respAreaChoices[index] && respAreaChoices[index].length >= maxResponseAreaChoices) {
+    const showWarning = (message) =>
       this.setState({
         warning: {
           open: true,
-          text: `There are only ${maxResponseAreaChoices} answers allowed per choice.`,
+          text: message,
           onClose: undefined,
           onConfirm: () => {
             this.setState({ warning: { open: false } });
@@ -273,6 +262,8 @@ export class Main extends React.Component {
         },
       });
 
+    if (respAreaChoices[index] && respAreaChoices[index].length >= maxResponseAreaChoices) {
+      showWarning(`There are only ${maxResponseAreaChoices} answers allowed per choice.`);
       return;
     }
 
@@ -280,20 +271,11 @@ export class Main extends React.Component {
       respAreaChoices[index] = [];
     }
 
+
+
     // check for duplicate answer, but exclude the one that is currently edited
     if ((respAreaChoices[index] || []).find((r, idx) => r.label === label && idx !== choiceIndex)) {
-      // show warning for duplicated answers
-      this.setState({
-        warning: {
-          open: true,
-          text: 'Duplicate answers are not allowed.',
-          onClose: undefined,
-          onConfirm: () => {
-            this.setState({ warning: { open: false } });
-          },
-        },
-      });
-
+      showWarning('Duplicate answers are not allowed.');
       return;
     }
 
@@ -403,6 +385,7 @@ export class Main extends React.Component {
                     <EditableHtml
                       markup={choice.rationale || ''}
                       spellCheck={spellCheckEnabled}
+                      pluginProps={getPluginProps(rationale?.inputConfiguration)}
                       onChange={(c) => this.onChoiceRationaleChanged(key, { ...choice, rationale: c })}
                       imageSupport={imageSupport}
                       maxImageWidth={(maxImageWidth && maxImageWidth.rationale) || defaultImageMaxWidth}
@@ -438,7 +421,6 @@ export class Main extends React.Component {
       spellCheckEnabled: spellCheck.settings && toggle(spellCheck.label),
       rubricEnabled: withRubric?.settings && toggle(withRubric?.label),
     };
-
     const getPluginProps = (props = {}) => ({
       ...baseInputConfiguration,
       ...props,
@@ -548,16 +530,19 @@ export class Main extends React.Component {
                 duplicates: true,
               },
               maxResponseAreas: maxResponseAreas,
-              respAreaToolbar: (node, editor, onToolbarDone) => {
+              respAreaToolbar: (nodeInfo, editor, onToolbarDone) => {
+                const [node, pos] = nodeInfo;
                 const { respAreaChoices } = this.state;
 
-                return () => (
+                return props => (
                   <InlineDropdownToolbar
+                    {...props}
                     onAddChoice={this.onAddChoice}
                     onCheck={this.onCheck}
                     onRemoveChoice={(index) => this.onRemoveChoice(node.attrs.index, index)}
                     onSelectChoice={(index) => this.onSelectChoice(node.attrs.index, index)}
                     node={node}
+                    pos={pos}
                     editor={editor}
                     onToolbarDone={onToolbarDone}
                     choices={respAreaChoices[node.attrs.index]}

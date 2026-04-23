@@ -115,18 +115,18 @@ const config = {
 
   // Options control rendering behavior
   options: {
-    role: 'student' // or 'instructor'
+    mode: 'student' // or 'instructor'
   }
 };
 ```
 
-### 3. Role-Based Rendering
+### 3. Mode-based rendering
 
-The `role` option controls what gets displayed:
+The `mode` option controls what gets displayed:
 
 ```typescript
 // Student view - questions only
-config.options.role = 'student';
+config.options.mode = 'student';
 // Result:
 // - Shows prompts and choices
 // - Hides correct answers
@@ -134,7 +134,7 @@ config.options.role = 'student';
 // - All interactions disabled
 
 // Instructor view - answer key
-config.options.role = 'instructor';
+config.options.mode = 'instructor';
 // Result:
 // - Shows prompts and choices
 // - Shows correct answers (highlighted)
@@ -238,7 +238,7 @@ Here's a minimal but complete example you can run:
           ]
         },
         options: {
-          role: 'student' // Start with student view
+          mode: 'student' // Start with student view
         }
       };
 
@@ -252,7 +252,7 @@ Here's a minimal but complete example you can run:
     // Role switcher function
     function updateRole(role) {
       const player = document.querySelector('#player');
-      window.itemConfig.options.role = role;
+      window.itemConfig.options.mode = role;
       // Trigger update by setting config again
       player.config = { ...window.itemConfig };
     }
@@ -295,14 +295,14 @@ When you set `player.config = itemConfig`, the print player:
    ```javascript
    const el = document.querySelector('multiple-choice-print-123456789[id="q1"]');
    el.model = { id: 'q1', element: 'multiple-choice', ... };
-   el.options = { role: 'student' };
+   el.options = { mode: 'student' };
    ```
 
 6. **Each print element internally**
    - Runs `preparePrintModel()` to transform the model
    - Renders using the delivery component
    - Disables all interactions
-   - Shows/hides answers based on role
+   - Shows/hides answers based on mode
 
 ## Key Differences from Interactive Player
 
@@ -314,7 +314,7 @@ When you set `player.config = itemConfig`, the print player:
 | **Markup** | N/A - direct component use | Parses and transforms HTML |
 | **Session** | Live session data | Empty session |
 | **Interactivity** | Enabled | Disabled |
-| **Role handling** | Via env/mode | Via options.role |
+| **Mode handling** | Via env/mode | Via options.mode |
 
 ## Migration to @pie-element/print-player
 

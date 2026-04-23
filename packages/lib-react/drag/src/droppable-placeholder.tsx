@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import PlaceHolder from './placeholder';
+import PlaceHolder from './placeholder.js';
 import PropTypes from 'prop-types';
 import { useDroppable } from '@dnd-kit/core';
 

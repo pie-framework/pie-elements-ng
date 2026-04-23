@@ -13,10 +13,10 @@ import { createRoot } from 'react-dom/client';
 import debug from 'debug';
 import { ModelUpdatedEvent, InsertSoundEvent, DeleteSoundEvent } from '@pie-element/shared-configure-events';
 
-import Main from './main';
+import Main from './main.js';
 import { defaults } from 'lodash-es';
 
-import sensibleDefaults from './defaults';
+import sensibleDefaults from './defaults.js';
 
 const log = debug('likert:configure');
 

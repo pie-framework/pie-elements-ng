@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import { color } from '@pie-lib/render-ui';
-import { allTools } from './tools';
+import { allTools } from './tools/index.js';
 import { DragProvider } from '@pie-lib/drag';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';

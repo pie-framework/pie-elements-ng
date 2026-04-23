@@ -9,11 +9,32 @@
  */
 
 import React from 'react';
-import { Text } from 'react-konva';
+import { Text as TextImport } from 'react-konva';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Text = unwrapReactInteropSymbol(TextImport, 'Text');
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
-import Transformer from './drawable-transformer';
+import Transformer from './drawable-transformer.js';
 
 export const generateId = () => Math.random().toString(36).substring(2) + new Date().getTime().toString(36);
 
@@ -229,7 +250,6 @@ export default class TextDrawable {
         };
 
         newStage.on('click', stageClickHandler);
-
         this.eventListenersDetachArray.push(() => newStage.off('click', stageClickHandler));
       }
 
@@ -251,11 +271,38 @@ export default class TextDrawable {
           onDblTap: (e) => this.handleDblClick(e, text),
           onTransform: (e) => this.handleTransform(e, textNode),
           onTransformEnd: this.props.handleSessionChange,
-          onMouseDown: this.handleMouseDown,
-          onTouchStart: this.handleMouseDown,
-          onMouseUp: this.handleMouseUp,
-          onTouchEnd: this.handleMouseUp,
-          onDragEnd: this.props.handleSessionChange,
+
+          onMouseDown: (e) => {
+            e.cancelBubble = true;
+            this.props.toggleTextSelected(true);
+          },
+          onTouchStart: (e) => {
+            e.cancelBubble = true;
+            this.props.toggleTextSelected(true);
+          },
+
+          onDragStart: (e) => {
+            e.cancelBubble = true;
+            this.props.toggleTextSelected(true);
+          },
+          onDragMove: (e) => {
+            e.cancelBubble = true;
+          },
+          onDragEnd: (e) => {
+            e.cancelBubble = true;
+            this.props.toggleTextSelected(false);
+            this.props.handleSessionChange();
+          },
+
+          onMouseUp: (e) => {
+            e.cancelBubble = true;
+            this.props.toggleTextSelected(false);
+          },
+          onTouchEnd: (e) => {
+            e.cancelBubble = true;
+            this.props.toggleTextSelected(false);
+          },
+
           onMouseEnter: this.props.onMouseOverElement,
           onMouseLeave: this.props.onMouseOutElement,
         };

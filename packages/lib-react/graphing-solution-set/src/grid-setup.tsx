@@ -10,7 +10,35 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { color, InputContainer } from '@pie-lib/render-ui';
+import { color, InputContainer as InputContainerImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { NumberTextFieldCustom, Toggle } from '@pie-lib/config-ui';
@@ -128,6 +156,15 @@ const AxisConfig = (props) => {
   const { axisLabel = {}, min = {}, max = {} } = displayedFields;
   const activePlugins = ['bold', 'italic', 'underline', 'strikethrough'];
 
+  const onKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      // prevent adding new lines - cancelling event
+      return true;
+    }
+
+    return false;
+  };
+
   return (
     <ColumnView>
       {displayHeader && (
@@ -169,6 +206,7 @@ const AxisConfig = (props) => {
                 onChange={(value) => onChange('axisLabel', value)}
                 markup={label || ''}
                 charactersLimit={5}
+                onKeyDown={onKeyDown}
                 activePlugins={activePlugins}
               />
             </AxisLabel>

@@ -19,9 +19,9 @@ import {
 } from '@pie-element/shared-configure-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
-import Main from './main';
+import Main from './main.js';
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 export default class CategorizeConfigure extends HTMLElement {
   static createDefaultModel = (model = {}) => ({

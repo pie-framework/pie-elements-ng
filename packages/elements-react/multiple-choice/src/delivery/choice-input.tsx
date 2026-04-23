@@ -14,11 +14,40 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
-import { Feedback, color, PreviewPrompt } from '@pie-lib/render-ui';
+import { Feedback as FeedbackImport, color, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import Radio from '@mui/material/Radio';
 import classNames from 'classnames';
 
-import FeedbackTick from './feedback-tick';
+import FeedbackTick from './feedback-tick.js';
 
 const CLASS_NAME = 'multiple-choice-component';
 
@@ -33,10 +62,16 @@ const CheckboxHolder: any = styled(Box)({
   alignItems: 'center',
   backgroundColor: color.background(),
   flex: 1,
+  '& .MuiFormControlLabel-root': {
+    marginLeft: '-14px', // to be consistent to previous versions before MUI v5 upgrade
+  },
   '& label': {
     color: color.text(),
     '& > span': {
       fontSize: 'inherit',
+    },
+    '& > .MuiButtonBase-root': {
+      padding: '12px', // to be consistent to previous versions before MUI v5 upgrade
     },
   },
 });
@@ -46,7 +81,7 @@ const BelowSelectionComponent: any = styled('span')(({ theme }) => ({
   alignItems: 'center',
   '& > span': {
     // visually reduce right padding, but maintain accessibility padding for checkbox indicators to be circles
-    marginLeft: `-${theme.spacing(1)}px`,
+    marginLeft: `-${theme.spacing(1)}`,
   },
 }));
 
@@ -78,7 +113,7 @@ const colorStyle = (varName, fallback) => ({
 
 const getInputStyles = (correctness) => {
   const key = (k) => (correctness ? `${correctness}-${k}` : k);
-  
+
   return {
     [key('root')]: {
       ...colorStyle('color', color.text()),
@@ -117,7 +152,7 @@ const StyledCheckboxBase: any = styled(Checkbox, {
 })(({ correctness }) => {
   const styles = getInputStyles(correctness);
   const key = (k) => (correctness ? `${correctness}-${k}` : k);
-  
+
   return {
     [`&.${CLASS_NAME}`]: {
       ...styles[key('root')],
@@ -140,7 +175,6 @@ export const StyledCheckbox = (props) => {
     <StyledCheckboxBase
       id={id}
       slotProps={{ input: { ref: inputRef } }}
-      aria-checked={checked}
       onKeyDown={onKeyDown}
       disableRipple
       {...miniProps}
@@ -155,7 +189,7 @@ const StyledRadioBase: any = styled(Radio, {
 })(({ correctness }) => {
   const styles = getInputStyles(correctness);
   const key = (k) => (correctness ? `${correctness}-${k}` : k);
-  
+
   return {
     [`&.${CLASS_NAME}`]: {
       ...styles[key('root')],
@@ -178,7 +212,6 @@ export const StyledRadio = (props) => {
     <StyledRadioBase
       id={id}
       slotProps={{ input: { ref: inputRef } }}
-      aria-checked={checked}
       disableRipple
       {...miniProps}
       correctness={correctness}
@@ -302,23 +335,33 @@ export class ChoiceInput extends React.Component {
       }),
     };
 
+    const hasMathOrImage =
+      typeof label === 'string' &&
+      (label.includes('<math') ||
+        label.includes('\\(') ||
+        label.includes('\\[') ||
+        label.includes('<img') ||
+        label.includes('data-latex') ||
+        label.includes('data-raw') ||
+        label.includes('<mjx-container'));
+
+    const screenReaderLabel = displayKey ? (
+      <SrOnly id={this.descId}>
+        {hasMathOrImage ? `Pick the answer below, ${displayKey}` : displayKey}
+      </SrOnly>
+    ) : null;
+
     const choicelabel = (
       <>
         {displayKey && !isSelectionButtonBelow ? (
           <Row component="span">
-            {displayKey}.{'\u00A0'}
+            <span aria-hidden="true">{displayKey}.{'\u00A0'}</span>
             <PreviewPrompt className="prompt-label" prompt={label} tagName="span" />
           </Row>
         ) : (
           <PreviewPrompt className="prompt-label" prompt={label} tagName="span" />
         )}
       </>
-    );
-
-    const screenReaderLabel = (
-      <SrOnly id={this.descId}>
-        {choiceMode === 'checkbox' ? 'Checkbox to select the answer below' : 'Radio button to select the answer below'}
-      </SrOnly>
     );
 
     const tagProps = {
@@ -330,28 +373,18 @@ export class ChoiceInput extends React.Component {
       id: this.choiceId,
       onChange: this.onToggleChoice,
       onKeyDown: this.handleKeyDown,
-      'aria-describedby': this.descId,
+      ...(screenReaderLabel ? { 'aria-describedby': this.descId } : {}),
     };
-
-    const hasMathOrImage =
-      typeof label === 'string' &&
-      (label.includes('<math') ||
-        label.includes('\\(') ||
-        label.includes('\\[') ||
-        label.includes('<img') ||
-        label.includes('data-latex') ||
-        label.includes('data-raw') ||
-        label.includes('<mjx-container'));
 
     const control = isSelectionButtonBelow ? (
       <BelowSelectionComponent>
-        {hasMathOrImage && screenReaderLabel}
+        {screenReaderLabel}
         <Tag {...tagProps} style={{ padding: 0 }} />
-        {displayKey ? `${displayKey}.` : ''}
+        <span aria-hidden="true">{displayKey ? `${displayKey}.` : ''}</span>
       </BelowSelectionComponent>
     ) : (
       <>
-        {hasMathOrImage && screenReaderLabel}
+        {screenReaderLabel}
         <Tag {...tagProps} slotProps={{ input: { ref: this.props.autoFocusRef } }} />
       </>
     );

@@ -10,8 +10,8 @@
 
 import debug from 'debug';
 import { cloneDeep, isEmpty, uniqWith } from 'lodash-es';
-import defaults from './defaults';
-import { equalMarks, sortedAnswers, removeInvalidAnswers } from './utils';
+import defaults from './defaults.js';
+import { equalMarks, sortedAnswers, removeInvalidAnswers } from './utils.js';
 
 const log = debug('@pie-element:graphing-solution-set:controller');
 

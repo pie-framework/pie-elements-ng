@@ -8,13 +8,15 @@
 
 import {
   transformLodashToLodashEs,
+  transformLodashEsDeepImportsToFullySpecified,
+  transformKnownDeepImportsToFullySpecified,
   transformPieFrameworkEventImports,
   transformControllerUtilsImports,
   transformSharedPackageImports,
-  transformMathquillImports,
+  transformLegacyConfigureLibImports,
   inlineEditableHtmlConstants,
   reexportTokenTypes,
-  transformSsrRequireToReactLazy,
+  transformSsrRequireToEsmImport,
   inlineConfigureDefaults,
   transformConfigureUtilsImports,
   transformSelfReferentialImports,
@@ -23,12 +25,11 @@ import {
   transformPackageJsonPieEvents,
   transformPackageJsonControllerUtils,
   transformPackageJsonSharedPackages,
-  transformPackageJsonMathquill,
   fixStyledComponentTypes,
   fixExportedFunctionTypes,
   transformMenuToInlineMenu,
   addInlineMenuExport,
-  transformMathQuillInterface,
+  transformReactInteropComponentImports,
 } from './sync-imports.js';
 import type { PackageJson } from '../../utils/package-json.js';
 
@@ -53,24 +54,25 @@ export interface TransformOptions {
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
- * 5. @pie-framework/mathquill → @pie-element/shared-mathquill
- * 6. @mui/material/Menu → InlineMenu from @pie-lib/render-ui
- * 7. Self-referential imports → relative imports
- * 8. Configure-specific transforms (if enabled)
- * 9. Pie-lib-specific transforms (if enabled)
- * 10. Fix styled component TypeScript type inference errors
+ * 5. @mui/material/Menu → InlineMenu from @pie-lib/render-ui
+ * 6. Self-referential imports → relative imports
+ * 7. Configure-specific transforms (if enabled)
+ * 8. Pie-lib-specific transforms (if enabled)
+ * 9. Fix styled component TypeScript type inference errors
  */
 export function applySourceTransforms(content: string, options: TransformOptions = {}): string {
   let transformed = content;
 
   // Core transforms (always applied)
   transformed = transformLodashToLodashEs(transformed);
+  transformed = transformLodashEsDeepImportsToFullySpecified(transformed);
+  transformed = transformKnownDeepImportsToFullySpecified(transformed);
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
   transformed = transformSharedPackageImports(transformed);
-  transformed = transformMathquillImports(transformed);
-  transformed = transformMathQuillInterface(transformed);
+  transformed = transformLegacyConfigureLibImports(transformed);
   transformed = transformMenuToInlineMenu(transformed);
+  transformed = transformReactInteropComponentImports(transformed);
 
   // Transform self-referential imports to relative paths
   if (options.packageName && options.relativePath) {
@@ -89,14 +91,14 @@ export function applySourceTransforms(content: string, options: TransformOptions
     }
   }
 
-  // Pie-lib-specific transforms
+  // Pie-lib-specific transforms (run only when syncing upstream pie-lib sources)
   if (options.includePieLib) {
     transformed = inlineEditableHtmlConstants(transformed);
     if (options.sourcePath) {
       transformed = reexportTokenTypes(transformed, options.sourcePath);
       transformed = addInlineMenuExport(transformed, options.sourcePath);
     }
-    transformed = transformSsrRequireToReactLazy(transformed);
+    transformed = transformSsrRequireToEsmImport(transformed);
   }
 
   // TypeScript fixes (always applied)
@@ -114,7 +116,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
- * 5. @pie-framework/mathquill → @pie-element/shared-mathquill
+ * 5. Preserve upstream @pie-framework/mathquill dependency versions from synced package.json
  */
 export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   let transformed = pkg;
@@ -124,7 +126,6 @@ export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
   transformed = transformPackageJsonPieEvents(transformed);
   transformed = transformPackageJsonControllerUtils(transformed);
   transformed = transformPackageJsonSharedPackages(transformed);
-  transformed = transformPackageJsonMathquill(transformed);
 
   return transformed;
 }

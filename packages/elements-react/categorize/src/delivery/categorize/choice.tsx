@@ -54,6 +54,9 @@ const StyledCardContent: any = styled(CardContent)(({ theme }) => ({
   },
   borderRadius: '4px',
   border: '1px solid',
+  '& p': {
+    margin: '0px',
+  },
 }));
 
 export class Layout extends React.Component {

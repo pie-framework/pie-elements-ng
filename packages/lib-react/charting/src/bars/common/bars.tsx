@@ -17,9 +17,9 @@ import debug from 'debug';
 
 import { color } from '@pie-lib/render-ui';
 import { types } from '@pie-lib/plot';
-import { bandKey } from '../../utils';
-import DraggableHandle, { DragHandle } from '../../common/drag-handle';
-import { CorrectCheckIcon } from './correct-check-icon';
+import { bandKey } from '../../utils.js';
+import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
+import { CorrectCheckIcon } from './correct-check-icon.js';
 
 const log = debug('pie-lib:chart:bars');
 const histogramColors = [

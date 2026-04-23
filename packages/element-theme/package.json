@@ -1,0 +1,44 @@
+{
+  "name": "@pie-element/element-theme",
+  "version": "0.1.0",
+  "description": "Generic web component theme wrapper for PIE element players",
+  "type": "module",
+  "main": "./dist/pie-element-theme.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/pie-element-theme.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "dev": "vite",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pie-element/shared-theming": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^8.0.1",
+    "vitest": "^4.1.0"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/element-theme"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
+}

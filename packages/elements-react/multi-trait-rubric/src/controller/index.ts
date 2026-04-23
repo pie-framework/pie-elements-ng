@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import defaults from './defaults';
-import { markupToText } from './utils';
+import defaults from './defaults.js';
+import { markupToText } from './utils.js';
 
 export function createDefaultModel(model = {}) {
   return new Promise((resolve) => resolve({ ...defaults, ...model }));

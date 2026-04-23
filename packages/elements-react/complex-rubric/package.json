@@ -1,7 +1,6 @@
 {
   "name": "@pie-element/complex-rubric",
-  "private": true,
-  "version": "0.1.0",
+  "version": "6.2.0-next.7",
   "description": "Complex Rubric Scoring Interaction",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -60,9 +59,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/math-inline",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {
@@ -19,13 +18,12 @@
     "prop-types": "^15.6.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
-    "@pie-element/shared-mathquill": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-feedback": "workspace:*",
+    "@pie-framework/mathquill": "^1.1.4",
     "@pie-framework/math-validation": "^1.0.0",
     "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "mathquill": "0.10.1"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -67,9 +65,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

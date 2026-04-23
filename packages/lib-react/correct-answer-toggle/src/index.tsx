@@ -11,8 +11,36 @@
 import { styled } from '@mui/material/styles';
 import { CSSTransition } from 'react-transition-group';
 import { CorrectResponse } from '@pie-lib/icons';
-import { color, Readable } from '@pie-lib/render-ui';
-import Expander from './expander';
+import { color, Readable as ReadableImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
+import Expander from './expander.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import Translator from '@pie-lib/translator';
@@ -20,12 +48,12 @@ import Translator from '@pie-lib/translator';
 const { translator } = Translator;
 
 const noTouch = {
-  '-webkit-touchCcallout': 'none',
-  '-webkit-user-select': 'none',
-  '-khtml-user-select': 'none',
-  '-moz-user-select': 'none',
-  '-ms-user-select': 'none',
-  'user-select': 'none',
+  WebkitTouchCallout: 'none',
+  WebkitUserSelect: 'none',
+  KhtmlUserSelect: 'none',
+  MozUserSelect: 'none',
+  msUserSelect: 'none',
+  userSelect: 'none',
 };
 
 const StyledRoot: any = styled('div')(() => ({

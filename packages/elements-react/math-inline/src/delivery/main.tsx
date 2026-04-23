@@ -19,7 +19,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { ResponseTypes } from './utils';
 import { isEmpty, isEqual } from 'lodash-es';
 import SimpleQuestionBlock from './simple-question-block';
-import MathQuill from '@pie-element/shared-mathquill';
+import MathQuill from '@pie-framework/mathquill';
 import { color } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
@@ -39,11 +39,12 @@ const DEFAULT_KEYPAD_VARIANT = 6;
 const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 function generateAdditionalKeys(keyData = []) {
+  const normalizeKeyLatex = (value = '') => value.replace(/\$\$/g, '').replace(/^\$|\$$/g, '').trim();
   return keyData.map((key) => ({
     name: key,
-    latex: key,
-    write: key,
-    label: key,
+    latex: normalizeKeyLatex(key),
+    write: normalizeKeyLatex(key),
+    label: normalizeKeyLatex(key),
   }));
 }
 
@@ -137,29 +138,23 @@ export class Main extends React.Component {
       showCorrect: this.props.model.config.alwaysShowCorrect || false,
       tooltipContainerRef: React.createRef(),
     };
-  }
 
-  UNSAFE_componentWillMount() {
-    if (typeof window !== 'undefined') {
-      let MQ = MathQuill.getInterface(3);
-
-      if (!registered) {
-        MQ.registerEmbed('answerBlock', (data) => {
-          const classNames = getBlockClassNames();
-          return {
-            htmlString: `<div class="${classNames.blockContainer}">
+    if (typeof window !== 'undefined' && !registered) {
+      const MQ = MathQuill.getInterface(2);
+      MQ.registerEmbed('answerBlock', (data) => {
+        const classNames = getBlockClassNames();
+        return {
+          htmlString: `<div class="${classNames.blockContainer}">
                 <div class="${classNames.blockResponse}" id="${data}Index">R</div>
                 <div class="${classNames.blockMath}">
                   <span id="${data}"></span>
                 </div>
               </div>`,
-            text: () => 'text',
-            latex: () => `\\embed{answerBlock}[${data}]`,
-          };
-        });
-
-        registered = true;
-      }
+          text: () => 'text',
+          latex: () => `\\embed{answerBlock}[${data}]`,
+        };
+      });
+      registered = true;
     }
   }
 
@@ -172,10 +167,9 @@ export class Main extends React.Component {
       Object.keys(answers).forEach((answerId) => {
         const el = this.root.querySelector(`#${answerId}`);
         const indexEl = this.root.querySelector(`#${answerId}Index`);
-        // const correct = model.correctness && model.correctness.correct;
 
         if (el) {
-          let MQ = MathQuill.getInterface(3);
+          let MQ = MathQuill.getInterface(2);
           const answer = answers[answerId];
 
           el.textContent = (answer && answer.value) || '';
@@ -183,25 +177,20 @@ export class Main extends React.Component {
           if (!model.view) {
             // for now, we're not going to be showing individual response correctness
             // TODO re-attach the classes once we are
-            // el.parentElement.parentElement.classList.add(
-            //   correct ? 'correct' : 'incorrect'
-            // );
           } else {
             el.parentElement.parentElement.classList.remove('correct');
             el.parentElement.parentElement.classList.remove('incorrect');
           }
 
           MQ.StaticMath(el);
-
-          // For now, we're not going to be indexing response blocks
-          // TODO go back to indexing once we support individual response correctness
-          // indexEl.textContent = `R${idx + 1}`;
           indexEl.textContent = 'R';
         }
       });
     }
 
-    renderMath(this.root);
+    if (this.root) {
+      renderMath(this.root);
+    }
   };
 
   countResponseOccurrences(expression) {
@@ -380,9 +369,19 @@ export class Main extends React.Component {
   };
 
   onSubFieldFocus: any = (id) => {
+    const fallbackId =
+      id ||
+      Object.keys(this.state.session?.answers || {})[0] ||
+      this.props.model?.config?.responses?.[0]?.id ||
+      '';
+
+    if (fallbackId && this.state.activeAnswerBlock !== fallbackId) {
+      this.setState({ activeAnswerBlock: fallbackId });
+    }
+
     if (!this.handleEvent) {
       this.handleEvent = (event) => {
-        this.handleKeyDown(event, id);
+        this.handleKeyDown(event, fallbackId);
       };
 
       document.addEventListener('keydown', this.handleEvent);
@@ -672,7 +671,7 @@ export class Main extends React.Component {
                   model={model}
                   session={session}
                   onSubFieldFocus={this.onSubFieldFocus}
-                  showKeypad={!!activeAnswerBlock}
+                  showKeypad={true}
                 />
               )}
 
@@ -756,6 +755,7 @@ export class Main extends React.Component {
                               additionalKeys={additionalKeys}
                               mode={equationEditor || DEFAULT_KEYPAD_VARIANT}
                               onClick={this.onClick}
+                              onRequestClose={() => this.setState({ activeAnswerBlock: '' })}
                             />
                           </ResponseContainer>
                         )) ||

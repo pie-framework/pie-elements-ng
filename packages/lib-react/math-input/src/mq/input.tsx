@@ -2,10 +2,6 @@
 /**
  * @synced-from pie-lib/packages/math-input/src/mq/input.jsx
  * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
 import React from 'react';
@@ -13,11 +9,11 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import { registerLineBreak } from './custom-elements';
-import MathQuill from '@pie-element/shared-mathquill';
+import MathQuill from '@pie-framework/mathquill';
 
 let MQ;
 if (typeof window !== 'undefined') {
-  MQ = MathQuill.getInterface(3);
+  MQ = MathQuill.getInterface(2);
 
   if (MQ && MQ.registerEmbed) {
     registerLineBreak(MQ);
@@ -138,18 +134,8 @@ export class Input extends React.Component {
   };
 
   onKeyPress: any = (event) => {
-    const keys = Object.keys(this.mathField.__controller.options);
-
-    if (keys.indexOf('ignoreNextMousedown') < 0) {
-      // It seems like the controller has the above handler as an option
-      // when all the right events are set and everything works fine
-      // this seems to work in all cases
-      this.refresh();
-    }
-
     if (event.charCode === 13) {
       event.preventDefault();
-      return;
     }
   };
 

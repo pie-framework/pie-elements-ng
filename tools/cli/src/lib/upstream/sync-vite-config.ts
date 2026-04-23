@@ -4,6 +4,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createExternalFunction } from './sync-externals.js';
+import { getPieLibVitePreset } from './sync-presets.js';
 
 /**
  * Detect the actual file extension for a source file
@@ -107,8 +108,10 @@ export function generatePieLibViteConfig(packageName?: string, packageDir?: stri
     }
   }
 
+  const preset = getPieLibVitePreset(packageName);
+
   // Special config for math-rendering wrapper (externalizes adapter package)
-  if (packageName === 'math-rendering') {
+  if (preset === 'math-rendering-wrapper') {
     return `import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
@@ -140,7 +143,7 @@ export default defineConfig({
   }
 
   // Special config for test-utils (includes testing library externals)
-  if (packageName === 'test-utils') {
+  if (preset === 'test-utils') {
     return `import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
@@ -167,7 +170,7 @@ export default defineConfig({
   }
 
   // Special config for editable-html-tip-tap (externalizes prosemirror and tiptap)
-  if (packageName === 'editable-html-tip-tap') {
+  if (preset === 'editable-html-tip-tap') {
     return `import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';

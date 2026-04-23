@@ -1,7 +1,6 @@
 {
   "name": "@pie-element/graphing-solution-set",
-  "private": true,
-  "version": "0.1.0",
+  "version": "5.2.0-next.7",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -13,12 +12,13 @@
     "@pie-lib/graphing-solution-set": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "classnames": "^2.2.5",
-    "core-js": "^3.40.0",
     "debug": "^4.1.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "lodash-es": "^4.17.21",
+    "prop-types": "^15.6.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -55,9 +55,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

@@ -10,15 +10,37 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Layer, Stage } from 'react-konva';
+import { Layer as LayerImport, Stage as StageImport } from 'react-konva';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
+const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
 import { cloneDeep } from 'lodash-es';
 import { styled } from '@mui/material/styles';
 
-import Rectangle from './hotspot-rectangle';
-import Polygon from './hotspot-polygon';
-import Circle from './hotspot-circle';
-import { getUpdatedShapes, updateImageDimensions } from './utils';
-import { RectangleShape, CircleShape, PolygonShape, SUPPORTED_SHAPES, SHAPE_GROUPS } from './shapes';
+import Rectangle from './hotspot-rectangle.js';
+import Polygon from './hotspot-polygon.js';
+import Circle from './hotspot-circle.js';
+import { getUpdatedShapes, updateImageDimensions } from './utils.js';
+import { RectangleShape, CircleShape, PolygonShape, SUPPORTED_SHAPES, SHAPE_GROUPS } from './shapes/index.js';
 
 const BaseContainer: any = styled('div')({
   position: 'relative',

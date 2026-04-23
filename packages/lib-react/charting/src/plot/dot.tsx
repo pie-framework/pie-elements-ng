@@ -13,11 +13,11 @@ import PropTypes from 'prop-types';
 import { Circle } from '@visx/shape';
 
 import { types } from '@pie-lib/plot';
-import { dataToXBand } from '../utils';
-import Plot from './common/plot';
+import { dataToXBand } from '../utils.js';
+import Plot from './common/plot.js';
 import { color } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
-import { correct, incorrect } from '../common/styles';
+import { correct, incorrect } from '../common/styles.js';
 
 const StyledCircle: any = styled(Circle)(() => ({
   fill: color.visualElementsColors.PLOT_FILL_COLOR,

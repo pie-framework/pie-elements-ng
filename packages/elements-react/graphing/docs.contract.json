@@ -1,0 +1,30 @@
+{
+  "elementName": "graphing",
+  "packageName": "@pie-element/graphing",
+  "framework": "react",
+  "supportedModes": [
+    "gather",
+    "view",
+    "evaluate"
+  ],
+  "views": [
+    {
+      "view": "author",
+      "pie": {
+        "file": "src/controller/defaults.ts"
+      },
+      "config": {
+        "file": "src/controller/defaults.ts"
+      }
+    },
+    {
+      "view": "delivery",
+      "pie": {
+        "file": "src/controller/defaults.ts"
+      },
+      "config": {
+        "file": "src/controller/defaults.ts"
+      }
+    }
+  ]
+}

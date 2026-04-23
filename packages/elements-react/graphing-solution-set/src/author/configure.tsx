@@ -16,8 +16,8 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import Typography from '@mui/material/Typography';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import GraphingConfig from './graphing-config';
-import CorrectResponse from './correct-response';
+import GraphingConfig from './graphing-config.js';
+import CorrectResponse from './correct-response.js';
 
 const { Panel, toggle, radio, checkboxes, textField, dropdown } = settings;
 const log = debug('@pie-element:graphing-solution-set:configure');

@@ -42,7 +42,7 @@ These are regenerated automatically on every `upstream:sync` and should NOT be c
   - **Contains timestamp** that changes on every sync
   - Regenerated from scanning `packages/elements-react/`
 
-- **`apps/element-demo/src/lib/data/sample-configs/react/`**
+- **`apps/element-demo/src/lib/samples/`**
   - Sample config/session JSON files
   - Copied from each element's `docs/demo/` directory
   - Redundant since source configs are already committed in element packages

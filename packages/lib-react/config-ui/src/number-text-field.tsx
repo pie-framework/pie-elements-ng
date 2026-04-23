@@ -37,7 +37,7 @@ const StyledTextField: any = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
     height: 'auto',
     minHeight: 'auto',
-    padding: '8px 12px',
+    padding: '6px 0 7px',
   },
   '& .MuiInput-root, & .MuiFilledInput-root': {
     '&:before, &:after, &:hover:not(.Mui-disabled):before': {

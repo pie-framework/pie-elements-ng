@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { getPluginProps } from './utils';
+import { getPluginProps } from './utils.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
@@ -58,6 +58,10 @@ const ValueHolder: any = styled('div')(({ theme, correct }) => ({
   ...(correct && {
     background: color.correctSecondary(),
   }),
+  '& p': {
+    // browser adds extra margin for p tags by default
+    margin: 0,
+  },
 }));
 
 const ActionButtons: any = styled('div')(({ theme }) => ({
@@ -182,11 +186,13 @@ const ItemBuilder: any = styled('div')(({ theme }) => ({
 class RespAreaToolbar extends React.Component {
   static propTypes = {
     node: PropTypes.object,
+    pos: PropTypes.number,
     uploadSoundSupport: PropTypes.object,
     onDone: PropTypes.func,
     choices: PropTypes.array,
     onAddChoice: PropTypes.func.isRequired,
     onCheck: PropTypes.func,
+    editorCallback: PropTypes.func,
     onRemoveChoice: PropTypes.func.isRequired,
     onSelectChoice: PropTypes.func.isRequired,
     onToolbarDone: PropTypes.func.isRequired,
@@ -245,6 +251,7 @@ class RespAreaToolbar extends React.Component {
 
   onDone: any = (val) => {
     const { choices, node, editor, onAddChoice, onToolbarDone } = this.props;
+
     const { editedChoiceIndex } = this.state;
     const onlyText = createElementFromHTML(val).textContent.trim();
 
@@ -274,10 +281,8 @@ class RespAreaToolbar extends React.Component {
   onRemoveChoice: any = (val, index) => {
     const { node, editor, onToolbarDone, onRemoveChoice } = this.props;
 
-    console.log('LOGGING', val, node.attrs.value, isEqual(val, node.attrs.value));
-
     if (isEqual(val, node.attrs.value)) {
-      editor.commands.updateAttributes('explicit_constructed_response', { value: null });
+      editor.commands.updateAttributes('inline_dropdown', { value: null });
       onToolbarDone(false);
     }
 
@@ -286,17 +291,32 @@ class RespAreaToolbar extends React.Component {
   };
 
   onEditChoice: any = (val, index) => {
+    const { editedChoiceIndex } = this.state;
+
+    this.preventDone = true;
+
+    if (editedChoiceIndex >= 0) {
+      const html = this.editorRef.getHTML() || '';
+
+      this.onDone(html);
+    }
+
     this.onRespAreaChange(val);
     this.setState({ editedChoiceIndex: index });
   };
 
   onKeyDown: any = (event) => {
     if (event.key === 'Enter') {
-      this.preventDone = false;
-      this.onAddChoice();
+      const html = this.editorRef.getHTML() || '';
+
+      this.onDone(html);
+      this.preventDone = true;
+
       // Cancelling event
-      return false;
+      return true;
     }
+
+    return false;
   };
 
   onBlur: any = () => {
@@ -324,16 +344,6 @@ class RespAreaToolbar extends React.Component {
     this.clickedInside = true;
   };
 
-  focusInput: any = () => {
-    // we need to focus the input so that math is saved even without pressing the green checkmark
-    const slateEditorRef = this.editorRef && this.editorRef.rootRef && this.editorRef.rootRef.slateEditor;
-    const inputRef = slateEditorRef && slateEditorRef.editorRef && slateEditorRef.editorRef.element;
-
-    if (inputRef) {
-      inputRef.focus();
-    }
-  };
-
   render() {
     const {
       choices,
@@ -354,14 +364,16 @@ class RespAreaToolbar extends React.Component {
         style={{
           ...toolbarStyle,
           backgroundColor: '#E0E1E6',
+          zIndex: 1,
         }}
         onMouseDown={this.onClickInside}
       >
         <ItemBuilder>
           <RespArea
-            ref={(ref) => {
+            editorRef={(ref) => {
               if (ref) {
                 this.editorRef = ref;
+                this.props.editorCallback?.(ref);
               }
             }}
             autoFocus={true}
@@ -384,6 +396,7 @@ class RespAreaToolbar extends React.Component {
             }}
             onDone={(val) => {
               if (this.preventDone) {
+                this.preventDone = false;
                 return;
               }
 
@@ -410,7 +423,6 @@ class RespAreaToolbar extends React.Component {
             mathMlOptions={mathMlOptions}
           />
           <AddButton
-            onMouseDown={() => this.focusInput()}
             onClick={() => this.onAddChoice()}
             size="small"
             aria-label="Add"

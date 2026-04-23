@@ -1,0 +1,46 @@
+{
+  "elementName": "multiple-choice",
+  "packageName": "@pie-element/multiple-choice",
+  "framework": "react",
+  "summary": "React implementation of multiple-choice element synced from pie-elements",
+  "supportedModes": [
+    "gather",
+    "view",
+    "evaluate"
+  ],
+  "views": [
+    {
+      "view": "author",
+      "pie": {
+        "file": "src/author/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaults.ts",
+        "path": "configuration"
+      }
+    },
+    {
+      "view": "delivery",
+      "pie": {
+        "file": "src/author/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaults.ts",
+        "path": "configuration"
+      }
+    },
+    {
+      "view": "print",
+      "pie": {
+        "file": "src/author/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaults.ts",
+        "path": "configuration"
+      }
+    }
+  ]
+}

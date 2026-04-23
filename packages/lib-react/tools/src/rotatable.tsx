@@ -11,10 +11,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { arctangent, distanceBetween, getAnchor as calcAnchor } from './anchor-utils';
+import { arctangent, distanceBetween, getAnchor as calcAnchor } from './anchor-utils.js';
 import { Portal } from 'react-portal';
 import Point from '@mapbox/point-geometry';
-import { parse as parseOrigin } from './transform-origin';
+import { parse as parseOrigin } from './transform-origin.js';
 
 const AnchorSvg: any = styled('svg')({
   position: 'absolute',

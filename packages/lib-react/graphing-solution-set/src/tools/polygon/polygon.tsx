@@ -12,16 +12,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { gridDraggable, types } from '@pie-lib/plot';
-import * as utils from '../../utils';
-import { color } from '@pie-lib/render-ui';
-import { correct, incorrect } from '../shared/styles';
+import * as utils from '../../utils.js';
+import { correct, incorrect } from '../shared/styles.js';
 
 const StyledPolygon: any = styled('polygon', {
   shouldForwardProp: (prop) => !['isSolution', 'correctness'].includes(prop),
 })(({ isSolution, correctness }) => ({
   fill: isSolution ? 'rgb(60, 73, 150, 0.6)' : 'transparent',
   strokeWidth: 2,
-  stroke: color.defaults.SECONDARY_LIGHT,
   '&:hover': {
     fill: isSolution ? 'rgb(60, 73, 150, 0.6)' : 'rgb(0, 0, 0, 0.25)',
   },
@@ -34,7 +32,6 @@ const StyledPolyline: any = styled('polyline', {
 })(({ isSolution, correctness }) => ({
   fill: isSolution ? 'rgb(60, 73, 150, 0.6)' : 'transparent',
   strokeWidth: 2,
-  stroke: color.defaults.SECONDARY_LIGHT,
   '&:hover': {
     fill: isSolution ? 'rgb(60, 73, 150, 0.6)' : 'rgb(0, 0, 0, 0.25)',
   },

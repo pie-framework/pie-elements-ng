@@ -25,21 +25,23 @@ import Functions from '@mui/icons-material/Functions';
 import ImageIcon from '@mui/icons-material/Image';
 import Redo from '@mui/icons-material/Redo';
 import Undo from '@mui/icons-material/Undo';
+import FormatQuote from '@mui/icons-material/FormatQuote';
 import TheatersIcon from '@mui/icons-material/Theaters';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import BorderAll from '@mui/icons-material/BorderAll';
+import Delete from '@mui/icons-material/Delete';
 
 import { useEditorState } from '@tiptap/react';
 
-import { PIE_TOOLBAR__CLASS } from '../constants';
-import { ToolbarIcon } from './respArea/ToolbarIcon';
-import { spanishConfig, specialConfig } from './characters/characterUtils';
-import TextAlignIcon from './icons/TextAlign';
-import CSSIcon from './icons/CssIcon';
-import { AddColumn, AddRow, RemoveColumn, RemoveRow, RemoveTable } from './icons/TableIcons';
+import { PIE_TOOLBAR__CLASS } from '../constants.js';
+import { ToolbarIcon } from './respArea/ToolbarIcon.js';
+import { spanishConfig, specialConfig } from './characters/characterUtils.js';
+import TextAlignIcon from './icons/TextAlign.js';
+import CSSIcon from './icons/CssIcon.js';
+import { AddColumn, AddRow, RemoveColumn, RemoveRow, RemoveTable } from './icons/TableIcons.js';
 
-import { CharacterIcon, CharacterPicker } from './CharacterPicker';
-import { DoneButton } from './common/done-button';
+import { CharacterIcon, CharacterPicker } from './CharacterPicker.js';
+import { DoneButton } from './common/done-button.js';
 
 const SuperscriptIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="none">
@@ -75,7 +77,15 @@ const HeadingIcon = () => (
   </svg>
 );
 
-function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, responseAreaProps, onChange }) {
+function MenuBar({
+  editor,
+  classes,
+  activePlugins,
+  toolbarOpts: toolOpts,
+  responseAreaProps,
+  onChange,
+  autoWidthToolbar,
+}) {
   const [showPicker, setShowPicker] = useState(false);
   const toolbarOpts = toolOpts ?? {};
 
@@ -93,11 +103,15 @@ function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, respon
       const hideDefaultToolbar =
         ctx.editor?.isActive('math') ||
         ctx.editor?.isActive('explicit_constructed_response') ||
-        ctx.editor?.isActive('imageUploadNode');
+        ctx.editor?.isActive('imageUploadNode') ||
+        ctx.editor?.isActive('drag_in_the_blank');
+
+      const hasTextSelectionInTable = selection && selection.empty === false && ctx.editor.isActive('table');
 
       return {
         currentNode,
         hideDefaultToolbar,
+        hasTextSelectionInTable,
         isFocused: ctx.editor?.isFocused,
         isBold: ctx.editor.isActive('bold') ?? false,
         canBold: ctx.editor.can().chain().toggleBold().run() ?? false,
@@ -132,13 +146,13 @@ function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, respon
   });
 
   const hasDoneButton = false;
-  const autoWidth = false;
+  const autoWidth = !!autoWidthToolbar;
 
   const names = classNames(classes.toolbar, PIE_TOOLBAR__CLASS, {
     [classes.toolbarWithNoDone]: !hasDoneButton,
     [classes.toolbarTop]: toolbarOpts.position === 'top',
     [classes.toolbarRight]: toolbarOpts.alignment === 'right',
-    [classes.focused]: toolbarOpts.alwaysVisible || (editorState.isFocused && !editor._toolbarOpened),
+    [classes.focused]: toolbarOpts.alwaysVisible || (editorState.isFocused && !editor._toolbarOpened && !editorState.hideDefaultToolbar),
     [classes.autoWidth]: autoWidth,
     [classes.fullWidth]: !autoWidth,
     [classes.hidden]: toolbarOpts.isHidden === true,
@@ -162,35 +176,35 @@ function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, respon
       {
         icon: <AddRow />,
         onClick: (editor) => editor.chain().focus().addRowAfter().run(),
-        hidden: (state) => !state.isTable,
+        hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
         isDisabled: (state) => !state.canTable,
       },
       {
         icon: <RemoveRow />,
         onClick: (editor) => editor.chain().focus().deleteRow().run(),
-        hidden: (state) => !state.isTable,
+        hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
         isDisabled: (state) => !state.canTable,
       },
       {
         icon: <AddColumn />,
         onClick: (editor) => editor.chain().focus().addColumnAfter().run(),
-        hidden: (state) => !state.isTable,
+        hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
         isDisabled: (state) => !state.canTable,
       },
       {
         icon: <RemoveColumn />,
         onClick: (editor) => editor.chain().focus().deleteColumn().run(),
-        hidden: (state) => !state.isTable,
+        hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
         isDisabled: (state) => !state.canTable,
       },
       {
         icon: <RemoveTable />,
         onClick: (editor) => editor.chain().focus().deleteTable().run(),
-        hidden: (state) => !state.isTable,
+        hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
         isDisabled: (state) => !state.canTable,
       },
@@ -206,79 +220,85 @@ function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, respon
 
           editor.commands.updateAttributes('table', update);
         },
-        hidden: (state) => !state.isTable,
+        hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.tableHasBorder,
         isDisabled: (state) => !state.canTable,
       },
       {
         icon: <Bold />,
         onClick: (editor) => editor.chain().focus().toggleBold().run(),
-        hidden: (state) => !activePlugins?.includes('bold') || state.isTable,
+        hidden: () => !activePlugins?.includes('bold'),
         isActive: (state) => state.isBold,
         isDisabled: (state) => !state.canBold,
       },
       {
         icon: <Italic />,
         onClick: (editor) => editor.chain().focus().toggleItalic().run(),
-        hidden: (state) => !activePlugins?.includes('italic') || state.isTable,
+        hidden: () => !activePlugins?.includes('italic'),
         isActive: (state) => state.isItalic,
         isDisabled: (state) => !state.canItalic,
       },
       {
         icon: <Strikethrough />,
         onClick: (editor) => editor.chain().focus().toggleStrike().run(),
-        hidden: (state) => !activePlugins?.includes('strikethrough') || state.isTable,
+        hidden: () => !activePlugins?.includes('strikethrough'),
         isActive: (state) => state.isStrike,
         isDisabled: (state) => !state.canStrike,
       },
       {
         icon: <Code />,
         onClick: (editor) => editor.chain().focus().toggleCode().run(),
-        hidden: (state) => !activePlugins?.includes('code') || state.isTable,
+        hidden: () => !activePlugins?.includes('code'),
         isActive: (state) => state.isCode,
         isDisabled: (state) => !state.canCode,
       },
       {
         icon: <Underline />,
         onClick: (editor) => editor.chain().focus().toggleUnderline().run(),
-        hidden: (state) => !activePlugins?.includes('underline') || state.isTable,
+        hidden: () => !activePlugins?.includes('underline'),
         isActive: (state) => state.isUnderline,
       },
       {
         icon: <SubscriptIcon />,
         onClick: (editor) => editor.chain().focus().toggleSubscript().run(),
-        hidden: (state) => !activePlugins?.includes('subscript') || state.isTable,
+        hidden: () => !activePlugins?.includes('subscript'),
         isActive: (state) => state.isSubScript,
       },
       {
         icon: <SuperscriptIcon />,
         onClick: (editor) => editor.chain().focus().toggleSuperscript().run(),
-        hidden: (state) => !activePlugins?.includes('superscript') || state.isTable,
+        hidden: () => !activePlugins?.includes('superscript'),
         isActive: (state) => state.isSuperScript,
       },
       {
         icon: <ImageIcon />,
-        hidden: (state) => !activePlugins?.includes('image') || state.isTable,
+        hidden: () => !activePlugins?.includes('image'),
         onClick: (editor) => editor.chain().focus().setImageUploadNode().run(),
       },
       {
         icon: <TheatersIcon />,
-        hidden: (state) => !activePlugins?.includes('video') || state.isTable,
+        hidden: () => !activePlugins?.includes('video'),
         onClick: (editor) => editor.chain().focus().insertMedia({ type: 'video' }).run(),
       },
       {
         icon: <VolumeUpIcon />,
-        hidden: (state) => !activePlugins?.includes('audio') || state.isTable,
+        hidden: () => !activePlugins?.includes('audio'),
         onClick: (editor) => editor.chain().focus().insertMedia({ type: 'audio', tag: 'audio' }).run(),
       },
       {
         icon: <CSSIcon />,
-        hidden: (state) => !activePlugins?.includes('css') || state.isTable,
+        hidden: () => !activePlugins?.includes('css'),
         onClick: (editor) => editor.commands.openCSSClassDialog(),
       },
       {
+        icon: <FormatQuote />,
+        hidden: () => !activePlugins?.includes('blockquote'),
+        onClick: (editor) => editor.chain().focus().toggleBlockquote().run(),
+        isActive: (state) => state.isBlockquote,
+      },
+      {
         icon: <HeadingIcon />,
-        hidden: (state) => !activePlugins?.includes('h3') || state.isTable,
+        hidden: () => !activePlugins?.includes('h3'),
         onClick: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
         isActive: (state) => state.isHeading3,
       },
@@ -289,40 +309,40 @@ function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, respon
       },
       {
         icon: <CharacterIcon letter="ñ" />,
-        hidden: (state) => !activePlugins?.includes('languageCharacters') || state.isTable,
+        hidden: () => !activePlugins?.includes('languageCharacters'),
         onClick: () => setShowPicker(spanishConfig),
       },
       {
         icon: <CharacterIcon letter="€" />,
-        hidden: (state) => activePlugins?.filter((p) => p === 'languageCharacters').length !== 2 || state.isTable,
+        hidden: () => activePlugins?.filter((p) => p === 'languageCharacters').length !== 2,
         onClick: () => setShowPicker(specialConfig),
       },
       {
         icon: <TextAlignIcon editor={editor} />,
-        hidden: (state) => !activePlugins?.includes('text-align') || state.isTable,
+        hidden: () => !activePlugins?.includes('text-align'),
         onClick: () => {},
       },
       {
         icon: <BulletedListIcon />,
-        hidden: (state) => !activePlugins?.includes('bulleted-list') || state.isTable,
+        hidden: () => !activePlugins?.includes('bulleted-list'),
         onClick: (editor) => editor.chain().focus().toggleBulletList().run(),
         isActive: (state) => state.isBulletList,
       },
       {
         icon: <NumberedListIcon />,
-        hidden: (state) => !activePlugins?.includes('numbered-list') || state.isTable,
+        hidden: () => !activePlugins?.includes('numbered-list'),
         onClick: (editor) => editor.chain().focus().toggleOrderedList().run(),
         isActive: (state) => state.isOrderedList,
       },
       {
         icon: <Undo />,
-        hidden: (state) => !activePlugins?.includes('undo') || state.isTable,
+        hidden: () => !activePlugins?.includes('undo'),
         onClick: (editor) => editor.chain().focus().undo().run(),
         isDisabled: (state) => !state.canUndo,
       },
       {
         icon: <Redo />,
-        hidden: (state) => !activePlugins?.includes('redo') || state.isTable,
+        hidden: () => !activePlugins?.includes('redo'),
         onClick: (editor) => editor.chain().focus().redo().run(),
         isDisabled: (state) => !state.canRedo,
       },
@@ -330,8 +350,29 @@ function MenuBar({ editor, classes, activePlugins, toolbarOpts: toolOpts, respon
     [activePlugins, editor],
   );
 
+  const isDragInTheBlankSelected =
+    editorState.hideDefaultToolbar && editorState.currentNode?.type?.name === 'drag_in_the_blank';
+
   return (
     <div className={names} style={{ ...customStyles }} onMouseDown={handleMouseDown}>
+      {isDragInTheBlankSelected && (
+        <div className={classes.defaultToolbar} tabIndex="1">
+          <div className={classes.buttonsContainer}>
+            <button
+              type="button"
+              className={classes.button}
+              onClick={(e) => {
+                e.preventDefault();
+                editor.chain().focus().deleteSelection().run();
+                onChange?.(editor.getHTML());
+              }}
+              aria-label="Delete response area"
+            >
+              <Delete />
+            </button>
+          </div>
+        </div>
+      )}
       {!editorState.hideDefaultToolbar && (
         <div className={classes.defaultToolbar} tabIndex="1">
           <div className={classes.buttonsContainer}>

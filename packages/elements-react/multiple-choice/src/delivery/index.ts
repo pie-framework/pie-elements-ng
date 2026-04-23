@@ -8,15 +8,43 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Main from './main';
+import Main from './main.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { debounce } from 'lodash-es';
 import debug from 'debug';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { EnableAudioAutoplayImage } from '@pie-lib/render-ui';
-import { updateSessionValue, updateSessionMetadata } from './session-updater';
+import { EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const EnableAudioAutoplayImage = unwrapReactInteropSymbol(EnableAudioAutoplayImageImport, 'EnableAudioAutoplayImage') || unwrapReactInteropSymbol(renderUi.EnableAudioAutoplayImage, 'EnableAudioAutoplayImage');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
+import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
 
 const log = debug('pie-ui:multiple-choice');
 
@@ -65,6 +93,8 @@ export default class MultipleChoice extends HTMLElement {
     this._keyboardEventsEnabled = false;
     this._audioInitialized = false;
     this._root = null;
+    this._mathObserver = null;
+    this._mathRenderPending = false;
 
     this._rerender = debounce(
       () => {
@@ -85,14 +115,12 @@ export default class MultipleChoice extends HTMLElement {
           this.setAttribute('role', 'region');
           this.setLangAttribute();
 
+          this._initMathObserver();
+
           if (!this._root) {
             this._root = createRoot(this);
           }
           this._root.render(element);
-          queueMicrotask(() => {
-            log('render complete - render math');
-            renderMath(this);
-          });
 
           if (this._model.keyboardEventsEnabled === true && !this._keyboardEventsEnabled) {
             this.enableKeyboardEvents();
@@ -127,6 +155,38 @@ export default class MultipleChoice extends HTMLElement {
       50,
       { leading: false, trailing: true },
     );
+  }
+
+  _scheduleMathRender: any = () => {
+    if (this._mathRenderPending) return;
+    this._mathRenderPending = true;
+
+    requestAnimationFrame(() => {
+      if (this._mathObserver) {
+        this._mathObserver.disconnect();
+      }
+      log('render complete - render math');
+      renderMath(this);
+      this._mathRenderPending = false;
+      setTimeout(() => {
+        if (this._mathObserver) {
+          this._mathObserver.observe(this, { childList: true, subtree: true });
+        }
+      }, 50);
+    });
+  };
+
+  _initMathObserver() {
+    if (this._mathObserver) return;
+    this._mathObserver = new MutationObserver(this._scheduleMathRender);
+    this._mathObserver.observe(this, { childList: true, subtree: true });
+  }
+
+  _disconnectMathObserver() {
+    if (this._mathObserver) {
+      this._mathObserver.disconnect();
+      this._mathObserver = null;
+    }
   }
 
   onShowCorrectToggle() {
@@ -201,6 +261,7 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   connectedCallback() {
+    this._initMathObserver();
     this._rerender();
 
     // Observation:  audio in Chrome will have the autoplay attribute,
@@ -290,6 +351,7 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._disconnectMathObserver();
     if (this._keyboardEventsEnabled) {
       window.removeEventListener('keydown', this._boundHandleKeyDown);
       this._keyboardEventsEnabled = false;

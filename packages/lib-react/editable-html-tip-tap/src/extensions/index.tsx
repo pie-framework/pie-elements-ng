@@ -8,7 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { compact, isEmpty } from 'lodash-es';
+import compact from 'lodash-es/compact.js';
+import isEmpty from 'lodash-es/isEmpty.js';
 import debug from 'debug';
 
 const log = debug('@pie-lib:editable-html:plugins');
@@ -40,6 +41,8 @@ export const ALL_PLUGINS = [
 
 export const PLUGINS_MAP = {
   'text-align': 'textAlign',
+  'bulleted-list': 'ul_list',
+  'numbered-list': 'ol_list',
 };
 
 export const DEFAULT_PLUGINS = ALL_PLUGINS.filter((plug) => !['responseArea', 'h3', 'blockquote'].includes(plug));

@@ -11,8 +11,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import Choice, { ChoiceType } from './choice';
-import DroppablePlaceholder from './droppable-placeholder';
+import Choice, { ChoiceType } from './choice.js';
+import DroppablePlaceholder from './droppable-placeholder.js';
 export { ChoiceType };
 
 const Wrapper: any = styled('div')({
@@ -39,6 +39,7 @@ export class Choices extends React.Component {
     choicePosition: PropTypes.string,
     onDropChoice: PropTypes.func,
     onRemoveChoice: PropTypes.func,
+    correct: PropTypes.boolean,
   };
 
   static defaultProps = {
@@ -49,7 +50,7 @@ export class Choices extends React.Component {
   };
 
   render() {
-    const { choices = [], model, disabled, onDropChoice, onRemoveChoice, choicePosition } = this.props;
+    const { choices = [], model, disabled, onDropChoice, onRemoveChoice, choicePosition, correct } = this.props;
 
     let style = {
       textAlign: 'center',
@@ -68,6 +69,7 @@ export class Choices extends React.Component {
           disabled={disabled}
           style={{ background: 'none' }}
           choiceBoard={true}
+          correct={correct}
         >
           {model.choicesLabel && model.choicesLabel !== '' && (
             <LabelHolder dangerouslySetInnerHTML={{ __html: model.choicesLabel }} />

@@ -4,5 +4,6 @@
  * Framework-agnostic TypeScript types and events for PIE elements.
  */
 
-export * from './events';
-export * from './types';
+export * from './events.js';
+export * from './docs-contract.js';
+export * from './types.js';

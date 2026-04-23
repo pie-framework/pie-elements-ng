@@ -15,10 +15,10 @@ import { Group } from '@visx/group';
 import { styled } from '@mui/material/styles';
 
 import { types } from '@pie-lib/plot';
-import { dataToXBand } from '../utils';
+import { dataToXBand } from '../utils.js';
 import { color } from '@pie-lib/render-ui';
-import Plot from './common/plot';
-import { correct, incorrect } from '../common/styles';
+import Plot from './common/plot.js';
+import { correct, incorrect } from '../common/styles.js';
 
 const StyledLinePath: any = styled(LinePath)(() => ({
   stroke: color.visualElementsColors.PLOT_FILL_COLOR,

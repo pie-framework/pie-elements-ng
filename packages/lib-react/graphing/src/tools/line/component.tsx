@@ -8,13 +8,13 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { lineBase, lineToolComponent, styles } from '../shared/line';
+import { lineBase, lineToolComponent, styles } from '../shared/line/index.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { trig, types } from '@pie-lib/plot';
 import classNames from 'classnames';
-import { ArrowMarker, genUid } from '../shared/arrow-head';
-import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils';
+import { ArrowMarker, genUid } from '../shared/arrow-head.js';
+import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils.js';
 import { styled } from '@mui/material/styles';
 
 const StyledArrowedLineRoot: any = styled('g')(({ theme }) => ({
@@ -51,6 +51,16 @@ export const ArrowedLine = (props) => {
           )}
         />
       </defs>
+      {/* Transparent wider line captures pointer events (+2px each side) */}
+      <line
+        x1={scale.x(eFrom.x)}
+        y1={scale.y(eFrom.y)}
+        x2={scale.x(eTo.x)}
+        y2={scale.y(eTo.y)}
+        stroke="transparent"
+        strokeWidth={7}
+        style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
+      />
       <line
         x1={scale.x(eFrom.x)}
         y1={scale.y(eFrom.y)}

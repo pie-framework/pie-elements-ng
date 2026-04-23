@@ -8,17 +8,17 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { lineBase, lineToolComponent, styles } from '../shared/line';
+import { lineBase, lineToolComponent, styles } from '../shared/line/index.js';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ArrowMarker, genUid } from '../shared/arrow-head';
+import { ArrowMarker, genUid } from '../shared/arrow-head.js';
 import { trig, types } from '@pie-lib/plot';
 import classNames from 'classnames';
-import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils';
+import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils.js';
 import { styled } from '@mui/material/styles';
 
 const StyledRayRoot: any = styled('g')(({ theme, disabled, correctness }) => ({
-  '& line': {
+  '& line:not(.hit-area)': {
     ...styles.line(theme),
     ...(disabled && styles.disabledSecondary(theme)),
     ...(correctness === 'correct' && styles.correct(theme, 'stroke')),
@@ -62,6 +62,17 @@ export const RayLine = (props) => {
           )}
         />
       </defs>
+      {/* Transparent wider line captures pointer events (+2px each side) */}
+      <line
+        x1={scale.x(from.x)}
+        y1={scale.y(from.y)}
+        x2={scale.x(aToB.x)}
+        y2={scale.y(aToB.y)}
+        className="hit-area"
+        stroke="transparent"
+        strokeWidth={7}
+        style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
+      />
       <line
         x1={scale.x(from.x)}
         y1={scale.y(from.y)}

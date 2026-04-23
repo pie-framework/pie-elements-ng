@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Main from './design';
+import Main from './design.js';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
@@ -18,8 +18,8 @@ import {
   InsertSoundEvent,
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
-import defaultValues from './defaultConfiguration';
-import { generateModel } from './utils';
+import defaultValues from './defaultConfiguration.js';
+import { generateModel } from './utils.js';
 
 export default class SelectTextConfigure extends HTMLElement {
   static createDefaultModel = (model = {}) => {

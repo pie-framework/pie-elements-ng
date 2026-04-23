@@ -13,7 +13,7 @@ import { createRoot } from 'react-dom/client';
 import { debounce } from 'lodash-es';
 import debug from 'debug';
 
-import StimulusTabs from '../delivery/stimulus-tabs';
+import StimulusTabs from '../delivery/stimulus-tabs.js';
 
 const log = debug('pie-element:passage:print');
 

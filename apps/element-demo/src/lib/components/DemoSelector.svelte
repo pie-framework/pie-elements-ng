@@ -4,8 +4,7 @@
  * Dropdown to select from multiple demo configurations
  */
 import { page } from '$app/stores';
-import { goto } from '$app/navigation';
-import type { DemoConfig } from '$lib/stores/demo-state';
+import { clearPersistedDemoStateForElement, type DemoConfig } from '$lib/stores/demo-state';
 
 interface Props {
   demos: DemoConfig[];
@@ -28,6 +27,11 @@ function selectDemo(demoId: string) {
   }
 
   const url = new URL($page.url);
+  const currentElementName = $page.url.pathname.split('/')[1];
+  if (currentElementName) {
+    // Demo switches should start from sample/default model/session, not prior persisted edits.
+    clearPersistedDemoStateForElement(currentElementName);
+  }
   url.searchParams.set('demo', demoId);
   // Force full page reload to load fresh demo data from server
   window.location.href = url.toString();

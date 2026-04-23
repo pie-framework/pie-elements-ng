@@ -9,7 +9,7 @@
  */
 
 import { cloneDeep } from 'lodash-es';
-import { SHAPE_GROUPS } from './shapes';
+import { SHAPE_GROUPS } from './shapes/index.js';
 
 const updateImageDimensions = (initialDim, nextDim, keepAspectRatio, resizeType) => {
   // if we want to keep image aspect ratio

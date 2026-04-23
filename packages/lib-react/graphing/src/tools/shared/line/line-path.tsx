@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { types } from '@pie-lib/plot';
-import { correct, disabled, disabledSecondary, incorrect, missing } from '../styles';
+import { correct, disabled, disabledSecondary, incorrect, missing } from '../styles.js';
 import * as vx from '@visx/shape';
 import { color } from '@pie-lib/render-ui';
 
@@ -39,10 +39,11 @@ const StyledDrawLine: any = styled(vx.LinePath)(({ disabled: isDisabled, correct
 }));
 
 const StyledLine: any = styled(vx.LinePath)(({ theme, disabled: isDisabled, correctness, isDragging }) => ({
-  strokeWidth: 3,
+  strokeWidth: 7,
   fill: 'none',
   transition: 'stroke-width 200ms ease-in, stroke 200ms ease-in',
   stroke: 'transparent',
+  pointerEvents: 'stroke',
   '&:hover': dragging(theme),
   ...(isDragging && dragging(theme)),
   ...(isDisabled && {

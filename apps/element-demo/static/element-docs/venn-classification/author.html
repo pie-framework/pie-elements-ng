@@ -1,0 +1,143 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>venn-classification author docs</title>
+    <style>
+      :root { color-scheme: light dark; font-family: Inter, system-ui, sans-serif; }
+      body { margin: 0; padding: 1.5rem; line-height: 1.55; }
+      h1,h2,h3 { line-height: 1.25; }
+      h1 { margin-top: 0; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .doc-section { margin-bottom: 2rem; }
+      .doc-property { margin: 0 0 1.25rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(128,128,128,.25); }
+      ul { padding-left: 1.25rem; }
+      .meta-list li { margin-bottom: .25rem; }
+    </style>
+  </head>
+  <body>
+    
+    <h1>venn-classification / author</h1>
+    
+  <section class="doc-section">
+    <h2>Model Defaults</h2>
+    <p><strong>Source:</strong> <code>src/controller/defaults.ts#model</code></p>
+    
+  <section class="doc-property">
+    <h3><code>circles</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>array</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>[&#123;&quot;label&quot;:&quot;Set A&quot;&#125;,&#123;&quot;label&quot;:&quot;Set B&quot;&#125;]</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>element</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>venn-classification</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>id</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>1</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>&lt;p&gt;Sort each tile into the correct region of the Venn diagram.&lt;/p&gt;</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>promptEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>regionLabels</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>object</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>&#123;&#125;</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>scoringPolicy</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>partialPerTile</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>tiles</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>array</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>[]</code></li>
+    </ul>
+  </section>
+  </section>
+    
+  <section class="doc-section">
+    <h2>Authoring/Configuration Defaults</h2>
+    <p><strong>Source:</strong> <code>src/controller/defaults.ts#configuration</code></p>
+    
+  <section class="doc-property">
+    <h3><code>prompt.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Prompt</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>scoringPolicy.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Scoring policy</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>scoringPolicy.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+  </section>
+  
+  </body>
+</html>

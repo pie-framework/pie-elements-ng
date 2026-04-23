@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import defaults from './defaults';
-import { markupToText } from './utils';
+import defaults from './defaults.js';
+import { markupToText } from './utils.js';
 
 
 // todo the import from pie-lib/rubric WILL break pslb

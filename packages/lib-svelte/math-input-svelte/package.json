@@ -1,6 +1,5 @@
 {
   "name": "@pie-lib/math-input-svelte",
-  "private": true,
   "version": "0.1.0",
   "description": "MathQuill wrapper components for Svelte 5",
   "type": "module",
@@ -25,16 +24,14 @@
     "dev": "vite build --watch",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
-  "dependencies": {
-    "@pie-element/shared-mathquill": "workspace:*"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "svelte": "^5.0.0"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "svelte": "^5.51.0",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "svelte": "^5.54.0",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^8.0.1"
   }
 }

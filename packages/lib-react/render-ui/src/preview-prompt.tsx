@@ -11,7 +11,7 @@
 import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import * as color from './color';
+import * as color from './color.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
@@ -77,10 +77,10 @@ export class PreviewPrompt extends Component {
     onClick: PropTypes.func,
     defaultClassName: PropTypes.string,
     autoplayAudioEnabled: PropTypes.bool,
-    customAudioButton: {
+    customAudioButton: PropTypes.shape({
       playImage: PropTypes.string,
       pauseImage: PropTypes.string,
-    },
+    }),
   };
 
   static defaultProps = {
@@ -236,21 +236,24 @@ export class PreviewPrompt extends Component {
 
       if (images && images.length) {
         for (let image of images) {
-          // check if alignment property was set
           if (image.attributes && image.attributes.alignment && image.attributes.alignment.value) {
+            const alignment = image.attributes.alignment.value;
+            const justifyContent =
+              alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start';
+
             const parentNode = image.parentElement;
 
-            // check if div is not already added to dom and replace current image with wrapped image
             if (
-              !(
-                parentNode.tagName === 'DIV' &&
-                parentNode.style.display === 'flex' &&
-                parentNode.style.width === '100%'
-              )
+              parentNode.tagName === 'DIV' &&
+              parentNode.style.display === 'flex' &&
+              parentNode.style.width === '100%'
             ) {
+              parentNode.style.justifyContent = justifyContent;
+            } else {
               const div = document.createElement('div');
               div.style.display = 'flex';
               div.style.width = '100%';
+              div.style.justifyContent = justifyContent;
 
               const copyImage = image.cloneNode(true);
               div.appendChild(copyImage);

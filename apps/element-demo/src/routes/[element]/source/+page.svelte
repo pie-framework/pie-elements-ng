@@ -41,6 +41,8 @@ function handleModelChanged(event: CustomEvent) {
   elementName={data.elementName}
   bind:controller={$controller}
   capabilities={data.capabilities}
+  preloadAuthor={false}
+  preloadPrint={false}
   {debug}
 >
   {#snippet children()}

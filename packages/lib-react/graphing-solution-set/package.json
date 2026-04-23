@@ -1,7 +1,6 @@
 {
   "name": "@pie-lib/graphing-solution-set",
-  "private": true,
-  "version": "0.1.0",
+  "version": "3.2.0-next.35",
   "description": "Graphing components",
   "dependencies": {
     "@dnd-kit/sortable": "10.0.0",
@@ -39,7 +38,9 @@
     "react-redux": "^6.0.0",
     "redux": "^4.0.1",
     "redux-undo": "^1.1.0",
-    "@pie-lib/config-ui": "workspace:*"
+    "@pie-lib/config-ui": "workspace:*",
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/utilities": "3.2.2"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -59,5 +60,12 @@
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "test": "bun x vitest run"
+  },
+  "devDependencies": {
+    "vite": "^8.0.1",
+    "typescript": "^5.9.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
   }
 }

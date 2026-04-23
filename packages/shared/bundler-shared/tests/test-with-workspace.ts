@@ -49,7 +49,6 @@ async function testWithWorkspace() {
 
   // Create symlinks to local packages
   const localPackages = {
-    '@pie-element/shared-mathquill': join(__dirname, '../../mathquill'),
     '@pie-element/multiple-choice': join(__dirname, '../../../elements-react/multiple-choice'),
   };
 

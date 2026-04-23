@@ -10,8 +10,31 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Circle, Group, Transformer } from 'react-konva';
-import DeleteWidget from './DeleteWidget';
+import { Circle as CircleImport, Group as GroupImport, Transformer as TransformerImport } from 'react-konva';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Transformer = unwrapReactInteropSymbol(TransformerImport, 'Transformer');
+const Group = unwrapReactInteropSymbol(GroupImport, 'Group');
+const Circle = unwrapReactInteropSymbol(CircleImport, 'Circle');
+import DeleteWidget from './DeleteWidget.js';
 
 class CircleComponent extends React.Component {
   constructor(props) {
@@ -41,7 +64,10 @@ class CircleComponent extends React.Component {
   };
 
   handleMouseLeave: any = () => {
-    this.setState({ hovered: false });
+    // Don't hide transformer if user is actively dragging/resizing
+    if (!this.state.isDragging) {
+      this.setState({ hovered: false });
+    }
     document.body.style.cursor = 'default';
   };
 

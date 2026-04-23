@@ -14,9 +14,9 @@ import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 
-import InputHeader from '../input-header';
-import { DeleteButton } from '../buttons';
-import PlaceHolder from './droppable-placeholder';
+import InputHeader from '../input-header.js';
+import { DeleteButton } from '../buttons.js';
+import PlaceHolder from './droppable-placeholder.js';
 
 const StyledCard: any = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'isDuplicated',
@@ -30,9 +30,7 @@ const StyledCard: any = styled(Card, {
 }));
 
 const StyledCardActions: any = styled(CardActions)(({ theme }) => ({
-  padding: 0,
-  paddingBottom: 0,
-  paddingTop: theme.spacing(1),
+  padding: `${theme.spacing(1)} 0 0`,
 }));
 
 const CategoryHeader: any = styled('div')(({ theme }) => ({
@@ -107,7 +105,7 @@ export class Category extends React.Component {
       mathMlOptions = {},
     } = this.props;
     const isCategoryHeaderDisabled = !!alternateResponseIndex || alternateResponseIndex === 0;
-    
+
     return (
       <StyledCard isDuplicated={isDuplicated}>
         <span>

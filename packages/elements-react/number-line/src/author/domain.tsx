@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { MiniField } from './number-text-field';
+import { MiniField } from './number-text-field.js';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { styled } from '@mui/material/styles';

@@ -29,15 +29,16 @@ This document explains the print architecture and how the two different print pl
 ### 1. Element-Level Print Player (Development)
 
 **Package:** `@pie-element/element-player` (this repository)
-**Component:** `<pie-esm-print-player>`
+**Component:** `<pie-element-player view="print">`
 **Purpose:** Testing and developing individual element print views
 
 ```html
-<pie-esm-print-player
+<pie-element-player
+  view="print"
   element-name="multiple-choice"
   role="student"
   model={model}
-/>
+></pie-element-player>
 ```
 
 **Use Cases:**
@@ -46,7 +47,7 @@ This document explains the print architecture and how the two different print pl
 - Single element demos
 - Quick print preview during development
 
-**Location:** [packages/element-player/src/players/EsmPrintPlayer.svelte](../packages/element-player/src/players/EsmPrintPlayer.svelte)
+**Location:** [packages/element-player/src/players/PieElementPlayer.svelte](../packages/element-player/src/players/PieElementPlayer.svelte)
 
 ### 2. Item-Level Print Player (Production)
 
@@ -62,7 +63,7 @@ Where `itemConfig` includes:
 - `item.markup` - HTML with multiple elements
 - `item.elements` - Package version map
 - `item.models` - Array of element models
-- `options.role` - student/instructor
+- `options.mode` - student/instructor
 
 **Use Cases:**
 - Production applications (pieoneer, content delivery)
@@ -97,7 +98,7 @@ Print components are **self-contained** and handle their own transformations:
 // packages/elements-react/multiple-choice/src/print/index.tsx
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.role === 'instructor';
+  const instr = opts.mode === 'instructor';
 
   return {
     ...model,
@@ -126,7 +127,7 @@ export default class MultipleChoicePrint extends HTMLElement {
 - Each print component exports a custom element class
 - `preparePrintModel()` handles print-specific transformations
 - Renders using the existing delivery component
-- Respects `options.role` for answer visibility
+- Respects `options.mode` for answer visibility
 - No external orchestration needed for single elements
 
 ## When to Use Which Approach
@@ -139,11 +140,12 @@ export default class MultipleChoicePrint extends HTMLElement {
 
 Example:
 ```html
-<pie-esm-element-player
+<pie-element-player
+  view="delivery"
   element-name="multiple-choice"
   model={{ ...model, disabled: true }}
   session={{}}
-/>
+></pie-element-player>
 ```
 
 ### Use Element-Level Print Player
@@ -154,11 +156,12 @@ Example:
 
 Example:
 ```html
-<pie-esm-print-player
+<pie-element-player
+  view="print"
   element-name="multiple-choice"
   role="student"
   model={model}
-/>
+></pie-element-player>
 ```
 
 ### Use Item-Level Print Player (Required For)
@@ -178,7 +181,7 @@ Example:
 | Feature | Element-Level | Item-Level |
 |---------|---------------|------------|
 | **Package** | `@pie-element/element-player` | `@pie-player/print` |
-| **Tag** | `<pie-esm-print-player>` | `<pie-print>` |
+| **Tag** | `<pie-element-player view="print">` | `<pie-print>` |
 | **Input** | Element name + model | Full item config |
 | **Markup** | Not used | HTML string with elements |
 | **Elements** | Single | Multiple |
@@ -192,11 +195,12 @@ The element-demo app uses the element-level player:
 
 ```svelte
 <!-- apps/element-demo/src/lib/element-player/components/PrintView.svelte -->
-<pie-esm-print-player
+<pie-element-player
+  view="print"
   element-name={elementName}
   role={role}
   model={model}
-/>
+></pie-element-player>
 ```
 
 This provides:
@@ -231,18 +235,10 @@ player.resolve = (tagName, pkg) => {
 };
 ```
 
-### Backwards Compatibility
+### Print player options
 
-✅ **Print exports are backwards compatible**
-- Same custom element pattern
-- Same `model` and `options` API
-- Same `preparePrintModel()` pattern
-- Works with both old and new print players
-
-✅ **No changes needed in elements**
-- Print components sync from upstream pie-elements
-- Existing print logic preserved
-- Only path changes from `module/print.js` to `dist/print/index.js`
+- Custom elements use the same `model` / `options` pattern and `preparePrintModel(model, opts)`.
+- Use `opts.mode` (`'student'` | `'instructor'`) for answer visibility and similar behavior.
 
 ## Development Workflow
 
@@ -262,7 +258,7 @@ player.resolve = (tagName, pkg) => {
    - Student: Shows questions only
    - Instructor: Shows answers and rationales
 
-4. **The demo uses `<pie-esm-print-player>` automatically**
+4. **The demo uses `<pie-element-player view="print">` automatically**
 
 ### Building Print Components
 
@@ -283,7 +279,7 @@ The build outputs to `dist/print/index.js` and `dist/print/index.d.ts`.
 - [Element-Level Print Player README](../packages/element-player/README_PRINT_PLAYER.md)
 - [Item-Level Print Player README](../../pie-players/packages/print-player/README.md)
 - [Item-Level Print Player Usage Examples](../../pie-players/packages/print-player/USAGE_EXAMPLE.md)
-- [EsmElementPlayer Documentation](../packages/element-player/src/players/EsmElementPlayer.svelte)
+- [PieElementPlayer Source](../packages/element-player/src/players/PieElementPlayer.svelte)
 
 ## Summary
 

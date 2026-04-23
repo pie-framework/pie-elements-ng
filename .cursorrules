@@ -1,8 +1,40 @@
-IE elements-ng project rules
+# IE elements-ng project rules
+
+## Spec-driven workflow
+
+- Significant changes (new elements, non-trivial element extensions, cross-cutting platform changes that touch model/session/event contracts, authoring-surface changes) should have a PRD in `docs/prds/<slug>/PRD.md`. See `docs/prds/README.md` for when to write, when to skip, and the template. [`docs/prds/venn-classification/PRD.md`](docs/prds/venn-classification/PRD.md) is the canonical example for length and tone.
+- PRD layout: one subdirectory per element or feature (e.g. `docs/prds/venn-classification/`); the PRD body lives in `PRD.md` inside that subdirectory (not `README.md` — the file name makes the content explicit and avoids colliding with the folder-level `docs/prds/README.md` conventions doc). Optional `wireframes/`, `examples/`, `notes/` siblings hold supporting artifacts. Facet files — `delivery.md`, `authoring.md`, `print.md` — are only introduced when a facet has genuinely outgrown `PRD.md`; default is single-file. The top-level template is `docs/prds/_template.md`.
+- When a task matches an existing PRD, read the PRD at `docs/prds/<slug>/PRD.md` at the start of the session. Treat its "Proposed surface" as the starting contract for model/session/event shape; do not silently invent alternatives. If you propose changing the contract, surface it explicitly in the PR description and update the relevant section of the PRD in the same change.
+- When a PRD is split into facets (`delivery.md`, `authoring.md`, `print.md`), the model/session shape always lives in `PRD.md`, never in a facet file. Facet files cover only their own facet and link back to `PRD.md`.
+- PRDs are functional specs, not project-management artifacts. Do **not** add: owners, created/last-updated dates, or a dated decision log. If the "why we didn't do the obvious alternative" matters, inline it next to the relevant Non-goal or Proposed-surface bullet — where it can't drift out of sync with the content it justifies. Do not re-add these PM fields to PRDs even if a template from elsewhere includes them.
+- **Status field is required.** Every PRD carries a status inline on the meta line under the H1, from the small vocabulary `Proposal` / `Accepted` / `Superseded`. A `Proposal` is circulating for review and its "Proposed surface" is not yet a fixed contract — agents must surface disagreement rather than silently implement against it. `Accepted` is the agreed contract (implementation may be complete, in flight, or not yet started). `Superseded` must link to the replacement PRD. There is no `Shipped` state — tests own behaviour once Accepted; release state lives in git tags / CHANGELOG.
+- **Status log (optional).** When a PRD transitions between status values, add a one-line entry to a `## Status log` section at the bottom. State transitions only, never content churn (git shows content changes). No dates (git has them). A fresh Proposal with no transitions does not need this section.
+- Do not write a PRD for: bug fixes, refactors with no observable behaviour change, demo-app or e2e tweaks, pure docs/version bumps, dependency updates. A PR description is enough for these.
+- Keep PRDs to roughly one screen of markdown. No long acceptance-criteria lists, no full TypeScript interface dumps (sketch 4-6 fields; full TS lives in code). The source of truth for behaviour is the test suite, not the PRD.
+- Resist auto-padding PRDs with generic sections (Performance, Security, etc.) that say nothing element-specific — short PRDs that contain only true claims beat long PRDs that pad with truisms.
+- Use the "Open questions" list for genuinely-undecided items. When a question is resolved, *remove* the bullet and inline the resolution into the relevant section — do not keep a "resolved" list.
+- **Wireframes** for a feature belong under `docs/prds/<slug>/wireframes/` (or another path under that PRD directory) and should be linked from `PRD.md` with a normal repo-relative path. Do not assume an external wireframe bundle in another checkout.
+
+## Web components and elements
 
 - Web components: set data via element properties, not attributes.
 - For custom elements, prefer imperative property updates (element.model = ..., element.session = ...).
+- Element packages must not call `customElements.define(...)` in runtime entry points (including `index.iife.ts`); registration belongs to PIE item/element players.
+- For Svelte custom elements (`<svelte:options customElement={...}>`), do **not** set `tag`; this auto-registers with `customElements.define(...)` and can cause duplicate registration errors. Export element classes only; players register tags.
 - When changing model/session, reassign a new object if needed to trigger reactivity.
 - Element player should rebuild the view model via controller.model(...) on mode or session changes.
 - Avoid reactive loops when controller updates session; guard against re-setting identical session objects.
-- Many element packages are synced from upstream; avoid manual edits in auto-generated files unless requested.
+- `packages/elements-react/*` and `packages/lib-react/*` are synced from upstream (`../pie-elements`, `../pie-lib`).
+- Do not directly edit synced files in those directories.
+- Make source changes in upstream repos first, then run `bun run upstream:update` (or `bun run upstream:sync --element=<name>`) to regenerate local files.
+- Only make temporary direct edits in synced files if the user explicitly approves an emergency local-only debugging patch.
+- Release/versioning default: always use a patch bump by default.
+- For Changesets-driven releases, default to `patch` unless the user explicitly asks for `minor` or `major`.
+- Publish policy: publish only explicitly selected packages (and packages bumped by changeset dependency propagation), never "all unpublished packages".
+- For manual npm publishing in this monorepo, always use `sh scripts/publish-with-env-token.sh --packages <pkg1,pkg2>` (single package example: `sh scripts/publish-with-env-token.sh --packages @pie-element/<name>`).
+- Do not run raw `npm publish` manually for package releases in this repo; the publish script handles explicit package targeting and token auth safely.
+- Versioning policy (current): packages are versioned independently; do not assume workspace-wide lockstep versions.
+- Upstream sync policy: `upstream:update` should preserve/copy package versions from upstream package.json when syncing `packages/elements-react/*` and `packages/lib-react/*`.
+- PIE API AWS builder compatibility: when an element package sets `package.json` `pie.controller` to `@pie-element/<name>/controller`, include a top-level `controller.js` file that re-exports from `./dist/controller/index.js`.
+- Ensure the top-level `controller.js` shim is published by listing it in `package.json` `files`.
+- Keep `exports["./controller"]` pointing at `./dist/controller/index.js` (or source in development) for standard ESM consumers; the shim is only for filesystem-alias resolver compatibility.

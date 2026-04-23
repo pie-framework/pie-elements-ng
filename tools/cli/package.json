@@ -18,7 +18,7 @@
   "dependencies": {
     "@oclif/core": "^4.0.0",
     "@oclif/plugin-help": "^6.2.0",
-    "@pie-element/bundler-shared": "workspace:*",
+    "@pie-element/element-bundler": "workspace:*",
     "es-module-lexer": "^1.7.0",
     "glob": "^13.0.0",
     "open": "^10.0.3",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
-    "bun-types": "^1.3.5",
+    "bun-types": "^1.3.11",
     "typescript": "^5.9.3"
   },
   "oclif": {
@@ -44,16 +44,28 @@
       "packages": {
         "description": "Generate and manage package configurations"
       },
+      "docs": {
+        "description": "Generate and verify framework-agnostic element documentation"
+      },
       "verify": {
         "description": "Verify builds and configurations"
-      },
-      "mathquill": {
-        "description": "MathQuill migration and management"
       }
     }
   },
   "engines": {
     "node": ">=20.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "tools/cli"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
 }

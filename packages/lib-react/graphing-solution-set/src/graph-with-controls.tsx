@@ -14,10 +14,10 @@ import { styled } from '@mui/material/styles';
 import classNames from 'classnames';
 import { isString, uniq } from 'lodash-es';
 import { color } from '@pie-lib/render-ui';
-import ToolMenu from './tool-menu';
-import Graph, { graphPropTypes } from './graph';
-import UndoRedo from './undo-redo';
-import { allTools, toolsArr } from './tools';
+import ToolMenu from './tool-menu.js';
+import Graph, { graphPropTypes } from './graph.js';
+import UndoRedo from './undo-redo.js';
+import { allTools, toolsArr } from './tools/index.js';
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 

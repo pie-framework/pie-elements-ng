@@ -142,7 +142,7 @@
               ],
             },
             options: {
-              role: 'student',
+              mode: 'student',
             },
           };
 
@@ -177,7 +177,7 @@
               ],
             },
             options: {
-              role: 'student',
+              mode: 'student',
             },
           };
 
@@ -206,8 +206,8 @@
           // Role switcher
           roleSelector.addEventListener('change', (e) => {
             const role = e.target.value;
-            config1.options.role = role;
-            config2.options.role = role;
+            config1.options.mode = role;
+            config2.options.mode = role;
             example1.config = { ...config1 }; // Trigger update
             example2.config = { ...config2 };
           });

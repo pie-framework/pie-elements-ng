@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import ChoicePreview from './choice-preview';
+import ChoicePreview from './choice-preview.js';
 import { useDroppable } from '@dnd-kit/core';
 import { uid, PlaceHolder } from '@pie-lib/drag';
 import debug from 'debug';
@@ -21,6 +21,7 @@ const log = debug('@pie-element:categorize:configure');
 const HelperText: any = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
   fontSize: theme.typography.fontSize - 2,
   color: `rgba(${theme.palette.common.black}, 0.4)`,
   width: '100%',
@@ -28,10 +29,6 @@ const HelperText: any = styled('div')(({ theme }) => ({
 }));
 
 const Helper = () => <HelperText>Drag your correct answers here</HelperText>;
-
-const DroppablePlaceholderContainer: any = styled('div')({
-  minHeight: '100px',
-});
 
 const Previews = ({ alternateResponseIndex, category, choices, onDeleteChoice }) => (
   <React.Fragment>
@@ -78,7 +75,6 @@ const DroppablePlaceHolder = ({
 
   return (
     <div ref={setNodeRef}>
-      <DroppablePlaceholderContainer>
         <PlaceHolder
           isOver={isOver}
           extraStyles={{
@@ -97,7 +93,6 @@ const DroppablePlaceHolder = ({
             />
           )}
         </PlaceHolder>
-      </DroppablePlaceholderContainer>
     </div>
   );
 };

@@ -12,9 +12,10 @@ import React from 'react';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
 import { Extension } from '@tiptap/core';
 import { Node, ReactNodeViewRenderer } from '@tiptap/react';
-import ExplicitConstructedResponse from '../components/respArea/ExplicitConstructedResponse';
-import DragInTheBlank from '../components/respArea/DragInTheBlank/DragInTheBlank';
-import InlineDropdown from '../components/respArea/InlineDropdown';
+import ExplicitConstructedResponse from '../components/respArea/ExplicitConstructedResponse.js';
+import DragInTheBlank from '../components/respArea/DragInTheBlank/DragInTheBlank.js';
+import InlineDropdown from '../components/respArea/InlineDropdown.js';
+import MathTemplated from '../components/respArea/MathTemplated.js';
 
 const lastIndexMap = {};
 
@@ -151,10 +152,12 @@ export const ResponseAreaExtension = Extension.create({
           }
 
           // --- Slate: indexing logic (kept identical) ---
-          if (lastIndexMap[typeName] === undefined) lastIndexMap[typeName] = 0;
+          if (lastIndexMap[typeName] === undefined) {
+            lastIndexMap[typeName] = 0;
+          }
 
           const prevIndex = lastIndexMap[typeName];
-          const newIndex = prevIndex === 0 ? prevIndex : prevIndex + 1;
+          const newIndex = prevIndex + 1;
 
           // Slate increments map even if newIndex === 0
           lastIndexMap[typeName] += 1;
@@ -165,7 +168,9 @@ export const ResponseAreaExtension = Extension.create({
             index: newIndex,
           });
 
-          if (!newInline) return false;
+          if (!newInline) {
+            return false;
+          }
 
           // --- Insert logic ---
           const { selection } = state;
@@ -191,20 +196,18 @@ export const ResponseAreaExtension = Extension.create({
           if (usedPos == null) {
             usedPos = tryInsertAt(tr.doc.content.size);
           }
-          if (usedPos == null) return false;
+
+          if (usedPos == null) {
+            return false;
+          }
 
           // Optionally select the node you just inserted (like your original command)
           // tr.setSelection(NodeSelection.create(tr.doc, usedPos))
 
           // --- Cursor move behavior for certain types (Slate: moveFocusTo next text) ---
-          if (
-            ['math_templated', 'inline_dropdown', 'drag_in_the_blank', 'explicit_constructed_response'].includes(
-              typeName,
-            )
-          ) {
+          if (['math_templated', 'inline_dropdown', 'explicit_constructed_response'].includes(typeName)) {
             tr.setSelection(NodeSelection.create(tr.doc, usedPos));
           } else {
-            // Default: put cursor after inserted node
             const after = usedPos + newInline.nodeSize;
             tr.setSelection(selectionAfterPos(tr.doc, after));
           }
@@ -223,7 +226,7 @@ export const ResponseAreaExtension = Extension.create({
           const node = selection.$from.nodeAfter;
           const nodePos = selection.from;
 
-          tr.setNodeMarkup(nodePos, undefined, { ...node.attrs, updated: `${Date.now()}` });
+          tr.setNodeMarkup(nodePos, undefined, { ...node?.attrs, updated: `${Date.now()}` });
           tr.setSelection(NodeSelection.create(tr.doc, nodePos));
 
           if (dispatch) {
@@ -315,7 +318,7 @@ export const MathTemplatedNode = Node.create({
     ];
   },
   addNodeView() {
-    return ReactNodeViewRenderer(() => <div></div>);
+    return ReactNodeViewRenderer((props) => <MathTemplated {...{ ...props, options: this.options }} />);
   },
 });
 

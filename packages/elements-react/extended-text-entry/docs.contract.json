@@ -1,0 +1,45 @@
+{
+  "elementName": "extended-text-entry",
+  "packageName": "@pie-element/extended-text-entry",
+  "framework": "react",
+  "supportedModes": [
+    "gather",
+    "view",
+    "evaluate"
+  ],
+  "views": [
+    {
+      "view": "author",
+      "pie": {
+        "file": "src/author/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaults.ts",
+        "path": "configuration"
+      }
+    },
+    {
+      "view": "delivery",
+      "pie": {
+        "file": "src/author/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaults.ts",
+        "path": "configuration"
+      }
+    },
+    {
+      "view": "print",
+      "pie": {
+        "file": "src/author/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaults.ts",
+        "path": "configuration"
+      }
+    }
+  ]
+}

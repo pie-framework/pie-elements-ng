@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { getPluginProps } from './utils';
+import { getPluginProps } from './utils.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
@@ -28,14 +28,14 @@ import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { DragProvider, uid } from '@pie-lib/drag';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
-import Categories from './categories';
-import AlternateResponses from './categories/alternateResponses';
-import Choices from './choices';
-import Choice from './choices/choice';
-import ChoicePreview from './categories/choice-preview';
-import { buildAlternateResponses, buildCategories } from './builder';
-import Header from './header';
-import { getMaxCategoryChoices, multiplePlacements } from '../utils';
+import Categories from './categories/index.js';
+import AlternateResponses from './categories/alternateResponses.js';
+import Choices from './choices/index.js';
+import Choice from './choices/choice.js';
+import ChoicePreview from './categories/choice-preview.js';
+import { buildAlternateResponses, buildCategories } from './builder.js';
+import Header from './header.js';
+import { getMaxCategoryChoices, multiplePlacements } from '../utils.js';
 import { AlertDialog } from '@pie-lib/config-ui';
 import Translator from '@pie-lib/translator';
 
@@ -64,7 +64,8 @@ const StyledHeader: any = styled(Header)(({ theme }) => ({
 
 const StyledInputContainer: any = styled(InputContainer)(({ theme }) => ({
   width: '100%',
-  paddingTop: theme.spacing(2),
+  paddingTop: theme.spacing(1),
+  marginTop: theme.spacing(1),
   marginBottom: theme.spacing(2),
 }));
 
@@ -236,55 +237,83 @@ export class Design extends React.Component {
     });
   };
 
-  onDragEnd: any = (event) => {
-    const { active, over } = event;
+  onDragEnd: any = ({ active, over }) => {
+    // scrolls back to the original draggable element (scrollIntoViewIfNeeded).
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
 
     this.setState({ activeDragItem: null });
-
-    if (!over || !active) {
+    if (!active) {
       return;
     }
 
+    // Restore scroll position after dnd-kit's drop animation fires scrollIntoViewIfNeeded.
+    // Two rAF frames are needed: dnd-kit uses one rAF internally for focus/scroll restoration.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo(scrollX, scrollY);
+      });
+    });
+
     const { model } = this.props;
-    const { allowAlternateEnabled } = model;
-    const activeData = active.data.current;
-    const overData = over.data.current;
+    const { allowAlternateEnabled, categories = [], choices = [] } = model;
 
-    // moving a choice between categories (correct response)
-    if (activeData.type === 'choice-preview' && overData.type === 'category') {
-      // Extract original choice.id - if DraggableChoice uses the unique id in data, extract the first part
-      // Format: ${choice.id}-${categoryId}-${choiceIndex} or ${choice.id}-${categoryId}-${choiceIndex}-alt-${alternateResponseIndex}
-      const choiceId =
-        activeData.choice?.id || (typeof activeData.id === 'string' ? activeData.id.split('-')[0] : activeData.id);
-      this.moveChoice(choiceId, activeData.categoryId, overData.id, activeData.choiceIndex || 0);
+    const activeData = active?.data?.current;
+    const overData = over?.data?.current;
+
+    if (!activeData) return;
+
+    const choiceIndex = activeData.choiceIndex || 0;
+    const overType = overData?.type;
+    const isPreview = activeData.type === 'choice-preview';
+    const isNewChoice = activeData.type === 'choice';
+
+    const choiceId =
+      activeData.choice?.id || (typeof activeData.id === 'string' ? activeData.id.split('-')[0] : activeData.id);
+
+    if (isPreview && (!overData || overType === 'choice')) {
+      this.removeChoiceFromSource(activeData, choiceIndex, { allowAlternateEnabled, categories, choices });
+      return;
     }
 
-    // placing a choice into a category (correct response)
-    if (activeData.type === 'choice' && overData.type === 'category') {
-      this.addChoiceToCategory({ id: activeData.id }, overData.id);
+    if (isPreview && overType === 'category') {
+      return this.moveChoice(choiceId, activeData.categoryId, overData.id, choiceIndex);
     }
 
-    // moving a choice between categories (alternate response)
-    if (activeData.type === 'choice-preview' && overData.type === 'category-alternate') {
-      const toAlternateIndex = overData.alternateResponseIndex;
-      // Extract original choice.id - if DraggableChoice uses the unique id in data, extract the first part
-      const choiceId =
-        activeData.choice?.id || (typeof activeData.id === 'string' ? activeData.id.split('-')[0] : activeData.id);
-      this.moveChoiceInAlternate(
+    if (isNewChoice && overType === 'category') {
+      return this.addChoiceToCategory({ id: activeData.id }, overData.id);
+    }
+
+    if (isPreview && overType === 'category-alternate') {
+      return this.moveChoiceInAlternate(
         choiceId,
         activeData.categoryId,
         overData.id,
-        activeData.choiceIndex || 0,
-        toAlternateIndex,
+        choiceIndex,
+        overData.alternateResponseIndex,
       );
     }
 
-    // placing a choice into a category (alternate response)
-    if (allowAlternateEnabled && activeData.type === 'choice' && overData.type === 'category-alternate') {
-      const choiceId = activeData.id;
-      const categoryId = overData.id;
-      const toAlternateResponseIndex = overData.alternateResponseIndex;
-      this.addChoiceToAlternateCategory({ id: choiceId }, categoryId, toAlternateResponseIndex);
+    if (allowAlternateEnabled && isNewChoice && overType === 'category-alternate') {
+      return this.addChoiceToAlternateCategory({ id: activeData.id }, overData.id, overData.alternateResponseIndex);
+    }
+  };
+
+  removeChoiceFromSource: any = (activeData, choiceIndex, { allowAlternateEnabled, categories, choices }) => {
+    const isAlternateSource = activeData.alternateResponseIndex !== undefined;
+
+    if (!isAlternateSource) {
+      this.deleteChoiceFromCategory(activeData.categoryId, activeData.choiceId, choiceIndex);
+      return;
+    }
+
+    if (!allowAlternateEnabled) return;
+
+    const category = categories?.find((c) => c.id === activeData.categoryId);
+    const choice = choices?.find((c) => c.id === activeData.choiceId);
+
+    if (category && choice) {
+      this.deleteChoiceFromAlternateCategory(category, choice, choiceIndex, activeData.alternateResponseIndex);
     }
   };
 
@@ -309,9 +338,9 @@ export class Design extends React.Component {
     });
   };
 
-  deleteChoiceFromCategory: any = (category, choice, choiceIndex) => {
+  deleteChoiceFromCategory: any = (categoryId, choiceId, choiceIndex) => {
     const { model } = this.props;
-    const correctResponse = removeChoiceFromCategory(choice.id, category.id, choiceIndex, model.correctResponse);
+    const correctResponse = removeChoiceFromCategory(choiceId, categoryId, choiceIndex, model.correctResponse);
 
     this.updateModel({ correctResponse });
   };

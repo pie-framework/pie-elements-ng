@@ -10,7 +10,7 @@
 
 import debug from 'debug';
 import { clone, remove } from 'lodash-es';
-import { score } from './scoring';
+import { score } from './scoring.js';
 
 export { score };
 

@@ -1,7 +1,6 @@
 {
   "name": "@pie-element/multi-trait-rubric",
-  "private": true,
-  "version": "0.1.0",
+  "version": "7.2.0-next.9",
   "description": "React implementation of multi-trait-rubric element synced from pie-elements",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -16,7 +15,10 @@
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/drag": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "@dnd-kit/core": "6.3.1",
+    "debug": "^4.1.1",
+    "lodash-es": "^4.17.21"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -53,9 +55,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

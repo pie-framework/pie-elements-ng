@@ -13,12 +13,12 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Translator from '@pie-lib/translator';
 
-import constants from './constants';
-import Button from './button';
-import DrawablePalette from './drawable-palette';
-import DrawableMain from './drawable-main';
-import DrawableText from './drawable-text';
-import Icon from './icon';
+import constants from './constants.js';
+import Button from './button.js';
+import DrawablePalette from './drawable-palette.js';
+import DrawableMain from './drawable-main.js';
+import DrawableText from './drawable-text.js';
+import Icon from './icon.js';
 
 const { tools: TOOLS } = constants;
 const { translator } = Translator;

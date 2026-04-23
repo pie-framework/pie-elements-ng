@@ -8,6 +8,6 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Axes, { AxisPropTypes } from './axes';
+import Axes, { AxisPropTypes } from './axes.js';
 
 export { Axes, AxisPropTypes };

@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { xy } from './utils';
+import { xy } from './utils.js';
 import Point from '@mapbox/point-geometry';
 import debug from 'debug';
 

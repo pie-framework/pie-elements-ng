@@ -9,9 +9,29 @@
  */
 
 import React from 'react';
-import { Rect } from 'react-konva';
+import { Rect as RectImport } from 'react-konva';
 
-import DrawableHelper from './drawable-helper';
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Rect = unwrapReactInteropSymbol(RectImport, 'Rect');
+import DrawableHelper from './drawable-helper.js';
 
 export default class RectangleDrawable extends DrawableHelper {
   static TYPE = 'RectangleDrawable';

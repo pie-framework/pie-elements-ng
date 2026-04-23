@@ -10,10 +10,10 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { GraphPropsType } from './types';
-import { DraggableCore } from './draggable';
+import { GraphPropsType } from './types.js';
+import { DraggableCore } from './draggable.js';
 import debug from 'debug';
-import * as utils from './utils';
+import * as utils from './utils.js';
 import { isFunction } from 'lodash-es';
 import invariant from 'invariant';
 import { pointer } from 'd3-selection';
@@ -70,6 +70,9 @@ export const gridDraggable = (opts) => (Comp) => {
       if (document.activeElement) {
         document.activeElement.blur();
       }
+      // reliably track whether any real drag movement occurred. This avoids the async-setState race condition
+      // where onStop fires before setState has updated, causing drags to be misidentified as clicks.
+      this._didDrag = false;
       this.setState({ startX: e.clientX, startY: e.clientY });
       if (onDragStart) {
         onDragStart();
@@ -105,12 +108,25 @@ export const gridDraggable = (opts) => (Comp) => {
       log('bounds: ', bounds);
       const grid = this.grid();
 
-      const scaled = {
+      let scaled = {
         left: bounds.left * grid.x,
         right: bounds.right * grid.x,
         top: bounds.top * grid.y,
         bottom: bounds.bottom * grid.y,
       };
+
+      // Normalize Y bounds so that:
+      // - top is <= 0 (negative or zero, allowing upward movement)
+      // - bottom is >= 0 (positive or zero, allowing downward movement)
+      // This compensates for the inverted Y scale (range.max -> 0, range.min -> size.height)
+      // Add a small buffer (1 grid unit) to ensure we can reach exact boundaries
+      const buffer = Math.abs(grid.y);
+      scaled = {
+        ...scaled,
+        top: Math.min(0, scaled.top) - buffer, // More negative to allow reaching max
+        bottom: Math.abs(scaled.bottom) + buffer, // More positive to allow reaching min
+      };
+
       log('[getScaledBounds]: ', scaled);
       return scaled;
     };
@@ -182,6 +198,13 @@ export const gridDraggable = (opts) => (Comp) => {
         return;
       }
 
+      // Mark that a real drag occurred so onStop won't treat this as a click.
+      // We check for non-trivial movement to avoid marking a click as a drag
+      // due to sub-pixel jitter on mousedown.
+      if (Math.abs(dd.deltaX) > 1 || Math.abs(dd.deltaY) > 1) {
+        this._didDrag = true;
+      }
+
       const bounds = this.getScaledBounds();
 
       if (dd.deltaX < 0 && dd.deltaX < bounds.left) {
@@ -237,7 +260,11 @@ export const gridDraggable = (opts) => (Comp) => {
       }
 
       log('[onStop] lastX/Y: ', dd.lastX, dd.lastY);
-      const isClick = this.tiny('x', e) && this.tiny('y', e);
+      // Use the synchronous _didDrag flag instead of comparing clientX/clientY via tiny().
+      // tiny() was unreliable because setState is async – startX/startY might not reflect
+      // the actual mousedown position when onStop fires. _didDrag is set synchronously in
+      // onStart (false) and onDrag (true), so it's always accurate.
+      const isClick = !this._didDrag;
 
       if (isClick) {
         if (onClick) {

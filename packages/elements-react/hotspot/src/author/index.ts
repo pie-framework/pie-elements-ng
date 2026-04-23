@@ -19,8 +19,8 @@ import {
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
 
-import Root from './root';
-import sensibleDefaults from './defaults';
+import Root from './root.js';
+import sensibleDefaults from './defaults.js';
 
 const log = debug('hotspot:configure');
 

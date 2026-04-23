@@ -10,11 +10,11 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { MiniField } from './number-text-field';
+import { MiniField } from './number-text-field.js';
 import { styled } from '@mui/material/styles';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import CardBar from './card-bar';
+import CardBar from './card-bar.js';
 import { Checkbox } from '@pie-lib/config-ui';
 import { cloneDeep } from 'lodash-es';
 

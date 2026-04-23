@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { cloneDeep, debounce } from 'lodash-es';
-import Main from '../delivery/main';
+import Main from '../delivery/main.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
 
@@ -78,9 +78,12 @@ export default class MultipleChoicePrint extends HTMLElement {
             this._root = createRoot(this);
           }
           this._root.render(element);
-          queueMicrotask(() => {
-            log('render complete - render math');
-            renderMath(this);
+          // Use double requestAnimationFrame so React has committed to the DOM before we render math
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              log('render complete - render math');
+              renderMath(this);
+            });
           });
         } else {
           log('skip');

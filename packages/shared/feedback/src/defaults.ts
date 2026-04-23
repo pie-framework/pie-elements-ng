@@ -1,4 +1,4 @@
-import type { Feedback } from './types';
+import type { Feedback } from './types.js';
 
 /**
  * Default feedback messages for all correctness levels

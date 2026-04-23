@@ -17,17 +17,17 @@ import { styled } from '@mui/material/styles';
 
 import { layout, settings } from '@pie-lib/config-ui';
 
-import Scale from './scale';
-import { MultiTraitButton } from './common';
-import { ExcludeZeroDialog, excludeZeroTypes, IncludeZeroDialog, InfoDialog } from './modals';
-import { addOrRemoveScaleColumn } from './utils';
+import Scale from './scale.js';
+import { MultiTraitButton } from './common.js';
+import { ExcludeZeroDialog, excludeZeroTypes, IncludeZeroDialog, InfoDialog } from './modals.js';
+import { addOrRemoveScaleColumn } from './utils.js';
 
 const { Panel, toggle } = settings;
 const MIN_WIDTH = '650px';
 
 const StyledDiv: any = styled('div')(({ theme }) => ({
   fontFamily: 'Cerebri Sans',
-  fontSize: theme.typography.fontSize,
+  fontSize: theme.typography.fontSize + 2, // current font size is 14px, so this will make it 16px
   padding: '16px 0',
 }));
 

@@ -15,8 +15,9 @@ import { AlertDialog } from '@pie-lib/config-ui';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 
-import Choice from './choice';
-import { choiceIsEmpty } from './markupUtils';
+import Choice from './choice.js';
+import { choiceIsEmpty } from './markupUtils.js';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const StyledDesign: any = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -63,11 +64,14 @@ export class Choices extends React.Component {
 
   state = { warning: { open: false } };
   preventDone = false;
+  wrapperRef = React.createRef(null);
 
   componentDidUpdate() {
     if (this.focusedNodeRef) {
       this.focusedNodeRef.focus('end');
     }
+
+    renderMath(this.wrapperRef.current);
   }
 
   onChoiceChanged: any = (prevValue, val, key) => {
@@ -156,9 +160,7 @@ export class Choices extends React.Component {
     } = this.props;
 
     // find the maximum existing id and add 1 to generate the new id so we avoid duplicates
-    const maxId = oldChoices.length > 0
-      ? Math.max(...oldChoices.map(choice => parseInt(choice.id, 10) || 0))
-      : -1;
+    const maxId = oldChoices.length > 0 ? Math.max(...oldChoices.map((choice) => parseInt(choice.id, 10) || 0)) : -1;
     const newId = `${maxId + 1}`;
 
     this.setState(
@@ -223,7 +225,7 @@ export class Choices extends React.Component {
     } = this.props;
     const visibleChoices = this.getVisibleChoices() || [];
     return (
-      <StyledDesign>
+      <StyledDesign ref={this.wrapperRef}>
         <StyledAddButton
           variant="contained"
           color="primary"
@@ -249,6 +251,7 @@ export class Choices extends React.Component {
               >
                 <EditableHtml
                   ref={(ref) => (this.focusedNodeRef = ref)}
+                  autoFocus
                   imageSupport={imageSupport}
                   markup={choice.value}
                   pluginProps={pluginProps}

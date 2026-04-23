@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { get } from 'lodash-es';
 import { styled } from '@mui/material/styles';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { MARK_TAGS } from './serialization';
+import { MARK_TAGS } from './serialization.js';
 
 const Paragraph: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(0.5),

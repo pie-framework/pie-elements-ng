@@ -1,8 +1,8 @@
 {
-  "name": "@pie-element/bundler-shared",
+  "name": "@pie-element/element-bundler",
   "version": "0.1.1",
   "type": "module",
-  "description": "Shared bundler for PIE elements - creates IIFE bundles compatible with pie-player-components",
+  "description": "PIE element bundler that produces IIFE bundles compatible with pie-player-components",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -19,18 +19,21 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && mkdir -p dist/shims && cp src/shims/*.js dist/shims/",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "webpack": "^5.99.9",
-    "esbuild-loader": "^4.3.0",
     "css-loader": "^7.1.2",
-    "style-loader": "^4.0.0",
+    "esbuild-loader": "^4.3.0",
     "pacote": "^21.1.0",
-    "string-hash": "^1.1.3"
+    "react": "^18.2.0",
+    "string-hash": "^1.1.3",
+    "style-loader": "^4.0.0",
+    "svelte": "^5.55.1",
+    "svelte-loader": "^3.2.4",
+    "webpack": "^5.99.9"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
@@ -38,5 +41,18 @@
     "@types/string-hash": "^1.1.3",
     "@types/webpack": "^5.28.5",
     "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/shared/bundler-shared"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
   }
 }

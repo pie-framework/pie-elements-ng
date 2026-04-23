@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { color } from '@pie-lib/render-ui';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import ChartType from './chart-type';
+import ChartType from './chart-type.js';
 import { AlertDialog, NumberTextFieldCustom } from '@pie-lib/config-ui';
 
 export const resetValues = (data, updateModel, range, onChange, model) => {

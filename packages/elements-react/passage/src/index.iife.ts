@@ -5,7 +5,7 @@
  * @sync-generated - Auto-generated during sync from pie-elements
  */
 
-import Element from './index';
+import Element from './index.js';
 
 // Auto-register the custom element for IIFE mode
 if (typeof window !== 'undefined' && !customElements.get('passage-element')) {

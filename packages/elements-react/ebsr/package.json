@@ -1,7 +1,6 @@
 {
   "name": "@pie-element/ebsr",
-  "private": true,
-  "version": "0.1.0",
+  "version": "13.2.0-next.10",
   "description": "",
   "dependencies": {
     "@pie-element/multiple-choice": "workspace:*",
@@ -12,7 +11,9 @@
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "@mui/material": "^7.3.4",
+    "prop-types": "^15.6.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -54,9 +55,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

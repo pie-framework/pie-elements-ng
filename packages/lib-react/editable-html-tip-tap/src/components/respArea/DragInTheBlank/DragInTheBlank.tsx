@@ -11,8 +11,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { NodeViewWrapper } from '@tiptap/react';
-import DragDropTile from './choice';
-import { omit } from 'lodash-es';
+import DragDropTile from './choice.js';
+import omit from 'lodash-es/omit.js';
 
 export const onValueChange = (editor, node, pos, choice) => {
   const { tr } = editor.state;
@@ -43,7 +43,11 @@ const DragDrop = (props) => {
 
   // console.log({nodeProps.children})
   return (
-    <NodeViewWrapper className="drag-in-the-blank" data-selected={selected}>
+    <NodeViewWrapper
+      className="drag-in-the-blank"
+      data-selected={selected}
+      style={{ display: 'inline', whiteSpace: 'normal' }}
+    >
       <span
         {...attributes}
         style={{
@@ -62,6 +66,7 @@ const DragDrop = (props) => {
           pos={pos}
           value={attributes}
           duplicates={options.duplicates}
+          selected={selected}
           onChange={(choice) => onValueChange(editor, node, pos, choice)}
           removeResponse={(choice) => onRemoveResponse(editor, node, choice)}
         ></DragDropTile>

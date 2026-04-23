@@ -51,27 +51,67 @@ export async function selectDemo(page: Page, demoId: string) {
 }
 
 /**
- * Switch mode (gather, view, evaluate)
+ * Navigate by query param, preserving current route state.
+ */
+async function navigateWithQueryParam(page: Page, name: string, value: string) {
+  const nextUrl = await page.evaluate(
+    ({ key, nextValue }) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set(key, nextValue);
+      return url.toString();
+    },
+    { key: name, nextValue: value }
+  );
+  await page.goto(nextUrl);
+}
+
+/**
+ * Switch mode (gather, view, evaluate) via URL params.
  */
 export async function switchMode(page: Page, mode: 'gather' | 'view' | 'evaluate') {
-  await page.click(`[data-testid="mode-${mode}"]`);
+  await navigateWithQueryParam(page, 'mode', mode);
   await page.waitForLoadState('networkidle');
   await waitForMathRendering(page);
 }
 
 /**
- * Switch role (student, instructor)
+ * Switch role (student, instructor) via URL params.
  */
 export async function switchRole(page: Page, role: 'student' | 'instructor') {
-  await page.click(`[data-testid="role-${role}"]`);
+  await navigateWithQueryParam(page, 'role', role);
   await page.waitForLoadState('networkidle');
+  await waitForMathRendering(page);
 }
 
 /**
  * Get session state from the session panel
  */
 export async function getSessionState(page: Page): Promise<any> {
-  const sessionText = await page.locator('[data-testid="session-panel-content"]').textContent();
+  // Prefer host session because some layouts no longer expose a session panel.
+  const hostSession = await page.evaluate(() => {
+    const host = document.querySelector('pie-element-player') as any;
+    if (!host || typeof host !== 'object') {
+      return undefined;
+    }
+    const raw = host.session;
+    if (raw === null || raw === undefined) {
+      return undefined;
+    }
+    try {
+      return JSON.parse(JSON.stringify(raw));
+    } catch {
+      return raw;
+    }
+  });
+  if (hostSession !== undefined) {
+    return hostSession;
+  }
+
+  const panel = page.locator('[data-testid="session-panel-content"]').first();
+  const hasPanel = await panel.isVisible().catch(() => false);
+  if (!hasPanel) return null;
+
+  const sessionText = await panel.textContent();
   if (!sessionText) return null;
 
   try {
@@ -97,7 +137,10 @@ export async function selectMultipleChoiceOption(page: Page, optionValue: string
  * Get the score from the scoring panel
  */
 export async function getScore(page: Page): Promise<number | null> {
-  const scoreText = await page.locator('[data-testid="score-value"]').textContent();
+  const scoreText = await page
+    .locator('[data-testid="score-value"]')
+    .textContent()
+    .catch(() => null);
   if (!scoreText) return null;
 
   const match = scoreText.match(/(\d+(?:\.\d+)?)/);
@@ -125,7 +168,7 @@ export async function clickShowCorrectAnswer(page: Page) {
  */
 export async function switchTab(page: Page, tab: 'deliver' | 'author' | 'print' | 'source') {
   await page.click(`[data-testid="tab-${tab}"]`);
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(200);
 
   if (tab === 'deliver' || tab === 'print') {
     await waitForMathRendering(page);
@@ -154,7 +197,7 @@ export async function updateModelInSource(page: Page, model: any) {
   await page.click('[data-testid="source-editor"]');
 
   // Select all and replace
-  await page.keyboard.press('Meta+A'); // Cmd+A on Mac
+  await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.type(JSON.stringify(model, null, 2));
 
   // Click apply button
@@ -175,11 +218,30 @@ export async function hasUnsavedChanges(page: Page): Promise<boolean> {
  * Wait for element to be loaded and ready
  */
 export async function waitForElementReady(page: Page, elementName: string) {
-  await page.waitForFunction((name) => customElements.get(name) !== undefined, elementName, {
-    timeout: 10_000,
-  });
+  const candidates = elementName.includes('-')
+    ? [elementName, `pie-${elementName}`]
+    : [elementName];
 
-  await page.waitForSelector(elementName, { state: 'attached', timeout: 10_000 });
+  await page.waitForFunction(
+    (names) => names.some((name: string) => customElements.get(name) !== undefined),
+    candidates,
+    {
+      timeout: 10_000,
+    }
+  );
+
+  for (const candidate of candidates) {
+    if (
+      await page
+        .locator(candidate)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      return;
+    }
+  }
+  await page.waitForSelector(candidates.join(', '), { state: 'attached', timeout: 10_000 });
 }
 
 /**
@@ -203,4 +265,235 @@ export async function getMultipleChoiceOptions(page: Page): Promise<string[]> {
 export async function getSelectedValue(page: Page): Promise<string | null> {
   const selected = await page.locator('pie-multiple-choice input[type="radio"]:checked').first();
   return await selected.getAttribute('value').catch(() => null);
+}
+
+/**
+ * Navigate to an element deliver route and wait for shell.
+ */
+export async function openDeliverRoute(page: Page, element: string, demoId?: string) {
+  const demoQuery = demoId ? `&demo=${encodeURIComponent(demoId)}` : '';
+  await page.goto(`/${element}/deliver?mode=gather&role=student${demoQuery}`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('[data-testid="role-student"], pie-element-player[view="delivery"]', {
+    timeout: 20_000,
+  });
+}
+
+/**
+ * Navigate to an element author route and wait for shell.
+ */
+export async function openAuthorRoute(page: Page, element: string, demoId?: string) {
+  const demoQuery = demoId ? `?demo=${encodeURIComponent(demoId)}` : '';
+  await page.goto(`/${element}/author${demoQuery}`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('.author-view', { timeout: 20_000 });
+}
+
+/**
+ * Get delivery element container.
+ */
+export function deliveryContainer(page: Page): Locator {
+  return page.locator('.delivery-view .element-container').first();
+}
+
+/**
+ * Parse session JSON panel; retries for async updates.
+ */
+export async function waitForSessionMutation(
+  page: Page,
+  before: unknown,
+  timeoutMs = 8_000
+): Promise<any> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const next = await getSessionState(page);
+    if (JSON.stringify(next ?? {}) !== JSON.stringify(before ?? {})) {
+      return next;
+    }
+    await page.waitForTimeout(200);
+  }
+  return await getSessionState(page);
+}
+
+/**
+ * Click inside first visible SVG in scope.
+ */
+export async function clickSvgCenter(scope: Locator, page: Page) {
+  const svg = scope.locator('svg').first();
+  await svg.waitFor({ state: 'visible', timeout: 10_000 });
+  const box = await svg.boundingBox();
+  if (!box) {
+    throw new Error('SVG bounding box unavailable');
+  }
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+}
+
+/**
+ * Click inside first visible canvas in scope.
+ */
+export async function clickCanvas(scope: Locator, position = { x: 28, y: 28 }) {
+  const canvas = scope.locator('canvas').first();
+  await canvas.waitFor({ state: 'visible', timeout: 10_000 });
+  await canvas.click({ position, force: true });
+}
+
+/**
+ * Attempt a broad, user-like interaction in delivery.
+ */
+export async function interactOnce(page: Page, scope?: Locator): Promise<string> {
+  const root = scope ?? deliveryContainer(page);
+
+  const radio = root.locator('input[type="radio"]').first();
+  if (await radio.isVisible().catch(() => false)) {
+    await radio.check();
+    return 'radio';
+  }
+
+  const checkbox = root.locator('input[type="checkbox"]').first();
+  if (await checkbox.isVisible().catch(() => false)) {
+    await checkbox.check();
+    return 'checkbox';
+  }
+
+  const combo = root.locator('[role="combobox"], button[aria-haspopup="listbox"]').first();
+  if (await combo.isVisible().catch(() => false)) {
+    await combo.click({ force: true });
+    const option = page.locator('[role="option"], li[role="option"]').first();
+    if (await option.isVisible().catch(() => false)) {
+      await option.click({ force: true });
+      return 'combobox';
+    }
+    await page.keyboard.press('Escape').catch(() => {});
+  }
+
+  const text = root
+    .locator('input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]), textarea')
+    .first();
+  if (await text.isVisible().catch(() => false)) {
+    await text.fill(`e2e-${Date.now()}`);
+    return 'text';
+  }
+
+  const editable = root.locator('[contenteditable="true"], [role="textbox"]').first();
+  if (await editable.isVisible().catch(() => false)) {
+    await editable.click();
+    await page.keyboard.press('Meta+A').catch(() => {});
+    await page.keyboard.type(`e2e-${Date.now()}`);
+    return 'contenteditable';
+  }
+
+  const button = root
+    .locator('button, [role="button"], [class*="choice"], [class*="option"], [class*="token"]')
+    .first();
+  if (await button.isVisible().catch(() => false)) {
+    await button.click({ force: true });
+    return 'button';
+  }
+
+  const primitive = root.locator('svg circle, svg path, svg rect, svg line').first();
+  if (await primitive.isVisible().catch(() => false)) {
+    await primitive.click({ force: true });
+    return 'svg-primitive';
+  }
+
+  const canvas = root.locator('canvas').first();
+  if (await canvas.isVisible().catch(() => false)) {
+    await canvas.click({ position: { x: 24, y: 24 }, force: true });
+    return 'canvas';
+  }
+
+  throw new Error('No interactive control found for generic interaction');
+}
+
+/**
+ * Basic drag helper using mouse between two locators.
+ */
+export async function dragBetween(page: Page, from: Locator, to: Locator) {
+  await from.waitFor({ state: 'visible', timeout: 10_000 });
+  await to.waitFor({ state: 'visible', timeout: 10_000 });
+  const fromBox = await from.boundingBox();
+  const toBox = await to.boundingBox();
+  if (!fromBox || !toBox) {
+    throw new Error('Cannot drag: missing source or target bounding box');
+  }
+  await page.mouse.move(fromBox.x + fromBox.width / 2, fromBox.y + fromBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(toBox.x + toBox.width / 2, toBox.y + toBox.height / 2, { steps: 12 });
+  await page.mouse.up();
+}
+
+/**
+ * Return visible locator candidates for selector groups.
+ */
+export async function visibleCandidates(
+  scope: Locator,
+  selectors: string[],
+  maxPerSelector = 6
+): Promise<Locator[]> {
+  const out: Locator[] = [];
+  for (const selector of selectors) {
+    const list = scope.locator(selector);
+    const count = Math.min(await list.count(), maxPerSelector);
+    for (let i = 0; i < count; i += 1) {
+      const candidate = list.nth(i);
+      if (await candidate.isVisible().catch(() => false)) {
+        out.push(candidate);
+      }
+    }
+  }
+  return out;
+}
+
+type DragCandidateOptions = {
+  sourceSelectors: string[];
+  targetSelectors: string[];
+  retries?: number;
+};
+
+/**
+ * Try deterministic source -> target drags with retries.
+ */
+export async function dragAnyCandidateToTarget(
+  page: Page,
+  scope: Locator,
+  options: DragCandidateOptions
+): Promise<boolean> {
+  const { sourceSelectors, targetSelectors, retries = 2 } = options;
+  const sources = await visibleCandidates(scope, sourceSelectors);
+  const targets = await visibleCandidates(scope, targetSelectors);
+  if (sources.length === 0 || targets.length === 0) {
+    return false;
+  }
+
+  for (let attempt = 0; attempt < retries; attempt += 1) {
+    for (const source of sources) {
+      for (const target of targets) {
+        try {
+          const same = await source.evaluate(
+            (src, tgt) => src.isSameNode(tgt as Node),
+            await target.elementHandle()
+          );
+          if (same) {
+            continue;
+          }
+          await dragBetween(page, source, target);
+          await page.waitForTimeout(200);
+          return true;
+        } catch {
+          // Continue trying other source/target pairs.
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Move to evaluate mode as instructor.
+ */
+export async function switchToEvaluate(page: Page) {
+  await switchRole(page, 'instructor');
+  await switchMode(page, 'evaluate');
 }

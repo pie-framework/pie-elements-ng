@@ -11,11 +11,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { intersection, normalize } from './builder';
+import { intersection, normalize } from './builder.js';
 import debug from 'debug';
 import classNames from 'classnames';
 
-import { clearSelection, getCaretCharacterOffsetWithin } from './selection-utils';
+import { clearSelection, getCaretCharacterOffsetWithin } from './selection-utils.js';
 
 import { green, yellow } from '@mui/material/colors';
 

@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 
-import EvaluationIcon from './evaluation-icon';
+import EvaluationIcon from './evaluation-icon.js';
 
 const StyledContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),

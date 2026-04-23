@@ -70,7 +70,7 @@ export default ({ editor, onChange }) => {
   }
 
   const applyAlignment = (event) => {
-    const alignType = event.target?.closest('div')?.getAttribute('value');
+    const alignType = event.currentTarget?.getAttribute('value');
 
     if (alignType) {
       editor.commands.setTextAlign(alignType);

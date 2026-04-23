@@ -13,6 +13,7 @@ import type { SyncConfig } from './sync-strategy.js';
 import { existsAny } from './sync-filesystem.js';
 import { applyPackageJsonTransforms } from './sync-transforms.js';
 import { BUILD_TOOLS, REACT, PACKAGE_DEFAULTS, SCRIPTS, WORKSPACE } from './sync-constants.js';
+import { getPieLibDependencyAugmentations, getPieLibDependencyOverride } from './sync-presets.js';
 
 interface EntryPointMap {
   hasIndex: boolean;
@@ -130,6 +131,60 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
   return exports;
 }
 
+function asObjectExports(
+  exportsValue: unknown
+): Record<string, Record<string, unknown> | string> | null {
+  if (!exportsValue || typeof exportsValue !== 'object') {
+    return null;
+  }
+  return exportsValue as Record<string, Record<string, unknown> | string>;
+}
+
+function getDevelopmentCondition(
+  exportsObj: Record<string, Record<string, unknown> | string> | null,
+  exportPath: string
+): string | null {
+  if (!exportsObj) {
+    return null;
+  }
+  const entry = exportsObj[exportPath];
+  if (!entry || typeof entry !== 'object') {
+    return null;
+  }
+  const dev = entry.development;
+  return typeof dev === 'string' ? dev : null;
+}
+
+function preserveDevelopmentExportConditions(
+  generatedExports: Record<string, unknown>,
+  currentExports: unknown,
+  upstreamExports: unknown
+): Record<string, unknown> {
+  const current = asObjectExports(currentExports);
+  const upstream = asObjectExports(upstreamExports);
+
+  for (const [exportPath, exportConfig] of Object.entries(generatedExports)) {
+    if (!exportConfig || typeof exportConfig !== 'object') {
+      continue;
+    }
+    if ('development' in (exportConfig as Record<string, unknown>)) {
+      continue;
+    }
+    const devFromCurrent = getDevelopmentCondition(current, exportPath);
+    const devFromUpstream = getDevelopmentCondition(upstream, exportPath);
+    const development = devFromCurrent ?? devFromUpstream;
+    if (!development) {
+      continue;
+    }
+    generatedExports[exportPath] = {
+      development,
+      ...(exportConfig as Record<string, unknown>),
+    };
+  }
+
+  return generatedExports;
+}
+
 /**
  * Extract imports from source files to determine runtime dependencies
  */
@@ -167,7 +222,8 @@ export async function extractImportsFromSources(elementDir: string): Promise<Set
               const importPath = match[1];
               // Only track package imports (not relative imports)
               if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
-                imports.add(importPath);
+                const normalized = normalizePackageImport(importPath);
+                if (normalized) imports.add(normalized);
               }
               match = importRegex.exec(content);
             }
@@ -176,7 +232,8 @@ export async function extractImportsFromSources(elementDir: string): Promise<Set
             while (match !== null) {
               const importPath = match[1];
               if (!importPath.startsWith('.') && !importPath.startsWith('/')) {
-                imports.add(importPath);
+                const normalized = normalizePackageImport(importPath);
+                if (normalized) imports.add(normalized);
               }
               match = dynamicImportRegex.exec(content);
             }
@@ -192,6 +249,17 @@ export async function extractImportsFromSources(elementDir: string): Promise<Set
 
   await scanDirectory(srcDir);
   return imports;
+}
+
+function normalizePackageImport(specifier: string): string | null {
+  if (!specifier || specifier.startsWith('.') || specifier.startsWith('/')) {
+    return null;
+  }
+  if (specifier.startsWith('@')) {
+    const parts = specifier.split('/');
+    return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : null;
+  }
+  return specifier.split('/')[0] || null;
 }
 
 async function findInstalledPackageJson(
@@ -285,6 +353,27 @@ async function inferPeerVersionFromDeclaredDeps(
   return null;
 }
 
+function addKnownPeerFallbacks(deps: Record<string, string>): void {
+  // Some widely used packages rely on peers that upstream metadata can omit
+  // or that may not be inferable from local resolution during sync.
+  if ((deps.recharts || deps['styled-components']) && !deps['react-is']) {
+    deps['react-is'] = '^19.2.0';
+  }
+
+  if (deps['@tiptap/extension-character-count'] && !deps['@tiptap/extensions']) {
+    deps['@tiptap/extensions'] = '^3.20.0';
+  }
+
+  if (deps['@tiptap/extension-list-item'] && !deps['@tiptap/extension-list']) {
+    const tiptapVersion = deps['@tiptap/extension-list-item'];
+    deps['@tiptap/extension-list'] = tiptapVersion;
+  }
+
+  if (deps['@testing-library/user-event'] && !deps['@testing-library/dom']) {
+    deps['@testing-library/dom'] = '^10.4.1';
+  }
+}
+
 /**
  * Extract and normalize dependencies from upstream package.json
  */
@@ -307,8 +396,26 @@ export function extractUpstreamDependencies(
   return expectedDeps;
 }
 
+function resolveSyncedVersion(
+  upstreamPkg: PackageJson | null,
+  existingPkg: PackageJson | null
+): string {
+  const upstreamVersion = typeof upstreamPkg?.version === 'string' ? upstreamPkg.version : null;
+  if (upstreamVersion) {
+    return upstreamVersion;
+  }
+  const existingVersion = typeof existingPkg?.version === 'string' ? existingPkg.version : null;
+  return existingVersion || '0.1.0';
+}
+
 /**
- * Ensure devDependencies include all required build tools
+ * Ensure devDependencies include all required build tools.
+ *
+ * The pinned versions in BUILD_TOOLS / REACT are the source of truth for the
+ * monorepo's toolchain, so we overwrite any existing entries instead of only
+ * filling in missing ones. This prevents an upstream package.json from
+ * silently downgrading vite / @vitejs/plugin-react / typescript across the
+ * pie-lib packages during `upstream:update`.
  */
 export function ensureBuildToolDependencies(pkg: PackageJson): void {
   if (!pkg.devDependencies || typeof pkg.devDependencies !== 'object') {
@@ -317,20 +424,17 @@ export function ensureBuildToolDependencies(pkg: PackageJson): void {
 
   const devDeps = pkg.devDependencies as Record<string, string>;
 
-  if (!devDeps.vite) devDeps.vite = BUILD_TOOLS.VITE;
-  if (!devDeps.typescript) devDeps.typescript = BUILD_TOOLS.TYPESCRIPT;
-  if (!devDeps['@vitejs/plugin-react'])
-    devDeps['@vitejs/plugin-react'] = BUILD_TOOLS.VITE_REACT_PLUGIN;
-  if (!devDeps['@types/react']) devDeps['@types/react'] = REACT.TYPES_VERSION;
-  if (!devDeps['@types/react-dom']) devDeps['@types/react-dom'] = REACT.TYPES_VERSION;
+  devDeps.vite = BUILD_TOOLS.VITE;
+  devDeps.typescript = BUILD_TOOLS.TYPESCRIPT;
+  devDeps['@vitejs/plugin-react'] = BUILD_TOOLS.VITE_REACT_PLUGIN;
+  devDeps['@types/react'] = REACT.TYPES_VERSION;
+  devDeps['@types/react-dom'] = REACT.TYPES_VERSION;
 }
 
 /**
  * Check if a @pie-framework or @pie-element/shared- package exists in the workspace
  *
- * Supports both legacy @pie-framework naming and new @pie-element/shared- naming:
- * - @pie-framework/mathquill → packages/shared/mathquill (legacy, should migrate)
- * - @pie-element/shared-mathquill → packages/shared/mathquill (new convention)
+ * Supports both legacy @pie-framework naming and new @pie-element/shared- naming.
  */
 function isPieFrameworkWorkspacePackage(packageName: string, config: SyncConfig): boolean {
   let pkgName: string;
@@ -409,13 +513,14 @@ export async function ensureElementPackageJson(
     }
   }
   await addTransitivePeerDependencies(expectedDeps, elementDir);
+  addKnownPeerFallbacks(expectedDeps);
 
   // Create minimal package.json if missing
   if (!pkg) {
     pkg = {
       name: `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}`,
       private: true,
-      version: '0.1.0',
+      version: resolveSyncedVersion(upstreamPkg, null),
       description:
         (upstreamPkg?.description as string | undefined) ??
         `React implementation of ${elementName} element synced from pie-elements`,
@@ -447,8 +552,12 @@ export async function ensureElementPackageJson(
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
 
-  // Generate exports based on entry points
-  pkg.exports = generateExportsObject(entryPoints);
+  // Generate exports based on entry points and preserve existing/upstream dev conditions.
+  pkg.exports = preserveDevelopmentExportConditions(
+    generateExportsObject(entryPoints),
+    pkg.exports,
+    upstreamPkg?.exports
+  );
 
   // Warn when metadata/structure disagree for core capabilities
   const metadataCapabilities = Array.isArray(pieMetadata?.capabilities)
@@ -489,6 +598,7 @@ export async function ensureElementPackageJson(
 
   // Set core package.json fields
   pkg.name = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}`;
+  pkg.version = resolveSyncedVersion(upstreamPkg, pkg);
   pkg.type = PACKAGE_DEFAULTS.TYPE;
   pkg.main = './dist/index.js';
   pkg.types = './dist/index.d.ts';
@@ -567,10 +677,7 @@ export async function ensurePieLibPackageJson(
   const expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
-    // Transform @pie-framework/mathquill to @pie-element/shared-mathquill
-    if (name === '@pie-framework/mathquill') {
-      expectedDeps['@pie-element/shared-mathquill'] = WORKSPACE.VERSION;
-    } else if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
+    if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[name] = WORKSPACE.VERSION;
     } else {
       expectedDeps[name] = version;
@@ -579,10 +686,6 @@ export async function ensurePieLibPackageJson(
 
   const importedPackages = await extractImportsFromSources(pkgDir);
   for (const importedPkg of importedPackages) {
-    if (importedPkg === '@pie-framework/mathquill') {
-      expectedDeps['@pie-element/shared-mathquill'] = WORKSPACE.VERSION;
-      continue;
-    }
     if (importedPkg.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[importedPkg] = WORKSPACE.VERSION;
       continue;
@@ -611,9 +714,14 @@ export async function ensurePieLibPackageJson(
     }
   }
 
-  // graphing imports @dnd-kit/core directly in source but upstream metadata can omit it.
-  if (pkgName === 'graphing' && !expectedDeps['@dnd-kit/core']) {
-    expectedDeps['@dnd-kit/core'] = '^6.3.0';
+  await addTransitivePeerDependencies(expectedDeps, pkgDir);
+  addKnownPeerFallbacks(expectedDeps);
+
+  const dependencyAugmentations = getPieLibDependencyAugmentations(pkgName);
+  for (const [depName, version] of Object.entries(dependencyAugmentations)) {
+    if (!expectedDeps[depName]) {
+      expectedDeps[depName] = version;
+    }
   }
 
   // Create minimal package.json if missing
@@ -621,7 +729,7 @@ export async function ensurePieLibPackageJson(
     pkg = {
       name: `${WORKSPACE.PIE_LIB_PREFIX}${pkgName}`,
       private: true,
-      version: '0.1.0',
+      version: resolveSyncedVersion(upstreamPkg, null),
       description:
         (upstreamPkg?.description as string | undefined) ??
         `React implementation of @pie-lib/${pkgName} synced from pie-lib`,
@@ -634,14 +742,12 @@ export async function ensurePieLibPackageJson(
     pkg.dependencies = expectedDeps;
   }
 
-  // Special handling for math-rendering: reference MathJax adapter package
-  if (pkgName === 'math-rendering') {
-    pkg.dependencies = {
-      [`${WORKSPACE.PIE_ELEMENT_PREFIX}shared-math-rendering-mathjax`]: WORKSPACE.VERSION,
-    };
+  const dependencyOverride = getPieLibDependencyOverride(pkgName);
+  if (dependencyOverride) {
+    pkg.dependencies = dependencyOverride;
   }
 
-  // Generate exports
+  // Generate exports and preserve existing/upstream dev conditions where applicable.
   const exportsObj: Record<string, unknown> = {
     ...(typeof pkg.exports === 'object' && pkg.exports
       ? (pkg.exports as Record<string, unknown>)
@@ -654,10 +760,11 @@ export async function ensurePieLibPackageJson(
   };
 
   pkg.name = `${WORKSPACE.PIE_LIB_PREFIX}${pkgName}`;
+  pkg.version = resolveSyncedVersion(upstreamPkg, pkg);
   pkg.type = PACKAGE_DEFAULTS.TYPE;
   pkg.main = './dist/index.js';
   pkg.types = './dist/index.d.ts';
-  pkg.exports = exportsObj;
+  pkg.exports = preserveDevelopmentExportConditions(exportsObj, pkg.exports, upstreamPkg?.exports);
 
   // Ensure files array
   const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
@@ -669,6 +776,12 @@ export async function ensurePieLibPackageJson(
   if (typeof pkg.sideEffects === 'undefined') {
     pkg.sideEffects = PACKAGE_DEFAULTS.SIDE_EFFECTS;
   }
+
+  // Pie-lib packages use a vite.config.ts that imports @vitejs/plugin-react,
+  // so their devDependencies must include the same build toolchain that
+  // element packages do. Without this, a fresh `bun install` (no hoisting)
+  // fails to resolve the plugin when turbo runs `vite build` per package.
+  ensureBuildToolDependencies(pkg);
 
   // Ensure build scripts
   if (!pkg.scripts || typeof pkg.scripts !== 'object') {

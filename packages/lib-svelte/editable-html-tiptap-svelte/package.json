@@ -1,7 +1,6 @@
 {
   "name": "@pie-lib/editable-html-tiptap-svelte",
-  "private": true,
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Tiptap-based rich text editor component for Svelte PIE elements",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,8 +10,7 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./dist/*.css": "./dist/*.css"
+    }
   },
   "files": [
     "dist",
@@ -27,7 +25,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@pie-lib-svelte/styling": "workspace:*",
+    "@pie-lib/styling-svelte": "workspace:*",
     "@tiptap/core": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
     "@tiptap/extension-text-style": "^3.19.0",
@@ -40,15 +38,17 @@
     "@tiptap/extension-table": "^3.19.0",
     "@tiptap/extension-table-row": "^3.19.0",
     "@tiptap/extension-table-cell": "^3.19.0",
-    "@tiptap/extension-table-header": "^3.19.0"
+    "@tiptap/extension-table-header": "^3.19.0",
+    "@tiptap/pm": "^3.19.0",
+    "@tiptap/extensions": "^3.20.0"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "svelte": "^5.51.0",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "svelte": "^5.54.0",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^8.0.1"
   }
 }

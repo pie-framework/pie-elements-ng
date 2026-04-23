@@ -9,15 +9,7 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: [
-        'react',
-        'react-dom',
-        '@pie-element/shared-types',
-        '@mui/material',
-        '@mui/material/styles',
-        '@emotion/react',
-        '@emotion/styled',
-      ],
+      external: ['@pie-element/shared-types'],
     },
   },
   test: {

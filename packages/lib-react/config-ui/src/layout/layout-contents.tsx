@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import Tabs from '../tabs';
+import Tabs from '../tabs/index.js';
 
 const StyledContainer: any = styled('div')(() => ({
   display: 'flex',

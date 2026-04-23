@@ -17,9 +17,9 @@ import debug from 'debug';
 import Typography from '@mui/material/Typography';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 
-import ChartingConfig from './charting-config';
-import CorrectResponse from './correct-response';
-import { applyConstraints, getGridValues, getLabelValues } from './utils';
+import ChartingConfig from './charting-config.js';
+import CorrectResponse from './correct-response.js';
+import { applyConstraints, getGridValues, getLabelValues } from './utils.js';
 
 const log = debug('@pie-element:graphing:configure');
 const { Panel, toggle, radio, dropdown, textField } = settings;

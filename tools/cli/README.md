@@ -121,19 +121,11 @@ Recommended wrapper that runs analyze + sync.
 bun run cli upstream:update
 ```
 
-#### `upstream:sync-mathquill`
-
-Sync the MathQuill fork used by the project.
-
-```bash
-bun run cli upstream:sync-mathquill
-```
-
 ### Package Management
 
 #### `packages:enable-publishing`
 
-Enable React package publishing (remove private flags).
+Enable publishing for all `@pie-element/*` and `@pie-lib/*` packages (remove private flags and clear matching Changesets ignore entries).
 
 ```bash
 # Dry run
@@ -179,7 +171,36 @@ Initialize package scaffolding for synced elements.
 bun run cli packages:init-synced-elements
 ```
 
+### Documentation
+
+#### `docs:generate`
+
+Generate framework-agnostic HTML docs artifacts for elements from per-element `docs.contract.json` descriptors.
+
+```bash
+# Generate docs for all elements
+bun run cli docs:generate
+
+# Generate for one framework/element
+bun run cli docs:generate --framework svelte --element simple-cloze
+
+# Seed missing contracts before generation
+bun run cli docs:generate --seed-contracts
+```
+
 ### Verification
+
+#### `docs:verify`
+
+Verify that all targeted elements have valid `docs.contract.json` descriptors and that generated docs are up to date.
+
+```bash
+# Verify all frameworks
+bun run cli docs:verify
+
+# Verify one framework/element
+bun run cli docs:verify --framework svelte --element simple-cloze
+```
 
 #### `verify:controllers`
 
@@ -195,6 +216,21 @@ Verify that all React elements build successfully.
 
 ```bash
 bun run cli verify:react-build
+```
+
+#### `verify:dependency-integrity`
+
+Inspect package imports and classify dependency usage as direct, transitive, hoist-reliant, or broken.
+
+```bash
+# Scan all element/lib-react packages
+bun run cli verify:dependency-integrity
+
+# Scan one package
+bun run cli verify:dependency-integrity --package @pie-element/ebsr
+
+# Fail on hoist-reliant imports too (not only broken)
+bun run cli verify:dependency-integrity --fail-on-hoist
 ```
 
 ## CLI Development
@@ -216,7 +252,7 @@ The CLI is built with [oclif](https://oclif.io/), following the same architectur
 
 - **Commands**: Located in `src/commands/` organized by topic
 - **Utilities**: Shared utilities in `src/utils/`
-- **Topics**: Commands are grouped into topics (upstream, packages, verify)
+- **Topics**: Commands are grouped into topics (upstream, packages, docs, verify)
 
 ## Migration from Scripts
 

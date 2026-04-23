@@ -8,22 +8,22 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { getPluginProps } from './utils';
+import { getPluginProps } from './utils.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 
-const StyledEditableHtml: any = styled(EditableHtml)(({ theme }) => ({
+const StyledEditableHtml: any = styled(EditableHtml)({
   flex: '1',
-  paddingBottom: theme.spacing(1),
   maxWidth: '100%',
-}));
+});
 
-const InputHeaderContainer: any = styled('div')({
+const InputHeaderContainer: any = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
-});
+  paddingBottom: theme.spacing(1),
+}));
 
 export class InputHeader extends React.Component {
   static propTypes = {
@@ -56,13 +56,6 @@ export class InputHeader extends React.Component {
     super(props);
   }
 
-  componentDidMount() {
-    const { focusedEl, index } = this.props;
-    if (focusedEl && index && focusedEl === index) {
-      this.inputRef.focus('end', null, true);
-    }
-  }
-
   render() {
     const {
       onChange,
@@ -78,16 +71,19 @@ export class InputHeader extends React.Component {
       maxImageHeight,
       uploadSoundSupport,
       mathMlOptions = {},
+      focusedEl,
+      index,
     } = this.props;
 
     const { headers, baseInputConfiguration } = configuration;
+    const shouldAutoFocus = focusedEl !== null && focusedEl !== undefined && focusedEl === index;
 
     return (
       <InputHeaderContainer>
         <StyledEditableHtml
           imageSupport={imageSupport}
           disabled={disabled}
-          ref={(ref) => (this.inputRef = ref)}
+          autoFocus={shouldAutoFocus}
           autoWidthToolbar
           label={'label'}
           markup={label}

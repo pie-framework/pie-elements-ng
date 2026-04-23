@@ -15,7 +15,7 @@ import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 
-import ImageContainer from './image-container';
+import ImageContainer from './image-container.js';
 import { cloneDeep } from 'lodash-es';
 
 const { Panel, toggle, dropdown } = settings;

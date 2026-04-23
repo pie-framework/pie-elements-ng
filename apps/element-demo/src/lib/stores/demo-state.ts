@@ -73,6 +73,34 @@ export const hasPrint = derived(capabilities, ($caps) => $caps.includes('print')
 export const modelVersion = writable<number>(0);
 export const sessionVersion = writable<number>(0);
 
+function normalizeModel(nextModel: any) {
+  return nextModel && typeof nextModel === 'object' ? nextModel : {};
+}
+
+function cloneValue<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+}
+
+function createValueSignature(value: unknown): string {
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized === undefined ? '__undefined__' : serialized;
+  } catch {
+    return `__unserializable__:${String(value)}`;
+  }
+}
+
 /**
  * Initialize stores from loaded data
  */
@@ -86,10 +114,15 @@ export function initializeDemo(data: {
   demos?: DemoConfig[];
   activeDemoId?: string;
 }) {
+  const incomingModel = normalizeModel(data.model);
+  // Always start from canonical sample model so demo updates are reflected immediately.
+  const nextModel = cloneValue(incomingModel);
+  const nextSession = cloneValue(normalizeSession(data.session));
+
   elementName.set(data.elementName);
   elementTitle.set(data.elementTitle);
-  model.set(data.model);
-  session.set(data.session);
+  model.set(nextModel);
+  session.set(nextSession);
   controller.set(data.controller);
   capabilities.set(data.capabilities);
   if (data.demos) {
@@ -123,11 +156,11 @@ function normalizeSession(nextSession: any) {
  * This propagates changes from deliver tab to all other tabs
  */
 export function updateSession(newSession: any) {
-  const normalized = normalizeSession(newSession);
-  const current = get(session);
+  const normalized = cloneValue(normalizeSession(newSession));
+  const current = cloneValue(normalizeSession(get(session)));
 
   // Check if session actually changed
-  if (JSON.stringify(normalized) !== JSON.stringify(current)) {
+  if (createValueSignature(normalized) !== createValueSignature(current)) {
     session.set(normalized);
     sessionVersion.update((v) => v + 1);
   }
@@ -138,17 +171,18 @@ export function updateSession(newSession: any) {
  * This propagates changes from author/source tabs to deliver tab
  */
 export function updateModel(newModel: any) {
+  const normalized = normalizeModel(newModel);
   const current = get(model);
 
   console.log('[demo-state] updateModel called', {
-    newModel,
+    newModel: normalized,
     current,
-    changed: JSON.stringify(newModel) !== JSON.stringify(current),
+    changed: JSON.stringify(normalized) !== JSON.stringify(current),
   });
 
   // Check if model actually changed
-  if (JSON.stringify(newModel) !== JSON.stringify(current)) {
-    model.set(newModel);
+  if (JSON.stringify(normalized) !== JSON.stringify(current)) {
+    model.set(normalized);
     const newVersion = get(modelVersion) + 1;
     modelVersion.update((v) => v + 1);
     console.log('[demo-state] Model updated, modelVersion incremented to', newVersion);
@@ -164,7 +198,8 @@ export function updateModel(newModel: any) {
  * Note: This clears the session but keeps its structure
  */
 export function resetSession() {
-  session.set({});
+  const nextSession = {};
+  session.set(nextSession);
   sessionVersion.update((v) => v + 1);
 }
 
@@ -177,10 +212,19 @@ export function switchDemo(demoId: string) {
   const demo = allDemos.find((d) => d.id === demoId);
 
   if (demo) {
+    const incomingModel = normalizeModel(demo.model || {});
+    // Always switch to canonical sample model for selected demo.
+    const nextModel = cloneValue(incomingModel);
+    const nextSession = cloneValue(normalizeSession(demo.session || {}));
     activeDemoId.set(demoId);
-    model.set(demo.model || {});
-    session.set(demo.session || {});
+    model.set(nextModel);
+    session.set(nextSession);
     modelVersion.update((v) => v + 1);
     sessionVersion.update((v) => v + 1);
   }
+}
+
+export function clearPersistedDemoStateForElement(currentElementName: string) {
+  // Intentionally a no-op: demo model/session caching is disabled.
+  void currentElementName;
 }

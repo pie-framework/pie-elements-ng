@@ -1,7 +1,6 @@
 {
   "name": "@pie-lib/mask-markup",
-  "private": true,
-  "version": "0.1.0",
+  "version": "2.2.0-next.36",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -19,7 +18,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "to-style": "^1.3.3",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/utilities": "3.2.2"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -39,5 +40,12 @@
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "test": "bun x vitest run"
+  },
+  "devDependencies": {
+    "vite": "^8.0.1",
+    "typescript": "^5.9.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
   }
 }

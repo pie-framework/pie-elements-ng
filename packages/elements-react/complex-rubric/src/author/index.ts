@@ -11,12 +11,12 @@
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import RubricConfigure from '@pie-element/rubric/configure/lib';
-import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric/configure/lib';
+import RubricConfigure from '@pie-element/rubric/author';
+import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric/author';
 import debug from 'debug';
 import { defaults } from 'lodash-es';
-import Main from './main';
-import sensibleDefaults from './defaults';
+import Main from './main.js';
+import sensibleDefaults from './defaults.js';
 
 const MODEL_UPDATED = ModelUpdatedEvent.TYPE;
 const RUBRIC_TAG_NAME = 'rubric-configure';

@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { tool as polygon } from './polygon';
-import { tool as line } from './line';
+import { tool as polygon } from './polygon/index.js';
+import { tool as line } from './line/index.js';
 
 const allTools = ['line', 'polygon'];
 

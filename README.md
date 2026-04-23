@@ -26,7 +26,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed explanations of ea
 
 ### Prerequisites
 
-- Bun >= 1.3.7
+- Bun >= 1.3.11
 - Node.js >= 20.0.0
 
 ### Initial Setup (First Time)
@@ -40,6 +40,10 @@ cd pie-elements-ng
 
 # 2. Install dependencies
 bun install
+
+# Hooks are installed automatically via postinstall.
+# If needed, you can reinstall them manually:
+bun run hooks:install
 
 # 3. Build all packages
 bun run build
@@ -90,6 +94,20 @@ git push
 
 `bun run typecheck` - TypeScript type checking across all packages
 
+### Controller Shim Compatibility
+
+Some external PIE builders (including `pie-api-aws`) resolve `@pie-element/<name>/controller` through filesystem aliases instead of package subpath exports. For packages that declare:
+
+- `package.json` `pie.controller`: `@pie-element/<name>/controller`
+
+also ship a root `controller.js` shim and publish it via `files`:
+
+```js
+export * from './dist/controller/index.js';
+```
+
+This keeps compatibility with alias-based resolvers while preserving standard ESM `exports["./controller"]` for normal consumers.
+
 ### Release Labels
 
 Use release labels to tag a coordinated release wave across packages while keeping package versions independent.
@@ -100,6 +118,45 @@ Use release labels to tag a coordinated release wave across packages while keepi
 
 `bun run release:label:push` - Create and push the release tag to origin
 
+### Manual Publish Recovery (GitHub Actions)
+
+`@pie-element/*` and `@pie-lib/*` packages are configured as publishable and are released through this workflow.
+
+If a publish fails after the version PR was already merged, rerun the Release workflow manually:
+
+1. Actions → **Release** → **Run workflow**
+2. Branch: `master` for stable (`latest`) or `develop` for prerelease (`next`)
+3. `release_intent`: `publish`
+4. `release_channel`: `stable` on `master`, `next` on `develop`
+5. `force_publish`: `true`
+
+This is intended for recovery/rerun scenarios only.
+
+Release and dist-tag policy details are documented in [docs/PUBLISHING.md](docs/PUBLISHING.md).
+
+### Targeted Package Release (Changesets)
+
+To release one or more specific packages, create a changeset scoped to those packages:
+
+```bash
+bun run changeset:plan -- --packages @pie-element/mc-populated-blank --type patch --summary "Fix CQT parity for VIC/SEL VIC variants"
+```
+
+For multiple packages:
+
+```bash
+bun run changeset:plan -- --packages @pie-element/mc-populated-blank,@pie-element/simple-cloze --type minor --summary "Add Svelte release updates"
+```
+
+Then run the normal Changesets flow:
+
+```bash
+# 1) Commit and merge PR with the generated .changeset file
+# 2) Let CI create/merge the version PR
+# 3) CI publishes via the same command used manually:
+bun run release:publish
+```
+
 ### Maintainer Commands
 
 `bun cli upstream:sync` - (Maintainers only) Syncs packages from the upstream pie-elements project. Requires pie-elements and pie-lib checked out as sibling directories. Analyzes the current state of those projects and copies over what is ready for ESM packaging, including rewrites and restructuring to fit the new project layout.
@@ -109,19 +166,27 @@ Use release labels to tag a coordinated release wave across packages while keepi
 PIE elements include print views for generating paper-based assessments and answer keys. Two complementary players serve different use cases:
 
 ### Element-Level Print Player (This Project)
+
 For development and testing of individual elements:
+
 ```html
-<pie-esm-print-player element-name="multiple-choice" role="student" model={...} />
+<pie-element-player view="print" element-name="multiple-choice" role="student"></pie-element-player>
 ```
+
 - **Package:** `@pie-element/element-player`
-- **Use for:** Element development, testing, documentation
-- **Location:** `packages/element-player/src/players/EsmPrintPlayer.svelte`
+- **Use for:** Element development, testing, documentation, and optional composable embedding
+- **Location:** `packages/element-player/src/players/PieElementPlayer.svelte`
+
+For most production app flows, prefer the standard upstream player stacks in `../pie-elements` and `../pie-players`.
 
 ### Item-Level Print Player (pie-players)
+
 For production rendering of complete assessment items:
+
 ```html
-<pie-print config={{ item: {...}, options: { role: 'student' } }}></pie-print>
+<pie-print config={{ item: {...}, options: { mode: 'student' } }}></pie-print>
 ```
+
 - **Package:** `@pie-player/print` (in pie-players repository)
 - **Use for:** Production apps, multi-element items, markup-driven rendering
 - **Location:** `../pie-players/packages/print-player`

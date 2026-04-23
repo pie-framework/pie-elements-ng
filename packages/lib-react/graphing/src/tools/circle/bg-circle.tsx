@@ -13,8 +13,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { gridDraggable, types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import * as utils from '../../utils';
-import { correct, disabled, disabledSecondary, incorrect, missing } from '../shared/styles';
+import * as utils from '../../utils.js';
+import { correct, disabled, disabledSecondary, incorrect, missing } from '../shared/styles.js';
 import { styled } from '@mui/material/styles';
 
 class RawCircle extends React.Component {

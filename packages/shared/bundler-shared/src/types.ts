@@ -16,6 +16,7 @@ export type BuildStage =
   | 'installing'
   | 'generating_entries'
   | 'bundling'
+  | 'bundling_controllers'
   | 'completed'
   | 'failed';
 
@@ -24,6 +25,18 @@ export interface BuildOptions {
   resolutionMode?: BuildResolutionMode;
   workspaceRoot?: string;
   requestedBundles?: BuildBundleName[];
+  /**
+   * Optional cache discriminator mixed into the bundle cache key.
+   * Use for workspace/source-aware invalidation while preserving per-dependency caching.
+   */
+  cacheSalt?: string;
+  /** Emit source maps for local debugging (larger/slower bundles). */
+  sourceMaps?: boolean;
+  /**
+   * When true, also emit standalone controller artifacts compatible with
+   * pie-api-aws `/controllers/<dep>_at_<version>/controller.js` layout.
+   */
+  includeControllers?: boolean;
 }
 
 export interface BuildRequest {
@@ -45,6 +58,7 @@ export interface BuildResult {
   success: boolean;
   hash: string;
   bundles?: Partial<Record<'player' | 'clientPlayer' | 'editor', string>>;
+  controllers?: Record<string, string>;
   errors?: string[];
   warnings?: string[];
   duration: number;

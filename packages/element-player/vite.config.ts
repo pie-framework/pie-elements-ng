@@ -22,15 +22,8 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: [
-        // Mark app-specific imports as external to prevent build errors
-        // This import only exists in element-demo app, not in this library
-        '$lib/element-imports',
-      ],
       output: {
-        // Enable code splitting for lazy-loaded math renderers
-        inlineDynamicImports: false,
-        // Put dynamic imports in separate chunks
+        // Put lazy math renderer dynamic imports in dedicated chunks.
         manualChunks: (id) => {
           if (id.includes('math-rendering-katex')) {
             return 'math-katex';

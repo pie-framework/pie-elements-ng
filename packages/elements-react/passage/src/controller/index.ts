@@ -10,7 +10,7 @@
 
 import { isEmpty } from 'lodash-es';
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
 

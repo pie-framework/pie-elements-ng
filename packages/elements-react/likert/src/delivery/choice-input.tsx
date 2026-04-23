@@ -15,7 +15,7 @@ import { styled } from '@mui/material/styles';
 
 import { color } from '@pie-lib/render-ui';
 import Radio from '@mui/material/Radio';
-import { LIKERT_ORIENTATION } from './likertEntities';
+import { LIKERT_ORIENTATION } from './likertEntities.js';
 
 export const RadioStyled: any = styled(Radio)({
   color: `var(--choice-input-color, ${color.text()})`,

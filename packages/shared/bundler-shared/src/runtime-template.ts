@@ -5,6 +5,8 @@ export const TOOLING_DEPENDENCIES: Record<string, string> = {
   'esbuild-loader': '^4.3.0',
   'css-loader': '^7.1.2',
   'style-loader': '^4.0.0',
+  svelte: '^5.55.1',
+  'svelte-loader': '^3.2.4',
   '@babel/runtime': '^7.28.4',
 };
 

@@ -9,7 +9,7 @@
  */
 
 import { DEFAULT_PLUGINS } from '@pie-lib/editable-html-tip-tap';
-import { excludeZeroTypes } from './modals';
+import { excludeZeroTypes } from './modals.js';
 
 export const filteredDefaultPlugins = (DEFAULT_PLUGINS || []).filter(
   (p) => p !== 'table' && p !== 'bulleted-list' && p !== 'numbered-list',

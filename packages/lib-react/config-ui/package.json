@@ -1,7 +1,6 @@
 {
   "name": "@pie-lib/config-ui",
-  "private": true,
-  "version": "0.1.0",
+  "version": "12.2.0-next.36",
   "description": "React implementation of @pie-lib/config-ui synced from pie-lib",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -16,7 +15,8 @@
     "lodash-es": "^4.17.23",
     "mathjs": "^7.0.1",
     "prop-types": "^15.6.2",
-    "react-measure": "^2.2.2"
+    "react-measure": "^2.2.2",
+    "react": "^18.2.0"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -36,5 +36,12 @@
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "test": "bun x vitest run"
+  },
+  "devDependencies": {
+    "vite": "^8.0.1",
+    "typescript": "^5.9.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
   }
 }

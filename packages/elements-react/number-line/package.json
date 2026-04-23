@@ -1,7 +1,6 @@
 {
   "name": "@pie-element/number-line",
-  "private": true,
-  "version": "0.1.0",
+  "version": "12.2.0-next.9",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -25,7 +24,8 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "prop-types": "^15.6.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -62,9 +62,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

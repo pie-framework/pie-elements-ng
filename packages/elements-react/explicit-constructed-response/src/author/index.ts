@@ -20,10 +20,10 @@ import {
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
 
-import Main from './main';
+import Main from './main.js';
 
-import sensibleDefaults from './defaults';
-import { processMarkup, createSlateMarkup } from './markupUtils';
+import sensibleDefaults from './defaults.js';
+import { processMarkup, createSlateMarkup } from './markupUtils.js';
 
 const log = debug('explicit-constructed-response:configure');
 

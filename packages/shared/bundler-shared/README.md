@@ -1,6 +1,19 @@
-# @pie-element/bundler-shared
+# @pie-element/element-bundler
 
-Shared bundler for PIE elements - creates IIFE bundles compatible with pie-player-components.
+PIE bundler for element IIFE outputs compatible with pie-player-components.
+
+This package is for IIFE bundle generation only. ESM bundle workflows do not depend on this package.
+Runtime note: this bundler invokes `bun install` during workspace preparation, so Bun must be available in the execution environment.
+
+## Migration from `@pie-element/bundler-shared`
+
+```ts
+// before
+import { Bundler } from '@pie-element/bundler-shared';
+
+// after
+import { Bundler } from '@pie-element/element-bundler';
+```
 
 ## Features
 
@@ -16,7 +29,7 @@ Shared bundler for PIE elements - creates IIFE bundles compatible with pie-playe
 ### Basic Example
 
 ```typescript
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const bundler = new Bundler('./bundles');
 
@@ -44,7 +57,7 @@ console.log(result);
 ```typescript
 // src/routes/api/bundle/+server.ts
 import { json } from '@sveltejs/kit';
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const bundler = new Bundler('./static/bundles');
 
@@ -59,7 +72,7 @@ export const POST = async ({ request }) => {
 
 ```typescript
 import express from 'express';
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const app = express();
 const bundler = new Bundler('./public/bundles');
@@ -73,7 +86,7 @@ app.post('/api/bundle', async (req, res) => {
 ### With AWS Lambda
 
 ```typescript
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const bundler = new Bundler('/tmp/bundles');
 
@@ -91,11 +104,13 @@ export const handler = async (event) => {
 ### Constructor
 
 ```typescript
-new Bundler(outputDir?: string, cacheDir?: string)
+new Bundler(outputDir?: string, cacheDir?: string, registry?: string, controllersDir?: string)
 ```
 
 - `outputDir` - Where to write bundle files (default: `./bundles`)
 - `cacheDir` - Where to cache downloaded packages (default: `/tmp/pie-bundler`)
+- `registry` - Optional npm registry URL
+- `controllersDir` - Where to write standalone controller artifacts (default: `./controllers`)
 
 ### Methods
 
@@ -104,16 +119,48 @@ new Bundler(outputDir?: string, cacheDir?: string)
 Build an IIFE bundle from the specified dependencies.
 
 **Request:**
+
 ```typescript
 {
   dependencies: Array<{
     name: string;     // @pie-element/multiple-choice
     version: string;  // 0.1.0
-  }>
+  }>,
+  options?: {
+    requestedBundles?: Array<'player' | 'client-player' | 'editor'>;
+    includeControllers?: boolean; // emit /controllers/<dep>_at_<version>/controller.js artifacts
+  }
 }
 ```
 
+### Build with standalone controller artifacts
+
+```typescript
+import { Bundler } from '@pie-element/element-bundler';
+
+const bundler = new Bundler('./bundles', './cache', undefined, './controllers');
+
+const result = await bundler.build({
+  dependencies: [{ name: '@pie-element/multiple-choice', version: '1.2.3' }],
+  options: {
+    includeControllers: true,
+  },
+});
+
+console.log(result.controllers);
+// {
+//   "@pie-element/multiple-choice@1.2.3":
+//   "/controllers/@pie-element/multiple-choice_at_1.2.3/controller.js"
+// }
+```
+
+When `includeControllers` is enabled, the bundler emits:
+
+- `controllers/<dep>_at_<version>/controller.js`
+- `controllers/<dep>_at_<version>/stats.json`
+
 **Response:**
+
 ```typescript
 {
   success: boolean;
@@ -123,6 +170,7 @@ Build an IIFE bundle from the specified dependencies.
     clientPlayer: string; // URL to client-player.js
     editor: string;       // URL to editor.js
   };
+  controllers?: Record<string, string>; // {"@pie-element/foo@1.2.3":"/controllers/@pie-element/foo_at_1.2.3/controller.js"}
   errors?: string[];
   warnings?: string[];
   duration: number;       // Build time in milliseconds
@@ -146,7 +194,8 @@ Get bundle URLs for a hash.
 4. **Workspace Setup** - Creates Bun workspace with all dependencies
 5. **Entry Generation** - Generates player.js, client-player.js, editor.js entries
 6. **Webpack Build** - Bundles with version resolution for @pie-lib packages
-7. **Output** - Writes IIFE bundles to output directory
+7. **(Optional) Standalone Controllers** - When `options.includeControllers=true`, emits controller artifacts compatible with `pie-api-aws` controller layout
+8. **Output** - Writes IIFE bundles to output directory
 
 ## Output Format
 

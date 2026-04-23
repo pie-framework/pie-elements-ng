@@ -9,8 +9,8 @@
  */
 
 import i18next, { type i18n, type TOptions } from 'i18next';
-import en from './en';
-import es from './es';
+import en from './en.js';
+import es from './es.js';
 
 i18next.init({
   fallbackLng: 'en',

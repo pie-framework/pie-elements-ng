@@ -13,7 +13,7 @@ import { styled } from '@mui/material/styles';
 import classnames from 'classnames';
 
 import { color } from '@pie-lib/render-ui';
-import { withMask } from './with-mask';
+import { withMask } from './with-mask.js';
 import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
 
 const EditableHtml = EditableHtmlImport;

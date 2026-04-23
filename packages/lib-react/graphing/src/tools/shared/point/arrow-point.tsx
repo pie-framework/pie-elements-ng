@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';
-import { arrowDimensions, getAngleDeg } from '../../../utils';
+import { arrowDimensions, getAngleDeg } from '../../../utils.js';
 
 export class RawArrow extends React.Component {
   static propTypes = {

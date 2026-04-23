@@ -1,0 +1,26 @@
+{
+  "elementName": "number-line",
+  "packageName": "@pie-element/number-line",
+  "framework": "react",
+  "generatedAt": "2026-04-17T06:27:06.111Z",
+  "summary": "No summary provided.",
+  "supportedModes": ["gather", "view", "evaluate"],
+  "views": [
+    {
+      "id": "delivery",
+      "file": "delivery.html",
+      "pieSource": "src/controller/defaults.ts",
+      "configSource": "src/controller/defaults.ts",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    },
+    {
+      "id": "author",
+      "file": "author.html",
+      "pieSource": "src/controller/defaults.ts",
+      "configSource": "src/controller/defaults.ts",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    }
+  ]
+}

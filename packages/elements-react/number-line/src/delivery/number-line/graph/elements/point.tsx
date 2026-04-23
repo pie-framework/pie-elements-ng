@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 
-import { Draggable } from '../../../draggable';
+import { Draggable } from '../../../draggable/index.js';
 
 const duration = '150ms';
 

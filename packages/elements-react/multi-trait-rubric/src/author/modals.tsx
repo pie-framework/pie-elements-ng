@@ -19,7 +19,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Button from '@mui/material/Button';
 import { color } from '@pie-lib/render-ui';
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const {
   configuration: {

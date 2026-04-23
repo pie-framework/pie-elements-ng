@@ -1,0 +1,31 @@
+{
+  "elementName": "venn-classification",
+  "packageName": "@pie-element/venn-classification",
+  "framework": "svelte",
+  "summary": "Venn diagram classification PIE element (2-set) with tile tray, optional per-tile images, pointer + keyboard placement, and MathJax-rendered math tile labels",
+  "supportedModes": ["gather", "view", "evaluate"],
+  "views": [
+    {
+      "view": "author",
+      "pie": {
+        "file": "src/controller/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/controller/defaults.ts",
+        "path": "configuration"
+      }
+    },
+    {
+      "view": "delivery",
+      "pie": {
+        "file": "src/controller/defaults.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/controller/defaults.ts",
+        "path": "configuration"
+      }
+    }
+  ]
+}

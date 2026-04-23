@@ -8,14 +8,14 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import * as colors from '../../colors';
+import * as colors from '../../colors.js';
 import { color } from '@pie-lib/render-ui';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import Arrow from '../arrow';
-import Point from './point';
-import { basePropTypes } from './base';
+import Arrow from '../arrow.js';
+import Point from './point.js';
+import { basePropTypes } from './base.js';
 import { isNumber } from 'lodash-es';
 
 const StyledRayGroup: any = styled('g')(({ $selected, $correct }) => ({

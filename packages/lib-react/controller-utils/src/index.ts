@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import * as partialScoring from './partial-scoring';
+import * as partialScoring from './partial-scoring.js';
 
-export { lockChoices, getShuffledChoices } from './persistence';
+export { lockChoices, getShuffledChoices } from './persistence.js';
 export { partialScoring };

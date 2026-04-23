@@ -16,8 +16,8 @@ import { settings, layout } from '@pie-lib/config-ui';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
-import { ConfirmationDialog, PassageButton } from './common';
-import Passage from './passage';
+import { ConfirmationDialog, PassageButton } from './common.js';
+import Passage from './passage.js';
 
 const { Panel, toggle, dropdown } = settings;
 

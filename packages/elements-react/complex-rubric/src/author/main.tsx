@@ -88,7 +88,7 @@ export class Main extends React.Component {
       switch (rubricType) {
         case RUBRIC_TYPES.SIMPLE_RUBRIC:
         default:
-          rubricTag: any = (
+          rubricTag = (
             <rubric-configure
               id="simpleRubric"
               key="simple-rubric"
@@ -104,7 +104,7 @@ export class Main extends React.Component {
           break;
 
         case RUBRIC_TYPES.MULTI_TRAIT_RUBRIC:
-          rubricTag: any = (
+          rubricTag = (
             <multi-trait-rubric-configure
               id="multiTraitRubric"
               key="multi-trait-rubric"
@@ -121,7 +121,7 @@ export class Main extends React.Component {
           break;
 
         case RUBRIC_TYPES.RUBRICLESS:
-          rubricTag: any = (
+          rubricTag = (
             <rubric-configure
               id="rubricless"
               key="rubricless"

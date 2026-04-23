@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { debounce } from 'lodash-es';
-import Main from '../delivery/main';
+import Main from '../delivery/main.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 import debug from 'debug';

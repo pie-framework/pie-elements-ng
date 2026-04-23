@@ -106,7 +106,7 @@ async function testBundler() {
   // Step 2: Publish packages
   log('Step 2: Publish local packages', 'blue');
   const packagesToPublish = [
-    join(__dirname, '../../mathquill'),
+    join(__dirname, '../../math-engine'),
     join(__dirname, '../../../elements-react/multiple-choice'),
     join(__dirname, '../../../elements-react/text-entry'),
   ];

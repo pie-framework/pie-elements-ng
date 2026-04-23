@@ -11,12 +11,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { get } from 'lodash-es';
+import get from 'lodash-es/get.js';
 
 import { PureToolbar } from '@pie-lib/math-toolbar';
 
-import CustomPopper from './characters/custom-popper';
-import { spanishConfig, specialConfig } from './characters/characterUtils';
+import CustomPopper from './characters/custom-popper.js';
+import { spanishConfig, specialConfig } from './characters/characterUtils.js';
 
 const CharacterIcon = ({ letter }) => (
   <div
@@ -131,6 +131,7 @@ export function CharacterPicker({ editor, opts, onClose }) {
         <div
           ref={containerRef}
           className="insert-character-dialog"
+          data-toolbar-for={editor.instanceId}
           style={{
             visibility: position.top === 0 && position.left === 0 ? 'hidden' : 'initial',
             position: 'absolute',

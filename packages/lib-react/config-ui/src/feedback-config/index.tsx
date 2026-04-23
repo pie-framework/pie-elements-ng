@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import FeedbackSelector, { FeedbackType } from './feedback-selector';
+import FeedbackSelector, { FeedbackType } from './feedback-selector.js';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { merge } from 'lodash-es';

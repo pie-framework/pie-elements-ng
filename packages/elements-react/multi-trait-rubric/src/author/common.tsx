@@ -14,10 +14,38 @@ import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputBase from '@mui/material/InputBase';
-import { color, InputContainer } from '@pie-lib/render-ui';
+import { color, InputContainer as InputContainerImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const InputContainer = unwrapReactInteropSymbol(InputContainerImport, 'InputContainer') || unwrapReactInteropSymbol(renderUi.InputContainer, 'InputContainer');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import { grey } from '@mui/material/colors';
 
-import { filteredDefaultPlugins } from './utils';
+import { filteredDefaultPlugins } from './utils.js';
 
 const InputHeight = '120px';
 export const BlockWidth = 200;
@@ -30,17 +58,19 @@ const Padding = '8px 4px';
 
 // global styles for EditableHtml components
 const GlobalStyles: any = styled('div')(({ theme }) => ({
+  fontFamily: 'Cerebri',
+  
   '& .editable-label': {
     textAlign: 'left',
     flex: 1,
     border: 'none',
 
-    '& div': {
+    '& div:not(.tiptap)': {
       padding: 0,
       border: 'none',
     },
 
-    '& > div': {
+    '& > div:first-of-type': {
       borderLeft: greyBorder,
       borderRadius: 0,
       padding: Padding,
@@ -55,13 +85,10 @@ const GlobalStyles: any = styled('div')(({ theme }) => ({
   '& .underlined-editable-level': {
     background: theme.palette.common.white,
     width: '100%',
+    padding: 0,
+    border: 'none',
 
-    '& div': {
-      padding: 0,
-      border: 'none',
-    },
-
-    '& > div': {
+    '& > div:first-of-type': {
       borderBottom: greyBorder,
       borderRadius: 0,
       padding: Padding,
@@ -72,6 +99,17 @@ const GlobalStyles: any = styled('div')(({ theme }) => ({
     border: 'none',
     margin: '10px',
     marginTop: 0,
+    '& > div:first-of-type': {
+      border: greyBorder,
+      borderRadius: '4px',
+      padding: Padding,
+    },
+
+    '& .tiptap': {
+      fontFamily: 'Cerebri',
+      height: InputHeight,
+      padding: 0
+    }
   },
 }));
 
@@ -117,6 +155,7 @@ export const Block: any = styled('div')(({ theme }) => ({
 const StyledSecondaryBlock: any = styled('div')({
   display: 'flex',
   overflowX: 'hidden',
+  overflowY: 'hidden',
   alignItems: 'flex-end',
   // this is needed to show the editor toolbar!!!
   paddingBottom: '30px',
@@ -204,7 +243,7 @@ export const ScorePoint = ({
               languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
               mathMlOptions={mathMlOptions}
               imageSupport={imageSupport}
-              slateEditorExtraStyles={{ fontFamily: 'Cerebri' }}
+              autoWidthToolbar
             />
           ) : null}
         </ScorePointBoxComponent>
@@ -292,7 +331,7 @@ export const SimpleInput = ({
         languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
         mathMlOptions={mathMlOptions}
         imageSupport={imageSupport}
-        slateEditorExtraStyles={{ fontFamily: 'Cerebri' }}
+        autoWidthToolbar
       />
     </SimpleInputWrapper>
   </GlobalStyles>
@@ -334,7 +373,7 @@ export const UnderlinedInput = ({
         languageCharactersProps={[{ language: 'spanish' }, { language: 'special' }]}
         mathMlOptions={mathMlOptions}
         imageSupport={imageSupport}
-        slateEditorExtraStyles={{ fontFamily: 'Cerebri' }}
+        autoWidthToolbar
       />
     </UnderlinedInputWrapper>
   </GlobalStyles>
@@ -367,11 +406,6 @@ export const ExpandedInput = ({
       autoWidthToolbar
       mathMlOptions={mathMlOptions}
       imageSupport={imageSupport}
-      slateEditorExtraStyles={{
-        fontFamily: 'Cerebri',
-        height: InputHeight,
-        padding: 0
-      }}
     />
   </GlobalStyles>
 );

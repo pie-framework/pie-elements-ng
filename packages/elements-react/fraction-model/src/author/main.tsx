@@ -12,13 +12,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormSection, layout, AlertDialog } from '@pie-lib/config-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { FractionModelChart  } from '../delivery';
+import { FractionModelChart  } from '../delivery/index.js';
 import Tooltip from '@mui/material/Tooltip';
 import Info from '@mui/icons-material/Info';
 import { styled } from '@mui/material/styles';
 
-import CardBar from './card-bar';
-import ModelOptions from './model-options';
+import CardBar from './card-bar.js';
+import ModelOptions from './model-options.js';
 
 const StyledFormSection: any = styled(FormSection)(({ theme }) => ({
   marginBottom: theme.spacing(4),

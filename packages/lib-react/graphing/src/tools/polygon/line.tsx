@@ -13,13 +13,14 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { gridDraggable, types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import * as utils from '../../utils';
-import { correct, disabled, incorrect, missing } from '../shared/styles';
+import * as utils from '../../utils.js';
+import { correct, disabled, incorrect, missing } from '../shared/styles.js';
 
 const StyledLine: any = styled('line')(({ disabled: isDisabled, correctness }) => ({
-  strokeWidth: 3,
+  strokeWidth: 7,
   transition: 'stroke-width 200ms ease-in, stroke 200ms ease-in',
   stroke: 'transparent',
+  pointerEvents: 'stroke',
   '&:hover': {
     strokeWidth: 4,
     stroke: color.defaults.BLACK,

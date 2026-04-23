@@ -1,0 +1,26 @@
+{
+  "elementName": "placement-ordering",
+  "packageName": "@pie-element/placement-ordering",
+  "framework": "react",
+  "generatedAt": "2026-04-17T06:27:06.170Z",
+  "summary": "No summary provided.",
+  "supportedModes": ["gather", "view", "evaluate"],
+  "views": [
+    {
+      "id": "delivery",
+      "file": "delivery.html",
+      "pieSource": "src/author/defaults.ts#model",
+      "configSource": "src/author/defaults.ts#configuration",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    },
+    {
+      "id": "author",
+      "file": "author.html",
+      "pieSource": "src/author/defaults.ts#model",
+      "configSource": "src/author/defaults.ts#configuration",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    }
+  ]
+}

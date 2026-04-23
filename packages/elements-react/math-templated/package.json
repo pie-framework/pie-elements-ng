@@ -1,6 +1,5 @@
 {
   "name": "@pie-element/math-templated",
-  "private": true,
   "version": "0.1.0",
   "description": "",
   "dependencies": {
@@ -8,22 +7,23 @@
     "@emotion/style": "^0.8.0",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@pie-element/shared-configure-events": "workspace:*",
+    "@pie-element/shared-controller-utils": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "@pie-element/shared-player-events": "workspace:*",
+    "@pie-framework/mathquill": "^1.1.4",
+    "@pie-framework/math-validation": "^1.0.0",
+    "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/correct-answer-toggle": "workspace:*",
+    "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/mask-markup": "workspace:*",
     "@pie-lib/math-input": "workspace:*",
-    "@pie-lib/render-ui": "workspace:*",
-    "prop-types": "^15.8.1",
-    "@pie-lib/config-ui": "workspace:*",
-    "@pie-lib/editable-html-tip-tap": "workspace:*",
-    "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/math-toolbar": "workspace:*",
+    "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "@pie-framework/math-validation": "^1.0.0",
-    "@pie-element/shared-controller-utils": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-mathquill": "workspace:*",
-    "mathquill": "0.10.1"
+    "debug": "^4.4.3",
+    "lodash-es": "^4.17.23",
+    "prop-types": "^15.8.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -65,9 +65,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

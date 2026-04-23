@@ -32,7 +32,28 @@
  *    - Student-facing UI only needs minimal fallback configuration
  *    - Inline empty defaults object to avoid the dependency
  */
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { PRESET_IDS } from './sync-presets.js';
+
+const SOURCE_PATH_PRESET_RULES = {
+  [PRESET_IDS.transformTextSelectTokenTypesReexport]: (sourcePath: string) =>
+    sourcePath.includes('text-select') && sourcePath.includes('token-select/index'),
+  [PRESET_IDS.transformChartingUtilsTypeFix]: (sourcePath: string) =>
+    sourcePath.includes('charting') && sourcePath.includes('utils'),
+  [PRESET_IDS.transformTranslatorIndexTypeFix]: (sourcePath: string) =>
+    sourcePath.includes('translator') && sourcePath.includes('/src/index'),
+  [PRESET_IDS.transformRenderUiInlineMenuExport]: (sourcePath: string) =>
+    sourcePath.includes('render-ui/src/index.js'),
+} as const;
+
+function sourcePathMatchesPreset(
+  sourcePath: string | undefined,
+  presetId: keyof typeof SOURCE_PATH_PRESET_RULES
+): boolean {
+  return !!sourcePath && SOURCE_PATH_PRESET_RULES[presetId](sourcePath);
+}
 
 /**
  * Fix import statements in a file to handle default export conversions
@@ -64,6 +85,85 @@ export async function fixImportsInFile(
       modified = true;
     }
   }
+
+  if (modified) {
+    await writeFile(filePath, content, 'utf-8');
+  }
+
+  return modified;
+}
+
+/**
+ * Rewrite relative ESM specifiers to explicit `.js` extensions for NodeNext compatibility.
+ *
+ * This is applied after sync so TypeScript source uses runtime-valid ESM specifiers:
+ * - `./foo` -> `./foo.js`
+ * - `./bar` (directory with index file) -> `./bar/index.js`
+ */
+export async function rewriteRelativeSpecifiersForNodeEsm(filePath: string): Promise<boolean> {
+  let content = await readFile(filePath, 'utf-8');
+  let modified = false;
+
+  const rewriteSpecifier = (specifier: string): string => {
+    if (!specifier.startsWith('./') && !specifier.startsWith('../')) {
+      return specifier;
+    }
+
+    // Keep explicit extensions as-is (css/json/svg/js/etc.).
+    if (/\.[a-z0-9]+$/i.test(specifier)) {
+      return specifier;
+    }
+
+    const basePath = join(dirname(filePath), specifier);
+    const moduleFileExtensions = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'];
+    const indexFileExtensions = moduleFileExtensions.map((ext) => `/index${ext}`);
+
+    const hasModuleFile = moduleFileExtensions.some((ext) => existsSync(`${basePath}${ext}`));
+    if (hasModuleFile) {
+      return `${specifier}.js`;
+    }
+
+    const hasIndexFile = indexFileExtensions.some((suffix) => existsSync(`${basePath}${suffix}`));
+    if (hasIndexFile) {
+      return `${specifier.replace(/\/$/, '')}/index.js`;
+    }
+
+    // Do not guess unresolved paths.
+    return specifier;
+  };
+
+  content = content.replace(
+    /(from\s+)(['"])(\.\.?\/[^'"]+)\2/g,
+    (match, prefix, quote, specifier) => {
+      const rewritten = rewriteSpecifier(specifier);
+      if (rewritten !== specifier) {
+        modified = true;
+        return `${prefix}${quote}${rewritten}${quote}`;
+      }
+      return match;
+    }
+  );
+
+  content = content.replace(
+    /(import\(\s*)(['"])(\.\.?\/[^'"]+)\2(\s*\))/g,
+    (match, start, quote, specifier, end) => {
+      const rewritten = rewriteSpecifier(specifier);
+      if (rewritten !== specifier) {
+        modified = true;
+        return `${start}${quote}${rewritten}${quote}${end}`;
+      }
+      return match;
+    }
+  );
+
+  content = content.replace(/\bimport\s+(['"])(\.\.?\/[^'"]+)\1/g, (match, quote, specifier) => {
+    const rewritten = rewriteSpecifier(specifier);
+    if (rewritten !== specifier) {
+      modified = true;
+      return `import ${quote}${rewritten}${quote}`;
+    }
+    return match;
+  });
 
   if (modified) {
     await writeFile(filePath, content, 'utf-8');
@@ -114,7 +214,7 @@ const ${importName} = {
  */
 export function reexportTokenTypes(code: string, filePath: string): string {
   // Only apply to text-select token-select/index file
-  if (!filePath.includes('text-select') || !filePath.includes('token-select/index')) {
+  if (!sourcePathMatchesPreset(filePath, PRESET_IDS.transformTextSelectTokenTypesReexport)) {
     return code;
   }
 
@@ -274,6 +374,38 @@ export function transformLodashToLodashEs(content: string): string {
 }
 
 /**
+ * Ensure deep lodash-es imports are fully specified for strict ESM resolution.
+ *
+ * Webpack (with fullySpecified ESM resolution) and other strict ESM loaders
+ * require file extensions for deep package specifiers:
+ * - lodash-es/isEqual -> lodash-es/isEqual.js
+ */
+export function transformLodashEsDeepImportsToFullySpecified(content: string): string {
+  return content.replace(
+    /(from\s+['"]|import\(\s*['"])lodash-es\/([^'")]+)(['"]\)?)/g,
+    (match, prefix, path, suffix) => {
+      if (/\.[a-z0-9]+$/i.test(path)) {
+        return match;
+      }
+      return `${prefix}lodash-es/${path}.js${suffix}`;
+    }
+  );
+}
+
+/**
+ * Ensure known strict-ESM deep imports include explicit file extensions.
+ *
+ * Webpack's fully-specified ESM resolution requires `.js` on deep imports like:
+ * - react-konva/lib/ReactKonvaCore -> react-konva/lib/ReactKonvaCore.js
+ */
+export function transformKnownDeepImportsToFullySpecified(content: string): string {
+  return content.replace(
+    /(from\s+['"]|import\(\s*['"])react-konva\/lib\/ReactKonvaCore(['"]\)?)/g,
+    '$1react-konva/lib/ReactKonvaCore.js$2'
+  );
+}
+
+/**
  * Transform package.json dependencies from lodash to lodash-es
  *
  * Replaces lodash with lodash-es version 4.17.22 (latest ESM version)
@@ -394,18 +526,18 @@ export function transformSharedPackageImports(content: string): string {
 }
 
 /**
- * Transform @pie-framework/mathquill imports to internal @pie-element/shared-mathquill
+ * Rewrite legacy configure subpath imports to author entrypoints.
  *
- * Handles:
- * - @pie-framework/mathquill → @pie-element/shared-mathquill
+ * Upstream sometimes imports configure elements via:
+ * - @pie-element/<element-name>/configure/lib
  *
- * Our internal mathquill package is a fork from the PIE org with matrix support,
- * accessibility features, and modernized ESM code.
+ * In this repo, configure code is synced into `src/author` and packages expose that via
+ * the `./author` export. Rewriting to `/author` preserves author-vs-delivery boundaries.
  */
-export function transformMathquillImports(content: string): string {
+export function transformLegacyConfigureLibImports(content: string): string {
   return content.replace(
-    /from\s+['"]@pie-framework\/mathquill['"]/g,
-    "from '@pie-element/shared-mathquill'"
+    /from\s+['"](@pie-element\/[^/'"]+)\/configure\/lib['"]/g,
+    "from '$1/author'"
   );
 }
 
@@ -489,27 +621,6 @@ export function transformPackageJsonSharedPackages<T extends Record<string, any>
       transformed.devDependencies[newPkg] = 'workspace:*';
       delete transformed.devDependencies[oldPkg];
     }
-  }
-
-  return transformed;
-}
-
-/**
- * Transform package.json dependencies for @pie-framework/mathquill
- *
- * Replaces @pie-framework/mathquill with internal @pie-element/shared-mathquill
- */
-export function transformPackageJsonMathquill<T extends Record<string, any>>(packageJson: T): T {
-  const transformed = { ...packageJson };
-
-  // Replace @pie-framework/mathquill with internal package
-  if (transformed.dependencies?.['@pie-framework/mathquill']) {
-    transformed.dependencies['@pie-element/shared-mathquill'] = 'workspace:*';
-    delete transformed.dependencies['@pie-framework/mathquill'];
-  }
-  if (transformed.devDependencies?.['@pie-framework/mathquill']) {
-    transformed.devDependencies['@pie-element/shared-mathquill'] = 'workspace:*';
-    delete transformed.devDependencies['@pie-framework/mathquill'];
   }
 
   return transformed;
@@ -612,53 +723,27 @@ export function transformConfigureUtilsImports(content: string, relativePath: st
     return content;
   }
 
-  // Transform '../utils' to './utils' (only exact match, not '../utils/something')
+  // Transform '../utils' to './utils.js' (only exact match, not '../utils/something')
+  // Keep explicit runtime extension for Node ESM consistency.
   let transformed = content;
-  transformed = transformed.replace(/from\s+['"]\.\.\/utils['"]/g, "from './utils'");
+  transformed = transformed.replace(/from\s+['"]\.\.\/utils['"]/g, "from './utils.js'");
 
   return transformed;
 }
 
 /**
- * Transform SSR-unsafe require() calls to standard ESM imports
+ * Transform legacy SSR-gated `require()` for pie-lib editors into static ESM imports.
  *
- * Upstream pie-lib code uses this pattern for SSR compatibility with MathQuill:
- *
- * ```js
- * // - mathquill error window not defined
- * let EditableHtml;
- * let StyledEditableHTML;
- * if (typeof window !== 'undefined') {
- *   EditableHtml = require('@pie-lib/editable-html-tip-tap')['default'];
- *   StyledEditableHTML = styled(EditableHtml)(({ theme }) => ({
- *     fontFamily: theme.typography.fontFamily,
- *   }));
- * }
- * ```
- *
- * This doesn't work in browser ESM (require is not defined). Transform to:
- *
- * ```tsx
- * import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
- *
- * const EditableHtml = EditableHtmlImport;
- * const StyledEditableHTML = styled(EditableHtml)(({ theme }) => ({
- *   fontFamily: theme.typography.fontFamily,
- * }));
- * ```
- *
- * We use direct imports instead of React.lazy because:
- * - Simpler code (no Suspense wrapper needed)
- * - No loading flicker
- * - Modern bundlers handle ESM imports correctly for SSR
- * - The component is always needed (no code-splitting benefit)
+ * Older upstream pie-lib used `typeof window` + `require()` so heavy editor code did not
+ * run under SSR. That breaks in browser ESM where `require` is undefined. When this pattern
+ * is still present in synced sources, rewrite it to a normal default import plus styled()
+ * wrapper. If upstream has already moved to ESM imports, this is a no-op.
  */
-export function transformSsrRequireToReactLazy(content: string): string {
+export function transformSsrRequireToEsmImport(content: string): string {
   let transformed = content;
 
   // Pattern 1: SSR check with require() for editable-html-tip-tap with styled wrapper
   // Matches:
-  //   // - mathquill error window not defined
   //   let EditableHtml;
   //   let StyledEditableHTML;
   //   if (typeof window !== 'undefined') {
@@ -676,7 +761,6 @@ export function transformSsrRequireToReactLazy(content: string): string {
   if (match) {
     const [fullMatch, componentVar, styledVar, importPath, styleParams] = match;
 
-    // Generate direct import replacement (better than React.lazy - simpler, no Suspense needed)
     const importVarName = `${componentVar}Import`;
     const replacement = `import ${importVarName} from '${importPath}';
 
@@ -703,7 +787,6 @@ const ${styledVar} = styled(${componentVar})(${styleParams});`;
     // Only apply if we didn't already match the styled pattern
     const [fullMatch, componentVar, importPath] = simpleMatch;
 
-    // Generate direct import replacement (better than React.lazy - simpler, no Suspense needed)
     const importVarName = `${componentVar}Import`;
     const replacement = `import ${importVarName} from '${importPath}';
 
@@ -738,12 +821,11 @@ export function fixStyledComponentTypes(content: string): string {
   const constStyledRegex = /const (\w+) = styled\(/g;
   transformed = transformed.replace(constStyledRegex, 'const $1: any = styled(');
 
-  // Pattern 3: Class methods/arrow functions that might return styled components
-  // Add `: any` return type to methods that are missing type annotations
-  // Match: methodName = () => { or methodName = (params) => {
-  // But only at start of line (class methods), not property assignments like reader.onload =
-  // And only if they don't already have a type annotation
-  const methodRegex = /^(\s*)(\w+)\s*=\s*\([^)]*\)\s*=>\s*\{/gm;
+  // Pattern 3: Class field arrow functions that might return styled components
+  // Add `: any` return type to class fields missing type annotations.
+  // IMPORTANT: keep this line-scoped so we do not accidentally match multiline JSX
+  // assignments such as `foo = (<Component ref={(r) => { ... }} />)`.
+  const methodRegex = /^(\s*)(\w+)\s*=\s*\([^)\n]*\)\s*=>\s*\{/gm;
   transformed = transformed.replace(methodRegex, (match) => {
     // Check if already has type annotation (: type = )
     const hasTypeAnnotation = match.includes(':');
@@ -830,11 +912,11 @@ export function transformSelfReferentialImports(
 
     if (namedImports) {
       // Named imports - keep them as a single import from the index
-      const replacement = `import { ${namedImports} } from '${targetPath}'`;
+      const replacement = `import { ${namedImports} } from '${targetPath}/index.js'`;
       transformed = transformed.replace(fullMatch, replacement);
     } else if (defaultImport) {
       // Default import - reference main index
-      const replacement = `import ${defaultImport} from '${targetPath}'`;
+      const replacement = `import ${defaultImport} from '${targetPath}/index.js'`;
       transformed = transformed.replace(fullMatch, replacement);
     }
   }
@@ -854,7 +936,7 @@ export function fixExportedFunctionTypes(content: string, sourcePath?: string): 
   let transformed = content;
 
   // Only apply to specific files that are known to have issues
-  if (sourcePath?.includes('charting') && sourcePath.includes('utils')) {
+  if (sourcePathMatchesPreset(sourcePath, PRESET_IDS.transformChartingUtilsTypeFix)) {
     // Fix: export const dataToXBand = (...) => { ... }
     // Pattern: export const functionName = (params) => {
     transformed = transformed.replace(
@@ -865,7 +947,7 @@ export function fixExportedFunctionTypes(content: string, sourcePath?: string): 
 
   // Fix translator package default export type inference issue
   // The spread operator `...i18next` causes TypeScript to require a reference to i18next types
-  if (sourcePath?.includes('translator') && sourcePath?.includes('/src/index')) {
+  if (sourcePathMatchesPreset(sourcePath, PRESET_IDS.transformTranslatorIndexTypeFix)) {
     // Add type imports
     if (!transformed.includes('type i18n')) {
       transformed = transformed.replace(
@@ -961,7 +1043,7 @@ export function transformMenuToInlineMenu(content: string): string {
 export function addInlineMenuExport(content: string, sourcePath?: string): string {
   // Only apply to render-ui root index file (not subdirectories like collapsible/index.tsx)
   // sourcePath format: pie-lib/packages/render-ui/src/index.js
-  if (!sourcePath?.includes('render-ui/src/index.js')) {
+  if (!sourcePathMatchesPreset(sourcePath, PRESET_IDS.transformRenderUiInlineMenuExport)) {
     return content;
   }
 
@@ -978,15 +1060,237 @@ export function addInlineMenuExport(content: string, sourcePath?: string): strin
 }
 
 /**
- * Transform MathQuill.getInterface(2) to getInterface(3)
+ * Transform React component imports that may resolve as module objects in IIFE builds.
  *
- * Interface version 2 requires jQuery, but pie-elements-ng uses interface version 3
- * which has a jQuery-free API. This transform updates calls to use version 3.
+ * Some libraries export React components as objects (e.g. forwardRef) or wrapped modules,
+ * which can trigger React invariant #130 in certain bundled interop paths.
  *
- * @param content - Source code content
- * @returns Transformed content with getInterface(3) instead of getInterface(2)
+ * This transform rewrites known-risk imports to pass through a small runtime unwrap helper:
+ * - `@mdi/react` default import
+ * - `react-konva` named imports
  */
-export function transformMathQuillInterface(content: string): string {
-  // Replace MathQuill.getInterface(2) with MathQuill.getInterface(3)
-  return content.replace(/MathQuill\.getInterface\(2\)/g, 'MathQuill.getInterface(3)');
+export function transformReactInteropComponentImports(content: string): string {
+  let transformed = content;
+  let touched = false;
+
+  // Handle default import from @mdi/react:
+  // import Icon from '@mdi/react'
+  // ->
+  // import IconImport from '@mdi/react'
+  // const Icon = unwrapReactInteropSymbol(IconImport, 'Icon');
+  transformed = transformed.replace(
+    /^import\s+([A-Za-z_$][\w$]*)\s+from\s+['"]@mdi\/react['"];?\s*$/m,
+    (match, localName: string) => {
+      if (localName.endsWith('Import')) {
+        return match;
+      }
+      touched = true;
+      return `import ${localName}Import from '@mdi/react';`;
+    }
+  );
+
+  const mdiMatch = transformed.match(
+    /^import\s+([A-Za-z_$][\w$]*)Import\s+from\s+['"]@mdi\/react['"];?\s*$/m
+  );
+  if (mdiMatch) {
+    const localName = mdiMatch[1];
+    const declaration = `const ${localName} = unwrapReactInteropSymbol(${localName}Import, '${localName}');`;
+    if (!transformed.includes(declaration)) {
+      touched = true;
+      transformed = transformed.replace(mdiMatch[0], `${mdiMatch[0]}\n${declaration}`);
+    }
+  }
+
+  // Handle named imports from react-konva:
+  // import { Stage, Layer } from 'react-konva'
+  // ->
+  // import { Stage as StageImport, Layer as LayerImport } from 'react-konva'
+  // const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
+  // const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
+  const konvaImportRegex = /^import\s+\{([^}]+)\}\s+from\s+['"]react-konva['"];?\s*$/m;
+  const konvaMatch = transformed.match(konvaImportRegex);
+  if (konvaMatch) {
+    const rawSpec = konvaMatch[1]
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const parsed = rawSpec
+      .map((entry) => {
+        const aliasMatch = entry.match(/^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/);
+        if (aliasMatch) {
+          return { exported: aliasMatch[1], local: aliasMatch[2] };
+        }
+        const singleMatch = entry.match(/^([A-Za-z_$][\w$]*)$/);
+        if (singleMatch) {
+          return { exported: singleMatch[1], local: singleMatch[1] };
+        }
+        return null;
+      })
+      .filter((v): v is { exported: string; local: string } => !!v);
+
+    if (parsed.length) {
+      const rewrittenSpecs = parsed.map(({ exported, local }) => `${exported} as ${local}Import`);
+      const declarations = parsed.map(
+        ({ exported, local }) =>
+          `const ${local} = unwrapReactInteropSymbol(${local}Import, '${exported}');`
+      );
+
+      transformed = transformed.replace(
+        konvaImportRegex,
+        `import { ${rewrittenSpecs.join(', ')} } from 'react-konva';`
+      );
+
+      for (const declaration of declarations) {
+        if (!transformed.includes(declaration)) {
+          transformed = transformed.replace(
+            /^import\s+\{[^}]+\}\s+from\s+['"]react-konva['"];?\s*$/m,
+            (line) => `${line}\n${declaration}`
+          );
+        }
+      }
+      touched = true;
+    }
+  }
+
+  // Handle mixed named imports from @pie-lib/render-ui where React components
+  // may resolve through nested/default interop in IIFE bundles.
+  // Example:
+  // import { Collapsible, color, PreviewPrompt } from '@pie-lib/render-ui'
+  // ->
+  // import { Collapsible as CollapsibleImport, color, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+  // const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible');
+  // const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt');
+  const renderUiImportRegex = /^import\s+\{([^}]+)\}\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m;
+  const renderUiMatch = transformed.match(renderUiImportRegex);
+  if (renderUiMatch) {
+    const rawSpec = renderUiMatch[1]
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const parsed = rawSpec
+      .map((entry) => {
+        const aliasMatch = entry.match(/^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/);
+        if (aliasMatch) {
+          return { exported: aliasMatch[1], local: aliasMatch[2] };
+        }
+        const singleMatch = entry.match(/^([A-Za-z_$][\w$]*)$/);
+        if (singleMatch) {
+          return { exported: singleMatch[1], local: singleMatch[1] };
+        }
+        return null;
+      })
+      .filter((v): v is { exported: string; local: string } => !!v);
+
+    // Heuristic: only wrap React component-like imports (PascalCase symbols).
+    const componentLike = parsed.filter(
+      ({ exported, local }) =>
+        /^[A-Z]/.test(exported) && /^[A-Z]/.test(local) && !local.endsWith('Import')
+    );
+
+    if (componentLike.length) {
+      const rewrittenSpecs = parsed.map(({ exported, local }) => {
+        const shouldWrap = componentLike.some(
+          (entry) => entry.exported === exported && entry.local === local
+        );
+        return shouldWrap
+          ? `${exported} as ${local}Import`
+          : exported === local
+            ? local
+            : `${exported} as ${local}`;
+      });
+
+      const declarations = componentLike.map(
+        ({ exported, local }) =>
+          `const ${local} = unwrapReactInteropSymbol(${local}Import, '${exported}');`
+      );
+
+      transformed = transformed.replace(
+        renderUiImportRegex,
+        `import { ${rewrittenSpecs.join(', ')} } from '@pie-lib/render-ui';`
+      );
+
+      // Add a namespace import so wrapped component imports can fall back to module members
+      // when named import interop resolves unexpectedly in IIFE bundles.
+      if (
+        !/^import\s+\*\s+as\s+RenderUiNamespace\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m.test(
+          transformed
+        )
+      ) {
+        transformed = transformed.replace(
+          /^import\s+\{[^}]+\}\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m,
+          (line) => `${line}\nimport * as RenderUiNamespace from '@pie-lib/render-ui';`
+        );
+      }
+
+      const renderUiInteropPrelude = `const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;`;
+      if (!transformed.includes('const renderUiNamespaceAny = RenderUiNamespace as any;')) {
+        transformed = transformed.replace(
+          /^import\s+\*\s+as\s+RenderUiNamespace\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m,
+          (line) => `${line}\n${renderUiInteropPrelude}`
+        );
+      }
+
+      for (const declaration of declarations) {
+        const withFallback = declaration.replace(
+          /unwrapReactInteropSymbol\((\w+)Import, '(\w+)'\);$/,
+          "unwrapReactInteropSymbol($1Import, '$2') || unwrapReactInteropSymbol(renderUi.$2, '$2');"
+        );
+        if (!transformed.includes(declaration) && !transformed.includes(withFallback)) {
+          transformed = transformed.replace(
+            /^import\s+\{[^}]+\}\s+from\s+['"]@pie-lib\/render-ui['"];?\s*$/m,
+            (line) => `${line}\n${withFallback}`
+          );
+        }
+      }
+      touched = true;
+    }
+  }
+
+  if (!touched) {
+    return transformed;
+  }
+
+  if (!transformed.includes('function isRenderableReactInteropType(')) {
+    const helperBlock = `function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+`;
+
+    // Capture top-of-file import blocks, including multiline imports.
+    const importBlockMatch = transformed.match(
+      /^(?:(?:\s*\/\/[^\n]*\n|\s*\/\*[\s\S]*?\*\/\s*\n|\s*\n)*)((?:import[\s\S]*?;\s*\n)+)/
+    );
+    if (importBlockMatch) {
+      const insertAt = importBlockMatch[0].length;
+      transformed =
+        transformed.slice(0, insertAt) + '\n' + helperBlock + transformed.slice(insertAt);
+    } else {
+      transformed = `${helperBlock}\n${transformed}`;
+    }
+  }
+
+  return transformed;
 }

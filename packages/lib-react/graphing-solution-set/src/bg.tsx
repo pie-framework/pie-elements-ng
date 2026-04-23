@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { pointer, select } from 'd3-selection';
 import { types, utils } from '@pie-lib/plot';
-import { getTickValues, thinnerShapesNeeded } from './utils';
+import { getTickValues, thinnerShapesNeeded } from './utils.js';
 
 export default class Bg extends React.Component {
   static propTypes = {

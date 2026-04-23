@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { noSelect, strokeColor } from '../style-utils';
+import { noSelect, strokeColor } from '../style-utils.js';
 import { range } from 'lodash-es';
 
 const StyledTick: any = styled('line')(({ theme }) => ({

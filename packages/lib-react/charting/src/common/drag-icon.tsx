@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { getAdjustedX, getScale } from '../utils';
+import { getAdjustedX, getScale } from '../utils.js';
 
 const DragIcon = ({ width, scaleValue, color }) => (
   <svg

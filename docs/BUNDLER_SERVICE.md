@@ -8,13 +8,13 @@ This bundler service creates IIFE (Immediately Invoked Function Expression) bund
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                  pie-elements-ng                        │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  ┌──────────────────────────────────────────────────┐  │
-│  │  @pie-element/bundler-shared                     │  │
+│  │  @pie-element/element-bundler                    │  │
 │  │  (Framework-agnostic bundler)                    │  │
 │  │                                                   │  │
 │  │  • Webpack 5 configuration                       │  │
@@ -50,7 +50,8 @@ This bundler service creates IIFE (Immediately Invoked Function Expression) bund
 ## Created Files
 
 ### Core Bundler Package
-- `packages/shared/bundler-shared/package.json` - Package configuration
+
+- `packages/shared/bundler-shared/package.json` - Package configuration for `@pie-element/element-bundler`
 - `packages/shared/bundler-shared/src/index.ts` - Main Bundler class
 - `packages/shared/bundler-shared/src/types.ts` - TypeScript types
 - `packages/shared/bundler-shared/src/installer.ts` - Package installer
@@ -61,6 +62,7 @@ This bundler service creates IIFE (Immediately Invoked Function Expression) bund
 - `packages/shared/bundler-shared/README.md` - Documentation
 
 ### SvelteKit Integration
+
 - `apps/element-demo/src/routes/api/bundle/+server.ts` - API endpoint
 - `apps/element-demo/src/routes/bundler/+page.svelte` - Test UI
 
@@ -74,11 +76,12 @@ bun run dev
 
 ### 2. Navigate to the Bundler UI
 
-Open http://localhost:5173/bundler
+Open [http://localhost:5173/bundler](http://localhost:5173/bundler)
 
 ### 3. Build a Bundle
 
 Enter an element name and version:
+
 - Element: `@pie-element/multiple-choice`
 - Version: `0.1.0`
 
@@ -87,6 +90,7 @@ Click "Build Bundle" and wait for the build to complete (~30-60 seconds).
 ### 4. Use the Bundle
 
 The bundles will be available at:
+
 - Player: `/bundles/{hash}/player.js`
 - Client Player: `/bundles/{hash}/client-player.js`
 - Editor: `/bundles/{hash}/editor.js`
@@ -108,6 +112,7 @@ Load them in your HTML:
 Build a bundle from dependencies.
 
 **Request:**
+
 ```json
 {
   "dependencies": [
@@ -120,6 +125,7 @@ Build a bundle from dependencies.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -139,6 +145,7 @@ Build a bundle from dependencies.
 Check if a bundle exists.
 
 **Response:**
+
 ```json
 {
   "exists": true,
@@ -148,7 +155,7 @@ Check if a bundle exists.
     "editor": "/bundles/1234567890/editor.js"
   }
 }
-```
+```text
 
 ## How It Works
 
@@ -165,7 +172,7 @@ Check if a bundle exists.
 
 The bundler handles different versions of `@pie-lib` packages per element:
 
-```
+```text
 Element A uses @pie-lib/math-rendering@4.0.0
 Element B uses @pie-lib/math-rendering@4.1.0
 ```
@@ -175,6 +182,7 @@ The `NormalModuleReplacementPlugin` detects which element is importing and resol
 ## Benefits
 
 ### vs pie-api-aws Bundler
+
 - ✅ **Self-contained** - No Lambda, Temporal, SNS, or CloudWatch
 - ✅ **Open source** - Fully available in this repo
 - ✅ **Testable** - Easy to test locally
@@ -182,13 +190,14 @@ The `NormalModuleReplacementPlugin` detects which element is importing and resol
 - ✅ **Framework agnostic** - Can be used in any Node.js environment
 
 ### vs Pre-publishing IIFE Bundles
+
 - ✅ **On-demand** - Build only what's needed
 - ✅ **Flexible** - Combine any elements and versions
 - ✅ **Space efficient** - Don't store all combinations
 
 ## Reusability
 
-The `@pie-element/bundler-shared` package is framework-agnostic and can be used in:
+The `@pie-element/element-bundler` package is framework-agnostic and can be used in:
 
 - ✅ SvelteKit (current implementation)
 - ✅ Express/Fastify/Hono
@@ -200,7 +209,7 @@ Example with Express:
 
 ```typescript
 import express from 'express';
-import { Bundler } from '@pie-element/bundler-shared';
+import { Bundler } from '@pie-element/element-bundler';
 
 const app = express();
 const bundler = new Bundler('./public/bundles');
@@ -224,8 +233,8 @@ Potential additions:
 
 ## Comparison with Upstream
 
-| Feature | pie-api-aws | bundler-shared |
-|---------|-------------|----------------|
+| Feature | pie-api-aws | element-bundler |
+| -------- | ----------- | ---------------- |
 | **Bundler** | Webpack 5 | Webpack 5 ✓ |
 | **Version resolution** | NormalModuleReplacementPlugin | Same ✓ |
 | **Entry generation** | code-generator.ts | Simplified ✓ |
@@ -236,6 +245,11 @@ Potential additions:
 | **Deployment** | Lambda | Any Node.js |
 | **Complexity** | ~5000 lines | ~600 lines |
 | **Open source** | No (private repo) | Yes ✓ |
+
+## Scope Clarification
+
+- `@pie-element/element-bundler` currently produces IIFE bundles for the local IIFE runtime path.
+- ESM bundle workflows do not require this package.
 
 ## License
 

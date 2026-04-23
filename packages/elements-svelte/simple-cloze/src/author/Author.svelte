@@ -1,11 +1,32 @@
+<svelte:options
+  customElement={{
+    shadow: 'none',
+    props: {
+      model: { type: 'Object' }
+    }
+  }}
+/>
+
 <script lang="ts">
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
+import { createEventDispatcher } from 'svelte';
+
+const dispatch = createEventDispatcher();
 
 let { model = $bindable(), onChange }: { model?: any; onChange?: (model: any) => void } = $props();
+
+function emitModelUpdate(nextModel: any) {
+  // Match the expected contract used by AuthorView:
+  // detail contains { update, reset }
+  dispatch('model.updated', { update: nextModel, reset: false });
+}
 
 function handlePromptChange(html: string) {
   if (onChange && model) {
     onChange({ ...model, prompt: html });
+  }
+  if (model) {
+    emitModelUpdate({ ...model, prompt: html });
   }
 }
 
@@ -13,6 +34,9 @@ function handleAnswerChange(e: Event) {
   const target = e.target as HTMLInputElement;
   if (onChange && model) {
     onChange({ ...model, correctAnswer: target.value });
+  }
+  if (model) {
+    emitModelUpdate({ ...model, correctAnswer: target.value });
   }
 }
 </script>

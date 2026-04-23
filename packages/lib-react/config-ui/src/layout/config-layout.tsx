@@ -12,8 +12,8 @@ import React from 'react';
 import Measure, { withContentRect } from 'react-measure';
 import { createTheme, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import LayoutContents from './layout-contents';
-import SettingsBox from './settings-box';
+import LayoutContents from './layout-contents.js';
+import SettingsBox from './settings-box.js';
 
 const theme = createTheme({
   typography: {

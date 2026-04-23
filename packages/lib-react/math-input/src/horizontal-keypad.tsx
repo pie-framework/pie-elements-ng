@@ -35,6 +35,7 @@ export default class HorizontalKeypad extends React.Component {
     noDecimal: PropTypes.bool,
     additionalKeys: PropTypes.array,
     setKeypadInteraction: PropTypes.func,
+    onRequestClose: PropTypes.func,
   };
 
   static defaultProps = {
@@ -59,6 +60,7 @@ export default class HorizontalKeypad extends React.Component {
       additionalKeys,
       layoutForKeyPad,
       setKeypadInteraction,
+      onRequestClose,
     } = this.props;
     const normalizedKeys = normalizeAdditionalKeys(additionalKeys);
 
@@ -73,6 +75,7 @@ export default class HorizontalKeypad extends React.Component {
         onPress={this.keypadPress}
         mode={mode}
         setKeypadInteraction={setKeypadInteraction}
+        onRequestClose={onRequestClose}
       />
     );
   }

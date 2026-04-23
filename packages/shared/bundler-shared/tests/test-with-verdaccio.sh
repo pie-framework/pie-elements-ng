@@ -26,7 +26,7 @@ echo ""
 
 # Packages to publish
 PACKAGES=(
-  "packages/shared/mathquill"
+  "packages/shared/math-engine"
   "packages/elements-react/multiple-choice"
   "packages/elements-react/text-entry"
 )

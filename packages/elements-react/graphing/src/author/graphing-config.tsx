@@ -14,7 +14,7 @@ import { GraphContainer, GridSetup } from '@pie-lib/graphing';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { MenuItem, Select, Typography, OutlinedInput } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { applyConstraints, filterPlotableMarks, getGridValues, getLabelValues } from './utils';
+import { applyConstraints, filterPlotableMarks, getGridValues, getLabelValues } from './utils.js';
 import { isEqual } from 'lodash-es';
 
 const Container: any = styled('div')(({ theme }) => ({

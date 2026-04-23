@@ -13,8 +13,8 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import PropTypes from 'prop-types';
 
-import { ColumnsHeader, ColumnsWrapper, IconWrapper, NumberInputFormGroupWrapper } from './HeaderCommon';
-import { MATRIX_LABEL_TYPE } from './matrixEntities';
+import { ColumnsHeader, ColumnsWrapper, IconWrapper, NumberInputFormGroupWrapper } from './HeaderCommon.js';
+import { MATRIX_LABEL_TYPE } from './matrixEntities.js';
 
 const MatrixColumnsSizeHeaderInput = ({ model, onChangeModel }) => {
   const onIncrementColumnsSize = () => {

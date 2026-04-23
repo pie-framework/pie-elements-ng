@@ -2,6 +2,53 @@
 
 This directory contains end-to-end browser tests for the PIE Element Demo application using Playwright.
 
+## ESM Coverage Status
+
+The current suite is stabilized for **ESM mode** and validates delivery/author usability across in-scope PIE React elements.
+
+- Dedicated interaction phases intentionally exclude: `rubric`, `complex-rubric`, `multi-trait-rubric`, `passage`
+- Baseline matrix still validates delivery/author checks for the full registry
+- Strict baseline checks enforce:
+  - route load success for delivery and author views
+  - visible delivery/configure content roots
+  - gather interaction attempt
+  - evaluate-mode signal path
+  - runtime safety guardrails (with narrowly scoped per-element guards where needed)
+
+## IIFE Optional Coverage
+
+IIFE coverage is intentionally optional and split into two layers:
+
+- `bun run test:iife:bundle` (from repo root): fast bundle-contract checks across all React elements.
+- `bun run test:e2e:iife` (from `apps/element-demo`): browser usefulness checks for IIFE delivery/controller and author paths.
+
+These checks are excluded from default `bun run test:e2e` runs.
+
+Expected runtime:
+
+- `test:iife:bundle`: typically 5-20 minutes depending on cache state.
+- `test:e2e:iife`: typically 15-45 minutes for the full matrix.
+
+Failure triage flow:
+
+1. Re-run a single element first: `IIFE_E2E_ELEMENT=<name> bun run test:e2e:iife`.
+2. If it fails before rendering, run `bun run test:iife:bundle` and inspect bundle-contract errors.
+3. Use Playwright artifacts (`playwright-report`) from local run or CI workflow for screenshots/trace.
+
+## ESM Follow-up Backlog
+
+Recent hardening completed:
+
+- Strengthened session-mutation assertions in phase/baseline tests to require measurable session deltas for interaction-driven cases.
+- Tightened evaluate-path checks to prefer explicit scoring/correct-answer signals and reduced silent interaction retries.
+- Expanded demo-path coverage with dedicated demo-variant checks (`multiple-choice` multi-demo matrix and `number-line` default + `basic-points`).
+- Added broader source/author-to-delivery propagation coverage across multiple element families (`multiple-choice`, `simple-cloze`, `explicit-constructed-response`).
+
+Current status:
+
+- No intentional ESM follow-up backlog items remain from the previous tracking list.
+- Further additions are now incremental coverage improvements rather than parity blockers.
+
 ## Overview
 
 The test suite validates critical functionality of the demo application, including:
@@ -29,14 +76,84 @@ Comprehensive test suite for the `math-algebra-quadratic` demo (multiple-choice 
 9. **Author Changes** - Editing in author tab and seeing changes in other views
 10. **Complete Workflow** - End-to-end scenario combining multiple operations
 
+### [phase1-spatial-dnd.spec.ts](./phase1-spatial-dnd.spec.ts)
+
+Dedicated interaction coverage for high-risk spatial and drag/drop elements:
+
+- `categorize`
+- `drag-in-the-blank`
+- `match-list`
+- `image-cloze-association`
+- `placement-ordering`
+- `hotspot`
+- `graphing`
+- `graphing-solution-set`
+- `charting`
+- `number-line`
+- `drawing-response`
+- `fraction-model`
+
+Each element test asserts:
+- Gather-mode interaction path
+- Session mutation signal (when session-supported)
+- Evaluate-mode rendering/scoring/correctness signal
+
+### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
+
+Dedicated interaction coverage for structured response and matching elements:
+
+- `match`
+- `matrix`
+- `likert`
+- `inline-dropdown`
+- `select-text`
+- `ebsr`
+- `math-templated`
+- `math-inline`
+
+Each element test asserts:
+- Element-specific interaction path (radio/checkbox/dropdown/token/math entry)
+- Session mutation
+- Evaluate-mode correctness/feedback/scoring signal
+
+### [phase3-text-and-hardening.spec.ts](./phase3-text-and-hardening.spec.ts)
+
+Dedicated text-response coverage and hardening for existing deep specs:
+
+- `extended-text-entry`
+- `explicit-constructed-response`
+- `multiple-choice` hardening (checkbox + view-mode guard)
+- `simple-cloze` evaluate-signal hardening
+
+### [demo-variants.spec.ts](./demo-variants.spec.ts)
+
+Dedicated non-default demo coverage for priority elements:
+
+- `multiple-choice`: `math-algebra-quadratic`, `basic-checkbox`, `radio-simple`
+- `number-line`: default demo + `basic-points`
+
+Each variant path validates route load, delivery visibility, and gather/session behavior.
+
+### [phase4-propagation.spec.ts](./phase4-propagation.spec.ts)
+
+Dedicated propagation coverage for model edits:
+
+- Source-tab apply propagates to delivery for:
+  - `multiple-choice`
+  - `simple-cloze`
+  - `explicit-constructed-response`
+- Author-tab edits propagate to source and delivery for:
+  - `multiple-choice`
+  - `simple-cloze`
+
 ### [test-helpers.ts](./test-helpers.ts)
 
 Reusable utility functions for tests:
 
 - `waitForMathRendering()` - Wait for MathJax LaTeX rendering to complete
 - `selectDemo()` - Select a demo from the dropdown
-- `switchMode()` - Switch between gather/view/evaluate modes
-- `switchRole()` - Switch between student/instructor roles
+- `switchMode()` - Switch between gather/view/evaluate modes via URL query params
+- `switchRole()` - Switch between student/instructor roles via URL query params
 - `getSessionState()` - Get current session state from panel
 - `selectMultipleChoiceOption()` - Click a multiple choice option
 - `getScore()` - Get score from scoring panel
@@ -46,6 +163,9 @@ Reusable utility functions for tests:
 - `waitForElementReady()` - Wait for custom element to load
 - `getMultipleChoiceOptions()` - Get all available options
 - `getSelectedValue()` - Get currently selected option
+
+Mode/role/player/demo are canonicalized through URL params in e2e flows. Prefer param-driven
+navigation over toolbar/control clicks whenever route params can represent the same state.
 
 ## Running Tests
 
@@ -78,6 +198,16 @@ bun run test:e2e:headed
 
 # Run in debug mode (step through)
 bun run test:e2e:debug
+```
+
+### Run Optional IIFE E2E
+
+```bash
+# From apps/element-demo
+bun run test:e2e:iife
+
+# Narrow run while debugging
+IIFE_E2E_ELEMENT=multiple-choice bun run test:e2e:iife
 ```
 
 ### Run Specific Test File

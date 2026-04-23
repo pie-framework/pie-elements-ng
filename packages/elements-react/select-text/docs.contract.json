@@ -1,0 +1,45 @@
+{
+  "elementName": "select-text",
+  "packageName": "@pie-element/select-text",
+  "framework": "react",
+  "supportedModes": [
+    "gather",
+    "view",
+    "evaluate"
+  ],
+  "views": [
+    {
+      "view": "author",
+      "pie": {
+        "file": "src/author/defaultConfiguration.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaultConfiguration.ts",
+        "path": "configuration"
+      }
+    },
+    {
+      "view": "delivery",
+      "pie": {
+        "file": "src/author/defaultConfiguration.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaultConfiguration.ts",
+        "path": "configuration"
+      }
+    },
+    {
+      "view": "print",
+      "pie": {
+        "file": "src/author/defaultConfiguration.ts",
+        "path": "model"
+      },
+      "config": {
+        "file": "src/author/defaultConfiguration.ts",
+        "path": "configuration"
+      }
+    }
+  ]
+}

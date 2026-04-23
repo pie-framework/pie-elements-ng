@@ -11,9 +11,9 @@
 import React from 'react';
 import IconButton from '@mui/material/IconButton';
 import Delete from '@mui/icons-material/Delete';
-import { PIE_TOOLBAR__CLASS } from '../constants';
+import { PIE_TOOLBAR__CLASS } from '../constants.js';
 import { styled } from '@mui/material/styles';
-import { DoneButton } from '../components/common/done-button';
+import { DoneButton } from '../components/common/done-button.js';
 
 const StyledToolbar: any = styled('div', {
   shouldForwardProp: (prop) => !['showDone', 'toolbarAlignment', 'isFocused', 'autoWidth', 'isHidden'].includes(prop),
@@ -58,7 +58,7 @@ const SharedContainer: any = styled('div')({
 });
 
 function CustomToolbarWrapper(props) {
-  const { children, deletable, toolbarOpts, autoWidth, isFocused, doneButtonRef, onDelete, showDone, onDone } = props;
+  const { children, deletable, toolbarOpts, autoWidth, isFocused, doneButtonRef, onDelete, showDone, onDone, style } = props;
   const customStyles = toolbarOpts.minWidth !== undefined ? { minWidth: toolbarOpts.minWidth } : {};
 
   return (
@@ -69,7 +69,7 @@ function CustomToolbarWrapper(props) {
       isFocused={toolbarOpts.alwaysVisible || isFocused}
       autoWidth={autoWidth}
       isHidden={toolbarOpts.isHidden === true}
-      style={{ ...customStyles }}
+      style={{ ...customStyles, ...style }}
     >
       {children}
 

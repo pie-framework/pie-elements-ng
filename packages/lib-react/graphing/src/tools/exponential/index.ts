@@ -8,9 +8,9 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Exponential from './component';
+import Exponential from './component.js';
 import debug from 'debug';
-import { equalPoints, sameAxes } from '../../utils';
+import { equalPoints, sameAxes } from '../../utils.js';
 
 const log = debug('pie-lib:graphing:exponential');
 

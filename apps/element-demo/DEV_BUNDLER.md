@@ -7,6 +7,9 @@ The element demo supports both player modes:
 
 When `player=iife`, bundling is local-only.
 
+The local IIFE path uses `@pie-element/element-bundler`.
+ESM mode does not require `@pie-element/element-bundler`.
+
 ## dev:demo
 
 Use the CLI command:
@@ -108,4 +111,3 @@ Source maps policy:
    - keep parity versions as control
    - upgrade in a branch/canary path
    - compare build success, output behavior, and runtime compatibility across representative element sets
-

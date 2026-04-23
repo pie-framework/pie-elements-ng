@@ -1,0 +1,26 @@
+{
+  "elementName": "simple-cloze",
+  "packageName": "@pie-element/simple-cloze",
+  "framework": "svelte",
+  "generatedAt": "2026-04-17T06:27:06.225Z",
+  "summary": "Simple cloze (text entry) demo/template PIE element built with Svelte 5",
+  "supportedModes": ["gather", "view", "evaluate"],
+  "views": [
+    {
+      "id": "delivery",
+      "file": "delivery.html",
+      "pieSource": "src/controller/defaults.ts#model",
+      "configSource": "src/controller/defaults.ts#configuration",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    },
+    {
+      "id": "author",
+      "file": "author.html",
+      "pieSource": "src/controller/defaults.ts#model",
+      "configSource": "src/controller/defaults.ts#configuration",
+      "hasModelDefaults": true,
+      "hasConfigDefaults": true
+    }
+  ]
+}

@@ -22,8 +22,8 @@ import { FeedbackConfig, FormSection, InputContainer, settings, layout } from '@
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { DragProvider } from '@pie-lib/drag';
 
-import ChoiceEditor from './choice-editor';
-import { generateValidationMessage, buildTiles, updateResponseOrChoices, normalizeIndex } from './utils';
+import ChoiceEditor from './choice-editor.js';
+import { generateValidationMessage, buildTiles, updateResponseOrChoices, normalizeIndex } from './utils.js';
 
 const log = debug('@pie-element:placement-ordering:design');
 const { Panel, toggle, radio, dropdown } = settings;

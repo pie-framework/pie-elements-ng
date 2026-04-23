@@ -6,7 +6,13 @@ export default defineConfig(({ mode, command }) => {
   if (mode === 'demo' && command === 'serve') {
     return {
       root: resolve(__dirname, 'docs/demo'),
-      plugins: [svelte()],
+      plugins: [
+        svelte({
+          compilerOptions: {
+            customElement: true,
+          },
+        }),
+      ],
     };
   }
 
@@ -22,7 +28,7 @@ export default defineConfig(({ mode, command }) => {
     ],
     build: {
       lib: {
-        entry: resolve(__dirname, 'src/delivery/index.ts'),
+        entry: resolve(__dirname, 'src/index.ts'),
         name: 'SimpleCloze',
         fileName: () => 'index.js',
         formats: ['es'],

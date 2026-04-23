@@ -16,18 +16,53 @@ import { DragOverlay } from '@dnd-kit/core';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { buildState, removeChoiceFromCategory, moveChoiceToCategory } from '@pie-lib/categorize';
 import { DragProvider, uid } from '@pie-lib/drag';
-import { color, Feedback, Collapsible, hasText, hasMedia, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
+import { color, Feedback as FeedbackImport, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
+const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
 import { AlertDialog } from '@pie-lib/config-ui';
-import Choices from './choices';
-import Choice from './choice';
-import Categories from './categories';
+import Choices from './choices.js';
+import Choice from './choice.js';
+import Categories from './categories.js';
 
 const { translator } = Translator;
 const log = debug('@pie-ui:categorize');
 
 class DragPreviewWrapper extends React.Component {
+  static propTypes = {
+    children: PropTypes.node,
+  };
+
   containerRef = React.createRef();
 
   componentDidMount() {
@@ -296,6 +331,7 @@ export class Categorize extends React.Component {
             choicePosition={choicePosition}
             onDropChoice={this.dropChoice}
             onRemoveChoice={this.removeChoice}
+            correct={correct}
           />
         </StyledCategorize>
         {displayNote && (
@@ -328,11 +364,28 @@ export class Categorize extends React.Component {
 }
 
 class CategorizeProvider extends React.Component {
+  static propTypes = {
+    model: PropTypes.object,
+    session: PropTypes.shape({
+      answers: PropTypes.arrayOf(
+        PropTypes.shape({
+          choice: PropTypes.string,
+          category: PropTypes.string,
+        }),
+      ),
+    }),
+    onAnswersChange: PropTypes.func.isRequired,
+    onShowCorrectToggle: PropTypes.func.isRequired,
+    pauseMathObserver: PropTypes.func,
+    resumeMathObserver: PropTypes.func,
+  };
+
   constructor(props) {
     super(props);
     this.uid = uid.generateId();
     this.state = {
       activeDragItem: null,
+      isValidDrop: false,
     };
   }
 
@@ -347,6 +400,7 @@ class CategorizeProvider extends React.Component {
     if (active?.data?.current) {
       this.setState({
         activeDragItem: active.data.current,
+        isValidDrop: false,
       });
     }
   };
@@ -355,38 +409,51 @@ class CategorizeProvider extends React.Component {
     const { active, over } = event;
     const { resumeMathObserver } = this.props;
 
-    this.setState({ activeDragItem: null });
+    // Check if drop is valid
+    const draggedItem = active?.data?.current;
+    const overData = over?.data?.current;
+    const isValidDrop =
+      over && active && draggedItem && draggedItem.type === 'choice' && overData && overData.itemType === 'categorize';
+
+    this.setState({
+      activeDragItem: null,
+      isValidDrop: isValidDrop,
+    });
 
     if (resumeMathObserver) {
       resumeMathObserver();
     }
 
-    if (!over || !active) {
+    if (!active || !draggedItem || draggedItem.type !== 'choice') {
       return;
     }
 
-    const draggedItem = active.data.current;
+    const choiceData = {
+      id: draggedItem.id,
+      categoryId: draggedItem.categoryId,
+      choiceIndex: draggedItem.choiceIndex,
+      value: draggedItem.value,
+      itemType: draggedItem.itemType,
+    };
 
-    if (draggedItem && draggedItem.type === 'choice') {
-      const choiceData = {
-        id: draggedItem.id,
-        categoryId: draggedItem.categoryId,
-        choiceIndex: draggedItem.choiceIndex,
-        value: draggedItem.value,
-        itemType: draggedItem.itemType,
-      };
-
-      if (over.id === 'choices-board') {
-        if (this.categorizeRef && this.categorizeRef.removeChoice && draggedItem.categoryId) {
-          this.categorizeRef.removeChoice(choiceData);
-        }
-      } else {
-        const categoryId = over.id;
-
-        if (this.categorizeRef && this.categorizeRef.dropChoice) {
-          this.categorizeRef.dropChoice(categoryId, choiceData);
-        }
+    // Dropped outside a valid/known target: remove from source category,
+    // which returns the choice to the choices pool.
+    if (!over) {
+      if (this.categorizeRef && this.categorizeRef.removeChoice && draggedItem.categoryId) {
+        this.categorizeRef.removeChoice(choiceData);
       }
+      return;
+    }
+
+    if (over.id === 'choices-board') {
+      if (this.categorizeRef && this.categorizeRef.removeChoice && draggedItem.categoryId) {
+        this.categorizeRef.removeChoice(choiceData);
+      }
+      return;
+    }
+
+    if (this.categorizeRef && this.categorizeRef.dropChoice) {
+      this.categorizeRef.dropChoice(over.id, choiceData);
     }
   };
 
@@ -407,11 +474,16 @@ class CategorizeProvider extends React.Component {
   };
 
   render() {
+    const { isValidDrop } = this.state;
+    // Disable drop animation for valid drops to prevent visual snap-back
+    // Keep default animation for invalid drops to show visual feedback
+    const dropAnimation = isValidDrop ? null : undefined;
+
     return (
       <DragProvider onDragStart={this.onDragStart} onDragEnd={this.onDragEnd}>
         <uid.Provider value={this.uid}>
           <Categorize ref={(ref) => (this.categorizeRef = ref)} {...this.props} />
-          <DragOverlay>
+          <DragOverlay dropAnimation={dropAnimation}>
             <DragPreviewWrapper>{this.renderDragOverlay()}</DragPreviewWrapper>
           </DragOverlay>
         </uid.Provider>

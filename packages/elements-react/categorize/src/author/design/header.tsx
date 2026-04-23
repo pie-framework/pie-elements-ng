@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import { AddButton } from './buttons';
+import { AddButton } from './buttons.js';
 
 const HeaderContainer: any = styled('div')(({ theme }) => ({
   display: 'flex',

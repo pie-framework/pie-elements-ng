@@ -3,19 +3,20 @@
   "version": "0.1.1",
   "description": "Shared PIE element player web component",
   "type": "module",
+  "unpkg": "./dist/pie-element-player.js",
+  "jsdelivr": "./dist/pie-element-player.js",
   "main": "./dist/pie-element-player.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
-      "default": "./dist/pie-element-player.js"
+      "import": "./dist/pie-element-player.js"
     },
     "./players": {
-      "types": "./dist/players/index.d.ts",
-      "development": "./src/players/index.ts",
-      "default": "./dist/pie-element-player.js"
-    }
+      "types": "./dist/index.d.ts",
+      "import": "./dist/pie-element-player.js"
+    },
+    "./styles.css": "./dist/pie-element-player.css"
   },
   "files": [
     "dist"
@@ -26,8 +27,6 @@
   },
   "dependencies": {
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-theming": "workspace:*",
-    "@pie-element/shared-theming-daisyui": "workspace:*",
     "@tiptap/core": "3.18.0",
     "@tiptap/extension-code-block-lowlight": "3.18.0",
     "@tiptap/extension-document": "3.18.0",
@@ -35,19 +34,32 @@
     "@tiptap/extension-text": "3.18.0",
     "@tiptap/starter-kit": "3.18.0",
     "highlight.js": "^11.11.1",
-    "lowlight": "^3.3.0"
-  },
-  "peerDependencies": {
-    "svelte": "^5.49.0"
+    "lowlight": "^3.3.0",
+    "@tiptap/pm": "^3.19.0",
+    "@tiptap/extension-code-block": "^3.20.0",
+    "@tiptap/extensions": "^3.20.0"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^6.2.4",
-    "@tailwindcss/vite": "^4.1.18",
-    "daisyui": "^5.5.14",
-    "svelte": "^5.46.1",
-    "tailwindcss": "^4.1.18",
-    "vite": "^7.3.1",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "daisyui": "^5.5.19",
+    "svelte": "^5.54.0",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/element-player"
+  },
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  },
+  "sideEffects": true
 }

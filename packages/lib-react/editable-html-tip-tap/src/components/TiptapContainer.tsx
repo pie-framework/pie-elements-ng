@@ -11,9 +11,9 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
-import { valueToSize } from '../utils/size';
+import { valueToSize } from '../utils/size.js';
 
-import StyledMenuBar from './MenuBar';
+import StyledMenuBar from './MenuBar.js';
 
 const StyledRoot: any = styled('div', {
   shouldForwardProp: (prop) => !['noBorder', 'error'].includes(prop),
@@ -83,14 +83,10 @@ const StyledRoot: any = styled('div', {
     },
   },
   '& blockquote': {
-    borderLeft: '3px solid var(--gray-3)',
-    margin: '1.5rem 0',
-    paddingLeft: '1rem',
-  },
-  '& hr': {
-    border: 'none',
-    borderTop: '1px solid var(--gray-2)',
-    margin: '2rem 0',
+    background: '#f9f9f9',
+    borderLeft: '5px solid #ccc',
+    margin: '1.5em 10px',
+    padding: '.5em 10px',
   },
   '& p': {
     margin: '0',
@@ -118,13 +114,13 @@ const StyledRoot: any = styled('div', {
 }));
 
 const StyledEditorHolder: any = styled('div', {
-  shouldForwardProp: (prop) => prop !== 'disableScrollbar',
-})(({ disableScrollbar }) => ({
+  shouldForwardProp: (prop) => !['disableScrollbar', 'highlightShape'].includes(prop),
+})(({ theme, disableScrollbar, highlightShape }) => ({
   position: 'relative',
   padding: '0px',
   overflowY: 'auto',
   color: color.text(),
-  backgroundColor: color.background(),
+  backgroundColor: highlightShape ? theme.palette.action.selected : color.background(),
   ...(disableScrollbar && {
     '&::-webkit-scrollbar': {
       display: 'none',
@@ -158,8 +154,15 @@ function TiptapContainer(props) {
     minHeight,
     height,
     maxHeight,
+    highlightShape,
     ref,
   } = props;
+
+  useEffect(() => {
+    if (editor && rootRef.current) {
+      editor._tiptapContainerEl = rootRef.current;
+    }
+  }, [editor, rootRef.current]);
 
   useEffect(() => {
     if (editor && autoFocus) {
@@ -205,7 +208,7 @@ function TiptapContainer(props) {
       style={{ width: sizeStyle.width, minWidth: sizeStyle.minWidth, maxWidth: sizeStyle.maxWidth }}
       ref={rootRef}
     >
-      <StyledEditorHolder disableScrollbar={disableScrollbar}>
+      <StyledEditorHolder disableScrollbar={disableScrollbar} highlightShape={highlightShape}>
         <StyledChildren noPadding={toolbarOpts && toolbarOpts.noPadding}>{children}</StyledChildren>
       </StyledEditorHolder>
 
@@ -216,6 +219,7 @@ function TiptapContainer(props) {
           toolbarOpts={toolbarOpts}
           activePlugins={activePlugins}
           onChange={props.onChange}
+          autoWidthToolbar={props.autoWidthToolbar}
         />
       )}
     </StyledRoot>

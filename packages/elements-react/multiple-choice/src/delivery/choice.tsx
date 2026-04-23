@@ -13,15 +13,15 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 
-import ChoiceInput from './choice-input';
+import ChoiceInput from './choice-input.js';
 
 const ChoiceContainer: any = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'noBorder' && prop !== 'horizontalLayout',
 })(({ theme, noBorder, horizontalLayout }) => ({
   paddingTop: theme.spacing(2.5),
-  paddingBottom: theme.spacing(1) + 2,
-  paddingLeft: theme.spacing(1) + 2,
-  paddingRight: theme.spacing(1) + 2,
+  paddingBottom: `calc(${theme.spacing(1)} + 2px)`,
+  paddingLeft: `calc(${theme.spacing(1)} + 2px)`,
+  paddingRight: `calc(${theme.spacing(1)} + 2px)`,
   borderBottom: noBorder ? 'none' : `1px solid ${theme.palette.grey[300]}`,
   ...(horizontalLayout && {
     paddingRight: theme.spacing(2.5),

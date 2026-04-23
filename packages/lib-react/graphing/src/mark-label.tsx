@@ -12,10 +12,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
 import AutosizeInput from 'react-input-autosize';
-import { useDebounce } from './use-debounce';
+const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
+import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
-import SvgIcon from './label-svg-icon';
+import SvgIcon from './label-svg-icon.js';
 
 const StyledInputCorrect: any = styled('div')(({ theme }) => ({
   float: 'right',
@@ -114,7 +115,7 @@ export const coordinates = (graphProps, mark, rect = { width: 0, height: 0 }, po
 };
 
 const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, onChange }) => (
-  <AutosizeInput
+  <AutosizeInputComponent
     inputRef={(r) => {
       _ref(r);
       externalInputRef(r);

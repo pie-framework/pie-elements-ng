@@ -19,10 +19,10 @@ import {
   removeChoiceFromCategory,
 } from '@pie-lib/categorize';
 
-import Category from './category';
-import Header from '../header';
-import { generateValidationMessage } from '../../utils';
-import { RowLabel } from './RowLabel';
+import Category from './category.js';
+import Header from '../header.js';
+import { generateValidationMessage } from '../../utils.js';
+import { RowLabel } from './RowLabel.js';
 
 const CategoriesContainer: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(3),
@@ -30,8 +30,8 @@ const CategoriesContainer: any = styled('div')(({ theme }) => ({
 
 const CategoriesHolder: any = styled('div')(({ theme }) => ({
   display: 'grid',
-  gridRowGap: `${theme.spacing(1)}px`,
-  gridColumnGap: `${theme.spacing(1)}px`,
+  gridRowGap: theme.spacing(1),
+  gridColumnGap: theme.spacing(1),
 }));
 
 const StyledTooltip: any = styled(Tooltip)(({ theme }) => ({

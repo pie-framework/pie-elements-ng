@@ -12,8 +12,8 @@ import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
-import MediaDialog from '../components/media/MediaDialog';
-import MediaToolbar from '../components/media/MediaToolbar';
+import MediaDialog from '../components/media/MediaDialog.js';
+import MediaToolbar from '../components/media/MediaToolbar.js';
 
 export const Media = Node.create({
   name: 'media',
@@ -163,20 +163,23 @@ export default function MediaNodeView({ editor, node, updateAttributes, deleteNo
   };
 
   useEffect(() => {
-    insertDialog({
-      ...node.attrs,
-      options: options,
-      edit: true,
-      callback: (val, data) => {
-        if (val) {
-          updateAttributes(data);
-        } else {
-          deleteNode();
-        }
+    // Only open dialog for newly inserted media without a src
+    if (!src) {
+      insertDialog({
+        ...node.attrs,
+        options: options,
+        edit: true,
+        callback: (val, data) => {
+          if (val) {
+            updateAttributes(data);
+          } else {
+            deleteNode();
+          }
 
-        editor.chain().focus().run();
-      },
-    });
+          editor.chain().focus().run();
+        },
+      });
+    }
   }, []);
 
   return (
@@ -186,7 +189,7 @@ export default function MediaNodeView({ editor, node, updateAttributes, deleteNo
           <source type="audio/mp3" src={src} />
         </audio>
       ) : (
-        <iframe src={src} allowFullScreen frameBorder="0" />
+        <iframe src={src} allowFullScreen frameBorder="0" width={width} height={height} />
       )}
 
       <MediaToolbar onEdit={handleEdit} onRemove={deleteNode} />

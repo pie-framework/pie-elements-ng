@@ -11,10 +11,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
-import Main from './main';
+import Main from './main.js';
 import { cloneDeep } from 'lodash-es';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import FractionModelChart from './fraction-model-chart';
+import FractionModelChart from './fraction-model-chart.js';
 
 // Export FractionModelChart for use in configure
 export { FractionModelChart };

@@ -12,14 +12,44 @@ import React from 'react';
 import Toggle from '@pie-lib/correct-answer-toggle';
 import { cloneDeep, isArray, isEqual, isNumber } from 'lodash-es';
 import Translator from '@pie-lib/translator';
-import { Collapsible, color, hasMedia, hasText, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
+import { Collapsible as CollapsibleImport, color, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
 
-import Feedback from './feedback';
-import Graph from './graph';
+import Feedback from './feedback.js';
+import Graph from './graph/index.js';
 import PropTypes from 'prop-types';
-import PointChooser from './point-chooser';
-import { buildElementModel } from './graph/elements/builder';
+import PointChooser from './point-chooser/index.js';
+import { buildElementModel } from './graph/elements/builder.js';
 
 const { translator } = Translator;
 
@@ -258,7 +288,8 @@ export class NumberLine extends React.Component {
       });
     };
 
-    let elements = showCorrectAnswer ? getCorrectAnswerElements() : getAnswerElements();
+    // Determine which elements to show on the chart
+    let elements = showCorrectAnswer && correctResponse ? getCorrectAnswerElements() : getAnswerElements();
 
     let maxPointsMessage = () =>
       maxNumberOfPoints == 1

@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { Circle, IconRoot, RoundFeedbackBox, Square, SquareFeedbackBox } from './icon-root';
+import { Circle, IconRoot, RoundFeedbackBox, Square, SquareFeedbackBox } from './icon-root.js';
 import PropTypes from 'prop-types';
 import React from 'react';
 

@@ -10,7 +10,7 @@
 
 import debug from 'debug';
 import { getFeedback } from '@pie-element/shared-feedback';
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const log = debug('@pie-element:extended-text-entry:controller');
 

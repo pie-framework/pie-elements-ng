@@ -9,11 +9,11 @@
  */
 
 import React from 'react';
-import { BasePoint } from '../shared/point';
-import { ToolPropTypeFields } from '../shared/types';
+import { BasePoint } from '../shared/point/index.js';
+import { ToolPropTypeFields } from '../shared/types.js';
 import { types } from '@pie-lib/plot';
 import ReactDOM from 'react-dom';
-import MarkLabel from '../../mark-label';
+import MarkLabel from '../../mark-label.js';
 import { isEmpty, isEqual } from 'lodash-es';
 
 export class Point extends React.Component {

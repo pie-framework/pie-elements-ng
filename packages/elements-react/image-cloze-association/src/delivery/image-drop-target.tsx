@@ -15,7 +15,7 @@ import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 import cx from 'classnames';
 
-import PossibleResponse from './possible-response';
+import PossibleResponse from './possible-response.js';
 
 const AnswersContainer: any = styled('div')(() => ({
   display: 'flex',

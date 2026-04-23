@@ -13,8 +13,38 @@ import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { styled } from '@mui/material/styles';
-import { Collapsible, color, PreviewPrompt, Purpose, UiLayout } from '@pie-lib/render-ui';
+import { Collapsible as CollapsibleImport, color, PreviewPrompt as PreviewPromptImport, Purpose as PurposeImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const Purpose = unwrapReactInteropSymbol(PurposeImport, 'Purpose') || unwrapReactInteropSymbol(renderUi.Purpose, 'Purpose');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 const PassagesContainer: any = styled('div')({
   flexGrow: 1,
   backgroundColor: color.background(),
@@ -32,6 +62,12 @@ const Passage: any = styled('div')(({ theme }) => ({
   backgroundColor: color.background(),
   color: color.text(),
   padding: theme.spacing(2),
+  '& blockquote': {
+    background: '#f9f9f9',
+    borderLeft: '5px solid #ccc',
+    margin: '1.5em 10px',
+    padding: '.5em 10px',
+  },
 }));
 
 const PassageTitle: any = styled('div')({
@@ -119,6 +155,7 @@ class StimulusTabs extends React.Component {
 
     if (newTabIndex !== -1) {
       event.preventDefault();
+      event.stopPropagation();
       this.handleChange(event, tabs[newTabIndex].id);
       document.getElementById(`button-${tabs[newTabIndex].id}`).focus();
     }
@@ -259,7 +296,6 @@ class StimulusTabs extends React.Component {
                     tabIndex={activeTab === tab.id ? 0 : -1}
                     aria-controls={`tabpanel-${tab.id}`}
                     aria-selected={activeTab === tab.id}
-                    onFocus={() => this.handleChange(null, tab.id)}
                     onKeyDown={(event) => this.handleKeyDown(event, tab.id)}
                   />
                 ))}

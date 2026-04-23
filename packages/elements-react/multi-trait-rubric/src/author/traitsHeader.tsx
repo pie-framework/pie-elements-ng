@@ -13,7 +13,35 @@ import PropTypes from 'prop-types';
 
 import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
-import { InlineMenu as Menu } from '@pie-lib/render-ui';
+import { InlineMenu as MenuImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Menu = unwrapReactInteropSymbol(MenuImport, 'InlineMenu') || unwrapReactInteropSymbol(renderUi.InlineMenu, 'InlineMenu');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import MenuItem from '@mui/material/MenuItem';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { color } from '@pie-lib/render-ui';
@@ -29,7 +57,7 @@ import {
   ScaleSettings,
   HeaderHeight,
   HeaderHeightLarge,
-} from './common';
+} from './common.js';
 
 const Label: any = styled('div')({
   width: '140px',
@@ -97,7 +125,11 @@ export class TraitsHeaderTile extends React.Component {
 
   handleClose = () => this.setState({ anchorEl: null });
 
-  scrollToPosition = (position) => this.secondaryBlock.scrollTo({ left: position });
+  scrollToPosition: any = (position) => {
+    if (this.secondaryBlock) {
+      this.secondaryBlock.scrollTo({ left: position });
+    }
+  };
 
   openMenu: any = () => {
     this.props.showDeleteScaleModal();

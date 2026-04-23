@@ -6,6 +6,7 @@
 
 import {
   checkLocalPlayerBuild,
+  getLocalPlayersSharedUrl,
   getAvailableVersions,
   loadPlayer,
   preloadElements,
@@ -439,8 +440,7 @@ class ESMPlayerTestApp {
         this.ui.playerMount.innerHTML = config.markup;
 
         // Initialize PIE elements from window.pie.default
-        const playersSharedUrl =
-          '/@fs/Users/eelco.hillenius/dev/prj/pie/pie-players/packages/players-shared/dist/index.js';
+        const playersSharedUrl = getLocalPlayersSharedUrl();
         const { initializePiesFromLoadedBundle, updatePieElementWithRef } = await import(
           /* @vite-ignore */
           playersSharedUrl

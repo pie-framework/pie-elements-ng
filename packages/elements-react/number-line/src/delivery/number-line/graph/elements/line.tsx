@@ -13,10 +13,10 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { isEqual, isNumber } from 'lodash-es';
 import { color } from '@pie-lib/render-ui';
-import { Draggable } from '../../../draggable';
+import { Draggable } from '../../../draggable/index.js';
 
-import Point from './point';
-import { basePropTypes } from './base';
+import Point from './point.js';
+import { basePropTypes } from './base.js';
 
 const duration = '150ms';
 

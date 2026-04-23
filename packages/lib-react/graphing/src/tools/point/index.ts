@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Point from './component';
+import Point from './component.js';
 
 export const tool = () => ({
   label: 'Point',

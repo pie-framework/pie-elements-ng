@@ -12,10 +12,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { styled } from '@mui/material/styles';
 import AutosizeInput from 'react-input-autosize';
+const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;
 import PropTypes from 'prop-types';
 
 import { types } from '@pie-lib/plot';
-import { correct, disabled, incorrect } from './common/styles';
+import { correct, disabled, incorrect } from './common/styles.js';
 import { color } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
@@ -111,7 +112,7 @@ export const MarkLabel = (props) => {
   const [label, setLabel] = useState(mark.label);
   const [mathLabel, setMathLabel] = useState(getLabelMathFormat(mark.label));
   const [isEditing, setIsEditing] = useState(false);
-  let root = useRef(null);
+  const rootRef = useRef(null);
 
   const onChange = (e) => {
     if (limitCharacters && e.target.value && e.target.value.length > 20) {
@@ -145,8 +146,13 @@ export const MarkLabel = (props) => {
   }, [mark.label]);
 
   useEffect(() => {
-    renderMath(root);
-  }, []);
+    const el = rootRef.current;
+
+    if (el && mathLabel) {
+      el.innerHTML = mathLabel;
+      renderMath(el);
+    }
+  }, [label, mathLabel]);
 
   return (
     <StyledContainer>
@@ -154,12 +160,11 @@ export const MarkLabel = (props) => {
       {isMathRendering() ? (
         <StyledMathInput
           ref={(r) => {
-            root = r;
+            rootRef.current = r;
             if (typeof externalInputRef === 'function') {
               externalInputRef(r);
             }
           }}
-          dangerouslySetInnerHTML={{ __html: getLabelMathFormat(label) }}
           className={classNames({
             disabled: disabled,
             error: error,
@@ -177,7 +182,7 @@ export const MarkLabel = (props) => {
           }}
         ></StyledMathInput>
       ) : (
-        <AutosizeInput
+        <AutosizeInputComponent
           inputRef={(r) => {
             _ref(r);
             if (typeof externalInputRef === 'function') {

@@ -18,8 +18,8 @@ import {
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
 
-import Main from './design';
-import defaultValues from './defaults';
+import Main from './design.js';
+import defaultValues from './defaults.js';
 
 export default class PassageConfigure extends HTMLElement {
   static createDefaultModel = (model = {}) => ({

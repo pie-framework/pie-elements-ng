@@ -15,6 +15,9 @@ let {
   packageName = undefined,
   controller = $bindable<PieController | null>(null),
   capabilities = undefined,
+  preloadController = true,
+  preloadAuthor = true,
+  preloadPrint = true,
   debug = false,
   children,
 }: {
@@ -22,6 +25,9 @@ let {
   packageName?: string;
   controller?: PieController | null;
   capabilities?: string[];
+  preloadController?: boolean;
+  preloadAuthor?: boolean;
+  preloadPrint?: boolean;
   debug?: boolean;
   children?: any;
 } = $props();
@@ -46,7 +52,7 @@ onMount(async () => {
     if (debug) console.log(`[player-layout] Loading element: ${elementName}`);
 
     // Load controller if not provided
-    if (!controller) {
+    if (preloadController && !controller) {
       try {
         const ctrl = await loadController(resolvedPackageName, '', debug);
         controller = ctrl;
@@ -58,7 +64,7 @@ onMount(async () => {
 
     // Load author/configure component if capabilities indicate it exists
     const configureTag = `${elementName}-configure`;
-    if (capabilities?.includes('author')) {
+    if (preloadAuthor && capabilities?.includes('author')) {
       try {
         console.log(`[player-layout] Loading author component for ${resolvedPackageName}`);
         const AuthorComponent = await loadAuthor(resolvedPackageName, '', debug);
@@ -78,7 +84,7 @@ onMount(async () => {
 
     // Load print component if capabilities indicate it exists
     const printTag = `${elementName}-print`;
-    if (capabilities?.includes('print')) {
+    if (preloadPrint && capabilities?.includes('print')) {
       try {
         console.log(`[player-layout] Loading print component for ${resolvedPackageName}`);
         const PrintComponent = await loadPrint(resolvedPackageName, '', debug);

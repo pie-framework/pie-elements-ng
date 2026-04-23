@@ -16,6 +16,12 @@ import { fixImportsInFile, containsJsx } from './sync-imports.js';
 import { generatePieLibViteConfig } from './sync-vite-config.js';
 import { createPieLibTransformPipeline } from './sync-transforms.js';
 import { ensurePieLibPackageJson } from './sync-package-manager.js';
+import { EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES } from './sync-constants.js';
+import {
+  getPieLibSourcePreserveList,
+  getPieLibSyncMode,
+  PIE_LIB_COMPATIBILITY_APPEND_PATCHES,
+} from './sync-presets.js';
 
 interface InternalSyncResult {
   filesChecked: number;
@@ -107,6 +113,17 @@ export class PieLibStrategy implements SyncStrategy {
     }
 
     for (const pkg of packagesToSync) {
+      if (
+        EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES.includes(
+          pkg as (typeof EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES)[number]
+        )
+      ) {
+        if (logger.isVerbose()) {
+          logger.info(`  ⏭️  ${pkg}: skipping (locally owned package)`);
+        }
+        continue;
+      }
+
       // Skip if package doesn't exist
       const pkgSrcDir = join(upstreamLibDir, pkg, 'src');
       if (!existsSync(pkgSrcDir)) {
@@ -118,13 +135,13 @@ export class PieLibStrategy implements SyncStrategy {
       const targetSrcDir = join(targetDir, 'src');
 
       // Clean target src subtree first so removed upstream files don't linger
-      await this.cleanTargetDir(targetSrcDir, `lib-react/${pkg}/src`, logger);
+      await this.cleanTargetDir(targetSrcDir, pkg, `lib-react/${pkg}/src`, logger, config.dryRun);
 
-      // Special handling for math-rendering - generate wrapper instead of full sync
+      // Package sync mode is preset-driven (full sync vs wrapper generation).
       let filesProcessed: number;
       let libChanged: boolean;
 
-      if (pkg === 'math-rendering') {
+      if (getPieLibSyncMode(pkg) === 'wrapper') {
         filesProcessed = await this.generateMathRenderingWrapper(targetSrcDir, logger);
         libChanged = filesProcessed > 0;
       } else {
@@ -185,16 +202,16 @@ export class PieLibStrategy implements SyncStrategy {
     };
   }
 
-  private async cleanTargetDir(targetDir: string, label: string, logger: any): Promise<void> {
-    // Preserve non-synced pie-elements-ng files
-    const preserve: string[] = [];
+  private async cleanTargetDir(
+    targetDir: string,
+    pkgName: string,
+    label: string,
+    logger: any,
+    dryRun: boolean
+  ): Promise<void> {
+    const preserve = getPieLibSourcePreserveList(pkgName);
 
-    // Preserve inline-menu.tsx in render-ui (not from upstream)
-    if (label.includes('render-ui')) {
-      preserve.push('inline-menu.tsx');
-    }
-
-    await cleanDirectory(targetDir, label, { dryRun: false, verbose: false, preserve }, logger);
+    await cleanDirectory(targetDir, label, { dryRun, verbose: false, preserve }, logger);
   }
 
   private async syncDirectory(
@@ -370,7 +387,8 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
     pkgName: string,
     targetSrcDir: string
   ): Promise<boolean> {
-    if (pkgName !== 'plot') {
+    const patchPreset = PIE_LIB_COMPATIBILITY_APPEND_PATCHES[pkgName];
+    if (!patchPreset) {
       return false;
     }
 
@@ -380,25 +398,11 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
     }
 
     const current = await readFile(typesPath, 'utf-8');
-    if (current.includes('ToolPropTypeFields')) {
+    if (current.includes(patchPreset.requiredMarker)) {
       return false;
     }
 
-    const patch = `
-
-// Local compatibility export used by graphing tool components.
-export const ToolPropTypeFields = {
-  graphProps: GraphPropsType.isRequired,
-  mark: PropTypes.object,
-  onChange: PropTypes.func,
-  onDelete: PropTypes.func,
-  onClick: PropTypes.func,
-};
-
-export const ToolPropType = PropTypes.shape(ToolPropTypeFields);
-`;
-
-    await writeFile(typesPath, `${current}${patch}`, 'utf-8');
+    await writeFile(typesPath, `${current}${patchPreset.append}`, 'utf-8');
     return true;
   }
 

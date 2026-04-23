@@ -5,7 +5,7 @@ import {
   generateEntries,
   createWebpackConfig,
   type BuildDependency,
-} from '@pie-element/bundler-shared';
+} from '@pie-element/element-bundler';
 import webpack from 'webpack';
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync, symlinkSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -131,7 +131,7 @@ export default class TestBundler extends Command {
   }
 
   private async buildLocalPackages(element: string): Promise<void> {
-    const packages = ['packages/shared/mathquill', `packages/elements-react/${element}`];
+    const packages = [`packages/elements-react/${element}`];
 
     for (const pkg of packages) {
       if (!existsSync(pkg)) {
@@ -184,7 +184,6 @@ export default class TestBundler extends Command {
 
     // Symlink local packages
     const localPackages = {
-      'shared-mathquill': 'packages/shared/mathquill',
       [element]: `packages/elements-react/${element}`,
     };
 
@@ -218,14 +217,6 @@ export default class TestBundler extends Command {
     const nodeModulesDir = join(workspaceDir, 'node_modules');
     const pieElementDir = join(nodeModulesDir, '@pie-element');
     mkdirSync(pieElementDir, { recursive: true });
-
-    // Link shared-mathquill
-    const mathquillLink = join(pieElementDir, 'shared-mathquill');
-    if (existsSync(mathquillLink)) {
-      rmSync(mathquillLink, { recursive: true, force: true });
-    }
-    symlinkSync(join(packagesDir, 'shared-mathquill'), mathquillLink, 'dir');
-    this.logger.info('Linked @pie-element/shared-mathquill in node_modules');
 
     // Link element package
     const elementLink = join(pieElementDir, element);

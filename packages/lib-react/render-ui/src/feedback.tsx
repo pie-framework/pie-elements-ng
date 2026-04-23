@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import * as color from './color';
+import * as color from './color.js';
 
 const FeedbackContainer: any = styled('div')({
   transformOrigin: '0% 0px 0px',

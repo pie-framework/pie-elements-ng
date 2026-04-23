@@ -8,16 +8,17 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { isEqual } from 'lodash-es';
+import isEqual from 'lodash-es/isEqual.js';
 import debug from 'debug';
 import LinearProgress from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
 import { NodeViewWrapper } from '@tiptap/react';
-import InsertImageHandler from '../components/image/InsertImageHandler';
-import ImageToolbar from '../components/image/ImageToolbar';
-import CustomToolbarWrapper from './custom-toolbar-wrapper';
+import ReactDOM from 'react-dom';
+import InsertImageHandler from '../components/image/InsertImageHandler.js';
+import ImageToolbar from '../components/image/ImageToolbar.js';
+import CustomToolbarWrapper from './custom-toolbar-wrapper.js';
 
 const log = debug('@pie-lib:editable-html:plugins:image:component');
 
@@ -36,9 +37,8 @@ const StyledProgress: any = styled(LinearProgress, {
 
 const StyledRoot: any = styled('div', {
   shouldForwardProp: (prop) => !['active', 'loading', 'pendingDelete'].includes(prop),
-})(({ theme, active, loading, pendingDelete }) => ({
+})(({ loading, pendingDelete }) => ({
   position: 'relative',
-  border: active ? `solid 1px ${theme.palette.primary.main}` : `solid 1px ${theme.palette.common.white}`,
   display: 'flex',
   transition: 'opacity 200ms linear',
   ...(loading && {
@@ -57,6 +57,12 @@ const StyledImageContainer: any = styled('div')(({ theme }) => ({
   '&&:hover > .resize': {
     display: 'block',
   },
+}));
+
+const StyledImage: any = styled('img', {
+  shouldForwardProp: (prop) => prop !== 'active',
+})(({ theme, active }) => ({
+  border: active ? `solid 1px ${theme.palette.primary.main}` : 'solid 1px transparent',
 }));
 
 const StyledResize: any = styled('div')(({ theme }) => ({
@@ -78,15 +84,18 @@ function ImageComponent(props) {
     editor,
     attributes,
     onFocus,
+    getPos,
     selected,
     options,
     maxImageWidth = 700,
     maxImageHeight = 900,
-    latex,
-    handleChange,
-    handleDone,
   } = props;
   const { alt } = node.attrs;
+  const pos = getPos();
+
+  const selFrom = editor.state.selection.from;
+  const selTo = editor.state.selection.to;
+  const onlyThisNodeSelected = useMemo(() => selFrom + node.nodeSize === selTo, [selFrom, selTo, node.nodeSize]);
 
   const [showToolbar, setShowToolbar] = useState(false);
 
@@ -100,39 +109,66 @@ function ImageComponent(props) {
     return parseInt(floored.toFixed(0) * 25, 10);
   }, []);
 
+  const findNodePos = useCallback(() => {
+    const key = latestNodeRef.current.attrs.nodeKey;
+    let found = null;
+    editor.state.doc.descendants((n, pos) => {
+      if (found !== null) return false;
+      if (n.type.name === 'imageUploadNode' && n.attrs.nodeKey === key) {
+        found = pos;
+        return false;
+      }
+    });
+    return found;
+  }, [editor]);
+
+  // dispatch an attribute update targeted precisely at this node by nodeKey.
+  const updateThisNode = useCallback(
+    (newAttrs) => {
+      const nodePos = findNodePos();
+      if (nodePos === null) return;
+      const currentNode = editor.state.doc.nodeAt(nodePos);
+      if (!currentNode) return;
+      editor.view.dispatch(editor.state.tr.setNodeMarkup(nodePos, undefined, { ...currentNode.attrs, ...newAttrs }));
+    },
+    [editor, findNodePos],
+  );
+
   const applySizeData = useCallback(() => {
     if (!node.attrs.width || !imgRef.current) return;
-
-    const update = {
-      ...node.attrs,
-      resizePercent: getPercentFromWidth(node.attrs.width),
-    };
-
-    if (!isEqual(update, node.attrs)) {
-      editor.commands.updateAttributes('imageUploadNode', update);
-    }
-  }, [editor, node.attrs, getPercentFromWidth]);
+    const resizePercent = getPercentFromWidth(node.attrs.width);
+    if (node.attrs.resizePercent === resizePercent) return;
+    updateThisNode({ resizePercent });
+  }, [node.attrs.width, node.attrs.resizePercent, getPercentFromWidth, updateThisNode]);
 
   // keep ref in sync with latest node
   useEffect(() => {
-    latestNodeRef.current = node;
-  }, [node]);
+    latestNodeRef.current = { ...node, pos };
+  }, [node, pos]);
 
   useEffect(() => {
-    const { selection } = editor.state;
-    const onlyThisNodeSelected = selection.from + node.nodeSize === selection.to;
-
     if (selected) {
       if (onlyThisNodeSelected) {
+        // Only open the upload UI for a fresh placeholder. Remounting after tab switch
+        // would otherwise call insertImageRequested again and reopen the file modal.
+        const hasImageSrc = String(node.attrs?.src ?? '').trim();
+
+        if (!hasImageSrc && options.imageHandling?.insertImageRequested) {
+          options.imageHandling.insertImageRequested(
+            editor,
+            [node, pos],
+            (finish) => new InsertImageHandler(editor, [node, pos], finish),
+          );
+        }
+
         setShowToolbar(selected);
       }
     } else {
       setShowToolbar(selected);
     }
-  }, [editor, node, selected]);
+  }, [onlyThisNodeSelected, selected]);
 
   useEffect(() => {
-    options.imageHandling.insertImageRequested(node, (finish) => new InsertImageHandler(editor, node, finish));
     applySizeData();
 
     const resizeHandle = resizeRef.current;
@@ -143,8 +179,6 @@ function ImageComponent(props) {
       if (resizeHandle) {
         resizeHandle.removeEventListener('mousedown', initResize, false);
       }
-
-      options.imageHandling.onDelete(latestNodeRef.current);
     };
   }, []);
 
@@ -164,11 +198,11 @@ function ImageComponent(props) {
       box.style.height = `${h}px`;
 
       const update = { width: w, height: h };
-      if (!isEqual(update, node.attrs)) {
-        editor.commands.updateAttributes('imageUploadNode', update);
+      if (!isEqual(update, { width: node.attrs.width, height: node.attrs.height })) {
+        updateThisNode(update);
       }
     }
-  }, [editor, node.attrs, maxImageWidth, maxImageHeight]);
+  }, [node.attrs.width, node.attrs.height, maxImageWidth, maxImageHeight, updateThisNode]);
 
   const updateAspect = (initial, next, keepAspect = true, resizeType) => {
     if (keepAspect) {
@@ -196,20 +230,17 @@ function ImageComponent(props) {
         box.style.width = `${next.width}px`;
         box.style.height = `${next.height}px`;
 
-        const update = { width: next.width, height: next.height };
-        if (!isEqual(update, node.attrs)) {
-          editor.commands.updateAttributes('imageUploadNode', update);
-        }
+        updateThisNode({ width: next.width, height: next.height });
       }
     },
-    [editor, node.attrs],
+    [editor, updateThisNode],
   );
 
   const onChange = useCallback(
     (newValues) => {
-      editor.commands.updateAttributes('imageUploadNode', newValues);
+      updateThisNode(newValues);
     },
-    [editor],
+    [editor, updateThisNode],
   );
 
   const stopResize = useCallback(() => {
@@ -234,16 +265,17 @@ function ImageComponent(props) {
     <NodeViewWrapper>
       <StyledRoot
         onFocus={onFocus}
-        active={selected}
         loading={!node.attrs.loaded}
         pendingDelete={node.attrs.deleteStatus === 'pending'}
         style={{ justifyContent: flexAlign }}
       >
         <StyledProgress mode="determinate" value={node.attrs.percent || 0} hideProgress={node.attrs.loaded} />
 
-        <StyledImageContainer>
-          <img
+        <StyledImageContainer onDragStart={(e) => e.preventDefault()}>
+          <StyledImage
             {...attributes}
+            active={selected && node.attrs.loaded}
+            draggable={false}
             ref={imgRef}
             src={node.attrs.src}
             style={style}
@@ -254,39 +286,52 @@ function ImageComponent(props) {
         </StyledImageContainer>
       </StyledRoot>
 
-      {showToolbar && (
-        <div
-          ref={toolbarRef}
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            zIndex: 20,
-            background: 'var(--editable-html-toolbar-bg, #efefef)',
-            boxShadow:
-              '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
-            width: '100%',
-          }}
-        >
-          <CustomToolbarWrapper
-            showDone
-            {...options}
-            onDone={() => {
-              setShowToolbar(false);
-              props.imageHandling?.onDone();
-              props.editor.commands.focus('end');
+      {showToolbar &&
+        editor._tiptapContainerEl &&
+        ReactDOM.createPortal(
+          <div
+            ref={toolbarRef}
+            style={{
+              zIndex: 20,
+              background: 'var(--editable-html-toolbar-bg, #efefef)',
+              boxShadow:
+                '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
+              width: '100%',
             }}
           >
-            <ImageToolbar
-              disableImageAlignmentButtons={options.disableImageAlignmentButtons}
-              alt={node.attrs.alt}
-              imageLoaded={node.attrs.loaded}
-              alignment={node.attrs.alignment || 'left'}
-              onChange={onChange}
-            />
-          </CustomToolbarWrapper>
-        </div>
-      )}
+            <CustomToolbarWrapper
+              showDone
+              deletable
+              toolbarOpts={options.toolbarOpts || {}}
+              onDelete={() => {
+                const nodePos = findNodePos();
+                if (nodePos === null) return;
+
+                options.imageHandling?.onDelete?.(latestNodeRef.current);
+
+                editor.view.dispatch(
+                  editor.state.tr.delete(nodePos, nodePos + editor.state.doc.nodeAt(nodePos).nodeSize),
+                );
+                setShowToolbar(false);
+                editor.commands.focus();
+              }}
+              onDone={() => {
+                setShowToolbar(false);
+                options.imageHandling?.onDone?.(editor);
+                editor.commands.focus('end');
+              }}
+            >
+              <ImageToolbar
+                disableImageAlignmentButtons={options.imageHandling?.disableImageAlignmentButtons}
+                alt={node.attrs.alt}
+                imageLoaded={node.attrs.loaded}
+                alignment={node.attrs.alignment || 'left'}
+                onChange={onChange}
+              />
+            </CustomToolbarWrapper>
+          </div>,
+          editor._tiptapContainerEl,
+        )}
     </NodeViewWrapper>
   );
 }

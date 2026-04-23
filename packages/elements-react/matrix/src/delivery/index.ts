@@ -12,7 +12,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import Main from './Main';
+import Main from './Main.js';
 
 export const isComplete = (session) => {
   if (!session || !session.value) {

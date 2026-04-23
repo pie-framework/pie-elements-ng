@@ -5,9 +5,10 @@
  */
 import { page } from '$app/stores';
 import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
-import DeliveryView from '$lib/element-player/components/DeliveryView.svelte';
-import IifeElementPlayer from '$lib/element-player/components/IifeElementPlayer.svelte';
+import '$lib/element-player/configure-loader';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
+import { get } from 'svelte/store';
+import '@pie-element/element-player';
 import {
   model,
   session,
@@ -21,15 +22,17 @@ import {
   iifeBuildMeta,
   iifeBuildLoading,
   iifeBuildRequestVersion,
+  theme,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
 let { data }: { data: LayoutData } = $props();
 
 // Build element model from controller
-let elementModel = $state<any>({});
+let elementModel = $state<any>(null);
 let elementSession = $state<any>({});
 let modelError = $state<string | null>(null);
+let esmModelReady = $state(false);
 let modelRequestId = 0;
 const debug = false;
 const playerType = $derived<PlayerType>(parsePlayerType($page.url.searchParams.get('player')));
@@ -39,23 +42,167 @@ const normalizeSession = (nextSession: any) => {
   return nextSession && typeof nextSession === 'object' ? nextSession : {};
 };
 
-// Apply session update callback for controller
-const applySessionUpdate = (patch: Record<string, unknown> | null | undefined) => {
-  if (!patch || typeof patch !== 'object') {
-    return Promise.resolve($session);
+const cloneValue = <T>(value: T): T => {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  try {
+    return structuredClone(value);
+  } catch {
+    try {
+      return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+      return value;
+    }
+  }
+};
+
+const createSessionSignature = (value: unknown) => {
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized === undefined ? '__undefined__' : serialized;
+  } catch {
+    return `__unserializable__:${String(value)}`;
+  }
+};
+
+const maxNestedArrayLength = (value: unknown, seen = new WeakSet<object>()): number => {
+  if (Array.isArray(value)) {
+    return Math.max(value.length, ...value.map((entry) => maxNestedArrayLength(entry, seen)));
+  }
+  if (!value || typeof value !== 'object') {
+    return 0;
+  }
+  if (seen.has(value as object)) {
+    return 0;
+  }
+  seen.add(value as object);
+  return Math.max(
+    0,
+    ...Object.values(value as Record<string, unknown>).map((entry) =>
+      maxNestedArrayLength(entry, seen)
+    )
+  );
+};
+
+const shouldRejectNonInteractiveSessionReplacement = (
+  currentSession: Record<string, unknown>,
+  nextSession: Record<string, unknown>
+) => {
+  const currentSignature = createSessionSignature(currentSession);
+  const nextSignature = createSessionSignature(nextSession);
+  if (currentSignature === nextSignature) {
+    return false;
+  }
+  const currentKeys = Object.keys(currentSession);
+  const nextKeys = Object.keys(nextSession);
+  if (currentKeys.length > 0 && nextKeys.length === 0) {
+    return true;
+  }
+  const currentArrayMax = maxNestedArrayLength(currentSession);
+  const nextArrayMax = maxNestedArrayLength(nextSession);
+  if (currentArrayMax > 0 && nextArrayMax === 0) {
+    return true;
+  }
+  if (currentArrayMax > 1 && nextArrayMax < currentArrayMax) {
+    return true;
+  }
+  return false;
+};
+
+const shouldCommitSession = ({
+  currentMode,
+  currentSession,
+  nextSession,
+}: {
+  currentMode: string;
+  currentSession: Record<string, unknown>;
+  nextSession: Record<string, unknown>;
+}) => {
+  if (currentMode === 'gather') {
+    return true;
+  }
+  return !shouldRejectNonInteractiveSessionReplacement(currentSession, nextSession);
+};
+
+const extractSessionFromEventDetail = (detail: unknown) => {
+  if (!detail || typeof detail !== 'object') {
+    return null;
   }
 
-  const baseSession = normalizeSession($session);
+  const detailObj = detail as Record<string, unknown>;
+  if ('session' in detailObj) {
+    const sessionValue = detailObj.session;
+    return sessionValue && typeof sessionValue === 'object' ? sessionValue : null;
+  }
+
+  const keys = Object.keys(detailObj);
+  const metadataOnlyKeys = new Set(['complete', 'component']);
+  const isMetadataOnly = keys.length > 0 && keys.every((key) => metadataOnlyKeys.has(key));
+  if (isMetadataOnly) {
+    return null;
+  }
+
+  return detailObj;
+};
+
+// Apply session update callback for controller
+const applySessionUpdate = (
+  patchOrSessionId: Record<string, unknown> | string | null | undefined,
+  maybeElementOrPatch?: Record<string, unknown> | string | null,
+  maybePatch?: Record<string, unknown> | null
+) => {
+  const hasControllerSessionContext =
+    typeof patchOrSessionId === 'string' &&
+    typeof maybeElementOrPatch === 'string' &&
+    !!maybePatch &&
+    typeof maybePatch === 'object';
+  const patch =
+    patchOrSessionId && typeof patchOrSessionId === 'object'
+      ? patchOrSessionId
+      : maybePatch && typeof maybePatch === 'object'
+        ? maybePatch
+        : maybeElementOrPatch && typeof maybeElementOrPatch === 'object'
+          ? maybeElementOrPatch
+          : null;
+  if (!patch || typeof patch !== 'object') {
+    return Promise.resolve(get(session));
+  }
+
+  const baseSession = normalizeSession(cloneValue(get(session)));
   const hasChanges = Object.entries(patch).some(
     ([key, value]) => (baseSession as Record<string, unknown>)[key] !== value
   );
   if (!hasChanges) {
-    return Promise.resolve($session);
+    return Promise.resolve(get(session));
   }
 
-  const nextSession = { ...(baseSession as Record<string, unknown>), ...patch };
+  const patchWithCompatData = hasControllerSessionContext
+    ? {
+        ...patch,
+        data: {
+          ...(((baseSession as Record<string, unknown>).data as Record<string, unknown>) ?? {}),
+          ...patch,
+        },
+      }
+    : patch;
+
+  const nextSession = cloneValue({
+    ...(baseSession as Record<string, unknown>),
+    ...patchWithCompatData,
+  });
+  const currentMode = get(mode);
+  if (
+    !shouldCommitSession({
+      currentMode,
+      currentSession: baseSession as Record<string, unknown>,
+      nextSession: normalizeSession(nextSession) as Record<string, unknown>,
+    })
+  ) {
+    return Promise.resolve(get(session));
+  }
   updateSession(nextSession);
-  return Promise.resolve($session);
+  return Promise.resolve(get(session));
 };
 
 // Build the view model using the controller
@@ -66,13 +213,19 @@ const buildModel = async (
   currentMode: string,
   currentRole: string,
   currentPartialScoring: boolean,
-  currentController: any
+  currentController: any,
+  _currentPlayerType: PlayerType
 ) => {
   if (debug)
     console.log('[deliver] Building model...', { requestId, mode: currentMode, role: currentRole });
 
+  if (requestId === modelRequestId) {
+    esmModelReady = false;
+  }
+
   if (!currentModel) {
-    elementModel = {};
+    elementModel = null;
+    esmModelReady = false;
     modelError = 'No model configuration found';
     console.error('[deliver] No model provided');
     return;
@@ -80,10 +233,11 @@ const buildModel = async (
 
   const modelFn = currentController?.model;
   if (!modelFn || typeof modelFn !== 'function') {
-    elementModel = { ...currentModel, mode: currentMode };
     modelError = currentController
       ? 'Controller model() function is required but not found'
       : 'Controller not loaded yet';
+    elementModel = null;
+    esmModelReady = false;
     if (currentController) {
       console.error('[deliver] Controller missing model() function');
     }
@@ -105,15 +259,29 @@ const buildModel = async (
     );
 
     if (requestId === modelRequestId) {
+      if (!nextModel || typeof nextModel !== 'object') {
+        throw new Error('Controller model() must return an object model');
+      }
       elementModel = { ...nextModel, mode: currentMode };
-      elementSession = sessionForController; // Use controller-modified session
+      const currentSessionSnapshot = normalizeSession(cloneValue(get(session)));
+      const nextSessionSnapshot = normalizeSession(cloneValue(sessionForController));
+      const commitControllerSession = shouldCommitSession({
+        currentMode,
+        currentSession: currentSessionSnapshot as Record<string, unknown>,
+        nextSession: nextSessionSnapshot as Record<string, unknown>,
+      });
+      elementSession = commitControllerSession
+        ? cloneValue(nextSessionSnapshot)
+        : cloneValue(currentSessionSnapshot);
+      esmModelReady = true;
 
       // If controller modified the session (e.g., initialized answer array), update the store
       // This ensures the session panel shows the initialized session
       const sessionChanged =
-        JSON.stringify(sessionForController) !== JSON.stringify(currentSession);
-      if (sessionChanged) {
-        updateSession(sessionForController);
+        createSessionSignature(nextSessionSnapshot) !==
+        createSessionSignature(currentSessionSnapshot);
+      if (sessionChanged && commitControllerSession) {
+        updateSession(nextSessionSnapshot);
       }
 
       modelError = null;
@@ -124,14 +292,15 @@ const buildModel = async (
   } catch (err) {
     console.error('[deliver] Controller model error:', err);
     if (requestId === modelRequestId) {
-      elementModel = { ...currentModel, mode: currentMode };
       modelError = err instanceof Error ? err.message : 'Failed to build model';
+      elementModel = null;
+      esmModelReady = false;
     }
   }
 };
 
 // Rebuild model when dependencies change
-// Note: Session changes do NOT trigger rebuild - they're handled by DeliveryView
+// Note: Session changes do NOT trigger rebuild - they're handled by pie-element-player events
 // Only rebuild when model, mode, role, partialScoring, or controller changes
 $effect(() => {
   const currentModel = $model;
@@ -141,6 +310,7 @@ $effect(() => {
   const currentRole = $role;
   const currentPartialScoring = $partialScoring;
   const currentController = $controller;
+  const currentPlayerType = playerType;
   const currentModelVersion = $modelVersion;
   // Explicitly NOT including sessionVersion - session updates should not trigger model rebuild
 
@@ -155,24 +325,43 @@ $effect(() => {
   buildModel(
     requestId,
     currentModel,
-    $session, // Read directly, don't track in effect
+    get(session), // Read store imperatively; session changes should not retrigger model rebuild
     currentMode,
     currentRole,
     currentPartialScoring,
-    currentController
+    currentController,
+    currentPlayerType
   );
 });
 
 // Handle session changes from the element
 function handleSessionChanged(event: CustomEvent) {
-  const detail = event.detail as any;
-  const newSession = detail?.session ?? detail;
-  elementSession = newSession;
-  updateSession(newSession);
+  const newSession = extractSessionFromEventDetail(event.detail);
+  if (!newSession) {
+    return;
+  }
+  const currentSessionSnapshot = normalizeSession(cloneValue(get(session)));
+  const nextSessionSnapshot = normalizeSession(cloneValue(newSession));
+  if (
+    !shouldCommitSession({
+      currentMode: $mode,
+      currentSession: currentSessionSnapshot as Record<string, unknown>,
+      nextSession: nextSessionSnapshot as Record<string, unknown>,
+    })
+  ) {
+    elementSession = cloneValue(currentSessionSnapshot);
+    return;
+  }
+  elementSession = cloneValue(nextSessionSnapshot);
+  updateSession(nextSessionSnapshot);
 }
 
 function handleIifeControllerChanged(event: CustomEvent) {
-  const nextController = event.detail;
+  if (playerType !== 'iife') {
+    return;
+  }
+  const detail = event.detail as any;
+  const nextController = detail?.controller ?? detail;
   if (nextController) {
     controller.set(nextController);
   }
@@ -227,31 +416,30 @@ function handleBuildState(event: CustomEvent) {
   {debug}
 >
   {#snippet children()}
-    {#if playerType === 'iife'}
-      <IifeElementPlayer
-        elementName={data.elementName}
-        packageName={data.packageName}
-        elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-        model={elementModel}
-        session={elementSession}
-        rebuildVersion={$iifeBuildRequestVersion}
-        on:session-changed={handleSessionChanged}
-        on:controller-changed={handleIifeControllerChanged}
-        on:bundle-meta={handleBundleMeta}
-        on:build-state={handleBuildState}
-      />
-    {:else}
-      <DeliveryView
-        elementName={data.elementName}
-        {elementModel}
-        session={elementSession}
-        {debug}
-        on:session-changed={handleSessionChanged}
-      />
-    {/if}
-    {#if modelError}
-      <div class="model-error">{modelError}</div>
-    {/if}
+    <pie-element-theme-daisyui theme={$theme}>
+      <div class="delivery-view">
+        <div class="element-container">
+          <pie-element-player
+            strategy={playerType}
+            runtime-support-check="on"
+            view="delivery"
+            element-name={data.elementName}
+            package-name={data.packageName}
+            element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+            model={elementModel ?? undefined}
+            session={elementSession ?? undefined}
+            rebuildVersion={$iifeBuildRequestVersion}
+            onsession-changed={handleSessionChanged}
+            oncontroller-changed={handleIifeControllerChanged}
+            onbundle-meta={handleBundleMeta}
+            onbuild-state={handleBuildState}
+          ></pie-element-player>
+          {#if !esmModelReady}
+            <div class="model-error">{modelError ?? 'Preparing view model...'}</div>
+          {/if}
+        </div>
+      </div>
+    </pie-element-theme-daisyui>
   {/snippet}
 </DeliveryPlayerLayout>
 
@@ -264,5 +452,16 @@ function handleBuildState(event: CustomEvent) {
     border-radius: 4px;
     color: #8a6d3b;
     font-size: 0.9rem;
+  }
+
+  .delivery-view {
+    height: 100%;
+    max-height: 100%;
+    overflow: auto;
+  }
+
+  .element-container {
+    padding: 1rem;
+    max-width: 100%;
   }
 </style>

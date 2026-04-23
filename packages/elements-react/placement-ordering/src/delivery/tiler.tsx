@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { styled } from '@mui/material/styles';
 
-import Tile from './tile';
+import Tile from './tile.js';
 
 const types = {
   choiceLabel: PropTypes.string,
@@ -34,6 +34,8 @@ const buildTiles = (props) => {
     tile.instanceId = props.instanceId;
     tile.disabled = props.disabled;
     tile.guideIndex = props.addGuide ? tile.index + 1 : undefined;
+    // unique key for dnd-kit IDs
+    tile.tileIndex = index;
 
     if (props.includeTargets) {
       return <Tile {...tile} key={index} />;

@@ -22,8 +22,7 @@
       "!**/packages/elements-svelte/multiple-choice/src/configure",
       "!packages/elements-react",
       "!packages/lib-react",
-      "!packages/shared/*/src/index.ts",
-      "!packages/shared/mathquill"
+      "!packages/shared/*/src/index.ts"
     ]
   },
   "formatter": {

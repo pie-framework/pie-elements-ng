@@ -10,7 +10,7 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import { normalizeSize } from './sized';
+import { normalizeSize } from './sized.js';
 
 // Info icon
 const Info = ({ fill }) => (

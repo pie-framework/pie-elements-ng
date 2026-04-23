@@ -57,7 +57,7 @@ const defaultMissingElement: MissingElFn = (pkg: PkgResolution, message?: string
  *       elements: { 'multiple-choice': '@pie-element/multiple-choice@12.0.0' },
  *       models: [{ id: '1', element: 'multiple-choice', ... }]
  *     },
- *     options: { role: 'student' }
+ *     options: { mode: 'student' }
  *   };
  * </script>
  * ```
@@ -158,8 +158,7 @@ export class PiePrint extends LitElement {
         return;
       }
 
-      // Set options - convert role to mode for backwards compatibility
-      el.options = { ...this.config.options, mode: this.config.options?.role };
+      el.options = { ...this.config.options };
       el.model = m;
     });
   }

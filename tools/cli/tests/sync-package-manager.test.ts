@@ -69,6 +69,97 @@ describe('ensureElementPackageJson iife build script generation', () => {
     const buildScript = await readBuildScript(elementDir);
     expect(buildScript).toBe(SCRIPTS.BUILD);
   });
+
+  it('adds known peer fallback deps for charting and styled packages', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+    const upstreamElementDir = join(
+      rootDir,
+      'upstream',
+      'pie-elements',
+      'packages',
+      'test-element'
+    );
+
+    await createElementBase(elementDir);
+    await mkdir(upstreamElementDir, { recursive: true });
+    await writeFile(
+      join(upstreamElementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          dependencies: {
+            recharts: '^3.7.0',
+            'styled-components': '^5.2.1',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toMatchObject({
+      recharts: '^3.7.0',
+      'styled-components': '^5.2.1',
+      'react-is': '^19.2.0',
+    });
+  });
+
+  it('preserves existing development export conditions', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'controller'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'controller', 'index.ts'),
+      'export default class Controller {}\n',
+      'utf-8'
+    );
+    await writeFile(
+      join(elementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          exports: {
+            '.': {
+              development: './src/index.ts',
+              types: './dist/index.d.ts',
+              default: './dist/index.js',
+            },
+            './controller': {
+              development: './src/controller/index.ts',
+              types: './dist/controller/index.d.ts',
+              default: './dist/controller/index.js',
+            },
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.exports['.'].development).toBe('./src/index.ts');
+    expect(pkgJson.exports['./controller'].development).toBe('./src/controller/index.ts');
+  });
 });
 
 describe('ensurePieLibPackageJson', () => {
@@ -107,6 +198,86 @@ describe('ensurePieLibPackageJson', () => {
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-lib/render-ui': 'workspace:*',
+    });
+  });
+
+  it('preserves upstream mathquill deps without remapping', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'math-input');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'math-input');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(join(libDir, 'src', 'index.ts'), 'export {};\n', 'utf-8');
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/math-input',
+          dependencies: {
+            '@pie-framework/mathquill': '^1.0.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensurePieLibPackageJson('math-input', libDir, createConfig(rootDir));
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toMatchObject({
+      '@pie-framework/mathquill': '^1.0.0',
+    });
+  });
+
+  it('adds known tiptap and testing-library peer fallback deps', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'test-utils');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'test-utils');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(
+      join(libDir, 'src', 'index.ts'),
+      `
+      import userEvent from '@testing-library/user-event';
+      import CharacterCount from '@tiptap/extension-character-count';
+      import ListItem from '@tiptap/extension-list-item';
+      export { userEvent, CharacterCount, ListItem };
+      `,
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/test-utils',
+          dependencies: {
+            '@testing-library/user-event': '^14.5.2',
+            '@tiptap/extension-character-count': '3.0.9',
+            '@tiptap/extension-list-item': '3.0.9',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensurePieLibPackageJson('test-utils', libDir, createConfig(rootDir));
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toMatchObject({
+      '@testing-library/user-event': '^14.5.2',
+      '@testing-library/dom': '^10.4.1',
+      '@tiptap/extension-character-count': '3.0.9',
+      '@tiptap/extensions': '^3.20.0',
+      '@tiptap/extension-list-item': '3.0.9',
+      '@tiptap/extension-list': '3.0.9',
     });
   });
 });

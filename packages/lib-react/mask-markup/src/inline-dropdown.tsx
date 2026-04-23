@@ -9,8 +9,8 @@
  */
 
 import React from 'react';
-import Dropdown from './components/dropdown';
-import { withMask } from './with-mask';
+import Dropdown from './components/dropdown.js';
+import { withMask } from './with-mask.js';
 
 // eslint-disable-next-line react/display-name
 export default withMask('dropdown', (props) => (node, data, onChange) => {

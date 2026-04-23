@@ -8,7 +8,7 @@ The demo app is designed to work with PIE elements loaded as ESM web components.
 
 Only two packages are needed at runtime:
 
-- `@pie-element/bundler-shared` - Bundler infrastructure for IIFE operation
+- `@pie-element/element-bundler` - Bundler infrastructure for IIFE operation
 - `@pie-element/element-player` - Web component that loads and renders elements
 
 ### Why so minimal?
@@ -17,7 +17,7 @@ In production ESM mode, the demo app loads elements from a CDN (like esm.sh, jsp
 
 ```typescript
 // Production: Load from CDN
-<pie-esm-element-player
+<pie-element-player
   element-name="multiple-choice"
   cdn-url="https://esm.sh"
 />
@@ -85,4 +85,4 @@ Currently the demo only supports local development mode. To support production C
 3. Configure CDN URL (e.g., `https://esm.sh` or `https://unpkg.com`)
 4. All element dependencies resolve automatically through CDN
 
-At that point, only `@pie-element/element-player` would be needed as a runtime dependency (bundler-shared is only for IIFE mode).
+At that point, only `@pie-element/element-player` would be needed as a runtime dependency (`@pie-element/element-bundler` is only for IIFE mode).

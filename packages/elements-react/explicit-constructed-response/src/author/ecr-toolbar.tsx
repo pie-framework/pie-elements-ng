@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { stripHtmlTags } from './markupUtils';
+import { stripHtmlTags } from './markupUtils.js';
 
 const findSlateNode = (key) => {
   return window.document.querySelector('[data-key="' + key + '"]');
@@ -28,6 +28,7 @@ export class ECRToolbar extends React.Component {
   static propTypes = {
     correctChoice: PropTypes.object,
     node: PropTypes.object,
+    pos: PropTypes.number,
     onDone: PropTypes.func,
     onChangeResponse: PropTypes.func.isRequired,
     onToolbarDone: PropTypes.func.isRequired,
@@ -77,11 +78,22 @@ export class ECRToolbar extends React.Component {
   }
 
   onDone: any = (markup) => {
-    const { node, editor, onToolbarDone, onChangeResponse } = this.props;
+    const { editor, node, onToolbarDone, onChangeResponse, pos } = this.props;
     const sanitizedMarkup = stripHtmlTags(markup);
     this.setState({ markup: sanitizedMarkup });
 
-    editor.commands.updateAttributes('explicit_constructed_response', { value: sanitizedMarkup });
+    const { tr } = editor.state;
+
+    // Type check before calling setNodeMarkup: if the node at the current position is a text node,
+    // missing, or not an inline atom, bail out to avoid errors after a delete.
+    const nodeAtPos = tr.doc.nodeAt(pos);
+    if (!nodeAtPos || nodeAtPos.isText || !nodeAtPos.isAtom || !nodeAtPos.isInline) {
+      return false;
+    }
+
+    // Merge old and new attributes
+    tr.setNodeMarkup(pos, undefined, { ...node.attrs, value: sanitizedMarkup });
+    editor.view.dispatch(tr);
 
     onToolbarDone(true);
     onChangeResponse(sanitizedMarkup);
@@ -95,6 +107,8 @@ export class ECRToolbar extends React.Component {
     if (event.key === 'Enter') {
       return true;
     }
+
+    return false;
   };
 
   onBlur: any = () => {

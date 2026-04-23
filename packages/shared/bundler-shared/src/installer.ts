@@ -138,14 +138,23 @@ function linkPackageDir(
     }
 
     // Create a compat layout for imports like @pie-element/foo/controller.
+    // Keep both source and dist available so development export conditions
+    // resolve to source (avoids dist-only CJS wrappers in IIFE output).
     mkdirSync(targetPath, { recursive: true });
+    const sourcePath = join(packagePath, 'src');
     const distPath = join(packagePath, 'dist');
+    if (existsSync(sourcePath)) {
+      symlinkSync(sourcePath, join(targetPath, 'src'), 'dir');
+    }
     if (existsSync(distPath)) {
       symlinkSync(distPath, join(targetPath, 'dist'), 'dir');
       for (const subPath of ['controller', 'author', 'configure', 'delivery', 'print']) {
-        const sourceSubPath = join(distPath, subPath);
-        if (existsSync(sourceSubPath)) {
-          symlinkSync(sourceSubPath, join(targetPath, subPath), 'dir');
+        const preferredSourceSubPath = join(sourcePath, subPath);
+        const fallbackDistSubPath = join(distPath, subPath);
+        if (existsSync(preferredSourceSubPath)) {
+          symlinkSync(preferredSourceSubPath, join(targetPath, subPath), 'dir');
+        } else if (existsSync(fallbackDistSubPath)) {
+          symlinkSync(fallbackDistSubPath, join(targetPath, subPath), 'dir');
         }
       }
     }

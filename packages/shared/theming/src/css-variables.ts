@@ -1,5 +1,5 @@
-import type { PieThemeExtended, CssVariableMapping } from './types';
-import { DEFAULT_CSS_MAPPINGS } from './constants';
+import type { PieThemeExtended, CssVariableMapping } from './types.js';
+import { DEFAULT_CSS_MAPPINGS } from './constants.js';
 
 /**
  * Generate CSS variables from a PIE theme
@@ -68,8 +68,10 @@ export function cssVariablesToStyleString(cssVars: Record<string, string>): stri
  * <div style={style}>...</div>
  * ```
  */
-export function cssVariablesToReactStyle(cssVars: Record<string, string>): React.CSSProperties {
-  return cssVars as React.CSSProperties;
+export function cssVariablesToReactStyle(
+  cssVars: Record<string, string>
+): Record<string, string | number | undefined> {
+  return cssVars as Record<string, string | number | undefined>;
 }
 
 /**

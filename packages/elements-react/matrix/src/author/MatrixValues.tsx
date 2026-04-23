@@ -11,9 +11,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import MatrixLabelEditableButton, { ACTION_TYPE } from './MatrixLabelEditableButton';
-import isNumeric from './isNumeric';
-import NumberInput from './NumberInput';
+import MatrixLabelEditableButton, { ACTION_TYPE } from './MatrixLabelEditableButton.js';
+import isNumeric from './isNumeric.js';
+import NumberInput from './NumberInput.js';
 import PropTypes from 'prop-types';
 
 const columnWidth = '120px';

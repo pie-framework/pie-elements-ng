@@ -20,8 +20,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
 
-import Root from './root';
-import sensibleDefaults from './defaults';
+import Root from './root.js';
+import sensibleDefaults from './defaults.js';
 
 const log = debug('image-cloze-association:configure');
 

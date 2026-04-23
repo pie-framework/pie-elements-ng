@@ -1,5 +1,5 @@
 import type { PieThemeExtended } from '@pie-element/shared-theming';
-import { lighten, darken, rgba } from '@pie-element/shared-theming-daisyui';
+import { lighten, darken, rgba } from './colors.js';
 
 /**
  * Convert MUI theme to extended PIE theme with derived colors
@@ -11,7 +11,7 @@ import { lighten, darken, rgba } from '@pie-element/shared-theming-daisyui';
  * @example
  * ```typescript
  * import { useTheme } from '@mui/material/styles';
- * import { extractMuiTheme } from './extract';
+ * import { extractMuiTheme } from './extract.js';
  *
  * function MyComponent() {
  *   const muiTheme = useTheme();

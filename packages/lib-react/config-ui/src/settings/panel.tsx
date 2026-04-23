@@ -18,11 +18,11 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import debug from 'debug';
 
-import Toggle from './toggle';
-import { NChoice } from '../two-choice';
-import SettingsRadioLabel from './settings-radio-label';
-import NumberTextField from '../number-text-field';
-import Checkbox from '../checkbox';
+import Toggle from './toggle.js';
+import { NChoice } from '../two-choice.js';
+import SettingsRadioLabel from './settings-radio-label.js';
+import NumberTextField from '../number-text-field.js';
+import Checkbox from '../checkbox.js';
 
 const log = debug('pie-lib:config-ui:settings:panel');
 

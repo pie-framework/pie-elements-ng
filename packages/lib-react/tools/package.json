@@ -1,7 +1,6 @@
 {
   "name": "@pie-lib/tools",
-  "private": true,
-  "version": "0.1.0",
+  "version": "1.2.0-next.4",
   "description": "Some interactive tools",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -15,7 +14,8 @@
     "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
     "react-portal": "^4.2.0",
-    "trigonometry-calculator": "^2.0.0"
+    "trigonometry-calculator": "^2.0.0",
+    "react": "^18.2.0"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -35,5 +35,12 @@
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "test": "bun x vitest run"
+  },
+  "devDependencies": {
+    "vite": "^8.0.1",
+    "typescript": "^5.9.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
   }
 }

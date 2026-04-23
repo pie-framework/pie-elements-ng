@@ -1,0 +1,665 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mc-populated-blank delivery docs</title>
+    <style>
+      :root { color-scheme: light dark; font-family: Inter, system-ui, sans-serif; }
+      body { margin: 0; padding: 1.5rem; line-height: 1.55; }
+      h1,h2,h3 { line-height: 1.25; }
+      h1 { margin-top: 0; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .doc-section { margin-bottom: 2rem; }
+      .doc-property { margin: 0 0 1.25rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(128,128,128,.25); }
+      ul { padding-left: 1.25rem; }
+      .meta-list li { margin-bottom: .25rem; }
+    </style>
+  </head>
+  <body>
+    
+    <h1>mc-populated-blank / delivery</h1>
+    
+  <section class="doc-section">
+    <h2>Model Defaults</h2>
+    <p><strong>Source:</strong> <code>src/controller/defaults.ts#model</code></p>
+    
+  <section class="doc-property">
+    <h3><code>audioButtonSkin</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>null</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>null</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>audioButtonSkinsByLocale</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>object</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>&#123;&#125;</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>audioTranscript</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>audioUrl</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>autoplayAudioEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>choiceLayout</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>choiceMode</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>text</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>choices</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>array</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>[&#123;&quot;id&quot;:&quot;c1&quot;,&quot;labelHtml&quot;:&quot;&lt;p&gt;Option A&lt;/p&gt;&quot;&#125;,&#123;&quot;id&quot;:&quot;c2&quot;,&quot;labelHtml&quot;:&quot;&lt;p&gt;Option B&lt;/p&gt;&quot;&#125;,&#123;&quot;id&quot;:&quot;c3&quot;,&quot;labelHtml&quot;:&quot;&lt;p&gt;Option C&lt;/p&gt;&quot;&#125;]</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>completeAudioEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>correctChoiceId</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>c2</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>element</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>mc-populated-blank</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>hasAudio</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>id</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>1</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>interactionMode</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>populate_blank</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.audioBlankTemplateMarginBottomRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>1.8</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.audioBlankTemplateMarginTopRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.8</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.audioInstructionsMaxWidthPx</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>875</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.blankStandaloneWidthRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>7</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.blankUnderlineWideWidthPx</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>4</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.blankUnderlineWidthPx</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>2</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.blankWideWidthRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>10</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.choiceGroupGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.5</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.choiceImageMaxHeightRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>5</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.choiceRowGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.5</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.horizontalChoiceContentMinHeightRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>7.5</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.horizontalChoiceRadioTopMarginRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.5</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.horizontalChoiceTileMinHeightRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>11</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.horizontalChoiceWidthPx</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>170</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.horizontalChoiceWidthVw</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>30</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.inlineChoicesMarginTopRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.25</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.inlineGridColumnGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>1.5</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.inlineGridRowGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.65</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.inlineTemplateMarginTopRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.45</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.legendMaxChars</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>120</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.listenButtonSizePx</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>128</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.narrowHorizontalChoiceMaxWidthPx</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>230</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.selectedImageMaxHeightRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>4</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.stimulusChoicesMarginTopRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.9</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.stimulusGridColumnGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>2</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.stimulusGridRowGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.7</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.stimulusMinColumnPx</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>210</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.stimulusSentenceMarginTopRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.2</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.textMinColumnPx</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>260</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.toggleButtonGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.5</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.tokenChoicesMarginTopRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.2</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.tokenGridColumnGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>1.5</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.tokenGridRowGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.8</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.tokenInlineTokenGapRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.35</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutLimits.tokenTemplateMarginTopRem</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>number</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>0.6</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutProfile</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>layoutProfilePresets</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>object</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>&#123;&#125;</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>locale</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>&lt;p&gt;&lt;strong&gt;Demo prompt&lt;/strong&gt;&lt;/p&gt;</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>promptEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>sentenceHtml</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>showVisibleTranscript</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructions</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code></code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>teacherInstructionsEnabled</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>template</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>&lt;p&gt;The answer is &#123;&#123;blank&#125;&#125;.&lt;/p&gt;</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.answerChoices</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Answer choices</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.audioResourceUnavailable</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Audio is enabled but no playable audio URL is configured.</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.clickToEnableAutoplay</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Click to enable audio autoplay</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.hideCorrectAnswer</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Hide correct answer</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.listenLabelEn</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Listen</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.listenLabelEs</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Escuchar</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.selectedAnswerInSentence</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Selected answer in sentence</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.showCorrectAnswer</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Show correct answer</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>uiText.transcriptLabel</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Transcript</code></li>
+    </ul>
+  </section>
+  </section>
+    
+  <section class="doc-section">
+    <h2>Authoring/Configuration Defaults</h2>
+    <p><strong>Source:</strong> <code>src/controller/defaults.ts#configuration</code></p>
+    
+  <section class="doc-property">
+    <h3><code>prompt.label</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>string</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>Prompt</code></li>
+    </ul>
+  </section>
+
+  <section class="doc-property">
+    <h3><code>prompt.settings</code></h3>
+    <ul>
+      <li><strong>Type:</strong> <code>boolean</code></li>
+      <li><strong>Required:</strong> <code>false</code></li>
+      <li><strong>Default:</strong> <code>true</code></li>
+    </ul>
+  </section>
+  </section>
+  
+  </body>
+</html>

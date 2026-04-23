@@ -1,8 +1,8 @@
 import { useTheme } from '@mui/material/styles';
 import { useMemo } from 'react';
 import type { PieThemeExtended } from '@pie-element/shared-theming';
-import { extractMuiTheme } from './extract';
-import { muiToPieTheme } from './convert';
+import { extractMuiTheme } from './extract.js';
+import { muiToPieTheme } from './convert.js';
 
 /**
  * Hook to extract PIE theme from current MUI theme context

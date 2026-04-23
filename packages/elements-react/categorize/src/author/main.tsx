@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Design from './design';
+import Design from './design/index.js';
 
 export class Main extends React.Component {
   static propTypes = {

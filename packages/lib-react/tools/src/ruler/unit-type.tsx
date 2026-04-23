@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { noSelect, strokeColor } from '../style-utils';
+import { noSelect, strokeColor } from '../style-utils.js';
 import { styled } from '@mui/material/styles';
 
 const StyledText: any = styled('text')(({ theme }) => ({

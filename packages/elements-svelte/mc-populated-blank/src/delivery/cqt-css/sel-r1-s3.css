@@ -1,0 +1,91 @@
+/* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-s3_plusggg/0.0.1/question.css */
+.mc-populated-blank-root.variant-sel-r1-s3 {
+  font-family: Starial, Arial, sans-serif;
+  max-width: 860px;
+  margin-inline: auto;
+  --mpb-listen-button-size: 128px;
+  --mpb-choice-width-px: 155px;
+  --mpb-choice-tile-min-height: 11.25rem;
+  --mpb-choice-content-min-height: 9.375rem;
+  --mpb-choice-group-gap: 0.35rem;
+  --mpb-choice-row-gap: 0.35rem;
+  --mpb-horizontal-choice-radio-top-margin: 0.25rem;
+  --mpb-stimulus-min-column: 240px;
+  --mpb-stimulus-grid-column-gap: 1.1rem;
+  --mpb-stimulus-choices-margin-top: 0.85rem;
+  --mpb-audio-blank-template-margin-bottom: 0.9rem;
+  --mpb-blank-wide-width: 6.8rem;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-audio-transcript {
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label,
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label :is(span, p, div) {
+  font-size: 1.9em;
+  line-height: 89px;
+  font-weight: 500;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-blank-value,
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-blank-value :is(span, p, div) {
+  font-size: 1.9em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal .pie-choice-tile {
+  border-radius: 6px;
+  background: #f1f1f1;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank {
+  grid-template-columns: minmax(220px, auto) auto auto;
+  grid-template-areas:
+    "sentence template audio"
+    "choices choices choices";
+  justify-content: center;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-template-line {
+  grid-area: template;
+  justify-self: center;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-sentence-line {
+  justify-self: end;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-audio-container {
+  justify-self: start;
+  align-self: start;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-choices-fieldset {
+  justify-self: center;
+  width: fit-content;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-sentence-line img {
+  max-width: 100%;
+  height: auto;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal:hover .pie-choice-tile {
+  background: #e2e2e2;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal.is-selected .pie-choice-tile,
+.mc-populated-blank-root.variant-sel-r1-s3
+  .pie-choice-horizontal.is-selected:hover
+  .pie-choice-tile {
+  background: #fcfcd3;
+}
+
+.mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal .pie-choice-radio {
+  transform: scale(0.85);
+}

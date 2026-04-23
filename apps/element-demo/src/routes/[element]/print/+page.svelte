@@ -4,18 +4,18 @@
  * Shows the print-friendly version of the element
  */
 import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
-import PrintView from '$lib/element-player/components/PrintView.svelte';
-import IifePrintPlayer from '$lib/element-player/components/IifePrintPlayer.svelte';
+import '$lib/element-player/configure-loader';
 import { page } from '$app/stores';
 import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
+import '@pie-element/element-player';
 import {
-  elementName,
   model,
   role,
   controller,
   iifeBuildMeta,
   iifeBuildLoading,
   iifeBuildRequestVersion,
+  theme,
 } from '$lib/stores/demo-state';
 import type { LayoutData } from '../$types';
 
@@ -60,34 +60,41 @@ function handleBuildState(event: CustomEvent) {
 }
 </script>
 
-{#if playerType === 'iife'}
-  <div class="h-full overflow-auto p-4">
-    <IifePrintPlayer
-      elementName={data.elementName}
-      packageName={data.packageName}
-      elementVersion={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
-      model={$model}
-      role={$role}
-      rebuildVersion={$iifeBuildRequestVersion}
-      on:bundle-meta={handleBundleMeta}
-      on:build-state={handleBuildState}
-    />
-  </div>
-{:else}
-  <PlayerLayout
-    elementName={data.elementName}
-    packageName={data.packageName}
-    bind:controller={$controller}
-    capabilities={data.capabilities}
-    {debug}
-  >
-    {#snippet children()}
-      <PrintView
-        elementName={$elementName}
-        model={$model}
-        role={$role}
-        {debug}
-      />
-    {/snippet}
-  </PlayerLayout>
-{/if}
+<PlayerLayout
+  elementName={data.elementName}
+  packageName={data.packageName}
+  bind:controller={$controller}
+  capabilities={data.capabilities}
+  preloadController={playerType === 'esm'}
+  preloadAuthor={false}
+  preloadPrint={false}
+  {debug}
+>
+  {#snippet children()}
+    <pie-element-theme-daisyui theme={$theme}>
+      <div class="print-view">
+        <pie-element-player
+          strategy={playerType}
+          runtime-support-check="on"
+          view="print"
+          element-name={data.elementName}
+          package-name={data.packageName}
+          element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+          model={$model}
+          role={$role}
+          rebuildVersion={$iifeBuildRequestVersion}
+          onbundle-meta={handleBundleMeta}
+          onbuild-state={handleBuildState}
+        ></pie-element-player>
+      </div>
+    </pie-element-theme-daisyui>
+  {/snippet}
+</PlayerLayout>
+
+<style>
+  .print-view {
+    height: 100%;
+    overflow: auto;
+    padding: 1rem;
+  }
+</style>

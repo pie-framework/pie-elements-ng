@@ -13,7 +13,37 @@ import PropTypes from 'prop-types';
 import { DragOverlay } from '@dnd-kit/core';
 import { DragProvider } from '@pie-lib/drag';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { color, Collapsible, PreviewPrompt, UiLayout, hasText, hasMedia } from '@pie-lib/render-ui';
+import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
@@ -21,11 +51,11 @@ import Translator from '@pie-lib/translator';
 import { flatMap, groupBy } from 'lodash-es';
 
 const { translator } = Translator;
-import Image from './image-container';
-import InteractiveSection from './interactive-section';
-import PossibleResponses from './possible-responses';
-import { getUnansweredAnswers, getAnswersCorrectness } from './utils-correctness';
-import PossibleResponse from './possible-response';
+import Image from './image-container.js';
+import InteractiveSection from './interactive-section.js';
+import PossibleResponses from './possible-responses.js';
+import { getUnansweredAnswers, getAnswersCorrectness } from './utils-correctness.js';
+import PossibleResponse from './possible-response.js';
 
 const generateId = () => Math.random().toString(36).substring(2) + new Date().getTime().toString(36);
 
@@ -85,6 +115,7 @@ export class ImageClozeAssociationComponent extends React.Component {
       })),
       maxResponsePerZone: maxResponsePerZone || 1,
       showCorrect: false,
+      isValidDrop: false,
     };
   }
 
@@ -94,20 +125,36 @@ export class ImageClozeAssociationComponent extends React.Component {
     if (active?.data?.current) {
       this.setState({
         draggingElement: active.data.current,
+        isValidDrop: false,
       });
     }
   };
 
   onDragEnd: any = (event) => {
     const { active, over } = event;
+    const { model } = this.props;
+    const { duplicateResponses } = model || {};
 
-    this.setState({ draggingElement: { id: '', value: '' } });
+    // Check if drop is valid
+    const draggedItem = active?.data?.current;
+    const responseArea = over?.data?.current;
+    const isValidDrop =
+      over &&
+      active &&
+      draggedItem &&
+      responseArea &&
+      responseArea.containerIndex !== undefined;
+
+    const shouldDisableAnimation = isValidDrop && duplicateResponses;
+
+    this.setState({
+      draggingElement: { id: '', value: '' },
+      isValidDrop: shouldDisableAnimation,
+    });
 
     if (!over || !active) {
       return;
     }
-
-    const draggedItem = active.data.current;
 
     if (!draggedItem) {
       return;
@@ -117,8 +164,6 @@ export class ImageClozeAssociationComponent extends React.Component {
       this.handleOnAnswerRemove(draggedItem);
       return;
     }
-
-    const responseArea = over.data.current;
 
     if (responseArea) {
       this.handleOnAnswerSelect(draggedItem, responseArea.containerIndex);
@@ -131,18 +176,23 @@ export class ImageClozeAssociationComponent extends React.Component {
 
     if (!draggingElement.id) return null;
 
-    if (draggingElement.id) {
-      return (
-        <PossibleResponse
-          key={draggingElement.id}
-          data={draggingElement}
-          answerChoiceTransparency={model.answerChoiceTransparency}
-          containerStyle={{ margin: '4px' }}
-        />
-      );
-    }
+    // check if the response contains an image
+    const imgRegex = /<img[^>]+src="([^">]+)"/;
+    const containsImage = imgRegex.test(draggingElement.value);
 
-    return null;
+    return (
+      <PossibleResponse
+        key={draggingElement.id}
+        canDrag={false}
+        data={draggingElement}
+        onDragBegin={() => {}}
+        isOverlay
+        containerStyle={{
+          ...(model.answerChoiceTransparency ? { opacity: '0.8' } : {}),
+          ...(!containsImage ? { padding: '0 10px', margin: '4px 6px !important' } : {}),
+        }}
+      />
+    );
   };
 
   filterPossibleAnswers = (possibleResponses, answer) =>
@@ -293,6 +343,7 @@ export class ImageClozeAssociationComponent extends React.Component {
       maxResponsePerZone,
       maxResponsePerZoneWarning,
       showCorrect,
+      isValidDrop,
     } = this.state;
     const isEvaluateMode = mode === 'evaluate';
     const showToggle = isEvaluateMode && !responseCorrect;
@@ -421,7 +472,11 @@ export class ImageClozeAssociationComponent extends React.Component {
             </StyledRationale>
           )}
         </StyledUiLayout>
-        <DragOverlay>{this.renderDragOverlay()}</DragOverlay>
+        {/* Disable drop animation for valid drops to prevent visual snap-back */}
+        {/* Keep default animation for invalid drops to show visual feedback */}
+        <DragOverlay dropAnimation={isValidDrop ? null : undefined}>
+          {this.renderDragOverlay()}
+        </DragOverlay>
       </DragProvider>
     );
   }

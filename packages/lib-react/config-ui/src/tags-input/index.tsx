@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { uniq } from 'lodash-es';
 import Chip from '@mui/material/Chip';
-import MuiBox from '../mui-box';
+import MuiBox from '../mui-box/index.js';
 
 const ENTER = 13;
 

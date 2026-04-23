@@ -1,5 +1,3 @@
-import { green, orange, pink, indigo, red } from '@mui/material/colors';
-
 /**
  * PIE Color Defaults - All 45+ default color values
  * Copied from @pie-lib/render-ui/src/color.ts
@@ -8,21 +6,21 @@ export const PIE_COLOR_DEFAULTS = {
   TEXT: 'black',
   DISABLED: 'grey',
   DISABLED_SECONDARY: '#ABABAB',
-  CORRECT: green[500], // #4CAF50
-  CORRECT_SECONDARY: green[50], // #E8F5E9
+  CORRECT: '#4CAF50',
+  CORRECT_SECONDARY: '#E8F5E9',
   CORRECT_TERTIARY: '#0EA449',
   CORRECT_WITH_ICON: '#087D38',
-  INCORRECT: orange[500], // #FF9800
-  INCORRECT_SECONDARY: red[50], // #FFEBEE
+  INCORRECT: '#FF9800',
+  INCORRECT_SECONDARY: '#FFEBEE',
   INCORRECT_WITH_ICON: '#BF0D00',
-  MISSING: red[700], // #D32F2F
+  MISSING: '#D32F2F',
   MISSING_WITH_ICON: '#6A78A1',
-  PRIMARY: indigo[500], // #3F51B5
-  PRIMARY_LIGHT: indigo[200], // #9FA8DA
-  PRIMARY_DARK: indigo[800], // #283593
-  SECONDARY: pink.A400, // #F50057
-  SECONDARY_LIGHT: pink[200], // #F48FB1
-  SECONDARY_DARK: pink[900], // #880E4F
+  PRIMARY: '#3F51B5',
+  PRIMARY_LIGHT: '#9FA8DA',
+  PRIMARY_DARK: '#283593',
+  SECONDARY: '#F50057',
+  SECONDARY_LIGHT: '#F48FB1',
+  SECONDARY_DARK: '#880E4F',
   TERTIARY: '#146EB3',
   TERTIARY_LIGHT: '#D0E2F0',
   BACKGROUND: 'rgba(255,255,255,0)',
@@ -49,12 +47,12 @@ export const PIE_COLOR_DEFAULTS = {
   // Component-specific colors (formerly ad-hoc, now formalized)
   // Choice inputs
   CHOICE_INPUT_COLOR: 'black', // References TEXT
-  CHOICE_INPUT_SELECTED_COLOR: indigo[500], // References PRIMARY
+  CHOICE_INPUT_SELECTED_COLOR: '#3F51B5',
   CHOICE_INPUT_DISABLED_COLOR: 'grey', // References DISABLED
 
   // Feedback
-  FEEDBACK_CORRECT_BG: green[500], // References CORRECT
-  FEEDBACK_INCORRECT_BG: orange[500], // References INCORRECT
+  FEEDBACK_CORRECT_BG: '#4CAF50',
+  FEEDBACK_INCORRECT_BG: '#FF9800',
 
   // Annotations (extended-text-entry)
   ANNOTATION_POINTER_RIGHT: '100%',
@@ -63,7 +61,7 @@ export const PIE_COLOR_DEFAULTS = {
   ANNOTATION_POINTER_BORDER_COLOR: 'rgb(153, 255, 153)',
 
   // Number line / graphing
-  ARROW_COLOR: orange[500], // Dynamic, using INCORRECT as default
+  ARROW_COLOR: '#FF9800',
   TICK_COLOR: '#ffffff',
   LINE_STROKE: '#ffffff',
   POINT_FILL: '#000000',

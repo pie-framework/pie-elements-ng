@@ -1,18 +1,20 @@
 {
   "name": "@pie-lib/math-input",
-  "private": true,
   "version": "0.1.0",
   "description": "React implementation of @pie-lib/math-input synced from pie-lib",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",
+    "@fontsource/stix-two-text": "^5.2.8",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
-    "@pie-element/shared-mathquill": "workspace:*",
+    "@pie-framework/mathquill": "^1.1.4",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
     "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
-    "@pie-lib/render-ui": "workspace:*"
+    "react": "^18.2.0"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -32,5 +34,12 @@
     "build": "bun x vite build && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "test": "bun x vitest run"
+  },
+  "devDependencies": {
+    "vite": "^8.0.1",
+    "typescript": "^5.9.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
   }
 }

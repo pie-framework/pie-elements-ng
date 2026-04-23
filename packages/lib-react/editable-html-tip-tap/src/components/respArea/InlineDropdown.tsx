@@ -11,7 +11,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { NodeViewWrapper } from '@tiptap/react';
-import { Chevron } from '../icons/RespArea';
+import { Chevron } from '../icons/RespArea.js';
 import ReactDOM from 'react-dom';
 
 const InlineDropdown = (props) => {
@@ -21,10 +21,12 @@ const InlineDropdown = (props) => {
   // TODO: Investigate
   // Needed because items with values inside have different positioning for some reason
   const html = value || '<div>&nbsp</div>';
+  const pos = getPos();
   const toolbarRef = useRef(null);
+  const toolbarEditor = useRef(null);
   const [showToolbar, setShowToolbar] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const InlineDropdownToolbar = options.respAreaToolbar(node, editor, () => {});
+  const InlineDropdownToolbar = options.respAreaToolbar([node, pos], editor, () => {});
 
   useEffect(() => {
     const { selection } = editor.state;
@@ -51,7 +53,11 @@ const InlineDropdown = (props) => {
     });
 
     const handleClickOutside = (event) => {
+      const insideSomeEditor = event.target.closest('[data-toolbar-for]');
+
       if (
+        (!insideSomeEditor || insideSomeEditor.dataset.toolbarFor !== toolbarEditor.current.instanceId) &&
+        !editor._toolbarOpened &&
         toolbarRef.current &&
         !toolbarRef.current.contains(event.target) &&
         !event.target.closest('[data-inline-node]')
@@ -76,7 +82,6 @@ const InlineDropdown = (props) => {
       style={{
         display: 'inline-flex',
         height: '50px',
-        margin: '0 5px',
         cursor: 'pointer',
       }}
     >
@@ -89,7 +94,7 @@ const InlineDropdown = (props) => {
           border: '1px solid #C0C3CF',
           boxSizing: 'border-box',
           borderRadius: '3px',
-          margin: '0 4px',
+          margin: '0 2px',
           position: 'relative',
           alignItems: 'center',
         }}
@@ -126,7 +131,11 @@ const InlineDropdown = (props) => {
       {showToolbar &&
         ReactDOM.createPortal(
           <div ref={toolbarRef} style={{ zIndex: 1 }}>
-            <InlineDropdownToolbar />
+            <InlineDropdownToolbar
+              editorCallback={(instance) => {
+                toolbarEditor.current = instance;
+              }}
+            />
           </div>,
           document.body,
         )}

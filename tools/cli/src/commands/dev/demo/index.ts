@@ -71,6 +71,9 @@ export default class DevDemo extends Command {
     this.log('');
 
     try {
+      // 0. Regenerate demo import map every run (CLI path bypasses package predev hook).
+      await this.generateDemoImports(demoAppPath);
+
       // 1. Build all elements if requested
       if (flags.build) {
         this.log('Building all React elements...');
@@ -187,6 +190,27 @@ export default class DevDemo extends Command {
     });
 
     return proc;
+  }
+
+  private async generateDemoImports(demoPath: string): Promise<void> {
+    this.log('Generating demo import map...');
+    await new Promise<void>((resolve, reject) => {
+      const generate = spawn('bun', ['run', 'generate-imports'], {
+        cwd: demoPath,
+        stdio: 'inherit',
+      });
+
+      generate.on('close', (code) => {
+        if (code === 0) {
+          this.log('✓ Demo import map generated\n');
+          resolve();
+        } else {
+          reject(new Error(`generate-imports failed with code ${code}`));
+        }
+      });
+
+      generate.on('error', reject);
+    });
   }
 
   private async openBrowser(url: string): Promise<void> {

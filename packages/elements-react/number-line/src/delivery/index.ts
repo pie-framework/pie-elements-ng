@@ -8,17 +8,17 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import * as dataConverter from './data-converter';
-import * as pointChooser from './number-line/point-chooser';
-import * as tickUtils from './number-line/graph/tick-utils';
+import * as dataConverter from './data-converter.js';
+import * as pointChooser from './number-line/point-chooser/index.js';
+import * as tickUtils from './number-line/graph/tick-utils.js';
 
-import { lineIsSwitched, switchGraphLine, toGraphFormat, toSessionFormat } from './data-converter';
+import { lineIsSwitched, switchGraphLine, toGraphFormat, toSessionFormat } from './data-converter.js';
 
-import Graph from './number-line/graph';
-import NumberLineComponent from './number-line';
+import Graph from './number-line/graph/index.js';
+import NumberLineComponent from './number-line/index.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import RootComponent from './number-line';
+import RootComponent from './number-line/index.js';
 import { cloneDeep } from 'lodash-es';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
@@ -28,6 +28,53 @@ export default class NumberLine extends HTMLElement {
   constructor() {
     super();
     this._root = null;
+    this._mathObserver = null;
+    this._mathRenderPending = false;
+  }
+
+  _scheduleMathRender: any = () => {
+    if (this._mathRenderPending) return;
+    this._mathRenderPending = true;
+
+    requestAnimationFrame(() => {
+      if (this._mathObserver) {
+        this._mathObserver.disconnect();
+      }
+
+      renderMath(this);
+      this._mathRenderPending = false;
+
+      setTimeout(() => {
+        if (this._mathObserver) {
+          this._mathObserver.observe(this, {
+            childList: true,
+            subtree: true,
+            characterData: false,
+          });
+        }
+      }, 50);
+    });
+  };
+
+  _initMathObserver() {
+    if (this._mathObserver) return;
+
+    this._mathObserver = new MutationObserver(() => {
+      this._scheduleMathRender();
+    });
+
+    this._mathObserver.observe(this, {
+      childList: true,
+      subtree: true,
+      characterData: false,
+    });
+  }
+
+  _disconnectMathObserver() {
+    if (this._mathObserver) {
+      this._mathObserver.disconnect();
+      this._mathObserver = null;
+    }
   }
 
   set model(m) {
@@ -48,6 +95,7 @@ export default class NumberLine extends HTMLElement {
   }
 
   connectedCallback() {
+    this._initMathObserver();
     this._render();
   }
 
@@ -162,13 +210,14 @@ export default class NumberLine extends HTMLElement {
         this._root = createRoot(this);
       }
       this._root.render(el);
-      queueMicrotask(() => {
-        renderMath(this);
-      });
+
+      // schedule math rendering via observer pipeline (for initial render as well)
+      this._scheduleMathRender();
     }
   }
 
   disconnectedCallback() {
+    this._disconnectMathObserver();
     if (this._root) {
       this._root.unmount();
     }

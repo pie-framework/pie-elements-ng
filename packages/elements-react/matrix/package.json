@@ -1,7 +1,6 @@
 {
   "name": "@pie-element/matrix",
-  "private": true,
-  "version": "0.1.0",
+  "version": "3.2.0-next.7",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -16,7 +15,9 @@
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "react-is": "^19.2.0",
+    "lodash-es": "^4.17.21"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -53,9 +54,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^6.0.0",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

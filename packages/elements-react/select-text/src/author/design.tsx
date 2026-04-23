@@ -20,7 +20,7 @@ import Info from '@mui/icons-material/Info';
 import debug from 'debug';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import Tooltip from '@mui/material/Tooltip';
-import { generateValidationMessage } from './utils';
+import { generateValidationMessage } from './utils.js';
 
 const { Panel, toggle, radio, dropdown } = settings;
 
@@ -86,7 +86,7 @@ const TokensDetails: any = styled('div')(({ theme }) => ({
 
 const StyledNumberTextField: any = styled(NumberTextField)(({ theme }) => ({
   width: '180px',
-  margin: `${theme.spacing(0.5)}px auto 0`,
+  margin: `${theme.spacing(0.5)} auto 0`,
 }));
 
 const log = debug('@pie-element:select-text:configure');

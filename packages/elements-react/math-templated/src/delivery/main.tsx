@@ -16,10 +16,10 @@ import Tooltip from '@mui/material/Tooltip';
 import { mq, HorizontalKeypad, updateSpans } from '@pie-lib/math-input';
 import { color, Collapsible, Readable, hasText, hasMedia, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import MathQuill from '@pie-element/shared-mathquill';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import ReactDOM from 'react-dom';
+import MathQuill from '@pie-framework/mathquill';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -204,11 +204,10 @@ if (typeof document !== 'undefined') {
   }
 }
 
-let registered = false;
-
 // Define a regex pattern to match {{number}}
 const REGEX = /(\{\{\d+\}\})/gm;
 const DEFAULT_KEYPAD_VARIANT = 6;
+let registered = false;
 
 // !!! If you're using Chrome but have selected the "iPad" device in Chrome Developer Tools, the navigator.userAgent string may still report as
 //  Safari because Chrome on iOS actually uses the Safari rendering engine under the hood due to Apple's restrictions on third-party browser engines.
@@ -219,11 +218,12 @@ const DEFAULT_KEYPAD_VARIANT = 6;
 const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 function generateAdditionalKeys(keyData = []) {
+  const normalizeKeyLatex = (value = '') => value.replace(/\$\$/g, '').replace(/^\$|\$$/g, '').trim();
   return keyData.map((key) => ({
     name: key,
-    latex: key,
-    write: key,
-    label: key,
+    latex: normalizeKeyLatex(key),
+    write: normalizeKeyLatex(key),
+    label: normalizeKeyLatex(key),
   }));
 }
 
@@ -318,26 +318,20 @@ export class Main extends React.Component {
       showCorrect: alwaysShowCorrect || false,
       tooltipContainerRef: React.createRef(),
     };
-  }
 
-  UNSAFE_componentWillMount() {
-    if (typeof window !== 'undefined') {
-      let MQ = MathQuill.getInterface(3);
-
-      if (!registered) {
-        MQ.registerEmbed('answerBlock', (data) => ({
-          htmlString: `<div class="block-container">
+    if (typeof window !== 'undefined' && !registered) {
+      const MQ = MathQuill.getInterface(2);
+      MQ.registerEmbed('answerBlock', (data) => ({
+        htmlString: `<div class="block-container">
               <div class="block-response" id="${data}Index">R</div>
               <div class="block-math">
                 <span id="${data}"></span>
               </div>
             </div>`,
-          text: () => 'text',
-          latex: () => `\\embed{answerBlock}[${data}]`,
-        }));
-
-        registered = true;
-      }
+        text: () => 'text',
+        latex: () => `\\embed{answerBlock}[${data}]`,
+      }));
+      registered = true;
     }
   }
 
@@ -352,7 +346,7 @@ export class Main extends React.Component {
         const indexEl = this.root.querySelector(`#${answerId}Index`);
 
         if (el) {
-          let MQ = MathQuill.getInterface(3);
+          let MQ = MathQuill.getInterface(2);
           const answer = answers[answerId];
 
           el.textContent = (answer && answer.value) || '';
@@ -363,13 +357,14 @@ export class Main extends React.Component {
           }
 
           MQ.StaticMath(el);
-
           indexEl.textContent = 'R';
         }
       });
     }
 
-    renderMath(this.root);
+    if (this.root) {
+      renderMath(this.root);
+    }
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -729,6 +724,7 @@ export class Main extends React.Component {
                             additionalKeys={additionalKeys}
                             mode={equationEditor || DEFAULT_KEYPAD_VARIANT}
                             onClick={this.onClick}
+                            onRequestClose={() => this.setState({ activeAnswerBlock: '' })}
                           />
                         </ResponseContainer>
                       )) ||

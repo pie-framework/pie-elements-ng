@@ -9,10 +9,39 @@
  */
 
 import React, { useState } from 'react';
-import { Readable } from '@pie-lib/render-ui';
+import { styled } from '@mui/material/styles';
+import { Readable as ReadableImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import PropTypes from 'prop-types';
-import { extractTextFromHTML, isEmptyString } from './utils';
+import { extractTextFromHTML, isEmptyString } from './utils.js';
 
 const styles = {
   axisLabel: {
@@ -56,6 +85,13 @@ const styles = {
   },
 };
 
+const LabelContent: any = styled('div')({
+  ...styles.disabledLabel,
+  '& p': {
+    margin: 0,
+  },
+});
+
 const LabelComponent = (props) => {
   const {
     disabledLabel,
@@ -72,6 +108,7 @@ const LabelComponent = (props) => {
     mathMlOptions = {},
     charactersLimit,
     titleHeight,
+    preventNewLines,
   } = props;
 
   const [rotatedToHorizontal, setRotatedToHorizontal] = useState(false);
@@ -119,6 +156,15 @@ const LabelComponent = (props) => {
     });
   };
 
+  const onKeyDown = (event) => {
+    if (preventNewLines && event.key === 'Enter') {
+      // prevent adding new lines - cancelling event
+      return true;
+    }
+
+    return false;
+  };
+
   return (
     <Readable false>
       <div
@@ -134,7 +180,7 @@ const LabelComponent = (props) => {
         }}
       >
         {disabledLabel ? (
-          <div style={styles.disabledLabel} dangerouslySetInnerHTML={{ __html: text || '' }} />
+          <LabelContent dangerouslySetInnerHTML={{ __html: text || '' }} />
         ) : (
           <EditableHtml
             markup={text || ''}
@@ -148,6 +194,7 @@ const LabelComponent = (props) => {
             disableScrollbar
             activePlugins={activePlugins}
             onDone={exitEditMode}
+            onKeyDown={onKeyDown}
             mathMlOptions={mathMlOptions}
             charactersLimit={charactersLimit}
           />
