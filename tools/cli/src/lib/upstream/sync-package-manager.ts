@@ -772,6 +772,12 @@ export async function ensurePieLibPackageJson(
     pkg.sideEffects = PACKAGE_DEFAULTS.SIDE_EFFECTS;
   }
 
+  // Pie-lib packages use a vite.config.ts that imports @vitejs/plugin-react,
+  // so their devDependencies must include the same build toolchain that
+  // element packages do. Without this, a fresh `bun install` (no hoisting)
+  // fails to resolve the plugin when turbo runs `vite build` per package.
+  ensureBuildToolDependencies(pkg);
+
   // Ensure build scripts
   if (!pkg.scripts || typeof pkg.scripts !== 'object') {
     pkg.scripts = {};

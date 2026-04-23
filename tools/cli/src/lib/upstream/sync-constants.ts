@@ -31,9 +31,9 @@ export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = ['math-input', 'math-rendering
 
 // Build tool versions
 export const BUILD_TOOLS = {
-  VITE: '^6.0.0',
+  VITE: '^8.0.1',
   TYPESCRIPT: '^5.9.3',
-  VITE_REACT_PLUGIN: '^4.2.0',
+  VITE_REACT_PLUGIN: '^6.0.1',
   LODASH_ES: '^4.17.22',
 } as const;
 
