@@ -36,7 +36,8 @@ describe('layout (2-set)', () => {
     const tileW = 110;
     const tileH = 44;
     for (const key of ['0', '1', '0,1']) {
-      const region = layout.regionByKey[key]!;
+      const region = layout.regionByKey[key];
+      if (!region) throw new Error(`missing region ${key}`);
       const slot0 = region.gridSlot(0, tileW, tileH);
       const slot1 = region.gridSlot(1, tileW, tileH);
       const slot2 = region.gridSlot(2, tileW, tileH);
@@ -56,7 +57,8 @@ describe('layout (2-set)', () => {
 
   it('outside strip lays out tiles in a horizontal row (slotsPerRow>1)', () => {
     const layout = buildLayout2Set(baseModel);
-    const outside = layout.regionByKey['']!;
+    const outside = layout.regionByKey[''];
+    if (!outside) throw new Error('missing outside region');
     const a = outside.gridSlot(0, 100, 40);
     const b = outside.gridSlot(1, 100, 40);
     expect(b.x).toBeGreaterThan(a.x);

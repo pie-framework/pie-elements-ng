@@ -235,7 +235,7 @@ export function hitTest(layout: DiagramLayout, x: number, y: number): RegionLayo
   const order = ['0,1', '0', '1', ''];
   for (const key of order) {
     const r = layout.regionByKey[key];
-    if (r && r.pointInRegion(x, y)) return r;
+    if (r?.pointInRegion(x, y)) return r;
   }
   return null;
 }

@@ -214,7 +214,7 @@ export const parseContract = (raw: unknown, location: string): PieDocsContract =
     packageName: raw.packageName,
     framework: raw.framework,
     summary: typeof raw.summary === 'string' ? raw.summary : undefined,
-    supportedModes: supportedModes && supportedModes.length ? supportedModes : MODES,
+    supportedModes: supportedModes?.length ? supportedModes : MODES,
     views,
   });
 };

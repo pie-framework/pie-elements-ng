@@ -59,7 +59,7 @@ class McPopulatedBlankElement extends SvelteElementClass {
   onAudioStarted = () => {
     this._internalSession = {
       ...(this._internalSession || {}),
-      audioStartTime: new Date().getTime(),
+      audioStartTime: Date.now(),
     };
   };
 
@@ -67,7 +67,7 @@ class McPopulatedBlankElement extends SvelteElementClass {
     this.audioComplete = true;
     this._internalSession = {
       ...(this._internalSession || {}),
-      audioEndTime: new Date().getTime(),
+      audioEndTime: Date.now(),
     };
     this._dispatchSessionChanged();
   };

@@ -146,13 +146,13 @@ describe('normalizeSession', () => {
   it('fills in missing placement keys for authored tiles', () => {
     const m = twoSetModel();
     const s = normalizeSession({ placements: { t1: [0] } }, m);
-    expect(Object.keys(s.placements!).sort()).toEqual(['t1', 't2', 't3', 't4']);
-    expect(s.placements!.t2).toBeNull();
+    expect(Object.keys(s.placements ?? {}).sort()).toEqual(['t1', 't2', 't3', 't4']);
+    expect(s.placements?.t2).toBeNull();
   });
   it('normalizes placement arrays to sorted-ascending', () => {
     const m = twoSetModel();
     const s = normalizeSession({ placements: { t3: [1, 0] as any } }, m);
-    expect(s.placements!.t3).toEqual([0, 1]);
+    expect(s.placements?.t3).toEqual([0, 1]);
   });
   it('preserves unknown placement keys', () => {
     const m = twoSetModel();
@@ -243,8 +243,8 @@ describe('createCorrectResponseSession', () => {
       mode: 'gather',
     });
     expect(s).not.toBeNull();
-    expect(s!.completed).toBe(true);
-    expect(s!.placements).toEqual({ t1: [0], t2: [1], t3: [0, 1], t4: [] });
+    expect(s?.completed).toBe(true);
+    expect(s?.placements).toEqual({ t1: [0], t2: [1], t3: [0, 1], t4: [] });
   });
 });
 
