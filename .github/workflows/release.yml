@@ -1,3 +1,7 @@
+# Versioning PRs (changesets) still run from CI. Automated `npm publish` is disabled
+# until the team adopts this repo; publish packages manually in the meantime.
+# To re-enable: set ENABLE_CICD_NPM_PUBLISH to 'true' on the release job and restore
+# `publish: bun run release:publish` on the changesets/action step.
 name: Release
 
 on:
@@ -19,7 +23,7 @@ on:
   workflow_dispatch:
     inputs:
       release_intent:
-        description: "What should this manual run do?"
+        description: "What should this manual run do? (The 'publish' option is rejected while ENABLE_CICD_NPM_PUBLISH is false.)"
         required: true
         type: choice
         options:
@@ -64,11 +68,13 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
-    name: Release to NPM
+    name: Release (version PRs only; npm publish off)
     runs-on: ubuntu-latest
     env:
       PUBLISH_NPM_TOKEN: ""
       PUBLISH_NODE_AUTH_TOKEN: ""
+      # Flip to 'true' and restore `publish: bun run release:publish` on changesets/action to re-enable CI publish.
+      ENABLE_CICD_NPM_PUBLISH: "false"
     permissions:
       contents: write
       pull-requests: write
@@ -164,8 +170,14 @@ jobs:
             exit 1
           fi
 
+          if [ "$intent" = "publish" ] && [ "${ENABLE_CICD_NPM_PUBLISH:-false}" != "true" ]; then
+            echo "Automated npm publish from GitHub Actions is disabled (ENABLE_CICD_NPM_PUBLISH != true)."
+            echo "Publish manually, or set ENABLE_CICD_NPM_PUBLISH=true and restore the changesets/action publish input in .github/workflows/release.yml."
+            exit 1
+          fi
+
       - name: Resolve release channel
-        if: (github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true')
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
         id: release_channel
         shell: bash
         run: |
@@ -208,7 +220,7 @@ jobs:
           echo "Resolved release channel: ${channel}"
 
       - name: Enforce branch to channel policy
-        if: (github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true')
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
         shell: bash
         run: |
           set -euo pipefail
@@ -233,15 +245,15 @@ jobs:
           exit 0
 
       - name: Build packages (publish runs only)
-        if: (github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true')
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
         run: bun run build
 
       - name: Run tests (publish runs only)
-        if: (github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true')
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
         run: bun run test
 
       - name: Resolve npm publish auth mode
-        if: (github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true')
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
         id: npm_auth
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -276,7 +288,7 @@ jobs:
           fi
 
       - name: Configure token auth for npm publish
-        if: steps.npm_auth.outputs.mode == 'token'
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.npm_auth.outputs.mode == 'token'
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -286,19 +298,22 @@ jobs:
           echo "PUBLISH_NODE_AUTH_TOKEN=${NPM_TOKEN}" >> "$GITHUB_ENV"
 
       - name: Configure OIDC auth for npm publish
-        if: steps.npm_auth.outputs.mode == 'oidc'
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.npm_auth.outputs.mode == 'oidc'
         run: |
           set -euo pipefail
           echo "Using OIDC trusted publishing for npm publish."
           echo "PUBLISH_NPM_TOKEN=" >> "$GITHUB_ENV"
           echo "PUBLISH_NODE_AUTH_TOKEN=" >> "$GITHUB_ENV"
 
-      - name: Create Release Pull Request or Publish to NPM
+      - name: Create release pull request (npm publish disabled in CI)
         if: github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_changesets == 'true' || steps.detect.outputs.has_version_bumps == 'true'
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: bun run release:publish
+          # Omit `publish` so the action never runs `bun run release:publish` from CI.
+          # Re-enable publishing by setting ENABLE_CICD_NPM_PUBLISH=true and adding:
+          #   publish: bun run release:publish
+          createGithubReleases: false
           version: bun run version
           title: 'chore(release): version packages [skip-heavy-ci]'
           commit: 'chore(release): version packages'
