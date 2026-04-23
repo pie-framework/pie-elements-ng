@@ -121,8 +121,28 @@ export interface GenerateDocsResult {
   outputs: PieDocsElementOutput[];
 }
 
-const normalizeForCheck = (content: string): string =>
-  content.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g, '<normalized-timestamp>');
+// Replace ISO-8601 timestamps with a fixed valid value so a post-normalization
+// JSON.parse still succeeds (the old `<normalized-timestamp>` placeholder was
+// not valid JSON, which forced a purely textual comparison).
+const normalizeTimestamps = (content: string): string =>
+  content.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g, '0000-01-01T00:00:00.000Z');
+
+// Compare generated content to the checked-in artifact.
+// - For JSON files, parse both sides and compare by structural equality so
+//   whitespace/formatting differences (e.g. after a biome format pass) do not
+//   register as drift. HTML files fall back to text comparison with timestamps
+//   normalized away.
+const normalizeForCheck = (path: string, content: string): string => {
+  const withoutTimestamps = normalizeTimestamps(content);
+  if (path.endsWith('.json')) {
+    try {
+      return JSON.stringify(JSON.parse(withoutTimestamps));
+    } catch {
+      return withoutTimestamps;
+    }
+  }
+  return withoutTimestamps;
+};
 
 const loadValueWithFallback = async (
   packageDir: string,
@@ -523,7 +543,8 @@ export const generateDocsForContract = async (
       const existing = existsSync(candidate.path) ? await readFile(candidate.path, 'utf-8') : null;
       if (
         existing === null ||
-        normalizeForCheck(existing) !== normalizeForCheck(candidate.content)
+        normalizeForCheck(candidate.path, existing) !==
+          normalizeForCheck(candidate.path, candidate.content)
       ) {
         driftFiles.push(candidate.path);
       }
