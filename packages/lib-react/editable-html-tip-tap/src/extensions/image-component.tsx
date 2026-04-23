@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash-es/isEqual.js';
 import debug from 'debug';
@@ -84,15 +84,18 @@ function ImageComponent(props) {
     editor,
     attributes,
     onFocus,
+    getPos,
     selected,
     options,
     maxImageWidth = 700,
     maxImageHeight = 900,
-    latex,
-    handleChange,
-    handleDone,
   } = props;
   const { alt } = node.attrs;
+  const pos = getPos();
+
+  const selFrom = editor.state.selection.from;
+  const selTo = editor.state.selection.to;
+  const onlyThisNodeSelected = useMemo(() => selFrom + node.nodeSize === selTo, [selFrom, selTo, node.nodeSize]);
 
   const [showToolbar, setShowToolbar] = useState(false);
 
@@ -106,45 +109,66 @@ function ImageComponent(props) {
     return parseInt(floored.toFixed(0) * 25, 10);
   }, []);
 
+  const findNodePos = useCallback(() => {
+    const key = latestNodeRef.current.attrs.nodeKey;
+    let found = null;
+    editor.state.doc.descendants((n, pos) => {
+      if (found !== null) return false;
+      if (n.type.name === 'imageUploadNode' && n.attrs.nodeKey === key) {
+        found = pos;
+        return false;
+      }
+    });
+    return found;
+  }, [editor]);
+
+  // dispatch an attribute update targeted precisely at this node by nodeKey.
+  const updateThisNode = useCallback(
+    (newAttrs) => {
+      const nodePos = findNodePos();
+      if (nodePos === null) return;
+      const currentNode = editor.state.doc.nodeAt(nodePos);
+      if (!currentNode) return;
+      editor.view.dispatch(editor.state.tr.setNodeMarkup(nodePos, undefined, { ...currentNode.attrs, ...newAttrs }));
+    },
+    [editor, findNodePos],
+  );
+
   const applySizeData = useCallback(() => {
     if (!node.attrs.width || !imgRef.current) return;
-
-    const update = {
-      ...node.attrs,
-      resizePercent: getPercentFromWidth(node.attrs.width),
-    };
-
-    if (!isEqual(update, node.attrs)) {
-      editor.commands.updateAttributes('imageUploadNode', update);
-    }
-  }, [editor, node.attrs, getPercentFromWidth]);
+    const resizePercent = getPercentFromWidth(node.attrs.width);
+    if (node.attrs.resizePercent === resizePercent) return;
+    updateThisNode({ resizePercent });
+  }, [node.attrs.width, node.attrs.resizePercent, getPercentFromWidth, updateThisNode]);
 
   // keep ref in sync with latest node
   useEffect(() => {
-    latestNodeRef.current = node;
-  }, [node]);
+    latestNodeRef.current = { ...node, pos };
+  }, [node, pos]);
 
   useEffect(() => {
-    const { selection } = editor.state;
-    const onlyThisNodeSelected = selection.from + node.nodeSize === selection.to;
-
     if (selected) {
       if (onlyThisNodeSelected) {
+        // Only open the upload UI for a fresh placeholder. Remounting after tab switch
+        // would otherwise call insertImageRequested again and reopen the file modal.
+        const hasImageSrc = String(node.attrs?.src ?? '').trim();
+
+        if (!hasImageSrc && options.imageHandling?.insertImageRequested) {
+          options.imageHandling.insertImageRequested(
+            editor,
+            [node, pos],
+            (finish) => new InsertImageHandler(editor, [node, pos], finish),
+          );
+        }
+
         setShowToolbar(selected);
       }
     } else {
       setShowToolbar(selected);
     }
-  }, [editor, node, selected]);
+  }, [onlyThisNodeSelected, selected]);
 
   useEffect(() => {
-    // Only open the upload UI for a fresh placeholder. Remounting after tab switch
-    // would otherwise call insertImageRequested again and reopen the file modal.
-    const hasImageSrc = String(node.attrs?.src ?? '').trim();
-    if (!hasImageSrc && options.imageHandling?.insertImageRequested) {
-      options.imageHandling.insertImageRequested(node, (finish) => new InsertImageHandler(editor, node, finish));
-    }
-
     applySizeData();
 
     const resizeHandle = resizeRef.current;
@@ -174,11 +198,11 @@ function ImageComponent(props) {
       box.style.height = `${h}px`;
 
       const update = { width: w, height: h };
-      if (!isEqual(update, node.attrs)) {
-        editor.commands.updateAttributes('imageUploadNode', update);
+      if (!isEqual(update, { width: node.attrs.width, height: node.attrs.height })) {
+        updateThisNode(update);
       }
     }
-  }, [editor, node.attrs, maxImageWidth, maxImageHeight]);
+  }, [node.attrs.width, node.attrs.height, maxImageWidth, maxImageHeight, updateThisNode]);
 
   const updateAspect = (initial, next, keepAspect = true, resizeType) => {
     if (keepAspect) {
@@ -206,36 +230,17 @@ function ImageComponent(props) {
         box.style.width = `${next.width}px`;
         box.style.height = `${next.height}px`;
 
-        const update = { width: next.width, height: next.height };
-        if (!isEqual(update, node.attrs)) {
-          editor.commands.updateAttributes('imageUploadNode', update);
-        }
+        updateThisNode({ width: next.width, height: next.height });
       }
     },
-    [editor, node.attrs],
+    [editor, updateThisNode],
   );
-
-  // Helper to find this node's current position in the doc.
-  // We cannot use object identity (n === node) because ProseMirror replaces
-  // node objects after every transaction — match by src instead.
-  const findNodePos = useCallback(() => {
-    let found = null;
-    const src = latestNodeRef.current.attrs.src;
-    editor.state.doc.descendants((n, pos) => {
-      if (found !== null) return false;
-      if (n.type.name === 'imageUploadNode' && n.attrs.src === src) {
-        found = pos;
-        return false;
-      }
-    });
-    return found;
-  }, [editor]);
 
   const onChange = useCallback(
     (newValues) => {
-      editor.commands.updateAttributes('imageUploadNode', newValues);
+      updateThisNode(newValues);
     },
-    [editor],
+    [editor, updateThisNode],
   );
 
   const stopResize = useCallback(() => {
@@ -312,7 +317,7 @@ function ImageComponent(props) {
               }}
               onDone={() => {
                 setShowToolbar(false);
-                options.imageHandling?.onDone?.();
+                options.imageHandling?.onDone?.(editor);
                 editor.commands.focus('end');
               }}
             >

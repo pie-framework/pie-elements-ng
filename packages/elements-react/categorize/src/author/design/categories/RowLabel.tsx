@@ -42,8 +42,9 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 const RowLabelContainer: any = styled(InputContainer)(({ theme }) => ({
-  paddingTop: theme.spacing(2),
   width: '100%',
+  paddingTop: theme.spacing(1),
+  marginTop: theme.spacing(1),
 }));
 
 export const RowLabel = ({

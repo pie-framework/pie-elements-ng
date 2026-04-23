@@ -30,8 +30,8 @@ const CategoriesContainer: any = styled('div')(({ theme }) => ({
 
 const CategoriesHolder: any = styled('div')(({ theme }) => ({
   display: 'grid',
-  gridRowGap: `${theme.spacing(1)}px`,
-  gridColumnGap: `${theme.spacing(1)}px`,
+  gridRowGap: theme.spacing(1),
+  gridColumnGap: theme.spacing(1),
 }));
 
 const StyledTooltip: any = styled(Tooltip)(({ theme }) => ({

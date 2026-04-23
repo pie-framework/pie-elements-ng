@@ -63,7 +63,7 @@ const CheckboxHolder: any = styled(Box)({
   backgroundColor: color.background(),
   flex: 1,
   '& .MuiFormControlLabel-root': {
-    marginLeft: '-14px', // to be consistent to previous versions before MUI v5 upgrade  
+    marginLeft: '-14px', // to be consistent to previous versions before MUI v5 upgrade
   },
   '& label': {
     color: color.text(),
@@ -71,7 +71,7 @@ const CheckboxHolder: any = styled(Box)({
       fontSize: 'inherit',
     },
     '& > .MuiButtonBase-root': {
-      padding: '12px', // to be consistent to previous versions before MUI v5 upgrade  
+      padding: '12px', // to be consistent to previous versions before MUI v5 upgrade
     },
   },
 });
@@ -81,7 +81,7 @@ const BelowSelectionComponent: any = styled('span')(({ theme }) => ({
   alignItems: 'center',
   '& > span': {
     // visually reduce right padding, but maintain accessibility padding for checkbox indicators to be circles
-    marginLeft: `-${theme.spacing(1)}px`,
+    marginLeft: `-${theme.spacing(1)}`,
   },
 }));
 
@@ -335,23 +335,33 @@ export class ChoiceInput extends React.Component {
       }),
     };
 
+    const hasMathOrImage =
+      typeof label === 'string' &&
+      (label.includes('<math') ||
+        label.includes('\\(') ||
+        label.includes('\\[') ||
+        label.includes('<img') ||
+        label.includes('data-latex') ||
+        label.includes('data-raw') ||
+        label.includes('<mjx-container'));
+
+    const screenReaderLabel = displayKey ? (
+      <SrOnly id={this.descId}>
+        {hasMathOrImage ? `Pick the answer below, ${displayKey}` : displayKey}
+      </SrOnly>
+    ) : null;
+
     const choicelabel = (
       <>
         {displayKey && !isSelectionButtonBelow ? (
           <Row component="span">
-            {displayKey}.{'\u00A0'}
+            <span aria-hidden="true">{displayKey}.{'\u00A0'}</span>
             <PreviewPrompt className="prompt-label" prompt={label} tagName="span" />
           </Row>
         ) : (
           <PreviewPrompt className="prompt-label" prompt={label} tagName="span" />
         )}
       </>
-    );
-
-    const screenReaderLabel = (
-      <SrOnly id={this.descId}>
-        {choiceMode === 'checkbox' ? 'Checkbox to select the answer below' : 'Radio button to select the answer below'}
-      </SrOnly>
     );
 
     const tagProps = {
@@ -363,28 +373,18 @@ export class ChoiceInput extends React.Component {
       id: this.choiceId,
       onChange: this.onToggleChoice,
       onKeyDown: this.handleKeyDown,
-      'aria-describedby': this.descId,
+      ...(screenReaderLabel ? { 'aria-describedby': this.descId } : {}),
     };
-
-    const hasMathOrImage =
-      typeof label === 'string' &&
-      (label.includes('<math') ||
-        label.includes('\\(') ||
-        label.includes('\\[') ||
-        label.includes('<img') ||
-        label.includes('data-latex') ||
-        label.includes('data-raw') ||
-        label.includes('<mjx-container'));
 
     const control = isSelectionButtonBelow ? (
       <BelowSelectionComponent>
-        {hasMathOrImage && screenReaderLabel}
+        {screenReaderLabel}
         <Tag {...tagProps} style={{ padding: 0 }} />
-        {displayKey ? `${displayKey}.` : ''}
+        <span aria-hidden="true">{displayKey ? `${displayKey}.` : ''}</span>
       </BelowSelectionComponent>
     ) : (
       <>
-        {hasMathOrImage && screenReaderLabel}
+        {screenReaderLabel}
         <Tag {...tagProps} slotProps={{ input: { ref: this.props.autoFocusRef } }} />
       </>
     );

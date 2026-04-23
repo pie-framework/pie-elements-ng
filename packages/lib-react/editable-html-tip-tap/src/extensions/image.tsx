@@ -13,6 +13,7 @@ import { ReactNodeViewRenderer } from '@tiptap/react';
 import { Plugin } from '@tiptap/pm/state';
 import React from 'react';
 import ImageComponent from './image-component.js';
+import { node } from 'prop-types';
 
 export const ImageUploadNode = Node.create({
   name: 'imageUploadNode',
@@ -24,6 +25,7 @@ export const ImageUploadNode = Node.create({
 
   addAttributes() {
     return {
+      nodeKey: { default: null },
       loaded: { default: false },
       deleteStatus: { default: null },
       alignment: { default: null },
@@ -58,6 +60,8 @@ export const ImageUploadNode = Node.create({
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
+              // adding a unique nodeKey attribute to help identify this node instance later due to issues with multiple images
+              attrs: { nodeKey: `img-${Date.now()}-${Math.random().toString(36).slice(2)}` },
           });
         },
     };
@@ -99,6 +103,7 @@ export const ImageUploadNode = Node.create({
                 attrs: {
                   src,
                   loaded: true,
+                  nodeKey: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                 },
               });
             };

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/graphing-solution-set",
-  "version": "5.2.0-next.5",
+  "version": "5.2.0-next.7",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

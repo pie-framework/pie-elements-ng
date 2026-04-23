@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/multi-trait-rubric",
-  "version": "7.2.0-next.7",
+  "version": "7.2.0-next.9",
   "description": "React implementation of multi-trait-rubric element synced from pie-elements",
   "dependencies": {
     "@emotion/react": "^11.14.0",
