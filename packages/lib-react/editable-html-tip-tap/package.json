@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/editable-html-tip-tap",
-  "version": "1.2.0-next.35",
+  "version": "1.2.0-next.36",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

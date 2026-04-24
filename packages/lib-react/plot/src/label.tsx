@@ -83,7 +83,20 @@ const styles = {
   displayNone: {
     display: 'none',
   },
+  centerPlaceholder: {
+    '& .ProseMirror p.is-editor-empty::before, & .ProseMirror div.is-editor-empty::before': {
+      left: 0,
+      right: 0,
+      width: '100%',
+      textAlign: 'center',
+    },
+  },
 };
+
+
+const LabelWrapper: any = styled('div')({
+  ...styles.centerPlaceholder,
+});
 
 const LabelContent: any = styled('div')({
   ...styles.disabledLabel,
@@ -167,7 +180,7 @@ const LabelComponent = (props) => {
 
   return (
     <Readable false>
-      <div
+      <LabelWrapper
         onClick={rotateLabel}
         style={{
           ...(rotatedToHorizontal ? rotatedStyle : defaultStyle),
@@ -199,7 +212,7 @@ const LabelComponent = (props) => {
             charactersLimit={charactersLimit}
           />
         )}
-      </div>
+      </LabelWrapper>
     </Readable>
   );
 };

@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/text-select",
-  "version": "2.2.0-next.9",
+  "version": "2.2.0-next.10",
   "description": "Some react components for text selection",
   "dependencies": {
     "@emotion/react": "^11.14.0",
