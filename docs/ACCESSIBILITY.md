@@ -510,9 +510,8 @@ document.addEventListener('keydown', (e) => {
 
 ## See Also
 
-- [testing.md](./testing.md) - Testing guide including accessibility tests
-- [evals/README.md](./evals/README.md) - Evaluation system with accessibility actions
-- [USAGE.md](./USAGE.md) - Usage guide with accessibility features
+- [evals/STYLE-TESTING.md](./evals/STYLE-TESTING.md) - Evaluation system with accessibility actions
+- [README.md](../README.md) - Getting started guide
 
 ---
 

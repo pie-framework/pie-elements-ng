@@ -543,7 +543,7 @@ bun cli upstream:sync
 - Build artifacts (`dist/`, `node_modules/`)
 - Generated demo metadata (has timestamps, machine-specific paths)
 
-See [UPSTREAM_SYNC_COMMIT_GUIDE.md](../UPSTREAM_SYNC_COMMIT_GUIDE.md) for details.
+See [upstream-sync-commit-guide.md](upstream-sync-commit-guide.md) for details.
 
 ### Current State & Future
 
@@ -942,7 +942,7 @@ Svelte 5 runes provide fine-grained reactivity:
 5. **Accessibility Tests** - axe-core scans
 6. **Evaluation Tests** - YAML-driven comprehensive scenarios
 
-See [testing.md](./testing.md) for details.
+See `CLAUDE.md` for the full testing strategy.
 
 ## Demo Application
 
@@ -1246,7 +1246,7 @@ Packages can be loaded from CDN:
 
 ### Adding New Elements
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for step-by-step guide.
+See `CLAUDE.md` for the step-by-step guide and element conventions.
 
 Key requirements:
 
