@@ -17,7 +17,9 @@ From `CLAUDE.md` (verbatim):
 > - Cross-cutting platform changes that touch model / session / event contracts across multiple elements (e.g. shared-stimulus container, parameterized items, event consistency work).
 > - Authoring-surface changes that shift how authors compose item content.
 
-Does **not** require a PRD: bug fixes, refactors with no behaviour change, demo tweaks, docs / README changes, version bumps, dependency updates.
+Does **not** require a PRD: bug fixes, refactors with no behaviour change, demo tweaks, docs / README changes, version bumps, dependency updates, or retroactive documentation of stable elements you are not actively changing.
+
+**Retroactive PRDs for existing elements**: do not write them preemptively. Tests own behaviour; a PRD written after the fact drifts from the code and creates a second source of truth with no active reader. Exception: write a thin PRD for an existing element *when you are about to touch it* — capture only intent not derivable from the code (key non-goals, deliberate upstream divergences). One screen is enough.
 
 ## Process
 
