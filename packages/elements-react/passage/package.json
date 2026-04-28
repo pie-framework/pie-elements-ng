@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/passage",
-  "version": "6.2.0-next.8",
+  "version": "6.2.0-next.10",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/inline-dropdown",
-  "version": "9.2.0-next.12",
+  "version": "9.2.0-next.14",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
