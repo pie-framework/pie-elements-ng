@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/rubric",
-  "version": "1.2.0-next.37",
+  "version": "2.0.1",
   "description": "React implementation of @pie-lib/rubric synced from pie-lib",
   "dependencies": {
     "@emotion/react": "^11.14.0",
