@@ -59,11 +59,15 @@ const DEFAULT_LAYOUT_LIMITS = {
 const DEFAULT_LAYOUT_PROFILE_PRESETS: Record<string, Record<string, number>> = {
   audio_blank_only: {
     blankWideWidthRem: 10,
-    blankUnderlineWideWidthPx: 4,
+    blankUnderlineWideWidthPx: 6,
+    horizontalChoiceTileMinHeightRem: 11.25,
+    horizontalChoiceContentMinHeightRem: 9.375,
+    choiceGroupGapRem: 1,
+    audioBlankTemplateMarginBottomRem: 1.875,
   },
   stimulus_image_blank: {
     blankWideWidthRem: 10,
-    blankUnderlineWideWidthPx: 4,
+    blankUnderlineWideWidthPx: 6,
   },
   token_sequence: {
     blankStandaloneWidthRem: 7,
@@ -164,8 +168,8 @@ const layoutLimits = $derived.by(() => {
     model?.layoutLimits && typeof model.layoutLimits === 'object' ? model.layoutLimits : {};
   return {
     ...DEFAULT_LAYOUT_LIMITS,
-    ...profilePresetLimits,
     ...configured,
+    ...profilePresetLimits,
   };
 });
 const correctAnswerStyleVars = $derived.by(() =>
@@ -951,6 +955,7 @@ $effect(() => {
     flex-direction: column;
     align-items: center;
     width: min(var(--mpb-choice-width-px, 170px), var(--mpb-choice-width-vw, 30vw));
+    min-height: var(--mpb-choice-tile-min-height, 11rem);
     gap: 0;
   }
 
@@ -976,7 +981,7 @@ $effect(() => {
   }
 
   .choice-row-horizontal:hover .choice-tile {
-    background: var(--pie-correct-answer-choice-hover-bg, #ececec);
+    background: var(--mpb-choice-hover-bg, var(--pie-correct-answer-choice-hover-bg, #f2f2f2));
   }
 
   .pie-choice-horizontal:not(.is-selected):not(:hover) .pie-choice-tile {
@@ -984,11 +989,11 @@ $effect(() => {
   }
 
   .choice-row-horizontal.is-selected .choice-tile {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
+    background: var(--mpb-choice-selected-bg, var(--pie-correct-answer-choice-selected-bg, #fcfcd3));
   }
 
   .choice-row-horizontal.is-selected:hover .choice-tile {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
+    background: var(--mpb-choice-selected-bg, var(--pie-correct-answer-choice-selected-bg, #fcfcd3));
   }
 
   .pie-choice:not(.pie-choice-horizontal):hover .pie-choice-label-wrap {
@@ -1065,6 +1070,7 @@ $effect(() => {
 
   .choice-radio-bottom {
     margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
+    padding: var(--mpb-choice-radio-padding, 0px);
   }
 
   .choice-radio-inline {
@@ -1087,10 +1093,17 @@ $effect(() => {
       var(--mpb-audio-blank-template-margin-bottom, 1.8rem);
   }
 
+  .layout-audio_blank_only fieldset {
+    display: flex;
+    justify-content: center;
+  }
+
   .layout-audio_blank_only .blank-slot,
   .layout-stimulus_image_blank .blank-slot {
     width: var(--mpb-blank-wide-width, 10rem);
-    border-bottom-width: var(--mpb-blank-underline-wide-width, 4px);
+    border-bottom-width: var(--mpb-blank-underline-wide-width, 6px);
+    min-height: 160px;
+    padding-bottom: 4px;
   }
 
   .layout-stimulus_image_blank {
