@@ -82,7 +82,7 @@ git commit -m "sync: update from upstream"
 git push
 ```
 
-**Important:** See [UPSTREAM_SYNC_COMMIT_GUIDE.md](UPSTREAM_SYNC_COMMIT_GUIDE.md) for details on what gets committed vs gitignored.
+**Important:** See [upstream-sync-commit-guide.md](docs/upstream-sync-commit-guide.md) for details on what gets committed vs gitignored.
 
 ### Development Commands
 

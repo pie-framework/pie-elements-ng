@@ -47,6 +47,15 @@ import { ChildrenType, GraphPropsType } from './types.js';
 import Label from './label.js';
 import { extractTextFromHTML, isEmptyObject, isEmptyString } from './utils.js';
 
+const centerPlaceholder = {
+  '& .ProseMirror p.is-editor-empty::before, & .ProseMirror div.is-editor-empty::before': {
+    left: 0,
+    right: 0,
+    width: '100%',
+    textAlign: 'center',
+  },
+};
+
 const StyledRoot: any = styled('div')(({ theme }) => ({
   border: `solid 1px ${color.primaryLight()}`,
   color: color.defaults.TEXT,
@@ -91,6 +100,7 @@ const GraphTitle: any = styled('div')(({ theme }) => ({
   '& p': {
     margin: 0,
   },
+  ...centerPlaceholder,
 }));
 
 const ChartTitle: any = styled('div')(({ theme }) => ({
@@ -107,6 +117,7 @@ const ChartTitle: any = styled('div')(({ theme }) => ({
   '& p': {
     margin: 0,
   },
+  ...centerPlaceholder,
 }));
 
 const TopPixelGuides: any = styled('div')({

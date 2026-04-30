@@ -271,6 +271,5 @@ If CDN costs or performance become issues:
 
 ## Related Documentation
 
-- [Verdaccio Setup Guide](./verdaccio-setup.md)
 - [Package Publishing Workflow](../README.md#publishing)
 - [E2E Testing Guide](../tests/e2e/README.md)
