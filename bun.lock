@@ -138,7 +138,7 @@
     },
     "packages/elements-react/categorize": {
       "name": "@pie-element/categorize",
-      "version": "12.2.0-next.10",
+      "version": "13.0.1",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -175,7 +175,7 @@
     },
     "packages/elements-react/charting": {
       "name": "@pie-element/charting",
-      "version": "11.2.0-next.8",
+      "version": "12.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -207,7 +207,7 @@
     },
     "packages/elements-react/complex-rubric": {
       "name": "@pie-element/complex-rubric",
-      "version": "6.2.0-next.7",
+      "version": "7.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -239,7 +239,7 @@
     },
     "packages/elements-react/drag-in-the-blank": {
       "name": "@pie-element/drag-in-the-blank",
-      "version": "9.2.0-next.8",
+      "version": "10.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -272,7 +272,7 @@
     },
     "packages/elements-react/drawing-response": {
       "name": "@pie-element/drawing-response",
-      "version": "11.2.0-next.7",
+      "version": "12.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -306,7 +306,7 @@
     },
     "packages/elements-react/ebsr": {
       "name": "@pie-element/ebsr",
-      "version": "13.2.0-next.11",
+      "version": "14.0.1",
       "dependencies": {
         "@pie-element/multiple-choice": "workspace:*",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -332,7 +332,7 @@
     },
     "packages/elements-react/explicit-constructed-response": {
       "name": "@pie-element/explicit-constructed-response",
-      "version": "10.2.0-next.10",
+      "version": "11.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -367,7 +367,7 @@
     },
     "packages/elements-react/extended-text-entry": {
       "name": "@pie-element/extended-text-entry",
-      "version": "14.2.0-next.8",
+      "version": "15.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -399,7 +399,7 @@
     },
     "packages/elements-react/fraction-model": {
       "name": "@pie-element/fraction-model",
-      "version": "5.2.0-next.8",
+      "version": "6.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -431,7 +431,7 @@
     },
     "packages/elements-react/graphing": {
       "name": "@pie-element/graphing",
-      "version": "9.2.0-next.8",
+      "version": "10.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -464,7 +464,7 @@
     },
     "packages/elements-react/graphing-solution-set": {
       "name": "@pie-element/graphing-solution-set",
-      "version": "5.2.0-next.7",
+      "version": "6.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -495,7 +495,7 @@
     },
     "packages/elements-react/hotspot": {
       "name": "@pie-element/hotspot",
-      "version": "10.2.0-next.8",
+      "version": "11.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -528,7 +528,7 @@
     },
     "packages/elements-react/image-cloze-association": {
       "name": "@pie-element/image-cloze-association",
-      "version": "9.2.0-next.8",
+      "version": "10.0.1",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -563,7 +563,7 @@
     },
     "packages/elements-react/inline-dropdown": {
       "name": "@pie-element/inline-dropdown",
-      "version": "9.2.0-next.12",
+      "version": "10.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -595,7 +595,7 @@
     },
     "packages/elements-react/likert": {
       "name": "@pie-element/likert",
-      "version": "3.2.0-next.7",
+      "version": "4.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -628,7 +628,7 @@
     },
     "packages/elements-react/match": {
       "name": "@pie-element/match",
-      "version": "11.2.0-next.9",
+      "version": "12.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -664,7 +664,7 @@
     },
     "packages/elements-react/match-list": {
       "name": "@pie-element/match-list",
-      "version": "6.2.0-next.4",
+      "version": "7.0.1",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -773,7 +773,7 @@
     },
     "packages/elements-react/matrix": {
       "name": "@pie-element/matrix",
-      "version": "3.2.0-next.7",
+      "version": "4.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -804,7 +804,7 @@
     },
     "packages/elements-react/multi-trait-rubric": {
       "name": "@pie-element/multi-trait-rubric",
-      "version": "7.2.0-next.9",
+      "version": "8.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -834,7 +834,7 @@
     },
     "packages/elements-react/multiple-choice": {
       "name": "@pie-element/multiple-choice",
-      "version": "12.2.0-next.10",
+      "version": "13.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -869,7 +869,7 @@
     },
     "packages/elements-react/number-line": {
       "name": "@pie-element/number-line",
-      "version": "12.2.0-next.10",
+      "version": "13.0.1",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -908,7 +908,7 @@
     },
     "packages/elements-react/passage": {
       "name": "@pie-element/passage",
-      "version": "6.2.0-next.8",
+      "version": "7.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -936,7 +936,7 @@
     },
     "packages/elements-react/placement-ordering": {
       "name": "@pie-element/placement-ordering",
-      "version": "13.2.0-next.8",
+      "version": "14.0.1",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -974,7 +974,7 @@
     },
     "packages/elements-react/rubric": {
       "name": "@pie-element/rubric",
-      "version": "7.2.0-next.7",
+      "version": "8.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1001,7 +1001,7 @@
     },
     "packages/elements-react/select-text": {
       "name": "@pie-element/select-text",
-      "version": "12.2.0-next.8",
+      "version": "13.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1096,7 +1096,7 @@
     },
     "packages/lib-react/categorize": {
       "name": "@pie-lib/categorize",
-      "version": "1.2.0-next.3",
+      "version": "2.0.1",
       "dependencies": {
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
@@ -1111,7 +1111,7 @@
     },
     "packages/lib-react/charting": {
       "name": "@pie-lib/charting",
-      "version": "6.2.0-next.37",
+      "version": "7.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1154,7 +1154,7 @@
     },
     "packages/lib-react/config-ui": {
       "name": "@pie-lib/config-ui",
-      "version": "12.2.0-next.37",
+      "version": "13.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1180,7 +1180,7 @@
     },
     "packages/lib-react/controller-utils": {
       "name": "@pie-lib/controller-utils",
-      "version": "1.2.0-next.3",
+      "version": "2.0.1",
       "dependencies": {
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
@@ -1195,7 +1195,7 @@
     },
     "packages/lib-react/correct-answer-toggle": {
       "name": "@pie-lib/correct-answer-toggle",
-      "version": "3.2.0-next.9",
+      "version": "4.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1218,7 +1218,7 @@
     },
     "packages/lib-react/drag": {
       "name": "@pie-lib/drag",
-      "version": "3.2.0-next.10",
+      "version": "4.0.1",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "10.0.0",
@@ -1245,7 +1245,7 @@
     },
     "packages/lib-react/editable-html-tip-tap": {
       "name": "@pie-lib/editable-html-tip-tap",
-      "version": "1.2.0-next.36",
+      "version": "2.0.1",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -1300,7 +1300,7 @@
     },
     "packages/lib-react/graphing": {
       "name": "@pie-lib/graphing",
-      "version": "3.2.0-next.36",
+      "version": "4.0.1",
       "dependencies": {
         "@dnd-kit/core": "^6.3.0",
         "@dnd-kit/sortable": "10.0.0",
@@ -1349,7 +1349,7 @@
     },
     "packages/lib-react/graphing-solution-set": {
       "name": "@pie-lib/graphing-solution-set",
-      "version": "3.2.0-next.36",
+      "version": "4.0.1",
       "dependencies": {
         "@dnd-kit/sortable": "10.0.0",
         "@emotion/react": "^11.14.0",
@@ -1398,7 +1398,7 @@
     },
     "packages/lib-react/graphing-utils": {
       "name": "@pie-lib/graphing-utils",
-      "version": "2.2.0-next.3",
+      "version": "3.0.1",
       "dependencies": {
         "@mapbox/point-geometry": "^1.1.0",
         "debug": "^4.1.1",
@@ -1414,7 +1414,7 @@
     },
     "packages/lib-react/icons": {
       "name": "@pie-lib/icons",
-      "version": "3.2.0-next.4",
+      "version": "4.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1432,7 +1432,7 @@
     },
     "packages/lib-react/mask-markup": {
       "name": "@pie-lib/mask-markup",
-      "version": "2.2.0-next.37",
+      "version": "3.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1500,7 +1500,7 @@
     },
     "packages/lib-react/math-toolbar": {
       "name": "@pie-lib/math-toolbar",
-      "version": "2.2.0-next.16",
+      "version": "3.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1522,7 +1522,7 @@
     },
     "packages/lib-react/plot": {
       "name": "@pie-lib/plot",
-      "version": "3.2.0-next.36",
+      "version": "4.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1553,7 +1553,7 @@
     },
     "packages/lib-react/render-ui": {
       "name": "@pie-lib/render-ui",
-      "version": "5.2.0-next.9",
+      "version": "6.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1578,7 +1578,7 @@
     },
     "packages/lib-react/rubric": {
       "name": "@pie-lib/rubric",
-      "version": "1.2.0-next.37",
+      "version": "2.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1604,7 +1604,7 @@
     },
     "packages/lib-react/style-utils": {
       "name": "@pie-lib/style-utils",
-      "version": "1.2.0-next.3",
+      "version": "2.0.1",
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
@@ -1615,7 +1615,7 @@
     },
     "packages/lib-react/test-utils": {
       "name": "@pie-lib/test-utils",
-      "version": "1.2.0-next.3",
+      "version": "2.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.11.0",
@@ -1633,7 +1633,7 @@
     },
     "packages/lib-react/text-select": {
       "name": "@pie-lib/text-select",
-      "version": "2.2.0-next.10",
+      "version": "3.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1658,7 +1658,7 @@
     },
     "packages/lib-react/tools": {
       "name": "@pie-lib/tools",
-      "version": "1.2.0-next.4",
+      "version": "2.0.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1683,7 +1683,7 @@
     },
     "packages/lib-react/translator": {
       "name": "@pie-lib/translator",
-      "version": "3.2.0-next.3",
+      "version": "4.0.1",
       "dependencies": {
         "debug": "^4.1.1",
         "i18next": "^25.7.0",
