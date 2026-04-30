@@ -166,3 +166,124 @@ test('plusggg: radio input has at least 16px padding', async ({ page }) => {
 
   expect(padding).toBeGreaterThanOrEqual(16);
 });
+
+// ---------------------------------------------------------------------------
+// 7. Blank slot height
+//    r1.scss: .rli-r1-cloze { height: 160px }
+//    The blank slot container should be at least 160px tall.
+// ---------------------------------------------------------------------------
+test('plusggg: blank slot height is at least 160px', async ({ page }) => {
+  await openPlusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const blank = root.locator('.pie-blank-slot');
+  await expect(blank).toBeVisible();
+
+  const box = await blank.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.height).toBeGreaterThanOrEqual(160);
+});
+
+// ---------------------------------------------------------------------------
+// 8. Gap between blank slot and distractors group
+//    r1.scss: .rli-r1-cloze { margin-bottom: 30px }
+//    Distance between bottom of blank slot and top of first choice tile >= 30px.
+// ---------------------------------------------------------------------------
+test('plusggg: gap between blank slot and choice tiles is at least 30px', async ({ page }) => {
+  await openPlusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const blank = root.locator('.pie-blank-slot');
+  const firstTile = root.locator('.choice-row-horizontal').first();
+  await expect(blank).toBeVisible();
+  await expect(firstTile).toBeVisible();
+
+  const blankBox = await blank.boundingBox();
+  const tileBox = await firstTile.boundingBox();
+  expect(blankBox).not.toBeNull();
+  expect(tileBox).not.toBeNull();
+
+  const gap = tileBox!.y - (blankBox!.y + blankBox!.height);
+  expect(gap).toBeGreaterThanOrEqual(30);
+});
+
+// ---------------------------------------------------------------------------
+// 9. Distractor tile minimum height
+//    r1.scss: .rli-r1-distractor { min-height: 180px }
+//    Each horizontal choice tile should be at least 180px tall.
+// ---------------------------------------------------------------------------
+test('plusggg: each choice tile is at least 180px tall', async ({ page }) => {
+  await openPlusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const tiles = root.locator('.choice-row-horizontal');
+  await expect(tiles).toHaveCount(3);
+
+  const heights = await tiles.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect().height)
+  );
+
+  for (const h of heights) {
+    expect(h).toBeGreaterThanOrEqual(180);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// 10. Content element min-height inside tile
+//     r1.scss: .rli-r1-content-element { min-height: 150px }
+//     The text content area inside each tile should be at least 150px tall.
+// ---------------------------------------------------------------------------
+test('plusggg: choice tile content area is at least 150px tall', async ({ page }) => {
+  await openPlusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const firstContent = root.locator('.choice-tile-content').first();
+  await expect(firstContent).toBeVisible();
+
+  const box = await firstContent.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.height).toBeGreaterThanOrEqual(150);
+});
+
+// ---------------------------------------------------------------------------
+// 11. Hover background color on unselected tile
+//     r1.scss: .rli-r1-distractor:hover { background-color: #f2f2f2 }
+//     Port uses #ececec. Expected on hover: rgb(242, 242, 242).
+// ---------------------------------------------------------------------------
+test('plusggg: hovered unselected tile background is #f2f2f2', async ({ page }) => {
+  await openPlusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const firstTile = root.locator('.choice-tile').first();
+  await expect(firstTile).toBeVisible();
+
+  await firstTile.hover();
+  await page.waitForTimeout(100);
+
+  await expect(firstTile).toHaveCSS('background-color', 'rgb(242, 242, 242)');
+});
+
+// ---------------------------------------------------------------------------
+// 12. Distractors group is horizontally centered
+//     r1.scss: .rli-r1-distractors { align-items: center } and the outer
+//     container is centered. The choices fieldset mid-point should be within
+//     20px of the viewport horizontal center.
+// ---------------------------------------------------------------------------
+test('plusggg: choice tiles are horizontally centered in the viewport', async ({ page }) => {
+  await openPlusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const fieldset = root.locator('.pie-choices-fieldset');
+  await expect(fieldset).toBeVisible();
+
+  const [fieldsetBox, viewportWidth] = await Promise.all([
+    fieldset.boundingBox(),
+    page.evaluate(() => window.innerWidth),
+  ]);
+  expect(fieldsetBox).not.toBeNull();
+
+  const fieldsetMidX = fieldsetBox!.x + fieldsetBox!.width / 2;
+  const viewportMidX = viewportWidth / 2;
+
+  expect(Math.abs(fieldsetMidX - viewportMidX)).toBeLessThanOrEqual(20);
+});
