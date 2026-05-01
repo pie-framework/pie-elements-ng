@@ -24,10 +24,7 @@
 import { expect, test } from '@playwright/test';
 import { deliveryContainer, waitForMathRendering } from './test-helpers';
 
-async function openRoute(
-  page: Parameters<typeof test>[0]['page'],
-  demoId: string
-) {
+async function openRoute(page: Parameters<typeof test>[0]['page'], demoId: string) {
   await page.goto(
     `/mc-populated-blank/deliver?mode=gather&role=student&demo=${encodeURIComponent(demoId)}&player=esm`
   );
@@ -37,7 +34,10 @@ async function openRoute(
   await waitForMathRendering(page);
 }
 
-async function patchModel(page: Parameters<typeof test>[0]['page'], patch: Record<string, unknown>) {
+async function patchModel(
+  page: Parameters<typeof test>[0]['page'],
+  patch: Record<string, unknown>
+) {
   await page.evaluate((p) => {
     const player = document.querySelector('pie-element-player') as any;
     if (!player?.model) return;

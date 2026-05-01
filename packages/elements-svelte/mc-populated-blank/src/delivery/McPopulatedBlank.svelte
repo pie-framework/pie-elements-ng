@@ -12,6 +12,7 @@
 <script lang="ts">
 import { color } from '@pie-lib/styling-svelte';
 import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
+import AudioPlayer from './AudioPlayer.svelte';
 import {
   ensureVariantCssInjected,
   getVariantCssConfig,
@@ -96,8 +97,6 @@ const DEFAULT_UI_TEXT = {
   clickToEnableAutoplay: 'Click to enable audio autoplay',
   audioResourceUnavailable: 'Audio is enabled but no playable audio URL is configured.',
   transcriptLabel: 'Transcript',
-  listenLabelEn: 'Listen',
-  listenLabelEs: 'Escuchar',
 } as const;
 
 let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
@@ -473,10 +472,6 @@ function onAudioEnded(e: Event) {
   host?.onAudioEnded?.();
 }
 
-function speechButtonLabel(locale = '') {
-  return locale.toLowerCase().startsWith('es') ? uiText.listenLabelEs : uiText.listenLabelEn;
-}
-
 const featureAudioSkin = $derived.by(() => {
   const locale = String(model?.locale || '').toLowerCase();
   const lang = locale.slice(0, 2);
@@ -522,11 +517,31 @@ function useListener<K extends keyof HTMLElementEventMap>(
   });
 }
 
-useListener(() => audioEl, 'playing', (e) => onAudioPlaying(e));
-useListener(() => audioEl, 'ended', (e) => onAudioEnded(e));
-useListener(() => featureAudioButtonEl, 'click', () => playFeatureAudio());
-useListener(() => autoplayEnableButtonEl, 'click', () => handleEnableAutoplayClick());
-useListener(() => toggleCorrectAnswerButtonEl, 'click', () => toggleCorrectAnswer());
+useListener(
+  () => audioEl,
+  'playing',
+  (e) => onAudioPlaying(e)
+);
+useListener(
+  () => audioEl,
+  'ended',
+  (e) => onAudioEnded(e)
+);
+useListener(
+  () => featureAudioButtonEl,
+  'click',
+  () => playFeatureAudio()
+);
+useListener(
+  () => autoplayEnableButtonEl,
+  'click',
+  () => handleEnableAutoplayClick()
+);
+useListener(
+  () => toggleCorrectAnswerButtonEl,
+  'click',
+  () => toggleCorrectAnswer()
+);
 
 // Delegated listeners on the choices group — two events with a radio-guard on change.
 $effect(() => {
@@ -641,69 +656,25 @@ $effect(() => {
     </div>
   {/if}
 
-  {#if model?.hasAudio}
-    <div class="mb-4 audio-container pie-audio-container">
-      {#if hasPlayableAudio && useFeatureButtonAudio}
-        <audio
-          bind:this={audioEl}
-          class="sr-only pie-audio-player"
-          preload="metadata"
-          src={model.audioUrl}
-          aria-hidden="true"
-          tabindex="-1"
-        ></audio>
-        <button
-          bind:this={featureAudioButtonEl}
-          class="listen-button pie-listen-button rli-feature-audio"
-          type="button"
-          aria-label={speechButtonLabel(model?.locale)}
-        >
-          <img
-            class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? '' : 'listen-active'}`}
-            src={featureAudioSkin.silentUrl}
-            alt=""
-            aria-hidden="true"
-          />
-          <img
-            class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? 'listen-active' : ''}`}
-            src={featureAudioSkin.playingUrl}
-            alt=""
-            aria-hidden="true"
-          />
-        </button>
-      {:else if hasPlayableAudio}
-        <audio
-          bind:this={audioEl}
-          controls
-          class="w-full max-w-md pie-audio-player"
-          preload="metadata"
-          src={model.audioUrl}
-          aria-describedby={model?.audioTranscript ? transcriptId : undefined}
-        >
-          <track kind="captions" />
-        </audio>
-        {#if autoPlayPromptOpen}
-          <button
-            bind:this={autoplayEnableButtonEl}
-            class="mt-2 text-sm underline pie-audio-autoplay-enable"
-            type="button"
-          >
-            {uiText.clickToEnableAutoplay}
-          </button>
-        {/if}
-      {:else if hasAudioButMissingResource}
-        <p class="text-sm text-red-700 pie-audio-error" role="alert">{audioErrorMessage}</p>
-      {/if}
-      {#if model?.audioTranscript}
-        <p
-          class={`text-sm mt-2 text-gray-700 pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
-          id={transcriptId}
-        >
-          <strong>{uiText.transcriptLabel}:</strong> {model.audioTranscript}
-        </p>
-      {/if}
-    </div>
-  {/if}
+  <AudioPlayer
+    hasAudio={!!model?.hasAudio}
+    {hasPlayableAudio}
+    {hasAudioButMissingResource}
+    audioUrl={model?.audioUrl}
+    {useFeatureButtonAudio}
+    audioTranscript={model?.audioTranscript}
+    {showVisibleTranscript}
+    {transcriptId}
+    {featureAudioSkin}
+    {autoPlayPromptOpen}
+    {isMediaPlaying}
+    {audioErrorMessage}
+    {uiText}
+    locale={model?.locale}
+    bind:audioEl
+    bind:featureAudioButtonEl
+    bind:autoplayEnableButtonEl
+  />
 
   {#if model?.sentenceHtml}
     <div class="mb-3 prose prose-p:my-1 sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
@@ -920,31 +891,6 @@ $effect(() => {
 
   .blank-slot-standalone {
     width: var(--mpb-blank-standalone-width, 7rem);
-  }
-
-  .listen-button {
-    width: var(--mpb-listen-button-size, 128px);
-    height: var(--mpb-listen-button-size, 128px);
-    border: 0;
-    padding: 0;
-    background-color: transparent;
-    cursor: pointer;
-    z-index: 1;
-  }
-
-  .listen-button:hover {
-    background-color: #e2f1fe;
-  }
-
-  .listen-feature-icon {
-    width: var(--mpb-listen-button-size, 128px);
-    height: var(--mpb-listen-button-size, 128px);
-    object-fit: contain;
-    display: none;
-  }
-
-  .listen-feature-icon.listen-active {
-    display: block;
   }
 
   .choice-row-horizontal {
