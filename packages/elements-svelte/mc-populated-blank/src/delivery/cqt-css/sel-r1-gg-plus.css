@@ -7,8 +7,10 @@
   --mpb-choice-width-px: 155px;
   --mpb-choice-tile-min-height: 11.25rem;
   --mpb-choice-content-min-height: 9.375rem;
-  --pie-correct-answer-choice-hover-bg: #e2e2e2;
-  --pie-correct-answer-choice-selected-bg: #fcfcd3;
+  /* Use --mpb-choice-*-bg (first-priority vars) so they win over the inline
+     rootStyle binding that sets --pie-correct-answer-choice-*-bg. */
+  --mpb-choice-hover-bg: #f2f2f2;
+  --mpb-choice-selected-bg: #fcfcd3;
 }
 
 .mc-populated-blank-root.variant-sel-r1-gg-plus .pie-audio-transcript {
@@ -26,4 +28,11 @@
 .mc-populated-blank-root.variant-sel-r1-gg-plus.layout-token_sequence {
   grid-template-columns: minmax(260px, auto) auto;
   justify-content: center;
+}
+
+/* r1.scss stem area uses flex-direction:row — the <p> wrapping stem tokens
+   must not break to a new line before the blank slot. */
+.mc-populated-blank-root.variant-sel-r1-gg-plus .pie-template-line p {
+  display: inline;
+  margin: 0;
 }

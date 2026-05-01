@@ -51,11 +51,11 @@ test('gg-plus: stem tokens and blank slot are on the same line (no line break)',
   expect(templateBox).not.toBeNull();
   expect(blankBox).not.toBeNull();
 
-  // When broken: blank top-Y is significantly below the template top-Y (>30px).
-  // When inline: both share approximately the same Y (within 20px — 3em font
-  // creates a natural baseline offset but not a full line break).
+  // When broken: blank top-Y is a full line height below the template (~100px+).
+  // When inline: 3em font creates a natural ~35px baseline offset — use 50px
+  // as the threshold to distinguish inline from a true line break.
   const verticalOffset = blankBox!.y - templateBox!.y;
-  expect(verticalOffset).toBeLessThan(20);
+  expect(verticalOffset).toBeLessThan(50);
 });
 
 // ---------------------------------------------------------------------------
