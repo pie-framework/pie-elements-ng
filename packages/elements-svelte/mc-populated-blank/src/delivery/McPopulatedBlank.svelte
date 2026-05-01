@@ -508,49 +508,27 @@ $effect(() => {
   }
 });
 
-$effect(() => {
-  const el = audioEl;
-  if (!el) return;
-  const handlePlaying = (e: Event) => onAudioPlaying(e);
-  const handleEnded = (e: Event) => onAudioEnded(e);
-  el.addEventListener('playing', handlePlaying);
-  el.addEventListener('ended', handleEnded);
-  return () => {
-    el.removeEventListener('playing', handlePlaying);
-    el.removeEventListener('ended', handleEnded);
-  };
-});
+// Attach a single event listener to a reactive element ref; auto-cleans on ref change.
+function useListener<K extends keyof HTMLElementEventMap>(
+  getEl: () => EventTarget | null | undefined,
+  event: K,
+  handler: (e: HTMLElementEventMap[K]) => void
+) {
+  $effect(() => {
+    const el = getEl();
+    if (!el) return;
+    el.addEventListener(event, handler as EventListener);
+    return () => el.removeEventListener(event, handler as EventListener);
+  });
+}
 
-$effect(() => {
-  const btn = featureAudioButtonEl;
-  if (!btn) return;
-  const handleClick = () => playFeatureAudio();
-  btn.addEventListener('click', handleClick);
-  return () => {
-    btn.removeEventListener('click', handleClick);
-  };
-});
+useListener(() => audioEl, 'playing', (e) => onAudioPlaying(e));
+useListener(() => audioEl, 'ended', (e) => onAudioEnded(e));
+useListener(() => featureAudioButtonEl, 'click', () => playFeatureAudio());
+useListener(() => autoplayEnableButtonEl, 'click', () => handleEnableAutoplayClick());
+useListener(() => toggleCorrectAnswerButtonEl, 'click', () => toggleCorrectAnswer());
 
-$effect(() => {
-  const btn = autoplayEnableButtonEl;
-  if (!btn) return;
-  const handleClick = () => handleEnableAutoplayClick();
-  btn.addEventListener('click', handleClick);
-  return () => {
-    btn.removeEventListener('click', handleClick);
-  };
-});
-
-$effect(() => {
-  const btn = toggleCorrectAnswerButtonEl;
-  if (!btn) return;
-  const handleClick = () => toggleCorrectAnswer();
-  btn.addEventListener('click', handleClick);
-  return () => {
-    btn.removeEventListener('click', handleClick);
-  };
-});
-
+// Delegated listeners on the choices group — two events with a radio-guard on change.
 $effect(() => {
   const group = choicesGroupEl;
   if (!group) return;
