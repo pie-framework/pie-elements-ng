@@ -337,29 +337,42 @@ const correctAnswerStyleVars = $derived.by(() =>
     `--pie-correct-answer-feedback-glyph-color:${color.white()}`,
   ].join(';')
 );
-const rootStyle = $derived.by(() =>
-  [
-    `--mpb-listen-button-size:${layoutLimits.listenButtonSizePx}px`,
+const rootStyle = $derived.by(() => {
+  // Blank slot — width, underline thickness
+  const blankVars = [
     `--mpb-blank-standalone-width:${layoutLimits.blankStandaloneWidthRem}rem`,
     `--mpb-blank-wide-width:${layoutLimits.blankWideWidthRem}rem`,
     `--mpb-blank-underline-width:${layoutLimits.blankUnderlineWidthPx}px`,
     `--mpb-blank-underline-wide-width:${layoutLimits.blankUnderlineWideWidthPx}px`,
-    `--mpb-selected-image-max-height:${layoutLimits.selectedImageMaxHeightRem}rem`,
-    `--mpb-choice-image-max-height:${layoutLimits.choiceImageMaxHeightRem}rem`,
+  ];
+
+  // Choice tiles — dimensions, spacing, image heights
+  const choiceVars = [
     `--mpb-choice-width-px:${layoutLimits.horizontalChoiceWidthPx}px`,
     `--mpb-choice-width-vw:${layoutLimits.horizontalChoiceWidthVw}vw`,
     `--mpb-choice-tile-min-height:${layoutLimits.horizontalChoiceTileMinHeightRem}rem`,
     `--mpb-choice-content-min-height:${layoutLimits.horizontalChoiceContentMinHeightRem}rem`,
-    `--mpb-stimulus-min-column:${layoutLimits.stimulusMinColumnPx}px`,
-    `--mpb-text-min-column:${layoutLimits.textMinColumnPx}px`,
+    `--mpb-choice-image-max-height:${layoutLimits.choiceImageMaxHeightRem}rem`,
+    `--mpb-selected-image-max-height:${layoutLimits.selectedImageMaxHeightRem}rem`,
     `--mpb-choice-group-gap:${layoutLimits.choiceGroupGapRem}rem`,
     `--mpb-choice-row-gap:${layoutLimits.choiceRowGapRem}rem`,
-    `--mpb-toggle-button-gap:${layoutLimits.toggleButtonGapRem}rem`,
     `--mpb-horizontal-choice-radio-top-margin:${layoutLimits.horizontalChoiceRadioTopMarginRem}rem`,
+    `--mpb-narrow-choice-max-width:${layoutLimits.narrowHorizontalChoiceMaxWidthPx}px`,
+    `--mpb-toggle-button-gap:${layoutLimits.toggleButtonGapRem}rem`,
+  ];
+
+  // Audio — button size, template margins, instruction width
+  const audioVars = [
+    `--mpb-listen-button-size:${layoutLimits.listenButtonSizePx}px`,
     `--mpb-audio-blank-template-margin-top:${layoutLimits.audioBlankTemplateMarginTopRem}rem`,
     `--mpb-audio-blank-template-margin-bottom:${layoutLimits.audioBlankTemplateMarginBottomRem}rem`,
     `--mpb-audio-instructions-max-width:${layoutLimits.audioInstructionsMaxWidthPx}px`,
-    `--mpb-narrow-choice-max-width:${layoutLimits.narrowHorizontalChoiceMaxWidthPx}px`,
+  ];
+
+  // Layout profile grids — stimulus_image_blank, token_sequence, inline_sentence
+  const gridVars = [
+    `--mpb-stimulus-min-column:${layoutLimits.stimulusMinColumnPx}px`,
+    `--mpb-text-min-column:${layoutLimits.textMinColumnPx}px`,
     `--mpb-stimulus-grid-column-gap:${layoutLimits.stimulusGridColumnGapRem}rem`,
     `--mpb-stimulus-grid-row-gap:${layoutLimits.stimulusGridRowGapRem}rem`,
     `--mpb-stimulus-sentence-margin-top:${layoutLimits.stimulusSentenceMarginTopRem}rem`,
@@ -373,9 +386,10 @@ const rootStyle = $derived.by(() =>
     `--mpb-inline-grid-row-gap:${layoutLimits.inlineGridRowGapRem}rem`,
     `--mpb-inline-template-margin-top:${layoutLimits.inlineTemplateMarginTopRem}rem`,
     `--mpb-inline-choices-margin-top:${layoutLimits.inlineChoicesMarginTopRem}rem`,
-    correctAnswerStyleVars,
-  ].join(';')
-);
+  ];
+
+  return [...blankVars, ...choiceVars, ...audioVars, ...gridVars, correctAnswerStyleVars].join(';');
+});
 
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
   forwardSessionChange({
