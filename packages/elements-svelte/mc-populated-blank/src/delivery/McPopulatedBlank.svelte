@@ -279,6 +279,9 @@ const shouldShowCorrectAnswerToggle = $derived(
 );
 
 const displayChoiceId = $derived.by(() => {
+  if (model?.alwaysShowCorrect && model?.correctChoiceId) {
+    return model.correctChoiceId;
+  }
   if (isEvaluateMode && showCorrectAnswer && model?.correctChoiceId) {
     return model.correctChoiceId;
   }
@@ -757,7 +760,7 @@ $effect(() => {
       {#each choices as c (c.id)}
         {@const choiceCorrectness = choiceCorrectnessById.get(c.id)}
         <div
-          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
+          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${(displayChoiceId === c.id) ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
           style="gap:var(--mpb-choice-row-gap, 0.5rem);"
         >
           {#if isHorizontalChoices}
@@ -783,7 +786,7 @@ $effect(() => {
                 id={`${instanceId}-opt-${c.id}`}
                 value={c.id}
                 checked={
-                  (showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
+                  displayChoiceId === c.id
                 }
                 disabled={model?.disabled}
                 class="choice-radio-bottom pie-choice-radio pie-choice-radio-bottom"
@@ -796,7 +799,7 @@ $effect(() => {
               id={`${instanceId}-opt-${c.id}`}
               value={c.id}
               checked={
-                (showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
+                displayChoiceId === c.id
               }
               disabled={model?.disabled}
               class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"

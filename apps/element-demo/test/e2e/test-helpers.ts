@@ -75,11 +75,15 @@ export async function switchMode(page: Page, mode: 'gather' | 'view' | 'evaluate
 }
 
 /**
- * Switch role (student, instructor) via URL params.
+ * Switch role (student, instructor) by clicking the toolbar button.
+ * This uses SvelteKit client-side navigation so the in-memory session store is
+ * preserved. The toolbar buttons also set mode=evaluate (instructor) or
+ * mode=gather (student), matching what the app does when a user clicks them.
  */
 export async function switchRole(page: Page, role: 'student' | 'instructor') {
-  await navigateWithQueryParam(page, 'role', role);
-  await page.waitForLoadState('networkidle');
+  await page.click(`[data-testid="role-${role}"]`);
+  const expectedRoleParam = `role=${role}`;
+  await page.waitForURL(`**${expectedRoleParam}**`, { timeout: 10_000 });
   await waitForMathRendering(page);
 }
 

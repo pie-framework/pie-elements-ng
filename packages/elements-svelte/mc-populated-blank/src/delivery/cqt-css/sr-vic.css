@@ -51,7 +51,9 @@
   border-radius: 6px;
 }
 
-.mc-populated-blank-root.variant-sr-vic .pie-choice:not(.pie-choice-horizontal):hover .pie-choice-label-wrap {
+.mc-populated-blank-root.variant-sr-vic
+  .pie-choice:not(.pie-choice-horizontal):hover
+  .pie-choice-label-wrap {
   background-color: transparent;
 }
 
