@@ -112,6 +112,10 @@ let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
+// ---------------------------------------------------------------------------
+// Cluster: modeFlags — delivery mode, correctness, and answer-reveal state
+// Feeds: shouldShowCorrectAnswerToggle, choiceState, a11y
+// ---------------------------------------------------------------------------
 const deliveryMode = $derived((model?.mode || model?.env?.mode || '').toString());
 const isEvaluateMode = $derived(deliveryMode === 'evaluate');
 const correctness = $derived(model?.correctness);
@@ -120,6 +124,17 @@ const isResponseCorrect = $derived(
 );
 const isCorrect = $derived(correctness === 'correct');
 const isIncorrect = $derived(correctness === 'incorrect');
+
+let showCorrectAnswer = $state(false);
+const shouldShowCorrectAnswerToggle = $derived(
+  isEvaluateMode && !isResponseCorrect && !!model?.correctChoiceId
+);
+
+// ---------------------------------------------------------------------------
+// Cluster: layoutConfig — profile limits, blank sizing, choice layout, audio mode
+// Feeds: rootStyle, blankWidth, blankBorderWidth, choiceState, useFeatureButtonAudio
+// ---------------------------------------------------------------------------
+const layoutProfile = $derived(model?.layoutProfile || '');
 const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
 const isBlankOnlyTemplate = $derived.by(() => {
   const t = model?.template || '';
@@ -130,23 +145,28 @@ const isBlankOnlyTemplate = $derived.by(() => {
     .trim();
   return plain === BLANK_TOKEN;
 });
-const layoutProfile = $derived(model?.layoutProfile || '');
-const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
-const variantRootClass = $derived(getVariantRootClass(model?.customType));
 const choiceLayout = $derived(
   model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
 );
 const isHorizontalChoices = $derived(choiceLayout === 'horizontal');
-const showVisibleTranscript = $derived(!!model?.showVisibleTranscript);
 const hasPlayableAudio = $derived(!!model?.hasAudio && !!model?.audioUrl);
 const hasAudioButMissingResource = $derived(!!model?.hasAudio && !model?.audioUrl);
 const hasInlineSentenceAudioLayout = $derived(
   layoutProfile === 'inline_sentence' && !!model?.hasAudio
 );
-const uiText = $derived.by(() => ({
-  ...DEFAULT_UI_TEXT,
-  ...(model?.uiText || {}),
-}));
+const showVisibleTranscript = $derived(!!model?.showVisibleTranscript);
+const useFeatureButtonAudio = $derived.by(() => {
+  if (typeof model?.useFeatureButtonAudio === 'boolean') {
+    return !!model.useFeatureButtonAudio;
+  }
+  const profile = layoutProfile || '';
+  return (
+    !!model?.hasAudio &&
+    (profile === 'audio_blank_only' ||
+      profile === 'stimulus_image_blank' ||
+      profile === 'token_sequence')
+  );
+});
 const profilePresetLimits = $derived.by(() => {
   const profile = String(layoutProfile || '');
   const defaults = DEFAULT_LAYOUT_PROFILE_PRESETS[profile] || {};
@@ -158,10 +178,7 @@ const profilePresetLimits = $derived.by(() => {
     customPresets[profile] && typeof customPresets[profile] === 'object'
       ? customPresets[profile]
       : {};
-  return {
-    ...defaults,
-    ...custom,
-  };
+  return { ...defaults, ...custom };
 });
 const layoutLimits = $derived.by(() => {
   const configured =
@@ -170,6 +187,137 @@ const layoutLimits = $derived.by(() => {
     ...DEFAULT_LAYOUT_LIMITS,
     ...configured,
     ...profilePresetLimits,
+  };
+});
+const blankWidth = $derived.by(() => {
+  if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
+    return `${layoutLimits.blankWideWidthRem}rem`;
+  }
+  if (isBlankOnlyTemplate) {
+    return `${layoutLimits.blankStandaloneWidthRem}rem`;
+  }
+  return 'auto';
+});
+const blankBorderWidth = $derived.by(() => {
+  if (
+    layoutProfile === 'audio_blank_only' ||
+    layoutProfile === 'stimulus_image_blank' ||
+    layoutProfile === 'token_sequence'
+  ) {
+    return `${layoutLimits.blankUnderlineWideWidthPx}px`;
+  }
+  return `${layoutLimits.blankUnderlineWidthPx}px`;
+});
+
+// ---------------------------------------------------------------------------
+// Cluster: choiceState — selection, display choice, per-choice correctness, result text
+// Feeds: template blank display, choice rendering, fieldset, result sr-only text
+// ---------------------------------------------------------------------------
+const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
+const choiceMode = $derived(model?.choiceMode || 'text');
+const selectedId = $derived(session?.choiceId || localChoiceId || '');
+const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
+const displayChoiceId = $derived.by(() => {
+  if (model?.alwaysShowCorrect && model?.correctChoiceId) {
+    return model.correctChoiceId;
+  }
+  if (isEvaluateMode && showCorrectAnswer && model?.correctChoiceId) {
+    return model.correctChoiceId;
+  }
+  return selectedId;
+});
+const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
+const displayChoiceLabelHtml = $derived.by(() => String(displayChoice?.labelHtml || ''));
+const resultText = $derived.by(() => {
+  if (!isEvaluateMode || showCorrectAnswer) return '';
+  if (isCorrect) return 'Correct answer selected';
+  if (isIncorrect && selectedId) return 'Incorrect answer selected';
+  return '';
+});
+const choiceCorrectnessById = $derived.by(() => {
+  const map = new Map<string, 'correct' | 'incorrect'>();
+  const correctChoiceId = String(model?.correctChoiceId || '');
+  const activeSelectedId = String(selectedId || '');
+
+  if (!isEvaluateMode || !correctChoiceId) {
+    return map;
+  }
+  if (showCorrectAnswer) {
+    // Reveal mode: show only the canonical correct answer, not the student's selection.
+    map.set(correctChoiceId, 'correct');
+    return map;
+  }
+  if (!activeSelectedId) {
+    map.set(correctChoiceId, 'incorrect');
+    return map;
+  }
+  if (activeSelectedId === correctChoiceId) {
+    map.set(correctChoiceId, 'correct');
+    return map;
+  }
+  map.set(activeSelectedId, 'incorrect');
+  map.set(correctChoiceId, 'incorrect');
+  return map;
+});
+
+// ---------------------------------------------------------------------------
+// Cluster: a11y — stable IDs, aria labelling, described-by relationships
+// Feeds: fieldset legend, radiogroup labelling, template described-by
+// ---------------------------------------------------------------------------
+const uiText = $derived.by(() => ({
+  ...DEFAULT_UI_TEXT,
+  ...(model?.uiText || {}),
+}));
+const promptId = $derived(`${instanceId}-prompt`);
+const transcriptId = $derived(`${instanceId}-transcript`);
+const legendId = $derived(`${instanceId}-choices-legend`);
+const resultId = $derived(`${instanceId}-result`);
+const legendText = $derived.by(() => {
+  const plain = (model?.prompt || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const maxChars = Math.max(
+    8,
+    Number(layoutLimits.legendMaxChars) || DEFAULT_LAYOUT_LIMITS.legendMaxChars
+  );
+  return plain.length > maxChars
+    ? `${plain.slice(0, Math.max(1, maxChars - 1))}…`
+    : plain || uiText.answerChoices;
+});
+const choicesGroupLabelledBy = $derived(model?.prompt ? promptId : undefined);
+const choicesGroupAriaLabel = $derived.by(() => {
+  if (model?.prompt) return undefined;
+  const explicit = String(model?.choiceGroupLabel || '').trim();
+  if (explicit) return explicit;
+  return legendText;
+});
+const templateDescribedBy = $derived.by(() => {
+  const ids: string[] = [];
+  if (model?.prompt) ids.push(promptId);
+  if (model?.hasAudio && model?.audioTranscript) ids.push(transcriptId);
+  return ids.length ? ids.join(' ') : undefined;
+});
+
+// ---------------------------------------------------------------------------
+// Misc — locale, audio error, template parsing, variant CSS, style strings
+// ---------------------------------------------------------------------------
+const lang = $derived.by(() => {
+  const locale = model?.locale || '';
+  return locale ? locale.slice(0, 2) : 'en';
+});
+const audioErrorMessage = $derived.by(() =>
+  hasAudioButMissingResource ? uiText.audioResourceUnavailable : ''
+);
+const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
+const variantRootClass = $derived(getVariantRootClass(model?.customType));
+const templateParts = $derived.by(() => {
+  const t = model?.template || '';
+  const idx = t.indexOf(BLANK_TOKEN);
+  if (idx < 0) return { before: t, after: '' };
+  return {
+    before: t.slice(0, idx),
+    after: t.slice(idx + BLANK_TOKEN.length),
   };
 });
 const correctAnswerStyleVars = $derived.by(() =>
@@ -228,152 +376,6 @@ const rootStyle = $derived.by(() =>
     correctAnswerStyleVars,
   ].join(';')
 );
-const useFeatureButtonAudio = $derived.by(() => {
-  if (typeof model?.useFeatureButtonAudio === 'boolean') {
-    return !!model.useFeatureButtonAudio;
-  }
-  const profile = layoutProfile || '';
-  return (
-    !!model?.hasAudio &&
-    (profile === 'audio_blank_only' ||
-      profile === 'stimulus_image_blank' ||
-      profile === 'token_sequence')
-  );
-});
-
-const templateParts = $derived.by(() => {
-  const t = model?.template || '';
-  const idx = t.indexOf(BLANK_TOKEN);
-  if (idx < 0) {
-    return { before: t, after: '' };
-  }
-  return {
-    before: t.slice(0, idx),
-    after: t.slice(idx + BLANK_TOKEN.length),
-  };
-});
-const blankWidth = $derived.by(() => {
-  if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
-    return `${layoutLimits.blankWideWidthRem}rem`;
-  }
-  if (isBlankOnlyTemplate) {
-    return `${layoutLimits.blankStandaloneWidthRem}rem`;
-  }
-  return 'auto';
-});
-const blankBorderWidth = $derived.by(() => {
-  if (
-    layoutProfile === 'audio_blank_only' ||
-    layoutProfile === 'stimulus_image_blank' ||
-    layoutProfile === 'token_sequence'
-  ) {
-    return `${layoutLimits.blankUnderlineWideWidthPx}px`;
-  }
-  return `${layoutLimits.blankUnderlineWidthPx}px`;
-});
-
-const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
-const choiceMode = $derived(model?.choiceMode || 'text');
-const selectedId = $derived(session?.choiceId || localChoiceId || '');
-const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
-
-let showCorrectAnswer = $state(false);
-const shouldShowCorrectAnswerToggle = $derived(
-  isEvaluateMode && !isResponseCorrect && !!model?.correctChoiceId
-);
-
-const displayChoiceId = $derived.by(() => {
-  if (model?.alwaysShowCorrect && model?.correctChoiceId) {
-    return model.correctChoiceId;
-  }
-  if (isEvaluateMode && showCorrectAnswer && model?.correctChoiceId) {
-    return model.correctChoiceId;
-  }
-  return selectedId;
-});
-
-const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
-const displayChoiceLabelHtml = $derived.by(() => String(displayChoice?.labelHtml || ''));
-
-const legendText = $derived.by(() => {
-  const plain = (model?.prompt || '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const maxChars = Math.max(
-    8,
-    Number(layoutLimits.legendMaxChars) || DEFAULT_LAYOUT_LIMITS.legendMaxChars
-  );
-  return plain.length > maxChars
-    ? `${plain.slice(0, Math.max(1, maxChars - 1))}…`
-    : plain || uiText.answerChoices;
-});
-
-const promptId = $derived(`${instanceId}-prompt`);
-const transcriptId = $derived(`${instanceId}-transcript`);
-const legendId = $derived(`${instanceId}-choices-legend`);
-const resultId = $derived(`${instanceId}-result`);
-
-const choicesGroupLabelledBy = $derived(model?.prompt ? promptId : undefined);
-const choicesGroupAriaLabel = $derived.by(() => {
-  if (model?.prompt) return undefined;
-  const explicit = String(model?.choiceGroupLabel || '').trim();
-  if (explicit) return explicit;
-  return legendText;
-});
-
-const templateDescribedBy = $derived.by(() => {
-  const ids: string[] = [];
-  if (model?.prompt) ids.push(promptId);
-  if (model?.hasAudio && model?.audioTranscript) {
-    ids.push(transcriptId);
-  }
-  return ids.length ? ids.join(' ') : undefined;
-});
-
-const lang = $derived.by(() => {
-  const locale = model?.locale || '';
-  return locale ? locale.slice(0, 2) : 'en';
-});
-const audioErrorMessage = $derived.by(() =>
-  hasAudioButMissingResource ? uiText.audioResourceUnavailable : ''
-);
-
-const resultText = $derived.by(() => {
-  if (!isEvaluateMode || showCorrectAnswer) return '';
-  if (isCorrect) return 'Correct answer selected';
-  if (isIncorrect && selectedId) return 'Incorrect answer selected';
-  return '';
-});
-const choiceCorrectnessById = $derived.by(() => {
-  const map = new Map<string, 'correct' | 'incorrect'>();
-  const correctChoiceId = String(model?.correctChoiceId || '');
-  const activeSelectedId = String(selectedId || '');
-
-  if (!isEvaluateMode || !correctChoiceId) {
-    return map;
-  }
-
-  if (showCorrectAnswer) {
-    // Reveal mode should show only the canonical correct answer state.
-    map.set(correctChoiceId, 'correct');
-    return map;
-  }
-
-  if (!activeSelectedId) {
-    map.set(correctChoiceId, 'incorrect');
-    return map;
-  }
-
-  if (activeSelectedId === correctChoiceId) {
-    map.set(correctChoiceId, 'correct');
-    return map;
-  }
-
-  map.set(activeSelectedId, 'incorrect');
-  map.set(correctChoiceId, 'incorrect');
-  return map;
-});
 
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
   forwardSessionChange({
@@ -761,10 +763,23 @@ $effect(() => {
       aria-label={choicesGroupAriaLabel}
       aria-describedby={resultText ? resultId : undefined}
     >
-      {#each choices as c (c.id)}
+      {#snippet choiceContent(c: (typeof choices)[number])}
+        {#if choiceMode === 'image' && c.imageUrl}
+          <img
+            src={c.imageUrl}
+            alt={c.imageAlt || `Choice ${c.id}`}
+            class="object-contain pie-choice-image"
+            style="max-height:var(--mpb-choice-image-max-height, 5rem);"
+          />
+        {:else}
+          <span class="choice-html pie-choice-label">{@html c.labelHtml || ''}</span>
+        {/if}
+      {/snippet}
+
+      {#snippet choiceRow(c: (typeof choices)[number])}
         {@const choiceCorrectness = choiceCorrectnessById.get(c.id)}
         <div
-          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${(displayChoiceId === c.id) ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
+          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${displayChoiceId === c.id ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
           style="gap:var(--mpb-choice-row-gap, 0.5rem);"
         >
           {#if isHorizontalChoices}
@@ -773,25 +788,14 @@ $effect(() => {
               class="cursor-pointer choice-tile text-center pie-choice-tile"
             >
               <span class="choice-tile-content pie-choice-tile-content">
-                {#if choiceMode === 'image' && c.imageUrl}
-                  <img
-                    src={c.imageUrl}
-                    alt={c.imageAlt || `Choice ${c.id}`}
-                    class="object-contain mx-auto pie-choice-image"
-                    style="max-height:var(--mpb-choice-image-max-height, 5rem);"
-                  />
-                {:else}
-                  <span class="choice-html pie-choice-label">{@html c.labelHtml || ''}</span>
-                {/if}
+                {@render choiceContent(c)}
               </span>
               <input
                 type="radio"
                 name={radioGroupName}
                 id={`${instanceId}-opt-${c.id}`}
                 value={c.id}
-                checked={
-                  displayChoiceId === c.id
-                }
+                checked={displayChoiceId === c.id}
                 disabled={model?.disabled}
                 class="choice-radio-bottom pie-choice-radio pie-choice-radio-bottom"
               />
@@ -802,23 +806,12 @@ $effect(() => {
               name={radioGroupName}
               id={`${instanceId}-opt-${c.id}`}
               value={c.id}
-              checked={
-                displayChoiceId === c.id
-              }
+              checked={displayChoiceId === c.id}
               disabled={model?.disabled}
               class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"
             />
             <label for={`${instanceId}-opt-${c.id}`} class="cursor-pointer flex-1 pie-choice-label-wrap">
-              {#if choiceMode === 'image' && c.imageUrl}
-                <img
-                  src={c.imageUrl}
-                  alt={c.imageAlt || `Choice ${c.id}`}
-                  class="object-contain pie-choice-image"
-                  style="max-height:var(--mpb-choice-image-max-height, 5rem);"
-                />
-              {:else}
-                <span class="choice-html pie-choice-label">{@html c.labelHtml || ''}</span>
-              {/if}
+              {@render choiceContent(c)}
             </label>
           {/if}
           {#if isEvaluateMode && choiceCorrectness}
@@ -830,6 +823,10 @@ $effect(() => {
             </span>
           {/if}
         </div>
+      {/snippet}
+
+      {#each choices as c (c.id)}
+        {@render choiceRow(c)}
       {/each}
     </div>
   </fieldset>

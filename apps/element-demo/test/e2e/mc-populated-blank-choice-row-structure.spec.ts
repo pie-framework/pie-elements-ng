@@ -129,15 +129,11 @@ test('choice-row/horizontal: correctness badge is inside outer pie-choice row in
   await switchRole(page, 'instructor');
 
   // A feedback badge must exist somewhere in the choices.
-  const badge = root
-    .locator('.pie-choice .pie-choice-feedback-badge')
-    .first();
+  const badge = root.locator('.pie-choice .pie-choice-feedback-badge').first();
   await expect(badge).toBeAttached();
 
   // The badge must NOT be inside the tile label (it sits alongside it).
-  const badgeInsideTile = root
-    .locator('label.pie-choice-tile .pie-choice-feedback-badge')
-    .first();
+  const badgeInsideTile = root.locator('label.pie-choice-tile .pie-choice-feedback-badge').first();
   await expect(badgeInsideTile).not.toBeAttached();
 });
 
