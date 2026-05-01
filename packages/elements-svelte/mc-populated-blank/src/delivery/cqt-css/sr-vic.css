@@ -1,4 +1,5 @@
 /* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sr-vic/0.0.1/question.css */
+/* Reference layout: web-ItemBankViewer/learnosity/templates/Renaissance/vic.scss */
 .mc-populated-blank-root.variant-sr-vic {
   font-family: Starial, Arial, sans-serif;
   --mpb-inline-grid-column-gap: 1rem;
@@ -11,4 +12,50 @@
 .mc-populated-blank-root.variant-sr-vic .pie-blank-value,
 .mc-populated-blank-root.variant-sr-vic .pie-choice-label {
   line-height: 123%;
+}
+
+/* vic.scss: .rli-vic-answer uses display:flex so sentence and cloze stay on
+   one line. The template HTML wraps text in <p>, which is block by default and
+   breaks to a new line. Making <p> inline keeps the sentence and blank inline. */
+.mc-populated-blank-root.variant-sr-vic .pie-template-line p {
+  display: inline;
+  margin: 0;
+}
+
+/* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 } */
+.mc-populated-blank-root.variant-sr-vic .pie-blank-value {
+  color: #cc3333;
+}
+
+/* vic.scss: .rli-vic-selected { background-color: #fcfcd3 } applied to the
+   whole distractor row (radio + label), not just the label wrapper. */
+.mc-populated-blank-root.variant-sr-vic .pie-choice.is-selected {
+  background-color: #fcfcd3;
+  border-radius: 6px;
+}
+
+.mc-populated-blank-root.variant-sr-vic .pie-choice.is-selected .pie-choice-label-wrap {
+  background-color: transparent;
+}
+
+/* vic.scss: distractor label text sits to the right of the radio — no centering. */
+.mc-populated-blank-root.variant-sr-vic .pie-choice-label {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+/* vic.scss: .rli-vic-distractor:hover { background-color: #F2F2F2 } applied to
+   the full row element, not only the inner label wrapper. */
+.mc-populated-blank-root.variant-sr-vic .pie-choice:not(.pie-choice-horizontal):hover {
+  background-color: #f2f2f2;
+  border-radius: 6px;
+}
+
+.mc-populated-blank-root.variant-sr-vic .pie-choice:not(.pie-choice-horizontal):hover .pie-choice-label-wrap {
+  background-color: transparent;
+}
+
+/* Selected state must win over hover — yellow persists when hovering a chosen row. */
+.mc-populated-blank-root.variant-sr-vic .pie-choice:not(.pie-choice-horizontal).is-selected:hover {
+  background-color: #fcfcd3;
 }

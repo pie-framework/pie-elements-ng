@@ -185,6 +185,17 @@ test.describe('mc-populated-blank correct-answer parity', () => {
     expect(sessionAfter?.choiceId).toBe(incorrectChoiceId);
   });
 
+  test('no radio is pre-selected on initial render (user must choose)', async ({ page }) => {
+    await openMpbRoute(page, 'esm');
+    const root = deliveryContainer(page);
+    await expect(root).toBeVisible();
+
+    await expect(root.locator('input[type="radio"]:checked')).toHaveCount(0);
+
+    const session = await getPlayerSession(page);
+    expect(session?.choiceId ?? '').toBe('');
+  });
+
   test('iife scorer flow: delivery remains interactive-safe in evaluate path', async ({ page }) => {
     await openMpbRoute(page, 'iife');
     const root = deliveryContainer(page);
