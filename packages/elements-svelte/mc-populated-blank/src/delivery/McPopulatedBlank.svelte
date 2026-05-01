@@ -71,7 +71,7 @@ const DEFAULT_LAYOUT_PROFILE_PRESETS: Record<string, Record<string, number>> = {
   },
   token_sequence: {
     blankStandaloneWidthRem: 7,
-    blankUnderlineWideWidthPx: 4,
+    blankUnderlineWideWidthPx: 6,
   },
 };
 const DEFAULT_AUDIO_BUTTON_SKINS = {
@@ -262,7 +262,11 @@ const blankWidth = $derived.by(() => {
   return 'auto';
 });
 const blankBorderWidth = $derived.by(() => {
-  if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
+  if (
+    layoutProfile === 'audio_blank_only' ||
+    layoutProfile === 'stimulus_image_blank' ||
+    layoutProfile === 'token_sequence'
+  ) {
     return `${layoutLimits.blankUnderlineWideWidthPx}px`;
   }
   return `${layoutLimits.blankUnderlineWidthPx}px`;

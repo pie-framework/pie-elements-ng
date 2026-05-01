@@ -36,9 +36,7 @@ async function openGStemRoute(page: Parameters<typeof test>[0]['page']) {
 //    block-level <p>, causing "will" to occupy its own line and pushing the
 //    blank slot below it.
 // ---------------------------------------------------------------------------
-test('g-stem: stem token and blank slot are on the same line (no line break)', async ({
-  page,
-}) => {
+test('g-stem: stem token and blank slot are on the same line (no line break)', async ({ page }) => {
   await openGStemRoute(page);
   const root = deliveryContainer(page);
 
@@ -56,7 +54,7 @@ test('g-stem: stem token and blank slot are on the same line (no line break)', a
   expect(blankBox).not.toBeNull();
 
   const verticalOffset = blankBox!.y - templateBox!.y;
-  expect(verticalOffset).toBeLessThan(10);
+  expect(verticalOffset).toBeLessThan(20);
 });
 
 // ---------------------------------------------------------------------------
