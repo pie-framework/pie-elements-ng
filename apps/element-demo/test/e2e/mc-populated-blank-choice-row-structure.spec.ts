@@ -276,3 +276,101 @@ test('choice-row/vertical: checked radio id matches is-selected row', async ({ p
     .getAttribute('for');
   expect(labelFor).toBe(checkedId);
 });
+
+// ===========================================================================
+// KEYBOARD NAVIGATION — listener attachment harness for useListener refactor
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// K1. ArrowRight moves selection to the next choice (horizontal)
+//     The choicesGroupEl delegated keydown listener drives this. If the listener
+//     fails to attach after a useListener refactor, this test catches it.
+// ---------------------------------------------------------------------------
+test('choice-row/horizontal: ArrowRight moves selection to next choice', async ({ page }) => {
+  await openRoute(page, HORIZONTAL_DEMO);
+  const root = deliveryContainer(page);
+
+  const radios = root.locator('input[type="radio"]');
+  const count = await radios.count();
+  expect(count).toBeGreaterThan(1);
+
+  // Select the first choice.
+  await radios.first().check();
+  await page.waitForTimeout(100);
+  await expect(root.locator('.pie-choice.is-selected')).toHaveCount(1);
+
+  // Focus the radiogroup and press ArrowRight.
+  const radioGroup = root.locator('[role="radiogroup"]');
+  await radioGroup.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(100);
+
+  // Selection must have moved to the second choice.
+  await expect(radios.nth(1)).toBeChecked();
+  await expect(root.locator('.pie-choice.is-selected')).toHaveCount(1);
+  const selectedFor = await root
+    .locator('.pie-choice.is-selected label.pie-choice-tile')
+    .getAttribute('for');
+  const secondId = await radios.nth(1).getAttribute('id');
+  expect(selectedFor).toBe(secondId);
+});
+
+// ---------------------------------------------------------------------------
+// K2. ArrowLeft wraps from first choice to last choice (horizontal)
+//     Validates wrap-around logic and confirms the listener stays attached
+//     across a selection state change.
+// ---------------------------------------------------------------------------
+test('choice-row/horizontal: ArrowLeft wraps from first to last choice', async ({ page }) => {
+  await openRoute(page, HORIZONTAL_DEMO);
+  const root = deliveryContainer(page);
+
+  const radios = root.locator('input[type="radio"]');
+  const count = await radios.count();
+  expect(count).toBeGreaterThan(1);
+
+  // Select the first choice.
+  await radios.first().check();
+  await page.waitForTimeout(100);
+
+  // Press ArrowLeft — should wrap to last.
+  const radioGroup = root.locator('[role="radiogroup"]');
+  await radioGroup.focus();
+  await page.keyboard.press('ArrowLeft');
+  await page.waitForTimeout(100);
+
+  await expect(radios.last()).toBeChecked();
+  const lastId = await radios.last().getAttribute('id');
+  const selectedFor = await root
+    .locator('.pie-choice.is-selected label.pie-choice-tile')
+    .getAttribute('for');
+  expect(selectedFor).toBe(lastId);
+});
+
+// ---------------------------------------------------------------------------
+// K3. ArrowDown moves selection to next choice (vertical)
+//     Confirms the same listener works for the vertical layout.
+// ---------------------------------------------------------------------------
+test('choice-row/vertical: ArrowDown moves selection to next choice', async ({ page }) => {
+  await openRoute(page, VERTICAL_DEMO);
+  const root = deliveryContainer(page);
+
+  const radios = root.locator('input[type="radio"]');
+  const count = await radios.count();
+  expect(count).toBeGreaterThan(1);
+
+  // Select the first choice.
+  await radios.first().check();
+  await page.waitForTimeout(100);
+
+  const radioGroup = root.locator('[role="radiogroup"]');
+  await radioGroup.focus();
+  await page.keyboard.press('ArrowDown');
+  await page.waitForTimeout(100);
+
+  await expect(radios.nth(1)).toBeChecked();
+  const secondId = await radios.nth(1).getAttribute('id');
+  const selectedFor = await root
+    .locator('.pie-choice.is-selected label.pie-choice-label-wrap')
+    .getAttribute('for');
+  expect(selectedFor).toBe(secondId);
+});
