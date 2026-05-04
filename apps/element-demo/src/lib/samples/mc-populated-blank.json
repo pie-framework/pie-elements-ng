@@ -418,6 +418,84 @@
         "element": "mc-populated-blank",
         "choiceId": ""
       }
+    },
+    {
+      "id": "evaluate-correct",
+      "title": "sr-vic — evaluate with correct answer pre-selected",
+      "description": "Evaluate mode fixture: distractor_1 (correct) pre-selected. Used by interaction tests.",
+      "tags": ["mc-populated-blank", "test-fixture"],
+      "model": {
+        "id": "9",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>He will heat up the water in the {{blank}}.</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "teapot" },
+          { "id": "distractor_2", "labelHtml": "flytrap" },
+          { "id": "distractor_3", "labelHtml": "coffee" },
+          { "id": "distractor_4", "labelHtml": "freezer" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": false,
+        "audioUrl": "",
+        "audioTranscript": "",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "inline_sentence",
+        "customType": "sr-vic",
+        "useFeatureButtonAudio": false,
+        "choiceLayout": "vertical",
+        "locale": "",
+        "autoplayAudioEnabled": false,
+        "completeAudioEnabled": false,
+        "showVisibleTranscript": false
+      },
+      "session": {
+        "id": "9",
+        "element": "mc-populated-blank",
+        "choiceId": "distractor_1"
+      }
+    },
+    {
+      "id": "evaluate-wrong",
+      "title": "sr-vic — evaluate with wrong answer pre-selected",
+      "description": "Evaluate mode fixture: distractor_2 (wrong) pre-selected. Used by interaction tests.",
+      "tags": ["mc-populated-blank", "test-fixture"],
+      "model": {
+        "id": "10",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>He will heat up the water in the {{blank}}.</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "teapot" },
+          { "id": "distractor_2", "labelHtml": "flytrap" },
+          { "id": "distractor_3", "labelHtml": "coffee" },
+          { "id": "distractor_4", "labelHtml": "freezer" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": false,
+        "audioUrl": "",
+        "audioTranscript": "",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "inline_sentence",
+        "customType": "sr-vic",
+        "useFeatureButtonAudio": false,
+        "choiceLayout": "vertical",
+        "locale": "",
+        "autoplayAudioEnabled": false,
+        "completeAudioEnabled": false,
+        "showVisibleTranscript": false
+      },
+      "session": {
+        "id": "10",
+        "element": "mc-populated-blank",
+        "choiceId": "distractor_2"
+      }
     }
   ]
 }
