@@ -110,7 +110,7 @@ const getStoredShuffle = (session: McpbSession): string[] =>
 const applyShuffledValues = (
   choices: McpbChoice[],
   shuffledValues: string[],
-  choiceKey: keyof McpbChoice,
+  choiceKey: keyof McpbChoice
 ) => {
   const orderedChoices = shuffledValues
     .map((value) => choices.find((choice) => choice?.[choiceKey] === value))
@@ -125,13 +125,17 @@ const applyShuffledValues = (
   return [...orderedChoices, ...leftovers];
 };
 
-type UpdateSessionFn = (id: string, element: string, data: { shuffledValues: string[] }) => Promise<void>;
+type UpdateSessionFn = (
+  id: string,
+  element: string,
+  data: { shuffledValues: string[] }
+) => Promise<void>;
 
 const getOrderedChoices = async (
   question: McpbQuestion,
   session: McpbSession,
   env: McpbEnv,
-  updateSession?: UpdateSessionFn,
+  updateSession?: UpdateSessionFn
 ) => {
   const choices = Array.isArray(question?.choices) ? [...question.choices] : [];
   if (!choices.length || !shouldShuffleChoices(question)) {
@@ -163,7 +167,7 @@ export const model = async (
   question: McpbQuestion,
   session: McpbSession | null,
   env: McpbEnv | null,
-  updateSession?: UpdateSessionFn,
+  updateSession?: UpdateSessionFn
 ) => {
   const safeSession: McpbSession = session || {};
   const safeEnv: McpbEnv = env || {};
