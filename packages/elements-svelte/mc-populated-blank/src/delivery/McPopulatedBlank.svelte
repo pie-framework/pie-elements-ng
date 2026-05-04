@@ -21,6 +21,14 @@ import {
   getVariantCssConfig,
   getVariantRootClass,
 } from './variant-css-map';
+const AUDIO_PLAYBACK = {
+  IDLE: 'idle',
+  PLAYING: 'playing',
+  BLOCKED: 'blocked',
+  PAUSED: 'paused',
+} as const;
+type AudioPlaybackState = (typeof AUDIO_PLAYBACK)[keyof typeof AUDIO_PLAYBACK];
+
 /** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
 const BLANK_TOKEN = '{{blank}}';
 const DEFAULT_AUDIO_BUTTON_SKINS = {
@@ -49,10 +57,8 @@ const DEFAULT_UI_TEXT = {
 
 let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
 let audioEl = $state<HTMLAudioElement | null>(null);
-let isMediaPlaying = $state(false);
+let audioPlaybackState = $state<AudioPlaybackState>(AUDIO_PLAYBACK.IDLE);
 let localChoiceId = $state('');
-let autoPlayPromptOpen = $state(false);
-let autoplayAttempted = $state(false);
 let featureAudioButtonEl = $state<HTMLButtonElement | null>(null);
 let autoplayEnableButtonEl = $state<HTMLButtonElement | null>(null);
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
@@ -295,29 +301,40 @@ function onRadioGroupKeydown(e: KeyboardEvent) {
   next.focus();
 }
 
+const isMediaPlaying = $derived(audioPlaybackState === AUDIO_PLAYBACK.PLAYING);
+const autoPlayPromptOpen = $derived(audioPlaybackState === AUDIO_PLAYBACK.BLOCKED);
+
+function onPlaybackStarted(e: Event) {
+  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
+    fallbackSelector: 'mc-populated-blank',
+  });
+  audioPlaybackState = AUDIO_PLAYBACK.PLAYING;
+  host?.onAudioStarted?.();
+}
+
+function onPlaybackEnded(e: Event) {
+  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
+    fallbackSelector: 'mc-populated-blank',
+  });
+  audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
+  host?.onAudioEnded?.();
+}
+
 function handleEnableAutoplayClick() {
   if (audioMode !== 'none' && audioMode !== 'error' && audioEl) {
+    // Clear the blocked prompt regardless of whether play succeeds — matches original behavior.
     audioEl.play().finally(() => {
-      autoPlayPromptOpen = false;
+      if (audioPlaybackState === AUDIO_PLAYBACK.BLOCKED) audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
     });
   }
 }
 
-function onAudioPlaying(e: Event) {
-  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
-    fallbackSelector: 'mc-populated-blank',
-  });
-  isMediaPlaying = true;
-  host?.onAudioStarted?.();
-  autoPlayPromptOpen = false;
-}
-
-function onAudioEnded(e: Event) {
-  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
-    fallbackSelector: 'mc-populated-blank',
-  });
-  isMediaPlaying = false;
-  host?.onAudioEnded?.();
+function playFeatureAudio() {
+  if (audioMode !== 'none' && audioMode !== 'error' && audioEl) {
+    audioEl.play().catch(() => {
+      // Keep behavior resilient: if playback is blocked, user can retry.
+    });
+  }
 }
 
 const featureAudioSkin = $derived.by(() => {
@@ -336,14 +353,6 @@ const featureAudioSkin = $derived.by(() => {
     : DEFAULT_AUDIO_BUTTON_SKINS.default;
   return byLocale[locale] || byLocale[lang] || byLocale.default || customSingle || defaultSkin;
 });
-
-function playFeatureAudio() {
-  if (audioMode !== 'none' && audioMode !== 'error' && audioEl) {
-    audioEl.play().catch(() => {
-      // Keep behavior resilient: if playback is blocked, user can retry.
-    });
-  }
-}
 
 $effect(() => {
   if (session?.choiceId) {
@@ -368,12 +377,12 @@ function useListener<K extends keyof HTMLElementEventMap>(
 useListener(
   () => audioEl,
   'playing',
-  (e) => onAudioPlaying(e)
+  (e) => onPlaybackStarted(e)
 );
 useListener(
   () => audioEl,
   'ended',
-  (e) => onAudioEnded(e)
+  (e) => onPlaybackEnded(e)
 );
 useListener(
   () => featureAudioButtonEl,
@@ -411,13 +420,13 @@ $effect(() => {
 
 $effect(() => {
   if (!model?.hasAudio || !model?.autoplayAudioEnabled) return;
-  if (autoplayAttempted) return;
+  if (audioPlaybackState !== AUDIO_PLAYBACK.IDLE) return;
 
-  autoplayAttempted = true;
+  // Browser autoplay restrictions vary. Try immediate play; if blocked show click-to-enable affordance.
   if (audioEl && model?.audioUrl) {
-    // Browser autoplay restrictions vary. Try immediate play; if blocked show click-to-enable affordance.
+    audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
     audioEl.play().catch(() => {
-      autoPlayPromptOpen = true;
+      audioPlaybackState = AUDIO_PLAYBACK.BLOCKED;
     });
   }
 });

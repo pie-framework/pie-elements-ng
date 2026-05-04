@@ -53,18 +53,19 @@ describe('blankWidth', () => {
 // blankBorderWidth
 // ---------------------------------------------------------------------------
 describe('blankBorderWidth', () => {
-  it.each(['audio_blank_only', 'stimulus_image_blank', 'token_sequence'])(
-    '%s → blankUnderlineWideWidthPx (profile preset overrides to 6)',
-    (profile) => {
-      const { blankBorderWidth } = computeLayoutStyle({
-        ...base,
-        layoutProfile: profile,
-        isBlankOnlyTemplate: false,
-      });
-      // All three wide-underline profiles have preset blankUnderlineWideWidthPx: 6
-      expect(blankBorderWidth).toBe('6px');
-    }
-  );
+  it.each([
+    'audio_blank_only',
+    'stimulus_image_blank',
+    'token_sequence',
+  ])('%s → blankUnderlineWideWidthPx (profile preset overrides to 6)', (profile) => {
+    const { blankBorderWidth } = computeLayoutStyle({
+      ...base,
+      layoutProfile: profile,
+      isBlankOnlyTemplate: false,
+    });
+    // All three wide-underline profiles have preset blankUnderlineWideWidthPx: 6
+    expect(blankBorderWidth).toBe('6px');
+  });
 
   it('other profile → blankUnderlineWidthPx (default 2)', () => {
     const { blankBorderWidth } = computeLayoutStyle({
