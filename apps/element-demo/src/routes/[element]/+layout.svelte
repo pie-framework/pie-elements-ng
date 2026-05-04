@@ -325,12 +325,6 @@ function handleThemeToggle(event: Event) {
 
 const isMcPopulatedBlank = $derived(data.elementName === 'mc-populated-blank');
 let showAudioTranscript = $state(false);
-
-$effect(() => {
-  document.querySelectorAll<HTMLElement>('.demo-element-player').forEach((el) => {
-    el.classList.toggle('rli-with-audio-transcript', showAudioTranscript);
-  });
-});
 </script>
 
 <div class="flex flex-col h-screen">
@@ -463,7 +457,7 @@ $effect(() => {
   </div>
 
   <!-- Page Content -->
-  <div class="flex-1 overflow-hidden bg-base-200">
+  <div class="flex-1 overflow-hidden bg-base-200" class:rli-with-audio-transcript={isMcPopulatedBlank && showAudioTranscript}>
     {@render children()}
   </div>
 </div>
