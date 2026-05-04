@@ -30,19 +30,6 @@ export const getPartialScore = (_question: any, session: any) => {
   return 1;
 };
 
-export const isComplete = (question: any, session: any, audioComplete = false) => {
-  if (!session || !session.choiceId) {
-    return false;
-  }
-  const autoplayAudioEnabled = !!question?.autoplayAudioEnabled;
-  const completeAudioEnabled = !!question?.completeAudioEnabled;
-  const requiresAudioCompletion =
-    autoplayAudioEnabled && completeAudioEnabled && !!question?.hasAudio;
-  if (requiresAudioCompletion && !audioComplete) {
-    return false;
-  }
-  return true;
-};
 
 export const outcome = (question: any, session: any, env: any) =>
   new Promise((resolve) => {
