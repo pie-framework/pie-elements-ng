@@ -162,33 +162,33 @@
     {
       "id": "variant-sel-r1-gplusggg",
       "title": "sel_r1-_gplusggg (canonical CQT sample)",
-      "description": "Canonical sample from item 0e7c3f32-9dfe-40d7-bbc4-0a6eea0e7874 and question a2837d4f-cdd0-4285-8352-a10a96e6564d.",
+      "description": "Canonical sample from item 11b4d9be-a79e-48c3-9e58-84f5be3dbb0f and question 3fe2da9a-3ba3-41af-9d97-e373cde716d7.",
       "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "sel_r1-_gplusgggv0.0.1"],
       "model": {
         "id": "4",
         "element": "mc-populated-blank",
         "prompt": "",
         "promptEnabled": false,
-        "template": "<p>{{blank}}</p>",
+        "template": "<p>{{blank}} <span style=\"font-size:1.8em;\">four</span></p>",
         "choiceMode": "text",
         "choices": [
           {
             "id": "distractor_1",
-            "labelHtml": "<span style=\"font-size:1.8em;\">jump</span>"
+            "labelHtml": "<span style=\"font-size:1.8em;\">four</span>"
           },
           {
             "id": "distractor_2",
-            "labelHtml": "<span style=\"font-size:1.8em;\">fast</span>"
+            "labelHtml": "<span style=\"font-size:1.8em;\">fear</span>"
           },
           {
             "id": "distractor_3",
-            "labelHtml": "<span style=\"font-size:1.8em;\">just</span>"
+            "labelHtml": "<span style=\"font-size:1.8em;\">four</span>"
           }
         ],
-        "correctChoiceId": "distractor_3",
+        "correctChoiceId": "distractor_2",
         "hasAudio": true,
-        "audioUrl": "https://assets.learnosity.com/organisations/844/d6a4947a-8e99-41b1-a14e-103af719e3dd.mp3",
-        "audioTranscript": "Look at the words. Pick the word \"just\" . . . \"just.\"",
+        "audioUrl": "https://assets.learnosity.com/organisations/844/a1810815-792c-4f8a-8d8f-ded46df5921c.mp3",
+        "audioTranscript": "The word is 'four.' Look at the three words. Pick the word that is different from 'four.'",
         "interactionMode": "populate_blank",
         "sentenceHtml": "",
         "layoutProfile": "audio_blank_only",
@@ -201,8 +201,8 @@
         "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
-          "learnosityItemReference": "0e7c3f32-9dfe-40d7-bbc4-0a6eea0e7874",
-          "learnosityQuestionReference": "a2837d4f-cdd0-4285-8352-a10a96e6564d"
+          "learnosityItemReference": "11b4d9be-a79e-48c3-9e58-84f5be3dbb0f",
+          "learnosityQuestionReference": "3fe2da9a-3ba3-41af-9d97-e373cde716d7"
         }
       },
       "session": {
