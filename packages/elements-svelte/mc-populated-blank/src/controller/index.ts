@@ -1,4 +1,10 @@
 import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults';
+import type {
+  McpbQuestion,
+  McpbSession,
+  McpbEnv,
+  McpbCorrectness,
+} from '../shared/types';
 
 const isEmptyObject = (value: unknown): boolean =>
   !!value &&
@@ -12,7 +18,7 @@ export function countBlankTokens(template: string): number {
   return (template.match(re) || []).length;
 }
 
-export const getCorrectness = (question: any, session: any) => {
+export const getCorrectness = (question: McpbQuestion, session: McpbSession): McpbCorrectness => {
   if (!session || !session.choiceId) {
     return 'unanswered';
   }
@@ -23,14 +29,14 @@ export const getCorrectness = (question: any, session: any) => {
   return 'incorrect';
 };
 
-export const getPartialScore = (_question: any, session: any) => {
+export const getPartialScore = (_question: McpbQuestion, session: McpbSession) => {
   if (!session || isEmptyObject(session) || !session.choiceId) {
     return 0;
   }
   return 1;
 };
 
-export const outcome = (question: any, session: any, env: any) =>
+export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbEnv) =>
   new Promise((resolve) => {
     if (!session || isEmptyObject(session)) {
       resolve({
@@ -63,7 +69,7 @@ export const outcome = (question: any, session: any, env: any) =>
     resolve({ score, empty: false, traceLog });
   });
 
-export const createDefaultModel = (model: any = {}) => ({
+export const createDefaultModel = (model: McpbQuestion = {}) => ({
   ...defaults.model,
   ...model,
   layoutLimits: {
@@ -72,7 +78,7 @@ export const createDefaultModel = (model: any = {}) => ({
   },
 });
 
-export const normalize = (question: any = {}) => createDefaultModel(question);
+export const normalize = (question: McpbQuestion = {}) => createDefaultModel(question);
 
 export const normalizeSession = (s: any) => ({ ...s });
 
