@@ -322,6 +322,15 @@ function handleThemeToggle(event: Event) {
   const newTheme = checkbox.checked ? 'dark' : 'light';
   theme.set(newTheme);
 }
+
+const isMcPopulatedBlank = $derived(data.elementName === 'mc-populated-blank');
+let showAudioTranscript = $state(false);
+
+$effect(() => {
+  document.querySelectorAll<HTMLElement>('.demo-element-player').forEach((el) => {
+    el.classList.toggle('rli-with-audio-transcript', showAudioTranscript);
+  });
+});
 </script>
 
 <div class="flex flex-col h-screen">
@@ -391,6 +400,12 @@ function handleThemeToggle(event: Event) {
             >
               Reset Input
             </button>
+            {#if isMcPopulatedBlank}
+              <label class="flex items-center gap-1 text-sm cursor-pointer select-none">
+                <input type="checkbox" class="checkbox checkbox-sm" bind:checked={showAudioTranscript} />
+                Show Audio Transcript
+              </label>
+            {/if}
             <div class="join" aria-label="Demo role mode">
               <a
                 href={getDeliveryRoleModeUrl('student')}
