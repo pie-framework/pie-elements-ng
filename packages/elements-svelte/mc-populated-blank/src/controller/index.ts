@@ -30,7 +30,6 @@ export const getPartialScore = (_question: any, session: any) => {
   return 1;
 };
 
-
 export const outcome = (question: any, session: any, env: any) =>
   new Promise((resolve) => {
     if (!session || isEmptyObject(session)) {
