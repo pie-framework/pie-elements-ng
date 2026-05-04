@@ -30,7 +30,14 @@ const DATA_API_BASE = process.env.LEARNOSITY_DATA_API_BASE ?? 'https://data.lear
 // ---------------------------------------------------------------------------
 function utcTimestamp() {
   const iso = new Date().toISOString();
-  return iso.slice(0, 4) + iso.slice(5, 7) + iso.slice(8, 10) + '-' + iso.slice(11, 13) + iso.slice(14, 16);
+  return (
+    iso.slice(0, 4) +
+    iso.slice(5, 7) +
+    iso.slice(8, 10) +
+    '-' +
+    iso.slice(11, 13) +
+    iso.slice(14, 16)
+  );
 }
 
 function sign(requestBody) {

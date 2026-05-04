@@ -26,7 +26,15 @@
   line-height: 123%;
 }
 
+/* sel_vic/main.scss: template left ~75%, audio right ~25% on the same row.
+   Svelte scoping prevents the component-internal grid-area rule from reaching
+   .audio-container inside AudioPlayer, so we override it here via the global
+   .pie-audio-container class which is not subject to scope hashing. */
 .mc-populated-blank-root.variant-sel-vic .pie-audio-container {
+  grid-area: audio;
+  margin: 0;
+  justify-self: end;
+  align-self: start;
   min-height: 128px;
 }
 

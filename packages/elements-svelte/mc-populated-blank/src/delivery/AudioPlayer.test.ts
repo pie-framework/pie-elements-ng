@@ -1,9 +1,10 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount, unmount, flushSync } from 'svelte';
 import AudioPlayer from './AudioPlayer.svelte';
+import type { AudioMode } from './computeAudioMode';
 
 const BASE_PROPS = {
-  audioMode: 'controls' as const,
+  audioMode: 'controls' as AudioMode,
   audioUrl: 'https://example.com/audio.mp3',
   audioTranscript: 'The word is look.',
   showVisibleTranscript: false,

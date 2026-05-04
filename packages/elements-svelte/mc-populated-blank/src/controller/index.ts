@@ -359,7 +359,7 @@ export const validate = (question: McpbQuestion = {}, _config: Record<string, un
       'inlineChoicesMarginTopRem',
     ] as const;
     for (const key of numericLimitKeys) {
-      if (limits[key] === undefined || limits[key] === null || limits[key] === '') continue;
+      if (limits[key] === undefined || limits[key] === null) continue;
       const value = Number(limits[key]);
       if (!Number.isFinite(value) || value <= 0) {
         errors.layoutLimits = `${key} must be a positive number when provided`;
