@@ -1,4 +1,6 @@
 <script lang="ts">
+import type { AudioMode } from './computeAudioMode';
+
 interface AudioButtonSkin {
   silentUrl: string;
   playingUrl: string;
@@ -11,11 +13,8 @@ interface UiText {
 }
 
 let {
-  hasAudio,
-  hasPlayableAudio,
-  hasAudioButMissingResource,
+  audioMode,
   audioUrl,
-  useFeatureButtonAudio,
   audioTranscript,
   showVisibleTranscript,
   transcriptId,
@@ -29,11 +28,8 @@ let {
   featureAudioButtonEl = $bindable(null),
   autoplayEnableButtonEl = $bindable(null),
 }: {
-  hasAudio: boolean;
-  hasPlayableAudio: boolean;
-  hasAudioButMissingResource: boolean;
+  audioMode: AudioMode;
   audioUrl: string | undefined;
-  useFeatureButtonAudio: boolean;
   audioTranscript: string | undefined;
   showVisibleTranscript: boolean;
   transcriptId: string;
@@ -53,9 +49,9 @@ function speechButtonLabel(loc = '') {
 }
 </script>
 
-{#if hasAudio}
+{#if audioMode !== 'none'}
   <div class="mb-4 audio-container pie-audio-container">
-    {#if hasPlayableAudio && useFeatureButtonAudio}
+    {#if audioMode === 'feature-button'}
       <audio
         bind:this={audioEl}
         class="sr-only pie-audio-player"
@@ -83,7 +79,7 @@ function speechButtonLabel(loc = '') {
           aria-hidden="true"
         />
       </button>
-    {:else if hasPlayableAudio}
+    {:else if audioMode === 'controls'}
       <audio
         bind:this={audioEl}
         controls
@@ -103,7 +99,7 @@ function speechButtonLabel(loc = '') {
           {uiText.clickToEnableAutoplay}
         </button>
       {/if}
-    {:else if hasAudioButMissingResource}
+    {:else if audioMode === 'error'}
       <p class="text-sm text-red-700 pie-audio-error" role="alert">{audioErrorMessage}</p>
     {/if}
     {#if audioTranscript}

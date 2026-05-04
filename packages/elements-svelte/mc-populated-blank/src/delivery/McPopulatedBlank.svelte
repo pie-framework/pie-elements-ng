@@ -14,6 +14,7 @@ import { color } from '@pie-lib/styling-svelte';
 import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import AudioPlayer from './AudioPlayer.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
+import { computeAudioMode } from './computeAudioMode';
 import {
   ensureVariantCssInjected,
   getVariantCssConfig,
@@ -149,8 +150,6 @@ const choiceLayout = $derived(
   model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
 );
 const isHorizontalChoices = $derived(choiceLayout === 'horizontal');
-const hasPlayableAudio = $derived(!!model?.hasAudio && !!model?.audioUrl);
-const hasAudioButMissingResource = $derived(!!model?.hasAudio && !model?.audioUrl);
 const hasInlineSentenceAudioLayout = $derived(
   layoutProfile === 'inline_sentence' && !!model?.hasAudio
 );
@@ -167,6 +166,13 @@ const useFeatureButtonAudio = $derived.by(() => {
       profile === 'token_sequence')
   );
 });
+const audioMode = $derived(
+  computeAudioMode({
+    hasAudio: !!model?.hasAudio,
+    audioUrl: model?.audioUrl,
+    useFeatureButtonAudio,
+  })
+);
 const profilePresetLimits = $derived.by(() => {
   const profile = String(layoutProfile || '');
   const defaults = DEFAULT_LAYOUT_PROFILE_PRESETS[profile] || {};
@@ -290,7 +296,7 @@ const lang = $derived.by(() => {
   return locale ? locale.slice(0, 2) : 'en';
 });
 const audioErrorMessage = $derived.by(() =>
-  hasAudioButMissingResource ? uiText.audioResourceUnavailable : ''
+  audioMode === 'error' ? uiText.audioResourceUnavailable : ''
 );
 const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
 const variantRootClass = $derived(getVariantRootClass(model?.customType));
@@ -432,7 +438,7 @@ function onRadioGroupKeydown(e: KeyboardEvent) {
 }
 
 function handleEnableAutoplayClick() {
-  if (hasPlayableAudio && audioEl) {
+  if (audioMode !== 'none' && audioMode !== 'error' && audioEl) {
     audioEl.play().finally(() => {
       autoPlayPromptOpen = false;
     });
@@ -474,7 +480,7 @@ const featureAudioSkin = $derived.by(() => {
 });
 
 function playFeatureAudio() {
-  if (hasPlayableAudio && audioEl) {
+  if (audioMode !== 'none' && audioMode !== 'error' && audioEl) {
     audioEl.play().catch(() => {
       // Keep behavior resilient: if playback is blocked, user can retry.
     });
@@ -641,11 +647,8 @@ $effect(() => {
   {/if}
 
   <AudioPlayer
-    hasAudio={!!model?.hasAudio}
-    {hasPlayableAudio}
-    {hasAudioButMissingResource}
+    {audioMode}
     audioUrl={model?.audioUrl}
-    {useFeatureButtonAudio}
     audioTranscript={model?.audioTranscript}
     {showVisibleTranscript}
     {transcriptId}
