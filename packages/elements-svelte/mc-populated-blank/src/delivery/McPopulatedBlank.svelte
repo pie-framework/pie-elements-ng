@@ -13,6 +13,7 @@
 import { color } from '@pie-lib/styling-svelte';
 import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import AudioPlayer from './AudioPlayer.svelte';
+import { computeChoiceCorrectness } from './computeChoiceCorrectness';
 import {
   ensureVariantCssInjected,
   getVariantCssConfig,
@@ -233,31 +234,14 @@ const resultText = $derived.by(() => {
   if (isIncorrect && selectedId) return 'Incorrect answer selected';
   return '';
 });
-const choiceCorrectnessById = $derived.by(() => {
-  const map = new Map<string, 'correct' | 'incorrect'>();
-  const correctChoiceId = String(model?.correctChoiceId || '');
-  const activeSelectedId = String(selectedId || '');
-
-  if (!isEvaluateMode || !correctChoiceId) {
-    return map;
-  }
-  if (showCorrectAnswer) {
-    // Reveal mode: show only the canonical correct answer, not the student's selection.
-    map.set(correctChoiceId, 'correct');
-    return map;
-  }
-  if (!activeSelectedId) {
-    map.set(correctChoiceId, 'incorrect');
-    return map;
-  }
-  if (activeSelectedId === correctChoiceId) {
-    map.set(correctChoiceId, 'correct');
-    return map;
-  }
-  map.set(activeSelectedId, 'incorrect');
-  map.set(correctChoiceId, 'incorrect');
-  return map;
-});
+const choiceCorrectnessById = $derived(
+  computeChoiceCorrectness({
+    isEvaluateMode,
+    correctChoiceId: String(model?.correctChoiceId || ''),
+    selectedId: String(selectedId || ''),
+    showCorrectAnswer,
+  })
+);
 
 // ---------------------------------------------------------------------------
 // Cluster: a11y — stable IDs, aria labelling, described-by relationships
