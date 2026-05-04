@@ -293,3 +293,46 @@ test('plusggg: choice tiles are horizontally centered in the viewport', async ({
 
   expect(Math.abs(fieldsetMidX - viewportMidX)).toBeLessThanOrEqual(20);
 });
+
+// ---------------------------------------------------------------------------
+// 13. Audio button is in the top-right corner
+//     r1.scss: .rli-r1-instructions { align-items: flex-end } — the audio
+//     button sits at the right edge of the component, above the choices.
+// ---------------------------------------------------------------------------
+test('plusggg: audio button is to the right of the blank slot', async ({ page }) => {
+  await openPlusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const audioContainer = root.locator('.pie-audio-container');
+  const templateLine = root.locator('.pie-template-line');
+
+  await expect(audioContainer).toBeVisible();
+  await expect(templateLine).toBeVisible();
+
+  const audioBox = await audioContainer.boundingBox();
+  const templateBox = await templateLine.boundingBox();
+
+  expect(audioBox).not.toBeNull();
+  expect(templateBox).not.toBeNull();
+
+  // Audio button left edge must be to the right of the template line midpoint
+  const templateMidX = templateBox!.x + templateBox!.width / 2;
+  expect(audioBox!.x).toBeGreaterThan(templateMidX);
+});
+
+test('plusggg: audio button top is above or level with the blank slot top', async ({ page }) => {
+  await openPlusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const audioContainer = root.locator('.pie-audio-container');
+  const templateLine = root.locator('.pie-template-line');
+
+  const audioBox = await audioContainer.boundingBox();
+  const templateBox = await templateLine.boundingBox();
+
+  expect(audioBox).not.toBeNull();
+  expect(templateBox).not.toBeNull();
+
+  // Audio button top should be at or above the template line top
+  expect(audioBox!.y).toBeLessThanOrEqual(templateBox!.y + 10);
+});
