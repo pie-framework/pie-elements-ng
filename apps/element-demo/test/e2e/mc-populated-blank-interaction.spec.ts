@@ -21,18 +21,18 @@ import {
 const NO_AUDIO_DEMO = 'variant-sr-vic';
 const AUDIO_DEMO = 'variant-sel-vic';
 // Pre-seeded evaluate fixtures (session has choiceId already set)
-const EVALUATE_CORRECT_DEMO = 'evaluate-correct';  // choiceId=distractor_1 (correct)
-const EVALUATE_WRONG_DEMO = 'evaluate-wrong';       // choiceId=distractor_2 (wrong)
+const EVALUATE_CORRECT_DEMO = 'evaluate-correct'; // choiceId=distractor_1 (correct)
+const EVALUATE_WRONG_DEMO = 'evaluate-wrong'; // choiceId=distractor_2 (wrong)
 
 // sr-vic: choices=[distractor_1, distractor_2, distractor_3, distractor_4], correctChoiceId=distractor_1
-const CORRECT_INDEX = 0;  // distractor_1 — correct
-const WRONG_INDEX = 1;    // distractor_2 — wrong
+const CORRECT_INDEX = 0; // distractor_1 — correct
+const WRONG_INDEX = 1; // distractor_2 — wrong
 const CORRECT_VALUE = 'distractor_1';
 const WRONG_VALUE = 'distractor_2';
 
 // sel-vic: choices=[distractor_1, distractor_2, distractor_3], correctChoiceId=distractor_1
-const AUDIO_CORRECT_INDEX = 0;  // distractor_1
-const AUDIO_WRONG_INDEX = 1;    // distractor_2
+const AUDIO_CORRECT_INDEX = 0; // distractor_1
+const AUDIO_WRONG_INDEX = 1; // distractor_2
 
 type TestPage = Parameters<typeof test>[0]['page'];
 

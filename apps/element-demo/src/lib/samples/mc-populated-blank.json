@@ -459,6 +459,44 @@
       }
     },
     {
+      "id": "plusggg-with-transcript",
+      "title": "sel_r1-_plusggg — audio transcript visible",
+      "description": "plusggg fixture with showVisibleTranscript:true. Used by transcript parity tests.",
+      "tags": ["mc-populated-blank", "test-fixture", "sel_r1-_plusggg"],
+      "model": {
+        "id": "11",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:1.8em;\">louk</span>" },
+          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:1.8em;\">lok</span>" },
+          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:1.8em;\">look</span>" }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/e134b07b-e827-4264-923f-3e3f1dac5d5a.mp3",
+        "audioTranscript": "The word is look. Pick the correct spelling of the word look.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "customType": "sel_r1-_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": true
+      },
+      "session": {
+        "id": "11",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
       "id": "evaluate-wrong",
       "title": "sr-vic — evaluate with wrong answer pre-selected",
       "description": "Evaluate mode fixture: distractor_2 (wrong) pre-selected. Used by interaction tests.",

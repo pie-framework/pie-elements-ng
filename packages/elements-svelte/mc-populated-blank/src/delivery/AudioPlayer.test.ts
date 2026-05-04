@@ -35,53 +35,35 @@ afterEach(() => {
   }
 });
 
-describe('AudioPlayer — transcript visibility', () => {
-  it('renders transcript text in the DOM when audioTranscript is provided', () => {
-    const { target, component } = mountPlayer({ showVisibleTranscript: false });
+describe('AudioPlayer — audio element', () => {
+  it('renders an audio element in controls mode', () => {
+    const { target, component } = mountPlayer({ audioMode: 'controls' });
     mounts.push({ target, component });
     flushSync();
-    expect(target.querySelector('.pie-audio-transcript')).not.toBeNull();
-    expect(target.textContent).toContain('The word is look.');
+    expect(target.querySelector('.pie-audio-player')).not.toBeNull();
   });
 
-  it('hides transcript visually with sr-only when showVisibleTranscript is false', () => {
-    const { target, component } = mountPlayer({ showVisibleTranscript: false });
+  it('renders nothing when audioMode is none', () => {
+    const { target, component } = mountPlayer({ audioMode: 'none' as const });
     mounts.push({ target, component });
     flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript).not.toBeNull();
-    expect(transcript!.classList.contains('sr-only')).toBe(true);
+    expect(target.querySelector('.pie-audio-container')).toBeNull();
   });
 
-  it('shows transcript visually when showVisibleTranscript is true', () => {
-    const { target, component } = mountPlayer({ showVisibleTranscript: true });
+  it('renders an error message when audioMode is error', () => {
+    const { target, component } = mountPlayer({
+      audioMode: 'error' as const,
+      audioErrorMessage: 'Unavailable',
+    });
     mounts.push({ target, component });
     flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript).not.toBeNull();
-    expect(transcript!.classList.contains('sr-only')).toBe(false);
+    expect(target.querySelector('.pie-audio-error')).not.toBeNull();
   });
 
-  it('labels transcript with the transcriptLabel from uiText', () => {
-    const { target, component } = mountPlayer({ showVisibleTranscript: true });
+  it('renders the feature button in feature-button mode', () => {
+    const { target, component } = mountPlayer({ audioMode: 'feature-button' as const });
     mounts.push({ target, component });
     flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.textContent).toContain('Transcript:');
-  });
-
-  it('omits transcript element entirely when audioTranscript is empty', () => {
-    const { target, component } = mountPlayer({ audioTranscript: '', showVisibleTranscript: true });
-    mounts.push({ target, component });
-    flushSync();
-    expect(target.querySelector('.pie-audio-transcript')).toBeNull();
-  });
-
-  it('transcript element has the correct id for aria-describedby', () => {
-    const { target, component } = mountPlayer({ transcriptId: 'aria-target' });
-    mounts.push({ target, component });
-    flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.id).toBe('aria-target');
+    expect(target.querySelector('.pie-listen-button')).not.toBeNull();
   });
 });

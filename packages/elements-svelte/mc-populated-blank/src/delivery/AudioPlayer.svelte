@@ -102,15 +102,6 @@ function speechButtonLabel(loc = '') {
     {:else if audioMode === 'error'}
       <p class="text-sm text-red-700 pie-audio-error" role="alert">{audioErrorMessage}</p>
     {/if}
-    {#if audioTranscript}
-      <p
-        class={`text-sm mt-2 text-gray-700 pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
-        id={transcriptId}
-      >
-        <strong>{uiText.transcriptLabel}:</strong>
-        {audioTranscript}
-      </p>
-    {/if}
   </div>
 {/if}
 

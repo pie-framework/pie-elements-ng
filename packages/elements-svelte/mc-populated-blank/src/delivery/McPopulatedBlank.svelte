@@ -63,6 +63,8 @@ let featureAudioButtonEl = $state<HTMLButtonElement | null>(null);
 let autoplayEnableButtonEl = $state<HTMLButtonElement | null>(null);
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
+let rootEl = $state<HTMLDivElement | null>(null);
+let ancestorHasTranscriptClass = $state(false);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
 // ---------------------------------------------------------------------------
@@ -105,7 +107,9 @@ const isHorizontalChoices = $derived(choiceLayout === 'horizontal');
 const hasInlineSentenceAudioLayout = $derived(
   layoutProfile === 'inline_sentence' && !!model?.hasAudio
 );
-const showVisibleTranscript = $derived(!!model?.showVisibleTranscript);
+const showVisibleTranscript = $derived(
+  !!model?.showVisibleTranscript || ancestorHasTranscriptClass
+);
 const useFeatureButtonAudio = $derived.by(() => {
   if (typeof model?.useFeatureButtonAudio === 'boolean') {
     return !!model.useFeatureButtonAudio;
@@ -434,15 +438,44 @@ $effect(() => {
 $effect(() => {
   ensureVariantCssInjected(variantCssConfig);
 });
+
+$effect(() => {
+  const el = rootEl;
+  if (!el) return;
+
+  const check = () => {
+    ancestorHasTranscriptClass = !!el.closest('.rli-with-audio-transcript');
+  };
+  check();
+
+  const observer = new MutationObserver(check);
+  // Walk up and observe each ancestor for class changes
+  let node: Element | null = el.parentElement;
+  while (node) {
+    observer.observe(node, { attributes: true, attributeFilter: ['class'] });
+    node = node.parentElement;
+  }
+  return () => observer.disconnect();
+});
 </script>
 
 <div
+  bind:this={rootEl}
   class={`p-4 mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
   style={layout.rootStyle}
 >
   {#if model?.prompt}
     <div class="mb-4 prose pie-prompt" id={promptId}>{@html model.prompt}</div>
+  {/if}
+
+  {#if model?.audioTranscript}
+    <p
+      class={`text-sm mb-3 text-gray-700 text-center pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
+      id={transcriptId}
+    >
+      {model.audioTranscript}
+    </p>
   {/if}
 
   {#if shouldShowCorrectAnswerToggle}
