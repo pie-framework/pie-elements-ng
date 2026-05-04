@@ -15,6 +15,7 @@ import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-eve
 import AudioPlayer from './AudioPlayer.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
 import { computeAudioMode } from './computeAudioMode';
+import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
 import {
   ensureVariantCssInjected,
   getVariantCssConfig,
@@ -22,61 +23,6 @@ import {
 } from './variant-css-map';
 /** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
 const BLANK_TOKEN = '{{blank}}';
-const DEFAULT_LAYOUT_LIMITS = {
-  blankStandaloneWidthRem: 7,
-  blankWideWidthRem: 10,
-  blankUnderlineWidthPx: 2,
-  blankUnderlineWideWidthPx: 4,
-  horizontalChoiceWidthPx: 170,
-  horizontalChoiceWidthVw: 30,
-  horizontalChoiceTileMinHeightRem: 11,
-  horizontalChoiceContentMinHeightRem: 7.5,
-  selectedImageMaxHeightRem: 4,
-  choiceImageMaxHeightRem: 5,
-  listenButtonSizePx: 128,
-  stimulusMinColumnPx: 210,
-  textMinColumnPx: 260,
-  legendMaxChars: 120,
-  choiceGroupGapRem: 0.5,
-  choiceRowGapRem: 0.5,
-  toggleButtonGapRem: 0.5,
-  horizontalChoiceRadioTopMarginRem: 0.5,
-  audioBlankTemplateMarginTopRem: 0.8,
-  audioBlankTemplateMarginBottomRem: 1.8,
-  audioInstructionsMaxWidthPx: 875,
-  narrowHorizontalChoiceMaxWidthPx: 230,
-  stimulusGridColumnGapRem: 2,
-  stimulusGridRowGapRem: 0.7,
-  stimulusSentenceMarginTopRem: 0.2,
-  stimulusChoicesMarginTopRem: 0.9,
-  tokenGridColumnGapRem: 1.5,
-  tokenGridRowGapRem: 0.8,
-  tokenTemplateMarginTopRem: 0.6,
-  tokenInlineTokenGapRem: 0.35,
-  tokenChoicesMarginTopRem: 0.2,
-  inlineGridColumnGapRem: 1.5,
-  inlineGridRowGapRem: 0.65,
-  inlineTemplateMarginTopRem: 0.45,
-  inlineChoicesMarginTopRem: 0.25,
-} as const;
-const DEFAULT_LAYOUT_PROFILE_PRESETS: Record<string, Record<string, number>> = {
-  audio_blank_only: {
-    blankWideWidthRem: 10,
-    blankUnderlineWideWidthPx: 6,
-    horizontalChoiceTileMinHeightRem: 11.25,
-    horizontalChoiceContentMinHeightRem: 9.375,
-    choiceGroupGapRem: 1,
-    audioBlankTemplateMarginBottomRem: 1.875,
-  },
-  stimulus_image_blank: {
-    blankWideWidthRem: 10,
-    blankUnderlineWideWidthPx: 6,
-  },
-  token_sequence: {
-    blankStandaloneWidthRem: 7,
-    blankUnderlineWideWidthPx: 6,
-  },
-};
 const DEFAULT_AUDIO_BUTTON_SKINS = {
   default: {
     silentUrl:
@@ -133,7 +79,7 @@ const shouldShowCorrectAnswerToggle = $derived(
 
 // ---------------------------------------------------------------------------
 // Cluster: layoutConfig — profile limits, blank sizing, choice layout, audio mode
-// Feeds: rootStyle, blankWidth, blankBorderWidth, choiceState, useFeatureButtonAudio
+// Feeds: layout (rootStyle, blankWidth, blankBorderWidth, legendMaxChars), audioMode, choiceState
 // ---------------------------------------------------------------------------
 const layoutProfile = $derived(model?.layoutProfile || '');
 const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
@@ -173,47 +119,32 @@ const audioMode = $derived(
     useFeatureButtonAudio,
   })
 );
-const profilePresetLimits = $derived.by(() => {
-  const profile = String(layoutProfile || '');
-  const defaults = DEFAULT_LAYOUT_PROFILE_PRESETS[profile] || {};
-  const customPresets =
-    model?.layoutProfilePresets && typeof model.layoutProfilePresets === 'object'
-      ? model.layoutProfilePresets
-      : {};
-  const custom =
-    customPresets[profile] && typeof customPresets[profile] === 'object'
-      ? customPresets[profile]
-      : {};
-  return { ...defaults, ...custom };
-});
-const layoutLimits = $derived.by(() => {
-  const configured =
-    model?.layoutLimits && typeof model.layoutLimits === 'object' ? model.layoutLimits : {};
-  return {
-    ...DEFAULT_LAYOUT_LIMITS,
-    ...configured,
-    ...profilePresetLimits,
-  };
-});
-const blankWidth = $derived.by(() => {
-  if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
-    return `${layoutLimits.blankWideWidthRem}rem`;
-  }
-  if (isBlankOnlyTemplate) {
-    return `${layoutLimits.blankStandaloneWidthRem}rem`;
-  }
-  return 'auto';
-});
-const blankBorderWidth = $derived.by(() => {
-  if (
-    layoutProfile === 'audio_blank_only' ||
-    layoutProfile === 'stimulus_image_blank' ||
-    layoutProfile === 'token_sequence'
-  ) {
-    return `${layoutLimits.blankUnderlineWideWidthPx}px`;
-  }
-  return `${layoutLimits.blankUnderlineWidthPx}px`;
-});
+const correctAnswerStyleVars = $derived.by(() =>
+  [
+    `--pie-correct-answer-toggle-label-color:${color.text()}`,
+    `--pie-correct-answer-toggle-icon-open-bg:${color.tertiaryLight()}`,
+    `--pie-correct-answer-toggle-icon-closed-bg:${color.backgroundDark()}`,
+    `--pie-correct-answer-toggle-icon-glyph-color:${color.tertiary()}`,
+    `--pie-correct-answer-choice-hover-bg:${color.backgroundDark()}`,
+    `--pie-correct-answer-choice-selected-bg:${color.secondaryBackground()}`,
+    `--pie-correct-answer-choice-correct-bg:${color.correctSecondary()}`,
+    `--pie-correct-answer-choice-incorrect-bg:${color.incorrectSecondary()}`,
+    `--pie-correct-answer-choice-correct-border:${color.correctTertiary()}`,
+    `--pie-correct-answer-choice-incorrect-border:${color.incorrectWithIcon()}`,
+    `--pie-correct-answer-feedback-correct-bg:${color.correctWithIcon()}`,
+    `--pie-correct-answer-feedback-incorrect-bg:${color.incorrectWithIcon()}`,
+    `--pie-correct-answer-feedback-glyph-color:${color.white()}`,
+  ].join(';')
+);
+const layout = $derived(
+  computeLayoutStyle({
+    layoutProfile,
+    isBlankOnlyTemplate,
+    configuredLimits: model?.layoutLimits,
+    customProfilePresets: model?.layoutProfilePresets,
+    correctAnswerStyleVars,
+  })
+);
 
 // ---------------------------------------------------------------------------
 // Cluster: choiceState — selection, display choice, per-choice correctness, result text
@@ -266,10 +197,7 @@ const legendText = $derived.by(() => {
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  const maxChars = Math.max(
-    8,
-    Number(layoutLimits.legendMaxChars) || DEFAULT_LAYOUT_LIMITS.legendMaxChars
-  );
+  const maxChars = Math.max(8, layout.legendMaxChars);
   return plain.length > maxChars
     ? `${plain.slice(0, Math.max(1, maxChars - 1))}…`
     : plain || uiText.answerChoices;
@@ -308,76 +236,6 @@ const templateParts = $derived.by(() => {
     before: t.slice(0, idx),
     after: t.slice(idx + BLANK_TOKEN.length),
   };
-});
-const correctAnswerStyleVars = $derived.by(() =>
-  [
-    `--pie-correct-answer-toggle-label-color:${color.text()}`,
-    `--pie-correct-answer-toggle-icon-open-bg:${color.tertiaryLight()}`,
-    `--pie-correct-answer-toggle-icon-closed-bg:${color.backgroundDark()}`,
-    `--pie-correct-answer-toggle-icon-glyph-color:${color.tertiary()}`,
-    `--pie-correct-answer-choice-hover-bg:${color.backgroundDark()}`,
-    `--pie-correct-answer-choice-selected-bg:${color.secondaryBackground()}`,
-    `--pie-correct-answer-choice-correct-bg:${color.correctSecondary()}`,
-    `--pie-correct-answer-choice-incorrect-bg:${color.incorrectSecondary()}`,
-    `--pie-correct-answer-choice-correct-border:${color.correctTertiary()}`,
-    `--pie-correct-answer-choice-incorrect-border:${color.incorrectWithIcon()}`,
-    `--pie-correct-answer-feedback-correct-bg:${color.correctWithIcon()}`,
-    `--pie-correct-answer-feedback-incorrect-bg:${color.incorrectWithIcon()}`,
-    `--pie-correct-answer-feedback-glyph-color:${color.white()}`,
-  ].join(';')
-);
-const rootStyle = $derived.by(() => {
-  // Blank slot — width, underline thickness
-  const blankVars = [
-    `--mpb-blank-standalone-width:${layoutLimits.blankStandaloneWidthRem}rem`,
-    `--mpb-blank-wide-width:${layoutLimits.blankWideWidthRem}rem`,
-    `--mpb-blank-underline-width:${layoutLimits.blankUnderlineWidthPx}px`,
-    `--mpb-blank-underline-wide-width:${layoutLimits.blankUnderlineWideWidthPx}px`,
-  ];
-
-  // Choice tiles — dimensions, spacing, image heights
-  const choiceVars = [
-    `--mpb-choice-width-px:${layoutLimits.horizontalChoiceWidthPx}px`,
-    `--mpb-choice-width-vw:${layoutLimits.horizontalChoiceWidthVw}vw`,
-    `--mpb-choice-tile-min-height:${layoutLimits.horizontalChoiceTileMinHeightRem}rem`,
-    `--mpb-choice-content-min-height:${layoutLimits.horizontalChoiceContentMinHeightRem}rem`,
-    `--mpb-choice-image-max-height:${layoutLimits.choiceImageMaxHeightRem}rem`,
-    `--mpb-selected-image-max-height:${layoutLimits.selectedImageMaxHeightRem}rem`,
-    `--mpb-choice-group-gap:${layoutLimits.choiceGroupGapRem}rem`,
-    `--mpb-choice-row-gap:${layoutLimits.choiceRowGapRem}rem`,
-    `--mpb-horizontal-choice-radio-top-margin:${layoutLimits.horizontalChoiceRadioTopMarginRem}rem`,
-    `--mpb-narrow-choice-max-width:${layoutLimits.narrowHorizontalChoiceMaxWidthPx}px`,
-    `--mpb-toggle-button-gap:${layoutLimits.toggleButtonGapRem}rem`,
-  ];
-
-  // Audio — button size, template margins, instruction width
-  const audioVars = [
-    `--mpb-listen-button-size:${layoutLimits.listenButtonSizePx}px`,
-    `--mpb-audio-blank-template-margin-top:${layoutLimits.audioBlankTemplateMarginTopRem}rem`,
-    `--mpb-audio-blank-template-margin-bottom:${layoutLimits.audioBlankTemplateMarginBottomRem}rem`,
-    `--mpb-audio-instructions-max-width:${layoutLimits.audioInstructionsMaxWidthPx}px`,
-  ];
-
-  // Layout profile grids — stimulus_image_blank, token_sequence, inline_sentence
-  const gridVars = [
-    `--mpb-stimulus-min-column:${layoutLimits.stimulusMinColumnPx}px`,
-    `--mpb-text-min-column:${layoutLimits.textMinColumnPx}px`,
-    `--mpb-stimulus-grid-column-gap:${layoutLimits.stimulusGridColumnGapRem}rem`,
-    `--mpb-stimulus-grid-row-gap:${layoutLimits.stimulusGridRowGapRem}rem`,
-    `--mpb-stimulus-sentence-margin-top:${layoutLimits.stimulusSentenceMarginTopRem}rem`,
-    `--mpb-stimulus-choices-margin-top:${layoutLimits.stimulusChoicesMarginTopRem}rem`,
-    `--mpb-token-grid-column-gap:${layoutLimits.tokenGridColumnGapRem}rem`,
-    `--mpb-token-grid-row-gap:${layoutLimits.tokenGridRowGapRem}rem`,
-    `--mpb-token-template-margin-top:${layoutLimits.tokenTemplateMarginTopRem}rem`,
-    `--mpb-token-inline-token-gap:${layoutLimits.tokenInlineTokenGapRem}rem`,
-    `--mpb-token-choices-margin-top:${layoutLimits.tokenChoicesMarginTopRem}rem`,
-    `--mpb-inline-grid-column-gap:${layoutLimits.inlineGridColumnGapRem}rem`,
-    `--mpb-inline-grid-row-gap:${layoutLimits.inlineGridRowGapRem}rem`,
-    `--mpb-inline-template-margin-top:${layoutLimits.inlineTemplateMarginTopRem}rem`,
-    `--mpb-inline-choices-margin-top:${layoutLimits.inlineChoicesMarginTopRem}rem`,
-  ];
-
-  return [...blankVars, ...choiceVars, ...audioVars, ...gridVars, correctAnswerStyleVars].join(';');
 });
 
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
@@ -572,7 +430,7 @@ $effect(() => {
 <div
   class={`p-4 mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
-  style={rootStyle}
+  style={layout.rootStyle}
 >
   {#if model?.prompt}
     <div class="mb-4 prose pie-prompt" id={promptId}>{@html model.prompt}</div>
@@ -674,7 +532,7 @@ $effect(() => {
       {@html templateParts.before}
       <span
         class={`inline-flex items-center min-h-[1.5em] px-2 mx-1 border-b-2 border-gray-500 align-baseline blank-slot pie-blank-slot ${isBlankOnlyTemplate ? 'blank-slot-standalone pie-blank-slot-standalone' : ''}`}
-        style={`width:${blankWidth};border-bottom-width:${blankBorderWidth};`}
+        style={`width:${layout.blankWidth};border-bottom-width:${layout.blankBorderWidth};`}
         role="status"
         aria-live="polite"
         aria-atomic="true"
