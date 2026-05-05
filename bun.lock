@@ -310,7 +310,7 @@
     },
     "packages/elements-react/ebsr": {
       "name": "@pie-element/ebsr",
-      "version": "14.0.1",
+      "version": "14.1.1-next.0",
       "dependencies": {
         "@mui/material": "^7.3.4",
         "@pie-element/multiple-choice": "workspace:*",
@@ -858,7 +858,7 @@
     },
     "packages/elements-react/multiple-choice": {
       "name": "@pie-element/multiple-choice",
-      "version": "13.0.1",
+      "version": "13.1.1-next.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1340,7 +1340,7 @@
     },
     "packages/lib-react/graphing": {
       "name": "@pie-lib/graphing",
-      "version": "4.0.1",
+      "version": "4.0.2",
       "dependencies": {
         "@dnd-kit/core": "^6.3.0",
         "@dnd-kit/sortable": "10.0.0",
