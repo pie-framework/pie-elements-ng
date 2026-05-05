@@ -80,5 +80,8 @@
     "@pie-element/shared-utils": "0.1.0",
     "@pie-element/cli": "0.1.1"
   },
-  "changesets": []
+  "changesets": [
+    "20260501125058-pie-element-multiple-choice",
+    "common-cougars-hang"
+  ]
 }
