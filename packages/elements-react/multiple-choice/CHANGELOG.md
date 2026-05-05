@@ -1,5 +1,11 @@
 # @pie-element/multiple-choice
 
+## 13.1.1-next.1
+
+### Patch Changes
+
+- e32415a: test release flow
+
 ## 13.1.1-next.0
 
 ### Patch Changes
