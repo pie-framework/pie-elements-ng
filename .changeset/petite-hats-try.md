@@ -1,0 +1,51 @@
+---
+"@pie-element/explicit-constructed-response": patch
+"@pie-element/image-cloze-association": patch
+"@pie-element/graphing-solution-set": patch
+"@pie-element/extended-text-entry": patch
+"@pie-element/multi-trait-rubric": patch
+"@pie-element/placement-ordering": patch
+"@pie-element/drag-in-the-blank": patch
+"@pie-element/drawing-response": patch
+"@pie-lib/correct-answer-toggle": patch
+"@pie-lib/editable-html-tip-tap": patch
+"@pie-lib/graphing-solution-set": patch
+"@pie-element/inline-dropdown": patch
+"@pie-element/multiple-choice": patch
+"@pie-element/complex-rubric": patch
+"@pie-element/fraction-model": patch
+"@pie-element/number-line": patch
+"@pie-element/select-text": patch
+"@pie-lib/controller-utils": patch
+"@pie-element/categorize": patch
+"@pie-element/match-list": patch
+"@pie-lib/graphing-utils": patch
+"@pie-element/charting": patch
+"@pie-element/graphing": patch
+"@pie-element/hotspot": patch
+"@pie-element/passage": patch
+"@pie-lib/math-toolbar": patch
+"@pie-element/likert": patch
+"@pie-element/matrix": patch
+"@pie-element/rubric": patch
+"@pie-lib/mask-markup": patch
+"@pie-lib/style-utils": patch
+"@pie-lib/text-select": patch
+"@pie-element/match": patch
+"@pie-lib/categorize": patch
+"@pie-lib/test-utils": patch
+"@pie-lib/translator": patch
+"@pie-element/ebsr": patch
+"@pie-lib/config-ui": patch
+"@pie-lib/render-ui": patch
+"@pie-lib/charting": patch
+"@pie-lib/graphing": patch
+"@pie-lib/rubric": patch
+"@pie-lib/icons": patch
+"@pie-lib/tools": patch
+"@pie-lib/drag": patch
+"@pie-lib/plot": patch
+"@pie-element/cli": patch
+---
+
+sync with upstream and test release flow
