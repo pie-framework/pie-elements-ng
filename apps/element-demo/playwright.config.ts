@@ -1,7 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+
+// Load .env so that LEARNOSITY_* vars are visible to the Playwright test process
+// (SvelteKit/Vite loads .env for the app server, but not for the test runner).
+const envPath = join(import.meta.dirname, '.env');
+if (existsSync(envPath)) {
+  for (const line of readFileSync(envPath, 'utf-8').split('\n')) {
+    const match = line.match(/^([^#=\s][^=]*)=(.*)$/);
+    if (match) process.env[match[1]] ??= match[2].trim();
+  }
+}
 
 function resolveLocalBrowsersDir(): string | undefined {
   // First try system cache (macOS)

@@ -146,7 +146,7 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": true,
+        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_vicv0.0.1",
           "learnosityItemReference": "04973d1a-0557-4963-937d-7ac76ee3baeb",
@@ -495,6 +495,591 @@
         "element": "mc-populated-blank",
         "choiceId": ""
       }
+    },
+    {
+      "id": "variant-sel-r1-gg-plus-es",
+      "title": "sel_r1-gg_plusggg — Spanish text (ea363a8b)",
+      "description": "Spanish text variant from item ea363a8b-26a1-44fb-bc8b-85f42758d952.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "es-US"],
+      "model": {
+        "id": "12",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p><span style=\"font-size:3em;\">w</span> <span style=\"font-size:3em;\">x</span> {{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">v</span>" },
+          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\"><span aria-label=\"i griega\"></span><span aria-hidden=\"true\">y</span></span>" },
+          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">x</span>" }
+        ],
+        "correctChoiceId": "distractor_2",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/3eedd77b-84d4-499d-b7a4-82255a59331f.mp3",
+        "audioTranscript": "Estas letras son W y X. Elige la letra que sigue en el alfabeto.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "customType": "sel_r1-gg_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
+          "learnosityItemReference": "ea363a8b-26a1-44fb-bc8b-85f42758d952",
+          "learnosityQuestionReference": "c54e2120-d76a-44c8-b1d1-8abe324806fc"
+        }
+      },
+      "session": { "id": "12", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-g-stem-es",
+      "title": "sel_r1-g_plusggg — Spanish text (8e2e031c)",
+      "description": "Spanish text variant from item 8e2e031c-5594-4081-811b-ddfcbecd5667.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "es-US"],
+      "model": {
+        "id": "13",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p><span style=\"font-size:2em;\">saco</span> {{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:2em;\">taco</span>" },
+          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:2em;\">poco</span>" },
+          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:2em;\">vaca</span>" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/14d244d7-1b2f-4575-b172-51d16c33c13b.mp3",
+        "audioTranscript": "Mira la palabra saco. Elige la palabra que rima con saco.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "customType": "sel_r1-g_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
+          "learnosityItemReference": "8e2e031c-5594-4081-811b-ddfcbecd5667",
+          "learnosityQuestionReference": "a9fa9f63-cfd4-49b9-88f0-c788e5eb53a9"
+        }
+      },
+      "session": { "id": "13", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-plusggg-es",
+      "title": "sel_r1-_plusggg — Spanish text (25bdc860)",
+      "description": "Spanish text variant from item 25bdc860-bd49-438d-a597-78561422037b.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "es-US"],
+      "model": {
+        "id": "14",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">3</span>" },
+          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\">2</span>" },
+          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">1</span>" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/d16f5669-b183-4392-aa27-b22ecfe6b2ff.mp3",
+        "audioTranscript": "La palabra es caracol. Elige el número de sílabas que escuchas en ca ra col.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "customType": "sel_r1-_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
+          "learnosityItemReference": "25bdc860-bd49-438d-a597-78561422037b",
+          "learnosityQuestionReference": "7d69dfdd-f3a1-497f-94ed-b44d90f1b93b"
+        }
+      },
+      "session": { "id": "14", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-gplusggg-es",
+      "title": "sel_r1-_gplusggg — Spanish text (74a235ac)",
+      "description": "Spanish text variant from item 74a235ac-ba03-462d-9e78-077603f7f51e.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "es-US"],
+      "model": {
+        "id": "15",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}} <span style=\"font-size:3em;\">sa</span></p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">ca</span>" },
+          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\">ro</span>" },
+          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">me</span>" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/5b80657f-6742-49c2-8c65-aec127ef661d.mp3",
+        "audioTranscript": "Mira la sílaba sa. Elige la sílaba que va antes de sa para formar la palabra casa.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "customType": "sel_r1-_gplusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
+          "learnosityItemReference": "74a235ac-ba03-462d-9e78-077603f7f51e",
+          "learnosityQuestionReference": "7276b29c-e841-4d09-bd85-a5194678a069"
+        }
+      },
+      "session": { "id": "15", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-ggplus-es",
+      "title": "sel_r1-_ggplusggg — Spanish text (23e2b004)",
+      "description": "Spanish text variant from item 23e2b004-9b64-41cb-b620-c108146d5a27.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "es-US"],
+      "model": {
+        "id": "16",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}} <span style=\"font-size:3em;\">v</span> <span style=\"font-size:3em;\">w</span></p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">u</span>" },
+          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\"><span aria-label=\"i griega\"></span><span aria-hidden=\"true\">y</span></span>" },
+          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">x</span>" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/884a9764-8830-441b-89b0-eeef1a5ee24b.mp3",
+        "audioTranscript": "Estas letras son V y W. Elige la letra que está antes que ellas en el alfabeto.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "customType": "sel_r1-_ggplusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
+          "learnosityItemReference": "23e2b004-9b64-41cb-b620-c108146d5a27",
+          "learnosityQuestionReference": "c1416a25-3c90-49bf-ab88-f1a8673e9407"
+        }
+      },
+      "session": { "id": "16", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-s3-es",
+      "title": "sel_r1-s3_plusggg — Spanish text (5f9fcfe0)",
+      "description": "Spanish text variant from item 5f9fcfe0-5870-4e1b-a436-49dceb43759d.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "es-US"],
+      "model": {
+        "id": "17",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:1.3em;\">hueso</span>" },
+          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:1.3em;\">tiene</span>" },
+          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:1.3em;\">perro</span>" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/2c2b85e9-4f75-43a3-9fe9-7d48036b6f68.mp3",
+        "audioTranscript": "Lee la oración. Elige la palabra que tiene una letra que no suena.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "<span style=\"font-size:1.1em;\">Mi perro tiene un hueso.</span>",
+        "layoutProfile": "stimulus_image_blank",
+        "customType": "sel_r1-s3_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
+          "learnosityItemReference": "5f9fcfe0-5870-4e1b-a436-49dceb43759d",
+          "learnosityQuestionReference": "20f5137c-8e62-4ae4-906e-36f6262e661b"
+        }
+      },
+      "session": { "id": "17", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-vic-es",
+      "title": "sel_vic — Spanish text (9264f1c0)",
+      "description": "Spanish text variant from item 9264f1c0-a6c9-4920-bb9c-7590be3c172a.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_vic", "es-US"],
+      "model": {
+        "id": "18",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>Es importante comenzar el día con un buen desayuno. Necesitamos comida en la mañana. No comer puede hacernos sentir cansados o enfermos. Desayunar nos ayuda a sentirnos bien. Trabajamos mejor en la escuela cuando nos sentimos bien. ¿Cuándo es importante desayunar? {{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "mientras trabajamos en la escuela" },
+          { "id": "distractor_2", "labelHtml": "cuando no sentimos bien" },
+          { "id": "distractor_3", "labelHtml": "en la mañana" }
+        ],
+        "correctChoiceId": "distractor_2",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/398f7467-5a40-4488-86c7-81df9ef6141e.mp3",
+        "audioTranscript": "Lee el pasaje y la pregunta. Luego, elige la respuesta correcta.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "inline_sentence",
+        "customType": "sel_vic",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "vertical",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_vicv0.0.1",
+          "learnosityItemReference": "9264f1c0-a6c9-4920-bb9c-7590be3c172a",
+          "learnosityQuestionReference": "c78bdd84-5de8-4249-b13e-baf906cfa195"
+        }
+      },
+      "session": { "id": "18", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-gg-plus-graphic",
+      "title": "sel_r1-gg_plusggg — graphic choices English (bc827dec)",
+      "description": "Graphic choice variant from item bc827dec-cb5e-4f09-b7f0-e227c2912c2f.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "graphic"],
+      "model": {
+        "id": "19",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p><img alt=\"woman\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/e85bd672-3f63-40ac-87e0-94541a3710ea.svg\" width=\"108\"> <img alt=\"girl\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/7ecf829f-3813-457d-afa5-7bdba18edf9f.svg\" width=\"108\"> {{blank}}</p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<img alt=\"sun\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/37d2ba6e-d1c2-4e59-ad7c-7b8dd62631b6.svg\" width=\"108\">" },
+          { "id": "distractor_2", "labelHtml": "<img alt=\"hammer\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/ba6e5055-6fe0-4e93-9512-ed42977ed6b1.svg\" width=\"108\">" },
+          { "id": "distractor_3", "labelHtml": "<img alt=\"grandmother\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/26ee2216-323f-4719-9457-076be451cc96.svg\" width=\"108\">" }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/ed48382d-0ff3-4296-86af-806af66aea57.mp3",
+        "audioTranscript": "Look at the pictures of the woman and the girl. Pick another picture that belongs in this group.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "customType": "sel_r1-gg_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
+          "learnosityItemReference": "bc827dec-cb5e-4f09-b7f0-e227c2912c2f",
+          "learnosityQuestionReference": "5b5091c4-a2b7-4892-b209-99b33793c2c6"
+        }
+      },
+      "session": { "id": "19", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-g-stem-graphic",
+      "title": "sel_r1-g_plusggg — graphic choices English (e6dc4fe3)",
+      "description": "Graphic choice variant from item e6dc4fe3-076d-4d39-963a-f5742987801a.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "graphic"],
+      "model": {
+        "id": "20",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p><img alt=\"shop\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/1d7af92f-05db-42a6-87fd-172d2ee653fc.svg\" width=\"108\"> {{blank}}</p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<img alt=\"boat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/8003bf8b-1192-4e12-bff4-2c9f80a1b0b8.svg\" width=\"108\">" },
+          { "id": "distractor_2", "labelHtml": "<img alt=\"shoe\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/5406c187-d12e-4f8f-8db1-41af3657afef.svg\" width=\"108\">" },
+          { "id": "distractor_3", "labelHtml": "<img alt=\"sheep\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/9ab5edad-1335-4ab2-8002-bcf692f033f2.svg\" width=\"108\">" }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/da308b24-ce3a-44db-80ec-2bdf49251f9d.mp3",
+        "audioTranscript": "Look at the shop. If you change the /o/ sound to /ee/, what new word do you make? Pick the picture of the new word.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "customType": "sel_r1-g_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
+          "learnosityItemReference": "e6dc4fe3-076d-4d39-963a-f5742987801a",
+          "learnosityQuestionReference": "f2c1c343-3aac-4232-a7cd-f18fc02e8f43"
+        }
+      },
+      "session": { "id": "20", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-plusggg-graphic",
+      "title": "sel_r1-_plusggg — graphic choices English (097f87c5)",
+      "description": "Graphic choice variant from item 097f87c5-c474-4dda-97b2-46b30d598a54.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "graphic"],
+      "model": {
+        "id": "21",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<img alt=\"teddy bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/4264ff6d-7790-4631-bd9d-03c9790dc9b1.svg\" width=\"108\">" },
+          { "id": "distractor_2", "labelHtml": "<img alt=\"polar bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/cba657c7-40b4-4cef-a0d7-09445d72eca1.svg\" width=\"108\">" },
+          { "id": "distractor_3", "labelHtml": "<img alt=\"black bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/6b6d4542-9913-4330-b471-1703db96ee57.svg\" width=\"108\">" }
+        ],
+        "correctChoiceId": "distractor_2",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/6ae1a1e6-9927-46dd-8442-8881f5058515.mp3",
+        "audioTranscript": "Listen to the passage. Polar bears live where it is very cold. Their fur looks like the snow. Their feet are good for walking on ice. Pick the picture that tells what this passage is mostly about.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "customType": "sel_r1-_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
+          "learnosityItemReference": "097f87c5-c474-4dda-97b2-46b30d598a54",
+          "learnosityQuestionReference": "fa344899-b3e9-4c94-a024-3612d550a6a9"
+        }
+      },
+      "session": { "id": "21", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-gplusggg-graphic",
+      "title": "sel_r1-_gplusggg — graphic choices English (a0c05ca1)",
+      "description": "Graphic choice variant from item a0c05ca1-127d-49eb-bb05-8ea7b5c1834f.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "graphic"],
+      "model": {
+        "id": "22",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}} <img alt=\"coat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/0ffac3e5-81a9-42df-93a5-6c3a03520dac.svg\" width=\"108\"></p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<img alt=\"gate\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/72b1b641-6444-497a-b07f-0cd52d2b0d8c.svg\" width=\"108\">" },
+          { "id": "distractor_2", "labelHtml": "<img alt=\"goat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/378698ca-2d49-4ba0-beff-6e3f1693c8a6.svg\" width=\"108\">" },
+          { "id": "distractor_3", "labelHtml": "<img alt=\"boat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/004c2794-8b36-4eb2-bc86-c359037536f5.svg\" width=\"108\">" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/76329d45-8c41-40f7-8e3b-eda48fd7c2ab.mp3",
+        "audioTranscript": "Look at the picture of the coat. Now look at the other pictures. Gate. Goat. Boat. Pick the picture that does not rhyme with coat.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "customType": "sel_r1-_gplusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
+          "learnosityItemReference": "a0c05ca1-127d-49eb-bb05-8ea7b5c1834f",
+          "learnosityQuestionReference": "2aa288ad-a928-4d90-bbc6-f7ee98a51f59"
+        }
+      },
+      "session": { "id": "22", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-ggplus-graphic",
+      "title": "sel_r1-_ggplusggg — graphic choices English (2e53a942)",
+      "description": "Graphic choice variant from item 2e53a942-8ceb-46d4-bf56-ddd7b376f504.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "graphic"],
+      "model": {
+        "id": "23",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}} <img alt=\"woman\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/c7f8fb43-7c69-457f-9e82-f728b412f1f8.svg\" width=\"108\"> <img alt=\"girl\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/3988be7c-0458-46d5-ab26-24006f0bc3a2.svg\" width=\"108\"></p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<img alt=\"sun\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/4645e5c2-217b-460b-a7a5-295b6c9d5a57.svg\" width=\"108\">" },
+          { "id": "distractor_2", "labelHtml": "<img alt=\"hammer\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/41226c8b-7288-42d8-a826-5ffc100f4cbc.svg\" width=\"108\">" },
+          { "id": "distractor_3", "labelHtml": "<img alt=\"grandmother\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/865a78f8-14ef-4552-8e96-32abfd38210b.svg\" width=\"108\">" }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/d46eb8fd-4721-4c23-a8b7-3540ca1b282d.mp3",
+        "audioTranscript": "Look at the pictures of the woman and the girl. Pick another picture that belongs in this group.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "customType": "sel_r1-_ggplusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
+          "learnosityItemReference": "2e53a942-8ceb-46d4-bf56-ddd7b376f504",
+          "learnosityQuestionReference": "d102f1f4-4311-4e99-9d05-e2047b2803d7"
+        }
+      },
+      "session": { "id": "23", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-s3-graphic",
+      "title": "sel_r1-s3_plusggg — graphic choices English (c3b6c877)",
+      "description": "Graphic choice variant from item c3b6c877-444d-4d27-9f1a-3cbc8af38b7a.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "graphic"],
+      "model": {
+        "id": "24",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<img alt=\"a cat\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/32ea28f7-f2db-4dc0-8cd5-3451f0767ad6.svg\" width=\"150\">" },
+          { "id": "distractor_2", "labelHtml": "<img alt=\"an ant\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/080089d7-c757-4b81-9f5e-accac51fd4e8.svg\" width=\"150\">" },
+          { "id": "distractor_3", "labelHtml": "<img alt=\"a mouse\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/036d6a16-1a35-4b70-9e9a-82217a6635b0.svg\" width=\"150\">" }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/f2c5abba-f857-444d-ae8f-62c5bd44efe6.mp3",
+        "audioTranscript": "Pick the picture of the animal that is ninth in the parade . . . ninth in the parade.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "<img alt=\"\" height=\"300\" src=\"https://assets.learnosity.com/organisations/844/11400931-d084-43d1-ad55-8e0d01409315.svg\" width=\"457\">",
+        "layoutProfile": "stimulus_image_blank",
+        "customType": "sel_r1-s3_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
+          "learnosityItemReference": "c3b6c877-444d-4d27-9f1a-3cbc8af38b7a",
+          "learnosityQuestionReference": "9b938e63-88ae-4f04-860b-66df1a61331a"
+        }
+      },
+      "session": { "id": "24", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-plusggg-graphic-es",
+      "title": "sel_r1-_plusggg — graphic choices Spanish (a83f1d87)",
+      "description": "Spanish graphic choice variant from item a83f1d87-f3e5-4c0e-8eb4-408275336c0b.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "graphic", "es-US"],
+      "model": {
+        "id": "25",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<img alt=\"paloma\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/0f7525ef-4cdb-415a-b20f-40fbd16e33fe.svgz\" width=\"108\">" },
+          { "id": "distractor_2", "labelHtml": "<img alt=\"plátano\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/c292fb15-c052-44c7-9f26-e639bdc69f7d.svgz\" width=\"108\">" },
+          { "id": "distractor_3", "labelHtml": "<img alt=\"pijama\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/8270bdad-d9b8-4f11-a7cb-9d4ad9ffe810.svgz\" width=\"108\">" }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/d8c47cce-ba4b-4e7d-a55e-bf2418094081.mp3",
+        "audioTranscript": "Escucha con atención lo que digo: pi ja ma. Elige el dibujo que tiene lo que digo: pi ja ma, pi ja ma.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "customType": "sel_r1-_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
+          "learnosityItemReference": "a83f1d87-f3e5-4c0e-8eb4-408275336c0b",
+          "learnosityQuestionReference": "3b30d112-f0a8-4bef-9958-bebdfabce992"
+        }
+      },
+      "session": { "id": "25", "element": "mc-populated-blank", "choiceId": "" }
+    },
+    {
+      "id": "variant-sel-r1-ggplus-graphic-es",
+      "title": "sel_r1-_ggplusggg — graphic choices Spanish (00cd1143)",
+      "description": "Spanish graphic choice variant from item 00cd1143-ceda-4f81-8f1f-6c9555d043e4.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "graphic", "es-US"],
+      "model": {
+        "id": "26",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}} <img alt=\"gallina\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/d776276a-5e20-40d2-a6f6-91e4247738db.svg\" width=\"108\"> <img alt=\"pato\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/1054472d-b903-46ed-a0a6-47f75326a5e9.svg\" width=\"108\"></p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<img alt=\"hoja\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/98e394ea-e8b7-40df-ba9d-b7bc627787c5.svg\" width=\"108\">" },
+          { "id": "distractor_2", "labelHtml": "<img alt=\"guante\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/e4f0338e-3b41-4831-b242-d3caed95ed8d.svg\" width=\"108\">" },
+          { "id": "distractor_3", "labelHtml": "<img alt=\"pollito\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/d800a750-e103-4f16-95c2-6e6cdfc1dbcf.svg\" width=\"108\">" }
+        ],
+        "correctChoiceId": "distractor_3",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/98e3e018-0603-45c0-ae76-ee123396ae43.mp3",
+        "audioTranscript": "Mira el dibujo de la gallina y el pato. Elige otro dibujo que debe estar en este grupo.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "customType": "sel_r1-_ggplusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "es-US",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "showVisibleTranscript": false,
+        "source": {
+          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
+          "learnosityItemReference": "00cd1143-ceda-4f81-8f1f-6c9555d043e4",
+          "learnosityQuestionReference": "98b7bb39-7a82-4221-9291-144833be351d"
+        }
+      },
+      "session": { "id": "26", "element": "mc-populated-blank", "choiceId": "" }
     },
     {
       "id": "evaluate-wrong",

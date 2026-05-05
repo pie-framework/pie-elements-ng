@@ -10,6 +10,10 @@ interface UiText {
   clickToEnableAutoplay: string;
   transcriptLabel: string;
   audioResourceUnavailable: string;
+  listenSilentAlt?: string;
+  listenPlayingAlt?: string;
+  listenSilentAltEs?: string;
+  listenPlayingAltEs?: string;
 }
 
 let {
@@ -47,6 +51,18 @@ let {
 function speechButtonLabel(loc = '') {
   return loc.toLowerCase().startsWith('es') ? 'Escuchar' : 'Listen';
 }
+
+function silentAlt(loc = '') {
+  return loc.toLowerCase().startsWith('es')
+    ? (uiText.listenSilentAltEs ?? 'Escuchar. Repetir las instrucciones.')
+    : (uiText.listenSilentAlt ?? 'Repeat instructions');
+}
+
+function playingAlt(loc = '') {
+  return loc.toLowerCase().startsWith('es')
+    ? (uiText.listenPlayingAltEs ?? 'Escuchar. Estas son las instrucciones.')
+    : (uiText.listenPlayingAlt ?? 'Instructions are playing');
+}
 </script>
 
 {#if audioMode !== 'none'}
@@ -69,14 +85,12 @@ function speechButtonLabel(loc = '') {
         <img
           class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? '' : 'listen-active'}`}
           src={featureAudioSkin.silentUrl}
-          alt=""
-          aria-hidden="true"
+          alt={silentAlt(locale)}
         />
         <img
           class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? 'listen-active' : ''}`}
           src={featureAudioSkin.playingUrl}
-          alt=""
-          aria-hidden="true"
+          alt={playingAlt(locale)}
         />
       </button>
     {:else if audioMode === 'controls'}

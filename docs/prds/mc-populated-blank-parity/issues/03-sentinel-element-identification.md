@@ -1,6 +1,6 @@
 # 03 — Sentinel element identification
 
-Type: **HITL**
+Type: **HITL** ✅ Resolved — sentinel is `lrn-assess`
 
 ## What to build
 

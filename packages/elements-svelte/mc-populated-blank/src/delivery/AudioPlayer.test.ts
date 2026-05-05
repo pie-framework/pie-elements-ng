@@ -17,6 +17,10 @@ const BASE_PROPS = {
     clickToEnableAutoplay: 'Click to enable',
     transcriptLabel: 'Transcript',
     audioResourceUnavailable: 'Unavailable',
+    listenSilentAlt: 'Repeat instructions',
+    listenPlayingAlt: 'Instructions are playing',
+    listenSilentAltEs: 'Escuchar. Repetir las instrucciones.',
+    listenPlayingAltEs: 'Escuchar. Estas son las instrucciones.',
   },
 };
 
@@ -66,5 +70,23 @@ describe('AudioPlayer — audio element', () => {
     mounts.push({ target, component });
     flushSync();
     expect(target.querySelector('.pie-listen-button')).not.toBeNull();
+  });
+
+  it('silent image alt is "Repeat instructions" in feature-button mode', () => {
+    const { target, component } = mountPlayer({ audioMode: 'feature-button' as const });
+    mounts.push({ target, component });
+    flushSync();
+    const imgs = target.querySelectorAll('.pie-listen-icon');
+    const alts = Array.from(imgs).map((el) => (el as HTMLImageElement).alt);
+    expect(alts).toContain('Repeat instructions');
+  });
+
+  it('playing image alt is "Instructions are playing" in feature-button mode', () => {
+    const { target, component } = mountPlayer({ audioMode: 'feature-button' as const });
+    mounts.push({ target, component });
+    flushSync();
+    const imgs = target.querySelectorAll('.pie-listen-icon');
+    const alts = Array.from(imgs).map((el) => (el as HTMLImageElement).alt);
+    expect(alts).toContain('Instructions are playing');
   });
 });

@@ -28,6 +28,10 @@ export interface McpbUiText {
   transcriptLabel?: string;
   listenLabelEn?: string;
   listenLabelEs?: string;
+  listenSilentAlt?: string;
+  listenPlayingAlt?: string;
+  listenSilentAltEs?: string;
+  listenPlayingAltEs?: string;
 }
 
 export interface McpbQuestion {

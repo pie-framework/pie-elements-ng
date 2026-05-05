@@ -126,3 +126,58 @@ test('plusggg: transcript renders above the choice tiles', async ({ page }) => {
   expect(choiceBox).not.toBeNull();
   expect(transcriptBox!.y + transcriptBox!.height).toBeLessThan(choiceBox!.y);
 });
+
+// ---------------------------------------------------------------------------
+// Cross-variant: transcript hidden by default, revealed by rli-with-audio-transcript
+// Covers all variants that have audio + a transcript string.
+// ---------------------------------------------------------------------------
+
+// sr-vic is excluded: it has no audio component and therefore no transcript.
+// Only SEL variants have audio + transcript.
+const AUDIO_TRANSCRIPT_VARIANTS: Array<{ demoId: string; label: string }> = [
+  { demoId: 'variant-sel-r1-plusggg',  label: 'plusggg' },
+  { demoId: 'variant-sel-vic',          label: 'sel-vic' },
+  { demoId: 'variant-sel-r1-gplusggg',  label: 'gplusggg' },
+  { demoId: 'variant-sel-r1-g-stem',    label: 'g-stem' },
+  { demoId: 'variant-sel-r1-gg-plus',   label: 'gg-plus' },
+  { demoId: 'variant-sel-r1-ggplus',    label: 'ggplus' },
+  { demoId: 'variant-sel-r1-s3',        label: 's3' },
+];
+
+for (const { demoId, label } of AUDIO_TRANSCRIPT_VARIANTS) {
+  test(`${label}: transcript is sr-only by default (no rli-with-audio-transcript ancestor)`, async ({ page }) => {
+    await openRoute(page, demoId);
+    const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
+    await expect(transcript).toBeAttached();
+    await expect(transcript).toHaveClass(/sr-only/);
+  });
+
+  test(`${label}: transcript becomes visible when rli-with-audio-transcript is added to an ancestor`, async ({ page }) => {
+    await openRoute(page, demoId);
+    const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
+
+    await expect(transcript).toHaveClass(/sr-only/);
+
+    await page.evaluate(() => {
+      document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+    });
+
+    await expect(transcript).not.toHaveClass(/sr-only/);
+    await expect(transcript).toBeVisible();
+  });
+
+  test(`${label}: transcript returns to sr-only when rli-with-audio-transcript is removed`, async ({ page }) => {
+    await openRoute(page, demoId);
+    const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
+
+    await page.evaluate(() => {
+      document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+    });
+    await expect(transcript).not.toHaveClass(/sr-only/);
+
+    await page.evaluate(() => {
+      document.querySelector('.demo-element-player')?.classList.remove('rli-with-audio-transcript');
+    });
+    await expect(transcript).toHaveClass(/sr-only/);
+  });
+}

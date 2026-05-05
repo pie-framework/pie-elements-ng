@@ -12,6 +12,7 @@
     "generate-imports": "bun run scripts/generate-element-imports.ts",
     "predev": "bun run generate-imports && bun run --cwd ../.. verify:no-local-paths apps/element-demo/src/lib/element-imports.js apps/element-demo/src/lib/element-imports.d.ts",
     "test:e2e": "playwright test",
+    "test:e2e:mcpb": "playwright test mc-populated-blank",
     "test:e2e:iife": "RUN_IIFE_E2E=1 playwright test iife-usefulness.spec.ts",
     "test:e2e:iife:suite": "RUN_IIFE_E2E=1 MATRIX_STRATEGIES=esm,iife playwright test iife-usefulness.spec.ts smoke-matrix.spec.ts",
     "test:e2e:iife:suite:orchestrated": "PIE_IIFE_EXTERNAL_SERVER=1 RUN_IIFE_E2E=1 MATRIX_STRATEGIES=esm,iife playwright test iife-usefulness.spec.ts smoke-matrix.spec.ts",

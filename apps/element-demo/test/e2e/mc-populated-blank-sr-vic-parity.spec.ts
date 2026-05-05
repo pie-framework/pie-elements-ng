@@ -137,3 +137,78 @@ test('sr-vic: hovered unselected choice row background is #f2f2f2', async ({ pag
   // Background must be on the row itself, not only the inner label wrapper.
   await expect(firstRow).toHaveCSS('background-color', 'rgb(242, 242, 242)');
 });
+
+// ---------------------------------------------------------------------------
+// Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
+// ---------------------------------------------------------------------------
+
+const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
+
+async function openSrVicParityRoute(page: import('@playwright/test').Page) {
+  await page.goto(`/mc-populated-blank/parity?demo=${encodeURIComponent(DEMO_ID)}`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('#pie-container', { timeout: 20_000 });
+  await page.waitForSelector('[data-learnosity-ready="true"]', { timeout: 30_000 });
+}
+
+test.describe('sr-vic live parity — visual', () => {
+  test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
+
+  test('both sides render a choices group', async ({ page }) => {
+    await openSrVicParityRoute(page);
+    await expect(page.locator('#pie-container [role="radiogroup"]')).toBeVisible();
+    await expect(page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first()).toBeVisible();
+  });
+
+  test('filled blank value is red (#cc3333) on PIE side', async ({ page }) => {
+    await openSrVicParityRoute(page);
+    await page.locator('#pie-container input[type="radio"]').first().check();
+    await page.waitForTimeout(200);
+    const color = await page.locator('#pie-container .pie-blank-value').first()
+      .evaluate((el) => getComputedStyle(el).color);
+    expect(color).toBe('rgb(204, 51, 51)');
+  });
+
+  test('audio transcript is sr-only (not visibly rendered) on PIE side', async ({ page }) => {
+    await openSrVicParityRoute(page);
+    const transcript = page.locator('#pie-container .pie-audio-transcript');
+    // sr-vic uses showVisibleTranscript: false — transcript should be sr-only or absent
+    const isVisible = await transcript.isVisible().catch(() => false);
+    if (isVisible) {
+      const clip = await transcript.evaluate((el) =>
+        getComputedStyle(el).clip
+      );
+      // sr-only uses clip: rect(0,0,0,0)
+      expect(clip).toMatch(/rect\(0/);
+    }
+  });
+});
+
+test.describe('sr-vic live parity — aria', () => {
+  test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
+
+  test('choices group has an accessible label on both sides', async ({ page }) => {
+    await openSrVicParityRoute(page);
+    const pieGroup = page.locator('#pie-container [role="radiogroup"]');
+    const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
+    const pieAriaLabel = await pieGroup.getAttribute('aria-label');
+    expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
+    const lrnAriaLabel = await page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first().getAttribute('aria-label');
+    expect(lrnAriaLabel).toBeTruthy();
+  });
+
+  test('blank slot aria-label is "blank" on PIE side', async ({ page }) => {
+    await openSrVicParityRoute(page);
+    const label = await page.locator('#pie-container .pie-blank-slot').getAttribute('aria-label');
+    expect(label).toBe('blank');
+  });
+
+  test('blank slot has role="status" and aria-live="polite" on PIE side', async ({ page }) => {
+    await openSrVicParityRoute(page);
+    const blank = page.locator('#pie-container .pie-blank-slot');
+    await expect(blank).toHaveAttribute('role', 'status');
+    await expect(blank).toHaveAttribute('aria-live', 'polite');
+  });
+});
+

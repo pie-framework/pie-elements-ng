@@ -186,17 +186,165 @@ test('sel-vic: hovered unselected choice row background is #f2f2f2', async ({ pa
 });
 
 // ---------------------------------------------------------------------------
-// 8. Audio transcript is visible (showVisibleTranscript: true for sel-vic)
+// 8. Audio transcript is sr-only by default; revealed by rli-with-audio-transcript
 //    sel_vic/main.scss: .rli-with-audio-transcript .rli-vic-audio-transcript { display: flex }
-//    The sel-vic model has showVisibleTranscript: true, so the transcript must
-//    be visible (not sr-only hidden).
+//    The transcript is hidden until an ancestor carries .rli-with-audio-transcript.
 // ---------------------------------------------------------------------------
-test('sel-vic: audio transcript is visible when showVisibleTranscript is true', async ({
+test('sel-vic: audio transcript is sr-only by default', async ({ page }) => {
+  await openSelVicRoute(page);
+  const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
+  await expect(transcript).toBeAttached();
+  await expect(transcript).toHaveClass(/sr-only/);
+});
+
+test('sel-vic: audio transcript becomes visible when rli-with-audio-transcript is added to an ancestor', async ({
+  page,
+}) => {
+  await openSelVicRoute(page);
+  const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
+  await expect(transcript).toHaveClass(/sr-only/);
+
+  await page.evaluate(() => {
+    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+  });
+
+  await expect(transcript).not.toHaveClass(/sr-only/);
+  await expect(transcript).toBeVisible();
+});
+
+// ---------------------------------------------------------------------------
+// 9. Audio transcript renders above the two-column grid (outside and above the
+//    audio button / sentence row), not inside it.
+//    Reference: sel_vic/src/question/index.js renders audioTranscript.render()
+//    *before* the .sel-vic grid div, so it spans full width above both columns.
+//    Currently the transcript may be placed inside the grid column alongside the
+//    audio button, which means its bottom edge is at the same level as or below
+//    the audio container's top edge.
+// ---------------------------------------------------------------------------
+test('sel-vic: audio transcript renders above the audio button (outside the two-column grid)', async ({
   page,
 }) => {
   await openSelVicRoute(page);
   const root = deliveryContainer(page);
 
+  await page.evaluate(() => {
+    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+  });
+
   const transcript = root.locator('.pie-audio-transcript');
+  const audioContainer = root.locator('.pie-audio-container');
   await expect(transcript).toBeVisible();
+  await expect(audioContainer).toBeVisible();
+
+  const transcriptBox = await transcript.boundingBox();
+  const audioBox = await audioContainer.boundingBox();
+  expect(transcriptBox).not.toBeNull();
+  expect(audioBox).not.toBeNull();
+
+  // Transcript bottom edge must be above the audio container top edge.
+  expect(transcriptBox!.y + transcriptBox!.height).toBeLessThan(audioBox!.y);
+});
+
+// ---------------------------------------------------------------------------
+// Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
+// ---------------------------------------------------------------------------
+
+import { installAudioMock, triggerAudioEvent } from './audio-mock';
+
+const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
+
+async function openSelVicParityRoute(page: import('@playwright/test').Page) {
+  await page.goto(`/mc-populated-blank/parity?demo=${encodeURIComponent(DEMO_ID)}`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('#pie-container', { timeout: 20_000 });
+  await page.waitForSelector('[data-learnosity-ready="true"]', { timeout: 30_000 });
+}
+
+test.describe('sel-vic live parity — visual', () => {
+  test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
+
+  test('both sides render a choices group', async ({ page }) => {
+    await openSelVicParityRoute(page);
+    await expect(page.locator('#pie-container [role="radiogroup"]')).toBeVisible();
+    await expect(page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first()).toBeVisible();
+  });
+
+  test('filled blank value is red (#cc3333) on PIE side', async ({ page }) => {
+    await openSelVicParityRoute(page);
+    await page.locator('#pie-container input[type="radio"]').first().check();
+    await page.waitForTimeout(200);
+    const color = await page.locator('#pie-container .pie-blank-value').first()
+      .evaluate((el) => getComputedStyle(el).color);
+    expect(color).toBe('rgb(204, 51, 51)');
+  });
+
+  test('transcript becomes visible on both sides when rli-with-audio-transcript is added to an ancestor', async ({ page }) => {
+    await openSelVicParityRoute(page);
+    await expect(page.locator('#pie-container .pie-audio-transcript')).toHaveClass(/sr-only/);
+
+    await page.evaluate(() => {
+      document.querySelector('#pie-container')?.classList.add('rli-with-audio-transcript');
+      document.querySelector('#learnosity-container')?.classList.add('rli-with-audio-transcript');
+    });
+
+    await expect(page.locator('#pie-container .pie-audio-transcript')).not.toHaveClass(/sr-only/);
+    const lrnTranscript = page.locator('#learnosity-container [class*="audio-transcript"], #learnosity-container [class*="rli-vic-audio-transcript"]').first();
+    await expect(lrnTranscript).toBeVisible();
+  });
+});
+
+test.describe('sel-vic live parity — aria', () => {
+  test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
+
+  test('choices group has an accessible label on both sides', async ({ page }) => {
+    await openSelVicParityRoute(page);
+    const pieGroup = page.locator('#pie-container [role="radiogroup"]');
+    const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
+    const pieAriaLabel = await pieGroup.getAttribute('aria-label');
+    expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
+    const lrnAriaLabel = await page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first().getAttribute('aria-label');
+    expect(lrnAriaLabel).toBeTruthy();
+  });
+
+  test('blank slot aria-label is "blank" on PIE side', async ({ page }) => {
+    await openSelVicParityRoute(page);
+    const label = await page.locator('#pie-container .pie-blank-slot').getAttribute('aria-label');
+    expect(label).toBe('blank');
+  });
+
+  test('blank slot has role="status" and aria-live="polite" on PIE side', async ({ page }) => {
+    await openSelVicParityRoute(page);
+    const blank = page.locator('#pie-container .pie-blank-slot');
+    await expect(blank).toHaveAttribute('role', 'status');
+    await expect(blank).toHaveAttribute('aria-live', 'polite');
+    await expect(blank).toHaveAttribute('aria-atomic', 'true');
+  });
+});
+
+test.describe('sel-vic live parity — behavioral', () => {
+  test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
+
+  test('PIE audio button switches to playing image on play event', async ({ page }) => {
+    await installAudioMock(page);
+    await openSelVicParityRoute(page);
+    const silentImg = page.locator('#pie-container .pie-listen-icon').first();
+    const playingImg = page.locator('#pie-container .pie-listen-icon').nth(1);
+    await expect(silentImg).toHaveClass(/listen-active/);
+    await triggerAudioEvent(page, 'play');
+    await page.waitForTimeout(100);
+    await expect(playingImg).toHaveClass(/listen-active/);
+    await expect(silentImg).not.toHaveClass(/listen-active/);
+  });
+
+  test('PIE audio button returns to silent on ended', async ({ page }) => {
+    await installAudioMock(page);
+    await openSelVicParityRoute(page);
+    await triggerAudioEvent(page, 'play');
+    await page.waitForTimeout(100);
+    await triggerAudioEvent(page, 'ended');
+    await page.waitForTimeout(100);
+    await expect(page.locator('#pie-container .pie-listen-icon').first()).toHaveClass(/listen-active/);
+    await expect(page.locator('#pie-container .pie-listen-icon').nth(1)).not.toHaveClass(/listen-active/);
+  });
 });
