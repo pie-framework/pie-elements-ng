@@ -16,17 +16,28 @@ interface MathJaxTexConfig {
 }
 
 interface MathJaxConfig {
+  loader?: {
+    load?: string[];
+  };
   tex?: MathJaxTexConfig;
   options?: {
     enableMenu?: boolean;
     enableExplorer?: boolean;
+    enableAssistiveMml?: boolean;
   };
   startup?: {
     ready?: () => void;
     defaultReady?: () => void;
+    document?: MathJaxDocument;
   };
   chtml?: {
     fontURL?: string;
+  };
+}
+
+interface MathJaxDocument {
+  assistiveMml?: () => {
+    updateDocument?: () => unknown;
   };
 }
 
@@ -36,10 +47,12 @@ interface MathJaxInstance {
   options?: {
     enableMenu?: boolean;
     enableExplorer?: boolean;
+    enableAssistiveMml?: boolean;
   };
   startup: {
     ready?: () => void;
     defaultReady: () => void;
+    document?: MathJaxDocument;
   };
   typesetPromise?: (elements?: Element[]) => Promise<void>;
 }
@@ -71,6 +84,9 @@ function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
     const { useSingleDollar = false, accessibility = true, loadFonts = true, srcUrl } = options;
 
     const config: MathJaxConfig = {
+      loader: {
+        load: accessibility ? ['a11y/assistive-mml'] : [],
+      },
       tex: {
         packages: ['base', 'ams', 'autoload'],
         macros: {
@@ -83,6 +99,7 @@ function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
       options: {
         enableMenu: accessibility,
         enableExplorer: accessibility,
+        enableAssistiveMml: accessibility,
       },
       startup: {
         ready: () => {
@@ -124,6 +141,20 @@ function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
   return mathjaxLoading;
 }
 
+function attachAssistiveMml(): void {
+  const mathDocument = window.MathJax?.startup?.document;
+
+  if (typeof mathDocument?.assistiveMml !== 'function') {
+    return;
+  }
+
+  try {
+    mathDocument.assistiveMml().updateDocument?.();
+  } catch (error) {
+    console.warn('[mathjax-renderer] Failed to attach assistive MathML:', error);
+  }
+}
+
 /**
  * Create a MathJax-based math renderer
  *
@@ -155,6 +186,7 @@ export function createMathjaxRenderer(
     }
 
     await window.MathJax.typesetPromise([element]);
+    attachAssistiveMml();
   };
 }
 
