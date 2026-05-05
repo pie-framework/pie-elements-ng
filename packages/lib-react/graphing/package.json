@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/graphing",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Graphing components",
   "dependencies": {
     "@dnd-kit/sortable": "10.0.0",
