@@ -74,7 +74,7 @@ jobs:
       PUBLISH_NPM_TOKEN: ""
       PUBLISH_NODE_AUTH_TOKEN: ""
       # Flip to 'true' and restore `publish: bun run release:publish` on changesets/action to re-enable CI publish.
-      ENABLE_CICD_NPM_PUBLISH: "false"
+      ENABLE_CICD_NPM_PUBLISH: "true"
     permissions:
       contents: write
       pull-requests: write
