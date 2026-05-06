@@ -18,7 +18,11 @@ export interface LayoutProfileResult {
   useFeatureButtonAudio: boolean;
 }
 
-const FEATURE_BUTTON_PROFILES = new Set(['audio_blank_only', 'stimulus_image_blank', 'token_sequence']);
+const FEATURE_BUTTON_PROFILES = new Set([
+  'audio_blank_only',
+  'stimulus_image_blank',
+  'token_sequence',
+]);
 
 export function computeLayoutProfile(params: LayoutProfileParams): LayoutProfileResult {
   const {
@@ -41,12 +45,12 @@ export function computeLayoutProfile(params: LayoutProfileParams): LayoutProfile
     return plain === BLANK_TOKEN;
   })();
 
-  const choiceLayout: 'horizontal' | 'vertical' = configuredChoiceLayout === 'horizontal' ||
-    configuredChoiceLayout === 'vertical'
-    ? (configuredChoiceLayout as 'horizontal' | 'vertical')
-    : isAudioOnlyMode || isBlankOnlyTemplate
-      ? 'horizontal'
-      : 'vertical';
+  const choiceLayout: 'horizontal' | 'vertical' =
+    configuredChoiceLayout === 'horizontal' || configuredChoiceLayout === 'vertical'
+      ? (configuredChoiceLayout as 'horizontal' | 'vertical')
+      : isAudioOnlyMode || isBlankOnlyTemplate
+        ? 'horizontal'
+        : 'vertical';
 
   const isHorizontalChoices = choiceLayout === 'horizontal';
 

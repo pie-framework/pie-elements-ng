@@ -142,6 +142,13 @@ test('sr-vic: hovered unselected choice row background is #f2f2f2', async ({ pag
 // Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
 // ---------------------------------------------------------------------------
 
+import {
+  assertBlankSlotAriaLabel,
+  assertBlankSlotAriaLive,
+  assertChoicesGroupAccessibleLabel,
+  assertChoicesGroupVisible,
+} from './mc-populated-blank-parity-shared';
+
 const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
 
 async function openSrVicParityRoute(page: import('@playwright/test').Page) {
@@ -157,12 +164,7 @@ test.describe('sr-vic live parity — visual', () => {
 
   test('both sides render a choices group', async ({ page }) => {
     await openSrVicParityRoute(page);
-    await expect(page.locator('#pie-container [role="radiogroup"]')).toBeVisible();
-    await expect(
-      page
-        .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
-        .first()
-    ).toBeVisible();
+    await assertChoicesGroupVisible(page);
   });
 
   test('filled blank value is red (#cc3333) on PIE side', async ({ page }) => {
@@ -194,27 +196,16 @@ test.describe('sr-vic live parity — aria', () => {
 
   test('choices group has an accessible label on both sides', async ({ page }) => {
     await openSrVicParityRoute(page);
-    const pieGroup = page.locator('#pie-container [role="radiogroup"]');
-    const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
-    const pieAriaLabel = await pieGroup.getAttribute('aria-label');
-    expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
-    const lrnAriaLabel = await page
-      .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
-      .first()
-      .getAttribute('aria-label');
-    expect(lrnAriaLabel).toBeTruthy();
+    await assertChoicesGroupAccessibleLabel(page);
   });
 
   test('blank slot aria-label is "blank" on PIE side', async ({ page }) => {
     await openSrVicParityRoute(page);
-    const label = await page.locator('#pie-container .pie-blank-slot').getAttribute('aria-label');
-    expect(label).toBe('blank');
+    await assertBlankSlotAriaLabel(page);
   });
 
   test('blank slot has role="status" and aria-live="polite" on PIE side', async ({ page }) => {
     await openSrVicParityRoute(page);
-    const blank = page.locator('#pie-container .pie-blank-slot');
-    await expect(blank).toHaveAttribute('role', 'status');
-    await expect(blank).toHaveAttribute('aria-live', 'polite');
+    await assertBlankSlotAriaLive(page);
   });
 });

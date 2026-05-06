@@ -33,7 +33,13 @@
 
 import { type Page, expect, test } from '@playwright/test';
 import { deliveryContainer, waitForMathRendering } from './test-helpers';
-import { installAudioMock, triggerAudioEvent } from './audio-mock';
+import { installAudioMock } from './audio-mock';
+import {
+  assertAudioPlayCycle,
+  assertBlankSlotAriaLive,
+  assertChoicesGroupAccessibleLabel,
+  assertChoicesGroupVisible,
+} from './mc-populated-blank-parity-shared';
 
 const DEMO_ID = 'variant-sel-r1-gplusggg';
 const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
@@ -181,14 +187,7 @@ test.describe('gplusggg live parity — visual', () => {
 
   test('both sides render a choices group', async ({ page }) => {
     await openParityRoute(page);
-
-    const pieGroup = page.locator('#pie-container [role="radiogroup"]');
-    const lrnGroup = page.locator(
-      '#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]'
-    );
-
-    await expect(pieGroup).toBeVisible();
-    await expect(lrnGroup).toBeVisible();
+    await assertChoicesGroupVisible(page);
   });
 
   test('PIE selected tile background color is #fcfcd3 (r1 spec)', async ({ page }) => {
@@ -226,19 +225,7 @@ test.describe('gplusggg live parity — aria', () => {
 
   test('choices group has an accessible label on both sides', async ({ page }) => {
     await openParityRoute(page);
-
-    // PIE: radiogroup has aria-labelledby pointing to legend, or aria-label fallback
-    const pieGroup = page.locator('#pie-container [role="radiogroup"]');
-    const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
-    const pieAriaLabel = await pieGroup.getAttribute('aria-label');
-    expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
-
-    // Learnosity: role="group" with aria-label from i18n
-    const lrnGroup = page
-      .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
-      .first();
-    const lrnAriaLabel = await lrnGroup.getAttribute('aria-label');
-    expect(lrnAriaLabel).toBeTruthy();
+    await assertChoicesGroupAccessibleLabel(page);
   });
 
   test('Learnosity choices group aria-label is the accessibility-expert string', async ({
@@ -259,13 +246,13 @@ test.describe('gplusggg live parity — aria', () => {
   test('blank slot aria-label is "blank" on both sides', async ({ page }) => {
     await openParityRoute(page);
 
-    // PIE blank slot
+    // PIE side — shared assertion
     const pieBlankLabel = await page
       .locator('#pie-container .pie-blank-slot')
       .getAttribute('aria-label');
     expect(pieBlankLabel).toBe('blank');
 
-    // Learnosity blank slot (span with aria-label="blank" or "(blank)")
+    // Learnosity side — variant-specific: span with aria-label="blank" or "(blank)"
     const lrnBlankLabel = await page
       .locator(
         '#learnosity-container [aria-label="blank"], #learnosity-container [aria-label="(blank)"]'
@@ -300,49 +287,16 @@ test.describe('gplusggg live parity — aria', () => {
 
   test('blank slot has role="status" and aria-live="polite" on PIE side', async ({ page }) => {
     await openParityRoute(page);
-
-    const blank = page.locator('#pie-container .pie-blank-slot');
-    await expect(blank).toHaveAttribute('role', 'status');
-    await expect(blank).toHaveAttribute('aria-live', 'polite');
-    await expect(blank).toHaveAttribute('aria-atomic', 'true');
+    await assertBlankSlotAriaLive(page, { expectAriaAtomic: true });
   });
 });
 
 test.describe('gplusggg live parity — behavioral', () => {
   test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
 
-  test('PIE audio button switches to playing image on play event', async ({ page }) => {
+  test('PIE audio button cycles through play and ended states', async ({ page }) => {
     await installAudioMock(page);
     await openParityRoute(page);
-
-    // Before: silent image is visible, playing image is hidden
-    const silentImg = page.locator('#pie-container .pie-listen-icon').first();
-    const playingImg = page.locator('#pie-container .pie-listen-icon').nth(1);
-
-    await expect(silentImg).toHaveClass(/listen-active/);
-    await expect(playingImg).not.toHaveClass(/listen-active/);
-
-    await triggerAudioEvent(page, 'play');
-    await page.waitForTimeout(100);
-
-    // After play: playing image is visible, silent is hidden
-    await expect(silentImg).not.toHaveClass(/listen-active/);
-    await expect(playingImg).toHaveClass(/listen-active/);
-  });
-
-  test('PIE audio button returns to silent image on ended event', async ({ page }) => {
-    await installAudioMock(page);
-    await openParityRoute(page);
-
-    await triggerAudioEvent(page, 'play');
-    await page.waitForTimeout(100);
-    await triggerAudioEvent(page, 'ended');
-    await page.waitForTimeout(100);
-
-    const silentImg = page.locator('#pie-container .pie-listen-icon').first();
-    const playingImg = page.locator('#pie-container .pie-listen-icon').nth(1);
-
-    await expect(silentImg).toHaveClass(/listen-active/);
-    await expect(playingImg).not.toHaveClass(/listen-active/);
+    await assertAudioPlayCycle(page);
   });
 });

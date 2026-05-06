@@ -24,19 +24,27 @@ describe('computeLayoutProfile — isBlankOnlyTemplate', () => {
   });
 
   it('is true when blank token is surrounded by whitespace after stripping', () => {
-    expect(computeLayoutProfile({ template: '  <p>  {{blank}}  </p>  ' }).isBlankOnlyTemplate).toBe(true);
+    expect(computeLayoutProfile({ template: '  <p>  {{blank}}  </p>  ' }).isBlankOnlyTemplate).toBe(
+      true
+    );
   });
 
   it('is true when template contains &nbsp; around the token', () => {
-    expect(computeLayoutProfile({ template: '&nbsp;{{blank}}&nbsp;' }).isBlankOnlyTemplate).toBe(true);
+    expect(computeLayoutProfile({ template: '&nbsp;{{blank}}&nbsp;' }).isBlankOnlyTemplate).toBe(
+      true
+    );
   });
 
   it('is false when template has text before the blank token', () => {
-    expect(computeLayoutProfile({ template: 'The word is {{blank}}.' }).isBlankOnlyTemplate).toBe(false);
+    expect(computeLayoutProfile({ template: 'The word is {{blank}}.' }).isBlankOnlyTemplate).toBe(
+      false
+    );
   });
 
   it('is false when template has text after the blank token', () => {
-    expect(computeLayoutProfile({ template: '<p>{{blank}} is the answer.</p>' }).isBlankOnlyTemplate).toBe(false);
+    expect(
+      computeLayoutProfile({ template: '<p>{{blank}} is the answer.</p>' }).isBlankOnlyTemplate
+    ).toBe(false);
   });
 
   it('is false for empty template', () => {
@@ -94,8 +102,13 @@ describe('computeLayoutProfile — hasInlineSentenceAudioLayout', () => {
   });
 
   it('is false for other profiles even when hasAudio is true', () => {
-    expect(computeLayoutProfile({ layoutProfile: 'audio_blank_only', hasAudio: true }).hasInlineSentenceAudioLayout).toBe(false);
-    expect(computeLayoutProfile({ layoutProfile: '', hasAudio: true }).hasInlineSentenceAudioLayout).toBe(false);
+    expect(
+      computeLayoutProfile({ layoutProfile: 'audio_blank_only', hasAudio: true })
+        .hasInlineSentenceAudioLayout
+    ).toBe(false);
+    expect(
+      computeLayoutProfile({ layoutProfile: '', hasAudio: true }).hasInlineSentenceAudioLayout
+    ).toBe(false);
   });
 });
 

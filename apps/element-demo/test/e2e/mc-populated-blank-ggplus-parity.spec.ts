@@ -121,7 +121,14 @@ test('ggplus: hovered unselected choice tile background is #f2f2f2', async ({ pa
 // Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
 // ---------------------------------------------------------------------------
 
-import { installAudioMock, triggerAudioEvent } from './audio-mock';
+import { installAudioMock } from './audio-mock';
+import {
+  assertAudioPlayCycle,
+  assertBlankSlotAriaLabel,
+  assertBlankSlotAriaLive,
+  assertChoicesGroupAccessibleLabel,
+  assertChoicesGroupVisible,
+} from './mc-populated-blank-parity-shared';
 
 const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
 
@@ -138,12 +145,7 @@ test.describe('ggplus live parity — visual', () => {
 
   test('both sides render a choices group', async ({ page }) => {
     await openggplusParityRoute(page);
-    await expect(page.locator('#pie-container [role="radiogroup"]')).toBeVisible();
-    await expect(
-      page
-        .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
-        .first()
-    ).toBeVisible();
+    await assertChoicesGroupVisible(page);
   });
 
   test('PIE selected tile background color is #fcfcd3 (r1 spec)', async ({ page }) => {
@@ -164,28 +166,17 @@ test.describe('ggplus live parity — aria', () => {
 
   test('choices group has an accessible label on both sides', async ({ page }) => {
     await openggplusParityRoute(page);
-    const pieGroup = page.locator('#pie-container [role="radiogroup"]');
-    const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
-    const pieAriaLabel = await pieGroup.getAttribute('aria-label');
-    expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
-    const lrnAriaLabel = await page
-      .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
-      .first()
-      .getAttribute('aria-label');
-    expect(lrnAriaLabel).toBeTruthy();
+    await assertChoicesGroupAccessibleLabel(page);
   });
 
   test('blank slot aria-label is "blank" on PIE side', async ({ page }) => {
     await openggplusParityRoute(page);
-    const label = await page.locator('#pie-container .pie-blank-slot').getAttribute('aria-label');
-    expect(label).toBe('blank');
+    await assertBlankSlotAriaLabel(page);
   });
 
   test('blank slot has role="status" and aria-live="polite" on PIE side', async ({ page }) => {
     await openggplusParityRoute(page);
-    const blank = page.locator('#pie-container .pie-blank-slot');
-    await expect(blank).toHaveAttribute('role', 'status');
-    await expect(blank).toHaveAttribute('aria-live', 'polite');
+    await assertBlankSlotAriaLive(page);
   });
 
   test('audio silent image alt is "Repeat instructions" on PIE side', async ({ page }) => {
@@ -198,26 +189,9 @@ test.describe('ggplus live parity — aria', () => {
 test.describe('ggplus live parity — behavioral', () => {
   test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
 
-  test('PIE audio button switches to playing image on play event', async ({ page }) => {
+  test('PIE audio button cycles through play and ended states', async ({ page }) => {
     await installAudioMock(page);
     await openggplusParityRoute(page);
-    const silentImg = page.locator('#pie-container .pie-listen-icon').first();
-    const playingImg = page.locator('#pie-container .pie-listen-icon').nth(1);
-    await expect(silentImg).toHaveClass(/listen-active/);
-    await triggerAudioEvent(page, 'play');
-    await page.waitForTimeout(100);
-    await expect(playingImg).toHaveClass(/listen-active/);
-  });
-
-  test('PIE audio button returns to silent on ended', async ({ page }) => {
-    await installAudioMock(page);
-    await openggplusParityRoute(page);
-    await triggerAudioEvent(page, 'play');
-    await page.waitForTimeout(100);
-    await triggerAudioEvent(page, 'ended');
-    await page.waitForTimeout(100);
-    await expect(page.locator('#pie-container .pie-listen-icon').first()).toHaveClass(
-      /listen-active/
-    );
+    await assertAudioPlayCycle(page);
   });
 });

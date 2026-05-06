@@ -249,7 +249,14 @@ test('sel-vic: audio transcript renders above the audio button (outside the two-
 // Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
 // ---------------------------------------------------------------------------
 
-import { installAudioMock, triggerAudioEvent } from './audio-mock';
+import { installAudioMock } from './audio-mock';
+import {
+  assertAudioPlayCycle,
+  assertBlankSlotAriaLabel,
+  assertBlankSlotAriaLive,
+  assertChoicesGroupAccessibleLabel,
+  assertChoicesGroupVisible,
+} from './mc-populated-blank-parity-shared';
 
 const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
 
@@ -266,12 +273,7 @@ test.describe('sel-vic live parity — visual', () => {
 
   test('both sides render a choices group', async ({ page }) => {
     await openSelVicParityRoute(page);
-    await expect(page.locator('#pie-container [role="radiogroup"]')).toBeVisible();
-    await expect(
-      page
-        .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
-        .first()
-    ).toBeVisible();
+    await assertChoicesGroupVisible(page);
   });
 
   test('filled blank value is red (#cc3333) on PIE side', async ({ page }) => {
@@ -311,59 +313,26 @@ test.describe('sel-vic live parity — aria', () => {
 
   test('choices group has an accessible label on both sides', async ({ page }) => {
     await openSelVicParityRoute(page);
-    const pieGroup = page.locator('#pie-container [role="radiogroup"]');
-    const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
-    const pieAriaLabel = await pieGroup.getAttribute('aria-label');
-    expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
-    const lrnAriaLabel = await page
-      .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
-      .first()
-      .getAttribute('aria-label');
-    expect(lrnAriaLabel).toBeTruthy();
+    await assertChoicesGroupAccessibleLabel(page);
   });
 
   test('blank slot aria-label is "blank" on PIE side', async ({ page }) => {
     await openSelVicParityRoute(page);
-    const label = await page.locator('#pie-container .pie-blank-slot').getAttribute('aria-label');
-    expect(label).toBe('blank');
+    await assertBlankSlotAriaLabel(page);
   });
 
   test('blank slot has role="status" and aria-live="polite" on PIE side', async ({ page }) => {
     await openSelVicParityRoute(page);
-    const blank = page.locator('#pie-container .pie-blank-slot');
-    await expect(blank).toHaveAttribute('role', 'status');
-    await expect(blank).toHaveAttribute('aria-live', 'polite');
-    await expect(blank).toHaveAttribute('aria-atomic', 'true');
+    await assertBlankSlotAriaLive(page, { expectAriaAtomic: true });
   });
 });
 
 test.describe('sel-vic live parity — behavioral', () => {
   test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
 
-  test('PIE audio button switches to playing image on play event', async ({ page }) => {
+  test('PIE audio button cycles through play and ended states', async ({ page }) => {
     await installAudioMock(page);
     await openSelVicParityRoute(page);
-    const silentImg = page.locator('#pie-container .pie-listen-icon').first();
-    const playingImg = page.locator('#pie-container .pie-listen-icon').nth(1);
-    await expect(silentImg).toHaveClass(/listen-active/);
-    await triggerAudioEvent(page, 'play');
-    await page.waitForTimeout(100);
-    await expect(playingImg).toHaveClass(/listen-active/);
-    await expect(silentImg).not.toHaveClass(/listen-active/);
-  });
-
-  test('PIE audio button returns to silent on ended', async ({ page }) => {
-    await installAudioMock(page);
-    await openSelVicParityRoute(page);
-    await triggerAudioEvent(page, 'play');
-    await page.waitForTimeout(100);
-    await triggerAudioEvent(page, 'ended');
-    await page.waitForTimeout(100);
-    await expect(page.locator('#pie-container .pie-listen-icon').first()).toHaveClass(
-      /listen-active/
-    );
-    await expect(page.locator('#pie-container .pie-listen-icon').nth(1)).not.toHaveClass(
-      /listen-active/
-    );
+    await assertAudioPlayCycle(page);
   });
 });
