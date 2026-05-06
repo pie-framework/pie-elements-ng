@@ -95,18 +95,34 @@ function useListener<K extends keyof HTMLElementEventMap>(
   });
 }
 
-useListener(() => audioEl, 'playing', () => {
-  audioPlaybackState = AUDIO_PLAYBACK.PLAYING;
-  onaudiostarted?.();
-});
+useListener(
+  () => audioEl,
+  'playing',
+  () => {
+    audioPlaybackState = AUDIO_PLAYBACK.PLAYING;
+    onaudiostarted?.();
+  }
+);
 
-useListener(() => audioEl, 'ended', () => {
-  audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
-  onaudioended?.();
-});
+useListener(
+  () => audioEl,
+  'ended',
+  () => {
+    audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
+    onaudioended?.();
+  }
+);
 
-useListener(() => featureAudioButtonEl, 'click', () => playFeatureAudio());
-useListener(() => autoplayEnableButtonEl, 'click', () => handleEnableAutoplayClick());
+useListener(
+  () => featureAudioButtonEl,
+  'click',
+  () => playFeatureAudio()
+);
+useListener(
+  () => autoplayEnableButtonEl,
+  'click',
+  () => handleEnableAutoplayClick()
+);
 
 $effect(() => {
   if (!autoplayEnabled || audioMode === 'none' || audioMode === 'error') return;
