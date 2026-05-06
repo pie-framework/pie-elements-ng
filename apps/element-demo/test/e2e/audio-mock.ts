@@ -69,7 +69,7 @@ export async function installAudioMock(page: Page): Promise<void> {
     // Override document.createElement so that DOM-created <audio> elements
     // (e.g. from Svelte templates) also get no-op play/pause methods.
     const _createElement = document.createElement.bind(document);
-    (document as any).createElement = function (tag: string, opts?: ElementCreationOptions) {
+    (document as any).createElement = (tag: string, opts?: ElementCreationOptions) => {
       const el = _createElement(tag, opts);
       if (tag.toLowerCase() === 'audio') {
         (el as any).play = () => {

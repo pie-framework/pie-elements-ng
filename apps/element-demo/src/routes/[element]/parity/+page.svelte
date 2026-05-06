@@ -13,7 +13,8 @@ let { data }: { data: PageData & Partial<LayoutData> } = $props();
 // --- Learnosity readiness ---
 // Sentinel: look for any Learnosity-rendered content (assess player or inline items).
 // lrn-assess is the assess player root; .lrn-widget is used by inline items.
-const LEARNOSITY_SENTINEL = 'lrn-assess, [class*="lrn_widget"], .lrn-widget, [data-lrn-widget-container], button[data-lrn-action="start"]';
+const LEARNOSITY_SENTINEL =
+  'lrn-assess, [class*="lrn_widget"], .lrn-widget, [data-lrn-widget-container], button[data-lrn-action="start"]';
 
 let learnosityReady = $state(false);
 let learnosityError = $state<string | null>(null);

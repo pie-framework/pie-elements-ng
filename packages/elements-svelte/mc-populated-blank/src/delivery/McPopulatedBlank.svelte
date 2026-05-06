@@ -14,20 +14,12 @@ import { color } from '@pie-lib/styling-svelte';
 import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import AudioPlayer from './AudioPlayer.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
-import { computeAudioMode } from './computeAudioMode';
 import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
 import {
   ensureVariantCssInjected,
   getVariantCssConfig,
   getVariantRootClass,
 } from './variant-css-map';
-const AUDIO_PLAYBACK = {
-  IDLE: 'idle',
-  PLAYING: 'playing',
-  BLOCKED: 'blocked',
-  PAUSED: 'paused',
-} as const;
-type AudioPlaybackState = (typeof AUDIO_PLAYBACK)[keyof typeof AUDIO_PLAYBACK];
 
 /** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
 const BLANK_TOKEN = '{{blank}}';
@@ -56,11 +48,7 @@ const DEFAULT_UI_TEXT = {
 } as const;
 
 let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
-let audioEl = $state<HTMLAudioElement | null>(null);
-let audioPlaybackState = $state<AudioPlaybackState>(AUDIO_PLAYBACK.IDLE);
 let localChoiceId = $state('');
-let featureAudioButtonEl = $state<HTMLButtonElement | null>(null);
-let autoplayEnableButtonEl = $state<HTMLButtonElement | null>(null);
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
 let rootEl = $state<HTMLDivElement | null>(null);
@@ -122,13 +110,6 @@ const useFeatureButtonAudio = $derived.by(() => {
       profile === 'token_sequence')
   );
 });
-const audioMode = $derived(
-  computeAudioMode({
-    hasAudio: !!model?.hasAudio,
-    audioUrl: model?.audioUrl,
-    useFeatureButtonAudio,
-  })
-);
 const correctAnswerStyleVars = $derived.by(() =>
   [
     `--pie-correct-answer-toggle-label-color:${color.text()}`,
@@ -233,9 +214,6 @@ const lang = $derived.by(() => {
   const locale = model?.locale || '';
   return locale ? locale.slice(0, 2) : 'en';
 });
-const audioErrorMessage = $derived.by(() =>
-  audioMode === 'error' ? uiText.audioResourceUnavailable : ''
-);
 const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
 const variantRootClass = $derived(getVariantRootClass(model?.customType));
 const templateParts = $derived.by(() => {
@@ -305,42 +283,6 @@ function onRadioGroupKeydown(e: KeyboardEvent) {
   next.focus();
 }
 
-const isMediaPlaying = $derived(audioPlaybackState === AUDIO_PLAYBACK.PLAYING);
-const autoPlayPromptOpen = $derived(audioPlaybackState === AUDIO_PLAYBACK.BLOCKED);
-
-function onPlaybackStarted(e: Event) {
-  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
-    fallbackSelector: 'mc-populated-blank',
-  });
-  audioPlaybackState = AUDIO_PLAYBACK.PLAYING;
-  host?.onAudioStarted?.();
-}
-
-function onPlaybackEnded(e: Event) {
-  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
-    fallbackSelector: 'mc-populated-blank',
-  });
-  audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
-  host?.onAudioEnded?.();
-}
-
-function handleEnableAutoplayClick() {
-  if (audioMode !== 'none' && audioMode !== 'error' && audioEl) {
-    // Clear the blocked prompt regardless of whether play succeeds — matches original behavior.
-    audioEl.play().finally(() => {
-      if (audioPlaybackState === AUDIO_PLAYBACK.BLOCKED) audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
-    });
-  }
-}
-
-function playFeatureAudio() {
-  if (audioMode !== 'none' && audioMode !== 'error' && audioEl) {
-    audioEl.play().catch(() => {
-      // Keep behavior resilient: if playback is blocked, user can retry.
-    });
-  }
-}
-
 const featureAudioSkin = $derived.by(() => {
   const locale = String(model?.locale || '').toLowerCase();
   const lang = locale.slice(0, 2);
@@ -358,51 +300,26 @@ const featureAudioSkin = $derived.by(() => {
   return byLocale[locale] || byLocale[lang] || byLocale.default || customSingle || defaultSkin;
 });
 
+function onAudioStarted() {
+  resolveDeliveryHost(rootEl, { fallbackSelector: 'mc-populated-blank' })?.onAudioStarted?.();
+}
+
+function onAudioEnded() {
+  resolveDeliveryHost(rootEl, { fallbackSelector: 'mc-populated-blank' })?.onAudioEnded?.();
+}
+
 $effect(() => {
   if (session?.choiceId) {
     localChoiceId = session.choiceId;
   }
 });
 
-// Attach a single event listener to a reactive element ref; auto-cleans on ref change.
-function useListener<K extends keyof HTMLElementEventMap>(
-  getEl: () => EventTarget | null | undefined,
-  event: K,
-  handler: (e: HTMLElementEventMap[K]) => void
-) {
-  $effect(() => {
-    const el = getEl();
-    if (!el) return;
-    el.addEventListener(event, handler as EventListener);
-    return () => el.removeEventListener(event, handler as EventListener);
-  });
-}
-
-useListener(
-  () => audioEl,
-  'playing',
-  (e) => onPlaybackStarted(e)
-);
-useListener(
-  () => audioEl,
-  'ended',
-  (e) => onPlaybackEnded(e)
-);
-useListener(
-  () => featureAudioButtonEl,
-  'click',
-  () => playFeatureAudio()
-);
-useListener(
-  () => autoplayEnableButtonEl,
-  'click',
-  () => handleEnableAutoplayClick()
-);
-useListener(
-  () => toggleCorrectAnswerButtonEl,
-  'click',
-  () => toggleCorrectAnswer()
-);
+$effect(() => {
+  const btn = toggleCorrectAnswerButtonEl;
+  if (!btn) return;
+  btn.addEventListener('click', toggleCorrectAnswer);
+  return () => btn.removeEventListener('click', toggleCorrectAnswer);
+});
 
 // Delegated listeners on the choices group — two events with a radio-guard on change.
 $effect(() => {
@@ -420,19 +337,6 @@ $effect(() => {
     group.removeEventListener('change', handleChange);
     group.removeEventListener('keydown', handleKeydown);
   };
-});
-
-$effect(() => {
-  if (!model?.hasAudio || !model?.autoplayAudioEnabled) return;
-  if (audioPlaybackState !== AUDIO_PLAYBACK.IDLE) return;
-
-  // Browser autoplay restrictions vary. Try immediate play; if blocked show click-to-enable affordance.
-  if (audioEl && model?.audioUrl) {
-    audioPlaybackState = AUDIO_PLAYBACK.PAUSED;
-    audioEl.play().catch(() => {
-      audioPlaybackState = AUDIO_PLAYBACK.BLOCKED;
-    });
-  }
 });
 
 $effect(() => {
@@ -547,20 +451,18 @@ $effect(() => {
   {/if}
 
   <AudioPlayer
-    {audioMode}
+    hasAudio={!!model?.hasAudio}
     audioUrl={model?.audioUrl}
+    {useFeatureButtonAudio}
+    autoplayEnabled={!!model?.autoplayAudioEnabled}
     audioTranscript={model?.audioTranscript}
     {showVisibleTranscript}
     {transcriptId}
     {featureAudioSkin}
-    {autoPlayPromptOpen}
-    {isMediaPlaying}
-    {audioErrorMessage}
     {uiText}
     locale={model?.locale}
-    bind:audioEl
-    bind:featureAudioButtonEl
-    bind:autoplayEnableButtonEl
+    onaudiostarted={onAudioStarted}
+    onaudioended={onAudioEnded}
   />
 
   {#if model?.sentenceHtml}

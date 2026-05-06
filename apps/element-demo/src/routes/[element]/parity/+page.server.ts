@@ -15,7 +15,12 @@ function utcTimestamp(): string {
   );
 }
 
-function signItemsInit(itemReference: string, CONSUMER_KEY: string, SECRET: string, DOMAIN: string): Record<string, unknown> {
+function signItemsInit(
+  itemReference: string,
+  CONSUMER_KEY: string,
+  SECRET: string,
+  DOMAIN: string
+): Record<string, unknown> {
   const timestamp = utcTimestamp();
   const requestBody = {
     user_id: 'parity-test-user',
@@ -44,8 +49,9 @@ function signItemsInit(itemReference: string, CONSUMER_KEY: string, SECRET: stri
     requestString,
   ];
 
-  (securityPacket as any).signature =
-    createHash('sha256').update(signatureArray.join('_')).digest('hex');
+  (securityPacket as any).signature = createHash('sha256')
+    .update(signatureArray.join('_'))
+    .digest('hex');
 
   return { security: securityPacket, request: requestBody };
 }

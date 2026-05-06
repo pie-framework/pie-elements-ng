@@ -1,18 +1,16 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount, unmount, flushSync } from 'svelte';
 import AudioPlayer from './AudioPlayer.svelte';
-import type { AudioMode } from './computeAudioMode';
 
 const BASE_PROPS = {
-  audioMode: 'controls' as AudioMode,
+  hasAudio: true,
   audioUrl: 'https://example.com/audio.mp3',
+  useFeatureButtonAudio: false,
+  autoplayEnabled: false,
   audioTranscript: 'The word is look.',
   showVisibleTranscript: false,
   transcriptId: 'test-transcript',
   featureAudioSkin: { silentUrl: '', playingUrl: '' },
-  autoPlayPromptOpen: false,
-  isMediaPlaying: false,
-  audioErrorMessage: '',
   uiText: {
     clickToEnableAutoplay: 'Click to enable',
     transcriptLabel: 'Transcript',
@@ -41,39 +39,36 @@ afterEach(() => {
 });
 
 describe('AudioPlayer — audio element', () => {
-  it('renders an audio element in controls mode', () => {
-    const { target, component } = mountPlayer({ audioMode: 'controls' });
+  it('renders native controls when hasAudio=true and useFeatureButtonAudio=false', () => {
+    const { target, component } = mountPlayer({ useFeatureButtonAudio: false });
     mounts.push({ target, component });
     flushSync();
     expect(target.querySelector('.pie-audio-player')).not.toBeNull();
   });
 
-  it('renders nothing when audioMode is none', () => {
-    const { target, component } = mountPlayer({ audioMode: 'none' as const });
+  it('renders nothing when hasAudio is false', () => {
+    const { target, component } = mountPlayer({ hasAudio: false });
     mounts.push({ target, component });
     flushSync();
     expect(target.querySelector('.pie-audio-container')).toBeNull();
   });
 
-  it('renders an error message when audioMode is error', () => {
-    const { target, component } = mountPlayer({
-      audioMode: 'error' as const,
-      audioErrorMessage: 'Unavailable',
-    });
+  it('renders an error message when hasAudio=true but audioUrl is missing', () => {
+    const { target, component } = mountPlayer({ audioUrl: undefined });
     mounts.push({ target, component });
     flushSync();
     expect(target.querySelector('.pie-audio-error')).not.toBeNull();
   });
 
-  it('renders the feature button in feature-button mode', () => {
-    const { target, component } = mountPlayer({ audioMode: 'feature-button' as const });
+  it('renders the feature button when useFeatureButtonAudio=true', () => {
+    const { target, component } = mountPlayer({ useFeatureButtonAudio: true });
     mounts.push({ target, component });
     flushSync();
     expect(target.querySelector('.pie-listen-button')).not.toBeNull();
   });
 
   it('silent image alt is "Repeat instructions" in feature-button mode', () => {
-    const { target, component } = mountPlayer({ audioMode: 'feature-button' as const });
+    const { target, component } = mountPlayer({ useFeatureButtonAudio: true });
     mounts.push({ target, component });
     flushSync();
     const imgs = target.querySelectorAll('.pie-listen-icon');
@@ -82,7 +77,7 @@ describe('AudioPlayer — audio element', () => {
   });
 
   it('playing image alt is "Instructions are playing" in feature-button mode', () => {
-    const { target, component } = mountPlayer({ audioMode: 'feature-button' as const });
+    const { target, component } = mountPlayer({ useFeatureButtonAudio: true });
     mounts.push({ target, component });
     flushSync();
     const imgs = target.querySelectorAll('.pie-listen-icon');
