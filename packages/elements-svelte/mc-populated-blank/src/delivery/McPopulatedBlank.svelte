@@ -13,6 +13,7 @@
 import { color } from '@pie-lib/styling-svelte';
 import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import AudioPlayer from './AudioPlayer.svelte';
+import ChoiceRow from './ChoiceRow.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
 import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
 import {
@@ -515,70 +516,18 @@ $effect(() => {
       aria-label={choicesGroupAriaLabel}
       aria-describedby={resultText ? resultId : undefined}
     >
-      {#snippet choiceContent(c: (typeof choices)[number])}
-        {#if choiceMode === 'image' && c.imageUrl}
-          <img
-            src={c.imageUrl}
-            alt={c.imageAlt || `Choice ${c.id}`}
-            class="object-contain pie-choice-image"
-            style="max-height:var(--mpb-choice-image-max-height, 5rem);"
-          />
-        {:else}
-          <span class="choice-html pie-choice-label">{@html c.labelHtml || ''}</span>
-        {/if}
-      {/snippet}
-
-      {#snippet choiceRow(c: (typeof choices)[number])}
-        {@const choiceCorrectness = choiceCorrectnessById.get(c.id)}
-        <div
-          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${displayChoiceId === c.id ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
-          style="gap:var(--mpb-choice-row-gap, 0.5rem);"
-        >
-          {#if isHorizontalChoices}
-            <label
-              for={`${instanceId}-opt-${c.id}`}
-              class="cursor-pointer choice-tile text-center pie-choice-tile"
-            >
-              <span class="choice-tile-content pie-choice-tile-content">
-                {@render choiceContent(c)}
-              </span>
-              <input
-                type="radio"
-                name={radioGroupName}
-                id={`${instanceId}-opt-${c.id}`}
-                value={c.id}
-                checked={displayChoiceId === c.id}
-                disabled={model?.disabled}
-                class="choice-radio-bottom pie-choice-radio pie-choice-radio-bottom"
-              />
-            </label>
-          {:else}
-            <input
-              type="radio"
-              name={radioGroupName}
-              id={`${instanceId}-opt-${c.id}`}
-              value={c.id}
-              checked={displayChoiceId === c.id}
-              disabled={model?.disabled}
-              class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"
-            />
-            <label for={`${instanceId}-opt-${c.id}`} class="cursor-pointer flex-1 pie-choice-label-wrap">
-              {@render choiceContent(c)}
-            </label>
-          {/if}
-          {#if isEvaluateMode && choiceCorrectness}
-            <span
-              class={`pie-choice-feedback-badge ${choiceCorrectness === 'correct' ? 'pie-choice-feedback-correct' : 'pie-choice-feedback-incorrect'}`}
-              aria-hidden="true"
-            >
-              {choiceCorrectness === 'correct' ? '✓' : '✕'}
-            </span>
-          {/if}
-        </div>
-      {/snippet}
-
       {#each choices as c (c.id)}
-        {@render choiceRow(c)}
+        <ChoiceRow
+          choice={c}
+          {choiceMode}
+          isHorizontal={isHorizontalChoices}
+          isSelected={displayChoiceId === c.id}
+          isDisabled={!!model?.disabled}
+          correctness={choiceCorrectnessById.get(c.id)}
+          {isEvaluateMode}
+          {instanceId}
+          {radioGroupName}
+        />
       {/each}
     </div>
   </fieldset>
@@ -680,132 +629,6 @@ $effect(() => {
 
   .blank-slot-standalone {
     width: var(--mpb-blank-standalone-width, 7rem);
-  }
-
-  .choice-row-horizontal {
-    flex-direction: column;
-    align-items: center;
-    width: min(var(--mpb-choice-width-px, 170px), var(--mpb-choice-width-vw, 30vw));
-    min-height: var(--mpb-choice-tile-min-height, 11rem);
-    gap: 0;
-  }
-
-  .choice-tile {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    min-height: var(--mpb-choice-tile-min-height, 11rem);
-    padding: 0.8rem 0.65rem 0.5rem;
-    border-radius: 8px;
-    background: transparent;
-    transition: background-color 120ms ease-in-out;
-  }
-
-  .choice-tile-content {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--mpb-choice-content-min-height, 7.5rem);
-  }
-
-  .choice-row-horizontal:hover .choice-tile {
-    background: var(--mpb-choice-hover-bg, var(--pie-correct-answer-choice-hover-bg, #f2f2f2));
-  }
-
-  .pie-choice-horizontal:not(.is-selected):not(:hover) .pie-choice-tile {
-    background: transparent;
-  }
-
-  .choice-row-horizontal.is-selected .choice-tile {
-    background: var(--mpb-choice-selected-bg, var(--pie-correct-answer-choice-selected-bg, #fcfcd3));
-  }
-
-  .choice-row-horizontal.is-selected:hover .choice-tile {
-    background: var(--mpb-choice-selected-bg, var(--pie-correct-answer-choice-selected-bg, #fcfcd3));
-  }
-
-  .pie-choice:not(.pie-choice-horizontal):hover .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-hover-bg, #ececec);
-  }
-
-  .pie-choice:not(.pie-choice-horizontal):not(.is-selected):not(:hover) .pie-choice-label-wrap {
-    background: transparent;
-  }
-
-  .pie-choice:not(.pie-choice-horizontal).is-selected .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
-    border-radius: 6px;
-  }
-
-  .pie-choice:not(.pie-choice-horizontal).is-selected:hover .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
-  }
-
-  .pie-choice.choice-correct {
-    border-left: 3px solid var(--pie-correct-answer-choice-correct-border, #0ea449);
-  }
-
-  .pie-choice.choice-incorrect {
-    border-left: 3px solid var(--pie-correct-answer-choice-incorrect-border, #bf0d00);
-  }
-
-  .pie-choice-horizontal.choice-correct .choice-tile {
-    background: var(--pie-correct-answer-choice-correct-bg, #e8f5e9);
-  }
-
-  .pie-choice-horizontal.choice-incorrect .choice-tile {
-    background: var(--pie-correct-answer-choice-incorrect-bg, #ffebee);
-  }
-
-  .pie-choice-feedback-badge {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.1rem;
-    height: 1.1rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    line-height: 1;
-    font-weight: 700;
-    color: var(--pie-correct-answer-feedback-glyph-color, #fff);
-  }
-
-  .pie-choice-feedback-correct {
-    background: var(--pie-correct-answer-feedback-correct-bg, #087d38);
-  }
-
-  .pie-choice-feedback-incorrect {
-    background: var(--pie-correct-answer-feedback-incorrect-bg, #bf0d00);
-  }
-
-  .choice-row-horizontal :global(p) {
-    margin: 0;
-    text-align: center;
-  }
-
-  .choice-html :global(p) {
-    margin: 0;
-  }
-
-  .choice-html {
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-
-  .choice-radio-bottom {
-    margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
-    padding: var(--mpb-choice-radio-padding, 0px);
-  }
-
-  .choice-radio-inline {
-    margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
   }
 
   .layout-audio_blank_only .audio-container,
