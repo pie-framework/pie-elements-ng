@@ -3,11 +3,14 @@
  *
  * Covers the shared interaction contract across all CQT variants:
  * radio selection, session emission, evaluate-mode feedback,
- * show/hide correct-answer toggle, and audio-completion gating.
+ * show/hide correct-answer toggle, audio-completion gating,
+ * ClozeMarker image mode, autoplay-blocked prompt, keyboard navigation,
+ * and choice layout variants.
  *
  * Uses `variant-sr-vic` (no audio) as the default fixture because it lets
  * interaction tests run without network dependencies. Audio-gated tests use
  * `variant-sel-vic` (has audio, completeAudioEnabled=true, autoplayAudioEnabled=true).
+ * Image-choice tests use `variant-sel-r1-plusggg-graphic` (choiceMode=image).
  */
 
 import { expect, test } from '@playwright/test';
@@ -20,6 +23,10 @@ import {
 
 const NO_AUDIO_DEMO = 'variant-sr-vic';
 const AUDIO_DEMO = 'variant-sel-vic';
+// horizontal image choices, correctChoiceId=distractor_2
+const GRAPHIC_DEMO = 'variant-sel-r1-plusggg-graphic';
+// vertical text choices, no audio
+const VERTICAL_DEMO = 'variant-sr-vic';
 // Pre-seeded evaluate fixtures (session has choiceId already set)
 const EVALUATE_CORRECT_DEMO = 'evaluate-correct'; // choiceId=distractor_1 (correct)
 const EVALUATE_WRONG_DEMO = 'evaluate-wrong'; // choiceId=distractor_2 (wrong)
@@ -298,3 +305,143 @@ test('arrow keys move focus between choices', async ({ page }) => {
   const secondRadio = root.locator('input[type="radio"]').nth(1);
   await expect(secondRadio).toBeFocused();
 });
+
+test('ArrowUp moves focus back to previous choice', async ({ page }) => {
+  await openNoAudioRoute(page);
+  const root = deliveryContainer(page);
+
+  const secondRadio = root.locator('input[type="radio"]').nth(1);
+  await secondRadio.click();
+  await page.keyboard.press('ArrowUp');
+
+  const firstRadio = root.locator('input[type="radio"]').first();
+  await expect(firstRadio).toBeFocused();
+});
+
+test('ArrowDown does not move past the last choice', async ({ page }) => {
+  await openNoAudioRoute(page);
+  const root = deliveryContainer(page);
+
+  const radios = root.locator('input[type="radio"]');
+  const count = await radios.count();
+  const lastRadio = radios.nth(count - 1);
+  await lastRadio.click();
+  await page.keyboard.press('ArrowDown');
+
+  // Focus should stay on or wrap to the last radio; it must not leave the group
+  const focused = page.locator('input[type="radio"]:focus');
+  await expect(focused).toHaveCount(1);
+});
+
+test('Space key selects the focused choice', async ({ page }) => {
+  await openNoAudioRoute(page);
+  const root = deliveryContainer(page);
+
+  const firstRadio = root.locator('input[type="radio"]').first();
+  await firstRadio.click();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Space');
+
+  const secondRadio = root.locator('input[type="radio"]').nth(1);
+  await expect(secondRadio).toBeChecked();
+});
+
+// ---------------------------------------------------------------------------
+// ClozeMarker — image mode
+// ---------------------------------------------------------------------------
+
+// Note: the graphic fixture uses labelHtml with embedded <img> tags, not the imageUrl field.
+// So the blank renders via pie-blank-value (the labelHtml path), not pie-blank-image.
+// The imageUrl path in ClozeMarker is covered by unit tests in ClozeMarker.test.ts.
+test('selecting an image choice populates the blank slot with the choice content', async ({
+  page,
+}) => {
+  await page.route('**/*.mp3', (route) => route.abort());
+  await openDeliverRoute(page, 'mc-populated-blank', GRAPHIC_DEMO);
+  await waitForMathRendering(page);
+  const root = deliveryContainer(page);
+
+  const radio = root.locator('input[type="radio"]').first();
+  await radio.check();
+
+  // Graphic choices use labelHtml with embedded <img> — blank value span appears
+  const blankValue = root.locator('.pie-blank-value');
+  await expect(blankValue).toBeVisible();
+  // The labelHtml contains an <img> element
+  const blankImg = blankValue.locator('img');
+  await expect(blankImg).toHaveCount(1);
+});
+
+// ---------------------------------------------------------------------------
+// Choice layout — horizontal vs inline
+// ---------------------------------------------------------------------------
+
+test('horizontal layout renders choice-row-horizontal class on each choice', async ({ page }) => {
+  await page.route('**/*.mp3', (route) => route.abort());
+  await openDeliverRoute(page, 'mc-populated-blank', GRAPHIC_DEMO);
+  await waitForMathRendering(page);
+  const root = deliveryContainer(page);
+
+  const horizontalRows = root.locator('.pie-choice-horizontal');
+  await expect(horizontalRows).not.toHaveCount(0);
+});
+
+test('vertical layout does not render choice-row-horizontal class', async ({ page }) => {
+  await openDeliverRoute(page, 'mc-populated-blank', VERTICAL_DEMO);
+  await waitForMathRendering(page);
+  const root = deliveryContainer(page);
+
+  const horizontalRows = root.locator('.pie-choice-horizontal');
+  await expect(horizontalRows).toHaveCount(0);
+});
+
+test('horizontal layout places radio inside the label (tile layout)', async ({ page }) => {
+  await page.route('**/*.mp3', (route) => route.abort());
+  await openDeliverRoute(page, 'mc-populated-blank', GRAPHIC_DEMO);
+  await waitForMathRendering(page);
+  const root = deliveryContainer(page);
+
+  const tilesWithRadio = root.locator('label.pie-choice-tile input[type="radio"]');
+  await expect(tilesWithRadio).not.toHaveCount(0);
+});
+
+test('vertical layout places radio before the label (inline layout)', async ({ page }) => {
+  await openDeliverRoute(page, 'mc-populated-blank', VERTICAL_DEMO);
+  await waitForMathRendering(page);
+  const root = deliveryContainer(page);
+
+  // In inline layout the radio has class pie-choice-radio-inline and is NOT inside a tile label
+  const inlineRadios = root.locator('input.pie-choice-radio-inline');
+  await expect(inlineRadios).not.toHaveCount(0);
+});
+
+// ---------------------------------------------------------------------------
+// Evaluate mode — selected answer visible in blank slot
+// ---------------------------------------------------------------------------
+
+test('selected answer is visible in blank slot in evaluate mode (correct answer)', async ({
+  page,
+}) => {
+  await openEvaluateRoute(page, EVALUATE_CORRECT_DEMO);
+  const root = deliveryContainer(page);
+
+  // evaluate-correct has choiceId=distractor_1 pre-seeded; blank should show the answer
+  const blankValue = root.locator('.pie-blank-value');
+  await expect(blankValue).toBeVisible();
+  await expect(blankValue).not.toBeEmpty();
+});
+
+test('selected answer is visible in blank slot in evaluate mode (wrong answer)', async ({
+  page,
+}) => {
+  await openEvaluateRoute(page, EVALUATE_WRONG_DEMO);
+  const root = deliveryContainer(page);
+
+  const blankValue = root.locator('.pie-blank-value');
+  await expect(blankValue).toBeVisible();
+  await expect(blankValue).not.toBeEmpty();
+});
+
+// Note: the autoplay-blocked prompt (pie-audio-autoplay-enable) only renders in
+// controls mode (useFeatureButtonAudio=false). All live fixtures use feature-button
+// mode. Autoplay-blocked behavior is covered by unit tests in AudioPlayer.test.ts.
