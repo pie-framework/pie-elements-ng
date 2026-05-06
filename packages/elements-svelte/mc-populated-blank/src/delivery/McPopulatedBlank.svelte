@@ -13,6 +13,7 @@
 import { color } from '@pie-lib/styling-svelte';
 import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import AudioPlayer from './AudioPlayer.svelte';
+import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
 import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
@@ -475,27 +476,15 @@ $effect(() => {
   {#if !isAudioOnlyMode}
     <div class="mb-4 template-line pie-template-line" aria-describedby={templateDescribedBy}>
       {@html templateParts.before}
-      <span
-        class={`inline-flex items-center min-h-[1.5em] px-2 mx-1 border-b-2 border-gray-500 align-baseline blank-slot pie-blank-slot ${isBlankOnlyTemplate ? 'blank-slot-standalone pie-blank-slot-standalone' : ''}`}
-        style={`width:${layout.blankWidth};border-bottom-width:${layout.blankBorderWidth};`}
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        aria-label={uiText.selectedAnswerInSentence}
-      >
-        {#if choiceMode === 'image' && displayChoice?.imageUrl}
-          <img
-            src={displayChoice.imageUrl}
-            alt={displayChoice.imageAlt || 'Selected answer image'}
-            class="w-auto object-contain pie-blank-image"
-            style="max-height:var(--mpb-selected-image-max-height, 4rem);"
-          />
-        {:else if displayChoiceLabelHtml}
-          <span class="choice-html pie-blank-value">{@html displayChoiceLabelHtml}</span>
-        {:else}
-          <span class="blank-inner-empty" aria-hidden="true">&nbsp;</span>
-        {/if}
-      </span>
+      <ClozeMarker
+        {choiceMode}
+        displayChoice={displayChoice}
+        {displayChoiceLabelHtml}
+        isStandalone={isBlankOnlyTemplate}
+        blankWidth={layout.blankWidth}
+        blankBorderWidth={layout.blankBorderWidth}
+        ariaLabel={uiText.selectedAnswerInSentence}
+      />
       {@html templateParts.after}
     </div>
   {/if}
@@ -548,19 +537,6 @@ $effect(() => {
 
   .mc-populated-blank-root :global(.prose) {
     max-width: none;
-  }
-
-  .blank-slot:focus-within {
-    outline: 2px solid var(--pie-focus, #2563eb);
-    outline-offset: 2px;
-  }
-
-  .blank-slot {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    vertical-align: baseline;
   }
 
   .pie-toggle-correct-answer {
@@ -622,15 +598,6 @@ $effect(() => {
     margin: 0;
   }
 
-  .blank-inner-empty {
-    display: inline-block;
-    min-width: 4ch;
-  }
-
-  .blank-slot-standalone {
-    width: var(--mpb-blank-standalone-width, 7rem);
-  }
-
   .layout-audio_blank_only .audio-container,
   .layout-stimulus_image_blank .audio-container {
     display: flex;
@@ -652,8 +619,8 @@ $effect(() => {
     justify-content: center;
   }
 
-  .layout-audio_blank_only .blank-slot,
-  .layout-stimulus_image_blank .blank-slot {
+  .layout-audio_blank_only :global(.pie-blank-slot),
+  .layout-stimulus_image_blank :global(.pie-blank-slot) {
     width: var(--mpb-blank-wide-width, 10rem);
     border-bottom-width: var(--mpb-blank-underline-wide-width, 6px);
     min-height: 160px;
@@ -722,7 +689,7 @@ $effect(() => {
     margin-left: var(--mpb-token-inline-token-gap, 0.35rem);
   }
 
-  .layout-token_sequence .blank-slot {
+  .layout-token_sequence :global(.pie-blank-slot) {
     width: var(--mpb-blank-standalone-width, 7rem);
     border-bottom-width: var(--mpb-blank-underline-wide-width, 4px);
     margin-left: var(--mpb-token-inline-token-gap, 0.35rem);
