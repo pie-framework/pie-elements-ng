@@ -148,7 +148,7 @@ async function openSrVicParityRoute(page: import('@playwright/test').Page) {
   await page.goto(`/mc-populated-blank/parity?demo=${encodeURIComponent(DEMO_ID)}`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
-  await page.waitForSelector('#pie-container', { timeout: 20_000 });
+  await page.waitForSelector('#pie-container pie-element-player', { timeout: 20_000 });
   await page.waitForSelector('[data-learnosity-ready="true"]', { timeout: 30_000 });
 }
 
@@ -158,14 +158,20 @@ test.describe('sr-vic live parity — visual', () => {
   test('both sides render a choices group', async ({ page }) => {
     await openSrVicParityRoute(page);
     await expect(page.locator('#pie-container [role="radiogroup"]')).toBeVisible();
-    await expect(page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first()).toBeVisible();
+    await expect(
+      page
+        .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
+        .first()
+    ).toBeVisible();
   });
 
   test('filled blank value is red (#cc3333) on PIE side', async ({ page }) => {
     await openSrVicParityRoute(page);
     await page.locator('#pie-container input[type="radio"]').first().check();
     await page.waitForTimeout(200);
-    const color = await page.locator('#pie-container .pie-blank-value').first()
+    const color = await page
+      .locator('#pie-container .pie-blank-value')
+      .first()
       .evaluate((el) => getComputedStyle(el).color);
     expect(color).toBe('rgb(204, 51, 51)');
   });
@@ -176,9 +182,7 @@ test.describe('sr-vic live parity — visual', () => {
     // sr-vic uses showVisibleTranscript: false — transcript should be sr-only or absent
     const isVisible = await transcript.isVisible().catch(() => false);
     if (isVisible) {
-      const clip = await transcript.evaluate((el) =>
-        getComputedStyle(el).clip
-      );
+      const clip = await transcript.evaluate((el) => getComputedStyle(el).clip);
       // sr-only uses clip: rect(0,0,0,0)
       expect(clip).toMatch(/rect\(0/);
     }
@@ -194,7 +198,10 @@ test.describe('sr-vic live parity — aria', () => {
     const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
     const pieAriaLabel = await pieGroup.getAttribute('aria-label');
     expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
-    const lrnAriaLabel = await page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first().getAttribute('aria-label');
+    const lrnAriaLabel = await page
+      .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
+      .first()
+      .getAttribute('aria-label');
     expect(lrnAriaLabel).toBeTruthy();
   });
 
@@ -211,4 +218,3 @@ test.describe('sr-vic live parity — aria', () => {
     await expect(blank).toHaveAttribute('aria-live', 'polite');
   });
 });
-

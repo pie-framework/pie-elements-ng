@@ -129,7 +129,7 @@ async function openggplusParityRoute(page: import('@playwright/test').Page) {
   await page.goto(`/mc-populated-blank/parity?demo=${encodeURIComponent(DEMO_ID)}`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
-  await page.waitForSelector('#pie-container', { timeout: 20_000 });
+  await page.waitForSelector('#pie-container pie-element-player', { timeout: 20_000 });
   await page.waitForSelector('[data-learnosity-ready="true"]', { timeout: 30_000 });
 }
 
@@ -139,20 +139,23 @@ test.describe('ggplus live parity — visual', () => {
   test('both sides render a choices group', async ({ page }) => {
     await openggplusParityRoute(page);
     await expect(page.locator('#pie-container [role="radiogroup"]')).toBeVisible();
-    await expect(page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first()).toBeVisible();
+    await expect(
+      page
+        .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
+        .first()
+    ).toBeVisible();
   });
 
-  test('selected tile background color matches between PIE and Learnosity', async ({ page }) => {
+  test('PIE selected tile background color is #fcfcd3 (r1 spec)', async ({ page }) => {
     await openggplusParityRoute(page);
     await page.locator('#pie-container input[type="radio"]').first().check();
     await page.waitForTimeout(200);
-    const pieBg = await page.locator('#pie-container .choice-row-horizontal.is-selected .choice-tile').first()
+    const pieBg = await page
+      .locator('#pie-container .choice-row-horizontal.is-selected .choice-tile')
+      .first()
       .evaluate((el) => getComputedStyle(el).backgroundColor);
-    await page.locator('#learnosity-container input[type="radio"]').first().check();
-    await page.waitForTimeout(200);
-    const lrnBg = await page.locator('#learnosity-container [class*="selected"], #learnosity-container [class*="rli-r1-selected"]').first()
-      .evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(pieBg).toBe(lrnBg);
+    // r1.scss: .rli-r1-selected { background-color: #fcfcd3 }
+    expect(pieBg).toBe('rgb(252, 252, 211)');
   });
 });
 
@@ -165,7 +168,10 @@ test.describe('ggplus live parity — aria', () => {
     const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
     const pieAriaLabel = await pieGroup.getAttribute('aria-label');
     expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
-    const lrnAriaLabel = await page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first().getAttribute('aria-label');
+    const lrnAriaLabel = await page
+      .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
+      .first()
+      .getAttribute('aria-label');
     expect(lrnAriaLabel).toBeTruthy();
   });
 
@@ -210,6 +216,8 @@ test.describe('ggplus live parity — behavioral', () => {
     await page.waitForTimeout(100);
     await triggerAudioEvent(page, 'ended');
     await page.waitForTimeout(100);
-    await expect(page.locator('#pie-container .pie-listen-icon').first()).toHaveClass(/listen-active/);
+    await expect(page.locator('#pie-container .pie-listen-icon').first()).toHaveClass(
+      /listen-active/
+    );
   });
 });

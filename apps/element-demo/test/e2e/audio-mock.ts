@@ -11,10 +11,11 @@
  *     await triggerAudioEvent(page, 'ended');
  *   });
  *
- * The mock replaces window.HTMLAudioElement before the page loads. Both the PIE
- * element and the Learnosity rendering use the fake, so behavioral assertions
- * on both sides are symmetric and deterministic (no network audio, no Chromium
- * audio stack).
+ * The mock intercepts `new Audio()` and overrides `document.createElement('audio')`
+ * so that play/pause/load are no-ops. The `trigger()` control API fires synthetic
+ * events on every audio target in the page — both MockAudio instances and DOM
+ * <audio> elements — so behavioral assertions on both PIE and Learnosity sides
+ * are symmetric and deterministic (no network audio, no Chromium audio stack).
  *
  * To restore real audio: remove the installAudioMock() call. No other changes needed.
  */
@@ -26,7 +27,8 @@ import type { Page } from '@playwright/test';
  */
 export async function installAudioMock(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const instances: EventTarget[] = [];
+    // MockAudio instances created via new Audio() / new HTMLAudioElement()
+    const mockInstances: EventTarget[] = [];
 
     class MockAudio extends EventTarget {
       src: string = '';
@@ -43,51 +45,78 @@ export async function installAudioMock(page: Page): Promise<void> {
       constructor(src?: string) {
         super();
         if (src) this.src = src;
-        instances.push(this);
+        mockInstances.push(this);
       }
 
       play(): Promise<void> {
         this.paused = false;
         this.ended = false;
-        this._fire('play');
+        this.dispatchEvent(new Event('play'));
+        this.dispatchEvent(new Event('playing'));
         return Promise.resolve();
       }
 
       pause(): void {
         this.paused = true;
-        this._fire('pause');
+        this.dispatchEvent(new Event('pause'));
       }
 
       load(): void {
-        this._fire('loadedmetadata');
-      }
-
-      _fire(type: string, detail?: unknown): void {
-        const event = new Event(type);
-        this.dispatchEvent(event);
+        this.dispatchEvent(new Event('loadedmetadata'));
       }
     }
 
-    // Expose control API on window for test code
+    // Override document.createElement so that DOM-created <audio> elements
+    // (e.g. from Svelte templates) also get no-op play/pause methods.
+    const _createElement = document.createElement.bind(document);
+    (document as any).createElement = function (tag: string, opts?: ElementCreationOptions) {
+      const el = _createElement(tag, opts);
+      if (tag.toLowerCase() === 'audio') {
+        (el as any).play = () => {
+          (el as any).paused = false;
+          (el as any).ended = false;
+          el.dispatchEvent(new Event('play'));
+          el.dispatchEvent(new Event('playing'));
+          return Promise.resolve();
+        };
+        (el as any).pause = () => {
+          (el as any).paused = true;
+          el.dispatchEvent(new Event('pause'));
+        };
+      }
+      return el;
+    };
+
+    // Control API: dispatch synthetic events on every audio target in the page.
+    // Covers both MockAudio instances and DOM <audio> elements so both PIE and
+    // Learnosity sides respond identically.
     (window as any).__audioMock = {
       trigger(eventType: string) {
-        for (const instance of instances) {
-          const event = new Event(eventType);
+        // Collect targets: MockAudio instances + all DOM <audio> elements
+        const domAudioEls = Array.from(document.querySelectorAll('audio'));
+        const allTargets: EventTarget[] = [...mockInstances, ...domAudioEls];
+
+        for (const target of allTargets) {
           if (eventType === 'ended') {
-            (instance as any).ended = true;
-            (instance as any).paused = true;
+            (target as any).ended = true;
+            (target as any).paused = true;
           }
           if (eventType === 'play') {
-            (instance as any).paused = false;
+            (target as any).paused = false;
+            // Fire 'playing' in addition to 'play' so components listening for
+            // HTMLMediaElement 'playing' (fires when playback actually starts)
+            // are notified, not just 'play' (fires when play() is called).
+            target.dispatchEvent(new Event('playing'));
           }
           if (eventType === 'pause') {
-            (instance as any).paused = true;
+            (target as any).paused = true;
           }
-          instance.dispatchEvent(event);
+          target.dispatchEvent(new Event(eventType));
         }
       },
       instanceCount() {
-        return instances.length;
+        const domCount = document.querySelectorAll('audio').length;
+        return mockInstances.length + domCount;
       },
     };
 
@@ -111,8 +140,7 @@ export async function triggerAudioEvent(
 }
 
 /**
- * Return the number of MockAudio instances created in the page.
- * Useful for asserting that both PIE and Learnosity created an audio element.
+ * Return the number of audio targets (MockAudio instances + DOM <audio> elements).
  */
 export async function audioInstanceCount(page: Page): Promise<number> {
   return page.evaluate(() => {

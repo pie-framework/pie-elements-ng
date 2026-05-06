@@ -1,10 +1,7 @@
 import { error } from '@sveltejs/kit';
-import { createHmac } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { PageServerLoad } from './$types';
-
-const CONSUMER_KEY = process.env.LEARNOSITY_CONSUMER_KEY;
-const SECRET = process.env.LEARNOSITY_SECRET;
-const DOMAIN = process.env.LEARNOSITY_DOMAIN ?? 'localhost';
+import { env } from '$env/dynamic/private';
 
 function utcTimestamp(): string {
   const iso = new Date().toISOString();
@@ -18,7 +15,7 @@ function utcTimestamp(): string {
   );
 }
 
-function signItemsInit(itemReference: string): Record<string, unknown> {
+function signItemsInit(itemReference: string, CONSUMER_KEY: string, SECRET: string, DOMAIN: string): Record<string, unknown> {
   const timestamp = utcTimestamp();
   const requestBody = {
     user_id: 'parity-test-user',
@@ -26,7 +23,7 @@ function signItemsInit(itemReference: string): Record<string, unknown> {
     name: 'PIE parity test',
     state: 'initial',
     activity_id: 'parity-test',
-    session_id: `parity-${Date.now()}`,
+    session_id: randomUUID(),
     type: 'submit_practice',
     items: [itemReference],
   };
@@ -35,27 +32,34 @@ function signItemsInit(itemReference: string): Record<string, unknown> {
     consumer_key: CONSUMER_KEY!,
     domain: DOMAIN,
     timestamp,
-    user_id: requestBody.user_id,
   };
 
   const requestString = JSON.stringify(requestBody);
+  // Learnosity SDK signs by SHA-256 hashing: consumer_key_domain_timestamp_SECRET_requestJSON
   const signatureArray = [
     securityPacket.consumer_key,
     securityPacket.domain,
     securityPacket.timestamp,
-    securityPacket.user_id,
+    SECRET,
+    requestString,
   ];
 
-  const hmac = createHmac('sha256', SECRET!);
-  hmac.update(signatureArray.join('_'));
-  (securityPacket as any).signature = '$02$' + hmac.digest('hex');
+  (securityPacket as any).signature =
+    createHash('sha256').update(signatureArray.join('_')).digest('hex');
 
   return { security: securityPacket, request: requestBody };
 }
 
 export const load: PageServerLoad = async ({ params, url }) => {
+  const CONSUMER_KEY = env.LEARNOSITY_CONSUMER_KEY;
+  const SECRET = env.LEARNOSITY_SECRET;
+  const DOMAIN = env.LEARNOSITY_DOMAIN ?? 'localhost';
+
   if (!CONSUMER_KEY || !SECRET) {
-    throw error(503, 'Learnosity credentials not configured. Set LEARNOSITY_CONSUMER_KEY and LEARNOSITY_SECRET env vars.');
+    throw error(
+      503,
+      'Learnosity credentials not configured. Set LEARNOSITY_CONSUMER_KEY and LEARNOSITY_SECRET env vars.'
+    );
   }
 
   const demoId = url.searchParams.get('demo');
@@ -83,7 +87,7 @@ export const load: PageServerLoad = async ({ params, url }) => {
     throw error(400, `Demo "${demoId}" has no learnosityItemReference in model.source`);
   }
 
-  const initPayload = signItemsInit(itemReference);
+  const initPayload = signItemsInit(itemReference, CONSUMER_KEY, SECRET, DOMAIN);
 
   return { demoId, itemReference, initPayload };
 };

@@ -102,7 +102,7 @@ async function openS3ParityRoute(page: import('@playwright/test').Page) {
   await page.goto(`/mc-populated-blank/parity?demo=${encodeURIComponent(DEMO_ID)}`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
-  await page.waitForSelector('#pie-container', { timeout: 20_000 });
+  await page.waitForSelector('#pie-container pie-element-player', { timeout: 20_000 });
   await page.waitForSelector('[data-learnosity-ready="true"]', { timeout: 30_000 });
 }
 
@@ -112,13 +112,19 @@ test.describe('s3 live parity — visual', () => {
   test('both sides render a choices group', async ({ page }) => {
     await openS3ParityRoute(page);
     await expect(page.locator('#pie-container [role="radiogroup"]')).toBeVisible();
-    await expect(page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first()).toBeVisible();
+    await expect(
+      page
+        .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
+        .first()
+    ).toBeVisible();
   });
 
   test('stimulus image, blank, and audio are on the same row on both sides', async ({ page }) => {
     await openS3ParityRoute(page);
     // PIE side: stimulus, blank, and audio container are vertically aligned
-    const stimulus = page.locator('#pie-container .pie-stimulus-image, #pie-container [class*="stimulus"]').first();
+    const stimulus = page
+      .locator('#pie-container .pie-stimulus-image, #pie-container [class*="stimulus"]')
+      .first();
     const blank = page.locator('#pie-container .pie-blank-slot').first();
     const audio = page.locator('#pie-container .pie-audio-container').first();
     await expect(stimulus).toBeVisible();
@@ -141,7 +147,10 @@ test.describe('s3 live parity — aria', () => {
     const pieLabelledBy = await pieGroup.getAttribute('aria-labelledby');
     const pieAriaLabel = await pieGroup.getAttribute('aria-label');
     expect(pieLabelledBy || pieAriaLabel).toBeTruthy();
-    const lrnAriaLabel = await page.locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]').first().getAttribute('aria-label');
+    const lrnAriaLabel = await page
+      .locator('#learnosity-container [role="group"], #learnosity-container [role="radiogroup"]')
+      .first()
+      .getAttribute('aria-label');
     expect(lrnAriaLabel).toBeTruthy();
   });
 

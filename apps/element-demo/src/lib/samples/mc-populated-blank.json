@@ -510,7 +510,10 @@
         "choiceMode": "text",
         "choices": [
           { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">v</span>" },
-          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\"><span aria-label=\"i griega\"></span><span aria-hidden=\"true\">y</span></span>" },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:3em;\"><span aria-label=\"i griega\"></span><span aria-hidden=\"true\">y</span></span>"
+          },
           { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">x</span>" }
         ],
         "correctChoiceId": "distractor_2",
@@ -666,7 +669,10 @@
         "choiceMode": "text",
         "choices": [
           { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">u</span>" },
-          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\"><span aria-label=\"i griega\"></span><span aria-hidden=\"true\">y</span></span>" },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:3em;\"><span aria-label=\"i griega\"></span><span aria-hidden=\"true\">y</span></span>"
+          },
           { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">x</span>" }
         ],
         "correctChoiceId": "distractor_1",
@@ -782,9 +788,18 @@
         "template": "<p><img alt=\"woman\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/e85bd672-3f63-40ac-87e0-94541a3710ea.svg\" width=\"108\"> <img alt=\"girl\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/7ecf829f-3813-457d-afa5-7bdba18edf9f.svg\" width=\"108\"> {{blank}}</p>",
         "choiceMode": "image",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<img alt=\"sun\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/37d2ba6e-d1c2-4e59-ad7c-7b8dd62631b6.svg\" width=\"108\">" },
-          { "id": "distractor_2", "labelHtml": "<img alt=\"hammer\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/ba6e5055-6fe0-4e93-9512-ed42977ed6b1.svg\" width=\"108\">" },
-          { "id": "distractor_3", "labelHtml": "<img alt=\"grandmother\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/26ee2216-323f-4719-9457-076be451cc96.svg\" width=\"108\">" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<img alt=\"sun\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/37d2ba6e-d1c2-4e59-ad7c-7b8dd62631b6.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<img alt=\"hammer\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/ba6e5055-6fe0-4e93-9512-ed42977ed6b1.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<img alt=\"grandmother\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/26ee2216-323f-4719-9457-076be451cc96.svg\" width=\"108\">"
+          }
         ],
         "correctChoiceId": "distractor_3",
         "hasAudio": true,
@@ -821,9 +836,18 @@
         "template": "<p><img alt=\"shop\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/1d7af92f-05db-42a6-87fd-172d2ee653fc.svg\" width=\"108\"> {{blank}}</p>",
         "choiceMode": "image",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<img alt=\"boat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/8003bf8b-1192-4e12-bff4-2c9f80a1b0b8.svg\" width=\"108\">" },
-          { "id": "distractor_2", "labelHtml": "<img alt=\"shoe\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/5406c187-d12e-4f8f-8db1-41af3657afef.svg\" width=\"108\">" },
-          { "id": "distractor_3", "labelHtml": "<img alt=\"sheep\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/9ab5edad-1335-4ab2-8002-bcf692f033f2.svg\" width=\"108\">" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<img alt=\"boat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/8003bf8b-1192-4e12-bff4-2c9f80a1b0b8.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<img alt=\"shoe\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/5406c187-d12e-4f8f-8db1-41af3657afef.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<img alt=\"sheep\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/9ab5edad-1335-4ab2-8002-bcf692f033f2.svg\" width=\"108\">"
+          }
         ],
         "correctChoiceId": "distractor_3",
         "hasAudio": true,
@@ -860,9 +884,18 @@
         "template": "<p>{{blank}}</p>",
         "choiceMode": "image",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<img alt=\"teddy bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/4264ff6d-7790-4631-bd9d-03c9790dc9b1.svg\" width=\"108\">" },
-          { "id": "distractor_2", "labelHtml": "<img alt=\"polar bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/cba657c7-40b4-4cef-a0d7-09445d72eca1.svg\" width=\"108\">" },
-          { "id": "distractor_3", "labelHtml": "<img alt=\"black bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/6b6d4542-9913-4330-b471-1703db96ee57.svg\" width=\"108\">" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<img alt=\"teddy bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/4264ff6d-7790-4631-bd9d-03c9790dc9b1.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<img alt=\"polar bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/cba657c7-40b4-4cef-a0d7-09445d72eca1.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<img alt=\"black bear\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/6b6d4542-9913-4330-b471-1703db96ee57.svg\" width=\"108\">"
+          }
         ],
         "correctChoiceId": "distractor_2",
         "hasAudio": true,
@@ -899,9 +932,18 @@
         "template": "<p>{{blank}} <img alt=\"coat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/0ffac3e5-81a9-42df-93a5-6c3a03520dac.svg\" width=\"108\"></p>",
         "choiceMode": "image",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<img alt=\"gate\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/72b1b641-6444-497a-b07f-0cd52d2b0d8c.svg\" width=\"108\">" },
-          { "id": "distractor_2", "labelHtml": "<img alt=\"goat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/378698ca-2d49-4ba0-beff-6e3f1693c8a6.svg\" width=\"108\">" },
-          { "id": "distractor_3", "labelHtml": "<img alt=\"boat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/004c2794-8b36-4eb2-bc86-c359037536f5.svg\" width=\"108\">" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<img alt=\"gate\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/72b1b641-6444-497a-b07f-0cd52d2b0d8c.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<img alt=\"goat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/378698ca-2d49-4ba0-beff-6e3f1693c8a6.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<img alt=\"boat\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/004c2794-8b36-4eb2-bc86-c359037536f5.svg\" width=\"108\">"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": true,
@@ -938,9 +980,18 @@
         "template": "<p>{{blank}} <img alt=\"woman\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/c7f8fb43-7c69-457f-9e82-f728b412f1f8.svg\" width=\"108\"> <img alt=\"girl\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/3988be7c-0458-46d5-ab26-24006f0bc3a2.svg\" width=\"108\"></p>",
         "choiceMode": "image",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<img alt=\"sun\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/4645e5c2-217b-460b-a7a5-295b6c9d5a57.svg\" width=\"108\">" },
-          { "id": "distractor_2", "labelHtml": "<img alt=\"hammer\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/41226c8b-7288-42d8-a826-5ffc100f4cbc.svg\" width=\"108\">" },
-          { "id": "distractor_3", "labelHtml": "<img alt=\"grandmother\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/865a78f8-14ef-4552-8e96-32abfd38210b.svg\" width=\"108\">" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<img alt=\"sun\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/4645e5c2-217b-460b-a7a5-295b6c9d5a57.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<img alt=\"hammer\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/41226c8b-7288-42d8-a826-5ffc100f4cbc.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<img alt=\"grandmother\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/865a78f8-14ef-4552-8e96-32abfd38210b.svg\" width=\"108\">"
+          }
         ],
         "correctChoiceId": "distractor_3",
         "hasAudio": true,
@@ -977,9 +1028,18 @@
         "template": "<p>{{blank}}</p>",
         "choiceMode": "image",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<img alt=\"a cat\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/32ea28f7-f2db-4dc0-8cd5-3451f0767ad6.svg\" width=\"150\">" },
-          { "id": "distractor_2", "labelHtml": "<img alt=\"an ant\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/080089d7-c757-4b81-9f5e-accac51fd4e8.svg\" width=\"150\">" },
-          { "id": "distractor_3", "labelHtml": "<img alt=\"a mouse\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/036d6a16-1a35-4b70-9e9a-82217a6635b0.svg\" width=\"150\">" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<img alt=\"a cat\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/32ea28f7-f2db-4dc0-8cd5-3451f0767ad6.svg\" width=\"150\">"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<img alt=\"an ant\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/080089d7-c757-4b81-9f5e-accac51fd4e8.svg\" width=\"150\">"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<img alt=\"a mouse\" height=\"150\" src=\"https://assets.learnosity.com/organisations/844/036d6a16-1a35-4b70-9e9a-82217a6635b0.svg\" width=\"150\">"
+          }
         ],
         "correctChoiceId": "distractor_3",
         "hasAudio": true,
@@ -1016,9 +1076,18 @@
         "template": "<p>{{blank}}</p>",
         "choiceMode": "image",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<img alt=\"paloma\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/0f7525ef-4cdb-415a-b20f-40fbd16e33fe.svgz\" width=\"108\">" },
-          { "id": "distractor_2", "labelHtml": "<img alt=\"plátano\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/c292fb15-c052-44c7-9f26-e639bdc69f7d.svgz\" width=\"108\">" },
-          { "id": "distractor_3", "labelHtml": "<img alt=\"pijama\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/8270bdad-d9b8-4f11-a7cb-9d4ad9ffe810.svgz\" width=\"108\">" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<img alt=\"paloma\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/0f7525ef-4cdb-415a-b20f-40fbd16e33fe.svgz\" width=\"108\">"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<img alt=\"plátano\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/c292fb15-c052-44c7-9f26-e639bdc69f7d.svgz\" width=\"108\">"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<img alt=\"pijama\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/8270bdad-d9b8-4f11-a7cb-9d4ad9ffe810.svgz\" width=\"108\">"
+          }
         ],
         "correctChoiceId": "distractor_3",
         "hasAudio": true,
@@ -1055,9 +1124,18 @@
         "template": "<p>{{blank}} <img alt=\"gallina\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/d776276a-5e20-40d2-a6f6-91e4247738db.svg\" width=\"108\"> <img alt=\"pato\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/1054472d-b903-46ed-a0a6-47f75326a5e9.svg\" width=\"108\"></p>",
         "choiceMode": "image",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<img alt=\"hoja\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/98e394ea-e8b7-40df-ba9d-b7bc627787c5.svg\" width=\"108\">" },
-          { "id": "distractor_2", "labelHtml": "<img alt=\"guante\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/e4f0338e-3b41-4831-b242-d3caed95ed8d.svg\" width=\"108\">" },
-          { "id": "distractor_3", "labelHtml": "<img alt=\"pollito\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/d800a750-e103-4f16-95c2-6e6cdfc1dbcf.svg\" width=\"108\">" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<img alt=\"hoja\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/98e394ea-e8b7-40df-ba9d-b7bc627787c5.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<img alt=\"guante\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/e4f0338e-3b41-4831-b242-d3caed95ed8d.svg\" width=\"108\">"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<img alt=\"pollito\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/d800a750-e103-4f16-95c2-6e6cdfc1dbcf.svg\" width=\"108\">"
+          }
         ],
         "correctChoiceId": "distractor_3",
         "hasAudio": true,
