@@ -16,6 +16,7 @@ import AudioPlayer from './AudioPlayer.svelte';
 import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
+import { computeLayoutProfile } from './computeLayoutProfile';
 import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
 import {
   ensureVariantCssInjected,
@@ -23,7 +24,6 @@ import {
   getVariantRootClass,
 } from './variant-css-map';
 
-/** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
 const BLANK_TOKEN = '{{blank}}';
 const DEFAULT_AUDIO_BUTTON_SKINS = {
   default: {
@@ -80,38 +80,24 @@ const shouldShowCorrectAnswerToggle = $derived(
 // Feeds: layout (rootStyle, blankWidth, blankBorderWidth, legendMaxChars), audioMode, choiceState
 // ---------------------------------------------------------------------------
 const layoutProfile = $derived(model?.layoutProfile || '');
-const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
-const isBlankOnlyTemplate = $derived.by(() => {
-  const t = model?.template || '';
-  if (!t) return false;
-  const plain = t
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .trim();
-  return plain === BLANK_TOKEN;
-});
-const choiceLayout = $derived(
-  model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
+const layoutProfileFlags = $derived(
+  computeLayoutProfile({
+    interactionMode: model?.interactionMode,
+    template: model?.template,
+    choiceLayout: model?.choiceLayout,
+    layoutProfile,
+    hasAudio: model?.hasAudio,
+    useFeatureButtonAudio: model?.useFeatureButtonAudio,
+  })
 );
-const isHorizontalChoices = $derived(choiceLayout === 'horizontal');
-const hasInlineSentenceAudioLayout = $derived(
-  layoutProfile === 'inline_sentence' && !!model?.hasAudio
-);
+const isAudioOnlyMode = $derived(layoutProfileFlags.isAudioOnlyMode);
+const isBlankOnlyTemplate = $derived(layoutProfileFlags.isBlankOnlyTemplate);
+const isHorizontalChoices = $derived(layoutProfileFlags.isHorizontalChoices);
+const hasInlineSentenceAudioLayout = $derived(layoutProfileFlags.hasInlineSentenceAudioLayout);
+const useFeatureButtonAudio = $derived(layoutProfileFlags.useFeatureButtonAudio);
 const showVisibleTranscript = $derived(
   !!model?.showVisibleTranscript || ancestorHasTranscriptClass
 );
-const useFeatureButtonAudio = $derived.by(() => {
-  if (typeof model?.useFeatureButtonAudio === 'boolean') {
-    return !!model.useFeatureButtonAudio;
-  }
-  const profile = layoutProfile || '';
-  return (
-    !!model?.hasAudio &&
-    (profile === 'audio_blank_only' ||
-      profile === 'stimulus_image_blank' ||
-      profile === 'token_sequence')
-  );
-});
 const correctAnswerStyleVars = $derived.by(() =>
   [
     `--pie-correct-answer-toggle-label-color:${color.text()}`,
