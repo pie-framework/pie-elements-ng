@@ -312,7 +312,7 @@ jobs:
         with:
           # Omit `publish` so the action never runs `bun run release:publish` from CI.
           # Re-enable publishing by setting ENABLE_CICD_NPM_PUBLISH=true and adding:
-          #   publish: bun run release:publish
+          publish: bun run release:publish
           createGithubReleases: false
           version: bun run version
           title: 'chore(release): version packages [skip-heavy-ci]'
