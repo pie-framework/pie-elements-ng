@@ -202,10 +202,16 @@ async function runScenarioChecks(
   const results: CheckResult[] = [];
 
   for (const check of checks) {
-    if (check === 'interactive-control-name') {
+    if (check === 'group-label') {
+      results.push(await checkGroupLabels(page));
+    } else if (check === 'interactive-control-name') {
       results.push(await checkInteractiveControlNames(page));
     } else if (check === 'keyboard-tab-reach') {
       results.push(await checkKeyboardTabReach(page));
+    } else if (check === 'math-alternative') {
+      results.push(await checkMathAlternatives(page));
+    } else if (check === 'media-alternative') {
+      results.push(await checkMediaAlternatives(page));
     } else if (check === 'target-size') {
       results.push(await checkTargetSize(page));
     } else if (check === 'status-message') {
@@ -214,6 +220,73 @@ async function runScenarioChecks(
   }
 
   return results;
+}
+
+async function checkGroupLabels(page: Page): Promise<CheckResult> {
+  const details = await page.locator('[data-testid="a11y-scan-subject"]').evaluate((subject) => {
+    const groupSelector = [
+      'fieldset',
+      '[role="group"]',
+      '[role="radiogroup"]',
+      '[role="listbox"]',
+      '[role="grid"]',
+      '[role="table"]',
+    ].join(',');
+
+    function isVisible(element: Element) {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        style.visibility !== 'hidden' &&
+        style.display !== 'none'
+      );
+    }
+
+    function textFromIdRefs(ids: string | null) {
+      if (!ids) {
+        return '';
+      }
+      return ids
+        .split(/\s+/)
+        .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
+        .filter(Boolean)
+        .join(' ');
+    }
+
+    function groupName(element: Element) {
+      if (element instanceof HTMLFieldSetElement) {
+        const legend = element.querySelector('legend')?.textContent?.trim();
+        if (legend) {
+          return legend;
+        }
+      }
+
+      return (
+        element.getAttribute('aria-label')?.trim() ||
+        textFromIdRefs(element.getAttribute('aria-labelledby')) ||
+        element.getAttribute('title')?.trim() ||
+        ''
+      );
+    }
+
+    return [...subject.querySelectorAll(groupSelector)]
+      .filter(isVisible)
+      .filter((element) => !groupName(element))
+      .slice(0, 10)
+      .map((element) => element.outerHTML.slice(0, 300));
+  });
+
+  return {
+    check: 'group-label',
+    status: details.length > 0 ? 'failed' : 'passed',
+    message:
+      details.length > 0
+        ? `${details.length} visible group(s) appear to lack a programmatic label`
+        : 'Visible fieldsets and ARIA groups have label signals',
+    details,
+  };
 }
 
 async function checkInteractiveControlNames(page: Page): Promise<CheckResult> {
@@ -342,6 +415,140 @@ async function checkKeyboardTabReach(page: Page): Promise<CheckResult> {
     message: reached
       ? 'Tab navigation reached an interactive target inside the scan subject'
       : 'Tab navigation did not reach the scan subject within 30 steps',
+  };
+}
+
+async function checkMathAlternatives(page: Page): Promise<CheckResult> {
+  const result = await page.locator('[data-testid="a11y-scan-subject"]').evaluate((subject) => {
+    const mathSelector = ['math', '.MathJax', '[data-latex]', '[data-math]'].join(',');
+
+    function isVisible(element: Element) {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        style.visibility !== 'hidden' &&
+        style.display !== 'none'
+      );
+    }
+
+    function textFromIdRefs(ids: string | null) {
+      if (!ids) {
+        return '';
+      }
+      return ids
+        .split(/\s+/)
+        .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
+        .filter(Boolean)
+        .join(' ');
+    }
+
+    const mathNodes = [...subject.querySelectorAll(mathSelector)].filter(isVisible);
+    const missing = mathNodes
+      .filter((element) => {
+        const hasAccessibleName =
+          !!element.getAttribute('aria-label')?.trim() ||
+          !!textFromIdRefs(element.getAttribute('aria-labelledby'));
+        const hasNativeAlternative = !!element.querySelector('annotation, annotation-xml, title');
+        const hasText = !!element.textContent?.trim();
+        return !hasAccessibleName && !hasNativeAlternative && !hasText;
+      })
+      .slice(0, 10)
+      .map((element) => element.outerHTML.slice(0, 300));
+
+    return { count: mathNodes.length, missing };
+  });
+
+  return {
+    check: 'math-alternative',
+    status: result.count === 0 || result.missing.length > 0 ? 'failed' : 'passed',
+    message:
+      result.count === 0
+        ? 'No rendered math nodes were found for this math-alternative scenario'
+        : result.missing.length > 0
+          ? `${result.missing.length} rendered math node(s) appear to lack a text alternative`
+          : 'Rendered math nodes expose text or accessible-name signals',
+    details: result.missing,
+  };
+}
+
+async function checkMediaAlternatives(page: Page): Promise<CheckResult> {
+  const details = await page.locator('[data-testid="a11y-scan-subject"]').evaluate((subject) => {
+    function isVisible(element: Element) {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        style.visibility !== 'hidden' &&
+        style.display !== 'none'
+      );
+    }
+
+    function textFromIdRefs(ids: string | null) {
+      if (!ids) {
+        return '';
+      }
+      return ids
+        .split(/\s+/)
+        .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
+        .filter(Boolean)
+        .join(' ');
+    }
+
+    function hasNameOrDecorativeRole(element: Element) {
+      if (
+        element.getAttribute('aria-hidden') === 'true' ||
+        element.getAttribute('role') === 'presentation' ||
+        element.getAttribute('role') === 'none'
+      ) {
+        return true;
+      }
+
+      return (
+        !!element.getAttribute('aria-label')?.trim() ||
+        !!textFromIdRefs(element.getAttribute('aria-labelledby')) ||
+        !!element.querySelector('title')?.textContent?.trim()
+      );
+    }
+
+    const missing: string[] = [];
+
+    for (const image of [...subject.querySelectorAll('img')].filter(isVisible)) {
+      if (image.getAttribute('alt') === null && !hasNameOrDecorativeRole(image)) {
+        missing.push(image.outerHTML.slice(0, 300));
+      }
+    }
+
+    for (const graphic of [...subject.querySelectorAll('svg, canvas')].filter(isVisible)) {
+      if (!hasNameOrDecorativeRole(graphic)) {
+        missing.push(graphic.outerHTML.slice(0, 300));
+      }
+    }
+
+    for (const media of [...subject.querySelectorAll('audio, video')].filter(isVisible)) {
+      if (!hasNameOrDecorativeRole(media) && media.querySelectorAll('track').length === 0) {
+        missing.push(media.outerHTML.slice(0, 300));
+      }
+    }
+
+    return {
+      count: subject.querySelectorAll('img, svg, canvas, audio, video').length,
+      missing: missing.slice(0, 10),
+    };
+  });
+
+  return {
+    check: 'media-alternative',
+    status: details.count === 0 || details.missing.length > 0 ? 'failed' : 'passed',
+    message:
+      details.count === 0
+        ? 'No media or graphic nodes were found for this media-alternative scenario'
+        : details.missing.length > 0
+          ? `${details.missing.length} visible media/graphic node(s) appear to lack an alternative or decorative marker`
+          : 'Visible media and graphics expose alternatives or decorative markers',
+    details: details.missing,
   };
 }
 

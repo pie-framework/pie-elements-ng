@@ -73,12 +73,15 @@ type ScenarioInput = {
 
 const interactiveChecks: A11yAutomatedCheck[] = [
   'axe',
+  'group-label',
   'interactive-control-name',
   'keyboard-tab-reach',
   'target-size',
 ];
 
 const feedbackChecks: A11yAutomatedCheck[] = [...interactiveChecks, 'status-message'];
+const mediaChecks: A11yAutomatedCheck[] = [...interactiveChecks, 'media-alternative'];
+const mathChecks: A11yAutomatedCheck[] = [...interactiveChecks, 'math-alternative'];
 
 function roleForMode(mode: A11yScanMode): A11yScanRole {
   return mode === 'evaluate' ? 'instructor' : 'student';
@@ -173,6 +176,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: drawingResponseSamples,
     wcagCriteria: ['1.1.1', '2.1.1', '2.5.1', '2.5.8', '4.1.2'],
     concerns: ['semantics', 'keyboard-focus', 'spatial-interaction', 'target-size'],
+    automatedChecks: mediaChecks,
     manualReviewNotes: ['Confirm the drawing task has a meaningful non-pointer alternative.'],
   }),
   defineScenario({
@@ -214,6 +218,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: fractionModelSamples,
     wcagCriteria: ['1.3.1', '1.4.11', '2.1.1', '2.5.8', '4.1.2'],
     concerns: ['semantics', 'keyboard-focus', 'visual-contrast', 'target-size'],
+    automatedChecks: mediaChecks,
   }),
   defineScenario({
     element: 'fraction-model',
@@ -235,6 +240,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: graphingSamples,
     wcagCriteria: ['1.3.1', '1.4.11', '2.1.1', '2.5.1', '2.5.8', '4.1.2'],
     concerns: ['semantics', 'keyboard-focus', 'spatial-interaction', 'visual-contrast'],
+    automatedChecks: mediaChecks,
     manualReviewNotes: ['Confirm graph drawing has a complete keyboard alternative.'],
   }),
   defineScenario({
@@ -246,6 +252,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: graphingSolutionSetSamples,
     wcagCriteria: ['1.3.1', '1.4.1', '1.4.11', '2.1.1', '4.1.2'],
     concerns: ['semantics', 'visual-contrast', 'spatial-interaction'],
+    automatedChecks: mediaChecks,
     manualReviewNotes: [
       'Confirm the solution region is understandable without relying only on color/shading.',
     ],
@@ -259,6 +266,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: hotspotSamples,
     wcagCriteria: ['1.1.1', '1.3.1', '2.1.1', '2.5.1', '4.1.2'],
     concerns: ['semantics', 'keyboard-focus', 'media-alternatives', 'spatial-interaction'],
+    automatedChecks: mediaChecks,
     manualReviewNotes: ['Confirm hotspot labels describe the target without revealing the answer.'],
   }),
   defineScenario({
@@ -270,6 +278,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: imageClozeAssociationSamples,
     wcagCriteria: ['1.1.1', '1.3.1', '2.1.1', '2.5.7', '4.1.2'],
     concerns: ['media-alternatives', 'keyboard-focus', 'spatial-interaction', 'semantics'],
+    automatedChecks: mediaChecks,
   }),
   defineScenario({
     element: 'inline-dropdown',
@@ -319,6 +328,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: mathInlineSamples,
     wcagCriteria: ['1.3.1', '2.1.1', '2.4.6', '3.3.2', '4.1.2'],
     concerns: ['math-accessibility', 'keyboard-focus', 'input-assistance', 'semantics'],
+    automatedChecks: mathChecks,
   }),
   defineScenario({
     element: 'math-templated',
@@ -329,6 +339,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: mathTemplatedSamples,
     wcagCriteria: ['1.3.1', '2.1.1', '2.4.3', '3.3.2', '4.1.2'],
     concerns: ['math-accessibility', 'keyboard-focus', 'input-assistance', 'semantics'],
+    automatedChecks: mathChecks,
   }),
   defineScenario({
     element: 'matrix',
@@ -357,9 +368,10 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     purpose:
       'Checks the audio/transcript variant for media alternatives, labelled controls, and keyboard reachability.',
     sample: mcPopulatedBlankSamples,
-    sampleIndex: 1,
+    sampleIndex: 2,
     wcagCriteria: ['1.1.1', '1.2.1', '1.2.2', '2.1.1', '4.1.2'],
     concerns: ['media-alternatives', 'keyboard-focus', 'semantics'],
+    automatedChecks: mediaChecks,
   }),
   defineScenario({
     element: 'multi-trait-rubric',
@@ -379,6 +391,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     purpose:
       'Checks a radio-style multiple-choice question for group labelling, keyboard selection, and state exposure.',
     sample: multipleChoiceSamples,
+    sampleIndex: 1,
     wcagCriteria: ['1.3.1', '2.1.1', '2.4.6', '3.3.2', '4.1.2'],
     concerns: ['semantics', 'keyboard-focus', 'input-assistance', 'target-size'],
   }),
@@ -404,6 +417,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: numberLineSamples,
     wcagCriteria: ['1.3.1', '1.4.11', '2.1.1', '2.5.1', '4.1.2'],
     concerns: ['semantics', 'keyboard-focus', 'spatial-interaction', 'visual-contrast'],
+    automatedChecks: mediaChecks,
   }),
   defineScenario({
     element: 'passage',
@@ -469,6 +483,349 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     sample: vennClassificationSamples,
     wcagCriteria: ['1.1.1', '1.3.1', '2.1.1', '2.5.7', '4.1.2'],
     concerns: ['semantics', 'keyboard-focus', 'spatial-interaction', 'media-alternatives'],
+    automatedChecks: mediaChecks,
+  }),
+  defineScenario({
+    element: 'categorize',
+    id: 'category-feedback-status',
+    title: 'Category evaluate state exposes feedback status',
+    purpose:
+      'Mounts a categorized response in evaluate mode to check correctness feedback, group labels, and live/status semantics.',
+    sample: categorizeSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'semantics', 'input-assistance'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'charting',
+    id: 'histogram-non-text-alternatives',
+    title: 'Histogram chart exposes non-text alternatives',
+    purpose:
+      'Exercises the histogram sample to check chart labels, graphic alternatives, non-text contrast, and keyboard-reachable controls.',
+    sample: chartingSamples,
+    sampleIndex: 2,
+    wcagCriteria: ['1.1.1', '1.3.1', '1.4.1', '1.4.11', '4.1.2'],
+    concerns: ['media-alternatives', 'semantics', 'visual-contrast'],
+    automatedChecks: mediaChecks,
+    manualReviewNotes: ['Confirm histogram bins and values are understandable without sight.'],
+  }),
+  defineScenario({
+    element: 'complex-rubric',
+    id: 'complex-rubric-evaluate-feedback',
+    title: 'Complex rubric evaluate state exposes scoring feedback',
+    purpose:
+      'Checks the instructor/evaluate state for labelled score controls, readable descriptor structure, and status feedback.',
+    sample: complexRubricSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '2.4.6', '3.3.2', '4.1.2', '4.1.3'],
+    concerns: ['semantics', 'table-structure', 'reading-structure', 'status-feedback'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'drag-in-the-blank',
+    id: 'image-blank-alternatives',
+    title: 'Image-based drag blanks expose alternatives',
+    purpose:
+      'Uses the image word-problem sample to check image alternatives, draggable labels, blank targets, and keyboard reachability.',
+    sample: dragInTheBlankSamples,
+    sampleIndex: 2,
+    wcagCriteria: ['1.1.1', '1.3.1', '2.1.1', '2.5.7', '4.1.2'],
+    concerns: ['media-alternatives', 'keyboard-focus', 'spatial-interaction', 'semantics'],
+    automatedChecks: mediaChecks,
+  }),
+  defineScenario({
+    element: 'drawing-response',
+    id: 'drawing-evaluate-feedback-status',
+    title: 'Drawing evaluate state exposes feedback status',
+    purpose:
+      'Checks the drawing response in evaluate mode for labelled feedback, canvas alternatives, and status-message semantics.',
+    sample: drawingResponseSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.1.1', '1.3.1', '3.3.1', '4.1.2', '4.1.3'],
+    concerns: ['media-alternatives', 'status-feedback', 'semantics'],
+    automatedChecks: [...mediaChecks, 'status-message'],
+    manualReviewNotes: [
+      'Automated checks cannot verify equivalence of a non-pointer drawing alternative.',
+    ],
+  }),
+  defineScenario({
+    element: 'ebsr',
+    id: 'ebsr-evaluate-feedback-status',
+    title: 'EBSR evaluate feedback identifies both parts',
+    purpose:
+      'Mounts the two-part item in evaluate mode to check part-specific feedback, status semantics, and labelled groups.',
+    sample: ebsrSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'semantics', 'input-assistance'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'explicit-constructed-response',
+    id: 'constructed-response-evaluate-errors',
+    title: 'Constructed response evaluate state labels feedback',
+    purpose:
+      'Checks scored embedded response fields for clear feedback, status-message semantics, and preserved field labels.',
+    sample: explicitConstructedResponseSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'input-assistance', 'semantics'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'extended-text-entry',
+    id: 'extended-text-evaluate-feedback',
+    title: 'Extended text evaluate state exposes feedback',
+    purpose:
+      'Checks the scored text-entry state for editor labelling, readable feedback, and status-message semantics.',
+    sample: extendedTextEntrySamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'input-assistance', 'semantics'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'fraction-model',
+    id: 'improper-fraction-graphic-alternatives',
+    title: 'Improper fraction model exposes graphic alternatives',
+    purpose:
+      'Uses the improper-fraction visual model to check non-text alternatives, control labels, and target sizing.',
+    sample: fractionModelSamples,
+    sampleIndex: 1,
+    wcagCriteria: ['1.1.1', '1.3.1', '1.4.11', '2.5.8', '4.1.2'],
+    concerns: ['media-alternatives', 'semantics', 'visual-contrast', 'target-size'],
+    automatedChecks: mediaChecks,
+  }),
+  defineScenario({
+    element: 'graphing',
+    id: 'parabola-graph-alternatives',
+    title: 'Parabola graph exposes graphic alternatives',
+    purpose:
+      'Exercises the parabola graphing sample to check canvas or SVG alternatives, tool labels, and spatial interaction affordances.',
+    sample: graphingSamples,
+    sampleIndex: 1,
+    wcagCriteria: ['1.1.1', '1.3.1', '1.4.11', '2.1.1', '4.1.2'],
+    concerns: ['media-alternatives', 'spatial-interaction', 'keyboard-focus', 'visual-contrast'],
+    automatedChecks: mediaChecks,
+    manualReviewNotes: ['Confirm graph construction can be completed without a pointer device.'],
+  }),
+  defineScenario({
+    element: 'graphing-solution-set',
+    id: 'solution-set-evaluate-feedback',
+    title: 'Solution-set evaluate state exposes feedback',
+    purpose:
+      'Checks evaluate-mode feedback for the graphing solution set while preserving graph alternatives and labelled controls.',
+    sample: graphingSolutionSetSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.1.1', '1.3.1', '3.3.1', '4.1.2', '4.1.3'],
+    concerns: ['media-alternatives', 'status-feedback', 'semantics'],
+    automatedChecks: [...mediaChecks, 'status-message'],
+  }),
+  defineScenario({
+    element: 'inline-dropdown',
+    id: 'inline-dropdown-evaluate-feedback',
+    title: 'Inline dropdown evaluate state labels feedback',
+    purpose:
+      'Checks dropdown blanks in evaluate mode for clear correctness feedback, preserved combobox labels, and status semantics.',
+    sample: inlineDropdownSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'input-assistance', 'semantics'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'likert',
+    id: 'likert-evaluate-feedback',
+    title: 'Likert evaluate state keeps scale semantics',
+    purpose:
+      'Checks scored Likert output for preserved scale labels, correctness feedback, and live/status semantics.',
+    sample: likertSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'semantics', 'input-assistance'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'match',
+    id: 'match-evaluate-feedback',
+    title: 'Matching evaluate state identifies row feedback',
+    purpose:
+      'Checks evaluate-mode matching feedback for row labels, answer control names, and status-message semantics.',
+    sample: matchSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'semantics', 'table-structure'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'match-list',
+    id: 'match-list-evaluate-feedback',
+    title: 'Match list evaluate state identifies associations',
+    purpose:
+      'Checks evaluate-mode association feedback for labelled prompts, labelled answers, and status-message semantics.',
+    sample: matchListSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'semantics', 'table-structure'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'math-inline',
+    id: 'inline-math-evaluate-feedback',
+    title: 'Inline math evaluate feedback preserves math alternatives',
+    purpose:
+      'Checks evaluate-mode math entry feedback, rendered math alternatives, and status-message semantics.',
+    sample: mathInlineSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['math-accessibility', 'status-feedback', 'input-assistance', 'semantics'],
+    automatedChecks: [...mathChecks, 'status-message'],
+  }),
+  defineScenario({
+    element: 'math-templated',
+    id: 'templated-math-evaluate-feedback',
+    title: 'Templated math evaluate feedback preserves field labels',
+    purpose:
+      'Checks evaluate-mode template feedback, math alternatives, field labels, and status-message semantics.',
+    sample: mathTemplatedSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['math-accessibility', 'status-feedback', 'input-assistance', 'semantics'],
+    automatedChecks: [...mathChecks, 'status-message'],
+  }),
+  defineScenario({
+    element: 'matrix',
+    id: 'matrix-evaluate-feedback',
+    title: 'Matrix evaluate state preserves row and column context',
+    purpose:
+      'Checks evaluate-mode matrix feedback for row/column relationships, group labels, and status-message semantics.',
+    sample: matrixSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'semantics', 'table-structure'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'mc-populated-blank',
+    id: 'populated-blank-stem-association',
+    title: 'Populated blank stem and choices stay associated',
+    purpose:
+      'Uses a stem-focused populated blank variant to check stem reading order, choice names, and keyboard reachability.',
+    sample: mcPopulatedBlankSamples,
+    sampleIndex: 4,
+    wcagCriteria: ['1.3.1', '2.1.1', '2.4.3', '3.3.2', '4.1.2'],
+    concerns: ['reading-structure', 'semantics', 'keyboard-focus', 'input-assistance'],
+  }),
+  defineScenario({
+    element: 'multi-trait-rubric',
+    id: 'multi-trait-rubric-evaluate-feedback',
+    title: 'Multi-trait rubric evaluate state labels feedback',
+    purpose:
+      'Checks evaluate-mode trait feedback for table-like structure, labelled score controls, and live/status semantics.',
+    sample: multiTraitRubricSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '2.4.6', '3.3.2', '4.1.2', '4.1.3'],
+    concerns: ['semantics', 'table-structure', 'reading-structure', 'status-feedback'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'multiple-choice',
+    id: 'multi-select-checkbox-group',
+    title: 'Multi-select choices expose checkbox group semantics',
+    purpose:
+      'Checks the multi-select choice sample for group labelling, checkbox state exposure, target size, and keyboard selection.',
+    sample: multipleChoiceSamples,
+    wcagCriteria: ['1.3.1', '2.1.1', '2.4.6', '3.3.2', '4.1.2'],
+    concerns: ['semantics', 'keyboard-focus', 'input-assistance', 'target-size'],
+  }),
+  defineScenario({
+    element: 'number-line',
+    id: 'number-line-inequality-rays',
+    title: 'Number line inequality rays expose alternatives',
+    purpose:
+      'Uses the inequality-ray sample to check graph alternatives, tick labels, and keyboard-reachable number-line controls.',
+    sample: numberLineSamples,
+    sampleIndex: 1,
+    wcagCriteria: ['1.1.1', '1.3.1', '1.4.11', '2.1.1', '4.1.2'],
+    concerns: ['media-alternatives', 'spatial-interaction', 'keyboard-focus', 'visual-contrast'],
+    automatedChecks: mediaChecks,
+    manualReviewNotes: [
+      'Confirm ray direction and endpoint inclusion are exposed without relying on position alone.',
+    ],
+  }),
+  defineScenario({
+    element: 'passage',
+    id: 'passage-poetry-reading-order',
+    title: 'Passage poetry preserves reading order',
+    purpose:
+      'Checks the multi-passage poetry sample for headings, language/reading structure, and logical source order.',
+    sample: passageSamples,
+    wcagCriteria: ['1.3.1', '1.3.2', '2.4.6', '3.1.1'],
+    concerns: ['reading-structure', 'semantics'],
+    automatedChecks: ['axe', 'group-label'],
+    manualReviewNotes: [
+      'Confirm line breaks and stanza structure are announced appropriately by screen readers.',
+    ],
+  }),
+  defineScenario({
+    element: 'placement-ordering',
+    id: 'ordering-evaluate-feedback',
+    title: 'Placement ordering evaluate state identifies order feedback',
+    purpose:
+      'Checks evaluate-mode ordered choices for labelled reorder context, correctness feedback, and status-message semantics.',
+    sample: placementOrderingSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'spatial-interaction', 'semantics'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'rubric',
+    id: 'rubric-descriptor-reading-order',
+    title: 'Rubric descriptors preserve reading order',
+    purpose:
+      'Checks score labels and descriptors for readable order, group labels, and table-like relationships.',
+    sample: rubricSamples,
+    wcagCriteria: ['1.3.1', '1.3.2', '2.4.6', '4.1.2'],
+    concerns: ['reading-structure', 'semantics', 'table-structure'],
+    automatedChecks: ['axe', 'group-label'],
+  }),
+  defineScenario({
+    element: 'select-text',
+    id: 'select-text-evaluate-feedback',
+    title: 'Select-text evaluate state exposes selection feedback',
+    purpose:
+      'Checks evaluate-mode token selection feedback for state exposure, keyboard reachability, and status-message semantics.',
+    sample: selectTextSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'reading-structure', 'semantics'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'simple-cloze',
+    id: 'simple-cloze-evaluate-feedback',
+    title: 'Simple cloze evaluate state exposes input feedback',
+    purpose:
+      'Checks evaluate-mode cloze feedback for input labelling, clear error/correctness text, and status-message semantics.',
+    sample: simpleClozeSamples,
+    mode: 'evaluate',
+    wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
+    concerns: ['status-feedback', 'input-assistance', 'semantics'],
+    automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'venn-classification',
+    id: 'venn-region-overrides',
+    title: 'Venn region label overrides are exposed',
+    purpose:
+      'Uses the region-label override sample to check diagram region names, tile names, keyboard placement, and graphic alternatives.',
+    sample: vennClassificationSamples,
+    sampleIndex: 2,
+    wcagCriteria: ['1.1.1', '1.3.1', '2.1.1', '2.5.7', '4.1.2'],
+    concerns: ['semantics', 'keyboard-focus', 'spatial-interaction', 'media-alternatives'],
+    automatedChecks: mediaChecks,
   }),
 ];
 

@@ -18,8 +18,11 @@ export type A11yConcern =
 
 export type A11yAutomatedCheck =
   | 'axe'
+  | 'group-label'
   | 'interactive-control-name'
   | 'keyboard-tab-reach'
+  | 'math-alternative'
+  | 'media-alternative'
   | 'target-size'
   | 'status-message';
 
