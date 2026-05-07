@@ -15,6 +15,11 @@
 
 import { expect, test } from '@playwright/test';
 import { deliveryContainer, waitForMathRendering } from './test-helpers';
+import {
+  assertChoicesGroupVisible,
+  assertScreenshotParity,
+} from './mc-populated-blank-parity-shared';
+import { PARITY_REGIONS } from './parity-regions';
 
 const DEMO_ID = 'variant-sel-r1-g-stem';
 
@@ -117,4 +122,34 @@ test('g-stem: hovered unselected choice tile background is #f2f2f2', async ({ pa
   await page.waitForTimeout(100);
 
   await expect(firstTile).toHaveCSS('background-color', 'rgb(242, 242, 242)');
+});
+
+// ---------------------------------------------------------------------------
+// Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
+// ---------------------------------------------------------------------------
+
+const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
+
+async function openParityRoute(page: import('@playwright/test').Page) {
+  await page.goto(`/mc-populated-blank/parity?demo=${encodeURIComponent(DEMO_ID)}`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('#pie-container pie-element-player', { timeout: 20_000 });
+  await page.waitForSelector('[data-learnosity-ready="true"]', { timeout: 30_000 });
+}
+
+test.describe('g-stem live parity — visual', () => {
+  test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
+
+  test('both sides render a choices group', async ({ page }) => {
+    await openParityRoute(page);
+    await assertChoicesGroupVisible(page);
+  });
+
+  test('PIE stem, choices, and audio regions match Learnosity baseline screenshots', async ({
+    page,
+  }, testInfo) => {
+    await openParityRoute(page);
+    await assertScreenshotParity(page, testInfo, DEMO_ID, PARITY_REGIONS[DEMO_ID]);
+  });
 });

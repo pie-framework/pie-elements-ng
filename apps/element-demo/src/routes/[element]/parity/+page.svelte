@@ -166,9 +166,16 @@ $effect(() => {
   }
   .parity-columns {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 900px 900px;
     gap: 2rem;
     align-items: start;
+    overflow-x: auto;
+  }
+
+  #pie-container,
+  #learnosity-container {
+    width: 900px;
+    box-sizing: border-box;
   }
   .parity-column-label {
     font-size: 0.9rem;

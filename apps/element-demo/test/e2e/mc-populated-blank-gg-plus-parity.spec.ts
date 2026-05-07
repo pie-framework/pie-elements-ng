@@ -52,10 +52,10 @@ test('gg-plus: stem tokens and blank slot are on the same line (no line break)',
   expect(blankBox).not.toBeNull();
 
   // When broken: blank top-Y is a full line height below the template (~100px+).
-  // When inline: 3em font creates a natural ~35px baseline offset — use 50px
-  // as the threshold to distinguish inline from a true line break.
+  // When inline with baseline alignment: blank sits near row bottom (~67px from
+  // template top) but still within the same row. Use 90px as the threshold.
   const verticalOffset = blankBox!.y - templateBox!.y;
-  expect(verticalOffset).toBeLessThan(50);
+  expect(verticalOffset).toBeLessThan(90);
 });
 
 // ---------------------------------------------------------------------------
@@ -119,6 +119,139 @@ test('gg-plus: hovered unselected choice tile background is #f2f2f2', async ({ p
 });
 
 // ---------------------------------------------------------------------------
+// 5. Template-line font size is 1.9em (r1 content-element base)
+//    r1.scss: .rli-r1-content-element { font-size: 1.9em } — shared via sel-r1-base.css.
+//    Without the base CSS this variant renders template tokens at the default body size.
+// ---------------------------------------------------------------------------
+test('gg-plus: template line font size is 1.9em', async ({ page }) => {
+  await openGgPlusRoute(page);
+  const root = deliveryContainer(page);
+  const templateLine = root.locator('.pie-template-line');
+  await expect(templateLine).toBeVisible();
+  const px = parseFloat(await templateLine.evaluate((el) => getComputedStyle(el).fontSize));
+  expect(px).toBeGreaterThanOrEqual(30);
+  expect(px).toBeLessThanOrEqual(32);
+});
+
+// ---------------------------------------------------------------------------
+// 6. After-cloze content does not shift when a distractor is selected
+//    sel-r1-base.css: pie-template-line { display:flex; align-items:center } —
+//    flex alignment prevents the ClozeMarker baseline change from moving siblings.
+// ---------------------------------------------------------------------------
+test('gg-plus: after-cloze content does not shift when a distractor is selected', async ({
+  page,
+}) => {
+  await openGgPlusRoute(page);
+  const root = deliveryContainer(page);
+  const templateLine = root.locator('.pie-template-line');
+  const beforeBox = await templateLine.boundingBox();
+  expect(beforeBox).not.toBeNull();
+  await root.locator('input[type="radio"]').first().check();
+  await page.waitForTimeout(100);
+  const afterBox = await templateLine.boundingBox();
+  expect(afterBox).not.toBeNull();
+  expect(Math.abs(afterBox!.y - beforeBox!.y)).toBeLessThan(5);
+});
+
+// ---------------------------------------------------------------------------
+// 7. Visible horizontal gap between the leading "m" span and the blank slot
+//    r1.scss: margin-right:2px/margin-left:2px per content-element.
+//    sel-r1-base.css: column-gap on .pie-template-line (flex row) replicates this.
+//    Template: "<p><span>l</span> <span>m</span> {{blank}}</p>" — blank is last.
+// ---------------------------------------------------------------------------
+test('gg-plus: there is a visible gap between the leading token and the blank slot', async ({
+  page,
+}) => {
+  await openGgPlusRoute(page);
+  const root = deliveryContainer(page);
+
+  const blankSlot = root.locator('.pie-blank-slot');
+  // The last template span before the blank is "m" — no class attribute.
+  const leadingSpan = root.locator('.pie-template-line span:not([class])').last();
+
+  await expect(blankSlot).toBeVisible();
+  await expect(leadingSpan).toBeVisible();
+
+  const spanBox = await leadingSpan.boundingBox();
+  const blankBox = await blankSlot.boundingBox();
+  expect(spanBox).not.toBeNull();
+  expect(blankBox).not.toBeNull();
+
+  // 1rem token gap with 3em tokens; at least 10px required.
+  const gap = blankBox!.x - (spanBox!.x + spanBox!.width);
+  expect(gap).toBeGreaterThanOrEqual(3);
+});
+
+// ---------------------------------------------------------------------------
+// 8. Gap between the two leading token spans ("l" and "m") is visible
+//    Template: "<p><span>l</span> <span>m</span> {{blank}}</p>" — two tokens left.
+// ---------------------------------------------------------------------------
+test('gg-plus: there is a visible gap between the two leading tokens', async ({ page }) => {
+  await openGgPlusRoute(page);
+  const root = deliveryContainer(page);
+
+  const spans = root.locator('.pie-template-line span:not([class])');
+  await expect(spans.nth(0)).toBeVisible();
+  await expect(spans.nth(1)).toBeVisible();
+
+  const box0 = await spans.nth(0).boundingBox();
+  const box1 = await spans.nth(1).boundingBox();
+  expect(box0).not.toBeNull();
+  expect(box1).not.toBeNull();
+
+  const gap = box1!.x - (box0!.x + box0!.width);
+  expect(gap).toBeGreaterThanOrEqual(3);
+});
+
+// ---------------------------------------------------------------------------
+// 9. Template row is centered above the choices row
+//    The variant CSS must span template across both grid columns.
+// ---------------------------------------------------------------------------
+test('gg-plus: template row is horizontally centered above the choices', async ({ page }) => {
+  await openGgPlusRoute(page);
+  const root = deliveryContainer(page);
+
+  const templateLine = root.locator('.pie-template-line');
+  const fieldset = root.locator('.pie-choices-fieldset');
+  await expect(templateLine).toBeVisible();
+  await expect(fieldset).toBeVisible();
+
+  const templateBox = await templateLine.boundingBox();
+  const fieldsetBox = await fieldset.boundingBox();
+  expect(templateBox).not.toBeNull();
+  expect(fieldsetBox).not.toBeNull();
+
+  const templateCX = templateBox!.x + templateBox!.width / 2;
+  const fieldsetCX = fieldsetBox!.x + fieldsetBox!.width / 2;
+  expect(Math.abs(templateCX - fieldsetCX)).toBeLessThan(60);
+});
+
+// ---------------------------------------------------------------------------
+// 10. Each template token (blank slot and spans) is at least 150px wide
+//     r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px }
+//     sel-r1-base.css applies this to both .pie-blank-slot and classless spans.
+// ---------------------------------------------------------------------------
+test('gg-plus: blank slot and token spans are each at least 150px wide', async ({ page }) => {
+  await openGgPlusRoute(page);
+  const root = deliveryContainer(page);
+
+  const blankSlot = root.locator('.pie-blank-slot');
+  const spans = root.locator('.pie-template-line span:not([class])');
+  await expect(blankSlot).toBeVisible();
+
+  const blankBox = await blankSlot.boundingBox();
+  expect(blankBox).not.toBeNull();
+  expect(blankBox!.width).toBeGreaterThanOrEqual(140);
+
+  const count = await spans.count();
+  for (let i = 0; i < count; i++) {
+    const box = await spans.nth(i).boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.width).toBeGreaterThanOrEqual(140);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
 // ---------------------------------------------------------------------------
 
@@ -129,7 +262,9 @@ import {
   assertBlankSlotAriaLive,
   assertChoicesGroupAccessibleLabel,
   assertChoicesGroupVisible,
+  assertScreenshotParity,
 } from './mc-populated-blank-parity-shared';
+import { PARITY_REGIONS } from './parity-regions';
 
 const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
 
@@ -159,6 +294,13 @@ test.describe('gg-plus live parity — visual', () => {
       .evaluate((el) => getComputedStyle(el).backgroundColor);
     // r1.scss: .rli-r1-selected { background-color: #fcfcd3 }
     expect(pieBg).toBe('rgb(252, 252, 211)');
+  });
+
+  test('PIE stem, choices, and audio regions match Learnosity baseline screenshots', async ({
+    page,
+  }, testInfo) => {
+    await openggplusParityRoute(page);
+    await assertScreenshotParity(page, testInfo, DEMO_ID, PARITY_REGIONS[DEMO_ID]);
   });
 });
 

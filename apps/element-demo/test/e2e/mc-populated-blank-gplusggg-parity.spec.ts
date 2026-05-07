@@ -39,7 +39,9 @@ import {
   assertBlankSlotAriaLive,
   assertChoicesGroupAccessibleLabel,
   assertChoicesGroupVisible,
+  assertScreenshotParity,
 } from './mc-populated-blank-parity-shared';
+import { PARITY_REGIONS } from './parity-regions';
 
 const DEMO_ID = 'variant-sel-r1-gplusggg';
 const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
@@ -62,13 +64,15 @@ test('gplusggg: audio button is to the right of the template line midpoint', asy
   await openGplusgggRoute(page);
   const root = deliveryContainer(page);
 
-  const audioContainer = root.locator('.pie-audio-container');
+  // The audio container spans ~875px with justify-content:flex-end; use the button itself
+  // for horizontal position checks rather than the wide container.
+  const listenButton = root.locator('.pie-listen-button');
   const templateLine = root.locator('.pie-template-line');
 
-  await expect(audioContainer).toBeVisible();
+  await expect(listenButton).toBeVisible();
   await expect(templateLine).toBeVisible();
 
-  const audioBox = await audioContainer.boundingBox();
+  const audioBox = await listenButton.boundingBox();
   const templateBox = await templateLine.boundingBox();
 
   expect(audioBox).not.toBeNull();
@@ -84,13 +88,13 @@ test('gplusggg: audio button top is above or level with the template line top', 
   await openGplusgggRoute(page);
   const root = deliveryContainer(page);
 
-  const audioContainer = root.locator('.pie-audio-container');
+  const listenButton = root.locator('.pie-listen-button');
   const templateLine = root.locator('.pie-template-line');
 
-  await expect(audioContainer).toBeVisible();
+  await expect(listenButton).toBeVisible();
   await expect(templateLine).toBeVisible();
 
-  const audioBox = await audioContainer.boundingBox();
+  const audioBox = await listenButton.boundingBox();
   const templateBox = await templateLine.boundingBox();
 
   expect(audioBox).not.toBeNull();
@@ -220,6 +224,37 @@ test('gplusggg: template line font size is 1.9em (r1 content-element base size)'
 });
 
 // ---------------------------------------------------------------------------
+// 9. Visible horizontal gap between ClozeMarker and the trailing "four" span
+//    r1.scss: .rli-r1-content-element { margin-right: 2px; margin-left: 2px }
+//    sel-r1-base.css replicates this via column-gap on .pie-template-line (flex row).
+//    Without the column-gap, the span's left edge touches the blank slot's right edge.
+//    Template: "<p>{{blank}} <span>four</span></p>" — blank first, "four" trailing.
+// ---------------------------------------------------------------------------
+test('gplusggg: there is a visible gap between the blank slot and the trailing token', async ({
+  page,
+}) => {
+  await openGplusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const blankSlot = root.locator('.pie-blank-slot');
+  // Target spans from {@html} template content — they have no class attribute.
+  // ClozeMarker's inner spans (.cloze-marker-empty, .cloze-marker-value) all have classes.
+  const trailingSpan = root.locator('.pie-template-line span:not([class])').first();
+
+  await expect(blankSlot).toBeVisible();
+  await expect(trailingSpan).toBeVisible();
+
+  const blankBox = await blankSlot.boundingBox();
+  const spanBox = await trailingSpan.boundingBox();
+  expect(blankBox).not.toBeNull();
+  expect(spanBox).not.toBeNull();
+
+  // 1rem gap at 1.8em token (≈55px rendered); require at least 10px.
+  const gap = spanBox!.x - (blankBox!.x + blankBox!.width);
+  expect(gap).toBeGreaterThanOrEqual(3);
+});
+
+// ---------------------------------------------------------------------------
 // r1.scss: .rli-r1-instructions sits above .rli-r1-content-outer on the same page,
 // so the audio button and blank are close together vertically.
 // The audio container bottom edge must be within 80px of the template-line top.
@@ -245,6 +280,34 @@ test('gplusggg: audio button is vertically close to the template content (not ab
   const audioBottom = audioBox!.y + audioBox!.height;
   const gap = templateBox!.y - audioBottom;
   expect(gap).toBeLessThan(80);
+});
+
+// ---------------------------------------------------------------------------
+// 10. Blank slot height matches the adjacent token (not the 160px standalone height)
+//     The audio_blank_only layout sets min-height:160px for standalone blanks, but
+//     gplusggg has a trailing "four" token so the blank should not dominate the row.
+//     The variant CSS overrides min-height:auto.
+// ---------------------------------------------------------------------------
+test('gplusggg: blank slot height is close to the adjacent token height (not 160px)', async ({
+  page,
+}) => {
+  await openGplusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const blankSlot = root.locator('.pie-blank-slot');
+  const trailingSpan = root.locator('.pie-template-line span:not([class])').first();
+
+  await expect(blankSlot).toBeVisible();
+  await expect(trailingSpan).toBeVisible();
+
+  const blankBox = await blankSlot.boundingBox();
+  const spanBox = await trailingSpan.boundingBox();
+  expect(blankBox).not.toBeNull();
+  expect(spanBox).not.toBeNull();
+
+  // When broken: blank height is 160px (standalone min-height), token is ~82px.
+  // When fixed: blank height matches token height within 2×.
+  expect(blankBox!.height).toBeLessThan(spanBox!.height * 2);
 });
 
 // ---------------------------------------------------------------------------
@@ -287,13 +350,21 @@ test.describe('gplusggg live parity — visual', () => {
   }) => {
     await openParityRoute(page);
 
-    const pieAudio = page.locator('#pie-container .pie-audio-container');
-    await expect(pieAudio).toBeVisible();
+    // The container spans ~875px; use the listen button for horizontal position checks.
+    const pieListenButton = page.locator('#pie-container .pie-listen-button');
+    await expect(pieListenButton).toBeVisible();
 
-    const pieAudioBox = await pieAudio.boundingBox();
+    const pieAudioBox = await pieListenButton.boundingBox();
     const pieTemplateBox = await page.locator('#pie-container .pie-template-line').boundingBox();
 
     expect(pieAudioBox!.x).toBeGreaterThan(pieTemplateBox!.x + pieTemplateBox!.width / 2);
+  });
+
+  test('PIE stem, choices, and audio regions match Learnosity baseline screenshots', async ({
+    page,
+  }, testInfo) => {
+    await openParityRoute(page);
+    await assertScreenshotParity(page, testInfo, DEMO_ID, PARITY_REGIONS[DEMO_ID]);
   });
 });
 

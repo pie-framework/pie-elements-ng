@@ -1,6 +1,8 @@
 /* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-_gplusggg/0.0.1/question.css */
+/* Shared r1 base styles (font, template-line flex, choice-label) are in sel-r1-base.css */
 .mc-populated-blank-root.variant-sel-r1-gplusggg {
-  font-family: Starial, Arial, sans-serif;
+  max-width: 875px;
+  margin-inline: auto;
   --mpb-listen-button-size: 128px;
   --mpb-choice-width-px: 155px;
   --mpb-choice-tile-min-height: 11.25rem;
@@ -10,34 +12,4 @@
   --mpb-choice-selected-bg: #fcfcd3;
 }
 
-.mc-populated-blank-root.variant-sel-r1-gplusggg .pie-audio-transcript {
-  font-family: Roboto, Arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-}
 
-/* r1.scss: .rli-r1-content-element { font-size: 1.9em } wraps both stem tokens and
-   distractor labels; inline font-size spans multiply on top of this base.
-   r1.scss: .rli-r1-stem { display:flex; flex-direction:row; justify-content:center } —
-   The {@html templateParts.before/after} strings are inserted as sibling DOM nodes, not
-   as parents of the ClozeMarker.  The ClozeMarker, the empty <p>, and the after-span
-   are all direct children of pie-template-line.  Making the template-line a flex row
-   means cross-axis placement is governed by align-items:center rather than inline
-   baseline alignment, eliminating the layout shift when the blank is filled. */
-.mc-populated-blank-root.variant-sel-r1-gplusggg .pie-template-line {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.9em;
-}
-
-.mc-populated-blank-root.variant-sel-r1-gplusggg .pie-template-line p {
-  margin: 0;
-}
-
-.mc-populated-blank-root.variant-sel-r1-gplusggg .pie-choice-label {
-  font-size: 1.9em;
-  line-height: 89px;
-}

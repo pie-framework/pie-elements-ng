@@ -10,9 +10,64 @@
  *     from './mc-populated-blank-parity-shared';
  */
 
-import { expect } from '@playwright/test';
+import { expect, type TestInfo } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { DEFAULT_MAX_DIFF_PIXEL_RATIO, type VariantRegions } from './parity-regions';
 import { triggerAudioEvent } from './audio-mock';
+
+// ---------------------------------------------------------------------------
+// Screenshot parity
+// ---------------------------------------------------------------------------
+
+/**
+ * Regression-guards each PIE region against a committed PIE snapshot.
+ *
+ * First run: Playwright writes the snapshot automatically (no credentials needed).
+ * Subsequent runs: fails if PIE changes unexpectedly.
+ *
+ * When a visual gap is spotted and fixed:
+ *   1. Fix the CSS.
+ *   2. Visually verify PIE against the Learnosity reference in snapshots/learnosity/.
+ *   3. Re-commit the updated PIE snapshot with --update-snapshots.
+ *
+ * Snapshot path: snapshots/pie-<variantId>-<region>.png
+ * Learnosity reference (human inspection only): snapshots/learnosity-<variantId>-<region>.png
+ *
+ * Logs the configured threshold as a test annotation on every run — use these
+ * to calibrate thresholds over time (tighten when a human-caught gap was passing).
+ */
+export async function assertScreenshotParity(
+  page: Page,
+  testInfo: TestInfo,
+  variantId: string,
+  regions: VariantRegions
+): Promise<void> {
+  const regionEntries: Array<{ name: 'stem' | 'choices' | 'audio'; pieSelector: string }> = [
+    { name: 'stem', pieSelector: regions.stem.pie },
+    { name: 'choices', pieSelector: regions.choices.pie },
+  ];
+  if (regions.audio) {
+    regionEntries.push({ name: 'audio', pieSelector: regions.audio.pie });
+  }
+
+  for (const { name, pieSelector } of regionEntries) {
+    const region = regions[name as 'stem' | 'choices' | 'audio'];
+    const threshold = region?.override?.maxDiffPixelRatio ?? DEFAULT_MAX_DIFF_PIXEL_RATIO;
+
+    const pieElement = page.locator('#pie-container').locator(pieSelector);
+    await pieElement.waitFor({ state: 'visible', timeout: 10_000 });
+
+    await expect(pieElement).toHaveScreenshot(
+      `pie-${variantId}-${name}.png`,
+      { maxDiffPixelRatio: threshold }
+    );
+
+    testInfo.annotations.push({
+      type: 'screenshot-parity-threshold',
+      description: `${variantId}/${name}: maxDiffPixelRatio=${threshold}`,
+    });
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Visual

@@ -12,6 +12,11 @@
 
 import { expect, test } from '@playwright/test';
 import { deliveryContainer, waitForMathRendering } from './test-helpers';
+import {
+  assertChoicesGroupVisible,
+  assertScreenshotParity,
+} from './mc-populated-blank-parity-shared';
+import { PARITY_REGIONS } from './parity-regions';
 
 const DEMO_ID = 'variant-sel-r1-plusggg';
 const ELEMENT_SCOPE = '.delivery-view .element-container';
@@ -303,19 +308,21 @@ test('plusggg: audio button is to the right of the blank slot', async ({ page })
   await openPlusgggRoute(page);
   const root = deliveryContainer(page);
 
-  const audioContainer = root.locator('.pie-audio-container');
+  // The audio container spans ~875px with justify-content:flex-end; use the button itself
+  // for horizontal position checks rather than the wide container.
+  const listenButton = root.locator('.pie-listen-button');
   const templateLine = root.locator('.pie-template-line');
 
-  await expect(audioContainer).toBeVisible();
+  await expect(listenButton).toBeVisible();
   await expect(templateLine).toBeVisible();
 
-  const audioBox = await audioContainer.boundingBox();
+  const audioBox = await listenButton.boundingBox();
   const templateBox = await templateLine.boundingBox();
 
   expect(audioBox).not.toBeNull();
   expect(templateBox).not.toBeNull();
 
-  // Audio button left edge must be to the right of the template line midpoint
+  // Listen button left edge must be to the right of the template line midpoint
   const templateMidX = templateBox!.x + templateBox!.width / 2;
   expect(audioBox!.x).toBeGreaterThan(templateMidX);
 });
@@ -335,4 +342,34 @@ test('plusggg: audio button top is above or level with the blank slot top', asyn
 
   // Audio button top should be at or above the template line top
   expect(audioBox!.y).toBeLessThanOrEqual(templateBox!.y + 10);
+});
+
+// ---------------------------------------------------------------------------
+// Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
+// ---------------------------------------------------------------------------
+
+const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
+
+async function openParityRoute(page: import('@playwright/test').Page) {
+  await page.goto(`/mc-populated-blank/parity?demo=${encodeURIComponent(DEMO_ID)}`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('#pie-container pie-element-player', { timeout: 20_000 });
+  await page.waitForSelector('[data-learnosity-ready="true"]', { timeout: 30_000 });
+}
+
+test.describe('plusggg live parity — visual', () => {
+  test.skip(!CREDENTIALS_PRESENT, 'Skipped: LEARNOSITY_CONSUMER_KEY not set');
+
+  test('both sides render a choices group', async ({ page }) => {
+    await openParityRoute(page);
+    await assertChoicesGroupVisible(page);
+  });
+
+  test('PIE stem, choices, and audio regions match Learnosity baseline screenshots', async ({
+    page,
+  }, testInfo) => {
+    await openParityRoute(page);
+    await assertScreenshotParity(page, testInfo, DEMO_ID, PARITY_REGIONS[DEMO_ID]);
+  });
 });

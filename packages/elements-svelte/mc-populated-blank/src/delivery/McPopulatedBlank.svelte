@@ -654,11 +654,11 @@ $effect(() => {
 
   .layout-token_sequence {
     display: grid;
-    grid-template-columns: minmax(var(--mpb-text-min-column, 260px), 1fr) auto;
+    grid-template-columns: 1fr auto;
     grid-template-areas:
-      'transcript transcript'
-      'template audio'
-      'choices choices';
+      'transcript audio'
+      'template   template'
+      'choices    choices';
     column-gap: var(--mpb-token-grid-column-gap, 1.5rem);
     row-gap: var(--mpb-token-grid-row-gap, 0.8rem);
     align-items: start;

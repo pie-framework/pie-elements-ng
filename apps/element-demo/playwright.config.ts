@@ -88,6 +88,11 @@ const localChromium = resolveLocalChromium();
 
 export default defineConfig({
   testDir: './test/e2e',
+  snapshotDir: './test/e2e/snapshots',
+  // Use the path argument directly so toHaveScreenshot resolves to
+  // snapshots/learnosity/<variantId>/<region>.png — matching what
+  // capture-baselines.spec.ts writes.
+  snapshotPathTemplate: '{snapshotDir}/{arg}{ext}',
   testMatch: ['**/*.spec.ts'],
   testIgnore: runIifeE2e ? [] : ['**/iife-usefulness.spec.ts'],
   fullyParallel: false,
@@ -100,7 +105,7 @@ export default defineConfig({
     timeout: 10_000,
   },
   use: {
-    baseURL: 'http://localhost:5222',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5222',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -111,15 +116,15 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } },
     },
   ],
   webServer: useExternalServer
     ? undefined
     : {
         command: 'bun run dev',
-        url: 'http://localhost:5222',
-        reuseExistingServer: true, // Use existing dev server
+        url: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5222',
+        reuseExistingServer: true,
         timeout: 120_000,
       },
 });

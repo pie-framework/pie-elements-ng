@@ -1,3 +1,4 @@
+import selR1BaseCss from './cqt-css/sel-r1-base.css?raw';
 import selR1PlusgggCss from './cqt-css/sel-r1-plusggg.css?raw';
 import srVicCss from './cqt-css/sr-vic.css?raw';
 import selVicCss from './cqt-css/sel-vic.css?raw';
@@ -90,21 +91,34 @@ export const getVariantRootClass = (customType: unknown): string => {
   return getVariantCssConfig(customType)?.variantClass || '';
 };
 
+const SEL_R1_VARIANT_IDS = new Set([
+  'sel-r1-plusggg',
+  'sel-r1-gplusggg',
+  'sel-r1-g-stem',
+  'sel-r1-gg-plus',
+  'sel-r1-ggplus',
+  'sel-r1-s3',
+]);
+
+const injectStyleOnce = (id: string, variantName: string, cssText: string): void => {
+  const existing = document.getElementById(id) as HTMLStyleElement | null;
+  if (existing) {
+    if (existing.textContent !== cssText) existing.textContent = cssText;
+    return;
+  }
+  const style = document.createElement('style');
+  style.id = id;
+  style.setAttribute('data-mpb-variant', variantName);
+  style.textContent = cssText;
+  document.head.appendChild(style);
+};
+
 export const ensureVariantCssInjected = (config?: VariantCssConfig): void => {
   if (!config || !config.cssText || typeof document === 'undefined') {
     return;
   }
-  const styleId = `mc-populated-blank-css-${config.variantId}`;
-  const existing = document.getElementById(styleId) as HTMLStyleElement | null;
-  if (existing) {
-    if (existing.textContent !== config.cssText) {
-      existing.textContent = config.cssText;
-    }
-    return;
+  if (SEL_R1_VARIANT_IDS.has(config.variantId)) {
+    injectStyleOnce('mc-populated-blank-css-sel-r1-base', 'sel-r1-base', selR1BaseCss);
   }
-  const style = document.createElement('style');
-  style.id = styleId;
-  style.setAttribute('data-mpb-variant', config.variantId);
-  style.textContent = config.cssText;
-  document.head.appendChild(style);
+  injectStyleOnce(`mc-populated-blank-css-${config.variantId}`, config.variantId, config.cssText);
 };
