@@ -584,8 +584,8 @@ $effect(() => {
     margin: 0;
   }
 
-  .layout-audio_blank_only .audio-container,
-  .layout-stimulus_image_blank .audio-container {
+  .layout-audio_blank_only :global(.pie-audio-container),
+  .layout-stimulus_image_blank :global(.pie-audio-container) {
     display: flex;
     width: min(100%, var(--mpb-audio-instructions-max-width, 875px));
     margin-left: auto;
@@ -617,6 +617,7 @@ $effect(() => {
     display: grid;
     grid-template-columns: minmax(var(--mpb-stimulus-min-column, 210px), 1fr) auto;
     grid-template-areas:
+      'transcript transcript'
       'sentence audio'
       '. template'
       'choices choices';
@@ -625,7 +626,11 @@ $effect(() => {
     align-items: start;
   }
 
-  .layout-stimulus_image_blank .audio-container {
+  .layout-stimulus_image_blank .pie-audio-transcript {
+    grid-area: transcript;
+  }
+
+  .layout-stimulus_image_blank :global(.pie-audio-container) {
     grid-area: audio;
     margin: 0;
   }
@@ -651,6 +656,7 @@ $effect(() => {
     display: grid;
     grid-template-columns: minmax(var(--mpb-text-min-column, 260px), 1fr) auto;
     grid-template-areas:
+      'transcript transcript'
       'template audio'
       'choices choices';
     column-gap: var(--mpb-token-grid-column-gap, 1.5rem);
@@ -658,7 +664,11 @@ $effect(() => {
     align-items: start;
   }
 
-  .layout-token_sequence .audio-container {
+  .layout-token_sequence .pie-audio-transcript {
+    grid-area: transcript;
+  }
+
+  .layout-token_sequence :global(.pie-audio-container) {
     grid-area: audio;
     margin: 0;
     justify-self: end;
@@ -690,6 +700,7 @@ $effect(() => {
     display: grid;
     grid-template-columns: minmax(var(--mpb-text-min-column, 260px), 1fr) auto;
     grid-template-areas:
+      'transcript transcript'
       'template audio'
       'choices choices';
     column-gap: var(--mpb-inline-grid-column-gap, 1.5rem);
@@ -697,7 +708,11 @@ $effect(() => {
     align-items: start;
   }
 
-  .layout-inline_sentence.has-inline-audio .audio-container {
+  .layout-inline_sentence.has-inline-audio .pie-audio-transcript {
+    grid-area: transcript;
+  }
+
+  .layout-inline_sentence.has-inline-audio :global(.pie-audio-container) {
     grid-area: audio;
     margin: 0;
     justify-self: end;
@@ -718,10 +733,10 @@ $effect(() => {
   /* Match Learnosity responsive behavior for CQT audio-blank layouts:
      at smaller widths, audio control shifts left and answer tiles stack. */
   @media (max-width: 760px) {
-    .layout-audio_blank_only .audio-container,
-    .layout-stimulus_image_blank .audio-container,
-    .layout-token_sequence .audio-container,
-    .layout-inline_sentence.has-inline-audio .audio-container {
+    .layout-audio_blank_only :global(.pie-audio-container),
+    .layout-stimulus_image_blank :global(.pie-audio-container),
+    .layout-token_sequence :global(.pie-audio-container),
+    .layout-inline_sentence.has-inline-audio :global(.pie-audio-container) {
       width: 100%;
       margin-left: 0;
       margin-right: 0;

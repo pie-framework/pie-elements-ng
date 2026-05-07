@@ -8,14 +8,20 @@
   --mpb-choice-group-gap: 1rem;
   --mpb-choice-hover-bg: #f2f2f2;
   --mpb-choice-selected-bg: #fcfcd3;
-  position: relative;
 }
 
-/* Audio button: top-right corner, matching .rli-r1-instructions { align-items: flex-end } */
-.mc-populated-blank-root.variant-sel-r1-plusggg .pie-audio-container {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+/* r1.scss: .rli-r1-content-element { font-size: 1.9em } and
+   .rli-r1-stem { display:flex; flex-direction:row; justify-content:center } */
+.mc-populated-blank-root.variant-sel-r1-plusggg .pie-template-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.9em;
+}
+
+.mc-populated-blank-root.variant-sel-r1-plusggg .pie-template-line p {
+  margin: 0;
 }
 
 .mc-populated-blank-root.variant-sel-r1-plusggg .pie-audio-transcript {

@@ -171,6 +171,83 @@ test('gplusggg: blank slot underline is 6px', async ({ page }) => {
 });
 
 // ---------------------------------------------------------------------------
+// r1.scss .rli-r1-stem { display:flex; flex-direction:row } — flex alignment keeps
+// after-content position stable when the blank is filled.  Inline/baseline layout
+// shifts because the ClozeMarker's synthesized baseline differs between empty
+// (&nbsp;) and filled (inline-flex) states.
+// ---------------------------------------------------------------------------
+test('gplusggg: after-cloze content does not shift vertically when a distractor is selected', async ({
+  page,
+}) => {
+  await openGplusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  // Measure the Y position of the template line BEFORE any selection.
+  const templateLine = root.locator('.pie-template-line');
+  await expect(templateLine).toBeVisible();
+  const beforeBox = await templateLine.boundingBox();
+  expect(beforeBox).not.toBeNull();
+
+  // Select the first radio button.
+  await root.locator('input[type="radio"]').first().check();
+  await page.waitForTimeout(100);
+
+  // Template line should not have shifted vertically.
+  const afterBox = await templateLine.boundingBox();
+  expect(afterBox).not.toBeNull();
+  expect(Math.abs(afterBox!.y - beforeBox!.y)).toBeLessThan(5);
+});
+
+// ---------------------------------------------------------------------------
+// r1.scss: .rli-r1-content-element { font-size: 1.9em } wraps all stem tokens.
+// Inline font-size spans in the template (e.g. style="font-size:1.8em") must
+// multiply on top of the 1.9em base — so the template-line context must be 1.9em.
+// ---------------------------------------------------------------------------
+test('gplusggg: template line font size is 1.9em (r1 content-element base size)', async ({
+  page,
+}) => {
+  await openGplusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const templateLine = root.locator('.pie-template-line');
+  await expect(templateLine).toBeVisible();
+
+  const fontSize = await templateLine.evaluate((el) => getComputedStyle(el).fontSize);
+  // 1.9em relative to default 16px body = 30.4px; accept 30–31px to allow subpixel rounding.
+  const px = parseFloat(fontSize);
+  expect(px).toBeGreaterThanOrEqual(30);
+  expect(px).toBeLessThanOrEqual(32);
+});
+
+// ---------------------------------------------------------------------------
+// r1.scss: .rli-r1-instructions sits above .rli-r1-content-outer on the same page,
+// so the audio button and blank are close together vertically.
+// The audio container bottom edge must be within 80px of the template-line top.
+// ---------------------------------------------------------------------------
+test('gplusggg: audio button is vertically close to the template content (not absolute-offset)', async ({
+  page,
+}) => {
+  await openGplusgggRoute(page);
+  const root = deliveryContainer(page);
+
+  const audioContainer = root.locator('.pie-audio-container');
+  const templateLine = root.locator('.pie-template-line');
+
+  await expect(audioContainer).toBeVisible();
+  await expect(templateLine).toBeVisible();
+
+  const audioBox = await audioContainer.boundingBox();
+  const templateBox = await templateLine.boundingBox();
+
+  expect(audioBox).not.toBeNull();
+  expect(templateBox).not.toBeNull();
+
+  const audioBottom = audioBox!.y + audioBox!.height;
+  const gap = templateBox!.y - audioBottom;
+  expect(gap).toBeLessThan(80);
+});
+
+// ---------------------------------------------------------------------------
 // SECTION 2 — Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
 // ---------------------------------------------------------------------------
 
