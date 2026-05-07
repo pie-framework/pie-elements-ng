@@ -76,4 +76,3 @@ test.describe('capture Learnosity baselines', () => {
     });
   }
 });
-

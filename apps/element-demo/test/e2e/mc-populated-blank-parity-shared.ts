@@ -57,10 +57,9 @@ export async function assertScreenshotParity(
     const pieElement = page.locator('#pie-container').locator(pieSelector);
     await pieElement.waitFor({ state: 'visible', timeout: 10_000 });
 
-    await expect(pieElement).toHaveScreenshot(
-      `pie-${variantId}-${name}.png`,
-      { maxDiffPixelRatio: threshold }
-    );
+    await expect(pieElement).toHaveScreenshot(`pie-${variantId}-${name}.png`, {
+      maxDiffPixelRatio: threshold,
+    });
 
     testInfo.annotations.push({
       type: 'screenshot-parity-threshold',
