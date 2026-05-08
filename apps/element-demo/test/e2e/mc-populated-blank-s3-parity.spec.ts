@@ -133,7 +133,9 @@ import {
   assertBlankSlotAriaLive,
   assertChoicesGroupAccessibleLabel,
   assertChoicesGroupVisible,
+  assertScreenshotParity,
 } from './mc-populated-blank-parity-shared';
+import { PARITY_REGIONS } from './parity-regions';
 
 const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
 
@@ -169,6 +171,13 @@ test.describe('s3 live parity — visual', () => {
     const audioBox = await audio.boundingBox();
     expect(Math.abs(stimBox!.y - blankBox!.y)).toBeLessThan(60);
     expect(Math.abs(stimBox!.y - audioBox!.y)).toBeLessThan(60);
+  });
+
+  test('PIE stem, choices, and audio regions match Learnosity baseline screenshots', async ({
+    page,
+  }, testInfo) => {
+    await openS3ParityRoute(page);
+    await assertScreenshotParity(page, testInfo, DEMO_ID, PARITY_REGIONS[DEMO_ID]);
   });
 });
 

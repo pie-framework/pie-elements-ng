@@ -121,8 +121,42 @@ export const PARITY_REGIONS: Record<string, VariantRegions> = {
     },
   },
 
-  // variant-sel-r1-s3, variant-sel-vic, variant-sr-vic omitted — their demo data
-  // does not yet have model.source.learnosityItemReference set, so the parity
-  // route returns 400 and baselines cannot be captured. Add entries here once
-  // learnosityItemReference is populated in mc-populated-blank.json.
+  'variant-sel-r1-s3': {
+    stem: {
+      pie: '.pie-template-line',
+      learnosity: '.rli-r1-stem',
+    },
+    choices: {
+      pie: '.pie-choices-fieldset',
+      learnosity: '.rli-r1-distractors',
+    },
+    audio: {
+      pie: '.pie-audio-container',
+      learnosity: '.rli-r1-instructions',
+    },
+  },
+
+  // sel-vic: audio is embedded in the stem area, no separate audio crop needed.
+  'variant-sel-vic': {
+    stem: {
+      pie: '.pie-template-line',
+      learnosity: '.rli-r1-stem',
+    },
+    choices: {
+      pie: '.pie-choices-fieldset',
+      learnosity: '.rli-r1-distractors',
+    },
+  },
+
+  // sr-vic: no audio component at all.
+  'variant-sr-vic': {
+    stem: {
+      pie: '.pie-template-line',
+      learnosity: '.rli-r1-stem',
+    },
+    choices: {
+      pie: '.pie-choices-fieldset',
+      learnosity: '.rli-r1-distractors',
+    },
+  },
 };

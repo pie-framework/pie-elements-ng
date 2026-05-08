@@ -147,7 +147,9 @@ import {
   assertBlankSlotAriaLive,
   assertChoicesGroupAccessibleLabel,
   assertChoicesGroupVisible,
+  assertScreenshotParity,
 } from './mc-populated-blank-parity-shared';
+import { PARITY_REGIONS } from './parity-regions';
 
 const CREDENTIALS_PRESENT = !!process.env.LEARNOSITY_CONSUMER_KEY;
 
@@ -188,6 +190,13 @@ test.describe('sr-vic live parity — visual', () => {
       // sr-only uses clip: rect(0,0,0,0)
       expect(clip).toMatch(/rect\(0/);
     }
+  });
+
+  test('PIE stem and choices regions match Learnosity baseline screenshots', async ({
+    page,
+  }, testInfo) => {
+    await openSrVicParityRoute(page);
+    await assertScreenshotParity(page, testInfo, DEMO_ID, PARITY_REGIONS[DEMO_ID]);
   });
 });
 
