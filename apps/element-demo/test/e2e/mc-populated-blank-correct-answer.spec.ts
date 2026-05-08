@@ -30,6 +30,12 @@ async function openMpbRoute(page: Parameters<typeof test>[0]['page'], player: 'e
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
   await page.waitForSelector('[data-testid="role-student"]', { timeout: 20_000 });
+  // iife player builds the bundle async — wait for the element to actually render
+  if (player === 'iife') {
+    await page.waitForSelector('.delivery-view .element-container input[type="radio"]', {
+      timeout: 60_000,
+    });
+  }
   await waitForMathRendering(page);
 }
 
