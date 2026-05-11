@@ -4,12 +4,7 @@
       "id": "variant-sel-r1-plusggg",
       "title": "sel_r1-_plusggg (canonical CQT sample)",
       "description": "Canonical sample from item 000eb0e6-92a0-43cd-bb1f-89ddb52da2e5 and question 49d6bda1-4614-447d-8c2e-d4a317e13540.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_plusggg",
-        "sel_r1-_plusgggv0.0.1"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "sel_r1-_plusgggv0.0.1"],
       "model": {
         "id": "1",
         "element": "mc-populated-blank",
@@ -60,13 +55,7 @@
       "id": "variant-sr-vic",
       "title": "VIC (canonical CQT sample)",
       "description": "Canonical sample from item 00293f60-334f-48d0-b145-f7cb9f02a0fe and question a546c0a3-3d68-4d5c-994f-262e788f486c.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "VIC",
-        "sr-vic",
-        "sr-vicv0.0.1"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "VIC", "sr-vic", "sr-vicv0.0.1"],
       "model": {
         "id": "2",
         "element": "mc-populated-blank",
@@ -121,13 +110,7 @@
       "id": "variant-sel-vic",
       "title": "SEL VIC (canonical CQT sample)",
       "description": "Canonical sample from item 04973d1a-0557-4963-937d-7ac76ee3baeb and question 11e9862e-cab1-415e-87a3-0f32fedcedfc.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "SEL VIC",
-        "sel_vic",
-        "sel_vicv0.0.1"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "SEL VIC", "sel_vic", "sel_vicv0.0.1"],
       "model": {
         "id": "3",
         "element": "mc-populated-blank",
@@ -178,12 +161,7 @@
       "id": "variant-sel-r1-gplusggg",
       "title": "sel_r1-_gplusggg (canonical CQT sample)",
       "description": "Canonical sample from item 11b4d9be-a79e-48c3-9e58-84f5be3dbb0f and question 3fe2da9a-3ba3-41af-9d97-e373cde716d7.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_gplusggg",
-        "sel_r1-_gplusgggv0.0.1"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "sel_r1-_gplusgggv0.0.1"],
       "model": {
         "id": "4",
         "element": "mc-populated-blank",
@@ -234,12 +212,7 @@
       "id": "variant-sel-r1-g-stem",
       "title": "sel_r1-g_plusggg (canonical CQT sample)",
       "description": "Canonical sample from item 0060b039-2605-47a6-8305-96e0463fcfd0 and question b78bf2ff-8d6e-4a6f-a0c9-9e188020b50e.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-g_plusggg",
-        "sel_r1-g_plusgggv0.0.1"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "sel_r1-g_plusgggv0.0.1"],
       "model": {
         "id": "5",
         "element": "mc-populated-blank",
@@ -290,12 +263,7 @@
       "id": "variant-sel-r1-gg-plus",
       "title": "sel_r1-gg_plusggg (canonical CQT sample)",
       "description": "Canonical sample from item 0d42ee84-b291-4336-b689-6912199fa81f and question a32aa886-0153-46a5-a31c-fdab5fd5165a.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-gg_plusggg",
-        "sel_r1-gg_plusgggv0.0.1"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "sel_r1-gg_plusgggv0.0.1"],
       "model": {
         "id": "6",
         "element": "mc-populated-blank",
@@ -346,12 +314,7 @@
       "id": "variant-sel-r1-ggplus",
       "title": "sel_r1-_ggplusggg (canonical CQT sample)",
       "description": "Canonical sample from item 0291a767-2334-4742-a899-e4178e85fc02 and question a469c1cf-fc1c-4cef-ae9f-04cc3f0cfc49.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_ggplusggg",
-        "sel_r1-_ggplusgggv0.0.1"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "sel_r1-_ggplusgggv0.0.1"],
       "model": {
         "id": "7",
         "element": "mc-populated-blank",
@@ -402,12 +365,7 @@
       "id": "variant-sel-r1-s3",
       "title": "sel_r1-s3_plusggg (canonical CQT sample)",
       "description": "Canonical sample from item 003dcbf8-ff38-4930-84ee-26ca8be834b9 and question 480b51c4-e8dd-4fed-8ddc-2e0667947326.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-s3_plusggg",
-        "sel_r1-s3_plusgggv0.0.1"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "sel_r1-s3_plusgggv0.0.1"],
       "model": {
         "id": "8",
         "element": "mc-populated-blank",
@@ -458,10 +416,7 @@
       "id": "evaluate-correct",
       "title": "sr-vic \u2014 evaluate with correct answer pre-selected",
       "description": "Evaluate mode fixture: distractor_1 (correct) pre-selected. Used by interaction tests.",
-      "tags": [
-        "mc-populated-blank",
-        "test-fixture"
-      ],
+      "tags": ["mc-populated-blank", "test-fixture"],
       "model": {
         "id": "9",
         "element": "mc-populated-blank",
@@ -511,12 +466,7 @@
       "id": "variant-sel-r1-gg-plus-es",
       "title": "sel_r1-gg_plusggg \u2014 Spanish text (ea363a8b)",
       "description": "Spanish text variant from item ea363a8b-26a1-44fb-bc8b-85f42758d952.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-gg_plusggg",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "es-US"],
       "model": {
         "id": "12",
         "element": "mc-populated-blank",
@@ -567,12 +517,7 @@
       "id": "variant-sel-r1-g-stem-es",
       "title": "sel_r1-g_plusggg \u2014 Spanish text (8e2e031c)",
       "description": "Spanish text variant from item 8e2e031c-5594-4081-811b-ddfcbecd5667.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-g_plusggg",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "es-US"],
       "model": {
         "id": "13",
         "element": "mc-populated-blank",
@@ -623,12 +568,7 @@
       "id": "variant-sel-r1-plusggg-es",
       "title": "sel_r1-_plusggg \u2014 Spanish text (25bdc860)",
       "description": "Spanish text variant from item 25bdc860-bd49-438d-a597-78561422037b.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_plusggg",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "es-US"],
       "model": {
         "id": "14",
         "element": "mc-populated-blank",
@@ -679,12 +619,7 @@
       "id": "variant-sel-r1-gplusggg-es",
       "title": "sel_r1-_gplusggg \u2014 Spanish text (74a235ac)",
       "description": "Spanish text variant from item 74a235ac-ba03-462d-9e78-077603f7f51e.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_gplusggg",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "es-US"],
       "model": {
         "id": "15",
         "element": "mc-populated-blank",
@@ -735,12 +670,7 @@
       "id": "variant-sel-r1-ggplus-es",
       "title": "sel_r1-_ggplusggg \u2014 Spanish text (23e2b004)",
       "description": "Spanish text variant from item 23e2b004-9b64-41cb-b620-c108146d5a27.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_ggplusggg",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "es-US"],
       "model": {
         "id": "16",
         "element": "mc-populated-blank",
@@ -791,12 +721,7 @@
       "id": "variant-sel-r1-s3-es",
       "title": "sel_r1-s3_plusggg \u2014 Spanish text (5f9fcfe0)",
       "description": "Spanish text variant from item 5f9fcfe0-5870-4e1b-a436-49dceb43759d.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-s3_plusggg",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "es-US"],
       "model": {
         "id": "17",
         "element": "mc-populated-blank",
@@ -847,12 +772,7 @@
       "id": "variant-sel-vic-es",
       "title": "sel_vic \u2014 Spanish text (9264f1c0)",
       "description": "Spanish text variant from item 9264f1c0-a6c9-4920-bb9c-7590be3c172a.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_vic",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_vic", "es-US"],
       "model": {
         "id": "18",
         "element": "mc-populated-blank",
@@ -903,12 +823,7 @@
       "id": "variant-sel-r1-gg-plus-graphic",
       "title": "sel_r1-gg_plusggg \u2014 graphic choices English (bc827dec)",
       "description": "Graphic choice variant from item bc827dec-cb5e-4f09-b7f0-e227c2912c2f.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-gg_plusggg",
-        "graphic"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "graphic"],
       "model": {
         "id": "19",
         "element": "mc-populated-blank",
@@ -959,12 +874,7 @@
       "id": "variant-sel-r1-g-stem-graphic",
       "title": "sel_r1-g_plusggg \u2014 graphic choices English (e6dc4fe3)",
       "description": "Graphic choice variant from item e6dc4fe3-076d-4d39-963a-f5742987801a.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-g_plusggg",
-        "graphic"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "graphic"],
       "model": {
         "id": "20",
         "element": "mc-populated-blank",
@@ -1015,12 +925,7 @@
       "id": "variant-sel-r1-plusggg-graphic",
       "title": "sel_r1-_plusggg \u2014 graphic choices English (097f87c5)",
       "description": "Graphic choice variant from item 097f87c5-c474-4dda-97b2-46b30d598a54.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_plusggg",
-        "graphic"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "graphic"],
       "model": {
         "id": "21",
         "element": "mc-populated-blank",
@@ -1071,12 +976,7 @@
       "id": "variant-sel-r1-gplusggg-graphic",
       "title": "sel_r1-_gplusggg \u2014 graphic choices English (a0c05ca1)",
       "description": "Graphic choice variant from item a0c05ca1-127d-49eb-bb05-8ea7b5c1834f.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_gplusggg",
-        "graphic"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "graphic"],
       "model": {
         "id": "22",
         "element": "mc-populated-blank",
@@ -1127,12 +1027,7 @@
       "id": "variant-sel-r1-ggplus-graphic",
       "title": "sel_r1-_ggplusggg \u2014 graphic choices English (2e53a942)",
       "description": "Graphic choice variant from item 2e53a942-8ceb-46d4-bf56-ddd7b376f504.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_ggplusggg",
-        "graphic"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "graphic"],
       "model": {
         "id": "23",
         "element": "mc-populated-blank",
@@ -1183,12 +1078,7 @@
       "id": "variant-sel-r1-s3-graphic",
       "title": "sel_r1-s3_plusggg \u2014 graphic choices English (c3b6c877)",
       "description": "Graphic choice variant from item c3b6c877-444d-4d27-9f1a-3cbc8af38b7a.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-s3_plusggg",
-        "graphic"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "graphic"],
       "model": {
         "id": "24",
         "element": "mc-populated-blank",
@@ -1239,13 +1129,7 @@
       "id": "variant-sel-r1-plusggg-graphic-es",
       "title": "sel_r1-_plusggg \u2014 graphic choices Spanish (a83f1d87)",
       "description": "Spanish graphic choice variant from item a83f1d87-f3e5-4c0e-8eb4-408275336c0b.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_plusggg",
-        "graphic",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "graphic", "es-US"],
       "model": {
         "id": "25",
         "element": "mc-populated-blank",
@@ -1296,13 +1180,7 @@
       "id": "variant-sel-r1-ggplus-graphic-es",
       "title": "sel_r1-_ggplusggg \u2014 graphic choices Spanish (00cd1143)",
       "description": "Spanish graphic choice variant from item 00cd1143-ceda-4f81-8f1f-6c9555d043e4.",
-      "tags": [
-        "mc-populated-blank",
-        "cqt-sample",
-        "sel_r1-_ggplusggg",
-        "graphic",
-        "es-US"
-      ],
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "graphic", "es-US"],
       "model": {
         "id": "26",
         "element": "mc-populated-blank",
@@ -1353,10 +1231,7 @@
       "id": "evaluate-wrong",
       "title": "sr-vic \u2014 evaluate with wrong answer pre-selected",
       "description": "Evaluate mode fixture: distractor_2 (wrong) pre-selected. Used by interaction tests.",
-      "tags": [
-        "mc-populated-blank",
-        "test-fixture"
-      ],
+      "tags": ["mc-populated-blank", "test-fixture"],
       "model": {
         "id": "10",
         "element": "mc-populated-blank",

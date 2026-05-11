@@ -225,11 +225,7 @@ for (const { demoId, label } of AUDIO_TRANSCRIPT_VARIANTS) {
     // all other visible content. The audio container may share the same grid row
     // (token_sequence: 'transcript audio'), so we allow it to start above the
     // transcript bottom but not above the transcript top.
-    const otherSelectors = [
-      '.pie-template-line',
-      '.pie-choices-fieldset',
-      '.pie-sentence-line',
-    ];
+    const otherSelectors = ['.pie-template-line', '.pie-choices-fieldset', '.pie-sentence-line'];
     for (const sel of otherSelectors) {
       const el = root.locator(sel).first();
       if (!(await el.isVisible())) continue;

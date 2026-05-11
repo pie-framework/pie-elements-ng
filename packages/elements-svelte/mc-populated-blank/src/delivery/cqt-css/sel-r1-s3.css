@@ -27,7 +27,6 @@
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-blank-value,
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-blank-value :is(span, p, div) {
-  font-size: 1.9em;
   line-height: 1.1;
   white-space: nowrap;
 }

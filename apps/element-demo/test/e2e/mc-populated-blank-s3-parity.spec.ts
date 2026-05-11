@@ -123,6 +123,41 @@ test('s3: audio transcript is above the stimulus/blank row (not auto-placed into
 });
 
 // ---------------------------------------------------------------------------
+// 4. Cloze blank value font size matches choice label font size after selection.
+//    In the reference system both the cloze and choice labels sit inside
+//    .rli-r1-content-element (1.9em), so inline font-size spans in labelHtml
+//    (e.g. <span style="font-size:1.8em">) resolve against the same context.
+//    The blank value inner span must match the choice label inner span.
+// ---------------------------------------------------------------------------
+test('s3: cloze blank value font size matches choice label font size after selection', async ({
+  page,
+}) => {
+  await openS3Route(page);
+  const root = deliveryContainer(page);
+
+  await root.locator('input[type="radio"]').first().check();
+  await page.waitForTimeout(100);
+
+  const blankValue = root.locator('.pie-blank-value');
+  await expect(blankValue).toBeVisible();
+
+  const { blankSize, choiceSize } = await page.evaluate(() => {
+    const getSize = (el: Element | null) => {
+      if (!el) return 0;
+      const inner = el.querySelector('span, p, div') ?? el;
+      return parseFloat(getComputedStyle(inner).fontSize);
+    };
+    return {
+      blankSize: getSize(document.querySelector('.pie-blank-value')),
+      choiceSize: getSize(document.querySelector('.pie-choice-label')),
+    };
+  });
+
+  expect(choiceSize).toBeGreaterThan(0);
+  expect(Math.abs(blankSize - choiceSize)).toBeLessThanOrEqual(2);
+});
+
+// ---------------------------------------------------------------------------
 // Live side-by-side parity (requires LEARNOSITY_CONSUMER_KEY)
 // ---------------------------------------------------------------------------
 
