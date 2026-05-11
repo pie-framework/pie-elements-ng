@@ -19,26 +19,18 @@ import { computeChoiceCorrectness } from './computeChoiceCorrectness';
 import { computeLayoutProfile } from './computeLayoutProfile';
 import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
 import {
+  computeFeatureAudioSkin,
+  computeDisplayChoiceId,
+  computeResultText,
+  computeLegendText,
+} from './computeDisplayState';
+import {
   ensureVariantCssInjected,
   getVariantCssConfig,
   getVariantRootClass,
 } from './variant-css-map';
 
 const BLANK_TOKEN = '{{blank}}';
-const DEFAULT_AUDIO_BUTTON_SKINS = {
-  default: {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/0c9f2aa3-3cd5-4de7-93ef-541c24ca35da.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/231dfdc2-c113-4be5-91fb-e75a0ca5994b.svg',
-  },
-  es: {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/27a9d5b5-d873-4bd5-b9ba-22748782d8ba.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/120f216d-96b7-4560-94b8-1d90710216b7.svg',
-  },
-} as const;
 const DEFAULT_UI_TEXT = {
   answerChoices: 'Answer choices',
   selectedAnswerInSentence: 'Selected answer in sentence',
@@ -131,23 +123,20 @@ const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
 const choiceMode = $derived(model?.choiceMode || 'text');
 const selectedId = $derived(session?.choiceId || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
-const displayChoiceId = $derived.by(() => {
-  if (model?.alwaysShowCorrect && model?.correctChoiceId) {
-    return model.correctChoiceId;
-  }
-  if (isEvaluateMode && showCorrectAnswer && model?.correctChoiceId) {
-    return model.correctChoiceId;
-  }
-  return selectedId;
-});
+const displayChoiceId = $derived(
+  computeDisplayChoiceId({
+    selectedId,
+    isEvaluateMode,
+    showCorrectAnswer,
+    alwaysShowCorrect: !!model?.alwaysShowCorrect,
+    correctChoiceId: String(model?.correctChoiceId || ''),
+  })
+);
 const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
 const displayChoiceLabelHtml = $derived.by(() => String(displayChoice?.labelHtml || ''));
-const resultText = $derived.by(() => {
-  if (!isEvaluateMode || showCorrectAnswer) return '';
-  if (isCorrect) return 'Correct answer selected';
-  if (isIncorrect && selectedId) return 'Incorrect answer selected';
-  return '';
-});
+const resultText = $derived(
+  computeResultText({ isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId })
+);
 const choiceCorrectnessById = $derived(
   computeChoiceCorrectness({
     isEvaluateMode,
@@ -169,16 +158,13 @@ const promptId = $derived(`${instanceId}-prompt`);
 const transcriptId = $derived(`${instanceId}-transcript`);
 const legendId = $derived(`${instanceId}-choices-legend`);
 const resultId = $derived(`${instanceId}-result`);
-const legendText = $derived.by(() => {
-  const plain = (model?.prompt || '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const maxChars = Math.max(8, layout.legendMaxChars);
-  return plain.length > maxChars
-    ? `${plain.slice(0, Math.max(1, maxChars - 1))}…`
-    : plain || uiText.answerChoices;
-});
+const legendText = $derived(
+  computeLegendText({
+    prompt: model?.prompt || '',
+    legendMaxChars: layout.legendMaxChars,
+    answerChoicesLabel: uiText.answerChoices,
+  })
+);
 const choicesGroupLabelledBy = $derived(model?.prompt ? promptId : undefined);
 const choicesGroupAriaLabel = $derived.by(() => {
   if (model?.prompt) return undefined;
@@ -269,22 +255,13 @@ function onRadioGroupKeydown(e: KeyboardEvent) {
   next.focus();
 }
 
-const featureAudioSkin = $derived.by(() => {
-  const locale = String(model?.locale || '').toLowerCase();
-  const lang = locale.slice(0, 2);
-  const byLocale =
-    model?.audioButtonSkinsByLocale && typeof model.audioButtonSkinsByLocale === 'object'
-      ? model.audioButtonSkinsByLocale
-      : {};
-  const customSingle =
-    model?.audioButtonSkin && typeof model.audioButtonSkin === 'object'
-      ? model.audioButtonSkin
-      : null;
-  const defaultSkin = locale.startsWith('es')
-    ? DEFAULT_AUDIO_BUTTON_SKINS.es
-    : DEFAULT_AUDIO_BUTTON_SKINS.default;
-  return byLocale[locale] || byLocale[lang] || byLocale.default || customSingle || defaultSkin;
-});
+const featureAudioSkin = $derived(
+  computeFeatureAudioSkin({
+    locale: model?.locale,
+    audioButtonSkin: model?.audioButtonSkin,
+    audioButtonSkinsByLocale: model?.audioButtonSkinsByLocale,
+  })
+);
 
 function onAudioStarted() {
   resolveDeliveryHost(rootEl, { fallbackSelector: 'mc-populated-blank' })?.onAudioStarted?.();
