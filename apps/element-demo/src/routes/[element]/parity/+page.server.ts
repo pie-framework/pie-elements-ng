@@ -34,7 +34,7 @@ function signItemsInit(
   };
 
   const securityPacket = {
-    consumer_key: CONSUMER_KEY!,
+    consumer_key: CONSUMER_KEY,
     domain: DOMAIN,
     timestamp,
   };

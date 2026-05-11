@@ -58,7 +58,7 @@ test('g-stem: stem token and blank slot are on the same line (no line break)', a
   expect(templateBox).not.toBeNull();
   expect(blankBox).not.toBeNull();
 
-  const verticalOffset = blankBox!.y - templateBox!.y;
+  const verticalOffset = blankBox?.y - templateBox?.y;
   expect(verticalOffset).toBeLessThan(20);
 });
 

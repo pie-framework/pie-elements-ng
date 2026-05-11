@@ -42,7 +42,7 @@ const normalizeSession = (nextSession: any) => {
   return nextSession && typeof nextSession === 'object' ? nextSession : {};
 };
 
-const cloneValue = <T>(value: T): T => {
+const cloneValue = <T,>(value: T): T => {
   if (value === null || typeof value !== 'object') {
     return value;
   }

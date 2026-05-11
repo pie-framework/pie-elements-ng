@@ -174,7 +174,7 @@ test('plusggg: radio input has at least 8px clearance from tile bottom edge', as
   expect(tileBox).not.toBeNull();
   expect(radioBox).not.toBeNull();
 
-  const clearance = tileBox!.y + tileBox!.height - (radioBox!.y + radioBox!.height);
+  const clearance = tileBox?.y + tileBox?.height - (radioBox?.y + radioBox?.height);
   expect(clearance).toBeGreaterThanOrEqual(8);
 });
 
@@ -192,7 +192,7 @@ test('plusggg: blank slot height is at least 160px', async ({ page }) => {
 
   const box = await blank.boundingBox();
   expect(box).not.toBeNull();
-  expect(box!.height).toBeGreaterThanOrEqual(160);
+  expect(box?.height).toBeGreaterThanOrEqual(160);
 });
 
 // ---------------------------------------------------------------------------
@@ -214,7 +214,7 @@ test('plusggg: gap between blank slot and choice tiles is at least 30px', async 
   expect(blankBox).not.toBeNull();
   expect(tileBox).not.toBeNull();
 
-  const gap = tileBox!.y - (blankBox!.y + blankBox!.height);
+  const gap = tileBox?.y - (blankBox?.y + blankBox?.height);
   expect(gap).toBeGreaterThanOrEqual(30);
 });
 
@@ -253,7 +253,7 @@ test('plusggg: choice tile content area is at least 150px tall', async ({ page }
 
   const box = await firstContent.boundingBox();
   expect(box).not.toBeNull();
-  expect(box!.height).toBeGreaterThanOrEqual(150);
+  expect(box?.height).toBeGreaterThanOrEqual(150);
 });
 
 // ---------------------------------------------------------------------------
@@ -293,7 +293,7 @@ test('plusggg: choice tiles are horizontally centered in the viewport', async ({
   ]);
   expect(fieldsetBox).not.toBeNull();
 
-  const fieldsetMidX = fieldsetBox!.x + fieldsetBox!.width / 2;
+  const fieldsetMidX = fieldsetBox?.x + fieldsetBox?.width / 2;
   const viewportMidX = viewportWidth / 2;
 
   expect(Math.abs(fieldsetMidX - viewportMidX)).toBeLessThanOrEqual(20);
@@ -323,8 +323,8 @@ test('plusggg: audio button is to the right of the blank slot', async ({ page })
   expect(templateBox).not.toBeNull();
 
   // Listen button left edge must be to the right of the template line midpoint
-  const templateMidX = templateBox!.x + templateBox!.width / 2;
-  expect(audioBox!.x).toBeGreaterThan(templateMidX);
+  const templateMidX = templateBox?.x + templateBox?.width / 2;
+  expect(audioBox?.x).toBeGreaterThan(templateMidX);
 });
 
 test('plusggg: audio button top is above or level with the blank slot top', async ({ page }) => {
@@ -341,7 +341,7 @@ test('plusggg: audio button top is above or level with the blank slot top', asyn
   expect(templateBox).not.toBeNull();
 
   // Audio button top should be at or above the template line top
-  expect(audioBox!.y).toBeLessThanOrEqual(templateBox!.y + 10);
+  expect(audioBox?.y).toBeLessThanOrEqual(templateBox?.y + 10);
 });
 
 // ---------------------------------------------------------------------------

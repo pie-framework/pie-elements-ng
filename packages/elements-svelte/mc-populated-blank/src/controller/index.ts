@@ -20,7 +20,7 @@ export function countBlankTokens(template: string): number {
 }
 
 export const getCorrectness = (question: McpbQuestion, session: McpbSession): McpbCorrectness => {
-  if (!session || !session.choiceId) {
+  if (!session?.choiceId) {
     return 'unanswered';
   }
   const correct = question?.correctChoiceId || '';

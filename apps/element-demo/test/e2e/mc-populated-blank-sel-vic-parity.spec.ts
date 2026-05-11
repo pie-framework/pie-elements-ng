@@ -51,11 +51,11 @@ test('sel-vic: template sentence and audio button are on the same row (two-colum
 
   // When stacked: audioBox.y is noticeably above templateBox.y (audio renders first).
   // When side-by-side: both share approximately the same top Y (within 20px).
-  const verticalDiff = Math.abs(templateBox!.y - audioBox!.y);
+  const verticalDiff = Math.abs(templateBox?.y - audioBox?.y);
   expect(verticalDiff).toBeLessThan(20);
 
   // And they must not overlap horizontally — template is left of audio.
-  expect(templateBox!.x).toBeLessThan(audioBox!.x);
+  expect(templateBox?.x).toBeLessThan(audioBox?.x);
 });
 
 // ---------------------------------------------------------------------------
@@ -82,7 +82,7 @@ test('sel-vic: blank slot stays inline within the template sentence (no line bre
 
   // When blank wraps to a new line its top Y is significantly below the template top.
   // When inline both start at the same Y (within 10px).
-  const verticalOffset = blankBox!.y - templateBox!.y;
+  const verticalOffset = blankBox?.y - templateBox?.y;
   expect(verticalOffset).toBeLessThan(10);
 });
 
@@ -123,7 +123,7 @@ test('sel-vic: choices fieldset width is at most 800px', async ({ page }) => {
 
   const box = await fieldset.boundingBox();
   expect(box).not.toBeNull();
-  expect(box!.width).toBeLessThanOrEqual(800);
+  expect(box?.width).toBeLessThanOrEqual(800);
 });
 
 // ---------------------------------------------------------------------------
@@ -242,7 +242,7 @@ test('sel-vic: audio transcript renders above the audio button (outside the two-
   expect(audioBox).not.toBeNull();
 
   // Transcript bottom edge must be above the audio container top edge.
-  expect(transcriptBox!.y + transcriptBox!.height).toBeLessThan(audioBox!.y);
+  expect(transcriptBox?.y + transcriptBox?.height).toBeLessThan(audioBox?.y);
 });
 
 // ---------------------------------------------------------------------------

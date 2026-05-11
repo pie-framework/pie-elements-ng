@@ -415,7 +415,7 @@ async function assertGatherAcceptsInput(page: Page, element: string) {
 
   const sessionPanelChanged = (beforeSession || '') !== (afterSession || '');
   const sessionJsonChanged = JSON.stringify(beforeState ?? {}) !== JSON.stringify(afterState ?? {});
-  if (sessionPanelChanged || sessionJsonChanged || !!method) {
+  if (sessionPanelChanged || sessionJsonChanged || method) {
     return;
   }
   throw new Error('interaction did not produce a measurable session change');

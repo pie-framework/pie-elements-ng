@@ -136,7 +136,7 @@ test('plusggg: transcript renders above the choice tiles when visible', async ({
 
   expect(transcriptBox).not.toBeNull();
   expect(choiceBox).not.toBeNull();
-  expect(transcriptBox!.y + transcriptBox!.height).toBeLessThan(choiceBox!.y);
+  expect(transcriptBox?.y + transcriptBox?.height).toBeLessThan(choiceBox?.y);
 });
 
 // ---------------------------------------------------------------------------
@@ -231,7 +231,7 @@ for (const { demoId, label } of AUDIO_TRANSCRIPT_VARIANTS) {
       if (!(await el.isVisible())) continue;
       const box = await el.boundingBox();
       if (!box) continue;
-      expect(box.y).toBeGreaterThanOrEqual(transcriptBox!.y - 5);
+      expect(box.y).toBeGreaterThanOrEqual(transcriptBox?.y - 5);
     }
   });
 

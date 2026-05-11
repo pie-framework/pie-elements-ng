@@ -78,8 +78,8 @@ test('gplusggg: audio button is to the right of the template line midpoint', asy
   expect(audioBox).not.toBeNull();
   expect(templateBox).not.toBeNull();
 
-  const templateMidX = templateBox!.x + templateBox!.width / 2;
-  expect(audioBox!.x).toBeGreaterThan(templateMidX);
+  const templateMidX = templateBox?.x + templateBox?.width / 2;
+  expect(audioBox?.x).toBeGreaterThan(templateMidX);
 });
 
 test('gplusggg: audio button top is above or level with the template line top', async ({
@@ -100,7 +100,7 @@ test('gplusggg: audio button top is above or level with the template line top', 
   expect(audioBox).not.toBeNull();
   expect(templateBox).not.toBeNull();
 
-  expect(audioBox!.y).toBeLessThanOrEqual(templateBox!.y + 10);
+  expect(audioBox?.y).toBeLessThanOrEqual(templateBox?.y + 10);
 });
 
 test('gplusggg: selected choice tile background is light yellow (#fcfcd3)', async ({ page }) => {
@@ -202,13 +202,15 @@ test('gplusggg: after-cloze content does not shift vertically when a distractor 
 
   const yBefore = await getTrailingY();
   expect(yBefore).not.toBeNull();
+  if (yBefore === null) return;
 
   await root.locator('input[type="radio"]').first().check();
   await page.waitForTimeout(100);
 
   const yAfter = await getTrailingY();
   expect(yAfter).not.toBeNull();
-  expect(Math.abs(yAfter! - yBefore!)).toBeLessThan(2);
+  if (yAfter === null) return;
+  expect(Math.abs(yAfter - yBefore)).toBeLessThan(2);
 });
 
 // ---------------------------------------------------------------------------
@@ -259,7 +261,7 @@ test('gplusggg: there is a visible gap between the blank slot and the trailing t
   expect(spanBox).not.toBeNull();
 
   // 1rem gap at 1.8em token (≈55px rendered); require at least 10px.
-  const gap = spanBox!.x - (blankBox!.x + blankBox!.width);
+  const gap = spanBox?.x - (blankBox?.x + blankBox?.width);
   expect(gap).toBeGreaterThanOrEqual(3);
 });
 
@@ -286,8 +288,8 @@ test('gplusggg: audio button is vertically close to the template content (not ab
   expect(audioBox).not.toBeNull();
   expect(templateBox).not.toBeNull();
 
-  const audioBottom = audioBox!.y + audioBox!.height;
-  const gap = templateBox!.y - audioBottom;
+  const audioBottom = audioBox?.y + audioBox?.height;
+  const gap = templateBox?.y - audioBottom;
   expect(gap).toBeLessThan(80);
 });
 
@@ -316,7 +318,7 @@ test('gplusggg: blank slot height is close to the adjacent token height (not 160
 
   // When broken: blank height is 160px (standalone min-height), token is ~82px.
   // When fixed: blank height matches token height within 2×.
-  expect(blankBox!.height).toBeLessThan(spanBox!.height * 2);
+  expect(blankBox?.height).toBeLessThan(spanBox?.height * 2);
 });
 
 // ---------------------------------------------------------------------------
@@ -366,7 +368,7 @@ test.describe('gplusggg live parity — visual', () => {
     const pieAudioBox = await pieListenButton.boundingBox();
     const pieTemplateBox = await page.locator('#pie-container .pie-template-line').boundingBox();
 
-    expect(pieAudioBox!.x).toBeGreaterThan(pieTemplateBox!.x + pieTemplateBox!.width / 2);
+    expect(pieAudioBox?.x).toBeGreaterThan(pieTemplateBox?.x + pieTemplateBox?.width / 2);
   });
 
   test('PIE stem, choices, and audio regions match Learnosity baseline screenshots', async ({

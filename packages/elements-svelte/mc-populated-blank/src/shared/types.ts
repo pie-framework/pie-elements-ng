@@ -80,5 +80,5 @@ export interface McpbSession {
 export interface McpbEnv {
   mode?: McpbDeliveryMode;
   role?: McpbRole;
-  ['@pie-element']?: { lockChoiceOrder?: boolean };
+  '@pie-element'?: { lockChoiceOrder?: boolean };
 }

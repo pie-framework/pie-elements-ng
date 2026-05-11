@@ -58,14 +58,14 @@ test('s3: stimulus image, blank slot, and audio button are on the same row', asy
   // When stacked: templateBox.y is well below sentenceBox.y (>80px difference).
   // When in the same row: all three share approximately the same top Y (within 60px —
   // the blank slot may be bottom-aligned within the row per the reference layout).
-  const sentenceTemplateDiff = Math.abs(templateBox!.y - sentenceBox!.y);
+  const sentenceTemplateDiff = Math.abs(templateBox?.y - sentenceBox?.y);
   expect(sentenceTemplateDiff).toBeLessThan(60);
 
   // Stimulus must be to the left of the blank slot.
-  expect(sentenceBox!.x).toBeLessThan(templateBox!.x);
+  expect(sentenceBox?.x).toBeLessThan(templateBox?.x);
 
   // Audio must be to the right of the blank slot.
-  expect(audioBox!.x).toBeGreaterThan(templateBox!.x);
+  expect(audioBox?.x).toBeGreaterThan(templateBox?.x);
 });
 
 // ---------------------------------------------------------------------------
@@ -87,7 +87,7 @@ test('s3: choices row is below the stimulus image (not overlapping)', async ({ p
   expect(fieldsetBox).not.toBeNull();
 
   // Choices must start below the bottom edge of the stimulus image.
-  expect(fieldsetBox!.y).toBeGreaterThan(sentenceBox!.y + sentenceBox!.height - 10);
+  expect(fieldsetBox?.y).toBeGreaterThan(sentenceBox?.y + sentenceBox?.height - 10);
 });
 
 // ---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ test('s3: audio transcript is above the stimulus/blank row (not auto-placed into
   expect(sentenceBox).not.toBeNull();
 
   // Transcript must be fully above the top of the sentence-line row.
-  expect(transcriptBox!.y + transcriptBox!.height).toBeLessThan(sentenceBox!.y + 10);
+  expect(transcriptBox?.y + transcriptBox?.height).toBeLessThan(sentenceBox?.y + 10);
 });
 
 // ---------------------------------------------------------------------------
@@ -204,8 +204,8 @@ test.describe('s3 live parity — visual', () => {
     const stimBox = await stimulus.boundingBox();
     const blankBox = await blank.boundingBox();
     const audioBox = await audio.boundingBox();
-    expect(Math.abs(stimBox!.y - blankBox!.y)).toBeLessThan(60);
-    expect(Math.abs(stimBox!.y - audioBox!.y)).toBeLessThan(60);
+    expect(Math.abs(stimBox?.y - blankBox?.y)).toBeLessThan(60);
+    expect(Math.abs(stimBox?.y - audioBox?.y)).toBeLessThan(60);
   });
 
   test('PIE stem, choices, and audio regions match Learnosity baseline screenshots', async ({

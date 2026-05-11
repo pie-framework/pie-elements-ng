@@ -54,7 +54,7 @@ test('gg-plus: stem tokens and blank slot are on the same line (no line break)',
   // When broken: blank top-Y is a full line height below the template (~100px+).
   // When inline with baseline alignment: blank sits near row bottom (~67px from
   // template top) but still within the same row. Use 90px as the threshold.
-  const verticalOffset = blankBox!.y - templateBox!.y;
+  const verticalOffset = blankBox?.y - templateBox?.y;
   expect(verticalOffset).toBeLessThan(90);
 });
 
@@ -150,7 +150,7 @@ test('gg-plus: after-cloze content does not shift when a distractor is selected'
   await page.waitForTimeout(100);
   const afterBox = await templateLine.boundingBox();
   expect(afterBox).not.toBeNull();
-  expect(Math.abs(afterBox!.y - beforeBox!.y)).toBeLessThan(5);
+  expect(Math.abs(afterBox?.y - beforeBox?.y)).toBeLessThan(5);
 });
 
 // ---------------------------------------------------------------------------
@@ -178,7 +178,7 @@ test('gg-plus: there is a visible gap between the leading token and the blank sl
   expect(blankBox).not.toBeNull();
 
   // 1rem token gap with 3em tokens; at least 10px required.
-  const gap = blankBox!.x - (spanBox!.x + spanBox!.width);
+  const gap = blankBox?.x - (spanBox?.x + spanBox?.width);
   expect(gap).toBeGreaterThanOrEqual(3);
 });
 
@@ -199,7 +199,7 @@ test('gg-plus: there is a visible gap between the two leading tokens', async ({ 
   expect(box0).not.toBeNull();
   expect(box1).not.toBeNull();
 
-  const gap = box1!.x - (box0!.x + box0!.width);
+  const gap = box1?.x - (box0?.x + box0?.width);
   expect(gap).toBeGreaterThanOrEqual(3);
 });
 
@@ -221,8 +221,8 @@ test('gg-plus: template row is horizontally centered above the choices', async (
   expect(templateBox).not.toBeNull();
   expect(fieldsetBox).not.toBeNull();
 
-  const templateCX = templateBox!.x + templateBox!.width / 2;
-  const fieldsetCX = fieldsetBox!.x + fieldsetBox!.width / 2;
+  const templateCX = templateBox?.x + templateBox?.width / 2;
+  const fieldsetCX = fieldsetBox?.x + fieldsetBox?.width / 2;
   expect(Math.abs(templateCX - fieldsetCX)).toBeLessThan(60);
 });
 
@@ -241,13 +241,13 @@ test('gg-plus: blank slot and token spans are each at least 150px wide', async (
 
   const blankBox = await blankSlot.boundingBox();
   expect(blankBox).not.toBeNull();
-  expect(blankBox!.width).toBeGreaterThanOrEqual(140);
+  expect(blankBox?.width).toBeGreaterThanOrEqual(140);
 
   const count = await spans.count();
   for (let i = 0; i < count; i++) {
     const box = await spans.nth(i).boundingBox();
     expect(box).not.toBeNull();
-    expect(box!.width).toBeGreaterThanOrEqual(140);
+    expect(box?.width).toBeGreaterThanOrEqual(140);
   }
 });
 

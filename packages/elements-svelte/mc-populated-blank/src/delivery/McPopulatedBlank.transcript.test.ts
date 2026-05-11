@@ -60,7 +60,7 @@ describe('McPopulatedBlank — transcript rendering', () => {
     mounts.push({ target, component });
     flushSync();
     const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript!.classList.contains('sr-only')).toBe(true);
+    expect(transcript?.classList.contains('sr-only')).toBe(true);
   });
 
   it('shows transcript without sr-only when ancestor has rli-with-audio-transcript class', async () => {
@@ -80,7 +80,7 @@ describe('McPopulatedBlank — transcript rendering', () => {
     flushSync();
 
     const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript!.classList.contains('sr-only')).toBe(false);
+    expect(transcript?.classList.contains('sr-only')).toBe(false);
     wrapper.remove();
   });
 
@@ -101,7 +101,7 @@ describe('McPopulatedBlank — transcript rendering', () => {
     flushSync();
 
     const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript!.textContent?.trim()).not.toMatch(/^Transcript:/i);
+    expect(transcript?.textContent?.trim()).not.toMatch(/^Transcript:/i);
     wrapper.remove();
   });
 
@@ -110,7 +110,7 @@ describe('McPopulatedBlank — transcript rendering', () => {
     mounts.push({ target, component });
     flushSync();
     const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript!.textContent).toContain(BASE_MODEL.audioTranscript);
+    expect(transcript?.textContent).toContain(BASE_MODEL.audioTranscript);
   });
 
   it('omits transcript element when audioTranscript is empty', () => {
@@ -141,14 +141,14 @@ describe('McPopulatedBlank — transcript rendering', () => {
     flushSync();
 
     const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript!.classList.contains('sr-only')).toBe(true);
+    expect(transcript?.classList.contains('sr-only')).toBe(true);
 
     wrapper.classList.add('rli-with-audio-transcript');
     // Allow MutationObserver microtask to fire
     await new Promise((r) => setTimeout(r, 0));
     flushSync();
 
-    expect(transcript!.classList.contains('sr-only')).toBe(false);
+    expect(transcript?.classList.contains('sr-only')).toBe(false);
     wrapper.remove();
   });
 });

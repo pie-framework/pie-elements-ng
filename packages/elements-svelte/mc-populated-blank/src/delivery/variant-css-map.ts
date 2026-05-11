@@ -114,7 +114,7 @@ const injectStyleOnce = (id: string, variantName: string, cssText: string): void
 };
 
 export const ensureVariantCssInjected = (config?: VariantCssConfig): void => {
-  if (!config || !config.cssText || typeof document === 'undefined') {
+  if (!config?.cssText || typeof document === 'undefined') {
     return;
   }
   if (SEL_R1_VARIANT_IDS.has(config.variantId)) {

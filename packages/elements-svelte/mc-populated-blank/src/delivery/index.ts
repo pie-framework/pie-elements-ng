@@ -2,7 +2,7 @@ import McPopulatedBlankComponent from './McPopulatedBlank.svelte';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-lib/delivery-events-svelte';
 
 function isComplete(model: any, session: any, audioComplete = false): boolean {
-  if (!session || !session.choiceId) return false;
+  if (!session?.choiceId) return false;
   const requiresAudioCompletion =
     !!model?.autoplayAudioEnabled && !!model?.completeAudioEnabled && !!model?.hasAudio;
   if (requiresAudioCompletion && !audioComplete) return false;

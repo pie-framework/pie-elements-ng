@@ -51,7 +51,7 @@ test('sr-vic: blank slot stays inline within the template sentence (no line brea
   // When blank wraps: the <p> before it occupies one full line (~20px at 16px
   // font / 123% line-height), so blankBox.y - templateBox.y ≈ 20px.
   // When inline (correct): both start at the same Y, so difference ≈ 0.
-  const verticalOffset = blankBox!.y - templateBox!.y;
+  const verticalOffset = blankBox?.y - templateBox?.y;
   expect(verticalOffset).toBeLessThan(10);
 });
 
