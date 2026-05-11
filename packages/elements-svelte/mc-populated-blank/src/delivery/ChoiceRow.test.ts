@@ -13,7 +13,7 @@ const BASE = {
 
 const mounts: Array<{ target: HTMLElement; component: ReturnType<typeof mount> }> = [];
 
-function mountRow(props: Parameters<typeof mount<typeof ChoiceRow>>[1]['props']) {
+function mountRow(props: Record<string, unknown>) {
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(ChoiceRow, { target, props });

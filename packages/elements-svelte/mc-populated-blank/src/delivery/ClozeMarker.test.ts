@@ -10,7 +10,7 @@ const BASE = {
 
 const mounts: Array<{ target: HTMLElement; component: ReturnType<typeof mount> }> = [];
 
-function mountSlot(props: Parameters<typeof mount<typeof ClozeMarker>>[1]['props']) {
+function mountSlot(props: Record<string, unknown>) {
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(ClozeMarker, { target, props });
