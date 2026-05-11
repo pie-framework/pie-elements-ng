@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/match-list",
-  "version": "6.2.0-next.4",
+  "version": "7.0.1",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

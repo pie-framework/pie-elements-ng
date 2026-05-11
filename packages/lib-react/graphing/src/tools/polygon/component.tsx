@@ -175,6 +175,7 @@ export class RawBaseComponent extends React.Component {
     const {
       closed,
       disabled,
+      onClick,
       isToolActive,
       labelModeEnabled,
       limitLabeling,
@@ -201,9 +202,12 @@ export class RawBaseComponent extends React.Component {
         onChangeProps(update);
       }
 
-      if (this.input[index]) {
-        this.input[index].focus();
-      }
+      // defer the focus() call with setTimeout to allow the re-render to complete first.
+      setTimeout(() => {
+        if (this.input[index]) {
+          this.input[index].focus();
+        }
+      }, 0);
 
       return;
     }
@@ -213,8 +217,7 @@ export class RawBaseComponent extends React.Component {
       return;
     }
 
-    // Clicks on existing mark points/lines should not create new marks.
-    // Moving is handled entirely by drag. Do nothing here.
+    onClick(point || data);
   };
 
   // IMPORTANT, do not remove

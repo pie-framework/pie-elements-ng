@@ -188,9 +188,9 @@ async function interactHotspot(page: Page, root: Locator): Promise<boolean> {
             });
           }
           for (const p of polygons) {
-            const points = Array.isArray(p?.points) ? p.points : [];
+            const points: unknown[] = Array.isArray(p?.points) ? p.points : [];
             const objectPoints = points.filter(
-              (point): point is { x: number; y: number } =>
+              (point: unknown): point is { x: number; y: number } =>
                 typeof point === 'object' &&
                 point !== null &&
                 typeof (point as { x?: unknown }).x === 'number' &&
@@ -199,8 +199,16 @@ async function interactHotspot(page: Page, root: Locator): Promise<boolean> {
 
             if (objectPoints.length > 0) {
               relativePoints.push({
-                x: objectPoints.reduce((acc, point) => acc + point.x, 0) / objectPoints.length,
-                y: objectPoints.reduce((acc, point) => acc + point.y, 0) / objectPoints.length,
+                x:
+                  objectPoints.reduce(
+                    (acc: number, point: { x: number; y: number }) => acc + point.x,
+                    0
+                  ) / objectPoints.length,
+                y:
+                  objectPoints.reduce(
+                    (acc: number, point: { x: number; y: number }) => acc + point.y,
+                    0
+                  ) / objectPoints.length,
               });
             } else if (points.length >= 2) {
               const pairs: Array<{ x: number; y: number }> = [];
@@ -209,8 +217,16 @@ async function interactHotspot(page: Page, root: Locator): Promise<boolean> {
               }
               if (pairs.length > 0) {
                 relativePoints.push({
-                  x: pairs.reduce((acc, point) => acc + point.x, 0) / pairs.length,
-                  y: pairs.reduce((acc, point) => acc + point.y, 0) / pairs.length,
+                  x:
+                    pairs.reduce(
+                      (acc: number, point: { x: number; y: number }) => acc + point.x,
+                      0
+                    ) / pairs.length,
+                  y:
+                    pairs.reduce(
+                      (acc: number, point: { x: number; y: number }) => acc + point.y,
+                      0
+                    ) / pairs.length,
                 });
               }
             }
@@ -224,7 +240,7 @@ async function interactHotspot(page: Page, root: Locator): Promise<boolean> {
           const stageHeight = Number(model?.dimensions?.height ?? rect.height);
           const scaleX = stageWidth > 0 ? rect.width / stageWidth : 1;
           const scaleY = stageHeight > 0 ? rect.height / stageHeight : 1;
-          return relativePoints.map((point) => ({
+          return relativePoints.map((point: { x: number; y: number }) => ({
             x: rect.left + point.x * scaleX,
             y: rect.top + point.y * scaleY,
           }));

@@ -23,6 +23,7 @@ import * as color from './color.js';
 import { hasText } from './has-text.js';
 import { hasMedia } from './has-media.js';
 import EnableAudioAutoplayImage from './assets/enableAudioAutoplayImage.js';
+import { transformDataHeadings } from './transform-headings.js';
 
 export {
   HtmlAndMath,
@@ -40,6 +41,7 @@ export {
   hasText,
   hasMedia,
   EnableAudioAutoplayImage,
+  transformDataHeadings,
 };
 // Non-synced pie-elements-ng exports
 export { InlineMenu } from './inline-menu.js';

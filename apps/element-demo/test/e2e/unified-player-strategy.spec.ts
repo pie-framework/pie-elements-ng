@@ -513,9 +513,10 @@ test.describe('Unified element player strategy host', () => {
       if (!(host instanceof HTMLElement) || !(innerElement instanceof HTMLElement)) {
         return { ok: false, reason: 'host-or-inner-missing' };
       }
+      const player = host as HTMLElement & { session?: unknown };
       const baseSession =
-        host.session && typeof host.session === 'object'
-          ? JSON.parse(JSON.stringify(host.session))
+        player.session && typeof player.session === 'object'
+          ? JSON.parse(JSON.stringify(player.session))
           : {};
       const nextSession = {
         ...baseSession,

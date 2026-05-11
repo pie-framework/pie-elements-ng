@@ -18,7 +18,7 @@ Defines the interaction mode and user role for element rendering.
 
 ```typescript
 interface PieEnvironment {
-  mode: 'gather' | 'view' | 'evaluate' | 'authoring';
+  mode: 'gather' | 'view' | 'evaluate' | 'configure';
   role: 'student' | 'instructor';
 
   // Optional configuration
@@ -32,7 +32,7 @@ interface PieEnvironment {
 - **`gather`**: Interactive mode where students can answer questions
 - **`view`**: Read-only mode displaying previous answers
 - **`evaluate`**: Shows correctness, scoring, and feedback
-- **authoring`**: Rich editing interface for content creation
+- **`configure`**: Rich editing interface for content creation (authoring mode)
 
 **Roles:**
 
@@ -332,7 +332,7 @@ element.addEventListener('session-change', (event) => {
 
 ### model-change
 
-Fired when model is modified (authoring mode only).
+Fired when model is modified (`configure` mode only).
 
 ```typescript
 interface ModelChangeEvent {
@@ -604,9 +604,8 @@ element.addEventListener('session-change', (e) => {
 
 ## See Also
 
-- [USAGE.md](./USAGE.md) - Getting started guide
+- [README.md](../README.md) - Getting started guide
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - System design
-- [INTEGRATION.md](./INTEGRATION.md) - Framework integration
 - [TypeScript Definitions](../packages/core/src/types.ts) - Source types
 
 ---

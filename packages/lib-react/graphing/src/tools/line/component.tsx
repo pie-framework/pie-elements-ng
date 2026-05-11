@@ -17,18 +17,29 @@ import { ArrowMarker, genUid } from '../shared/arrow-head.js';
 import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils.js';
 import { styled } from '@mui/material/styles';
 
-const StyledArrowedLineRoot: any = styled('g')(({ theme }) => ({
-  line: styles.line(theme),
-  enabledArrow: styles.arrow(theme),
-  disabledArrow: styles.disabledArrow(theme),
-  disabled: styles.disabled(theme),
-  disabledSecondary: styles.disabledSecondary(theme),
-  correct: styles.correct(theme, 'stroke'),
-  correctArrow: styles.correct(theme),
-  incorrect: styles.incorrect(theme, 'stroke'),
-  incorrectArrow: styles.incorrect(theme),
-  missing: styles.missing(theme, 'stroke'),
-  missingArrow: styles.missing(theme),
+const StyledArrowedLineRoot: any = styled('g')(({ theme, disabled, correctness }) => ({
+  '& line:not(.hit-area)': {
+    ...styles.line(theme),
+    ...(disabled && styles.disabledSecondary(theme)),
+    ...(correctness === 'correct' && styles.correct(theme, 'stroke')),
+    ...(correctness === 'incorrect' && styles.incorrect(theme, 'stroke')),
+    ...(correctness === 'missing' && styles.missing(theme, 'stroke')),
+  },
+  '& .enabledArrow': {
+    ...styles.arrow(theme),
+  },
+  '& .disabledArrow': {
+    ...styles.disabledArrow(theme),
+  },
+  '& .correctArrow': {
+    ...styles.correct(theme),
+  },
+  '& .incorrectArrow': {
+    ...styles.incorrect(theme),
+  },
+  '& .missingArrow': {
+    ...styles.missing(theme),
+  },
 }));
 
 export const ArrowedLine = (props) => {
@@ -41,7 +52,7 @@ export const ArrowedLine = (props) => {
   const finalMarkerId = propMarkerId || markerId;
 
   return (
-    <StyledArrowedLineRoot>
+    <StyledArrowedLineRoot disabled={disabled} correctness={correctness}>
       <defs>
         <ArrowMarker
           size={thinnerShapesNeeded(graphProps) ? 4 : 5}
@@ -57,6 +68,7 @@ export const ArrowedLine = (props) => {
         y1={scale.y(eFrom.y)}
         x2={scale.x(eTo.x)}
         y2={scale.y(eTo.y)}
+        className="hit-area"
         stroke="transparent"
         strokeWidth={7}
         style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
@@ -66,7 +78,7 @@ export const ArrowedLine = (props) => {
         y1={scale.y(eFrom.y)}
         x2={scale.x(eTo.x)}
         y2={scale.y(eTo.y)}
-        className={classNames('line', disabled && 'disabledSecondary', correctness, className)}
+        className={className}
         markerEnd={`url(#${finalMarkerId}-${suffix})`}
         markerStart={`url(#${finalMarkerId}-${suffix})`}
         {...rest}

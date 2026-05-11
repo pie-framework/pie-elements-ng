@@ -47,9 +47,11 @@ let majorValues = {};
 
 const StyledNumberTextField: any = styled(NumberTextField)({
   width: '150px',
+
+  '.MuiInputBase-input': {
+    padding: '16.5px 14px',
+  },
 });
-
-
 
 const Row: any = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -268,9 +270,9 @@ export class Main extends React.Component {
         ticks.minor < 1
           ? math.number(math.ceil(minorLimits.min))
           : ticks.minor >= math.number(math.ceil(minorLimits.min)) &&
-            ticks.minor <= math.number(math.floor(minorLimits.max))
-          ? ticks.minor
-          : math.number(math.ceil(minorLimits.min));
+              ticks.minor <= math.number(math.floor(minorLimits.max))
+            ? ticks.minor
+            : math.number(math.ceil(minorLimits.min));
       ticks.integerTick = ticks.minor;
       minorValues = { decimal: [], fraction: [] };
       ticks.fractionTick = '0';

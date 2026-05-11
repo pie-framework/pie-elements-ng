@@ -178,6 +178,7 @@ async function synthesizeSessionChanged(page: Page): Promise<boolean> {
     if (!(host instanceof HTMLElement)) {
       return false;
     }
+    const player = host as HTMLElement & { session?: unknown };
     const innerElement =
       host.querySelector('.demo-element-player > *:not(.loading):not(.error)') ??
       host.querySelector('.element-container > *:not(.loading):not(.error)');
@@ -185,8 +186,8 @@ async function synthesizeSessionChanged(page: Page): Promise<boolean> {
       return false;
     }
     const currentSession =
-      host.session && typeof host.session === 'object'
-        ? JSON.parse(JSON.stringify(host.session))
+      player.session && typeof player.session === 'object'
+        ? JSON.parse(JSON.stringify(player.session))
         : {};
     const nextSession = { ...currentSession, __matrixMarker: token };
     innerElement.dispatchEvent(

@@ -69,6 +69,11 @@ function handleThemeToggle(event: Event) {
           Explore {data.elements.length} interactive assessment elements. Click on any element below to
           see it in action with live demos and configuration options.
         </p>
+        <div class="mt-6">
+          <a href="/a11y" data-sveltekit-reload class="btn btn-outline btn-primary">
+            Open Axe Accessibility Suite
+          </a>
+        </div>
       </div>
 
       <!-- Filter Section -->

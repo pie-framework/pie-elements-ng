@@ -577,10 +577,9 @@ When reporting issues, include:
 
 ## See Also
 
-- [USAGE.md](./USAGE.md) - Usage guide
+- [README.md](../README.md) - Getting started
 - [API_REFERENCE.md](./API_REFERENCE.md) - API documentation
-- [INTEGRATION.md](./INTEGRATION.md) - Framework integration
-- [testing.md](./testing.md) - Testing guide
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System design
 
 ---
 
