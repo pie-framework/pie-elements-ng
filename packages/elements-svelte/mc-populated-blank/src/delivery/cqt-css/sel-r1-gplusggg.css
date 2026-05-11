@@ -11,3 +11,16 @@
   --mpb-choice-hover-bg: #f2f2f2;
   --mpb-choice-selected-bg: #fcfcd3;
 }
+
+/* r1.scss: .rli-r1-content-element boxes all have fixed line-height:89px, so every
+   token in the stem row shares a stable baseline regardless of content.  In PIE,
+   the blank slot's baseline shifts when the empty placeholder (short &nbsp;) is
+   replaced by the filled value span (full text height), dragging adjacent tokens
+   down by ~9px.  Switching to align-items:center is safe here because gplusggg has
+   only one row of content (blank + "four"), so vertical centering and baseline
+   alignment produce the same visual result.  The :is() wrapper raises specificity
+   above the base [class*=] rule without needing !important. */
+:is(.mc-populated-blank-root.variant-sel-r1-gplusggg) .pie-template-line {
+  align-items: center;
+}
+

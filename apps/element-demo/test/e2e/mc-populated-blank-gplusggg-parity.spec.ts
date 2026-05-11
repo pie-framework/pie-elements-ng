@@ -176,9 +176,9 @@ test('gplusggg: blank slot underline is 6px', async ({ page }) => {
 
 // ---------------------------------------------------------------------------
 // r1.scss .rli-r1-stem { display:flex; flex-direction:row } — flex alignment keeps
-// after-content position stable when the blank is filled.  Inline/baseline layout
-// shifts because the ClozeMarker's synthesized baseline differs between empty
-// (&nbsp;) and filled (inline-flex) states.
+// all token positions stable when the blank is filled.  The trailing text token
+// (a direct child of .pie-template-line, not a descendant of .pie-blank-slot)
+// must not shift when the blank slot content changes.
 // ---------------------------------------------------------------------------
 test('gplusggg: after-cloze content does not shift vertically when a distractor is selected', async ({
   page,
@@ -186,20 +186,29 @@ test('gplusggg: after-cloze content does not shift vertically when a distractor 
   await openGplusgggRoute(page);
   const root = deliveryContainer(page);
 
-  // Measure the Y position of the template line BEFORE any selection.
-  const templateLine = root.locator('.pie-template-line');
-  await expect(templateLine).toBeVisible();
-  const beforeBox = await templateLine.boundingBox();
-  expect(beforeBox).not.toBeNull();
+  // Locate the trailing "four" span as a *direct child* of .pie-template-line,
+  // not a descendant of the blank slot.  Use evaluate to find the direct-child
+  // span reliably, since :scope > span is not available via Playwright locators.
+  const getTrailingY = () =>
+    page.evaluate(() => {
+      const line = document.querySelector('.pie-template-line');
+      const slot = document.querySelector('.pie-blank-slot');
+      // Direct-child spans only — skip the blank slot itself
+      const directSpans = Array.from(line?.children ?? []).filter(
+        (el) => el.tagName === 'SPAN' && el !== slot
+      ) as HTMLElement[];
+      return directSpans[0]?.getBoundingClientRect().y ?? null;
+    });
 
-  // Select the first radio button.
+  const yBefore = await getTrailingY();
+  expect(yBefore).not.toBeNull();
+
   await root.locator('input[type="radio"]').first().check();
   await page.waitForTimeout(100);
 
-  // Template line should not have shifted vertically.
-  const afterBox = await templateLine.boundingBox();
-  expect(afterBox).not.toBeNull();
-  expect(Math.abs(afterBox!.y - beforeBox!.y)).toBeLessThan(5);
+  const yAfter = await getTrailingY();
+  expect(yAfter).not.toBeNull();
+  expect(Math.abs(yAfter! - yBefore!)).toBeLessThan(2);
 });
 
 // ---------------------------------------------------------------------------

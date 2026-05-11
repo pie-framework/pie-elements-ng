@@ -46,9 +46,7 @@ async function openRoute(page: Page, demoId: string) {
   if (GRAPHIC_SET.has(demoId)) {
     await page.waitForFunction(
       () => {
-        const imgs = Array.from(
-          document.querySelectorAll('.pie-choice img')
-        ) as HTMLImageElement[];
+        const imgs = Array.from(document.querySelectorAll('.pie-choice img')) as HTMLImageElement[];
         return imgs.length > 0 && imgs.every((img) => img.complete && img.naturalWidth > 0);
       },
       { timeout: 30_000 }
