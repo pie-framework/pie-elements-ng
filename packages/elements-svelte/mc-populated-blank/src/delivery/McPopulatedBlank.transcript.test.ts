@@ -63,24 +63,50 @@ describe('McPopulatedBlank — transcript rendering', () => {
     expect(transcript!.classList.contains('sr-only')).toBe(true);
   });
 
-  it('shows transcript without sr-only when showVisibleTranscript is true', () => {
-    const { target, component } = mountComponent({ showVisibleTranscript: true });
+  it('shows transcript without sr-only when ancestor has rli-with-audio-transcript class', async () => {
+    const wrapper = document.createElement('div');
+    document.body.appendChild(wrapper);
+    const target = document.createElement('div');
+    wrapper.appendChild(target);
+    const component = mount(McPopulatedBlank as any, {
+      target,
+      props: { model: { ...BASE_MODEL }, session: {} },
+    });
     mounts.push({ target, component });
     flushSync();
+
+    wrapper.classList.add('rli-with-audio-transcript');
+    await new Promise((r) => setTimeout(r, 0));
+    flushSync();
+
     const transcript = target.querySelector('.pie-audio-transcript');
     expect(transcript!.classList.contains('sr-only')).toBe(false);
+    wrapper.remove();
   });
 
-  it('transcript text has no label prefix', () => {
-    const { target, component } = mountComponent({ showVisibleTranscript: true });
+  it('transcript text has no label prefix', async () => {
+    const wrapper = document.createElement('div');
+    document.body.appendChild(wrapper);
+    const target = document.createElement('div');
+    wrapper.appendChild(target);
+    const component = mount(McPopulatedBlank as any, {
+      target,
+      props: { model: { ...BASE_MODEL }, session: {} },
+    });
     mounts.push({ target, component });
     flushSync();
+
+    wrapper.classList.add('rli-with-audio-transcript');
+    await new Promise((r) => setTimeout(r, 0));
+    flushSync();
+
     const transcript = target.querySelector('.pie-audio-transcript');
     expect(transcript!.textContent?.trim()).not.toMatch(/^Transcript:/i);
+    wrapper.remove();
   });
 
   it('transcript contains the audioTranscript text', () => {
-    const { target, component } = mountComponent({ showVisibleTranscript: true });
+    const { target, component } = mountComponent();
     mounts.push({ target, component });
     flushSync();
     const transcript = target.querySelector('.pie-audio-transcript');
@@ -95,7 +121,7 @@ describe('McPopulatedBlank — transcript rendering', () => {
   });
 
   it('transcript renders before the first choice tile', () => {
-    const { target, component } = mountComponent({ showVisibleTranscript: true });
+    const { target, component } = mountComponent();
     mounts.push({ target, component });
     flushSync();
     const all = Array.from(target.querySelectorAll('.pie-audio-transcript, .pie-choice'));
