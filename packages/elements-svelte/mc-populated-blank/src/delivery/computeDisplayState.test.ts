@@ -44,8 +44,14 @@ import {
   DEFAULT_AUDIO_BUTTON_SKINS,
 } from './computeDisplayState';
 
-const CUSTOM_SKIN = { silentUrl: 'https://example.com/s.svg', playingUrl: 'https://example.com/p.svg' };
-const BY_LOCALE_SKIN = { silentUrl: 'https://example.com/l.svg', playingUrl: 'https://example.com/lp.svg' };
+const CUSTOM_SKIN = {
+  silentUrl: 'https://example.com/s.svg',
+  playingUrl: 'https://example.com/p.svg',
+};
+const BY_LOCALE_SKIN = {
+  silentUrl: 'https://example.com/l.svg',
+  playingUrl: 'https://example.com/lp.svg',
+};
 
 // ---------------------------------------------------------------------------
 // computeFeatureAudioSkin
@@ -53,12 +59,20 @@ const BY_LOCALE_SKIN = { silentUrl: 'https://example.com/l.svg', playingUrl: 'ht
 
 describe('computeFeatureAudioSkin', () => {
   it('A1: no locale, no overrides → default English skin', () => {
-    const result = computeFeatureAudioSkin({ locale: '', audioButtonSkin: null, audioButtonSkinsByLocale: {} });
+    const result = computeFeatureAudioSkin({
+      locale: '',
+      audioButtonSkin: null,
+      audioButtonSkinsByLocale: {},
+    });
     expect(result).toEqual(DEFAULT_AUDIO_BUTTON_SKINS.default);
   });
 
   it('A2: Spanish locale (es-MX) → built-in es skin', () => {
-    const result = computeFeatureAudioSkin({ locale: 'es-MX', audioButtonSkin: null, audioButtonSkinsByLocale: {} });
+    const result = computeFeatureAudioSkin({
+      locale: 'es-MX',
+      audioButtonSkin: null,
+      audioButtonSkinsByLocale: {},
+    });
     expect(result).toEqual(DEFAULT_AUDIO_BUTTON_SKINS.es);
   });
 
@@ -116,7 +130,13 @@ describe('computeFeatureAudioSkin', () => {
 // ---------------------------------------------------------------------------
 
 describe('computeDisplayChoiceId', () => {
-  const base = { selectedId: 'a', isEvaluateMode: false, showCorrectAnswer: false, alwaysShowCorrect: false, correctChoiceId: 'b' };
+  const base = {
+    selectedId: 'a',
+    isEvaluateMode: false,
+    showCorrectAnswer: false,
+    alwaysShowCorrect: false,
+    correctChoiceId: 'b',
+  };
 
   it('D1: gather mode → selectedId', () => {
     expect(computeDisplayChoiceId({ ...base })).toBe('a');
@@ -127,19 +147,27 @@ describe('computeDisplayChoiceId', () => {
   });
 
   it('D3: alwaysShowCorrect=true, no correctChoiceId → selectedId', () => {
-    expect(computeDisplayChoiceId({ ...base, alwaysShowCorrect: true, correctChoiceId: '' })).toBe('a');
+    expect(computeDisplayChoiceId({ ...base, alwaysShowCorrect: true, correctChoiceId: '' })).toBe(
+      'a'
+    );
   });
 
   it('D4: evaluate + showCorrectAnswer=true → correctChoiceId', () => {
-    expect(computeDisplayChoiceId({ ...base, isEvaluateMode: true, showCorrectAnswer: true })).toBe('b');
+    expect(computeDisplayChoiceId({ ...base, isEvaluateMode: true, showCorrectAnswer: true })).toBe(
+      'b'
+    );
   });
 
   it('D5: evaluate + showCorrectAnswer=false → selectedId', () => {
-    expect(computeDisplayChoiceId({ ...base, isEvaluateMode: true, showCorrectAnswer: false })).toBe('a');
+    expect(
+      computeDisplayChoiceId({ ...base, isEvaluateMode: true, showCorrectAnswer: false })
+    ).toBe('a');
   });
 
   it('D6: not evaluate + showCorrectAnswer=true → selectedId (not overridden)', () => {
-    expect(computeDisplayChoiceId({ ...base, isEvaluateMode: false, showCorrectAnswer: true })).toBe('a');
+    expect(
+      computeDisplayChoiceId({ ...base, isEvaluateMode: false, showCorrectAnswer: true })
+    ).toBe('a');
   });
 });
 
@@ -148,7 +176,13 @@ describe('computeDisplayChoiceId', () => {
 // ---------------------------------------------------------------------------
 
 describe('computeResultText', () => {
-  const base = { isEvaluateMode: true, showCorrectAnswer: false, isCorrect: false, isIncorrect: false, selectedId: '' };
+  const base = {
+    isEvaluateMode: true,
+    showCorrectAnswer: false,
+    isCorrect: false,
+    isIncorrect: false,
+    selectedId: '',
+  };
 
   it('R1: not evaluate mode → empty string', () => {
     expect(computeResultText({ ...base, isEvaluateMode: false })).toBe('');
@@ -163,7 +197,9 @@ describe('computeResultText', () => {
   });
 
   it('R4: evaluate + incorrect + has selection → Incorrect answer selected', () => {
-    expect(computeResultText({ ...base, isIncorrect: true, selectedId: 'a' })).toBe('Incorrect answer selected');
+    expect(computeResultText({ ...base, isIncorrect: true, selectedId: 'a' })).toBe(
+      'Incorrect answer selected'
+    );
   });
 
   it('R5: evaluate + incorrect + no selection → empty string', () => {
@@ -181,34 +217,58 @@ describe('computeResultText', () => {
 
 describe('computeLegendText', () => {
   it('L1: plain text prompt under limit → prompt text', () => {
-    expect(computeLegendText({ prompt: 'Choose the word', legendMaxChars: 40, answerChoicesLabel: 'Choices' }))
-      .toBe('Choose the word');
+    expect(
+      computeLegendText({
+        prompt: 'Choose the word',
+        legendMaxChars: 40,
+        answerChoicesLabel: 'Choices',
+      })
+    ).toBe('Choose the word');
   });
 
   it('L2: HTML prompt → tags stripped', () => {
-    expect(computeLegendText({ prompt: '<p><strong>Choose</strong> the word</p>', legendMaxChars: 40, answerChoicesLabel: 'Choices' }))
-      .toBe('Choose the word');
+    expect(
+      computeLegendText({
+        prompt: '<p><strong>Choose</strong> the word</p>',
+        legendMaxChars: 40,
+        answerChoicesLabel: 'Choices',
+      })
+    ).toBe('Choose the word');
   });
 
   it('L3: prompt over legendMaxChars → truncated with ellipsis', () => {
-    const result = computeLegendText({ prompt: 'Choose the correct spelling', legendMaxChars: 10, answerChoicesLabel: 'Choices' });
+    const result = computeLegendText({
+      prompt: 'Choose the correct spelling',
+      legendMaxChars: 10,
+      answerChoicesLabel: 'Choices',
+    });
     expect(result.length).toBeLessThanOrEqual(10);
     expect(result.endsWith('…')).toBe(true);
   });
 
   it('L4: empty prompt → answerChoicesLabel fallback', () => {
-    expect(computeLegendText({ prompt: '', legendMaxChars: 40, answerChoicesLabel: 'Answer choices' }))
-      .toBe('Answer choices');
+    expect(
+      computeLegendText({ prompt: '', legendMaxChars: 40, answerChoicesLabel: 'Answer choices' })
+    ).toBe('Answer choices');
   });
 
   it('L5: legendMaxChars below 8 → clamped, no crash', () => {
-    const result = computeLegendText({ prompt: 'Hi there friend', legendMaxChars: 2, answerChoicesLabel: 'Choices' });
+    const result = computeLegendText({
+      prompt: 'Hi there friend',
+      legendMaxChars: 2,
+      answerChoicesLabel: 'Choices',
+    });
     expect(result.endsWith('…')).toBe(true);
     expect(result.length).toBeGreaterThan(0);
   });
 
   it('L6: whitespace-only HTML prompt → fallback', () => {
-    expect(computeLegendText({ prompt: '<p>   </p>', legendMaxChars: 40, answerChoicesLabel: 'Answer choices' }))
-      .toBe('Answer choices');
+    expect(
+      computeLegendText({
+        prompt: '<p>   </p>',
+        legendMaxChars: 40,
+        answerChoicesLabel: 'Answer choices',
+      })
+    ).toBe('Answer choices');
   });
 });
