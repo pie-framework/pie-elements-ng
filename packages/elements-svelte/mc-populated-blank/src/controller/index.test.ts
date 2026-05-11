@@ -61,13 +61,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import {
-  getCorrectness,
-  outcome,
-  model,
-  validate,
-  createCorrectResponseSession,
-} from './index';
+import { getCorrectness, outcome, model, validate, createCorrectResponseSession } from './index';
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -143,7 +137,7 @@ describe('outcome', () => {
   });
 
   it('O5: traceLog includes mode, selected id, correct id, final score', async () => {
-    const result = await outcome(BASE_QUESTION, { choiceId: 'a' }, EVALUATE_ENV) as any;
+    const result = (await outcome(BASE_QUESTION, { choiceId: 'a' }, EVALUATE_ENV)) as any;
     const log = result.traceLog.join('\n');
     expect(log).toContain('evaluate');
     expect(log).toContain('a');
