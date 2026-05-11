@@ -159,4 +159,41 @@ export const PARITY_REGIONS: Record<string, VariantRegions> = {
       learnosity: '.rli-r1-distractors',
     },
   },
+
+  // Graphic (choiceMode=image) variants — no learnosityItemReference, PIE-only snapshots.
+  'variant-sel-r1-plusggg-graphic': {
+    stem: { pie: '.pie-template-line', learnosity: '.rli-r1-stem' },
+    choices: { pie: '.pie-choices-fieldset', learnosity: '.rli-r1-distractors' },
+    audio: { pie: '.pie-audio-container', learnosity: '.rli-r1-instructions' },
+  },
+
+  'variant-sel-r1-gplusggg-graphic': {
+    stem: { pie: '.pie-template-line', learnosity: '.rli-r1-stem' },
+    choices: { pie: '.pie-choices-fieldset', learnosity: '.rli-r1-distractors' },
+    audio: { pie: '.pie-audio-container', learnosity: '.rli-r1-instructions' },
+  },
+
+  'variant-sel-r1-gg-plus-graphic': {
+    stem: { pie: '.pie-template-line', learnosity: '.rli-r1-stem' },
+    choices: { pie: '.pie-choices-fieldset', learnosity: '.rli-r1-distractors' },
+    audio: { pie: '.pie-audio-container', learnosity: '.rli-r1-instructions' },
+  },
+
+  'variant-sel-r1-ggplus-graphic': {
+    stem: { pie: '.pie-template-line', learnosity: '.rli-r1-stem' },
+    choices: { pie: '.pie-choices-fieldset', learnosity: '.rli-r1-distractors' },
+    audio: { pie: '.pie-audio-container', learnosity: '.rli-r1-instructions' },
+  },
+
+  'variant-sel-r1-g-stem-graphic': {
+    stem: { pie: '.pie-template-line', learnosity: '.rli-r1-stem' },
+    choices: { pie: '.pie-choices-fieldset', learnosity: '.rli-r1-distractors' },
+    audio: { pie: '.pie-audio-container', learnosity: '.rli-r1-instructions' },
+  },
+
+  'variant-sel-r1-s3-graphic': {
+    stem: { pie: '.pie-template-line', learnosity: '.rli-r1-stem' },
+    choices: { pie: '.pie-choices-fieldset', learnosity: '.rli-r1-distractors' },
+    audio: { pie: '.pie-audio-container', learnosity: '.rli-r1-instructions' },
+  },
 };
