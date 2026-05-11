@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { MiniField } from './number-text-field.js';
+import NumberTextField from './number-text-field.js';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { styled } from '@mui/material/styles';
@@ -25,6 +25,10 @@ const FlexRow: any = styled('div')({
   display: 'flex',
   alignItems: 'center',
   gap: '10px',
+
+  '.MuiInputBase-input': {
+    padding: '16.5px 14px !important',
+  },
 });
 
 const sort = (domain) => {
@@ -61,11 +65,11 @@ export class Domain extends React.Component {
       <DisplayFlex>
         <FlexRow>
           <label>Min Value</label>
-          <MiniField min={-100000} max={99999} value={domain.min} name={DOMAIN_BEGIN} onChange={this.changeMin} />
+          <NumberTextField min={-100000} max={99999} value={domain.min} name={DOMAIN_BEGIN} onChange={this.changeMin} />
         </FlexRow>
         <FlexRow>
           <label>Max Value</label>
-          <MiniField min={-99999} max={100000} value={domain.max} name={DOMAIN_END} onChange={this.changeMax} />
+          <NumberTextField min={-99999} max={100000} value={domain.max} name={DOMAIN_END} onChange={this.changeMax} />
         </FlexRow>
       </DisplayFlex>
     );

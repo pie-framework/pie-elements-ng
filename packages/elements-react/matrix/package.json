@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/matrix",
-  "version": "3.2.0-next.7",
+  "version": "4.0.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

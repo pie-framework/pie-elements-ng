@@ -409,7 +409,13 @@ function resolveSyncedVersion(
 }
 
 /**
- * Ensure devDependencies include all required build tools
+ * Ensure devDependencies include all required build tools.
+ *
+ * The pinned versions in BUILD_TOOLS / REACT are the source of truth for the
+ * monorepo's toolchain, so we overwrite any existing entries instead of only
+ * filling in missing ones. This prevents an upstream package.json from
+ * silently downgrading vite / @vitejs/plugin-react / typescript across the
+ * pie-lib packages during `upstream:update`.
  */
 export function ensureBuildToolDependencies(pkg: PackageJson): void {
   if (!pkg.devDependencies || typeof pkg.devDependencies !== 'object') {
@@ -418,12 +424,11 @@ export function ensureBuildToolDependencies(pkg: PackageJson): void {
 
   const devDeps = pkg.devDependencies as Record<string, string>;
 
-  if (!devDeps.vite) devDeps.vite = BUILD_TOOLS.VITE;
-  if (!devDeps.typescript) devDeps.typescript = BUILD_TOOLS.TYPESCRIPT;
-  if (!devDeps['@vitejs/plugin-react'])
-    devDeps['@vitejs/plugin-react'] = BUILD_TOOLS.VITE_REACT_PLUGIN;
-  if (!devDeps['@types/react']) devDeps['@types/react'] = REACT.TYPES_VERSION;
-  if (!devDeps['@types/react-dom']) devDeps['@types/react-dom'] = REACT.TYPES_VERSION;
+  devDeps.vite = BUILD_TOOLS.VITE;
+  devDeps.typescript = BUILD_TOOLS.TYPESCRIPT;
+  devDeps['@vitejs/plugin-react'] = BUILD_TOOLS.VITE_REACT_PLUGIN;
+  devDeps['@types/react'] = REACT.TYPES_VERSION;
+  devDeps['@types/react-dom'] = REACT.TYPES_VERSION;
 }
 
 /**

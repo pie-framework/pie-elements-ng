@@ -99,10 +99,14 @@ export const lineToolComponent = (Component) => {
       this.state = {};
     }
 
-    startDrag = () => this.setState({ mark: { ...this.props.mark } });
+    startDrag: any = () => {
+      const { onDragStart } = this.props;
+      this.setState({ mark: { ...this.props.mark } });
+      if (onDragStart) onDragStart();
+    };
 
     stopDrag: any = () => {
-      const { onChange, mark } = this.props;
+      const { onChange, mark, onDragStop } = this.props;
       const update = { ...this.state.mark };
 
       this.setState({ mark: undefined }, () => {
@@ -117,6 +121,7 @@ export const lineToolComponent = (Component) => {
         if (!isEqual(mark, update) && !shouldNotChange) {
           onChange(mark, update);
         }
+        if (onDragStop) onDragStop();
       });
     };
 
@@ -309,12 +314,10 @@ export const lineBase = (Comp, opts) => {
     };
 
     clickPoint: any = (point, type, data) => {
-      const { changeMarkProps, disabled, from, to, labelModeEnabled, limitLabeling } = this.props;
+      const { changeMarkProps, disabled, from, to, labelModeEnabled, limitLabeling, onClick } = this.props;
 
       if (!labelModeEnabled) {
-        // Clicks on existing mark points/lines should not create new marks.
-        // Moving is handled entirely by drag. Do nothing here.
-        return;
+        onClick(point || data);
       }
 
       if (disabled) {
@@ -355,7 +358,7 @@ export const lineBase = (Comp, opts) => {
         labelNode,
         labelModeEnabled,
       } = this.props;
-      const common = { graphProps, onDragStart, onDragStop, disabled, correctness };
+      const common = { graphProps, onDragStart, onDragStop, disabled, correctness, onClick };
       const angle = to ? trig.toDegrees(trig.angle(from, to)) : 0;
 
       let fromLabelNode = null;

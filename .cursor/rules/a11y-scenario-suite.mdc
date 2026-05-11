@@ -1,0 +1,14 @@
+---
+description: Guidance for maintaining the PIE accessibility scenario suite
+globs: apps/element-demo/src/lib/a11y/**, apps/element-demo/test/a11y/**, apps/element-demo/src/lib/samples/**, docs/a11y/**
+alwaysApply: false
+---
+
+# Accessibility Scenario Suite
+
+- Treat WCAG 2.2 Level AA as the target when adding or reviewing PIE element accessibility scenarios.
+- Use `.claude/skills/accessibility-reviewer-assessments/SKILL.md` for the detailed assessment-specific checklist.
+- Prefer dedicated a11y scenarios in `apps/element-demo/src/lib/a11y/scenarios/catalog.ts` over broad demo inventory coverage.
+- Keep automated scope explicit: document Axe-covered checks, custom Playwright checks, manual-only concerns, and unclear gaps in `docs/a11y/`.
+- Add reusable checks in `apps/element-demo/test/a11y/axe-scenarios.spec.ts` only when the concern applies across multiple elements.
+- Do not edit synced outputs in `packages/elements-react/*` or `packages/lib-react/*`; fix upstream first or document the issue for follow-up.

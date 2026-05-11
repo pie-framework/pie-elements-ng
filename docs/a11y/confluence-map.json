@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "cloudId": "6b6fffef-32f8-44d1-82ea-ad3773ab29c8",
+  "siteUrl": "https://illuminate.atlassian.net",
+  "spaceId": "18331566138",
+  "rootPageId": "19292586001",
+  "rootTitle": "PIE Elements Universal Access (WCAG)",
+  "pages": [
+    {
+      "slug": "working-model",
+      "title": "Repo / Working Model",
+      "localPath": "docs/a11y/INDEX.md",
+      "pageId": "19332301229",
+      "parentSlug": null,
+      "sync": "repo-managed-with-pm-status"
+    },
+    {
+      "slug": "initiative-map",
+      "title": "A11y Initiative Map",
+      "localPath": "docs/a11y/INITIATIVE-MAP.md",
+      "pageId": "19331220010",
+      "parentSlug": null,
+      "sync": "repo-managed-with-pm-status"
+    },
+    {
+      "slug": "group-1a",
+      "title": "Group 1A: MC/MS, EBSR, Passages",
+      "localPath": "docs/a11y/TRACKING.md",
+      "pageId": "19332104616",
+      "parentSlug": null,
+      "sync": "generated-group-summary"
+    },
+    {
+      "slug": "group-1b",
+      "title": "Group 1B: Inline Dropdown, ECR, CQT",
+      "localPath": "docs/a11y/TRACKING.md",
+      "pageId": "19329090333",
+      "parentSlug": null,
+      "sync": "generated-group-summary"
+    },
+    {
+      "slug": "group-2",
+      "title": "Group 2: Drag / Spatial / Image",
+      "localPath": "docs/a11y/TRACKING.md",
+      "pageId": "19329090353",
+      "parentSlug": null,
+      "sync": "generated-group-summary"
+    },
+    {
+      "slug": "group-1c",
+      "title": "Group 1C: Math Editor / Math Inline",
+      "localPath": "docs/a11y/TRACKING.md",
+      "pageId": "19333710011",
+      "parentSlug": null,
+      "sync": "generated-group-summary"
+    },
+    {
+      "slug": "group-1d",
+      "title": "Group 1D: CR / Extended Text Entry",
+      "localPath": "docs/a11y/TRACKING.md",
+      "pageId": "19333054742",
+      "parentSlug": null,
+      "sync": "generated-group-summary"
+    },
+    {
+      "slug": "group-3",
+      "title": "Group 3: Math / Graphing / Drawing",
+      "localPath": "docs/a11y/TRACKING.md",
+      "pageId": "19332759944",
+      "parentSlug": null,
+      "sync": "generated-group-summary"
+    },
+    {
+      "slug": "prd-index",
+      "title": "PRD Index",
+      "localPath": "docs/prds",
+      "pageId": "19329221447",
+      "parentSlug": null,
+      "sync": "generated-prd-index"
+    }
+  ]
+}

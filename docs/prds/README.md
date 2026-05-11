@@ -18,8 +18,15 @@ Do **not** write a PRD for:
 - Demo-app or e2e-test tweaks.
 - Pure docs / README changes.
 - Version bumps and dependency updates.
+- Retroactive documentation of stable, already-synced elements you are not actively changing — tests own behaviour; a PRD written after the fact just drifts.
 
 For everything in the second list, a PR description is the right artifact.
+
+### Retroactive PRDs for existing elements
+
+Writing a PRD for a React element that already exists and is not being touched adds documentation overhead without a reader who needs it, and creates a second source of truth that will drift from the code. Don't do it preemptively.
+
+**Do** write a thin PRD for an existing element when you are about to touch it — the PRD is written by someone who just read the code carefully, captures intent that isn't derivable from the code (key non-goals, deliberate divergences from upstream), and is immediately useful. One screen covering model/session shape, non-goals, and known constraints is enough.
 
 ## Layout
 
@@ -134,3 +141,5 @@ A few practical rules to keep PRDs useful with LLMs in the loop:
 - **Don't accept LLM-generated padding.** If a PRD draft has long generic sections about "Performance" or "Security" that say nothing element-specific, delete them. A short PRD that contains only true claims beats a long PRD that pads with truisms.
 
 See [`venn-classification/PRD.md`](./venn-classification/PRD.md) for an example PRD that anchors the expected length and tone.
+
+For a product-manager-oriented workflow that connects PRDs to Jira and Confluence, see [`PM_GUIDE.md`](./PM_GUIDE.md).

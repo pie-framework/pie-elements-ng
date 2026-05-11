@@ -60,8 +60,8 @@ If you're a maintainer and need to sync changes from the upstream `pie-elements`
 ```bash
 # 1. Clone upstream repositories as siblings (one-time setup)
 cd ..
-git clone https://github.com/PieLabs/pie-elements.git
-git clone https://github.com/PieLabs/pie-lib.git
+git clone https://github.com/pie-framework/pie-elements.git
+git clone https://github.com/pie-framework/pie-lib.git
 cd pie-elements-ng
 
 # 2. Pull latest upstream changes
@@ -82,7 +82,7 @@ git commit -m "sync: update from upstream"
 git push
 ```
 
-**Important:** See [UPSTREAM_SYNC_COMMIT_GUIDE.md](UPSTREAM_SYNC_COMMIT_GUIDE.md) for details on what gets committed vs gitignored.
+**Important:** See [upstream-sync-commit-guide.md](docs/upstream-sync-commit-guide.md) for details on what gets committed vs gitignored.
 
 ### Development Commands
 

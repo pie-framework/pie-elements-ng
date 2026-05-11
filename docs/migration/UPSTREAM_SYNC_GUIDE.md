@@ -1405,7 +1405,6 @@ bun install
 ## Related Documents
 
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - System architecture
-- [CONTRIBUTING.md](../CONTRIBUTING.md) - Contributing guidelines
 - [CLI README](../../tools/cli/README.md) - Detailed CLI usage
 
 ---

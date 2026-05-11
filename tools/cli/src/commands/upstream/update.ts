@@ -1,5 +1,6 @@
 import { Command, Flags } from '@oclif/core';
 import { resolve } from 'node:path';
+import { spawn } from 'node:child_process';
 import AnalyzeEsm from './analyze-esm.js';
 import Sync from './sync.js';
 import { assertReposExist } from '../../lib/upstream/repo-utils.js';
@@ -106,6 +107,29 @@ export default class Update extends Command {
     ].filter(Boolean);
 
     await Sync.run(syncFlags);
+
+    if (!flags['dry-run']) {
+      if (flags.verbose) {
+        this.log('');
+        this.log('─'.repeat(60));
+        this.log('');
+        this.log('📦 Finalizing: running bun install to update lockfile...');
+      }
+      const exitCode = await new Promise<number>((resolve) => {
+        const child = spawn('bun', ['install'], {
+          cwd: process.cwd(),
+          stdio: 'inherit',
+          env: process.env,
+        });
+        child.on('close', (code) => resolve(code ?? 1));
+        child.on('error', () => resolve(1));
+      });
+      if (exitCode !== 0) {
+        this.warn('bun install failed — lockfile may be out of sync');
+      } else if (flags.verbose) {
+        this.log('   ✓ bun install completed\n');
+      }
+    }
 
     if (!flags.verbose) {
       this.log('');
