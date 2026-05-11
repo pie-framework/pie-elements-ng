@@ -141,3 +141,5 @@ A few practical rules to keep PRDs useful with LLMs in the loop:
 - **Don't accept LLM-generated padding.** If a PRD draft has long generic sections about "Performance" or "Security" that say nothing element-specific, delete them. A short PRD that contains only true claims beats a long PRD that pads with truisms.
 
 See [`venn-classification/PRD.md`](./venn-classification/PRD.md) for an example PRD that anchors the expected length and tone.
+
+For a product-manager-oriented workflow that connects PRDs to Jira and Confluence, see [`PM_GUIDE.md`](./PM_GUIDE.md).
