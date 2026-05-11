@@ -2,6 +2,51 @@ import { type LayoutLimits, DEFAULT_LAYOUT_LIMITS } from '../shared/layoutLimits
 export type { LayoutLimits };
 export { DEFAULT_LAYOUT_LIMITS };
 
+/**
+ * Maps every LayoutLimits key (except legendMaxChars, which is a return value not a CSS var)
+ * to its --mpb-* CSS variable name and CSS unit.
+ * Add a single entry here when adding a new layout limit.
+ */
+export const CSS_VAR_SPEC: Record<
+  Exclude<keyof LayoutLimits, 'legendMaxChars'>,
+  { varName: string; unit: string }
+> = {
+  blankStandaloneWidthRem:             { varName: '--mpb-blank-standalone-width',             unit: 'rem' },
+  blankWideWidthRem:                   { varName: '--mpb-blank-wide-width',                   unit: 'rem' },
+  blankUnderlineWidthPx:               { varName: '--mpb-blank-underline-width',              unit: 'px'  },
+  blankUnderlineWideWidthPx:           { varName: '--mpb-blank-underline-wide-width',         unit: 'px'  },
+  horizontalChoiceWidthPx:             { varName: '--mpb-choice-width-px',                    unit: 'px'  },
+  horizontalChoiceWidthVw:             { varName: '--mpb-choice-width-vw',                    unit: 'vw'  },
+  horizontalChoiceTileMinHeightRem:    { varName: '--mpb-choice-tile-min-height',             unit: 'rem' },
+  horizontalChoiceContentMinHeightRem: { varName: '--mpb-choice-content-min-height',          unit: 'rem' },
+  choiceImageMaxHeightRem:             { varName: '--mpb-choice-image-max-height',            unit: 'rem' },
+  selectedImageMaxHeightRem:           { varName: '--mpb-selected-image-max-height',          unit: 'rem' },
+  choiceGroupGapRem:                   { varName: '--mpb-choice-group-gap',                   unit: 'rem' },
+  choiceRowGapRem:                     { varName: '--mpb-choice-row-gap',                     unit: 'rem' },
+  horizontalChoiceRadioTopMarginRem:   { varName: '--mpb-horizontal-choice-radio-top-margin', unit: 'rem' },
+  narrowHorizontalChoiceMaxWidthPx:    { varName: '--mpb-narrow-choice-max-width',            unit: 'px'  },
+  toggleButtonGapRem:                  { varName: '--mpb-toggle-button-gap',                  unit: 'rem' },
+  listenButtonSizePx:                  { varName: '--mpb-listen-button-size',                 unit: 'px'  },
+  audioBlankTemplateMarginTopRem:      { varName: '--mpb-audio-blank-template-margin-top',    unit: 'rem' },
+  audioBlankTemplateMarginBottomRem:   { varName: '--mpb-audio-blank-template-margin-bottom', unit: 'rem' },
+  audioInstructionsMaxWidthPx:         { varName: '--mpb-audio-instructions-max-width',       unit: 'px'  },
+  stimulusMinColumnPx:                 { varName: '--mpb-stimulus-min-column',                unit: 'px'  },
+  textMinColumnPx:                     { varName: '--mpb-text-min-column',                    unit: 'px'  },
+  stimulusGridColumnGapRem:            { varName: '--mpb-stimulus-grid-column-gap',           unit: 'rem' },
+  stimulusGridRowGapRem:               { varName: '--mpb-stimulus-grid-row-gap',              unit: 'rem' },
+  stimulusSentenceMarginTopRem:        { varName: '--mpb-stimulus-sentence-margin-top',       unit: 'rem' },
+  stimulusChoicesMarginTopRem:         { varName: '--mpb-stimulus-choices-margin-top',        unit: 'rem' },
+  tokenGridColumnGapRem:               { varName: '--mpb-token-grid-column-gap',              unit: 'rem' },
+  tokenGridRowGapRem:                  { varName: '--mpb-token-grid-row-gap',                 unit: 'rem' },
+  tokenTemplateMarginTopRem:           { varName: '--mpb-token-template-margin-top',          unit: 'rem' },
+  tokenInlineTokenGapRem:              { varName: '--mpb-token-inline-token-gap',             unit: 'rem' },
+  tokenChoicesMarginTopRem:            { varName: '--mpb-token-choices-margin-top',           unit: 'rem' },
+  inlineGridColumnGapRem:              { varName: '--mpb-inline-grid-column-gap',             unit: 'rem' },
+  inlineGridRowGapRem:                 { varName: '--mpb-inline-grid-row-gap',                unit: 'rem' },
+  inlineTemplateMarginTopRem:          { varName: '--mpb-inline-template-margin-top',         unit: 'rem' },
+  inlineChoicesMarginTopRem:           { varName: '--mpb-inline-choices-margin-top',          unit: 'rem' },
+};
+
 export const DEFAULT_LAYOUT_PROFILE_PRESETS: Record<string, Partial<LayoutLimits>> = {
   audio_blank_only: {
     blankWideWidthRem: 10,
@@ -68,47 +113,10 @@ export function computeLayoutStyle(params: {
     ? `${l.blankUnderlineWideWidthPx}px`
     : `${l.blankUnderlineWidthPx}px`;
 
-  const rootStyle = [
-    // Blank slot
-    `--mpb-blank-standalone-width:${l.blankStandaloneWidthRem}rem`,
-    `--mpb-blank-wide-width:${l.blankWideWidthRem}rem`,
-    `--mpb-blank-underline-width:${l.blankUnderlineWidthPx}px`,
-    `--mpb-blank-underline-wide-width:${l.blankUnderlineWideWidthPx}px`,
-    // Choice tiles
-    `--mpb-choice-width-px:${l.horizontalChoiceWidthPx}px`,
-    `--mpb-choice-width-vw:${l.horizontalChoiceWidthVw}vw`,
-    `--mpb-choice-tile-min-height:${l.horizontalChoiceTileMinHeightRem}rem`,
-    `--mpb-choice-content-min-height:${l.horizontalChoiceContentMinHeightRem}rem`,
-    `--mpb-choice-image-max-height:${l.choiceImageMaxHeightRem}rem`,
-    `--mpb-selected-image-max-height:${l.selectedImageMaxHeightRem}rem`,
-    `--mpb-choice-group-gap:${l.choiceGroupGapRem}rem`,
-    `--mpb-choice-row-gap:${l.choiceRowGapRem}rem`,
-    `--mpb-horizontal-choice-radio-top-margin:${l.horizontalChoiceRadioTopMarginRem}rem`,
-    `--mpb-narrow-choice-max-width:${l.narrowHorizontalChoiceMaxWidthPx}px`,
-    `--mpb-toggle-button-gap:${l.toggleButtonGapRem}rem`,
-    // Audio
-    `--mpb-listen-button-size:${l.listenButtonSizePx}px`,
-    `--mpb-audio-blank-template-margin-top:${l.audioBlankTemplateMarginTopRem}rem`,
-    `--mpb-audio-blank-template-margin-bottom:${l.audioBlankTemplateMarginBottomRem}rem`,
-    `--mpb-audio-instructions-max-width:${l.audioInstructionsMaxWidthPx}px`,
-    // Profile grids
-    `--mpb-stimulus-min-column:${l.stimulusMinColumnPx}px`,
-    `--mpb-text-min-column:${l.textMinColumnPx}px`,
-    `--mpb-stimulus-grid-column-gap:${l.stimulusGridColumnGapRem}rem`,
-    `--mpb-stimulus-grid-row-gap:${l.stimulusGridRowGapRem}rem`,
-    `--mpb-stimulus-sentence-margin-top:${l.stimulusSentenceMarginTopRem}rem`,
-    `--mpb-stimulus-choices-margin-top:${l.stimulusChoicesMarginTopRem}rem`,
-    `--mpb-token-grid-column-gap:${l.tokenGridColumnGapRem}rem`,
-    `--mpb-token-grid-row-gap:${l.tokenGridRowGapRem}rem`,
-    `--mpb-token-template-margin-top:${l.tokenTemplateMarginTopRem}rem`,
-    `--mpb-token-inline-token-gap:${l.tokenInlineTokenGapRem}rem`,
-    `--mpb-token-choices-margin-top:${l.tokenChoicesMarginTopRem}rem`,
-    `--mpb-inline-grid-column-gap:${l.inlineGridColumnGapRem}rem`,
-    `--mpb-inline-grid-row-gap:${l.inlineGridRowGapRem}rem`,
-    `--mpb-inline-template-margin-top:${l.inlineTemplateMarginTopRem}rem`,
-    `--mpb-inline-choices-margin-top:${l.inlineChoicesMarginTopRem}rem`,
-    correctAnswerStyleVars,
-  ].join(';');
+  const cssVars = (Object.keys(CSS_VAR_SPEC) as (keyof typeof CSS_VAR_SPEC)[]).map(
+    (key) => `${CSS_VAR_SPEC[key].varName}:${l[key]}${CSS_VAR_SPEC[key].unit}`
+  );
+  const rootStyle = [...cssVars, correctAnswerStyleVars].join(';');
 
   return { rootStyle, blankWidth, blankBorderWidth, legendMaxChars: l.legendMaxChars };
 }
