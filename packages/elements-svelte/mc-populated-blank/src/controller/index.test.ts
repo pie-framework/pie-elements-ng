@@ -152,7 +152,7 @@ describe('outcome', () => {
 
 describe('model — choice ordering', () => {
   it('M1: shuffle=false → original order preserved', async () => {
-    const result = await model({ ...BASE_QUESTION, shuffle: false }, {}, GATHER_ENV);
+    const result = await model({ ...BASE_QUESTION, shuffle: false }, {}, GATHER_ENV) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['a', 'b', 'c']);
   });
 
@@ -161,7 +161,7 @@ describe('model — choice ordering', () => {
       { ...BASE_QUESTION, shuffle: true },
       {},
       { mode: 'view', role: 'instructor' }
-    );
+    ) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['a', 'b', 'c']);
   });
 
@@ -170,25 +170,25 @@ describe('model — choice ordering', () => {
       { ...BASE_QUESTION, shuffle: true, lockChoiceOrder: true },
       {},
       GATHER_ENV
-    );
+    ) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['a', 'b', 'c']);
   });
 
   it('M4: shuffle=true, stored shuffle in session.data.shuffledValues → order restored', async () => {
     const session = { data: { shuffledValues: ['c', 'a', 'b'] } };
-    const result = await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV);
+    const result = await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['c', 'a', 'b']);
   });
 
   it('M5: shuffle=true, stored shuffle in session.shuffledValues (legacy) → order restored', async () => {
     const session = { shuffledValues: ['b', 'c', 'a'] };
-    const result = await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV);
+    const result = await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['b', 'c', 'a']);
   });
 
   it('M6: shuffle=true, stored shuffle has unknown id → known ids first, extras appended', async () => {
     const session = { data: { shuffledValues: ['c', 'a', 'unknown'] } };
-    const result = await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV);
+    const result = await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV) as any;
     const ids = result.choices.map((c: any) => c.id);
     expect(ids[0]).toBe('c');
     expect(ids[1]).toBe('a');
@@ -210,7 +210,7 @@ describe('model — choice ordering', () => {
 
   it('M8: shuffle=true, no stored shuffle, no updateSession → shuffled silently without throw', async () => {
     const session = { id: 'sess-1', element: 'mc-populated-blank' };
-    const result = await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV);
+    const result = await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV) as any;
     expect(result.choices).toHaveLength(3);
   });
 });
