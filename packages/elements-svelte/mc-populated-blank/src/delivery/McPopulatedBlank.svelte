@@ -12,78 +12,25 @@
 <script lang="ts">
 import { color } from '@pie-lib/styling-svelte';
 import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
+import AudioPlayer from './AudioPlayer.svelte';
+import ClozeMarker from './ClozeMarker.svelte';
+import ChoiceRow from './ChoiceRow.svelte';
+import { computeChoiceCorrectness } from './computeChoiceCorrectness';
+import { computeLayoutProfile } from './computeLayoutProfile';
+import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
+import {
+  computeFeatureAudioSkin,
+  computeDisplayChoiceId,
+  computeResultText,
+  computeLegendText,
+} from './computeDisplayState';
 import {
   ensureVariantCssInjected,
   getVariantCssConfig,
   getVariantRootClass,
 } from './variant-css-map';
-/** Must match controller `BLANK_TOKEN` (kept local to avoid pulling controller into delivery). */
+
 const BLANK_TOKEN = '{{blank}}';
-const DEFAULT_LAYOUT_LIMITS = {
-  blankStandaloneWidthRem: 7,
-  blankWideWidthRem: 10,
-  blankUnderlineWidthPx: 2,
-  blankUnderlineWideWidthPx: 4,
-  horizontalChoiceWidthPx: 170,
-  horizontalChoiceWidthVw: 30,
-  horizontalChoiceTileMinHeightRem: 11,
-  horizontalChoiceContentMinHeightRem: 7.5,
-  selectedImageMaxHeightRem: 4,
-  choiceImageMaxHeightRem: 5,
-  listenButtonSizePx: 128,
-  stimulusMinColumnPx: 210,
-  textMinColumnPx: 260,
-  legendMaxChars: 120,
-  choiceGroupGapRem: 0.5,
-  choiceRowGapRem: 0.5,
-  toggleButtonGapRem: 0.5,
-  horizontalChoiceRadioTopMarginRem: 0.5,
-  audioBlankTemplateMarginTopRem: 0.8,
-  audioBlankTemplateMarginBottomRem: 1.8,
-  audioInstructionsMaxWidthPx: 875,
-  narrowHorizontalChoiceMaxWidthPx: 230,
-  stimulusGridColumnGapRem: 2,
-  stimulusGridRowGapRem: 0.7,
-  stimulusSentenceMarginTopRem: 0.2,
-  stimulusChoicesMarginTopRem: 0.9,
-  tokenGridColumnGapRem: 1.5,
-  tokenGridRowGapRem: 0.8,
-  tokenTemplateMarginTopRem: 0.6,
-  tokenInlineTokenGapRem: 0.35,
-  tokenChoicesMarginTopRem: 0.2,
-  inlineGridColumnGapRem: 1.5,
-  inlineGridRowGapRem: 0.65,
-  inlineTemplateMarginTopRem: 0.45,
-  inlineChoicesMarginTopRem: 0.25,
-} as const;
-const DEFAULT_LAYOUT_PROFILE_PRESETS: Record<string, Record<string, number>> = {
-  audio_blank_only: {
-    blankWideWidthRem: 10,
-    blankUnderlineWideWidthPx: 4,
-  },
-  stimulus_image_blank: {
-    blankWideWidthRem: 10,
-    blankUnderlineWideWidthPx: 4,
-  },
-  token_sequence: {
-    blankStandaloneWidthRem: 7,
-    blankUnderlineWideWidthPx: 4,
-  },
-};
-const DEFAULT_AUDIO_BUTTON_SKINS = {
-  default: {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/0c9f2aa3-3cd5-4de7-93ef-541c24ca35da.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/231dfdc2-c113-4be5-91fb-e75a0ca5994b.svg',
-  },
-  es: {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/27a9d5b5-d873-4bd5-b9ba-22748782d8ba.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/120f216d-96b7-4560-94b8-1d90710216b7.svg',
-  },
-} as const;
 const DEFAULT_UI_TEXT = {
   answerChoices: 'Answer choices',
   selectedAnswerInSentence: 'Selected answer in sentence',
@@ -92,22 +39,20 @@ const DEFAULT_UI_TEXT = {
   clickToEnableAutoplay: 'Click to enable audio autoplay',
   audioResourceUnavailable: 'Audio is enabled but no playable audio URL is configured.',
   transcriptLabel: 'Transcript',
-  listenLabelEn: 'Listen',
-  listenLabelEs: 'Escuchar',
 } as const;
 
 let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
-let audioEl = $state<HTMLAudioElement | null>(null);
-let isMediaPlaying = $state(false);
 let localChoiceId = $state('');
-let autoPlayPromptOpen = $state(false);
-let autoplayAttempted = $state(false);
-let featureAudioButtonEl = $state<HTMLButtonElement | null>(null);
-let autoplayEnableButtonEl = $state<HTMLButtonElement | null>(null);
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
+let rootEl = $state<HTMLDivElement | null>(null);
+let ancestorHasTranscriptClass = $state(false);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
+// ---------------------------------------------------------------------------
+// Cluster: modeFlags — delivery mode, correctness, and answer-reveal state
+// Feeds: shouldShowCorrectAnswerToggle, choiceState, a11y
+// ---------------------------------------------------------------------------
 const deliveryMode = $derived((model?.mode || model?.env?.mode || '').toString());
 const isEvaluateMode = $derived(deliveryMode === 'evaluate');
 const correctness = $derived(model?.correctness);
@@ -116,58 +61,33 @@ const isResponseCorrect = $derived(
 );
 const isCorrect = $derived(correctness === 'correct');
 const isIncorrect = $derived(correctness === 'incorrect');
-const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
-const isBlankOnlyTemplate = $derived.by(() => {
-  const t = model?.template || '';
-  if (!t) return false;
-  const plain = t
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .trim();
-  return plain === BLANK_TOKEN;
-});
+
+let showCorrectAnswer = $state(false);
+const shouldShowCorrectAnswerToggle = $derived(
+  isEvaluateMode && !isResponseCorrect && !!model?.correctChoiceId
+);
+
+// ---------------------------------------------------------------------------
+// Cluster: layoutConfig — profile limits, blank sizing, choice layout, audio mode
+// Feeds: layout (rootStyle, blankWidth, blankBorderWidth, legendMaxChars), audioMode, choiceState
+// ---------------------------------------------------------------------------
 const layoutProfile = $derived(model?.layoutProfile || '');
-const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
-const variantRootClass = $derived(getVariantRootClass(model?.customType));
-const choiceLayout = $derived(
-  model?.choiceLayout || (isAudioOnlyMode || isBlankOnlyTemplate ? 'horizontal' : 'vertical')
+const layoutProfileFlags = $derived(
+  computeLayoutProfile({
+    interactionMode: model?.interactionMode,
+    template: model?.template,
+    choiceLayout: model?.choiceLayout,
+    layoutProfile,
+    hasAudio: model?.hasAudio,
+    useFeatureButtonAudio: model?.useFeatureButtonAudio,
+  })
 );
-const isHorizontalChoices = $derived(choiceLayout === 'horizontal');
-const showVisibleTranscript = $derived(!!model?.showVisibleTranscript);
-const hasPlayableAudio = $derived(!!model?.hasAudio && !!model?.audioUrl);
-const hasAudioButMissingResource = $derived(!!model?.hasAudio && !model?.audioUrl);
-const hasInlineSentenceAudioLayout = $derived(
-  layoutProfile === 'inline_sentence' && !!model?.hasAudio
-);
-const uiText = $derived.by(() => ({
-  ...DEFAULT_UI_TEXT,
-  ...(model?.uiText || {}),
-}));
-const profilePresetLimits = $derived.by(() => {
-  const profile = String(layoutProfile || '');
-  const defaults = DEFAULT_LAYOUT_PROFILE_PRESETS[profile] || {};
-  const customPresets =
-    model?.layoutProfilePresets && typeof model.layoutProfilePresets === 'object'
-      ? model.layoutProfilePresets
-      : {};
-  const custom =
-    customPresets[profile] && typeof customPresets[profile] === 'object'
-      ? customPresets[profile]
-      : {};
-  return {
-    ...defaults,
-    ...custom,
-  };
-});
-const layoutLimits = $derived.by(() => {
-  const configured =
-    model?.layoutLimits && typeof model.layoutLimits === 'object' ? model.layoutLimits : {};
-  return {
-    ...DEFAULT_LAYOUT_LIMITS,
-    ...profilePresetLimits,
-    ...configured,
-  };
-});
+const isAudioOnlyMode = $derived(layoutProfileFlags.isAudioOnlyMode);
+const isBlankOnlyTemplate = $derived(layoutProfileFlags.isBlankOnlyTemplate);
+const isHorizontalChoices = $derived(layoutProfileFlags.isHorizontalChoices);
+const hasInlineSentenceAudioLayout = $derived(layoutProfileFlags.hasInlineSentenceAudioLayout);
+const useFeatureButtonAudio = $derived(layoutProfileFlags.useFeatureButtonAudio);
+const showVisibleTranscript = $derived(ancestorHasTranscriptClass);
 const correctAnswerStyleVars = $derived.by(() =>
   [
     `--pie-correct-answer-toggle-label-color:${color.text()}`,
@@ -185,124 +105,66 @@ const correctAnswerStyleVars = $derived.by(() =>
     `--pie-correct-answer-feedback-glyph-color:${color.white()}`,
   ].join(';')
 );
-const rootStyle = $derived.by(() =>
-  [
-    `--mpb-listen-button-size:${layoutLimits.listenButtonSizePx}px`,
-    `--mpb-blank-standalone-width:${layoutLimits.blankStandaloneWidthRem}rem`,
-    `--mpb-blank-wide-width:${layoutLimits.blankWideWidthRem}rem`,
-    `--mpb-blank-underline-width:${layoutLimits.blankUnderlineWidthPx}px`,
-    `--mpb-blank-underline-wide-width:${layoutLimits.blankUnderlineWideWidthPx}px`,
-    `--mpb-selected-image-max-height:${layoutLimits.selectedImageMaxHeightRem}rem`,
-    `--mpb-choice-image-max-height:${layoutLimits.choiceImageMaxHeightRem}rem`,
-    `--mpb-choice-width-px:${layoutLimits.horizontalChoiceWidthPx}px`,
-    `--mpb-choice-width-vw:${layoutLimits.horizontalChoiceWidthVw}vw`,
-    `--mpb-choice-tile-min-height:${layoutLimits.horizontalChoiceTileMinHeightRem}rem`,
-    `--mpb-choice-content-min-height:${layoutLimits.horizontalChoiceContentMinHeightRem}rem`,
-    `--mpb-stimulus-min-column:${layoutLimits.stimulusMinColumnPx}px`,
-    `--mpb-text-min-column:${layoutLimits.textMinColumnPx}px`,
-    `--mpb-choice-group-gap:${layoutLimits.choiceGroupGapRem}rem`,
-    `--mpb-choice-row-gap:${layoutLimits.choiceRowGapRem}rem`,
-    `--mpb-toggle-button-gap:${layoutLimits.toggleButtonGapRem}rem`,
-    `--mpb-horizontal-choice-radio-top-margin:${layoutLimits.horizontalChoiceRadioTopMarginRem}rem`,
-    `--mpb-audio-blank-template-margin-top:${layoutLimits.audioBlankTemplateMarginTopRem}rem`,
-    `--mpb-audio-blank-template-margin-bottom:${layoutLimits.audioBlankTemplateMarginBottomRem}rem`,
-    `--mpb-audio-instructions-max-width:${layoutLimits.audioInstructionsMaxWidthPx}px`,
-    `--mpb-narrow-choice-max-width:${layoutLimits.narrowHorizontalChoiceMaxWidthPx}px`,
-    `--mpb-stimulus-grid-column-gap:${layoutLimits.stimulusGridColumnGapRem}rem`,
-    `--mpb-stimulus-grid-row-gap:${layoutLimits.stimulusGridRowGapRem}rem`,
-    `--mpb-stimulus-sentence-margin-top:${layoutLimits.stimulusSentenceMarginTopRem}rem`,
-    `--mpb-stimulus-choices-margin-top:${layoutLimits.stimulusChoicesMarginTopRem}rem`,
-    `--mpb-token-grid-column-gap:${layoutLimits.tokenGridColumnGapRem}rem`,
-    `--mpb-token-grid-row-gap:${layoutLimits.tokenGridRowGapRem}rem`,
-    `--mpb-token-template-margin-top:${layoutLimits.tokenTemplateMarginTopRem}rem`,
-    `--mpb-token-inline-token-gap:${layoutLimits.tokenInlineTokenGapRem}rem`,
-    `--mpb-token-choices-margin-top:${layoutLimits.tokenChoicesMarginTopRem}rem`,
-    `--mpb-inline-grid-column-gap:${layoutLimits.inlineGridColumnGapRem}rem`,
-    `--mpb-inline-grid-row-gap:${layoutLimits.inlineGridRowGapRem}rem`,
-    `--mpb-inline-template-margin-top:${layoutLimits.inlineTemplateMarginTopRem}rem`,
-    `--mpb-inline-choices-margin-top:${layoutLimits.inlineChoicesMarginTopRem}rem`,
+const layout = $derived(
+  computeLayoutStyle({
+    layoutProfile,
+    isBlankOnlyTemplate,
+    configuredLimits: model?.layoutLimits,
+    customProfilePresets: model?.layoutProfilePresets,
     correctAnswerStyleVars,
-  ].join(';')
+  })
 );
-const useFeatureButtonAudio = $derived.by(() => {
-  if (typeof model?.useFeatureButtonAudio === 'boolean') {
-    return !!model.useFeatureButtonAudio;
-  }
-  const profile = layoutProfile || '';
-  return (
-    !!model?.hasAudio &&
-    (profile === 'audio_blank_only' ||
-      profile === 'stimulus_image_blank' ||
-      profile === 'token_sequence')
-  );
-});
 
-const templateParts = $derived.by(() => {
-  const t = model?.template || '';
-  const idx = t.indexOf(BLANK_TOKEN);
-  if (idx < 0) {
-    return { before: t, after: '' };
-  }
-  return {
-    before: t.slice(0, idx),
-    after: t.slice(idx + BLANK_TOKEN.length),
-  };
-});
-const blankWidth = $derived.by(() => {
-  if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
-    return `${layoutLimits.blankWideWidthRem}rem`;
-  }
-  if (isBlankOnlyTemplate) {
-    return `${layoutLimits.blankStandaloneWidthRem}rem`;
-  }
-  return 'auto';
-});
-const blankBorderWidth = $derived.by(() => {
-  if (layoutProfile === 'audio_blank_only' || layoutProfile === 'stimulus_image_blank') {
-    return `${layoutLimits.blankUnderlineWideWidthPx}px`;
-  }
-  return `${layoutLimits.blankUnderlineWidthPx}px`;
-});
-
+// ---------------------------------------------------------------------------
+// Cluster: choiceState — selection, display choice, per-choice correctness, result text
+// Feeds: template blank display, choice rendering, fieldset, result sr-only text
+// ---------------------------------------------------------------------------
 const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
 const choiceMode = $derived(model?.choiceMode || 'text');
 const selectedId = $derived(session?.choiceId || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
-
-let showCorrectAnswer = $state(false);
-const shouldShowCorrectAnswerToggle = $derived(
-  isEvaluateMode && !isResponseCorrect && !!model?.correctChoiceId
+const displayChoiceId = $derived(
+  computeDisplayChoiceId({
+    selectedId,
+    isEvaluateMode,
+    showCorrectAnswer,
+    alwaysShowCorrect: !!model?.alwaysShowCorrect,
+    correctChoiceId: String(model?.correctChoiceId || ''),
+  })
 );
-
-const displayChoiceId = $derived.by(() => {
-  if (isEvaluateMode && showCorrectAnswer && model?.correctChoiceId) {
-    return model.correctChoiceId;
-  }
-  return selectedId;
-});
-
 const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
 const displayChoiceLabelHtml = $derived.by(() => String(displayChoice?.labelHtml || ''));
+const resultText = $derived(
+  computeResultText({ isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId })
+);
+const choiceCorrectnessById = $derived(
+  computeChoiceCorrectness({
+    isEvaluateMode,
+    correctChoiceId: String(model?.correctChoiceId || ''),
+    selectedId: String(selectedId || ''),
+    showCorrectAnswer,
+  })
+);
 
-const legendText = $derived.by(() => {
-  const plain = (model?.prompt || '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const maxChars = Math.max(
-    8,
-    Number(layoutLimits.legendMaxChars) || DEFAULT_LAYOUT_LIMITS.legendMaxChars
-  );
-  return plain.length > maxChars
-    ? `${plain.slice(0, Math.max(1, maxChars - 1))}…`
-    : plain || uiText.answerChoices;
-});
-
+// ---------------------------------------------------------------------------
+// Cluster: a11y — stable IDs, aria labelling, described-by relationships
+// Feeds: fieldset legend, radiogroup labelling, template described-by
+// ---------------------------------------------------------------------------
+const uiText = $derived.by(() => ({
+  ...DEFAULT_UI_TEXT,
+  ...(model?.uiText || {}),
+}));
 const promptId = $derived(`${instanceId}-prompt`);
 const transcriptId = $derived(`${instanceId}-transcript`);
 const legendId = $derived(`${instanceId}-choices-legend`);
 const resultId = $derived(`${instanceId}-result`);
-
+const legendText = $derived(
+  computeLegendText({
+    prompt: model?.prompt || '',
+    legendMaxChars: layout.legendMaxChars,
+    answerChoicesLabel: uiText.answerChoices,
+  })
+);
 const choicesGroupLabelledBy = $derived(model?.prompt ? promptId : undefined);
 const choicesGroupAriaLabel = $derived.by(() => {
   if (model?.prompt) return undefined;
@@ -310,58 +172,30 @@ const choicesGroupAriaLabel = $derived.by(() => {
   if (explicit) return explicit;
   return legendText;
 });
-
 const templateDescribedBy = $derived.by(() => {
   const ids: string[] = [];
   if (model?.prompt) ids.push(promptId);
-  if (model?.hasAudio && model?.audioTranscript) {
-    ids.push(transcriptId);
-  }
+  if (model?.hasAudio && model?.audioTranscript) ids.push(transcriptId);
   return ids.length ? ids.join(' ') : undefined;
 });
 
+// ---------------------------------------------------------------------------
+// Misc — locale, audio error, template parsing, variant CSS, style strings
+// ---------------------------------------------------------------------------
 const lang = $derived.by(() => {
   const locale = model?.locale || '';
   return locale ? locale.slice(0, 2) : 'en';
 });
-const audioErrorMessage = $derived.by(() =>
-  hasAudioButMissingResource ? uiText.audioResourceUnavailable : ''
-);
-
-const resultText = $derived.by(() => {
-  if (!isEvaluateMode || showCorrectAnswer) return '';
-  if (isCorrect) return 'Correct answer selected';
-  if (isIncorrect && selectedId) return 'Incorrect answer selected';
-  return '';
-});
-const choiceCorrectnessById = $derived.by(() => {
-  const map = new Map<string, 'correct' | 'incorrect'>();
-  const correctChoiceId = String(model?.correctChoiceId || '');
-  const activeSelectedId = String(selectedId || '');
-
-  if (!isEvaluateMode || !correctChoiceId) {
-    return map;
-  }
-
-  if (showCorrectAnswer) {
-    // Reveal mode should show only the canonical correct answer state.
-    map.set(correctChoiceId, 'correct');
-    return map;
-  }
-
-  if (!activeSelectedId) {
-    map.set(correctChoiceId, 'incorrect');
-    return map;
-  }
-
-  if (activeSelectedId === correctChoiceId) {
-    map.set(correctChoiceId, 'correct');
-    return map;
-  }
-
-  map.set(activeSelectedId, 'incorrect');
-  map.set(correctChoiceId, 'incorrect');
-  return map;
+const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
+const variantRootClass = $derived(getVariantRootClass(model?.customType));
+const templateParts = $derived.by(() => {
+  const t = model?.template || '';
+  const idx = t.indexOf(BLANK_TOKEN);
+  if (idx < 0) return { before: t, after: '' };
+  return {
+    before: t.slice(0, idx),
+    after: t.slice(idx + BLANK_TOKEN.length),
+  };
 });
 
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
@@ -421,58 +255,20 @@ function onRadioGroupKeydown(e: KeyboardEvent) {
   next.focus();
 }
 
-function handleEnableAutoplayClick() {
-  if (hasPlayableAudio && audioEl) {
-    audioEl.play().finally(() => {
-      autoPlayPromptOpen = false;
-    });
-  }
+const featureAudioSkin = $derived(
+  computeFeatureAudioSkin({
+    locale: model?.locale,
+    audioButtonSkin: model?.audioButtonSkin,
+    audioButtonSkinsByLocale: model?.audioButtonSkinsByLocale,
+  })
+);
+
+function onAudioStarted() {
+  resolveDeliveryHost(rootEl, { fallbackSelector: 'mc-populated-blank' })?.onAudioStarted?.();
 }
 
-function onAudioPlaying(e: Event) {
-  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
-    fallbackSelector: 'mc-populated-blank',
-  });
-  isMediaPlaying = true;
-  host?.onAudioStarted?.();
-  autoPlayPromptOpen = false;
-}
-
-function onAudioEnded(e: Event) {
-  const host = resolveDeliveryHost(e.currentTarget as HTMLElement, {
-    fallbackSelector: 'mc-populated-blank',
-  });
-  isMediaPlaying = false;
-  host?.onAudioEnded?.();
-}
-
-function speechButtonLabel(locale = '') {
-  return locale.toLowerCase().startsWith('es') ? uiText.listenLabelEs : uiText.listenLabelEn;
-}
-
-const featureAudioSkin = $derived.by(() => {
-  const locale = String(model?.locale || '').toLowerCase();
-  const lang = locale.slice(0, 2);
-  const byLocale =
-    model?.audioButtonSkinsByLocale && typeof model.audioButtonSkinsByLocale === 'object'
-      ? model.audioButtonSkinsByLocale
-      : {};
-  const customSingle =
-    model?.audioButtonSkin && typeof model.audioButtonSkin === 'object'
-      ? model.audioButtonSkin
-      : null;
-  const defaultSkin = locale.startsWith('es')
-    ? DEFAULT_AUDIO_BUTTON_SKINS.es
-    : DEFAULT_AUDIO_BUTTON_SKINS.default;
-  return byLocale[locale] || byLocale[lang] || byLocale.default || customSingle || defaultSkin;
-});
-
-function playFeatureAudio() {
-  if (hasPlayableAudio && audioEl) {
-    audioEl.play().catch(() => {
-      // Keep behavior resilient: if playback is blocked, user can retry.
-    });
-  }
+function onAudioEnded() {
+  resolveDeliveryHost(rootEl, { fallbackSelector: 'mc-populated-blank' })?.onAudioEnded?.();
 }
 
 $effect(() => {
@@ -482,48 +278,13 @@ $effect(() => {
 });
 
 $effect(() => {
-  const el = audioEl;
-  if (!el) return;
-  const handlePlaying = (e: Event) => onAudioPlaying(e);
-  const handleEnded = (e: Event) => onAudioEnded(e);
-  el.addEventListener('playing', handlePlaying);
-  el.addEventListener('ended', handleEnded);
-  return () => {
-    el.removeEventListener('playing', handlePlaying);
-    el.removeEventListener('ended', handleEnded);
-  };
-});
-
-$effect(() => {
-  const btn = featureAudioButtonEl;
-  if (!btn) return;
-  const handleClick = () => playFeatureAudio();
-  btn.addEventListener('click', handleClick);
-  return () => {
-    btn.removeEventListener('click', handleClick);
-  };
-});
-
-$effect(() => {
-  const btn = autoplayEnableButtonEl;
-  if (!btn) return;
-  const handleClick = () => handleEnableAutoplayClick();
-  btn.addEventListener('click', handleClick);
-  return () => {
-    btn.removeEventListener('click', handleClick);
-  };
-});
-
-$effect(() => {
   const btn = toggleCorrectAnswerButtonEl;
   if (!btn) return;
-  const handleClick = () => toggleCorrectAnswer();
-  btn.addEventListener('click', handleClick);
-  return () => {
-    btn.removeEventListener('click', handleClick);
-  };
+  btn.addEventListener('click', toggleCorrectAnswer);
+  return () => btn.removeEventListener('click', toggleCorrectAnswer);
 });
 
+// Delegated listeners on the choices group — two events with a radio-guard on change.
 $effect(() => {
   const group = choicesGroupEl;
   if (!group) return;
@@ -542,30 +303,46 @@ $effect(() => {
 });
 
 $effect(() => {
-  if (!model?.hasAudio || !model?.autoplayAudioEnabled) return;
-  if (autoplayAttempted) return;
-
-  autoplayAttempted = true;
-  if (audioEl && model?.audioUrl) {
-    // Browser autoplay restrictions vary. Try immediate play; if blocked show click-to-enable affordance.
-    audioEl.play().catch(() => {
-      autoPlayPromptOpen = true;
-    });
-  }
+  ensureVariantCssInjected(variantCssConfig);
 });
 
 $effect(() => {
-  ensureVariantCssInjected(variantCssConfig);
+  const el = rootEl;
+  if (!el) return;
+
+  const check = () => {
+    ancestorHasTranscriptClass = !!el.closest('.rli-with-audio-transcript');
+  };
+  check();
+
+  const observer = new MutationObserver(check);
+  // Walk up and observe each ancestor for class changes
+  let node: Element | null = el.parentElement;
+  while (node) {
+    observer.observe(node, { attributes: true, attributeFilter: ['class'] });
+    node = node.parentElement;
+  }
+  return () => observer.disconnect();
 });
 </script>
 
 <div
+  bind:this={rootEl}
   class={`p-4 mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
-  style={rootStyle}
+  style={layout.rootStyle}
 >
   {#if model?.prompt}
     <div class="mb-4 prose pie-prompt" id={promptId}>{@html model.prompt}</div>
+  {/if}
+
+  {#if model?.audioTranscript}
+    <p
+      class={`text-sm mb-3 text-gray-700 text-center pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
+      id={transcriptId}
+    >
+      {model.audioTranscript}
+    </p>
   {/if}
 
   {#if shouldShowCorrectAnswerToggle}
@@ -636,69 +413,20 @@ $effect(() => {
     </div>
   {/if}
 
-  {#if model?.hasAudio}
-    <div class="mb-4 audio-container pie-audio-container">
-      {#if hasPlayableAudio && useFeatureButtonAudio}
-        <audio
-          bind:this={audioEl}
-          class="sr-only pie-audio-player"
-          preload="metadata"
-          src={model.audioUrl}
-          aria-hidden="true"
-          tabindex="-1"
-        ></audio>
-        <button
-          bind:this={featureAudioButtonEl}
-          class="listen-button pie-listen-button rli-feature-audio"
-          type="button"
-          aria-label={speechButtonLabel(model?.locale)}
-        >
-          <img
-            class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? '' : 'listen-active'}`}
-            src={featureAudioSkin.silentUrl}
-            alt=""
-            aria-hidden="true"
-          />
-          <img
-            class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? 'listen-active' : ''}`}
-            src={featureAudioSkin.playingUrl}
-            alt=""
-            aria-hidden="true"
-          />
-        </button>
-      {:else if hasPlayableAudio}
-        <audio
-          bind:this={audioEl}
-          controls
-          class="w-full max-w-md pie-audio-player"
-          preload="metadata"
-          src={model.audioUrl}
-          aria-describedby={model?.audioTranscript ? transcriptId : undefined}
-        >
-          <track kind="captions" />
-        </audio>
-        {#if autoPlayPromptOpen}
-          <button
-            bind:this={autoplayEnableButtonEl}
-            class="mt-2 text-sm underline pie-audio-autoplay-enable"
-            type="button"
-          >
-            {uiText.clickToEnableAutoplay}
-          </button>
-        {/if}
-      {:else if hasAudioButMissingResource}
-        <p class="text-sm text-red-700 pie-audio-error" role="alert">{audioErrorMessage}</p>
-      {/if}
-      {#if model?.audioTranscript}
-        <p
-          class={`text-sm mt-2 text-gray-700 pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
-          id={transcriptId}
-        >
-          <strong>{uiText.transcriptLabel}:</strong> {model.audioTranscript}
-        </p>
-      {/if}
-    </div>
-  {/if}
+  <AudioPlayer
+    hasAudio={!!model?.hasAudio}
+    audioUrl={model?.audioUrl}
+    {useFeatureButtonAudio}
+    autoplayEnabled={!!model?.autoplayAudioEnabled}
+    audioTranscript={model?.audioTranscript}
+    {showVisibleTranscript}
+    {transcriptId}
+    {featureAudioSkin}
+    {uiText}
+    locale={model?.locale}
+    onaudiostarted={onAudioStarted}
+    onaudioended={onAudioEnded}
+  />
 
   {#if model?.sentenceHtml}
     <div class="mb-3 prose prose-p:my-1 sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
@@ -709,27 +437,15 @@ $effect(() => {
   {#if !isAudioOnlyMode}
     <div class="mb-4 template-line pie-template-line" aria-describedby={templateDescribedBy}>
       {@html templateParts.before}
-      <span
-        class={`inline-flex items-center min-h-[1.5em] px-2 mx-1 border-b-2 border-gray-500 align-baseline blank-slot pie-blank-slot ${isBlankOnlyTemplate ? 'blank-slot-standalone pie-blank-slot-standalone' : ''}`}
-        style={`width:${blankWidth};border-bottom-width:${blankBorderWidth};`}
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        aria-label={uiText.selectedAnswerInSentence}
-      >
-        {#if choiceMode === 'image' && displayChoice?.imageUrl}
-          <img
-            src={displayChoice.imageUrl}
-            alt={displayChoice.imageAlt || 'Selected answer image'}
-            class="w-auto object-contain pie-blank-image"
-            style="max-height:var(--mpb-selected-image-max-height, 4rem);"
-          />
-        {:else if displayChoiceLabelHtml}
-          <span class="choice-html pie-blank-value">{@html displayChoiceLabelHtml}</span>
-        {:else}
-          <span class="blank-inner-empty" aria-hidden="true">&nbsp;</span>
-        {/if}
-      </span>
+      <ClozeMarker
+        {choiceMode}
+        displayChoice={displayChoice}
+        {displayChoiceLabelHtml}
+        isStandalone={isBlankOnlyTemplate}
+        blankWidth={layout.blankWidth}
+        blankBorderWidth={layout.blankBorderWidth}
+        ariaLabel={uiText.selectedAnswerInSentence}
+      />
       {@html templateParts.after}
     </div>
   {/if}
@@ -751,74 +467,17 @@ $effect(() => {
       aria-describedby={resultText ? resultId : undefined}
     >
       {#each choices as c (c.id)}
-        {@const choiceCorrectness = choiceCorrectnessById.get(c.id)}
-        <div
-          class={`flex items-start choice-row pie-choice ${isHorizontalChoices ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${((showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id) ? 'is-selected pie-choice-selected' : ''} ${choiceCorrectness ? `choice-${choiceCorrectness} pie-choice-${choiceCorrectness}` : ''}`}
-          style="gap:var(--mpb-choice-row-gap, 0.5rem);"
-        >
-          {#if isHorizontalChoices}
-            <label
-              for={`${instanceId}-opt-${c.id}`}
-              class="cursor-pointer choice-tile text-center pie-choice-tile"
-            >
-              <span class="choice-tile-content pie-choice-tile-content">
-                {#if choiceMode === 'image' && c.imageUrl}
-                  <img
-                    src={c.imageUrl}
-                    alt={c.imageAlt || `Choice ${c.id}`}
-                    class="object-contain mx-auto pie-choice-image"
-                    style="max-height:var(--mpb-choice-image-max-height, 5rem);"
-                  />
-                {:else}
-                  <span class="choice-html pie-choice-label">{@html c.labelHtml || ''}</span>
-                {/if}
-              </span>
-              <input
-                type="radio"
-                name={radioGroupName}
-                id={`${instanceId}-opt-${c.id}`}
-                value={c.id}
-                checked={
-                  (showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
-                }
-                disabled={model?.disabled}
-                class="choice-radio-bottom pie-choice-radio pie-choice-radio-bottom"
-              />
-            </label>
-          {:else}
-            <input
-              type="radio"
-              name={radioGroupName}
-              id={`${instanceId}-opt-${c.id}`}
-              value={c.id}
-              checked={
-                (showCorrectAnswer ? model?.correctChoiceId : selectedId) === c.id
-              }
-              disabled={model?.disabled}
-              class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"
-            />
-            <label for={`${instanceId}-opt-${c.id}`} class="cursor-pointer flex-1 pie-choice-label-wrap">
-              {#if choiceMode === 'image' && c.imageUrl}
-                <img
-                  src={c.imageUrl}
-                  alt={c.imageAlt || `Choice ${c.id}`}
-                  class="object-contain pie-choice-image"
-                  style="max-height:var(--mpb-choice-image-max-height, 5rem);"
-                />
-              {:else}
-                <span class="choice-html pie-choice-label">{@html c.labelHtml || ''}</span>
-              {/if}
-            </label>
-          {/if}
-          {#if isEvaluateMode && choiceCorrectness}
-            <span
-              class={`pie-choice-feedback-badge ${choiceCorrectness === 'correct' ? 'pie-choice-feedback-correct' : 'pie-choice-feedback-incorrect'}`}
-              aria-hidden="true"
-            >
-              {choiceCorrectness === 'correct' ? '✓' : '✕'}
-            </span>
-          {/if}
-        </div>
+        <ChoiceRow
+          choice={c}
+          {choiceMode}
+          isHorizontal={isHorizontalChoices}
+          isSelected={displayChoiceId === c.id}
+          isDisabled={!!model?.disabled}
+          correctness={choiceCorrectnessById.get(c.id)}
+          {isEvaluateMode}
+          {instanceId}
+          {radioGroupName}
+        />
       {/each}
     </div>
   </fieldset>
@@ -839,19 +498,6 @@ $effect(() => {
 
   .mc-populated-blank-root :global(.prose) {
     max-width: none;
-  }
-
-  .blank-slot:focus-within {
-    outline: 2px solid var(--pie-focus, #2563eb);
-    outline-offset: 2px;
-  }
-
-  .blank-slot {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    vertical-align: baseline;
   }
 
   .pie-toggle-correct-answer {
@@ -913,166 +559,8 @@ $effect(() => {
     margin: 0;
   }
 
-  .blank-inner-empty {
-    display: inline-block;
-    min-width: 4ch;
-  }
-
-  .blank-slot-standalone {
-    width: var(--mpb-blank-standalone-width, 7rem);
-  }
-
-  .listen-button {
-    width: var(--mpb-listen-button-size, 128px);
-    height: var(--mpb-listen-button-size, 128px);
-    border: 0;
-    padding: 0;
-    background-color: transparent;
-    cursor: pointer;
-    z-index: 1;
-  }
-
-  .listen-button:hover {
-    background-color: #e2f1fe;
-  }
-
-  .listen-feature-icon {
-    width: var(--mpb-listen-button-size, 128px);
-    height: var(--mpb-listen-button-size, 128px);
-    object-fit: contain;
-    display: none;
-  }
-
-  .listen-feature-icon.listen-active {
-    display: block;
-  }
-
-  .choice-row-horizontal {
-    flex-direction: column;
-    align-items: center;
-    width: min(var(--mpb-choice-width-px, 170px), var(--mpb-choice-width-vw, 30vw));
-    gap: 0;
-  }
-
-  .choice-tile {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    min-height: var(--mpb-choice-tile-min-height, 11rem);
-    padding: 0.8rem 0.65rem 0.5rem;
-    border-radius: 8px;
-    background: transparent;
-    transition: background-color 120ms ease-in-out;
-  }
-
-  .choice-tile-content {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--mpb-choice-content-min-height, 7.5rem);
-  }
-
-  .choice-row-horizontal:hover .choice-tile {
-    background: var(--pie-correct-answer-choice-hover-bg, #ececec);
-  }
-
-  .pie-choice-horizontal:not(.is-selected):not(:hover) .pie-choice-tile {
-    background: transparent;
-  }
-
-  .choice-row-horizontal.is-selected .choice-tile {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
-  }
-
-  .choice-row-horizontal.is-selected:hover .choice-tile {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
-  }
-
-  .pie-choice:not(.pie-choice-horizontal):hover .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-hover-bg, #ececec);
-  }
-
-  .pie-choice:not(.pie-choice-horizontal):not(.is-selected):not(:hover) .pie-choice-label-wrap {
-    background: transparent;
-  }
-
-  .pie-choice:not(.pie-choice-horizontal).is-selected .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
-    border-radius: 6px;
-  }
-
-  .pie-choice:not(.pie-choice-horizontal).is-selected:hover .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
-  }
-
-  .pie-choice.choice-correct {
-    border-left: 3px solid var(--pie-correct-answer-choice-correct-border, #0ea449);
-  }
-
-  .pie-choice.choice-incorrect {
-    border-left: 3px solid var(--pie-correct-answer-choice-incorrect-border, #bf0d00);
-  }
-
-  .pie-choice-horizontal.choice-correct .choice-tile {
-    background: var(--pie-correct-answer-choice-correct-bg, #e8f5e9);
-  }
-
-  .pie-choice-horizontal.choice-incorrect .choice-tile {
-    background: var(--pie-correct-answer-choice-incorrect-bg, #ffebee);
-  }
-
-  .pie-choice-feedback-badge {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.1rem;
-    height: 1.1rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    line-height: 1;
-    font-weight: 700;
-    color: var(--pie-correct-answer-feedback-glyph-color, #fff);
-  }
-
-  .pie-choice-feedback-correct {
-    background: var(--pie-correct-answer-feedback-correct-bg, #087d38);
-  }
-
-  .pie-choice-feedback-incorrect {
-    background: var(--pie-correct-answer-feedback-incorrect-bg, #bf0d00);
-  }
-
-  .choice-row-horizontal :global(p) {
-    margin: 0;
-    text-align: center;
-  }
-
-  .choice-html :global(p) {
-    margin: 0;
-  }
-
-  .choice-html {
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-
-  .choice-radio-bottom {
-    margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
-  }
-
-  .choice-radio-inline {
-    margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
-  }
-
-  .layout-audio_blank_only .audio-container,
-  .layout-stimulus_image_blank .audio-container {
+  .layout-audio_blank_only :global(.pie-audio-container),
+  .layout-stimulus_image_blank :global(.pie-audio-container) {
     display: flex;
     width: min(100%, var(--mpb-audio-instructions-max-width, 875px));
     margin-left: auto;
@@ -1087,16 +575,24 @@ $effect(() => {
       var(--mpb-audio-blank-template-margin-bottom, 1.8rem);
   }
 
-  .layout-audio_blank_only .blank-slot,
-  .layout-stimulus_image_blank .blank-slot {
+  .layout-audio_blank_only fieldset {
+    display: flex;
+    justify-content: center;
+  }
+
+  .layout-audio_blank_only :global(.pie-blank-slot),
+  .layout-stimulus_image_blank :global(.pie-blank-slot) {
     width: var(--mpb-blank-wide-width, 10rem);
-    border-bottom-width: var(--mpb-blank-underline-wide-width, 4px);
+    border-bottom-width: var(--mpb-blank-underline-wide-width, 6px);
+    min-height: 160px;
+    padding-bottom: 4px;
   }
 
   .layout-stimulus_image_blank {
     display: grid;
     grid-template-columns: minmax(var(--mpb-stimulus-min-column, 210px), 1fr) auto;
     grid-template-areas:
+      'transcript transcript'
       'sentence audio'
       '. template'
       'choices choices';
@@ -1105,7 +601,11 @@ $effect(() => {
     align-items: start;
   }
 
-  .layout-stimulus_image_blank .audio-container {
+  .layout-stimulus_image_blank .pie-audio-transcript {
+    grid-area: transcript;
+  }
+
+  .layout-stimulus_image_blank :global(.pie-audio-container) {
     grid-area: audio;
     margin: 0;
   }
@@ -1129,16 +629,21 @@ $effect(() => {
 
   .layout-token_sequence {
     display: grid;
-    grid-template-columns: minmax(var(--mpb-text-min-column, 260px), 1fr) auto;
+    grid-template-columns: 1fr auto;
     grid-template-areas:
-      'template audio'
-      'choices choices';
+      'transcript audio'
+      'template   template'
+      'choices    choices';
     column-gap: var(--mpb-token-grid-column-gap, 1.5rem);
     row-gap: var(--mpb-token-grid-row-gap, 0.8rem);
     align-items: start;
   }
 
-  .layout-token_sequence .audio-container {
+  .layout-token_sequence .pie-audio-transcript {
+    grid-area: transcript;
+  }
+
+  .layout-token_sequence :global(.pie-audio-container) {
     grid-area: audio;
     margin: 0;
     justify-self: end;
@@ -1155,7 +660,7 @@ $effect(() => {
     margin-left: var(--mpb-token-inline-token-gap, 0.35rem);
   }
 
-  .layout-token_sequence .blank-slot {
+  .layout-token_sequence :global(.pie-blank-slot) {
     width: var(--mpb-blank-standalone-width, 7rem);
     border-bottom-width: var(--mpb-blank-underline-wide-width, 4px);
     margin-left: var(--mpb-token-inline-token-gap, 0.35rem);
@@ -1170,6 +675,7 @@ $effect(() => {
     display: grid;
     grid-template-columns: minmax(var(--mpb-text-min-column, 260px), 1fr) auto;
     grid-template-areas:
+      'transcript transcript'
       'template audio'
       'choices choices';
     column-gap: var(--mpb-inline-grid-column-gap, 1.5rem);
@@ -1177,7 +683,11 @@ $effect(() => {
     align-items: start;
   }
 
-  .layout-inline_sentence.has-inline-audio .audio-container {
+  .layout-inline_sentence.has-inline-audio .pie-audio-transcript {
+    grid-area: transcript;
+  }
+
+  .layout-inline_sentence.has-inline-audio :global(.pie-audio-container) {
     grid-area: audio;
     margin: 0;
     justify-self: end;
@@ -1198,10 +708,10 @@ $effect(() => {
   /* Match Learnosity responsive behavior for CQT audio-blank layouts:
      at smaller widths, audio control shifts left and answer tiles stack. */
   @media (max-width: 760px) {
-    .layout-audio_blank_only .audio-container,
-    .layout-stimulus_image_blank .audio-container,
-    .layout-token_sequence .audio-container,
-    .layout-inline_sentence.has-inline-audio .audio-container {
+    .layout-audio_blank_only :global(.pie-audio-container),
+    .layout-stimulus_image_blank :global(.pie-audio-container),
+    .layout-token_sequence :global(.pie-audio-container),
+    .layout-inline_sentence.has-inline-audio :global(.pie-audio-container) {
       width: 100%;
       margin-left: 0;
       margin-right: 0;

@@ -30,6 +30,12 @@ async function openMpbRoute(page: Page, player: 'esm' | 'iife') {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
   await page.waitForSelector('[data-testid="role-student"]', { timeout: 20_000 });
+  // iife player builds the bundle async — wait for the element to actually render
+  if (player === 'iife') {
+    await page.waitForSelector('.delivery-view .element-container input[type="radio"]', {
+      timeout: 60_000,
+    });
+  }
   await waitForMathRendering(page);
 }
 
@@ -183,6 +189,17 @@ test.describe('mc-populated-blank correct-answer parity', () => {
 
     const sessionAfter = await getPlayerSession(page);
     expect(sessionAfter?.choiceId).toBe(incorrectChoiceId);
+  });
+
+  test('no radio is pre-selected on initial render (user must choose)', async ({ page }) => {
+    await openMpbRoute(page, 'esm');
+    const root = deliveryContainer(page);
+    await expect(root).toBeVisible();
+
+    await expect(root.locator('input[type="radio"]:checked')).toHaveCount(0);
+
+    const session = await getPlayerSession(page);
+    expect(session?.choiceId ?? '').toBe('');
   });
 
   test('iife scorer flow: delivery remains interactive-safe in evaluate path', async ({ page }) => {

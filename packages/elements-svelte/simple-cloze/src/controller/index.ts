@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash-es';
 import defaults from './defaults';
 
 export const getCorrectness = (question: any, session: any) => {
-  if (!session || !session.response) {
+  if (!session?.response) {
     return 'unanswered';
   }
 

@@ -5,6 +5,7 @@
     "rootDir": "./src",
     "composite": true,
     "noEmit": false,
+    "emitDeclarationOnly": false,
     "allowImportingTsExtensions": false
   },
   "include": ["src/**/*"],

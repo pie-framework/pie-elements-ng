@@ -322,6 +322,9 @@ function handleThemeToggle(event: Event) {
   const newTheme = checkbox.checked ? 'dark' : 'light';
   theme.set(newTheme);
 }
+
+const isMcPopulatedBlank = $derived(data.elementName === 'mc-populated-blank');
+let showAudioTranscript = $state(false);
 </script>
 
 <div class="flex flex-col h-screen">
@@ -391,6 +394,12 @@ function handleThemeToggle(event: Event) {
             >
               Reset Input
             </button>
+            {#if isMcPopulatedBlank}
+              <label class="flex items-center gap-1 text-sm cursor-pointer select-none">
+                <input type="checkbox" class="checkbox checkbox-sm" bind:checked={showAudioTranscript} />
+                Show Audio Transcript
+              </label>
+            {/if}
             <div class="join" aria-label="Demo role mode">
               <a
                 href={getDeliveryRoleModeUrl('student')}
@@ -448,7 +457,7 @@ function handleThemeToggle(event: Event) {
   </div>
 
   <!-- Page Content -->
-  <div class="flex-1 overflow-hidden bg-base-200">
+  <div class="flex-1 overflow-hidden bg-base-200" class:rli-with-audio-transcript={isMcPopulatedBlank && showAudioTranscript}>
     {@render children()}
   </div>
 </div>

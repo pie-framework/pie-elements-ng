@@ -1,0 +1,1 @@
+LEARNOSITY_CONSUMER_KEY=1JQLtMp0itQcxfSQ npx playwright test test/e2e/capture-baselines.spec.ts --project=chromium

@@ -1,4 +1,11 @@
 import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults';
+import type {
+  McpbChoice,
+  McpbQuestion,
+  McpbSession,
+  McpbEnv,
+  McpbCorrectness,
+} from '../shared/types';
 
 const isEmptyObject = (value: unknown): boolean =>
   !!value &&
@@ -12,8 +19,8 @@ export function countBlankTokens(template: string): number {
   return (template.match(re) || []).length;
 }
 
-export const getCorrectness = (question: any, session: any) => {
-  if (!session || !session.choiceId) {
+export const getCorrectness = (question: McpbQuestion, session: McpbSession): McpbCorrectness => {
+  if (!session?.choiceId) {
     return 'unanswered';
   }
   const correct = question?.correctChoiceId || '';
@@ -23,28 +30,14 @@ export const getCorrectness = (question: any, session: any) => {
   return 'incorrect';
 };
 
-export const getPartialScore = (_question: any, session: any) => {
+export const getPartialScore = (_question: McpbQuestion, session: McpbSession) => {
   if (!session || isEmptyObject(session) || !session.choiceId) {
     return 0;
   }
   return 1;
 };
 
-export const isComplete = (question: any, session: any, audioComplete = false) => {
-  if (!session || !session.choiceId) {
-    return false;
-  }
-  const autoplayAudioEnabled = !!question?.autoplayAudioEnabled;
-  const completeAudioEnabled = !!question?.completeAudioEnabled;
-  const requiresAudioCompletion =
-    autoplayAudioEnabled && completeAudioEnabled && !!question?.hasAudio;
-  if (requiresAudioCompletion && !audioComplete) {
-    return false;
-  }
-  return true;
-};
-
-export const outcome = (question: any, session: any, env: any) =>
+export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbEnv) =>
   new Promise((resolve) => {
     if (!session || isEmptyObject(session)) {
       resolve({
@@ -77,7 +70,7 @@ export const outcome = (question: any, session: any, env: any) =>
     resolve({ score, empty: false, traceLog });
   });
 
-export const createDefaultModel = (model: any = {}) => ({
+export const createDefaultModel = (model: McpbQuestion = {}) => ({
   ...defaults.model,
   ...model,
   layoutLimits: {
@@ -86,13 +79,13 @@ export const createDefaultModel = (model: any = {}) => ({
   },
 });
 
-export const normalize = (question: any = {}) => createDefaultModel(question);
+export const normalize = (question: McpbQuestion = {}) => createDefaultModel(question);
 
-export const normalizeSession = (s: any) => ({ ...s });
+export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
 
-const shouldShuffleChoices = (question: any) => !!question?.shuffle;
+const shouldShuffleChoices = (question: McpbQuestion) => !!question?.shuffle;
 
-const shouldLockChoices = (question: any, env: any) => {
+const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) => {
   if (question?.lockChoiceOrder) return true;
   if (env?.['@pie-element']?.lockChoiceOrder) return true;
   return env?.role === 'instructor';
@@ -107,28 +100,43 @@ function shuffleArray<T>(items: T[]): T[] {
   return out;
 }
 
-const getStoredShuffle = (session: any): string[] =>
+const getStoredShuffle = (session: McpbSession): string[] =>
   Array.isArray(session?.data?.shuffledValues)
     ? session.data.shuffledValues
     : Array.isArray(session?.shuffledValues)
       ? session.shuffledValues
       : [];
 
-const applyShuffledValues = (choices: any[], shuffledValues: string[], choiceKey: string) => {
+const applyShuffledValues = (
+  choices: McpbChoice[],
+  shuffledValues: string[],
+  choiceKey: keyof McpbChoice
+) => {
   const orderedChoices = shuffledValues
     .map((value) => choices.find((choice) => choice?.[choiceKey] === value))
-    .filter(Boolean);
+    .filter((c): c is McpbChoice => !!c);
 
   if (orderedChoices.length === choices.length) {
     return orderedChoices;
   }
 
-  const orderedValues = new Set(orderedChoices.map((choice: any) => choice[choiceKey]));
+  const orderedValues = new Set(orderedChoices.map((choice) => choice[choiceKey]));
   const leftovers = choices.filter((choice) => !orderedValues.has(choice?.[choiceKey]));
   return [...orderedChoices, ...leftovers];
 };
 
-const getOrderedChoices = async (question: any, session: any, env: any, updateSession?: any) => {
+type UpdateSessionFn = (
+  id: string,
+  element: string,
+  data: { shuffledValues: string[] }
+) => Promise<void>;
+
+const getOrderedChoices = async (
+  question: McpbQuestion,
+  session: McpbSession,
+  env: McpbEnv,
+  updateSession?: UpdateSessionFn
+) => {
   const choices = Array.isArray(question?.choices) ? [...question.choices] : [];
   if (!choices.length || !shouldShuffleChoices(question)) {
     return choices;
@@ -155,13 +163,18 @@ const getOrderedChoices = async (question: any, session: any, env: any, updateSe
   return shuffledChoices;
 };
 
-export const model = async (question: any, session: any, env: any, updateSession?: any) => {
-  session = session || {};
-  const safeEnv = env || {};
+export const model = async (
+  question: McpbQuestion,
+  session: McpbSession | null,
+  env: McpbEnv | null,
+  updateSession?: UpdateSessionFn
+) => {
+  const safeSession: McpbSession = session || {};
+  const safeEnv: McpbEnv = env || {};
   const normalizedQuestion = normalize(question);
-  const choices = await getOrderedChoices(normalizedQuestion, session, safeEnv, updateSession);
+  const choices = await getOrderedChoices(normalizedQuestion, safeSession, safeEnv, updateSession);
 
-  const out: any = {
+  const out: Record<string, unknown> = {
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
     interactionMode: normalizedQuestion.interactionMode || 'populate_blank',
     layoutProfile: normalizedQuestion.layoutProfile || '',
@@ -206,7 +219,7 @@ export const model = async (question: any, session: any, env: any, updateSession
   };
 
   if (safeEnv.mode === 'evaluate') {
-    const correctness = getCorrectness(normalizedQuestion, session);
+    const correctness = getCorrectness(normalizedQuestion, safeSession);
     out.correctness = correctness;
     out.responseCorrect = correctness === 'correct';
     out.correctChoiceId = normalizedQuestion.correctChoiceId;
@@ -223,7 +236,7 @@ export const model = async (question: any, session: any, env: any, updateSession
   return out;
 };
 
-export const createCorrectResponseSession = (question: any, env: any) => {
+export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEnv) => {
   return new Promise((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
       resolve({
@@ -237,18 +250,18 @@ export const createCorrectResponseSession = (question: any, env: any) => {
   });
 };
 
-export const validate = (model: any = {}, _config: any = {}) => {
-  const errors: any = {};
+export const validate = (question: McpbQuestion = {}, _config: Record<string, unknown> = {}) => {
+  const errors: Record<string, string> = {};
 
-  if (model.promptEnabled) {
-    const p = model.prompt?.trim() || '';
+  if (question.promptEnabled) {
+    const p = question.prompt?.trim() || '';
     if (!p || p === '<p></p>') {
       errors.prompt = 'Prompt is required when prompt is enabled';
     }
   }
 
-  const interactionMode = model.interactionMode || 'populate_blank';
-  const template = model.template || '';
+  const interactionMode = question.interactionMode || 'populate_blank';
+  const template = question.template || '';
   const n = countBlankTokens(template);
   if (interactionMode === 'audio_mc_only') {
     if (n > 0) {
@@ -264,12 +277,12 @@ export const validate = (model: any = {}, _config: any = {}) => {
     errors.interactionMode = 'Unknown interaction mode';
   }
 
-  const choices = Array.isArray(model.choices) ? model.choices : [];
+  const choices = Array.isArray(question.choices) ? question.choices : [];
   if (choices.length < 2) {
     errors.choices = 'At least two choices are required';
   }
 
-  const mode = model.choiceMode || 'text';
+  const mode = question.choiceMode || 'text';
   for (let i = 0; i < choices.length; i++) {
     const c = choices[i];
     if (!c?.id) {
@@ -294,19 +307,19 @@ export const validate = (model: any = {}, _config: any = {}) => {
     }
   }
 
-  const correct = model.correctChoiceId;
-  if (!correct || !choices.some((c: any) => c.id === correct)) {
+  const correct = question.correctChoiceId;
+  if (!correct || !choices.some((c) => c.id === correct)) {
     errors.correctChoiceId = 'Correct choice must match one of the choice ids';
   }
 
-  if (model.hasAudio) {
-    const hasAudioUrl = !!model.audioUrl?.trim();
+  if (question.hasAudio) {
+    const hasAudioUrl = !!question.audioUrl?.trim();
     if (!hasAudioUrl) {
       errors.audioUrl = 'A playable audio URL is required when audio is enabled';
     }
   }
 
-  const limits = model?.layoutLimits;
+  const limits = question?.layoutLimits;
   if (limits && typeof limits === 'object') {
     const numericLimitKeys = [
       'blankStandaloneWidthRem',
@@ -344,9 +357,9 @@ export const validate = (model: any = {}, _config: any = {}) => {
       'inlineGridRowGapRem',
       'inlineTemplateMarginTopRem',
       'inlineChoicesMarginTopRem',
-    ];
+    ] as const;
     for (const key of numericLimitKeys) {
-      if (limits[key] === undefined || limits[key] === null || limits[key] === '') continue;
+      if (limits[key] === undefined || limits[key] === null) continue;
       const value = Number(limits[key]);
       if (!Number.isFinite(value) || value <= 0) {
         errors.layoutLimits = `${key} must be a positive number when provided`;

@@ -12,6 +12,7 @@
     "generate-imports": "bun run scripts/generate-element-imports.ts",
     "predev": "bun run generate-imports && bun run --cwd ../.. verify:no-local-paths apps/element-demo/src/lib/element-imports.js apps/element-demo/src/lib/element-imports.d.ts",
     "test:e2e": "playwright test",
+    "test:e2e:mcpb": "playwright test mc-populated-blank",
     "test:a11y": "playwright test --config=playwright.a11y.config.ts",
     "test:a11y:inventory": "A11Y_SUITE=inventory playwright test --config=playwright.a11y.config.ts",
     "test:a11y:ui": "playwright test --config=playwright.a11y.config.ts --ui",
