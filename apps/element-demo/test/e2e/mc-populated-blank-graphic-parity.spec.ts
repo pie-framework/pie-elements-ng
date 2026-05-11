@@ -40,10 +40,13 @@ async function openGraphicRoute(page: Page, demoId: string) {
   await page.waitForSelector('[data-testid="role-student"]', { timeout: 20_000 });
   await waitForMathRendering(page);
   // Wait for choice images to load — they are external URLs and define tile dimensions.
-  await page.waitForFunction(() => {
-    const imgs = Array.from(document.querySelectorAll('.pie-choice img')) as HTMLImageElement[];
-    return imgs.length > 0 && imgs.every((img) => img.complete && img.naturalWidth > 0);
-  }, { timeout: 30_000 });
+  await page.waitForFunction(
+    () => {
+      const imgs = Array.from(document.querySelectorAll('.pie-choice img')) as HTMLImageElement[];
+      return imgs.length > 0 && imgs.every((img) => img.complete && img.naturalWidth > 0);
+    },
+    { timeout: 30_000 }
+  );
 }
 
 for (const DEMO_ID of GRAPHIC_VARIANTS) {
@@ -108,9 +111,7 @@ for (const DEMO_ID of GRAPHIC_VARIANTS) {
       expect(bgAfter).not.toBe(bgBefore);
     });
 
-    test('gap between adjacent choice tiles on the same row is at least 16px', async ({
-      page,
-    }) => {
+    test('gap between adjacent choice tiles on the same row is at least 16px', async ({ page }) => {
       await openGraphicRoute(page, DEMO_ID);
       const root = deliveryContainer(page);
 

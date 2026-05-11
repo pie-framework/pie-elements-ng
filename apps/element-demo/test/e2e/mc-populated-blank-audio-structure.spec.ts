@@ -183,11 +183,10 @@ test('audio/missing-resource: no audio controls when audioUrl is missing', async
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
-// T1. Transcript is sr-only (not visually visible) when showVisibleTranscript is false
-//     All r1-family variants have showVisibleTranscript: false. The transcript
-//     element must exist (for screen readers) but must not be visible.
+// T1. Transcript is sr-only by default (no rli-with-audio-transcript ancestor).
+//     The transcript element must exist (for screen readers) but must not be visible.
 // ---------------------------------------------------------------------------
-test('audio/transcript: sr-only when showVisibleTranscript is false', async ({ page }) => {
+test('audio/transcript: sr-only without rli-with-audio-transcript ancestor', async ({ page }) => {
   await openRoute(page, 'variant-sel-r1-plusggg');
   const root = deliveryContainer(page);
 
@@ -199,12 +198,19 @@ test('audio/transcript: sr-only when showVisibleTranscript is false', async ({ p
 });
 
 // ---------------------------------------------------------------------------
-// T2. Transcript is visually visible when showVisibleTranscript is true
-//     sel-vic has showVisibleTranscript: true. Already covered by sel-vic parity
-//     but included here as a complete contract alongside T1.
+// T2. Transcript becomes visible when rli-with-audio-transcript is added to an ancestor.
+//     Visibility is driven entirely by the player-level ancestor class, not by a model flag.
 // ---------------------------------------------------------------------------
-test('audio/transcript: visible when showVisibleTranscript is true', async ({ page }) => {
-  await openRoute(page, 'variant-sel-vic');
+test('audio/transcript: visible when rli-with-audio-transcript is on an ancestor', async ({
+  page,
+}) => {
+  await openRoute(page, 'variant-sel-r1-plusggg');
   const root = deliveryContainer(page);
+
+  await page.evaluate(() => {
+    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+  });
+
+  await expect(root.locator('.pie-audio-transcript')).not.toHaveClass(/sr-only/);
   await expect(root.locator('.pie-audio-transcript')).toBeVisible();
 });

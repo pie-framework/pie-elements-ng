@@ -4,7 +4,12 @@
       "id": "variant-sel-r1-plusggg",
       "title": "sel_r1-_plusggg (canonical CQT sample)",
       "description": "Canonical sample from item 000eb0e6-92a0-43cd-bb1f-89ddb52da2e5 and question 49d6bda1-4614-447d-8c2e-d4a317e13540.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "sel_r1-_plusgggv0.0.1"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_plusggg",
+        "sel_r1-_plusgggv0.0.1"
+      ],
       "model": {
         "id": "1",
         "element": "mc-populated-blank",
@@ -39,7 +44,6 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
           "learnosityItemReference": "000eb0e6-92a0-43cd-bb1f-89ddb52da2e5",
@@ -56,7 +60,13 @@
       "id": "variant-sr-vic",
       "title": "VIC (canonical CQT sample)",
       "description": "Canonical sample from item 00293f60-334f-48d0-b145-f7cb9f02a0fe and question a546c0a3-3d68-4d5c-994f-262e788f486c.",
-      "tags": ["mc-populated-blank", "cqt-sample", "VIC", "sr-vic", "sr-vicv0.0.1"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "VIC",
+        "sr-vic",
+        "sr-vicv0.0.1"
+      ],
       "model": {
         "id": "2",
         "element": "mc-populated-blank",
@@ -111,7 +121,13 @@
       "id": "variant-sel-vic",
       "title": "SEL VIC (canonical CQT sample)",
       "description": "Canonical sample from item 04973d1a-0557-4963-937d-7ac76ee3baeb and question 11e9862e-cab1-415e-87a3-0f32fedcedfc.",
-      "tags": ["mc-populated-blank", "cqt-sample", "SEL VIC", "sel_vic", "sel_vicv0.0.1"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "SEL VIC",
+        "sel_vic",
+        "sel_vicv0.0.1"
+      ],
       "model": {
         "id": "3",
         "element": "mc-populated-blank",
@@ -146,7 +162,6 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_vicv0.0.1",
           "learnosityItemReference": "04973d1a-0557-4963-937d-7ac76ee3baeb",
@@ -163,7 +178,12 @@
       "id": "variant-sel-r1-gplusggg",
       "title": "sel_r1-_gplusggg (canonical CQT sample)",
       "description": "Canonical sample from item 11b4d9be-a79e-48c3-9e58-84f5be3dbb0f and question 3fe2da9a-3ba3-41af-9d97-e373cde716d7.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "sel_r1-_gplusgggv0.0.1"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_gplusggg",
+        "sel_r1-_gplusgggv0.0.1"
+      ],
       "model": {
         "id": "4",
         "element": "mc-populated-blank",
@@ -198,7 +218,6 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
           "learnosityItemReference": "11b4d9be-a79e-48c3-9e58-84f5be3dbb0f",
@@ -215,7 +234,12 @@
       "id": "variant-sel-r1-g-stem",
       "title": "sel_r1-g_plusggg (canonical CQT sample)",
       "description": "Canonical sample from item 0060b039-2605-47a6-8305-96e0463fcfd0 and question b78bf2ff-8d6e-4a6f-a0c9-9e188020b50e.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "sel_r1-g_plusgggv0.0.1"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-g_plusggg",
+        "sel_r1-g_plusgggv0.0.1"
+      ],
       "model": {
         "id": "5",
         "element": "mc-populated-blank",
@@ -250,7 +274,6 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
           "learnosityItemReference": "0060b039-2605-47a6-8305-96e0463fcfd0",
@@ -267,7 +290,12 @@
       "id": "variant-sel-r1-gg-plus",
       "title": "sel_r1-gg_plusggg (canonical CQT sample)",
       "description": "Canonical sample from item 0d42ee84-b291-4336-b689-6912199fa81f and question a32aa886-0153-46a5-a31c-fdab5fd5165a.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "sel_r1-gg_plusgggv0.0.1"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-gg_plusggg",
+        "sel_r1-gg_plusgggv0.0.1"
+      ],
       "model": {
         "id": "6",
         "element": "mc-populated-blank",
@@ -286,7 +314,7 @@
           },
           {
             "id": "distractor_3",
-            "labelHtml": "<span style=\"font-size:3em;\">ñ</span>"
+            "labelHtml": "<span style=\"font-size:3em;\">\u00f1</span>"
           }
         ],
         "correctChoiceId": "distractor_1",
@@ -302,7 +330,6 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
           "learnosityItemReference": "0d42ee84-b291-4336-b689-6912199fa81f",
@@ -319,7 +346,12 @@
       "id": "variant-sel-r1-ggplus",
       "title": "sel_r1-_ggplusggg (canonical CQT sample)",
       "description": "Canonical sample from item 0291a767-2334-4742-a899-e4178e85fc02 and question a469c1cf-fc1c-4cef-ae9f-04cc3f0cfc49.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "sel_r1-_ggplusgggv0.0.1"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_ggplusggg",
+        "sel_r1-_ggplusgggv0.0.1"
+      ],
       "model": {
         "id": "7",
         "element": "mc-populated-blank",
@@ -354,7 +386,6 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
           "learnosityItemReference": "0291a767-2334-4742-a899-e4178e85fc02",
@@ -371,7 +402,12 @@
       "id": "variant-sel-r1-s3",
       "title": "sel_r1-s3_plusggg (canonical CQT sample)",
       "description": "Canonical sample from item 003dcbf8-ff38-4930-84ee-26ca8be834b9 and question 480b51c4-e8dd-4fed-8ddc-2e0667947326.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "sel_r1-s3_plusgggv0.0.1"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-s3_plusggg",
+        "sel_r1-s3_plusgggv0.0.1"
+      ],
       "model": {
         "id": "8",
         "element": "mc-populated-blank",
@@ -406,7 +442,6 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
           "learnosityItemReference": "003dcbf8-ff38-4930-84ee-26ca8be834b9",
@@ -421,9 +456,12 @@
     },
     {
       "id": "evaluate-correct",
-      "title": "sr-vic — evaluate with correct answer pre-selected",
+      "title": "sr-vic \u2014 evaluate with correct answer pre-selected",
       "description": "Evaluate mode fixture: distractor_1 (correct) pre-selected. Used by interaction tests.",
-      "tags": ["mc-populated-blank", "test-fixture"],
+      "tags": [
+        "mc-populated-blank",
+        "test-fixture"
+      ],
       "model": {
         "id": "9",
         "element": "mc-populated-blank",
@@ -432,10 +470,22 @@
         "template": "<p>He will heat up the water in the {{blank}}.</p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "teapot" },
-          { "id": "distractor_2", "labelHtml": "flytrap" },
-          { "id": "distractor_3", "labelHtml": "coffee" },
-          { "id": "distractor_4", "labelHtml": "freezer" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "teapot"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "flytrap"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "coffee"
+          },
+          {
+            "id": "distractor_4",
+            "labelHtml": "freezer"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": false,
@@ -449,8 +499,7 @@
         "choiceLayout": "vertical",
         "locale": "",
         "autoplayAudioEnabled": false,
-        "completeAudioEnabled": false,
-        "showVisibleTranscript": false
+        "completeAudioEnabled": false
       },
       "session": {
         "id": "9",
@@ -459,48 +508,15 @@
       }
     },
     {
-      "id": "plusggg-with-transcript",
-      "title": "sel_r1-_plusggg — audio transcript visible",
-      "description": "plusggg fixture with showVisibleTranscript:true. Used by transcript parity tests.",
-      "tags": ["mc-populated-blank", "test-fixture", "sel_r1-_plusggg"],
-      "model": {
-        "id": "11",
-        "element": "mc-populated-blank",
-        "prompt": "",
-        "promptEnabled": false,
-        "template": "<p>{{blank}}</p>",
-        "choiceMode": "text",
-        "choices": [
-          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:1.8em;\">louk</span>" },
-          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:1.8em;\">lok</span>" },
-          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:1.8em;\">look</span>" }
-        ],
-        "correctChoiceId": "distractor_3",
-        "hasAudio": true,
-        "audioUrl": "https://assets.learnosity.com/organisations/844/e134b07b-e827-4264-923f-3e3f1dac5d5a.mp3",
-        "audioTranscript": "The word is look. Pick the correct spelling of the word look.",
-        "interactionMode": "populate_blank",
-        "sentenceHtml": "",
-        "layoutProfile": "audio_blank_only",
-        "customType": "sel_r1-_plusggg",
-        "useFeatureButtonAudio": true,
-        "choiceLayout": "horizontal",
-        "locale": "",
-        "autoplayAudioEnabled": true,
-        "completeAudioEnabled": true,
-        "showVisibleTranscript": true
-      },
-      "session": {
-        "id": "11",
-        "element": "mc-populated-blank",
-        "choiceId": ""
-      }
-    },
-    {
       "id": "variant-sel-r1-gg-plus-es",
-      "title": "sel_r1-gg_plusggg — Spanish text (ea363a8b)",
+      "title": "sel_r1-gg_plusggg \u2014 Spanish text (ea363a8b)",
       "description": "Spanish text variant from item ea363a8b-26a1-44fb-bc8b-85f42758d952.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-gg_plusggg",
+        "es-US"
+      ],
       "model": {
         "id": "12",
         "element": "mc-populated-blank",
@@ -509,12 +525,18 @@
         "template": "<p><span style=\"font-size:3em;\">w</span> <span style=\"font-size:3em;\">x</span> {{blank}}</p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">v</span>" },
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:3em;\">v</span>"
+          },
           {
             "id": "distractor_2",
             "labelHtml": "<span style=\"font-size:3em;\"><span aria-label=\"i griega\"></span><span aria-hidden=\"true\">y</span></span>"
           },
-          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">x</span>" }
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:3em;\">x</span>"
+          }
         ],
         "correctChoiceId": "distractor_2",
         "hasAudio": true,
@@ -529,20 +551,28 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
           "learnosityItemReference": "ea363a8b-26a1-44fb-bc8b-85f42758d952",
           "learnosityQuestionReference": "c54e2120-d76a-44c8-b1d1-8abe324806fc"
         }
       },
-      "session": { "id": "12", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "12",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-g-stem-es",
-      "title": "sel_r1-g_plusggg — Spanish text (8e2e031c)",
+      "title": "sel_r1-g_plusggg \u2014 Spanish text (8e2e031c)",
       "description": "Spanish text variant from item 8e2e031c-5594-4081-811b-ddfcbecd5667.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-g_plusggg",
+        "es-US"
+      ],
       "model": {
         "id": "13",
         "element": "mc-populated-blank",
@@ -551,9 +581,18 @@
         "template": "<p><span style=\"font-size:2em;\">saco</span> {{blank}}</p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:2em;\">taco</span>" },
-          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:2em;\">poco</span>" },
-          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:2em;\">vaca</span>" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:2em;\">taco</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:2em;\">poco</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:2em;\">vaca</span>"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": true,
@@ -568,20 +607,28 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
           "learnosityItemReference": "8e2e031c-5594-4081-811b-ddfcbecd5667",
           "learnosityQuestionReference": "a9fa9f63-cfd4-49b9-88f0-c788e5eb53a9"
         }
       },
-      "session": { "id": "13", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "13",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-plusggg-es",
-      "title": "sel_r1-_plusggg — Spanish text (25bdc860)",
+      "title": "sel_r1-_plusggg \u2014 Spanish text (25bdc860)",
       "description": "Spanish text variant from item 25bdc860-bd49-438d-a597-78561422037b.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_plusggg",
+        "es-US"
+      ],
       "model": {
         "id": "14",
         "element": "mc-populated-blank",
@@ -590,14 +637,23 @@
         "template": "<p>{{blank}}</p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">3</span>" },
-          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\">2</span>" },
-          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">1</span>" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:3em;\">3</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:3em;\">2</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:3em;\">1</span>"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": true,
         "audioUrl": "https://assets.learnosity.com/organisations/844/d16f5669-b183-4392-aa27-b22ecfe6b2ff.mp3",
-        "audioTranscript": "La palabra es caracol. Elige el número de sílabas que escuchas en ca ra col.",
+        "audioTranscript": "La palabra es caracol. Elige el n\u00famero de s\u00edlabas que escuchas en ca ra col.",
         "interactionMode": "populate_blank",
         "sentenceHtml": "",
         "layoutProfile": "audio_blank_only",
@@ -607,20 +663,28 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
           "learnosityItemReference": "25bdc860-bd49-438d-a597-78561422037b",
           "learnosityQuestionReference": "7d69dfdd-f3a1-497f-94ed-b44d90f1b93b"
         }
       },
-      "session": { "id": "14", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "14",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-gplusggg-es",
-      "title": "sel_r1-_gplusggg — Spanish text (74a235ac)",
+      "title": "sel_r1-_gplusggg \u2014 Spanish text (74a235ac)",
       "description": "Spanish text variant from item 74a235ac-ba03-462d-9e78-077603f7f51e.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_gplusggg",
+        "es-US"
+      ],
       "model": {
         "id": "15",
         "element": "mc-populated-blank",
@@ -629,14 +693,23 @@
         "template": "<p>{{blank}} <span style=\"font-size:3em;\">sa</span></p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">ca</span>" },
-          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\">ro</span>" },
-          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">me</span>" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:3em;\">ca</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:3em;\">ro</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:3em;\">me</span>"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": true,
         "audioUrl": "https://assets.learnosity.com/organisations/844/5b80657f-6742-49c2-8c65-aec127ef661d.mp3",
-        "audioTranscript": "Mira la sílaba sa. Elige la sílaba que va antes de sa para formar la palabra casa.",
+        "audioTranscript": "Mira la s\u00edlaba sa. Elige la s\u00edlaba que va antes de sa para formar la palabra casa.",
         "interactionMode": "populate_blank",
         "sentenceHtml": "",
         "layoutProfile": "audio_blank_only",
@@ -646,20 +719,28 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
           "learnosityItemReference": "74a235ac-ba03-462d-9e78-077603f7f51e",
           "learnosityQuestionReference": "7276b29c-e841-4d09-bd85-a5194678a069"
         }
       },
-      "session": { "id": "15", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "15",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-ggplus-es",
-      "title": "sel_r1-_ggplusggg — Spanish text (23e2b004)",
+      "title": "sel_r1-_ggplusggg \u2014 Spanish text (23e2b004)",
       "description": "Spanish text variant from item 23e2b004-9b64-41cb-b620-c108146d5a27.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_ggplusggg",
+        "es-US"
+      ],
       "model": {
         "id": "16",
         "element": "mc-populated-blank",
@@ -668,17 +749,23 @@
         "template": "<p>{{blank}} <span style=\"font-size:3em;\">v</span> <span style=\"font-size:3em;\">w</span></p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">u</span>" },
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:3em;\">u</span>"
+          },
           {
             "id": "distractor_2",
             "labelHtml": "<span style=\"font-size:3em;\"><span aria-label=\"i griega\"></span><span aria-hidden=\"true\">y</span></span>"
           },
-          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">x</span>" }
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:3em;\">x</span>"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": true,
         "audioUrl": "https://assets.learnosity.com/organisations/844/884a9764-8830-441b-89b0-eeef1a5ee24b.mp3",
-        "audioTranscript": "Estas letras son V y W. Elige la letra que está antes que ellas en el alfabeto.",
+        "audioTranscript": "Estas letras son V y W. Elige la letra que est\u00e1 antes que ellas en el alfabeto.",
         "interactionMode": "populate_blank",
         "sentenceHtml": "",
         "layoutProfile": "token_sequence",
@@ -688,20 +775,28 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
           "learnosityItemReference": "23e2b004-9b64-41cb-b620-c108146d5a27",
           "learnosityQuestionReference": "c1416a25-3c90-49bf-ab88-f1a8673e9407"
         }
       },
-      "session": { "id": "16", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "16",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-s3-es",
-      "title": "sel_r1-s3_plusggg — Spanish text (5f9fcfe0)",
+      "title": "sel_r1-s3_plusggg \u2014 Spanish text (5f9fcfe0)",
       "description": "Spanish text variant from item 5f9fcfe0-5870-4e1b-a436-49dceb43759d.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-s3_plusggg",
+        "es-US"
+      ],
       "model": {
         "id": "17",
         "element": "mc-populated-blank",
@@ -710,14 +805,23 @@
         "template": "<p>{{blank}}</p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:1.3em;\">hueso</span>" },
-          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:1.3em;\">tiene</span>" },
-          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:1.3em;\">perro</span>" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "<span style=\"font-size:1.3em;\">hueso</span>"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "<span style=\"font-size:1.3em;\">tiene</span>"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "<span style=\"font-size:1.3em;\">perro</span>"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": true,
         "audioUrl": "https://assets.learnosity.com/organisations/844/2c2b85e9-4f75-43a3-9fe9-7d48036b6f68.mp3",
-        "audioTranscript": "Lee la oración. Elige la palabra que tiene una letra que no suena.",
+        "audioTranscript": "Lee la oraci\u00f3n. Elige la palabra que tiene una letra que no suena.",
         "interactionMode": "populate_blank",
         "sentenceHtml": "<span style=\"font-size:1.1em;\">Mi perro tiene un hueso.</span>",
         "layoutProfile": "stimulus_image_blank",
@@ -727,31 +831,48 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
           "learnosityItemReference": "5f9fcfe0-5870-4e1b-a436-49dceb43759d",
           "learnosityQuestionReference": "20f5137c-8e62-4ae4-906e-36f6262e661b"
         }
       },
-      "session": { "id": "17", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "17",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-vic-es",
-      "title": "sel_vic — Spanish text (9264f1c0)",
+      "title": "sel_vic \u2014 Spanish text (9264f1c0)",
       "description": "Spanish text variant from item 9264f1c0-a6c9-4920-bb9c-7590be3c172a.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_vic", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_vic",
+        "es-US"
+      ],
       "model": {
         "id": "18",
         "element": "mc-populated-blank",
         "prompt": "",
         "promptEnabled": false,
-        "template": "<p>Es importante comenzar el día con un buen desayuno. Necesitamos comida en la mañana. No comer puede hacernos sentir cansados o enfermos. Desayunar nos ayuda a sentirnos bien. Trabajamos mejor en la escuela cuando nos sentimos bien. ¿Cuándo es importante desayunar? {{blank}}</p>",
+        "template": "<p>Es importante comenzar el d\u00eda con un buen desayuno. Necesitamos comida en la ma\u00f1ana. No comer puede hacernos sentir cansados o enfermos. Desayunar nos ayuda a sentirnos bien. Trabajamos mejor en la escuela cuando nos sentimos bien. \u00bfCu\u00e1ndo es importante desayunar? {{blank}}</p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "mientras trabajamos en la escuela" },
-          { "id": "distractor_2", "labelHtml": "cuando no sentimos bien" },
-          { "id": "distractor_3", "labelHtml": "en la mañana" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "mientras trabajamos en la escuela"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "cuando no sentimos bien"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "en la ma\u00f1ana"
+          }
         ],
         "correctChoiceId": "distractor_2",
         "hasAudio": true,
@@ -766,20 +887,28 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_vicv0.0.1",
           "learnosityItemReference": "9264f1c0-a6c9-4920-bb9c-7590be3c172a",
           "learnosityQuestionReference": "c78bdd84-5de8-4249-b13e-baf906cfa195"
         }
       },
-      "session": { "id": "18", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "18",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-gg-plus-graphic",
-      "title": "sel_r1-gg_plusggg — graphic choices English (bc827dec)",
+      "title": "sel_r1-gg_plusggg \u2014 graphic choices English (bc827dec)",
       "description": "Graphic choice variant from item bc827dec-cb5e-4f09-b7f0-e227c2912c2f.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-gg_plusggg", "graphic"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-gg_plusggg",
+        "graphic"
+      ],
       "model": {
         "id": "19",
         "element": "mc-populated-blank",
@@ -814,20 +943,28 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
           "learnosityItemReference": "bc827dec-cb5e-4f09-b7f0-e227c2912c2f",
           "learnosityQuestionReference": "5b5091c4-a2b7-4892-b209-99b33793c2c6"
         }
       },
-      "session": { "id": "19", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "19",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-g-stem-graphic",
-      "title": "sel_r1-g_plusggg — graphic choices English (e6dc4fe3)",
+      "title": "sel_r1-g_plusggg \u2014 graphic choices English (e6dc4fe3)",
       "description": "Graphic choice variant from item e6dc4fe3-076d-4d39-963a-f5742987801a.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "graphic"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-g_plusggg",
+        "graphic"
+      ],
       "model": {
         "id": "20",
         "element": "mc-populated-blank",
@@ -862,20 +999,28 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
           "learnosityItemReference": "e6dc4fe3-076d-4d39-963a-f5742987801a",
           "learnosityQuestionReference": "f2c1c343-3aac-4232-a7cd-f18fc02e8f43"
         }
       },
-      "session": { "id": "20", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "20",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-plusggg-graphic",
-      "title": "sel_r1-_plusggg — graphic choices English (097f87c5)",
+      "title": "sel_r1-_plusggg \u2014 graphic choices English (097f87c5)",
       "description": "Graphic choice variant from item 097f87c5-c474-4dda-97b2-46b30d598a54.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "graphic"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_plusggg",
+        "graphic"
+      ],
       "model": {
         "id": "21",
         "element": "mc-populated-blank",
@@ -910,20 +1055,28 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
           "learnosityItemReference": "097f87c5-c474-4dda-97b2-46b30d598a54",
           "learnosityQuestionReference": "fa344899-b3e9-4c94-a024-3612d550a6a9"
         }
       },
-      "session": { "id": "21", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "21",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-gplusggg-graphic",
-      "title": "sel_r1-_gplusggg — graphic choices English (a0c05ca1)",
+      "title": "sel_r1-_gplusggg \u2014 graphic choices English (a0c05ca1)",
       "description": "Graphic choice variant from item a0c05ca1-127d-49eb-bb05-8ea7b5c1834f.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_gplusggg", "graphic"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_gplusggg",
+        "graphic"
+      ],
       "model": {
         "id": "22",
         "element": "mc-populated-blank",
@@ -958,20 +1111,28 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
           "learnosityItemReference": "a0c05ca1-127d-49eb-bb05-8ea7b5c1834f",
           "learnosityQuestionReference": "2aa288ad-a928-4d90-bbc6-f7ee98a51f59"
         }
       },
-      "session": { "id": "22", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "22",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-ggplus-graphic",
-      "title": "sel_r1-_ggplusggg — graphic choices English (2e53a942)",
+      "title": "sel_r1-_ggplusggg \u2014 graphic choices English (2e53a942)",
       "description": "Graphic choice variant from item 2e53a942-8ceb-46d4-bf56-ddd7b376f504.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "graphic"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_ggplusggg",
+        "graphic"
+      ],
       "model": {
         "id": "23",
         "element": "mc-populated-blank",
@@ -1006,20 +1167,28 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
           "learnosityItemReference": "2e53a942-8ceb-46d4-bf56-ddd7b376f504",
           "learnosityQuestionReference": "d102f1f4-4311-4e99-9d05-e2047b2803d7"
         }
       },
-      "session": { "id": "23", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "23",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-s3-graphic",
-      "title": "sel_r1-s3_plusggg — graphic choices English (c3b6c877)",
+      "title": "sel_r1-s3_plusggg \u2014 graphic choices English (c3b6c877)",
       "description": "Graphic choice variant from item c3b6c877-444d-4d27-9f1a-3cbc8af38b7a.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "graphic"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-s3_plusggg",
+        "graphic"
+      ],
       "model": {
         "id": "24",
         "element": "mc-populated-blank",
@@ -1054,20 +1223,29 @@
         "locale": "",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
           "learnosityItemReference": "c3b6c877-444d-4d27-9f1a-3cbc8af38b7a",
           "learnosityQuestionReference": "9b938e63-88ae-4f04-860b-66df1a61331a"
         }
       },
-      "session": { "id": "24", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "24",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-plusggg-graphic-es",
-      "title": "sel_r1-_plusggg — graphic choices Spanish (a83f1d87)",
+      "title": "sel_r1-_plusggg \u2014 graphic choices Spanish (a83f1d87)",
       "description": "Spanish graphic choice variant from item a83f1d87-f3e5-4c0e-8eb4-408275336c0b.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_plusggg", "graphic", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_plusggg",
+        "graphic",
+        "es-US"
+      ],
       "model": {
         "id": "25",
         "element": "mc-populated-blank",
@@ -1082,7 +1260,7 @@
           },
           {
             "id": "distractor_2",
-            "labelHtml": "<img alt=\"plátano\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/c292fb15-c052-44c7-9f26-e639bdc69f7d.svgz\" width=\"108\">"
+            "labelHtml": "<img alt=\"pl\u00e1tano\" height=\"108\" src=\"https://assets.learnosity.com/organisations/844/c292fb15-c052-44c7-9f26-e639bdc69f7d.svgz\" width=\"108\">"
           },
           {
             "id": "distractor_3",
@@ -1092,7 +1270,7 @@
         "correctChoiceId": "distractor_3",
         "hasAudio": true,
         "audioUrl": "https://assets.learnosity.com/organisations/844/d8c47cce-ba4b-4e7d-a55e-bf2418094081.mp3",
-        "audioTranscript": "Escucha con atención lo que digo: pi ja ma. Elige el dibujo que tiene lo que digo: pi ja ma, pi ja ma.",
+        "audioTranscript": "Escucha con atenci\u00f3n lo que digo: pi ja ma. Elige el dibujo que tiene lo que digo: pi ja ma, pi ja ma.",
         "interactionMode": "populate_blank",
         "sentenceHtml": "",
         "layoutProfile": "audio_blank_only",
@@ -1102,20 +1280,29 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
           "learnosityItemReference": "a83f1d87-f3e5-4c0e-8eb4-408275336c0b",
           "learnosityQuestionReference": "3b30d112-f0a8-4bef-9958-bebdfabce992"
         }
       },
-      "session": { "id": "25", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "25",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "variant-sel-r1-ggplus-graphic-es",
-      "title": "sel_r1-_ggplusggg — graphic choices Spanish (00cd1143)",
+      "title": "sel_r1-_ggplusggg \u2014 graphic choices Spanish (00cd1143)",
       "description": "Spanish graphic choice variant from item 00cd1143-ceda-4f81-8f1f-6c9555d043e4.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-_ggplusggg", "graphic", "es-US"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-_ggplusggg",
+        "graphic",
+        "es-US"
+      ],
       "model": {
         "id": "26",
         "element": "mc-populated-blank",
@@ -1150,20 +1337,26 @@
         "locale": "es-US",
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
-        "showVisibleTranscript": false,
         "source": {
           "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
           "learnosityItemReference": "00cd1143-ceda-4f81-8f1f-6c9555d043e4",
           "learnosityQuestionReference": "98b7bb39-7a82-4221-9291-144833be351d"
         }
       },
-      "session": { "id": "26", "element": "mc-populated-blank", "choiceId": "" }
+      "session": {
+        "id": "26",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
     },
     {
       "id": "evaluate-wrong",
-      "title": "sr-vic — evaluate with wrong answer pre-selected",
+      "title": "sr-vic \u2014 evaluate with wrong answer pre-selected",
       "description": "Evaluate mode fixture: distractor_2 (wrong) pre-selected. Used by interaction tests.",
-      "tags": ["mc-populated-blank", "test-fixture"],
+      "tags": [
+        "mc-populated-blank",
+        "test-fixture"
+      ],
       "model": {
         "id": "10",
         "element": "mc-populated-blank",
@@ -1172,10 +1365,22 @@
         "template": "<p>He will heat up the water in the {{blank}}.</p>",
         "choiceMode": "text",
         "choices": [
-          { "id": "distractor_1", "labelHtml": "teapot" },
-          { "id": "distractor_2", "labelHtml": "flytrap" },
-          { "id": "distractor_3", "labelHtml": "coffee" },
-          { "id": "distractor_4", "labelHtml": "freezer" }
+          {
+            "id": "distractor_1",
+            "labelHtml": "teapot"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "flytrap"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "coffee"
+          },
+          {
+            "id": "distractor_4",
+            "labelHtml": "freezer"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": false,
@@ -1189,8 +1394,7 @@
         "choiceLayout": "vertical",
         "locale": "",
         "autoplayAudioEnabled": false,
-        "completeAudioEnabled": false,
-        "showVisibleTranscript": false
+        "completeAudioEnabled": false
       },
       "session": {
         "id": "10",

@@ -1,20 +1,18 @@
 /**
- * Transcript visibility parity tests for mc-populated-blank (_plusggg variant).
+ * Transcript visibility parity tests for mc-populated-blank.
  *
  * Reference: web-ItemBankViewer/learnosity/templates/Renaissance/sel_r1-_plusggg/
  * The reference renders the transcript text when .rli-with-audio-transcript is
  * present on an ancestor element — not via a model flag.
  *
- * Two fixtures are used:
- *   - variant-sel-r1-plusggg: showVisibleTranscript:false — tests the DOM-class trigger
- *   - plusggg-with-transcript: showVisibleTranscript:true  — tests the model-flag path
+ * Transcript visibility is driven entirely by the player-level ancestor class.
+ * There is no model-flag path — showVisibleTranscript on the model is ignored.
  */
 
 import { expect, test } from '@playwright/test';
 import { deliveryContainer, waitForMathRendering } from './test-helpers';
 
 const DEMO_ID = 'variant-sel-r1-plusggg';
-const TRANSCRIPT_DEMO_ID = 'plusggg-with-transcript';
 const TRANSCRIPT_TEXT = 'The word is look. Pick the correct spelling of the word look.';
 
 async function openRoute(page: Parameters<typeof test>[0]['page'], demo = DEMO_ID) {
@@ -92,29 +90,43 @@ test('plusggg: transcript contains the correct text when made visible via ancest
 });
 
 // ---------------------------------------------------------------------------
-// model showVisibleTranscript:true path (already passing — regression guard)
+// Visible transcript layout assertions (ancestor class path)
 // ---------------------------------------------------------------------------
 
-test('plusggg: transcript is visible when model showVisibleTranscript is true', async ({
+test('plusggg: transcript is visible when rli-with-audio-transcript is on an ancestor', async ({
   page,
 }) => {
-  await openRoute(page, TRANSCRIPT_DEMO_ID);
+  await openRoute(page);
   const root = deliveryContainer(page);
+
+  await page.evaluate(() => {
+    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+  });
+
   const transcript = root.locator('.pie-audio-transcript');
   await expect(transcript).toBeVisible();
   await expect(transcript).not.toHaveClass(/sr-only/);
 });
 
-test('plusggg: transcript text is center-aligned', async ({ page }) => {
-  await openRoute(page, TRANSCRIPT_DEMO_ID);
+test('plusggg: transcript text is center-aligned when visible', async ({ page }) => {
+  await openRoute(page);
   const root = deliveryContainer(page);
+
+  await page.evaluate(() => {
+    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+  });
+
   const transcript = root.locator('.pie-audio-transcript');
   await expect(transcript).toHaveCSS('text-align', 'center');
 });
 
-test('plusggg: transcript renders above the choice tiles', async ({ page }) => {
-  await openRoute(page, TRANSCRIPT_DEMO_ID);
+test('plusggg: transcript renders above the choice tiles when visible', async ({ page }) => {
+  await openRoute(page);
   const root = deliveryContainer(page);
+
+  await page.evaluate(() => {
+    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+  });
 
   const transcript = root.locator('.pie-audio-transcript');
   const firstChoice = root.locator('.pie-choice').first();
@@ -142,6 +154,12 @@ const AUDIO_TRANSCRIPT_VARIANTS: Array<{ demoId: string; label: string }> = [
   { demoId: 'variant-sel-r1-gg-plus', label: 'gg-plus' },
   { demoId: 'variant-sel-r1-ggplus', label: 'ggplus' },
   { demoId: 'variant-sel-r1-s3', label: 's3' },
+  { demoId: 'variant-sel-r1-plusggg-graphic', label: 'plusggg-graphic' },
+  { demoId: 'variant-sel-r1-gplusggg-graphic', label: 'gplusggg-graphic' },
+  { demoId: 'variant-sel-r1-gg-plus-graphic', label: 'gg-plus-graphic' },
+  { demoId: 'variant-sel-r1-ggplus-graphic', label: 'ggplus-graphic' },
+  { demoId: 'variant-sel-r1-g-stem-graphic', label: 'g-stem-graphic' },
+  { demoId: 'variant-sel-r1-s3-graphic', label: 's3-graphic' },
 ];
 
 for (const { demoId, label } of AUDIO_TRANSCRIPT_VARIANTS) {
@@ -185,5 +203,52 @@ for (const { demoId, label } of AUDIO_TRANSCRIPT_VARIANTS) {
       document.querySelector('.demo-element-player')?.classList.remove('rli-with-audio-transcript');
     });
     await expect(transcript).toHaveClass(/sr-only/);
+  });
+
+  test(`${label}: transcript top is at or above all other question content when visible`, async ({
+    page,
+  }) => {
+    await openRoute(page, demoId);
+    const root = deliveryContainer(page);
+
+    await page.evaluate(() => {
+      document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+    });
+
+    const transcript = root.locator('.pie-audio-transcript');
+    await expect(transcript).toBeVisible();
+
+    const transcriptBox = await transcript.boundingBox();
+    expect(transcriptBox).not.toBeNull();
+
+    // The transcript must be the topmost element — its top Y must be at or above
+    // all other visible content. The audio container may share the same grid row
+    // (token_sequence: 'transcript audio'), so we allow it to start above the
+    // transcript bottom but not above the transcript top.
+    const otherSelectors = [
+      '.pie-template-line',
+      '.pie-choices-fieldset',
+      '.pie-sentence-line',
+    ];
+    for (const sel of otherSelectors) {
+      const el = root.locator(sel).first();
+      if (!(await el.isVisible())) continue;
+      const box = await el.boundingBox();
+      if (!box) continue;
+      expect(box.y).toBeGreaterThanOrEqual(transcriptBox!.y - 5);
+    }
+  });
+
+  test(`${label}: transcript region matches committed snapshot when visible`, async ({ page }) => {
+    await openRoute(page, demoId);
+    const root = deliveryContainer(page);
+
+    await page.evaluate(() => {
+      document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
+    });
+
+    const transcript = root.locator('.pie-audio-transcript');
+    await expect(transcript).toBeVisible();
+    await expect(transcript).toHaveScreenshot(`pie-${demoId}-transcript.png`);
   });
 }

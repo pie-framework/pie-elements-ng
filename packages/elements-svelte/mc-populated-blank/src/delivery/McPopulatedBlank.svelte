@@ -95,9 +95,7 @@ const isBlankOnlyTemplate = $derived(layoutProfileFlags.isBlankOnlyTemplate);
 const isHorizontalChoices = $derived(layoutProfileFlags.isHorizontalChoices);
 const hasInlineSentenceAudioLayout = $derived(layoutProfileFlags.hasInlineSentenceAudioLayout);
 const useFeatureButtonAudio = $derived(layoutProfileFlags.useFeatureButtonAudio);
-const showVisibleTranscript = $derived(
-  !!model?.showVisibleTranscript || ancestorHasTranscriptClass
-);
+const showVisibleTranscript = $derived(ancestorHasTranscriptClass);
 const correctAnswerStyleVars = $derived.by(() =>
   [
     `--pie-correct-answer-toggle-label-color:${color.text()}`,
