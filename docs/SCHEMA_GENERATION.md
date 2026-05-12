@@ -5,9 +5,9 @@ This repository generates per-view HTML documentation artifacts for PIE elements
 ## Goals
 
 - Support both `packages/elements-react/*` and `packages/elements-svelte/*`.
-- Keep output centralized under `apps/element-demo/static/element-docs/<element>/`.
+- Keep output centralized under `apps/element-demo/static/element-docs/<element>/` during demo builds.
 - Include default values in generated docs whenever defaults are known.
-- Enforce descriptor + docs drift checks before publish.
+- Generate deployable docs as part of the element demo build.
 
 ## Contract File
 
@@ -67,7 +67,7 @@ Example:
 
 ## Commands
 
-Generate docs:
+Generate docs manually:
 
 ```bash
 bun run cli docs:generate
@@ -95,14 +95,23 @@ Each generated element folder contains:
 - `author.html` (author view docs)
 - `print.html` (only when print is meaningfully different)
 
+Generated HTML is a build artifact. It is written into `apps/element-demo/static/element-docs/`
+by the element-demo `prebuild`/`predev` scripts so SvelteKit can serve it from
+`/element-docs/<element>/`, but the generated directory is not committed.
+
 ## Upstream Sync Integration
 
 `upstream:update` and `upstream:sync` run through the React sync strategy, which refreshes docs contracts for synced React elements. This keeps descriptors aligned with package/view changes during sync.
 
-## Publish Enforcement
+## Build Integration
 
-Release publishing runs docs verification via the root `release:publish` script. Publishing fails when:
+The element-demo build runs docs generation before `vite build`. Publishing therefore ships docs
+from the same generation step as local demo builds instead of relying on checked-in HTML.
+
+Docs verification remains available as an explicit diagnostic command. It is not part of release
+publishing because the generated HTML is no longer committed.
+
+Docs generation fails when:
 
 - a publish-targeted element has no valid `docs.contract.json`,
-- a contract references missing source files,
-- generated docs are out of date.
+- a contract references missing source files.

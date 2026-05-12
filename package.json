@@ -50,7 +50,7 @@
     "changeset:plan": "node ./scripts/create-package-changeset.mjs",
     "version": "changeset version",
     "release": "bun run release:publish",
-    "release:publish": "bun run build && bun run verify:runtime-support && bun run cli verify:controllers && bun run cli docs:verify && node ./scripts/changeset-publish-resolved-workspaces.mjs",
+    "release:publish": "bun run build && bun run verify:runtime-support && bun run cli verify:controllers && node ./scripts/changeset-publish-resolved-workspaces.mjs",
     "release:manual": "bun run release:publish",
     "release:publish:packages": "node ./scripts/release-publish-selective.mjs",
     "release:publish:packages:env-token": "sh ./scripts/publish-with-env-token.sh",

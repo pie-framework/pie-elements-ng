@@ -6,11 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "prebuild": "bun run generate-imports && bun run --cwd ../.. verify:no-local-paths apps/element-demo/src/lib/element-imports.js apps/element-demo/src/lib/element-imports.d.ts",
+    "prebuild": "bun run generate-imports && bun run generate-docs && bun run --cwd ../.. verify:no-local-paths apps/element-demo/src/lib/element-imports.js apps/element-demo/src/lib/element-imports.d.ts",
     "build": "vite build",
     "preview": "vite preview",
     "generate-imports": "bun run scripts/generate-element-imports.ts",
-    "predev": "bun run generate-imports && bun run --cwd ../.. verify:no-local-paths apps/element-demo/src/lib/element-imports.js apps/element-demo/src/lib/element-imports.d.ts",
+    "generate-docs": "cd ../.. && bun run cli docs:generate",
+    "predev": "bun run generate-imports && bun run generate-docs && bun run --cwd ../.. verify:no-local-paths apps/element-demo/src/lib/element-imports.js apps/element-demo/src/lib/element-imports.d.ts",
     "test:e2e": "playwright test",
     "test:e2e:mcpb": "playwright test mc-populated-blank",
     "test:a11y": "playwright test --config=playwright.a11y.config.ts",
@@ -39,6 +40,7 @@
     "lowlight": "^3.3.0"
   },
   "devDependencies": {
+    "@pie-element/cli": "workspace:*",
     "@pie-element/multiple-choice": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@sveltejs/adapter-auto": "^7.0.1",

@@ -53,6 +53,7 @@
         "lowlight": "^3.3.0",
       },
       "devDependencies": {
+        "@pie-element/cli": "workspace:*",
         "@pie-element/multiple-choice": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@sveltejs/adapter-auto": "^7.0.1",

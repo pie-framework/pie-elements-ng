@@ -64,7 +64,7 @@ bun run upstream:status
 bun run upstream:update
 bun run verify:runtime-support
 bun run cli verify:controllers
-bun run cli docs:verify
+bun run --cwd apps/element-demo build
 ```
 
 New NG-native elements, shared infrastructure, demo tooling, accessibility workflows, and release automation are developed directly in this project.
