@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/graphing-utils",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "",
   "dependencies": {
     "@mapbox/point-geometry": "^1.1.0",

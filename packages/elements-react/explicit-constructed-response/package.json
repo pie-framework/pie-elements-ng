@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/explicit-constructed-response",
-  "version": "11.0.1",
+  "version": "11.1.0-next.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

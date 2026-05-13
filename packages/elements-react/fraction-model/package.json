@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/fraction-model",
-  "version": "6.0.1",
+  "version": "6.1.0-next.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

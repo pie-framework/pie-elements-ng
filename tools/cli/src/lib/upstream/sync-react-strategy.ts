@@ -957,7 +957,7 @@ export default defineConfig({
 
   private generateTsConfig(): string {
     return `{
-  "extends": "../../../tsconfig.base.json",
+  "extends": "../../../tsconfig.declarations.json",
   "compilerOptions": {
     "outDir": "dist",
     "declarationDir": "dist",

@@ -290,13 +290,12 @@ export default defineConfig({
 
   private generateTsConfig(): string {
     return `{
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tsconfig.declarations.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
     "jsx": "react-jsx",
-    "declaration": true,
-    "emitDeclarationOnly": false
+    "declaration": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]

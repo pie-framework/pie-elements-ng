@@ -432,7 +432,7 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
 
   private generateTsConfig(): string {
     return `{
-  "extends": "../../../tsconfig.base.json",
+  "extends": "../../../tsconfig.declarations.json",
   "compilerOptions": {
     "outDir": "dist",
     "declarationDir": "dist",

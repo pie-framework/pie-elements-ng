@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-//import EditableHTML from '@pie-lib/editable-html-tip-tap';
+import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer as InputContainerImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -44,12 +44,9 @@ import { styled } from '@mui/material/styles';
 import Group from './group.js';
 
 // - mathquill error window not defined
-import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
-
-const EditableHtml = EditableHtmlImport;
 const StyledEditableHTML: any = styled(EditableHtml)(({ theme }) => ({
-    fontFamily: theme.typography.fontFamily,
-  }));
+  fontFamily: theme.typography.fontFamily,
+}));
 
 const feedbackLabels = {
   default: 'Simple Feedback',

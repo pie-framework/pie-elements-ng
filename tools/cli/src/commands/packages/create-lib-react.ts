@@ -259,12 +259,11 @@ export default defineConfig({
     }
 
     const tsConfig = {
-      extends: '../../../tsconfig.base.json',
+      extends: '../../../tsconfig.declarations.json',
       compilerOptions: {
         outDir: './dist',
         rootDir: './src',
         declaration: true,
-        emitDeclarationOnly: false,
       },
       include: ['src/**/*'],
       exclude: ['node_modules', 'dist', '**/*.spec.ts', '**/*.spec.tsx'],
