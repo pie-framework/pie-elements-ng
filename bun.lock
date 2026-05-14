@@ -193,6 +193,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
+        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -242,6 +243,7 @@
       "name": "@pie-element/drag-in-the-blank",
       "version": "10.1.0-next.1",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -256,6 +258,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
+        "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
       },
@@ -288,6 +291,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
+        "debug": "^4.1.1",
         "konva": "8.3.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
@@ -309,6 +313,7 @@
       "name": "@pie-element/ebsr",
       "version": "14.2.0-next.1",
       "dependencies": {
+        "@mui/material": "^7.3.4",
         "@pie-element/multiple-choice": "workspace:*",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
@@ -318,6 +323,7 @@
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
+        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -350,6 +356,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.5",
+        "debug": "^4.1.1",
         "he": "^1.2.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.1",
@@ -383,6 +390,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "lodash.throttle": "^4.1.1",
         "prop-types": "^15.6.1",
       },
@@ -414,6 +422,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-is": "^19.2.0",
         "recharts": "^3.7.0",
@@ -450,6 +459,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
+        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -481,6 +492,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "classnames": "^2.2.5",
         "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
+        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -511,7 +524,9 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
+        "debug": "^4.1.1",
         "konva": "8.3.0",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-konva": "^18.2.14",
       },
@@ -547,8 +562,11 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.6",
+        "debug": "^4.1.1",
         "humps": "^2.0.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
+        "react-transition-group": "^2.3.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -579,6 +597,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
+        "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
       },
@@ -631,6 +650,7 @@
       "name": "@pie-element/match",
       "version": "12.1.0-next.1",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -787,6 +807,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-is": "^19.2.0",
         "styled-components": "^5.2.1",
@@ -807,6 +828,7 @@
       "name": "@pie-element/multi-trait-rubric",
       "version": "8.1.0-next.1",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -819,6 +841,8 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "clsx": "^1.1.1",
+        "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.6.1",
       },
       "devDependencies": {
@@ -892,6 +916,7 @@
         "d3-selection": "^3.0.0",
         "lodash-es": "^4.17.23",
         "mathjs": "^7.5.1",
+        "prop-types": "^15.6.1",
         "react-jss": "^10.10.0",
         "react-transition-group": "^4.4.5",
       },
@@ -921,6 +946,8 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
+        "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -957,7 +984,10 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
         "decimal.js": "^10.0.0",
+        "js-combinatorics": "^2.1.2",
         "lodash-es": "^4.17.23",
+        "nested-property": "^4.0.0",
+        "pluralize": "^8.0.0",
         "prop-types": "^15.8.1",
         "react-transition-group": "^4.4.5",
       },
@@ -986,6 +1016,8 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/rubric": "workspace:*",
+        "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1018,6 +1050,8 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/text-select": "workspace:*",
+        "debug": "^4.1.1",
+        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1142,6 +1176,7 @@
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
         "lodash-es": "^4.17.23",
+        "prop-types": "^15.6.1",
         "react": "^18.2.0",
         "react-draggable": "^3.3.0",
         "react-input-autosize": "^2.2.1",
@@ -1170,6 +1205,7 @@
         "lodash-es": "^4.17.23",
         "mathjs": "^7.0.1",
         "prop-types": "^15.6.2",
+        "react": "^18.2.0",
         "react-measure": "^2.2.2",
       },
       "devDependencies": {
@@ -1208,6 +1244,7 @@
         "@pie-lib/translator": "workspace:*",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
+        "react": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -1286,7 +1323,10 @@
         "keycode": "^2.2.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
+        "prosemirror-state": "^1.4.4",
+        "react": "^18.2.0",
         "react-attr-converter": "^0.3.1",
+        "react-dom": "^18.2.0",
         "react-jss": "^8.6.1",
         "react-portal": "^4.2.0",
         "tippy.js": "latest",
@@ -1306,6 +1346,7 @@
       "dependencies": {
         "@dnd-kit/core": "^6.3.0",
         "@dnd-kit/sortable": "10.0.0",
+        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mapbox/point-geometry": "^1.1.0",
@@ -1353,7 +1394,9 @@
       "name": "@pie-lib/graphing-solution-set",
       "version": "4.0.2",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "10.0.0",
+        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mapbox/point-geometry": "^1.1.0",
@@ -1423,6 +1466,7 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "prop-types": "^15.6.2",
+        "react": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1436,6 +1480,8 @@
       "name": "@pie-lib/mask-markup",
       "version": "3.0.2",
       "dependencies": {
+        "@dnd-kit/core": "6.3.1",
+        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -1513,6 +1559,7 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
+        "react": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1568,6 +1615,7 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
+        "react": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -1621,9 +1669,13 @@
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.11.0",
+        "@mui/material": "^7.3.4",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/jest-dom": "^5.16.5",
+        "@testing-library/react": "^16.3.0",
         "@testing-library/user-event": "^14.5.2",
+        "prop-types": "^15.6.1",
+        "react": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1649,6 +1701,8 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1672,6 +1726,7 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
+        "react": "^18.2.0",
         "react-portal": "^4.2.0",
         "trigonometry-calculator": "^2.0.0",
       },
@@ -2510,6 +2565,8 @@
 
     "@testing-library/jest-dom": ["@testing-library/jest-dom@6.9.1", "", { "dependencies": { "@adobe/css-tools": "^4.4.0", "aria-query": "^5.0.0", "css.escape": "^1.5.1", "dom-accessibility-api": "^0.6.3", "picocolors": "^1.1.1", "redent": "^3.0.0" } }, "sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA=="],
 
+    "@testing-library/react": ["@testing-library/react@16.3.2", "", { "dependencies": { "@babel/runtime": "^7.12.5" }, "peerDependencies": { "@testing-library/dom": "^10.0.0", "@types/react": "^18.0.0 || ^19.0.0", "@types/react-dom": "^18.0.0 || ^19.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g=="],
+
     "@testing-library/user-event": ["@testing-library/user-event@14.6.1", "", { "peerDependencies": { "@testing-library/dom": ">=7.21.4" } }, "sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw=="],
 
     "@tiptap/core": ["@tiptap/core@3.18.0", "", { "peerDependencies": { "@tiptap/pm": "^3.18.0" } }, "sha512-Gczd4GbK1DNgy/QUPElMVozoa0GW9mW8E31VIi7Q4a9PHHz8PcrxPmuWwtJ2q0PF8MWpOSLuBXoQTWaXZRPRnQ=="],
@@ -3296,6 +3353,8 @@
 
     "jquery": ["jquery@3.7.1", "", {}, "sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg=="],
 
+    "js-combinatorics": ["js-combinatorics@2.1.2", "", {}, "sha512-/1AY2bYwxajoaKjPzvgQ80U7lcucU71ubzFPVgZGmzbDGn3R18ZQUZfD69+4Idg4JfNcq6trwD6I+dRfVnr/tg=="],
+
     "js-tokens": ["js-tokens@10.0.0", "", {}, "sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q=="],
 
     "js-yaml": ["js-yaml@4.1.1", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA=="],
@@ -3512,6 +3571,8 @@
 
     "neo-async": ["neo-async@2.6.2", "", {}, "sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw=="],
 
+    "nested-property": ["nested-property@4.0.0", "", {}, "sha512-yFehXNWRs4cM0+dz7QxCd06hTbWbSkV0ISsqBfkntU6TOY4Qm3Q88fRRLOddkGh2Qq6dZvnKVAahfhjcUvLnyA=="],
+
     "nlcst-to-string": ["nlcst-to-string@2.0.4", "", {}, "sha512-3x3jwTd6UPG7vi5k4GEzvxJ5rDA7hVUIRNHPblKuMVP9Z3xmlsd9cgLcpAMkc5uPOBna82EeshROFhsPkbnTZg=="],
 
     "no-case": ["no-case@2.3.2", "", { "dependencies": { "lower-case": "^1.1.1" } }, "sha512-rmTZ9kz+f3rCvK2TD1Ue/oZlns7OGoIWP4fc3llxxRXlOkHKoWPPWJOfFYpITabSow43QJbRIoHQXtt10VldyQ=="],
@@ -3597,6 +3658,8 @@
     "playwright": ["playwright@1.59.1", "", { "dependencies": { "playwright-core": "1.59.1" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw=="],
 
     "playwright-core": ["playwright-core@1.59.1", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg=="],
+
+    "pluralize": ["pluralize@8.0.0", "", {}, "sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA=="],
 
     "postcss": ["postcss@8.5.14", "", { "dependencies": { "nanoid": "^3.3.11", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg=="],
 
@@ -4022,6 +4085,14 @@
 
     "@pie-element/print-player/@types/node": ["@types/node@22.19.18", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-9v00a+dn2yWVsYDEunWC4g/TcRKVq3r8N5FuZp7u0SGrPvdN9c2yXI9bBuf5Fl0hNCb+QTIePTn5pJs2pwBOQQ=="],
 
+    "@pie-element/shared-configure-events/@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
+
+    "@pie-element/shared-controller-utils/@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
+
+    "@pie-element/shared-feedback/@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
+
+    "@pie-element/shared-player-events/@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
+
     "@pie-element/simple-cloze/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
     "@pie-element/simple-cloze/@tiptap/starter-kit": ["@tiptap/starter-kit@3.23.1", "", { "dependencies": { "@tiptap/core": "^3.23.1", "@tiptap/extension-blockquote": "^3.23.1", "@tiptap/extension-bold": "^3.23.1", "@tiptap/extension-bullet-list": "^3.23.1", "@tiptap/extension-code": "^3.23.1", "@tiptap/extension-code-block": "^3.23.1", "@tiptap/extension-document": "^3.23.1", "@tiptap/extension-dropcursor": "^3.23.1", "@tiptap/extension-gapcursor": "^3.23.1", "@tiptap/extension-hard-break": "^3.23.1", "@tiptap/extension-heading": "^3.23.1", "@tiptap/extension-horizontal-rule": "^3.23.1", "@tiptap/extension-italic": "^3.23.1", "@tiptap/extension-link": "^3.23.1", "@tiptap/extension-list": "^3.23.1", "@tiptap/extension-list-item": "^3.23.1", "@tiptap/extension-list-keymap": "^3.23.1", "@tiptap/extension-ordered-list": "^3.23.1", "@tiptap/extension-paragraph": "^3.23.1", "@tiptap/extension-strike": "^3.23.1", "@tiptap/extension-text": "^3.23.1", "@tiptap/extension-underline": "^3.23.1", "@tiptap/extensions": "^3.23.1", "@tiptap/pm": "^3.23.1" } }, "sha512-CURePHQagBaZIDJrHH3of4Nmi0VYGpZ6yBlkdFxFHBxY9aeG2/h5kn+oHo8GbzkSFsRV+9olzRgDTOULVgs8pQ=="],
@@ -4293,6 +4364,14 @@
     "@pie-element/placement-ordering/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
 
     "@pie-element/print-player/@types/node/undici-types": ["undici-types@6.21.0", "", {}, "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="],
+
+    "@pie-element/shared-configure-events/@types/bun/bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
+
+    "@pie-element/shared-controller-utils/@types/bun/bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
+
+    "@pie-element/shared-feedback/@types/bun/bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
+
+    "@pie-element/shared-player-events/@types/bun/bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
 
     "@pie-element/simple-cloze/@tiptap/starter-kit/@tiptap/extension-document": ["@tiptap/extension-document@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1" } }, "sha512-NA5Rx59HRwG6Hb6LwLpC5lE7z6vCj6f90S7RNNsnE+CyiXNR/OhY2BcjuxiGnascHvsnsAbvxGU3ymKMDgvDVg=="],
 
