@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.11
+
+### Patch Changes
+
+- dcd5aa2: Added parity tests between McPopulatedBlank and Learnosity CQTs. McPopulatedBlank now looks and acts much more like the CQTs. Ready for review by others.
+
 ## 0.2.10
 
 ### Patch Changes
