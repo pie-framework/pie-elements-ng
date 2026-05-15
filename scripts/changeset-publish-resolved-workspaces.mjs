@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { globSync } from 'glob';
 
@@ -17,6 +17,7 @@ const explicitPackages = (process.env.RELEASE_PACKAGES || '')
 
 const rootPackage = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
 const workspacePatterns = Array.isArray(rootPackage.workspaces) ? rootPackage.workspaces : [];
+const svelteElementRoot = join(repoRoot, 'packages', 'elements-svelte');
 
 const packageJsonPaths = new Set();
 for (const workspacePattern of workspacePatterns) {
@@ -332,6 +333,19 @@ const readWorkspacePackage = (packageName) => {
   }
 };
 
+const getWorkspacePackageDir = (packageName) => {
+  const packageJsonPath = localPackageJsonPathsByName.get(packageName);
+  if (!packageJsonPath) return null;
+  return packageJsonPath.slice(0, -'/package.json'.length);
+};
+
+const isSvelteElementPackage = (packageName) => {
+  const packageDir = getWorkspacePackageDir(packageName);
+  if (!packageDir) return false;
+  const relative = packageDir.slice(svelteElementRoot.length);
+  return packageDir.startsWith(svelteElementRoot) && relative.startsWith('/');
+};
+
 const getRuntimeWorkspaceDependencies = (packageName) => {
   const pkg = readWorkspacePackage(packageName);
   if (!pkg) return [];
@@ -355,6 +369,175 @@ const getRuntimeWorkspaceDependencies = (packageName) => {
   }
 
   return dependencies;
+};
+
+const collectPackageJsonTargets = (value, out) => {
+  if (!value) return;
+  if (typeof value === 'string') {
+    out.add(value);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const entry of value) collectPackageJsonTargets(entry, out);
+    return;
+  }
+  if (typeof value === 'object') {
+    for (const entry of Object.values(value)) collectPackageJsonTargets(entry, out);
+  }
+};
+
+const collectJsFiles = (dir, out = []) => {
+  if (!existsSync(dir)) return out;
+  for (const entry of readdirSync(dir)) {
+    const fullPath = join(dir, entry);
+    const stats = statSync(fullPath);
+    if (stats.isDirectory()) {
+      collectJsFiles(fullPath, out);
+    } else if (entry.endsWith('.js') || entry.endsWith('.mjs')) {
+      out.push(fullPath);
+    }
+  }
+  return out;
+};
+
+const parseNpmPackJson = (stdout) => {
+  const text = String(stdout || '');
+  const start = text.indexOf('[');
+  const end = text.lastIndexOf(']');
+  if (start < 0 || end < start) {
+    throw new Error('npm pack --dry-run --json did not return a JSON payload');
+  }
+  return JSON.parse(text.slice(start, end + 1));
+};
+
+const getPackedFiles = (packageName) => {
+  const result = run('npm', ['pack', '--dry-run', '--json', '--workspace', packageName]);
+  if (result.status !== 0) {
+    throw new Error(
+      `[release] npm pack dry-run failed for ${packageName}:\n${result.stderr || result.stdout}`
+    );
+  }
+  const packData = parseNpmPackJson(result.stdout);
+  return new Set((packData?.[0]?.files || []).map((entry) => entry.path).filter(Boolean));
+};
+
+const hasRealSvelteImport = (source) => {
+  const importPattern = /^\s*import\s+(?:[^'"]+from\s+)?['"](@?svelte(?:\/[^'"]*)?)['"]/gm;
+  return importPattern.test(source);
+};
+
+const formatExamples = (items, limit = 5) => {
+  const values = [...items].sort();
+  const suffix = values.length > limit ? `, ... ${values.length - limit} more` : '';
+  return `${values.slice(0, limit).join(', ')}${suffix}`;
+};
+
+const assertSvelteElementPublishSurface = (targetPackages) => {
+  const violations = [];
+  let checked = 0;
+
+  for (const packageName of targetPackages.keys()) {
+    if (!isSvelteElementPackage(packageName)) continue;
+    checked += 1;
+
+    const pkg = readWorkspacePackage(packageName);
+    const packageDir = getWorkspacePackageDir(packageName);
+    if (!pkg || !packageDir) continue;
+
+    for (const section of ['dependencies', 'optionalDependencies']) {
+      if (pkg[section]?.svelte) {
+        violations.push(
+          `${packageName}: ${section}.svelte is not allowed; Svelte element runtime entries must bundle Svelte`
+        );
+      }
+    }
+
+    if (pkg.peerDependencies?.svelte) {
+      violations.push(
+        `${packageName}: peerDependencies.svelte leaks a Svelte requirement to non-Svelte hosts; remove it unless this package intentionally publishes raw Svelte source exports`
+      );
+    }
+
+    if (
+      Array.isArray(pkg.files) &&
+      pkg.files.some((entry) => String(entry).replace(/^\.\//, '') === 'src')
+    ) {
+      violations.push(
+        `${packageName}: files[] includes "src", which publishes raw Svelte source and tests`
+      );
+    }
+
+    const declaredTargets = new Set();
+    collectPackageJsonTargets(pkg.exports, declaredTargets);
+    for (const field of ['main', 'module', 'types', 'svelte']) {
+      if (pkg[field]) declaredTargets.add(pkg[field]);
+    }
+    for (const target of declaredTargets) {
+      if (typeof target !== 'string') continue;
+      const normalized = target.replace(/^\.\//, '');
+      if (normalized.startsWith('src/')) {
+        violations.push(`${packageName}: package export points at source path ${target}`);
+      }
+      if (normalized.endsWith('.svelte') || normalized.includes('.svelte?')) {
+        violations.push(`${packageName}: package export exposes Svelte component source ${target}`);
+      }
+    }
+
+    const packedFiles = getPackedFiles(packageName);
+    const packedSourceFiles = [];
+    const packedTestArtifacts = [];
+    for (const packedFile of packedFiles) {
+      if (packedFile.startsWith('src/')) {
+        packedSourceFiles.push(packedFile);
+      }
+      if (/(^|\/).+\.test\.(?:[cm]?[jt]sx?|d\.ts)(?:\.map)?$/.test(packedFile)) {
+        packedTestArtifacts.push(packedFile);
+      }
+    }
+    if (packedSourceFiles.length > 0) {
+      violations.push(
+        `${packageName}: packed tarball includes ${packedSourceFiles.length} source file(s), e.g. ${formatExamples(packedSourceFiles)}`
+      );
+    }
+    if (packedTestArtifacts.length > 0) {
+      violations.push(
+        `${packageName}: packed tarball includes ${packedTestArtifacts.length} test artifact(s), e.g. ${formatExamples(packedTestArtifacts)}`
+      );
+    }
+
+    const distDir = join(packageDir, 'dist');
+    if (!existsSync(distDir)) {
+      violations.push(`${packageName}: missing dist directory; run build before publish`);
+    } else {
+      for (const jsFile of collectJsFiles(distDir)) {
+        const source = readFileSync(jsFile, 'utf8');
+        if (hasRealSvelteImport(source)) {
+          violations.push(
+            `${packageName}: built artifact ${jsFile.slice(packageDir.length + 1)} imports Svelte at runtime`
+          );
+        }
+        if (source.includes('customElements.define(')) {
+          violations.push(
+            `${packageName}: built artifact ${jsFile.slice(packageDir.length + 1)} calls customElements.define(...)`
+          );
+        }
+      }
+    }
+  }
+
+  if (violations.length > 0) {
+    throw new Error(
+      `[release] Refusing to publish because selected Svelte element package(s) have publish-surface violations:\n${violations
+        .map((violation) => `- ${violation}`)
+        .join('\n')}`
+    );
+  }
+
+  if (checked > 0) {
+    console.log(
+      `[release] Svelte element publish-surface preflight passed (${checked} package(s))`
+    );
+  }
 };
 
 const collectRuntimeWorkspaceDependencyClosure = (targetPackages) => {
@@ -551,6 +734,7 @@ try {
   );
   console.log(`[release] Using RELEASE_CHANNEL=${releaseChannel}`);
   assertRuntimeWorkspaceDependenciesPublishable(targetPackages);
+  assertSvelteElementPublishSurface(targetPackages);
 
   const publishOrder = sortTargetsByRuntimeWorkspaceDependencies(targetPackages);
   if (publishOrder.map((p) => p.name).join(',') !== packageList.map((p) => p.name).join(',')) {

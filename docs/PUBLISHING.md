@@ -60,6 +60,8 @@ For each selected package, any local workspace dependency from `dependencies` or
 
 This prevents publishing an element whose npm install later fails in the PIE builder because a workspace dependency was never published. If the preflight fails, add the missing package to `--packages` or publish that dependency first.
 
+When a selected target is a Svelte element package under `packages/elements-svelte`, the same publish command also checks the package surface before publishing. It rejects Svelte runtime dependencies leaking to hosts, source-path exports, `src` in the packed tarball, test artifacts in the packed tarball, real Svelte imports in built JS, and runtime `customElements.define(...)` calls.
+
 ## Dist-Tag Backfill Runbook
 
 Use the backfill script to detect and repair stale `latest` tags across `@pie-element/*`.
