@@ -5,6 +5,7 @@ import { globSync } from 'glob';
 
 const repoRoot = process.cwd();
 const depSections = ['dependencies', 'peerDependencies', 'optionalDependencies', 'devDependencies'];
+const runtimeDepSections = ['dependencies', 'optionalDependencies'];
 const publishAttempts = Number(process.env.RELEASE_PUBLISH_ATTEMPTS || 2);
 const releaseChannel = String(process.env.RELEASE_CHANNEL || 'auto')
   .trim()
@@ -28,11 +29,15 @@ for (const workspacePattern of workspacePatterns) {
 }
 
 const localPackages = new Map();
+const localPackageJsonPathsByName = new Map();
+const privatePackages = new Set();
 for (const packageJsonPath of packageJsonPaths) {
   try {
     const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
     if (pkg?.name && pkg?.version) {
       localPackages.set(pkg.name, pkg.version);
+      localPackageJsonPathsByName.set(pkg.name, packageJsonPath);
+      if (pkg.private === true) privatePackages.add(pkg.name);
     }
   } catch {
     // Ignore malformed or non-package manifests.
@@ -222,6 +227,25 @@ const listVersionBumpedPackages = () => {
 
 const resolveExplicitPackages = () => {
   const selected = new Map();
+  const missing = [];
+  const privateSelected = [];
+
+  for (const explicitPackage of explicitPackages) {
+    if (!localPackageJsonPathsByName.has(explicitPackage)) {
+      missing.push(explicitPackage);
+    } else if (privatePackages.has(explicitPackage)) {
+      privateSelected.push(explicitPackage);
+    }
+  }
+
+  if (missing.length > 0 || privateSelected.length > 0) {
+    const details = [
+      ...missing.map((name) => `- ${name}: no workspace package found`),
+      ...privateSelected.map((name) => `- ${name}: workspace package is private`),
+    ].join('\n');
+    throw new Error(`[release] Invalid RELEASE_PACKAGES selection:\n${details}`);
+  }
+
   for (const packageJsonPath of packageJsonPaths) {
     const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
     if (!pkg?.name || pkg.private === true) continue;
@@ -296,6 +320,150 @@ const hasPublishedVersion = (packageName, version) => {
   } catch {
     return text === version;
   }
+};
+
+const readWorkspacePackage = (packageName) => {
+  const packageJsonPath = localPackageJsonPathsByName.get(packageName);
+  if (!packageJsonPath) return null;
+  try {
+    return JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+  } catch {
+    return null;
+  }
+};
+
+const getRuntimeWorkspaceDependencies = (packageName) => {
+  const pkg = readWorkspacePackage(packageName);
+  if (!pkg) return [];
+
+  const dependencies = [];
+  for (const section of runtimeDepSections) {
+    const deps = pkg[section];
+    if (!deps) continue;
+
+    for (const [dependencyName, range] of Object.entries(deps)) {
+      if (localPackages.has(dependencyName)) {
+        dependencies.push({
+          packageName,
+          dependencyName,
+          version: localPackages.get(dependencyName),
+          section,
+          range,
+        });
+      }
+    }
+  }
+
+  return dependencies;
+};
+
+const collectRuntimeWorkspaceDependencyClosure = (targetPackages) => {
+  const dependenciesByName = new Map();
+  const visited = new Set();
+  const stack = [...targetPackages.keys()];
+
+  while (stack.length > 0) {
+    const packageName = stack.pop();
+    if (!packageName || visited.has(packageName)) continue;
+    visited.add(packageName);
+
+    for (const dependency of getRuntimeWorkspaceDependencies(packageName)) {
+      const existing = dependenciesByName.get(dependency.dependencyName);
+      if (existing) {
+        existing.requiredBy.add(packageName);
+      } else {
+        dependenciesByName.set(dependency.dependencyName, {
+          name: dependency.dependencyName,
+          version: dependency.version,
+          requiredBy: new Set([packageName]),
+          private: privatePackages.has(dependency.dependencyName),
+        });
+      }
+
+      stack.push(dependency.dependencyName);
+    }
+  }
+
+  return dependenciesByName;
+};
+
+const assertRuntimeWorkspaceDependenciesPublishable = (targetPackages) => {
+  const dependencyClosure = collectRuntimeWorkspaceDependencyClosure(targetPackages);
+  const unpublished = [];
+  const privateDeps = [];
+
+  for (const dependency of dependencyClosure.values()) {
+    if (targetPackages.has(dependency.name)) continue;
+
+    const requiredBy = [...dependency.requiredBy].sort().join(', ');
+    if (dependency.private) {
+      privateDeps.push({ ...dependency, requiredBy });
+      continue;
+    }
+
+    if (!hasPublishedVersion(dependency.name, dependency.version)) {
+      unpublished.push({ ...dependency, requiredBy });
+    }
+  }
+
+  if (privateDeps.length === 0 && unpublished.length === 0) return;
+
+  const details = [
+    ...privateDeps.map(
+      (dep) =>
+        `- ${dep.name}@${dep.version}: private workspace dependency required by ${dep.requiredBy}`
+    ),
+    ...unpublished.map(
+      (dep) =>
+        `- ${dep.name}@${dep.version}: not published to npm and not selected for this publish (required by ${dep.requiredBy})`
+    ),
+  ].join('\n');
+  const suggestedPackages = [...new Set(unpublished.map((dep) => dep.name))].sort();
+  const suggestion =
+    suggestedPackages.length > 0
+      ? `\n\nPublish or include the missing dependency package(s) first. For a targeted release, add them explicitly, e.g. RELEASE_PACKAGES=${[
+          ...suggestedPackages,
+          ...targetPackages.keys(),
+        ].join(',')}`
+      : '';
+
+  throw new Error(
+    `[release] Refusing to publish because selected package(s) have unpublished workspace runtime dependencies:\n${details}${suggestion}`
+  );
+};
+
+const sortTargetsByRuntimeWorkspaceDependencies = (targetPackages) => {
+  const sorted = [];
+  const visiting = new Set();
+  const visited = new Set();
+
+  const visit = (packageName, path = []) => {
+    if (visited.has(packageName)) return;
+    if (visiting.has(packageName)) {
+      throw new Error(
+        `[release] Cannot determine publish order due to runtime workspace dependency cycle: ${[
+          ...path,
+          packageName,
+        ].join(' -> ')}`
+      );
+    }
+
+    visiting.add(packageName);
+    for (const dependency of getRuntimeWorkspaceDependencies(packageName)) {
+      if (targetPackages.has(dependency.dependencyName)) {
+        visit(dependency.dependencyName, [...path, packageName]);
+      }
+    }
+    visiting.delete(packageName);
+    visited.add(packageName);
+    sorted.push({ name: packageName, version: targetPackages.get(packageName) });
+  };
+
+  for (const packageName of targetPackages.keys()) {
+    visit(packageName);
+  }
+
+  return sorted;
 };
 
 const publishWorkspaceOnce = ({ packageName, version, publishTag }) =>
@@ -382,8 +550,18 @@ try {
       .join(', ')}`
   );
   console.log(`[release] Using RELEASE_CHANNEL=${releaseChannel}`);
+  assertRuntimeWorkspaceDependenciesPublishable(targetPackages);
 
-  for (const { name, version } of packageList) {
+  const publishOrder = sortTargetsByRuntimeWorkspaceDependencies(targetPackages);
+  if (publishOrder.map((p) => p.name).join(',') !== packageList.map((p) => p.name).join(',')) {
+    console.log(
+      `[release] Dependency-aware publish order: ${publishOrder
+        .map((p) => `${p.name}@${p.version}`)
+        .join(', ')}`
+    );
+  }
+
+  for (const { name, version } of publishOrder) {
     const publishTag = resolvePublishTag(version);
     const published = hasPublishedVersion(name, version);
     if (published === true) {
