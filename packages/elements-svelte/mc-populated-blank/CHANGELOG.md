@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.12
+
+### Patch Changes
+
+- Publish a dist-only package surface so hosts can consume the Svelte element without source files, Svelte peer dependencies, or unpublished workspace runtime dependencies.
+
 ## 0.2.11
 
 ### Patch Changes

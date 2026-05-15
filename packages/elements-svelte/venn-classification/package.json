@@ -37,13 +37,11 @@
     "test": "vitest run",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
-  "dependencies": {
+  "devDependencies": {
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*",
     "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
-    "@pie-lib/styling-svelte": "workspace:*"
-  },
-  "devDependencies": {
+    "@pie-lib/styling-svelte": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@tiptap/core": "^3.19.0",
     "@tiptap/pm": "^3.19.0",

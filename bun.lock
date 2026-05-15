@@ -1068,55 +1068,41 @@
     },
     "packages/elements-svelte/mc-populated-blank": {
       "name": "@pie-element/mc-populated-blank",
-      "version": "0.2.10",
-      "dependencies": {
+      "version": "0.2.12",
+      "devDependencies": {
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/styling-svelte": "workspace:*",
-      },
-      "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "svelte": "^5.54.0",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
         "vitest": "^4.1.0",
-      },
-      "peerDependencies": {
-        "svelte": "^5.0.0",
       },
     },
     "packages/elements-svelte/simple-cloze": {
       "name": "@pie-element/simple-cloze",
       "version": "0.1.3",
-      "dependencies": {
+      "devDependencies": {
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
         "@pie-lib/styling-svelte": "workspace:*",
-        "lodash-es": "^4.17.21",
-      },
-      "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "@tiptap/core": "^3.19.0",
         "@tiptap/pm": "^3.19.0",
         "@tiptap/starter-kit": "^3.19.0",
-        "@types/lodash-es": "^4.17.12",
         "svelte": "^5.54.0",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "svelte": "^5.0.0",
       },
     },
     "packages/elements-svelte/venn-classification": {
       "name": "@pie-element/venn-classification",
       "version": "0.1.0",
-      "dependencies": {
+      "devDependencies": {
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
         "@pie-lib/styling-svelte": "workspace:*",
-      },
-      "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "@tiptap/core": "^3.19.0",
         "@tiptap/pm": "^3.19.0",
@@ -1125,9 +1111,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
         "vitest": "^4.1.0",
-      },
-      "peerDependencies": {
-        "svelte": "^5.0.0",
       },
     },
     "packages/lib-react/categorize": {
@@ -2736,8 +2719,6 @@
     "@types/linkify-it": ["@types/linkify-it@5.0.0", "", {}, "sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q=="],
 
     "@types/lodash": ["@types/lodash@4.17.24", "", {}, "sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ=="],
-
-    "@types/lodash-es": ["@types/lodash-es@4.17.12", "", { "dependencies": { "@types/lodash": "*" } }, "sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ=="],
 
     "@types/markdown-it": ["@types/markdown-it@14.1.2", "", { "dependencies": { "@types/linkify-it": "^5", "@types/mdurl": "^2" } }, "sha512-promo4eFwuiW+TfGxhi+0x3czqTYJkG8qB17ZUJiVF10Xm7NLVRSLUsfRTU/6h1e24VvRnXCx+hG7li58lkzog=="],
 

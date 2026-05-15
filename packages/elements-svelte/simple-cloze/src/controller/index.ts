@@ -1,5 +1,7 @@
-import { isEmpty } from 'lodash-es';
 import defaults from './defaults';
+
+const isEmptySession = (session: unknown) =>
+  !session || (typeof session === 'object' && Object.keys(session).length === 0);
 
 export const getCorrectness = (question: any, session: any) => {
   if (!session?.response) {
@@ -18,7 +20,7 @@ export const getCorrectness = (question: any, session: any) => {
 };
 
 export const getPartialScore = (_question: any, session: any) => {
-  if (!session || isEmpty(session)) {
+  if (isEmptySession(session)) {
     return 0;
   }
 
@@ -27,7 +29,7 @@ export const getPartialScore = (_question: any, session: any) => {
 
 export const outcome = (question: any, session: any, env: any) =>
   new Promise((resolve) => {
-    if (!session || isEmpty(session)) {
+    if (isEmptySession(session)) {
       resolve({ score: 0, empty: true });
       return;
     }
