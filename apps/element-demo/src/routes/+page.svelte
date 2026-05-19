@@ -69,11 +69,6 @@ function handleThemeToggle(event: Event) {
           Explore {data.elements.length} interactive assessment elements. Click on any element below to
           see it in action with live demos and configuration options.
         </p>
-        <div class="mt-6">
-          <a href="/a11y" data-sveltekit-reload class="btn btn-outline btn-primary">
-            Open Axe Accessibility Suite
-          </a>
-        </div>
       </div>
 
       <!-- Filter Section -->
@@ -134,10 +129,10 @@ function handleThemeToggle(event: Event) {
             <div class="card-body">
               <div class="flex items-start justify-between gap-2 mb-2">
                 <h2 class="card-title flex-1 min-w-0">
-                  <span class="break-words">{element.title}</span>
+                  <span class="wrap-break-word">{element.title}</span>
                 </h2>
                 {#if element.demoCount >= 1}
-                  <span class="badge badge-primary badge-sm flex-shrink-0 whitespace-nowrap">{element.demoCount} {element.demoCount === 1 ? 'demo' : 'demos'}</span>
+                  <span class="badge badge-primary badge-sm shrink-0 whitespace-nowrap">{element.demoCount} {element.demoCount === 1 ? 'demo' : 'demos'}</span>
                 {/if}
               </div>
               <p class="text-sm opacity-70 truncate">{element.packageName}</p>

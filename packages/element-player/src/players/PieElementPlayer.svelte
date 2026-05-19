@@ -20,6 +20,11 @@
         type: "String",
         attribute: "iife-bundle-endpoint",
       },
+      iifeBundleHost: {
+        reflect: true,
+        type: "String",
+        attribute: "iife-bundle-host",
+      },
       iifeBundleRetry: { reflect: false, type: "Object" },
       preloadedFallbackStrategy: {
         reflect: true,
@@ -70,6 +75,7 @@ interface Props {
   role?: 'student' | 'instructor';
   cdnUrl?: string;
   iifeBundleEndpoint?: string;
+  iifeBundleHost?: string;
   iifeBundleRetry?: IifeBundleRetryConfig;
   preloadedFallbackStrategy?: ElementPlayerStrategy;
   runtimeSupportCheck?: RuntimeSupportCheck;
@@ -88,6 +94,7 @@ let {
   role = 'student',
   cdnUrl = '',
   iifeBundleEndpoint = '/api/bundle',
+  iifeBundleHost = '',
   iifeBundleRetry = DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
   preloadedFallbackStrategy = 'esm',
   runtimeSupportCheck = 'off',
@@ -407,6 +414,7 @@ async function ensureLoaded() {
       elementVersion,
       cdnUrl,
       iifeBundleEndpoint,
+      iifeBundleHost,
       iifeBundleRetry,
       signal: requestAbortController.signal,
       runtimeSupportCheck,
@@ -559,6 +567,7 @@ $effect(() => {
     runtimeSupportCheck,
     cdnUrl,
     iifeBundleEndpoint,
+    iifeBundleHost,
     JSON.stringify(iifeBundleRetry || DEFAULT_IIFE_BUNDLE_RETRY_CONFIG),
     preloadedFallbackStrategy,
     rebuildVersion,

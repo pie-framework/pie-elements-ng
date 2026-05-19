@@ -1,17 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-
-// Load .env so that LEARNOSITY_* vars are visible to the Playwright test process
-// (SvelteKit/Vite loads .env for the app server, but not for the test runner).
-const envPath = join(import.meta.dirname, '.env');
-if (existsSync(envPath)) {
-  for (const line of readFileSync(envPath, 'utf-8').split('\n')) {
-    const match = line.match(/^([^#=\s][^=]*)=(.*)$/);
-    if (match) process.env[match[1]] ??= match[2].trim();
-  }
-}
 
 function resolveLocalBrowsersDir(): string | undefined {
   // First try system cache (macOS)
@@ -88,11 +78,6 @@ const localChromium = resolveLocalChromium();
 
 export default defineConfig({
   testDir: './test/e2e',
-  snapshotDir: './test/e2e/snapshots',
-  // Use the path argument directly so toHaveScreenshot resolves to
-  // snapshots/learnosity/<variantId>/<region>.png — matching what
-  // capture-baselines.spec.ts writes.
-  snapshotPathTemplate: '{snapshotDir}/{arg}{ext}',
   testMatch: ['**/*.spec.ts'],
   testIgnore: runIifeE2e ? [] : ['**/iife-usefulness.spec.ts'],
   fullyParallel: false,
@@ -108,7 +93,7 @@ export default defineConfig({
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5222',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
     ...(localChromium ? { launchOptions: { executablePath: localChromium } } : {}),

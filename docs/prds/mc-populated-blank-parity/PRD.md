@@ -1,6 +1,6 @@
 # McPopulatedBlank parity testing harness
 
-Status: **Proposal** · Impl. path: Extend `element-demo` + new test infrastructure
+Status: **Proposal** · Impl. path: `apps/learnosity-parity-demo` + parity test infrastructure
 
 ## Context
 
@@ -8,11 +8,11 @@ McPopulatedBlank is a PIE-framework port of the Renaissance Custom Question type
 
 The current parity test suite consists of static screenshot-derived CSS assertions, one spec file per variant. These cover layout geometry and computed CSS values but cannot test ARIA attributes, audio event sequencing, or the image-switching behavior that is the core interactive feature of several variants. The suite is also fragile: layout pixel thresholds break on minor CSS changes unrelated to parity.
 
-This PRD specifies a live side-by-side parity harness: the element-demo app hosts both the PIE rendering and a Learnosity rendering of the same item on a dedicated route, and Playwright tests compare the two live DOMs directly.
+This PRD specifies a live side-by-side parity harness: a dedicated local parity app hosts both the PIE rendering and a Learnosity rendering of the same item on a dedicated route, and Playwright tests compare the two live DOMs directly.
 
 ## Goals
 
-- A dedicated parity route in element-demo renders PIE and Learnosity side by side for any variant, derived from the existing `mc-populated-blank.json` sample registry.
+- A dedicated parity route in `apps/learnosity-parity-demo` renders PIE and Learnosity side by side for any variant, derived from the existing `mc-populated-blank.json` sample registry.
 - Playwright tests can assert visual, ARIA, and behavioral parity by querying both DOMs in a single test run, with no external authentication required.
 - Audio behavioral tests are deterministic — they do not depend on network audio playback or Chromium's audio stack.
 - Test organization mirrors the variant structure: one spec file per variant, covering all three parity dimensions.
@@ -21,7 +21,7 @@ This PRD specifies a live side-by-side parity harness: the element-demo app host
 ## Non-goals
 
 - **Not a replacement for the existing parity specs.** The existing CSS-geometry tests provide a fast, CI-safe check against known values; they stay. The new harness supplements them with live cross-comparison.
-- **No authentication dependency.** The Learnosity signing endpoint lives inside element-demo and sources credentials from env vars, not from PIEOneer or any deployed service.
+- **No authentication dependency.** The Learnosity signing endpoint lives inside the local parity app and sources credentials from env vars, not from PIEOneer or any deployed service.
 - **Not a general Learnosity integration.** The signing endpoint and parity route exist solely as a local test harness. They are gated behind env var presence so they cannot function in production builds without credentials configured.
 - **No real audio playback in behavioral tests.** Chromium headless audio reliability is not the property being tested; what matters is whether the PIE and Learnosity implementations respond identically to the same audio lifecycle events. Real network audio is deferred to manual QA.
 - **No coverage of Learnosity authoring, scoring, or response-masking APIs.** Only the delivery rendering surface (gather mode) is in scope.

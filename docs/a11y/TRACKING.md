@@ -2,7 +2,7 @@
 
 Status: Initial scenario coverage in progress.
 
-This directory tracks the WCAG 2.2 Level AA accessibility coverage for every PIE element in the demo registry. The automated suite lives in `apps/element-demo/src/lib/a11y/scenarios/catalog.ts` and runs through `apps/element-demo/test/a11y/axe-scenarios.spec.ts`.
+This directory tracks the WCAG 2.2 Level AA accessibility coverage for every PIE element in the demo registry. The automated suite lives in `apps/element-a11y-demo/src/lib/a11y/scenarios/catalog.ts` and runs through `apps/element-a11y-demo/test/a11y/axe-scenarios.spec.ts`.
 
 ## Coverage Matrix
 

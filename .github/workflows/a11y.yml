@@ -22,9 +22,9 @@ jobs:
           bun-version: 1.3.13
       - run: bun install --frozen-lockfile
       - run: bun x svelte-kit sync
-        working-directory: apps/element-demo
-      - run: bun run --cwd apps/element-demo generate-imports
-      - run: bun run build
+        working-directory: apps/element-a11y-demo
+      - run: bun run --cwd apps/element-a11y-demo generate-imports
+      - run: bun run --cwd apps/element-a11y-demo build
       - run: bunx playwright install --with-deps
       - run: bun run test:a11y
       - run: bun run test:a11y:inventory
@@ -33,7 +33,7 @@ jobs:
         with:
           name: axe-a11y-reports
           path: |
-            apps/element-demo/test-results/a11y/
-            apps/element-demo/playwright-a11y-report/
+            apps/element-a11y-demo/test-results/a11y/
+            apps/element-a11y-demo/playwright-a11y-report/
           if-no-files-found: warn
           retention-days: 30

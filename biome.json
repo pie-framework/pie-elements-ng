@@ -17,12 +17,18 @@
       "!**/coverage",
       "!**/.svelte-kit",
       "!**/.changeset",
+      "!**/test-results",
+      "!**/playwright-a11y-report",
+      "!**/playwright-report",
       "!**/packages/apps/examples",
       "!**/packages/lib-svelte/config-ui",
       "!**/packages/elements-svelte/multiple-choice/src/configure",
       "!packages/elements-react",
       "!packages/lib-react",
       "!packages/shared/*/src/index.ts",
+      "!apps/*/src/lib/elements/registry.ts",
+      "!apps/*/src/lib/element-imports.js",
+      "!apps/*/src/lib/element-imports.d.ts",
       "!apps/esm-player-test/index.html",
       "!packages/elements-svelte/simple-cloze/test.html"
     ]

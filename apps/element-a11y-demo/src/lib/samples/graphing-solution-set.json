@@ -1,0 +1,200 @@
+{
+  "demos": [
+    {
+      "id": "1",
+      "title": "System of Two Inequalities - Gina's Problem",
+      "description": "Graph the system: 4x – 3y > –6 and x + 3y > –9",
+      "model": {
+        "id": "1",
+        "element": "graphing-solution-set",
+        "promptEnabled": true,
+        "domain": {
+          "min": -10,
+          "max": 10,
+          "step": 1,
+          "labelStep": 1,
+          "axisLabel": "<div>x</div>"
+        },
+        "range": {
+          "min": -10,
+          "max": 10,
+          "step": 1,
+          "labelStep": 1,
+          "axisLabel": "<div>y</div>"
+        },
+        "answers": {
+          "correctAnswer": {
+            "name": "Correct Answer",
+            "marks": [
+              {
+                "type": "line",
+                "building": false,
+                "from": {
+                  "x": 0,
+                  "y": 2
+                },
+                "fill": "Solid",
+                "to": {
+                  "x": -3,
+                  "y": -2
+                }
+              },
+              {
+                "type": "line",
+                "building": false,
+                "from": {
+                  "x": 0,
+                  "y": -3
+                },
+                "fill": "Dashed",
+                "to": {
+                  "x": -3,
+                  "y": -2
+                }
+              },
+              {
+                "points": [
+                  {
+                    "x": 10,
+                    "y": -6.333
+                  },
+                  {
+                    "x": -3,
+                    "y": -2
+                  },
+                  {
+                    "x": 6,
+                    "y": 10
+                  },
+                  {
+                    "x": 10,
+                    "y": 10
+                  }
+                ],
+                "building": false,
+                "type": "polygon",
+                "closed": true,
+                "isSolution": true
+              }
+            ]
+          }
+        },
+        "arrows": {
+          "left": true,
+          "right": true,
+          "up": true,
+          "down": true
+        },
+        "defaultGridConfiguration": 0,
+        "graph": {
+          "width": 480,
+          "height": 480
+        },
+        "gssLineData": {
+          "numberOfLines": 2,
+          "selectedTool": "solutionSet",
+          "sections": [
+            [
+              {
+                "x": 10,
+                "y": -6.333
+              },
+              {
+                "x": -3,
+                "y": -2
+              },
+              {
+                "x": 6,
+                "y": 10
+              },
+              {
+                "x": 10,
+                "y": 10
+              }
+            ],
+            [
+              {
+                "x": 6,
+                "y": 10
+              },
+              {
+                "x": -3,
+                "y": -2
+              },
+              {
+                "x": -10,
+                "y": 0.333
+              },
+              {
+                "x": -10,
+                "y": 10
+              }
+            ],
+            [
+              {
+                "x": 10,
+                "y": -10
+              },
+              {
+                "x": -9,
+                "y": -10
+              },
+              {
+                "x": -3,
+                "y": -2
+              },
+              {
+                "x": 10,
+                "y": -6.333
+              }
+            ],
+            [
+              {
+                "x": -3,
+                "y": -2
+              },
+              {
+                "x": -9,
+                "y": -10
+              },
+              {
+                "x": -10,
+                "y": -10
+              },
+              {
+                "x": -10,
+                "y": 0.333
+              }
+            ]
+          ],
+          "lineA": {
+            "lineType": "Solid"
+          },
+          "lineB": {
+            "lineType": "Dashed"
+          }
+        },
+        "includeAxes": true,
+        "labels": {
+          "top": "<div></div>",
+          "left": "<div></div>",
+          "right": "<div></div>",
+          "bottom": "<div></div>"
+        },
+        "labelsEnabled": true,
+        "padding": true,
+        "prompt": "<div>Gina wrote the following system of linear inequalities on the board.<br/></div><div>4x – 3y &gt; –6<br/></div><div>x + 3y &gt; –9</div><div>Graph the system.</div>",
+        "rationale": "",
+        "standardGrid": true,
+        "title": "System of Linear Inequalities",
+        "coordinatesOnHover": false,
+        "rationaleEnabled": false,
+        "teacherInstructionsEnabled": false,
+        "studentInstructionsEnabled": false,
+        "titleEnabled": true,
+        "dimensionsEnabled": true,
+        "marks": []
+      }
+    }
+  ]
+}

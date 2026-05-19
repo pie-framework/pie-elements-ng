@@ -354,7 +354,7 @@ A11Y_CONCERN=keyboard-focus bun run test:a11y
 # Run the broad demo inventory baseline
 bun run test:a11y:inventory
 
-# Reports are written under apps/element-demo/test-results/a11y/
+# Reports are written under apps/element-a11y-demo/test-results/a11y/
 ```
 
 ### Manual Testing

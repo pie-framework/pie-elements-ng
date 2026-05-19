@@ -16,7 +16,7 @@ import {
 } from '$lib/stores/demo-state';
 import DemoSelector from '$lib/components/DemoSelector.svelte';
 import IifeBuildPanel from '$lib/components/IifeBuildPanel.svelte';
-import { parsePlayerType } from '$lib/config/player-runtime';
+import { isIifePlayerAvailable, parsePlayerType } from '$lib/config/player-runtime';
 import type { LayoutData } from './$types';
 
 let { data, children }: { data: LayoutData; children: any } = $props();
@@ -193,7 +193,11 @@ onMount(() => {
   const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
   const playerParam = url.searchParams.get('player');
 
-  if (!playerParam || !['esm', 'iife'].includes(playerParam)) {
+  if (
+    !playerParam ||
+    !['esm', 'iife'].includes(playerParam) ||
+    (!isIifePlayerAvailable && playerParam !== 'esm')
+  ) {
     url.searchParams.set('player', 'esm');
     needsUpdate = true;
   }
@@ -366,24 +370,26 @@ let showAudioTranscript = $state(false);
     <div class="px-3 pb-2">
       <div>
         <div class="flex flex-wrap md:flex-nowrap items-center gap-2">
-          <div class="join">
-            <button
-              class="btn btn-sm join-item"
-              class:btn-active={currentPlayerType === 'esm'}
-              onclick={() => updatePlayerUrl({ player: 'esm' })}
-              title="Use ESM player"
-            >
-              ESM
-            </button>
-            <button
-              class="btn btn-sm join-item"
-              class:btn-active={currentPlayerType === 'iife'}
-              onclick={() => updatePlayerUrl({ player: 'iife' })}
-              title="Use IIFE player"
-            >
-              IIFE
-            </button>
-          </div>
+          {#if isIifePlayerAvailable}
+            <div class="join">
+              <button
+                class="btn btn-sm join-item"
+                class:btn-active={currentPlayerType === 'esm'}
+                onclick={() => updatePlayerUrl({ player: 'esm' })}
+                title="Use ESM player"
+              >
+                ESM
+              </button>
+              <button
+                class="btn btn-sm join-item"
+                class:btn-active={currentPlayerType === 'iife'}
+                onclick={() => updatePlayerUrl({ player: 'iife' })}
+                title="Use IIFE player"
+              >
+                IIFE
+              </button>
+            </div>
+          {/if}
           <DemoSelector demos={data.demos || []} activeDemoId={data.activeDemoId || 'default'} />
           {#if activeTab === 'deliver'}
             <button

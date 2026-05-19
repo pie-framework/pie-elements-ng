@@ -27,7 +27,7 @@ Some initiative work is not owned by a single element package.
 
 ## Reporting Expectations
 
-- Scenario IDs and automated checks come from `apps/element-demo/src/lib/a11y/scenarios/catalog.ts`.
+- Scenario IDs and automated checks come from `apps/element-a11y-demo/src/lib/a11y/scenarios/catalog.ts`.
 - Findings and suggested Jira titles come from the Axe scenario report.
 - Confluence group pages summarize status and sequencing.
 - Jira tickets own assignment, sprint, and release state.

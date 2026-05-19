@@ -6,7 +6,12 @@
 import PlayerLayout from '$lib/element-player/components/PlayerLayout.svelte';
 import '$lib/element-player/configure-loader';
 import { page } from '$app/stores';
-import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
+import {
+  iifeBundleEndpoint,
+  iifeBundleHost,
+  parsePlayerType,
+  type PlayerType,
+} from '$lib/config/player-runtime';
 import '@pie-element/element-player';
 import {
   model,
@@ -314,6 +319,8 @@ $effect(() => {
             element-name={data.elementName}
             package-name={data.packageName}
             element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+            iife-bundle-endpoint={iifeBundleEndpoint}
+            iife-bundle-host={iifeBundleHost}
             model={$model}
             rebuildVersion={$iifeBuildRequestVersion}
             onmodel-changed={handleModelChanged}
