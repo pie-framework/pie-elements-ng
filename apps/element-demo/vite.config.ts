@@ -52,6 +52,26 @@ export default defineConfig({
       ],
     }),
     {
+      name: 'react-refresh-preamble-dev-only',
+      apply: 'serve',
+      transformIndexHtml() {
+        return [
+          {
+            tag: 'script',
+            attrs: { type: 'module' },
+            children: [
+              "import RefreshRuntime from '/@react-refresh';",
+              'RefreshRuntime.injectIntoGlobalHook(window);',
+              'window.$RefreshReg$ = () => {};',
+              'window.$RefreshSig$ = () => (type) => type;',
+              'window.__vite_plugin_react_preamble_installed__ = true;',
+            ].join('\n'),
+            injectTo: 'head',
+          },
+        ];
+      },
+    },
+    {
       name: 'serve-demo-iife-bundles',
       apply: 'serve',
       configureServer(server) {
@@ -148,8 +168,7 @@ export default defineConfig({
     // Do not list d3-shape here: it is not a direct dependency of this app and Vite cannot resolve it
     // until a charting import pulls it in (via @pie-lib/charting / recharts).
     include: ['react', 'react-dom', 'react/jsx-runtime'],
-    // Exclude workspace packages and @pie-framework packages to prevent dependency scanning errors
-    // These are marked as external in the build config
+    // Exclude workspace packages and @pie-framework packages to prevent dependency scanning errors.
     exclude: ['@pie-element/*', '@pie-lib/*', '@pie-framework/*'],
     // Vite 8 uses Rolldown for dep optimization.
     // Keep controller dist files external to avoid optimizer scan issues.
@@ -158,54 +177,18 @@ export default defineConfig({
     },
   },
 
+  ssr: {
+    external: ['@pie-element/element-bundler', 'lightningcss'],
+  },
+
   build: {
     rollupOptions: {
-      external: (id) => {
-        // Mark common dependencies that React and Svelte elements mark as external
-        // These match the external configuration in element vite configs
-        // to prevent "failed to resolve import" errors during build
-        return (
-          /^react($|\/)/.test(id) ||
-          /^react-dom($|\/)/.test(id) ||
-          /^svelte($|\/)/.test(id) ||
-          /^@pie-lib\//.test(id) ||
-          /^@pie-element\//.test(id) ||
-          /^@pie-framework\//.test(id) ||
-          /^@mui\//.test(id) ||
-          /^@emotion\//.test(id) ||
-          /^d3-/.test(id) ||
-          /^@testing-library\//.test(id) ||
-          id === 'lodash' ||
-          /^lodash\//.test(id) ||
-          /^styled-components/.test(id) ||
-          id === 'konva' ||
-          /^konva\//.test(id) ||
-          id === 'react-konva' ||
-          /^react-konva\//.test(id) ||
-          /^@dnd-kit\//.test(id) ||
-          id === '@mdi/react' ||
-          /^@mdi\/react\//.test(id) ||
-          id === '@mdi/js' ||
-          /^@mdi\/js\//.test(id) ||
-          id === 'recharts' ||
-          /^recharts\//.test(id) ||
-          [
-            'prop-types',
-            'classnames',
-            'debug',
-            'i18next',
-            'humps',
-            'mathjs',
-            'react-jss',
-            'js-combinatorics',
-            '@mapbox/point-geometry',
-            'react-transition-group',
-            'nested-property',
-            'pluralize',
-            'decimal.js',
-          ].includes(id)
-        );
-      },
+      external: (id) =>
+        id === 'lightningcss/package.json' ||
+        id === 'canvas' ||
+        id === '@pie-element/element-bundler' ||
+        id.startsWith('@pie-element/element-bundler/') ||
+        id.includes('/packages/shared/bundler-shared/'),
     },
   },
 });
