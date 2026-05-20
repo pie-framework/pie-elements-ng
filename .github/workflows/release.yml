@@ -74,7 +74,7 @@ jobs:
       PUBLISH_NPM_TOKEN: ""
       PUBLISH_NODE_AUTH_TOKEN: ""
       # Flip to 'true' and restore `publish: bun run release:publish` on changesets/action to re-enable CI publish.
-      ENABLE_CICD_NPM_PUBLISH: "false"
+      ENABLE_CICD_NPM_PUBLISH: "true"
     permissions:
       contents: write
       pull-requests: write
@@ -94,7 +94,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.11
+          bun-version: 1.3.13
 
       - name: Cache Bun downloads
         uses: actions/cache@v4
@@ -312,7 +312,7 @@ jobs:
         with:
           # Omit `publish` so the action never runs `bun run release:publish` from CI.
           # Re-enable publishing by setting ENABLE_CICD_NPM_PUBLISH=true and adding:
-          #   publish: bun run release:publish
+          publish: bun run release:publish
           createGithubReleases: false
           version: bun run version
           title: 'chore(release): version packages [skip-heavy-ci]'

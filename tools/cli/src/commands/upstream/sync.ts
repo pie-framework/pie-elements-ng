@@ -994,7 +994,7 @@ export default class Sync extends Command {
       const pkgJsonPath = join(pkgPath, 'package.json');
       const pkgJson = (await loadPackageJson(pkgJsonPath)) as PackageJson | null;
 
-      if (!pkgJson || !pkgJson.dependencies) {
+      if (!pkgJson?.dependencies) {
         continue;
       }
 

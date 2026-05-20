@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import {
   deliveryContainer,
   getModelFromSource,
@@ -10,12 +10,12 @@ import {
 const DEMO_ID = 'variant-sr-vic';
 const ELEMENT_SCOPE = '.delivery-view .element-container';
 
-async function getCheckedValue(page: Parameters<typeof test>[0]['page']) {
+async function getCheckedValue(page: Page) {
   const checked = deliveryContainer(page).locator('input[type="radio"]:checked').first();
   return checked.getAttribute('value');
 }
 
-async function getPlayerSession(page: Parameters<typeof test>[0]['page']) {
+async function getPlayerSession(page: Page) {
   return page.evaluate(() => {
     const player = document.querySelector('pie-element-player') as any;
     if (!player?.session || typeof player.session !== 'object') return null;
@@ -23,13 +23,19 @@ async function getPlayerSession(page: Parameters<typeof test>[0]['page']) {
   });
 }
 
-async function openMpbRoute(page: Parameters<typeof test>[0]['page'], player: 'esm' | 'iife') {
+async function openMpbRoute(page: Page, player: 'esm' | 'iife') {
   await page.goto(
     `/mc-populated-blank/deliver?mode=gather&role=student&demo=${encodeURIComponent(DEMO_ID)}&player=${player}`
   );
   await page.waitForLoadState('domcontentloaded');
   await page.waitForLoadState('networkidle');
   await page.waitForSelector('[data-testid="role-student"]', { timeout: 20_000 });
+  // iife player builds the bundle async — wait for the element to actually render
+  if (player === 'iife') {
+    await page.waitForSelector('.delivery-view .element-container input[type="radio"]', {
+      timeout: 60_000,
+    });
+  }
   await waitForMathRendering(page);
 }
 
@@ -183,6 +189,17 @@ test.describe('mc-populated-blank correct-answer parity', () => {
 
     const sessionAfter = await getPlayerSession(page);
     expect(sessionAfter?.choiceId).toBe(incorrectChoiceId);
+  });
+
+  test('no radio is pre-selected on initial render (user must choose)', async ({ page }) => {
+    await openMpbRoute(page, 'esm');
+    const root = deliveryContainer(page);
+    await expect(root).toBeVisible();
+
+    await expect(root.locator('input[type="radio"]:checked')).toHaveCount(0);
+
+    const session = await getPlayerSession(page);
+    expect(session?.choiceId ?? '').toBe('');
   });
 
   test('iife scorer flow: delivery remains interactive-safe in evaluate path', async ({ page }) => {

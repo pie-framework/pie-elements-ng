@@ -20,7 +20,7 @@ jobs:
           node-version: 20.x
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.11
+          bun-version: 1.3.13
       - run: bun install --frozen-lockfile
       - run: bun run test:iife:bundle
 
@@ -35,7 +35,7 @@ jobs:
           node-version: 20.x
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.11
+          bun-version: 1.3.13
       - run: bun install --frozen-lockfile
       - run: bun x svelte-kit sync
         working-directory: apps/element-demo

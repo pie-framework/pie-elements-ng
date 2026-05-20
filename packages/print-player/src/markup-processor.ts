@@ -113,7 +113,7 @@ export const printItemAndFloaters = (
       markup: r.html,
       elements: Object.entries(item.elements).reduce<Elements>((acc, [key, value]) => {
         const res = resolutions.find((r) => r.tagName === key);
-        if (!res || !res.printTagName) {
+        if (!res?.printTagName) {
           throw new Error(`cant find resolution for element: ${key}`);
         }
         acc[res.printTagName] = value;
@@ -121,7 +121,7 @@ export const printItemAndFloaters = (
       }, {}),
       models: embedded.map((m) => {
         const res = resolutions.find((r) => r.tagName === m.element);
-        if (!res || !res.printTagName) {
+        if (!res?.printTagName) {
           throw new Error(`cant find resolution for element: ${m.element}`);
         }
         return { ...m, element: res?.printTagName };

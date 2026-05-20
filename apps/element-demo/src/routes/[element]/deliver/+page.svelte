@@ -6,7 +6,12 @@
 import { page } from '$app/stores';
 import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
 import '$lib/element-player/configure-loader';
-import { parsePlayerType, type PlayerType } from '$lib/config/player-runtime';
+import {
+  iifeBundleEndpoint,
+  iifeBundleHost,
+  parsePlayerType,
+  type PlayerType,
+} from '$lib/config/player-runtime';
 import { get } from 'svelte/store';
 import '@pie-element/element-player';
 import {
@@ -42,7 +47,7 @@ const normalizeSession = (nextSession: any) => {
   return nextSession && typeof nextSession === 'object' ? nextSession : {};
 };
 
-const cloneValue = <T>(value: T): T => {
+const cloneValue = <T,>(value: T): T => {
   if (value === null || typeof value !== 'object') {
     return value;
   }
@@ -426,6 +431,8 @@ function handleBuildState(event: CustomEvent) {
             element-name={data.elementName}
             package-name={data.packageName}
             element-version={(data as LayoutData & { elementVersion?: string }).elementVersion || 'latest'}
+            iife-bundle-endpoint={iifeBundleEndpoint}
+            iife-bundle-host={iifeBundleHost}
             model={elementModel ?? undefined}
             session={elementSession ?? undefined}
             rebuildVersion={$iifeBuildRequestVersion}

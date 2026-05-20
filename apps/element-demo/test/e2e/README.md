@@ -2,6 +2,16 @@
 
 This directory contains end-to-end browser tests for the PIE Element Demo application using Playwright.
 
+## Root Commands
+
+The root `bun run test:e2e` command intentionally matches CI and runs only this public
+element demo app. Broader local suites remain opt-in:
+
+- `bun run test:e2e`: public `apps/element-demo` e2e suite.
+- `bun run test:e2e:all`: every workspace with a `test:e2e` script.
+- `bun run test:learnosity-parity`: optional `apps/learnosity-parity-demo` parity harness.
+- `bun run test:iife:*`: optional IIFE bundle and browser suites.
+
 ## ESM Coverage Status
 
 The current suite is stabilized for **ESM mode** and validates delivery/author usability across in-scope PIE React elements.

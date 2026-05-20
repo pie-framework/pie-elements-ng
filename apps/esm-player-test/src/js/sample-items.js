@@ -288,7 +288,7 @@ export function getAllElementTypes() {
  * @returns {string[]}
  */
 export function getElementTypesForItem(item) {
-  if (!item || !item.elements) {
+  if (!item?.elements) {
     return [];
   }
 

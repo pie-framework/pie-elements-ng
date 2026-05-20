@@ -5,7 +5,8 @@ The element demo supports both player modes:
 - `player=esm` (default)
 - `player=iife`
 
-When `player=iife`, bundling is local-only.
+When `player=iife`, the demo can use either the local development bundler or the hosted PIE
+bundle service.
 
 The local IIFE path uses `@pie-element/element-bundler`.
 ESM mode does not require `@pie-element/element-bundler`.
@@ -26,6 +27,39 @@ Notes:
 - Optional env var `DEMO_BUNDLER_RESOLUTION_MODE` controls dependency resolution:
   - `workspace-fast` (default): resolves `@pie-*` from local workspace
   - `prod-faithful`: resolves from package versions like production
+
+## Switching IIFE bundle backends
+
+For direct Vite demo runs from the repository root:
+
+```bash
+# Local development bundler (default)
+bun run dev:element-demo:iife-local
+
+# Hosted PIE bundle service
+bun run dev:element-demo:iife-hosted
+```
+
+The script flag is `PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE`:
+
+```bash
+PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE=hosted bun run dev:element-demo
+PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE=local bun run dev:element-demo
+```
+
+Defaults:
+
+- local mode endpoint: `/api/bundle`
+- hosted mode bundle host: `https://proxy.pie-api.com/bundles/`
+
+Optional overrides:
+
+```bash
+PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_ENDPOINT=http://localhost:5339/api/bundle bun run dev:element-demo
+PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE=hosted \
+  PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_HOST=https://proxy.dev.pie-api.com/bundles/ \
+  bun run dev:element-demo
+```
 
 ## URL params
 

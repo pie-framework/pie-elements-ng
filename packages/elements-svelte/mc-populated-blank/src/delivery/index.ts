@@ -1,6 +1,13 @@
 import McPopulatedBlankComponent from './McPopulatedBlank.svelte';
-import { isComplete as isControllerComplete } from '../controller';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-lib/delivery-events-svelte';
+
+function isComplete(model: any, session: any, audioComplete = false): boolean {
+  if (!session?.choiceId) return false;
+  const requiresAudioCompletion =
+    !!model?.autoplayAudioEnabled && !!model?.completeAudioEnabled && !!model?.hasAudio;
+  if (requiresAudioCompletion && !audioComplete) return false;
+  return true;
+}
 
 const SvelteElementClass = (McPopulatedBlankComponent as any).element;
 
@@ -73,7 +80,7 @@ class McPopulatedBlankElement extends SvelteElementClass {
   };
 
   _isComplete = () => {
-    return isControllerComplete(this._model, this._internalSession, this.audioComplete);
+    return isComplete(this._model, this._internalSession, this.audioComplete);
   };
 
   connectedCallback() {

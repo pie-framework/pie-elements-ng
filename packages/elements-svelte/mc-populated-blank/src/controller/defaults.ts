@@ -1,43 +1,9 @@
+import { DEFAULT_LAYOUT_LIMITS } from '../shared/layoutLimits';
+
+export { DEFAULT_LAYOUT_LIMITS };
+
 /** Token authors must include exactly once in `template` (HTML). */
 export const BLANK_TOKEN = '{{blank}}';
-/** Baseline values tuned to match historical CQT visuals; override via model.layoutLimits. */
-export const DEFAULT_LAYOUT_LIMITS = {
-  blankStandaloneWidthRem: 7,
-  blankWideWidthRem: 10,
-  blankUnderlineWidthPx: 2,
-  blankUnderlineWideWidthPx: 4,
-  horizontalChoiceWidthPx: 170,
-  horizontalChoiceWidthVw: 30,
-  horizontalChoiceTileMinHeightRem: 11,
-  horizontalChoiceContentMinHeightRem: 7.5,
-  selectedImageMaxHeightRem: 4,
-  choiceImageMaxHeightRem: 5,
-  listenButtonSizePx: 128,
-  stimulusMinColumnPx: 210,
-  textMinColumnPx: 260,
-  legendMaxChars: 120,
-  choiceGroupGapRem: 0.5,
-  choiceRowGapRem: 0.5,
-  toggleButtonGapRem: 0.5,
-  horizontalChoiceRadioTopMarginRem: 0.5,
-  audioBlankTemplateMarginTopRem: 0.8,
-  audioBlankTemplateMarginBottomRem: 1.8,
-  audioInstructionsMaxWidthPx: 875,
-  narrowHorizontalChoiceMaxWidthPx: 230,
-  stimulusGridColumnGapRem: 2,
-  stimulusGridRowGapRem: 0.7,
-  stimulusSentenceMarginTopRem: 0.2,
-  stimulusChoicesMarginTopRem: 0.9,
-  tokenGridColumnGapRem: 1.5,
-  tokenGridRowGapRem: 0.8,
-  tokenTemplateMarginTopRem: 0.6,
-  tokenInlineTokenGapRem: 0.35,
-  tokenChoicesMarginTopRem: 0.2,
-  inlineGridColumnGapRem: 1.5,
-  inlineGridRowGapRem: 0.65,
-  inlineTemplateMarginTopRem: 0.45,
-  inlineChoicesMarginTopRem: 0.25,
-} as const;
 
 export default {
   model: {
@@ -54,7 +20,7 @@ export default {
     audioButtonSkinsByLocale: {},
     uiText: {
       answerChoices: 'Answer choices',
-      selectedAnswerInSentence: 'Selected answer in sentence',
+      selectedAnswerInSentence: 'blank',
       showCorrectAnswer: 'Show correct answer',
       hideCorrectAnswer: 'Hide correct answer',
       clickToEnableAutoplay: 'Click to enable audio autoplay',
@@ -62,6 +28,10 @@ export default {
       transcriptLabel: 'Transcript',
       listenLabelEn: 'Listen',
       listenLabelEs: 'Escuchar',
+      listenSilentAlt: 'Repeat instructions',
+      listenPlayingAlt: 'Instructions are playing',
+      listenSilentAltEs: 'Escuchar. Repetir las instrucciones.',
+      listenPlayingAltEs: 'Escuchar. Estas son las instrucciones.',
     },
     sentenceHtml: '',
     template: `<p>The answer is ${BLANK_TOKEN}.</p>`,

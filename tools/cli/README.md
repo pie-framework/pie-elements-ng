@@ -176,6 +176,8 @@ bun run cli packages:init-synced-elements
 #### `docs:generate`
 
 Generate framework-agnostic HTML docs artifacts for elements from per-element `docs.contract.json` descriptors.
+The element demo runs this during `prebuild`/`predev`; the generated `static/element-docs`
+directory is a local build artifact and is not committed.
 
 ```bash
 # Generate docs for all elements
@@ -192,7 +194,7 @@ bun run cli docs:generate --seed-contracts
 
 #### `docs:verify`
 
-Verify that all targeted elements have valid `docs.contract.json` descriptors and that generated docs are up to date.
+Verify that all targeted elements have valid `docs.contract.json` descriptors and that local generated docs match the current generator output.
 
 ```bash
 # Verify all frameworks

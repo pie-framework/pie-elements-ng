@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/tools",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Some interactive tools",
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -24,7 +24,7 @@ export interface LocalBundleMeta {
   hash?: string;
   duration?: number;
   cached?: boolean;
-  source: 'local';
+  source: 'local' | 'hosted';
   url: string;
 }
 
@@ -254,6 +254,55 @@ function getBundleUrl(
   return bundleTarget === 'editor' ? bundles.editor || '' : bundles.clientPlayer || '';
 }
 
+function normalizeBundleHost(host: string): string {
+  return `${host.trim().replace(/\/+$/, '')}/`;
+}
+
+function bundleTargetFile(bundleTarget: IifeBundleTarget): string {
+  return bundleTarget === 'editor'
+    ? 'editor.js'
+    : bundleTarget === 'player'
+      ? 'player.js'
+      : 'client-player.js';
+}
+
+function buildHostedBundleUrl({
+  bundleHost,
+  packageName,
+  version,
+  bundleTarget,
+  forceRebuild,
+}: {
+  bundleHost: string;
+  packageName: string;
+  version: string;
+  bundleTarget: IifeBundleTarget;
+  forceRebuild: boolean;
+}): string {
+  const packageVersion = encodeURI(`${packageName}@${version}`);
+  const url = `${normalizeBundleHost(bundleHost)}${packageVersion}/${bundleTargetFile(bundleTarget)}`;
+  if (!forceRebuild) {
+    return url;
+  }
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}overwrite=true&rebuild=${Date.now()}`;
+}
+
+function getPackageFromRegistry(
+  registry: Record<string, IifePackageExports>,
+  packageName: string
+): IifePackageExports {
+  const pkg = registry[packageName];
+  if (!pkg) {
+    throw new IifeBundleLoadError(
+      'PACKAGE_MISSING',
+      `Package ${packageName} not found in loaded bundle. Available: ${Object.keys(registry).join(', ')}`,
+      { packageName, availablePackages: Object.keys(registry) }
+    );
+  }
+  return pkg;
+}
+
 const defaultBuildClient: IifeBuildClient = {
   async startBuild(request) {
     const response = await fetch(request.endpoint, {
@@ -319,6 +368,7 @@ export async function loadIifePackage(opts: {
   packageName: string;
   version: string;
   endpoint?: string;
+  bundleHost?: string;
   forceRebuild?: boolean;
   clearCache?: boolean;
   bundleTarget?: IifeBundleTarget;
@@ -341,6 +391,32 @@ export async function loadIifePackage(opts: {
     attempt += 1;
     try {
       throwIfAborted(opts.signal);
+      if (opts.bundleHost) {
+        opts.onProgress?.({ stage: 'script-load' });
+        const bundleUrl = buildHostedBundleUrl({
+          bundleHost: opts.bundleHost,
+          packageName: opts.packageName,
+          version: opts.version,
+          bundleTarget,
+          forceRebuild: !!opts.forceRebuild,
+        });
+        const registry = await registryClient.load(bundleUrl);
+        throwIfAborted(opts.signal);
+        const pkg = getPackageFromRegistry(registry, opts.packageName);
+        const meta: LocalBundleMeta = {
+          source: 'hosted',
+          url: bundleUrl,
+        };
+        opts.onRetryStatus?.({
+          state: 'completed',
+          stage: 'script-load',
+          attempt,
+          elapsedMs: Date.now() - startedAt,
+          timeoutMs: retryConfig.timeoutMs,
+        });
+        return { pkg, meta };
+      }
+
       const startPayload = await buildClient.startBuild({
         endpoint,
         packageName: opts.packageName,
@@ -390,14 +466,7 @@ export async function loadIifePackage(opts: {
 
       const registry = await registryClient.load(bundleUrl);
       throwIfAborted(opts.signal);
-      const pkg = registry[opts.packageName];
-      if (!pkg) {
-        throw new IifeBundleLoadError(
-          'PACKAGE_MISSING',
-          `Package ${opts.packageName} not found in loaded bundle. Available: ${Object.keys(registry).join(', ')}`,
-          { packageName: opts.packageName, availablePackages: Object.keys(registry) }
-        );
-      }
+      const pkg = getPackageFromRegistry(registry, opts.packageName);
 
       if (attempt > 1) {
         const elapsedMs = Date.now() - startedAt;

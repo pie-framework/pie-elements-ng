@@ -44,14 +44,9 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
-// import EditableHtml from '@pie-lib/editable-html-tip-tap';
+import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputCheckbox, InputRadio } from '../inputs.js';
 import FeedbackMenu from './feedback-menu.js';
-
-// - mathquill error window not defined
-import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
-
-const EditableHtml = EditableHtmlImport;
 
 const StyledEditorHolder: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),

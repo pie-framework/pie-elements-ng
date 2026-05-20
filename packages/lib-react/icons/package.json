@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/icons",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Some simple icons",
   "dependencies": {
     "@emotion/react": "^11.14.0",

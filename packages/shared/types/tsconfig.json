@@ -1,12 +1,9 @@
 {
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tsconfig.runtime.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "declaration": true,
-    "emitDeclarationOnly": false,
-    "noEmit": false,
-    "allowImportingTsExtensions": false
+    "declaration": true
   },
   "include": ["src/**/*"]
 }

@@ -325,33 +325,36 @@ Use consistent UI patterns across all elements:
 
 #### axe-core Integration
 
-All elements are tested with axe-core:
+The demo app includes a separately mounted Axe scenario suite at `/a11y`. The primary
+suite uses dedicated WCAG 2.2 AA-oriented scenarios per element, with routes such as
+`/a11y/multiple-choice/scan?scenario=single-select-radio-group`.
 
-```typescript
-import { expect, test } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+The suite records Axe violations and lightweight Playwright check failures in JSON and
+Markdown reports without failing builds yet. This keeps the first scenario baseline
+non-blocking while the team triages current accessibility issues.
 
-test('should not have accessibility violations', async ({ page }) => {
-  await page.goto('/multiple-choice');
+The broad demo-shadow inventory remains available at `/a11y/inventory` and through
+`bun run test:a11y:inventory` for discovery across the existing demo samples.
 
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag22aa'])
-    .analyze();
-
-  expect(results.violations).toEqual([]);
-});
-```
+In local dev mode, the `/a11y` UI can also start these runs directly and link to the
+generated JSON, Markdown, and Playwright HTML reports. These controls are dev-only
+because they run Playwright commands from SvelteKit server endpoints.
 
 #### Run Accessibility Tests
 
 ```bash
-# Run all accessibility tests
+# Run the curated accessibility scenario suite
 bun run test:a11y
 
-# Per-element demo (after build)
-# cd packages/elements-react/<element>
-# python -m http.server 5174
-# open http://localhost:5174/
+# Focus one element, scenario, or concern while triaging
+A11Y_ELEMENT=multiple-choice bun run test:a11y
+A11Y_ELEMENT=multiple-choice A11Y_SCENARIO=single-select-radio-group bun run test:a11y
+A11Y_CONCERN=keyboard-focus bun run test:a11y
+
+# Run the broad demo inventory baseline
+bun run test:a11y:inventory
+
+# Reports are written under apps/element-a11y-demo/test-results/a11y/
 ```
 
 ### Manual Testing

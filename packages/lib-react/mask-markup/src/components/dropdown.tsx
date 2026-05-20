@@ -63,11 +63,11 @@ const StyledButton: any = styled(Button)(() => ({
   margin: '2px',
   textTransform: 'none',
   '& span': {
-    paddingRight: '5px',
+    paddingRight: '24px',
   },
   '& svg': {
     position: 'absolute',
-    right: 0,
+    right: '4px',
     top: 'calc(50% - 12px)',
     pointerEvents: 'none',
     color: color.text(),
@@ -131,7 +131,7 @@ const StyledMenuItem: any = styled(MenuItem)(() => ({
     backgroundColor: color.dropdownBackground(),
   },
   boxSizing: 'border-box',
-  padding: '25px',
+  padding: '16px 8px',
   borderRadius: '4px',
   '&.selected': {
     color: `${color.text()} !important`,
@@ -149,8 +149,8 @@ const StyledLabel: any = styled('span')(() => ({
 
 const StyledSelectedIndicator: any = styled('span')(() => ({
   fontSize: 'max(1rem, 14px)',
-  position: 'absolute',
-  right: '10px',
+  flexShrink: 0,
+  paddingLeft: '8px',
 }));
 
 const StyledInputLabel: any = styled(InputLabel)(() => ({

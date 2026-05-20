@@ -1,6 +1,6 @@
 /* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-s3_plusggg/0.0.1/question.css */
+/* Shared r1 base styles (font, template-line flex, choice-label) are in sel-r1-base.css */
 .mc-populated-blank-root.variant-sel-r1-s3 {
-  font-family: Starial, Arial, sans-serif;
   max-width: 860px;
   margin-inline: auto;
   --mpb-listen-button-size: 128px;
@@ -17,13 +17,7 @@
   --mpb-blank-wide-width: 6.8rem;
 }
 
-.mc-populated-blank-root.variant-sel-r1-s3 .pie-audio-transcript {
-  font-family: Roboto, Arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-}
-
+/* s3 overrides base choice-label with font-weight:500 */
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label,
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label :is(span, p, div) {
   font-size: 1.9em;
@@ -33,7 +27,6 @@
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-blank-value,
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-blank-value :is(span, p, div) {
-  font-size: 1.9em;
   line-height: 1.1;
   white-space: nowrap;
 }
@@ -46,6 +39,7 @@
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank {
   grid-template-columns: minmax(220px, auto) auto auto;
   grid-template-areas:
+    "transcript transcript transcript"
     "sentence template audio"
     "choices choices choices";
   justify-content: center;

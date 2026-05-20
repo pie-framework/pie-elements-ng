@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.declarations.json",
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
@@ -8,7 +8,6 @@
     "types": ["svelte"],
     "declaration": true,
     "declarationDir": "./dist",
-    "emitDeclarationOnly": true,
     "sourceMap": true,
     "strict": true,
     "skipLibCheck": true

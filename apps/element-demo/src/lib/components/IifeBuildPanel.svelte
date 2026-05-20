@@ -1,8 +1,12 @@
 <script lang="ts">
+import { iifeBundleMode } from '$lib/config/player-runtime';
 import { iifeBuildLoading, iifeBuildMeta, requestIifeRebuild } from '$lib/stores/demo-state';
 </script>
 
 <div class="flex items-center gap-2 text-xs">
+  {#if $iifeBuildMeta?.source}
+    <span class="badge badge-outline">{$iifeBuildMeta.source}</span>
+  {/if}
   {#if $iifeBuildLoading}
     <span class="badge badge-outline">
       {$iifeBuildMeta?.stage ? `${$iifeBuildMeta.stage}...` : 'building...'}
@@ -22,12 +26,14 @@ import { iifeBuildLoading, iifeBuildMeta, requestIifeRebuild } from '$lib/stores
   {#if $iifeBuildMeta?.error}
     <span class="badge badge-error">build failed</span>
   {/if}
-  <button
-    class="btn btn-xs"
-    onclick={() => requestIifeRebuild()}
-    disabled={$iifeBuildLoading}
-    title="Clear local bundler cache and rebuild"
-  >
-    Rebuild (clean cache)
-  </button>
+  {#if iifeBundleMode === 'local'}
+    <button
+      class="btn btn-xs"
+      onclick={() => requestIifeRebuild()}
+      disabled={$iifeBuildLoading}
+      title="Clear local bundler cache and rebuild"
+    >
+      Rebuild
+    </button>
+  {/if}
 </div>

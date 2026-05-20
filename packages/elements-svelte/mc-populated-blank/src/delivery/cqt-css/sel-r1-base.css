@@ -1,0 +1,59 @@
+/* Shared base styles for all sel_r1-*_plusggg variants.
+   Applied via the data-mpb-variant="sel-r1-base" style element.
+   Uses [class*="variant-sel-r1-"] so it covers every r1 variant class.
+   Source: web-ItemBankViewer/learnosity/templates/Renaissance/r1.scss */
+
+/* r1.scss: Starial font throughout */
+[class*="variant-sel-r1-"] {
+  font-family: Starial, Arial, sans-serif;
+}
+
+/* r1.scss: .rli-r1-audio-transcript { font-family:Roboto; font-size:16px } */
+[class*="variant-sel-r1-"] .pie-audio-transcript {
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* r1.scss: .rli-r1-content-element { font-size: 1.9em } wraps all stem tokens.
+   Makes inline font-size spans in the template multiply on top of this base. */
+[class*="variant-sel-r1-"] .pie-template-line {
+  font-size: 1.9em;
+}
+
+/* r1.scss: .rli-r1-stem { display:flex; flex-direction:row; justify-content:center }
+   r1.scss: .rli-r1-content-element { margin-right:2px; margin-left:2px } — 4px total gap.
+   column-gap:4px replicates the 2px+2px per-element margin. */
+[class*="variant-sel-r1-"] .pie-template-line {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  column-gap: 4px;
+}
+
+[class*="variant-sel-r1-"] .pie-template-line p {
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 4px;
+}
+
+/* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px; min-height:150px;
+   line-height:89px } — every stem token (blank slot and adjacent spans) is a 150px box.
+   Scoped to token_sequence layout so the audio_blank_only standalone blank (160px) is unaffected. */
+[class*="variant-sel-r1-"].layout-token_sequence .pie-template-line span:not([class]),
+[class*="variant-sel-r1-"].layout-token_sequence .pie-template-line .pie-blank-slot {
+  min-width: 150px;
+  max-width: 150px;
+  min-height: 150px;
+  line-height: 89px;
+}
+
+/* r1.scss: .rli-r1-content-element { font-size:1.9em; line-height:89px } on distractors */
+[class*="variant-sel-r1-"] .pie-choice-label {
+  font-size: 1.9em;
+  line-height: 89px;
+}

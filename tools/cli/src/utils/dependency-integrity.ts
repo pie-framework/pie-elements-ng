@@ -77,7 +77,7 @@ export async function analyzePackageDependencyIntegrity(
   }
 
   const pkgJson = (await loadPackageJson(pkgJsonPath)) as PackageJson | null;
-  if (!pkgJson || !pkgJson.name) {
+  if (!pkgJson?.name) {
     return null;
   }
 

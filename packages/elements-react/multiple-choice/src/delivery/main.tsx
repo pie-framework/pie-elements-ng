@@ -52,6 +52,8 @@ class Main extends React.Component {
       names: PropTypes.arrayOf(PropTypes.string),
       rules: PropTypes.string,
     }),
+    baseHeadingLevel: PropTypes.number,
+    includeSrHeading: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -60,7 +62,7 @@ class Main extends React.Component {
   };
 
   render() {
-    const { model, onChoiceChanged, session, onShowCorrectToggle, options } = this.props;
+    const { model, onChoiceChanged, session, onShowCorrectToggle, options, baseHeadingLevel, includeSrHeading } = this.props;
     const { extraCSSRules, fontSizeFactor } = model;
 
     // model.partLabel is a property used for ebsr
@@ -72,6 +74,8 @@ class Main extends React.Component {
           session={session}
           onChoiceChanged={onChoiceChanged}
           onShowCorrectToggle={onShowCorrectToggle}
+          baseHeadingLevel={baseHeadingLevel}
+          includeSrHeading={includeSrHeading}
         />
       </PreviewLayout>
     );

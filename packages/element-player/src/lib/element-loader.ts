@@ -50,7 +50,7 @@ async function resolveModule(
     return import(/* @vite-ignore */ modulePath);
   }
   // Let Vite resolve local workspace specifiers in ESM mode.
-  return import(modulePath);
+  return import(/* @vite-ignore */ modulePath);
 }
 
 /**

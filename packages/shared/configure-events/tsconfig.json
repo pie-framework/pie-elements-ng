@@ -1,4 +1,5 @@
 {
+  "extends": "../../../tsconfig.declarations.json",
   "compilerOptions": {
     "baseUrl": "src",
     "outDir": "dist",

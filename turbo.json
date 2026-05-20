@@ -1,10 +1,24 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "concurrency": "76",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "esm/**", "build/**"],
+      "env": ["NODE_ENV"]
+    },
+    "@pie-element/element-demo#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../../packages/**/docs.contract.json",
+        "../../packages/**/README.md",
+        "../../packages/**/src/controller/defaults.ts",
+        "../../tools/cli/src/commands/docs/**",
+        "../../tools/cli/src/lib/docs/**"
+      ],
+      "outputs": ["build/**", "static/element-docs/**"],
       "env": ["NODE_ENV"]
     },
     "dev": {

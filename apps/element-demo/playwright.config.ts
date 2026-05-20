@@ -90,10 +90,10 @@ export default defineConfig({
     timeout: 10_000,
   },
   use: {
-    baseURL: 'http://localhost:5222',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5222',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
     ...(localChromium ? { launchOptions: { executablePath: localChromium } } : {}),
@@ -101,15 +101,15 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } },
     },
   ],
   webServer: useExternalServer
     ? undefined
     : {
         command: 'bun run dev',
-        url: 'http://localhost:5222',
-        reuseExistingServer: true, // Use existing dev server
+        url: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5222',
+        reuseExistingServer: true,
         timeout: 120_000,
       },
 });

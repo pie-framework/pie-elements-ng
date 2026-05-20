@@ -35,6 +35,7 @@ export interface UnifiedPlayerLoadRequest {
   elementVersion: string;
   cdnUrl?: string;
   iifeBundleEndpoint?: string;
+  iifeBundleHost?: string;
   iifeBundleRetry?: IifeBundleRetryConfig;
   onIifeBundleRetryStatus?: (status: IifeBundleRetryStatus) => void;
   signal?: AbortSignal;
@@ -344,6 +345,7 @@ async function loadIife(
     packageName: req.packageName,
     version: req.elementVersion,
     endpoint: req.iifeBundleEndpoint,
+    bundleHost: req.iifeBundleHost,
     iifeBundleRetry: req.iifeBundleRetry ?? DEFAULT_IIFE_BUNDLE_RETRY_CONFIG,
     onRetryStatus: req.onIifeBundleRetryStatus,
     signal: req.signal,

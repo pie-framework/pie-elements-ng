@@ -1,5 +1,5 @@
 {
-  "extends": "../../../tsconfig.base.json",
+  "extends": "../../../tsconfig.runtime.json",
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
@@ -7,9 +7,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "module": "Node16",
-    "moduleResolution": "node16",
-    "allowImportingTsExtensions": false,
-    "noEmit": false
+    "moduleResolution": "node16"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]
