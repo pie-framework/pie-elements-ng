@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 
-// Don't compile Svelte - ship as source .svelte files
-// Let consuming apps compile them with their own Svelte setup
 export default defineConfig({
-  plugins: [],
+  plugins: [svelte()],
   build: {
     lib: {
       entry: {
@@ -13,13 +12,11 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: (id) => {
-        // Externalize Svelte files and dependencies
-        return /^svelte/.test(id) || /\.svelte$/.test(id) || /^@pie-element\//.test(id);
-      },
+      external: (id) => /^svelte/.test(id) || /^@pie-element\//.test(id),
       output: {
-        preserveModules: true,
-        preserveModulesRoot: 'src',
+        entryFileNames: '[name].js',
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        assetFileNames: 'assets/[name][extname]',
       },
     },
   },
