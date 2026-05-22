@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/mask-markup",
-  "version": "3.0.2",
+  "version": "3.0.4",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

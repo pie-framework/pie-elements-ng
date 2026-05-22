@@ -79,7 +79,6 @@ export class Choice extends React.Component {
       hoverAnswerBackgroundColor,
       hoverAnswerStrokeColor,
       hoverAnswerStrokeWidth,
-      autoFocusRef,
       tagName
     } = this.props;
     
@@ -168,7 +167,7 @@ export class Choice extends React.Component {
           noBorder={noBorder}
           horizontalLayout={horizontalLayout}
         >
-          <ChoiceInput {...choiceProps} autoFocusRef={autoFocusRef} />
+          <ChoiceInput {...choiceProps} />
         </ChoiceContainer>
       </div>
     );
@@ -197,7 +196,6 @@ Choice.propTypes = {
   hoverAnswerStrokeWidth: PropTypes.string,
   tagName: PropTypes.string,
   isSelectionButtonBelow: PropTypes.bool,
-  autoFocusRef: PropTypes.object,
 };
 
 export default Choice;

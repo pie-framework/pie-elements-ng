@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/ebsr",
-  "version": "14.2.0-next.1",
+  "version": "14.2.0",
   "description": "",
   "dependencies": {
     "@pie-element/multiple-choice": "workspace:*",
