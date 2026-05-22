@@ -385,7 +385,7 @@ export class ChoiceInput extends React.Component {
     ) : (
       <>
         {screenReaderLabel}
-        <Tag {...tagProps} slotProps={{ input: { ref: this.props.autoFocusRef } }} />
+        <Tag {...tagProps} />
       </>
     );
 

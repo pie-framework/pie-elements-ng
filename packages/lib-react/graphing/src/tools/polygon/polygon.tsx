@@ -19,7 +19,7 @@ import { correct, disabledSecondary, incorrect, missing, graphingShapeFill } fro
 
 const StyledPolygon: any = styled('polygon')(({ disabled: isDisabled, correctness }) => ({
   fill: alpha(graphingShapeFill(), 0.2),
-  strokeWidth: 2,
+  strokeWidth: 3,
   stroke: color.defaults.BLACK,
   ...(isDisabled && disabledSecondary('stroke')),
   ...(correctness === 'correct' && correct('stroke')),
@@ -32,7 +32,7 @@ const StyledPolygon: any = styled('polygon')(({ disabled: isDisabled, correctnes
 
 const StyledPolyline: any = styled('polyline')(({ disabled: isDisabled, correctness }) => ({
   fill: alpha(graphingShapeFill(), 0.0),
-  strokeWidth: 2,
+  strokeWidth: 3,
   stroke: color.defaults.BLACK,
   pointerEvents: 'none',
   ...(isDisabled && disabledSecondary('stroke')),
