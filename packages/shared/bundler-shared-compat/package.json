@@ -19,6 +19,9 @@
     "dist",
     "README.md"
   ],
+  "scripts": {
+    "build": "rm -rf dist && mkdir -p dist && cp index.js index.d.ts types.js types.d.ts dist/"
+  },
   "dependencies": {
     "@pie-element/element-bundler": "workspace:*"
   },
