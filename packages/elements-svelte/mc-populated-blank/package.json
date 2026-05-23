@@ -21,6 +21,10 @@
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
     },
+    "./controller.js": {
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller/index.js"
+    },
     "./author": {
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"

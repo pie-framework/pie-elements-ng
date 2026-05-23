@@ -10,8 +10,13 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "bin/run.js",
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "dev": "node ./bin/dev.js",
     "lint": "biome check ."
   },
