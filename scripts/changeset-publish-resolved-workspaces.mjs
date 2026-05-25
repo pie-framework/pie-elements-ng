@@ -563,7 +563,16 @@ const collectRuntimeWorkspaceDependencyClosure = (targetPackages) => {
         });
       }
 
-      stack.push(dependency.dependencyName);
+      // Only recurse into a workspace dep if it is also being published in this
+      // run. If it is already on npm at the correct version, its published
+      // manifest has already-resolved (non-workspace) deps — there is no need
+      // to walk its local workspace package.json, and doing so would
+      // incorrectly flag transitive workspace:* refs that are irrelevant to
+      // the consumer (e.g. @pie-lib/render-ui@6.1.0 on npm having a local
+      // workspace:* on @pie-lib/math-rendering which hasn't been republished).
+      if (targetPackages.has(dependency.dependencyName)) {
+        stack.push(dependency.dependencyName);
+      }
     }
   }
 
