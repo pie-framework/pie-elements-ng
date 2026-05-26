@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/learnosity-parity-demo",
-  "version": "0.1.2-next.0",
+  "version": "0.1.2-next.1",
   "private": true,
   "description": "Dedicated SvelteKit app for PIE vs Learnosity parity demos",
   "type": "module",

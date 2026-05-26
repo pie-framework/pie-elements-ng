@@ -1,5 +1,13 @@
 # @pie-element/shared-theming-mui
 
+## 0.1.1-next.1
+
+### Patch Changes
+
+- 5ca8ec1: Republish shared packages with resolved workspace:\* dependencies (fixes broken 0.1.0 manifests on npm)
+- Updated dependencies [5ca8ec1]
+  - @pie-element/shared-theming@0.1.1-next.1
+
 ## 0.1.1-next.0
 
 ### Patch Changes
