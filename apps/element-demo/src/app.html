@@ -4,6 +4,23 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/pie-logo-orange.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      React Refresh preamble. Must be injected here (and not via a Vite
+      `transformIndexHtml` plugin) because SvelteKit serves its own HTML
+      template and never goes through Vite's index.html transform pipeline.
+      Without this, any React TSX module loaded from a workspace element
+      package throws "@vitejs/plugin-react can't detect preamble" during
+      dev, which is what breaks the ESM view of every React element.
+      The script is a no-op in production: `/@react-refresh` only exists
+      under the Vite dev server.
+    -->
+    <script type="module">
+      import RefreshRuntime from '/@react-refresh';
+      RefreshRuntime.injectIntoGlobalHook(window);
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+      window.__vite_plugin_react_preamble_installed__ = true;
+    </script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="off">
