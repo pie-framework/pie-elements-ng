@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/multi-trait-rubric",
-  "version": "8.1.0-next.1",
+  "version": "8.1.0",
   "description": "React implementation of multi-trait-rubric element synced from pie-elements",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -9,7 +9,7 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
     "clsx": "^1.1.1",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/drag-in-the-blank",
-  "version": "10.1.0-next.1",
+  "version": "10.1.0",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -12,7 +12,7 @@
     "@pie-lib/mask-markup": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "lodash-es": "^4.17.23",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/number-line",
-  "version": "13.1.0-next.1",
+  "version": "13.1.0",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -12,7 +12,7 @@
     "@pie-lib/icons": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "classnames": "^2.2.5",
+    "classnames": "^2.2.6",
     "d3-scale": "^4.0.2",
     "d3-selection": "^3.0.0",
     "lodash-es": "^4.17.23",
@@ -25,7 +25,7 @@
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "prop-types": "^15.6.1"
+    "prop-types": "^15.8.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

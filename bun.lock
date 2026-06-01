@@ -203,7 +203,7 @@
     },
     "packages/elements-react/categorize": {
       "name": "@pie-element/categorize",
-      "version": "13.1.0-next.1",
+      "version": "13.1.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -224,7 +224,7 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
+        "prop-types": "^15.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -240,7 +240,7 @@
     },
     "packages/elements-react/charting": {
       "name": "@pie-element/charting",
-      "version": "12.1.0-next.1",
+      "version": "12.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -257,7 +257,6 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -273,7 +272,7 @@
     },
     "packages/elements-react/complex-rubric": {
       "name": "@pie-element/complex-rubric",
-      "version": "7.1.0-next.1",
+      "version": "7.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -286,10 +285,10 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/rubric": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.7.2",
+        "prop-types": "^15.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -305,9 +304,8 @@
     },
     "packages/elements-react/drag-in-the-blank": {
       "name": "@pie-element/drag-in-the-blank",
-      "version": "10.1.0-next.1",
+      "version": "10.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -322,9 +320,8 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
+        "prop-types": "^15.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -340,7 +337,7 @@
     },
     "packages/elements-react/drawing-response": {
       "name": "@pie-element/drawing-response",
-      "version": "12.1.0-next.1",
+      "version": "12.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -355,10 +352,9 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "debug": "^4.1.1",
         "konva": "8.3.0",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
+        "prop-types": "^15.8.1",
         "react-konva": "^18.2.14",
       },
       "devDependencies": {
@@ -375,19 +371,17 @@
     },
     "packages/elements-react/ebsr": {
       "name": "@pie-element/ebsr",
-      "version": "14.2.0-next.1",
+      "version": "14.2.0",
       "dependencies": {
-        "@mui/material": "^7.3.4",
         "@pie-element/multiple-choice": "workspace:*",
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -403,7 +397,7 @@
     },
     "packages/elements-react/explicit-constructed-response": {
       "name": "@pie-element/explicit-constructed-response",
-      "version": "11.1.0-next.1",
+      "version": "11.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -419,11 +413,10 @@
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.5",
-        "debug": "^4.1.1",
+        "classnames": "^2.2.6",
         "he": "^1.2.0",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
+        "prop-types": "^15.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -439,7 +432,7 @@
     },
     "packages/elements-react/extended-text-entry": {
       "name": "@pie-element/extended-text-entry",
-      "version": "15.1.0-next.1",
+      "version": "15.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -452,11 +445,10 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "lodash.throttle": "^4.1.1",
-        "prop-types": "^15.6.1",
+        "prop-types": "^15.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -472,7 +464,7 @@
     },
     "packages/elements-react/fraction-model": {
       "name": "@pie-element/fraction-model",
-      "version": "6.1.0-next.1",
+      "version": "6.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -486,7 +478,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-is": "^19.2.0",
         "recharts": "^3.7.0",
@@ -505,7 +496,7 @@
     },
     "packages/elements-react/graphing": {
       "name": "@pie-element/graphing",
-      "version": "10.1.0-next.2",
+      "version": "10.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -521,10 +512,8 @@
         "@pie-lib/graphing": "workspace:*",
         "@pie-lib/graphing-utils": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
-        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -540,7 +529,7 @@
     },
     "packages/elements-react/graphing-solution-set": {
       "name": "@pie-element/graphing-solution-set",
-      "version": "6.1.0-next.1",
+      "version": "6.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -554,10 +543,8 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/graphing-solution-set": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
-        "prop-types": "^15.6.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -573,7 +560,7 @@
     },
     "packages/elements-react/hotspot": {
       "name": "@pie-element/hotspot",
-      "version": "11.1.0-next.1",
+      "version": "11.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -588,9 +575,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
-        "debug": "^4.1.1",
         "konva": "8.3.0",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-konva": "^18.2.14",
       },
@@ -608,7 +593,7 @@
     },
     "packages/elements-react/image-cloze-association": {
       "name": "@pie-element/image-cloze-association",
-      "version": "10.1.0-next.1",
+      "version": "10.1.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -626,11 +611,9 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "classnames": "^2.2.6",
-        "debug": "^4.1.1",
         "humps": "^2.0.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
-        "react-transition-group": "^2.3.1",
+        "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -646,7 +629,7 @@
     },
     "packages/elements-react/inline-dropdown": {
       "name": "@pie-element/inline-dropdown",
-      "version": "10.1.0-next.1",
+      "version": "10.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -661,7 +644,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
       },
@@ -679,7 +661,7 @@
     },
     "packages/elements-react/likert": {
       "name": "@pie-element/likert",
-      "version": "4.1.0-next.1",
+      "version": "4.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -691,12 +673,11 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
         "react-test-renderer": "18.2.0",
-        "react-transition-group": "^2.3.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -712,9 +693,8 @@
     },
     "packages/elements-react/match": {
       "name": "@pie-element/match",
-      "version": "12.1.0-next.1",
+      "version": "12.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -730,10 +710,10 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
+        "prop-types": "^15.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -749,7 +729,7 @@
     },
     "packages/elements-react/match-list": {
       "name": "@pie-element/match-list",
-      "version": "7.1.0-next.1",
+      "version": "7.1.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -858,7 +838,7 @@
     },
     "packages/elements-react/matrix": {
       "name": "@pie-element/matrix",
-      "version": "4.1.0-next.1",
+      "version": "4.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -871,7 +851,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
         "react-is": "^19.2.0",
         "styled-components": "^5.2.1",
@@ -890,9 +869,8 @@
     },
     "packages/elements-react/multi-trait-rubric": {
       "name": "@pie-element/multi-trait-rubric",
-      "version": "8.1.0-next.1",
+      "version": "8.1.0",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -905,9 +883,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "clsx": "^1.1.1",
-        "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
-        "prop-types": "^15.6.1",
+        "prop-types": "^15.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -923,7 +899,7 @@
     },
     "packages/elements-react/multiple-choice": {
       "name": "@pie-element/multiple-choice",
-      "version": "13.2.0-next.1",
+      "version": "13.2.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -938,7 +914,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.8.1",
@@ -958,7 +934,7 @@
     },
     "packages/elements-react/number-line": {
       "name": "@pie-element/number-line",
-      "version": "13.1.0-next.1",
+      "version": "13.1.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -975,12 +951,11 @@
         "@pie-lib/icons": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.5",
+        "classnames": "^2.2.6",
         "d3-scale": "^4.0.2",
         "d3-selection": "^3.0.0",
         "lodash-es": "^4.17.23",
         "mathjs": "^7.5.1",
-        "prop-types": "^15.6.1",
         "react-jss": "^10.10.0",
         "react-transition-group": "^4.4.5",
       },
@@ -998,7 +973,7 @@
     },
     "packages/elements-react/passage": {
       "name": "@pie-element/passage",
-      "version": "7.1.0-next.1",
+      "version": "7.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1010,8 +985,6 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1028,9 +1001,9 @@
     },
     "packages/elements-react/placement-ordering": {
       "name": "@pie-element/placement-ordering",
-      "version": "14.1.0-next.1",
+      "version": "14.1.0",
       "dependencies": {
-        "@dnd-kit/core": "^6.3.1",
+        "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -1048,10 +1021,7 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
         "decimal.js": "^10.0.0",
-        "js-combinatorics": "^2.1.2",
         "lodash-es": "^4.17.23",
-        "nested-property": "^4.0.0",
-        "pluralize": "^8.0.0",
         "prop-types": "^15.8.1",
         "react-transition-group": "^4.4.5",
       },
@@ -1069,7 +1039,7 @@
     },
     "packages/elements-react/rubric": {
       "name": "@pie-element/rubric",
-      "version": "8.1.0-next.1",
+      "version": "8.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1080,8 +1050,6 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/rubric": "workspace:*",
-        "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1098,7 +1066,7 @@
     },
     "packages/elements-react/select-text": {
       "name": "@pie-element/select-text",
-      "version": "13.1.0-next.1",
+      "version": "13.1.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1114,8 +1082,6 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/text-select": "workspace:*",
-        "debug": "^4.1.1",
-        "lodash-es": "^4.17.21",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -1194,7 +1160,7 @@
     },
     "packages/lib-react/charting": {
       "name": "@pie-lib/charting",
-      "version": "7.0.2",
+      "version": "7.0.5",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1223,7 +1189,6 @@
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
         "lodash-es": "^4.17.23",
-        "prop-types": "^15.6.1",
         "react": "^18.2.0",
         "react-draggable": "^3.3.0",
         "react-input-autosize": "^2.2.1",
@@ -1238,7 +1203,7 @@
     },
     "packages/lib-react/config-ui": {
       "name": "@pie-lib/config-ui",
-      "version": "13.0.2",
+      "version": "13.0.5",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1252,7 +1217,6 @@
         "lodash-es": "^4.17.23",
         "mathjs": "^7.0.1",
         "prop-types": "^15.6.2",
-        "react": "^18.2.0",
         "react-measure": "^2.2.2",
       },
       "devDependencies": {
@@ -1280,7 +1244,7 @@
     },
     "packages/lib-react/correct-answer-toggle": {
       "name": "@pie-lib/correct-answer-toggle",
-      "version": "4.0.2",
+      "version": "4.0.3",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1291,7 +1255,6 @@
         "@pie-lib/translator": "workspace:*",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
-        "react": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -1304,7 +1267,7 @@
     },
     "packages/lib-react/drag": {
       "name": "@pie-lib/drag",
-      "version": "4.0.2",
+      "version": "4.0.3",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "10.0.0",
@@ -1331,7 +1294,7 @@
     },
     "packages/lib-react/editable-html-tip-tap": {
       "name": "@pie-lib/editable-html-tip-tap",
-      "version": "2.1.0",
+      "version": "2.1.3",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -1344,25 +1307,25 @@
         "@pie-lib/math-rendering": "workspace:*",
         "@pie-lib/math-toolbar": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "@tiptap/core": "3.0.9",
-        "@tiptap/extension-character-count": "3.0.9",
-        "@tiptap/extension-color": "3.0.9",
-        "@tiptap/extension-image": "3.0.9",
-        "@tiptap/extension-list": "3.0.9",
-        "@tiptap/extension-list-item": "3.0.9",
+        "@tiptap/core": "3.20.0",
+        "@tiptap/extension-character-count": "3.20.0",
+        "@tiptap/extension-color": "3.20.0",
+        "@tiptap/extension-image": "3.20.0",
+        "@tiptap/extension-list": "3.20.0",
+        "@tiptap/extension-list-item": "3.20.0",
         "@tiptap/extension-placeholder": "3.20.0",
-        "@tiptap/extension-subscript": "3.0.9",
-        "@tiptap/extension-superscript": "3.0.9",
-        "@tiptap/extension-table": "3.0.9",
-        "@tiptap/extension-table-cell": "3.0.9",
-        "@tiptap/extension-table-header": "3.0.9",
-        "@tiptap/extension-table-row": "3.0.9",
-        "@tiptap/extension-text-align": "3.0.9",
-        "@tiptap/extension-text-style": "3.0.9",
+        "@tiptap/extension-subscript": "3.20.0",
+        "@tiptap/extension-superscript": "3.20.0",
+        "@tiptap/extension-table": "3.20.0",
+        "@tiptap/extension-table-cell": "3.20.0",
+        "@tiptap/extension-table-header": "3.20.0",
+        "@tiptap/extension-table-row": "3.20.0",
+        "@tiptap/extension-text-align": "3.20.0",
+        "@tiptap/extension-text-style": "3.20.0",
         "@tiptap/extensions": "^3.20.0",
-        "@tiptap/pm": "3.0.9",
-        "@tiptap/react": "3.0.9",
-        "@tiptap/starter-kit": "3.0.9",
+        "@tiptap/pm": "3.20.0",
+        "@tiptap/react": "3.20.0",
+        "@tiptap/starter-kit": "3.20.0",
         "change-case": "^3.0.2",
         "classnames": "^2.2.6",
         "debug": "^4.1.1",
@@ -1370,10 +1333,7 @@
         "keycode": "^2.2.0",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
-        "prosemirror-state": "^1.4.4",
-        "react": "^18.2.0",
         "react-attr-converter": "^0.3.1",
-        "react-dom": "^18.2.0",
         "react-jss": "^8.6.1",
         "react-portal": "^4.2.0",
         "tippy.js": "latest",
@@ -1389,11 +1349,10 @@
     },
     "packages/lib-react/graphing": {
       "name": "@pie-lib/graphing",
-      "version": "4.0.3",
+      "version": "4.0.6",
       "dependencies": {
         "@dnd-kit/core": "^6.3.0",
         "@dnd-kit/sortable": "10.0.0",
-        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mapbox/point-geometry": "^1.1.0",
@@ -1439,11 +1398,9 @@
     },
     "packages/lib-react/graphing-solution-set": {
       "name": "@pie-lib/graphing-solution-set",
-      "version": "4.0.2",
+      "version": "4.0.5",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "10.0.0",
-        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mapbox/point-geometry": "^1.1.0",
@@ -1513,7 +1470,6 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "prop-types": "^15.6.2",
-        "react": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1525,10 +1481,8 @@
     },
     "packages/lib-react/mask-markup": {
       "name": "@pie-lib/mask-markup",
-      "version": "3.0.2",
+      "version": "3.0.5",
       "dependencies": {
-        "@dnd-kit/core": "6.3.1",
-        "@dnd-kit/utilities": "3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -1595,7 +1549,7 @@
     },
     "packages/lib-react/math-toolbar": {
       "name": "@pie-lib/math-toolbar",
-      "version": "3.0.2",
+      "version": "3.0.3",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1606,7 +1560,6 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1618,7 +1571,7 @@
     },
     "packages/lib-react/plot": {
       "name": "@pie-lib/plot",
-      "version": "4.0.2",
+      "version": "4.0.5",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1649,7 +1602,7 @@
     },
     "packages/lib-react/render-ui": {
       "name": "@pie-lib/render-ui",
-      "version": "6.1.0",
+      "version": "6.1.1",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1662,7 +1615,6 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -1675,7 +1627,7 @@
     },
     "packages/lib-react/rubric": {
       "name": "@pie-lib/rubric",
-      "version": "2.0.2",
+      "version": "2.0.5",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1716,13 +1668,9 @@
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.11.0",
-        "@mui/material": "^7.3.4",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/jest-dom": "^5.16.5",
-        "@testing-library/react": "^16.3.0",
         "@testing-library/user-event": "^14.5.2",
-        "prop-types": "^15.6.1",
-        "react": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1734,7 +1682,7 @@
     },
     "packages/lib-react/text-select": {
       "name": "@pie-lib/text-select",
-      "version": "3.0.2",
+      "version": "3.0.3",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1748,8 +1696,6 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.6.2",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1773,7 +1719,6 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.17.23",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
         "react-portal": "^4.2.0",
         "trigonometry-calculator": "^2.0.0",
       },
@@ -2676,8 +2621,6 @@
 
     "@testing-library/jest-dom": ["@testing-library/jest-dom@6.9.1", "", { "dependencies": { "@adobe/css-tools": "^4.4.0", "aria-query": "^5.0.0", "css.escape": "^1.5.1", "dom-accessibility-api": "^0.6.3", "picocolors": "^1.1.1", "redent": "^3.0.0" } }, "sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA=="],
 
-    "@testing-library/react": ["@testing-library/react@16.3.2", "", { "dependencies": { "@babel/runtime": "^7.12.5" }, "peerDependencies": { "@testing-library/dom": "^10.0.0", "@types/react": "^18.0.0 || ^19.0.0", "@types/react-dom": "^18.0.0 || ^19.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g=="],
-
     "@testing-library/user-event": ["@testing-library/user-event@14.6.1", "", { "peerDependencies": { "@testing-library/dom": ">=7.21.4" } }, "sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw=="],
 
     "@tiptap/core": ["@tiptap/core@3.18.0", "", { "peerDependencies": { "@tiptap/pm": "^3.18.0" } }, "sha512-Gczd4GbK1DNgy/QUPElMVozoa0GW9mW8E31VIi7Q4a9PHHz8PcrxPmuWwtJ2q0PF8MWpOSLuBXoQTWaXZRPRnQ=="],
@@ -2690,7 +2633,7 @@
 
     "@tiptap/extension-bullet-list": ["@tiptap/extension-bullet-list@3.23.1", "", { "peerDependencies": { "@tiptap/extension-list": "3.23.1" } }, "sha512-owWnBBI4t+jqVDY0naDjhsAmrNGldh4czouef2K+mEf032B7uGsDVCwKp1qaX1JZesyYDfvXOaIwT22hNID2mw=="],
 
-    "@tiptap/extension-character-count": ["@tiptap/extension-character-count@3.0.9", "", { "peerDependencies": { "@tiptap/extensions": "^3.0.9" } }, "sha512-KKtHfvMlYCNszldPvmzDzvRSV/Xukb7T/t4IMPgFp2LUDPuBK1z4TPP8HEsONTFAAKc+JgnJPPkMxfhh/tFbnQ=="],
+    "@tiptap/extension-character-count": ["@tiptap/extension-character-count@3.20.0", "", { "peerDependencies": { "@tiptap/extensions": "^3.20.0" } }, "sha512-WxE0HgntJfkpaCy7u7ANL7jwqygSIu1wc7eKL78sp1jr0QeyQYj5Addq7h//fpr7OI9+V8v55tM2+qd8RiI77Q=="],
 
     "@tiptap/extension-code": ["@tiptap/extension-code@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1" } }, "sha512-nGuhb4YghgTfkejwWHrD9GSpwcC5kkVmm2sN/UY4yceDw+PkyysYKJWZehRLTOC8GNgSAhq/EeQeq14Xwk6dyg=="],
 
@@ -2698,7 +2641,7 @@
 
     "@tiptap/extension-code-block-lowlight": ["@tiptap/extension-code-block-lowlight@3.18.0", "", { "peerDependencies": { "@tiptap/core": "^3.18.0", "@tiptap/extension-code-block": "^3.18.0", "@tiptap/pm": "^3.18.0", "highlight.js": "^11", "lowlight": "^2 || ^3" } }, "sha512-euUvh9r1KNSua9X4VdMS6lcWgUkcd0YznCFhp4b5gSqT5/5F7tGlvEg5mNpBeNhOIreDQV6zfBc7HvLfh7cLEA=="],
 
-    "@tiptap/extension-color": ["@tiptap/extension-color@3.0.9", "", { "peerDependencies": { "@tiptap/extension-text-style": "^3.0.9" } }, "sha512-cA68vy5lZwBVqBLMEDL6rjKIBPXRV+sUjmV+UokJcguAUTerHLK0dAHcbKRp9hJ6KF6z1KAOC7u3ZBhyjibC1w=="],
+    "@tiptap/extension-color": ["@tiptap/extension-color@3.20.0", "", { "peerDependencies": { "@tiptap/extension-text-style": "^3.20.0" } }, "sha512-KGXQ3I18uLHQ61FZpXDu0gH6+0jqmDkVwkPNXmM3oPNDSH80SG5UeZlrXi/PwtlusePJ3dFHtoQ1g6j2bJUssg=="],
 
     "@tiptap/extension-document": ["@tiptap/extension-document@3.18.0", "", { "peerDependencies": { "@tiptap/core": "^3.18.0" } }, "sha512-e0hOGrjTMpCns8IC5p+c5CEiE1BBmFBFL+RpIxU/fjT2SaZ7q2xsFguBu94lQDT0cD6fdZokFRpGwEMxZNVGCg=="],
 
@@ -2716,15 +2659,15 @@
 
     "@tiptap/extension-horizontal-rule": ["@tiptap/extension-horizontal-rule@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1", "@tiptap/pm": "3.23.1" } }, "sha512-30XUHXdEZxcz1FCWjz9HW2EEq06NQcAye6rXGnvHo6Y60iJ6MRsrX5byvceFNF9DTVtOIcUFBQ/psIiRcoi0KA=="],
 
-    "@tiptap/extension-image": ["@tiptap/extension-image@3.0.9", "", { "peerDependencies": { "@tiptap/core": "^3.0.9" } }, "sha512-/2igN/oIF58zqX5fcg00bf6qGLcQyXHysl5I8GiurkvO95d+SQTlYbJneSRUpt6CgrUKbhRnMBPVubmapgg+Zw=="],
+    "@tiptap/extension-image": ["@tiptap/extension-image@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0" } }, "sha512-0t7HYncV0kYEQS79NFczxdlZoZ8zu8X4VavDqt+mbSAUKRq3gCvgtZ5Zyd778sNmtmbz3arxkEYMIVou2swD0g=="],
 
     "@tiptap/extension-italic": ["@tiptap/extension-italic@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1" } }, "sha512-lZB9YCjoVNDoPMguya66nBvaS/2YpGN5iAcjAGx/JQkCAZeOAtl9+ALMzbWPKH6tQP6m98YtkY1T7RXr++T0bA=="],
 
     "@tiptap/extension-link": ["@tiptap/extension-link@3.23.1", "", { "dependencies": { "linkifyjs": "^4.3.2" }, "peerDependencies": { "@tiptap/core": "3.23.1", "@tiptap/pm": "3.23.1" } }, "sha512-uOeyLqYQI0WG62agpFG24kVHSn3Z48gD8Y0uLLJbtzh/nDFC3d9So2sQGWlSVyMzsgkJ4k/9jNnxxsVO8qgJOg=="],
 
-    "@tiptap/extension-list": ["@tiptap/extension-list@3.0.9", "", { "peerDependencies": { "@tiptap/core": "^3.0.9", "@tiptap/pm": "^3.0.9" } }, "sha512-y5JQoFmVR+6FhDdEz2oFIMkURSRSDhCtsrlNWdUpSTGnTAa2WZT7nEhHcIMSGvYU3t0fkfLQ9yTMSaQZFa5GLA=="],
+    "@tiptap/extension-list": ["@tiptap/extension-list@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-+V0/gsVWAv+7vcY0MAe6D52LYTIicMSHw00wz3ISZgprSb2yQhJ4+4gurOnUrQ4Du3AnRQvxPROaofwxIQ66WQ=="],
 
-    "@tiptap/extension-list-item": ["@tiptap/extension-list-item@3.0.9", "", { "peerDependencies": { "@tiptap/extension-list": "^3.0.9" } }, "sha512-K+ogk1BH/eYhsK9nSTXNdIXlxQcXzty6h1QFiZNr9XmaLk+q4NZFHR5FVz3EJ7QXyw+Gv/2FQn+T2Q/GpbMxZQ=="],
+    "@tiptap/extension-list-item": ["@tiptap/extension-list-item@3.20.0", "", { "peerDependencies": { "@tiptap/extension-list": "^3.20.0" } }, "sha512-qEtjaaGPuqaFB4VpLrGDoIe9RHnckxPfu6d3rc22ap6TAHCDyRv05CEyJogqccnFceG/v5WN4znUBER8RWnWHA=="],
 
     "@tiptap/extension-list-keymap": ["@tiptap/extension-list-keymap@3.23.1", "", { "peerDependencies": { "@tiptap/extension-list": "3.23.1" } }, "sha512-sHbE5sxiJzhgGn94GUAzD4qKM9SyImBrOlAGS/EIe+pausjqQE7xi+YW0gRo2jG+gXhSYl4/oAGXQXzmSInSUQ=="],
 
@@ -2736,23 +2679,23 @@
 
     "@tiptap/extension-strike": ["@tiptap/extension-strike@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1" } }, "sha512-+R5LG0ZW9SDZc4weA79uq6uUduVsCEph9tRcoQCRA82IVIiPYSTxTLew9odalmk/Mc7vdZvOK5jjtO5jUVw/rg=="],
 
-    "@tiptap/extension-subscript": ["@tiptap/extension-subscript@3.0.9", "", { "peerDependencies": { "@tiptap/core": "^3.0.9", "@tiptap/pm": "^3.0.9" } }, "sha512-FJi6TH5VnAGtqD7c8TX0JJGkabVTC69lEoSel8RUbK9P+NHk0hh1PEyCjHSNhGinepoB6GIi6+skvXHIkJb5xw=="],
+    "@tiptap/extension-subscript": ["@tiptap/extension-subscript@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-EX3GPey4Gp9W04zM2MsP5OfMnwGtQTh1Q0ZokJAdENHpyXbche9WjK31FTzwEmTSqlU5stSsH5KwhSYlDwm5rA=="],
 
-    "@tiptap/extension-superscript": ["@tiptap/extension-superscript@3.0.9", "", { "peerDependencies": { "@tiptap/core": "^3.0.9", "@tiptap/pm": "^3.0.9" } }, "sha512-an3ZLXkgO9eLxRDeWelxlzCSdGlVptPMfcg/d315SnjBKRhXJbBirLxQsYfb5CF/cGJ56Qj3TvewfKPITP5POw=="],
+    "@tiptap/extension-superscript": ["@tiptap/extension-superscript@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-NNFv58LM/7JMu4aq9Apq8yuaB8MDL5dvVZ7R6qMuQNZDVGAGgoiBqtglA1RXldNl/9IFcVg67rT8oF86qykYKA=="],
 
-    "@tiptap/extension-table": ["@tiptap/extension-table@3.0.9", "", { "peerDependencies": { "@tiptap/core": "^3.0.9", "@tiptap/pm": "^3.0.9" } }, "sha512-jygDvj9MIwMlzs2c+4MZwXCXI6sc7LcKgPFoJ93qiCn6CZrDwaX3XzxXi0VAg7MexsUi1nVaGZQk/gv+Pf3rKw=="],
+    "@tiptap/extension-table": ["@tiptap/extension-table@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-vaaMtQ2KnSSr8WVwgWf7NYNzPwrHx/6T0ekA5CxV8qNUEpXIaLXa5+tE7tJHWEdNR2KY3gUJ46D3lfOkxyFrBQ=="],
 
-    "@tiptap/extension-table-cell": ["@tiptap/extension-table-cell@3.0.9", "", { "peerDependencies": { "@tiptap/extension-table": "^3.0.9" } }, "sha512-3prTFcDCBdZJD+nzkFWFejbEVMbfuNI73GPce+Pk3hLy4cSXFnF0QKjdG8oBoAWULMIsE4FPyY3enQJ4brI6ew=="],
+    "@tiptap/extension-table-cell": ["@tiptap/extension-table-cell@3.20.0", "", { "peerDependencies": { "@tiptap/extension-table": "^3.20.0" } }, "sha512-9Dg4zda3UWwtpBwSG7b9BeQy5oT27a/yEIBeARuxe19bloMLZgqpPRtnSrOK0OAITtVnjA+NZdKPcVLRMS2E8A=="],
 
-    "@tiptap/extension-table-header": ["@tiptap/extension-table-header@3.0.9", "", { "peerDependencies": { "@tiptap/extension-table": "^3.0.9" } }, "sha512-yPLDzw1EHM6MtuqQIMTmI1ZOAg7ReY09CdYLGtMbSdcLvrg1afg/oOc7K5qSt5qOcLYHW8TJlyykjfhz/qoQtg=="],
+    "@tiptap/extension-table-header": ["@tiptap/extension-table-header@3.20.0", "", { "peerDependencies": { "@tiptap/extension-table": "^3.20.0" } }, "sha512-2tVHHlihpeHO/gh2uU46gAX3NTGdKR+yDmfLlO2l0QAvx2TXNfNzX2pOM4MmyostW5Ko9TCWV4x0D9h3IQDhPw=="],
 
-    "@tiptap/extension-table-row": ["@tiptap/extension-table-row@3.0.9", "", { "peerDependencies": { "@tiptap/extension-table": "^3.0.9" } }, "sha512-BfaKJqYGjWa5TjGRjNZzbYwaExp29VV1WlJsR7SjdQ74DhY70/cth1Jt70LHSpTfJeclwbYwGOGVdXZqTwUtWA=="],
+    "@tiptap/extension-table-row": ["@tiptap/extension-table-row@3.20.0", "", { "peerDependencies": { "@tiptap/extension-table": "^3.20.0" } }, "sha512-clkfQahkYW/U48QBh1rPZv3AWWSC9AqGKp2DLTH/SGIorM/NwI0jpPtBETMlvowyQu0ivlH9B896smEph+Do2A=="],
 
     "@tiptap/extension-text": ["@tiptap/extension-text@3.18.0", "", { "peerDependencies": { "@tiptap/core": "^3.18.0" } }, "sha512-9TvctdnBCwK/zyTi9kS7nGFNl5OvGM8xE0u38ZmQw5t79JOqJHgOroyqMjw8LHK/1PWrozfNCmsZbpq4IZuKXw=="],
 
-    "@tiptap/extension-text-align": ["@tiptap/extension-text-align@3.0.9", "", { "peerDependencies": { "@tiptap/core": "^3.0.9" } }, "sha512-QQBk8orIdntL3tPzGkKIqEogqArvO/x4dfvbAA2K0DqvS9uGJ3Qp4X6Twv+BIHLjeyhZl/z48vEMB+bjwvqg+w=="],
+    "@tiptap/extension-text-align": ["@tiptap/extension-text-align@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0" } }, "sha512-4s0r+bovtH6yeGDUD+Ui8j5WOV5koB5P6AuzOMqoLwaFGRSkKf64ly6DXjjmjIgnYCLZN/XO6llaQKVVdvad2g=="],
 
-    "@tiptap/extension-text-style": ["@tiptap/extension-text-style@3.0.9", "", { "peerDependencies": { "@tiptap/core": "^3.0.9" } }, "sha512-x7SZLS537c7w789n8re0IktmkBZqz98dux/hwpFAcC4oL06YPjFG7Dy9mAiKcsKqKWI0eAyTQvMybz+TJusBbw=="],
+    "@tiptap/extension-text-style": ["@tiptap/extension-text-style@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0" } }, "sha512-zyWW1a6W+kaXAn3wv2svJ1XuVMapujftvH7Xn2Q3QmKKiDkO+NiFkrGe8BhMopu8Im51nO3NylIgVA0X1mS1rQ=="],
 
     "@tiptap/extension-underline": ["@tiptap/extension-underline@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1" } }, "sha512-+PvHyVozHyxJ9oWCIQx5JHBZ7LAa/sFJUOFaKyfmel4gL9AbP52MmvrciXARlZHd1WCULJtdbLan0+x5/D/9hQ=="],
 
@@ -2760,7 +2703,7 @@
 
     "@tiptap/pm": ["@tiptap/pm@3.23.1", "", { "dependencies": { "prosemirror-changeset": "^2.3.0", "prosemirror-commands": "^1.6.2", "prosemirror-dropcursor": "^1.8.1", "prosemirror-gapcursor": "^1.3.2", "prosemirror-history": "^1.4.1", "prosemirror-keymap": "^1.2.2", "prosemirror-model": "^1.24.1", "prosemirror-schema-list": "^1.5.0", "prosemirror-state": "^1.4.3", "prosemirror-tables": "^1.6.4", "prosemirror-transform": "^1.10.2", "prosemirror-view": "^1.38.1" } }, "sha512-8G+TkNsUHHAAJYREpA6fw+Dw/m2Y3Go4/QMQM8RYepid+wTeE1wSv7sBA/CBrphhYmJSWeTyCPtgQIxnTJXMCA=="],
 
-    "@tiptap/react": ["@tiptap/react@3.0.9", "", { "dependencies": { "@types/use-sync-external-store": "^0.0.6", "fast-deep-equal": "^3.1.3", "use-sync-external-store": "^1.4.0" }, "optionalDependencies": { "@tiptap/extension-bubble-menu": "^3.0.9", "@tiptap/extension-floating-menu": "^3.0.9" }, "peerDependencies": { "@tiptap/core": "^3.0.9", "@tiptap/pm": "^3.0.9", "react": "^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-BbvWPSgYGvd9m8fPXKI81gf9KP+1SMCPpscbtbbhPyxiW2ziY+jwo+i7MwVI73P89hWAJCy/43UnOde438HmOA=="],
+    "@tiptap/react": ["@tiptap/react@3.20.0", "", { "dependencies": { "@types/use-sync-external-store": "^0.0.6", "fast-equals": "^5.3.3", "use-sync-external-store": "^1.4.0" }, "optionalDependencies": { "@tiptap/extension-bubble-menu": "^3.20.0", "@tiptap/extension-floating-menu": "^3.20.0" }, "peerDependencies": { "@tiptap/core": "^3.20.0", "@tiptap/pm": "^3.20.0", "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0", "@types/react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0", "react": "^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-jFLNzkmn18zqefJwPje0PPd9VhZ7Oy28YHiSvSc7YpBnQIbuN/HIxZ2lrOsKyEHta0WjRZjfU5X1pGxlbcGwOA=="],
 
     "@tiptap/starter-kit": ["@tiptap/starter-kit@3.18.0", "", { "dependencies": { "@tiptap/core": "^3.18.0", "@tiptap/extension-blockquote": "^3.18.0", "@tiptap/extension-bold": "^3.18.0", "@tiptap/extension-bullet-list": "^3.18.0", "@tiptap/extension-code": "^3.18.0", "@tiptap/extension-code-block": "^3.18.0", "@tiptap/extension-document": "^3.18.0", "@tiptap/extension-dropcursor": "^3.18.0", "@tiptap/extension-gapcursor": "^3.18.0", "@tiptap/extension-hard-break": "^3.18.0", "@tiptap/extension-heading": "^3.18.0", "@tiptap/extension-horizontal-rule": "^3.18.0", "@tiptap/extension-italic": "^3.18.0", "@tiptap/extension-link": "^3.18.0", "@tiptap/extension-list": "^3.18.0", "@tiptap/extension-list-item": "^3.18.0", "@tiptap/extension-list-keymap": "^3.18.0", "@tiptap/extension-ordered-list": "^3.18.0", "@tiptap/extension-paragraph": "^3.18.0", "@tiptap/extension-strike": "^3.18.0", "@tiptap/extension-text": "^3.18.0", "@tiptap/extension-underline": "^3.18.0", "@tiptap/extensions": "^3.18.0", "@tiptap/pm": "^3.18.0" } }, "sha512-LctpCelqI/5nHEeZgCPiwI1MmTjGr6YCIBGWmS5s4DJE7NfevEkwomR/C05QKdVUwPhpCXIMeS1+h/RYqRo1KA=="],
 
@@ -3198,7 +3141,7 @@
 
     "dom-accessibility-api": ["dom-accessibility-api@0.6.3", "", {}, "sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w=="],
 
-    "dom-helpers": ["dom-helpers@3.4.0", "", { "dependencies": { "@babel/runtime": "^7.1.2" } }, "sha512-LnuPJ+dwqKDIyotW1VzmOZ5TONUN7CwkCR5hrgawTUbkBGYdeoNLZo6nNfGkCrjtE1nXXaj7iMMpDa8/d9WoIA=="],
+    "dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
 
     "dompurify": ["dompurify@3.4.2", "", { "optionalDependencies": { "@types/trusted-types": "^2.0.7" } }, "sha512-lHeS9SA/IKeIFFyYciHBr2n0v1VMPlSj843HdLOwjb2OxNwdq9Xykxqhk+FE42MzAdHvInbAolSE4mhahPpjXA=="],
 
@@ -3275,6 +3218,8 @@
     "extendable-error": ["extendable-error@0.1.7", "", {}, "sha512-UOiS2in6/Q0FK0R0q6UY9vYpQ21mr/Qn1KOnte7vsACuNJf514WvCCUHSRCPcgjPT2bAhNIJdlE6bVap1GKmeg=="],
 
     "fast-deep-equal": ["fast-deep-equal@3.1.3", "", {}, "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="],
+
+    "fast-equals": ["fast-equals@5.4.0", "", {}, "sha512-jt2DW/aNFNwke7AUd+Z+e6pz39KO5rzdbbFCg2sGafS4mk13MI7Z8O5z9cADNn5lhGODIgLwug6TZO2ctf7kcw=="],
 
     "fast-glob": ["fast-glob@3.3.3", "", { "dependencies": { "@nodelib/fs.stat": "^2.0.2", "@nodelib/fs.walk": "^1.2.3", "glob-parent": "^5.1.2", "merge2": "^1.3.0", "micromatch": "^4.0.8" } }, "sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg=="],
 
@@ -3467,8 +3412,6 @@
     "jiti": ["jiti@2.7.0", "", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ=="],
 
     "jquery": ["jquery@3.7.1", "", {}, "sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg=="],
-
-    "js-combinatorics": ["js-combinatorics@2.1.2", "", {}, "sha512-/1AY2bYwxajoaKjPzvgQ80U7lcucU71ubzFPVgZGmzbDGn3R18ZQUZfD69+4Idg4JfNcq6trwD6I+dRfVnr/tg=="],
 
     "js-tokens": ["js-tokens@10.0.0", "", {}, "sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q=="],
 
@@ -3686,8 +3629,6 @@
 
     "neo-async": ["neo-async@2.6.2", "", {}, "sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw=="],
 
-    "nested-property": ["nested-property@4.0.0", "", {}, "sha512-yFehXNWRs4cM0+dz7QxCd06hTbWbSkV0ISsqBfkntU6TOY4Qm3Q88fRRLOddkGh2Qq6dZvnKVAahfhjcUvLnyA=="],
-
     "nlcst-to-string": ["nlcst-to-string@2.0.4", "", {}, "sha512-3x3jwTd6UPG7vi5k4GEzvxJ5rDA7hVUIRNHPblKuMVP9Z3xmlsd9cgLcpAMkc5uPOBna82EeshROFhsPkbnTZg=="],
 
     "no-case": ["no-case@2.3.2", "", { "dependencies": { "lower-case": "^1.1.1" } }, "sha512-rmTZ9kz+f3rCvK2TD1Ue/oZlns7OGoIWP4fc3llxxRXlOkHKoWPPWJOfFYpITabSow43QJbRIoHQXtt10VldyQ=="],
@@ -3773,8 +3714,6 @@
     "playwright": ["playwright@1.59.1", "", { "dependencies": { "playwright-core": "1.59.1" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw=="],
 
     "playwright-core": ["playwright-core@1.59.1", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg=="],
-
-    "pluralize": ["pluralize@8.0.0", "", {}, "sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA=="],
 
     "postcss": ["postcss@8.5.14", "", { "dependencies": { "nanoid": "^3.3.11", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg=="],
 
@@ -3866,8 +3805,6 @@
 
     "react-konva": ["react-konva@18.2.14", "", { "dependencies": { "@types/react-reconciler": "^0.28.2", "its-fine": "^1.1.1", "react-reconciler": "~0.29.0", "scheduler": "^0.23.0" }, "peerDependencies": { "konva": "^8.0.1 || ^7.2.5 || ^9.0.0 || ^10.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-lBDe/5fTgquMdg1AHI0B16YZdAOvEhWMBWuo12ioyY0icdxcz9Cf12j86fsCJCHdnvjUOlZeC0f5q+siyHbD4Q=="],
 
-    "react-lifecycles-compat": ["react-lifecycles-compat@3.0.4", "", {}, "sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA=="],
-
     "react-measure": ["react-measure@2.5.2", "", { "dependencies": { "@babel/runtime": "^7.2.0", "get-node-dimensions": "^1.2.1", "prop-types": "^15.6.2", "resize-observer-polyfill": "^1.5.0" }, "peerDependencies": { "react": ">0.13.0", "react-dom": ">0.13.0" } }, "sha512-M+rpbTLWJ3FD6FXvYV6YEGvQ5tMayQ3fGrZhRPHrE9bVlBYfDCLuDcgNttYfk8IqfOI03jz6cbpqMRTUclQnaA=="],
 
     "react-portal": ["react-portal@4.3.0", "", { "dependencies": { "prop-types": "^15.5.8" }, "peerDependencies": { "react": "^16.0.0-0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0", "react-dom": "^16.0.0-0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0" } }, "sha512-qs/2uKq1ifB3J1+K8ExfgUvCDZqlqCkfOEhqTELEDTfosloKiuzOzc7hl7IQ/7nohiFZD41BUYU0boAsIsGYHw=="],
@@ -3880,7 +3817,7 @@
 
     "react-test-renderer": ["react-test-renderer@18.2.0", "", { "dependencies": { "react-is": "^18.2.0", "react-shallow-renderer": "^16.15.0", "scheduler": "^0.23.0" }, "peerDependencies": { "react": "^18.2.0" } }, "sha512-JWD+aQ0lh2gvh4NM3bBM42Kx+XybOxCpgYK7F8ugAlpaTSnWsX+39Z4XkOykGZAHrjwwTZT3x3KxswVWxHPUqA=="],
 
-    "react-transition-group": ["react-transition-group@2.9.0", "", { "dependencies": { "dom-helpers": "^3.4.0", "loose-envify": "^1.4.0", "prop-types": "^15.6.2", "react-lifecycles-compat": "^3.0.4" }, "peerDependencies": { "react": ">=15.0.0", "react-dom": ">=15.0.0" } }, "sha512-+HzNTCHpeQyl4MJ/bdE0u6XRMe9+XG/+aL4mCxVN4DnPBQ0/5bfHWPDuOZUzYdMj94daZaZdCCc1Dzt9R/xSSg=="],
+    "react-transition-group": ["react-transition-group@4.4.5", "", { "dependencies": { "@babel/runtime": "^7.5.5", "dom-helpers": "^5.0.1", "loose-envify": "^1.4.0", "prop-types": "^15.6.2" }, "peerDependencies": { "react": ">=16.6.0", "react-dom": ">=16.6.0" } }, "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="],
 
     "read-yaml-file": ["read-yaml-file@1.1.0", "", { "dependencies": { "graceful-fs": "^4.1.5", "js-yaml": "^3.6.1", "pify": "^4.0.1", "strip-bom": "^3.0.0" } }, "sha512-VIMnQi/Z4HT2Fxuwg5KrY174U1VdUIASQVWXXyqtNRtxSr9IYkn1rsI6Tb6HsrHCmB7gVpNwX6JxPTHcH6IoTA=="],
 
@@ -4186,8 +4123,6 @@
 
     "@mui/material/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 
-    "@mui/material/react-transition-group": ["react-transition-group@4.4.5", "", { "dependencies": { "@babel/runtime": "^7.5.5", "dom-helpers": "^5.0.1", "loose-envify": "^1.4.0", "prop-types": "^15.6.2" }, "peerDependencies": { "react": ">=16.6.0", "react-dom": ">=16.6.0" } }, "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="],
-
     "@mui/system/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 
     "@mui/utils/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
@@ -4195,12 +4130,6 @@
     "@pie-element/cli/bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
 
     "@pie-element/element-bundler/@types/node": ["@types/node@22.19.18", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-9v00a+dn2yWVsYDEunWC4g/TcRKVq3r8N5FuZp7u0SGrPvdN9c2yXI9bBuf5Fl0hNCb+QTIePTn5pJs2pwBOQQ=="],
-
-    "@pie-element/multiple-choice/react-transition-group": ["react-transition-group@4.4.5", "", { "dependencies": { "@babel/runtime": "^7.5.5", "dom-helpers": "^5.0.1", "loose-envify": "^1.4.0", "prop-types": "^15.6.2" }, "peerDependencies": { "react": ">=16.6.0", "react-dom": ">=16.6.0" } }, "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="],
-
-    "@pie-element/number-line/react-transition-group": ["react-transition-group@4.4.5", "", { "dependencies": { "@babel/runtime": "^7.5.5", "dom-helpers": "^5.0.1", "loose-envify": "^1.4.0", "prop-types": "^15.6.2" }, "peerDependencies": { "react": ">=16.6.0", "react-dom": ">=16.6.0" } }, "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="],
-
-    "@pie-element/placement-ordering/react-transition-group": ["react-transition-group@4.4.5", "", { "dependencies": { "@babel/runtime": "^7.5.5", "dom-helpers": "^5.0.1", "loose-envify": "^1.4.0", "prop-types": "^15.6.2" }, "peerDependencies": { "react": ">=16.6.0", "react-dom": ">=16.6.0" } }, "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="],
 
     "@pie-element/print-player/@types/node": ["@types/node@22.19.18", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-9v00a+dn2yWVsYDEunWC4g/TcRKVq3r8N5FuZp7u0SGrPvdN9c2yXI9bBuf5Fl0hNCb+QTIePTn5pJs2pwBOQQ=="],
 
@@ -4222,13 +4151,11 @@
 
     "@pie-framework/math-validation/mathjs": ["mathjs@9.5.2", "", { "dependencies": { "@babel/runtime": "^7.15.4", "complex.js": "^2.0.15", "decimal.js": "^10.3.1", "escape-latex": "^1.2.0", "fraction.js": "^4.1.1", "javascript-natural-sort": "^0.7.1", "seedrandom": "^3.0.5", "tiny-emitter": "^2.1.0", "typed-function": "^2.0.0" }, "bin": { "mathjs": "bin/cli.js" } }, "sha512-c0erTq0GP503/Ch2OtDOAn50GIOsuxTMjmE00NI/vKJFSWrDaQHRjx6ai+16xYv70yBSnnpUgHZGNf9FR9IwmA=="],
 
-    "@pie-lib/correct-answer-toggle/react-transition-group": ["react-transition-group@4.4.5", "", { "dependencies": { "@babel/runtime": "^7.5.5", "dom-helpers": "^5.0.1", "loose-envify": "^1.4.0", "prop-types": "^15.6.2" }, "peerDependencies": { "react": ">=16.6.0", "react-dom": ">=16.6.0" } }, "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="],
+    "@pie-lib/editable-html-tip-tap/@tiptap/core": ["@tiptap/core@3.20.0", "", { "peerDependencies": { "@tiptap/pm": "^3.20.0" } }, "sha512-aC9aROgia/SpJqhsXFiX9TsligL8d+oeoI8W3u00WI45s0VfsqjgeKQLDLF7Tu7hC+7F02teC84SAHuup003VQ=="],
 
-    "@pie-lib/editable-html-tip-tap/@tiptap/core": ["@tiptap/core@3.0.9", "", { "peerDependencies": { "@tiptap/pm": "^3.0.9" } }, "sha512-1zdDyILerBcD3P0fu8kCtPLOFj0R5utjexCQ2CZ46pckn/Wk4V+WUBARzhG5Yz2JDkmJIUIcmLBVrL6G1rjJWg=="],
+    "@pie-lib/editable-html-tip-tap/@tiptap/pm": ["@tiptap/pm@3.20.0", "", { "dependencies": { "prosemirror-changeset": "^2.3.0", "prosemirror-collab": "^1.3.1", "prosemirror-commands": "^1.6.2", "prosemirror-dropcursor": "^1.8.1", "prosemirror-gapcursor": "^1.3.2", "prosemirror-history": "^1.4.1", "prosemirror-inputrules": "^1.4.0", "prosemirror-keymap": "^1.2.2", "prosemirror-markdown": "^1.13.1", "prosemirror-menu": "^1.2.4", "prosemirror-model": "^1.24.1", "prosemirror-schema-basic": "^1.2.3", "prosemirror-schema-list": "^1.5.0", "prosemirror-state": "^1.4.3", "prosemirror-tables": "^1.6.4", "prosemirror-trailing-node": "^3.0.0", "prosemirror-transform": "^1.10.2", "prosemirror-view": "^1.38.1" } }, "sha512-jn+2KnQZn+b+VXr8EFOJKsnjVNaA4diAEr6FOazupMt8W8ro1hfpYtZ25JL87Kao/WbMze55sd8M8BDXLUKu1A=="],
 
-    "@pie-lib/editable-html-tip-tap/@tiptap/pm": ["@tiptap/pm@3.0.9", "", { "dependencies": { "prosemirror-changeset": "^2.3.0", "prosemirror-collab": "^1.3.1", "prosemirror-commands": "^1.6.2", "prosemirror-dropcursor": "^1.8.1", "prosemirror-gapcursor": "^1.3.2", "prosemirror-history": "^1.4.1", "prosemirror-inputrules": "^1.4.0", "prosemirror-keymap": "^1.2.2", "prosemirror-markdown": "^1.13.1", "prosemirror-menu": "^1.2.4", "prosemirror-model": "^1.24.1", "prosemirror-schema-basic": "^1.2.3", "prosemirror-schema-list": "^1.5.0", "prosemirror-state": "^1.4.3", "prosemirror-tables": "^1.6.4", "prosemirror-trailing-node": "^3.0.0", "prosemirror-transform": "^1.10.2", "prosemirror-view": "^1.38.1" } }, "sha512-cJdnpGyirRxwi6M4IkyapEK/jhcjFXdfX3uhJp/4uVH1dynNXalV0gE/YnH/yt55kzwvG9OUrwOQt+t1iXgNog=="],
-
-    "@pie-lib/editable-html-tip-tap/@tiptap/starter-kit": ["@tiptap/starter-kit@3.0.9", "", { "dependencies": { "@tiptap/core": "^3.0.9", "@tiptap/extension-blockquote": "^3.0.9", "@tiptap/extension-bold": "^3.0.9", "@tiptap/extension-bullet-list": "^3.0.9", "@tiptap/extension-code": "^3.0.9", "@tiptap/extension-code-block": "^3.0.9", "@tiptap/extension-document": "^3.0.9", "@tiptap/extension-dropcursor": "^3.0.9", "@tiptap/extension-gapcursor": "^3.0.9", "@tiptap/extension-hard-break": "^3.0.9", "@tiptap/extension-heading": "^3.0.9", "@tiptap/extension-horizontal-rule": "^3.0.9", "@tiptap/extension-italic": "^3.0.9", "@tiptap/extension-link": "^3.0.9", "@tiptap/extension-list": "^3.0.9", "@tiptap/extension-list-item": "^3.0.9", "@tiptap/extension-list-keymap": "^3.0.9", "@tiptap/extension-ordered-list": "^3.0.9", "@tiptap/extension-paragraph": "^3.0.9", "@tiptap/extension-strike": "^3.0.9", "@tiptap/extension-text": "^3.0.9", "@tiptap/extension-underline": "^3.0.9", "@tiptap/extensions": "^3.0.9", "@tiptap/pm": "^3.0.9" } }, "sha512-CYg6tV5fYOvkP1gyATkJJj+nFYmwjDKLipQc/r0D/tHKypxefENrm4G7mf4B78zsB/izfk5mW3iujvyeod6EcQ=="],
+    "@pie-lib/editable-html-tip-tap/@tiptap/starter-kit": ["@tiptap/starter-kit@3.20.0", "", { "dependencies": { "@tiptap/core": "^3.20.0", "@tiptap/extension-blockquote": "^3.20.0", "@tiptap/extension-bold": "^3.20.0", "@tiptap/extension-bullet-list": "^3.20.0", "@tiptap/extension-code": "^3.20.0", "@tiptap/extension-code-block": "^3.20.0", "@tiptap/extension-document": "^3.20.0", "@tiptap/extension-dropcursor": "^3.20.0", "@tiptap/extension-gapcursor": "^3.20.0", "@tiptap/extension-hard-break": "^3.20.0", "@tiptap/extension-heading": "^3.20.0", "@tiptap/extension-horizontal-rule": "^3.20.0", "@tiptap/extension-italic": "^3.20.0", "@tiptap/extension-link": "^3.20.0", "@tiptap/extension-list": "^3.20.0", "@tiptap/extension-list-item": "^3.20.0", "@tiptap/extension-list-keymap": "^3.20.0", "@tiptap/extension-ordered-list": "^3.20.0", "@tiptap/extension-paragraph": "^3.20.0", "@tiptap/extension-strike": "^3.20.0", "@tiptap/extension-text": "^3.20.0", "@tiptap/extension-underline": "^3.20.0", "@tiptap/extensions": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-W4+1re35pDNY/7rpXVg+OKo/Fa4Gfrn08Bq3E3fzlJw6gjE3tYU8dY9x9vC2rK9pd9NOp7Af11qCFDaWpohXkw=="],
 
     "@pie-lib/editable-html-tip-tap/react-jss": ["react-jss@8.6.1", "", { "dependencies": { "hoist-non-react-statics": "^2.5.0", "jss": "^9.7.0", "jss-preset-default": "^4.3.0", "prop-types": "^15.6.0", "theming": "^1.3.0" }, "peerDependencies": { "react": ">=0.13" } }, "sha512-SH6XrJDJkAphp602J14JTy3puB2Zxz1FkM3bKVE8wON+va99jnUTKWnzGECb3NfIn9JPR5vHykge7K3/A747xQ=="],
 
@@ -4255,8 +4182,6 @@
     "@pie-lib/editable-html-tiptap-svelte/@tiptap/extension-text-style": ["@tiptap/extension-text-style@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1" } }, "sha512-q3GQQo+lBhrtNkqdbhYWnv/byG/RYAxVnNhYPQMubRzavGdXBU8NhpJ/47YYjPimG1sahzcs2aqy7amVd8ri/A=="],
 
     "@pie-lib/editable-html-tiptap-svelte/@tiptap/starter-kit": ["@tiptap/starter-kit@3.23.1", "", { "dependencies": { "@tiptap/core": "^3.23.1", "@tiptap/extension-blockquote": "^3.23.1", "@tiptap/extension-bold": "^3.23.1", "@tiptap/extension-bullet-list": "^3.23.1", "@tiptap/extension-code": "^3.23.1", "@tiptap/extension-code-block": "^3.23.1", "@tiptap/extension-document": "^3.23.1", "@tiptap/extension-dropcursor": "^3.23.1", "@tiptap/extension-gapcursor": "^3.23.1", "@tiptap/extension-hard-break": "^3.23.1", "@tiptap/extension-heading": "^3.23.1", "@tiptap/extension-horizontal-rule": "^3.23.1", "@tiptap/extension-italic": "^3.23.1", "@tiptap/extension-link": "^3.23.1", "@tiptap/extension-list": "^3.23.1", "@tiptap/extension-list-item": "^3.23.1", "@tiptap/extension-list-keymap": "^3.23.1", "@tiptap/extension-ordered-list": "^3.23.1", "@tiptap/extension-paragraph": "^3.23.1", "@tiptap/extension-strike": "^3.23.1", "@tiptap/extension-text": "^3.23.1", "@tiptap/extension-underline": "^3.23.1", "@tiptap/extensions": "^3.23.1", "@tiptap/pm": "^3.23.1" } }, "sha512-CURePHQagBaZIDJrHH3of4Nmi0VYGpZ6yBlkdFxFHBxY9aeG2/h5kn+oHo8GbzkSFsRV+9olzRgDTOULVgs8pQ=="],
-
-    "@pie-lib/render-ui/react-transition-group": ["react-transition-group@4.4.5", "", { "dependencies": { "@babel/runtime": "^7.5.5", "dom-helpers": "^5.0.1", "loose-envify": "^1.4.0", "prop-types": "^15.6.2" }, "peerDependencies": { "react": ">=16.6.0", "react-dom": ">=16.6.0" } }, "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="],
 
     "@pie-lib/test-utils/@testing-library/jest-dom": ["@testing-library/jest-dom@5.17.0", "", { "dependencies": { "@adobe/css-tools": "^4.0.1", "@babel/runtime": "^7.9.2", "@types/testing-library__jest-dom": "^5.9.1", "aria-query": "^5.0.0", "chalk": "^3.0.0", "css.escape": "^1.5.1", "dom-accessibility-api": "^0.5.6", "lodash": "^4.17.15", "redent": "^3.0.0" } }, "sha512-ynmNeT7asXyH3aSVv4vvX4Rb+0qjOhdNHnO/3vuZNqPmhDpV/+rCSGwQ7bLcmU2cJ4dvoheIO85LQj0IbJHEtg=="],
 
@@ -4306,9 +4231,13 @@
 
     "@tiptap/extension-horizontal-rule/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
+    "@tiptap/extension-image/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
+
     "@tiptap/extension-italic/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
     "@tiptap/extension-link/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
+
+    "@tiptap/extension-list/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
     "@tiptap/extension-list-keymap/@tiptap/extension-list": ["@tiptap/extension-list@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1", "@tiptap/pm": "3.23.1" } }, "sha512-v1AeXPpagslgRZdOp7WdjCoO4TjjNP8RM2R6Gqx0/inGaNXnM8zCMshOxZlAb03Ad7kq/4RGJmkpM/Jjsi6dEQ=="],
 
@@ -4318,9 +4247,21 @@
 
     "@tiptap/extension-strike/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
+    "@tiptap/extension-subscript/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
+
+    "@tiptap/extension-superscript/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
+
+    "@tiptap/extension-table/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
+
+    "@tiptap/extension-text-align/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
+
+    "@tiptap/extension-text-style/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
+
     "@tiptap/extension-underline/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
     "@tiptap/extensions/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
+
+    "@tiptap/react/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
     "@tiptap/starter-kit/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
@@ -4480,15 +4421,7 @@
 
     "@jest/types/chalk/supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
 
-    "@mui/material/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
-
     "@pie-element/element-bundler/@types/node/undici-types": ["undici-types@6.21.0", "", {}, "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="],
-
-    "@pie-element/multiple-choice/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
-
-    "@pie-element/number-line/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
-
-    "@pie-element/placement-ordering/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
 
     "@pie-element/print-player/@types/node/undici-types": ["undici-types@6.21.0", "", {}, "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="],
 
@@ -4515,8 +4448,6 @@
     "@pie-element/venn-classification/@tiptap/starter-kit/@tiptap/extension-list-item": ["@tiptap/extension-list-item@3.23.1", "", { "peerDependencies": { "@tiptap/extension-list": "3.23.1" } }, "sha512-Fk/884un5OSLCFxe2TbOmfp3sLMB5b76CnMjaSrvgfiaZnsV2WlJZGPXxCAPbxNIATTykNlSBsVuMBO7we64Vg=="],
 
     "@pie-element/venn-classification/@tiptap/starter-kit/@tiptap/extension-text": ["@tiptap/extension-text@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1" } }, "sha512-k1Ki9bBV6mLz1mFP+Laqh1YHJ2MY0P8XzaMqpkgMndEBIJQ3XcpWQc5bfAlRnYcOI9ZXDbAgQ8CwgArxHmQWCQ=="],
-
-    "@pie-lib/correct-answer-toggle/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
 
     "@pie-lib/editable-html-tip-tap/@tiptap/starter-kit/@tiptap/core": ["@tiptap/core@3.23.1", "", { "peerDependencies": { "@tiptap/pm": "3.23.1" } }, "sha512-8YvSGiJTeU5wPuGiYIIYgyiyaaT1CAx+kJL0bju0w871OvbJJj0T/ywhcmxGXW6pOal2T8X2xt9ZqE+vib0VJw=="],
 
@@ -4545,8 +4476,6 @@
     "@pie-lib/editable-html-tiptap-svelte/@tiptap/starter-kit/@tiptap/extension-list-item": ["@tiptap/extension-list-item@3.23.1", "", { "peerDependencies": { "@tiptap/extension-list": "3.23.1" } }, "sha512-Fk/884un5OSLCFxe2TbOmfp3sLMB5b76CnMjaSrvgfiaZnsV2WlJZGPXxCAPbxNIATTykNlSBsVuMBO7we64Vg=="],
 
     "@pie-lib/editable-html-tiptap-svelte/@tiptap/starter-kit/@tiptap/extension-text": ["@tiptap/extension-text@3.23.1", "", { "peerDependencies": { "@tiptap/core": "3.23.1" } }, "sha512-k1Ki9bBV6mLz1mFP+Laqh1YHJ2MY0P8XzaMqpkgMndEBIJQ3XcpWQc5bfAlRnYcOI9ZXDbAgQ8CwgArxHmQWCQ=="],
-
-    "@pie-lib/render-ui/react-transition-group/dom-helpers": ["dom-helpers@5.2.1", "", { "dependencies": { "@babel/runtime": "^7.8.7", "csstype": "^3.0.2" } }, "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA=="],
 
     "@pie-lib/test-utils/@testing-library/jest-dom/dom-accessibility-api": ["dom-accessibility-api@0.5.16", "", {}, "sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg=="],
 

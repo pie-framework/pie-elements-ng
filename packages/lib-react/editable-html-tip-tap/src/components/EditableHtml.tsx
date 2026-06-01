@@ -298,29 +298,31 @@ export const EditableHtml = (props) => {
       editable: !props.disabled,
       content: normalizeInitialMarkup(props.markup),
       onUpdate: ({ editor, transaction }) => {
-        if (transaction.isDone || props.markup !== editor.getHTML()) {
+        if (transaction.isDone) {
           props.onChange?.(editor.getHTML());
         }
       },
-      onBlur: debounce(({ editor }) => {
+      onBlur: ({ editor }) => {
         const otherToolbarOpened =
           editor._insertingImage ||
           editor._toolbarOpened ||
           editor.isActive('inline_dropdown') ||
           editor.isActive('explicit_constructed_response');
 
-        if (otherToolbarOpened) {
+        if (otherToolbarOpened || !editor.schema) {
           return;
         }
 
-        if (props.markup !== editor.getHTML()) {
-          props.onChange?.(editor.getHTML());
+        const html = editor.getHTML();
+
+        if (props.markup !== html) {
+          props.onChange?.(html);
         }
 
         if (toolbarOptsToUse.doneOn === 'blur') {
-          props.onDone?.(editor.getHTML());
+          props.onDone?.(html);
         }
-      }, 200),
+      },
     },
     [props.charactersLimit],
   );
@@ -438,7 +440,7 @@ const StyledEditorContent: any = styled(EditorContent, {
       },
     }),
     ...(separateParagraph && {
-      '& > div:has(+ div)': {
+      '& > p:has(+ p)': {
         marginBottom: '1em',
       },
     }),

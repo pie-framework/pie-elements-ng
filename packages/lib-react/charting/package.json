@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/charting",
-  "version": "7.0.2",
+  "version": "7.0.5",
   "description": "charting",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -33,7 +33,7 @@
     "d3-time": "^3.1.0",
     "d3-interpolate": "^3.0.1",
     "d3-shape": "^3.2.0",
-    "prop-types": "^15.6.1"
+    "prop-types": "^15.8.1"
   },
   "type": "module",
   "main": "./dist/index.js",

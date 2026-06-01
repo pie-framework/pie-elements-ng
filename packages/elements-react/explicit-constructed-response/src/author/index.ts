@@ -65,8 +65,6 @@ export default class ExplicitConstructedResponse extends HTMLElement {
     this._root = null;
     this._model = ExplicitConstructedResponse.prepareModel();
     this._configuration = sensibleDefaults.configuration;
-    this.onModelChanged = this.onModelChanged.bind(this);
-    this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
   set model(s) {
@@ -122,13 +120,16 @@ export default class ExplicitConstructedResponse extends HTMLElement {
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
-    this._model = ExplicitConstructedResponse.prepareModel(m);
+  onModelChanged: any = (m, reset)=> {
+    this._model = ExplicitConstructedResponse.prepareModel({
+      ...this._model,
+      ...m,
+    });
     this._render();
     this.dispatchModelUpdated(reset);
-  }
+  };
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged: any =(c) => {
     this._configuration = c;
 
     const newInputConfig = this._configuration?.responseAreaInputConfiguration?.inputConfiguration;
@@ -139,7 +140,7 @@ export default class ExplicitConstructedResponse extends HTMLElement {
     };
 
     this.onModelChanged(this._model);
-  }
+  };
 
   /** @param {done, progress, file} handler */
   insertImage(handler) {

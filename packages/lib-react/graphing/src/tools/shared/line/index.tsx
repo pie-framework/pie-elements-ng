@@ -17,11 +17,11 @@ import { correct, disabled, disabledSecondary, incorrect, missing } from '../sty
 import ReactDOM from 'react-dom';
 import MarkLabel from '../../../mark-label.js';
 import { color } from '@pie-lib/render-ui';
-import { equalPoints, getMiddleOfTwoPoints, sameAxes } from '../../../utils.js';
+import { equalPoints, getMiddleOfTwoPoints, sameAxes, stripEmptyLabel } from '../../../utils.js';
 import { styled } from '@mui/material/styles';
 
 const StyledLineGroup: any = styled('g')(({ disabled, correctness }) => ({
-  '& line': {
+  '& line:not(.hit-area)': {
     fill: 'transparent',
     stroke: color.defaults.BLACK,
     strokeWidth: 3,
@@ -32,23 +32,23 @@ const StyledLineGroup: any = styled('g')(({ disabled, correctness }) => ({
     },
   },
   ...(disabled && {
-    '& line': {
+    '& line:not(.hit-area)': {
       ...disabledSecondary('stroke'),
       strokeWidth: 2,
     },
   }),
   ...(correctness === 'correct' && {
-    '& line': {
+    '& line:not(.hit-area)': {
       ...correct('stroke'),
     },
   }),
   ...(correctness === 'incorrect' && {
-    '& line': {
+    '& line:not(.hit-area)': {
       ...incorrect('stroke'),
     },
   }),
   ...(correctness === 'missing' && {
-    '& line': {
+    '& line:not(.hit-area)': {
       ...missing('stroke'),
       strokeWidth: 1,
       strokeDasharray: '4 3',
@@ -314,7 +314,7 @@ export const lineBase = (Comp, opts) => {
     };
 
     clickPoint: any = (point, type, data) => {
-      const { changeMarkProps, disabled, from, to, labelModeEnabled, limitLabeling, onClick } = this.props;
+      const { changeMarkProps, disabled, from, to, middle, labelModeEnabled, limitLabeling, onClick } = this.props;
 
       if (!labelModeEnabled) {
         onClick(point || data);
@@ -334,7 +334,12 @@ export const lineBase = (Comp, opts) => {
         point = { ...point, ...getMiddleOfTwoPoints(from, to) };
       }
 
-      changeMarkProps({ from, to, [type]: { label: '', ...point } });
+      changeMarkProps({
+        from: stripEmptyLabel(from),
+        to: stripEmptyLabel(to),
+        middle: stripEmptyLabel(middle),
+        [type]: { label: '', ...point },
+      });
 
       if (this.input[type]) {
         this.input[type].focus();

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/charting",
-  "version": "12.1.0-next.1",
+  "version": "12.1.0",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -18,7 +18,7 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "prop-types": "^15.6.1"
+    "prop-types": "^15.8.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
