@@ -191,7 +191,6 @@ class RespAreaToolbar extends React.Component {
     onDone: PropTypes.func,
     choices: PropTypes.array,
     onAddChoice: PropTypes.func.isRequired,
-    onCheck: PropTypes.func,
     editorCallback: PropTypes.func,
     onRemoveChoice: PropTypes.func.isRequired,
     onSelectChoice: PropTypes.func.isRequired,
@@ -237,6 +236,21 @@ class RespAreaToolbar extends React.Component {
     renderMath(domNode);
   }
 
+  componentWillUnmount() {
+    this.commitPendingEdit();
+  }
+
+  commitPendingEdit: any = () => {
+    const { editedChoiceIndex } = this.state;
+
+    if (editedChoiceIndex < 0 || !this.editorRef?.getHTML) {
+      return;
+    }
+
+    this.preventDone = false;
+    this.onDone(this.editorRef.getHTML() || '');
+  };
+
   onRespAreaChange: any = (respAreaMarkup) => {
     this.setState({ respAreaMarkup });
   };
@@ -257,7 +271,6 @@ class RespAreaToolbar extends React.Component {
 
     if (editedChoiceIndex >= 0 && choices?.[editedChoiceIndex]?.correct) {
       editor.commands.updateAttributes('inline_dropdown', { value: val });
-      onToolbarDone(false);
     }
 
     if (!isEmpty(onlyText)) {
@@ -273,7 +286,6 @@ class RespAreaToolbar extends React.Component {
 
     editor.commands.updateAttributes('inline_dropdown', { value: newValue });
 
-    onToolbarDone(false);
     onSelectChoice(index);
     editor.commands.refreshResponseArea();
   };
@@ -283,7 +295,6 @@ class RespAreaToolbar extends React.Component {
 
     if (isEqual(val, node.attrs.value)) {
       editor.commands.updateAttributes('inline_dropdown', { value: null });
-      onToolbarDone(false);
     }
 
     onRemoveChoice(index);
@@ -293,6 +304,7 @@ class RespAreaToolbar extends React.Component {
   onEditChoice: any = (val, index) => {
     const { editedChoiceIndex } = this.state;
 
+    this.clickedInside = true;
     this.preventDone = true;
 
     if (editedChoiceIndex >= 0) {
@@ -325,19 +337,14 @@ class RespAreaToolbar extends React.Component {
       return;
     }
 
-    const { node, choices, onCheck, onToolbarDone, editor } = this.props;
-    const correctResponse = (choices || []).find((choice) => choice.correct);
+    const { editedChoiceIndex } = this.state;
+
+    if (editedChoiceIndex >= 0) {
+      this.commitPendingEdit();
+      return;
+    }
 
     this.onAddChoice();
-    if (!choices || (choices && choices.length < 2) || !correctResponse) {
-      onCheck(() => {
-        const { tr } = editor.state;
-
-        tr.deleteSelection();
-        editor.view.dispatch(tr);
-        onToolbarDone(false);
-      });
-    }
   };
 
   onClickInside: any = () => {
@@ -361,6 +368,7 @@ class RespAreaToolbar extends React.Component {
 
     return (
       <ResponseContainer
+        data-inline-dropdown-toolbar=""
         style={{
           ...toolbarStyle,
           backgroundColor: '#E0E1E6',
@@ -403,18 +411,18 @@ class RespAreaToolbar extends React.Component {
               this.onDone(val);
             }}
             onBlur={(e) => {
-              if (!e.relatedTarget) {
-                return;
-              }
-
               const isInInsertCharacter = !!(e.relatedTarget && e.relatedTarget.closest('.insert-character-dialog'));
               const isInDoneButton = !!(e.relatedTarget && e.relatedTarget.closest('[aria-label="Done"]'));
 
-              this.preventDone = isInInsertCharacter || isInDoneButton;
-              if (isInInsertCharacter || isInDoneButton) {
-                this.clickedInside = true;
+              if (e.relatedTarget) {
+                this.preventDone = isInInsertCharacter || isInDoneButton;
+
+                if (isInInsertCharacter || isInDoneButton) {
+                  this.clickedInside = true;
+                }
               }
-              this.onBlur(e);
+
+              this.onBlur();
             }}
             placeholder="Add Choice"
             pluginProps={getPluginProps(responseAreaInputConfiguration?.inputConfiguration, baseInputConfiguration)}
