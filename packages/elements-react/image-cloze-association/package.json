@@ -31,22 +31,22 @@
   },
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./delivery": {
-      "development": "./src/delivery/index.ts",
       "types": "./dist/delivery/index.d.ts",
       "default": "./dist/delivery/index.js"
     },
     "./author": {
-      "development": "./src/author/index.ts",
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"
     },
     "./controller": {
-      "development": "./src/controller/index.ts",
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller/index.js"
+    },
+    "./controller.js": {
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
     }
@@ -55,8 +55,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "sideEffects": false,
   "devDependencies": {

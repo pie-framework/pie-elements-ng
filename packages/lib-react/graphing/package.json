@@ -51,8 +51,7 @@
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "sideEffects": false,
   "scripts": {

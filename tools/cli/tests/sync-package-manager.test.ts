@@ -114,7 +114,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
     });
   });
 
-  it('preserves existing development export conditions', async () => {
+  it('removes development export conditions and preserves controller dist aliases', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
 
@@ -157,8 +157,19 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.exports['.'].development).toBe('./src/index.ts');
-    expect(pkgJson.exports['./controller'].development).toBe('./src/controller/index.ts');
+    expect(pkgJson.exports['.']).toEqual({
+      types: './dist/index.d.ts',
+      default: './dist/index.js',
+    });
+    expect(pkgJson.exports['./controller']).toEqual({
+      types: './dist/controller/index.d.ts',
+      default: './dist/controller/index.js',
+    });
+    expect(pkgJson.exports['./controller.js']).toEqual({
+      types: './dist/controller/index.d.ts',
+      default: './dist/controller/index.js',
+    });
+    expect(pkgJson.files).toEqual(['dist']);
   });
 });
 
