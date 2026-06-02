@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/render-ui",
-  "version": "6.1.1",
+  "version": "6.1.0",
   "description": "Some shared ui elements when rendering - but not worthy of their own package yet.",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -27,7 +27,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "sideEffects": false,
   "scripts": {

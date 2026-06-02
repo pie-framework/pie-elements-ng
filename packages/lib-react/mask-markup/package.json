@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/mask-markup",
-  "version": "3.0.5",
+  "version": "3.0.3",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -32,7 +32,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "sideEffects": false,
   "scripts": {
