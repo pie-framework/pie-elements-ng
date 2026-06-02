@@ -1,5 +1,12 @@
 # @pie-element/ebsr
 
+## 14.2.1-next.2
+
+### Patch Changes
+
+- Updated dependencies [42e1684]
+  - @pie-element/multiple-choice@13.2.1-next.2
+
 ## 14.2.1-next.1
 
 ### Patch Changes

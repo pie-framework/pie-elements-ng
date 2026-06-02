@@ -1,5 +1,11 @@
 # @pie-element/multiple-choice
 
+## 13.2.1-next.2
+
+### Patch Changes
+
+- 42e1684: Include changes and fix dependency issues
+
 ## 13.2.1-next.1
 
 ### Patch Changes
