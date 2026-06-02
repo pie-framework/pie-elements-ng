@@ -1,5 +1,14 @@
 # @pie-element/match-list
 
+## 7.1.1-next.0
+
+### Patch Changes
+
+- Updated dependencies [b34750c]
+  - @pie-lib/correct-answer-toggle@4.0.3-next.0
+  - @pie-lib/drag@4.0.3-next.0
+  - @pie-lib/render-ui@6.1.1-next.0
+
 ## 7.1.1-next.1
 
 ### Patch Changes
