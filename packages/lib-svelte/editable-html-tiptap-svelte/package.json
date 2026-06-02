@@ -1,20 +1,19 @@
 {
   "name": "@pie-lib/editable-html-tiptap-svelte",
   "version": "0.1.2",
+  "private": true,
   "description": "Tiptap-based rich text editor component for Svelte PIE elements",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "sideEffects": [
     "**/*.css"
@@ -41,9 +40,6 @@
     "@tiptap/extension-table-header": "^3.19.0",
     "@tiptap/pm": "^3.19.0",
     "@tiptap/extensions": "^3.20.0"
-  },
-  "peerDependencies": {
-    "svelte": "^5.0.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",

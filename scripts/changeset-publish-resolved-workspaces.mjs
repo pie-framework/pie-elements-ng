@@ -563,7 +563,16 @@ const collectRuntimeWorkspaceDependencyClosure = (targetPackages) => {
         });
       }
 
-      stack.push(dependency.dependencyName);
+      // Only recurse into a workspace dep if it is also being published in this
+      // run. If it is already on npm at the correct version, its published
+      // manifest has already-resolved (non-workspace) deps — there is no need
+      // to walk its local workspace package.json, and doing so would
+      // incorrectly flag transitive workspace:* refs that are irrelevant to
+      // the consumer (e.g. @pie-lib/render-ui@6.1.0 on npm having a local
+      // workspace:* on @pie-lib/math-rendering which hasn't been republished).
+      if (targetPackages.has(dependency.dependencyName)) {
+        stack.push(dependency.dependencyName);
+      }
     }
   }
 
@@ -717,13 +726,24 @@ try {
     explicitPackages.length > 0 ? resolveExplicitPackages() : listVersionBumpedPackages();
 
   if (targetPackages.size === 0) {
-    const explicitHint =
-      explicitPackages.length > 0
-        ? ` (requested RELEASE_PACKAGES=${explicitPackages.join(',')})`
-        : '';
-    throw new Error(
-      `[release] No version-bumped publish targets found${explicitHint}. Refusing to publish all packages.`
+    // Explicit RELEASE_PACKAGES selection that resolved to nothing is a user
+    // error (typo, all selected packages already private, etc.) — fail loud.
+    if (explicitPackages.length > 0) {
+      throw new Error(
+        `[release] No publish targets resolved for requested RELEASE_PACKAGES=${explicitPackages.join(',')}.`
+      );
+    }
+    // Implicit run with no version bumps detected. This is the normal "nothing
+    // to publish" state — exit cleanly so changesets/action's "publish any
+    // unpublished packages" fallback doesn't surface as a workflow failure.
+    console.log(
+      '[release] No version-bumped publish targets detected. Nothing to publish; exiting cleanly.'
     );
+    restoreWorkspaceRanges();
+    if (changedFiles.length > 0) {
+      console.log('[release] Restored workspace ranges after preflight');
+    }
+    process.exit(0);
   }
 
   const packageList = [...targetPackages.entries()].map(([name, version]) => ({ name, version }));

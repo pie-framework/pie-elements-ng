@@ -78,10 +78,14 @@
     "@pie-element/shared-theming-mui": "0.1.0",
     "@pie-element/shared-types": "0.1.0",
     "@pie-element/shared-utils": "0.1.0",
-    "@pie-element/cli": "0.1.1"
+    "@pie-element/cli": "0.1.1",
+    "@pie-element/element-a11y-demo": "0.1.1",
+    "@pie-element/learnosity-parity-demo": "0.1.1"
   },
   "changesets": [
     "20260501125058-pie-element-multiple-choice",
+    "20260522080545-pie-element-shared-controller-utils-",
+    "20260526072424-pie-element-shared-controller-utils-",
     "common-cougars-hang",
     "floppy-sites-watch",
     "orange-toes-dream"

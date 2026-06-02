@@ -44,13 +44,32 @@ interface PieEnvironment {
 Base interface that all element models extend.
 
 ```typescript
+interface AccessibilityCatalogCard {
+  catalog: string;                  // e.g., "spoken"
+  language?: string;                // BCP 47 language tag, e.g., "en-US"
+  content: string;                  // Authored alternative content, often SSML
+}
+
+interface AccessibilityCatalog {
+  identifier: string;               // Stable ID referenced by visible content
+  cards: AccessibilityCatalogCard[];
+}
+
 interface PieModel {
   id: string;                     // Unique identifier
   element: string;                // Element type (e.g., "@pie-element/multiple-choice")
+  accessibilityCatalogs?: AccessibilityCatalog[];
 }
 ```
 
 Element-specific models extend this with additional properties.
+
+`accessibilityCatalogs` is an optional, QTI-aligned contract for authored
+accessibility alternatives. PIE players/toolkits can use spoken catalog entries
+to replace visible model content during text-to-speech playback, for example
+when visible math or abbreviated text needs a clearer spoken representation.
+Individual elements are not expected to render this field directly, and default
+models should omit it unless authored content provides catalog entries.
 
 ### PieSession
 

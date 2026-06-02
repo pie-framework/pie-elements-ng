@@ -19,8 +19,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "declarationMap": true,
+    "declarationMap": false,
     "sourceMap": true,
+    "inlineSources": true,
     "isolatedDeclarations": false
   },
   "exclude": ["node_modules", "dist", "build", "esm", ".svelte-kit"]
