@@ -105,6 +105,10 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/controller/index.d.ts',
       default: './dist/controller/index.js',
     };
+    exports['./controller.js'] = {
+      types: './dist/controller/index.d.ts',
+      default: './dist/controller/index.js',
+    };
   }
 
   if (entryPoints.hasConfigure) {
@@ -129,60 +133,6 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
   }
 
   return exports;
-}
-
-function asObjectExports(
-  exportsValue: unknown
-): Record<string, Record<string, unknown> | string> | null {
-  if (!exportsValue || typeof exportsValue !== 'object') {
-    return null;
-  }
-  return exportsValue as Record<string, Record<string, unknown> | string>;
-}
-
-function getDevelopmentCondition(
-  exportsObj: Record<string, Record<string, unknown> | string> | null,
-  exportPath: string
-): string | null {
-  if (!exportsObj) {
-    return null;
-  }
-  const entry = exportsObj[exportPath];
-  if (!entry || typeof entry !== 'object') {
-    return null;
-  }
-  const dev = entry.development;
-  return typeof dev === 'string' ? dev : null;
-}
-
-function preserveDevelopmentExportConditions(
-  generatedExports: Record<string, unknown>,
-  currentExports: unknown,
-  upstreamExports: unknown
-): Record<string, unknown> {
-  const current = asObjectExports(currentExports);
-  const upstream = asObjectExports(upstreamExports);
-
-  for (const [exportPath, exportConfig] of Object.entries(generatedExports)) {
-    if (!exportConfig || typeof exportConfig !== 'object') {
-      continue;
-    }
-    if ('development' in (exportConfig as Record<string, unknown>)) {
-      continue;
-    }
-    const devFromCurrent = getDevelopmentCondition(current, exportPath);
-    const devFromUpstream = getDevelopmentCondition(upstream, exportPath);
-    const development = devFromCurrent ?? devFromUpstream;
-    if (!development) {
-      continue;
-    }
-    generatedExports[exportPath] = {
-      development,
-      ...(exportConfig as Record<string, unknown>),
-    };
-  }
-
-  return generatedExports;
 }
 
 /**
@@ -552,12 +502,10 @@ export async function ensureElementPackageJson(
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
 
-  // Generate exports based on entry points and preserve existing/upstream dev conditions.
-  pkg.exports = preserveDevelopmentExportConditions(
-    generateExportsObject(entryPoints),
-    pkg.exports,
-    upstreamPkg?.exports
-  );
+  // Generate dist-only exports based on entry points. Do not preserve
+  // source-backed `development` conditions; PIE-605 makes raw source paths a
+  // private implementation detail and keeps public package surfaces dist-only.
+  pkg.exports = generateExportsObject(entryPoints);
 
   // Warn when metadata/structure disagree for core capabilities
   const metadataCapabilities = Array.isArray(pieMetadata?.capabilities)
@@ -603,12 +551,9 @@ export async function ensureElementPackageJson(
   pkg.main = './dist/index.js';
   pkg.types = './dist/index.d.ts';
 
-  // Ensure files array
-  const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
-  const normalizedFiles = new Set<string>(files.filter((v): v is string => typeof v === 'string'));
-  normalizedFiles.add('dist');
-  normalizedFiles.add('src');
-  pkg.files = Array.from(normalizedFiles).sort();
+  // Ensure publish surface is dist-only. Source remains available in the repo,
+  // but must not be published as a public package API.
+  pkg.files = ['dist'];
 
   // Set sideEffects
   if (typeof pkg.sideEffects === 'undefined') {
@@ -747,12 +692,9 @@ export async function ensurePieLibPackageJson(
     pkg.dependencies = dependencyOverride;
   }
 
-  // Generate exports and preserve existing/upstream dev conditions where applicable.
-  const exportsObj: Record<string, unknown> = {
-    ...(typeof pkg.exports === 'object' && pkg.exports
-      ? (pkg.exports as Record<string, unknown>)
-      : {}),
-  };
+  // Generate dist-only exports. Pie-lib packages expose only their compiled
+  // top-level entry; raw source paths are intentionally not public.
+  const exportsObj: Record<string, unknown> = {};
 
   exportsObj['.'] = {
     types: './dist/index.d.ts',
@@ -764,14 +706,11 @@ export async function ensurePieLibPackageJson(
   pkg.type = PACKAGE_DEFAULTS.TYPE;
   pkg.main = './dist/index.js';
   pkg.types = './dist/index.d.ts';
-  pkg.exports = preserveDevelopmentExportConditions(exportsObj, pkg.exports, upstreamPkg?.exports);
+  pkg.exports = exportsObj;
 
-  // Ensure files array
-  const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
-  const normalizedFiles = new Set<string>(files.filter((v): v is string => typeof v === 'string'));
-  normalizedFiles.add('dist');
-  normalizedFiles.add('src');
-  pkg.files = Array.from(normalizedFiles).sort();
+  // Ensure publish surface is dist-only. Source remains available in the repo,
+  // but must not be published as a public package API.
+  pkg.files = ['dist'];
 
   if (typeof pkg.sideEffects === 'undefined') {
     pkg.sideEffects = PACKAGE_DEFAULTS.SIDE_EFFECTS;
