@@ -142,7 +142,7 @@ jobs:
             manifest_diff="$(git diff -U0 "$before" "$after" -- "$manifest" || true)"
             # Require both removed and added "version" lines to avoid treating
             # metadata-only package.json edits as publish intents.
-            if echo "$manifest_diff" | grep -Eq '^-\\s*"version"\\s*:' && echo "$manifest_diff" | grep -Eq '^\\+\\s*"version"\\s*:'; then
+            if echo "$manifest_diff" | grep -Eq '^-[[:space:]]*"version"[[:space:]]*:' && echo "$manifest_diff" | grep -Eq '^\+[[:space:]]*"version"[[:space:]]*:'; then
               has_version_bumps=true
               break
             fi
