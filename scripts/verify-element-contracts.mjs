@@ -1,47 +1,93 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import { runPublishSurfaceCheck } from './check-publish-surface.mjs';
+import { runSourcemapSourceCheck } from './check-sourcemap-sources.mjs';
+import { createPackageSnapshots } from './lib/package-inspection.mjs';
 
-const steps = [
-  {
-    name: 'NPM packaging surface',
-    command: ['bun', './scripts/check-publish-surface.mjs'],
-  },
+const childSteps = [
   {
     name: 'Controller package contract',
     command: ['bun', 'run', 'cli', 'verify:controllers'],
-    marker: 'verify:controllers',
   },
   {
     name: 'Runtime support export contract',
     command: ['bun', './scripts/verify-runtime-support-exports.mjs'],
   },
-  {
-    name: 'Sourcemap source contract',
-    command: ['bun', './scripts/check-sourcemap-sources.mjs'],
-  },
 ];
 
-const failures = [];
+export const createPackageSnapshotsForContracts = ({ root = process.cwd(), packRunner } = {}) =>
+  createPackageSnapshots({ root, includePackedFiles: true, packRunner });
 
-for (const step of steps) {
-  console.log(`\n== ${step.name} ==`);
-  const result = spawnSync(step.command[0], step.command.slice(1), {
+export const defaultRunChildProcess = (command) =>
+  spawnSync(command[0], command.slice(1), {
     stdio: 'inherit',
     shell: false,
   });
 
-  if (result.status !== 0) {
-    failures.push(step.name);
-  }
-}
+export const createContractSteps = ({
+  root = process.cwd(),
+  snapshots,
+  runChildProcess = defaultRunChildProcess,
+} = {}) => [
+  {
+    name: 'NPM packaging surface',
+    run: (io) => runPublishSurfaceCheck({ root, snapshots, ...io }),
+  },
+  {
+    name: 'Controller package contract',
+    run: () => runChildProcess(childSteps[0].command),
+  },
+  {
+    name: 'Runtime support export contract',
+    run: () => runChildProcess(childSteps[1].command),
+  },
+  {
+    name: 'Sourcemap source contract',
+    run: (io) => runSourcemapSourceCheck({ root, snapshots, ...io }),
+  },
+];
 
-if (failures.length > 0) {
-  console.error('\nPIE element contract verification failed:');
-  for (const failure of failures) {
-    console.error(`- ${failure}`);
-  }
-  process.exit(1);
-}
+export const runElementContractVerification = ({
+  root = process.cwd(),
+  packRunner,
+  runChildProcess = defaultRunChildProcess,
+  log = console.log,
+  error = console.error,
+} = {}) => {
+  const snapshots = createPackageSnapshotsForContracts({ root, packRunner });
+  const steps = createContractSteps({ root, snapshots, runChildProcess });
+  const failures = [];
+  const stepResults = [];
 
-console.log('\nPIE element contract verification passed.');
+  for (const step of steps) {
+    log(`\n== ${step.name} ==`);
+    const result = step.run({ log, error });
+    stepResults.push({ name: step.name, result });
+
+    const failed = typeof result?.ok === 'boolean' ? !result.ok : result.status !== 0;
+    if (failed) {
+      failures.push(step.name);
+    }
+  }
+
+  if (failures.length > 0) {
+    error('\nPIE element contract verification failed:');
+    for (const failure of failures) {
+      error(`- ${failure}`);
+    }
+    return { ok: false, failures, steps: stepResults, snapshots };
+  }
+
+  log('\nPIE element contract verification passed.');
+  return { ok: true, failures, steps: stepResults, snapshots };
+};
+
+const isDirectRun = () =>
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun()) {
+  const result = runElementContractVerification();
+  if (!result.ok) process.exit(1);
+}

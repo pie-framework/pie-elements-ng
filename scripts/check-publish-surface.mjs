@@ -1,48 +1,27 @@
 #!/usr/bin/env node
 
-import { execSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import {
+  collectJsFiles as collectPackageJsFiles,
+  createPackageSnapshots,
+  readJson,
+  toPosix,
+} from './lib/package-inspection.mjs';
 
 const ROOT = process.cwd();
-const ROOT_PACKAGE_JSON = path.join(ROOT, 'package.json');
 const POLICY_PATH = path.join(ROOT, 'scripts', 'publish-policy.json');
 const BROWSER_ESM_POLICY_PATH = path.join(ROOT, 'tools', 'vite', 'browser-esm-policy.json');
 const MAX_DETAILS_PER_PACKAGE = 20;
 const FORBIDDEN_EXPORT_CONDITIONS = new Set(['development', 'svelte']);
 
-const readJson = (filePath) => JSON.parse(readFileSync(filePath, 'utf8'));
-const toPosix = (value) => value.replaceAll(path.sep, '/');
 const policy = existsSync(POLICY_PATH) ? readJson(POLICY_PATH) : {};
 const browserEsmPolicy = readJson(BROWSER_ESM_POLICY_PATH);
 const forbiddenPublicExports = new Map(Object.entries(policy.forbiddenPublicExports || {}));
 const allowedBrowserBareImports = new Set(browserEsmPolicy.allowedBareImports || []);
 const expectedBrowserSharedDependencies = browserEsmPolicy.sharedDependencyVersions || {};
 const maxBrowserJsBytesPerPackage = Number(browserEsmPolicy.maxBrowserJsBytesPerPackage || 0);
-
-const getWorkspaceDirs = () => {
-  const rootPkg = readJson(ROOT_PACKAGE_JSON);
-  const workspaces = Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : [];
-  const dirs = new Set();
-
-  for (const workspace of workspaces) {
-    if (typeof workspace !== 'string') continue;
-    if (!workspace.startsWith('packages/') && !workspace.startsWith('tools/')) {
-      continue;
-    }
-    if (workspace.endsWith('/*')) {
-      const parent = path.join(ROOT, workspace.slice(0, -2));
-      if (!existsSync(parent)) continue;
-      for (const entry of readdirSync(parent, { withFileTypes: true })) {
-        if (entry.isDirectory()) dirs.add(path.join(parent, entry.name));
-      }
-      continue;
-    }
-    dirs.add(path.join(ROOT, workspace));
-  }
-
-  return [...dirs].filter((dir) => existsSync(path.join(dir, 'package.json')));
-};
 
 const normalizeTarget = (value) => {
   if (typeof value !== 'string' || !value.startsWith('./')) return null;
@@ -91,15 +70,6 @@ const collectExportKeyViolations = (pkg, violations) => {
       violations.push(`forbidden public export is present: ${exportKey}`);
     }
   }
-};
-
-const parsePackJson = (rawOutput) => {
-  const start = rawOutput.indexOf('[');
-  const end = rawOutput.lastIndexOf(']');
-  if (start < 0 || end < 0 || end < start) {
-    throw new Error('npm pack output did not include JSON payload');
-  }
-  return JSON.parse(rawOutput.slice(start, end + 1));
 };
 
 const isMetadataFile = (filePath) =>
@@ -228,20 +198,6 @@ const collectControllerContractViolations = (dir, pkg) => {
   return violations;
 };
 
-const collectJsFiles = (dir) => {
-  if (!existsSync(dir)) return [];
-  const files = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...collectJsFiles(fullPath));
-    } else if (entry.isFile() && entry.name.endsWith('.js')) {
-      files.push(fullPath);
-    }
-  }
-  return files;
-};
-
 const collectBareImportSpecifiers = (source) => {
   const specifiers = [];
   for (const line of source.split(/\r?\n/)) {
@@ -300,7 +256,7 @@ const collectBrowserEsmViolations = (dir, pkg) => {
 
   const browserDir = path.join(dir, 'dist/browser');
   let browserJsBytes = 0;
-  const jsFiles = collectJsFiles(browserDir);
+  const jsFiles = collectPackageJsFiles(browserDir);
   for (const filePath of jsFiles) {
     browserJsBytes += readFileSync(filePath).byteLength;
     const source = readFileSync(filePath, 'utf8');
@@ -324,40 +280,7 @@ const collectBrowserEsmViolations = (dir, pkg) => {
   return violations;
 };
 
-const isElementPackageDir = (dir, pkg) =>
-  typeof pkg.name === 'string' &&
-  pkg.name.startsWith('@pie-element/') &&
-  (toPosix(path.relative(ROOT, dir)).startsWith('packages/elements-react/') ||
-    toPosix(path.relative(ROOT, dir)).startsWith('packages/elements-svelte/'));
-
-const collectRuntimeSupportContractViolations = (dir, pkg) => {
-  if (!isElementPackageDir(dir, pkg)) return [];
-  const browserExports = Object.keys(pkg.exports ?? {}).filter((key) =>
-    key.startsWith('./browser/')
-  );
-  if (browserExports.length > 0) return [];
-
-  const violations = [];
-  const runtimeSupportExport = pkg.exports?.['./runtime-support'];
-  const target =
-    typeof runtimeSupportExport === 'string' ? runtimeSupportExport : runtimeSupportExport?.default;
-  if (typeof target !== 'string') {
-    return [
-      'non-browser-ESM element packages must expose exports["./runtime-support"] marking esm unsupported',
-    ];
-  }
-  if (!target.startsWith('./dist/')) {
-    violations.push('exports["./runtime-support"] must point at ./dist/...');
-    return violations;
-  }
-  const targetPath = path.join(dir, target.slice(2));
-  if (!existsSync(targetPath)) {
-    violations.push(`exports["./runtime-support"] target is missing: ${target}`);
-  }
-  return violations;
-};
-
-const collectManifestViolations = (dir, pkg) => {
+export const collectManifestViolations = (dir, pkg) => {
   const violations = [];
   if (Array.isArray(pkg.files)) {
     for (const entry of pkg.files) {
@@ -389,7 +312,6 @@ const collectManifestViolations = (dir, pkg) => {
   collectExportKeyViolations(pkg, violations);
   violations.push(...collectControllerContractViolations(dir, pkg));
   violations.push(...collectBrowserEsmViolations(dir, pkg));
-  violations.push(...collectRuntimeSupportContractViolations(dir, pkg));
 
   const targets = new Set();
   for (const field of ['main', 'module', 'types', 'unpkg', 'jsdelivr']) {
@@ -418,58 +340,94 @@ const collectManifestViolations = (dir, pkg) => {
   return violations;
 };
 
-const collectPackViolations = (dir, pkg) => {
-  const rawOutput = execSync('npm pack --dry-run --json', {
-    cwd: dir,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  }).toString();
-  const packData = parsePackJson(rawOutput);
-  const packedFiles = (packData?.[0]?.files ?? []).map((entry) => toPosix(entry.path));
-  return packedFiles
+export const collectPackViolations = (snapshot) => {
+  const { packedFiles, pkg, packError } = snapshot;
+  if (packedFiles == null && pkg == null) {
+    throw new Error('invalid package snapshot');
+  }
+  if (packError) {
+    throw packError;
+  }
+  if (!packedFiles) {
+    throw new Error(
+      'package snapshot is missing packedFiles; create snapshots with includePackedFiles'
+    );
+  }
+  return [...packedFiles]
     .filter((filePath) => isRawSourceFile(filePath) || !isAllowedPackedFile(filePath, pkg))
     .map((filePath) => `packed file is outside dist/metadata/assets: ${filePath}`)
     .sort();
 };
 
-const failures = [];
-let checked = 0;
-
-for (const dir of getWorkspaceDirs()) {
-  const pkg = readJson(path.join(dir, 'package.json'));
-  if (pkg.private) continue;
-  checked += 1;
-
-  const violations = collectManifestViolations(dir, pkg);
+export const collectPublishSurfaceViolations = (snapshot) => {
+  const violations = collectManifestViolations(snapshot.dir, snapshot.pkg);
   try {
-    violations.push(...collectPackViolations(dir, pkg));
+    violations.push(...collectPackViolations(snapshot));
   } catch (error) {
     violations.push(
       error.stderr?.toString()?.trim() || error.message || 'failed to inspect npm pack contents'
     );
   }
+  return violations;
+};
 
-  if (violations.length > 0) {
-    failures.push({
-      name: pkg.name || path.basename(dir),
-      dir: path.relative(ROOT, dir),
-      violations,
-    });
+export const collectPublishSurfaceFailures = ({
+  root = ROOT,
+  snapshots = createPackageSnapshots({ root, includePackedFiles: true }),
+} = {}) => {
+  const failures = [];
+  for (const snapshot of snapshots) {
+    const violations = collectPublishSurfaceViolations(snapshot);
+    if (violations.length > 0) {
+      failures.push({
+        name: snapshot.pkg.name || path.basename(snapshot.dir),
+        dir: snapshot.relativeDir ?? toPosix(path.relative(root, snapshot.dir)),
+        violations,
+      });
+    }
   }
-}
+  return failures;
+};
 
-if (failures.length > 0) {
-  console.error(
+export const printPublishSurfaceResult = (
+  { failures, checked },
+  { log = console.log, error = console.error } = {}
+) => {
+  if (failures.length === 0) {
+    log(`[check-publish-surface] OK: validated ${checked} publishable package(s)`);
+    return;
+  }
+  error(
     `[check-publish-surface] Found ${failures.length} package(s) with non-dist publish surface`
   );
   for (const failure of failures) {
-    console.error(`\n- ${failure.name} (${failure.dir})`);
+    error(`\n- ${failure.name} (${failure.dir})`);
     for (const violation of failure.violations.slice(0, MAX_DETAILS_PER_PACKAGE)) {
-      console.error(`  - ${violation}`);
+      error(`  - ${violation}`);
     }
     const omitted = failure.violations.length - MAX_DETAILS_PER_PACKAGE;
-    if (omitted > 0) console.error(`  - ... ${omitted} more`);
+    if (omitted > 0) error(`  - ... ${omitted} more`);
   }
-  process.exit(1);
-}
+};
 
-console.log(`[check-publish-surface] OK: validated ${checked} publishable package(s)`);
+export const runPublishSurfaceCheck = (options = {}) => {
+  const snapshots =
+    options.snapshots ??
+    createPackageSnapshots({
+      root: options.root ?? ROOT,
+      includePackedFiles: true,
+      packRunner: options.packRunner,
+    });
+  const failures = collectPublishSurfaceFailures({ root: options.root ?? ROOT, snapshots });
+  const result = { ok: failures.length === 0, checked: snapshots.length, failures };
+  printPublishSurfaceResult(result, options);
+  return result;
+};
+
+const isDirectRun = () =>
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun()) {
+  const result = runPublishSurfaceCheck();
+  if (!result.ok) process.exit(1);
+}

@@ -1,7 +1,7 @@
 # Versioning PRs (changesets) still run from CI. Automated `npm publish` is disabled
 # until the team adopts this repo; publish packages manually in the meantime.
-# To re-enable: set ENABLE_CICD_NPM_PUBLISH to 'true' on the release job and restore
-# `publish: bun run release:publish` on the changesets/action step.
+# To re-enable: set ENABLE_CICD_NPM_PUBLISH to 'true' on the release job and keep
+# the changesets/action publish input enabled.
 name: Release
 
 on:
@@ -78,7 +78,7 @@ jobs:
     env:
       PUBLISH_NPM_TOKEN: ""
       PUBLISH_NODE_AUTH_TOKEN: ""
-      # Flip to 'true' and restore `publish: bun run release:publish` on changesets/action to re-enable CI publish.
+      # Flip to 'true' and restore the changesets/action publish input to re-enable CI publish.
       ENABLE_CICD_NPM_PUBLISH: "true"
     permissions:
       contents: write
@@ -311,7 +311,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: bun run release:publish
+          publish: bun run release:publish:checked
           createGithubReleases: false
           version: bun run version
           title: 'chore(release): version packages [skip-heavy-ci]'
