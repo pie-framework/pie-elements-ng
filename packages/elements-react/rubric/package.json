@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/rubric",
-  "version": "8.1.1-next.0",
+  "version": "8.1.1",
   "description": "Rubric Scoring Interaction",
   "dependencies": {
     "@emotion/react": "^11.14.0",

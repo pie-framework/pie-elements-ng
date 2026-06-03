@@ -125,14 +125,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Are there any Changesets present in the repo at this commit?
-          # Ignore the .changeset/README.md fixture file which is part of the
-          # changesets bootstrap and never represents a real changeset entry.
-          if find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' -print -quit | grep -q .; then
-            echo "has_changesets=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_changesets=false" >> "$GITHUB_OUTPUT"
-          fi
+          # In prerelease mode, consumed changesets remain on disk and are tracked
+          # in .changeset/pre.json. Only count pending changesets as release intent.
+          node scripts/release-detect-intent.mjs >> "$GITHUB_OUTPUT"
 
           # Did this push include actual package version bumps (i.e. merged release PR)?
           before="${{ github.event.before }}"
