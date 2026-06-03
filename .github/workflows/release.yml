@@ -63,6 +63,11 @@ on:
           - next
           - beta
         default: auto
+      release_packages:
+        description: "Optional comma-separated package names for manual publish recovery"
+        required: false
+        type: string
+        default: ""
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -306,13 +311,11 @@ jobs:
           echo "PUBLISH_NPM_TOKEN=" >> "$GITHUB_ENV"
           echo "PUBLISH_NODE_AUTH_TOKEN=" >> "$GITHUB_ENV"
 
-      - name: Create release pull request (npm publish disabled in CI)
+      - name: Run Changesets release
         if: github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_changesets == 'true' || steps.detect.outputs.has_version_bumps == 'true'
         id: changesets
         uses: changesets/action@v1
         with:
-          # Omit `publish` so the action never runs `bun run release:publish` from CI.
-          # Re-enable publishing by setting ENABLE_CICD_NPM_PUBLISH=true and adding:
           publish: bun run release:publish
           createGithubReleases: false
           version: bun run version
@@ -324,6 +327,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
           RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
+          RELEASE_PACKAGES: ${{ github.event_name == 'workflow_dispatch' && inputs.release_packages || '' }}
 
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
