@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/rubric",
-  "version": "2.0.4-next.0",
+  "version": "2.0.3",
   "description": "React implementation of @pie-lib/rubric synced from pie-lib",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -15,7 +15,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "@pie-lib/config-ui": "workspace:*",
-    "@pie-lib/render-ui": "workspace:*"
+    "@pie-lib/render-ui": "workspace:*",
+    "@emotion/core": "0.x.x"
   },
   "type": "module",
   "main": "./dist/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/render-ui",
-  "version": "6.1.1-next.0",
+  "version": "6.1.0",
   "description": "Some shared ui elements when rendering - but not worthy of their own package yet.",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -14,8 +14,9 @@
     "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
     "react-transition-group": "^4.4.5",
+    "react": "^18.3.1",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "react": "^18.2.0"
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "type": "module",
   "main": "./dist/index.js",

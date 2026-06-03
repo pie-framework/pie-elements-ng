@@ -247,7 +247,7 @@ bun run check          # Svelte component validation
 - If an element declares `package.json` `pie.controller` as `@pie-element/<name>/controller`, include a top-level `controller.js` shim in the package root:
   - `export * from './dist/controller/index.js';`
 - Ensure that shim is published by including `"controller.js"` in `package.json` `files`.
-- Keep `exports["./controller"]` as the primary ESM entry for standard consumers; the root shim exists only for builder compatibility.
+- Keep `exports["./controller"]` and `exports["./controller.js"]` pointing at `./dist/controller/index.js` for standard ESM consumers; the root shim exists only for builder compatibility.
 
 ### Framework Agnostic
 

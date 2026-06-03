@@ -58,15 +58,6 @@ The local packages in this workspace:
 - ✅ Have all dependencies properly defined
 - ✅ Are built and ready to bundle
 
-## Alternative: Verdaccio (More Complex)
-
-You can also publish to a local NPM registry (Verdaccio), but this requires:
-1. Converting workspace: protocol dependencies
-2. Publishing each package
-3. Configuring the bundler to use Verdaccio
-
-The workspace approach is simpler and more direct for development/testing.
-
 ## Future: Once Published to NPM
 
 Once the modernized elements are published to NPM:

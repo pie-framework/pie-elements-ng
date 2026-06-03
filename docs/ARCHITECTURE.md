@@ -124,7 +124,7 @@ This was enabled by the PIE team's work on upstream library updates (React 18, M
 
 **Modern approach**: Symmetric peer folders at `src/` level
 
-```
+```text
 src/
 ├── delivery/     # Student/teacher interaction
 ├── author/       # Configuration interface
@@ -145,7 +145,7 @@ The symmetric peer-folder structure combined with ESM's module system enables a 
 
 ##### Example: Multiple UI variants for the same element
 
-```
+```text
 packages/multiple-choice/
 ├── delivery/              # Standard UI
 ├── delivery-mobile/       # Touch-optimized UI (larger tap targets)
@@ -237,6 +237,7 @@ Each variant is simply a peer folder with its own implementation, loaded on-dema
 **Modern approach**: Single unified demo app (`apps/element-demo`) built with SvelteKit.
 
 **Key differences**:
+
 - **Legacy**: Tool-generated demo per element, separate HTML files, required pie CLI commands
 - **Modern**: One app demos ALL elements, SvelteKit routing, auto-discovery of elements
 - **Framework-agnostic**: The modern demo loads elements built with ANY framework (React, Svelte, future Vue/Angular)
@@ -259,222 +260,50 @@ The demo system works by dynamically loading elements via the unified player, re
 - Single source of truth for all PIE code
 - Workspace references (`"workspace:*"`) ensure consistency
 
-### 8. Workspace-Wide Versioning
+### 8. Independent Package Versioning And Release Labels
 
-**Legacy approach**:
+This project currently uses **independent package versioning**. Each publishable
+`@pie-element/*` and `@pie-lib/*` package carries its own npm version, and release
+automation publishes only the explicitly selected packages plus any dependents
+that Changesets must bump.
 
-- Each element and library package had independent version numbers
-- Elements could depend on any version of any `@pie-lib` package
-- Example: `@pie-element/multiple-choice@12.0.0` might depend on `@pie-lib/math-rendering@4.1.0-next.4`
-- `pie-lib` itself was a monorepo where each package had its own version
-- Resulted in complex dependency graphs and version conflicts
+Local development still uses workspace references (`"workspace:*"`) so packages
+are linked consistently inside the monorepo. Those workspace references are a
+development and build-time mechanism, not a promise that every npm package shares
+one version number.
 
-**Modern approach**:
+**Why independent versions here?**
 
-This project uses **workspace-wide versioning** where all packages share the same version number:
+1. **Compatibility with existing consumers** - Legacy PIE consumers already
+   depend on independently versioned element packages.
+2. **Selective publishing** - A fix to one element should not publish dozens of
+   unchanged packages unless dependency propagation requires it.
+3. **Migration safety** - Synced packages can preserve upstream package versions
+   during the migration from `../pie-elements` and `../pie-lib`.
+4. **Clear release blast radius** - Changesets records which packages changed
+   and why, while avoiding a false impression that every package changed.
 
-```json
-{
-  "name": "@pie-element/multiple-choice",
-  "version": "1.5.0",
-  "dependencies": {
-    "@pie-lib/render-ui": "1.5.0",
-    "@pie-lib/math-rendering": "1.5.0"
-  }
-}
-```
+**Coordinated release waves:**
 
-**Why workspace-wide versioning?**
-
-Modern monorepos overwhelmingly favor workspace-wide versioning for several compelling reasons:
-
-1. **Simplicity** - One version number for the entire project
-   - No mental overhead tracking which package is at which version
-   - No complex dependency resolution across internal packages
-   - Clear communication: "We're on PIE Elements v2.0"
-
-2. **Dependency consistency** - Guarantees compatible package versions
-   - In the legacy system, you could have: Element A → pie-lib-foo@1.0.0, Element B → pie-lib-foo@2.0.0
-   - Different elements depending on incompatible versions of shared libraries
-   - Workspace-wide versioning guarantees all packages are compatible
-
-3. **Testing confidence** - What you test is what you ship
-   - Legacy: Element tested with lib@4.0.0, shipped with lib@4.1.0 (untested combination)
-   - Workspace-wide: All packages tested together as a unit
-   - No untested version combinations in production
-
-4. **Release process efficiency** - One decision, one release
-   - No need to decide which packages need version bumps
-   - No cascading releases (lib update → element update → player update)
-   - Changesets handles the entire workspace as a unit
-
-5. **Developer experience** - Easier mental model
-   - `bun install` always gives you compatible versions
-   - No need to manually synchronize package versions
-   - Workspace protocol (`"workspace:*"`) ensures local linking during development
-
-6. **Simplified patch releases** - Makes backporting fixes straightforward
-   - Checkout the git hash/tag of any release (e.g., `v1.4.0`)
-   - Fix the bug in any affected package(s) - elements, libs, wherever needed
-   - All dependencies are at the exact versions they were tested with
-   - Publish the patch release knowing everything is consistent
-   - No need to track down which version of each lib package was used
-   - No risk of pulling in untested dependency combinations
-
-7. **Industry standard** - Most successful monorepos use this approach
-   - React monorepo: All packages share version
-   - Svelte monorepo: All packages share version
-   - Turborepo examples: Workspace-wide versioning by default
-   - Google's monorepo (Bazel): All code at HEAD, no versions
-
-**Real-world pain from independent versioning:**
-
-The legacy pie-elements/pie-lib approach created these problems:
-
-```bash
-# Developer scenario 1: Local development
-$ cd pie-elements/packages/multiple-choice
-$ npm install  # Gets @pie-lib/math-rendering@4.1.0
-
-$ cd ../../pie-lib/packages/math-rendering
-$ npm run build  # Makes changes to math-rendering
-
-# Changes not reflected in multiple-choice!
-# Must manually re-link or publish intermediate versions
-```
-
-```bash
-# Developer scenario 2: Inconsistent dependency versions
-# multiple-choice@12.0.0 depends on render-ui@5.0.0
-# drag-in-the-blank@11.5.0 depends on render-ui@6.0.0
-# Different elements using incompatible library versions
-# Potential API mismatches and bundle bloat from duplicate dependencies
-```
-
-```bash
-# Developer scenario 3: Release coordination nightmare
-$ cd pie-lib
-$ npm run publish  # Publish math-rendering@4.2.0
-
-# Now must update ALL elements that use it:
-$ cd pie-elements/packages/multiple-choice
-# Edit package.json: "@pie-lib/math-rendering": "^4.2.0"
-$ cd ../drag-in-the-blank
-# Edit package.json: "@pie-lib/math-rendering": "^4.2.0"
-# ... repeat for 50+ elements
-
-# What if you miss one? Inconsistent versions in production!
-```
-
-```bash
-# Developer scenario 4: Patch release hell
-# Need to backport a fix to v11.0.0
-$ git checkout v11.0.0
-
-# Which versions of libraries were used?
-$ cat packages/multiple-choice/package.json
-# "@pie-lib/render-ui": "^5.0.0"  # Could be 5.0.0, 5.1.0, 5.2.0...
-$ cat packages/drag-in-the-blank/package.json
-# "@pie-lib/render-ui": "^5.1.0"  # Different version!
-
-# Need to fix a bug in render-ui too - which version to fix?
-# Have to check package-lock.json for each element
-# Or worse, check what was actually published
-# Risk of creating an untested combination
-```
-
-**How workspace-wide versioning solves this:**
-
-```bash
-# Developer scenario 1: Local development
-$ cd pie-elements-ng
-$ bun run build  # All packages built together
-# All packages always reference each other via workspace protocol
-# Changes to any package immediately available to all others
-```
-
-```bash
-# Developer scenario 2: Guaranteed consistency
-# All packages share version 1.5.0
-# Impossible to have mismatched internal package versions
-# All elements use compatible library versions
-```
-
-```bash
-# Developer scenario 3: Simple releases
-$ bun run changeset  # Describe changes
-$ git push
-# Changesets automatically:
-# - Bumps ALL packages to 1.6.0
-# - Updates all internal dependencies
-# - Creates coordinated release
-# Zero manual version updates needed
-```
-
-```bash
-# Developer scenario 4: Straightforward patch releases
-# Need to backport a fix to v1.4.0
-$ git checkout v1.4.0
-$ git checkout -b patch-1.4.1
-
-# All dependencies are exactly as they were in v1.4.0
-# No guessing, no hunting through package-lock.json
-# Fix the bug in any affected packages
-$ vim packages/elements-react/multiple-choice/src/delivery/index.tsx
-$ vim packages/lib-react/render-ui/src/index.ts  # If needed
-
-$ bun run changeset
-# Select "patch"
-$ git commit -am "fix: resolve XYZ issue"
-$ git push
-
-# All packages bumped to 1.4.1
-# Everything is consistent and tested as a unit
-# No risk of untested dependency combinations
-```
+When a group of independent package releases belongs to the same product wave,
+use a release label/tag such as `pie-elements-ng-YYYY.MM.DD`. The label provides
+human-readable coordination across packages without forcing lockstep npm
+versions.
 
 **Publishing strategy:**
 
-**Current Status**: `@pie-element/*` and `@pie-lib/*` packages are configured to be publishable and are managed by the Changesets release workflow.
+- **Element packages** (`@pie-element/*`) are versioned and published by CI when
+  selected for release.
+- **Library packages** (`@pie-lib/*`) are also versioned/publishable when their
+  public surface changes or when Changesets dependency propagation requires it.
+- **Default bump policy** is `patch` unless a user explicitly requests `minor` or
+  `major`.
+- **Manual publishing** must use the repository publish scripts so package
+  selection and token handling remain explicit.
 
-**Release behavior**:
-
-- **Element packages** (`@pie-element/*`) are versioned and published by CI.
-- **Library packages** (`@pie-lib/*`) are also versioned/publishable so internal dependency graphs stay coherent during coordinated releases.
-
-This differs from earlier phases where most synced packages were intentionally private.
-
-**Trade-offs:**
-
-The main consideration is that element packages are released together, even if some haven't changed. However:
-
-- **Storage**: Disk space and npm registry storage is cheap
-- **Downloads**: Users only download what they import (ESM tree-shaking)
-- **Clarity**: Outweighs the minor inefficiency of releasing unchanged packages
-- **Automation**: Changesets makes this cost-free from a developer perspective
-- **Reduced API surface**: Fewer published packages means simpler dependency management for consumers
-
-**Migration from legacy versioning:**
-
-This project inherits synced packages from the legacy independent versioning system but immediately converts them to workspace-wide versioning:
-
-1. **Sync phase**: Pull element source from upstream (with independent versions)
-2. **Normalization phase**: Rewrite all internal dependencies to `"workspace:*"`
-3. **Build phase**: All packages built with coordinated versions
-4. **Publish phase**: All packages released with same version number
-
-This means once in pie-elements-ng, packages never experience the version coordination problems of the upstream project.
-
-**Conclusion:**
-
-Workspace-wide versioning is a deliberate architectural decision based on:
-
-- Lessons learned from the upstream project's independent versioning challenges
-- Industry best practices from successful monorepos
-- Modern tooling (Changesets, Turborepo) designed around this pattern
-- Practical development efficiency and release coordination needs
-
-While independent versioning offers theoretical flexibility, the practical reality is that the coordination overhead, testing complexity, and potential for version conflicts make it unsuitable for tightly-coupled packages like PIE elements and libraries.
+This differs from earlier design notes that proposed workspace-wide lockstep
+versions. Release labels provide coordination; package versions remain
+independent.
 
 ### 9. GitHub Actions CI/CD
 
@@ -966,7 +795,7 @@ The demo uses the unified Element Player to dynamically load elements via custom
 
 **Architecture:**
 
-```
+```text
 apps/element-demo/
 ├── src/
 │   ├── routes/
@@ -1009,7 +838,7 @@ The `predev` script automatically regenerates all required files before starting
 
 **URL Format:**
 
-```
+```text
 http://localhost:5173/[element-name]
 
 Examples:
@@ -1153,7 +982,7 @@ See [WCAG 2.2 Quick Reference](https://www.w3.org/WAI/WCAG22/quickref/)
 
 Elements should work with strict CSP:
 
-```
+```text
 default-src 'self';
 script-src 'self';
 style-src 'self' 'unsafe-inline';
@@ -1189,48 +1018,46 @@ See [PUBLISHING.md](./PUBLISHING.md) for policy details, backfill runbook, and v
 
 ### Versioning
 
-This project is designed to use **workspace-wide versioning** where all packages share the same version number. This is a deliberate architectural decision that differs from the upstream pie-elements/pie-lib projects.
+This project uses **independent package versioning**. Each publishable
+`@pie-element/*` and `@pie-lib/*` package has its own npm version, while release
+labels can group a coordinated release wave across packages.
 
 **Current Status**: `@pie-element/*` and `@pie-lib/*` packages are publish-enabled and released through the Changesets CI flow.
 
-See [section 8 above](#8-workspace-wide-versioning) for a detailed explanation of why this approach was chosen and the problems it solves.
+See [section 8 above](#8-independent-package-versioning-and-release-labels) for the current policy.
 
 **Semantic Versioning (SemVer)**:
 
-All packages follow semantic versioning as a coordinated unit:
+Each changed package follows semantic versioning independently:
 
-- **Major** (1.0.0): Breaking changes in any package
-- **Minor** (0.1.0): New features in any package, backward compatible
-- **Patch** (0.0.1): Bug fixes in any package
+- **Major**: Breaking changes in that package
+- **Minor**: Backward-compatible new features in that package
+- **Patch**: Bug fixes in that package
 
 **How versioning works:**
 
 1. Developer makes changes to any package(s)
 2. Run `bun run changeset` to describe the change
-3. Changesets automatically determines the appropriate version bump
-4. All element packages are released together with the same new version
-5. Internal dependencies automatically updated to the new version
+3. Changesets determines the appropriate version bump for selected packages
+4. Only selected packages and dependency-propagated packages are published
+5. A release label may be added when several independent packages ship together
 
-**Example release (future, when published):**
+**Example release:**
 
 ```bash
-# Before: All element packages at 1.4.0
 $ bun run changeset
 # Select "minor" for a new feature in multiple-choice
 # PR merged
 
-# After: All element packages bumped to 1.5.0
-@pie-element/multiple-choice: 1.5.0     # Will be published to npm
-@pie-element/drag-in-the-blank: 1.5.0   # Will be published to npm (even though unchanged)
-
-# Lib packages are versioned in the same coordinated release:
-@pie-lib/render-ui: 1.5.0
-@pie-lib/math-rendering: 1.5.0
+# Only affected packages are bumped/published.
+@pie-element/multiple-choice: 1.6.0
 ```
 
 **Current Reality**: Package releases are coordinated through the CI release workflow.
 
-This ensures all packages are always compatible and tested together. External consumers only interact with `@pie-element/*` packages, which bundle all necessary dependencies.
+Workspace builds and contract checks ensure compatible package surfaces before
+publish. External consumers install the specific `@pie-element/*` packages they
+need.
 
 ### CDN Distribution
 

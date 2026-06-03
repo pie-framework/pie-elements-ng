@@ -65,10 +65,14 @@ export const PACKAGE_DEFAULTS = {
 } as const;
 
 // Build scripts
+export const ELEMENT_BROWSER_VITE_CONFIG = '../../../tools/vite/element-browser.config.ts';
+
 export const SCRIPTS = {
   BUILD: 'bun x vite build && bun x tsc --emitDeclarationOnly',
+  BUILD_WITH_BROWSER: `bun x vite build && bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG} && bun x tsc --emitDeclarationOnly`,
   BUILD_WITH_IIFE:
     'bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly',
+  BUILD_WITH_IIFE_AND_BROWSER: `bun x vite build && bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG} && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly`,
   DEV: 'bun x vite',
   DEMO: 'bun x vite --mode demo',
   TEST: 'bun x vitest run',

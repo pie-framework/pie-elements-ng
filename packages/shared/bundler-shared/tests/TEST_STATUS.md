@@ -59,10 +59,7 @@ If you need to test the bundler before publishing:
 ### Option 1: Use Local Packages (Requires Bundler Modification)
 Modify the installer to support local package paths instead of NPM registry.
 
-### Option 2: Publish to Test Registry
-Publish elements to a test NPM registry (like Verdaccio) and test against that.
-
-### Option 3: Wait for Production Publish
+### Option 2: Wait for Production Publish
 The recommended approach - publish the modernized elements to NPM, then run integration tests.
 
 ## Test Quality

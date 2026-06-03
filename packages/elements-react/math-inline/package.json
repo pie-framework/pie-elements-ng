@@ -1,6 +1,7 @@
 {
   "name": "@pie-element/math-inline",
-  "version": "0.1.0",
+  "version": "12.1.0",
+  "private": true,
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -12,18 +13,19 @@
     "@pie-lib/math-toolbar": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "classnames": "^2.2.5",
+    "classnames": "^2.2.6",
     "debug": "^4.1.1",
     "lodash-es": "^4.17.23",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-feedback": "workspace:*",
-    "@pie-framework/mathquill": "^1.1.4",
     "@pie-framework/math-validation": "^1.0.0",
     "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "@pie-framework/mathquill": "^1.0.0",
+    "@emotion/core": "0.x.x"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -42,6 +44,10 @@
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"
     },
+    "./configure": {
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    },
     "./controller": {
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
@@ -53,12 +59,18 @@
     "./print": {
       "types": "./dist/print/index.d.ts",
       "default": "./dist/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "configure.js",
+    "controller.js",
     "dist"
   ],
   "sideEffects": false,
@@ -74,5 +86,9 @@
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"
+  },
+  "pie": {
+    "controller": "@pie-element/math-inline/controller",
+    "configure": "@pie-element/math-inline/configure"
   }
 }

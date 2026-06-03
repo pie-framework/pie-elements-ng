@@ -6,7 +6,11 @@
 import type { LayoutLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { ELEMENT_REGISTRY, getElement } from '$lib/elements/registry';
-import { discoverElementViews, type ElementView } from '$lib/utils/view-discovery';
+import {
+  discoverElementViews,
+  hasControllerExport,
+  type ElementView,
+} from '$lib/utils/view-discovery';
 
 // Player routes are client-rendered only; CE bundles reference browser-only globals (customElements/window).
 export const ssr = false;
@@ -71,10 +75,12 @@ export const load: LayoutLoad = async ({
   let initialModel: any = {};
   let initialSession: any = {};
   let packageName = elementInfo.packageName;
+  let hasController = false;
 
   // Discover available views from package.json exports
   try {
     availableViews = await discoverElementViews(elementName);
+    hasController = await hasControllerExport(elementName);
   } catch (e) {
     console.warn(`[+layout.ts] Could not discover views for ${elementName}:`, e);
   }
@@ -118,6 +124,7 @@ export const load: LayoutLoad = async ({
     elementName,
     elementTitle,
     packageName,
+    hasController,
     capabilities,
     availableViews,
     demos,

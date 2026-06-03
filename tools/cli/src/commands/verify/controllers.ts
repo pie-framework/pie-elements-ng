@@ -26,6 +26,21 @@ function hasAnyControllerSource(elementDir: string): boolean {
   );
 }
 
+function hasAnyAuthorOrConfigureSource(elementDir: string): boolean {
+  for (const view of ['author', 'configure']) {
+    const base = join(elementDir, 'src', view, 'index');
+    if (
+      existsSync(base + '.ts') ||
+      existsSync(base + '.tsx') ||
+      existsSync(base + '.js') ||
+      existsSync(base + '.jsx')
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 async function verifyControllerPackage(elementDir: string, element: string): Promise<CheckResult> {
   const pkgPath = join(elementDir, 'package.json');
   if (!existsSync(pkgPath)) {
@@ -39,7 +54,8 @@ async function verifyControllerPackage(elementDir: string, element: string): Pro
   }
 
   const hasController = hasAnyControllerSource(elementDir);
-  if (!hasController) {
+  const hasAuthorOrConfigure = hasAnyAuthorOrConfigureSource(elementDir);
+  if (!hasController && !hasAuthorOrConfigure) {
     return { element, elementDir, ok: true, errors: [], warnings: [] };
   }
 
@@ -47,12 +63,39 @@ async function verifyControllerPackage(elementDir: string, element: string): Pro
   const pkg = JSON.parse(pkgRaw) as any;
   const exportsObj = pkg?.exports as any;
   const controllerExport = exportsObj?.['./controller'];
+  const controllerJsExport = exportsObj?.['./controller.js'];
+  const configureExport = exportsObj?.['./configure'];
+  const expectedControllerSpecifier = `${pkg.name}/controller`;
+  const expectedConfigureSpecifier = `${pkg.name}/configure`;
+  const expectedShim = "export * from './dist/controller/index.js';\n";
 
   const errors: string[] = [];
   const warnings: string[] = [];
-  if (!controllerExport) {
+  const files = Array.isArray(pkg.files) ? pkg.files : [];
+
+  if (hasController) {
+    if (pkg?.pie?.controller !== expectedControllerSpecifier) {
+      errors.push(`package.json pie.controller must be "${expectedControllerSpecifier}"`);
+    }
+    if (!files.includes('controller.js')) {
+      errors.push('package.json files[] must include "controller.js"');
+    }
+  }
+  if (hasAuthorOrConfigure) {
+    if (pkg?.pie?.configure !== expectedConfigureSpecifier) {
+      errors.push(`package.json pie.configure must be "${expectedConfigureSpecifier}"`);
+    }
+    if (!configureExport) {
+      errors.push('Missing exports["./configure"] in package.json');
+    }
+    if (!files.includes('configure.js')) {
+      errors.push('package.json files[] must include "configure.js"');
+    }
+  }
+
+  if (hasController && !controllerExport) {
     errors.push('Missing exports["./controller"] in package.json');
-  } else {
+  } else if (controllerExport) {
     const jsPath = controllerExport?.default as string | undefined;
     const dtsPath = controllerExport?.types as string | undefined;
 
@@ -71,6 +114,53 @@ async function verifyControllerPackage(elementDir: string, element: string): Pro
       const abs = join(elementDir, dtsPath.replace(/^\.\//, ''));
       if (!existsSync(abs)) {
         warnings.push(`Controller d.ts artifact missing: ${dtsPath}`);
+      }
+    }
+  }
+
+  if (hasController && !controllerJsExport) {
+    errors.push('Missing exports["./controller.js"] in package.json');
+  } else if (controllerJsExport) {
+    const jsPath = controllerJsExport?.default as string | undefined;
+    const dtsPath = controllerJsExport?.types as string | undefined;
+    if (controllerExport && jsPath !== controllerExport?.default) {
+      errors.push('exports["./controller.js"].default must match exports["./controller"].default');
+    }
+    if (controllerExport && dtsPath !== controllerExport?.types) {
+      errors.push('exports["./controller.js"].types must match exports["./controller"].types');
+    }
+  }
+
+  if (configureExport) {
+    const configureTarget = configureExport?.default as string | undefined;
+    if (!configureTarget || typeof configureTarget !== 'string') {
+      errors.push('exports["./configure"].default is missing');
+    } else {
+      const abs = join(elementDir, configureTarget.replace(/^\.\//, ''));
+      if (!existsSync(abs)) {
+        errors.push(`Configure JS artifact missing: ${configureTarget}`);
+      }
+      const configureShimPath = join(elementDir, 'configure.js');
+      const expectedConfigureShim = `export { default } from '${configureTarget}';\nexport * from '${configureTarget}';\n`;
+      if (!existsSync(configureShimPath)) {
+        errors.push('Missing root configure.js compatibility shim');
+      } else {
+        const configureShim = await readFile(configureShimPath, 'utf-8');
+        if (configureShim !== expectedConfigureShim) {
+          errors.push(`Root configure.js shim must re-export ${configureTarget}`);
+        }
+      }
+    }
+  }
+
+  if (hasController) {
+    const shimPath = join(elementDir, 'controller.js');
+    if (!existsSync(shimPath)) {
+      errors.push('Missing root controller.js compatibility shim');
+    } else {
+      const shim = await readFile(shimPath, 'utf-8');
+      if (shim !== expectedShim) {
+        errors.push('Root controller.js shim must re-export ./dist/controller/index.js');
       }
     }
   }
@@ -165,7 +255,10 @@ export default class VerifyControllers extends Command {
         for (const e of f.errors) this.log(`    • ${e}`);
       }
       this.log('\n💡 Fixes:');
-      this.log('  - Ensure package.json exports include "./controller"');
+      this.log('  - Ensure package.json exports include "./controller" and "./controller.js"');
+      this.log('  - Ensure package.json pie.controller is "@pie-element/<element>/controller"');
+      this.log('  - Ensure package.json files[] includes "controller.js"');
+      this.log('  - Ensure root controller.js re-exports "./dist/controller/index.js"');
       this.log('  - Ensure build outputs exist under dist/controller/');
       this.log(`  - Rebuild: cd ${ELEMENTS_REACT_DIR}/<element> && bun run build`);
       this.log(`  - Or: cd ${ELEMENTS_SVELTE_DIR}/<element> && bun run build`);

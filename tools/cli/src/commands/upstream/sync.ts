@@ -1,6 +1,10 @@
 import { Command, Flags } from '@oclif/core';
 import { Logger } from '../../utils/logger.js';
-import { loadCompatibilityReport, type CompatibilityReport } from '../../utils/compatibility.js';
+import {
+  formatCompatibilityReportLastAnalyzed,
+  loadCompatibilityReport,
+  type CompatibilityReport,
+} from '../../utils/compatibility.js';
 import { getCurrentCommit } from '../../utils/git.js';
 import { printSyncSummary, createEmptySummary } from '../../lib/upstream/sync-summary.js';
 import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
@@ -407,7 +411,7 @@ export default class Sync extends Command {
     }
 
     this.logger.info(`📋 Using ESM compatibility filter from ${config.compatibilityFile}`);
-    this.logger.info(`   Last analyzed: ${new Date(report.lastAnalyzed).toLocaleString()}`);
+    this.logger.info(`   Last analyzed: ${formatCompatibilityReportLastAnalyzed(report)}`);
     this.logger.info(`   Compatible elements: ${report.elements.length}`);
     this.logger.info(`   Compatible pie-lib packages: ${report.pieLibPackages.length}`);
 

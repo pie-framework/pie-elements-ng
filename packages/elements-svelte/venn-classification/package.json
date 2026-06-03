@@ -6,7 +6,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "pie": {
-    "controller": "@pie-element/venn-classification/controller"
+    "controller": "@pie-element/venn-classification/controller",
+    "configure": "@pie-element/venn-classification/configure"
   },
   "exports": {
     ".": {
@@ -28,15 +29,24 @@
     "./author": {
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"
+    },
+    "./configure": {
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "files": [
-    "dist",
-    "controller.js"
+    "configure.js",
+    "controller.js",
+    "dist"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
+    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
     "dev": "vite",
     "test": "vitest run",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"

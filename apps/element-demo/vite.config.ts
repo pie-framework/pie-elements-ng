@@ -188,6 +188,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
+      '@workspace': workspaceRoot,
       // Fix @pie-framework/math-validation resolution issue
       // The package has module: "src/index.ts" which doesn't exist in installed package
       // Force Vite to use the main field (lib/index.js) instead

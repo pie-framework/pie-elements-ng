@@ -22,6 +22,7 @@ export default defineConfig(({ mode, command }) => {
         'delivery/index': resolve(__dirname, 'src/delivery/index.ts'),
         'author/index': resolve(__dirname, 'src/author/index.ts'),
         'print/index': resolve(__dirname, 'src/print/index.tsx'),
+        'runtime-support': resolve(__dirname, 'src/runtime-support.ts'),
       },
       formats: ['es'],
     },

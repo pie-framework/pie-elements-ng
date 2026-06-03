@@ -96,20 +96,26 @@ export const inferViewsFromPackageExports = (exportsMap?: Record<string, unknown
     return ['delivery'];
   }
 
-  const views = new Set<string>();
+  const views = new Set<string>(['delivery']);
   for (const key of Object.keys(exportsMap)) {
     if (!key.startsWith('./')) {
       continue;
     }
     const view = key.replace('./', '').trim();
-    if (!view || view === 'controller') {
+    if (
+      !view ||
+      view === 'delivery' ||
+      view === 'configure' ||
+      view === 'controller' ||
+      view === 'controller.js' ||
+      view === 'runtime-support' ||
+      view.startsWith('browser/')
+    ) {
       continue;
     }
-    views.add(view);
-  }
-
-  if (views.size === 0) {
-    views.add('delivery');
+    if (view === 'author' || view === 'print' || view.startsWith('delivery-')) {
+      views.add(view);
+    }
   }
 
   return Array.from(views).sort();

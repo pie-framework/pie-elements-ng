@@ -134,38 +134,9 @@ export default defineConfig({
 2. Run `bun run build` in the element package
 3. Refresh the demo to see changes
 
-**Alternative (Advanced):** To enable HMR for development on specific packages:
+**Advanced source development:** package manifests stay dist-only for publishing, so `upstream:sync` must not add `development` export conditions that point at `src/`. Local source loading belongs in demo-only resolver tooling such as `vite-plugin-workspace-resolver.ts`, where it cannot leak into npm package surfaces.
 
-The `upstream:sync` command already adds 'development' export conditions to synced element packages via `addDevelopmentExports()`. To use this:
-
-1. **Sync a specific element:**
-
-   ```bash
-   bun run upstream:sync:element multiple-choice
-   ```
-
-   This adds 'development' exports pointing to `src/` files in that element's package.json.
-
-2. **Enable the development condition in Vite config:**
-
-   ```js
-   // vite.config.ts
-   resolve: {
-     conditions: ['development', 'import', 'default'],
-   },
-   optimizeDeps: {
-     include: ['react', 'react-dom', 'react/jsx-runtime'],
-     // IMPORTANT: Only exclude the specific package you're developing
-     exclude: ['@pie-element/multiple-choice'],  // Not all packages!
-   },
-   ```
-
-3. **⚠️ Warning:** This approach can still trigger infinite loops if:
-   - You exclude too many packages (use `exclude` sparingly)
-   - Your element has many source files that change frequently
-   - The element imports other workspace packages that also use 'development' exports
-
-**Recommendation:** For most development, use the stable configuration (no 'development' condition) and rebuild packages as needed. Only use HMR for rapid iteration when absolutely necessary.
+**Recommendation:** Use the default dist-based approach for stability. Only route a specific package to source through demo resolver configuration when actively developing it, and keep published `exports` pointed at `dist/`.
 
 ---
 

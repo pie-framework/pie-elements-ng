@@ -74,6 +74,20 @@ export class ReactComponentsStrategy implements SyncStrategy {
 
     for (const pkg of packages) {
       if (EXCLUDED_UPSTREAM_ELEMENTS.includes(pkg as (typeof EXCLUDED_UPSTREAM_ELEMENTS)[number])) {
+        if (context.packageFilter && pkg !== context.packageFilter) {
+          continue;
+        }
+
+        const targetDir = join(targetBaseDir, pkg);
+        const hasControllerSource = existsAny([
+          join(targetDir, 'src/controller/index.ts'),
+          join(targetDir, 'src/controller/index.tsx'),
+          join(targetDir, 'src/controller/index.js'),
+          join(targetDir, 'src/controller/index.jsx'),
+        ]);
+        if (!config.dryRun && existsSync(targetDir) && hasControllerSource) {
+          await ensureElementPackageJson(pkg, targetDir, config);
+        }
         continue;
       }
 
@@ -195,10 +209,12 @@ export class ReactComponentsStrategy implements SyncStrategy {
       await this.ensureIifeEntryPoint(pkg, elementDir, config, logger);
       await this.ensureIifeViteConfig(pkg, elementDir, config, logger);
 
+      await this.ensureElementViteConfig(pkg, elementDir, logger);
       // Ensure package.json has ESM module support and expected exports.
       let wrotePkgJson = false;
-      wrotePkgJson = await ensureElementPackageJson(pkg, elementDir, config);
-      await this.ensureElementViteConfig(pkg, elementDir, logger);
+      wrotePkgJson = await ensureElementPackageJson(pkg, elementDir, config, {
+        includeBrowserExports: true,
+      });
       const wroteTsConfig = await this.ensureTsConfig(pkg, elementDir, logger);
 
       // Ensure demo structure
