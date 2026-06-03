@@ -129,13 +129,108 @@ export interface PieLibDetail {
   blockers: string[];
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
+function blockedReason(value: unknown): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    const reasons = stringArray(value);
+    return reasons.length > 0 ? reasons : ['Unsupported by static browser ESM report'];
+  }
+  if (isRecord(value) && typeof value.reason === 'string') {
+    return [value.reason];
+  }
+  return ['Unsupported by static browser ESM report'];
+}
+
+function normalizeStaticBrowserEsmReport(report: Record<string, unknown>): CompatibilityReport {
+  const elements = stringArray(report.browserEsmReady);
+  const unsupported = isRecord(report.browserEsmUnsupported) ? report.browserEsmUnsupported : {};
+  const blockedElements = Object.fromEntries(
+    Object.entries(unsupported).map(([element, details]) => [element, blockedReason(details)])
+  );
+  const elementDetails: Record<string, ElementDetail> = {};
+
+  for (const element of elements) {
+    elementDetails[element] = {
+      compatible: true,
+      directDeps: [],
+      pieLibDeps: [],
+      pieElementDeps: [],
+      blockers: [],
+      studentUI: { compatible: true, blockers: [] },
+      configure: { compatible: true, blockers: [] },
+      controller: { compatible: true, blockers: [] },
+    };
+  }
+
+  for (const [element, blockers] of Object.entries(blockedElements)) {
+    elementDetails[element] = {
+      compatible: false,
+      directDeps: [],
+      pieLibDeps: [],
+      pieElementDeps: [],
+      blockers,
+      studentUI: { compatible: false, blockers },
+      configure: { compatible: false, blockers },
+      controller: { compatible: false, blockers },
+    };
+  }
+
+  return {
+    ...report,
+    elements,
+    pieLibPackages: [],
+    blockedElements,
+    elementDetails,
+    pieLibDetails: {},
+    esmPlayerReady: elements,
+    esmValidation: {},
+    lastAnalyzed: typeof report.lastAnalyzed === 'string' ? report.lastAnalyzed : 'unknown',
+    summary: {
+      totalElements: elements.length + Object.keys(blockedElements).length,
+      compatibleElements: elements.length,
+      blockedElements: Object.keys(blockedElements).length,
+      esmPlayerReady: elements.length,
+      totalPieLibPackages: 0,
+      compatiblePieLibPackages: 0,
+    },
+  };
+}
+
+function normalizeCompatibilityReport(report: unknown): CompatibilityReport {
+  if (isRecord(report) && Array.isArray(report.browserEsmReady) && !Array.isArray(report.elements)) {
+    return normalizeStaticBrowserEsmReport(report);
+  }
+
+  return report as CompatibilityReport;
+}
+
+export function formatCompatibilityReportLastAnalyzed(report: CompatibilityReport): string {
+  const timestamp = report.lastAnalyzed;
+  if (!timestamp || timestamp === 'unknown') {
+    return 'unknown';
+  }
+
+  const analyzedAt = new Date(timestamp);
+  return Number.isNaN(analyzedAt.getTime()) ? 'unknown' : analyzedAt.toLocaleString();
+}
+
 export async function loadCompatibilityReport(path: string): Promise<CompatibilityReport> {
   if (!existsSync(path)) {
     throw new Error(`Compatibility report not found at: ${path}`);
   }
 
   const content = await readFile(path, 'utf-8');
-  return JSON.parse(content) as CompatibilityReport;
+  return normalizeCompatibilityReport(JSON.parse(content) as unknown);
 }
 
 export function isElementCompatible(element: string, report: CompatibilityReport): boolean {
