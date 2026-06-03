@@ -1,5 +1,13 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.0
+
+### Patch Changes
+
+- Publish corrected React element next prereleases from stable npm baselines.
+- Updated dependencies
+  - @pie-element/multiple-choice@13.2.2-next.0
+
 ## 14.2.1-next.0
 
 ### Patch Changes

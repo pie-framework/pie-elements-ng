@@ -1,5 +1,11 @@
 # @pie-element/inline-dropdown
 
+## 10.1.2-next.0
+
+### Patch Changes
+
+- Publish corrected React element next prereleases from stable npm baselines.
+
 ## 10.1.1-next.0
 
 ### Patch Changes

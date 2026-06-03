@@ -1,5 +1,11 @@
 # @pie-element/graphing-solution-set
 
+## 6.1.2-next.0
+
+### Patch Changes
+
+- Publish corrected React element next prereleases from stable npm baselines.
+
 ## 6.1.1-next.0
 
 ### Patch Changes

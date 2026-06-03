@@ -1,5 +1,14 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.0
+
+### Patch Changes
+
+- Publish corrected React element next prereleases from stable npm baselines.
+- Updated dependencies
+  - @pie-element/multi-trait-rubric@8.1.2-next.0
+  - @pie-element/rubric@8.1.2-next.0
+
 ## 7.1.1-next.0
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pie-element/placement-ordering
 
+## 14.1.2-next.0
+
+### Patch Changes
+
+- Publish corrected React element next prereleases from stable npm baselines.
+
 ## 14.1.1-next.0
 
 ### Patch Changes

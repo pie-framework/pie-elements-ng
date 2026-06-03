@@ -1,5 +1,11 @@
 # @pie-element/multiple-choice
 
+## 13.2.2-next.0
+
+### Patch Changes
+
+- Publish corrected React element next prereleases from stable npm baselines.
+
 ## 13.2.1-next.0
 
 ### Patch Changes

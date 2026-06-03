@@ -1,5 +1,11 @@
 # @pie-element/passage
 
+## 7.1.2-next.0
+
+### Patch Changes
+
+- Publish corrected React element next prereleases from stable npm baselines.
+
 ## 7.1.1-next.0
 
 ### Patch Changes

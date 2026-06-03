@@ -1,5 +1,11 @@
 # @pie-element/multi-trait-rubric
 
+## 8.1.2-next.0
+
+### Patch Changes
+
+- Publish corrected React element next prereleases from stable npm baselines.
+
 ## 8.1.1-next.0
 
 ### Patch Changes
