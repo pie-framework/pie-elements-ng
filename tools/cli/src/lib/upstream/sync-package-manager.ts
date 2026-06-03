@@ -5,8 +5,8 @@
  * to eliminate the massive duplication between controllers-strategy and react-strategy.
  */
 
-import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
+import { readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
@@ -22,7 +22,43 @@ interface EntryPointMap {
   hasController: boolean;
   hasConfigure: boolean;
   hasPrint: boolean;
+  hasRuntimeSupport: boolean;
   hasTypes: boolean;
+}
+
+interface BrowserEsmPolicy {
+  sharedDependencyVersions?: Record<string, string>;
+}
+
+type LegacyConfigureEntry = 'author' | 'configure';
+
+function getLegacyConfigureEntry(entryPoints: EntryPointMap): LegacyConfigureEntry | null {
+  if (entryPoints.hasConfigure) {
+    return 'configure';
+  }
+  if (entryPoints.hasAuthor) {
+    return 'author';
+  }
+  return null;
+}
+
+function distEntryExport(entry: LegacyConfigureEntry): Record<string, string> {
+  return {
+    types: `./dist/${entry}/index.d.ts`,
+    default: `./dist/${entry}/index.js`,
+  };
+}
+
+function readBrowserEsmPolicy(rootDir: string): BrowserEsmPolicy {
+  const policyPath = join(rootDir, 'tools/vite/browser-esm-policy.json');
+  if (!existsSync(policyPath)) {
+    return {};
+  }
+  try {
+    return JSON.parse(readFileSync(policyPath, 'utf-8')) as BrowserEsmPolicy;
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -66,6 +102,12 @@ export function detectEntryPoints(elementDir: string): EntryPointMap {
       join(elementDir, 'src/print/index.js'),
       join(elementDir, 'src/print/index.jsx'),
     ]),
+    hasRuntimeSupport: existsAny([
+      join(elementDir, 'src/runtime-support.ts'),
+      join(elementDir, 'src/runtime-support.tsx'),
+      join(elementDir, 'src/runtime-support.js'),
+      join(elementDir, 'src/runtime-support.jsx'),
+    ]),
     hasTypes: existsAny([
       join(elementDir, 'src/types/index.ts'),
       join(elementDir, 'src/types/index.tsx'),
@@ -78,7 +120,11 @@ export function detectEntryPoints(elementDir: string): EntryPointMap {
 /**
  * Generate exports object based on available entry points
  */
-export function generateExportsObject(entryPoints: EntryPointMap): Record<string, unknown> {
+export function generateExportsObject(
+  entryPoints: EntryPointMap,
+  options: { includeBrowserExports?: boolean } = {}
+): Record<string, unknown> {
+  const includeBrowserExports = options.includeBrowserExports ?? false;
   const exports: Record<string, unknown> = {
     '.': {
       types: './dist/index.d.ts',
@@ -91,6 +137,11 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/delivery/index.d.ts',
       default: './dist/delivery/index.js',
     };
+    if (includeBrowserExports) {
+      exports['./browser/delivery'] = {
+        default: './dist/browser/delivery/index.js',
+      };
+    }
   }
 
   if (entryPoints.hasAuthor) {
@@ -98,6 +149,16 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/author/index.d.ts',
       default: './dist/author/index.js',
     };
+    if (includeBrowserExports) {
+      exports['./browser/author'] = {
+        default: './dist/browser/author/index.js',
+      };
+    }
+  }
+
+  const legacyConfigureEntry = getLegacyConfigureEntry(entryPoints);
+  if (legacyConfigureEntry) {
+    exports['./configure'] = distEntryExport(legacyConfigureEntry);
   }
 
   if (entryPoints.hasController) {
@@ -109,13 +170,11 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/controller/index.d.ts',
       default: './dist/controller/index.js',
     };
-  }
-
-  if (entryPoints.hasConfigure) {
-    exports['./configure'] = {
-      types: './dist/configure/index.d.ts',
-      default: './dist/configure/index.js',
-    };
+    if (includeBrowserExports) {
+      exports['./browser/controller'] = {
+        default: './dist/browser/controller/index.js',
+      };
+    }
   }
 
   if (entryPoints.hasPrint) {
@@ -123,12 +182,24 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/print/index.d.ts',
       default: './dist/print/index.js',
     };
+    if (includeBrowserExports) {
+      exports['./browser/print'] = {
+        default: './dist/browser/print/index.js',
+      };
+    }
   }
 
   if (entryPoints.hasTypes) {
     exports['./types'] = {
       types: './dist/types/index.d.ts',
       default: './dist/types/index.js',
+    };
+  }
+
+  if (entryPoints.hasRuntimeSupport) {
+    exports['./runtime-support'] = {
+      types: './dist/runtime-support.d.ts',
+      default: './dist/runtime-support.js',
     };
   }
 
@@ -322,6 +393,10 @@ function addKnownPeerFallbacks(deps: Record<string, string>): void {
   if (deps['@testing-library/user-event'] && !deps['@testing-library/dom']) {
     deps['@testing-library/dom'] = '^10.4.1';
   }
+
+  if (deps['@visx/curve'] && !deps['d3-shape']) {
+    deps['d3-shape'] = '^3.2.0';
+  }
 }
 
 /**
@@ -412,7 +487,8 @@ function isPieFrameworkWorkspacePackage(packageName: string, config: SyncConfig)
 export async function ensureElementPackageJson(
   elementName: string,
   elementDir: string,
-  config: SyncConfig
+  config: SyncConfig,
+  options: { includeBrowserExports?: boolean } = {}
 ): Promise<boolean> {
   if (!existsSync(elementDir)) {
     return false;
@@ -420,6 +496,7 @@ export async function ensureElementPackageJson(
 
   const pkgPath = join(elementDir, 'package.json');
   const upstreamPkgPath = join(config.pieElements, 'packages', elementName, 'package.json');
+  const includeBrowserExports = options.includeBrowserExports ?? false;
 
   // Load existing package.json
   let pkg: PackageJson | null = null;
@@ -460,6 +537,22 @@ export async function ensureElementPackageJson(
           expectedDeps[imported] = '^1.0.0'; // Use latest 1.x version as default
         }
       }
+    } else if (!expectedDeps[imported]) {
+      // Keep element package.json aligned with actual runtime imports from src/.
+      // Upstream package.json can miss third-party deps after source transforms.
+      const installedPkg = await findInstalledPackageJson(imported, elementDir);
+      if (installedPkg?.version) {
+        expectedDeps[imported] = `^${installedPkg.version}`;
+      } else {
+        const inferredPeerVersion = await inferPeerVersionFromDeclaredDeps(
+          imported,
+          expectedDeps,
+          elementDir
+        );
+        if (inferredPeerVersion) {
+          expectedDeps[imported] = inferredPeerVersion;
+        }
+      }
     }
   }
   await addTransitivePeerDependencies(expectedDeps, elementDir);
@@ -490,14 +583,17 @@ export async function ensureElementPackageJson(
   // Preserve pie metadata (if present upstream or locally)
   const pieMetadata = ((upstreamPkg as PackageJson | null | undefined)?.pie ??
     (pkg as PackageJson | null | undefined)?.pie ??
-    undefined) as { capabilities?: string[] } | undefined;
+    undefined) as
+    | {
+        capabilities?: string[];
+        controller?: string;
+        configure?: string;
+        browserSharedDependencies?: Record<string, string>;
+      }
+    | undefined;
 
   // Apply all standard transformations
   pkg = applyPackageJsonTransforms(pkg);
-
-  if (pieMetadata) {
-    pkg.pie = pieMetadata;
-  }
 
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
@@ -505,7 +601,35 @@ export async function ensureElementPackageJson(
   // Generate dist-only exports based on entry points. Do not preserve
   // source-backed `development` conditions; PIE-605 makes raw source paths a
   // private implementation detail and keeps public package surfaces dist-only.
-  pkg.exports = generateExportsObject(entryPoints);
+  const nextPieMetadata = pieMetadata ? { ...pieMetadata } : {};
+  if (entryPoints.hasController) {
+    nextPieMetadata.controller = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}/controller`;
+  } else {
+    delete nextPieMetadata.controller;
+  }
+  const legacyConfigureEntry = getLegacyConfigureEntry(entryPoints);
+  if (legacyConfigureEntry) {
+    nextPieMetadata.configure = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}/configure`;
+  } else {
+    delete nextPieMetadata.configure;
+  }
+  if (includeBrowserExports) {
+    const browserEsmPolicy = readBrowserEsmPolicy(config.pieElementsNg);
+    if (browserEsmPolicy.sharedDependencyVersions) {
+      nextPieMetadata.browserSharedDependencies = browserEsmPolicy.sharedDependencyVersions;
+    }
+  } else {
+    delete nextPieMetadata.browserSharedDependencies;
+  }
+
+  if (Object.keys(nextPieMetadata).length > 0) {
+    pkg.pie = nextPieMetadata;
+  } else {
+    delete pkg.pie;
+  }
+
+  const hasBrowserBuild = includeBrowserExports;
+  pkg.exports = generateExportsObject(entryPoints, { includeBrowserExports: hasBrowserBuild });
 
   // Warn when metadata/structure disagree for core capabilities
   const metadataCapabilities = Array.isArray(pieMetadata?.capabilities)
@@ -552,8 +676,23 @@ export async function ensureElementPackageJson(
   pkg.types = './dist/index.d.ts';
 
   // Ensure publish surface is dist-only. Source remains available in the repo,
-  // but must not be published as a public package API.
-  pkg.files = ['dist'];
+  // but must not be published as a public package API. Controller-bearing
+  // elements additionally publish the root shim required by legacy builders.
+  const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
+  const normalizedFiles = new Set<string>(files.filter((v): v is string => typeof v === 'string'));
+  normalizedFiles.add('dist');
+  normalizedFiles.delete('src');
+  if (entryPoints.hasController) {
+    normalizedFiles.add('controller.js');
+  } else {
+    normalizedFiles.delete('controller.js');
+  }
+  if (legacyConfigureEntry) {
+    normalizedFiles.add('configure.js');
+  } else {
+    normalizedFiles.delete('configure.js');
+  }
+  pkg.files = Array.from(normalizedFiles).sort();
 
   // Set sideEffects
   if (typeof pkg.sideEffects === 'undefined') {
@@ -573,10 +712,35 @@ export async function ensureElementPackageJson(
     existsSync(join(elementDir, 'src/index.iife.ts')) ||
     existsSync(join(elementDir, 'vite.config.iife.ts'));
 
-  scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE : SCRIPTS.BUILD;
+  if (hasBrowserBuild) {
+    scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE_AND_BROWSER : SCRIPTS.BUILD_WITH_BROWSER;
+  } else {
+    scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE : SCRIPTS.BUILD;
+  }
   scripts.dev = SCRIPTS.DEV;
   scripts.demo = SCRIPTS.DEMO;
   scripts.test = SCRIPTS.TEST;
+
+  const controllerShimPath = join(elementDir, 'controller.js');
+  const controllerShimContent = "export * from './dist/controller/index.js';\n";
+  const hasControllerShim = existsSync(controllerShimPath);
+  const currentControllerShim = hasControllerShim
+    ? await readFile(controllerShimPath, 'utf-8').catch(() => null)
+    : null;
+  const shouldWriteControllerShim =
+    entryPoints.hasController && currentControllerShim !== controllerShimContent;
+  const shouldRemoveControllerShim = !entryPoints.hasController && hasControllerShim;
+  const configureShimPath = join(elementDir, 'configure.js');
+  const configureShimContent = legacyConfigureEntry
+    ? `export { default } from './dist/${legacyConfigureEntry}/index.js';\nexport * from './dist/${legacyConfigureEntry}/index.js';\n`
+    : null;
+  const hasConfigureShim = existsSync(configureShimPath);
+  const currentConfigureShim = hasConfigureShim
+    ? await readFile(configureShimPath, 'utf-8').catch(() => null)
+    : null;
+  const shouldWriteConfigureShim =
+    configureShimContent !== null && currentConfigureShim !== configureShimContent;
+  const shouldRemoveConfigureShim = configureShimContent === null && hasConfigureShim;
 
   // Check if content changed
   const nextContent = `${JSON.stringify(pkg, null, 2)}\n`;
@@ -584,12 +748,30 @@ export async function ensureElementPackageJson(
     ? await readFile(pkgPath, 'utf-8').catch(() => null)
     : null;
 
-  if (currentContent === nextContent) {
+  if (
+    currentContent === nextContent &&
+    !shouldWriteControllerShim &&
+    !shouldRemoveControllerShim &&
+    !shouldWriteConfigureShim &&
+    !shouldRemoveConfigureShim
+  ) {
     return false;
   }
 
   // Write updated package.json
-  await writeFile(pkgPath, nextContent, 'utf-8');
+  if (currentContent !== nextContent) {
+    await writeFile(pkgPath, nextContent, 'utf-8');
+  }
+  if (shouldWriteControllerShim) {
+    await writeFile(controllerShimPath, controllerShimContent, 'utf-8');
+  } else if (shouldRemoveControllerShim) {
+    await unlink(controllerShimPath).catch(() => {});
+  }
+  if (shouldWriteConfigureShim && configureShimContent !== null) {
+    await writeFile(configureShimPath, configureShimContent, 'utf-8');
+  } else if (shouldRemoveConfigureShim) {
+    await unlink(configureShimPath).catch(() => {});
+  }
   return true;
 }
 

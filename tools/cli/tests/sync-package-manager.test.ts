@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -25,6 +26,26 @@ const createElementBase = async (elementDir: string) => {
   await writeFile(
     join(elementDir, 'src', 'index.ts'),
     'export default class TestElement {}\n',
+    'utf-8'
+  );
+};
+
+const writeBrowserEsmPolicy = async (rootDir: string) => {
+  await mkdir(join(rootDir, 'tools', 'vite'), { recursive: true });
+  await writeFile(
+    join(rootDir, 'tools', 'vite', 'browser-esm-policy.json'),
+    JSON.stringify(
+      {
+        allowedBareImports: ['react', 'react/jsx-runtime', 'react-dom', 'react-dom/client'],
+        sharedDependencyVersions: {
+          react: '18.2.0',
+          'react-dom': '18.2.0',
+        },
+        maxBrowserJsBytesPerPackage: 4194304,
+      },
+      null,
+      2
+    ),
     'utf-8'
   );
 };
@@ -91,6 +112,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
           dependencies: {
             recharts: '^3.7.0',
             'styled-components': '^5.2.1',
+            '@visx/curve': '^3.0.0',
           },
         },
         null,
@@ -111,14 +133,22 @@ describe('ensureElementPackageJson iife build script generation', () => {
       recharts: '^3.7.0',
       'styled-components': '^5.2.1',
       'react-is': '^19.2.0',
+      'd3-shape': '^3.2.0',
     });
   });
 
-  it('removes development export conditions and preserves controller dist aliases', async () => {
+  it('removes development export conditions and emits the controller package contract', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
 
+    await writeBrowserEsmPolicy(rootDir);
     await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'delivery'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'delivery', 'index.ts'),
+      'export default class DeliveryElement {}\n',
+      'utf-8'
+    );
     await mkdir(join(elementDir, 'src', 'controller'), { recursive: true });
     await writeFile(
       join(elementDir, 'src', 'controller', 'index.ts'),
@@ -152,7 +182,8 @@ describe('ensureElementPackageJson iife build script generation', () => {
     const changed = await ensureElementPackageJson(
       'test-element',
       elementDir,
-      createConfig(rootDir)
+      createConfig(rootDir),
+      { includeBrowserExports: true }
     );
     expect(changed).toBe(true);
 
@@ -160,6 +191,11 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.exports['.']).toEqual({
       types: './dist/index.d.ts',
       default: './dist/index.js',
+    });
+    expect(pkgJson.pie.controller).toBe('@pie-element/test-element/controller');
+    expect(pkgJson.pie.browserSharedDependencies).toEqual({
+      react: '18.2.0',
+      'react-dom': '18.2.0',
     });
     expect(pkgJson.exports['./controller']).toEqual({
       types: './dist/controller/index.d.ts',
@@ -169,7 +205,140 @@ describe('ensureElementPackageJson iife build script generation', () => {
       types: './dist/controller/index.d.ts',
       default: './dist/controller/index.js',
     });
+    expect(pkgJson.exports['./browser/delivery']).toEqual({
+      default: './dist/browser/delivery/index.js',
+    });
+    expect(pkgJson.exports['./browser/controller']).toEqual({
+      default: './dist/browser/controller/index.js',
+    });
+    expect(pkgJson.files).toContain('dist');
+    expect(pkgJson.files).toContain('controller.js');
+    expect(pkgJson.files).not.toContain('src');
+    expect(pkgJson.scripts.build).toContain(
+      'vite build --config ../../../tools/vite/element-browser.config.ts'
+    );
+    await expect(readFile(join(elementDir, 'controller.js'), 'utf-8')).resolves.toBe(
+      "export * from './dist/controller/index.js';\n"
+    );
+  });
+
+  it('emits legacy configure metadata and shim from the modern author entry', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'author'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'author', 'index.ts'),
+      'export default class AuthorElement {}\n',
+      'utf-8'
+    );
+    await mkdir(join(elementDir, 'src', 'controller'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'controller', 'index.ts'),
+      'export default class Controller {}\n',
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.pie.controller).toBe('@pie-element/test-element/controller');
+    expect(pkgJson.pie.configure).toBe('@pie-element/test-element/configure');
+    expect(pkgJson.exports['./author']).toEqual({
+      types: './dist/author/index.d.ts',
+      default: './dist/author/index.js',
+    });
+    expect(pkgJson.exports['./configure']).toEqual({
+      types: './dist/author/index.d.ts',
+      default: './dist/author/index.js',
+    });
+    expect(pkgJson.files).toContain('configure.js');
+    await expect(readFile(join(elementDir, 'configure.js'), 'utf-8')).resolves.toBe(
+      "export { default } from './dist/author/index.js';\nexport * from './dist/author/index.js';\n"
+    );
+  });
+
+  it('emits legacy configure metadata and shim for author-only packages', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'author'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'author', 'index.ts'),
+      'export default class AuthorElement {}\n',
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.pie.controller).toBeUndefined();
+    expect(pkgJson.pie.configure).toBe('@pie-element/test-element/configure');
+    expect(pkgJson.exports['./controller']).toBeUndefined();
+    expect(pkgJson.exports['./configure']).toEqual({
+      types: './dist/author/index.d.ts',
+      default: './dist/author/index.js',
+    });
+    expect(pkgJson.files).toContain('configure.js');
+    expect(pkgJson.files).not.toContain('controller.js');
+    expect(existsSync(join(elementDir, 'controller.js'))).toBe(false);
+    await expect(readFile(join(elementDir, 'configure.js'), 'utf-8')).resolves.toBe(
+      "export { default } from './dist/author/index.js';\nexport * from './dist/author/index.js';\n"
+    );
+  });
+
+  it('removes stale root compatibility shims when source entries disappear', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+    await writeFile(
+      join(elementDir, 'controller.js'),
+      "export * from './dist/controller/index.js';\n",
+      'utf-8'
+    );
+    await writeFile(
+      join(elementDir, 'configure.js'),
+      "export { default } from './dist/author/index.js';\nexport * from './dist/author/index.js';\n",
+      'utf-8'
+    );
+    await writeFile(
+      join(elementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          files: ['configure.js', 'controller.js', 'dist'],
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
     expect(pkgJson.files).toEqual(['dist']);
+    expect(pkgJson.pie).toBeUndefined();
+    expect(existsSync(join(elementDir, 'controller.js'))).toBe(false);
+    expect(existsSync(join(elementDir, 'configure.js'))).toBe(false);
   });
 });
 
@@ -188,6 +357,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(pkgJson.dependencies).toEqual({
       '@pie-element/shared-math-rendering-mathjax': 'workspace:*',
     });
+    expect(pkgJson.files).toEqual(['dist']);
   });
 
   it('adds workspace deps detected from pie-lib source imports', async () => {

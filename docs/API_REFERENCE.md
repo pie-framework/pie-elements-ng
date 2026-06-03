@@ -2,6 +2,10 @@
 
 Complete API documentation for PIE Elements NG.
 
+For the normative PIE element JavaScript and npm packaging contract, see
+[`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md). This page provides
+examples and element-specific reference detail.
+
 ## Table of Contents
 
 - [Core Interfaces](#core-interfaces)

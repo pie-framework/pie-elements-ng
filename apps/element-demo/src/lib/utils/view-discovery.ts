@@ -18,16 +18,39 @@ export interface ElementView {
   description?: string;
 }
 
-// Use Vite's import.meta.glob to statically analyze package.json files at build time
-// IMPORTANT: The path MUST be a literal string (Vite requirement for static analysis)
-// If this file moves or the workspace structure changes, update this path:
-//   Current file: apps/element-demo/src/lib/utils/view-discovery.ts
-//   Target: <workspace-root>/packages/elements-{react,svelte}/*/package.json
-//   Levels up: ../../../../../ (from utils/ -> lib/ -> src/ -> element-demo/ -> apps/ -> root/)
-const packageJsonModules = import.meta.glob<{ exports?: Record<string, unknown> }>(
-  '../../../../../packages/elements-{react,svelte}/*/package.json',
+interface ElementPackageJson {
+  exports?: Record<string, unknown>;
+}
+
+const packageJsonModules = import.meta.glob<ElementPackageJson>(
+  '@workspace/packages/elements-{react,svelte}/*/package.json',
   { eager: false }
 );
+const packageJsonEntries = Object.entries(packageJsonModules);
+const ELEMENT_FAMILIES = ['react', 'svelte'] as const;
+
+export function isElementViewExport(exportKey: string): boolean {
+  if (!exportKey.startsWith('./')) return false;
+  const viewId = exportKey.replace('./', '');
+  if (!viewId || viewId === 'delivery') return false;
+  if (viewId === 'controller' || viewId === 'controller.js') return false;
+  if (viewId === 'runtime-support') return false;
+  if (viewId.startsWith('browser/')) return false;
+  return viewId === 'author' || viewId === 'print' || viewId.startsWith('delivery-');
+}
+
+async function loadElementPackageJson(elementName: string): Promise<ElementPackageJson | null> {
+  for (const family of ELEMENT_FAMILIES) {
+    const packagePath = `packages/elements-${family}/${elementName}/package.json`;
+    const loader = packageJsonEntries.find(([modulePath]) => modulePath.endsWith(packagePath))?.[1];
+
+    if (loader) {
+      return loader();
+    }
+  }
+
+  return null;
+}
 
 /**
  * Discover available views from an element's package.json exports
@@ -39,38 +62,17 @@ export async function discoverElementViews(elementName: string): Promise<Element
   const views: ElementView[] = [];
 
   try {
-    // Find the matching package.json using the glob result
-    // The glob pattern matches both React and Svelte elements, so we need to check both paths
-    const reactPath = `../../../../../packages/elements-react/${elementName}/package.json`;
-    const sveltePath = `../../../../../packages/elements-svelte/${elementName}/package.json`;
-
-    let packagePath = reactPath;
-    let loader = packageJsonModules[reactPath];
-
-    if (!loader) {
-      packagePath = sveltePath;
-      loader = packageJsonModules[sveltePath];
-    }
-
-    if (!loader) {
+    const packageJson = await loadElementPackageJson(elementName);
+    if (!packageJson) {
       console.warn(`Could not find package.json for ${elementName}`);
       return views;
     }
 
-    // Load the package.json
-    const packageJson = await loader();
     const exports = packageJson.exports || {};
 
     // Parse exports to find view subpaths
     for (const [key] of Object.entries(exports)) {
-      // Skip root export (that's delivery, handled separately)
-      if (key === '.') continue;
-
-      // Skip controller export
-      if (key === './controller') continue;
-
-      // Skip plain delivery export (same as root, handled separately)
-      if (key === './delivery') continue;
+      if (!isElementViewExport(key)) continue;
 
       // Parse the subpath
       const subpath = key.replace('./', '/');
@@ -157,4 +159,9 @@ function getViewDescription(viewId: string): string | undefined {
 export async function hasView(elementName: string, viewId: string): Promise<boolean> {
   const views = await discoverElementViews(elementName);
   return views.some((v) => v.id === viewId);
+}
+
+export async function hasControllerExport(elementName: string): Promise<boolean> {
+  const packageJson = await loadElementPackageJson(elementName);
+  return Boolean(packageJson?.exports?.['./controller']);
 }

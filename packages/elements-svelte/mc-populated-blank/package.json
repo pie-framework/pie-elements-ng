@@ -6,7 +6,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "pie": {
-    "controller": "@pie-element/mc-populated-blank/controller"
+    "controller": "@pie-element/mc-populated-blank/controller",
+    "configure": "@pie-element/mc-populated-blank/configure"
   },
   "exports": {
     ".": {
@@ -29,18 +30,27 @@
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"
     },
+    "./configure": {
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    },
     "./print": {
       "types": "./dist/print/index.d.ts",
       "default": "./dist/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "files": [
-    "dist",
-    "controller.js"
+    "configure.js",
+    "controller.js",
+    "dist"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
+    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
     "dev": "vite",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },

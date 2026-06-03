@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/match-list",
-  "version": "7.1.1-next.0",
+  "version": "7.1.0",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -18,7 +18,13 @@
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "@emotion/core": "0.x.x",
+    "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "@emotion/styled": "^11.3.0",
+    "@mui/material-pigment-css": "^7.3.11"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -33,6 +39,9 @@
       "types": "./dist/delivery/index.d.ts",
       "default": "./dist/delivery/index.js"
     },
+    "./browser/delivery": {
+      "default": "./dist/browser/delivery/index.js"
+    },
     "./controller": {
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
@@ -40,12 +49,16 @@
     "./controller.js": {
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
+    },
+    "./browser/controller": {
+      "default": "./dist/browser/controller/index.js"
     }
   },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "controller.js",
     "dist"
   ],
   "sideEffects": false,
@@ -57,9 +70,16 @@
     "@types/react-dom": "^18.2.0"
   },
   "scripts": {
-    "build": "bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
+    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"
+  },
+  "pie": {
+    "controller": "@pie-element/match-list/controller",
+    "browserSharedDependencies": {
+      "react": "18.2.0",
+      "react-dom": "18.2.0"
+    }
   }
 }

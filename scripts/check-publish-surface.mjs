@@ -7,13 +7,18 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const ROOT_PACKAGE_JSON = path.join(ROOT, 'package.json');
 const POLICY_PATH = path.join(ROOT, 'scripts', 'publish-policy.json');
+const BROWSER_ESM_POLICY_PATH = path.join(ROOT, 'tools', 'vite', 'browser-esm-policy.json');
 const MAX_DETAILS_PER_PACKAGE = 20;
 const FORBIDDEN_EXPORT_CONDITIONS = new Set(['development', 'svelte']);
 
 const readJson = (filePath) => JSON.parse(readFileSync(filePath, 'utf8'));
 const toPosix = (value) => value.replaceAll(path.sep, '/');
 const policy = existsSync(POLICY_PATH) ? readJson(POLICY_PATH) : {};
+const browserEsmPolicy = readJson(BROWSER_ESM_POLICY_PATH);
 const forbiddenPublicExports = new Map(Object.entries(policy.forbiddenPublicExports || {}));
+const allowedBrowserBareImports = new Set(browserEsmPolicy.allowedBareImports || []);
+const expectedBrowserSharedDependencies = browserEsmPolicy.sharedDependencyVersions || {};
+const maxBrowserJsBytesPerPackage = Number(browserEsmPolicy.maxBrowserJsBytesPerPackage || 0);
 
 const getWorkspaceDirs = () => {
   const rootPkg = readJson(ROOT_PACKAGE_JSON);
@@ -121,6 +126,9 @@ const isAllowedPackedFile = (filePath, pkg) => {
   if (filePath === 'controller.js' && pkg.pie?.controller?.endsWith('/controller')) {
     return true;
   }
+  if (filePath === 'configure.js' && pkg.pie?.configure?.endsWith('/configure')) {
+    return true;
+  }
   if (getDeclaredBinFiles(pkg).has(filePath)) return true;
   if (isMetadataFile(filePath)) return true;
   if (filePath === 'oclif.manifest.json' && pkg.oclif) return true;
@@ -130,7 +138,226 @@ const isAllowedPackedFile = (filePath, pkg) => {
   return false;
 };
 
-const collectManifestViolations = (pkg) => {
+const collectControllerContractViolations = (dir, pkg) => {
+  const violations = [];
+  const controllerExport = pkg.exports?.['./controller'];
+  const configureExport = pkg.exports?.['./configure'];
+  const files = Array.isArray(pkg.files) ? pkg.files : [];
+  const hasControllerContract =
+    Boolean(controllerExport) ||
+    Boolean(pkg.exports?.['./controller.js']) ||
+    Boolean(pkg.pie?.controller) ||
+    files.includes('controller.js');
+  const hasConfigureContract =
+    Boolean(configureExport) || Boolean(pkg.pie?.configure) || files.includes('configure.js');
+
+  if (!hasControllerContract && !hasConfigureContract) {
+    return violations;
+  }
+
+  const expectedControllerSpecifier = `${pkg.name}/controller`;
+  const expectedConfigureSpecifier = `${pkg.name}/configure`;
+  const controllerJsExport = pkg.exports?.['./controller.js'];
+
+  if (hasControllerContract) {
+    if (!controllerExport) {
+      violations.push('exports["./controller"] is required for controller packages');
+    }
+    if (pkg.pie?.controller !== expectedControllerSpecifier) {
+      violations.push(`pie.controller must be "${expectedControllerSpecifier}"`);
+    }
+    if (!controllerJsExport) {
+      violations.push('exports["./controller.js"] is required for controller packages');
+    } else if (controllerExport) {
+      if (controllerJsExport.default !== controllerExport.default) {
+        violations.push(
+          'exports["./controller.js"].default must match exports["./controller"].default'
+        );
+      }
+      if (controllerJsExport.types !== controllerExport.types) {
+        violations.push(
+          'exports["./controller.js"].types must match exports["./controller"].types'
+        );
+      }
+    }
+    if (!files.includes('controller.js')) {
+      violations.push('files[] must include controller.js for controller packages');
+    }
+  }
+
+  if (hasConfigureContract) {
+    if (!configureExport) {
+      violations.push('exports["./configure"] is required for author/configure packages');
+    }
+    if (pkg.pie?.configure !== expectedConfigureSpecifier) {
+      violations.push(`pie.configure must be "${expectedConfigureSpecifier}"`);
+    }
+    if (!files.includes('configure.js')) {
+      violations.push('files[] must include configure.js for author/configure packages');
+    }
+
+    const configureTarget = configureExport?.default;
+    if (typeof configureTarget !== 'string' || !configureTarget.startsWith('./dist/')) {
+      violations.push('exports["./configure"].default must point at ./dist/...');
+    } else {
+      const configureShimPath = path.join(dir, 'configure.js');
+      const expectedConfigureShim = `export { default } from '${configureTarget}';\nexport * from '${configureTarget}';\n`;
+      if (!existsSync(configureShimPath)) {
+        violations.push('root configure.js compatibility shim is missing');
+      } else {
+        const configureShim = readFileSync(configureShimPath, 'utf8');
+        if (configureShim !== expectedConfigureShim) {
+          violations.push(`root configure.js shim must re-export ${configureTarget}`);
+        }
+      }
+    }
+  }
+
+  if (hasControllerContract) {
+    const shimPath = path.join(dir, 'controller.js');
+    if (!existsSync(shimPath)) {
+      violations.push('root controller.js compatibility shim is missing');
+    } else {
+      const shim = readFileSync(shimPath, 'utf8');
+      if (shim !== "export * from './dist/controller/index.js';\n") {
+        violations.push('root controller.js shim must re-export ./dist/controller/index.js');
+      }
+    }
+  }
+
+  return violations;
+};
+
+const collectJsFiles = (dir) => {
+  if (!existsSync(dir)) return [];
+  const files = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...collectJsFiles(fullPath));
+    } else if (entry.isFile() && entry.name.endsWith('.js')) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+};
+
+const collectBareImportSpecifiers = (source) => {
+  const specifiers = [];
+  for (const line of source.split(/\r?\n/)) {
+    const match =
+      line.match(/^\s*import\s+['"]([^'"]+)['"]/) ||
+      line.match(/^\s*import\s+[^'"]+?\s+from\s+['"]([^'"]+)['"]/) ||
+      line.match(/^\s*export\s+[^'"]+?\s+from\s+['"]([^'"]+)['"]/);
+    if (!match) continue;
+    const specifier = match[1];
+    if (
+      specifier.startsWith('.') ||
+      specifier.startsWith('/') ||
+      specifier.startsWith('http://') ||
+      specifier.startsWith('https://')
+    ) {
+      continue;
+    }
+    specifiers.push(specifier);
+  }
+  return specifiers;
+};
+
+const collectBrowserEsmViolations = (dir, pkg) => {
+  const browserExports = Object.entries(pkg.exports ?? {}).filter(([key]) =>
+    key.startsWith('./browser/')
+  );
+  if (browserExports.length === 0) {
+    return [];
+  }
+
+  const violations = [];
+  const browserSharedDependencies = pkg.pie?.browserSharedDependencies;
+  for (const [dependencyName, expectedVersion] of Object.entries(
+    expectedBrowserSharedDependencies
+  )) {
+    const actualVersion = browserSharedDependencies?.[dependencyName];
+    if (actualVersion !== expectedVersion) {
+      violations.push(
+        `pie.browserSharedDependencies.${dependencyName} must be "${expectedVersion}" for browser ESM packages`
+      );
+    }
+  }
+
+  for (const [key, value] of browserExports) {
+    const target = typeof value === 'string' ? value : value?.default;
+    if (typeof target !== 'string' || !target.startsWith('./dist/browser/')) {
+      violations.push(`${key} must point at ./dist/browser/...`);
+      continue;
+    }
+
+    const targetPath = path.join(dir, target.slice(2));
+    if (!existsSync(targetPath)) {
+      violations.push(`${key} target is missing: ${target}`);
+    }
+  }
+
+  const browserDir = path.join(dir, 'dist/browser');
+  let browserJsBytes = 0;
+  const jsFiles = collectJsFiles(browserDir);
+  for (const filePath of jsFiles) {
+    browserJsBytes += readFileSync(filePath).byteLength;
+    const source = readFileSync(filePath, 'utf8');
+    for (const specifier of collectBareImportSpecifiers(source)) {
+      if (!allowedBrowserBareImports.has(specifier)) {
+        const relPath = toPosix(path.relative(dir, filePath));
+        violations.push(`${relPath} contains unsupported bare browser import "${specifier}"`);
+      }
+    }
+    if (source.includes('customElements.define')) {
+      const relPath = toPosix(path.relative(dir, filePath));
+      violations.push(`${relPath} must not auto-register a custom element`);
+    }
+  }
+  if (maxBrowserJsBytesPerPackage > 0 && browserJsBytes > maxBrowserJsBytesPerPackage) {
+    violations.push(
+      `dist/browser JS size ${browserJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
+    );
+  }
+
+  return violations;
+};
+
+const isElementPackageDir = (dir, pkg) =>
+  typeof pkg.name === 'string' &&
+  pkg.name.startsWith('@pie-element/') &&
+  (toPosix(path.relative(ROOT, dir)).startsWith('packages/elements-react/') ||
+    toPosix(path.relative(ROOT, dir)).startsWith('packages/elements-svelte/'));
+
+const collectRuntimeSupportContractViolations = (dir, pkg) => {
+  if (!isElementPackageDir(dir, pkg)) return [];
+  const browserExports = Object.keys(pkg.exports ?? {}).filter((key) =>
+    key.startsWith('./browser/')
+  );
+  if (browserExports.length > 0) return [];
+
+  const violations = [];
+  const runtimeSupportExport = pkg.exports?.['./runtime-support'];
+  const target =
+    typeof runtimeSupportExport === 'string' ? runtimeSupportExport : runtimeSupportExport?.default;
+  if (typeof target !== 'string') {
+    return [
+      'non-browser-ESM element packages must expose exports["./runtime-support"] marking esm unsupported',
+    ];
+  }
+  if (!target.startsWith('./dist/')) {
+    violations.push('exports["./runtime-support"] must point at ./dist/...');
+    return violations;
+  }
+  const targetPath = path.join(dir, target.slice(2));
+  if (!existsSync(targetPath)) {
+    violations.push(`exports["./runtime-support"] target is missing: ${target}`);
+  }
+  return violations;
+};
+
+const collectManifestViolations = (dir, pkg) => {
   const violations = [];
   if (Array.isArray(pkg.files)) {
     for (const entry of pkg.files) {
@@ -160,6 +387,9 @@ const collectManifestViolations = (pkg) => {
   }
 
   collectExportKeyViolations(pkg, violations);
+  violations.push(...collectControllerContractViolations(dir, pkg));
+  violations.push(...collectBrowserEsmViolations(dir, pkg));
+  violations.push(...collectRuntimeSupportContractViolations(dir, pkg));
 
   const targets = new Set();
   for (const field of ['main', 'module', 'types', 'unpkg', 'jsdelivr']) {
@@ -209,7 +439,7 @@ for (const dir of getWorkspaceDirs()) {
   if (pkg.private) continue;
   checked += 1;
 
-  const violations = collectManifestViolations(pkg);
+  const violations = collectManifestViolations(dir, pkg);
   try {
     violations.push(...collectPackViolations(dir, pkg));
   } catch (error) {

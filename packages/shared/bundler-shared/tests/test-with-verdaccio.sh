@@ -14,6 +14,84 @@ NC='\033[0m' # No Color
 # Configuration
 VERDACCIO_URL="http://localhost:4873"
 TEST_VERSION="0.0.0-test.$(date +%s)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+find_workspace_root() {
+  local dir="$1"
+
+  while [ "$dir" != "/" ]; do
+    if [ -f "$dir/package.json" ] && node -e "const pkg = require(process.argv[1]); process.exit(Array.isArray(pkg.workspaces) || Array.isArray(pkg.workspaces && pkg.workspaces.packages) ? 0 : 1)" "$dir/package.json"; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+
+  return 1
+}
+
+WORKSPACE_ROOT="$(find_workspace_root "$SCRIPT_DIR")"
+TEST_PACKAGE="${VERDACCIO_TEST_PACKAGE:-@pie-element/multiple-choice}"
+PACKAGES_INPUT="${VERDACCIO_PACKAGES:-$TEST_PACKAGE}"
+IFS=',' read -ra RAW_PACKAGES <<< "$PACKAGES_INPUT"
+PACKAGES=()
+for RAW_PKG in "${RAW_PACKAGES[@]}"; do
+  PKG="$(echo "$RAW_PKG" | xargs)"
+  if [ -n "$PKG" ]; then
+    PACKAGES+=("$PKG")
+  fi
+done
+
+if [ ${#PACKAGES[@]} -eq 0 ]; then
+  PACKAGES=("$TEST_PACKAGE")
+fi
+
+TEST_PACKAGE_INCLUDED=false
+for PKG in "${PACKAGES[@]}"; do
+  if [ "$PKG" = "$TEST_PACKAGE" ]; then
+    TEST_PACKAGE_INCLUDED=true
+    break
+  fi
+done
+if [ "$TEST_PACKAGE_INCLUDED" = false ]; then
+  PACKAGES+=("$TEST_PACKAGE")
+fi
+
+resolve_workspace_package() {
+  node - "$WORKSPACE_ROOT" "$1" <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+
+const workspaceRoot = process.argv[2];
+const packageName = process.argv[3];
+const rootPackageJson = JSON.parse(fs.readFileSync(path.join(workspaceRoot, 'package.json'), 'utf8'));
+const workspaces = Array.isArray(rootPackageJson.workspaces)
+  ? rootPackageJson.workspaces
+  : rootPackageJson.workspaces?.packages || [];
+
+for (const pattern of workspaces) {
+  if (!pattern.endsWith('/*')) continue;
+
+  const baseDir = path.join(workspaceRoot, pattern.slice(0, -2));
+  if (!fs.existsSync(baseDir)) continue;
+
+  for (const entry of fs.readdirSync(baseDir)) {
+    const packageDir = path.join(baseDir, entry);
+    const packageJsonPath = path.join(packageDir, 'package.json');
+    if (!fs.existsSync(packageJsonPath)) continue;
+
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    if (packageJson.name === packageName) {
+      console.log(packageDir);
+      process.exit(0);
+    }
+  }
+}
+
+console.error(`Package ${packageName} was not found in workspace packages.`);
+process.exit(1);
+NODE
+}
 
 echo -e "${BLUE}Step 1: Check if Verdaccio is running${NC}"
 if ! curl -sf "$VERDACCIO_URL/-/ping" > /dev/null; then
@@ -24,13 +102,6 @@ fi
 echo -e "${GREEN}✅ Verdaccio is running${NC}"
 echo ""
 
-# Packages to publish
-PACKAGES=(
-  "packages/shared/math-engine"
-  "packages/elements-react/multiple-choice"
-  "packages/elements-react/text-entry"
-)
-
 echo -e "${BLUE}Step 2: Build and publish local packages to Verdaccio${NC}"
 echo "Test version: $TEST_VERSION"
 echo ""
@@ -39,7 +110,7 @@ echo ""
 export NPM_CONFIG_REGISTRY="$VERDACCIO_URL"
 
 for PKG in "${PACKAGES[@]}"; do
-  PKG_PATH="../../../../../../$PKG"
+  PKG_PATH="$(resolve_workspace_package "$PKG")"
 
   if [ ! -d "$PKG_PATH" ]; then
     echo -e "${YELLOW}⚠️  Skipping $PKG (not found)${NC}"
@@ -73,7 +144,7 @@ done
 
 echo -e "${BLUE}Step 3: Verify packages are available${NC}"
 for PKG in "${PACKAGES[@]}"; do
-  PKG_PATH="../../../../../../$PKG"
+  PKG_PATH="$(resolve_workspace_package "$PKG")"
   if [ ! -d "$PKG_PATH" ]; then
     continue
   fi
@@ -113,7 +184,7 @@ async function test() {
   console.log('Testing with Verdaccio packages...');
   const result = await bundler.build({
     dependencies: [
-      { name: '@pie-element/multiple-choice', version: '${TEST_VERSION}' }
+      { name: '${TEST_PACKAGE}', version: '${TEST_VERSION}' }
     ]
   });
 

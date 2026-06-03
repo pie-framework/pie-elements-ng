@@ -45,7 +45,7 @@ src/
   types.ts                   # Model, Session, ViewModel — no `any`
 
 package.json                 # "pie": { "controller": "@pie-element/<slug>/controller" }
-                             # "exports" map with ./delivery, ./controller, ./author subpaths
+                             # "exports" map with ./delivery, ./controller, ./controller.js, ./author subpaths
                              # "files" includes controller.js
 controller.js                # Shim: export * from './dist/controller/index.js'
 docs.contract.json           # PieDocsContract

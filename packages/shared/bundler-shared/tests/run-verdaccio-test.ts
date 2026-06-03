@@ -12,7 +12,7 @@ import { Bundler } from '../src/index';
 import { execSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,6 +20,11 @@ const __dirname = dirname(__filename);
 
 const VERDACCIO_URL = 'http://localhost:4873';
 const TEST_VERSION = `0.0.0-test.${Date.now()}`;
+const TEST_PACKAGE = process.env.VERDACCIO_TEST_PACKAGE || '@pie-element/multiple-choice';
+const PUBLISH_PACKAGES = (process.env.VERDACCIO_PACKAGES || TEST_PACKAGE)
+  .split(',')
+  .map((name) => name.trim())
+  .filter(Boolean);
 
 // ANSI colors
 const colors = {
@@ -42,6 +47,55 @@ function checkVerdaccio(): boolean {
   } catch {
     return false;
   }
+}
+
+function findWorkspaceRoot(startDir: string): string {
+  let currentDir = startDir;
+
+  while (true) {
+    const packageJsonPath = join(currentDir, 'package.json');
+    if (existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+      const workspaces = packageJson.workspaces;
+      if (Array.isArray(workspaces) || Array.isArray(workspaces?.packages)) {
+        return currentDir;
+      }
+    }
+
+    const parentDir = dirname(currentDir);
+    if (parentDir === currentDir) {
+      throw new Error(`Could not find workspace root from ${startDir}`);
+    }
+    currentDir = parentDir;
+  }
+}
+
+function workspacePatterns(workspaceRoot: string): string[] {
+  const packageJson = JSON.parse(readFileSync(join(workspaceRoot, 'package.json'), 'utf-8'));
+  const workspaces = packageJson.workspaces;
+  return Array.isArray(workspaces) ? workspaces : workspaces?.packages || [];
+}
+
+function resolveWorkspacePackage(workspaceRoot: string, packageName: string): string {
+  for (const pattern of workspacePatterns(workspaceRoot)) {
+    if (!pattern.endsWith('/*')) continue;
+
+    const baseDir = join(workspaceRoot, pattern.slice(0, -2));
+    if (!existsSync(baseDir)) continue;
+
+    for (const entry of readdirSync(baseDir)) {
+      const packageDir = join(baseDir, entry);
+      const packageJsonPath = join(packageDir, 'package.json');
+      if (!existsSync(packageJsonPath)) continue;
+
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+      if (packageJson.name === packageName) {
+        return packageDir;
+      }
+    }
+  }
+
+  throw new Error(`Package ${packageName} was not found in workspace packages.`);
 }
 
 async function publishPackage(packagePath: string): Promise<string | null> {
@@ -105,11 +159,10 @@ async function testBundler() {
 
   // Step 2: Publish packages
   log('Step 2: Publish local packages', 'blue');
-  const packagesToPublish = [
-    join(__dirname, '../../math-engine'),
-    join(__dirname, '../../../elements-react/multiple-choice'),
-    join(__dirname, '../../../elements-react/text-entry'),
-  ];
+  const workspaceRoot = findWorkspaceRoot(__dirname);
+  const packagesToPublish = PUBLISH_PACKAGES.map((packageName) =>
+    resolveWorkspacePackage(workspaceRoot, packageName)
+  );
 
   const published: string[] = [];
   for (const pkgPath of packagesToPublish) {
@@ -135,9 +188,15 @@ async function testBundler() {
     VERDACCIO_URL
   );
 
-  log('Building bundle with @pie-element/multiple-choice...', 'blue');
+  if (!published.includes(TEST_PACKAGE)) {
+    throw new Error(
+      `${TEST_PACKAGE} must be included in VERDACCIO_PACKAGES so the bundler test can install the test version.`
+    );
+  }
+
+  log(`Building bundle with ${TEST_PACKAGE}...`, 'blue');
   const result = await bundler.build({
-    dependencies: [{ name: '@pie-element/multiple-choice', version: TEST_VERSION }],
+    dependencies: [{ name: TEST_PACKAGE, version: TEST_VERSION }],
   });
 
   log('\nBuild Result:', 'blue');

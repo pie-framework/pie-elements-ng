@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/plot",
-  "version": "4.0.4-next.0",
+  "version": "4.0.3",
   "description": "Some underlying components for building charts/graphs",
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/correct-answer-toggle",
-  "version": "4.0.3-next.0",
+  "version": "4.0.2",
   "description": "A react based toggle component",
   "dependencies": {
     "@emotion/react": "^11.14.0",
