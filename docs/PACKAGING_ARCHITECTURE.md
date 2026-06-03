@@ -280,5 +280,3 @@ exercise representative ESM, IIFE, and preloaded flows.
   background on legacy shared-library IIFE bundling.
 - [`DEMO_SYSTEM.md`](DEMO_SYSTEM.md) explains how the demo app loads package
   artifacts during development.
-- [`esm-testing-strategy.md`](esm-testing-strategy.md) covers ESM/import-map
-  testing strategy.

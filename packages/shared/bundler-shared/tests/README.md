@@ -93,62 +93,7 @@ bun cli dev:test-bundler --keep-workspace
 
 See [../TESTING.md](../TESTING.md) for complete documentation on workspace testing.
 
-## Testing with Local Packages (Verdaccio)
-
-You can test the bundler with local packages using Verdaccio (a local NPM registry):
-
-### Quick Start
-
-```bash
-# 1. Start Verdaccio
-docker compose up -d verdaccio
-
-# 2. Run the Verdaccio test script
-cd packages/shared/bundler-shared
-bun run tests/run-verdaccio-test.ts
-```
-
-The script will:
-1. Build local packages (`@pie-element/multiple-choice`, etc.)
-2. Publish them to Verdaccio with a test version (e.g., `0.0.0-test.1234567890`)
-3. Run the bundler using Verdaccio as the registry
-4. Verify the bundles are created correctly
-
-### Manual Verdaccio Testing
-
-If you want more control:
-
-```bash
-# 1. Start Verdaccio
-docker compose up -d verdaccio
-
-# 2. Build and publish a package
-cd packages/elements-react/multiple-choice
-bun run build
-npm version 0.0.0-test.1 --no-git-tag-version
-npm publish --registry http://localhost:4873
-
-# 3. Test with the bundler
-cd packages/shared/bundler-shared
-bun run test-with-local.ts  # (create this script)
-```
-
-### Environment Variable
-
-The bundler supports a custom registry via environment variable:
-
-```bash
-export NPM_REGISTRY=http://localhost:4873
-bun test
-```
-
-Or pass it directly to the Bundler constructor:
-
-```typescript
-const bundler = new Bundler('./bundles', './cache', 'http://localhost:4873');
-```
-
-### What Gets Tested
+## What Gets Tested
 
 1. **Basic Bundle Creation**
    - Single element bundling
