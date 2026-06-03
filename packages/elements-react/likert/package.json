@@ -13,17 +13,12 @@
     "lodash-es": "^4.17.23",
     "prop-types": "^15.8.1",
     "react-test-renderer": "18.2.0",
+    "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
-    "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "react": ">=16.8.0",
-    "@emotion/core": "0.x.x",
-    "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "@emotion/styled": "^11.3.0",
-    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "@mui/material-pigment-css": "^7.3.11"
+    "@emotion/core": "0.x.x"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -88,10 +83,10 @@
   },
   "pie": {
     "controller": "@pie-element/likert/controller",
+    "configure": "@pie-element/likert/configure",
     "browserSharedDependencies": {
       "react": "18.2.0",
       "react-dom": "18.2.0"
-    },
-    "configure": "@pie-element/likert/configure"
+    }
   }
 }

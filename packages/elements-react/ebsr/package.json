@@ -8,12 +8,12 @@
     "classnames": "^2.2.6",
     "debug": "^4.1.1",
     "lodash-es": "^4.17.23",
-    "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-controller-utils": "workspace:*",
+    "prop-types": "^15.8.1",
+    "@pie-lib/config-ui": "workspace:*",
     "@mui/material": "^7.3.11",
-    "prop-types": "^15.8.1"
+    "@pie-element/shared-controller-utils": "workspace:*",
+    "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -85,10 +85,10 @@
   },
   "pie": {
     "controller": "@pie-element/ebsr/controller",
+    "configure": "@pie-element/ebsr/configure",
     "browserSharedDependencies": {
       "react": "18.2.0",
       "react-dom": "18.2.0"
-    },
-    "configure": "@pie-element/ebsr/configure"
+    }
   }
 }

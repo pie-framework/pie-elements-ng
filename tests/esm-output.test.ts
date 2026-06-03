@@ -33,11 +33,15 @@ function collectExportTargets(exportsField: PackageJson['exports']): string[] {
 }
 
 function isLikelyEsm(source: string): boolean {
+  if (/\bexport\b|\bimport\b|import\.meta/.test(source)) {
+    return true;
+  }
+
   // Avoid treating Svelte custom-element output like `exports.forEach(...)` as CJS.
   if (/\bmodule\.exports\b/.test(source) || /\brequire\s*\(/.test(source)) {
     return false;
   }
-  return /\bexport\b|\bimport\b|import\.meta/.test(source);
+  return false;
 }
 
 // Packages explicitly excluded from `bun run build` in the root package.json.

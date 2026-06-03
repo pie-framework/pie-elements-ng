@@ -137,6 +137,161 @@ describe('ensureElementPackageJson iife build script generation', () => {
     });
   });
 
+  it('does not promote optional transitive peer deps into element package dependencies', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+    const upstreamElementDir = join(
+      rootDir,
+      'upstream',
+      'pie-elements',
+      'packages',
+      'test-element'
+    );
+    const fakeDepDir = join(rootDir, 'node_modules', 'uses-optional-peer');
+
+    await createElementBase(elementDir);
+    await mkdir(upstreamElementDir, { recursive: true });
+    await mkdir(fakeDepDir, { recursive: true });
+    await writeFile(join(fakeDepDir, 'index.js'), 'export {};\n', 'utf-8');
+    await writeFile(
+      join(fakeDepDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'uses-optional-peer',
+          version: '1.0.0',
+          main: './index.js',
+          peerDependencies: {
+            'required-peer': '^2.0.0',
+            'optional-peer': '^3.0.0',
+            react: '^18.0.0',
+          },
+          peerDependenciesMeta: {
+            'optional-peer': {
+              optional: true,
+            },
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamElementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          dependencies: {
+            'uses-optional-peer': '^1.0.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toMatchObject({
+      'uses-optional-peer': '^1.0.0',
+      'required-peer': '^2.0.0',
+    });
+    expect(pkgJson.dependencies).not.toHaveProperty('optional-peer');
+    expect(pkgJson.dependencies).not.toHaveProperty('react');
+  });
+
+  it('declares third-party packages detected from transformed element source imports', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+    const upstreamElementDir = join(
+      rootDir,
+      'upstream',
+      'pie-elements',
+      'packages',
+      'test-element'
+    );
+    const fakeDebugDir = join(rootDir, 'node_modules', 'debug');
+    const fakeLodashEsDir = join(rootDir, 'node_modules', 'lodash-es');
+
+    await createElementBase(elementDir);
+    await mkdir(fakeDebugDir, { recursive: true });
+    await mkdir(fakeLodashEsDir, { recursive: true });
+    await writeFile(
+      join(fakeDebugDir, 'index.js'),
+      'export default function debug() {}\n',
+      'utf-8'
+    );
+    await writeFile(
+      join(fakeLodashEsDir, 'lodash.js'),
+      'export const isEmpty = () => false;\n',
+      'utf-8'
+    );
+    await writeFile(
+      join(fakeDebugDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'debug',
+          version: '4.4.3',
+          main: './index.js',
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+    await writeFile(
+      join(fakeLodashEsDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'lodash-es',
+          version: '4.18.1',
+          main: './lodash.js',
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+    await writeFile(
+      join(elementDir, 'src', 'index.ts'),
+      "import React from 'react';\nimport { createRoot } from 'react-dom/client';\nimport debug from 'debug';\nimport { isEmpty } from 'lodash-es';\nexport { React, createRoot, debug, isEmpty };\n",
+      'utf-8'
+    );
+    await mkdir(upstreamElementDir, { recursive: true });
+    await writeFile(
+      join(upstreamElementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          dependencies: {},
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies.debug).toBe('^4.4.3');
+    expect(pkgJson.dependencies['lodash-es']).toBe('^4.18.1');
+    expect(pkgJson.dependencies).not.toHaveProperty('react');
+    expect(pkgJson.dependencies).not.toHaveProperty('react-dom');
+  });
+
   it('removes development export conditions and emits the controller package contract', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');

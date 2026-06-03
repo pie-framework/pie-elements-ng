@@ -15,7 +15,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "@pie-lib/config-ui": "workspace:*",
-    "@pie-lib/render-ui": "workspace:*"
+    "@pie-lib/render-ui": "workspace:*",
+    "@emotion/core": "0.x.x"
   },
   "type": "module",
   "main": "./dist/index.js",

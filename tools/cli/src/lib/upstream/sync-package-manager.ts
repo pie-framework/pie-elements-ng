@@ -7,7 +7,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { readFile, unlink, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
 import { existsAny } from './sync-filesystem.js';
@@ -289,7 +289,7 @@ async function findInstalledPackageJson(
 ): Promise<PackageJson | null> {
   try {
     const { createRequire } = await import('node:module');
-    const req = createRequire(join(fromDir, 'package.json'));
+    const req = createRequire(resolve(fromDir, 'package.json'));
     const resolvedEntry = req.resolve(packageName);
 
     let currentDir = dirname(resolvedEntry);
@@ -316,7 +316,8 @@ async function findInstalledPackageJson(
 
 async function addTransitivePeerDependencies(
   deps: Record<string, string>,
-  fromDir: string
+  fromDir: string,
+  declaredPeerDeps: Set<string> = new Set()
 ): Promise<void> {
   const depNames = Object.keys(deps);
 
@@ -331,9 +332,16 @@ async function addTransitivePeerDependencies(
 
     const installedPkg = await findInstalledPackageJson(depName, fromDir);
     const peerDeps = (installedPkg?.peerDependencies as Record<string, string> | undefined) ?? {};
+    const optionalPeers = new Set(
+      Object.entries(
+        (installedPkg?.peerDependenciesMeta as Record<string, { optional?: boolean }>) ?? {}
+      )
+        .filter(([, meta]) => meta?.optional)
+        .map(([peerName]) => peerName)
+    );
 
     for (const [peerName, peerVersion] of Object.entries(peerDeps)) {
-      if (deps[peerName]) {
+      if (deps[peerName] || declaredPeerDeps.has(peerName) || optionalPeers.has(peerName)) {
         continue;
       }
 
@@ -511,6 +519,11 @@ export async function ensureElementPackageJson(
 
   // Extract and normalize upstream dependencies
   const expectedDeps = extractUpstreamDependencies(upstreamPkg);
+  const declaredPeerDeps = new Set([
+    ...Object.keys((pkg?.peerDependencies as Record<string, string> | undefined) ?? {}),
+    'react',
+    'react-dom',
+  ]);
 
   // Scan source files for actual imports to catch dependencies from skipped directories
   const importedPackages = await extractImportsFromSources(elementDir);
@@ -520,6 +533,9 @@ export async function ensureElementPackageJson(
   for (const imported of importedPackages) {
     // Skip self-dependencies (package importing from itself)
     if (imported === currentPackageName) {
+      continue;
+    }
+    if (imported === 'react' || imported === 'react-dom') {
       continue;
     }
 
@@ -555,7 +571,7 @@ export async function ensureElementPackageJson(
       }
     }
   }
-  await addTransitivePeerDependencies(expectedDeps, elementDir);
+  await addTransitivePeerDependencies(expectedDeps, elementDir, declaredPeerDeps);
   addKnownPeerFallbacks(expectedDeps);
 
   // Create minimal package.json if missing

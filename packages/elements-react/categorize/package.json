@@ -23,12 +23,7 @@
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "@emotion/core": "0.x.x",
-    "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "@emotion/styled": "^11.3.0",
-    "@mui/material-pigment-css": "^7.3.11"
+    "@emotion/core": "0.x.x"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -93,10 +88,10 @@
   },
   "pie": {
     "controller": "@pie-element/categorize/controller",
+    "configure": "@pie-element/categorize/configure",
     "browserSharedDependencies": {
       "react": "18.2.0",
       "react-dom": "18.2.0"
-    },
-    "configure": "@pie-element/categorize/configure"
+    }
   }
 }

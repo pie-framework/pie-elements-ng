@@ -14,15 +14,10 @@
     "debug": "^4.1.1",
     "lodash-es": "^4.17.23",
     "prop-types": "^15.8.1",
+    "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-element/shared-configure-events": "workspace:*",
-    "react": ">=16.8.0",
     "@emotion/core": "0.x.x",
-    "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "@emotion/styled": "^11.3.0",
-    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "@mui/material-pigment-css": "^7.3.11",
     "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {
@@ -95,10 +90,10 @@
   },
   "pie": {
     "controller": "@pie-element/complex-rubric/controller",
+    "configure": "@pie-element/complex-rubric/configure",
     "browserSharedDependencies": {
       "react": "18.2.0",
       "react-dom": "18.2.0"
-    },
-    "configure": "@pie-element/complex-rubric/configure"
+    }
   }
 }
