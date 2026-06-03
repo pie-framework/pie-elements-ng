@@ -2,7 +2,10 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { formatCompatibilityReportLastAnalyzed, loadCompatibilityReport } from '../src/utils/compatibility.js';
+import {
+  formatCompatibilityReportLastAnalyzed,
+  loadCompatibilityReport,
+} from '../src/utils/compatibility.js';
 
 describe('loadCompatibilityReport', () => {
   it('normalizes static browser ESM reports for upstream sync filtering', async () => {

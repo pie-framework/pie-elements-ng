@@ -134,7 +134,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function stringArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
 }
 
 function blockedReason(value: unknown): string[] {
@@ -207,7 +209,11 @@ function normalizeStaticBrowserEsmReport(report: Record<string, unknown>): Compa
 }
 
 function normalizeCompatibilityReport(report: unknown): CompatibilityReport {
-  if (isRecord(report) && Array.isArray(report.browserEsmReady) && !Array.isArray(report.elements)) {
+  if (
+    isRecord(report) &&
+    Array.isArray(report.browserEsmReady) &&
+    !Array.isArray(report.elements)
+  ) {
     return normalizeStaticBrowserEsmReport(report);
   }
 
