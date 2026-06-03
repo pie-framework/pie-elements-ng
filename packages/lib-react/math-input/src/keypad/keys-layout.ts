@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { times, zip } from 'lodash-es';
+import { times, zip } from '@pie-element/shared-lodash';
 
 /**
  * Sort additional keys.

@@ -9,7 +9,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import debounce from 'lodash-es/debounce.js';
+import { debounce } from '@pie-element/shared-lodash';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import { styled } from '@mui/material/styles';
 import StarterKit from '@tiptap/starter-kit';

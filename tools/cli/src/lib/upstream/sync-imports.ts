@@ -35,7 +35,11 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { PRESET_IDS, shouldTransformReactInputAutosizeSource } from './sync-presets.js';
+import {
+  PRESET_IDS,
+  shouldTransformConfigUiMathjsSource,
+  shouldTransformReactInputAutosizeSource,
+} from './sync-presets.js';
 
 const SOURCE_PATH_PRESET_RULES = {
   [PRESET_IDS.transformTextSelectTokenTypesReexport]: (sourcePath: string) =>
@@ -342,36 +346,64 @@ export function convertModuleExportsToEsm(content: string): string {
   return content.replace(fullMatch, esmExports);
 }
 
-/**
- * Transform lodash imports to lodash-es for ESM compatibility
- *
- * Handles all lodash import patterns:
- * - Individual module imports: import isEmpty from 'lodash/isEmpty'
- * - Named imports: import { isEmpty, isEqual } from 'lodash'
- * - Default import: import _ from 'lodash'
- * - Namespace import: import * as _ from 'lodash'
- *
- * Converts them to use lodash-es which is a pure ESM package.
- */
-export function transformLodashToLodashEs(content: string): string {
-  let transformed = content;
+const VENDORED_LODASH_PACKAGE = '@pie-element/shared-lodash';
 
-  // Pattern 1: Individual module imports
-  // import isEmpty from 'lodash/isEmpty' → import { isEmpty } from 'lodash-es'
-  // import cloneDeep from 'lodash/cloneDeep' → import { cloneDeep } from 'lodash-es'
+function lodashMemberFromPath(path: string): string {
+  return path.replace(/\.js$/i, '').split('/').pop() ?? path;
+}
+
+/**
+ * Transform lodash and lodash-es imports to the vendored shared lodash package.
+ *
+ * The vendored package is intentionally a narrow ESM implementation of the
+ * lodash helpers used by synced PIE sources, avoiding CDN/runtime lodash
+ * resolution while keeping import shapes tree-shakeable.
+ */
+export function transformLodashToVendoredLodash(content: string): string {
+  let transformed = content;
+  const dynamicDeepImportMembers = new Set<string>();
+
+  // Deep default imports:
+  // import localName from 'lodash-es/isEqual.js' -> import { isEqual as localName } ...
   transformed = transformed.replace(
-    /import\s+(\w+)\s+from\s+['"]lodash\/(\w+)['"]/g,
-    "import { $1 } from 'lodash-es'"
+    /import\s+([A-Za-z_$][\w$]*)\s+from\s+(['"])(?:lodash|lodash-es)\/([^'"]+)\2;?/g,
+    (_match, localName: string, quote: string, path: string) => {
+      const member = lodashMemberFromPath(path);
+      const imported = member === localName ? member : `${member} as ${localName}`;
+      return `import { ${imported} } from ${quote}${VENDORED_LODASH_PACKAGE}${quote};`;
+    }
   );
 
-  // Pattern 2: Named imports, default imports, and namespace imports from main module
-  // import { isEmpty, isEqual } from 'lodash' → import { isEmpty, isEqual } from 'lodash-es'
-  // import _ from 'lodash' → import _ from 'lodash-es'
-  // import * as _ from 'lodash' → import * as _ from 'lodash-es'
-  transformed = transformed.replace(/from\s+['"]lodash['"]/g, "from 'lodash-es'");
+  transformed = transformed.replace(
+    /(import\(\s*)(['"])(?:lodash|lodash-es)\/([^'"]+)\2(\s*\))/g,
+    (_match, _prefix: string, _quote: string, path: string) => {
+      const member = lodashMemberFromPath(path);
+      dynamicDeepImportMembers.add(member);
+      return `Promise.resolve({ default: ${member}, ${member} })`;
+    }
+  );
+
+  // Root imports keep their local import shape.
+  transformed = transformed.replace(
+    /(from\s+)(['"])(?:lodash|lodash-es)\2/g,
+    `$1$2${VENDORED_LODASH_PACKAGE}$2`
+  );
+
+  // Dynamic root imports can use the package namespace.
+  transformed = transformed.replace(
+    /(import\(\s*)(['"])(?:lodash|lodash-es)\2(\s*\))/g,
+    `$1$2${VENDORED_LODASH_PACKAGE}$2$3`
+  );
+
+  if (dynamicDeepImportMembers.size > 0) {
+    const imports = [...dynamicDeepImportMembers].sort().join(', ');
+    transformed = `import { ${imports} } from '${VENDORED_LODASH_PACKAGE}';\n${transformed}`;
+  }
 
   return transformed;
 }
+
+export const transformLodashToLodashEs = transformLodashToVendoredLodash;
 
 /**
  * Transform classnames imports to clsx.
@@ -416,22 +448,51 @@ export function transformReactInputAutosizeToLocal(content: string, sourcePath?:
 }
 
 /**
- * Ensure deep lodash-es imports are fully specified for strict ESM resolution.
+ * Replace config-ui's tiny mathjs usage with a local fraction-to-number helper.
  *
- * Webpack (with fullySpecified ESM resolution) and other strict ESM loaders
- * require file extensions for deep package specifiers:
- * - lodash-es/isEqual -> lodash-es/isEqual.js
+ * number-text-field-custom only uses `math.number(math.fraction(value))` to
+ * compare custom fraction values. Keep mathjs for number-line where the surface
+ * includes exact rational arithmetic, comparisons, snapping, and expression
+ * parsing.
+ */
+export function transformConfigUiMathjsToLocalFraction(
+  content: string,
+  sourcePath?: string
+): string {
+  if (!shouldTransformConfigUiMathjsSource(sourcePath)) {
+    return content;
+  }
+
+  let transformed = content.replace(
+    /math\.number\(\s*math\.fraction\(([^()]+?)\)\s*\)/g,
+    'fractionToNumber($1)'
+  );
+
+  if (transformed === content) {
+    return content;
+  }
+
+  if (!/\bmath\./.test(transformed)) {
+    transformed = transformed.replace(
+      /import\s+\*\s+as\s+math\s+from\s+(['"])mathjs\1;?/,
+      "import { fractionToNumber } from './fraction-to-number.js';"
+    );
+  } else if (!transformed.includes("from './fraction-to-number.js'")) {
+    transformed = transformed.replace(
+      /import\s+\*\s+as\s+math\s+from\s+(['"])mathjs\1;?/,
+      (match) => `${match}\nimport { fractionToNumber } from './fraction-to-number.js';`
+    );
+  }
+
+  return transformed;
+}
+
+/**
+ * Compatibility wrapper retained for older callers. Lodash imports now target
+ * the vendored shared package rather than lodash-es deep modules.
  */
 export function transformLodashEsDeepImportsToFullySpecified(content: string): string {
-  return content.replace(
-    /(from\s+['"]|import\(\s*['"])lodash-es\/([^'")]+)(['"]\)?)/g,
-    (match, prefix, path, suffix) => {
-      if (/\.[a-z0-9]+$/i.test(path)) {
-        return match;
-      }
-      return `${prefix}lodash-es/${path}.js${suffix}`;
-    }
-  );
+  return transformLodashToVendoredLodash(content);
 }
 
 /**
@@ -448,24 +509,24 @@ export function transformKnownDeepImportsToFullySpecified(content: string): stri
 }
 
 /**
- * Transform package.json dependencies from lodash to lodash-es
+ * Transform package.json dependencies from lodash/lodash-es to the vendored package.
  *
- * Replaces lodash with lodash-es version 4.18.1 (latest ESM version)
- * Also removes @types/lodash as lodash-es includes built-in TypeScript types
+ * The browser/runtime dependency is a workspace package that vendors the small
+ * lodash helper surface needed by synced sources.
  */
 export function transformPackageJsonLodash<T extends Record<string, any>>(packageJson: T): T {
   const transformed = { ...packageJson };
 
-  // Replace lodash with lodash-es in dependencies
-  if (transformed.dependencies?.lodash) {
-    transformed.dependencies['lodash-es'] = '^4.18.1';
+  if (transformed.dependencies?.lodash || transformed.dependencies?.['lodash-es']) {
+    transformed.dependencies[VENDORED_LODASH_PACKAGE] = 'workspace:*';
     delete transformed.dependencies.lodash;
+    delete transformed.dependencies['lodash-es'];
   }
 
-  // Replace lodash with lodash-es in devDependencies
-  if (transformed.devDependencies?.lodash) {
-    transformed.devDependencies['lodash-es'] = '^4.18.1';
+  if (transformed.devDependencies?.lodash || transformed.devDependencies?.['lodash-es']) {
+    transformed.devDependencies[VENDORED_LODASH_PACKAGE] = 'workspace:*';
     delete transformed.devDependencies.lodash;
+    delete transformed.devDependencies['lodash-es'];
   }
 
   // Remove @types/lodash if present (lodash-es has built-in types)
@@ -505,7 +566,7 @@ export function transformPackageJsonRecharts<T extends Record<string, any>>(pack
  */
 export function transformPackageJsonBrowserEsmDependencies<T extends Record<string, any>>(
   packageJson: T,
-  options: { removeReactInputAutosize?: boolean } = {}
+  options: { removeReactInputAutosize?: boolean; removeMathjs?: boolean } = {}
 ): T {
   const transformed = { ...packageJson };
   const deps = transformed.dependencies as Record<string, string> | undefined;
@@ -522,11 +583,14 @@ export function transformPackageJsonBrowserEsmDependencies<T extends Record<stri
     delete deps['react-input-autosize'];
   }
 
+  if (options.removeMathjs) {
+    delete deps.mathjs;
+  }
+
   const versionPins: Record<string, string> = {
     '@types/react': '^18.2.0',
     '@types/react-dom': '^18.2.0',
     clsx: '^2.1.1',
-    'lodash-es': '^4.18.1',
     mathjs: '^15.2.0',
     'react-draggable': '^4.6.0',
     'react-is': '^18.3.1',

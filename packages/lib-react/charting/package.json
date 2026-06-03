@@ -22,7 +22,7 @@
     "d3-selection": "^3.0.0",
     "debug": "^4.1.1",
     "invariant": "^2.2.4",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "react-draggable": "^4.6.0",
     "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",

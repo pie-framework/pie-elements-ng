@@ -9,7 +9,7 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.8.1",
     "react-test-renderer": "18.2.0",
     "@pie-element/shared-configure-events": "workspace:*",

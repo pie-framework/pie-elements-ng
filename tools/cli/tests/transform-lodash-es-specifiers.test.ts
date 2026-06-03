@@ -1,37 +1,41 @@
 import { describe, expect, it } from 'vitest';
-import { transformLodashEsDeepImportsToFullySpecified } from '../src/lib/upstream/sync-imports';
+import { transformLodashToVendoredLodash } from '../src/lib/upstream/sync-imports';
 
-describe('transformLodashEsDeepImportsToFullySpecified', () => {
-  it('adds .js extension to deep lodash-es import specifiers', () => {
+describe('transformLodashToVendoredLodash deep imports', () => {
+  it('rewrites deep lodash-es import specifiers to vendored named imports', () => {
     const input = `
 import compact from 'lodash-es/compact';
 import isEqual from "lodash-es/isEqual";
 `;
 
-    const output = transformLodashEsDeepImportsToFullySpecified(input);
+    const output = transformLodashToVendoredLodash(input);
 
-    expect(output).toContain("import compact from 'lodash-es/compact.js';");
-    expect(output).toContain('import isEqual from "lodash-es/isEqual.js";');
+    expect(output).toContain("import { compact } from '@pie-element/shared-lodash';");
+    expect(output).toContain('import { isEqual } from "@pie-element/shared-lodash";');
   });
 
-  it('keeps already fully specified lodash-es imports unchanged', () => {
+  it('rewrites already fully specified lodash-es imports and preserves dynamic deep default shape', () => {
     const input = `
 import omit from 'lodash-es/omit.js';
 const mod = await import("lodash-es/get.js");
 `;
 
-    const output = transformLodashEsDeepImportsToFullySpecified(input);
+    const output = transformLodashToVendoredLodash(input);
 
-    expect(output).toBe(input);
+    expect(output).toContain("import { omit } from '@pie-element/shared-lodash';");
+    expect(output).toContain("import { get } from '@pie-element/shared-lodash';");
+    expect(output).toContain('const mod = await Promise.resolve({ default: get, get });');
   });
 
-  it('does not modify root lodash-es imports', () => {
+  it('rewrites root lodash-es imports', () => {
     const input = `
 import { isEmpty } from 'lodash-es';
 `;
 
-    const output = transformLodashEsDeepImportsToFullySpecified(input);
+    const output = transformLodashToVendoredLodash(input);
 
-    expect(output).toBe(input);
+    expect(output).toBe(`
+import { isEmpty } from '@pie-element/shared-lodash';
+`);
   });
 });

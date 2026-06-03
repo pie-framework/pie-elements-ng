@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Configure from './configure';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,

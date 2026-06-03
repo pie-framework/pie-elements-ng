@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { get } from 'lodash-es';
+import { get } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { MARK_TAGS } from './serialization.js';

@@ -10,7 +10,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/mask-markup": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.8.1",
     "@pie-element/shared-configure-events": "workspace:*",
     "debug": "^4.4.3",

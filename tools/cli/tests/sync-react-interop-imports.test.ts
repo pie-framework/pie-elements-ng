@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   transformClassnamesToClsx,
   transformKnownDeepImportsToFullySpecified,
+  transformLodashToVendoredLodash,
+  transformConfigUiMathjsToLocalFraction,
   transformReactInteropComponentImports,
   transformReactInputAutosizeToLocal,
 } from '../src/lib/upstream/sync-imports';
@@ -116,6 +118,67 @@ import { Rect } from 'react-konva/lib/ReactKonvaCore';
 });
 
 describe('browser ESM dependency import transform', () => {
+  it('rewrites root lodash imports to the vendored shared lodash package', () => {
+    const input = `
+import _ from 'lodash';
+import * as lodash from 'lodash-es';
+import { cloneDeep, isEqual as equals } from 'lodash-es';
+`;
+
+    const output = transformLodashToVendoredLodash(input);
+
+    expect(output).toContain("import _ from '@pie-element/shared-lodash';");
+    expect(output).toContain("import * as lodash from '@pie-element/shared-lodash';");
+    expect(output).toContain(
+      "import { cloneDeep, isEqual as equals } from '@pie-element/shared-lodash';"
+    );
+    expect(output).not.toContain('lodash-es');
+    expect(output).not.toContain("from 'lodash'");
+  });
+
+  it('rewrites lodash deep default imports to named vendored imports', () => {
+    const input = `
+import same from 'lodash-es/isEqual.js';
+import omit from 'lodash/omit';
+`;
+
+    const output = transformLodashToVendoredLodash(input);
+
+    expect(output).toContain("import { isEqual as same } from '@pie-element/shared-lodash';");
+    expect(output).toContain("import { omit } from '@pie-element/shared-lodash';");
+    expect(output).not.toContain('lodash-es/');
+    expect(output).not.toContain('lodash/');
+  });
+
+  it('rewrites config-ui mathjs fraction conversion to a local helper', () => {
+    const input = `
+import * as math from 'mathjs';
+
+export const closest = (value, number) =>
+  Math.abs(math.number(math.fraction(value)) - math.number(math.fraction(number)));
+`;
+
+    const output = transformConfigUiMathjsToLocalFraction(
+      input,
+      'pie-lib/packages/config-ui/src/number-text-field-custom.jsx'
+    );
+
+    expect(output).toContain("import { fractionToNumber } from './fraction-to-number.js';");
+    expect(output).toContain('Math.abs(fractionToNumber(value) - fractionToNumber(number))');
+    expect(output).not.toContain('mathjs');
+    expect(output).not.toContain('math.');
+  });
+
+  it('does not rewrite mathjs outside config-ui fraction input source', () => {
+    const output = createReactComponentTransformPipeline('@pie-element/number-line')(
+      "import * as math from 'mathjs';\nexport const value = math.evaluate('1/2');\n",
+      'src/author/index.js'
+    );
+
+    expect(output).toContain("import * as math from 'mathjs';");
+    expect(output).toContain("math.evaluate('1/2')");
+  });
+
   it('rewrites classnames imports to clsx', () => {
     const input = `
 import classNames from 'classnames';
@@ -180,11 +243,12 @@ export const Label = () => <AutoInput value="A" />;
 
   it('runs through the React element sync pipeline', () => {
     const output = createReactComponentTransformPipeline('@pie-element/test')(
-      "import cx from 'classnames';\nexport { cx };\n",
+      "import cx from 'classnames';\nimport { isEmpty } from 'lodash';\nexport { cx, isEmpty };\n",
       'src/delivery/index.js'
     );
 
     expect(output).toContain("import cx from 'clsx';");
+    expect(output).toContain("import { isEmpty } from '@pie-element/shared-lodash';");
   });
 
   it('runs through the pie-lib sync pipeline', () => {
@@ -194,6 +258,17 @@ export const Label = () => <AutoInput value="A" />;
     );
 
     expect(output).toContain("import cx from 'clsx';");
+  });
+
+  it('runs the config-ui mathjs replacement through the pie-lib sync pipeline', () => {
+    const output = createPieLibTransformPipeline()(
+      "import * as math from 'mathjs';\nexport const n = math.number(math.fraction(value));\n",
+      'pie-lib/packages/config-ui/src/number-text-field-custom.jsx'
+    );
+
+    expect(output).toContain("import { fractionToNumber } from './fraction-to-number.js';");
+    expect(output).toContain('export const n = fractionToNumber(value);');
+    expect(output).not.toContain('mathjs');
   });
 
   it('runs the autosize replacement through the pie-lib sync pipeline', () => {

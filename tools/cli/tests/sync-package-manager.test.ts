@@ -218,18 +218,18 @@ describe('ensureElementPackageJson iife build script generation', () => {
       'test-element'
     );
     const fakeDebugDir = join(rootDir, 'node_modules', 'debug');
-    const fakeLodashEsDir = join(rootDir, 'node_modules', 'lodash-es');
+    const fakeSharedLodashDir = join(rootDir, 'node_modules', '@pie-element', 'shared-lodash');
 
     await createElementBase(elementDir);
     await mkdir(fakeDebugDir, { recursive: true });
-    await mkdir(fakeLodashEsDir, { recursive: true });
+    await mkdir(fakeSharedLodashDir, { recursive: true });
     await writeFile(
       join(fakeDebugDir, 'index.js'),
       'export default function debug() {}\n',
       'utf-8'
     );
     await writeFile(
-      join(fakeLodashEsDir, 'lodash.js'),
+      join(fakeSharedLodashDir, 'index.js'),
       'export const isEmpty = () => false;\n',
       'utf-8'
     );
@@ -247,12 +247,12 @@ describe('ensureElementPackageJson iife build script generation', () => {
       'utf-8'
     );
     await writeFile(
-      join(fakeLodashEsDir, 'package.json'),
+      join(fakeSharedLodashDir, 'package.json'),
       JSON.stringify(
         {
-          name: 'lodash-es',
-          version: '4.18.1',
-          main: './lodash.js',
+          name: '@pie-element/shared-lodash',
+          version: '0.1.0',
+          main: './index.js',
         },
         null,
         2
@@ -261,7 +261,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
     );
     await writeFile(
       join(elementDir, 'src', 'index.ts'),
-      "import React from 'react';\nimport { createRoot } from 'react-dom/client';\nimport debug from 'debug';\nimport { isEmpty } from 'lodash-es';\nexport { React, createRoot, debug, isEmpty };\n",
+      "import React from 'react';\nimport { createRoot } from 'react-dom/client';\nimport debug from 'debug';\nimport { isEmpty } from '@pie-element/shared-lodash';\nexport { React, createRoot, debug, isEmpty };\n",
       'utf-8'
     );
     await mkdir(upstreamElementDir, { recursive: true });
@@ -287,9 +287,10 @@ describe('ensureElementPackageJson iife build script generation', () => {
 
     const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
     expect(pkgJson.dependencies.debug).toBe('^4.4.3');
-    expect(pkgJson.dependencies['lodash-es']).toBe('^4.18.1');
+    expect(pkgJson.dependencies['@pie-element/shared-lodash']).toBe('workspace:*');
     expect(pkgJson.dependencies).not.toHaveProperty('react');
     expect(pkgJson.dependencies).not.toHaveProperty('react-dom');
+    expect(pkgJson.dependencies).not.toHaveProperty('lodash-es');
   });
 
   it('preserves local element versions and applies the browser ESM dependency policy', async () => {
@@ -360,8 +361,8 @@ describe('ensureElementPackageJson iife build script generation', () => {
       'react-dom': '^18.0.0',
     });
     expect(pkgJson.dependencies).toMatchObject({
+      '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
-      'lodash-es': '^4.18.1',
       mathjs: '^15.2.0',
       'react-draggable': '^4.6.0',
       'react-is': '^18.3.1',
@@ -371,6 +372,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
     });
     expect(pkgJson.dependencies).not.toHaveProperty('classnames');
     expect(pkgJson.dependencies).not.toHaveProperty('lodash');
+    expect(pkgJson.dependencies).not.toHaveProperty('lodash-es');
     expect(pkgJson.dependencies).not.toHaveProperty('react');
     expect(pkgJson.dependencies).not.toHaveProperty('react-dom');
   });
@@ -722,8 +724,8 @@ describe('ensurePieLibPackageJson', () => {
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
     expect(pkgJson.dependencies).toMatchObject({
+      '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
-      'lodash-es': '^4.18.1',
       mathjs: '^15.2.0',
       'react-draggable': '^4.6.0',
       'react-redux': '^9.3.0',
@@ -731,7 +733,109 @@ describe('ensurePieLibPackageJson', () => {
     });
     expect(pkgJson.dependencies).not.toHaveProperty('classnames');
     expect(pkgJson.dependencies).not.toHaveProperty('lodash');
+    expect(pkgJson.dependencies).not.toHaveProperty('lodash-es');
     expect(pkgJson.dependencies).not.toHaveProperty('react-input-autosize');
+  });
+
+  it('removes mathjs from config-ui when the local fraction helper is generated', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'config-ui');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'config-ui');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(
+      join(libDir, 'src', 'number-text-field-custom.tsx'),
+      "import { fractionToNumber } from './fraction-to-number.js';\nexport { fractionToNumber };\n",
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/config-ui',
+          version: '1.0.0',
+          dependencies: {
+            mathjs: '^7.5.1',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensurePieLibPackageJson('config-ui', libDir, createConfig(rootDir));
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).not.toHaveProperty('mathjs');
+  });
+
+  it('keeps mathjs in config-ui if synced source still imports it', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'config-ui');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'config-ui');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(
+      join(libDir, 'src', 'unmatched-math.ts'),
+      "import * as math from 'mathjs';\nexport const value = math.evaluate('1/2');\n",
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/config-ui',
+          version: '1.0.0',
+          dependencies: {
+            mathjs: '^7.5.1',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensurePieLibPackageJson('config-ui', libDir, createConfig(rootDir));
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies.mathjs).toBe('^15.2.0');
+  });
+
+  it('keeps mathjs pinned for pie-lib packages without a generated math helper', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'plot');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'plot');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(join(libDir, 'src', 'index.ts'), 'export const value = 1;\n', 'utf-8');
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/plot',
+          version: '1.0.0',
+          dependencies: {
+            mathjs: '^7.5.1',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensurePieLibPackageJson('plot', libDir, createConfig(rootDir));
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies.mathjs).toBe('^15.2.0');
   });
 
   it('does not remove react-input-autosize from pie-lib packages without the generated local component', async () => {

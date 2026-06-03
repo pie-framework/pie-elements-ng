@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep, find, isEmpty, isEqualWith, merge, omitBy } from 'lodash-es';
+import { cloneDeep, find, isEmpty, isEqualWith, merge, omitBy } from '@pie-element/shared-lodash';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import * as math from 'mathjs';

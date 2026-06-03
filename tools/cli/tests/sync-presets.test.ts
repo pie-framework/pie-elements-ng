@@ -7,6 +7,7 @@ import {
   getPieLibVitePreset,
   getPostSyncTextPatches,
   shouldGenerateAutosizeInputComponent,
+  shouldGenerateConfigUiFractionHelper,
   PIE_LIB_COMPATIBILITY_APPEND_PATCHES,
   PRESET_IDS,
 } from '../src/lib/upstream/sync-presets.js';
@@ -63,6 +64,12 @@ describe('sync preset registry', () => {
     expect(shouldGenerateAutosizeInputComponent('graphing')).toBe(true);
     expect(shouldGenerateAutosizeInputComponent('graphing-solution-set')).toBe(true);
     expect(shouldGenerateAutosizeInputComponent('plot')).toBe(false);
+  });
+
+  it('generates the local fraction helper only for config-ui', () => {
+    expect(shouldGenerateConfigUiFractionHelper('config-ui')).toBe(true);
+    expect(shouldGenerateConfigUiFractionHelper('number-line')).toBe(false);
+    expect(shouldGenerateConfigUiFractionHelper('graphing')).toBe(false);
   });
 
   it('tracks compatibility append patches with stable IDs', () => {

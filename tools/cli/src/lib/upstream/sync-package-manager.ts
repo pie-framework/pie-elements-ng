@@ -16,6 +16,7 @@ import { BUILD_TOOLS, REACT, PACKAGE_DEFAULTS, SCRIPTS, WORKSPACE } from './sync
 import {
   getPieLibDependencyAugmentations,
   getPieLibDependencyOverride,
+  shouldGenerateConfigUiFractionHelper,
   shouldGenerateAutosizeInputComponent,
 } from './sync-presets.js';
 
@@ -882,6 +883,8 @@ export async function ensurePieLibPackageJson(
   expectedDeps =
     (applyPackageJsonTransforms({ dependencies: expectedDeps } as PackageJson, {
       removeReactInputAutosize: shouldGenerateAutosizeInputComponent(pkgName),
+      removeMathjs:
+        shouldGenerateConfigUiFractionHelper(pkgName) && !importedPackages.has('mathjs'),
     }).dependencies as Record<string, string> | undefined) ?? {};
 
   // Create minimal package.json if missing

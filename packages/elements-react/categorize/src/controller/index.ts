@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { buildState, score } from '@pie-lib/categorize';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';

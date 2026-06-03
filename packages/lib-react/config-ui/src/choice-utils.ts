@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { includes } from 'lodash-es';
+import { includes } from '@pie-element/shared-lodash';
 
 /**
  * Add value to every model.choices.

@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import classNames from 'clsx';
-import { isString, uniq } from 'lodash-es';
+import { isString, uniq } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 import ToolMenu from './tool-menu.js';
 import Graph, { graphPropTypes } from './graph.js';

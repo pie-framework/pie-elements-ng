@@ -20,7 +20,7 @@ import Main from './design.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import defaultValues from './defaults.js';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 
 const prepareCustomizationObject = (config, model) => {
   const configuration = defaults(config, defaultValues.configuration);

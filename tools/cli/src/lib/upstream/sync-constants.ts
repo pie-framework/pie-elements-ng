@@ -34,7 +34,6 @@ export const BUILD_TOOLS = {
   VITE: '^8.0.1',
   TYPESCRIPT: '^5.9.3',
   VITE_REACT_PLUGIN: '^6.0.1',
-  LODASH_ES: '^4.18.1',
 } as const;
 
 // React versions

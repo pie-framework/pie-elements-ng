@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 export const buildCategories = (categories, choices, correctResponse) => {
   const clonedCategories = cloneDeep(categories);

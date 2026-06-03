@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep, head, isEmpty, isEqual, tail } from 'lodash-es';
+import { cloneDeep, head, isEmpty, isEqual, tail } from '@pie-element/shared-lodash';
 import { utils } from '@pie-lib/plot';
 import invariant from 'invariant';
 

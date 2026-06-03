@@ -197,8 +197,6 @@ export default defineConfig({
           /^@emotion\\//.test(id) ||
           /^d3-/.test(id) ||
           /^@testing-library\\//.test(id) ||
-          id === 'lodash-es' ||
-          /^lodash-es\\//.test(id) ||
           /^styled-components/.test(id) ||
           id === 'konva' || /^konva\\//.test(id) ||
           id === 'react-konva' || /^react-konva\\//.test(id) ||
@@ -234,7 +232,9 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ${createExternalFunction('pielib')},
+      external: ${createExternalFunction('pielib', {
+        externalizeMathjs: packageName !== 'config-ui',
+      })},
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',

@@ -16,7 +16,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { InputContainer, settings, layout, NumberTextField } from '@pie-lib/config-ui';
 import { styled } from '@mui/material/styles';
-import { merge } from 'lodash-es';
+import { merge } from '@pie-element/shared-lodash';
 import { LIKERT_TYPE, LIKERT_SCALE, LIKERT_ORIENTATION } from './likertEntities.js';
 import generateChoices from './choiceGenerator.js';
 import { color } from '@pie-lib/render-ui';

@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { cloneDeep, isEmpty, pick, throttle } from 'lodash-es';
+import { cloneDeep, isEmpty, pick, throttle } from '@pie-element/shared-lodash';
 import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 import { InputContainer, layout, settings } from '@pie-lib/config-ui';
 import { styled } from '@mui/material/styles';

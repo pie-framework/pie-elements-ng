@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { find, isEmpty, isUndefined } from 'lodash-es';
+import { find, isEmpty, isUndefined } from '@pie-element/shared-lodash';
 import DragAndDropAnswer from './answer.js';
 import { DroppablePlaceholder } from './droppable-placeholder.js';
 

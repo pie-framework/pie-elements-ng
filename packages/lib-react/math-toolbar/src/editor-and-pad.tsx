@@ -15,7 +15,7 @@ import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 

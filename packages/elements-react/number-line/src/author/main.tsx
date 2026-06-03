@@ -19,7 +19,7 @@ import PropTypes from 'prop-types';
 import Domain from './domain.js';
 import Arrows from './arrows.js';
 import PointConfig from './point-config.js';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';

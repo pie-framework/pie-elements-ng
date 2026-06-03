@@ -17,7 +17,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { ResponseTypes } from './utils';
-import { isEmpty, isEqual } from 'lodash-es';
+import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block';
 import MathQuill from '@pie-framework/mathquill';
 import { color } from '@pie-lib/render-ui';

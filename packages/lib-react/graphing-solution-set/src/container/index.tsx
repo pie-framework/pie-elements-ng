@@ -14,7 +14,7 @@ import { applyMiddleware, createStore } from 'redux';
 import reducer from './reducer.js';
 import { changeMarks } from './actions.js';
 import PropTypes from 'prop-types';
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 import { ActionCreators } from 'redux-undo';
 import GraphWithControls from '../graph-with-controls.js';
 import { getLastAction, lastActionMiddleware } from './middleware.js';

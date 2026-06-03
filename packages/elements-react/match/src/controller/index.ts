@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep, isEmpty, isEqual } from 'lodash-es';
+import { cloneDeep, isEmpty, isEqual } from '@pie-element/shared-lodash';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
 import debug from 'debug';

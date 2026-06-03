@@ -15,7 +15,7 @@ import EditableHtml, { ALL_PLUGINS, deleteInlineDropdownByIndex } from '@pie-lib
 import { AlertDialog, InputContainer, layout, settings } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { color } from '@pie-lib/render-ui';
-import { cloneDeep, isEmpty, isEqual, isUndefined, max, reduce } from 'lodash-es';
+import { cloneDeep, isEmpty, isEqual, isUndefined, max, reduce } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';

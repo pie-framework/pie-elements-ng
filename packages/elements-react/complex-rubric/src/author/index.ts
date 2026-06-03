@@ -14,7 +14,7 @@ import { createRoot } from 'react-dom/client';
 import RubricConfigure from '@pie-element/rubric/author';
 import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric/author';
 import debug from 'debug';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 import Main from './main.js';
 import sensibleDefaults from './defaults.js';
 

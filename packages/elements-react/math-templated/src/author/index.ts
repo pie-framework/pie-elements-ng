@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
-import { defaults, isArray } from 'lodash-es';
+import { defaults, isArray } from '@pie-element/shared-lodash';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,

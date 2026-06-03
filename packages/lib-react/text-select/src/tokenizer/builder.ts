@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { clone, compact } from 'lodash-es';
+import { clone, compact } from '@pie-element/shared-lodash';
 import English from '@pie-framework/parse-english';
 
 const g = (str, node) => {

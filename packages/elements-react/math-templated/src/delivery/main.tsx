@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { isEmpty, isEqual } from 'lodash-es';
+import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { mq, HorizontalKeypad, updateSpans } from '@pie-lib/math-input';

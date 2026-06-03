@@ -12,7 +12,7 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23",
+    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.7.2",
     "react": "^18.2.0"
   },

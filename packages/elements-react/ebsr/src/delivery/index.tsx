@@ -10,7 +10,7 @@
 
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import MultipleChoice from '@pie-element/multiple-choice';
-import { get } from 'lodash-es';
+import { get } from '@pie-element/shared-lodash';
 import debug from 'debug';
 
 const SESSION_CHANGED = SessionChangedEvent.TYPE;

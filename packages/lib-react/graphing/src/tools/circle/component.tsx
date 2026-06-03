@@ -18,7 +18,7 @@ import { types } from '@pie-lib/plot';
 import { rootEdgeComponent } from '../shared/line/with-root-edge.js';
 import ReactDOM from 'react-dom';
 import MarkLabel from '../../mark-label.js';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 import { keyframes, styled } from '@mui/material/styles';
 

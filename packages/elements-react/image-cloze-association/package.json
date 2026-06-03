@@ -20,7 +20,7 @@
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "clsx": "^2.1.1",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",

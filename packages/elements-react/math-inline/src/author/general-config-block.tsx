@@ -18,7 +18,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Response from './response';
 import { MathToolbar } from '@pie-lib/math-toolbar';
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 import { ResponseTypes, generateValidationMessage, getPluginProps } from './utils';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';

@@ -1,7 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { generatePieLibViteConfig } from '../src/lib/upstream/sync-vite-config.js';
+import {
+  generateElementViteConfig,
+  generatePieLibViteConfig,
+} from '../src/lib/upstream/sync-vite-config.js';
 import { browserCjsRequireInteropPlugin } from '../../vite/browser-cjs-require-interop.ts';
 
 describe('generatePieLibViteConfig presets', () => {
@@ -21,6 +24,9 @@ describe('generatePieLibViteConfig presets', () => {
     const config = generatePieLibViteConfig('editable-html-tip-tap');
     expect(config).toContain('/^prosemirror-/.test(id)');
     expect(config).toContain('/^@tiptap\\//.test(id)');
+    expect(config).not.toContain("id === 'lodash-es'");
+    expect(config).not.toContain('^lodash-es');
+    expect(config).toContain("'mathjs'");
   });
 
   it('uses default config for other packages', () => {
@@ -28,6 +34,19 @@ describe('generatePieLibViteConfig presets', () => {
     expect(config).toContain('external: (id) =>');
     expect(config).not.toContain('/^prosemirror-/.test(id)');
     expect(config).not.toContain("id === '@pie-element/shared-math-rendering-mathjax'");
+    expect(config).not.toContain("id === 'lodash-es'");
+    expect(config).not.toContain('^lodash-es');
+    expect(config).toContain("'mathjs'");
+  });
+
+  it('omits stale mathjs externalization only for config-ui', () => {
+    const config = generatePieLibViteConfig('config-ui');
+    expect(config).not.toContain("'mathjs'");
+  });
+
+  it('keeps mathjs externalized for element library builds', () => {
+    const config = generateElementViteConfig({ index: 'src/index.ts' });
+    expect(config).toContain("'mathjs'");
   });
 });
 

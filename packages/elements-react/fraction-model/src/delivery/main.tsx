@@ -45,7 +45,7 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 const ModelPreview: any = styled('div')({
   padding: '16px',

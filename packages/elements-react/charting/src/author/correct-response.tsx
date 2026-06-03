@@ -12,7 +12,7 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { Chart } from '@pie-lib/charting';
-import { cloneDeep, isEqual } from 'lodash-es';
+import { cloneDeep, isEqual } from '@pie-element/shared-lodash';
 
 import Typography from '@mui/material/Typography';
 

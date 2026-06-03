@@ -13,7 +13,7 @@
     "@pie-lib/math-input": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "prop-types": "^15.8.1",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "debug": "^4.4.3",

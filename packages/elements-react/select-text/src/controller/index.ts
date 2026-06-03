@@ -9,7 +9,7 @@
  */
 
 import debug from 'debug';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import defaults from './defaults.js';

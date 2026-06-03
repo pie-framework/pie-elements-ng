@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
 import debug from 'debug';
-import { flatten } from 'lodash-es';
+import { flatten } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 import { commonMqKeyboardStyles } from '../mq/common-mq-styles';
 import { baseSet } from '../keys';

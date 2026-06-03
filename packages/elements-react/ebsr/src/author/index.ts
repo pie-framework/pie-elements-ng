@@ -12,7 +12,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import MultipleChoiceConfigure from '@pie-element/multiple-choice/author';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 import Main from './main.js';
 
 import sensibleDefaults from './defaults.js';

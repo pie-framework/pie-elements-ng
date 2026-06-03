@@ -126,6 +126,10 @@ export function shouldGenerateAutosizeInputComponent(pkgName: string): boolean {
   return ['charting', 'graphing', 'graphing-solution-set'].includes(pkgName);
 }
 
+export function shouldGenerateConfigUiFractionHelper(pkgName: string): boolean {
+  return pkgName === 'config-ui';
+}
+
 export function shouldTransformReactInputAutosizeSource(sourcePath?: string): boolean {
   if (!sourcePath) {
     return true;
@@ -135,6 +139,17 @@ export function shouldTransformReactInputAutosizeSource(sourcePath?: string): bo
     (pkgName) =>
       sourcePath.includes(`pie-lib/packages/${pkgName}/src/`) ||
       sourcePath.includes(`packages/lib-react/${pkgName}/src/`)
+  );
+}
+
+export function shouldTransformConfigUiMathjsSource(sourcePath?: string): boolean {
+  if (!sourcePath) {
+    return false;
+  }
+
+  return (
+    sourcePath.includes('pie-lib/packages/config-ui/src/number-text-field-custom') ||
+    sourcePath.includes('packages/lib-react/config-ui/src/number-text-field-custom')
   );
 }
 

@@ -10,7 +10,7 @@
 
 import { utils } from '@pie-lib/plot';
 import invariant from 'invariant';
-import { cloneDeep, head, isEmpty, isEqual, omit, tail } from 'lodash-es';
+import { cloneDeep, head, isEmpty, isEqual, omit, tail } from '@pie-element/shared-lodash';
 
 export const stripEmptyLabel = (pt) => (pt?.label === '' ? omit(pt, 'label') : pt);
 

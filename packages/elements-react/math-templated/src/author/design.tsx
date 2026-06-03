@@ -16,7 +16,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
-import { cloneDeep, pick, throttle } from 'lodash-es';
+import { cloneDeep, pick, throttle } from '@pie-element/shared-lodash';
 import { InputContainer, settings, layout } from '@pie-lib/config-ui';
 import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 const { dropdown } = settings;

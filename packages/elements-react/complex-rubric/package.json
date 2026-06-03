@@ -11,7 +11,7 @@
     "@pie-element/rubric": "workspace:*",
     "@pie-lib/rubric": "workspace:*",
     "debug": "^4.1.1",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.8.1",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",

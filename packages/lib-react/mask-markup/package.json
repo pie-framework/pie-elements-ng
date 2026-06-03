@@ -11,7 +11,7 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.7.2",
     "to-style": "^1.3.3",
     "@dnd-kit/core": "^6.3.1",

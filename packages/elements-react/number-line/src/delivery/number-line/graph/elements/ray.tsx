@@ -16,7 +16,7 @@ import { styled } from '@mui/material/styles';
 import Arrow from '../arrow.js';
 import Point from './point.js';
 import { basePropTypes } from './base.js';
-import { isNumber } from 'lodash-es';
+import { isNumber } from '@pie-element/shared-lodash';
 
 const StyledRayGroup: any = styled('g')(({ $selected, $correct }) => ({
   '& line': {

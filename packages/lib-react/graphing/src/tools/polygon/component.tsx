@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { ToolPropTypeFields } from '../shared/types.js';
 import { BasePoint } from '../shared/point/index.js';
-import { chunk, initial, isEmpty } from 'lodash-es';
+import { chunk, initial, isEmpty } from '@pie-element/shared-lodash';
 import debug from 'debug';
 import Line from './line.js';
 import DraggablePolygon, { Polygon } from './polygon.js';

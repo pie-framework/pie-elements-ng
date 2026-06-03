@@ -9,7 +9,7 @@
  */
 
 import debug from 'debug';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { getActualFeedbackForCorrectness } from '@pie-element/shared-feedback';
 
 import { ResponseTypes } from './utils';

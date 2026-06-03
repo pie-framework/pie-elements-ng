@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'clsx';
 import { types } from '@pie-lib/plot';
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 import { arrowDimensions, getAngleDeg } from '../../../utils.js';
 
 export class RawArrow extends React.Component {

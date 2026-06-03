@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { differenceWith, isEqual, uniq, uniqWith } from 'lodash-es';
+import { differenceWith, isEqual, uniq, uniqWith } from '@pie-element/shared-lodash';
 import {
   getAmplitudeAndFreq,
   pointsToABC,

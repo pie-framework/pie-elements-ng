@@ -84,4 +84,71 @@ describe('PieLibStrategy autosize input generation', () => {
     expect(autosizeInput).toContain('export const AutosizeInput = React.forwardRef');
     expect(packageJson.dependencies ?? {}).not.toHaveProperty('react-input-autosize');
   });
+
+  it('generates the config-ui fraction helper when syncing fraction input sources', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const pieLibDir = join(rootDir, 'upstream', 'pie-lib');
+    const upstreamConfigUiDir = join(pieLibDir, 'packages', 'config-ui');
+
+    await mkdir(join(upstreamConfigUiDir, 'src'), { recursive: true });
+    await writeFile(
+      join(upstreamConfigUiDir, 'src', 'number-text-field-custom.jsx'),
+      "import * as math from 'mathjs';\nexport const distance = (value, number) => Math.abs(math.number(math.fraction(value)) - math.number(math.fraction(number)));\n",
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamConfigUiDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/config-ui',
+          version: '1.0.0',
+          dependencies: {
+            mathjs: '^7.5.1',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+    await commitPieLibFixture(pieLibDir);
+
+    const strategy = new PieLibStrategy();
+    const result = await strategy.execute({
+      config: {
+        dryRun: false,
+        pieElements: join(rootDir, 'upstream', 'pie-elements'),
+        pieElementsNg: rootDir,
+        pieLib: pieLibDir,
+        pieLibPackages: ['config-ui'],
+        skipDemos: true,
+        syncControllers: false,
+        syncPieLib: true,
+        syncReactComponents: false,
+        upstreamCommit: 'test',
+      },
+      logger: createLogger(),
+    });
+
+    const targetSrcDir = join(rootDir, 'packages', 'lib-react', 'config-ui', 'src');
+    const numberTextField = await readFile(
+      join(targetSrcDir, 'number-text-field-custom.tsx'),
+      'utf-8'
+    );
+    const fractionHelper = await readFile(join(targetSrcDir, 'fraction-to-number.ts'), 'utf-8');
+    const packageJson = JSON.parse(
+      await readFile(join(rootDir, 'packages', 'lib-react', 'config-ui', 'package.json'), 'utf-8')
+    );
+
+    expect(result.packageNames).toEqual(['@pie-lib/config-ui']);
+    expect(numberTextField).toContain(
+      "import { fractionToNumber } from './fraction-to-number.js';"
+    );
+    expect(numberTextField).toContain(
+      'Math.abs(fractionToNumber(value) - fractionToNumber(number))'
+    );
+    expect(numberTextField).not.toContain('mathjs');
+    expect(fractionHelper).toContain('export const fractionToNumber');
+    expect(packageJson.dependencies ?? {}).not.toHaveProperty('mathjs');
+  });
 });

@@ -13,7 +13,7 @@ import { renderToString } from 'react-dom/server';
 import PropTypes from 'prop-types';
 import Token, { TokenTypes } from './token.js';
 import { styled } from '@mui/material/styles';
-import { clone, isEqual } from 'lodash-es';
+import { clone, isEqual } from '@pie-element/shared-lodash';
 import debug from 'debug';
 import { noSelect } from '@pie-lib/style-utils';
 

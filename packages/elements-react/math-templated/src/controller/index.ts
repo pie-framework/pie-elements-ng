@@ -9,7 +9,7 @@
  */
 
 import debug from 'debug';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import Translator from '@pie-lib/translator';
 import * as mv from '@pie-framework/math-validation';
 

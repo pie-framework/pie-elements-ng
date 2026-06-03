@@ -13,10 +13,9 @@
  * 2. Internal monorepo packages (@pie-lib, @pie-element, @pie-element) - External for separate resolution
  * 3. Utility libraries (prop-types, classnames, debug) - External to reduce duplication across packages
  * 4. Specialized UI libraries (@dnd-kit, react-transition-group, styled-components) - External to avoid version conflicts
- * 5. Lodash variants (lodash/lodash-es) - External for runtime resolution via import maps
- * 6. D3 modules - External as they're commonly shared
+ * 5. D3 modules - External as they're commonly shared
  */
-export function isExternal(id: string, variant: 'element' | 'pielib'): boolean {
+export function isExternal(id: string, _variant: 'element' | 'pielib'): boolean {
   // React and React DOM - always external (peer dependencies)
   if (/^react($|\/)/.test(id)) return true;
   if (/^react-dom($|\/)/.test(id)) return true;
@@ -39,15 +38,6 @@ export function isExternal(id: string, variant: 'element' | 'pielib'): boolean {
 
   // Testing libraries - always external
   if (/^@testing-library\//.test(id)) return true;
-
-  // Lodash - variant-specific (elements use lodash, pie-lib uses lodash-es)
-  if (variant === 'element') {
-    if (id === 'lodash') return true;
-    if (/^lodash\//.test(id)) return true;
-  } else {
-    if (id === 'lodash-es') return true;
-    if (/^lodash-es\//.test(id)) return true;
-  }
 
   // Styled-components - external to avoid multiple instances
   if (/^styled-components/.test(id)) return true;
@@ -84,13 +74,25 @@ export function isExternal(id: string, variant: 'element' | 'pielib'): boolean {
  * Generate external function for Vite rollupOptions
  * Use this in vite.config.ts generation
  */
-export function createExternalFunction(variant: 'element' | 'pielib'): string {
-  const lodashCheck =
-    variant === 'element'
-      ? `id === 'lodash' ||
-          /^lodash\\//.test(id) ||`
-      : `id === 'lodash-es' ||
-          /^lodash-es\\//.test(id) ||`;
+export function createExternalFunction(
+  _variant: 'element' | 'pielib',
+  options: { externalizeMathjs?: boolean } = {}
+): string {
+  const sharedExternals = [
+    'prop-types',
+    'classnames',
+    'debug',
+    'i18next',
+    'humps',
+    ...(options.externalizeMathjs === false ? [] : ['mathjs']),
+    'react-jss',
+    'js-combinatorics',
+    '@mapbox/point-geometry',
+    'react-transition-group',
+    'nested-property',
+    'pluralize',
+    'decimal.js',
+  ];
 
   return `(id) => {
         return (
@@ -104,7 +106,6 @@ export function createExternalFunction(variant: 'element' | 'pielib'): string {
           /^@emotion\\//.test(id) ||
           /^d3-/.test(id) ||
           /^@testing-library\\//.test(id) ||
-          ${lodashCheck}
           /^styled-components/.test(id) ||
           id === 'konva' || /^konva\\//.test(id) ||
           id === 'react-konva' || /^react-konva\\//.test(id) ||
@@ -112,7 +113,7 @@ export function createExternalFunction(variant: 'element' | 'pielib'): string {
           id === '@mdi/react' || /^@mdi\\/react\\//.test(id) ||
           id === '@mdi/js' || /^@mdi\\/js\\//.test(id) ||
           id === 'recharts' || /^recharts\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)
+          ${JSON.stringify(sharedExternals).replace(/"/g, "'")}.includes(id)
         );
       }`;
 }
@@ -142,9 +143,6 @@ export function createKonvaExternalFunction(): string {
         if (id.startsWith('d3-')) return true;
         // Keep recharts external
         if (id === 'recharts' || id.startsWith('recharts/')) return true;
-        // Keep lodash external even with preserveModules: false
-        // It will be resolved via import map in demo HTML
-        if (id === 'lodash' || id.startsWith('lodash/')) return true;
         if (id === 'styled-components' || id.startsWith('styled-components/')) return true;
         // DnD Kit libraries
         if (id.startsWith('@dnd-kit/')) return true;
