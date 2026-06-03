@@ -4,6 +4,12 @@
 
 ### Patch Changes
 
+- 33d27e0: define and enforce packaging contracts PIE-626
+
+## 7.1.1-next.0
+
+### Patch Changes
+
 - Updated dependencies [b34750c]
   - @pie-lib/correct-answer-toggle@4.0.3-next.0
   - @pie-lib/drag@4.0.3-next.0

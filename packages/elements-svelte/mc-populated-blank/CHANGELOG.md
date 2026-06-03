@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.13-next.0
+
+### Patch Changes
+
+- 33d27e0: define and enforce packaging contracts PIE-626
+
 ## 0.2.12
 
 ### Patch Changes
