@@ -10,7 +10,7 @@
 
 import { getPluginProps } from './utils.js';
 import * as React from 'react';
-import cx from 'classnames';
+import cx from 'clsx';
 import PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';

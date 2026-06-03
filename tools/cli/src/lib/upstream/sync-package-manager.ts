@@ -386,7 +386,7 @@ function addKnownPeerFallbacks(deps: Record<string, string>): void {
   // Some widely used packages rely on peers that upstream metadata can omit
   // or that may not be inferable from local resolution during sync.
   if ((deps.recharts || deps['styled-components']) && !deps['react-is']) {
-    deps['react-is'] = '^19.2.0';
+    deps['react-is'] = '^18.3.1';
   }
 
   if (deps['@tiptap/extension-character-count'] && !deps['@tiptap/extensions']) {
@@ -416,7 +416,7 @@ export function extractUpstreamDependencies(
   if (!upstreamPkg) return {};
 
   const upstreamDeps = (upstreamPkg.dependencies as Record<string, string> | undefined) ?? {};
-  const expectedDeps: Record<string, string> = {};
+  let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
@@ -433,12 +433,12 @@ function resolveSyncedVersion(
   upstreamPkg: PackageJson | null,
   existingPkg: PackageJson | null
 ): string {
-  const upstreamVersion = typeof upstreamPkg?.version === 'string' ? upstreamPkg.version : null;
-  if (upstreamVersion) {
-    return upstreamVersion;
-  }
   const existingVersion = typeof existingPkg?.version === 'string' ? existingPkg.version : null;
-  return existingVersion || '0.1.0';
+  if (existingVersion) {
+    return existingVersion;
+  }
+  const upstreamVersion = typeof upstreamPkg?.version === 'string' ? upstreamPkg.version : null;
+  return upstreamVersion || '0.1.0';
 }
 
 /**
@@ -595,6 +595,11 @@ export async function ensureElementPackageJson(
   if (Object.keys(expectedDeps).length > 0) {
     pkg.dependencies = expectedDeps;
   }
+  pkg.peerDependencies = {
+    ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
+    react: REACT.VERSION,
+    'react-dom': REACT.VERSION,
+  };
 
   // Preserve pie metadata (if present upstream or locally)
   const pieMetadata = ((upstreamPkg as PackageJson | null | undefined)?.pie ??
@@ -817,7 +822,7 @@ export async function ensurePieLibPackageJson(
 
   // Extract upstream dependencies
   const upstreamDeps = (upstreamPkg?.dependencies as Record<string, string> | undefined) ?? {};
-  const expectedDeps: Record<string, string> = {};
+  let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
@@ -867,6 +872,14 @@ export async function ensurePieLibPackageJson(
     }
   }
 
+  const declaresReactRuntime =
+    typeof expectedDeps.react === 'string' || typeof expectedDeps['react-dom'] === 'string';
+
+  expectedDeps =
+    (applyPackageJsonTransforms({ dependencies: expectedDeps } as PackageJson).dependencies as
+      | Record<string, string>
+      | undefined) ?? {};
+
   // Create minimal package.json if missing
   if (!pkg) {
     pkg = {
@@ -888,6 +901,14 @@ export async function ensurePieLibPackageJson(
   const dependencyOverride = getPieLibDependencyOverride(pkgName);
   if (dependencyOverride) {
     pkg.dependencies = dependencyOverride;
+  }
+
+  if (declaresReactRuntime) {
+    pkg.peerDependencies = {
+      ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
+      react: REACT.VERSION,
+      'react-dom': REACT.VERSION,
+    };
   }
 
   // Generate dist-only exports. Pie-lib packages expose only their compiled

@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { styled } from '@mui/material/styles';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { color } from '@pie-lib/render-ui';
 import { withMask } from './with-mask.js';

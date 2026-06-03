@@ -10,14 +10,14 @@
     "@pie-element/multi-trait-rubric": "workspace:*",
     "@pie-element/rubric": "workspace:*",
     "@pie-lib/rubric": "workspace:*",
-    "classnames": "^2.2.6",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23",
+    "lodash-es": "^4.18.1",
     "prop-types": "^15.8.1",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@emotion/core": "0.x.x",
+    "clsx": "^2.1.1",
     "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {

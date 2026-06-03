@@ -45,7 +45,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import Radio from '@mui/material/Radio';
-import classNames from 'classnames';
+import classNames from 'clsx';
 
 import FeedbackTick from './feedback-tick.js';
 

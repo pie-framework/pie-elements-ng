@@ -10,7 +10,6 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/graphing": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "classnames": "^2.2.6",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
     "lodash-es": "^4.18.1",
@@ -21,7 +20,8 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-lib/graphing-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@emotion/core": "0.x.x",
+    "clsx": "^2.1.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

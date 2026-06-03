@@ -16,7 +16,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { color } from '@pie-lib/render-ui';
 import { grey } from '@mui/material/colors';
 

@@ -30,6 +30,8 @@ import {
   transformMenuToInlineMenu,
   addInlineMenuExport,
   transformReactInteropComponentImports,
+  transformClassnamesToClsx,
+  transformPackageJsonBrowserEsmDependencies,
 } from './sync-imports.js';
 import type { PackageJson } from '../../utils/package-json.js';
 
@@ -65,6 +67,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
 
   // Core transforms (always applied)
   transformed = transformLodashToLodashEs(transformed);
+  transformed = transformClassnamesToClsx(transformed);
   transformed = transformLodashEsDeepImportsToFullySpecified(transformed);
   transformed = transformKnownDeepImportsToFullySpecified(transformed);
   transformed = transformPieFrameworkEventImports(transformed);
@@ -123,6 +126,7 @@ export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
 
   transformed = transformPackageJsonLodash(transformed);
   transformed = transformPackageJsonRecharts(transformed);
+  transformed = transformPackageJsonBrowserEsmDependencies(transformed);
   transformed = transformPackageJsonPieEvents(transformed);
   transformed = transformPackageJsonControllerUtils(transformed);
   transformed = transformPackageJsonSharedPackages(transformed);

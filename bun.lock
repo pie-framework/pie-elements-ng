@@ -204,7 +204,7 @@
     },
     "packages/elements-react/categorize": {
       "name": "@pie-element/categorize",
-      "version": "13.1.0",
+      "version": "13.1.2-next.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/core": "0.x.x",
@@ -225,7 +225,7 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -242,7 +242,7 @@
     },
     "packages/elements-react/charting": {
       "name": "@pie-element/charting",
-      "version": "12.1.0",
+      "version": "12.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -259,7 +259,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -276,7 +276,7 @@
     },
     "packages/elements-react/complex-rubric": {
       "name": "@pie-element/complex-rubric",
-      "version": "7.1.0",
+      "version": "7.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -290,9 +290,9 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/rubric": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -309,7 +309,7 @@
     },
     "packages/elements-react/drag-in-the-blank": {
       "name": "@pie-element/drag-in-the-blank",
-      "version": "10.1.0",
+      "version": "10.1.2-next.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/core": "0.x.x",
@@ -328,7 +328,7 @@
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.4.3",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -345,7 +345,7 @@
     },
     "packages/elements-react/drawing-response": {
       "name": "@pie-element/drawing-response",
-      "version": "12.1.0",
+      "version": "12.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -363,7 +363,7 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.4.3",
         "konva": "8.3.0",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
         "react-konva": "^18.2.14",
       },
@@ -381,7 +381,7 @@
     },
     "packages/elements-react/ebsr": {
       "name": "@pie-element/ebsr",
-      "version": "14.2.0",
+      "version": "14.2.2-next.0",
       "dependencies": {
         "@mui/material": "^7.3.11",
         "@pie-element/multiple-choice": "workspace:*",
@@ -390,9 +390,9 @@
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -409,7 +409,7 @@
     },
     "packages/elements-react/explicit-constructed-response": {
       "name": "@pie-element/explicit-constructed-response",
-      "version": "11.1.0",
+      "version": "11.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -426,10 +426,10 @@
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.4.3",
         "he": "^1.2.0",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -446,7 +446,7 @@
     },
     "packages/elements-react/extended-text-entry": {
       "name": "@pie-element/extended-text-entry",
-      "version": "15.1.0",
+      "version": "15.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -460,7 +460,7 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "lodash-es": "^4.18.1",
         "lodash.throttle": "^4.1.1",
@@ -480,7 +480,7 @@
     },
     "packages/elements-react/fraction-model": {
       "name": "@pie-element/fraction-model",
-      "version": "6.1.0",
+      "version": "6.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -497,8 +497,8 @@
         "@pie-lib/test-utils": "workspace:*",
         "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
-        "react-is": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-        "recharts": "^3.7.0",
+        "react-is": "^18.3.1",
+        "recharts": "^3.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -514,7 +514,7 @@
     },
     "packages/elements-react/graphing": {
       "name": "@pie-element/graphing",
-      "version": "10.1.0",
+      "version": "10.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -531,7 +531,7 @@
         "@pie-lib/graphing": "workspace:*",
         "@pie-lib/graphing-utils": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
@@ -550,7 +550,7 @@
     },
     "packages/elements-react/graphing-solution-set": {
       "name": "@pie-element/graphing-solution-set",
-      "version": "6.1.0",
+      "version": "6.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -565,7 +565,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/graphing-solution-set": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
@@ -584,7 +584,7 @@
     },
     "packages/elements-react/hotspot": {
       "name": "@pie-element/hotspot",
-      "version": "11.1.0",
+      "version": "11.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -620,7 +620,7 @@
     },
     "packages/elements-react/image-cloze-association": {
       "name": "@pie-element/image-cloze-association",
-      "version": "10.1.0",
+      "version": "10.1.2-next.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/core": "0.x.x",
@@ -638,7 +638,7 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.4.3",
         "humps": "^2.0.1",
         "lodash-es": "^4.18.1",
@@ -659,7 +659,7 @@
     },
     "packages/elements-react/inline-dropdown": {
       "name": "@pie-element/inline-dropdown",
-      "version": "10.1.0",
+      "version": "10.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -676,7 +676,7 @@
         "@pie-lib/mask-markup": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.4.3",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -693,7 +693,7 @@
     },
     "packages/elements-react/likert": {
       "name": "@pie-element/likert",
-      "version": "4.1.0",
+      "version": "4.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -706,9 +706,9 @@
         "@pie-lib/config-ui": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
         "react-test-renderer": "18.2.0",
       },
@@ -726,7 +726,7 @@
     },
     "packages/elements-react/match": {
       "name": "@pie-element/match",
-      "version": "12.1.0",
+      "version": "12.1.2-next.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/core": "0.x.x",
@@ -745,9 +745,9 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -764,7 +764,7 @@
     },
     "packages/elements-react/match-list": {
       "name": "@pie-element/match-list",
-      "version": "7.1.0",
+      "version": "7.1.2-next.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -781,7 +781,7 @@
         "@pie-lib/drag": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -818,9 +818,9 @@
         "@pie-lib/math-toolbar": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
       },
       "devDependencies": {
@@ -876,7 +876,7 @@
     },
     "packages/elements-react/matrix": {
       "name": "@pie-element/matrix",
-      "version": "4.1.0",
+      "version": "4.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -892,7 +892,7 @@
         "debug": "^4.1.1",
         "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
-        "react-is": ">= 16.8.0",
+        "react-is": "^18.3.1",
         "styled-components": "^5.2.1",
       },
       "devDependencies": {
@@ -909,7 +909,7 @@
     },
     "packages/elements-react/multi-trait-rubric": {
       "name": "@pie-element/multi-trait-rubric",
-      "version": "8.1.0",
+      "version": "8.1.2-next.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/core": "0.x.x",
@@ -924,7 +924,7 @@
         "@pie-lib/drag": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "clsx": "^1.1.1",
+        "clsx": "^2.1.1",
         "debug": "^4.4.3",
         "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
@@ -943,7 +943,7 @@
     },
     "packages/elements-react/multiple-choice": {
       "name": "@pie-element/multiple-choice",
-      "version": "13.2.0",
+      "version": "13.2.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -959,9 +959,9 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
         "react-transition-group": "^4.4.5",
       },
@@ -979,7 +979,7 @@
     },
     "packages/elements-react/number-line": {
       "name": "@pie-element/number-line",
-      "version": "13.1.0",
+      "version": "13.1.2-next.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/core": "0.x.x",
@@ -997,11 +997,11 @@
         "@pie-lib/icons": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "d3-scale": "^4.0.2",
         "d3-selection": "^3.0.0",
-        "lodash-es": "^4.17.23",
-        "mathjs": "^7.5.1",
+        "lodash-es": "^4.18.1",
+        "mathjs": "^15.2.0",
         "prop-types": "^15.8.1",
         "react-jss": "^10.10.0",
         "react-transition-group": "^4.4.5",
@@ -1020,7 +1020,7 @@
     },
     "packages/elements-react/passage": {
       "name": "@pie-element/passage",
-      "version": "7.1.0",
+      "version": "7.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -1051,7 +1051,7 @@
     },
     "packages/elements-react/placement-ordering": {
       "name": "@pie-element/placement-ordering",
-      "version": "14.1.0",
+      "version": "14.1.2-next.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/core": "0.x.x",
@@ -1073,7 +1073,7 @@
         "debug": "^4.1.1",
         "decimal.js": "^10.0.0",
         "js-combinatorics": "^2.1.2",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "nested-property": "^4.0.0",
         "pluralize": "^8.0.0",
         "prop-types": "^15.8.1",
@@ -1093,7 +1093,7 @@
     },
     "packages/elements-react/rubric": {
       "name": "@pie-element/rubric",
-      "version": "8.1.0",
+      "version": "8.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -1123,7 +1123,7 @@
     },
     "packages/elements-react/select-text": {
       "name": "@pie-element/select-text",
-      "version": "13.1.0",
+      "version": "13.1.2-next.0",
       "dependencies": {
         "@emotion/core": "0.x.x",
         "@emotion/react": "^11.14.0",
@@ -1158,7 +1158,7 @@
     },
     "packages/elements-svelte/mc-populated-blank": {
       "name": "@pie-element/mc-populated-blank",
-      "version": "0.2.12",
+      "version": "0.2.13-next.0",
       "devDependencies": {
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/styling-svelte": "workspace:*",
@@ -1171,7 +1171,7 @@
     },
     "packages/elements-svelte/simple-cloze": {
       "name": "@pie-element/simple-cloze",
-      "version": "0.1.3",
+      "version": "0.1.4-next.0",
       "devDependencies": {
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
@@ -1187,7 +1187,7 @@
     },
     "packages/elements-svelte/venn-classification": {
       "name": "@pie-element/venn-classification",
-      "version": "0.1.0",
+      "version": "0.1.1-next.0",
       "devDependencies": {
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
@@ -1208,7 +1208,7 @@
       "version": "2.0.2",
       "dependencies": {
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1230,7 +1230,6 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
-        "@pie-lib/math-rendering": "workspace:*",
         "@pie-lib/plot": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
@@ -1241,7 +1240,7 @@
         "@visx/point": "^3.0.0",
         "@visx/scale": "^3.0.0",
         "@visx/shape": "^3.0.0",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "d3-interpolate": "^3.0.1",
         "d3-scale": "^4.0.2",
         "d3-selection": "^3.0.0",
@@ -1249,11 +1248,9 @@
         "d3-time": "^3.1.0",
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.8.1",
-        "react": "^18.2.0",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
-        "react-draggable": "^3.3.0",
+        "react-draggable": "^4.6.0",
         "react-input-autosize": "^2.2.1",
       },
       "devDependencies": {
@@ -1262,6 +1259,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/config-ui": {
@@ -1278,11 +1279,9 @@
         "@pie-lib/render-ui": "workspace:*",
         "assert": "^1.4.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
-        "mathjs": "^7.0.1",
+        "lodash-es": "^4.18.1",
+        "mathjs": "^15.2.0",
         "prop-types": "^15.6.2",
-        "react": "^18.3.1",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
         "react-measure": "^2.2.2",
       },
       "devDependencies": {
@@ -1291,6 +1290,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/controller-utils": {
@@ -1320,10 +1323,8 @@
         "@pie-lib/icons": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.6.2",
-        "react": "^18.3.1",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -1332,6 +1333,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/drag": {
@@ -1347,13 +1352,10 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-        "@pie-lib/math-rendering": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.6",
-        "lodash-es": "^4.17.23",
+        "clsx": "^2.1.1",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
-        "react-dom": ">=16.8.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1361,6 +1363,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/editable-html-tip-tap": {
@@ -1375,7 +1381,6 @@
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/drag": "workspace:*",
         "@pie-lib/math-input": "workspace:*",
-        "@pie-lib/math-rendering": "workspace:*",
         "@pie-lib/math-toolbar": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "@tiptap/core": "3.20.0",
@@ -1397,19 +1402,17 @@
         "@tiptap/pm": "3.20.0",
         "@tiptap/react": "3.20.0",
         "@tiptap/starter-kit": "3.20.0",
-        "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0",
-        "@types/react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
         "change-case": "^3.0.2",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "immutable": "^4.0.0-rc.12",
         "keycode": "^2.2.0",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.6.2",
         "prosemirror-state": "^1.4.4",
-        "react": "^18.3.1",
         "react-attr-converter": "^0.3.1",
-        "react-dom": "^18.3.1",
         "react-jss": "^8.6.1",
         "react-portal": "^4.2.0",
         "tippy.js": "latest",
@@ -1421,6 +1424,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/graphing": {
@@ -1451,20 +1458,18 @@
         "@visx/group": "^3.0.0",
         "@visx/point": "^3.0.0",
         "@visx/shape": "^3.0.0",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "d3-scale": "^4.0.2",
         "d3-selection": "^3.0.0",
         "d3-shape": "^3.2.0",
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "react-draggable": "^3.3.0",
+        "react-draggable": "^4.6.0",
         "react-input-autosize": "^2.2.1",
-        "react-redux": "^6.0.0",
-        "redux": "^4.0.1",
+        "react-redux": "^9.3.0",
+        "redux": "^5.0.1",
         "redux-undo": "^1.1.0",
       },
       "devDependencies": {
@@ -1473,6 +1478,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/graphing-solution-set": {
@@ -1504,20 +1513,18 @@
         "@visx/group": "^3.0.0",
         "@visx/point": "^3.0.0",
         "@visx/shape": "^3.0.0",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "d3-scale": "^4.0.2",
         "d3-selection": "^3.0.0",
         "d3-shape": "^3.2.0",
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "react-draggable": "^3.3.0",
+        "react-draggable": "^4.6.0",
         "react-input-autosize": "^2.2.1",
-        "react-redux": "^6.0.0",
-        "redux": "^4.0.1",
+        "react-redux": "^9.3.0",
+        "redux": "^5.0.1",
         "redux-undo": "^1.1.0",
       },
       "devDependencies": {
@@ -1527,6 +1534,10 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
+      },
     },
     "packages/lib-react/graphing-utils": {
       "name": "@pie-lib/graphing-utils",
@@ -1534,7 +1545,7 @@
       "dependencies": {
         "@mapbox/point-geometry": "^1.1.0",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1554,8 +1565,6 @@
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "prop-types": "^15.6.2",
-        "react": "^18.3.1",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1563,6 +1572,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/mask-markup": {
@@ -1579,14 +1592,11 @@
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/drag": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
-        "@pie-lib/math-rendering": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
         "to-style": "^1.3.3",
       },
       "devDependencies": {
@@ -1595,6 +1605,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/math-input": {
@@ -1648,10 +1662,8 @@
         "@pie-lib/math-input": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.3.1",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1659,6 +1671,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/plot": {
@@ -1678,13 +1694,11 @@
         "d3-selection": "^3.0.0",
         "debug": "^4.1.1",
         "invariant": "^2.2.4",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
-        "react-draggable": "^3.3.0",
-        "react-redux": "^6.0.0",
-        "redux": "^4.0.1",
+        "react-draggable": "^4.6.0",
+        "react-redux": "^9.3.0",
+        "redux": "^5.0.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1692,6 +1706,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/render-ui": {
@@ -1704,13 +1722,10 @@
         "@mui/material": "^7.3.4",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/icons": "workspace:*",
-        "@pie-lib/math-rendering": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.3.1",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -1719,6 +1734,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/rubric": {
@@ -1735,10 +1754,8 @@
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1746,6 +1763,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/style-utils": {
@@ -1771,8 +1792,6 @@
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.5.2",
         "prop-types": "^15.8.1",
-        "react": "^18.3.1",
-        "react-dom": "^18.0.0 || ^19.0.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1780,6 +1799,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/text-select": {
@@ -1795,12 +1818,10 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/style-utils": "workspace:*",
         "@pie-lib/translator": "workspace:*",
-        "classnames": "^2.2.6",
+        "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.6.2",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1808,6 +1829,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-react/tools": {
@@ -1823,10 +1848,8 @@
         "@pie-lib/style-utils": "workspace:*",
         "assert": "^1.4.1",
         "debug": "^4.1.1",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.3.1",
-        "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0",
         "react-portal": "^4.2.0",
         "trigonometry-calculator": "^2.0.0",
       },
@@ -1837,6 +1860,10 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
+      },
     },
     "packages/lib-react/translator": {
       "name": "@pie-lib/translator",
@@ -1844,10 +1871,8 @@
       "dependencies": {
         "debug": "^4.1.1",
         "i18next": "^25.7.0",
-        "lodash-es": "^4.17.23",
+        "lodash-es": "^4.18.1",
         "prop-types": "^15.7.2",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1855,6 +1880,10 @@
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
       },
     },
     "packages/lib-svelte/delivery-events": {
@@ -3143,7 +3172,7 @@
 
     "cli-spinners": ["cli-spinners@2.9.2", "", {}, "sha512-ywqV+5MmyL4E7ybXgKys4DugZbX0FC6LnwrhjuykIjnK9k8OQacQ7axGKnjDXWNhns0xot3bZI5h55H8yo9cJg=="],
 
-    "clsx": ["clsx@1.2.1", "", {}, "sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg=="],
+    "clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 
     "color-convert": ["color-convert@2.0.1", "", { "dependencies": { "color-name": "~1.1.4" } }, "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ=="],
 
@@ -3359,7 +3388,7 @@
 
     "form-data": ["form-data@4.0.5", "", { "dependencies": { "asynckit": "^0.4.0", "combined-stream": "^1.0.8", "es-set-tostringtag": "^2.1.0", "hasown": "^2.0.2", "mime-types": "^2.1.12" } }, "sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w=="],
 
-    "fraction.js": ["fraction.js@4.3.7", "", {}, "sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew=="],
+    "fraction.js": ["fraction.js@5.3.4", "", {}, "sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ=="],
 
     "fs-extra": ["fs-extra@7.0.1", "", { "dependencies": { "graceful-fs": "^4.1.2", "jsonfile": "^4.0.0", "universalify": "^0.1.0" } }, "sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw=="],
 
@@ -3705,7 +3734,7 @@
 
     "math-intrinsics": ["math-intrinsics@1.1.0", "", {}, "sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g=="],
 
-    "mathjs": ["mathjs@7.6.0", "", { "dependencies": { "complex.js": "^2.0.11", "decimal.js": "^10.2.1", "escape-latex": "^1.2.0", "fraction.js": "^4.0.12", "javascript-natural-sort": "^0.7.1", "seed-random": "^2.2.0", "tiny-emitter": "^2.1.0", "typed-function": "^2.0.0" }, "bin": { "mathjs": "bin/cli.js" } }, "sha512-abywR28hUpKF4at5jE8Ys+Kigk40eKMT5mcBLD0/dtsqjfOLbtzd3WjlRqIopNo7oQ6FME51qph6lb8h/bhpUg=="],
+    "mathjs": ["mathjs@15.2.0", "", { "dependencies": { "@babel/runtime": "^7.26.10", "complex.js": "^2.2.5", "decimal.js": "^10.4.3", "escape-latex": "^1.2.0", "fraction.js": "^5.2.1", "javascript-natural-sort": "^0.7.1", "seedrandom": "^3.0.5", "tiny-emitter": "^2.1.0", "typed-function": "^4.2.1" }, "bin": { "mathjs": "bin/cli.js" } }, "sha512-UAQzSVob9rNLdGpqcFMYmSu9dkuLYy7Lr2hBEQS5SHQdknA9VppJz3cy2KkpMzTODunad6V6cNv+5kOLsePLow=="],
 
     "mdurl": ["mdurl@2.0.0", "", {}, "sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w=="],
 
@@ -3917,11 +3946,11 @@
 
     "react-dom": ["react-dom@18.3.1", "", { "dependencies": { "loose-envify": "^1.1.0", "scheduler": "^0.23.2" }, "peerDependencies": { "react": "^18.3.1" } }, "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw=="],
 
-    "react-draggable": ["react-draggable@3.3.2", "", { "dependencies": { "classnames": "^2.2.5", "prop-types": "^15.6.0" } }, "sha512-oaz8a6enjbPtx5qb0oDWxtDNuybOylvto1QLydsXgKmwT7e3GXC2eMVDwEMIUYJIFqVG72XpOv673UuuAq6LhA=="],
+    "react-draggable": ["react-draggable@4.6.0", "", { "dependencies": { "clsx": "^2.1.1", "prop-types": "^15.8.1" }, "peerDependencies": { "react": ">= 16.3.0", "react-dom": ">= 16.3.0" } }, "sha512-g4vqY53xhmPrBnZvGP+1YQV0eYnB3o0VLzoi6q2IpwnQrxIZ34tYRKpVtsWIXPg4D/pvLn+oYCW5gOK2cWIrgA=="],
 
     "react-input-autosize": ["react-input-autosize@2.2.2", "", { "dependencies": { "prop-types": "^15.5.8" }, "peerDependencies": { "react": "^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0" } }, "sha512-jQJgYCA3S0j+cuOwzuCd1OjmBmnZLdqQdiLKRYrsMMzbjUrVDS5RvJUDwJqA7sKuksDuzFtm6hZGKFu7Mjk5aw=="],
 
-    "react-is": ["react-is@19.2.7", "", {}, "sha512-kZFnouyVv7eP/Phmrlo9FK+zcAdriZJvzxXHF1Sl1P377WSGe2G/JxVolhTrB/jeV47lKImhNUsijjHAAbcl/A=="],
+    "react-is": ["react-is@18.3.1", "", {}, "sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg=="],
 
     "react-is-18": ["react-is@18.3.1", "", {}, "sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg=="],
 
@@ -3937,7 +3966,7 @@
 
     "react-reconciler": ["react-reconciler@0.29.2", "", { "dependencies": { "loose-envify": "^1.1.0", "scheduler": "^0.23.2" }, "peerDependencies": { "react": "^18.3.1" } }, "sha512-zZQqIiYgDCTP/f1N/mAR10nJGrPD2ZR+jDSEsKWJHYC7Cm2wodlwbR3upZRdC3cjIjSlTLNVyO7Iu0Yy7t2AYg=="],
 
-    "react-redux": ["react-redux@6.0.1", "", { "dependencies": { "@babel/runtime": "^7.3.1", "hoist-non-react-statics": "^3.3.0", "invariant": "^2.2.4", "loose-envify": "^1.4.0", "prop-types": "^15.7.2", "react-is": "^16.8.2" }, "peerDependencies": { "react": "^16.4.0-0", "redux": "^2.0.0 || ^3.0.0 || ^4.0.0-0" } }, "sha512-T52I52Kxhbqy/6TEfBv85rQSDz6+Y28V/pf52vDWs1YRXG19mcFOGfHnY2HsNFHyhP+ST34Aih98fvt6tqwVcQ=="],
+    "react-redux": ["react-redux@9.3.0", "", { "dependencies": { "@types/use-sync-external-store": "^0.0.6", "use-sync-external-store": "^1.4.0" }, "peerDependencies": { "@types/react": "^18.2.25 || ^19", "react": "^18.0 || ^19", "redux": "^5.0.0" }, "optionalPeers": ["@types/react", "redux"] }, "sha512-KQopgqFo/p/fgmAs5qz6p5RWaNAzq40WAu7fJIXnQpYxFPbJYtsJPWvGeF2rOBaY/kEuV77AVsX8TsQzKm+A/g=="],
 
     "react-shallow-renderer": ["react-shallow-renderer@16.15.0", "", { "dependencies": { "object-assign": "^4.1.1", "react-is": "^16.12.0 || ^17.0.0 || ^18.0.0" }, "peerDependencies": { "react": "^16.0.0 || ^17.0.0 || ^18.0.0" } }, "sha512-oScf2FqQ9LFVQgA73vr86xl2NaOIX73rh+YFqcOp68CWj56tSfgtGKrEbyhCj0rSijyG9M1CYprTh39fBi5hzA=="],
 
@@ -3955,7 +3984,7 @@
 
     "reduce-function-call": ["reduce-function-call@1.0.3", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-Hl/tuV2VDgWgCSEeWMLwxLZqX7OK59eU1guxXsRKTAyeYimivsKdtcV4fu3r710tpG5GmDKDhQ0HSZLExnNmyQ=="],
 
-    "redux": ["redux@4.2.1", "", { "dependencies": { "@babel/runtime": "^7.9.2" } }, "sha512-LAUYz4lc+Do8/g7aeRa8JkyDErK6ekstQaqWQrNRW//MY1TvCEpMtpTWvlQ+FPbWCx+Xixu/6SHt5N0HR+SB4w=="],
+    "redux": ["redux@5.0.1", "", {}, "sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w=="],
 
     "redux-thunk": ["redux-thunk@3.1.0", "", { "peerDependencies": { "redux": "^5.0.0" } }, "sha512-NW2r5T6ksUKXCabzhL9z+h206HQw/NJkcLm1GPImRQ8IzfXwRGqjVhKJGauHirT0DAuyy6hjdnMZaRoAcy0Klw=="],
 
@@ -3992,8 +4021,6 @@
     "scheduler": ["scheduler@0.23.2", "", { "dependencies": { "loose-envify": "^1.1.0" } }, "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ=="],
 
     "schema-utils": ["schema-utils@4.3.3", "", { "dependencies": { "@types/json-schema": "^7.0.9", "ajv": "^8.9.0", "ajv-formats": "^2.1.1", "ajv-keywords": "^5.1.0" } }, "sha512-eflK8wEtyOE6+hsaRVPxvUKYCpRgzLqDTb8krvAsRIwOGlHoSgYLgBXoubGgLd2fT41/OUYdb48v4k4WWHQurA=="],
-
-    "seed-random": ["seed-random@2.2.0", "", {}, "sha512-34EQV6AAHQGhoc0tn/96a9Fsi6v2xdqe/dMUwljGRaFOzR3EgRmECvD0O8vi8X+/uQ50LGHfkNu/Eue5TPKZkQ=="],
 
     "seedrandom": ["seedrandom@3.0.5", "", {}, "sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg=="],
 
@@ -4141,7 +4168,7 @@
 
     "type-fest": ["type-fest@0.21.3", "", {}, "sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w=="],
 
-    "typed-function": ["typed-function@2.1.0", "", {}, "sha512-bctQIOqx2iVbWGDGPWwIm18QScpu2XRmkC19D8rQGFsjKSgteq/o1hTZvIG/wuDq8fanpBDrLkLq+aEN/6y5XQ=="],
+    "typed-function": ["typed-function@4.2.2", "", {}, "sha512-VwaXim9Gp1bngi/q3do8hgttYn2uC3MoT/gfuMWylnj1IeZBUAyPddHZlo1K05BDoj8DYPpMdiHqH1dDYdJf2A=="],
 
     "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
@@ -4249,10 +4276,6 @@
 
     "@emotion/styled/@emotion/utils": ["@emotion/utils@1.4.2", "", {}, "sha512-3vLclRofFziIa3J2wDh9jjbkUz9qk5Vi3IZ/FSTKViB0k+ef0fPV7dYrUIugbgupYDx7v9ud/SjrtEP8Y4xLoA=="],
 
-    "@hello-pangea/dnd/react-redux": ["react-redux@9.3.0", "", { "dependencies": { "@types/use-sync-external-store": "^0.0.6", "use-sync-external-store": "^1.4.0" }, "peerDependencies": { "@types/react": "^18.2.25 || ^19", "react": "^18.0 || ^19", "redux": "^5.0.0" }, "optionalPeers": ["@types/react", "redux"] }, "sha512-KQopgqFo/p/fgmAs5qz6p5RWaNAzq40WAu7fJIXnQpYxFPbJYtsJPWvGeF2rOBaY/kEuV77AVsX8TsQzKm+A/g=="],
-
-    "@hello-pangea/dnd/redux": ["redux@5.0.1", "", {}, "sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w=="],
-
     "@jest/types/chalk": ["chalk@4.1.2", "", { "dependencies": { "ansi-styles": "^4.1.0", "supports-color": "^7.1.0" } }, "sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA=="],
 
     "@manypkg/find-root/@types/node": ["@types/node@12.20.55", "", {}, "sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ=="],
@@ -4263,7 +4286,7 @@
 
     "@manypkg/get-packages/fs-extra": ["fs-extra@8.1.0", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^4.0.0", "universalify": "^0.1.0" } }, "sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g=="],
 
-    "@mui/material/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
+    "@mui/material/react-is": ["react-is@19.2.7", "", {}, "sha512-kZFnouyVv7eP/Phmrlo9FK+zcAdriZJvzxXHF1Sl1P377WSGe2G/JxVolhTrB/jeV47lKImhNUsijjHAAbcl/A=="],
 
     "@mui/styled-engine/@emotion/cache": ["@emotion/cache@11.14.0", "", { "dependencies": { "@emotion/memoize": "^0.9.0", "@emotion/sheet": "^1.4.0", "@emotion/utils": "^1.4.2", "@emotion/weak-memoize": "^0.4.0", "stylis": "4.2.0" } }, "sha512-L/B1lc/TViYk4DcpGxtAVbx0ZyiKM5ktoIyafGkH6zg/tj+mA+NE//aPYKG0k8kCHSHVJrpLpcAlOBEXQ3SavA=="],
 
@@ -4271,9 +4294,7 @@
 
     "@mui/styled-engine/@emotion/sheet": ["@emotion/sheet@1.4.0", "", {}, "sha512-fTBW9/8r2w3dXWYM4HCB1Rdp8NLibOw2+XELH5m5+AkWiL/KqYX6dc0kKYlaYyKjrQ6ds33MCdMPEwgs2z1rqg=="],
 
-    "@mui/system/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
-
-    "@mui/utils/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
+    "@mui/utils/react-is": ["react-is@19.2.7", "", {}, "sha512-kZFnouyVv7eP/Phmrlo9FK+zcAdriZJvzxXHF1Sl1P377WSGe2G/JxVolhTrB/jeV47lKImhNUsijjHAAbcl/A=="],
 
     "@pie-element/element-bundler/@types/node": ["@types/node@22.19.19", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-dyh/xO2Fh5bYrfWaaqGrRQQGkNdmYw6AmaAUvYeUMNTWQtvb796ikLdmTchRmOlOiIJ1TDXfWgVx1QkUlQ6Hew=="],
 
@@ -4311,13 +4332,9 @@
 
     "@pigment-css/react/@mui/utils": ["@mui/utils@6.4.9", "", { "dependencies": { "@babel/runtime": "^7.26.0", "@mui/types": "~7.2.24", "@types/prop-types": "^15.7.14", "clsx": "^2.1.1", "prop-types": "^15.8.1", "react-is": "^19.0.0" }, "peerDependencies": { "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0", "react": "^17.0.0 || ^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react"] }, "sha512-Y12Q9hbK9g+ZY0T3Rxrx9m2m10gaphDuUMgWxyV5kNJevVxXYCLclYUCC9vXaIk1/NdNDTcW2Yfr2OGvNFNmHg=="],
 
-    "@pigment-css/react/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
-
     "@pigment-css/react/stylis": ["stylis@4.4.0", "", {}, "sha512-5Z9ZpRzfuH6l/UAvCPAPUo3665Nk2wLaZU3x+TLHKVzIz33+sbJqbtrYoC3KD4/uVOr2Zp+L0LySezP9OHV9yA=="],
 
     "@reduxjs/toolkit/immer": ["immer@11.1.8", "", {}, "sha512-/tbkHMW7y10Lx6i1crLjD4/OhNkRG+Fo7byZHtah0547nIeXYcpIXaUh0IAQY6gO5459qpGGYapcEOHtFXkIuA=="],
-
-    "@reduxjs/toolkit/redux": ["redux@5.0.1", "", {}, "sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w=="],
 
     "@rollup/plugin-commonjs/estree-walker": ["estree-walker@2.0.2", "", {}, "sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w=="],
 
@@ -4497,23 +4514,11 @@
 
     "react-jss/@emotion/is-prop-valid": ["@emotion/is-prop-valid@0.7.3", "", { "dependencies": { "@emotion/memoize": "0.7.1" } }, "sha512-uxJqm/sqwXw3YPA5GXX365OBcJGFtxUVkB6WyezqFHlNe9jqUWH5ur2O2M8dGBz61kn1g3ZBlzUunFQXQIClhA=="],
 
-    "react-redux/react-is": ["react-is@16.13.1", "", {}, "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="],
-
-    "react-shallow-renderer/react-is": ["react-is@18.3.1", "", {}, "sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg=="],
-
-    "react-test-renderer/react-is": ["react-is@18.3.1", "", {}, "sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg=="],
-
     "read-yaml-file/js-yaml": ["js-yaml@3.14.2", "", { "dependencies": { "argparse": "^1.0.7", "esprima": "^4.0.0" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg=="],
-
-    "recharts/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
-
-    "recharts/react-redux": ["react-redux@9.3.0", "", { "dependencies": { "@types/use-sync-external-store": "^0.0.6", "use-sync-external-store": "^1.4.0" }, "peerDependencies": { "@types/react": "^18.2.25 || ^19", "react": "^18.0 || ^19", "redux": "^5.0.0" }, "optionalPeers": ["@types/react", "redux"] }, "sha512-KQopgqFo/p/fgmAs5qz6p5RWaNAzq40WAu7fJIXnQpYxFPbJYtsJPWvGeF2rOBaY/kEuV77AVsX8TsQzKm+A/g=="],
 
     "reduce-css-calc/balanced-match": ["balanced-match@0.4.2", "", {}, "sha512-STw03mQKnGUYtoNjmowo4F2cRmIIxYEGiMsjjwla/u5P1lxadj/05WkNaFjNiKTgJkj8KiXbgAiRTmcQRwQNtg=="],
 
     "reduce-function-call/balanced-match": ["balanced-match@1.0.2", "", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="],
-
-    "redux-thunk/redux": ["redux@5.0.1", "", {}, "sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w=="],
 
     "source-map-support/source-map": ["source-map@0.6.1", "", {}, "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g=="],
 
@@ -4522,8 +4527,6 @@
     "styled-components/supports-color": ["supports-color@5.5.0", "", { "dependencies": { "has-flag": "^3.0.0" } }, "sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow=="],
 
     "svelte/aria-query": ["aria-query@5.3.1", "", {}, "sha512-Z/ZeOgVl7bcSYZ/u/rh0fOpvEpq//LZmdbkXyc7syVzjPAhfOa9ebsdTSjEBDU4vs5nC98Kfduj1uFo0qyET3g=="],
-
-    "svelte/clsx": ["clsx@2.1.1", "", {}, "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="],
 
     "victory-vendor/@types/d3-shape": ["@types/d3-shape@3.1.8", "", { "dependencies": { "@types/d3-path": "*" } }, "sha512-lae0iWfcDeR7qt7rA88BNiqdvPS5pFVPpo5OfjElwNaT2yyekbM0C9vK+yqBqEmHr6lDkRnYNoTBYlAgJa7a4w=="],
 
@@ -4585,6 +4588,10 @@
 
     "@pie-element/venn-classification/@tiptap/starter-kit/@tiptap/extension-text": ["@tiptap/extension-text@3.24.0", "", { "peerDependencies": { "@tiptap/core": "3.24.0" } }, "sha512-Im7keLPEihxm3+LyF+drYCoaOY5hlq35lvHAp/el6M8pJ/scts88HrYpdR1Yc4BtpZBIhfHSyWgPaupI4qwdeg=="],
 
+    "@pie-framework/math-validation/mathjs/fraction.js": ["fraction.js@4.3.7", "", {}, "sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew=="],
+
+    "@pie-framework/math-validation/mathjs/typed-function": ["typed-function@2.1.0", "", {}, "sha512-bctQIOqx2iVbWGDGPWwIm18QScpu2XRmkC19D8rQGFsjKSgteq/o1hTZvIG/wuDq8fanpBDrLkLq+aEN/6y5XQ=="],
+
     "@pie-lib/editable-html-tip-tap/@tiptap/starter-kit/@tiptap/core": ["@tiptap/core@3.24.0", "", { "peerDependencies": { "@tiptap/pm": "3.24.0" } }, "sha512-GTAsXAI32p4hEZgPzvUv2RPrObxamy9AFhmhG10fXSvN/cDUs8naEYVIqDV3Sh99jMwQEbTFKW1E1mcspsY6ow=="],
 
     "@pie-lib/editable-html-tip-tap/@tiptap/starter-kit/@tiptap/extension-document": ["@tiptap/extension-document@3.24.0", "", { "peerDependencies": { "@tiptap/core": "3.24.0" } }, "sha512-yxgM3+yXy2XZzEwH43y2Kp8D1BkblxEWLXqo0YCoAKtxyKCcEaT8kdlf70kS7D0+VSzYU4D0iN7VdQIYHcL2mA=="],
@@ -4632,6 +4639,8 @@
     "@pigment-css/react/@mui/system/@mui/types": ["@mui/types@7.2.24", "", { "peerDependencies": { "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react"] }, "sha512-3c8tRt/CbWZ+pEg7QpSwbdxOk36EfmhbKf6AGZsD1EcLDLTSZoxxJ86FVtcjxvjuhdyBiWKSTGZFaXCnidO2kw=="],
 
     "@pigment-css/react/@mui/utils/@mui/types": ["@mui/types@7.2.24", "", { "peerDependencies": { "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react"] }, "sha512-3c8tRt/CbWZ+pEg7QpSwbdxOk36EfmhbKf6AGZsD1EcLDLTSZoxxJ86FVtcjxvjuhdyBiWKSTGZFaXCnidO2kw=="],
+
+    "@pigment-css/react/@mui/utils/react-is": ["react-is@19.2.7", "", {}, "sha512-kZFnouyVv7eP/Phmrlo9FK+zcAdriZJvzxXHF1Sl1P377WSGe2G/JxVolhTrB/jeV47lKImhNUsijjHAAbcl/A=="],
 
     "@types/jest/pretty-format/ansi-styles": ["ansi-styles@5.2.0", "", {}, "sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA=="],
 

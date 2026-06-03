@@ -9,7 +9,7 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import AutosizeInput from 'react-input-autosize';
 const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;

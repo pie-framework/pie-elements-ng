@@ -9,7 +9,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { styled, useTheme } from '@mui/material/styles';
 import { NodeSelection } from 'prosemirror-state';
 

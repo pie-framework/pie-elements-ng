@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { BasePoint } from '../shared/point/index.js';
 import BgCircle from './bg-circle.js';
 import { equalPoints, getMiddleOfTwoPoints, point, stripEmptyLabel } from '../../utils.js';

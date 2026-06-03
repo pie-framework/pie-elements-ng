@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, transformDataHeadings } from '@pie-lib/render-ui';

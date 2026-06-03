@@ -374,6 +374,16 @@ export function transformLodashToLodashEs(content: string): string {
 }
 
 /**
+ * Transform classnames imports to clsx.
+ *
+ * clsx preserves the call shape used by classnames while offering a browser ESM
+ * entrypoint, so synced source should prefer it over the CommonJS-era package.
+ */
+export function transformClassnamesToClsx(content: string): string {
+  return content.replace(/from\s+(['"])classnames\1/g, 'from $1clsx$1');
+}
+
+/**
  * Ensure deep lodash-es imports are fully specified for strict ESM resolution.
  *
  * Webpack (with fullySpecified ESM resolution) and other strict ESM loaders
@@ -408,7 +418,7 @@ export function transformKnownDeepImportsToFullySpecified(content: string): stri
 /**
  * Transform package.json dependencies from lodash to lodash-es
  *
- * Replaces lodash with lodash-es version 4.17.22 (latest ESM version)
+ * Replaces lodash with lodash-es version 4.18.1 (latest ESM version)
  * Also removes @types/lodash as lodash-es includes built-in TypeScript types
  */
 export function transformPackageJsonLodash<T extends Record<string, any>>(packageJson: T): T {
@@ -416,13 +426,13 @@ export function transformPackageJsonLodash<T extends Record<string, any>>(packag
 
   // Replace lodash with lodash-es in dependencies
   if (transformed.dependencies?.lodash) {
-    transformed.dependencies['lodash-es'] = '^4.17.22';
+    transformed.dependencies['lodash-es'] = '^4.18.1';
     delete transformed.dependencies.lodash;
   }
 
   // Replace lodash with lodash-es in devDependencies
   if (transformed.devDependencies?.lodash) {
-    transformed.devDependencies['lodash-es'] = '^4.17.22';
+    transformed.devDependencies['lodash-es'] = '^4.18.1';
     delete transformed.devDependencies.lodash;
   }
 
@@ -446,14 +456,55 @@ export function transformPackageJsonLodash<T extends Record<string, any>>(packag
 export function transformPackageJsonRecharts<T extends Record<string, any>>(packageJson: T): T {
   const transformed = { ...packageJson };
 
-  // Upgrade recharts to 3.x in dependencies
+  // Keep recharts on the current ESM-capable major.
   if (transformed.dependencies?.recharts) {
-    // Only upgrade if it's 2.x
-    const version = transformed.dependencies.recharts;
-    if (version.includes('2.')) {
-      transformed.dependencies.recharts = '^3.7.0';
+    transformed.dependencies.recharts = '^3.8.1';
+  }
+
+  return transformed;
+}
+
+/**
+ * Apply browser-ESM dependency replacements and upgrades for synced packages.
+ *
+ * This is intentionally dependency policy, not build-output patching: upstream
+ * sync rewrites package manifests toward packages that can participate in the
+ * browser ESM graph directly.
+ */
+export function transformPackageJsonBrowserEsmDependencies<T extends Record<string, any>>(
+  packageJson: T
+): T {
+  const transformed = { ...packageJson };
+  const deps = transformed.dependencies as Record<string, string> | undefined;
+  if (!deps) {
+    return transformed;
+  }
+
+  if (deps.classnames) {
+    deps.clsx = '^2.1.1';
+    delete deps.classnames;
+  }
+
+  const versionPins: Record<string, string> = {
+    '@types/react': '^18.2.0',
+    '@types/react-dom': '^18.2.0',
+    clsx: '^2.1.1',
+    'lodash-es': '^4.18.1',
+    mathjs: '^15.2.0',
+    'react-draggable': '^4.6.0',
+    'react-is': '^18.3.1',
+    'react-redux': '^9.3.0',
+    redux: '^5.0.1',
+  };
+
+  for (const [name, version] of Object.entries(versionPins)) {
+    if (deps[name]) {
+      deps[name] = version;
     }
   }
+
+  delete deps.react;
+  delete deps['react-dom'];
 
   return transformed;
 }

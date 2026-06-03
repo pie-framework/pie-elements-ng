@@ -10,7 +10,6 @@
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "classnames": "^2.2.6",
     "debug": "^4.1.1",
     "lodash.throttle": "^4.1.1",
     "prop-types": "^15.8.1",
@@ -19,7 +18,8 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "lodash-es": "^4.18.1",
-    "@emotion/core": "0.x.x"
+    "@emotion/core": "0.x.x",
+    "clsx": "^2.1.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

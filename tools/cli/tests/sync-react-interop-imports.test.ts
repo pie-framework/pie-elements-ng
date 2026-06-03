@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  transformClassnamesToClsx,
   transformKnownDeepImportsToFullySpecified,
   transformReactInteropComponentImports,
 } from '../src/lib/upstream/sync-imports';
+import {
+  createPieLibTransformPipeline,
+  createReactComponentTransformPipeline,
+} from '../src/lib/upstream/sync-transforms';
 
 describe('react interop component import transform', () => {
   it('rewrites @mdi/react default import with interop-safe unwrapping', () => {
@@ -106,5 +111,41 @@ import { Rect } from 'react-konva/lib/ReactKonvaCore';
 
     const output = transformKnownDeepImportsToFullySpecified(input);
     expect(output).toContain("import { Rect } from 'react-konva/lib/ReactKonvaCore.js';");
+  });
+});
+
+describe('browser ESM dependency import transform', () => {
+  it('rewrites classnames imports to clsx', () => {
+    const input = `
+import classNames from 'classnames';
+import cx from "classnames";
+
+export const one = classNames('a', false && 'b');
+export const two = cx('c');
+`;
+
+    const output = transformClassnamesToClsx(input);
+
+    expect(output).toContain("import classNames from 'clsx';");
+    expect(output).toContain('import cx from "clsx";');
+    expect(output).not.toContain('classnames');
+  });
+
+  it('runs through the React element sync pipeline', () => {
+    const output = createReactComponentTransformPipeline('@pie-element/test')(
+      "import cx from 'classnames';\nexport { cx };\n",
+      'src/delivery/index.js'
+    );
+
+    expect(output).toContain("import cx from 'clsx';");
+  });
+
+  it('runs through the pie-lib sync pipeline', () => {
+    const output = createPieLibTransformPipeline()(
+      "import cx from 'classnames';\nexport { cx };\n",
+      'pie-lib/packages/graphing/src/index.jsx'
+    );
+
+    expect(output).toContain("import cx from 'clsx';");
   });
 });

@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import Check from '@mui/icons-material/Check';
 import Close from '@mui/icons-material/Close';
 

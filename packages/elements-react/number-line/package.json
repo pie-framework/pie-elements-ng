@@ -12,11 +12,10 @@
     "@pie-lib/icons": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "classnames": "^2.2.6",
     "d3-scale": "^4.0.2",
     "d3-selection": "^3.0.0",
-    "lodash-es": "^4.17.23",
-    "mathjs": "^7.5.1",
+    "lodash-es": "^4.18.1",
+    "mathjs": "^15.2.0",
     "react-jss": "^10.10.0",
     "react-transition-group": "^4.4.5",
     "prop-types": "^15.8.1",
@@ -26,7 +25,8 @@
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@emotion/core": "0.x.x",
+    "clsx": "^2.1.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",

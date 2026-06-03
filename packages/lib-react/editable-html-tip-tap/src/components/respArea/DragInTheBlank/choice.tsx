@@ -14,7 +14,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { color } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { GripIcon } from '../../icons/RespArea.js';
 

@@ -171,6 +171,10 @@ map generation. Adding a new shared browser singleton requires updating this
 repository's policy and the player import-map generation together. Dependencies
 not in the policy should remain bundled by default.
 
+The React browser singleton contract is React 18. The upstream sync pipeline is
+therefore allowed to upgrade or replace React 16/17-era helper dependencies
+instead of preserving shim support for browser ESM consumers.
+
 ## Runtime Consumption
 
 `packages/element-player` supports three strategies:

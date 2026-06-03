@@ -124,6 +124,8 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
 
 - Bare imports are allowed only when listed in `allowedBareImports`.
 - Shared browser singleton versions are exact and declared in `pie.browserSharedDependencies`.
+- The browser ESM React contract is React 18. Synced packages must not preserve
+  React 16/17 compatibility shims in browser-facing dependency policy.
 - `dependencies` and `peerDependencies` are install metadata only; they are not browser runtime singleton contracts.
 - Browser JS output must stay within the policy size budget unless the policy is intentionally changed.
 
