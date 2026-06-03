@@ -1,5 +1,11 @@
 # @pie-element/simple-cloze
 
+## 0.1.4-next.0
+
+### Patch Changes
+
+- 33d27e0: define and enforce packaging contracts PIE-626
+
 ## 0.1.3
 
 ### Patch Changes
