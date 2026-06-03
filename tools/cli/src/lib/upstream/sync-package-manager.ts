@@ -13,7 +13,11 @@ import type { SyncConfig } from './sync-strategy.js';
 import { existsAny } from './sync-filesystem.js';
 import { applyPackageJsonTransforms } from './sync-transforms.js';
 import { BUILD_TOOLS, REACT, PACKAGE_DEFAULTS, SCRIPTS, WORKSPACE } from './sync-constants.js';
-import { getPieLibDependencyAugmentations, getPieLibDependencyOverride } from './sync-presets.js';
+import {
+  getPieLibDependencyAugmentations,
+  getPieLibDependencyOverride,
+  shouldGenerateAutosizeInputComponent,
+} from './sync-presets.js';
 
 interface EntryPointMap {
   hasIndex: boolean;
@@ -876,9 +880,9 @@ export async function ensurePieLibPackageJson(
     typeof expectedDeps.react === 'string' || typeof expectedDeps['react-dom'] === 'string';
 
   expectedDeps =
-    (applyPackageJsonTransforms({ dependencies: expectedDeps } as PackageJson).dependencies as
-      | Record<string, string>
-      | undefined) ?? {};
+    (applyPackageJsonTransforms({ dependencies: expectedDeps } as PackageJson, {
+      removeReactInputAutosize: shouldGenerateAutosizeInputComponent(pkgName),
+    }).dependencies as Record<string, string> | undefined) ?? {};
 
   // Create minimal package.json if missing
   if (!pkg) {

@@ -3,6 +3,7 @@ import {
   transformClassnamesToClsx,
   transformKnownDeepImportsToFullySpecified,
   transformReactInteropComponentImports,
+  transformReactInputAutosizeToLocal,
 } from '../src/lib/upstream/sync-imports';
 import {
   createPieLibTransformPipeline,
@@ -131,6 +132,52 @@ export const two = cx('c');
     expect(output).not.toContain('classnames');
   });
 
+  it('rewrites react-input-autosize imports to the local autosize input component', () => {
+    const input = `
+import React from 'react';
+import AutosizeInput from 'react-input-autosize';
+
+export const Label = () => (
+  <AutosizeInput
+    inputRef={(node) => console.log(node)}
+    inputStyle={{ minWidth: 20 }}
+    value="A"
+  />
+);
+`;
+
+    const output = transformReactInputAutosizeToLocal(input);
+
+    expect(output).toContain("import { AutosizeInput } from './autosize-input.js';");
+    expect(output).toContain('<AutosizeInput');
+    expect(output).not.toContain('react-input-autosize');
+    expect(output).not.toContain('AutosizeInputComponent');
+  });
+
+  it('preserves react-input-autosize local import aliases when rewriting', () => {
+    const input = `
+import React from 'react';
+import AutoInput from 'react-input-autosize';
+
+export const Label = () => <AutoInput value="A" />;
+`;
+
+    const output = transformReactInputAutosizeToLocal(input);
+
+    expect(output).toContain("import { AutosizeInput as AutoInput } from './autosize-input.js';");
+    expect(output).toContain('<AutoInput value="A" />');
+    expect(output).not.toContain('react-input-autosize');
+  });
+
+  it('does not rewrite react-input-autosize outside generated autosize packages', () => {
+    const output = createPieLibTransformPipeline()(
+      'import AutosizeInput from \'react-input-autosize\';\nexport const Foo = () => <AutosizeInput value="x" />;\n',
+      'pie-lib/packages/plot/src/mark-label.jsx'
+    );
+
+    expect(output).toContain("import AutosizeInput from 'react-input-autosize';");
+  });
+
   it('runs through the React element sync pipeline', () => {
     const output = createReactComponentTransformPipeline('@pie-element/test')(
       "import cx from 'classnames';\nexport { cx };\n",
@@ -147,5 +194,15 @@ export const two = cx('c');
     );
 
     expect(output).toContain("import cx from 'clsx';");
+  });
+
+  it('runs the autosize replacement through the pie-lib sync pipeline', () => {
+    const output = createPieLibTransformPipeline()(
+      'import AutosizeInput from \'react-input-autosize\';\nexport const Foo = () => <AutosizeInput value="x" />;\n',
+      'pie-lib/packages/graphing/src/mark-label.jsx'
+    );
+
+    expect(output).toContain("import { AutosizeInput } from './autosize-input.js';");
+    expect(output).not.toContain('react-input-autosize');
   });
 });

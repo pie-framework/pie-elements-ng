@@ -27,8 +27,6 @@ export type PieLibVitePreset =
  */
 export const PRESET_IDS = {
   testUtilsDeclarationStabilization: 'patch.test-utils.declaration-stabilization',
-  graphingAutosizeInterop: 'patch.graphing.autosize-interop',
-  chartingAutosizeInterop: 'patch.charting.autosize-interop',
   graphingDomPropLeakGuard: 'patch.graphing.dom-prop-leak-guard',
   previewPromptPropTypesShape: 'patch.render-ui.preview-prompt-proptypes-shape',
   correctAnswerToggleStyleNormalization: 'patch.correct-answer-toggle.style-key-normalization',
@@ -65,52 +63,6 @@ export function getPostSyncTextPatches(projectRoot: string): PostSyncTextPatch[]
         {
           from: 'export function renderWithProviders(ui, options = {}) {',
           to: 'export function renderWithProviders(ui: React.ReactElement, options: RenderOptions & { theme?: unknown; providers?: React.ComponentType<{ children?: React.ReactNode }>[] } = {}): RenderResult {',
-        },
-      ],
-    },
-    {
-      id: PRESET_IDS.graphingAutosizeInterop,
-      label: '@pie-lib/graphing autosize interop',
-      file: join(projectRoot, 'packages/lib-react/graphing/src/mark-label.tsx'),
-      replacements: [
-        {
-          from: "import AutosizeInput from 'react-input-autosize';",
-          to: "import AutosizeInput from 'react-input-autosize';\nconst AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;",
-        },
-        {
-          from: '<AutosizeInput',
-          to: '<AutosizeInputComponent',
-        },
-        {
-          from: '<AutosizeInputComponentComponent',
-          to: '<AutosizeInputComponent',
-        },
-        {
-          from: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;\nconst AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;',
-          to: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;',
-        },
-      ],
-    },
-    {
-      id: PRESET_IDS.chartingAutosizeInterop,
-      label: '@pie-lib/charting autosize interop',
-      file: join(projectRoot, 'packages/lib-react/charting/src/mark-label.tsx'),
-      replacements: [
-        {
-          from: "import AutosizeInput from 'react-input-autosize';",
-          to: "import AutosizeInput from 'react-input-autosize';\nconst AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;",
-        },
-        {
-          from: '<AutosizeInput',
-          to: '<AutosizeInputComponent',
-        },
-        {
-          from: '<AutosizeInputComponentComponent',
-          to: '<AutosizeInputComponent',
-        },
-        {
-          from: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;\nconst AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;',
-          to: 'const AutosizeInputComponent = AutosizeInput?.default ?? AutosizeInput;',
         },
       ],
     },
@@ -168,6 +120,22 @@ export function getPieLibSourcePreserveList(pkgName: string): string[] {
     return ['inline-menu.tsx'];
   }
   return [];
+}
+
+export function shouldGenerateAutosizeInputComponent(pkgName: string): boolean {
+  return ['charting', 'graphing', 'graphing-solution-set'].includes(pkgName);
+}
+
+export function shouldTransformReactInputAutosizeSource(sourcePath?: string): boolean {
+  if (!sourcePath) {
+    return true;
+  }
+
+  return ['charting', 'graphing', 'graphing-solution-set'].some(
+    (pkgName) =>
+      sourcePath.includes(`pie-lib/packages/${pkgName}/src/`) ||
+      sourcePath.includes(`packages/lib-react/${pkgName}/src/`)
+  );
 }
 
 export function getPieLibVitePreset(pkgName?: string): PieLibVitePreset {

@@ -31,6 +31,7 @@ import {
   addInlineMenuExport,
   transformReactInteropComponentImports,
   transformClassnamesToClsx,
+  transformReactInputAutosizeToLocal,
   transformPackageJsonBrowserEsmDependencies,
 } from './sync-imports.js';
 import type { PackageJson } from '../../utils/package-json.js';
@@ -46,6 +47,8 @@ export interface TransformOptions {
   includeConfigure?: boolean;
   /** Whether to include pie-lib-specific transforms */
   includePieLib?: boolean;
+  /** Whether to remove react-input-autosize from package metadata */
+  removeReactInputAutosize?: boolean;
 }
 
 /**
@@ -96,6 +99,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
 
   // Pie-lib-specific transforms (run only when syncing upstream pie-lib sources)
   if (options.includePieLib) {
+    transformed = transformReactInputAutosizeToLocal(transformed, options.sourcePath);
     transformed = inlineEditableHtmlConstants(transformed);
     if (options.sourcePath) {
       transformed = reexportTokenTypes(transformed, options.sourcePath);
@@ -121,12 +125,17 @@ export function applySourceTransforms(content: string, options: TransformOptions
  * 4. @pie-lib shared packages → @pie-element/shared-*
  * 5. Preserve upstream @pie-framework/mathquill dependency versions from synced package.json
  */
-export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
+export function applyPackageJsonTransforms<T extends PackageJson>(
+  pkg: T,
+  options: TransformOptions = {}
+): T {
   let transformed = pkg;
 
   transformed = transformPackageJsonLodash(transformed);
   transformed = transformPackageJsonRecharts(transformed);
-  transformed = transformPackageJsonBrowserEsmDependencies(transformed);
+  transformed = transformPackageJsonBrowserEsmDependencies(transformed, {
+    removeReactInputAutosize: options.removeReactInputAutosize,
+  });
   transformed = transformPackageJsonPieEvents(transformed);
   transformed = transformPackageJsonControllerUtils(transformed);
   transformed = transformPackageJsonSharedPackages(transformed);

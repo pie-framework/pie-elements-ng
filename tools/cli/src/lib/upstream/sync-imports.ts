@@ -35,7 +35,7 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { PRESET_IDS } from './sync-presets.js';
+import { PRESET_IDS, shouldTransformReactInputAutosizeSource } from './sync-presets.js';
 
 const SOURCE_PATH_PRESET_RULES = {
   [PRESET_IDS.transformTextSelectTokenTypesReexport]: (sourcePath: string) =>
@@ -384,6 +384,38 @@ export function transformClassnamesToClsx(content: string): string {
 }
 
 /**
+ * Replace react-input-autosize with the local ESM autosize input component.
+ *
+ * The upstream dependency is CommonJS-era and only used by graph label inputs.
+ * Synced packages generate a tiny local component instead of carrying the
+ * dependency into browser ESM output.
+ */
+export function transformReactInputAutosizeToLocal(content: string, sourcePath?: string): string {
+  if (!shouldTransformReactInputAutosizeSource(sourcePath)) {
+    return content;
+  }
+
+  let transformed = content;
+
+  transformed = transformed.replace(
+    /import\s+([A-Za-z_$][\w$]*)\s+from\s+(['"])react-input-autosize\2;?/g,
+    (_match, importName: string) =>
+      importName === 'AutosizeInput'
+        ? "import { AutosizeInput } from './autosize-input.js';"
+        : `import { AutosizeInput as ${importName} } from './autosize-input.js';`
+  );
+
+  transformed = transformed.replace(
+    /\n?const\s+AutosizeInputComponent\s*=\s*AutosizeInput\?\.default\s*\?\?\s*AutosizeInput;?/g,
+    ''
+  );
+  transformed = transformed.replace(/<AutosizeInputComponent\b/g, '<AutosizeInput');
+  transformed = transformed.replace(/<\/AutosizeInputComponent>/g, '</AutosizeInput>');
+
+  return transformed;
+}
+
+/**
  * Ensure deep lodash-es imports are fully specified for strict ESM resolution.
  *
  * Webpack (with fullySpecified ESM resolution) and other strict ESM loaders
@@ -472,7 +504,8 @@ export function transformPackageJsonRecharts<T extends Record<string, any>>(pack
  * browser ESM graph directly.
  */
 export function transformPackageJsonBrowserEsmDependencies<T extends Record<string, any>>(
-  packageJson: T
+  packageJson: T,
+  options: { removeReactInputAutosize?: boolean } = {}
 ): T {
   const transformed = { ...packageJson };
   const deps = transformed.dependencies as Record<string, string> | undefined;
@@ -483,6 +516,10 @@ export function transformPackageJsonBrowserEsmDependencies<T extends Record<stri
   if (deps.classnames) {
     deps.clsx = '^2.1.1';
     delete deps.classnames;
+  }
+
+  if (options.removeReactInputAutosize) {
+    delete deps['react-input-autosize'];
   }
 
   const versionPins: Record<string, string> = {

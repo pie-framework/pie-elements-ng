@@ -6,6 +6,7 @@ import {
   getPieLibSyncMode,
   getPieLibVitePreset,
   getPostSyncTextPatches,
+  shouldGenerateAutosizeInputComponent,
   PIE_LIB_COMPATIBILITY_APPEND_PATCHES,
   PRESET_IDS,
 } from '../src/lib/upstream/sync-presets.js';
@@ -49,14 +50,19 @@ describe('sync preset registry', () => {
     const root = '/tmp/workspace';
     const patches = getPostSyncTextPatches(root);
 
-    expect(patches.length).toBeGreaterThanOrEqual(6);
+    expect(patches.length).toBeGreaterThanOrEqual(4);
     expect(patches.map((p) => p.id)).toContain(PRESET_IDS.testUtilsDeclarationStabilization);
-    expect(patches.map((p) => p.id)).toContain(PRESET_IDS.graphingAutosizeInterop);
-    expect(patches.map((p) => p.id)).toContain(PRESET_IDS.chartingAutosizeInterop);
     expect(patches.map((p) => p.id)).toContain(PRESET_IDS.graphingDomPropLeakGuard);
     expect(patches.map((p) => p.id)).toContain(PRESET_IDS.previewPromptPropTypesShape);
     expect(patches.map((p) => p.id)).toContain(PRESET_IDS.correctAnswerToggleStyleNormalization);
     expect(patches.every((p) => p.file.startsWith(root))).toBe(true);
+  });
+
+  it('generates the local autosize input component for graph labeling packages', () => {
+    expect(shouldGenerateAutosizeInputComponent('charting')).toBe(true);
+    expect(shouldGenerateAutosizeInputComponent('graphing')).toBe(true);
+    expect(shouldGenerateAutosizeInputComponent('graphing-solution-set')).toBe(true);
+    expect(shouldGenerateAutosizeInputComponent('plot')).toBe(false);
   });
 
   it('tracks compatibility append patches with stable IDs', () => {

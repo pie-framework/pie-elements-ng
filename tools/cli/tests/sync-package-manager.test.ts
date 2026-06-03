@@ -706,6 +706,7 @@ describe('ensurePieLibPackageJson', () => {
             lodash: '^4.17.21',
             mathjs: '^7.5.1',
             'react-draggable': '^3.3.0',
+            'react-input-autosize': '^2.2.1',
             'react-redux': '^6.0.0',
             redux: '^4.0.1',
           },
@@ -730,6 +731,38 @@ describe('ensurePieLibPackageJson', () => {
     });
     expect(pkgJson.dependencies).not.toHaveProperty('classnames');
     expect(pkgJson.dependencies).not.toHaveProperty('lodash');
+    expect(pkgJson.dependencies).not.toHaveProperty('react-input-autosize');
+  });
+
+  it('does not remove react-input-autosize from pie-lib packages without the generated local component', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'plot');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'plot');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(join(libDir, 'src', 'index.ts'), 'export {};\n', 'utf-8');
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/plot',
+          version: '1.0.0',
+          dependencies: {
+            'react-input-autosize': '^2.2.1',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensurePieLibPackageJson('plot', libDir, createConfig(rootDir));
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toHaveProperty('react-input-autosize', '^2.2.1');
   });
 
   it('pins math-rendering to shared mathjax adapter workspace package', async () => {
