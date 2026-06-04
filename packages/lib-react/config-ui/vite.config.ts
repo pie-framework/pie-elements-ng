@@ -18,7 +18,6 @@ export default defineConfig({
           /^react-dom($|\/)/.test(id) ||
           /^@pie-lib\//.test(id) ||
           /^@pie-element\//.test(id) ||
-          /^@pie-element\//.test(id) ||
           /^@pie-framework\//.test(id) ||
           /^@mui\//.test(id) ||
           /^@emotion\//.test(id) ||

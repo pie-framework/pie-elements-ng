@@ -11,7 +11,7 @@
 import React from 'react';
 import { FormSection, InputContainer, AlertDialog, settings, layout } from '@pie-lib/config-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { NumberLineComponent, dataConverter, tickUtils  } from '../delivery/index.js';
+import { NumberLineComponent, dataConverter, tickUtils } from '../delivery/index.js';
 import NumberTextField from './number-text-field.js';
 import CardBar from './card-bar.js';
 import Size from './size.js';
