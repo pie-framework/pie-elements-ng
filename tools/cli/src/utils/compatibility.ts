@@ -291,6 +291,18 @@ export function formatCompatibilityReportLastAnalyzed(report: CompatibilityRepor
   return Number.isNaN(analyzedAt.getTime()) ? 'unknown' : analyzedAt.toLocaleString();
 }
 
+export function createTrackedCompatibilityReport(report: CompatibilityReport): CompatibilityReport {
+  const { esmRuntimeValidation, esmRuntimeValidationEnabled, esmRuntimeCdnBaseUrl, ...tracked } =
+    report;
+  const { esmRuntimeReady, ...summary } = report.summary;
+
+  return {
+    ...tracked,
+    lastAnalyzed: 'unknown',
+    summary,
+  };
+}
+
 export async function loadCompatibilityReport(path: string): Promise<CompatibilityReport> {
   if (!existsSync(path)) {
     throw new Error(`Compatibility report not found at: ${path}`);

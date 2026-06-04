@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  createTrackedCompatibilityReport,
   deriveStaticBrowserEsmReport,
   formatCompatibilityReportLastAnalyzed,
   loadCompatibilityReport,
@@ -41,6 +42,53 @@ describe('loadCompatibilityReport', () => {
     });
     expect(report.lastAnalyzed).toBe('unknown');
     expect(formatCompatibilityReportLastAnalyzed(report)).toBe('unknown');
+  });
+});
+
+describe('createTrackedCompatibilityReport', () => {
+  it('removes volatile runtime probe fields from the tracked report', () => {
+    const report = createTrackedCompatibilityReport({
+      elements: ['categorize'],
+      pieLibPackages: ['config-ui'],
+      blockedElements: {},
+      elementDetails: {},
+      pieLibDetails: {},
+      esmPlayerReady: ['categorize'],
+      esmValidation: {},
+      esmPlayerValidationEnabled: true,
+      esmRuntimeValidationEnabled: true,
+      esmRuntimeCdnBaseUrl: 'https://esm.sh',
+      esmRuntimeValidation: {
+        categorize: {
+          compatible: false,
+          cdnBaseUrl: 'https://esm.sh',
+          version: '13.1.0',
+          entryOk: false,
+          controllerOk: false,
+          entryParseOk: false,
+          controllerParseOk: false,
+          errors: ['fetch https://esm.sh/@pie-element/categorize@13.1.0 -> 404'],
+        },
+      },
+      lastAnalyzed: '2026-06-04T03:35:33.325Z',
+      summary: {
+        totalElements: 1,
+        compatibleElements: 1,
+        blockedElements: 0,
+        esmPlayerReady: 1,
+        esmRuntimeReady: 0,
+        totalPieLibPackages: 1,
+        compatiblePieLibPackages: 1,
+      },
+    });
+
+    expect(report.lastAnalyzed).toBe('unknown');
+    expect(report.esmRuntimeValidationEnabled).toBeUndefined();
+    expect(report.esmRuntimeCdnBaseUrl).toBeUndefined();
+    expect(report.esmRuntimeValidation).toBeUndefined();
+    expect(report.summary.esmRuntimeReady).toBeUndefined();
+    expect(report.elements).toEqual(['categorize']);
+    expect(report.pieLibPackages).toEqual(['config-ui']);
   });
 });
 
