@@ -9,7 +9,7 @@
  */
 
 import debug from 'debug';
-import { clone, remove } from 'lodash-es';
+import { clone, remove } from '@pie-element/shared-lodash';
 import { score } from './scoring.js';
 
 export { score };

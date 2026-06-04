@@ -12,7 +12,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import debug from 'debug';
-import { difference, isEqual, uniqueId } from 'lodash-es';
+import { difference, isEqual, uniqueId } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import { closestCenter } from '@dnd-kit/core';
 

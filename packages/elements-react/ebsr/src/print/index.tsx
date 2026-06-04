@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep, get } from 'lodash-es';
+import { cloneDeep, get } from '@pie-element/shared-lodash';
 import MultipleChoice from '@pie-element/multiple-choice';
 import debug from 'debug';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';

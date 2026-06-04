@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { isEqual, isNumber } from 'lodash-es';
+import { isEqual, isNumber } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 import { Draggable } from '../../../draggable/index.js';
 

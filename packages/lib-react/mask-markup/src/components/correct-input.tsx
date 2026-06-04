@@ -10,7 +10,7 @@
 
 import React from 'react';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 

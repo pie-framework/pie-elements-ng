@@ -1,19 +1,19 @@
 {
   "name": "@pie-element/ebsr",
-  "version": "14.2.2-next.0",
+  "version": "14.2.2-next.1",
   "description": "",
   "dependencies": {
     "@pie-element/multiple-choice": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "classnames": "^2.2.6",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
     "@mui/material": "^7.3.11",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*"
+    "@pie-element/shared-player-events": "workspace:*",
+    "clsx": "^2.1.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -59,6 +59,10 @@
     },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

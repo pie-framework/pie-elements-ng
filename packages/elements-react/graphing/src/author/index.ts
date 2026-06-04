@@ -21,7 +21,7 @@ import {
 import debug from 'debug';
 import defaultValues from './defaults.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 const log = debug('pie-elements:graphing:configure');
 

@@ -1,4 +1,4 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -33,26 +33,13 @@ describe('PIE element contract documentation and verifier', () => {
     expect(verifier).toContain('verify:controllers');
   });
 
-  it('requires explicit runtime-support metadata for packages without browser ESM exports', async () => {
-    const packageRoots = [
-      join(process.cwd(), 'packages/elements-react'),
-      join(process.cwd(), 'packages/elements-svelte'),
-    ];
+  it('keeps runtime-support metadata validation in the aggregate verifier', async () => {
+    const verifier = await readFile(
+      join(process.cwd(), 'scripts/verify-element-contracts.mjs'),
+      'utf-8'
+    );
 
-    for (const packageRoot of packageRoots) {
-      const entries = await readdir(packageRoot, { withFileTypes: true });
-      for (const entry of entries) {
-        if (!entry.isDirectory()) continue;
-        const packageJsonPath = join(packageRoot, entry.name, 'package.json');
-        const pkg = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
-        if (pkg.private) continue;
-        const exportKeys = Object.keys(pkg.exports ?? {});
-        const hasBrowserEsm = exportKeys.some((key) => key.startsWith('./browser/'));
-        if (hasBrowserEsm) continue;
-
-        expect(pkg.exports?.['./runtime-support']).toBeDefined();
-        expect(pkg.exports['./runtime-support'].default).toBe('./dist/runtime-support.js');
-      }
-    }
+    expect(verifier).toContain('Runtime support export contract');
+    expect(verifier).toContain('verify-runtime-support-exports.mjs');
   });
 });

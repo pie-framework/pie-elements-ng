@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { cloneDeep, debounce, isEmpty } from 'lodash-es';
+import { cloneDeep, debounce, isEmpty } from '@pie-element/shared-lodash';
 
 import { styled } from '@mui/material/styles';
 

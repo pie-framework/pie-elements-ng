@@ -11,7 +11,7 @@
 import React from 'react';
 import { FormSection, InputContainer, AlertDialog, settings, layout } from '@pie-lib/config-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { NumberLineComponent, dataConverter, tickUtils  } from '../delivery/index.js';
+import { NumberLineComponent, dataConverter, tickUtils } from '../delivery/index.js';
 import NumberTextField from './number-text-field.js';
 import CardBar from './card-bar.js';
 import Size from './size.js';
@@ -19,7 +19,7 @@ import PropTypes from 'prop-types';
 import Domain from './domain.js';
 import Arrows from './arrows.js';
 import PointConfig from './point-config.js';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Info from '@mui/icons-material/Info';

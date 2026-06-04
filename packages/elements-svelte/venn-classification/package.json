@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/venn-classification",
-  "version": "0.1.1-next.0",
+  "version": "0.1.1-next.1",
   "description": "Venn diagram classification PIE element (Svelte 5) with 2-set classification, tile tray, optional tile images, pointer + keyboard placement, and MathJax-rendered math tile labels",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,6 +18,9 @@
       "types": "./dist/delivery/index.d.ts",
       "default": "./dist/delivery/index.js"
     },
+    "./browser/delivery": {
+      "default": "./dist/browser/delivery/index.js"
+    },
     "./controller": {
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
@@ -26,9 +29,15 @@
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
     },
+    "./browser/controller": {
+      "default": "./dist/browser/controller/index.js"
+    },
     "./author": {
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"
+    },
+    "./browser/author": {
+      "default": "./dist/browser/author/index.js"
     },
     "./configure": {
       "types": "./dist/author/index.d.ts",
@@ -46,7 +55,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
+    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
     "dev": "vite",
     "test": "vitest run",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"

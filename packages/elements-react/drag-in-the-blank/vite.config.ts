@@ -21,6 +21,7 @@ export default defineConfig(({ mode, command }) => {
         'controller/index': resolve(__dirname, 'src/controller/index.ts'),
         'delivery/index': resolve(__dirname, 'src/delivery/index.ts'),
         'author/index': resolve(__dirname, 'src/author/index.tsx'),
+        'runtime-support': resolve(__dirname, 'src/runtime-support.ts'),
       },
       formats: ['es'],
     },
@@ -31,14 +32,11 @@ export default defineConfig(({ mode, command }) => {
           /^react-dom($|\/)/.test(id) ||
           /^@pie-lib\//.test(id) ||
           /^@pie-element\//.test(id) ||
-          /^@pie-element\//.test(id) ||
           /^@pie-framework\//.test(id) ||
           /^@mui\//.test(id) ||
           /^@emotion\//.test(id) ||
           /^d3-/.test(id) ||
           /^@testing-library\//.test(id) ||
-          id === 'lodash' ||
-          /^lodash\//.test(id) ||
           /^styled-components/.test(id) ||
           id === 'konva' || /^konva\//.test(id) ||
           id === 'react-konva' || /^react-konva\//.test(id) ||
@@ -46,7 +44,7 @@ export default defineConfig(({ mode, command }) => {
           id === '@mdi/react' || /^@mdi\/react\//.test(id) ||
           id === '@mdi/js' || /^@mdi\/js\//.test(id) ||
           id === 'recharts' || /^recharts\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)
+          ['prop-types','debug','i18next','humps','mathjs','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
         );
       },
       output: {

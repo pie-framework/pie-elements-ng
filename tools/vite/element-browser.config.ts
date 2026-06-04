@@ -2,7 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, esmExternalRequirePlugin } from 'vite';
+import { browserCjsRequireInteropPlugin } from './browser-cjs-require-interop.ts';
 
 const packageDir = process.cwd();
 const configDir = dirname(fileURLToPath(import.meta.url));
@@ -10,7 +11,8 @@ const policyPath = resolve(configDir, 'browser-esm-policy.json');
 const browserEsmPolicy = JSON.parse(readFileSync(policyPath, 'utf-8')) as {
   allowedBareImports: string[];
 };
-const allowedBareImports = new Set(browserEsmPolicy.allowedBareImports);
+const allowedBareImportSpecifiers = browserEsmPolicy.allowedBareImports;
+const allowedBareImports = new Set(allowedBareImportSpecifiers);
 
 const entryIfExists = (key: string, relativePath: string): [string, string] | null => {
   const fullPath = resolve(packageDir, relativePath);
@@ -37,6 +39,9 @@ if (Object.keys(entries).length === 0) {
 export default defineConfig({
   root: packageDir,
   plugins: [
+    esmExternalRequirePlugin({
+      external: allowedBareImportSpecifiers,
+    }),
     {
       name: 'pie-browser-player-owned-registration',
       transform(code) {
@@ -55,12 +60,18 @@ export default defineConfig({
     emptyOutDir: false,
     outDir: resolve(packageDir, 'dist/browser'),
     sourcemap: true,
+    commonjsOptions: {
+      esmExternals: allowedBareImportSpecifiers,
+      strictRequires: false,
+      transformMixedEsModules: true,
+    },
     lib: {
       entry: entries,
       formats: ['es'],
     },
     rollupOptions: {
       external: (id) => allowedBareImports.has(id),
+      plugins: [browserCjsRequireInteropPlugin()],
     },
   },
 });

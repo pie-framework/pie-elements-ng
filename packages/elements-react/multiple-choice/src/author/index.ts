@@ -21,7 +21,7 @@ import {
 
 import Main from './main.js';
 import { choiceUtils as utils } from '@pie-lib/config-ui';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
 

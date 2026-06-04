@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { debounce } from 'lodash-es';
+import { debounce } from '@pie-element/shared-lodash';
 import debug from 'debug';
 
 import Typography from '@mui/material/Typography';

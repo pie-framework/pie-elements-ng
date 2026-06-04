@@ -1,11 +1,11 @@
 {
   "name": "@pie-lib/graphing-utils",
-  "version": "3.0.2",
+  "version": "3.0.3-next.0",
   "description": "",
   "dependencies": {
     "@mapbox/point-geometry": "^1.1.0",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23"
+    "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

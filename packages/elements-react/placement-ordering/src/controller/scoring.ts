@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { differenceWith, isEqual, uniq } from 'lodash-es';
+import { differenceWith, isEqual, uniq } from '@pie-element/shared-lodash';
 import { combination } from 'js-combinatorics';
 import debug from 'debug';
 

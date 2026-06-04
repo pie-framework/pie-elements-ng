@@ -45,7 +45,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
-import { findKey, isUndefined, uniqueId } from 'lodash-es';
+import { findKey, isUndefined, uniqueId } from '@pie-element/shared-lodash';
 import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
 import { Answer } from './answer.js';

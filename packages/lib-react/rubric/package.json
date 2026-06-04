@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/rubric",
-  "version": "2.0.3",
+  "version": "2.0.4-next.0",
   "description": "React implementation of @pie-lib/rubric synced from pie-lib",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -10,10 +10,8 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@emotion/core": "0.x.x"
@@ -42,5 +40,9 @@
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   }
 }

@@ -6,14 +6,19 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { readFile, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
 import { existsAny } from './sync-filesystem.js';
 import { applyPackageJsonTransforms } from './sync-transforms.js';
 import { BUILD_TOOLS, REACT, PACKAGE_DEFAULTS, SCRIPTS, WORKSPACE } from './sync-constants.js';
-import { getPieLibDependencyAugmentations, getPieLibDependencyOverride } from './sync-presets.js';
+import {
+  getPieLibDependencyAugmentations,
+  getPieLibDependencyOverride,
+  shouldGenerateConfigUiFractionHelper,
+  shouldGenerateAutosizeInputComponent,
+} from './sync-presets.js';
 
 interface EntryPointMap {
   hasIndex: boolean;
@@ -206,6 +211,44 @@ export function generateExportsObject(
   return exports;
 }
 
+function generateRuntimeSupportSource(elementName: string, entryPoints: EntryPointMap): string {
+  const packageName = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}`;
+  return `export const runtimeSupport = {
+  schemaVersion: 1,
+  packageName: '${packageName}',
+  supports: {
+    esm: {
+      delivery: ${entryPoints.hasDelivery},
+      author: ${entryPoints.hasAuthor},
+      print: ${entryPoints.hasPrint},
+    },
+  },
+};
+
+export default runtimeSupport;
+`;
+}
+
+async function ensureBrowserRuntimeSupportSource(
+  elementName: string,
+  elementDir: string,
+  entryPoints: EntryPointMap
+): Promise<boolean> {
+  const runtimeSupportPath = join(elementDir, 'src', 'runtime-support.ts');
+  const nextContent = generateRuntimeSupportSource(elementName, entryPoints);
+  const currentContent = existsSync(runtimeSupportPath)
+    ? await readFile(runtimeSupportPath, 'utf-8').catch(() => null)
+    : null;
+
+  if (currentContent === nextContent) {
+    return false;
+  }
+
+  await mkdir(dirname(runtimeSupportPath), { recursive: true });
+  await writeFile(runtimeSupportPath, nextContent, 'utf-8');
+  return true;
+}
+
 /**
  * Extract imports from source files to determine runtime dependencies
  */
@@ -386,7 +429,7 @@ function addKnownPeerFallbacks(deps: Record<string, string>): void {
   // Some widely used packages rely on peers that upstream metadata can omit
   // or that may not be inferable from local resolution during sync.
   if ((deps.recharts || deps['styled-components']) && !deps['react-is']) {
-    deps['react-is'] = '^19.2.0';
+    deps['react-is'] = '^18.3.1';
   }
 
   if (deps['@tiptap/extension-character-count'] && !deps['@tiptap/extensions']) {
@@ -416,7 +459,7 @@ export function extractUpstreamDependencies(
   if (!upstreamPkg) return {};
 
   const upstreamDeps = (upstreamPkg.dependencies as Record<string, string> | undefined) ?? {};
-  const expectedDeps: Record<string, string> = {};
+  let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
@@ -433,12 +476,12 @@ function resolveSyncedVersion(
   upstreamPkg: PackageJson | null,
   existingPkg: PackageJson | null
 ): string {
-  const upstreamVersion = typeof upstreamPkg?.version === 'string' ? upstreamPkg.version : null;
-  if (upstreamVersion) {
-    return upstreamVersion;
-  }
   const existingVersion = typeof existingPkg?.version === 'string' ? existingPkg.version : null;
-  return existingVersion || '0.1.0';
+  if (existingVersion) {
+    return existingVersion;
+  }
+  const upstreamVersion = typeof upstreamPkg?.version === 'string' ? upstreamPkg.version : null;
+  return upstreamVersion || '0.1.0';
 }
 
 /**
@@ -595,6 +638,11 @@ export async function ensureElementPackageJson(
   if (Object.keys(expectedDeps).length > 0) {
     pkg.dependencies = expectedDeps;
   }
+  pkg.peerDependencies = {
+    ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
+    react: REACT.VERSION,
+    'react-dom': REACT.VERSION,
+  };
 
   // Preserve pie metadata (if present upstream or locally)
   const pieMetadata = ((upstreamPkg as PackageJson | null | undefined)?.pie ??
@@ -613,6 +661,13 @@ export async function ensureElementPackageJson(
 
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
+  const wroteRuntimeSupport =
+    includeBrowserExports && !entryPoints.hasRuntimeSupport
+      ? await ensureBrowserRuntimeSupportSource(elementName, elementDir, entryPoints)
+      : false;
+  if (includeBrowserExports) {
+    entryPoints.hasRuntimeSupport = true;
+  }
 
   // Generate dist-only exports based on entry points. Do not preserve
   // source-backed `development` conditions; PIE-605 makes raw source paths a
@@ -766,6 +821,7 @@ export async function ensureElementPackageJson(
 
   if (
     currentContent === nextContent &&
+    !wroteRuntimeSupport &&
     !shouldWriteControllerShim &&
     !shouldRemoveControllerShim &&
     !shouldWriteConfigureShim &&
@@ -817,7 +873,7 @@ export async function ensurePieLibPackageJson(
 
   // Extract upstream dependencies
   const upstreamDeps = (upstreamPkg?.dependencies as Record<string, string> | undefined) ?? {};
-  const expectedDeps: Record<string, string> = {};
+  let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
@@ -867,6 +923,16 @@ export async function ensurePieLibPackageJson(
     }
   }
 
+  const declaresReactRuntime =
+    typeof expectedDeps.react === 'string' || typeof expectedDeps['react-dom'] === 'string';
+
+  expectedDeps =
+    (applyPackageJsonTransforms({ dependencies: expectedDeps } as PackageJson, {
+      removeReactInputAutosize: shouldGenerateAutosizeInputComponent(pkgName),
+      removeMathjs:
+        shouldGenerateConfigUiFractionHelper(pkgName) && !importedPackages.has('mathjs'),
+    }).dependencies as Record<string, string> | undefined) ?? {};
+
   // Create minimal package.json if missing
   if (!pkg) {
     pkg = {
@@ -888,6 +954,14 @@ export async function ensurePieLibPackageJson(
   const dependencyOverride = getPieLibDependencyOverride(pkgName);
   if (dependencyOverride) {
     pkg.dependencies = dependencyOverride;
+  }
+
+  if (declaresReactRuntime) {
+    pkg.peerDependencies = {
+      ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
+      react: REACT.VERSION,
+      'react-dom': REACT.VERSION,
+    };
   }
 
   // Generate dist-only exports. Pie-lib packages expose only their compiled

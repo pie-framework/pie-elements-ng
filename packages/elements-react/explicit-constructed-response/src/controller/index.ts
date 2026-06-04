@@ -9,7 +9,7 @@
  */
 
 import debug from 'debug';
-import { find, isEmpty, map, reduce } from 'lodash-es';
+import { find, isEmpty, map, reduce } from '@pie-element/shared-lodash';
 import { decode } from 'he';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import Translator from '@pie-lib/translator';

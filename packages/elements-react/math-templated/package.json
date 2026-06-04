@@ -1,7 +1,6 @@
 {
   "name": "@pie-element/math-templated",
-  "version": "7.1.0",
-  "private": true,
+  "version": "7.1.1-next.0",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -13,7 +12,7 @@
     "@pie-lib/math-input": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "prop-types": "^15.8.1",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "debug": "^4.4.3",
@@ -24,7 +23,6 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-framework/mathquill": "^1.0.0",
     "@emotion/core": "0.x.x"
   },
   "peerDependencies": {
@@ -40,9 +38,15 @@
       "types": "./dist/delivery/index.d.ts",
       "default": "./dist/delivery/index.js"
     },
+    "./browser/delivery": {
+      "default": "./dist/browser/delivery/index.js"
+    },
     "./author": {
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"
+    },
+    "./browser/author": {
+      "default": "./dist/browser/author/index.js"
     },
     "./configure": {
       "types": "./dist/author/index.d.ts",
@@ -56,9 +60,15 @@
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
     },
+    "./browser/controller": {
+      "default": "./dist/browser/controller/index.js"
+    },
     "./print": {
       "types": "./dist/print/index.d.ts",
       "default": "./dist/print/index.js"
+    },
+    "./browser/print": {
+      "default": "./dist/browser/print/index.js"
     },
     "./runtime-support": {
       "types": "./dist/runtime-support.d.ts",
@@ -82,13 +92,17 @@
     "@types/react-dom": "^18.2.0"
   },
   "scripts": {
-    "build": "bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
+    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"
   },
   "pie": {
     "controller": "@pie-element/math-templated/controller",
-    "configure": "@pie-element/math-templated/configure"
+    "configure": "@pie-element/math-templated/configure",
+    "browserSharedDependencies": {
+      "react": "18.2.0",
+      "react-dom": "18.2.0"
+    }
   }
 }

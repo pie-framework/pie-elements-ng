@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import UnitType from './unit-type.js';
-import { range } from 'lodash-es';
+import { range } from '@pie-element/shared-lodash';
 import Unit from './unit.js';
 import { fillColor, strokeColor } from '../style-utils.js';
 

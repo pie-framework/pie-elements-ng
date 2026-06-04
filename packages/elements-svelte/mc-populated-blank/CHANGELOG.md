@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.13-next.1
+
+### Patch Changes
+
+- Prepare all PIE element packages for the next prerelease patch wave
+
 ## 0.2.13-next.0
 
 ### Patch Changes

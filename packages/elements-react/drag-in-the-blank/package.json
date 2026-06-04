@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/drag-in-the-blank",
-  "version": "10.1.2-next.0",
+  "version": "10.1.2-next.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -11,7 +11,6 @@
     "@pie-lib/drag": "workspace:*",
     "@pie-lib/mask-markup": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "lodash-es": "^4.17.23",
     "prop-types": "^15.8.1",
     "@dnd-kit/core": "^6.3.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -19,6 +18,7 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "debug": "^4.4.3",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@emotion/core": "0.x.x"
@@ -60,6 +60,10 @@
     },
     "./browser/controller": {
       "default": "./dist/browser/controller/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

@@ -1,51 +1,20 @@
 /**
  * Vite configuration generation for sync operations
  */
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { collectEntryPoints, detectEntryFile } from './sync-entry-discovery.js';
 import { createExternalFunction } from './sync-externals.js';
 import { getPieLibVitePreset } from './sync-presets.js';
-
-/**
- * Detect the actual file extension for a source file
- */
-function detectFileExtension(basePath: string): string | null {
-  if (existsSync(`${basePath}.tsx`)) return '.tsx';
-  if (existsSync(`${basePath}.ts`)) return '.ts';
-  return null;
-}
 
 /**
  * Detect entry points for an element package
  */
 export function detectElementEntryPoints(elementDir: string): Record<string, string> {
-  const entryPoints: Record<string, string> = {};
-
-  // Main index
-  const indexExt = detectFileExtension(join(elementDir, 'src/index'));
-  if (indexExt) {
-    entryPoints.index = `src/index${indexExt}`;
-  }
-
-  // Controller
-  const controllerExt = detectFileExtension(join(elementDir, 'src/controller/index'));
-  if (controllerExt) {
-    entryPoints['controller/index'] = `src/controller/index${controllerExt}`;
-  }
-
-  // Configure
-  const configureExt = detectFileExtension(join(elementDir, 'src/configure/index'));
-  if (configureExt) {
-    entryPoints['configure/index'] = `src/configure/index${configureExt}`;
-  }
-
-  // Delivery
-  const deliveryExt = detectFileExtension(join(elementDir, 'src/delivery/index'));
-  if (deliveryExt) {
-    entryPoints['delivery/index'] = `src/delivery/index${deliveryExt}`;
-  }
-
-  return entryPoints;
+  return collectEntryPoints(elementDir, [
+    ['index', 'src/index'],
+    ['controller/index', 'src/controller/index'],
+    ['configure/index', 'src/configure/index'],
+    ['delivery/index', 'src/delivery/index'],
+  ]);
 }
 
 /**
@@ -102,10 +71,7 @@ export function generatePieLibViteConfig(packageName?: string, packageDir?: stri
   // Detect entry point extension if package directory provided
   let entryPoint = 'src/index.ts';
   if (packageDir) {
-    const ext = detectFileExtension(join(packageDir, 'src/index'));
-    if (ext) {
-      entryPoint = `src/index${ext}`;
-    }
+    entryPoint = detectEntryFile(packageDir, 'src/index') ?? entryPoint;
   }
 
   const preset = getPieLibVitePreset(packageName);
@@ -197,8 +163,6 @@ export default defineConfig({
           /^@emotion\\//.test(id) ||
           /^d3-/.test(id) ||
           /^@testing-library\\//.test(id) ||
-          id === 'lodash-es' ||
-          /^lodash-es\\//.test(id) ||
           /^styled-components/.test(id) ||
           id === 'konva' || /^konva\\//.test(id) ||
           id === 'react-konva' || /^react-konva\\//.test(id) ||
@@ -206,7 +170,7 @@ export default defineConfig({
           id === '@mdi/js' || /^@mdi\\/js\\//.test(id) ||
           /^prosemirror-/.test(id) ||
           /^@tiptap\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@dnd-kit/core', 'react-transition-group'].includes(id)
+          ['prop-types', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@dnd-kit/core', 'react-transition-group'].includes(id)
         );
       },
       output: {
@@ -234,7 +198,9 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ${createExternalFunction('pielib')},
+      external: ${createExternalFunction('pielib', {
+        externalizeMathjs: packageName !== 'config-ui',
+      })},
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',

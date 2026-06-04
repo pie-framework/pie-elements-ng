@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { cloneDeep, isEqual, map, reduce } from 'lodash-es';
+import { cloneDeep, isEqual, map, reduce } from '@pie-element/shared-lodash';
 
 import AlternateSection from './alternateSection.js';
 

@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { isEmpty, map, reduce } from 'lodash-es';
+import { isEmpty, map, reduce } from '@pie-element/shared-lodash';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
 import defaults from './defaults.js';
 

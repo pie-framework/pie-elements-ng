@@ -12,7 +12,7 @@ import { lineBase, lineToolComponent, styles } from '../shared/line/index.js';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { trig, types } from '@pie-lib/plot';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { ArrowMarker, genUid } from '../shared/arrow-head.js';
 import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils.js';
 import { styled } from '@mui/material/styles';

@@ -42,7 +42,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import cn from 'classnames';
+import cn from 'clsx';
 
 const rotations = {
   left: -90,

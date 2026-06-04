@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/fraction-model",
-  "version": "6.1.2-next.0",
+  "version": "6.1.2-next.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -12,14 +12,14 @@
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/test-utils": "workspace:*",
     "prop-types": "^15.8.1",
-    "recharts": "^3.7.0",
+    "recharts": "^3.8.1",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@emotion/core": "0.x.x",
-    "react-is": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+    "react-is": "^18.3.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -58,6 +58,10 @@
     },
     "./browser/controller": {
       "default": "./dist/browser/controller/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

@@ -14,7 +14,7 @@ import debug from 'debug';
 import { ModelUpdatedEvent, InsertSoundEvent, DeleteSoundEvent } from '@pie-element/shared-configure-events';
 
 import Main from './Main.js';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
 

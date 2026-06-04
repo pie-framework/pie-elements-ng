@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { cloneDeep, isEqual } from 'lodash-es';
+import { cloneDeep, isEqual } from '@pie-element/shared-lodash';
 import { createGraphProps, Root, types } from '@pie-lib/plot';
 import debug from 'debug';
 

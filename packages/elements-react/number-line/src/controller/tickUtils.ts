@@ -9,7 +9,7 @@
  */
 
 import * as math from 'mathjs';
-import { isNumber, isObject, uniqWith } from 'lodash-es';
+import { isNumber, isObject, uniqWith } from '@pie-element/shared-lodash';
 
 // All these functions are duplicated in  src/number-line/graph/tick-utils
 

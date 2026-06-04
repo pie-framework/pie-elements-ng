@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
-import { debounce } from 'lodash-es';
+import { debounce } from '@pie-element/shared-lodash';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 
 // Inlined from configure/lib/defaults (configure/ not synced - ESM-incompatible)
@@ -21,7 +21,7 @@ const defaults = {
     // Full authoring configuration is only needed in the configure package
   } as any
 };;
-import Main from './main';
+import Main from './main.js';
 
 const log = debug('pie-ui:math-inline');
 

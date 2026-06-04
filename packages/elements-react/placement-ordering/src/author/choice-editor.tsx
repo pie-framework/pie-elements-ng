@@ -11,7 +11,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import debug from 'debug';
-import { isEqual, shuffle } from 'lodash-es';
+import { isEqual, shuffle } from '@pie-element/shared-lodash';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import { InputContainer as InputContainerImport } from '@pie-lib/render-ui';

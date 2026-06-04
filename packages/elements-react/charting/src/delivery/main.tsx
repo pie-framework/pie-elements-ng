@@ -43,7 +43,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { Chart, chartTypes, KeyLegend } from '@pie-lib/charting';
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 
 const StyledUiLayout: any = styled(UiLayout)({

@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { flatten, times } from 'lodash-es';
+import { flatten, times } from '@pie-element/shared-lodash';
 
 export const mkSet = (category) => (o) => ({ ...o, category });
 

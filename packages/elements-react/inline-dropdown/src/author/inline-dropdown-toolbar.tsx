@@ -15,7 +15,7 @@ import PropTypes from 'prop-types';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
-import { isEmpty, isEqual } from 'lodash-es';
+import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 
 import AddIcon from '@mui/icons-material/Add';

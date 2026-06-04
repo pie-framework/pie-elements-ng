@@ -4,15 +4,17 @@ This document explains how code transforms work in the sync pipeline when import
 
 ## Overview
 
-When syncing code from upstream `pie-lib` repository, several automatic transforms ensure the code is compatible with this codebase. These transforms preserve improvements made locally even when syncing updates from upstream.
+When syncing code from upstream `pie-elements` and `pie-lib` repositories, several automatic transforms ensure the code is compatible with this codebase. These transforms preserve improvements made locally even when syncing updates from upstream.
+
+Source transforms live in `tools/cli/src/lib/upstream/sync-imports.ts`. Structural module-specifier and import-shape rewrites should use the parser-backed helpers in `tools/cli/src/lib/upstream/sync-source-edit.ts` so comments, documentation strings, and unrelated literals are not rewritten accidentally. Literal string replacements are still acceptable for generated files and narrowly scoped compatibility patches.
 
 ## Active Transforms
 
-### 1. Lodash to Lodash-ES
-**File**: `tools/cli/src/commands/upstream/sync-imports.ts`
-**Function**: `transformLodashToLodashEs()`
+### 1. Lodash to Vendored Shared Lodash
+**File**: `tools/cli/src/lib/upstream/sync-imports.ts`
+**Function**: `transformLodashToVendoredLodash()`
 
-Converts all lodash imports to lodash-es for ESM compatibility:
+Converts lodash and lodash-es imports to the vendored shared lodash package for browser ESM compatibility:
 
 ```javascript
 // Before (upstream)
@@ -20,12 +22,12 @@ import isEmpty from 'lodash/isEmpty';
 import { isEqual } from 'lodash';
 
 // After (synced)
-import { isEmpty } from 'lodash-es';
-import { isEqual } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
+import { isEqual } from '@pie-element/shared-lodash';
 ```
 
 ### 2. PIE Framework Event Packages
-**File**: `tools/cli/src/commands/upstream/sync-imports.ts`
+**File**: `tools/cli/src/lib/upstream/sync-imports.ts`
 **Function**: `transformPieFrameworkEventImports()`
 
 Replaces external event packages with internal workspace packages:
@@ -40,7 +42,7 @@ import { PiePlayerEvent } from '@pie-element/shared-player-events';
 
 ### 3. Editable-HTML Constants Inlining
 
-**File**: `tools/cli/src/commands/upstream/sync-imports.ts`
+**File**: `tools/cli/src/lib/upstream/sync-imports.ts`
 **Function**: `inlineEditableHtmlConstants()`
 
 **Why needed**: The `editable-html` package depends on Slate v0.x which is not ESM-compatible. Some packages only need constants from it, so we inline them to avoid the dependency.
@@ -59,7 +61,7 @@ const Constants = {
 
 ### 4. TokenTypes Re-export
 
-**File**: `tools/cli/src/commands/upstream/sync-imports.ts`
+**File**: `tools/cli/src/lib/upstream/sync-imports.ts`
 **Function**: `reexportTokenTypes()`
 
 **Why needed**: Upstream code works in CommonJS/Webpack (looser module resolution) but ESM requires explicit re-exports for proper module graph.
@@ -81,7 +83,7 @@ export { TokenTypes };  // ← Added explicit re-export
 
 ### 5. Configure Defaults Inlining
 
-**File**: `tools/cli/src/commands/upstream/sync-imports.ts`
+**File**: `tools/cli/src/lib/upstream/sync-imports.ts`
 **Function**: `inlineConfigureDefaults()`
 
 **Why needed**: The `configure` package depends on Slate v0.x which is not ESM-compatible. Student-facing UI only needs minimal fallback configuration, not the full authoring configuration.

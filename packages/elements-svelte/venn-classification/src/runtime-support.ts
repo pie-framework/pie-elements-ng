@@ -3,8 +3,8 @@ export const runtimeSupport = {
   packageName: '@pie-element/venn-classification',
   supports: {
     esm: {
-      delivery: false,
-      author: false,
+      delivery: true,
+      author: true,
       print: false,
     },
   },

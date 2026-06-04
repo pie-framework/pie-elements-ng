@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/multiple-choice",
-  "version": "13.2.2-next.0",
+  "version": "13.2.2-next.1",
   "description": "React implementation of multiple-choice element synced from pie-elements",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -10,15 +10,15 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "classnames": "^2.2.6",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23",
     "prop-types": "^15.8.1",
     "react-transition-group": "^4.4.5",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
+    "clsx": "^2.1.1",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@emotion/core": "0.x.x"
@@ -67,6 +67,10 @@
     },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

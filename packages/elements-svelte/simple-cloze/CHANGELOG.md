@@ -1,5 +1,11 @@
 # @pie-element/simple-cloze
 
+## 0.1.4-next.1
+
+### Patch Changes
+
+- Prepare all PIE element packages for the next prerelease patch wave
+
 ## 0.1.4-next.0
 
 ### Patch Changes

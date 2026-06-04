@@ -44,14 +44,6 @@ function isLikelyEsm(source: string): boolean {
   return false;
 }
 
-// Packages explicitly excluded from `bun run build` in the root package.json.
-// Keep this in sync with the `--filter=!...` flags there so the test does not
-// flag missing build outputs for packages we deliberately do not build.
-const BUILD_EXCLUDED_PACKAGES = new Set<string>([
-  '@pie-element/math-inline',
-  '@pie-element/math-templated',
-]);
-
 describe('ESM build outputs', () => {
   const root = process.cwd();
   const packageJsonPaths = globSync('packages/**/package.json', {
@@ -72,10 +64,6 @@ describe('ESM build outputs', () => {
       }
 
       if (pkg.name?.startsWith('@pie-wc/')) {
-        continue;
-      }
-
-      if (pkg.name && BUILD_EXCLUDED_PACKAGES.has(pkg.name)) {
         continue;
       }
 

@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import { cloneDeep, isEmpty, isEqual } from 'lodash-es';
+import { cloneDeep, isEmpty, isEqual } from '@pie-element/shared-lodash';
 import { BasePoint } from '../point/index.js';
 import { gridDraggable, trig, types, utils } from '@pie-lib/plot';
 import PropTypes from 'prop-types';

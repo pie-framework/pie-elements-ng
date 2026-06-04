@@ -80,7 +80,8 @@
     "@pie-element/shared-utils": "0.1.0",
     "@pie-element/cli": "0.1.1",
     "@pie-element/element-a11y-demo": "0.1.1",
-    "@pie-element/learnosity-parity-demo": "0.1.1"
+    "@pie-element/learnosity-parity-demo": "0.1.1",
+    "@pie-element/shared-lodash": "0.1.0"
   },
   "changesets": [
     "20260501125058-pie-element-multiple-choice",
@@ -90,8 +91,10 @@
     "20260602132616-pie-lib-config-ui-pie-lib-correct-an",
     "20260603022336-pie-element-multiple-choice",
     "202606030607-react-elements-next",
+    "20260604035455-pie-element-categorize-pie-element-c",
     "common-cougars-hang",
     "floppy-sites-watch",
-    "orange-toes-dream"
+    "orange-toes-dream",
+    "vendored-lodash-runtime"
   ]
 }

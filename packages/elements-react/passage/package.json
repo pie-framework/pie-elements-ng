@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/passage",
-  "version": "7.1.2-next.0",
+  "version": "7.1.2-next.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -12,7 +12,7 @@
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "debug": "^4.4.3",
@@ -62,6 +62,10 @@
     },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

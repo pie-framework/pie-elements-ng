@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-toolbar",
-  "version": "3.0.2",
+  "version": "3.0.3-next.0",
   "description": "Math toolbar for editing math equations",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -10,11 +10,9 @@
     "@pie-lib/math-input": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
-    "react": "^18.3.1",
-    "@emotion/core": "0.x.x",
-    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+    "@pie-element/shared-lodash": "workspace:*",
+    "@emotion/core": "0.x.x"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -40,5 +38,9 @@
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   }
 }

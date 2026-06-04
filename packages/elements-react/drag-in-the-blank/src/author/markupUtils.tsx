@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { escape } from 'lodash-es';
+import { escape } from '@pie-element/shared-lodash';
 
 export const createElementFromHTML = (htmlString) => {
   const div = document.createElement('div');

@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { times } from 'lodash-es';
+import { times } from '@pie-element/shared-lodash';
 
 const digitMap = {
   0: 'zero',

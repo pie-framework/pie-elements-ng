@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { debounce } from 'lodash-es';
+import { debounce } from '@pie-element/shared-lodash';
 import debug from 'debug';
 
 import StimulusTabs from '../delivery/stimulus-tabs.js';

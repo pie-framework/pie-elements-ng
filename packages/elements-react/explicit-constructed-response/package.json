@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/explicit-constructed-response",
-  "version": "11.1.2-next.0",
+  "version": "11.1.2-next.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -11,10 +11,9 @@
     "@pie-lib/mask-markup": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "classnames": "^2.2.6",
     "he": "^1.2.0",
-    "lodash-es": "^4.17.23",
     "prop-types": "^15.8.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "debug": "^4.4.3",
     "@pie-element/shared-configure-events": "workspace:*",
@@ -22,7 +21,8 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@emotion/core": "0.x.x",
+    "clsx": "^2.1.1"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -68,6 +68,10 @@
     },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

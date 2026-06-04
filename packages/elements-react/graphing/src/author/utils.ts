@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 
 const VALID_GRID_VALUES = [
   0.01, 0.02, 0.04, 0.05, 0.0625, 0.1, 0.125, 0.2, 0.25, 0.5, 1, 2, 3, 4, 5, 8, 10, 12, 15, 20, 40, 50, 64, 100, 500,

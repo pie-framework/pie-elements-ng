@@ -33,7 +33,7 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 }
 const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
 const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 
 import Rectangle from './hotspot-rectangle.js';

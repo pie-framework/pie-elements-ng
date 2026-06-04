@@ -98,6 +98,79 @@ the element package directory. It discovers existing `src/delivery`,
 `tools/vite/browser-esm-policy.json`. It also strips package-time custom element
 registration because players own tag registration.
 
+### Browser ESM CommonJS Interop
+
+Browser ESM builds are static browser files. They must not depend on a runtime
+`require` function, and they must not rely on CDN transforms such as jsDelivr
+`+esm` to rewrite package internals at load time. Most legacy CommonJS-era code
+is handled by upgrading or replacing dependencies during `upstream:sync`, but a
+few browser-reachable packages still publish CJS-shaped internals even when
+consumed through an ESM entry.
+
+Rolldown represents those cases with a generated helper that tries to call
+`require` if the environment provides it and otherwise throws an error like:
+
+```js
+var req = /* @__PURE__ */ ((fallback) =>
+  typeof require < "u" ? require : fallback)(function (id) {
+  throw Error(
+    'Calling `require` for "' +
+      id +
+      "\" in an environment that doesn't expose the `require` function."
+  );
+});
+```
+
+That helper is not browser-safe. The browser build therefore uses
+`tools/vite/browser-cjs-require-interop.ts` as a narrowly scoped output pass. It
+finds Rolldown require helpers in generated chunks, follows helper exports across
+shared chunks, records the literal module IDs passed to those helpers, and
+rewrites the helper assignment to call a generated browser dispatcher:
+
+```js
+var req = __pieBrowserCjsRequire;
+```
+
+The dispatcher is intentionally small and allow-listed:
+
+- `react`, `react-dom`, and `react-dom/client` are mapped to real ESM imports.
+  They remain browser shared singletons owned by the player import map.
+- `classnames` is mapped to a tiny inline implementation that handles strings,
+  numbers, arrays, and object truthy-key expansion.
+- `prop-types` is mapped to no-op validators with CommonJS default-import
+  compatibility. Production browser ESM does not need runtime prop validation,
+  but transitive React packages may still read `PropTypes.string.isRequired`,
+  `PropTypes.shape(...)`, `PropTypes.oneOf(...)`, `checkPropTypes`, or
+  `resetWarningCache`.
+
+For example, a dependency chunk that contains:
+
+```js
+var PropTypes = req("prop-types");
+Icon.propTypes = {
+  title: PropTypes.string,
+  size: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+};
+```
+
+is rewritten so `req("prop-types")` returns an inline object whose validators are
+functions returning `null`, with `.isRequired` pointing back to the same
+validator. This preserves module evaluation without shipping the CJS
+`prop-types` package or introducing browser `require`.
+
+The shim is a compatibility boundary for browser packaging, not a new dependency
+policy. If a generated browser chunk calls the helper with any unsupported
+package-shaped target, the plugin fails the build instead of silently shipping a
+runtime error. Add a new target only when all of the following are true:
+
+- Upgrading, replacing, or removing the dependency is not currently viable.
+- The dependency is browser-reachable and required for an element we need to
+  ship.
+- The fallback behavior is small, deterministic, and safe for production browser
+  ESM.
+- Focused tests cover the generated helper shape and the expected interop
+  behavior in `tools/cli/tests/sync-vite-config.test.ts`.
+
 Per-element IIFE builds use each package's `vite.config.iife.ts`. The current
 migration-generated React configs resolve `@pie-element/shared-*` and
 `@pie-lib/*` imports to workspace source and set webpack/Rollup externalization
@@ -170,6 +243,10 @@ the package's `pie.browserSharedDependencies`, and the external player's import
 map generation. Adding a new shared browser singleton requires updating this
 repository's policy and the player import-map generation together. Dependencies
 not in the policy should remain bundled by default.
+
+The React browser singleton contract is React 18. The upstream sync pipeline is
+therefore allowed to upgrade or replace React 16/17-era helper dependencies
+instead of preserving shim support for browser ESM consumers.
 
 ## Runtime Consumption
 

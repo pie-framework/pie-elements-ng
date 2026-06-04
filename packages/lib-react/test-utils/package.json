@@ -7,12 +7,10 @@
     "@emotion/styled": "^11.11.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/user-event": "^14.5.2",
-    "react": "^18.3.1",
     "prop-types": "^15.8.1",
     "@testing-library/react": "^16.3.2",
     "@mui/material": "^7.3.11",
-    "@testing-library/dom": ">=7.21.4",
-    "react-dom": "^18.0.0 || ^19.0.0"
+    "@testing-library/dom": ">=7.21.4"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -38,5 +36,9 @@
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   }
 }

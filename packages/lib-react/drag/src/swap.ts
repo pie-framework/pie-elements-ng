@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 export default (arr, fromIndex, toIndex) => {
   if (!arr || arr.length <= 1 || fromIndex === undefined || toIndex === undefined) {

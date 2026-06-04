@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/select-text",
-  "version": "13.1.2-next.0",
+  "version": "13.1.2-next.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -11,7 +11,7 @@
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/text-select": "workspace:*",
     "prop-types": "^15.8.1",
-    "lodash-es": "^4.18.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "debug": "^4.4.3",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
@@ -66,6 +66,10 @@
     },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

@@ -16,7 +16,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 
 import ImageContainer from './image-container.js';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 const { Panel, toggle, dropdown } = settings;
 

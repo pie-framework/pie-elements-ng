@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/complex-rubric",
-  "version": "7.1.2-next.0",
+  "version": "7.1.2-next.1",
   "description": "Complex Rubric Scoring Interaction",
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -10,14 +10,14 @@
     "@pie-element/multi-trait-rubric": "workspace:*",
     "@pie-element/rubric": "workspace:*",
     "@pie-lib/rubric": "workspace:*",
-    "classnames": "^2.2.6",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23",
     "prop-types": "^15.8.1",
     "@pie-element/shared-configure-events": "workspace:*",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@emotion/core": "0.x.x",
+    "clsx": "^2.1.1",
     "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {
@@ -64,6 +64,10 @@
     },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

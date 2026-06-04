@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 

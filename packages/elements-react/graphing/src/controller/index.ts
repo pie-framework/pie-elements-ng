@@ -10,7 +10,7 @@
 
 import debug from 'debug';
 
-import { cloneDeep, isEmpty, uniqWith } from 'lodash-es';
+import { cloneDeep, isEmpty, uniqWith } from '@pie-element/shared-lodash';
 import defaults from './defaults.js';
 import { equalMarks, equalPointWithLabel, sortedAnswers } from './utils.js';
 
