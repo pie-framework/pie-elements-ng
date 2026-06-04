@@ -1,5 +1,11 @@
 # @pie-lib/correct-answer-toggle
 
+## 4.0.3-next.37
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.1.1-next.37
+
 ## 4.0.3-next.0
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/select-text",
-  "version": "13.1.2-next.1",
+  "version": "13.1.2-next.2",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

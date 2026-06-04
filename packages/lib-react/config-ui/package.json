@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/config-ui",
-  "version": "13.0.4-next.0",
+  "version": "13.0.4-next.30",
   "description": "React implementation of @pie-lib/config-ui synced from pie-lib",
   "dependencies": {
     "@emotion/react": "^11.14.0",

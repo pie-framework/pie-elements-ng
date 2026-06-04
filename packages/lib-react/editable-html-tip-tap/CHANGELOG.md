@@ -1,5 +1,16 @@
 # @pie-lib/editable-html-tip-tap
 
+## 2.1.2-next.30
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.0
+  - @pie-lib/drag@4.0.3-next.37
+  - @pie-lib/math-input@8.1.1-next.2
+  - @pie-lib/render-ui@6.1.1-next.37
+  - @pie-lib/math-toolbar@3.0.3-next.37
+
 ## 2.1.2-next.0
 
 ### Patch Changes

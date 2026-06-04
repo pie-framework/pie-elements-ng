@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/multiple-choice",
-  "version": "13.2.2-next.1",
+  "version": "13.2.2-next.2",
   "description": "React implementation of multiple-choice element synced from pie-elements",
   "dependencies": {
     "@emotion/react": "^11.14.0",

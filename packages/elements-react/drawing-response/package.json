@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/drawing-response",
-  "version": "12.1.2-next.1",
+  "version": "12.1.2-next.2",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

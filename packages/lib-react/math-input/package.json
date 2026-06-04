@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-input",
-  "version": "0.1.1-next.1",
+  "version": "8.1.1-next.2",
   "description": "React implementation of @pie-lib/math-input synced from pie-lib",
   "dependencies": {
     "@emotion/react": "^11.14.0",

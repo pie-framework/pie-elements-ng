@@ -1,5 +1,13 @@
 # @pie-lib/math-input
 
+## 8.1.1-next.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.0
+  - @pie-lib/render-ui@6.1.1-next.37
+
 ## 0.1.1-next.1
 
 ### Patch Changes

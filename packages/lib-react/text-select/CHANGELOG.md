@@ -1,5 +1,11 @@
 # @pie-lib/text-select
 
+## 3.0.3-next.37
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.1.1-next.37
+
 ## 3.0.3-next.0
 
 ### Patch Changes

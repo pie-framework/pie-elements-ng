@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-rendering",
-  "version": "0.1.1-next.0",
+  "version": "5.0.3-next.2",
   "description": "math rendering utilities",
   "dependencies": {
     "@pie-element/shared-math-rendering-mathjax": "workspace:*"

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/categorize",
-  "version": "13.1.2-next.1",
+  "version": "13.1.2-next.2",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
