@@ -11,6 +11,7 @@
 import { keysForGrade } from './keys/grades';
 import { updateSpans } from './updateSpans';
 import * as keys from './keys';
+import MathQuill from '@pie-framework/mathquill';
 
 import HorizontalKeypad from './horizontal-keypad';
 
@@ -24,4 +25,39 @@ const rmRightBracket = (s) => (s.indexOf('\\)') === s.length - 2 ? s.substring(0
 const addBrackets = (s) => addRightBracket(addLeftBracket(s));
 const removeBrackets = (s) => rmRightBracket(rmLeftBracket(s));
 
-export { keysForGrade, addBrackets, removeBrackets, keys, HorizontalKeypad, mq, updateSpans };
+const getMathQuillInterface = () => {
+  if (typeof window === 'undefined') return null;
+  return MathQuill.getInterface(2);
+};
+
+const registerEmbed = (name, factory) => {
+  const MQ = getMathQuillInterface();
+  if (MQ?.registerEmbed) {
+    MQ.registerEmbed(name, factory);
+  }
+};
+
+const applyStaticMath = (element, latex = '') => {
+  const MQ = getMathQuillInterface();
+  if (!MQ?.StaticMath || !element) return null;
+
+  element.textContent = '';
+  const staticMath = MQ.StaticMath(element);
+  if (typeof staticMath?.latex === 'function') {
+    staticMath.latex(latex);
+  }
+  updateSpans(element);
+  return staticMath;
+};
+
+export {
+  keysForGrade,
+  addBrackets,
+  removeBrackets,
+  keys,
+  HorizontalKeypad,
+  mq,
+  updateSpans,
+  registerEmbed,
+  applyStaticMath,
+};

@@ -11,15 +11,46 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { mq, HorizontalKeypad, updateSpans } from '@pie-lib/math-input';
-import { Feedback, Collapsible, Readable, hasText, hasMedia, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
+import { mq, HorizontalKeypad, updateSpans, registerEmbed, applyStaticMath } from '@pie-lib/math-input';
+import { Feedback as FeedbackImport, Collapsible as CollapsibleImport, Readable as ReadableImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
+const Feedback = unwrapReactInteropSymbol(FeedbackImport, 'Feedback') || unwrapReactInteropSymbol(renderUi.Feedback, 'Feedback');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { ResponseTypes } from './utils';
+import { ResponseTypes } from './utils.js';
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
-import SimpleQuestionBlock from './simple-question-block';
-import MathQuill from '@pie-framework/mathquill';
+import SimpleQuestionBlock from './simple-question-block.js';
 import { color } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
@@ -39,12 +70,11 @@ const DEFAULT_KEYPAD_VARIANT = 6;
 const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 function generateAdditionalKeys(keyData = []) {
-  const normalizeKeyLatex = (value = '') => value.replace(/\$\$/g, '').replace(/^\$|\$$/g, '').trim();
   return keyData.map((key) => ({
     name: key,
-    latex: normalizeKeyLatex(key),
-    write: normalizeKeyLatex(key),
-    label: normalizeKeyLatex(key),
+    latex: key,
+    write: key,
+    label: key,
   }));
 }
 
@@ -138,23 +168,27 @@ export class Main extends React.Component {
       showCorrect: this.props.model.config.alwaysShowCorrect || false,
       tooltipContainerRef: React.createRef(),
     };
+  }
 
-    if (typeof window !== 'undefined' && !registered) {
-      const MQ = MathQuill.getInterface(2);
-      MQ.registerEmbed('answerBlock', (data) => {
-        const classNames = getBlockClassNames();
-        return {
-          htmlString: `<div class="${classNames.blockContainer}">
+  UNSAFE_componentWillMount() {
+    if (typeof window !== 'undefined') {
+      if (!registered) {
+        registerEmbed('answerBlock', (data) => {
+          const classNames = getBlockClassNames();
+          return {
+            htmlString: `<div class="${classNames.blockContainer}">
                 <div class="${classNames.blockResponse}" id="${data}Index">R</div>
                 <div class="${classNames.blockMath}">
                   <span id="${data}"></span>
                 </div>
               </div>`,
-          text: () => 'text',
-          latex: () => `\\embed{answerBlock}[${data}]`,
-        };
-      });
-      registered = true;
+            text: () => 'text',
+            latex: () => `\\embed{answerBlock}[${data}]`,
+          };
+        });
+
+        registered = true;
+      }
     }
   }
 
@@ -167,30 +201,33 @@ export class Main extends React.Component {
       Object.keys(answers).forEach((answerId) => {
         const el = this.root.querySelector(`#${answerId}`);
         const indexEl = this.root.querySelector(`#${answerId}Index`);
+        // const correct = model.correctness && model.correctness.correct;
 
         if (el) {
-          let MQ = MathQuill.getInterface(2);
           const answer = answers[answerId];
 
-          el.textContent = (answer && answer.value) || '';
+          applyStaticMath(el, (answer && answer.value) || '');
 
           if (!model.view) {
             // for now, we're not going to be showing individual response correctness
             // TODO re-attach the classes once we are
+            // el.parentElement.parentElement.classList.add(
+            //   correct ? 'correct' : 'incorrect'
+            // );
           } else {
             el.parentElement.parentElement.classList.remove('correct');
             el.parentElement.parentElement.classList.remove('incorrect');
           }
 
-          MQ.StaticMath(el);
+          // For now, we're not going to be indexing response blocks
+          // TODO go back to indexing once we support individual response correctness
+          // indexEl.textContent = `R${idx + 1}`;
           indexEl.textContent = 'R';
         }
       });
     }
 
-    if (this.root) {
-      renderMath(this.root);
-    }
+    renderMath(this.root);
   };
 
   countResponseOccurrences(expression) {
@@ -369,19 +406,9 @@ export class Main extends React.Component {
   };
 
   onSubFieldFocus: any = (id) => {
-    const fallbackId =
-      id ||
-      Object.keys(this.state.session?.answers || {})[0] ||
-      this.props.model?.config?.responses?.[0]?.id ||
-      '';
-
-    if (fallbackId && this.state.activeAnswerBlock !== fallbackId) {
-      this.setState({ activeAnswerBlock: fallbackId });
-    }
-
     if (!this.handleEvent) {
       this.handleEvent = (event) => {
-        this.handleKeyDown(event, fallbackId);
+        this.handleKeyDown(event, id);
       };
 
       document.addEventListener('keydown', this.handleEvent);
@@ -434,6 +461,8 @@ export class Main extends React.Component {
   };
 
   onClick: any = (data) => {
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
     const c = this.toNodeData(data);
 
     if (c.type === 'clear') {
@@ -453,6 +482,10 @@ export class Main extends React.Component {
     }
 
     this.input.focus();
+    requestAnimationFrame(() => {
+      window.scrollTo(scrollX, scrollY);
+      requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+    });
   };
 
   callOnSessionChange: any = () => {
@@ -471,6 +504,8 @@ export class Main extends React.Component {
     updateSpans();
 
     if (name) {
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
       this.setState(
         (state) => ({
           session: {
@@ -482,7 +517,12 @@ export class Main extends React.Component {
             },
           },
         }),
-        this.callOnSessionChange,
+        () => {
+          this.callOnSessionChange();
+          requestAnimationFrame(() => {
+            window.scrollTo(scrollX, scrollY);
+          });
+        },
       );
     }
   };
@@ -671,7 +711,7 @@ export class Main extends React.Component {
                   model={model}
                   session={session}
                   onSubFieldFocus={this.onSubFieldFocus}
-                  showKeypad={true}
+                  showKeypad={!!activeAnswerBlock}
                 />
               )}
 
@@ -755,7 +795,6 @@ export class Main extends React.Component {
                               additionalKeys={additionalKeys}
                               mode={equationEditor || DEFAULT_KEYPAD_VARIANT}
                               onClick={this.onClick}
-                              onRequestClose={() => this.setState({ activeAnswerBlock: '' })}
                             />
                           </ResponseContainer>
                         )) ||
@@ -1036,13 +1075,13 @@ const Expression: any = styled('div', {
     ...(printCorrect && {
       border: `2px solid ${color.correct()} !important`,
     }),
-    '& > .mq-math-mode': {
-      '& > .mq-root-block': {
+    '& .mq-math-mode': {
+      '& .mq-root-block': {
         paddingRight: '0 !important',
         paddingLeft: '0 !important',
-        '& > .mq-editable-field': {
+        '& .mq-editable-field': {
           minWidth: '10px',
-          padding: theme.spacing(0.25),
+          padding: theme.spacing(0.4),
         },
       },
       '& sup': {

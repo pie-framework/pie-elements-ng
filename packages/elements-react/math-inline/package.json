@@ -13,18 +13,17 @@
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
     "debug": "^4.1.1",
-    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
+    "clsx": "^2.1.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-framework/math-validation": "^1.0.0",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-framework/mathquill": "^1.0.0",
-    "@emotion/core": "0.x.x",
-    "clsx": "^2.1.1"
+    "@emotion/core": "0.x.x"
   },
   "peerDependencies": {
     "react": "^18.0.0",

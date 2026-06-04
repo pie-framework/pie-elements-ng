@@ -66,6 +66,10 @@
     },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent, ModelSetEvent } from '@pie-element/shared-player-events';
-import Main from './main';
+import Main from './main.js';
 import { debounce } from '@pie-element/shared-lodash';
 
 export default class MathTemplated extends HTMLElement {

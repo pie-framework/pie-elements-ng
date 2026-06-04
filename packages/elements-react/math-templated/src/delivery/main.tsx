@@ -13,13 +13,43 @@ import PropTypes from 'prop-types';
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { mq, HorizontalKeypad, updateSpans } from '@pie-lib/math-input';
-import { color, Collapsible, Readable, hasText, hasMedia, PreviewPrompt, UiLayout } from '@pie-lib/render-ui';
+import { mq, HorizontalKeypad, updateSpans, registerEmbed, applyStaticMath } from '@pie-lib/math-input';
+import { color, Collapsible as CollapsibleImport, Readable as ReadableImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+
+function isRenderableReactInteropType(value: any) {
+  return (
+    typeof value === 'function' ||
+    (typeof value === 'object' && value !== null && typeof value.$$typeof === 'symbol')
+  );
+}
+
+function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
+  if (!maybeSymbol) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol)) return maybeSymbol;
+  if (isRenderableReactInteropType(maybeSymbol.default)) return maybeSymbol.default;
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport])) {
+    return maybeSymbol[namedExport];
+  }
+  if (namedExport && isRenderableReactInteropType(maybeSymbol[namedExport]?.default)) {
+    return maybeSymbol[namedExport].default;
+  }
+  return maybeSymbol;
+}
+const UiLayout = unwrapReactInteropSymbol(UiLayoutImport, 'UiLayout') || unwrapReactInteropSymbol(renderUi.UiLayout, 'UiLayout');
+const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
+const Readable = unwrapReactInteropSymbol(ReadableImport, 'Readable') || unwrapReactInteropSymbol(renderUi.Readable, 'Readable');
+const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
+import * as RenderUiNamespace from '@pie-lib/render-ui';
+const renderUiNamespaceAny = RenderUiNamespace as any;
+const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
+const renderUi =
+  renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
+    ? renderUiDefaultMaybe
+    : renderUiNamespaceAny;
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import ReactDOM from 'react-dom';
-import MathQuill from '@pie-framework/mathquill';
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -204,10 +234,12 @@ if (typeof document !== 'undefined') {
   }
 }
 
+let registered = false;
+
 // Define a regex pattern to match {{number}}
 const REGEX = /(\{\{\d+\}\})/gm;
 const DEFAULT_KEYPAD_VARIANT = 6;
-let registered = false;
+const KEYPAD_VIEWPORT_PADDING = 8;
 
 // !!! If you're using Chrome but have selected the "iPad" device in Chrome Developer Tools, the navigator.userAgent string may still report as
 //  Safari because Chrome on iOS actually uses the Safari rendering engine under the hood due to Apple's restrictions on third-party browser engines.
@@ -218,12 +250,11 @@ let registered = false;
 const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 function generateAdditionalKeys(keyData = []) {
-  const normalizeKeyLatex = (value = '') => value.replace(/\$\$/g, '').replace(/^\$|\$$/g, '').trim();
   return keyData.map((key) => ({
     name: key,
-    latex: normalizeKeyLatex(key),
-    write: normalizeKeyLatex(key),
-    label: normalizeKeyLatex(key),
+    latex: key,
+    write: key,
+    label: key,
   }));
 }
 
@@ -284,6 +315,60 @@ function prepareForStatic(model, state) {
   }
 }
 
+/**
+ * Popper.js v2 modifier that implements precise horizontal placement:
+ *
+ *   1. Default: left-align the keypad with the left edge of the response area.
+ *
+ *   2. Overflow: if left-aligning would push the right edge of the keypad past
+ *      the viewport's right edge, right-align the keypad so that its right edge
+ *      sits exactly at the left edge of the response area.
+ *
+ * In both cases we compute offsets.x from first principles (rather than
+ * adjusting whatever Popper already set) to avoid any upstream skew.
+ *
+ * Coordinate note:
+ *   state.rects.reference.x  — reference's left edge in offset-parent coords.
+ *   getBoundingClientRect()  — viewport-relative coords.
+ *   Both describe the same physical point, so the difference between them is
+ *   the constant offset needed to convert viewport ↔ offset-parent coords.
+ */
+const smartHorizontalPlacementModifier = {
+  name: 'smartHorizontalPlacement',
+  enabled: true,
+  phase: 'main',
+  requires: ['popperOffsets'],
+  fn: ({ state }) => {
+    const offsets = state.modifiersData.popperOffsets;
+    if (!offsets) return;
+
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const popperWidth = state.rects.popper.width;
+
+    const referenceViewportLeft = state.elements.reference.getBoundingClientRect().left;
+
+    const offsetParentEl = state.elements.popper?.offsetParent;
+    const offsetParentRect = offsetParentEl?.getBoundingClientRect?.() || { left: 0 };
+    const offsetParentScrollLeft = offsetParentEl?.scrollLeft || 0;
+    const referenceOffsetParentX = referenceViewportLeft - offsetParentRect.left + offsetParentScrollLeft;
+    const viewportLeftInOffsetParent = referenceOffsetParentX - referenceViewportLeft;
+    const minX = viewportLeftInOffsetParent + KEYPAD_VIEWPORT_PADDING;
+    const maxX = viewportLeftInOffsetParent + viewportWidth - popperWidth - KEYPAD_VIEWPORT_PADDING;
+
+    if (referenceViewportLeft + popperWidth <= viewportWidth) {
+      offsets.x = referenceOffsetParentX;
+    } else {
+      offsets.x = referenceOffsetParentX - popperWidth;
+    }
+
+    if (maxX < minX) {
+      offsets.x = minX;
+    } else {
+      offsets.x = Math.min(Math.max(offsets.x, minX), maxX);
+    }
+  },
+};
+
 export class Main extends React.Component {
   // removes {{ and }} and returns only key response. Eg: {{0}} => 0
   static getResponseKey = (response) => (response || '').replaceAll('{{', '').replaceAll('}}', '');
@@ -303,7 +388,6 @@ export class Main extends React.Component {
     const { answers: sessionAnswers } = session || {};
 
     if (markup) {
-      // build out local state model using responses declared in markup
       (markup || '').replace(REGEX, (response) => {
         const responseKey = Main.getResponseKey(response);
         const sessionAnswerForResponse = sessionAnswers && sessionAnswers[`r${responseKey}`];
@@ -318,20 +402,24 @@ export class Main extends React.Component {
       showCorrect: alwaysShowCorrect || false,
       tooltipContainerRef: React.createRef(),
     };
+  }
 
-    if (typeof window !== 'undefined' && !registered) {
-      const MQ = MathQuill.getInterface(2);
-      MQ.registerEmbed('answerBlock', (data) => ({
-        htmlString: `<div class="block-container">
+  UNSAFE_componentWillMount() {
+    if (typeof window !== 'undefined') {
+      if (!registered) {
+        registerEmbed('answerBlock', (data) => ({
+          htmlString: `<div class="block-container">
               <div class="block-response" id="${data}Index">R</div>
               <div class="block-math">
                 <span id="${data}"></span>
               </div>
             </div>`,
-        text: () => 'text',
-        latex: () => `\\embed{answerBlock}[${data}]`,
-      }));
-      registered = true;
+          text: () => 'text',
+          latex: () => `\\embed{answerBlock}[${data}]`,
+        }));
+
+        registered = true;
+      }
     }
   }
 
@@ -346,25 +434,21 @@ export class Main extends React.Component {
         const indexEl = this.root.querySelector(`#${answerId}Index`);
 
         if (el) {
-          let MQ = MathQuill.getInterface(2);
           const answer = answers[answerId];
 
-          el.textContent = (answer && answer.value) || '';
+          applyStaticMath(el, (answer && answer.value) || '');
 
           if (model.view) {
             el.parentElement.parentElement.classList.remove('correct');
             el.parentElement.parentElement.classList.remove('incorrect');
           }
 
-          MQ.StaticMath(el);
           indexEl.textContent = 'R';
         }
       });
     }
 
-    if (this.root) {
-      renderMath(this.root);
-    }
+    renderMath(this.root);
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -431,7 +515,25 @@ export class Main extends React.Component {
   }
 
   onSubFieldFocus: any = (id) => {
-    this.setState({ activeAnswerBlock: id });
+    const editableFields = Array.from(this.root?.querySelectorAll('.mq-editable-field') || []);
+    const savedScroll = editableFields.map((el) => ({
+      el,
+      left: el.scrollLeft,
+      top: el.scrollTop,
+    }));
+
+    const restoreEditableScroll = () => {
+      savedScroll.forEach(({ el, left, top }) => {
+        el.scrollLeft = left;
+        el.scrollTop = top;
+      });
+    };
+
+    this.setState({ activeAnswerBlock: id }, () => {
+      restoreEditableScroll();
+      requestAnimationFrame(restoreEditableScroll);
+      setTimeout(restoreEditableScroll, 0);
+    });
   };
 
   toNodeData: any = (data) => {
@@ -473,7 +575,43 @@ export class Main extends React.Component {
       this.input.write(c.value);
     }
 
+    // Keep all relevant scroll containers stable when refocusing after keypad
+    // click. Browser "focus into view" can scroll horizontally back to start.
+    const fieldElement = this.input?.el?.() || this.root;
+    const scrollTargets = [];
+    let node = fieldElement;
+
+    while (node && node !== document.body && node !== document.documentElement) {
+      const isScrollable = node.scrollWidth > node.clientWidth || node.scrollHeight > node.clientHeight;
+      if (isScrollable) {
+        scrollTargets.push(node);
+      }
+      node = node.parentElement;
+    }
+
+    if (document.scrollingElement) {
+      scrollTargets.push(document.scrollingElement);
+    }
+
+    const savedScroll = scrollTargets.map((el) => ({
+      el,
+      left: el.scrollLeft,
+      top: el.scrollTop,
+    }));
+    const windowScroll = { x: window.scrollX, y: window.scrollY };
+
+    const restoreScroll = () => {
+      savedScroll.forEach(({ el, left, top }) => {
+        el.scrollLeft = left;
+        el.scrollTop = top;
+      });
+      window.scrollTo(windowScroll.x, windowScroll.y);
+    };
+
     this.input.focus();
+    restoreScroll();
+    requestAnimationFrame(restoreScroll);
+    setTimeout(restoreScroll, 0);
   };
 
   callOnSessionChange: any = () => {
@@ -682,30 +820,36 @@ export class Main extends React.Component {
                   slotProps={{
                     popper: {
                       container: tooltipContainerRef?.current || undefined,
-                      placement: 'bottom-end',
+                      // 'bottom-start' left-aligns the keypad with the left edge of the
+                      // response area by default. The smartHorizontalPlacement modifier
+                      // below overrides this when the keypad would overflow the viewport.
+                      placement: 'bottom-start',
                       sx: {
                         backgroundColor: 'transparent',
-                        width: '650px',
+                        width: 'auto',
                         opacity: 1,
                         '& .MuiTooltip-arrow': {
                           display: 'none',
                         },
                       },
-                      modifiers: {
-                        preventOverflow: {
-                          enabled: true,
-                          boundariesElement: 'body',
-                        },
-                        flip: {
+                      modifiers: [
+                        {
+                          name: 'preventOverflow',
                           enabled: false,
                         },
-                      },
+                        {
+                          name: 'flip',
+                          enabled: false,
+                        },
+                        smartHorizontalPlacementModifier,
+                      ],
                     },
                     tooltip: {
                       sx: {
                         fontSize: 'initial',
                         backgroundColor: 'transparent',
-                        width: '600px',
+                        width: 'auto',
+                        maxWidth: 'none',
                         marginTop: 0,
                         paddingTop: 0,
                         boxShadow: 'none',
@@ -724,7 +868,6 @@ export class Main extends React.Component {
                             additionalKeys={additionalKeys}
                             mode={equationEditor || DEFAULT_KEYPAD_VARIANT}
                             onClick={this.onClick}
-                            onRequestClose={() => this.setState({ activeAnswerBlock: '' })}
                           />
                         </ResponseContainer>
                       )) ||

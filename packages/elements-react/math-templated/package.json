@@ -23,7 +23,6 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-framework/mathquill": "^1.0.0",
     "@emotion/core": "0.x.x"
   },
   "peerDependencies": {

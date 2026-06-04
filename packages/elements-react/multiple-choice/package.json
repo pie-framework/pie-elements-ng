@@ -11,11 +11,11 @@
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
     "debug": "^4.1.1",
-    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.8.1",
     "react-transition-group": "^4.4.5",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "clsx": "^2.1.1",
@@ -67,6 +67,10 @@
     },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

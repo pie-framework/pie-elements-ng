@@ -11,10 +11,10 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
-    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.7.2",
     "clsx": "^2.1.1",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "@pie-element/shared-lodash": "workspace:*",
     "@emotion/core": "0.x.x"
   },
   "type": "module",

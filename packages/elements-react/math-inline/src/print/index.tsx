@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { debounce } from '@pie-element/shared-lodash';
-import Main from '../delivery/main';
+import Main from '../delivery/main.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import debug from 'debug';
 
@@ -26,7 +26,7 @@ const log = debug('pie-element:math-inline:print');
  */
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.mode === 'instructor';
+  const instr = opts.role === 'instructor';
 
   model.prompt = model.promptEnabled !== false ? model.prompt : undefined;
   model.teacherInstructions =
@@ -44,7 +44,7 @@ const preparePrintModel = (model, opts) => {
     disabled: true,
     config: {
       ...model,
-      env: { mode: instr ? 'evaluate' : model.mode, role: opts.mode },
+      env: { mode: instr ? 'evaluate' : model.mode, role: opts.role },
     },
   };
 };

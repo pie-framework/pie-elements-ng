@@ -12,9 +12,9 @@
     "@pie-lib/render-ui": "workspace:*",
     "assert": "^1.4.1",
     "debug": "^4.1.1",
-    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.6.2",
     "react-measure": "^2.2.2",
+    "@pie-element/shared-lodash": "workspace:*",
     "@emotion/core": "0.x.x"
   },
   "type": "module",

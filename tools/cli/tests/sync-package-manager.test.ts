@@ -462,6 +462,58 @@ describe('ensureElementPackageJson iife build script generation', () => {
     );
   });
 
+  it('generates runtime-support metadata for browser ESM element packages', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await writeBrowserEsmPolicy(rootDir);
+    await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'delivery'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'delivery', 'index.ts'),
+      'export default class DeliveryElement {}\n',
+      'utf-8'
+    );
+    await mkdir(join(elementDir, 'src', 'author'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'author', 'index.ts'),
+      'export default class AuthorElement {}\n',
+      'utf-8'
+    );
+    await mkdir(join(elementDir, 'src', 'controller'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'controller', 'index.ts'),
+      'export default class Controller {}\n',
+      'utf-8'
+    );
+    await mkdir(join(elementDir, 'src', 'print'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'print', 'index.ts'),
+      'export default class PrintElement {}\n',
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir),
+      { includeBrowserExports: true }
+    );
+
+    expect(changed).toBe(true);
+    const runtimeSupport = await readFile(join(elementDir, 'src', 'runtime-support.ts'), 'utf-8');
+    expect(runtimeSupport).toContain("packageName: '@pie-element/test-element'");
+    expect(runtimeSupport).toContain('delivery: true');
+    expect(runtimeSupport).toContain('author: true');
+    expect(runtimeSupport).toContain('print: true');
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.exports['./runtime-support']).toEqual({
+      types: './dist/runtime-support.d.ts',
+      default: './dist/runtime-support.js',
+    });
+  });
+
   it('emits legacy configure metadata and shim from the modern author entry', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');

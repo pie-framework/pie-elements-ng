@@ -12,8 +12,8 @@
     "@pie-lib/style-utils": "workspace:*",
     "@pie-lib/translator": "workspace:*",
     "debug": "^4.1.1",
-    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.6.2",
+    "@pie-element/shared-lodash": "workspace:*",
     "clsx": "^2.1.1",
     "@emotion/core": "0.x.x"
   },

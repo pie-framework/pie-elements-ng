@@ -11,6 +11,7 @@ import type {
   EsmRuntimeValidationResult,
   EsmValidationResult,
 } from '../../utils/compatibility.js';
+import { deriveStaticBrowserEsmReport } from '../../utils/compatibility.js';
 import { assertReposExist } from '../../lib/upstream/repo-utils.js';
 
 // PIE elements that are actively used in pie-elements-ng
@@ -172,6 +173,9 @@ export default class AnalyzeEsm extends Command {
       flags['runtime-max-modules'],
       flags['runtime-cache-file']
     );
+    const staticBrowserEsmReport = await deriveStaticBrowserEsmReport(process.cwd());
+    report.browserEsmReady = staticBrowserEsmReport.browserEsmReady;
+    report.browserEsmUnsupported = staticBrowserEsmReport.browserEsmUnsupported;
 
     // Save JSON report
     const outputDir = join(flags.output, '..');

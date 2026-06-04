@@ -28,6 +28,36 @@ interface InternalSyncResult {
   filesUpdated: number;
 }
 
+export function collectElementViteEntryPoints(elementDir: string): Record<string, string> {
+  const entryPoints: Record<string, string> = {};
+
+  const findEntry = (basePath: string): string | null => {
+    if (existsSync(join(elementDir, `${basePath}.tsx`))) return `${basePath}.tsx`;
+    if (existsSync(join(elementDir, `${basePath}.ts`))) return `${basePath}.ts`;
+    return null;
+  };
+
+  const entries: Array<[string, string]> = [
+    ['index', 'src/index'],
+    ['controller/index', 'src/controller/index'],
+    ['configure/index', 'src/configure/index'],
+    ['delivery/index', 'src/delivery/index'],
+    ['author/index', 'src/author/index'],
+    ['print/index', 'src/print/index'],
+    ['types/index', 'src/types/index'],
+    ['runtime-support', 'src/runtime-support'],
+  ];
+
+  for (const [entryName, sourcePath] of entries) {
+    const entry = findEntry(sourcePath);
+    if (entry) {
+      entryPoints[entryName] = entry;
+    }
+  }
+
+  return entryPoints;
+}
+
 export class ReactComponentsStrategy implements SyncStrategy {
   private touchedElementPackages = new Set<string>();
   private result: InternalSyncResult = {
@@ -209,12 +239,12 @@ export class ReactComponentsStrategy implements SyncStrategy {
       await this.ensureIifeEntryPoint(pkg, elementDir, config, logger);
       await this.ensureIifeViteConfig(pkg, elementDir, config, logger);
 
-      await this.ensureElementViteConfig(pkg, elementDir, logger);
       // Ensure package.json has ESM module support and expected exports.
       let wrotePkgJson = false;
       wrotePkgJson = await ensureElementPackageJson(pkg, elementDir, config, {
         includeBrowserExports: true,
       });
+      await this.ensureElementViteConfig(pkg, elementDir, logger);
       const wroteTsConfig = await this.ensureTsConfig(pkg, elementDir, logger);
 
       // Ensure demo structure
@@ -582,50 +612,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
     // Always regenerate to reflect current directory structure
     // (e.g., if configure/ was skipped due to ESM incompatibility)
 
-    // Detect entry points
-    const entryPoints: Record<string, string> = {};
-
-    // Helper to find which file extension exists (.ts or .tsx)
-    const findEntry = (basePath: string): string | null => {
-      if (existsSync(join(elementDir, `${basePath}.tsx`))) return `${basePath}.tsx`;
-      if (existsSync(join(elementDir, `${basePath}.ts`))) return `${basePath}.ts`;
-      return null;
-    };
-
-    const indexEntry = findEntry('src/index');
-    if (indexEntry) {
-      entryPoints.index = indexEntry;
-    }
-
-    const controllerEntry = findEntry('src/controller/index');
-    if (controllerEntry) {
-      entryPoints['controller/index'] = controllerEntry;
-    }
-
-    const configureEntry = findEntry('src/configure/index');
-    if (configureEntry) {
-      entryPoints['configure/index'] = configureEntry;
-    }
-
-    const deliveryEntry = findEntry('src/delivery/index');
-    if (deliveryEntry) {
-      entryPoints['delivery/index'] = deliveryEntry;
-    }
-
-    const authorEntry = findEntry('src/author/index');
-    if (authorEntry) {
-      entryPoints['author/index'] = authorEntry;
-    }
-
-    const printEntry = findEntry('src/print/index');
-    if (printEntry) {
-      entryPoints['print/index'] = printEntry;
-    }
-
-    const typesEntry = findEntry('src/types/index');
-    if (typesEntry) {
-      entryPoints['types/index'] = typesEntry;
-    }
+    const entryPoints = collectElementViteEntryPoints(elementDir);
 
     if (Object.keys(entryPoints).length === 0) {
       return; // No entry points, skip vite config

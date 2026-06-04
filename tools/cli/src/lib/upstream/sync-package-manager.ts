@@ -6,7 +6,7 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { readFile, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
@@ -209,6 +209,44 @@ export function generateExportsObject(
   }
 
   return exports;
+}
+
+function generateRuntimeSupportSource(elementName: string, entryPoints: EntryPointMap): string {
+  const packageName = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}`;
+  return `export const runtimeSupport = {
+  schemaVersion: 1,
+  packageName: '${packageName}',
+  supports: {
+    esm: {
+      delivery: ${entryPoints.hasDelivery},
+      author: ${entryPoints.hasAuthor},
+      print: ${entryPoints.hasPrint},
+    },
+  },
+};
+
+export default runtimeSupport;
+`;
+}
+
+async function ensureBrowserRuntimeSupportSource(
+  elementName: string,
+  elementDir: string,
+  entryPoints: EntryPointMap
+): Promise<boolean> {
+  const runtimeSupportPath = join(elementDir, 'src', 'runtime-support.ts');
+  const nextContent = generateRuntimeSupportSource(elementName, entryPoints);
+  const currentContent = existsSync(runtimeSupportPath)
+    ? await readFile(runtimeSupportPath, 'utf-8').catch(() => null)
+    : null;
+
+  if (currentContent === nextContent) {
+    return false;
+  }
+
+  await mkdir(dirname(runtimeSupportPath), { recursive: true });
+  await writeFile(runtimeSupportPath, nextContent, 'utf-8');
+  return true;
 }
 
 /**
@@ -623,6 +661,13 @@ export async function ensureElementPackageJson(
 
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
+  const wroteRuntimeSupport =
+    includeBrowserExports && !entryPoints.hasRuntimeSupport
+      ? await ensureBrowserRuntimeSupportSource(elementName, elementDir, entryPoints)
+      : false;
+  if (includeBrowserExports) {
+    entryPoints.hasRuntimeSupport = true;
+  }
 
   // Generate dist-only exports based on entry points. Do not preserve
   // source-backed `development` conditions; PIE-605 makes raw source paths a
@@ -776,6 +821,7 @@ export async function ensureElementPackageJson(
 
   if (
     currentContent === nextContent &&
+    !wroteRuntimeSupport &&
     !shouldWriteControllerShim &&
     !shouldRemoveControllerShim &&
     !shouldWriteConfigureShim &&

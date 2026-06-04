@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Configure from './configure';
+import Configure from './configure.js';
 import { isEmpty } from '@pie-element/shared-lodash';
 import {
   ModelUpdatedEvent,
@@ -21,7 +21,7 @@ import {
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const log = debug('pie-elements:math-inline:configure');
 

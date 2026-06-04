@@ -181,7 +181,7 @@ export const MarkLabel = (props) => {
           }}
         ></StyledMathInput>
       ) : (
-      <AutosizeInput
+        <AutosizeInput
           inputRef={(r) => {
             _ref(r);
             if (typeof externalInputRef === 'function') {

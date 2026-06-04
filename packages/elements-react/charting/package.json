@@ -11,10 +11,10 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
-    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
@@ -58,6 +58,10 @@
     },
     "./browser/controller": {
       "default": "./dist/browser/controller/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

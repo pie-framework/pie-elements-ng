@@ -58,6 +58,10 @@
     },
     "./browser/controller": {
       "default": "./dist/browser/controller/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",

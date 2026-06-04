@@ -23,22 +23,36 @@ type PackageJson = {
   };
 };
 
+type CompatibilityReport = {
+  browserEsmReady?: string[];
+  browserEsmUnsupported?: Record<string, unknown>;
+  elements?: string[];
+  blockedElements?: Record<string, unknown>;
+};
+
 async function readJson<T>(path: string): Promise<T> {
   return JSON.parse(await readFile(path, 'utf-8')) as T;
+}
+
+function unsupportedEntries(report: CompatibilityReport): Record<string, unknown> {
+  return report.browserEsmUnsupported ?? report.blockedElements ?? {};
+}
+
+function readyElements(report: CompatibilityReport): string[] {
+  return report.browserEsmReady ?? [];
 }
 
 describe('browser ESM readiness report', () => {
   const root = process.cwd();
 
   test('has no unsupported browser ESM elements', async () => {
-    const report = await readJson<{
-      browserEsmReady?: string[];
-      browserEsmUnsupported?: Record<string, unknown>;
-    }>(join(root, '.compatibility/report.json'));
+    const report = await readJson<CompatibilityReport>(join(root, '.compatibility/report.json'));
+    const ready = readyElements(report);
 
-    expect(report.browserEsmUnsupported ?? {}).toEqual({});
+    expect(Array.isArray(report.browserEsmReady)).toBe(true);
+    expect(unsupportedEntries(report)).toEqual({});
     for (const { slug } of formerlyBlockedElements) {
-      expect(report.browserEsmReady).toContain(slug);
+      expect(ready).toContain(slug);
     }
   });
 

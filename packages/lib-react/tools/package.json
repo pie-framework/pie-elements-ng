@@ -11,10 +11,10 @@
     "@pie-lib/style-utils": "workspace:*",
     "assert": "^1.4.1",
     "debug": "^4.1.1",
-    "@pie-element/shared-lodash": "workspace:*",
     "prop-types": "^15.7.2",
     "react-portal": "^4.2.0",
     "trigonometry-calculator": "^2.0.0",
+    "@pie-element/shared-lodash": "workspace:*",
     "@emotion/core": "0.x.x"
   },
   "type": "module",

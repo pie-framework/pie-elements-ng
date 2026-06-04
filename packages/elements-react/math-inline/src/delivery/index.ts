@@ -21,7 +21,7 @@ const defaults = {
     // Full authoring configuration is only needed in the configure package
   } as any
 };;
-import Main from './main';
+import Main from './main.js';
 
 const log = debug('pie-ui:math-inline');
 

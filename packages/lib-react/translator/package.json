@@ -5,8 +5,8 @@
   "dependencies": {
     "debug": "^4.1.1",
     "i18next": "^25.7.0",
-    "@pie-element/shared-lodash": "workspace:*",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",
