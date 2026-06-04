@@ -14,8 +14,7 @@
     "debug": "^4.1.1",
     "prop-types": "^15.6.2",
     "react-measure": "^2.2.2",
-    "@pie-element/shared-lodash": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

@@ -11,8 +11,7 @@
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.7.2",
-    "@pie-element/shared-lodash": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

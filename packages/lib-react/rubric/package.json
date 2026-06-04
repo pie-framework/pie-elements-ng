@@ -13,8 +13,7 @@
     "prop-types": "^15.7.2",
     "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
-    "@pie-lib/render-ui": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@pie-lib/render-ui": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

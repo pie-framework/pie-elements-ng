@@ -23,8 +23,7 @@
     "@pie-element/shared-lodash": "workspace:*",
     "clsx": "^2.1.1",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",

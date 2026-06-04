@@ -12,7 +12,6 @@
     "@pie-lib/translator": "workspace:*",
     "prop-types": "^15.6.2",
     "react-transition-group": "^4.4.5",
-    "@emotion/core": "0.x.x",
     "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",

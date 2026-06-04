@@ -19,8 +19,7 @@
     "react-draggable": "^4.6.0",
     "react-redux": "^9.3.0",
     "redux": "^5.0.1",
-    "@pie-element/shared-lodash": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

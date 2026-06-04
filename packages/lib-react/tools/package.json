@@ -14,8 +14,7 @@
     "prop-types": "^15.7.2",
     "react-portal": "^4.2.0",
     "trigonometry-calculator": "^2.0.0",
-    "@pie-element/shared-lodash": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

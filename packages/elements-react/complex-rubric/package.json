@@ -16,7 +16,6 @@
     "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@emotion/core": "0.x.x",
     "clsx": "^2.1.1",
     "@pie-element/shared-player-events": "workspace:*"
   },

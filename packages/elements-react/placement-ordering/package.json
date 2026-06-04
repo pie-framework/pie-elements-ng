@@ -26,8 +26,7 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "js-combinatorics": "^2.1.2",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",

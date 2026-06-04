@@ -326,6 +326,8 @@ function normalizePackageImport(specifier: string): string | null {
   return specifier.split('/')[0] || null;
 }
 
+const LEGACY_PEERS_TO_SKIP = new Set(['@emotion/core']);
+
 async function findInstalledPackageJson(
   packageName: string,
   fromDir: string
@@ -384,7 +386,12 @@ async function addTransitivePeerDependencies(
     );
 
     for (const [peerName, peerVersion] of Object.entries(peerDeps)) {
-      if (deps[peerName] || declaredPeerDeps.has(peerName) || optionalPeers.has(peerName)) {
+      if (
+        deps[peerName] ||
+        declaredPeerDeps.has(peerName) ||
+        optionalPeers.has(peerName) ||
+        LEGACY_PEERS_TO_SKIP.has(peerName)
+      ) {
         continue;
       }
 

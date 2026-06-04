@@ -17,8 +17,7 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
     "@dnd-kit/utilities": "^3.2.2",
-    "clsx": "^2.1.1",
-    "@emotion/core": "0.x.x"
+    "clsx": "^2.1.1"
   },
   "type": "module",
   "main": "./dist/index.js",

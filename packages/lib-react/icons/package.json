@@ -7,8 +7,7 @@
     "@emotion/style": "^0.8.0",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
-    "prop-types": "^15.6.2",
-    "@emotion/core": "0.x.x"
+    "prop-types": "^15.6.2"
   },
   "type": "module",
   "main": "./dist/index.js",

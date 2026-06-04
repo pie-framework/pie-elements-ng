@@ -72,7 +72,7 @@ function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
     return Promise.resolve();
   }
 
-  if (window.MathJax?.version) {
+  if (window.MathJax?.typesetPromise) {
     return Promise.resolve();
   }
 

@@ -25,7 +25,6 @@
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@emotion/core": "0.x.x",
     "clsx": "^2.1.1"
   },
   "peerDependencies": {

@@ -20,7 +20,6 @@
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-lib/graphing-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "@emotion/core": "0.x.x",
     "clsx": "^2.1.1"
   },
   "peerDependencies": {

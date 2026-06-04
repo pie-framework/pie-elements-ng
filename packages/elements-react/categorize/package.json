@@ -22,8 +22,7 @@
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
-    "@pie-element/shared-player-events": "workspace:*",
-    "@emotion/core": "0.x.x"
+    "@pie-element/shared-player-events": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",

@@ -207,6 +207,68 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies).not.toHaveProperty('react');
   });
 
+  it('does not promote legacy Emotion peers into element package dependencies', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+    const upstreamElementDir = join(
+      rootDir,
+      'upstream',
+      'pie-elements',
+      'packages',
+      'test-element'
+    );
+    const fakeEmotionStyleDir = join(rootDir, 'node_modules', '@emotion', 'style');
+
+    await createElementBase(elementDir);
+    await mkdir(upstreamElementDir, { recursive: true });
+    await mkdir(fakeEmotionStyleDir, { recursive: true });
+    await writeFile(join(fakeEmotionStyleDir, 'index.js'), 'export {};\n', 'utf-8');
+    await writeFile(
+      join(fakeEmotionStyleDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@emotion/style',
+          version: '0.8.0',
+          main: './index.js',
+          peerDependencies: {
+            '@emotion/core': '0.x.x',
+            react: '>=16.3.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamElementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          dependencies: {
+            '@emotion/style': '^0.8.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toMatchObject({
+      '@emotion/style': '^0.8.0',
+    });
+    expect(pkgJson.dependencies).not.toHaveProperty('@emotion/core');
+  });
+
   it('declares third-party packages detected from transformed element source imports', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');

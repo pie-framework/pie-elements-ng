@@ -18,7 +18,6 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
-    "@emotion/core": "0.x.x",
     "clsx": "^2.1.1"
   },
   "peerDependencies": {

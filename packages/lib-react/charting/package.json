@@ -28,7 +28,6 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
     "clsx": "^2.1.1",
-    "@emotion/core": "0.x.x",
     "d3-time": "^3.1.0",
     "d3-interpolate": "^3.0.1",
     "d3-shape": "^3.2.0"
