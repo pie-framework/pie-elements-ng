@@ -29,9 +29,7 @@ function getRenderer() {
 function getPlayerMathRenderer(): PlayerMathRenderingApi | null {
   if (typeof window === 'undefined') return null;
 
-  const renderer = (window as any)[PLAYER_MATH_RENDERING_KEY] as
-    | PlayerMathRenderingApi
-    | undefined;
+  const renderer = (window as any)[PLAYER_MATH_RENDERING_KEY] as PlayerMathRenderingApi | undefined;
 
   return typeof renderer?.renderMath === 'function' ? renderer : null;
 }
