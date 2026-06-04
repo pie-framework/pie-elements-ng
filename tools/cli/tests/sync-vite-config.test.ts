@@ -5,6 +5,11 @@ import {
   generateElementViteConfig,
   generatePieLibViteConfig,
 } from '../src/lib/upstream/sync-vite-config.js';
+import {
+  createExternalFunction,
+  createKonvaExternalFunction,
+  isExternal,
+} from '../src/lib/upstream/sync-externals.js';
 import { browserCjsRequireInteropPlugin } from '../../vite/browser-cjs-require-interop.ts';
 
 describe('generatePieLibViteConfig presets', () => {
@@ -47,6 +52,25 @@ describe('generatePieLibViteConfig presets', () => {
   it('keeps mathjs externalized for element library builds', () => {
     const config = generateElementViteConfig({ index: 'src/index.ts' });
     expect(config).toContain("'mathjs'");
+  });
+});
+
+describe('generated Vite externals', () => {
+  it('does not duplicate @pie-element external checks', () => {
+    const standard = createExternalFunction('element');
+    const konva = createKonvaExternalFunction();
+
+    expect(standard.match(/@pie-element/g) ?? []).toHaveLength(1);
+    expect(konva.match(/@pie-element/g) ?? []).toHaveLength(1);
+  });
+
+  it('keeps runtime external checks aligned with generated categories', () => {
+    expect(isExternal('react/jsx-runtime', 'element')).toBe(true);
+    expect(isExternal('@pie-lib/render-ui', 'element')).toBe(true);
+    expect(isExternal('@pie-element/shared-lodash', 'pielib')).toBe(true);
+    expect(isExternal('@mdi/react', 'pielib')).toBe(true);
+    expect(isExternal('recharts/lib/chart', 'element')).toBe(true);
+    expect(isExternal('local-only-package', 'element')).toBe(false);
   });
 });
 

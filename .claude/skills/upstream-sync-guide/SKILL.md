@@ -60,7 +60,7 @@ bun run upstream:check
 
 `upstream:update` must copy the upstream `package.json` version into `packages/elements-react/<name>/package.json` and `packages/lib-react/<name>/package.json` verbatim. Do **not** reset to `0.0.1` or `0.1.0`.
 
-If after a sync the version has been reset, the transform pipeline has a bug in `sync-package.ts` (or equivalent). Investigate there rather than manually editing `package.json` versions, which will be overwritten on the next sync.
+If after a sync the version has been reset, the transform pipeline has a bug in `sync-package-manager.ts` (or equivalent). Investigate there rather than manually editing `package.json` versions, which will be overwritten on the next sync.
 
 ## What Sync Transforms Do
 

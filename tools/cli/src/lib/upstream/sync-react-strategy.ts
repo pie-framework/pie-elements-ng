@@ -13,11 +13,13 @@ import { getCurrentCommit } from '../../utils/git.js';
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, existsAny, readdir } from './sync-filesystem.js';
 import { createExternalFunction, createKonvaExternalFunction } from './sync-externals.js';
-import { fixImportsInFile, containsJsx } from './sync-imports.js';
+import { containsJsx } from './sync-imports.js';
 import { createReactComponentTransformPipeline } from './sync-transforms.js';
 import { ensureElementPackageJson } from './sync-package-manager.js';
 import { isSubdirectoryCompatible } from './sync-compatibility.js';
 import { EXCLUDED_UPSTREAM_ELEMENTS } from './sync-constants.js';
+import { collectEntryPoints } from './sync-entry-discovery.js';
+import { syncSourceTree } from './sync-source-tree.js';
 import { seedContractForElement } from '../docs/contracts.js';
 import type { ElementPackageInfo } from '../docs/types.js';
 
@@ -29,15 +31,7 @@ interface InternalSyncResult {
 }
 
 export function collectElementViteEntryPoints(elementDir: string): Record<string, string> {
-  const entryPoints: Record<string, string> = {};
-
-  const findEntry = (basePath: string): string | null => {
-    if (existsSync(join(elementDir, `${basePath}.tsx`))) return `${basePath}.tsx`;
-    if (existsSync(join(elementDir, `${basePath}.ts`))) return `${basePath}.ts`;
-    return null;
-  };
-
-  const entries: Array<[string, string]> = [
+  return collectEntryPoints(elementDir, [
     ['index', 'src/index'],
     ['controller/index', 'src/controller/index'],
     ['configure/index', 'src/configure/index'],
@@ -46,16 +40,7 @@ export function collectElementViteEntryPoints(elementDir: string): Record<string
     ['print/index', 'src/print/index'],
     ['types/index', 'src/types/index'],
     ['runtime-support', 'src/runtime-support'],
-  ];
-
-  for (const [entryName, sourcePath] of entries) {
-    const entry = findEntry(sourcePath);
-    if (entry) {
-      entryPoints[entryName] = entry;
-    }
-  }
-
-  return entryPoints;
+  ]);
 }
 
 export class ReactComponentsStrategy implements SyncStrategy {
@@ -312,115 +297,24 @@ export class ReactComponentsStrategy implements SyncStrategy {
     pkg: string,
     upstreamCommit: string
   ): Promise<number> {
-    let filesProcessed = 0;
-    const defaultExportFiles = new Set<string>(); // Track files with default exports
+    const packageName = `@pie-element/${pkg}`;
+    const transformPipeline = createReactComponentTransformPipeline(packageName);
+    const stats = await syncSourceTree({
+      sourceDir,
+      targetDir,
+      relativePath,
+      sourcePathPrefix: `pie-elements/packages/${pkg}`,
+      upstreamCommit,
+      transform: (content, context) => transformPipeline(content, context.relativeFilePath),
+      skipFile: (fileName) => fileName === 'print.js' || fileName === 'print.jsx',
+    });
 
-    const items = await readdir(sourceDir);
+    this.result.filesChecked += stats.filesChecked;
+    this.result.filesCopied += stats.filesCopied;
+    this.result.filesSkipped += stats.filesSkipped;
+    this.result.filesUpdated += stats.filesUpdated;
 
-    for (const item of items) {
-      const srcPath = join(sourceDir, item);
-      const stat = await fsStat(srcPath);
-
-      if (stat.isDirectory()) {
-        // Skip __tests__, __mocks__, etc.
-        if (item.startsWith('__')) {
-          continue;
-        }
-        // Recursively sync subdirectories
-        const subFilesProcessed = await this.syncDirectory(
-          srcPath,
-          join(targetDir, item),
-          join(relativePath, item),
-          pkg,
-          upstreamCommit
-        );
-        filesProcessed += subFilesProcessed;
-        continue;
-      }
-
-      // Only process .js and .jsx files
-      if (!item.endsWith('.js') && !item.endsWith('.jsx')) {
-        continue;
-      }
-
-      // Skip print.js/print.jsx files - they're synced to src/print/ separately
-      if (item === 'print.js' || item === 'print.jsx') {
-        continue;
-      }
-
-      this.result.filesChecked++;
-      filesProcessed++;
-
-      // Read source
-      let sourceContent = await readFile(srcPath, 'utf-8');
-
-      // Apply all standard transformations
-      const packageName = `@pie-element/${pkg}`;
-      const transformPipeline = createReactComponentTransformPipeline(packageName);
-      sourceContent = transformPipeline(sourceContent, join(relativePath, item));
-
-      const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
-
-      // Convert .js → .ts/.tsx and .jsx → .tsx
-      const targetFile = item.replace(/\.jsx?$/, hasJsx ? '.tsx' : '.ts');
-      const targetPath = join(targetDir, targetFile);
-
-      // Convert based on file extension
-      const conversionResult = hasJsx
-        ? convertJsxToTsx(sourceContent, {
-            sourcePath: `pie-elements/packages/${pkg}/${relativePath}/${item}`,
-            commit: upstreamCommit,
-          })
-        : convertJsToTs(sourceContent, {
-            sourcePath: `pie-elements/packages/${pkg}/${relativePath}/${item}`,
-            commit: upstreamCommit,
-          });
-
-      const converted = conversionResult.code;
-
-      // Track files that export default objects (for import fixing later)
-      if (conversionResult.hasDefaultObjectExport) {
-        // Store the file name without extension for import matching
-        const fileNameWithoutExt = targetFile.replace(/\.(ts|tsx)$/, '');
-        defaultExportFiles.add(fileNameWithoutExt);
-      }
-
-      // Check if different
-      // NOTE: This comparison is exact (===) to ensure any changes in:
-      // - Upstream source code
-      // - Transformation logic (lodash-es, event packages, etc.)
-      // - Sync version (tracked in @sync-version header)
-      // will trigger a file update. This prioritizes correctness over speed.
-      const isNew = !existsSync(targetPath);
-      if (!isNew) {
-        const currentContent = await readFile(targetPath, 'utf-8');
-        if (currentContent === converted) {
-          this.result.filesSkipped++;
-          continue;
-        }
-        this.result.filesUpdated++;
-      } else {
-        this.result.filesCopied++;
-      }
-
-      // Write
-      await mkdir(dirname(targetPath), { recursive: true });
-      await writeFile(targetPath, converted, 'utf-8');
-    }
-
-    // After all files are synced, fix import statements in consuming files
-    if (defaultExportFiles.size > 0) {
-      const targetDirItems = await readdir(targetDir);
-      for (const item of targetDirItems) {
-        const itemPath = join(targetDir, item);
-        const stat = await fsStat(itemPath);
-        if (stat.isFile() && (item.endsWith('.tsx') || item.endsWith('.ts'))) {
-          await fixImportsInFile(itemPath, defaultExportFiles);
-        }
-      }
-    }
-
-    return filesProcessed;
+    return stats.filesProcessed;
   }
 
   /**

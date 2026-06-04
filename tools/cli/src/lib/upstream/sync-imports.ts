@@ -35,11 +35,13 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import ts from 'typescript';
 import {
   PRESET_IDS,
   shouldTransformConfigUiMathjsSource,
   shouldTransformReactInputAutosizeSource,
 } from './sync-presets.js';
+import { applySourceEdits, rewriteModuleSpecifiers, type SourceEdit } from './sync-source-edit.js';
 
 const SOURCE_PATH_PRESET_RULES = {
   [PRESET_IDS.transformTextSelectTokenTypesReexport]: (sourcePath: string) =>
@@ -360,39 +362,64 @@ function lodashMemberFromPath(path: string): string {
  * resolution while keeping import shapes tree-shakeable.
  */
 export function transformLodashToVendoredLodash(content: string): string {
-  let transformed = content;
+  const sourceFile = ts.createSourceFile(
+    'source.tsx',
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+  const edits: SourceEdit[] = [];
   const dynamicDeepImportMembers = new Set<string>();
 
-  // Deep default imports:
-  // import localName from 'lodash-es/isEqual.js' -> import { isEqual as localName } ...
-  transformed = transformed.replace(
-    /import\s+([A-Za-z_$][\w$]*)\s+from\s+(['"])(?:lodash|lodash-es)\/([^'"]+)\2;?/g,
-    (_match, localName: string, quote: string, path: string) => {
-      const member = lodashMemberFromPath(path);
-      const imported = member === localName ? member : `${member} as ${localName}`;
-      return `import { ${imported} } from ${quote}${VENDORED_LODASH_PACKAGE}${quote};`;
+  const visit = (node: ts.Node): void => {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      const path = lodashDeepImportPath(node.moduleSpecifier.text);
+      if (path) {
+        const member = lodashMemberFromPath(path);
+        edits.push({
+          start: node.getStart(sourceFile),
+          end: node.getEnd(),
+          text: lodashImportReplacement(node, sourceFile, member),
+        });
+      }
+    } else if (
+      ts.isExportDeclaration(node) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      const path = lodashDeepImportPath(node.moduleSpecifier.text);
+      if (path) {
+        const member = lodashMemberFromPath(path);
+        edits.push({
+          start: node.getStart(sourceFile),
+          end: node.getEnd(),
+          text: lodashExportReplacement(node, sourceFile, member),
+        });
+      }
+    } else if (isDynamicStringImport(node)) {
+      const path = lodashDeepImportPath(node.arguments[0].text);
+      if (path) {
+        const member = lodashMemberFromPath(path);
+        dynamicDeepImportMembers.add(member);
+        edits.push({
+          start: node.getStart(sourceFile),
+          end: node.getEnd(),
+          text: `Promise.resolve({ default: ${member}, ${member} })`,
+        });
+      }
     }
-  );
 
-  transformed = transformed.replace(
-    /(import\(\s*)(['"])(?:lodash|lodash-es)\/([^'"]+)\2(\s*\))/g,
-    (_match, _prefix: string, _quote: string, path: string) => {
-      const member = lodashMemberFromPath(path);
-      dynamicDeepImportMembers.add(member);
-      return `Promise.resolve({ default: ${member}, ${member} })`;
-    }
-  );
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+
+  let transformed = applySourceEdits(content, edits);
 
   // Root imports keep their local import shape.
-  transformed = transformed.replace(
-    /(from\s+)(['"])(?:lodash|lodash-es)\2/g,
-    `$1$2${VENDORED_LODASH_PACKAGE}$2`
-  );
-
-  // Dynamic root imports can use the package namespace.
-  transformed = transformed.replace(
-    /(import\(\s*)(['"])(?:lodash|lodash-es)\2(\s*\))/g,
-    `$1$2${VENDORED_LODASH_PACKAGE}$2$3`
+  transformed = rewriteModuleSpecifiers(transformed, (specifier) =>
+    specifier === 'lodash' || specifier === 'lodash-es' ? VENDORED_LODASH_PACKAGE : undefined
   );
 
   if (dynamicDeepImportMembers.size > 0) {
@@ -401,6 +428,113 @@ export function transformLodashToVendoredLodash(content: string): string {
   }
 
   return transformed;
+}
+
+function lodashDeepImportPath(specifier: string): string | null {
+  const match = specifier.match(/^(?:lodash|lodash-es)\/(.+)$/);
+  return match?.[1] ?? null;
+}
+
+function isDynamicStringImport(node: ts.Node): node is ts.CallExpression & {
+  arguments: ts.NodeArray<ts.StringLiteral>;
+} {
+  return (
+    ts.isCallExpression(node) &&
+    node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+    node.arguments.length === 1 &&
+    ts.isStringLiteral(node.arguments[0])
+  );
+}
+
+function quoteLike(specifier: string, originalText: string): string {
+  const delimiter = originalText.startsWith('"') ? '"' : "'";
+  const escaped = specifier.replace(/\\/g, '\\\\').replaceAll(delimiter, `\\${delimiter}`);
+  return `${delimiter}${escaped}${delimiter}`;
+}
+
+function lodashImportReplacement(
+  node: ts.ImportDeclaration,
+  sourceFile: ts.SourceFile,
+  member: string
+): string {
+  const packageSpecifier = quoteLike(
+    VENDORED_LODASH_PACKAGE,
+    node.moduleSpecifier.getText(sourceFile)
+  );
+  const importClause = node.importClause;
+  if (!importClause) {
+    return `import ${packageSpecifier};`;
+  }
+
+  if (importClause.name) {
+    return `import { ${formatLodashBinding(member, importClause.name.text)} } from ${packageSpecifier};`;
+  }
+
+  const namedBindings = importClause.namedBindings;
+  if (namedBindings && ts.isNamespaceImport(namedBindings)) {
+    return `import { ${formatLodashBinding(member, namedBindings.name.text)} } from ${packageSpecifier};`;
+  }
+
+  if (namedBindings && ts.isNamedImports(namedBindings)) {
+    const bindings = namedBindings.elements
+      .map((specifier) => lodashImportSpecifierBinding(member, specifier))
+      .join(', ');
+    const typeOnly = importClause.isTypeOnly ? 'type ' : '';
+    return `import ${typeOnly}{ ${bindings} } from ${packageSpecifier};`;
+  }
+
+  return `import ${packageSpecifier};`;
+}
+
+function lodashExportReplacement(
+  node: ts.ExportDeclaration,
+  sourceFile: ts.SourceFile,
+  member: string
+): string {
+  const packageSpecifier = quoteLike(
+    VENDORED_LODASH_PACKAGE,
+    node.moduleSpecifier?.getText(sourceFile) ?? `'${VENDORED_LODASH_PACKAGE}'`
+  );
+  const exportClause = node.exportClause;
+  if (!exportClause) {
+    return `export { ${member} } from ${packageSpecifier};`;
+  }
+
+  if (ts.isNamespaceExport(exportClause)) {
+    return `export { ${formatLodashBinding(member, exportClause.name.text)} } from ${packageSpecifier};`;
+  }
+
+  const bindings = exportClause.elements
+    .map((specifier) => lodashExportSpecifierBinding(member, specifier))
+    .join(', ');
+  const typeOnly = node.isTypeOnly ? 'type ' : '';
+  return `export ${typeOnly}{ ${bindings} } from ${packageSpecifier};`;
+}
+
+function lodashImportSpecifierBinding(member: string, specifier: ts.ImportSpecifier): string {
+  const imported = specifier.propertyName?.text ?? specifier.name.text;
+  const local = specifier.name.text;
+
+  if (imported === 'default') {
+    return formatLodashBinding(member, local);
+  }
+
+  return imported === local ? imported : `${imported} as ${local}`;
+}
+
+function lodashExportSpecifierBinding(member: string, specifier: ts.ExportSpecifier): string {
+  const exported = specifier.name.text;
+  const local = specifier.propertyName?.text ?? exported;
+
+  if (local === 'default') {
+    return formatLodashBinding(member, exported);
+  }
+
+  return local === exported ? exported : `${local} as ${exported}`;
+}
+
+function formatLodashBinding(imported: string, local: string): string {
+  return imported === local ? imported : `${imported} as ${local}`;
 }
 
 export const transformLodashToLodashEs = transformLodashToVendoredLodash;
@@ -412,7 +546,9 @@ export const transformLodashToLodashEs = transformLodashToVendoredLodash;
  * entrypoint, so synced source should prefer it over the CommonJS-era package.
  */
 export function transformClassnamesToClsx(content: string): string {
-  return content.replace(/from\s+(['"])classnames\1/g, 'from $1clsx$1');
+  return rewriteModuleSpecifiers(content, (specifier) =>
+    specifier === 'classnames' ? 'clsx' : undefined
+  );
 }
 
 /**
@@ -427,24 +563,83 @@ export function transformReactInputAutosizeToLocal(content: string, sourcePath?:
     return content;
   }
 
-  let transformed = content;
-
-  transformed = transformed.replace(
-    /import\s+([A-Za-z_$][\w$]*)\s+from\s+(['"])react-input-autosize\2;?/g,
-    (_match, importName: string) =>
-      importName === 'AutosizeInput'
-        ? "import { AutosizeInput } from './autosize-input.js';"
-        : `import { AutosizeInput as ${importName} } from './autosize-input.js';`
+  const sourceFile = ts.createSourceFile(
+    'source.tsx',
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
   );
+  const edits: SourceEdit[] = [];
 
-  transformed = transformed.replace(
-    /\n?const\s+AutosizeInputComponent\s*=\s*AutosizeInput\?\.default\s*\?\?\s*AutosizeInput;?/g,
-    ''
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      node.moduleSpecifier.text === 'react-input-autosize'
+    ) {
+      const importName = node.importClause?.name?.text;
+      if (importName) {
+        edits.push({
+          start: node.getStart(sourceFile),
+          end: node.getEnd(),
+          text:
+            importName === 'AutosizeInput'
+              ? "import { AutosizeInput } from './autosize-input.js';"
+              : `import { AutosizeInput as ${importName} } from './autosize-input.js';`,
+        });
+      }
+    } else if (isAutosizeInputComponentAdapter(node, sourceFile)) {
+      edits.push({
+        start: node.getStart(sourceFile),
+        end: node.getEnd(),
+        text: '',
+      });
+    } else if (isAutosizeInputComponentJsxTag(node)) {
+      edits.push({
+        start: node.tagName.getStart(sourceFile),
+        end: node.tagName.getEnd(),
+        text: 'AutosizeInput',
+      });
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+
+  return applySourceEdits(content, edits);
+}
+
+function isAutosizeInputComponentAdapter(
+  node: ts.Node,
+  sourceFile: ts.SourceFile
+): node is ts.VariableStatement {
+  if (!ts.isVariableStatement(node) || node.declarationList.declarations.length !== 1) {
+    return false;
+  }
+
+  const declaration = node.declarationList.declarations[0];
+  if (!ts.isIdentifier(declaration.name) || declaration.name.text !== 'AutosizeInputComponent') {
+    return false;
+  }
+
+  return (
+    declaration.initializer?.getText(sourceFile).replace(/\s+/g, '') ===
+    'AutosizeInput?.default??AutosizeInput'
   );
-  transformed = transformed.replace(/<AutosizeInputComponent\b/g, '<AutosizeInput');
-  transformed = transformed.replace(/<\/AutosizeInputComponent>/g, '</AutosizeInput>');
+}
 
-  return transformed;
+function isAutosizeInputComponentJsxTag(
+  node: ts.Node
+): node is ts.JsxOpeningElement | ts.JsxClosingElement | ts.JsxSelfClosingElement {
+  return (
+    (ts.isJsxOpeningElement(node) ||
+      ts.isJsxClosingElement(node) ||
+      ts.isJsxSelfClosingElement(node)) &&
+    ts.isIdentifier(node.tagName) &&
+    node.tagName.text === 'AutosizeInputComponent'
+  );
 }
 
 /**
@@ -502,9 +697,8 @@ export function transformLodashEsDeepImportsToFullySpecified(content: string): s
  * - react-konva/lib/ReactKonvaCore -> react-konva/lib/ReactKonvaCore.js
  */
 export function transformKnownDeepImportsToFullySpecified(content: string): string {
-  return content.replace(
-    /(from\s+['"]|import\(\s*['"])react-konva\/lib\/ReactKonvaCore(['"]\)?)/g,
-    '$1react-konva/lib/ReactKonvaCore.js$2'
+  return rewriteModuleSpecifiers(content, (specifier) =>
+    specifier === 'react-konva/lib/ReactKonvaCore' ? 'react-konva/lib/ReactKonvaCore.js' : undefined
   );
 }
 
@@ -618,21 +812,15 @@ export function transformPackageJsonBrowserEsmDependencies<T extends Record<stri
  * - @pie-framework/pie-configure-events → @pie-element/shared-configure-events
  */
 export function transformPieFrameworkEventImports(content: string): string {
-  let transformed = content;
-
-  // Transform pie-player-events imports
-  transformed = transformed.replace(
-    /from\s+['"]@pie-framework\/pie-player-events['"]/g,
-    "from '@pie-element/shared-player-events'"
-  );
-
-  // Transform pie-configure-events imports
-  transformed = transformed.replace(
-    /from\s+['"]@pie-framework\/pie-configure-events['"]/g,
-    "from '@pie-element/shared-configure-events'"
-  );
-
-  return transformed;
+  return rewriteModuleSpecifiers(content, (specifier) => {
+    if (specifier === '@pie-framework/pie-player-events') {
+      return '@pie-element/shared-player-events';
+    }
+    if (specifier === '@pie-framework/pie-configure-events') {
+      return '@pie-element/shared-configure-events';
+    }
+    return undefined;
+  });
 }
 
 /**
@@ -645,9 +833,8 @@ export function transformPieFrameworkEventImports(content: string): string {
  * and no lodash/debug dependencies.
  */
 export function transformControllerUtilsImports(content: string): string {
-  return content.replace(
-    /from\s+['"]@pie-lib\/controller-utils['"]/g,
-    "from '@pie-element/shared-controller-utils'"
+  return rewriteModuleSpecifiers(content, (specifier) =>
+    specifier === '@pie-lib/controller-utils' ? '@pie-element/shared-controller-utils' : undefined
   );
 }
 
@@ -660,21 +847,15 @@ export function transformControllerUtilsImports(content: string): string {
  * These packages have been moved to shared/ for better version control and consistency.
  */
 export function transformSharedPackageImports(content: string): string {
-  let transformed = content;
-
-  // Transform math-rendering
-  transformed = transformed.replace(
-    /from\s+['"]@pie-lib\/math-rendering['"]/g,
-    "from '@pie-element/shared-math-rendering-mathjax'"
-  );
-
-  // Transform feedback
-  transformed = transformed.replace(
-    /from\s+['"]@pie-lib\/feedback['"]/g,
-    "from '@pie-element/shared-feedback'"
-  );
-
-  return transformed;
+  return rewriteModuleSpecifiers(content, (specifier) => {
+    if (specifier === '@pie-lib/math-rendering') {
+      return '@pie-element/shared-math-rendering-mathjax';
+    }
+    if (specifier === '@pie-lib/feedback') {
+      return '@pie-element/shared-feedback';
+    }
+    return undefined;
+  });
 }
 
 /**
@@ -687,9 +868,10 @@ export function transformSharedPackageImports(content: string): string {
  * the `./author` export. Rewriting to `/author` preserves author-vs-delivery boundaries.
  */
 export function transformLegacyConfigureLibImports(content: string): string {
-  return content.replace(
-    /from\s+['"](@pie-element\/[^/'"]+)\/configure\/lib['"]/g,
-    "from '$1/author'"
+  return rewriteModuleSpecifiers(content, (specifier) =>
+    /^@pie-element\/[^/]+\/configure\/lib$/.test(specifier)
+      ? specifier.replace(/\/configure\/lib$/, '/author')
+      : undefined
   );
 }
 
@@ -877,10 +1059,9 @@ export function transformConfigureUtilsImports(content: string, relativePath: st
 
   // Transform '../utils' to './utils.js' (only exact match, not '../utils/something')
   // Keep explicit runtime extension for Node ESM consistency.
-  let transformed = content;
-  transformed = transformed.replace(/from\s+['"]\.\.\/utils['"]/g, "from './utils.js'");
-
-  return transformed;
+  return rewriteModuleSpecifiers(content, (specifier) =>
+    specifier === '../utils' ? './utils.js' : undefined
+  );
 }
 
 /**
@@ -1018,62 +1199,31 @@ export function transformSelfReferentialImports(
   packageName: string,
   sourceFilePath: string
 ): string {
-  let transformed = content;
-
   // Extract element name from package name (@pie-element/fraction-model → fraction-model)
   const elementName = packageName.replace('@pie-element/', '');
+  let targetPath: string | null = null;
 
-  // Pattern: import { X } from '@pie-element/element-name' or import X from '@pie-element/element-name'
-  const selfImportPattern = new RegExp(
-    `import\\s+(?:\\{\\s*([^}]+)\\s*\\}|([\\w]+))\\s+from\\s+['"]@pie-element/${elementName}['"]`,
-    'g'
-  );
-
-  const matches = Array.from(transformed.matchAll(selfImportPattern));
-
-  for (const match of matches) {
-    const [fullMatch, namedImports, defaultImport] = match;
-
-    // Determine source directory (configure/src → author, src → delivery)
-    let targetPath = '';
-
-    if (sourceFilePath.startsWith('configure/src/')) {
-      // Configure files reference delivery components
-      // configure/src/main.jsx → author/main.tsx
-      // Relative path from author/ to delivery/
-      targetPath = '../delivery';
-    } else if (sourceFilePath.startsWith('src/')) {
-      // Main src files shouldn't self-reference, but handle it anyway
-      targetPath = '.';
-    } else {
-      // Unknown structure, skip
-      continue;
-    }
-
-    // Strategy: Self-referential imports typically come from the package's main
-    // index file which re-exports from various locations. Rather than trying to
-    // guess individual file locations (which often fails for namespace exports
-    // and re-exports), we keep the import pointing to the index (delivery folder)
-    // which handles all re-exports correctly.
-    //
-    // Examples:
-    // - import { NumberLineComponent, dataConverter, tickUtils } from '@pie-element/number-line'
-    //   → import { NumberLineComponent, dataConverter, tickUtils } from '../delivery'
-    // - import FractionModel from '@pie-element/fraction-model'
-    //   → import FractionModel from '../delivery'
-
-    if (namedImports) {
-      // Named imports - keep them as a single import from the index
-      const replacement = `import { ${namedImports} } from '${targetPath}/index.js'`;
-      transformed = transformed.replace(fullMatch, replacement);
-    } else if (defaultImport) {
-      // Default import - reference main index
-      const replacement = `import ${defaultImport} from '${targetPath}/index.js'`;
-      transformed = transformed.replace(fullMatch, replacement);
-    }
+  if (sourceFilePath.startsWith('configure/src/')) {
+    // Configure files reference delivery components
+    // configure/src/main.jsx → author/main.tsx
+    // Relative path from author/ to delivery/
+    targetPath = '../delivery';
+  } else if (sourceFilePath.startsWith('src/')) {
+    // Main src files shouldn't self-reference, but handle it anyway
+    targetPath = '.';
   }
 
-  return transformed;
+  if (!targetPath) {
+    return content;
+  }
+
+  // Strategy: Self-referential imports typically come from the package's main
+  // index file which re-exports from various locations. Rather than trying to
+  // guess individual file locations (which often fails for namespace exports
+  // and re-exports), we keep the import pointing to the index.
+  return rewriteModuleSpecifiers(content, (specifier) =>
+    specifier === `@pie-element/${elementName}` ? `${targetPath}/index.js` : undefined
+  );
 }
 
 /**
@@ -1150,32 +1300,59 @@ const translatorModule: TranslatorModule = `;
  * @returns Transformed content with Menu imports replaced
  */
 export function transformMenuToInlineMenu(content: string): string {
-  let transformed = content;
-
-  // Pattern 1: import Menu from '@mui/material/Menu'
-  // → import { InlineMenu as Menu } from '@pie-lib/render-ui'
-  if (/import\s+Menu\s+from\s+['"]@mui\/material\/Menu['"]/.test(transformed)) {
-    transformed = transformed.replace(
-      /import\s+Menu\s+from\s+['"]@mui\/material\/Menu['"]/g,
-      "import { InlineMenu as Menu } from '@pie-lib/render-ui'"
-    );
-  }
-
-  // Pattern 2: import Menu, { MenuProps } from '@mui/material/Menu'
-  // → import { InlineMenu as Menu } from '@pie-lib/render-ui'
-  //   import type { MenuProps } from '@mui/material/Menu'
-  const namedImportMatch = transformed.match(
-    /import\s+Menu\s*,\s*\{([^}]+)\}\s+from\s+['"]@mui\/material\/Menu['"]/
+  const sourceFile = ts.createSourceFile(
+    'source.tsx',
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
   );
-  if (namedImportMatch) {
-    const namedImports = namedImportMatch[1];
-    transformed = transformed.replace(
-      /import\s+Menu\s*,\s*\{([^}]+)\}\s+from\s+['"]@mui\/material\/Menu['"]/,
-      `import { InlineMenu as Menu } from '@pie-lib/render-ui';\nimport type {${namedImports}} from '@mui/material/Menu'`
-    );
+  const edits: SourceEdit[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      node.moduleSpecifier.text === '@mui/material/Menu'
+    ) {
+      const defaultName = node.importClause?.name?.text;
+      if (!defaultName) {
+        return;
+      }
+
+      const namedImports = menuNamedImportsText(node, sourceFile);
+      const replacement = [
+        `import { InlineMenu as ${defaultName} } from '@pie-lib/render-ui';`,
+        namedImports ? `import type { ${namedImports} } from '@mui/material/Menu';` : null,
+      ]
+        .filter((line): line is string => !!line)
+        .join('\n');
+
+      edits.push({
+        start: node.getStart(sourceFile),
+        end: node.getEnd(),
+        text: replacement,
+      });
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+
+  return applySourceEdits(content, edits);
+}
+
+function menuNamedImportsText(
+  node: ts.ImportDeclaration,
+  sourceFile: ts.SourceFile
+): string | null {
+  const namedBindings = node.importClause?.namedBindings;
+  if (!namedBindings || !ts.isNamedImports(namedBindings)) {
+    return null;
   }
 
-  return transformed;
+  return namedBindings.elements.map((element) => element.getText(sourceFile)).join(', ');
 }
 
 /**

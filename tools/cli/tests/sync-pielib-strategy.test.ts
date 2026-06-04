@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -150,5 +151,78 @@ describe('PieLibStrategy autosize input generation', () => {
     expect(numberTextField).not.toContain('mathjs');
     expect(fractionHelper).toContain('export const fractionToNumber');
     expect(packageJson.dependencies ?? {}).not.toHaveProperty('mathjs');
+  });
+});
+
+describe('PieLibStrategy source tree sync', () => {
+  it('syncs nested source trees while applying transforms and skipping test folders', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-pielib-tree-test-'));
+    const pieLibDir = join(rootDir, 'upstream', 'pie-lib');
+    const upstreamToolsDir = join(pieLibDir, 'packages', 'tools');
+
+    await mkdir(join(upstreamToolsDir, 'src', 'nested'), { recursive: true });
+    await mkdir(join(upstreamToolsDir, 'src', '__tests__'), { recursive: true });
+    await writeFile(
+      join(upstreamToolsDir, 'src', 'index.js'),
+      "import classNames from 'classnames';\nexport const label = classNames('a', false && 'b');\n",
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamToolsDir, 'src', 'nested', 'button.jsx'),
+      "import isEmpty from 'lodash/isEmpty';\nexport const Button = () => <button>{String(isEmpty([]))}</button>;\n",
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamToolsDir, 'src', '__tests__', 'ignored.js'),
+      'export const ignored = true;\n',
+      'utf-8'
+    );
+    await writeFile(
+      join(upstreamToolsDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/tools',
+          version: '1.0.0',
+          dependencies: {
+            classnames: '^2.5.1',
+            lodash: '^4.17.21',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+    await commitPieLibFixture(pieLibDir);
+
+    const strategy = new PieLibStrategy();
+    const result = await strategy.execute({
+      config: {
+        dryRun: false,
+        pieElements: join(rootDir, 'upstream', 'pie-elements'),
+        pieElementsNg: rootDir,
+        pieLib: pieLibDir,
+        pieLibPackages: ['tools'],
+        skipDemos: true,
+        syncControllers: false,
+        syncPieLib: true,
+        syncReactComponents: false,
+        upstreamCommit: 'test',
+      },
+      logger: createLogger(),
+    });
+
+    const targetDir = join(rootDir, 'packages', 'lib-react', 'tools');
+    const index = await readFile(join(targetDir, 'src', 'index.ts'), 'utf-8');
+    const nestedButton = await readFile(join(targetDir, 'src', 'nested', 'button.tsx'), 'utf-8');
+    const packageJson = JSON.parse(await readFile(join(targetDir, 'package.json'), 'utf-8'));
+
+    expect(result.packageNames).toEqual(['@pie-lib/tools']);
+    expect(index).toContain("import classNames from 'clsx';");
+    expect(index).toContain('@synced-from pie-lib/packages/tools/src/index.js');
+    expect(nestedButton).toContain("import { isEmpty } from '@pie-element/shared-lodash';");
+    expect(packageJson.dependencies).toHaveProperty('clsx', '^2.1.1');
+    expect(packageJson.dependencies).toHaveProperty('@pie-element/shared-lodash', 'workspace:*');
+    expect(existsSync(join(targetDir, 'src', '__tests__'))).toBe(false);
   });
 });

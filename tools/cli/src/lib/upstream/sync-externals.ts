@@ -10,7 +10,7 @@
  *
  * Categories of externals:
  * 1. Framework peer dependencies (React, MUI, Emotion) - MUST be external to avoid duplicate instances
- * 2. Internal monorepo packages (@pie-lib, @pie-element, @pie-element) - External for separate resolution
+ * 2. Internal monorepo packages (@pie-lib, @pie-element) - External for separate resolution
  * 3. Utility libraries (prop-types, classnames, debug) - External to reduce duplication across packages
  * 4. Specialized UI libraries (@dnd-kit, react-transition-group, styled-components) - External to avoid version conflicts
  * 5. D3 modules - External as they're commonly shared
@@ -22,7 +22,6 @@ export function isExternal(id: string, _variant: 'element' | 'pielib'): boolean 
 
   // Internal monorepo packages - always external
   if (/^@pie-lib\//.test(id)) return true;
-  if (/^@pie-element\//.test(id)) return true;
   if (/^@pie-element\//.test(id)) return true;
   if (/^@pie-framework\//.test(id)) return true;
 
@@ -48,6 +47,10 @@ export function isExternal(id: string, _variant: 'element' | 'pielib'): boolean 
 
   // DnD Kit libraries - external for drag and drop functionality
   if (/^@dnd-kit\//.test(id)) return true;
+
+  // Material Design Icons - external for graphing/drawing packages
+  if (id === '@mdi/react' || /^@mdi\/react\//.test(id)) return true;
+  if (id === '@mdi/js' || /^@mdi\/js\//.test(id)) return true;
 
   // Common utility and UI libraries - always external
   const commonExternals = [
@@ -100,7 +103,6 @@ export function createExternalFunction(
           /^react-dom($|\\/)/.test(id) ||
           /^@pie-lib\\//.test(id) ||
           /^@pie-element\\//.test(id) ||
-          /^@pie-element\\//.test(id) ||
           /^@pie-framework\\//.test(id) ||
           /^@mui\\//.test(id) ||
           /^@emotion\\//.test(id) ||
@@ -135,7 +137,6 @@ export function createKonvaExternalFunction(): string {
         if (id === 'react' || id.startsWith('react/')) return true;
         if (id === 'react-dom' || id.startsWith('react-dom/')) return true;
         if (id.startsWith('@pie-lib/')) return true;
-        if (id.startsWith('@pie-element/')) return true;
         if (id.startsWith('@pie-element/')) return true;
         if (id.startsWith('@pie-framework/')) return true;
         if (id.startsWith('@mui/')) return true;

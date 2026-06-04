@@ -6,17 +6,16 @@
  */
 
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, stat as fsStat, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { convertJsToTs, convertJsxToTsx } from '../../utils/conversion.js';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { getCurrentCommit } from '../../utils/git.js';
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, readdir } from './sync-filesystem.js';
-import { fixImportsInFile, containsJsx } from './sync-imports.js';
 import { generatePieLibViteConfig } from './sync-vite-config.js';
 import { createPieLibTransformPipeline } from './sync-transforms.js';
 import { ensurePieLibPackageJson } from './sync-package-manager.js';
 import { EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES } from './sync-constants.js';
+import { syncSourceTree } from './sync-source-tree.js';
 import {
   getPieLibSourcePreserveList,
   getPieLibSyncMode,
@@ -230,109 +229,22 @@ export class PieLibStrategy implements SyncStrategy {
     pkg: string,
     upstreamCommit: string
   ): Promise<number> {
-    let filesProcessed = 0;
-    const defaultExportFiles = new Set<string>(); // Track files with default exports
+    const transformPipeline = createPieLibTransformPipeline();
+    const stats = await syncSourceTree({
+      sourceDir,
+      targetDir,
+      relativePath,
+      sourcePathPrefix: `pie-lib/packages/${pkg}`,
+      upstreamCommit,
+      transform: (content, context) => transformPipeline(content, context.absoluteSourcePath),
+    });
 
-    const items = await readdir(sourceDir);
+    this.result.filesChecked += stats.filesChecked;
+    this.result.filesCopied += stats.filesCopied;
+    this.result.filesSkipped += stats.filesSkipped;
+    this.result.filesUpdated += stats.filesUpdated;
 
-    for (const item of items) {
-      const srcPath = join(sourceDir, item);
-      const stat = await fsStat(srcPath);
-
-      if (stat.isDirectory()) {
-        // Skip __tests__, __mocks__, etc.
-        if (item.startsWith('__')) {
-          continue;
-        }
-        // Recursively sync subdirectories
-        const subFilesProcessed = await this.syncDirectory(
-          srcPath,
-          join(targetDir, item),
-          join(relativePath, item),
-          pkg,
-          upstreamCommit
-        );
-        filesProcessed += subFilesProcessed;
-        continue;
-      }
-
-      // Only process .js and .jsx files
-      if (!item.endsWith('.js') && !item.endsWith('.jsx')) {
-        continue;
-      }
-
-      this.result.filesChecked++;
-      filesProcessed++;
-
-      // Read source
-      let sourceContent = await readFile(srcPath, 'utf-8');
-
-      // Apply all standard transformations
-      const transformPipeline = createPieLibTransformPipeline();
-      sourceContent = transformPipeline(sourceContent, srcPath);
-
-      const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
-
-      // Convert .js → .ts/.tsx and .jsx → .tsx
-      const targetFile = item.replace(/\.jsx?$/, hasJsx ? '.tsx' : '.ts');
-      const targetPath = join(targetDir, targetFile);
-
-      // Convert based on file extension
-      const conversionResult = hasJsx
-        ? convertJsxToTsx(sourceContent, {
-            sourcePath: `pie-lib/packages/${pkg}/${relativePath}/${item}`,
-            commit: upstreamCommit,
-          })
-        : convertJsToTs(sourceContent, {
-            sourcePath: `pie-lib/packages/${pkg}/${relativePath}/${item}`,
-            commit: upstreamCommit,
-          });
-
-      let converted = conversionResult.code;
-
-      // Track files that export default objects (for import fixing later)
-      if (conversionResult.hasDefaultObjectExport) {
-        // Store the file name without extension for import matching
-        const fileNameWithoutExt = targetFile.replace(/\.(ts|tsx)$/, '');
-        defaultExportFiles.add(fileNameWithoutExt);
-      }
-
-      // Check if different
-      // NOTE: This comparison is exact (===) to ensure any changes in:
-      // - Upstream source code
-      // - Transformation logic (lodash-es, event packages, etc.)
-      // - Sync version (tracked in @sync-version header)
-      // will trigger a file update. This prioritizes correctness over speed.
-      const isNew = !existsSync(targetPath);
-      if (!isNew) {
-        const currentContent = await readFile(targetPath, 'utf-8');
-        if (currentContent === converted) {
-          this.result.filesSkipped++;
-          continue;
-        }
-        this.result.filesUpdated++;
-      } else {
-        this.result.filesCopied++;
-      }
-
-      // Write
-      await mkdir(dirname(targetPath), { recursive: true });
-      await writeFile(targetPath, converted, 'utf-8');
-    }
-
-    // After all files are synced, fix import statements in consuming files
-    if (defaultExportFiles.size > 0) {
-      const targetDirItems = await readdir(targetDir);
-      for (const item of targetDirItems) {
-        const itemPath = join(targetDir, item);
-        const stat = await fsStat(itemPath);
-        if (stat.isFile() && (item.endsWith('.tsx') || item.endsWith('.ts'))) {
-          await fixImportsInFile(itemPath, defaultExportFiles);
-        }
-      }
-    }
-
-    return filesProcessed;
+    return stats.filesProcessed;
   }
 
   /**
