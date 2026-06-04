@@ -45,7 +45,7 @@ export default defineConfig(({ mode, command }) => {
           id === '@mdi/react' || /^@mdi\/react\//.test(id) ||
           id === '@mdi/js' || /^@mdi\/js\//.test(id) ||
           id === 'recharts' || /^recharts\//.test(id) ||
-          ['prop-types','classnames','debug','i18next','humps','mathjs','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
+          ['prop-types','debug','i18next','humps','mathjs','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
         );
       },
       output: {

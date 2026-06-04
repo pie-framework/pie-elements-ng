@@ -31,6 +31,7 @@ describe('generatePieLibViteConfig presets', () => {
     expect(config).toContain('/^@tiptap\\//.test(id)');
     expect(config).not.toContain("id === 'lodash-es'");
     expect(config).not.toContain('^lodash-es');
+    expect(config).not.toContain("'classnames'");
     expect(config).toContain("'mathjs'");
   });
 
@@ -70,6 +71,8 @@ describe('generated Vite externals', () => {
     expect(isExternal('@pie-element/shared-lodash', 'pielib')).toBe(true);
     expect(isExternal('@mdi/react', 'pielib')).toBe(true);
     expect(isExternal('recharts/lib/chart', 'element')).toBe(true);
+    expect(isExternal('classnames', 'element')).toBe(false);
+    expect(createExternalFunction('element')).not.toContain("'classnames'");
     expect(isExternal('local-only-package', 'element')).toBe(false);
   });
 });

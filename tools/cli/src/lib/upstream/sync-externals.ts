@@ -11,7 +11,7 @@
  * Categories of externals:
  * 1. Framework peer dependencies (React, MUI, Emotion) - MUST be external to avoid duplicate instances
  * 2. Internal monorepo packages (@pie-lib, @pie-element) - External for separate resolution
- * 3. Utility libraries (prop-types, classnames, debug) - External to reduce duplication across packages
+ * 3. Utility libraries (prop-types, debug) - External to reduce duplication across packages
  * 4. Specialized UI libraries (@dnd-kit, react-transition-group, styled-components) - External to avoid version conflicts
  * 5. D3 modules - External as they're commonly shared
  */
@@ -55,7 +55,6 @@ export function isExternal(id: string, _variant: 'element' | 'pielib'): boolean 
   // Common utility and UI libraries - always external
   const commonExternals = [
     'prop-types', // React prop validation
-    'classnames', // CSS class utility
     'debug', // Debug logging
     'i18next', // Internationalization
     'humps', // String case conversion
@@ -83,7 +82,6 @@ export function createExternalFunction(
 ): string {
   const sharedExternals = [
     'prop-types',
-    'classnames',
     'debug',
     'i18next',
     'humps',
@@ -150,7 +148,7 @@ export function createKonvaExternalFunction(): string {
         // Material Design Icons for drawing-response
         if (id === '@mdi/react' || id.startsWith('@mdi/react/')) return true;
         if (id === '@mdi/js' || id.startsWith('@mdi/js/')) return true;
-        if (['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)) return true;
+        if (['prop-types', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)) return true;
 
         // Everything else gets bundled (including dependencies of konva/react-konva)
         return false;
