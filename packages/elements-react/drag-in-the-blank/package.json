@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/drag-in-the-blank",
-  "version": "10.1.2-next.0",
+  "version": "10.1.2-next.1",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

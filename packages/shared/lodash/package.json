@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-lodash",
-  "version": "0.1.0",
+  "version": "0.1.1-next.0",
   "description": "Vendored lodash helper subset for PIE elements",
   "type": "module",
   "main": "./dist/index.js",
