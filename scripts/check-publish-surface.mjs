@@ -220,6 +220,15 @@ const collectBareImportSpecifiers = (source) => {
   return specifiers;
 };
 
+const browserSharedDependencyForSpecifier = (specifier) => {
+  for (const dependencyName of Object.keys(expectedBrowserSharedDependencies)) {
+    if (specifier === dependencyName || specifier.startsWith(`${dependencyName}/`)) {
+      return dependencyName;
+    }
+  }
+  return null;
+};
+
 const collectBrowserEsmViolations = (dir, pkg) => {
   const browserExports = Object.entries(pkg.exports ?? {}).filter(([key]) =>
     key.startsWith('./browser/')
@@ -230,16 +239,6 @@ const collectBrowserEsmViolations = (dir, pkg) => {
 
   const violations = [];
   const browserSharedDependencies = pkg.pie?.browserSharedDependencies;
-  for (const [dependencyName, expectedVersion] of Object.entries(
-    expectedBrowserSharedDependencies
-  )) {
-    const actualVersion = browserSharedDependencies?.[dependencyName];
-    if (actualVersion !== expectedVersion) {
-      violations.push(
-        `pie.browserSharedDependencies.${dependencyName} must be "${expectedVersion}" for browser ESM packages`
-      );
-    }
-  }
 
   for (const [key, value] of browserExports) {
     const target = typeof value === 'string' ? value : value?.default;
@@ -256,6 +255,7 @@ const collectBrowserEsmViolations = (dir, pkg) => {
 
   const browserDir = path.join(dir, 'dist/browser');
   let browserJsBytes = 0;
+  const requiredBrowserSharedDependencies = new Set();
   const jsFiles = collectPackageJsFiles(browserDir);
   for (const filePath of jsFiles) {
     browserJsBytes += readFileSync(filePath).byteLength;
@@ -264,6 +264,11 @@ const collectBrowserEsmViolations = (dir, pkg) => {
       if (!allowedBrowserBareImports.has(specifier)) {
         const relPath = toPosix(path.relative(dir, filePath));
         violations.push(`${relPath} contains unsupported bare browser import "${specifier}"`);
+        continue;
+      }
+      const sharedDependency = browserSharedDependencyForSpecifier(specifier);
+      if (sharedDependency) {
+        requiredBrowserSharedDependencies.add(sharedDependency);
       }
     }
     if (source.includes('customElements.define')) {
@@ -275,6 +280,16 @@ const collectBrowserEsmViolations = (dir, pkg) => {
     violations.push(
       `dist/browser JS size ${browserJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
     );
+  }
+
+  for (const dependencyName of requiredBrowserSharedDependencies) {
+    const expectedVersion = expectedBrowserSharedDependencies[dependencyName];
+    const actualVersion = browserSharedDependencies?.[dependencyName];
+    if (actualVersion !== expectedVersion) {
+      violations.push(
+        `pie.browserSharedDependencies.${dependencyName} must be "${expectedVersion}" for browser ESM packages`
+      );
+    }
   }
 
   return violations;

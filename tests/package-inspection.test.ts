@@ -150,4 +150,58 @@ describe('package inspection quality-gate helpers', () => {
       'non-browser-ESM element packages must expose exports["./runtime-support"] marking esm unsupported'
     );
   });
+
+  it('requires browser shared dependency metadata only for browser outputs that import it', async () => {
+    const root = await makeWorkspaceFixture();
+    const svelteDir = join(root, 'packages', 'elements-svelte', 'simple-cloze');
+    const reactDir = join(root, 'packages', 'elements-react', 'react-element');
+    await mkdir(join(svelteDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await mkdir(join(reactDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await writeFile(
+      join(svelteDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'export default class SimpleClozeElement extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(
+      join(reactDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'import React from "react"; export default class ReactElement extends HTMLElement {}\n',
+      'utf8'
+    );
+
+    const basePackage = {
+      version: '1.0.0',
+      files: ['dist'],
+      exports: {
+        './browser/delivery': {
+          default: './dist/browser/delivery/index.js',
+        },
+      },
+    };
+
+    const svelteViolations = collectPublishSurfaceViolations({
+      dir: svelteDir,
+      relativeDir: 'packages/elements-svelte/simple-cloze',
+      pkg: {
+        ...basePackage,
+        name: '@pie-element/simple-cloze',
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+    });
+    const reactViolations = collectPublishSurfaceViolations({
+      dir: reactDir,
+      relativeDir: 'packages/elements-react/react-element',
+      pkg: {
+        ...basePackage,
+        name: '@pie-element/react-element',
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+    });
+
+    expect(svelteViolations).not.toContain(
+      'pie.browserSharedDependencies.react must be "18.2.0" for browser ESM packages'
+    );
+    expect(reactViolations).toContain(
+      'pie.browserSharedDependencies.react must be "18.2.0" for browser ESM packages'
+    );
+  });
 });

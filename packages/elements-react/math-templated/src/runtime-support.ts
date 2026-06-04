@@ -3,9 +3,9 @@ export const runtimeSupport = {
   packageName: '@pie-element/math-templated',
   supports: {
     esm: {
-      delivery: false,
-      author: false,
-      print: false,
+      delivery: true,
+      author: true,
+      print: true,
     },
   },
 };

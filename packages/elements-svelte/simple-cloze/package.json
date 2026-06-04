@@ -18,6 +18,9 @@
       "types": "./dist/delivery/index.d.ts",
       "default": "./dist/delivery/index.js"
     },
+    "./browser/delivery": {
+      "default": "./dist/browser/delivery/index.js"
+    },
     "./controller": {
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
@@ -26,9 +29,15 @@
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
     },
+    "./browser/controller": {
+      "default": "./dist/browser/controller/index.js"
+    },
     "./author": {
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"
+    },
+    "./browser/author": {
+      "default": "./dist/browser/author/index.js"
     },
     "./configure": {
       "types": "./dist/author/index.d.ts",
@@ -37,6 +46,9 @@
     "./print": {
       "types": "./dist/print/index.d.ts",
       "default": "./dist/print/index.js"
+    },
+    "./browser/print": {
+      "default": "./dist/browser/print/index.js"
     },
     "./runtime-support": {
       "types": "./dist/runtime-support.d.ts",
@@ -50,7 +62,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
+    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
     "dev": "vite",
     "demo": "vite --mode demo",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"

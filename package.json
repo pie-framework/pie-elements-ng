@@ -25,7 +25,7 @@
     "postinstall": "lefthook install",
     "hooks:install": "lefthook install",
     "dev": "turbo run dev",
-    "build": "turbo run build --filter=!@pie-element/math-inline --filter=!@pie-element/math-templated",
+    "build": "turbo run build",
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:watch": "vitest watch",

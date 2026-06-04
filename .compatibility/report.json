@@ -28,32 +28,21 @@
     "likert",
     "match",
     "match-list",
+    "math-inline",
+    "math-templated",
     "matrix",
+    "mc-populated-blank",
     "multi-trait-rubric",
     "multiple-choice",
     "number-line",
     "passage",
     "placement-ordering",
     "rubric",
-    "select-text"
+    "select-text",
+    "simple-cloze",
+    "venn-classification"
   ],
-  "browserEsmUnsupported": {
-    "math-inline": {
-      "reason": "Excluded from the root build and marked private; not publishable until math browser/runtime packaging is restored"
-    },
-    "math-templated": {
-      "reason": "Excluded from the root build and marked private; not publishable until math browser/runtime packaging is restored"
-    },
-    "mc-populated-blank": {
-      "reason": "Svelte element not yet built for the shared React browser ESM policy; publishes ./runtime-support with supports.esm.* = false"
-    },
-    "simple-cloze": {
-      "reason": "Svelte element not yet built for the shared React browser ESM policy; publishes ./runtime-support with supports.esm.* = false"
-    },
-    "venn-classification": {
-      "reason": "Svelte element not yet built for the shared React browser ESM policy; publishes ./runtime-support with supports.esm.* = false"
-    }
-  },
+  "browserEsmUnsupported": {},
   "verification": {
     "requiredCommand": "bun run verify:element-contracts",
     "checks": [
@@ -67,6 +56,10 @@
   },
   "releaseSmokeMatrix": [
     "ESM delivery for multiple-choice",
+    "ESM delivery for math-inline",
+    "ESM delivery for mc-populated-blank",
+    "ESM delivery for simple-cloze",
+    "ESM delivery for venn-classification",
     "ESM author view for one browser-ready React element",
     "ESM print or fallback path for one browser-ready React element",
     "ESM passage plus interaction item",

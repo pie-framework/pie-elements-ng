@@ -18,12 +18,8 @@ export const WORKSPACE = {
 } as const;
 
 // Upstream element packages intentionally excluded from sync.
-// These templates are not used in pie-elements-ng runtime or are temporarily disabled.
-export const EXCLUDED_UPSTREAM_ELEMENTS = [
-  'boilerplate-item-type',
-  'math-inline',
-  'math-templated',
-] as const;
+// These templates are not used in pie-elements-ng runtime.
+export const EXCLUDED_UPSTREAM_ELEMENTS = ['boilerplate-item-type'] as const;
 
 // Upstream @pie-lib packages intentionally excluded from sync.
 // These are owned locally in pie-elements-ng while ESM/math behavior is stabilized.
