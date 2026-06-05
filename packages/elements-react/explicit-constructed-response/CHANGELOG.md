@@ -1,5 +1,11 @@
 # @pie-element/explicit-constructed-response
 
+## 11.1.2-next.4
+
+### Patch Changes
+
+- Trigger another prerelease patch for all PIE element packages.
+
 ## 11.1.2-next.3
 
 ### Patch Changes

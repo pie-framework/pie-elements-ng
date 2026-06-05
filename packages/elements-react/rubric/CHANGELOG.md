@@ -1,5 +1,11 @@
 # @pie-element/rubric
 
+## 8.1.2-next.4
+
+### Patch Changes
+
+- Trigger another prerelease patch for all PIE element packages.
+
 ## 8.1.2-next.3
 
 ### Patch Changes

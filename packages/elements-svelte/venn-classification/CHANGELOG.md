@@ -1,5 +1,11 @@
 # @pie-element/venn-classification
 
+## 0.1.1-next.3
+
+### Patch Changes
+
+- Trigger another prerelease patch for all PIE element packages.
+
 ## 0.1.1-next.2
 
 ### Patch Changes

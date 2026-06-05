@@ -1,5 +1,11 @@
 # @pie-element/extended-text-entry
 
+## 15.1.2-next.4
+
+### Patch Changes
+
+- Trigger another prerelease patch for all PIE element packages.
+
 ## 15.1.2-next.3
 
 ### Patch Changes

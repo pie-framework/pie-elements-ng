@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/complex-rubric",
-  "version": "7.1.2-next.3",
+  "version": "7.1.2-next.4",
   "description": "Complex Rubric Scoring Interaction",
   "dependencies": {
     "@emotion/react": "^11.14.0",
