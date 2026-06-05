@@ -6,6 +6,10 @@ import { defineConfig, esmExternalRequirePlugin } from 'vite';
 import { browserCjsRequireInteropPlugin } from './browser-cjs-require-interop.ts';
 
 const packageDir = process.cwd();
+const packageJson = JSON.parse(readFileSync(resolve(packageDir, 'package.json'), 'utf-8')) as {
+  name?: string;
+  version?: string;
+};
 const configDir = dirname(fileURLToPath(import.meta.url));
 const policyPath = resolve(configDir, 'browser-esm-policy.json');
 const browserEsmPolicy = JSON.parse(readFileSync(policyPath, 'utf-8')) as {
@@ -42,18 +46,11 @@ export default defineConfig({
     esmExternalRequirePlugin({
       external: allowedBareImportSpecifiers,
     }),
-    {
-      name: 'pie-browser-player-owned-registration',
-      transform(code) {
-        if (!code.includes('customElements.define(')) {
-          return null;
-        }
-        return code.replaceAll('customElements.define(', 'void (');
-      },
-    },
     react(),
   ],
   define: {
+    __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
+    __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
     'process.env.NODE_ENV': JSON.stringify('production'),
   },
   build: {

@@ -229,6 +229,16 @@ const browserSharedDependencyForSpecifier = (specifier) => {
   return null;
 };
 
+const getPackageSlug = (pkg) =>
+  typeof pkg.name === 'string' ? pkg.name.replace(/^@pie-element\//, '') : null;
+
+const hasPublicElementAutoRegistration = (source, pkg) => {
+  const slug = getPackageSlug(pkg);
+  if (!slug) return false;
+  const publicTag = `${slug}-element`;
+  return new RegExp(`customElements\\.define\\(\\s*['"]${publicTag}['"]`).test(source);
+};
+
 const collectBrowserEsmViolations = (dir, pkg) => {
   const browserExports = Object.entries(pkg.exports ?? {}).filter(([key]) =>
     key.startsWith('./browser/')
@@ -271,9 +281,9 @@ const collectBrowserEsmViolations = (dir, pkg) => {
         requiredBrowserSharedDependencies.add(sharedDependency);
       }
     }
-    if (source.includes('customElements.define')) {
+    if (hasPublicElementAutoRegistration(source, pkg)) {
       const relPath = toPosix(path.relative(dir, filePath));
-      violations.push(`${relPath} must not auto-register a custom element`);
+      violations.push(`${relPath} must not auto-register the public element tag`);
     }
   }
   if (maxBrowserJsBytesPerPackage > 0 && browserJsBytes > maxBrowserJsBytesPerPackage) {

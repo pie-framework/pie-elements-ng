@@ -35,7 +35,23 @@ When a helper is exported, its name and behavior are public API. Do not rename o
 
 ### Custom Element Runtime
 
-Published element view modules export custom element classes. They must not register tags at package import time. Runtime registration belongs to the player or host.
+Published element view modules export custom element classes. They must not
+register their authored top-level PIE tag at package import time. Runtime
+registration of authored item tags belongs to the player or host.
+
+If a package renders private child custom elements inside its own implementation,
+the package's browser artifact must define those private child tags itself before
+the first render depends on them. Private child tags are not authored content
+dependencies and players must not discover them from package dependencies, DOM
+snippets, or element-specific knowledge.
+
+Private child tag names are global custom element names, so packages must scope
+them by the owning package version (for example with a `--version-<encoded>`
+suffix), use the same scoped name for registration and rendering, and keep
+registration idempotent with `customElements.get(...)` guards. This preserves
+side-by-side loading of multiple package versions and mirrors the IIFE behavior
+where private child implementations are resolved from the owning package's
+dependency tree at build time.
 
 Players set data via properties, not attributes:
 

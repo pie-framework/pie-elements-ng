@@ -95,8 +95,18 @@ The shared browser ESM config in `tools/vite/element-browser.config.ts` runs fro
 the element package directory. It discovers existing `src/delivery`,
 `src/author`, `src/print`, and `src/controller` entries, writes them to
 `dist/browser`, and only externalizes bare imports listed in
-`tools/vite/browser-esm-policy.json`. It also strips package-time custom element
-registration because players own tag registration.
+`tools/vite/browser-esm-policy.json`. It injects the owning package name/version
+as build-time constants so browser artifacts can derive deterministic,
+version-scoped private child custom element tags.
+
+Browser ESM keeps the same registration boundary as the runtime contract:
+players own authored top-level PIE tag registration, while an element package
+owns the package-private child custom elements it renders internally. This is
+why private child definitions such as EBSR's multiple-choice parts are kept in
+the browser artifact instead of being discovered by `pie-players` at runtime.
+Whether or not EBSR's "two multiple-choice children" design is the ideal
+architecture, it is the behavior that existing IIFE bundles have shipped for a
+long time, so browser ESM must support it for compatibility.
 
 ### Browser ESM CommonJS Interop
 

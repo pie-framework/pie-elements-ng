@@ -17,10 +17,14 @@ import debug from 'debug';
 import { defaults } from '@pie-element/shared-lodash';
 import Main from './main.js';
 import sensibleDefaults from './defaults.js';
+import {
+  COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,
+  COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,
+} from '../private-tags.js';
 
 const MODEL_UPDATED = ModelUpdatedEvent.TYPE;
-const RUBRIC_TAG_NAME = 'rubric-configure';
-const MULTI_TRAIT_RUBRIC_TAG_NAME = 'multi-trait-rubric-configure';
+const RUBRIC_TAG_NAME = COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG;
+const MULTI_TRAIT_RUBRIC_TAG_NAME = COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG;
 
 class ComplexSimpleRubricConfigure extends RubricConfigure {}
 
@@ -159,8 +163,10 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     let element = React.createElement(Main, {
       model: this._model,
       configuration: this._configuration,
+      multiTraitRubricTagName: MULTI_TRAIT_RUBRIC_TAG_NAME,
       onModelChanged: this.onModelChanged,
       onConfigurationChanged: this.onConfigurationChanged,
+      simpleRubricTagName: RUBRIC_TAG_NAME,
       canUpdateModel: this.canUpdateModel
     });
 

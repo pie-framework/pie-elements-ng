@@ -204,4 +204,66 @@ describe('package inspection quality-gate helpers', () => {
       'pie.browserSharedDependencies.react must be "18.2.0" for browser ESM packages'
     );
   });
+
+  it('allows browser ESM packages to register private child custom elements only', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'composite');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'customElements.define("composite-private-child--version-1-0-0", class extends HTMLElement {});\n',
+      'utf8'
+    );
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/composite',
+      pkg: {
+        name: '@pie-element/composite',
+        version: '1.0.0',
+        files: ['dist'],
+        exports: {
+          './browser/delivery': {
+            default: './dist/browser/delivery/index.js',
+          },
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+    });
+
+    expect(violations).not.toContain(
+      'dist/browser/delivery/index.js must not auto-register the public element tag'
+    );
+  });
+
+  it('rejects browser ESM packages that register their public element tag', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'public-registering');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'customElements.define("public-registering-element", class extends HTMLElement {});\n',
+      'utf8'
+    );
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/public-registering',
+      pkg: {
+        name: '@pie-element/public-registering',
+        version: '1.0.0',
+        files: ['dist'],
+        exports: {
+          './browser/delivery': {
+            default: './dist/browser/delivery/index.js',
+          },
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+    });
+
+    expect(violations).toContain(
+      'dist/browser/delivery/index.js must not auto-register the public element tag'
+    );
+  });
 });

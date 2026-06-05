@@ -11,9 +11,10 @@
 import Rubric from '@pie-element/rubric';
 import MultiTraitRubric from '@pie-element/multi-trait-rubric';
 import { RUBRIC_TYPES } from '@pie-lib/rubric';
+import { COMPLEX_RUBRIC_MULTI_TRAIT_TAG, COMPLEX_RUBRIC_SIMPLE_TAG } from '../private-tags.js';
 
-const RUBRIC_TAG_NAME = 'complex-rubric-simple';
-const MULTI_TRAIT_RUBRIC_TAG_NAME = 'complex-rubric-multi-trait';
+const RUBRIC_TAG_NAME = COMPLEX_RUBRIC_SIMPLE_TAG;
+const MULTI_TRAIT_RUBRIC_TAG_NAME = COMPLEX_RUBRIC_MULTI_TRAIT_TAG;
 
 class ComplexRubricSimple extends Rubric {}
 
