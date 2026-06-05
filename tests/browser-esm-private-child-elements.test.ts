@@ -1,9 +1,7 @@
-import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { globSync } from 'glob';
-import { beforeAll } from 'vitest';
 
 type PrivateChildCase = {
   slug: string;
@@ -60,15 +58,6 @@ async function importBuiltView(path: string): Promise<void> {
 
 describe('browser ESM private child custom elements', () => {
   const root = process.cwd();
-
-  beforeAll(() => {
-    for (const { slug } of cases) {
-      execFileSync('bun', ['run', '--cwd', `packages/elements-react/${slug}`, 'build'], {
-        cwd: root,
-        stdio: 'pipe',
-      });
-    }
-  }, 60_000);
 
   test('shared browser build preserves package-owned private child registration', async () => {
     const browserConfig = await readFile(
