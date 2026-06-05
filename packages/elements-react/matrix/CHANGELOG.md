@@ -1,5 +1,11 @@
 # @pie-element/matrix
 
+## 4.1.2-next.3
+
+### Patch Changes
+
+- Trigger the next prerelease patch for all PIE element packages.
+
 ## 4.1.2-next.2
 
 ### Patch Changes

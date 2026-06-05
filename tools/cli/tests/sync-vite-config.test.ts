@@ -54,6 +54,13 @@ describe('generatePieLibViteConfig presets', () => {
     const config = generateElementViteConfig({ index: 'src/index.ts' });
     expect(config).toContain("'mathjs'");
   });
+
+  it('injects package metadata for version-scoped private custom elements', () => {
+    const config = generateElementViteConfig({ index: 'src/index.ts' });
+    expect(config).toContain("readFileSync(resolve(__dirname, 'package.json')");
+    expect(config).toContain('__PIE_PACKAGE_NAME__');
+    expect(config).toContain('__PIE_PACKAGE_VERSION__');
+  });
 });
 
 describe('generated Vite externals', () => {

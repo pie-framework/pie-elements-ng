@@ -1,5 +1,11 @@
 # @pie-element/math-inline
 
+## 12.1.1-next.13
+
+### Patch Changes
+
+- Trigger the next prerelease patch for all PIE element packages.
+
 ## 12.1.1-next.12
 
 ### Patch Changes

@@ -13,7 +13,6 @@ import MultipleChoice from '@pie-element/multiple-choice';
 import debug from 'debug';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';
-
 const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;
 const SESSION_CHANGED = SessionChangedEvent.TYPE;
 import Translator from '@pie-lib/translator';

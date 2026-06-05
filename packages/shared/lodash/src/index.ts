@@ -256,6 +256,15 @@ export function forEach<T>(
 }
 
 export function get(object: unknown, path: string | number | Array<string | number>, defaultValue?: unknown): any {
+  if (
+    !Array.isArray(path) &&
+    object != null &&
+    Object.prototype.hasOwnProperty.call(Object(object), path)
+  ) {
+    const directValue = (object as any)[path as any];
+    return directValue === undefined ? defaultValue : directValue;
+  }
+
   let current = object as any;
   for (const key of toPath(path)) {
     if (current == null) return defaultValue;

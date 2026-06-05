@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/hotspot",
-  "version": "11.1.2-next.2",
+  "version": "11.1.2-next.3",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

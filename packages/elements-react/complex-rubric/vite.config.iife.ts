@@ -60,9 +60,9 @@ export default defineConfig({
     react(),
   ],
   define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
     __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
     __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
-    'process.env.NODE_ENV': JSON.stringify('production'),
   },
   build: {
     emptyOutDir: false, // Don't wipe existing ESM builds

@@ -1,5 +1,11 @@
 # @pie-element/fraction-model
 
+## 6.1.2-next.3
+
+### Patch Changes
+
+- Trigger the next prerelease patch for all PIE element packages.
+
 ## 6.1.2-next.2
 
 ### Patch Changes

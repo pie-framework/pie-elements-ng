@@ -1,5 +1,13 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.3
+
+### Patch Changes
+
+- Trigger the next prerelease patch for all PIE element packages.
+- Updated dependencies
+  - @pie-element/multiple-choice@13.2.2-next.3
+
 ## 14.2.2-next.2
 
 ### Patch Changes

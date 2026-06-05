@@ -100,6 +100,16 @@ describe('vendored lodash helpers', () => {
     expect(deep).toEqual(source);
   });
 
+  it('matches lodash get by preferring literal dotted keys before path traversal', () => {
+    const source = {
+      'partA.choiceMode': { label: 'Choice mode' },
+      partA: { choiceMode: 'radio' },
+    };
+
+    expect(get(source, 'partA.choiceMode')).toEqual({ label: 'Choice mode' });
+    expect(get(source, ['partA', 'choiceMode'])).toBe('radio');
+  });
+
   it('implements equality and collection helpers', () => {
     expect(isEqual({ a: [1, 2] }, { a: [1, 2] })).toBe(true);
     expect(isEqualWith(1, '1', (a, b) => String(a) === String(b))).toBe(true);

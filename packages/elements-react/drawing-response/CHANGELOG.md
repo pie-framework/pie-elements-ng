@@ -1,5 +1,11 @@
 # @pie-element/drawing-response
 
+## 12.1.2-next.3
+
+### Patch Changes
+
+- Trigger the next prerelease patch for all PIE element packages.
+
 ## 12.1.2-next.2
 
 ### Patch Changes

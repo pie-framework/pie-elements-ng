@@ -1,5 +1,14 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.3
+
+### Patch Changes
+
+- Trigger the next prerelease patch for all PIE element packages.
+- Updated dependencies
+  - @pie-element/multi-trait-rubric@8.1.2-next.3
+  - @pie-element/rubric@8.1.2-next.3
+
 ## 7.1.2-next.2
 
 ### Patch Changes

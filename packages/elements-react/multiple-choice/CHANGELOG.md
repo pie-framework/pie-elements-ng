@@ -1,5 +1,11 @@
 # @pie-element/multiple-choice
 
+## 13.2.2-next.3
+
+### Patch Changes
+
+- Trigger the next prerelease patch for all PIE element packages.
+
 ## 13.2.2-next.2
 
 ### Patch Changes

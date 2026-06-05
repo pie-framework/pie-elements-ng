@@ -30,6 +30,24 @@ interface InternalSyncResult {
   filesUpdated: number;
 }
 
+interface PrivateTagConstant {
+  name: string;
+  tag: string;
+}
+
+const PRIVATE_CHILD_TAGS: Record<string, PrivateTagConstant[]> = {
+  ebsr: [
+    { name: 'EBSR_MULTIPLE_CHOICE_TAG', tag: 'ebsr-multiple-choice' },
+    { name: 'EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG', tag: 'ebsr-multiple-choice-configure' },
+  ],
+  'complex-rubric': [
+    { name: 'COMPLEX_RUBRIC_SIMPLE_TAG', tag: 'complex-rubric-simple' },
+    { name: 'COMPLEX_RUBRIC_MULTI_TRAIT_TAG', tag: 'complex-rubric-multi-trait' },
+    { name: 'COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG', tag: 'rubric-configure' },
+    { name: 'COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG', tag: 'multi-trait-rubric-configure' },
+  ],
+};
+
 export function collectElementViteEntryPoints(elementDir: string): Record<string, string> {
   return collectEntryPoints(elementDir, [
     ['index', 'src/index'],
@@ -205,6 +223,8 @@ export class ReactComponentsStrategy implements SyncStrategy {
         elementFilesProcessed += printFilesProcessed;
       }
 
+      const wrotePrivateChildSupport = await this.ensurePrivateChildElementSupport(pkg, targetDir);
+
       // Generate src/index.ts that re-exports from delivery/
       const mainIndexPath = join(targetDir, 'src/index.ts');
       const mainIndexContent = `export { default } from './delivery/index.js';\n`;
@@ -257,7 +277,7 @@ export class ReactComponentsStrategy implements SyncStrategy {
         await seedContractForElement(packageInfo, config.pieElementsNg, { refresh: true });
       }
 
-      if (elementChanged || wrotePkgJson || wroteTsConfig) {
+      if (elementChanged || wrotePrivateChildSupport || wrotePkgJson || wroteTsConfig) {
         this.touchedElementPackages.add(pkg);
       }
     }
@@ -401,6 +421,281 @@ export class ReactComponentsStrategy implements SyncStrategy {
     }
 
     return filesProcessed;
+  }
+
+  private async ensurePrivateChildElementSupport(
+    pkg: string,
+    elementDir: string
+  ): Promise<boolean> {
+    const tags = PRIVATE_CHILD_TAGS[pkg];
+    if (!tags) {
+      return false;
+    }
+
+    let changed = await this.ensurePrivateTagsFile(elementDir, tags);
+
+    if (pkg === 'ebsr') {
+      changed = (await this.ensureEbsrPrivateChildReferences(elementDir)) || changed;
+    }
+
+    if (pkg === 'complex-rubric') {
+      changed = (await this.ensureComplexRubricPrivateChildReferences(elementDir)) || changed;
+    }
+
+    return changed;
+  }
+
+  private async ensurePrivateTagsFile(
+    elementDir: string,
+    tags: PrivateTagConstant[]
+  ): Promise<boolean> {
+    const privateTagsPath = join(elementDir, 'src/private-tags.ts');
+    const exports = tags.map(
+      ({ name, tag }) => `export const ${name} = \`${tag}\${ownerVersionSuffix}\`;`
+    );
+    const content = `declare const __PIE_PACKAGE_VERSION__: string | undefined;
+
+const encodeVersionForTag = (version: string): string =>
+  version
+    .trim()
+    .toLowerCase()
+    .replace(/[.+]/g, '-')
+    .replace(/[^0-9A-Za-z-]/g, '-')
+    .replace(/-{2,}/g, '-');
+
+const ownerVersion =
+  typeof __PIE_PACKAGE_VERSION__ === 'string' && __PIE_PACKAGE_VERSION__.trim()
+    ? __PIE_PACKAGE_VERSION__
+    : 'local';
+const ownerVersionSuffix = \`--version-\${encodeVersionForTag(ownerVersion)}\`;
+
+${exports.join('\n')}
+`;
+
+    const current = existsSync(privateTagsPath)
+      ? await readFile(privateTagsPath, 'utf-8').catch(() => null)
+      : null;
+    if (current === content) {
+      return false;
+    }
+
+    await mkdir(dirname(privateTagsPath), { recursive: true });
+    await writeFile(privateTagsPath, content, 'utf-8');
+    return true;
+  }
+
+  private async ensureEbsrPrivateChildReferences(elementDir: string): Promise<boolean> {
+    let changed = false;
+
+    changed =
+      (await this.replaceInSyncedFile(join(elementDir, 'src/delivery/index.tsx'), [
+        {
+          from: "import debug from 'debug';\n",
+          to: "import debug from 'debug';\nimport { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';\n",
+        },
+        {
+          from: "const MC_TAG_NAME = 'ebsr-multiple-choice';",
+          to: 'const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;',
+        },
+      ])) || changed;
+
+    changed =
+      (await this.replaceInSyncedFile(join(elementDir, 'src/print/index.tsx'), [
+        {
+          from: "import { SessionChangedEvent } from '@pie-element/shared-player-events';\n",
+          to: "import { SessionChangedEvent } from '@pie-element/shared-player-events';\nimport { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';\n",
+        },
+        {
+          from: "const MC_TAG_NAME = 'ebsr-multiple-choice';",
+          to: 'const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;',
+        },
+      ])) || changed;
+
+    changed =
+      (await this.replaceInSyncedFile(join(elementDir, 'src/author/index.ts'), [
+        {
+          from: "import Main from './main';\n",
+          to: "import Main from './main';\nimport { EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG } from '../private-tags.js';\n",
+        },
+        {
+          from: "const MC_TAG_NAME = 'ebsr-multiple-choice-configure';",
+          to: 'const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG;',
+        },
+        {
+          from: '      configuration: this._configuration,\n',
+          to: '      configuration: this._configuration,\n      multipleChoiceTagName: MC_TAG_NAME,\n',
+        },
+      ])) || changed;
+
+    changed =
+      (await this.replaceInSyncedFile(join(elementDir, 'src/author/main.tsx'), [
+        {
+          from: "import { styled } from '@mui/material/styles';\n",
+          to: "import { styled } from '@mui/material/styles';\nimport { EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG } from '../private-tags.js';\n",
+        },
+        {
+          from: `    configuration: PropTypes.object,
+    model: PropTypes.object,
+    onModelChanged: PropTypes.func,
+    onConfigurationChanged: PropTypes.func,`,
+          to: `    configuration: PropTypes.object,
+    model: PropTypes.object,
+    multipleChoiceTagName: PropTypes.string,
+    onModelChanged: PropTypes.func,
+    onConfigurationChanged: PropTypes.func,`,
+        },
+        {
+          from: '    const { model, configuration, onConfigurationChanged } = this.props;\n',
+          to: `    const {
+      model,
+      configuration,
+      multipleChoiceTagName = EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG,
+      onConfigurationChanged,
+    } = this.props;
+    const MultipleChoiceConfigureElement = multipleChoiceTagName;
+`,
+        },
+        {
+          from: '<ebsr-multiple-choice-configure',
+          to: '<MultipleChoiceConfigureElement',
+        },
+        {
+          from: '</ebsr-multiple-choice-configure>',
+          to: '</MultipleChoiceConfigureElement>',
+        },
+      ])) || changed;
+
+    return changed;
+  }
+
+  private async ensureComplexRubricPrivateChildReferences(elementDir: string): Promise<boolean> {
+    let changed = false;
+
+    changed =
+      (await this.replaceInSyncedFile(join(elementDir, 'src/delivery/index.ts'), [
+        {
+          from: "import { RUBRIC_TYPES } from '@pie-lib/rubric';\n",
+          to: "import { RUBRIC_TYPES } from '@pie-lib/rubric';\nimport { COMPLEX_RUBRIC_MULTI_TRAIT_TAG, COMPLEX_RUBRIC_SIMPLE_TAG } from '../private-tags.js';\n",
+        },
+        {
+          from: "const RUBRIC_TAG_NAME = 'complex-rubric-simple';",
+          to: 'const RUBRIC_TAG_NAME = COMPLEX_RUBRIC_SIMPLE_TAG;',
+        },
+        {
+          from: "const MULTI_TRAIT_RUBRIC_TAG_NAME = 'complex-rubric-multi-trait';",
+          to: 'const MULTI_TRAIT_RUBRIC_TAG_NAME = COMPLEX_RUBRIC_MULTI_TRAIT_TAG;',
+        },
+      ])) || changed;
+
+    changed =
+      (await this.replaceInSyncedFile(join(elementDir, 'src/print/index.ts'), [
+        {
+          from: "import { RUBRIC_TYPES } from '@pie-lib/rubric';\n",
+          to: "import { RUBRIC_TYPES } from '@pie-lib/rubric';\nimport { COMPLEX_RUBRIC_MULTI_TRAIT_TAG, COMPLEX_RUBRIC_SIMPLE_TAG } from '../private-tags.js';\n",
+        },
+        {
+          from: "const RUBRIC_TAG_NAME = 'complex-rubric-simple';",
+          to: 'const RUBRIC_TAG_NAME = COMPLEX_RUBRIC_SIMPLE_TAG;',
+        },
+        {
+          from: "const MULTI_TRAIT_RUBRIC_TAG_NAME = 'complex-rubric-multi-trait';",
+          to: 'const MULTI_TRAIT_RUBRIC_TAG_NAME = COMPLEX_RUBRIC_MULTI_TRAIT_TAG;',
+        },
+      ])) || changed;
+
+    changed =
+      (await this.replaceInSyncedFile(join(elementDir, 'src/author/index.ts'), [
+        {
+          from: "import sensibleDefaults from './defaults';\n",
+          to: "import sensibleDefaults from './defaults';\nimport {\n  COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,\n  COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,\n} from '../private-tags.js';\n",
+        },
+        {
+          from: "const RUBRIC_TAG_NAME = 'rubric-configure';",
+          to: 'const RUBRIC_TAG_NAME = COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG;',
+        },
+        {
+          from: "const MULTI_TRAIT_RUBRIC_TAG_NAME = 'multi-trait-rubric-configure';",
+          to: 'const MULTI_TRAIT_RUBRIC_TAG_NAME = COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG;',
+        },
+        {
+          from: '      configuration: this._configuration,\n',
+          to: '      configuration: this._configuration,\n      multiTraitRubricTagName: MULTI_TRAIT_RUBRIC_TAG_NAME,\n',
+        },
+        {
+          from: '      onConfigurationChanged: this.onConfigurationChanged,\n',
+          to: '      onConfigurationChanged: this.onConfigurationChanged,\n      simpleRubricTagName: RUBRIC_TAG_NAME,\n',
+        },
+      ])) || changed;
+
+    changed =
+      (await this.replaceInSyncedFile(join(elementDir, 'src/author/main.tsx'), [
+        {
+          from: "import { color } from '@pie-lib/render-ui';\n",
+          to: "import { color } from '@pie-lib/render-ui';\nimport {\n  COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,\n  COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,\n} from '../private-tags.js';\n",
+        },
+        {
+          from: `    canUpdateModel: PropTypes.bool,
+    configuration: PropTypes.object,
+    model: PropTypes.object,
+    onModelChanged: PropTypes.func,
+    onConfigurationChanged: PropTypes.func,`,
+          to: `    canUpdateModel: PropTypes.bool,
+    configuration: PropTypes.object,
+    multiTraitRubricTagName: PropTypes.string,
+    model: PropTypes.object,
+    onModelChanged: PropTypes.func,
+    onConfigurationChanged: PropTypes.func,
+    simpleRubricTagName: PropTypes.string,`,
+        },
+        {
+          from: '    const { model, configuration, canUpdateModel } = this.props;\n',
+          to: `    const {
+      model,
+      configuration,
+      canUpdateModel,
+      multiTraitRubricTagName = COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,
+      simpleRubricTagName = COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,
+    } = this.props;
+    const MultiTraitRubricConfigureElement = multiTraitRubricTagName;
+    const SimpleRubricConfigureElement = simpleRubricTagName;
+`,
+        },
+        { from: '<rubric-configure', to: '<SimpleRubricConfigureElement' },
+        { from: '</rubric-configure>', to: '</SimpleRubricConfigureElement>' },
+        { from: '<multi-trait-rubric-configure', to: '<MultiTraitRubricConfigureElement' },
+        {
+          from: '</multi-trait-rubric-configure>',
+          to: '</MultiTraitRubricConfigureElement>',
+        },
+      ])) || changed;
+
+    return changed;
+  }
+
+  private async replaceInSyncedFile(
+    filePath: string,
+    replacements: Array<{ from: string; to: string }>
+  ): Promise<boolean> {
+    if (!existsSync(filePath)) {
+      return false;
+    }
+
+    const original = await readFile(filePath, 'utf-8');
+    let next = original;
+
+    for (const { from, to } of replacements) {
+      if (!next.includes(from)) {
+        continue;
+      }
+      next = next.split(from).join(to);
+    }
+
+    if (next === original) {
+      return false;
+    }
+
+    await writeFile(filePath, next, 'utf-8');
+    return true;
   }
 
   /**
@@ -547,12 +842,22 @@ export class ReactComponentsStrategy implements SyncStrategy {
   return {`
       : `{`;
 
-    return `import { resolve } from 'node:path';
+    return `import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
+  name?: string;
+  version?: string;
+};
+
 export default defineConfig(${demoModeConfig}
   plugins: [react()],
+  define: {
+    __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
+    __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
+  },
   build: {
     lib: {
       entry: {
@@ -677,10 +982,15 @@ export default Element;
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('') + 'Element';
 
-    const config = `import { existsSync } from 'node:fs';
+    const config = `import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
+  name?: string;
+  version?: string;
+};
 
 const resolveWorkspaceEntry = (baseDir: string): string | null => {
   const candidates = ['index.ts', 'index.tsx', 'index.js', 'index.jsx'];
@@ -735,6 +1045,8 @@ export default defineConfig({
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
+    __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
+    __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
   },
   build: {
     emptyOutDir: false, // Don't wipe existing ESM builds

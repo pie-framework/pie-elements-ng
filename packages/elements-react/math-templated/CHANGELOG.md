@@ -1,5 +1,11 @@
 # @pie-element/math-templated
 
+## 7.1.1-next.13
+
+### Patch Changes
+
+- Trigger the next prerelease patch for all PIE element packages.
+
 ## 7.1.1-next.12
 
 ### Patch Changes
