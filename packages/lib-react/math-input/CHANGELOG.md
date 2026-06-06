@@ -1,5 +1,13 @@
 # @pie-lib/math-input
 
+## 8.1.1-next.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-lodash@0.1.1-next.1
+  - @pie-lib/render-ui@6.1.1-next.38
+
 ## 8.1.1-next.2
 
 ### Patch Changes

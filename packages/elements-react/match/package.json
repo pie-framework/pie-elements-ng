@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/match",
-  "version": "12.1.2-next.4",
+  "version": "12.1.2-next.5",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",

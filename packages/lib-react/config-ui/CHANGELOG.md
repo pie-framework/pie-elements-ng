@@ -1,5 +1,15 @@
 # @pie-lib/config-ui
 
+## 13.0.4-next.31
+
+### Patch Changes
+
+- Publish the fixed vendored lodash get helper through EBSR's authoring dependency graph.
+- Updated dependencies
+  - @pie-element/shared-lodash@0.1.1-next.1
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.31
+  - @pie-lib/render-ui@6.1.1-next.38
+
 ## 13.0.4-next.30
 
 ### Patch Changes

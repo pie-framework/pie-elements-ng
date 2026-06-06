@@ -1,5 +1,19 @@
 # @pie-lib/graphing
 
+## 4.0.5-next.31
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-lodash@0.1.1-next.1
+  - @pie-lib/config-ui@13.0.4-next.31
+  - @pie-lib/drag@4.0.3-next.38
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.31
+  - @pie-lib/graphing-utils@3.0.3-next.1
+  - @pie-lib/plot@4.0.4-next.31
+  - @pie-lib/render-ui@6.1.1-next.38
+  - @pie-lib/translator@4.0.3-next.1
+
 ## 4.0.5-next.30
 
 ### Patch Changes

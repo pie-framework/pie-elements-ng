@@ -1,5 +1,13 @@
 # @pie-lib/drag
 
+## 4.0.3-next.38
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-lodash@0.1.1-next.1
+  - @pie-lib/render-ui@6.1.1-next.38
+
 ## 4.0.3-next.37
 
 ### Patch Changes

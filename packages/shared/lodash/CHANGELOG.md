@@ -1,5 +1,11 @@
 # @pie-element/shared-lodash
 
+## 0.1.1-next.1
+
+### Patch Changes
+
+- Publish the fixed vendored lodash get helper through EBSR's authoring dependency graph.
+
 ## 0.1.1-next.0
 
 ### Patch Changes

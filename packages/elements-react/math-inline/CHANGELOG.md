@@ -1,5 +1,19 @@
 # @pie-element/math-inline
 
+## 12.1.1-next.15
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-lodash@0.1.1-next.1
+  - @pie-lib/config-ui@13.0.4-next.31
+  - @pie-lib/correct-answer-toggle@4.0.3-next.38
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.31
+  - @pie-lib/math-input@8.1.1-next.3
+  - @pie-lib/math-toolbar@3.0.3-next.38
+  - @pie-lib/render-ui@6.1.1-next.38
+  - @pie-lib/translator@4.0.3-next.1
+
 ## 12.1.1-next.14
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/drag",
-  "version": "4.0.3-next.37",
+  "version": "4.0.3-next.38",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

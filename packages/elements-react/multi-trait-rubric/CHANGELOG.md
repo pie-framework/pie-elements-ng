@@ -1,5 +1,16 @@
 # @pie-element/multi-trait-rubric
 
+## 8.1.2-next.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-lodash@0.1.1-next.1
+  - @pie-lib/config-ui@13.0.4-next.31
+  - @pie-lib/drag@4.0.3-next.38
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.31
+  - @pie-lib/render-ui@6.1.1-next.38
+
 ## 8.1.2-next.4
 
 ### Patch Changes

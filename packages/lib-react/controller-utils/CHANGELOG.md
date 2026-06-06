@@ -1,5 +1,12 @@
 # @pie-lib/controller-utils
 
+## 2.0.3-next.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-lodash@0.1.1-next.1
+
 ## 2.0.3-next.0
 
 ### Patch Changes

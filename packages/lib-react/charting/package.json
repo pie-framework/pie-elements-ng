@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/charting",
-  "version": "7.0.4-next.30",
+  "version": "7.0.4-next.31",
   "description": "charting",
   "dependencies": {
     "@emotion/react": "^11.14.0",

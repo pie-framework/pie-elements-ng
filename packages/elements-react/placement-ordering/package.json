@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/placement-ordering",
-  "version": "14.1.2-next.4",
+  "version": "14.1.2-next.5",
   "description": "",
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

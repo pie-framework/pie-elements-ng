@@ -1,5 +1,12 @@
 # @pie-lib/render-ui
 
+## 6.1.1-next.38
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-lodash@0.1.1-next.1
+
 ## 6.1.1-next.37
 
 ### Patch Changes
