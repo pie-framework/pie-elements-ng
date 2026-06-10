@@ -30,13 +30,16 @@
 
 /* r1.scss: .rli-r1-stem { display:flex; flex-direction:row; justify-content:center }
    r1.scss: .rli-r1-content-element { margin-right:2px; margin-left:2px } — 4px total gap.
-   column-gap:4px replicates the 2px+2px per-element margin. */
+   Apply the per-element margin to both classless tokens and the blank slot
+   (which is the cloze equivalent) so the gap stacks with whitespace text-nodes
+   between flex items the same way LSY does. Earlier this used column-gap:4px,
+   but flex column-gap accumulates with the cloze-side mx-1 and the implicit
+   whitespace, producing a wider gap than LSY shows. See CONTOOL-2569. */
 [class*="variant-sel-r1-"] .pie-template-line {
   display: flex;
   flex-direction: row;
   align-items: baseline;
   justify-content: center;
-  column-gap: 4px;
 }
 
 [class*="variant-sel-r1-"] .pie-template-line p {
@@ -44,29 +47,44 @@
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  gap: 4px;
 }
 
 /* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px; min-height:150px;
-   line-height:89px } — wraps every stem token (blank slot and adjacent inline spans) in
-   LSY, giving each a 150px box. Apply to inline tokens in all r1 variants so trailing
+   line-height:89px; margin-right:2px; margin-left:2px } — wraps every stem token
+   (blank slot and adjacent inline spans) in LSY, giving each a 150px box with a
+   2px per-side margin. Apply to inline tokens in all r1 variants so trailing
    tokens in audio_blank_only (gplusggg) match the blank's height the way LSY does. */
 [class*="variant-sel-r1-"] .pie-template-line span:not([class]) {
   min-width: 150px;
   max-width: 150px;
   min-height: 150px;
   line-height: 89px;
+  margin-left: 2px;
+  margin-right: 2px;
 }
 
 /* In token_sequence layouts the blank itself is also a content-element box (no
    surrounding .rli-r1-cloze container at 160px). audio_blank_only / stimulus_image_blank
    keep their own 160px min-height set on the blank slot in McPopulatedBlank.svelte to
-   mirror LSY's .rli-r1-cloze height. */
+   mirror LSY's .rli-r1-cloze height. The 2px per-side margin matches LSY's
+   .rli-r1-content-element pattern (overriding the default Tailwind mx-1). */
 [class*="variant-sel-r1-"].layout-token_sequence .pie-template-line .pie-blank-slot {
   min-width: 150px;
   max-width: 150px;
   min-height: 150px;
   line-height: 89px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+/* audio_blank_only / stimulus_image_blank keep the 160px wide blank slot, but
+   still need the 2px per-side margin so the gap to the trailing token mirrors
+   LSY's .rli-r1-content-element rhythm. Without this, Tailwind's mx-1 (4px)
+   would dominate and the cloze→token gap diverges from LSY. See CONTOOL-2569. */
+[class*="variant-sel-r1-"].layout-audio_blank_only .pie-template-line .pie-blank-slot,
+[class*="variant-sel-r1-"].layout-stimulus_image_blank .pie-template-line .pie-blank-slot {
+  margin-left: 2px;
+  margin-right: 2px;
 }
 
 /* r1.scss: .rli-r1-content-element { font-size:1.9em; line-height:89px } on distractors */
