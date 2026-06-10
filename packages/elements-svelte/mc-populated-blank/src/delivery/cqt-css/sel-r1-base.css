@@ -3,9 +3,15 @@
    Uses [class*="variant-sel-r1-"] so it covers every r1 variant class.
    Source: web-ItemBankViewer/learnosity/templates/Renaissance/r1.scss */
 
-/* r1.scss: Starial font throughout */
+/* r1.scss: Starial font throughout.
+   font-size 14px mirrors the Learnosity host root (.lrn_widget) which sets the
+   base for all em-scaled rules in r1.scss (e.g. .rli-r1-content-element { 1.9em })
+   and any em-based author content (e.g. <span style="font-size:1.8em">). Without
+   this base PIE inherits the 16px browser default and renders ~14% larger than
+   the LSY reference. See CONTOOL-2567. */
 [class*="variant-sel-r1-"] {
   font-family: Starial, Arial, sans-serif;
+  font-size: 14px;
 }
 
 /* r1.scss: .rli-r1-audio-transcript { font-family:Roboto; font-size:16px } */
@@ -42,9 +48,20 @@
 }
 
 /* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px; min-height:150px;
-   line-height:89px } — every stem token (blank slot and adjacent spans) is a 150px box.
-   Scoped to token_sequence layout so the audio_blank_only standalone blank (160px) is unaffected. */
-[class*="variant-sel-r1-"].layout-token_sequence .pie-template-line span:not([class]),
+   line-height:89px } — wraps every stem token (blank slot and adjacent inline spans) in
+   LSY, giving each a 150px box. Apply to inline tokens in all r1 variants so trailing
+   tokens in audio_blank_only (gplusggg) match the blank's height the way LSY does. */
+[class*="variant-sel-r1-"] .pie-template-line span:not([class]) {
+  min-width: 150px;
+  max-width: 150px;
+  min-height: 150px;
+  line-height: 89px;
+}
+
+/* In token_sequence layouts the blank itself is also a content-element box (no
+   surrounding .rli-r1-cloze container at 160px). audio_blank_only / stimulus_image_blank
+   keep their own 160px min-height set on the blank slot in McPopulatedBlank.svelte to
+   mirror LSY's .rli-r1-cloze height. */
 [class*="variant-sel-r1-"].layout-token_sequence .pie-template-line .pie-blank-slot {
   min-width: 150px;
   max-width: 150px;

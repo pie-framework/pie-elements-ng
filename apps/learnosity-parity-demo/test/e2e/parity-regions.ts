@@ -14,10 +14,22 @@
  *   choices → .pie-choices-fieldset
  *   audio   → .pie-audio-container
  *
- * Learnosity selectors:
- *   stem    → .rli-r1-stem           (blank + adjacent tokens)
- *   choices → .rli-r1-distractors    (choice tiles, role="group")
- *   audio   → .rli-r1-instructions   (listen button container)
+ * Learnosity selectors (vary by template family):
+ *   r1 family (sel_r1-*_plusggg variants):
+ *     stem    → .rli-r1-stem           (blank + adjacent tokens)
+ *     choices → .rli-r1-distractors    (choice tiles, role="group")
+ *     audio   → .rli-r1-instructions   (listen button container)
+ *   s3 family (sel_r1-s3_plusggg) — uses its own rli-s3-* prefix in the
+ *   live (devel) item bundle, not the rli-r1-* prefix shown in the source
+ *   templates. The PIE template is "<p>{{blank}}</p>" so the LSY equivalent
+ *   stem is the cloze container itself:
+ *     stem    → .rli-s3-cloze-container
+ *     choices → .rli-s3-distractors
+ *     audio   → .rli-s3-listen-container
+ *   vic family (sel_vic, sr_vic) — different prefix entirely:
+ *     stem    → .rli-vic-stimulus     (cloze inside .rli-vic-answer)
+ *     choices → .rli-vic-distractors
+ *     audio   → none (sr_vic) or inline (sel_vic — no separate crop)
  */
 
 export interface RegionOverride {
@@ -121,42 +133,47 @@ export const PARITY_REGIONS: Record<string, VariantRegions> = {
     },
   },
 
+  // s3 template (sel_r1-s3_plusggg) uses the rli-s3-* prefix in the live
+  // (devel) item bundle. The PIE template for this demo is "<p>{{blank}}</p>"
+  // so the LSY equivalent is .rli-s3-cloze-container (the cloze itself).
   'variant-sel-r1-s3': {
     stem: {
       pie: '.pie-template-line',
-      learnosity: '.rli-r1-stem',
+      learnosity: '.rli-s3-cloze-container',
     },
     choices: {
       pie: '.pie-choices-fieldset',
-      learnosity: '.rli-r1-distractors',
+      learnosity: '.rli-s3-distractors',
     },
     audio: {
       pie: '.pie-audio-container',
-      learnosity: '.rli-r1-instructions',
+      learnosity: '.rli-s3-listen-container',
     },
   },
 
-  // sel-vic: audio is embedded in the stem area, no separate audio crop needed.
+  // sel-vic uses the rli-vic-* prefix — different template family.
+  // The cloze sits inside .rli-vic-stimulus → .rli-vic-answer; the listen
+  // button is rendered inline so there's no separate audio crop.
   'variant-sel-vic': {
     stem: {
       pie: '.pie-template-line',
-      learnosity: '.rli-r1-stem',
+      learnosity: '.rli-vic-stimulus',
     },
     choices: {
       pie: '.pie-choices-fieldset',
-      learnosity: '.rli-r1-distractors',
+      learnosity: '.rli-vic-distractors',
     },
   },
 
-  // sr-vic: no audio component at all.
+  // sr-vic shares the rli-vic-* prefix and has no audio component at all.
   'variant-sr-vic': {
     stem: {
       pie: '.pie-template-line',
-      learnosity: '.rli-r1-stem',
+      learnosity: '.rli-vic-stimulus',
     },
     choices: {
       pie: '.pie-choices-fieldset',
-      learnosity: '.rli-r1-distractors',
+      learnosity: '.rli-vic-distractors',
     },
   },
 
@@ -191,9 +208,10 @@ export const PARITY_REGIONS: Record<string, VariantRegions> = {
     audio: { pie: '.pie-audio-container', learnosity: '.rli-r1-instructions' },
   },
 
+  // s3-graphic uses the same s3 template as the text variant — rli-s3-* prefix.
   'variant-sel-r1-s3-graphic': {
-    stem: { pie: '.pie-template-line', learnosity: '.rli-r1-stem' },
-    choices: { pie: '.pie-choices-fieldset', learnosity: '.rli-r1-distractors' },
-    audio: { pie: '.pie-audio-container', learnosity: '.rli-r1-instructions' },
+    stem: { pie: '.pie-template-line', learnosity: '.rli-s3-cloze-container' },
+    choices: { pie: '.pie-choices-fieldset', learnosity: '.rli-s3-distractors' },
+    audio: { pie: '.pie-audio-container', learnosity: '.rli-s3-listen-container' },
   },
 };

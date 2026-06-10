@@ -2,7 +2,10 @@
 /* Reference layout: web-ItemBankViewer/learnosity/templates/Renaissance/sel_vic/scss/main.scss + vic.scss */
 .mc-populated-blank-root.variant-sel-vic {
   font-family: Starial, Arial, sans-serif;
-  font-size: 1.5em;
+  /* LSY chain: .lrn_widget (14px host) → .sel-vic { 1.5em } = 21px.
+     PIE collapses both LSY layers into this single variant-root selector, so
+     the resolved value is set directly. See CONTOOL-2567. */
+  font-size: 21px;
   max-width: 800px;
   margin-inline: auto;
   --mpb-inline-grid-column-gap: 1rem;
