@@ -119,18 +119,19 @@ test('gg-plus: hovered unselected choice tile background is #f2f2f2', async ({ p
 });
 
 // ---------------------------------------------------------------------------
-// 5. Template-line font size is 1.9em (r1 content-element base)
-//    r1.scss: .rli-r1-content-element { font-size: 1.9em } — shared via sel-r1-base.css.
-//    Without the base CSS this variant renders template tokens at the default body size.
+// 5. Template-line font size resolves to 26.6px (r1 content-element base)
+//    r1.scss: .rli-r1-content-element { font-size: 1.9em } against the Learnosity
+//    host base of 14px → 26.6px. PIE pins the same 14px base on the variant root
+//    in sel-r1-base.css so the existing 1.9em rule resolves to the same px value.
+//    Tolerance ±0.5px to absorb sub-pixel font rendering noise.
 // ---------------------------------------------------------------------------
-test('gg-plus: template line font size is 1.9em', async ({ page }) => {
+test('gg-plus: template line font size matches LSY (14px × 1.9em = 26.6px)', async ({ page }) => {
   await openGgPlusRoute(page);
   const root = deliveryContainer(page);
   const templateLine = root.locator('.pie-template-line');
   await expect(templateLine).toBeVisible();
   const px = parseFloat(await templateLine.evaluate((el) => getComputedStyle(el).fontSize));
-  expect(px).toBeGreaterThanOrEqual(30);
-  expect(px).toBeLessThanOrEqual(32);
+  expect(Math.abs(px - 26.6)).toBeLessThanOrEqual(0.5);
 });
 
 // ---------------------------------------------------------------------------
