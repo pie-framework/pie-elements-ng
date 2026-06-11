@@ -48,6 +48,16 @@
   margin: 0;
 }
 
+/* LSY .rli-vic-answer has no text-align rule and inherits start; PIE's
+   inline_sentence layout sets text-align:center on .template-line via a
+   Svelte-scoped selector with specificity (0,4,0), so we need to match or
+   exceed that. Pin sel-vic back to start so wrapped lines stay left-aligned.
+   See CONTOOL-2573. */
+.mc-populated-blank-root.variant-sel-vic.layout-inline_sentence
+  .pie-template-line.template-line {
+  text-align: start;
+}
+
 /* vic.scss: .rli-vic-cloze { margin-left: 6px; margin-right: 6px } gives the
    cloze breathing room from adjacent text or punctuation. The PIE markup uses
    Tailwind-style mx-1 in the class list, but mc-populated-blank does not

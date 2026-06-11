@@ -65,8 +65,7 @@ function measureClozeToPunctGapFn() {
         const rect = range.getBoundingClientRect();
         if (rect.width === 0 && rect.height === 0) continue;
         // Same-line: punctuation top is within the cloze's vertical extent.
-        const sameLine =
-          rect.top < clozeRect.bottom - 1 && rect.bottom > clozeRect.top + 1;
+        const sameLine = rect.top < clozeRect.bottom - 1 && rect.bottom > clozeRect.top + 1;
         if (!sameLine) continue;
         // Must be to the right of the cloze.
         if (rect.left < clozeRect.right) continue;

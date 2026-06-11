@@ -22,6 +22,16 @@
   margin: 0;
 }
 
+/* LSY .rli-vic-answer has no text-align rule and inherits start; PIE's
+   inline_sentence layout sets text-align:center on .template-line via a
+   Svelte-scoped selector with specificity (0,4,0), so we need to match or
+   exceed that. Pin sr-vic back to start so wrapped lines stay left-aligned.
+   Same root cause as sel-vic. See CONTOOL-2573. */
+.mc-populated-blank-root.variant-sr-vic.layout-inline_sentence
+  .pie-template-line.template-line {
+  text-align: start;
+}
+
 /* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 } */
 .mc-populated-blank-root.variant-sr-vic .pie-blank-value {
   color: #cc3333;
