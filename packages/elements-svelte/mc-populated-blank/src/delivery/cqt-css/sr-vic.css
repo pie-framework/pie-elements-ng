@@ -27,8 +27,7 @@
    Svelte-scoped selector with specificity (0,4,0), so we need to match or
    exceed that. Pin sr-vic back to start so wrapped lines stay left-aligned.
    Same root cause as sel-vic. See CONTOOL-2573. */
-.mc-populated-blank-root.variant-sr-vic.layout-inline_sentence
-  .pie-template-line.template-line {
+.mc-populated-blank-root.variant-sr-vic.layout-inline_sentence .pie-template-line.template-line {
   text-align: start;
 }
 
