@@ -48,6 +48,17 @@
   margin: 0;
 }
 
+/* vic.scss: .rli-vic-cloze { margin-left: 6px; margin-right: 6px } gives the
+   cloze breathing room from adjacent text or punctuation. The PIE markup uses
+   Tailwind-style mx-1 in the class list, but mc-populated-blank does not
+   compile Tailwind, so that class is a no-op. Set the inline margin
+   explicitly so the cloze→trailing-punctuation gap matches LSY. See
+   CONTOOL-2572. */
+.mc-populated-blank-root.variant-sel-vic .pie-template-line .pie-blank-slot {
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
 /* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 } */
 .mc-populated-blank-root.variant-sel-vic .pie-blank-value {
   color: #cc3333;
