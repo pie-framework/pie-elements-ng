@@ -92,3 +92,15 @@
   font-size: 1.9em;
   line-height: 89px;
 }
+
+/* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px;
+   min-height:150px } wraps every image (stem token + distractor) and forces
+   the content box to 150×150. LSY's host also rewrites <img width/height>
+   to 150 server-side. PIE keeps the authored attributes (typically 108×108),
+   so without an explicit override images render ~28% smaller than LSY.
+   See CONTOOL-2570. */
+[class*="variant-sel-r1-"] .pie-template-line img,
+[class*="variant-sel-r1-"] .pie-choice-label img {
+  width: 150px;
+  height: 150px;
+}
