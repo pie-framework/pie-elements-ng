@@ -50,10 +50,7 @@ test.describe('CONTOOL-2570 — graphic image size parity (ggplus-graphic)', () 
   }) => {
     await openParityRoute(page);
 
-    const pieSizes = await page.evaluate(
-      imageSizesFn(),
-      '#pie-container .pie-template-line img'
-    );
+    const pieSizes = await page.evaluate(imageSizesFn(), '#pie-container .pie-template-line img');
     const lrnSizes = await page.evaluate(imageSizesFn(), '#learnosity-container .rli-r1-stem img');
 
     expect(pieSizes.length, 'PIE stem images').toBeGreaterThan(0);
@@ -76,10 +73,7 @@ test.describe('CONTOOL-2570 — graphic image size parity (ggplus-graphic)', () 
   }) => {
     await openParityRoute(page);
 
-    const pieSizes = await page.evaluate(
-      imageSizesFn(),
-      '#pie-container .pie-choice-label img'
-    );
+    const pieSizes = await page.evaluate(imageSizesFn(), '#pie-container .pie-choice-label img');
     const lrnSizes = await page.evaluate(
       imageSizesFn(),
       '#learnosity-container .rli-r1-distractors img'
