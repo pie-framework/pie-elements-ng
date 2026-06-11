@@ -17,12 +17,14 @@
   --mpb-blank-wide-width: 6.8rem;
 }
 
-/* s3 overrides base choice-label with font-weight:500 */
+/* sel_r1-s3_plusggg/question.css does not set font-weight on distractors or
+   cloze content-element, so they inherit 400 from the host root. The earlier
+   font-weight:500 override caused PIE to render visibly heavier than LSY for
+   the same author content. See CONTOOL-2571. */
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label,
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label :is(span, p, div) {
   font-size: 1.9em;
   line-height: 89px;
-  font-weight: 500;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-blank-value,

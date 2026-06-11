@@ -80,8 +80,6 @@ test.describe('CONTOOL-2569 — cloze-to-token gap parity (ggplus)', () => {
 
     expect(piePx, 'PIE cloze/token not found').not.toBeNull();
     expect(lrnPx, 'Learnosity cloze/token not found').not.toBeNull();
-    expect(Math.abs((piePx as number) - (lrnPx as number))).toBeLessThanOrEqual(
-      GAP_TOLERANCE_PX
-    );
+    expect(Math.abs((piePx as number) - (lrnPx as number))).toBeLessThanOrEqual(GAP_TOLERANCE_PX);
   });
 });

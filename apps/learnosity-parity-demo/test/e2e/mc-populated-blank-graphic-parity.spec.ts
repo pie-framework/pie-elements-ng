@@ -19,7 +19,7 @@
  */
 
 import { type Page, expect, test } from '@playwright/test';
-import { deliveryContainer, waitForMathRendering } from './test-helpers';
+import { deliveryContainer, disableTransitions, waitForMathRendering } from './test-helpers';
 import { PARITY_REGIONS } from './parity-regions';
 
 const GRAPHIC_VARIANTS = [
@@ -47,6 +47,10 @@ async function openGraphicRoute(page: Page, demoId: string) {
     },
     { timeout: 30_000 }
   );
+  // Kill CSS transitions so toHaveCSS doesn't sample mid-fade. ChoiceRow.svelte
+  // animates background-color over 120ms; without this, a check() followed by
+  // an immediate computed-style read can land on the intermediate color.
+  await disableTransitions(page);
 }
 
 for (const DEMO_ID of GRAPHIC_VARIANTS) {
@@ -72,7 +76,6 @@ for (const DEMO_ID of GRAPHIC_VARIANTS) {
       const root = deliveryContainer(page);
 
       await root.locator('input[type="radio"]').first().check();
-      await page.waitForTimeout(100);
 
       const selectedRow = root.locator('.pie-choice.is-selected').first();
       await expect(selectedRow).toBeVisible();
@@ -105,10 +108,9 @@ for (const DEMO_ID of GRAPHIC_VARIANTS) {
 
       const bgBefore = await firstTile.evaluate((el) => getComputedStyle(el).backgroundColor);
       await firstTile.hover();
-      await page.waitForTimeout(100);
-      const bgAfter = await firstTile.evaluate((el) => getComputedStyle(el).backgroundColor);
-
-      expect(bgAfter).not.toBe(bgBefore);
+      await expect
+        .poll(() => firstTile.evaluate((el) => getComputedStyle(el).backgroundColor))
+        .not.toBe(bgBefore);
     });
 
     test('gap between adjacent choice tiles on the same row is at least 16px', async ({ page }) => {
