@@ -131,10 +131,7 @@ test.describe('CONTOOL-2573 — sel-vic wrapped-line alignment parity', () => {
     // Allow re-layout after text mutation.
     await page.waitForTimeout(150);
 
-    const measured = await page.evaluate(
-      measureLineLeftsFn(),
-      '#pie-container .pie-template-line'
-    );
+    const measured = await page.evaluate(measureLineLeftsFn(), '#pie-container .pie-template-line');
     expect(measured, 'PIE stem not measurable').not.toBeNull();
     const m = measured as NonNullable<typeof measured>;
     expect(
