@@ -8,6 +8,6 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { DELETE } from './chars';
+import { DELETE } from './chars.js';
 
 export const del = { label: DELETE, category: 'edit', keystroke: 'Backspace', ariaLabel: 'Delete' };

@@ -1,6 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
+  name?: string;
+  version?: string;
+};
 
 export default defineConfig(({ mode, command }) => {
   // Demo mode: serve the docs/demo directory
@@ -14,6 +20,10 @@ export default defineConfig(({ mode, command }) => {
   // Build mode: build the library
   return {
   plugins: [react()],
+  define: {
+    __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
+    __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
+  },
   build: {
     lib: {
       entry: {
