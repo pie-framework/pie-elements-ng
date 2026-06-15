@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { LEFT_ARROW, RIGHT_ARROW } from './chars';
-import { mkSet } from './utils';
+import { LEFT_ARROW, RIGHT_ARROW } from './chars.js';
+import { mkSet } from './utils.js';
 
 const set = mkSet('navigation');
 

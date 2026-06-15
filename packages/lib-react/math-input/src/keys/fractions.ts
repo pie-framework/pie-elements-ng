@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { mkSet } from './utils';
+import { mkSet } from './utils.js';
 
 const set = mkSet('fractions');
 

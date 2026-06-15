@@ -11,9 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import * as mq from './mq';
-import { baseSet } from './keys';
-import KeyPad from './keypad';
+import * as mq from './mq/index.js';
+import { baseSet } from './keys/index.js';
+import KeyPad from './keypad/index.js';
 import debug from 'debug';
 
 const log = debug('pie-lib:math-input');
