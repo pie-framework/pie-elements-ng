@@ -101,6 +101,12 @@ This was enabled by the PIE team's work on upstream library updates (React 18, M
 - **Package**: `@pie-player/print`
 - **Use for**: Production applications, complete assessment items
 
+**Timed Media Section Context**:
+
+Future `video-stimulus` work in this repository should treat the media component as shared stimulus only. Cue-to-question orchestration, child item sessions, playback policy, and aggregate section completion belong to the timed-media section architecture in `pie-players`: [`timed-media-section.md`](../../pie-players/docs/architecture/timed-media-section.md).
+
+Cross-element shared contracts such as host event projections, section score rollups, media/evidence metadata, accessibility handoff patterns, and standards-adapter hooks belong in `pie-players` shared architecture rather than individual element APIs: [`shared-contracts-p0.md`](../../pie-players/docs/architecture/shared-contracts-p0.md).
+
 **Element structure**: Each element has symmetric peer folders:
 
 - `delivery/` - Student/teacher interaction
