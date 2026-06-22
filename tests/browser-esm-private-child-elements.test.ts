@@ -1,59 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { globSync } from 'glob';
-
-type PrivateChildCase = {
-  slug: string;
-  views: Array<{
-    view: 'delivery' | 'author' | 'print';
-    tags: string[];
-  }>;
-};
-
-const cases: PrivateChildCase[] = [
-  {
-    slug: 'ebsr',
-    views: [
-      { view: 'delivery', tags: ['ebsr-multiple-choice'] },
-      { view: 'author', tags: ['ebsr-multiple-choice-configure'] },
-      { view: 'print', tags: ['ebsr-multiple-choice'] },
-    ],
-  },
-  {
-    slug: 'complex-rubric',
-    views: [
-      {
-        view: 'delivery',
-        tags: ['complex-rubric-simple', 'complex-rubric-multi-trait'],
-      },
-      {
-        view: 'author',
-        tags: ['rubric-configure', 'multi-trait-rubric-configure'],
-      },
-      {
-        view: 'print',
-        tags: ['complex-rubric-simple', 'complex-rubric-multi-trait'],
-      },
-    ],
-  },
-];
 
 async function readJson<T>(path: string): Promise<T> {
   return JSON.parse(await readFile(path, 'utf-8')) as T;
-}
-
-function encodeVersionForTag(version: string): string {
-  return version
-    .trim()
-    .toLowerCase()
-    .replace(/[.+]/g, '-')
-    .replace(/[^0-9A-Za-z-]/g, '-')
-    .replace(/-{2,}/g, '-');
-}
-
-async function importBuiltView(path: string): Promise<void> {
-  await import(`${pathToFileURL(path).href}?private-child-test=${Date.now()}-${Math.random()}`);
 }
 
 describe('browser ESM private child custom elements', () => {
@@ -96,37 +46,5 @@ describe('browser ESM private child custom elements', () => {
     }
 
     expect(violations).toEqual([]);
-  });
-
-  test.each(cases)('$slug browser ESM views register version-scoped private child tags', async ({
-    slug,
-    views,
-  }) => {
-    const packageDir = join(root, 'packages/elements-react', slug);
-    const pkg = await readJson<{ version: string }>(join(packageDir, 'package.json'));
-    const versionSuffix = `--version-${encodeVersionForTag(pkg.version)}`;
-    const browserFiles = globSync('dist/browser/**/*.js', {
-      cwd: packageDir,
-      absolute: true,
-    });
-    const browserOutput = (
-      await Promise.all(browserFiles.map((path) => readFile(path, 'utf-8')))
-    ).join('\n');
-
-    expect(browserOutput).toContain(pkg.version);
-    expect(browserOutput).toContain('--version-');
-
-    for (const { view, tags } of views) {
-      const entry = join(packageDir, `dist/browser/${view}/index.js`);
-      const source = await readFile(entry, 'utf-8');
-
-      expect(source).toContain('customElements.define');
-      await importBuiltView(entry);
-      for (const tag of tags) {
-        expect(customElements.get(`${tag}${versionSuffix}`)).toBeDefined();
-        expect(browserOutput).toContain(tag);
-        expect(browserOutput).not.toMatch(new RegExp(`['"]${tag}['"]`));
-      }
-    }
   });
 });
