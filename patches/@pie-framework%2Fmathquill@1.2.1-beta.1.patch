@@ -1,0 +1,21 @@
+diff --git a/build/mathquill.esm.js b/build/mathquill.esm.js
+index 1e62a11159bb762e9e259edcf7af3d6acd266d47..e6a88a7c63de1ff6afdf7f5d278322c2e81218a1 100644
+--- a/build/mathquill.esm.js
++++ b/build/mathquill.esm.js
+@@ -558,16 +558,6 @@ $.contains = function(container, contained) {
+   return container !== contained && container.contains(contained);
+ };
+ 
+-// Export for ESM
+-if (typeof module !== 'undefined' && module.exports) {
+-  module.exports = $;
+-  module.exports.default = $;
+-}
+-if (typeof exports !== 'undefined') {
+-  exports.default = $;
+-  exports.$ = $;
+-}
+-
+ 
+ /**
+  * MathQuill v1.2.1-beta.1, by Han, Jeanine, and Mary

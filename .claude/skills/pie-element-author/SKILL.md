@@ -22,7 +22,7 @@ Before writing a line of code:
 
 - [ ] Does a PRD exist at `docs/prds/<slug>/PRD.md`? If not, draft one from `docs/prds/_template.md` first (use the `pie-prd-author` skill). Do not start implementation against an undocumented surface.
 - [ ] Read `PRD.md` fully. Treat the "Proposed surface" as the starting contract. If anything is ambiguous, surface it before coding.
-- [ ] Read `UBIQUITOUS_LANGUAGE.md` for correct terminology. Use its terms throughout (e.g. "tile" not "chip", "region" not "bucket", etc.).
+- [ ] Read `CONTEXT.md` and use its canonical language alongside the relevant PRD and established element examples. Do not introduce new synonyms for model/session concepts without surfacing the contract change.
 - [ ] Scan `packages/elements-svelte/venn-classification/` as a structural reference. It is the canonical Svelte element in this repo.
 - [ ] Confirm the element slug — this becomes the directory name, package name (`@pie-element/<slug>`), and the PRD slug.
 
@@ -30,7 +30,7 @@ Before writing a line of code:
 
 Every Svelte element lives at `packages/elements-svelte/<slug>/` and contains:
 
-```
+```text
 src/
   delivery/
     <ElementName>.svelte     # Student-facing delivery component
@@ -61,7 +61,7 @@ vitest.config.ts
 All five methods are **pure functions** — no DOM access, no side effects, no `any`.
 
 | Method | Signature (sketch) | Contract |
-|---|---|---|
+| --- | --- | --- |
 | `model(question, session, env)` | `→ ViewModel` | Derives the view-model; never mutates inputs; strips correctness data when `env.mode !== 'evaluate'`. |
 | `outcome(question, session, env)` | `→ { score: number, empty: boolean }` | Score in `[0, 1]`; `empty: true` iff session has no response; must be deterministic. |
 | `createDefaultModel()` | `→ Model` | Returns a model that passes `validate()` with zero errors, usable as a blank starting point for authoring. |

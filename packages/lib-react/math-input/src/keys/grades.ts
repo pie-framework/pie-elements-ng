@@ -8,24 +8,24 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import * as comparison from './comparison';
-import * as vars from './vars';
-import * as fractions from './fractions';
-import * as exponent from './exponent';
-import * as misc from './misc';
-import * as constants from './constants';
-import * as trigonometry from './trigonometry';
-import * as geometry from './geometry';
-import * as operators from './operators';
-import * as log from './log';
-import * as subSup from './sub-sup';
-import * as statistics from './statistics';
-import * as basicOperators from './basic-operators';
-import * as matrices from './matrices';
-import digits from './digits';
-import * as logic from './logic';
-import * as nav from './navigation';
-import * as edit from './edit';
+import * as comparison from './comparison.js';
+import * as vars from './vars.js';
+import * as fractions from './fractions.js';
+import * as exponent from './exponent.js';
+import * as misc from './misc.js';
+import * as constants from './constants.js';
+import * as trigonometry from './trigonometry.js';
+import * as geometry from './geometry.js';
+import * as operators from './operators.js';
+import * as log from './log.js';
+import * as subSup from './sub-sup.js';
+import * as statistics from './statistics.js';
+import * as basicOperators from './basic-operators.js';
+import * as matrices from './matrices.js';
+import digits from './digits.js';
+import * as logic from './logic.js';
+import * as nav from './navigation.js';
+import * as edit from './edit.js';
 
 const hs = [
   [fractions.blankOverBlank, misc.percentage, vars.x, exponent.squared, exponent.squareRoot],

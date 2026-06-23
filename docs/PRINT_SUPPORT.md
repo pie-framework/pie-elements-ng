@@ -71,7 +71,7 @@ Where `itemConfig` includes:
 - Markup-driven rendering
 - Floater elements (rubrics, standalone components)
 
-**Location:** Moved to [pie-players/packages/print-player](../../pie-players/packages/print-player)
+**Location:** Moved to `packages/print-player` in the `pie-players` repository.
 
 ## Print Element Architecture
 
@@ -277,8 +277,8 @@ The build outputs to `dist/print/index.js` and `dist/print/index.d.ts`.
 ## Further Reading
 
 - [Element-Level Print Player README](../packages/element-player/README_PRINT_PLAYER.md)
-- [Item-Level Print Player README](../../pie-players/packages/print-player/README.md)
-- [Item-Level Print Player Usage Examples](../../pie-players/packages/print-player/USAGE_EXAMPLE.md)
+- Item-Level Print Player README: `packages/print-player/README.md` in the `pie-players` repository
+- Item-Level Print Player Usage Examples: `packages/print-player/USAGE_EXAMPLE.md` in the `pie-players` repository
 - [PieElementPlayer Source](../packages/element-player/src/players/PieElementPlayer.svelte)
 
 ## Summary

@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import Input from './input';
-import Static from './static';
-import CommonMqStyles from './common-mq-styles';
+import Input from './input.js';
+import Static from './static.js';
+import CommonMqStyles from './common-mq-styles.js';
 
 export { Input, Static, CommonMqStyles };

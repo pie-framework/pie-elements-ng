@@ -4,9 +4,6 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
-  test: {
-    include: ['test/**/*.test.ts'],
-  },
   build: {
     lib: {
       entry: {
@@ -21,14 +18,11 @@ export default defineConfig({
           /^react-dom($|\/)/.test(id) ||
           /^@pie-lib\//.test(id) ||
           /^@pie-element\//.test(id) ||
-          /^@pie-element\//.test(id) ||
           /^@pie-framework\//.test(id) ||
           /^@mui\//.test(id) ||
           /^@emotion\//.test(id) ||
           /^d3-/.test(id) ||
           /^@testing-library\//.test(id) ||
-          id === 'lodash-es' ||
-          /^lodash-es\//.test(id) ||
           /^styled-components/.test(id) ||
           id === 'konva' || /^konva\//.test(id) ||
           id === 'react-konva' || /^react-konva\//.test(id) ||
@@ -36,7 +30,7 @@ export default defineConfig({
           id === '@mdi/react' || /^@mdi\/react\//.test(id) ||
           id === '@mdi/js' || /^@mdi\/js\//.test(id) ||
           id === 'recharts' || /^recharts\//.test(id) ||
-          ['prop-types', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@mapbox/point-geometry', 'react-transition-group', 'nested-property', 'pluralize', 'decimal.js'].includes(id)
+          ['prop-types','debug','i18next','humps','mathjs','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
         );
       },
       output: {

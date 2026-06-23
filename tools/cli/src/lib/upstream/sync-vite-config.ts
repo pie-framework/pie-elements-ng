@@ -19,6 +19,19 @@ export function detectElementEntryPoints(elementDir: string): Record<string, str
 
 /**
  * Generate Vite config content for an element package
+ *
+ * @tech-debt The __PIE_PACKAGE_VERSION__ injection was added in commit 8a579dfe
+ * "fix: support private child elements in browser esm" to enable version-scoped
+ * custom element registration (e.g., 'ebsr-multiple-choice--version-8-1-1').
+ *
+ * This prevents name collisions when multiple versions of elements coexist in
+ * browser ESM bundles. However, it adds boilerplate to all 51+ element configs,
+ * even though only ~2 elements (EBSR, complex-rubric) actually need it.
+ *
+ * Consider refactoring:
+ * - Move to shared @pie-element/vite-plugin-version
+ * - Only inject for elements with private children
+ * - Use runtime version detection instead of compile-time injection
  */
 export function generateElementViteConfig(entryPoints: Record<string, string>): string {
   if (Object.keys(entryPoints).length === 0) {
