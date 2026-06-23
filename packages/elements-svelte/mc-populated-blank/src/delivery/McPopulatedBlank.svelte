@@ -192,10 +192,24 @@ const templateParts = $derived.by(() => {
   const t = model?.template || '';
   const idx = t.indexOf(BLANK_TOKEN);
   if (idx < 0) return { before: t, after: '' };
-  return {
-    before: t.slice(0, idx),
-    after: t.slice(idx + BLANK_TOKEN.length),
-  };
+  let before = t.slice(0, idx);
+  let after = t.slice(idx + BLANK_TOKEN.length);
+  // LSY's shared cloze renderer (Renaissance components/src/cloze.js) emits
+  // literal `&nbsp;` on BOTH sides of the cloze span unconditionally:
+  //   `&nbsp;<span ... -cloze-blank></span><span ... -cloze>…</span>&nbsp;`.
+  // Mirror that ONLY for inline_sentence layouts (sel-vic, sr-vic, plain
+  // sentence). Token-sequence layouts arrange tokens in a grid with explicit
+  // sibling-margin spacing, so injecting NBSP throws off those tuned gaps;
+  // they don't suffer the wrap-leader symptom either because each token has
+  // its own grid placement. This (a) keeps the cloze glued to its neighbors
+  // so it doesn't dangle at the start of a wrapped line (CONTOOL-2574), and
+  // (b) matches LSY's cloze→adjacent-text gap when the author wrote no
+  // whitespace around {{blank}} (CONTOOL-2572: e.g. `…word: {{blank}}.`).
+  if (layoutProfile === 'inline_sentence') {
+    before = `${before.replace(/\s+$/, '')} `;
+    after = ` ${after.replace(/^\s+/, '')}`;
+  }
+  return { before, after };
 });
 
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
@@ -435,9 +449,8 @@ $effect(() => {
   {/if}
 
   {#if !isAudioOnlyMode}
-    <div class="mb-4 template-line pie-template-line" aria-describedby={templateDescribedBy}>
-      {@html templateParts.before}
-      <ClozeMarker
+    <div class="mb-4 template-line pie-template-line" aria-describedby={templateDescribedBy}
+      >{@html templateParts.before}<ClozeMarker
         {choiceMode}
         displayChoice={displayChoice}
         {displayChoiceLabelHtml}
@@ -445,9 +458,7 @@ $effect(() => {
         blankWidth={layout.blankWidth}
         blankBorderWidth={layout.blankBorderWidth}
         ariaLabel={uiText.selectedAnswerInSentence}
-      />
-      {@html templateParts.after}
-    </div>
+      />{@html templateParts.after}</div>
   {/if}
 
   {#if resultText}

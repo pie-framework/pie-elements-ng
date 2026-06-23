@@ -820,6 +820,56 @@
       }
     },
     {
+      "id": "variant-sel-vic-cloze-punct",
+      "title": "sel_vic — cloze followed by punctuation (CONTOOL-2572)",
+      "description": "Reproduction sample for CONTOOL-2572: cloze marker is immediately followed by a period; PIE renders a different gap to the punctuation than Learnosity. Sourced from item 0d6e94d3-b8d7-486c-803f-b037e49bbd9c.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_vic", "CONTOOL-2572"],
+      "model": {
+        "id": "18b",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>Choose the right word: {{blank}}.</p>",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "labelHtml": "run"
+          },
+          {
+            "id": "distractor_2",
+            "labelHtml": "do"
+          },
+          {
+            "id": "distractor_3",
+            "labelHtml": "toy"
+          }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/af9f6179-fca4-4e5a-9b7f-8fb5374a23e5.mp3",
+        "audioTranscript": "Choose the right word.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "inline_sentence",
+        "customType": "sel_vic",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "vertical",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true,
+        "source": {
+          "csvQuestionTypeTag": "sel_vicv0.0.1",
+          "learnosityItemReference": "0d6e94d3-b8d7-486c-803f-b037e49bbd9c_v2.0"
+        }
+      },
+      "session": {
+        "id": "18b",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
       "id": "variant-sel-r1-gg-plus-graphic",
       "title": "sel_r1-gg_plusggg \u2014 graphic choices English (bc827dec)",
       "description": "Graphic choice variant from item bc827dec-cb5e-4f09-b7f0-e227c2912c2f.",

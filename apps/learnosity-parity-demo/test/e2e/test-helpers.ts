@@ -303,6 +303,27 @@ export function deliveryContainer(page: Page): Locator {
 }
 
 /**
+ * Disable CSS transitions and animations for the page so that assertions on
+ * computed styles (e.g. background-color via toHaveCSS) sample the final
+ * state rather than an intermediate frame. Penetrates shadow roots so it
+ * applies inside Svelte custom elements as well.
+ */
+export async function disableTransitions(page: Page) {
+  const css = `*, *::before, *::after { transition: none !important; animation: none !important; }`;
+  await page.addStyleTag({ content: css });
+  await page.evaluate((styleText) => {
+    for (const root of document.querySelectorAll('*')) {
+      const sr = (root as HTMLElement).shadowRoot;
+      if (sr) {
+        const style = document.createElement('style');
+        style.textContent = styleText;
+        sr.appendChild(style);
+      }
+    }
+  }, css);
+}
+
+/**
  * Parse session JSON panel; retries for async updates.
  */
 export async function waitForSessionMutation(

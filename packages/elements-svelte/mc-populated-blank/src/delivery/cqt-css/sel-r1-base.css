@@ -3,9 +3,15 @@
    Uses [class*="variant-sel-r1-"] so it covers every r1 variant class.
    Source: web-ItemBankViewer/learnosity/templates/Renaissance/r1.scss */
 
-/* r1.scss: Starial font throughout */
+/* r1.scss: Starial font throughout.
+   font-size 14px mirrors the Learnosity host root (.lrn_widget) which sets the
+   base for all em-scaled rules in r1.scss (e.g. .rli-r1-content-element { 1.9em })
+   and any em-based author content (e.g. <span style="font-size:1.8em">). Without
+   this base PIE inherits the 16px browser default and renders ~14% larger than
+   the LSY reference. See CONTOOL-2567. */
 [class*="variant-sel-r1-"] {
   font-family: Starial, Arial, sans-serif;
+  font-size: 14px;
 }
 
 /* r1.scss: .rli-r1-audio-transcript { font-family:Roboto; font-size:16px } */
@@ -24,13 +30,16 @@
 
 /* r1.scss: .rli-r1-stem { display:flex; flex-direction:row; justify-content:center }
    r1.scss: .rli-r1-content-element { margin-right:2px; margin-left:2px } — 4px total gap.
-   column-gap:4px replicates the 2px+2px per-element margin. */
+   Apply the per-element margin to both classless tokens and the blank slot
+   (which is the cloze equivalent) so the gap stacks with whitespace text-nodes
+   between flex items the same way LSY does. Earlier this used column-gap:4px,
+   but flex column-gap accumulates with the cloze-side mx-1 and the implicit
+   whitespace, producing a wider gap than LSY shows. See CONTOOL-2569. */
 [class*="variant-sel-r1-"] .pie-template-line {
   display: flex;
   flex-direction: row;
   align-items: baseline;
   justify-content: center;
-  column-gap: 4px;
 }
 
 [class*="variant-sel-r1-"] .pie-template-line p {
@@ -38,22 +47,60 @@
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  gap: 4px;
 }
 
 /* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px; min-height:150px;
-   line-height:89px } — every stem token (blank slot and adjacent spans) is a 150px box.
-   Scoped to token_sequence layout so the audio_blank_only standalone blank (160px) is unaffected. */
-[class*="variant-sel-r1-"].layout-token_sequence .pie-template-line span:not([class]),
+   line-height:89px; margin-right:2px; margin-left:2px } — wraps every stem token
+   (blank slot and adjacent inline spans) in LSY, giving each a 150px box with a
+   2px per-side margin. Apply to inline tokens in all r1 variants so trailing
+   tokens in audio_blank_only (gplusggg) match the blank's height the way LSY does. */
+[class*="variant-sel-r1-"] .pie-template-line span:not([class]) {
+  min-width: 150px;
+  max-width: 150px;
+  min-height: 150px;
+  line-height: 89px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+/* In token_sequence layouts the blank itself is also a content-element box (no
+   surrounding .rli-r1-cloze container at 160px). audio_blank_only / stimulus_image_blank
+   keep their own 160px min-height set on the blank slot in McPopulatedBlank.svelte to
+   mirror LSY's .rli-r1-cloze height. The 2px per-side margin matches LSY's
+   .rli-r1-content-element pattern (overriding the default Tailwind mx-1). */
 [class*="variant-sel-r1-"].layout-token_sequence .pie-template-line .pie-blank-slot {
   min-width: 150px;
   max-width: 150px;
   min-height: 150px;
   line-height: 89px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+/* audio_blank_only / stimulus_image_blank keep the 160px wide blank slot, but
+   still need the 2px per-side margin so the gap to the trailing token mirrors
+   LSY's .rli-r1-content-element rhythm. Without this, Tailwind's mx-1 (4px)
+   would dominate and the cloze→token gap diverges from LSY. See CONTOOL-2569. */
+[class*="variant-sel-r1-"].layout-audio_blank_only .pie-template-line .pie-blank-slot,
+[class*="variant-sel-r1-"].layout-stimulus_image_blank .pie-template-line .pie-blank-slot {
+  margin-left: 2px;
+  margin-right: 2px;
 }
 
 /* r1.scss: .rli-r1-content-element { font-size:1.9em; line-height:89px } on distractors */
 [class*="variant-sel-r1-"] .pie-choice-label {
   font-size: 1.9em;
   line-height: 89px;
+}
+
+/* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px;
+   min-height:150px } wraps every image (stem token + distractor) and forces
+   the content box to 150×150. LSY's host also rewrites <img width/height>
+   to 150 server-side. PIE keeps the authored attributes (typically 108×108),
+   so without an explicit override images render ~28% smaller than LSY.
+   See CONTOOL-2570. */
+[class*="variant-sel-r1-"] .pie-template-line img,
+[class*="variant-sel-r1-"] .pie-choice-label img {
+  width: 150px;
+  height: 150px;
 }
