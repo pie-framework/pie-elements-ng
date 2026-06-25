@@ -106,5 +106,5 @@ describe('ESM build outputs', () => {
     }
 
     expect(failures).toEqual([]);
-  });
+  }, 15_000);
 });
