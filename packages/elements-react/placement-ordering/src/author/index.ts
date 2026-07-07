@@ -171,9 +171,14 @@ export default class PlacementOrdering extends HTMLElement {
     this._root.render(element);
   }
 
+  connectedCallback() {
+    this._rerender();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

@@ -15,6 +15,7 @@ import { NodeSelection } from 'prosemirror-state';
 import { Chevron } from '../icons/RespArea.js';
 import ReactDOM from 'react-dom';
 import CustomToolbarWrapper from '../../extensions/custom-toolbar-wrapper.js';
+import { setToolbarOpened } from '../../utils/toolbar.js';
 
 const InlineDropdown = (props) => {
   const { editor, node, getPos, options, selected } = props;
@@ -102,6 +103,14 @@ const InlineDropdown = (props) => {
     }
   }, [editor, node, selected]);
 
+
+ 
+  const isScrollbarClicked = (event) =>
+    event.clientX > document.documentElement.clientWidth ||
+    event.clientY > document.documentElement.clientHeight ||
+    event.target === document.documentElement;
+  
+
   useEffect(() => {
     // Calculate position relative to selection
     const bodyRect = document.body.getBoundingClientRect();
@@ -114,6 +123,10 @@ const InlineDropdown = (props) => {
     });
 
     const handleClickOutside = (event) => {
+
+      if( isScrollbarClicked(event) ) {
+        return;
+      }
       const insideSomeEditor = event.target.closest('[data-toolbar-for]');
 
       if (
@@ -135,7 +148,7 @@ const InlineDropdown = (props) => {
     }
 
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showToolbar]);
+  }, [showToolbar, node]);
 
   return (
     <NodeViewWrapper
@@ -184,14 +197,14 @@ const InlineDropdown = (props) => {
       {showToolbar && (
         <React.Fragment>
           {ReactDOM.createPortal(
-            <div ref={toolbarRef} style={{ zIndex: 1 }}>
+            <div ref={toolbarRef}>
               <InlineDropdownToolbar
                 editorCallback={(instance) => {
                   toolbarEditor.current = instance;
                 }}
               />
             </div>,
-            document.body,
+            editor?._tiptapContainerEl || document.body,
           )}
 
           {editor._tiptapContainerEl &&
@@ -206,7 +219,7 @@ const InlineDropdown = (props) => {
                   tr.delete(pos, pos + node.nodeSize);
                   // Prevent the debounced onBlur/onDone from firing into the
                   // now-deleted node's stale position
-                  editor._toolbarOpened = false;
+                  setToolbarOpened(editor, false);
                   delete editor._holdInlineDropdownToolbarIndex;
                   editor.view.dispatch(tr);
                   setShowToolbar(false);

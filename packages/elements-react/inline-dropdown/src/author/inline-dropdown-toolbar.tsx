@@ -160,7 +160,7 @@ const RespArea: any = styled(EditableHtml)(({ theme }) => ({
   },
 }));
 
-const AddButton: any = styled(IconButton)(({ theme }) => ({
+const ToolbarButton: any = styled(IconButton)(({ theme }) => ({
   fontSize: theme.typography.fontSize + 2,
   padding: theme.spacing(0.5),
   color: theme.palette.common.black,
@@ -216,14 +216,14 @@ class RespAreaToolbar extends React.Component {
       const domNodeRect = domNode.getBoundingClientRect();
       const editorNode = domNode.closest('.tiptap');
       const editorRect = editorNode.getBoundingClientRect();
-      const top = domNodeRect.top - domNodeRect.height;
+      const top = domNodeRect.top - editorRect.top;
       const left = domNodeRect.left - editorRect.left;
 
       this.setState({
         toolbarStyle: {
           position: 'absolute',
-          top: `${top + domNodeRect.height + 40}px`,
-          left: `${left + 25}px`,
+          top: `${top + domNodeRect.height + 25}px`,
+          left: `${left}px`,
         },
       });
     }
@@ -317,12 +317,16 @@ class RespAreaToolbar extends React.Component {
     this.setState({ editedChoiceIndex: index });
   };
 
+  finishEditing: any = () => {
+    const html = this.editorRef.getHTML() || '';
+
+    this.onDone(html);
+    this.preventDone = true;
+  };
+
   onKeyDown: any = (event) => {
     if (event.key === 'Enter') {
-      const html = this.editorRef.getHTML() || '';
-
-      this.onDone(html);
-      this.preventDone = true;
+      this.finishEditing();
 
       // Cancelling event
       return true;
@@ -360,7 +364,7 @@ class RespAreaToolbar extends React.Component {
       baseInputConfiguration = {},
       responseAreaInputConfiguration = {},
     } = this.props;
-    const { respAreaMarkup, toolbarStyle } = this.state;
+    const { respAreaMarkup, toolbarStyle, editedChoiceIndex } = this.state;
 
     if (!toolbarStyle) {
       return null;
@@ -372,7 +376,7 @@ class RespAreaToolbar extends React.Component {
         style={{
           ...toolbarStyle,
           backgroundColor: '#E0E1E6',
-          zIndex: 1,
+          zIndex: 999,
         }}
         onMouseDown={this.onClickInside}
       >
@@ -430,13 +434,13 @@ class RespAreaToolbar extends React.Component {
             uploadSoundSupport={uploadSoundSupport}
             mathMlOptions={mathMlOptions}
           />
-          <AddButton
-            onClick={() => this.onAddChoice()}
+          <ToolbarButton
+            onClick={() => editedChoiceIndex >= 0 ? this.finishEditing() : this.onAddChoice()}
             size="small"
             aria-label="Add"
           >
-            <AddIcon fontSize="inherit" />
-          </AddButton>
+            {editedChoiceIndex >= 0 ? <CheckIcon fontSize="inherit" /> : <AddIcon fontSize="inherit"/>}
+          </ToolbarButton>
         </ItemBuilder>
 
         {choices && (

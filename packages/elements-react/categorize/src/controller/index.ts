@@ -16,7 +16,7 @@ import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
 import defaults from './defaults.js';
-import { getCompleteResponseDetails, isAlternateDuplicated, isCorrectResponseDuplicated } from './utils.js';
+import { getCompleteResponseDetails, isAlternateDuplicated, isCorrectResponseDuplicated, multiplePlacements } from './utils.js';
 
 // eslint-disable-next-line no-console
 
@@ -164,6 +164,18 @@ export const model = async (question, session, env, updateSession) => {
     choices = await getShuffledChoices(choices, session, updateSession, 'id');
   }
 
+  choices = (choices || []).map((c) => {
+    let categoryCount;
+    if (normalizedQuestion.allowMultiplePlacementsEnabled === multiplePlacements.enabled) {
+      categoryCount = 0;
+    } else if (normalizedQuestion.allowMultiplePlacementsEnabled === multiplePlacements.disabled) {
+      categoryCount = 1;
+    } else {
+      categoryCount = c.categoryCount || 0;
+    }
+    return { ...c, categoryCount };
+  });
+
   if (!note) {
     note = translator.t('common:commonCorrectAnswerWithAlternates', { lng: language });
   }
@@ -245,7 +257,7 @@ export const getLogTrace = (model, session, env) => {
   if (draggedChoices > 0) {
     traceLog.push(`Student placed ${draggedChoices} choice(s) into categories.`);
         
-    (categories || []).forEach((category, categoryIndex) => {
+    (categories || []).forEach((category) => {
       const categoryId = category.id;
       const builtCategory = builtCategories.find(c => c.id === categoryId);
       const studentChoices = builtCategory ? builtCategory.choices || [] : [];
@@ -278,11 +290,11 @@ export const getLogTrace = (model, session, env) => {
   }
 
   if (hasAlternates) {
-    traceLog.push(`Score calculated using all-or-nothing scoring (alternate responses disable partial scoring).`);
-    traceLog.push(`Student must get all categories completely correct to receive full credit.`);
+    traceLog.push('Score calculated using all-or-nothing scoring (alternate responses disable partial scoring).');
+    traceLog.push('Student must get all categories completely correct to receive full credit.');
   } else if (partialScoringEnabled) {
-    traceLog.push(`Score calculated using partial scoring.`);
-    traceLog.push(`Student receives credit for each correct placement, with deductions for incorrect placements beyond required amount.`);
+    traceLog.push('Score calculated using partial scoring.');
+    traceLog.push('Student receives credit for each correct placement, with deductions for incorrect placements beyond required amount.');
     
     if (draggedChoices > 0) {
       const totalCorrect = builtCategories.reduce((sum, cat) => 
@@ -299,8 +311,8 @@ export const getLogTrace = (model, session, env) => {
       }
     }
   } else {
-    traceLog.push(`Score calculated using all-or-nothing scoring.`);
-    traceLog.push(`Student must get all categories completely correct to receive full credit.`);
+    traceLog.push('Score calculated using all-or-nothing scoring.');
+    traceLog.push('Student must get all categories completely correct to receive full credit.');
   }
 
   const score = getTotalScore(model, session, env);

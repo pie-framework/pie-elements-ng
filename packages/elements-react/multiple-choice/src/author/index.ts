@@ -233,6 +233,7 @@ export default class MultipleChoice extends HTMLElement {
     log('connectedCallback - Component connected to DOM');
     log('connectedCallback - Model:', this._model ? 'present' : 'missing');
     log('connectedCallback - Configuration:', this._configuration ? 'present' : 'missing');
+    this._render();
   }
 
   disconnectedCallback() {

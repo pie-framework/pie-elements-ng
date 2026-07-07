@@ -14,7 +14,7 @@ export default {
   model: {
     allowAlternateEnabled: true,
     allowMaxChoicesPerCategory: false,
-    allowMultiplePlacementsEnabled: multiplePlacements.enabled,
+    allowMultiplePlacementsEnabled: multiplePlacements.disabled,
     alternates: [],
     categories: [],
     categoriesPerRow: 2,
