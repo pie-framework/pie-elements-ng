@@ -51,7 +51,7 @@ This document explains the print architecture and how the two different print pl
 
 ### 2. Item-Level Print Player (Production)
 
-**Package:** `@pie-player/print` (pie-players repository)
+**Package:** `@pie-players/pie-print-player` (pie-players repository)
 **Component:** `<pie-print>`
 **Purpose:** Production rendering of complete assessment items
 
@@ -63,7 +63,7 @@ Where `itemConfig` includes:
 - `item.markup` - HTML with multiple elements
 - `item.elements` - Package version map
 - `item.models` - Array of element models
-- `options.mode` - student/instructor
+- `options.role` - student/instructor
 
 **Use Cases:**
 - Production applications (pieoneer, content delivery)
@@ -71,7 +71,12 @@ Where `itemConfig` includes:
 - Markup-driven rendering
 - Floater elements (rubrics, standalone components)
 
-**Location:** Moved to `packages/print-player` in the `pie-players` repository.
+**Location:** `packages/print-player` in the `pie-players` repository.
+
+> Note: this repo also contains a `packages/print-player` (`@pie-element/print-player`).
+> It is **superseded** — its resolver loads `dist/print/index.js` (the bundler
+> artifact, which is not browser-loadable) and it does not inject a React import
+> map. Use `@pie-players/pie-print-player` for production print.
 
 ## Print Element Architecture
 
@@ -98,7 +103,7 @@ Print components are **self-contained** and handle their own transformations:
 // packages/elements-react/multiple-choice/src/print/index.tsx
 
 const preparePrintModel = (model, opts) => {
-  const instr = opts.mode === 'instructor';
+  const instr = opts.role === 'instructor';
 
   return {
     ...model,
@@ -127,8 +132,53 @@ export default class MultipleChoicePrint extends HTMLElement {
 - Each print component exports a custom element class
 - `preparePrintModel()` handles print-specific transformations
 - Renders using the existing delivery component
-- Respects `options.mode` for answer visibility
+- Respects `options.role` for answer visibility
 - No external orchestration needed for single elements
+
+## How the Print Bundle Is Built
+
+Print is bundled by **Vite**, per element package, from the single
+`src/print/index.tsx` entry. Two artifacts are produced:
+
+| Artifact | Built by | Purpose |
+| --- | --- | --- |
+| `dist/print/index.js` | the package's `vite.config.ts` | Node / bundler ESM. Keeps **bare imports** (`@pie-element/*`, `@pie-lib/*`, …). Loads in a browser **only when the host resolves them** — via a full import map or a bundler. Not self-contained. |
+| `dist/browser/print/index.js` | `tools/vite/element-browser.config.ts` | Browser ESM. **This is what the item-level player loads.** Self-contained except for React (only `react` / `react-dom` stay external). |
+
+### Self-contained except for React
+
+The browser build externalizes **only** React, per
+`tools/vite/browser-esm-policy.json`:
+
+```json
+{
+  "allowedBareImports": [
+    "react", "react/jsx-runtime", "react/jsx-dev-runtime",
+    "react-dom", "react-dom/client"
+  ],
+  "sharedDependencyVersions": { "react": "18.2.0", "react-dom": "18.2.0" }
+}
+```
+
+Everything else the print module needs — `@pie-lib/*` (render-ui,
+correct-answer-toggle, icons, translator), math rendering (including MathJax),
+lodash, MUI, Emotion, and any private child elements (e.g. EBSR's internal
+multiple-choice) — is **inlined** into the bundle's own chunks.
+
+React stays external because it must be a single shared instance on the page.
+The item-level player supplies it at load time through an injected **import
+map** that resolves `react` / `react-dom` to one pinned singleton
+(React 18.2.0).
+
+### Classic `pie-elements` vs `pie-elements-ng`
+
+|  | classic `pie-elements` | `pie-elements-ng` |
+| --- | --- | --- |
+| Bundler | `pslb` | Vite |
+| Print artifact | `module/print.js` | `dist/browser/print/index.js` |
+| Shared at runtime | React **and** a broad set of libs (MUI, render-ui, correct-answer-toggle, math-rendering) via shared DLL modules (`@pie-lib/shared-module`, `@pie-lib/math-rendering-module`) | **Only React** (`react` / `react-dom` / JSX runtimes) |
+| Everything else | provided by the shared modules at runtime | inlined into the element's own print bundle |
+| React provided by | shared DLL modules | an import map injected by the player |
 
 ## When to Use Which Approach
 
@@ -180,7 +230,7 @@ Example:
 
 | Feature | Element-Level | Item-Level |
 |---------|---------------|------------|
-| **Package** | `@pie-element/element-player` | `@pie-player/print` |
+| **Package** | `@pie-element/element-player` | `@pie-players/pie-print-player` |
 | **Tag** | `<pie-element-player view="print">` | `<pie-print>` |
 | **Input** | Element name + model | Full item config |
 | **Markup** | Not used | HTML string with elements |
@@ -213,14 +263,18 @@ This provides:
 
 ### From @pie-framework/pie-print
 
-The new item-level player (`@pie-player/print`) is a drop-in replacement:
+The new item-level player (`@pie-players/pie-print-player`) is a drop-in replacement:
 
 ```diff
 - <script src="https://cdn.jsdelivr.net/npm/@pie-framework/pie-print@2.7.0/lib/pie-print.js"></script>
-+ <script src="https://cdn.jsdelivr.net/npm/@pie-player/print@1.0.0/dist/print-player.js"></script>
++ <script src="https://cdn.jsdelivr.net/npm/@pie-players/pie-print-player/dist/print-player.js"></script>
 ```
 
-The API remains identical - only the URL resolution changes for newer packages:
+The `<pie-print>` API is the same; the URL resolution differs. `pie-elements-ng`
+packages are loaded from the **browser** print artifact (`dist/browser/print`),
+not the bundler-facing `dist/print`. The default resolver already does this, so
+no `resolve` override is needed for standard packages. To load from a custom
+host:
 
 ```javascript
 player.resolve = (tagName, pkg) => {
@@ -228,17 +282,24 @@ player.resolve = (tagName, pkg) => {
   return Promise.resolve({
     tagName,
     pkg,
-    // Updated path for pie-elements-ng packages
-    url: `https://cdn.jsdelivr.net/npm/@pie-element/${name}@${version}/dist/print/index.js`,
-    module: true
+    // Browser ESM artifact (self-contained except React)
+    url: `https://cdn.jsdelivr.net/npm/@pie-element/${name}@${version}/dist/browser/print/index.js`,
+    module: true,
+    loader: 'browser-esm',
   });
 };
 ```
 
+> Note: `dist/print/index.js` also exists and *can* be loaded in a browser, but
+> it is **not self-contained** — its bare `@pie-element/*` / `@pie-lib/*` imports
+> must be resolved by a full import map or a bundler, and loading the `@pie-lib`
+> graph at runtime exposes it to transitive version mismatches. The player uses
+> `dist/browser/print/index.js`, which only needs a React import map.
+
 ### Print player options
 
 - Custom elements use the same `model` / `options` pattern and `preparePrintModel(model, opts)`.
-- Use `opts.mode` (`'student'` | `'instructor'`) for answer visibility and similar behavior.
+- Use `opts.role` (`'student'` | `'instructor'`) for answer visibility and similar behavior.
 
 ## Development Workflow
 
@@ -272,7 +333,9 @@ bun run turbo build --filter @pie-element/multiple-choice
 bun run turbo build --filter "@pie-element/*"
 ```
 
-The build outputs to `dist/print/index.js` and `dist/print/index.d.ts`.
+The build outputs `dist/print/index.js` (bundler ESM) and `dist/print/index.d.ts`,
+plus `dist/browser/print/index.js` (the browser artifact the item-level player
+loads). See [How the Print Bundle Is Built](#how-the-print-bundle-is-built).
 
 ## Further Reading
 
