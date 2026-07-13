@@ -80,7 +80,21 @@ above. They are intentionally unavailable outside local dev mode.
 
 ## CI
 
-The `A11y Scenarios` GitHub workflow is manual (`workflow_dispatch`) and non-blocking.
-It runs the curated scenarios plus the broad inventory baseline, then uploads JSON,
-Markdown, and Playwright HTML reports as artifacts. Do not make it a required
-build/deploy gate until scenario findings and the inventory baseline have been triaged.
+The `A11y Scenarios` GitHub workflow runs on every pull request to `master`/`develop`
+(and on demand via `workflow_dispatch`). It is **non-blocking**: the job uses
+`continue-on-error: true`, so Axe findings never fail the PR check.
+
+It runs the curated scenarios plus the broad inventory baseline, then:
+
+- writes the Markdown summary to the GitHub Actions **job step summary**, so violations
+  are readable directly on the workflow run page without downloading anything, and
+- uploads the JSON, Markdown, and Playwright HTML reports as the `axe-a11y-reports`
+  artifact (30-day retention) for full detail — selectors, DOM context, and suggested
+  Jira titles.
+
+The workflow honors the shared `[skip-heavy-ci]` PR label/title (and skips
+`changeset-release/*` branches), the same escape hatch used by `ci.yml`.
+
+Do not make it a required build/deploy gate until scenario findings and the inventory
+baseline have been triaged. To promote toward blocking, run the suite with
+`A11Y_ENFORCE=1` so curated scenario findings fail.
