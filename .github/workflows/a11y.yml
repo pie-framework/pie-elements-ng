@@ -27,11 +27,26 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.13
+      - name: Cache Bun downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
       - run: bun x svelte-kit sync
         working-directory: apps/element-a11y-demo
       - run: bun run --cwd apps/element-a11y-demo generate-imports
       - run: bun run --cwd apps/element-a11y-demo build
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
       - run: bunx playwright install --with-deps
       - run: bun run test:a11y
       - run: bun run test:a11y:inventory
