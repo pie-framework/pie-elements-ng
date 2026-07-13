@@ -367,3 +367,5 @@ exercise representative ESM, IIFE, and preloaded flows.
   background on legacy shared-library IIFE bundling.
 - [`DEMO_SYSTEM.md`](DEMO_SYSTEM.md) explains how the demo app loads package
   artifacts during development.
+- [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md) explains how the print bundle is built
+  and rendered with the new print player.
