@@ -8,13 +8,10 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { multiplePlacements } from './utils.js';
-
 export default {
   model: {
     allowAlternateEnabled: true,
     allowMaxChoicesPerCategory: false,
-    allowMultiplePlacementsEnabled: multiplePlacements.enabled,
     alternates: [],
     categories: [],
     categoriesPerRow: 2,

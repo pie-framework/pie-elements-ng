@@ -181,6 +181,7 @@ export default class EbsrConfigure extends HTMLElement {
     this.removeEventListener(MODEL_UPDATED, this.onModelUpdated);
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

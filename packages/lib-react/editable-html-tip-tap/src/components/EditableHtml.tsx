@@ -130,6 +130,30 @@ export const EditableHtml = (props) => {
     ...toolbarOpts,
   };
 
+  const commitEditorContent = useCallback(
+    (editor) => {
+      const html = editor.getHTML();
+
+      if (props.markup !== html) {
+        props.onChange?.(html);
+      }
+
+      if (toolbarOptsToUse.doneOn === 'blur') {
+        props.onDone?.(html);
+      }
+    },
+    [props.markup, props.onChange, props.onDone, toolbarOptsToUse.doneOn],
+  );
+
+  const responseAreaPropsToUse = useMemo(
+    () => ({
+      ...defaultResponseAreaProps,
+      ...props.responseAreaProps,
+      onInlineDropdownToolbarClose: commitEditorContent,
+    }),
+    [props.responseAreaProps, commitEditorContent],
+  );
+
   const activePluginsToUse = useMemo(() => {
     let { customPlugins, ...otherPluginProps } = props.pluginProps || {};
 
@@ -153,14 +177,14 @@ export const EditableHtml = (props) => {
       toolbar: {},
       table: {},
       responseArea: {
-        type: props.responseAreaProps?.type,
+        type: responseAreaPropsToUse.type,
       },
       languageCharacters: props.languageCharactersProps,
       keyPadCharacterRef: {},
       setKeypadInteraction: {},
       media: {},
     });
-  }, [props]);
+  }, [props, responseAreaPropsToUse.type]);
 
   const extensions = [
     TextAlign.configure({
@@ -193,11 +217,11 @@ export const EditableHtml = (props) => {
     TableRow,
     ExtendedTableHeader,
     ExtendedTableCell,
-    ResponseAreaExtension.configure(props.responseAreaProps),
-    ExplicitConstructedResponseNode.configure(props.responseAreaProps),
-    DragInTheBlankNode.configure(props.responseAreaProps),
-    InlineDropdownNode.configure(props.responseAreaProps),
-    MathTemplatedNode.configure(props.responseAreaProps),
+    ResponseAreaExtension.configure(responseAreaPropsToUse),
+    ExplicitConstructedResponseNode.configure(responseAreaPropsToUse),
+    DragInTheBlankNode.configure(responseAreaPropsToUse),
+    InlineDropdownNode.configure(responseAreaPropsToUse),
+    MathTemplatedNode.configure(responseAreaPropsToUse),
     MathNode.configure({
       toolbarOpts: toolbarOptsToUse,
       math: props.pluginProps?.math || {},
@@ -313,15 +337,7 @@ export const EditableHtml = (props) => {
           return;
         }
 
-        const html = editor.getHTML();
-
-        if (props.markup !== html) {
-          props.onChange?.(html);
-        }
-
-        if (toolbarOptsToUse.doneOn === 'blur') {
-          props.onDone?.(html);
-        }
+        commitEditorContent(editor);
       },
     },
     [props.charactersLimit],
@@ -344,7 +360,7 @@ export const EditableHtml = (props) => {
     const nextMarkup = normalizeInitialMarkup(props.markup);
 
     if (nextMarkup !== editor.getHTML()) {
-      editor.commands.setContent(nextMarkup, false);
+      editor.commands.setContent(nextMarkup, { emitUpdate: false });
     }
   }, [props.markup, editor]);
 

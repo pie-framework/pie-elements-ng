@@ -116,6 +116,7 @@ function BlankContent({
   const rootRef = useRef(null);
   const spanRef = useRef(null);
   const frozenRef = useRef(null); // to use during dragging to prevent flickering
+  const measuringRef = useRef(false); // guard against ResizeObserver feedback loops
   const [dimensions, setDimensions] = useState({ height: 0, width: 0 });
 
   const handleImageLoad = () => {
@@ -143,7 +144,8 @@ function BlankContent({
   };
 
   const updateDimensions = () => {
-    if (spanRef.current && rootRef.current) {
+    if (spanRef.current && rootRef.current && !measuringRef.current) {
+      measuringRef.current = true;
       // Temporarily set rootRef width to 'auto' for natural measurement
       rootRef.current.style.width = 'auto';
       rootRef.current.style.height = 'auto';
@@ -152,16 +154,21 @@ function BlankContent({
       const measureNode = getMeasureNode();
       const node = measureNode || spanRef.current;
       const rect = node.getBoundingClientRect();
-      const width = rect.width || node.offsetWidth || 0;
+      const width = node.offsetWidth || rect.width || 0;
       const height = Math.max(
-        rect.height || 0,
         node.offsetHeight || 0,
+        rect.height || 0,
         node.scrollHeight || 0,
         spanRef.current.scrollHeight || 0,
       );
 
-      const widthWithPadding = width + 24; // 12px padding on each side
-      const heightWithPadding = height + 24; // 12px padding on top and bottom
+      const PADDING = 12;
+      const BORDER_WIDTH = 2;
+      const ADDITIONAL_SPACE = 1;
+      // padding and border on each side
+      const widthWithPadding = width + 2 * PADDING + 2 * BORDER_WIDTH + ADDITIONAL_SPACE;
+      // padding and border on top and bottom
+      const heightWithPadding = height + 2 * PADDING + 2 * BORDER_WIDTH + ADDITIONAL_SPACE;
 
       const responseAreaWidth = parseFloat(emptyResponseAreaWidth) || 0;
       const responseAreaHeight = parseFloat(emptyResponseAreaHeight) || 0;
@@ -169,13 +176,21 @@ function BlankContent({
       const adjustedWidth = widthWithPadding <= responseAreaWidth ? responseAreaWidth : widthWithPadding;
       const adjustedHeight = heightWithPadding <= responseAreaHeight ? responseAreaHeight : heightWithPadding;
 
+
       setDimensions((prevState) => ({
         width: adjustedWidth > responseAreaWidth ? adjustedWidth : prevState.width,
         height: adjustedHeight > responseAreaHeight ? adjustedHeight : prevState.height,
       }));
 
-      rootRef.current.style.width = `${adjustedWidth}px`;
-      rootRef.current.style.height = `${adjustedHeight}px`;
+      const nextWidth = `${adjustedWidth}px`;
+      const nextHeight = `${adjustedHeight}px`;
+      if (rootRef.current.style.width !== nextWidth) {
+        rootRef.current.style.width = nextWidth;
+      }
+      if (rootRef.current.style.height !== nextHeight) {
+        rootRef.current.style.height = nextHeight;
+      }
+      measuringRef.current = false;
     }
   };
 
@@ -201,6 +216,20 @@ function BlankContent({
     handleElements();
   }, []);
 
+  // Re-measure when the element first becomes visible — covers the tabbed-view case
+  // where the initial measurement happened while the tab was hidden (size 0).
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined' || !rootRef.current) return undefined;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) updateDimensions();
+      },
+      { threshold: 0 },
+    );
+    io.observe(rootRef.current);
+    return () => io.disconnect();
+  }, []);
+
   // Render math for the placeholder/preview when dragging over
   useEffect(() => {
     if (rootRef.current) {
@@ -214,7 +243,7 @@ function BlankContent({
       return;
     }
     handleElements();
-  }, [choice]);
+  }, [choice?.value]);
 
   useEffect(() => {
     if (!isOver && !isDragging) {

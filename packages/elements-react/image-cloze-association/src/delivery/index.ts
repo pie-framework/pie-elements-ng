@@ -260,6 +260,7 @@ export default class ImageClozeAssociation extends HTMLElement {
 
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 
