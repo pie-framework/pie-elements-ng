@@ -164,13 +164,24 @@ export const model = async (question, session, env, updateSession) => {
     choices = await getShuffledChoices(choices, session, updateSession, 'id');
   }
 
+  const resolvedAllowMultiple = (() => {
+    if (question.allowMultiplePlacementsEnabled != null) {
+      return question.allowMultiplePlacementsEnabled;
+    }
+    // Derive from correct response: if any choice id appears in more than one category, reuse is required
+    const allChoiceIds = (correctResponse || []).flatMap((cr) => cr.choices || []);
+    const isExclusive = allChoiceIds.length === new Set(allChoiceIds).size;
+    return isExclusive ? multiplePlacements.disabled : multiplePlacements.enabled;
+  })();
+
   choices = (choices || []).map((c) => {
     let categoryCount;
-    if (normalizedQuestion.allowMultiplePlacementsEnabled === multiplePlacements.enabled) {
+    if (resolvedAllowMultiple === multiplePlacements.enabled) {
       categoryCount = 0;
-    } else if (normalizedQuestion.allowMultiplePlacementsEnabled === multiplePlacements.disabled) {
+    } else if (resolvedAllowMultiple === multiplePlacements.disabled) {
       categoryCount = 1;
     } else {
+      // perChoice — use the value set on each choice individually
       categoryCount = c.categoryCount || 0;
     }
     return { ...c, categoryCount };
@@ -213,6 +224,7 @@ export const model = async (question, session, env, updateSession) => {
     possibleResponses,
     responseAreasToBeFilled,
     hasUnplacedChoices,
+    ...(question.allowMultiplePlacementsEnabled == null && { allowMultiplePlacementsEnabled: resolvedAllowMultiple }),
   };
 
   if (role === 'instructor' && (mode === 'view' || mode === 'evaluate')) {
@@ -286,7 +298,7 @@ export const getLogTrace = (model, session, env) => {
   }
 
   if (hasAlternates) {
-    traceLog.push(`Alternate response combinations are accepted for this question.`);
+    traceLog.push('Alternate response combinations are accepted for this question.');
   }
 
   if (hasAlternates) {
