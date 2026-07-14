@@ -80,11 +80,17 @@ above. They are intentionally unavailable outside local dev mode.
 
 ## CI
 
-The `A11y Scenarios` GitHub workflow runs on every pull request to `master`/`develop`
-(and on demand via `workflow_dispatch`). It is **non-blocking**: the job uses
-`continue-on-error: true`, so Axe findings never fail the PR check.
+The `A11y Scenarios` GitHub workflow is **non-blocking**: the job uses
+`continue-on-error: true`, so Axe findings never fail a check. What runs depends on the
+trigger:
 
-It runs the curated scenarios plus the broad inventory baseline, then:
+- **Every pull request** to `master`/`develop` runs the curated **scenarios only**
+  (fast per-PR feedback).
+- **Release PRs into `master`** (e.g. a `develop` -> `master` PR) and **manual
+  `workflow_dispatch`** additionally run the broad **inventory baseline** — the full
+  release-boundary sweep. The inventory step is skipped on regular PRs into `develop`.
+
+In every case it then:
 
 - writes the Markdown summary to the GitHub Actions **job step summary**, so violations
   are readable directly on the workflow run page without downloading anything, and

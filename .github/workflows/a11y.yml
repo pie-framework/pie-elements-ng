@@ -27,29 +27,20 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.13
-      - name: Cache Bun downloads
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
       - run: bun x svelte-kit sync
         working-directory: apps/element-a11y-demo
       - run: bun run --cwd apps/element-a11y-demo generate-imports
-      - run: bun run --cwd apps/element-a11y-demo build
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-      - run: bunx playwright install --with-deps
+      # No build step: the Playwright config serves the app via `bun run dev`
+      # (Vite), which compiles element sources on the fly, so a production build
+      # is not needed for the a11y scan run.
+      - run: bunx playwright install --with-deps chromium
       - run: bun run test:a11y
+      # The broad inventory sweep (~7 min) is skipped on regular PRs to keep
+      # per-PR feedback fast. It runs on release PRs into master (develop ->
+      # master, i.e. base branch master) and on manual dispatch.
       - run: bun run test:a11y:inventory
+        if: github.event_name == 'workflow_dispatch' || github.base_ref == 'master'
       - name: Publish a11y report to job summary
         if: always()
         run: |
@@ -72,6 +63,9 @@ jobs:
               echo "## Inventory baseline"
               echo
               head -c 400000 "$report_dir/axe-a11y-report.md"
+              echo
+            elif [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+              echo "_The broad inventory baseline runs only on release PRs into \`master\` (and on manual dispatch), so it is not included for this PR._"
               echo
             else
               echo "> Inventory report not found ($report_dir/axe-a11y-report.md)."
