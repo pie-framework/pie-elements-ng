@@ -1,8 +1,21 @@
 # Creates versioning PRs (changesets) and publishes to npm from CI.
 #
-# Publishing authenticates via OIDC trusted publishing once the NPM_TOKEN secret is removed;
-# while that secret exists the `auto` mode below resolves to token auth. See the
-# "Resolve npm publish auth mode" step and scripts/configure-trusted-publishers.mjs.
+# Publishing currently authenticates with the NPM_TOKEN secret: while that secret exists the
+# `auto` mode below resolves to token auth. The OIDC machinery here is complete and exercised
+# (npm floor, .npmrc scrub, provenance check), but the cutover is BLOCKED and the secret must
+# not be deleted yet.
+#
+# Why: npm permits exactly one trusted publisher per package, and most of the names this repo
+# publishes are also published by pie-framework/pie-elements and pie-framework/pie-lib, which
+# are still active — this repo ships `-next.N` prereleases of the same packages those repos
+# release as stable. As of 2026-07-31, 50 of 74 packages already have a trusted publisher
+# bound to one of those repos' ci.yml. Auth mode applies to a whole publish run, so flipping
+# to OIDC would fail every one of them with ENEEDAUTH and produce a partial release — the
+# failure mode pie-players hit when its token was removed before its packages were configured.
+#
+# See the "Shared packages" note in scripts/configure-trusted-publishers.mjs. The secret can be
+# removed only once `bun run trusted-publishers -- --verify` reports CONFIGURED for every
+# package. See also the "Resolve npm publish auth mode" step below.
 #
 # CI publishing is gated on ENABLE_CICD_NPM_PUBLISH, currently 'true'.
 name: Release
