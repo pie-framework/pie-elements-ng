@@ -181,8 +181,9 @@ test.describe('sr-vic live parity — visual', () => {
   });
 
   test('audio transcript is sr-only (not visibly rendered) on PIE side', async ({ page }) => {
-    await openSrVicParityRoute(page);
-    const transcript = page.locator('#pie-container .pie-audio-transcript');
+    // PIE-only assertion — use the deliver route to avoid waiting on LSY rendering.
+    await openSrVicRoute(page);
+    const transcript = page.locator('[data-testid="role-student"] .pie-audio-transcript');
     // sr-vic uses showVisibleTranscript: false — transcript should be sr-only or absent
     const isVisible = await transcript.isVisible().catch(() => false);
     if (isVisible) {

@@ -215,12 +215,11 @@ test('gplusggg: after-cloze content does not shift vertically when a distractor 
 
 // ---------------------------------------------------------------------------
 // r1.scss: .rli-r1-content-element { font-size: 1.9em } wraps all stem tokens.
-// Inline font-size spans in the template (e.g. style="font-size:1.8em") must
-// multiply on top of the 1.9em base — so the template-line context must be 1.9em.
+// Inline font-size spans in the template (e.g. style="font-size:1.8em") multiply
+// on top of this. The 1.9em resolves against the Learnosity host base of 14px,
+// pinned on the variant root in sel-r1-base.css for parity. → 26.6px.
 // ---------------------------------------------------------------------------
-test('gplusggg: template line font size is 1.9em (r1 content-element base size)', async ({
-  page,
-}) => {
+test('gplusggg: template line font size matches LSY (14px × 1.9em = 26.6px)', async ({ page }) => {
   await openGplusgggRoute(page);
   const root = deliveryContainer(page);
 
@@ -228,10 +227,8 @@ test('gplusggg: template line font size is 1.9em (r1 content-element base size)'
   await expect(templateLine).toBeVisible();
 
   const fontSize = await templateLine.evaluate((el) => getComputedStyle(el).fontSize);
-  // 1.9em relative to default 16px body = 30.4px; accept 30–31px to allow subpixel rounding.
   const px = parseFloat(fontSize);
-  expect(px).toBeGreaterThanOrEqual(30);
-  expect(px).toBeLessThanOrEqual(32);
+  expect(Math.abs(px - 26.6)).toBeLessThanOrEqual(0.5);
 });
 
 // ---------------------------------------------------------------------------
