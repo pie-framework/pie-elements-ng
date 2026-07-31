@@ -2,6 +2,11 @@
   "name": "@pie-element/ebsr",
   "version": "14.2.2-next.5",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/elements-react/ebsr"
+  },
   "dependencies": {
     "@pie-element/multiple-choice": "workspace:*",
     "@pie-lib/translator": "workspace:*",

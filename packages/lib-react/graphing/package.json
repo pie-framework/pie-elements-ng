@@ -2,6 +2,11 @@
   "name": "@pie-lib/graphing",
   "version": "4.0.5-next.31",
   "description": "Graphing components",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/graphing"
+  },
   "dependencies": {
     "@dnd-kit/sortable": "10.0.0",
     "@emotion/react": "^11.14.0",

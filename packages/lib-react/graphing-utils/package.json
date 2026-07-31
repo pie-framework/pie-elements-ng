@@ -2,6 +2,11 @@
   "name": "@pie-lib/graphing-utils",
   "version": "3.0.3-next.1",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/graphing-utils"
+  },
   "dependencies": {
     "@mapbox/point-geometry": "^1.1.0",
     "debug": "^4.1.1",

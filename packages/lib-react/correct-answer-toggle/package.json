@@ -2,6 +2,11 @@
   "name": "@pie-lib/correct-answer-toggle",
   "version": "4.0.3-next.38",
   "description": "A react based toggle component",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/correct-answer-toggle"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

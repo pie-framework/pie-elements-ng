@@ -2,6 +2,11 @@
   "name": "@pie-lib/categorize",
   "version": "2.0.3-next.1",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/categorize"
+  },
   "dependencies": {
     "debug": "^4.1.1",
     "@pie-element/shared-lodash": "workspace:*"

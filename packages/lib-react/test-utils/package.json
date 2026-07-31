@@ -2,6 +2,11 @@
   "name": "@pie-lib/test-utils",
   "version": "2.0.2",
   "description": "Testing utilities for pie-lib packages with React Testing Library and MUI support",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/test-utils"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.11.0",

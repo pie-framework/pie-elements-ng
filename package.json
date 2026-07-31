@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "description": "Modern PIE elements implementation with Svelte 5, Bun, and Turbo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git"
+  },
   "workspaces": [
     "packages/shared/*",
     "packages/elements-react/*",
@@ -89,6 +93,10 @@
     "verify:runtime-support": "node scripts/verify-runtime-support-exports.mjs",
     "verify:element-contracts": "bun ./scripts/verify-element-contracts.mjs",
     "check:publish-surface": "bun ./scripts/check-publish-surface.mjs",
+    "check:repository-metadata": "bun ./scripts/check-repository-metadata.mjs",
+    "check:npm-auth": "node ./scripts/check-npm-auth.mjs",
+    "check:provenance": "bun ./scripts/check-provenance.mjs",
+    "trusted-publishers": "node ./scripts/configure-trusted-publishers.mjs",
     "check:sourcemaps": "bun ./scripts/check-sourcemap-sources.mjs",
     "verify:dependency-integrity": "bun run cli verify:dependency-integrity",
     "evals": "turbo run test:evals",

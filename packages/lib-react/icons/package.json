@@ -2,6 +2,11 @@
   "name": "@pie-lib/icons",
   "version": "4.0.2",
   "description": "Some simple icons",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/icons"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

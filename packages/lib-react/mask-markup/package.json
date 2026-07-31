@@ -2,6 +2,11 @@
   "name": "@pie-lib/mask-markup",
   "version": "3.0.4-next.33",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/mask-markup"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

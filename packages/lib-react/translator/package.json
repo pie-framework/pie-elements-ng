@@ -2,6 +2,11 @@
   "name": "@pie-lib/translator",
   "version": "4.0.3-next.1",
   "description": "React implementation of @pie-lib/translator synced from pie-lib",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/translator"
+  },
   "dependencies": {
     "debug": "^4.1.1",
     "i18next": "^25.7.0",

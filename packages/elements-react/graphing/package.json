@@ -2,6 +2,11 @@
   "name": "@pie-element/graphing",
   "version": "10.1.2-next.5",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/elements-react/graphing"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",

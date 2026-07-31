@@ -2,6 +2,11 @@
   "name": "@pie-lib/text-select",
   "version": "3.0.3-next.38",
   "description": "Some react components for text selection",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/text-select"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
