@@ -236,6 +236,87 @@ describe('package inspection quality-gate helpers', () => {
     );
   });
 
+  it('measures the browser size budget over the reachable graph, not stale chunks', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'stale-chunks');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+
+    // Reachable payload: entry -> shared chunk, both tiny.
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'import "../shared-AAAAAAAA.js";\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'shared-AAAAAAAA.js'),
+      'export const shared = 1;\n',
+      'utf8'
+    );
+    // Orphan left behind by an earlier build, larger than the whole budget.
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'shared-BBBBBBBB.js'),
+      `export const stale = "${'x'.repeat(5 * 1024 * 1024)}";\n`,
+      'utf8'
+    );
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/stale-chunks',
+      pkg: {
+        name: '@pie-element/stale-chunks',
+        version: '1.0.0',
+        files: ['dist'],
+        exports: {
+          './browser/delivery': {
+            default: './dist/browser/delivery/index.js',
+          },
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+    });
+
+    // The 5 MiB stale chunk must not be charged against the 4 MiB budget: the
+    // tripwire exists to catch dependency drift in the real payload, and a
+    // leftover chunk from an earlier build is not drift.
+    expect(violations.some((violation) => violation.includes('exceeds policy budget'))).toBe(false);
+  });
+
+  it('still trips the browser size budget when the reachable payload itself is oversized', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'oversized');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+
+    // Entry pulls the oversized chunk in, so it counts as real payload drift.
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'import "../vendor-AAAAAAAA.js";\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'vendor-AAAAAAAA.js'),
+      `export const vendor = "${'x'.repeat(5 * 1024 * 1024)}";\n`,
+      'utf8'
+    );
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/oversized',
+      pkg: {
+        name: '@pie-element/oversized',
+        version: '1.0.0',
+        files: ['dist'],
+        exports: {
+          './browser/delivery': {
+            default: './dist/browser/delivery/index.js',
+          },
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+    });
+
+    expect(violations.some((violation) => violation.includes('exceeds policy budget'))).toBe(true);
+  });
+
   it('rejects browser ESM packages that register their public element tag', async () => {
     const root = await makeWorkspaceFixture();
     const packageDir = join(root, 'packages', 'elements-react', 'public-registering');

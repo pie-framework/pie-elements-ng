@@ -198,6 +198,61 @@ const collectControllerContractViolations = (dir, pkg) => {
   return violations;
 };
 
+const collectRelativeImportSpecifiers = (source) => {
+  const specifiers = new Set();
+  const patterns = [
+    /\bimport\s+['"]([^'"]+)['"]/g,
+    /\bimport\s[^'"]*?\bfrom\s*['"]([^'"]+)['"]/g,
+    /\bexport\s[^'"]*?\bfrom\s*['"]([^'"]+)['"]/g,
+    /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+  ];
+  for (const pattern of patterns) {
+    for (const match of source.matchAll(pattern)) {
+      if (match[1].startsWith('.')) specifiers.add(match[1]);
+    }
+  }
+  return [...specifiers];
+};
+
+/**
+ * Walk the module graph reachable from the declared ./browser/* export targets.
+ *
+ * The budget exists to catch dependency drift in the shipped payload (e.g. react
+ * silently becoming bundled instead of externalized), so it has to be measured
+ * over what a consumer actually downloads. Summing every .js under dist/browser
+ * instead also counts orphaned content-hashed chunks left behind by earlier
+ * builds, which inflates the number by a whole vendor chunk and fails the gate
+ * on packages whose real payload is barely half the budget.
+ */
+const collectReachableBrowserJsFiles = (dir, browserExportTargets) => {
+  const reachable = new Set();
+  const queue = [];
+
+  for (const target of browserExportTargets) {
+    const entryPath = path.resolve(dir, target.slice(2));
+    if (existsSync(entryPath)) queue.push(entryPath);
+  }
+
+  while (queue.length > 0) {
+    const filePath = queue.pop();
+    if (reachable.has(filePath)) continue;
+    reachable.add(filePath);
+
+    const source = readFileSync(filePath, 'utf8');
+    for (const specifier of collectRelativeImportSpecifiers(source)) {
+      const resolved = path.resolve(path.dirname(filePath), specifier);
+      for (const candidate of [resolved, `${resolved}.js`, path.join(resolved, 'index.js')]) {
+        if (path.extname(candidate) === '.js' && existsSync(candidate)) {
+          queue.push(candidate);
+          break;
+        }
+      }
+    }
+  }
+
+  return reachable;
+};
+
 const collectBareImportSpecifiers = (source) => {
   const specifiers = [];
   for (const line of source.split(/\r?\n/)) {
@@ -249,6 +304,7 @@ const collectBrowserEsmViolations = (dir, pkg) => {
 
   const violations = [];
   const browserSharedDependencies = pkg.pie?.browserSharedDependencies;
+  const browserExportTargets = [];
 
   for (const [key, value] of browserExports) {
     const target = typeof value === 'string' ? value : value?.default;
@@ -260,15 +316,23 @@ const collectBrowserEsmViolations = (dir, pkg) => {
     const targetPath = path.join(dir, target.slice(2));
     if (!existsSync(targetPath)) {
       violations.push(`${key} target is missing: ${target}`);
+      continue;
     }
+    browserExportTargets.push(target);
   }
 
   const browserDir = path.join(dir, 'dist/browser');
   let browserJsBytes = 0;
   const requiredBrowserSharedDependencies = new Set();
   const jsFiles = collectPackageJsFiles(browserDir);
+  const reachableJsFiles = collectReachableBrowserJsFiles(dir, browserExportTargets);
   for (const filePath of jsFiles) {
-    browserJsBytes += readFileSync(filePath).byteLength;
+    // Budget only counts the payload reachable from the declared browser exports.
+    // Unreachable files are stale chunks from an earlier build: inert dead weight,
+    // not dependency drift, so they must not trip the budget.
+    if (reachableJsFiles.has(filePath)) {
+      browserJsBytes += readFileSync(filePath).byteLength;
+    }
     const source = readFileSync(filePath, 'utf8');
     for (const specifier of collectBareImportSpecifiers(source)) {
       if (!allowedBrowserBareImports.has(specifier)) {
@@ -288,7 +352,7 @@ const collectBrowserEsmViolations = (dir, pkg) => {
   }
   if (maxBrowserJsBytesPerPackage > 0 && browserJsBytes > maxBrowserJsBytesPerPackage) {
     violations.push(
-      `dist/browser JS size ${browserJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
+      `dist/browser reachable JS size ${browserJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
     );
   }
 

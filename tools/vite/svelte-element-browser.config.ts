@@ -57,7 +57,9 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify('production'),
   },
   build: {
-    emptyOutDir: false,
+    // See element-browser.config.ts: dist/browser is owned exclusively by this
+    // config, and leaving it un-emptied lets stale content-hashed chunks pile up.
+    emptyOutDir: true,
     outDir: resolve(packageDir, 'dist/browser'),
     sourcemap: true,
     commonjsOptions: {
