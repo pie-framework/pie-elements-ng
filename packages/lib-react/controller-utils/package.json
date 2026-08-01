@@ -2,6 +2,11 @@
   "name": "@pie-lib/controller-utils",
   "version": "2.0.3-next.1",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/controller-utils"
+  },
   "dependencies": {
     "debug": "^4.1.1",
     "@pie-element/shared-lodash": "workspace:*"

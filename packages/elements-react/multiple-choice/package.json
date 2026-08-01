@@ -2,6 +2,11 @@
   "name": "@pie-element/multiple-choice",
   "version": "13.2.2-next.5",
   "description": "React implementation of multiple-choice element synced from pie-elements",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/elements-react/multiple-choice"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",

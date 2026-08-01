@@ -2,6 +2,11 @@
   "name": "@pie-lib/charting",
   "version": "7.0.4-next.31",
   "description": "charting",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/charting"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

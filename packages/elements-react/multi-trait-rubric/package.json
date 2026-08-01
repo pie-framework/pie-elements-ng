@@ -2,6 +2,11 @@
   "name": "@pie-element/multi-trait-rubric",
   "version": "8.1.2-next.5",
   "description": "React implementation of multi-trait-rubric element synced from pie-elements",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/elements-react/multi-trait-rubric"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",
