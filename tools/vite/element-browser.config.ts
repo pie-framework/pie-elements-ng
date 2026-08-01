@@ -54,7 +54,12 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify('production'),
   },
   build: {
-    emptyOutDir: false,
+    // dist/browser is owned exclusively by this config, so emptying it is safe and
+    // keeps the directory deterministic. With emptyOutDir: false, content-hashed
+    // chunks from earlier builds are never removed, so dist/browser accumulates
+    // orphaned copies of the ~2 MB vendor chunk and trips the publish-surface
+    // size budget even though the real payload is well under it.
+    emptyOutDir: true,
     outDir: resolve(packageDir, 'dist/browser'),
     sourcemap: true,
     commonjsOptions: {
