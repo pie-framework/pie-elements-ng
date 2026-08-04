@@ -8,8 +8,8 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { DIVIDE, MULTIPLY } from './chars';
-import { mkSet } from './utils';
+import { DIVIDE, MULTIPLY } from './chars.js';
+import { mkSet } from './utils.js';
 
 const set = mkSet('operators');
 

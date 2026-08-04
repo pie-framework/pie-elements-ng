@@ -1,0 +1,14 @@
+{
+  "allowedBareImports": [
+    "react",
+    "react/jsx-runtime",
+    "react/jsx-dev-runtime",
+    "react-dom",
+    "react-dom/client"
+  ],
+  "sharedDependencyVersions": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "maxBrowserJsBytesPerPackage": 4194304
+}

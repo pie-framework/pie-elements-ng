@@ -16,7 +16,7 @@ import { GraphContainer as Graph } from '@pie-lib/graphing';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Delete from '@mui/icons-material/Delete';
-import { set, isEqual } from 'lodash-es';
+import { set, isEqual } from '@pie-element/shared-lodash';
 import { MenuItem, Select, Tooltip, Typography } from '@mui/material';
 import Info from '@mui/icons-material/Info';
 

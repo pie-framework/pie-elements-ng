@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormSection, layout, AlertDialog } from '@pie-lib/config-ui';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { FractionModelChart  } from '../delivery/index.js';
+import { FractionModelChart } from '../delivery/index.js';
 import Tooltip from '@mui/material/Tooltip';
 import Info from '@mui/icons-material/Info';
 import { styled } from '@mui/material/styles';

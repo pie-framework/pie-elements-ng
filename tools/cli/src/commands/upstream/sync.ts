@@ -1,6 +1,10 @@
 import { Command, Flags } from '@oclif/core';
 import { Logger } from '../../utils/logger.js';
-import { loadCompatibilityReport, type CompatibilityReport } from '../../utils/compatibility.js';
+import {
+  formatCompatibilityReportLastAnalyzed,
+  loadCompatibilityReport,
+  type CompatibilityReport,
+} from '../../utils/compatibility.js';
 import { getCurrentCommit } from '../../utils/git.js';
 import { printSyncSummary, createEmptySummary } from '../../lib/upstream/sync-summary.js';
 import { loadPackageJson, writePackageJson, type PackageJson } from '../../utils/package-json.js';
@@ -16,7 +20,6 @@ import { PieLibStrategy } from '../../lib/upstream/sync-pielib-strategy.js';
 import type { SyncStrategy, SyncContext } from '../../lib/upstream/sync-strategy.js';
 import { DEFAULT_PATHS, COMPATIBILITY_FILE, WORKSPACE } from '../../lib/upstream/sync-constants.js';
 import { assertReposExist } from '../../lib/upstream/repo-utils.js';
-import { addDevelopmentExports } from '../../lib/upstream/sync-dev-exports.js';
 import { rewriteRelativeSpecifiersForNodeEsm } from '../../lib/upstream/sync-imports.js';
 import {
   analyzePackageDependencyIntegrity,
@@ -356,11 +359,6 @@ export default class Sync extends Command {
       }
     }
 
-    // Add development export conditions for HMR support
-    if (!config.dryRun && this.touchedElementPackages.size > 0) {
-      await this.addDevelopmentExportsToPackages(config);
-    }
-
     // Build by default (unless dry-run or explicitly skipped)
     if (!config.dryRun && !config.skipBuild && result.errors.length === 0) {
       await this.buildTouchedPackages(config, result);
@@ -413,7 +411,7 @@ export default class Sync extends Command {
     }
 
     this.logger.info(`📋 Using ESM compatibility filter from ${config.compatibilityFile}`);
-    this.logger.info(`   Last analyzed: ${new Date(report.lastAnalyzed).toLocaleString()}`);
+    this.logger.info(`   Last analyzed: ${formatCompatibilityReportLastAnalyzed(report)}`);
     this.logger.info(`   Compatible elements: ${report.elements.length}`);
     this.logger.info(`   Compatible pie-lib packages: ${report.pieLibPackages.length}`);
 
@@ -1068,26 +1066,6 @@ export default class Sync extends Command {
       this.logger.warn('   ⚠️  bun install failed');
     } else {
       this.logger.info('   ✓ bun install completed successfully\n');
-    }
-  }
-
-  private async addDevelopmentExportsToPackages(config: SyncConfig): Promise<void> {
-    this.logger.section('🔧 Adding development export conditions');
-
-    const elementsDir = join(config.pieElementsNg, 'packages/elements-react');
-    const packageNames = Array.from(this.touchedElementPackages);
-
-    if (packageNames.length === 0) {
-      this.logger.debug('   No element packages to process');
-      return;
-    }
-
-    const updated = await addDevelopmentExports(elementsDir, packageNames, this.logger);
-
-    if (updated > 0) {
-      this.logger.info(`   ✓ Added development exports to ${updated} package(s)\n`);
-    } else {
-      this.logger.debug('   → No changes needed\n');
     }
   }
 

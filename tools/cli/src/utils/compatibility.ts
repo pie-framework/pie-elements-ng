@@ -1,5 +1,6 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 /**
  * ESM package.json validation result
@@ -65,6 +66,9 @@ export interface EsmRuntimeValidationResult {
  * Compatibility report structure
  */
 export interface CompatibilityReport {
+  browserEsmReady?: string[];
+  browserEsmUnsupported?: Record<string, { reason: string }>;
+
   elements: string[];
   pieLibPackages: string[];
   blockedElements: Record<string, string[]>;
@@ -101,6 +105,11 @@ export interface CompatibilityReport {
   };
 }
 
+export interface StaticBrowserEsmReport {
+  browserEsmReady: string[];
+  browserEsmUnsupported: Record<string, { reason: string }>;
+}
+
 export interface ElementDetail {
   compatible: boolean;
   directDeps: string[];
@@ -129,13 +138,178 @@ export interface PieLibDetail {
   blockers: string[];
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
+}
+
+function hasBrowserExport(exportsMap: unknown, key: string): boolean {
+  if (!isRecord(exportsMap)) return false;
+  const value = exportsMap[key];
+  if (typeof value === 'string') return value.length > 0;
+  return isRecord(value) && typeof value.default === 'string' && value.default.length > 0;
+}
+
+export async function deriveStaticBrowserEsmReport(
+  repoRoot: string
+): Promise<StaticBrowserEsmReport> {
+  const ready: string[] = [];
+  const unsupported: Record<string, { reason: string }> = {};
+  const packageRoots = [
+    join(repoRoot, 'packages', 'elements-react'),
+    join(repoRoot, 'packages', 'elements-svelte'),
+  ];
+
+  for (const packageRoot of packageRoots) {
+    const entries = await readdir(packageRoot, { withFileTypes: true }).catch(() => []);
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const packageJsonPath = join(packageRoot, entry.name, 'package.json');
+      if (!existsSync(packageJsonPath)) continue;
+
+      const pkg = JSON.parse(await readFile(packageJsonPath, 'utf-8')) as Record<string, unknown>;
+      if (
+        pkg.private === true ||
+        typeof pkg.name !== 'string' ||
+        !pkg.name.startsWith('@pie-element/')
+      ) {
+        continue;
+      }
+
+      const missing = ['./browser/delivery', './browser/controller'].filter(
+        (key) => !hasBrowserExport(pkg.exports, key)
+      );
+      if (missing.length === 0) {
+        ready.push(entry.name);
+      } else {
+        unsupported[entry.name] = {
+          reason: `Missing browser ESM exports: ${missing.join(', ')}`,
+        };
+      }
+    }
+  }
+
+  return {
+    browserEsmReady: ready.sort(),
+    browserEsmUnsupported: Object.fromEntries(Object.entries(unsupported).sort()),
+  };
+}
+
+function blockedReason(value: unknown): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    const reasons = stringArray(value);
+    return reasons.length > 0 ? reasons : ['Unsupported by static browser ESM report'];
+  }
+  if (isRecord(value) && typeof value.reason === 'string') {
+    return [value.reason];
+  }
+  return ['Unsupported by static browser ESM report'];
+}
+
+function normalizeStaticBrowserEsmReport(report: Record<string, unknown>): CompatibilityReport {
+  const elements = stringArray(report.browserEsmReady);
+  const unsupported = isRecord(report.browserEsmUnsupported) ? report.browserEsmUnsupported : {};
+  const blockedElements = Object.fromEntries(
+    Object.entries(unsupported).map(([element, details]) => [element, blockedReason(details)])
+  );
+  const elementDetails: Record<string, ElementDetail> = {};
+
+  for (const element of elements) {
+    elementDetails[element] = {
+      compatible: true,
+      directDeps: [],
+      pieLibDeps: [],
+      pieElementDeps: [],
+      blockers: [],
+      studentUI: { compatible: true, blockers: [] },
+      configure: { compatible: true, blockers: [] },
+      controller: { compatible: true, blockers: [] },
+    };
+  }
+
+  for (const [element, blockers] of Object.entries(blockedElements)) {
+    elementDetails[element] = {
+      compatible: false,
+      directDeps: [],
+      pieLibDeps: [],
+      pieElementDeps: [],
+      blockers,
+      studentUI: { compatible: false, blockers },
+      configure: { compatible: false, blockers },
+      controller: { compatible: false, blockers },
+    };
+  }
+
+  return {
+    ...report,
+    elements,
+    pieLibPackages: [],
+    blockedElements,
+    elementDetails,
+    pieLibDetails: {},
+    esmPlayerReady: elements,
+    esmValidation: {},
+    lastAnalyzed: typeof report.lastAnalyzed === 'string' ? report.lastAnalyzed : 'unknown',
+    summary: {
+      totalElements: elements.length + Object.keys(blockedElements).length,
+      compatibleElements: elements.length,
+      blockedElements: Object.keys(blockedElements).length,
+      esmPlayerReady: elements.length,
+      totalPieLibPackages: 0,
+      compatiblePieLibPackages: 0,
+    },
+  };
+}
+
+function normalizeCompatibilityReport(report: unknown): CompatibilityReport {
+  if (
+    isRecord(report) &&
+    Array.isArray(report.browserEsmReady) &&
+    !Array.isArray(report.elements)
+  ) {
+    return normalizeStaticBrowserEsmReport(report);
+  }
+
+  return report as CompatibilityReport;
+}
+
+export function formatCompatibilityReportLastAnalyzed(report: CompatibilityReport): string {
+  const timestamp = report.lastAnalyzed;
+  if (!timestamp || timestamp === 'unknown') {
+    return 'unknown';
+  }
+
+  const analyzedAt = new Date(timestamp);
+  return Number.isNaN(analyzedAt.getTime()) ? 'unknown' : analyzedAt.toLocaleString();
+}
+
+export function createTrackedCompatibilityReport(report: CompatibilityReport): CompatibilityReport {
+  const { esmRuntimeValidation, esmRuntimeValidationEnabled, esmRuntimeCdnBaseUrl, ...tracked } =
+    report;
+  const { esmRuntimeReady, ...summary } = report.summary;
+
+  return {
+    ...tracked,
+    lastAnalyzed: 'unknown',
+    summary,
+  };
+}
+
 export async function loadCompatibilityReport(path: string): Promise<CompatibilityReport> {
   if (!existsSync(path)) {
     throw new Error(`Compatibility report not found at: ${path}`);
   }
 
   const content = await readFile(path, 'utf-8');
-  return JSON.parse(content) as CompatibilityReport;
+  return normalizeCompatibilityReport(JSON.parse(content) as unknown);
 }
 
 export function isElementCompatible(element: string, report: CompatibilityReport): boolean {

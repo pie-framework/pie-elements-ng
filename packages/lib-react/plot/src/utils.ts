@@ -9,7 +9,7 @@
  */
 
 import invariant from 'invariant';
-import { head, isEqual, range, tail } from 'lodash-es';
+import { head, isEqual, range, tail } from '@pie-element/shared-lodash';
 import Point from '@mapbox/point-geometry';
 
 export const xy = (x, y) => ({ x, y });

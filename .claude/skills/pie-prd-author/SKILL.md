@@ -25,7 +25,7 @@ Does **not** require a PRD: bug fixes, refactors with no behaviour change, demo 
 
 1. Read `docs/prds/_template.md` — this is the copy-paste starter.
 2. Read `docs/prds/venn-classification/PRD.md` — canonical length and tone. Target that density.
-3. Read `UBIQUITOUS_LANGUAGE.md` — use its terms throughout the PRD. Do not invent synonyms.
+3. Read `CONTEXT.md`, `docs/prds/README.md`, the relevant existing PRD if one exists, and nearby element examples. Use established repo terminology for model, session, mode, controller, and authoring concepts; do not invent synonyms.
 4. Identify the slug: element name or feature name in kebab-case. It becomes `docs/prds/<slug>/PRD.md`.
 5. Check whether a PRD already exists at that path before creating a new one.
 6. Draft into `docs/prds/<slug>/PRD.md`. Cover: Context, Goals, Non-goals, Proposed surface (Model, Session, Modes, Controller responsibilities, Authoring surface), Worked example, Accessibility, Open questions.
@@ -65,7 +65,7 @@ Every Non-goal that a reader might push back on must include a one-sentence inli
 
 Example pattern:
 
-```
+```markdown
 - **No per-tile scoring weights.** All tiles score equally; weights add authoring complexity
   with marginal pedagogical benefit for K-8 formative use.
 ```
@@ -85,7 +85,7 @@ The default is a single `PRD.md` covering all facets. Only split into `delivery.
 
 ## Tool Usage
 
-- **Read**: `docs/prds/_template.md`, `docs/prds/venn-classification/PRD.md`, `UBIQUITOUS_LANGUAGE.md`, any existing PRD at the target path.
+- **Read**: `CONTEXT.md`, `docs/prds/README.md`, `docs/prds/_template.md`, `docs/prds/venn-classification/PRD.md`, any existing PRD at the target path, and nearby element examples when terminology is unclear.
 - **Glob**: find existing PRDs (`docs/prds/**/PRD.md`) to check for prior art or a related element's surface.
 - **Grep**: scan for terminology conflicts or existing usage of a proposed field name.
 - **Write / Edit**: only after the user confirms the draft in conversation.

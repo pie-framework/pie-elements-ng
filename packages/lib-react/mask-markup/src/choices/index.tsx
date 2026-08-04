@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { findKey } from 'lodash-es';
+import { findKey } from '@pie-element/shared-lodash';
 import Choice from './choice.js';
 import { DragDroppablePlaceholder } from '@pie-lib/drag';
 

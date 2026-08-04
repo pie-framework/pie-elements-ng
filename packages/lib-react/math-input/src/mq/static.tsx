@@ -2,18 +2,17 @@
 /**
  * @synced-from pie-lib/packages/math-input/src/mq/static.jsx
  * @auto-generated
+ *
+ * This file is automatically synced from pie-elements and converted to TypeScript.
+ * Manual edits will be overwritten on next sync.
+ * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
 import PropTypes from 'prop-types';
 import React from 'react';
 import debug from 'debug';
-import MathQuill from '@pie-framework/mathquill';
-import { updateSpans } from '../updateSpans';
-
-let MQ;
-if (typeof window !== 'undefined') {
-  MQ = MathQuill.getInterface(2);
-}
+import { updateSpans } from '../updateSpans.js';
+import { MQ } from './mathquill-instance.js';
 
 const log = debug('pie-lib:math-input:mq:static');
 const REGEX = /\\MathQuillMathField\[r\d*\]\{(.*?)\}/g;
@@ -135,13 +134,26 @@ export default class Static extends React.Component {
   };
 
   onInputEdit: any = (field) => {
-    if (!this.mathField) {
+    if (!this.mathField || this._isProgrammaticUpdate) {
       return;
     }
     const name = this.props.getFieldName(field, this.mathField.innerFields);
 
     if (this.props.onSubFieldChange) {
-      this.props.onSubFieldChange(name, field.latex());
+      // eslint-disable-next-line no-useless-escape
+      const regexMatch = field.latex().match(/[0-9]\\ \\frac\{[^\{]*\}\{ \}/);
+
+      if (this.inputRef?.current && regexMatch && regexMatch?.length) {
+        try {
+          field.__controller.cursor.insLeftOf(field.__controller.cursor.parent[-1].parent);
+          field.el().dispatchEvent(new KeyboardEvent('keydown', { keyCode: 8 }));
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e.toString());
+        }
+      } else {
+        this.props.onSubFieldChange(name, field.latex());
+      }
     }
 
     this.announceLatexConversion(field.latex());
@@ -180,7 +192,10 @@ export default class Static extends React.Component {
       }
     }
 
-    this.setState({ previousLatex: newLatex, isDeleteKeyPressed: false });
+    // Only setState when values change to avoid "Maximum update depth exceeded"
+    if (this.state.previousLatex !== newLatex || this.state.isDeleteKeyPressed) {
+      this.setState({ previousLatex: newLatex, isDeleteKeyPressed: false });
+    }
   };
 
   announceMessage: any = (message) => {
@@ -189,6 +204,7 @@ export default class Static extends React.Component {
     if (this.liveRegion) {
       this.liveRegion.textContent = message;
 
+      // Clear the message after it is announced
       setTimeout(() => {
         this.liveRegion.textContent = '';
       }, 500);
@@ -208,12 +224,17 @@ export default class Static extends React.Component {
     }
 
     try {
+      this._isProgrammaticUpdate = true;
       this.mathField.parseLatex(this.props.latex);
       this.mathField.latex(this.props.latex);
     } catch (e) {
+      // default latex if received has errors
       this.mathField.latex('\\MathQuillMathField[r1]{}');
+    } finally {
+      this._isProgrammaticUpdate = false;
     }
   };
+
 
   blur: any = () => {
     log('blur mathfield');

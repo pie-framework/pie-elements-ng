@@ -38,6 +38,7 @@ tests/e2e/.generated/
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 .DS_Store

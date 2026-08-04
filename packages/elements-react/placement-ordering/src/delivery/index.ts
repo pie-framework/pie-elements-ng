@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { compact } from 'lodash-es';
+import { compact } from '@pie-element/shared-lodash';
 import debug from 'debug';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
@@ -123,12 +123,14 @@ export default class Ordering extends HTMLElement {
 
   connectedCallback() {
     this._initMathObserver();
+    this.render();
   }
 
   disconnectedCallback() {
     this._disconnectMathObserver();
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

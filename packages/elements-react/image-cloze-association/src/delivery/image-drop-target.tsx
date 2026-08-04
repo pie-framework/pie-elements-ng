@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { useDroppable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
-import cx from 'classnames';
+import cx from 'clsx';
 
 import PossibleResponse from './possible-response.js';
 

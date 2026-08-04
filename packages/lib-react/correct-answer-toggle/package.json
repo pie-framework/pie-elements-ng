@@ -1,19 +1,23 @@
 {
   "name": "@pie-lib/correct-answer-toggle",
-  "version": "4.0.2",
+  "version": "4.0.3-next.38",
   "description": "A react based toggle component",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/correct-answer-toggle"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
-    "@emotion/style": "^0.8.0",
+    "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-lib/icons": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "lodash-es": "^4.17.23",
     "prop-types": "^15.6.2",
     "react-transition-group": "^4.4.5",
-    "react": "^18.2.0"
+    "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -25,8 +29,7 @@
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "sideEffects": false,
   "scripts": {
@@ -35,10 +38,14 @@
     "test": "bun x vitest run"
   },
   "devDependencies": {
-    "vite": "^8.0.1",
+    "vite": "^8.1.5",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   }
 }

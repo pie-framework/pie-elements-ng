@@ -11,6 +11,10 @@ import type {
   EsmRuntimeValidationResult,
   EsmValidationResult,
 } from '../../utils/compatibility.js';
+import {
+  createTrackedCompatibilityReport,
+  deriveStaticBrowserEsmReport,
+} from '../../utils/compatibility.js';
 import { assertReposExist } from '../../lib/upstream/repo-utils.js';
 
 // PIE elements that are actively used in pie-elements-ng
@@ -172,11 +176,18 @@ export default class AnalyzeEsm extends Command {
       flags['runtime-max-modules'],
       flags['runtime-cache-file']
     );
+    const staticBrowserEsmReport = await deriveStaticBrowserEsmReport(process.cwd());
+    report.browserEsmReady = staticBrowserEsmReport.browserEsmReady;
+    report.browserEsmUnsupported = staticBrowserEsmReport.browserEsmUnsupported;
 
     // Save JSON report
     const outputDir = join(flags.output, '..');
     await mkdir(outputDir, { recursive: true });
-    await writeFile(flags.output, JSON.stringify(report, null, 2), 'utf-8');
+    await writeFile(
+      flags.output,
+      `${JSON.stringify(createTrackedCompatibilityReport(report), null, 2)}\n`,
+      'utf-8'
+    );
 
     // Print summary
     this.printReport(report, flags.output);

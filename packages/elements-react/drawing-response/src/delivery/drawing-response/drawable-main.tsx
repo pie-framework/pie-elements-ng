@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { cloneDeep, isEqual, omit } from 'lodash-es';
+import { cloneDeep, isEqual, omit } from '@pie-element/shared-lodash';
 import { Layer as LayerImport, Stage as StageImport } from 'react-konva';
 
 function isRenderableReactInteropType(value: any) {

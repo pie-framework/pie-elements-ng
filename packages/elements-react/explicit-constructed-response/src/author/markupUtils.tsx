@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { escape } from 'lodash-es';
+import { escape } from '@pie-element/shared-lodash';
 
 // do not remove \t from \times, \triangle, \tan, \theta or \therefore
 const tSymbols = 'imes|riangle|an|heta|herefore';

@@ -1,9 +1,16 @@
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vitest/config';
+
+const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [svelte({ hot: !process.env.VITEST })],
   resolve: {
+    alias: {
+      '@workspace': workspaceRoot,
+    },
     conditions: process.env.VITEST ? ['browser'] : [],
   },
   test: {

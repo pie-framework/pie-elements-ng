@@ -14,7 +14,7 @@ import { GraphPropsType } from './types.js';
 import { DraggableCore } from './draggable.js';
 import debug from 'debug';
 import * as utils from './utils.js';
-import { isFunction } from 'lodash-es';
+import { isFunction } from '@pie-element/shared-lodash';
 import invariant from 'invariant';
 import { pointer } from 'd3-selection';
 

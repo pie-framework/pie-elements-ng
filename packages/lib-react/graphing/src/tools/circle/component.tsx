@@ -10,15 +10,15 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { BasePoint } from '../shared/point/index.js';
 import BgCircle from './bg-circle.js';
-import { equalPoints, getMiddleOfTwoPoints, point } from '../../utils.js';
+import { equalPoints, getMiddleOfTwoPoints, point, stripEmptyLabel } from '../../utils.js';
 import { types } from '@pie-lib/plot';
 import { rootEdgeComponent } from '../shared/line/with-root-edge.js';
 import ReactDOM from 'react-dom';
 import MarkLabel from '../../mark-label.js';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 import { keyframes, styled } from '@mui/material/styles';
 
@@ -113,7 +113,7 @@ export class RawBaseCircle extends React.Component {
   };
 
   clickPoint: any = (point, type, data) => {
-    const { changeMarkProps, disabled, from, to, labelModeEnabled, limitLabeling, onClick } = this.props;
+    const { changeMarkProps, disabled, from, to, middle, labelModeEnabled, limitLabeling, onClick } = this.props;
 
     if (!labelModeEnabled) {
       onClick(point || data);
@@ -125,8 +125,12 @@ export class RawBaseCircle extends React.Component {
     if (type === 'middle' && !point && from && to) {
       point = { ...point, ...getMiddleOfTwoPoints(from, to) };
     }
-
-    changeMarkProps({ from, to, [type]: { label: '', ...point } });
+    changeMarkProps({
+      from: stripEmptyLabel(from),
+      to: stripEmptyLabel(to),
+      middle: stripEmptyLabel(middle),
+      [type]: { label: '', ...point },
+    });
 
     if (this.input[type]) {
       this.input[type].focus();

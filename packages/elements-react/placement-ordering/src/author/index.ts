@@ -20,7 +20,7 @@ import Main from './design.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import defaultValues from './defaults.js';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 
 const prepareCustomizationObject = (config, model) => {
   const configuration = defaults(config, defaultValues.configuration);
@@ -171,9 +171,14 @@ export default class PlacementOrdering extends HTMLElement {
     this._root.render(element);
   }
 
+  connectedCallback() {
+    this._rerender();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

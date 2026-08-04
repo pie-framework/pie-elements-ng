@@ -7,8 +7,7 @@
  */
 
 import {
-  transformLodashToLodashEs,
-  transformLodashEsDeepImportsToFullySpecified,
+  transformLodashToVendoredLodash,
   transformKnownDeepImportsToFullySpecified,
   transformPieFrameworkEventImports,
   transformControllerUtilsImports,
@@ -30,6 +29,10 @@ import {
   transformMenuToInlineMenu,
   addInlineMenuExport,
   transformReactInteropComponentImports,
+  transformClassnamesToClsx,
+  transformConfigUiMathjsToLocalFraction,
+  transformReactInputAutosizeToLocal,
+  transformPackageJsonBrowserEsmDependencies,
 } from './sync-imports.js';
 import type { PackageJson } from '../../utils/package-json.js';
 
@@ -44,13 +47,17 @@ export interface TransformOptions {
   includeConfigure?: boolean;
   /** Whether to include pie-lib-specific transforms */
   includePieLib?: boolean;
+  /** Whether to remove react-input-autosize from package metadata */
+  removeReactInputAutosize?: boolean;
+  /** Whether to remove mathjs from package metadata */
+  removeMathjs?: boolean;
 }
 
 /**
  * Apply all standard source code transformations in the correct order
  *
  * This ensures consistent transformation across all sync strategies:
- * 1. lodash → lodash-es (ESM compatibility)
+ * 1. lodash/lodash-es → @pie-element/shared-lodash (vendored ESM helpers)
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
@@ -64,8 +71,8 @@ export function applySourceTransforms(content: string, options: TransformOptions
   let transformed = content;
 
   // Core transforms (always applied)
-  transformed = transformLodashToLodashEs(transformed);
-  transformed = transformLodashEsDeepImportsToFullySpecified(transformed);
+  transformed = transformLodashToVendoredLodash(transformed);
+  transformed = transformClassnamesToClsx(transformed);
   transformed = transformKnownDeepImportsToFullySpecified(transformed);
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
@@ -93,6 +100,8 @@ export function applySourceTransforms(content: string, options: TransformOptions
 
   // Pie-lib-specific transforms (run only when syncing upstream pie-lib sources)
   if (options.includePieLib) {
+    transformed = transformReactInputAutosizeToLocal(transformed, options.sourcePath);
+    transformed = transformConfigUiMathjsToLocalFraction(transformed, options.sourcePath);
     transformed = inlineEditableHtmlConstants(transformed);
     if (options.sourcePath) {
       transformed = reexportTokenTypes(transformed, options.sourcePath);
@@ -112,17 +121,24 @@ export function applySourceTransforms(content: string, options: TransformOptions
  * Apply all standard package.json transformations
  *
  * Ensures consistent dependency transformations across all packages:
- * 1. lodash → lodash-es
+ * 1. lodash/lodash-es → @pie-element/shared-lodash
  * 2. @pie-framework event packages → internal packages
  * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
  * 5. Preserve upstream @pie-framework/mathquill dependency versions from synced package.json
  */
-export function applyPackageJsonTransforms<T extends PackageJson>(pkg: T): T {
+export function applyPackageJsonTransforms<T extends PackageJson>(
+  pkg: T,
+  options: TransformOptions = {}
+): T {
   let transformed = pkg;
 
   transformed = transformPackageJsonLodash(transformed);
   transformed = transformPackageJsonRecharts(transformed);
+  transformed = transformPackageJsonBrowserEsmDependencies(transformed, {
+    removeReactInputAutosize: options.removeReactInputAutosize,
+    removeMathjs: options.removeMathjs,
+  });
   transformed = transformPackageJsonPieEvents(transformed);
   transformed = transformPackageJsonControllerUtils(transformed);
   transformed = transformPackageJsonSharedPackages(transformed);

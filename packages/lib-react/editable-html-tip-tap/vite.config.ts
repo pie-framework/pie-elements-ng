@@ -24,8 +24,6 @@ export default defineConfig({
           /^@emotion\//.test(id) ||
           /^d3-/.test(id) ||
           /^@testing-library\//.test(id) ||
-          id === 'lodash-es' ||
-          /^lodash-es\//.test(id) ||
           /^styled-components/.test(id) ||
           id === 'konva' || /^konva\//.test(id) ||
           id === 'react-konva' || /^react-konva\//.test(id) ||
@@ -33,7 +31,7 @@ export default defineConfig({
           id === '@mdi/js' || /^@mdi\/js\//.test(id) ||
           /^prosemirror-/.test(id) ||
           /^@tiptap\//.test(id) ||
-          ['prop-types', 'classnames', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@dnd-kit/core', 'react-transition-group'].includes(id)
+          ['prop-types', 'debug', 'i18next', 'humps', 'mathjs', 'react-jss', 'js-combinatorics', '@dnd-kit/core', 'react-transition-group'].includes(id)
         );
       },
       output: {

@@ -77,6 +77,11 @@ export class Choices extends React.Component {
   onChoiceChanged: any = (prevValue, val, key) => {
     const { onChange, model } = this.props;
     const { choices, correctResponse, alternateResponses } = model;
+
+    if (choiceIsEmpty({ value: prevValue }) && choiceIsEmpty({ value: val })) {
+      return;
+    }
+
     const duplicatedValue = (choices || []).find((c) => c.value === val && c.id !== key);
 
     // discard the new added choice or the changes if the choice would be a duplicate to one that already exists
@@ -136,11 +141,31 @@ export class Choices extends React.Component {
       return;
     }
 
-    const newChoicesWithoutTheEmptyOne = newChoices.filter((choice) => choice.id !== key);
+    onChange(newChoices);
+  };
 
-    onChange(newChoicesWithoutTheEmptyOne);
+  onChoiceDone: any = (choiceId, latestValue) => {
+    const { onChange, model } = this.props;
+    const { choices } = model;
+    const currentChoice = (choices || []).find((c) => c.id === choiceId);
+
+    // model.choices[i].value can be stale when the editor's onChange did not fire for the most recent edit 
+    // (for example, image uploads). In that case, we want to use the latest value from the editor.
+    const effectiveValue = latestValue !== undefined ? latestValue : currentChoice && currentChoice.value;
+
+    if (!currentChoice || !choiceIsEmpty({ value: effectiveValue })) {
+      if (currentChoice && currentChoice.value !== effectiveValue) {
+        const newChoices = (choices || []).map((c) => (c.id === choiceId ? { ...c, value: effectiveValue } : c));
+        onChange(newChoices);
+      }
+      this.setState({ focusedEl: undefined });
+      return;
+    }
+
+    onChange((choices || []).filter((c) => c.id !== choiceId));
 
     this.setState({
+      focusedEl: undefined,
       warning: {
         open: true,
         text: 'Answer choices cannot be blank.',
@@ -263,14 +288,12 @@ export class Choices extends React.Component {
 
                     this.onChoiceChanged(choice.value, val, choice.id);
                   }}
-                  onDone={() => {
+                  onDone={(val) => {
                     if (this.preventDone) {
                       return;
                     }
 
-                    this.setState({
-                      focusedEl: undefined,
-                    });
+                    this.onChoiceDone(choice.id, val);
                   }}
                   onBlur={(e) => {
                     const inInInsertCharacter = e.relatedTarget && e.relatedTarget.closest('.insert-character-dialog');

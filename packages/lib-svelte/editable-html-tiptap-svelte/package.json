@@ -1,20 +1,19 @@
 {
   "name": "@pie-lib/editable-html-tiptap-svelte",
   "version": "0.1.2",
+  "private": true,
   "description": "Tiptap-based rich text editor component for Svelte PIE elements",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "sideEffects": [
     "**/*.css"
@@ -26,13 +25,13 @@
   },
   "dependencies": {
     "@pie-lib/styling-svelte": "workspace:*",
-    "@tiptap/core": "^3.19.0",
+    "@tiptap/core": "^3.29.2",
     "@tiptap/starter-kit": "^3.19.0",
     "@tiptap/extension-text-style": "^3.19.0",
     "@tiptap/extension-character-count": "^3.19.0",
-    "@tiptap/extension-superscript": "^3.19.0",
-    "@tiptap/extension-subscript": "^3.19.0",
-    "@tiptap/extension-text-align": "^3.19.0",
+    "@tiptap/extension-superscript": "^3.29.2",
+    "@tiptap/extension-subscript": "^3.29.2",
+    "@tiptap/extension-text-align": "^3.29.2",
     "@tiptap/extension-image": "^3.19.0",
     "@tiptap/extension-underline": "^3.19.0",
     "@tiptap/extension-table": "^3.19.0",
@@ -42,13 +41,10 @@
     "@tiptap/pm": "^3.19.0",
     "@tiptap/extensions": "^3.20.0"
   },
-  "peerDependencies": {
-    "svelte": "^5.0.0"
-  },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "svelte": "^5.54.0",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1"
+    "vite": "^8.1.5"
   }
 }

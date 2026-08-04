@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { debounce, isEqual } from 'lodash-es';
+import { debounce, isEqual } from '@pie-element/shared-lodash';
 import Button from '@mui/material/Button';
 import Delete from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -18,7 +18,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
-import { max } from 'lodash-es';
+import { max } from '@pie-element/shared-lodash';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { stripHtmlTags, getAdjustedLength, decodeHTML } from './markupUtils.js';
 

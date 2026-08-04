@@ -18,7 +18,7 @@ import PossibleResponse from './possible-response.js';
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   backgroundColor: color.background(),
-  padding: theme.spacing(2),
+  margin: theme.spacing(2),
   display: 'flex',
   alignItems: 'center',
   width: 'fit-content',

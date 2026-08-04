@@ -15,7 +15,7 @@ import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 
@@ -273,7 +273,8 @@ export class EditorAndPad extends React.Component {
 
   componentDidMount() {
     if (this.input && this.props.autoFocus) {
-      this.input.focus();
+      // adding a timeout to wait for other stuff related to focus to be finished
+      setTimeout(() => this.input.focus(), 0);
     }
   }
 

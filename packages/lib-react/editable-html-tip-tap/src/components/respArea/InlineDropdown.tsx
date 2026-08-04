@@ -9,25 +9,89 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import PropTypes from 'prop-types';
 import { NodeViewWrapper } from '@tiptap/react';
+import { NodeSelection } from 'prosemirror-state';
 import { Chevron } from '../icons/RespArea.js';
-import ReactDOM from 'react-dom';
 import CustomToolbarWrapper from '../../extensions/custom-toolbar-wrapper.js';
+import { setToolbarOpened } from '../../utils/toolbar.js';
 
 const InlineDropdown = (props) => {
   const { editor, node, getPos, options, selected } = props;
   const { attrs: attributes } = node;
   const { value, error } = attributes;
-  // TODO: Investigate
-  // Needed because items with values inside have different positioning for some reason
   const html = value || '<div>&nbsp</div>';
   const pos = getPos();
   const toolbarRef = useRef(null);
   const toolbarEditor = useRef(null);
+  const pendingCloseRequest = useRef(false);
+  const elementRef = useRef(null);
+
+  const isHeld = () =>
+    editor._holdInlineDropdownToolbarIndex != null &&
+    String(editor._holdInlineDropdownToolbarIndex) === String(node.attrs.index);
+
   const [showToolbar, setShowToolbar] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
-  const InlineDropdownToolbar = options.respAreaToolbar([node, pos], editor, () => {});
+
+  const closeToolbar = () => {
+    if (isHeld()) {
+      return;
+    }
+
+    setShowToolbar(false);
+    options.onInlineDropdownToolbarClose?.(editor);
+  };
+
+  const InlineDropdownToolbar = options.respAreaToolbar([node, pos], editor, closeToolbar);
+
+  const reselectNode = () => {
+    const { tr } = editor.state;
+    const nodeAtPos = tr.doc.nodeAt(pos);
+
+    if (!nodeAtPos) {
+      return;
+    }
+
+    const { selection } = tr;
+
+    if (selection.from === pos && selection.to === pos + nodeAtPos.nodeSize) {
+      return;
+    }
+
+    tr.setSelection(NodeSelection.create(tr.doc, pos));
+    editor.view.dispatch(tr);
+  };
+
+  const requestClose = () => {
+    if (pendingCloseRequest.current) {
+      return;
+    }
+
+    if (options.onToolbarCloseRequest) {
+      pendingCloseRequest.current = true;
+
+      options.onToolbarCloseRequest(
+        [node, pos],
+        editor,
+        () => {
+          pendingCloseRequest.current = false;
+          delete editor._holdInlineDropdownToolbarIndex;
+          closeToolbar();
+        },
+        () => {
+          pendingCloseRequest.current = false;
+          delete editor._holdInlineDropdownToolbarIndex;
+          setShowToolbar(true);
+          setTimeout(reselectNode, 0);
+        },
+      );
+    } else {
+      closeToolbar();
+    }
+  };
 
   useEffect(() => {
     const { selection } = editor.state;
@@ -35,12 +99,23 @@ const InlineDropdown = (props) => {
 
     if (selected) {
       if (onlyThisNodeSelected) {
-        setShowToolbar(selected);
+        setShowToolbar(true);
       }
-    } else {
-      setShowToolbar(selected);
+    } else if (showToolbar) {
+      requestClose();
     }
   }, [editor, node, selected]);
+
+  const isScrollbarClicked = (event) =>
+    event.clientX > document.documentElement.clientWidth ||
+    event.clientY > document.documentElement.clientHeight ||
+    event.target === document.documentElement;
+
+  useEffect(() => {
+    if (elementRef.current && typeof renderMath === 'function') {
+      renderMath(elementRef.current);
+    }
+  }, [value]);
 
   useEffect(() => {
     // Calculate position relative to selection
@@ -54,16 +129,21 @@ const InlineDropdown = (props) => {
     });
 
     const handleClickOutside = (event) => {
+      if (isScrollbarClicked(event)) {
+        return;
+      }
+
       const insideSomeEditor = event.target.closest('[data-toolbar-for]');
 
       if (
-        (!insideSomeEditor || insideSomeEditor.dataset.toolbarFor !== toolbarEditor.current.instanceId) &&
+        !event.target.closest('[data-inline-dropdown-toolbar]') &&
+        (!insideSomeEditor || insideSomeEditor.dataset.toolbarFor !== toolbarEditor.current?.instanceId) &&
         !editor._toolbarOpened &&
         toolbarRef.current &&
         !toolbarRef.current.contains(event.target) &&
         !event.target.closest('[data-inline-node]')
       ) {
-        setShowToolbar(false);
+        requestClose();
       }
     };
 
@@ -74,7 +154,7 @@ const InlineDropdown = (props) => {
     }
 
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showToolbar]);
+  }, [showToolbar, node]);
 
   return (
     <NodeViewWrapper
@@ -87,6 +167,7 @@ const InlineDropdown = (props) => {
       }}
     >
       <div
+        ref={elementRef}
         style={{
           display: 'inline-flex',
           minWidth: '178px',
@@ -115,31 +196,22 @@ const InlineDropdown = (props) => {
               display: 'inline-block',
               verticalAlign: 'middle',
             }}
-            dangerouslySetInnerHTML={{
-              __html: html,
-            }}
+            dangerouslySetInnerHTML={{ __html: html }}
           />
         </div>
-        <Chevron
-          direction="down"
-          style={{
-            position: 'absolute',
-            top: '5px',
-            right: '5px',
-          }}
-        />
+        <Chevron direction="down" style={{ position: 'absolute', top: '5px', right: '5px' }} />
       </div>
       {showToolbar && (
         <React.Fragment>
           {ReactDOM.createPortal(
-            <div ref={toolbarRef} style={{ zIndex: 1 }}>
+            <div ref={toolbarRef}>
               <InlineDropdownToolbar
                 editorCallback={(instance) => {
                   toolbarEditor.current = instance;
                 }}
               />
             </div>,
-            document.body,
+            editor?._tiptapContainerEl || document.body,
           )}
 
           {editor._tiptapContainerEl &&
@@ -154,7 +226,8 @@ const InlineDropdown = (props) => {
                   tr.delete(pos, pos + node.nodeSize);
                   // Prevent the debounced onBlur/onDone from firing into the
                   // now-deleted node's stale position
-                  editor._toolbarOpened = false;
+                  setToolbarOpened(editor, false);
+                  delete editor._holdInlineDropdownToolbarIndex;
                   editor.view.dispatch(tr);
                   setShowToolbar(false);
                   editor.commands.focus();

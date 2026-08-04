@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import Controls from './controls.js';
 import { styled } from '@mui/material/styles';
 import { paragraphs, sentences, words } from './builder.js';
-import { clone, differenceWith, isEqual } from 'lodash-es';
+import { clone, differenceWith, isEqual } from '@pie-element/shared-lodash';
 import { noSelect } from '@pie-lib/style-utils';
 import TokenText from './token-text.js';
 

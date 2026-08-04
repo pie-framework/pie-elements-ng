@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-controller-utils",
-  "version": "0.1.0",
+  "version": "0.1.1-next.1",
   "description": "Controller utility functions for PIE elements",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,8 +26,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1",
-    "vitest": "^4.1.0"
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
   },
   "publishConfig": {
     "access": "public"
@@ -35,7 +35,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
     "directory": "packages/shared/controller-utils"
   },
   "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",

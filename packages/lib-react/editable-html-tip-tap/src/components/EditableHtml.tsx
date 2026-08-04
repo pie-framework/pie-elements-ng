@@ -9,7 +9,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import debounce from 'lodash-es/debounce.js';
+import { debounce } from '@pie-element/shared-lodash';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import { styled } from '@mui/material/styles';
 import StarterKit from '@tiptap/starter-kit';
@@ -130,6 +130,30 @@ export const EditableHtml = (props) => {
     ...toolbarOpts,
   };
 
+  const commitEditorContent = useCallback(
+    (editor) => {
+      const html = editor.getHTML();
+
+      if (props.markup !== html) {
+        props.onChange?.(html);
+      }
+
+      if (toolbarOptsToUse.doneOn === 'blur') {
+        props.onDone?.(html);
+      }
+    },
+    [props.markup, props.onChange, props.onDone, toolbarOptsToUse.doneOn],
+  );
+
+  const responseAreaPropsToUse = useMemo(
+    () => ({
+      ...defaultResponseAreaProps,
+      ...props.responseAreaProps,
+      onInlineDropdownToolbarClose: commitEditorContent,
+    }),
+    [props.responseAreaProps, commitEditorContent],
+  );
+
   const activePluginsToUse = useMemo(() => {
     let { customPlugins, ...otherPluginProps } = props.pluginProps || {};
 
@@ -153,14 +177,14 @@ export const EditableHtml = (props) => {
       toolbar: {},
       table: {},
       responseArea: {
-        type: props.responseAreaProps?.type,
+        type: responseAreaPropsToUse.type,
       },
       languageCharacters: props.languageCharactersProps,
       keyPadCharacterRef: {},
       setKeypadInteraction: {},
       media: {},
     });
-  }, [props]);
+  }, [props, responseAreaPropsToUse.type]);
 
   const extensions = [
     TextAlign.configure({
@@ -193,11 +217,11 @@ export const EditableHtml = (props) => {
     TableRow,
     ExtendedTableHeader,
     ExtendedTableCell,
-    ResponseAreaExtension.configure(props.responseAreaProps),
-    ExplicitConstructedResponseNode.configure(props.responseAreaProps),
-    DragInTheBlankNode.configure(props.responseAreaProps),
-    InlineDropdownNode.configure(props.responseAreaProps),
-    MathTemplatedNode.configure(props.responseAreaProps),
+    ResponseAreaExtension.configure(responseAreaPropsToUse),
+    ExplicitConstructedResponseNode.configure(responseAreaPropsToUse),
+    DragInTheBlankNode.configure(responseAreaPropsToUse),
+    InlineDropdownNode.configure(responseAreaPropsToUse),
+    MathTemplatedNode.configure(responseAreaPropsToUse),
     MathNode.configure({
       toolbarOpts: toolbarOptsToUse,
       math: props.pluginProps?.math || {},
@@ -298,29 +322,23 @@ export const EditableHtml = (props) => {
       editable: !props.disabled,
       content: normalizeInitialMarkup(props.markup),
       onUpdate: ({ editor, transaction }) => {
-        if (transaction.isDone || props.markup !== editor.getHTML()) {
+        if (transaction.isDone) {
           props.onChange?.(editor.getHTML());
         }
       },
-      onBlur: debounce(({ editor }) => {
+      onBlur: ({ editor }) => {
         const otherToolbarOpened =
           editor._insertingImage ||
           editor._toolbarOpened ||
           editor.isActive('inline_dropdown') ||
           editor.isActive('explicit_constructed_response');
 
-        if (otherToolbarOpened) {
+        if (otherToolbarOpened || !editor.schema) {
           return;
         }
 
-        if (props.markup !== editor.getHTML()) {
-          props.onChange?.(editor.getHTML());
-        }
-
-        if (toolbarOptsToUse.doneOn === 'blur') {
-          props.onDone?.(editor.getHTML());
-        }
-      }, 200),
+        commitEditorContent(editor);
+      },
     },
     [props.charactersLimit],
   );
@@ -342,7 +360,7 @@ export const EditableHtml = (props) => {
     const nextMarkup = normalizeInitialMarkup(props.markup);
 
     if (nextMarkup !== editor.getHTML()) {
-      editor.commands.setContent(nextMarkup, false);
+      editor.commands.setContent(nextMarkup, { emitUpdate: false });
     }
   }, [props.markup, editor]);
 
@@ -438,7 +456,7 @@ const StyledEditorContent: any = styled(EditorContent, {
       },
     }),
     ...(separateParagraph && {
-      '& > div:has(+ div)': {
+      '& > p:has(+ p)': {
         marginBottom: '1em',
       },
     }),

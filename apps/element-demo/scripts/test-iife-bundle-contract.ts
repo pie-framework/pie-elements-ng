@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { Bundler, mkDependencyHash, type BuildBundleName } from '@pie-element/element-bundler';
 import { loadReactElementMatrix } from '../src/lib/testing/react-element-matrix';
 import { createWorkspaceCacheSalt } from '../src/lib/testing/workspace-fingerprint';
+import { findWorkspaceRoot } from '../src/vite-plugin-workspace-resolver';
 
 interface ContractFailure {
   element: string;
@@ -55,7 +56,7 @@ function assertBundleContract(
 }
 
 async function main() {
-  const workspaceRoot = join(process.cwd(), '..', '..');
+  const workspaceRoot = findWorkspaceRoot(process.cwd());
   const elementFilter = normalizeElementFilter(process.env.IIFE_ELEMENTS);
   const clearCache = process.env.IIFE_CLEAR_CACHE === '1';
   const instanceDir = join(process.cwd(), '.cache', 'iife-contract-tests');

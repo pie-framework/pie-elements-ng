@@ -23,7 +23,7 @@ const dragging = () => ({
 
 const StyledDrawLine: any = styled(vx.LinePath)(({ disabled: isDisabled, correctness }) => ({
   fill: 'none',
-  strokeWidth: 2,
+  strokeWidth: 3,
   stroke: color.black(),
   ...(isDisabled && {
     ...disabledSecondary('stroke'),
@@ -46,17 +46,7 @@ const StyledLine: any = styled(vx.LinePath)(({ theme, disabled: isDisabled, corr
   pointerEvents: 'stroke',
   '&:hover': dragging(theme),
   ...(isDragging && dragging(theme)),
-  ...(isDisabled && {
-    ...disabled('stroke'),
-    strokeWidth: 2,
-  }),
-  ...(correctness === 'correct' && correct('stroke')),
-  ...(correctness === 'incorrect' && incorrect('stroke')),
-  ...(correctness === 'missing' && {
-    ...missing('stroke'),
-    strokeWidth: 1,
-    strokeDasharray: '4 3',
-  }),
+  ...((isDisabled || correctness) && { pointerEvents: 'none' }),
 }));
 
 export class RawLinePath extends React.Component {

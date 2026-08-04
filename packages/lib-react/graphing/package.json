@@ -1,11 +1,16 @@
 {
   "name": "@pie-lib/graphing",
-  "version": "4.0.3",
+  "version": "4.0.5-next.31",
   "description": "Graphing components",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/graphing"
+  },
   "dependencies": {
     "@dnd-kit/sortable": "10.0.0",
     "@emotion/react": "^11.14.0",
-    "@emotion/style": "^0.8.0",
+    "@emotion/styled": "^11.14.1",
     "@mapbox/point-geometry": "^1.1.0",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
@@ -23,23 +28,21 @@
     "@visx/group": "^3.0.0",
     "@visx/point": "^3.0.0",
     "@visx/shape": "^3.0.0",
-    "classnames": "^2.2.6",
     "d3-scale": "^4.0.2",
     "d3-selection": "^3.0.0",
     "debug": "^4.1.1",
     "invariant": "^2.2.4",
-    "lodash-es": "^4.17.23",
     "prop-types": "^15.7.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-draggable": "^3.3.0",
-    "react-input-autosize": "^2.2.1",
-    "react-redux": "^6.0.0",
-    "redux": "^4.0.1",
+    "react-draggable": "^4.6.0",
+    "react-redux": "^9.3.0",
+    "redux": "^5.0.1",
     "redux-undo": "^1.1.0",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
-    "@dnd-kit/core": "^6.3.0",
-    "@dnd-kit/utilities": "3.2.2"
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/utilities": "^3.2.2",
+    "clsx": "^2.1.1",
+    "d3-shape": "^3.2.0"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -51,8 +54,7 @@
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "sideEffects": false,
   "scripts": {
@@ -61,10 +63,14 @@
     "test": "bun x vitest run"
   },
   "devDependencies": {
-    "vite": "^8.0.1",
+    "vite": "^8.1.5",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   }
 }

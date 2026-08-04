@@ -17,6 +17,10 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
+import {
+  COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,
+  COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,
+} from '../private-tags.js';
 
 const StyledFormControlLabel: any = styled(FormControlLabel)({
   '&.MuiFormControlLabel-root': {
@@ -45,9 +49,11 @@ export class Main extends React.Component {
   static propTypes = {
     canUpdateModel: PropTypes.bool,
     configuration: PropTypes.object,
+    multiTraitRubricTagName: PropTypes.string,
     model: PropTypes.object,
     onModelChanged: PropTypes.func,
     onConfigurationChanged: PropTypes.func,
+    simpleRubricTagName: PropTypes.string,
   };
 
   onModelChanged: any = (model) => {
@@ -64,7 +70,15 @@ export class Main extends React.Component {
   };
 
   render() {
-    const { model, configuration, canUpdateModel } = this.props;
+    const {
+      model,
+      configuration,
+      canUpdateModel,
+      multiTraitRubricTagName = COMPLEX_RUBRIC_MULTI_TRAIT_CONFIGURE_TAG,
+      simpleRubricTagName = COMPLEX_RUBRIC_SIMPLE_CONFIGURE_TAG,
+    } = this.props;
+    const MultiTraitRubricConfigureElement = multiTraitRubricTagName;
+    const SimpleRubricConfigureElement = simpleRubricTagName;
 
     const { extraCSSRules, rubrics = {} } = model || {};
     let { rubricType } = model;
@@ -89,7 +103,7 @@ export class Main extends React.Component {
         case RUBRIC_TYPES.SIMPLE_RUBRIC:
         default:
           rubricTag = (
-            <rubric-configure
+            <SimpleRubricConfigureElement
               id="simpleRubric"
               key="simple-rubric"
               ref={(ref) => {
@@ -105,7 +119,7 @@ export class Main extends React.Component {
 
         case RUBRIC_TYPES.MULTI_TRAIT_RUBRIC:
           rubricTag = (
-            <multi-trait-rubric-configure
+            <MultiTraitRubricConfigureElement
               id="multiTraitRubric"
               key="multi-trait-rubric"
               ref={(ref) => {
@@ -122,7 +136,7 @@ export class Main extends React.Component {
 
         case RUBRIC_TYPES.RUBRICLESS:
           rubricTag = (
-            <rubric-configure
+            <SimpleRubricConfigureElement
               id="rubricless"
               key="rubricless"
               ref={(ref) => {

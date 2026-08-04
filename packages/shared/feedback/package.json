@@ -12,8 +12,7 @@
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo && vite build && tsc --emitDeclarationOnly",
@@ -24,8 +23,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1",
-    "vitest": "^4.1.0"
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
   },
   "publishConfig": {
     "access": "public"
@@ -33,7 +32,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
     "directory": "packages/shared/feedback"
   },
   "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",

@@ -20,7 +20,7 @@ import {
 } from '@pie-element/shared-configure-events';
 import * as defaults from './defaults.js';
 import * as math from 'mathjs';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 // this function is duplicated in controller; at some point, use the same shared function
 const updateTicks = (model) => {
@@ -191,9 +191,14 @@ export default class NumberLine extends HTMLElement {
     this._root.render(element);
   }
 
+  connectedCallback() {
+    this._rerender();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

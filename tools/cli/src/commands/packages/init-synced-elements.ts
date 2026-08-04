@@ -244,7 +244,7 @@ export default defineConfig({
           /^d3-/.test(id) ||
           id === 'lodash' ||
           /^lodash\\//.test(id) ||
-          ['prop-types', 'classnames', 'debug'].includes(id)
+          ['prop-types', 'debug'].includes(id)
         );
       },
       output: {

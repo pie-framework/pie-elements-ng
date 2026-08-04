@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { types } from '@pie-lib/plot';
 import { ArrowHead } from '../arrow-head.js';
 import { thinnerShapesNeeded } from '../../../utils.js';

@@ -10,11 +10,12 @@
 
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import MultipleChoice from '@pie-element/multiple-choice';
-import { get } from 'lodash-es';
+import { get } from '@pie-element/shared-lodash';
 import debug from 'debug';
+import { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';
 
 const SESSION_CHANGED = SessionChangedEvent.TYPE;
-const MC_TAG_NAME = 'ebsr-multiple-choice';
+const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;
 const log = debug('pie-elements:ebsr');
 
 class EbsrMC extends MultipleChoice {}
@@ -132,7 +133,7 @@ export default class Ebsr extends HTMLElement {
       // the EBSR element itself provides the item-level heading.
       const { includeSrHeading, baseHeadingLevel } = getPlayerAttributes(this);
       part.includeSrHeading = includeSrHeading;
-      part.baseHeadingLevel = baseHeadingLevel !== undefined ? Math.min(6, baseHeadingLevel + (includeSrHeading ? 1 : 0)) : undefined;
+      part.baseHeadingLevel = baseHeadingLevel;
     }
   }
 

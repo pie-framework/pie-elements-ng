@@ -14,8 +14,8 @@ import { FeedbackConfig, settings, layout, InputContainer } from '@pie-lib/confi
 import PropTypes from 'prop-types';
 import debug from 'debug';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import GeneralConfigBlock from './general-config-block';
-import { getPluginProps, ResponseTypes } from './utils';
+import GeneralConfigBlock from './general-config-block.js';
+import { getPluginProps, ResponseTypes } from './utils.js';
 
 const log = debug('@pie-element:math-inline:configure');
 const { Panel, toggle, radio, dropdown } = settings;

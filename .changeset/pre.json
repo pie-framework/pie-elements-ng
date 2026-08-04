@@ -78,12 +78,27 @@
     "@pie-element/shared-theming-mui": "0.1.0",
     "@pie-element/shared-types": "0.1.0",
     "@pie-element/shared-utils": "0.1.0",
-    "@pie-element/cli": "0.1.1"
+    "@pie-element/cli": "0.1.1",
+    "@pie-element/element-a11y-demo": "0.1.1",
+    "@pie-element/learnosity-parity-demo": "0.1.1",
+    "@pie-element/shared-lodash": "0.1.0"
   },
   "changesets": [
     "20260501125058-pie-element-multiple-choice",
+    "20260522080545-pie-element-shared-controller-utils-",
+    "20260526072424-pie-element-shared-controller-utils-",
+    "20260601145202-pie-element-multiple-choice",
+    "20260602132616-pie-lib-config-ui-pie-lib-correct-an",
+    "20260603022336-pie-element-multiple-choice",
+    "202606030607-react-elements-next",
+    "20260604035455-pie-element-categorize-pie-element-c",
+    "20260604073624-pie-element-shared-math-rendering-ma",
+    "20260605215125-pie-element-categorize-pie-element-c",
+    "20260605230602-pie-element-categorize-pie-element-c",
+    "20260605235223-pie-element-ebsr-pie-element-shared-",
     "common-cougars-hang",
     "floppy-sites-watch",
-    "orange-toes-dream"
+    "orange-toes-dream",
+    "vendored-lodash-runtime"
   ]
 }

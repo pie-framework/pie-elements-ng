@@ -12,7 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
-import { cloneDeep, debounce } from 'lodash-es';
+import { cloneDeep, debounce } from '@pie-element/shared-lodash';
 import { Tokenizer } from '@pie-lib/text-select';
 import { InputContainer, NumberTextField, FeedbackConfig, settings, layout } from '@pie-lib/config-ui';
 import Chip from '@mui/material/Chip';

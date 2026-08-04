@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { ResponseTypes } from './utils';
+import { ResponseTypes } from './utils.js';
 
 export default {
   allowTrailingZerosDefault: false,

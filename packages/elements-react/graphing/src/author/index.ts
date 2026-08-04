@@ -21,7 +21,7 @@ import {
 import debug from 'debug';
 import defaultValues from './defaults.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 const log = debug('pie-elements:graphing:configure');
 
@@ -196,9 +196,14 @@ export default class GraphLinesConfigure extends HTMLElement {
     }
   }
 
+  connectedCallback() {
+    this._render();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

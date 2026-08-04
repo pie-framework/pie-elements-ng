@@ -11,7 +11,7 @@
 import defaults from './defaults.js';
 import { lockChoices, getShuffledChoices, partialScoring } from '@pie-element/shared-controller-utils';
 import { isResponseCorrect } from './utils.js';
-import { get, isEmpty } from 'lodash-es';
+import { get, isEmpty } from '@pie-element/shared-lodash';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;

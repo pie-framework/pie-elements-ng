@@ -14,7 +14,7 @@ import React from 'react';
 import debug from 'debug';
 import { styled } from '@mui/material/styles';
 import { PlaceHolder } from '@pie-lib/drag';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 
 const log = debug('pie-elements:match-title:answer');

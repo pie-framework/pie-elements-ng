@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { styled } from '@mui/material/styles';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import PropTypes from 'prop-types';
 import { color } from '@pie-lib/render-ui';
 import { grey } from '@mui/material/colors';
@@ -34,7 +34,7 @@ const StyledPlaceholder: any = styled('div')(({ theme }) => ({
     padding: theme.spacing(1),
     border: `2px dashed ${color.black()}`,
   },
-  '&.disabled': {
+  '&.placeholderDisabled': {
     boxShadow: 'none',
     background: theme.palette.background.paper,
   },
@@ -85,7 +85,13 @@ export const PlaceHolder = (props) => {
     extraStyles,
   } = props;
 
-  const names = classNames('placeholder', disabled && 'disabled', isOver && 'over', type, className);
+  const names = classNames(
+    'placeholder',
+    disabled && 'placeholderDisabled',
+    isOver && 'over',
+    type,
+    className,
+  );
 
   const style = {};
 

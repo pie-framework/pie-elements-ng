@@ -9,7 +9,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { styled, useTheme } from '@mui/material/styles';
 import { NodeSelection } from 'prosemirror-state';
 
@@ -96,6 +96,10 @@ function MenuBar({
 
       let currentNode;
 
+      if (!ctx.editor?.commandManager) {
+        return {};
+      }
+
       if (selection instanceof NodeSelection) {
         currentNode = selection.node; // the selected node
       }
@@ -113,6 +117,7 @@ function MenuBar({
         hideDefaultToolbar,
         hasTextSelectionInTable,
         isFocused: ctx.editor?.isFocused,
+        toolbarOpened: ctx.editor?._toolbarOpened ?? false,
         isBold: ctx.editor.isActive('bold') ?? false,
         canBold: ctx.editor.can().chain().toggleBold().run() ?? false,
         isTable: ctx.editor.isActive('table') ?? false,
@@ -153,7 +158,9 @@ function MenuBar({
     [classes.toolbarWithNoDone]: !hasDoneButton,
     [classes.toolbarTop]: toolbarOpts.position === 'top',
     [classes.toolbarRight]: toolbarOpts.alignment === 'right',
-    [classes.focused]: toolbarOpts.alwaysVisible || (editorState.isFocused && !editor._toolbarOpened && !editorState.hideDefaultToolbar),
+    [classes.focused]:
+      toolbarOpts.alwaysVisible ||
+      (editorState.isFocused && !editorState.toolbarOpened && !editorState.hideDefaultToolbar),
     [classes.autoWidth]: autoWidth,
     [classes.fullWidth]: !autoWidth,
     [classes.hidden]: toolbarOpts.isHidden === true,
@@ -441,7 +448,7 @@ const StyledMenuBar = (props) => {
   const classes = {
     defaultToolbar: 'defaultToolbar',
     buttonsContainer: 'buttonsContainer',
-    button: 'button',
+    button: 'toolbarButton',
     active: 'active',
     disabled: 'disabled',
     isActive: 'isActive',
@@ -476,13 +483,18 @@ const StyledMenuBarRoot: any = styled('div')(({ theme }) => ({
     display: 'flex',
     width: '100%',
   },
-  '& .button': {
+  '& .toolbarButton': {
     color: 'grey',
     display: 'inline-flex',
     padding: '2px',
     background: 'none',
     border: 'none',
     cursor: 'pointer',
+    // previously we had implicit 24×24 icon rendering for mui svg icons, but now we need to explicitly set the size to 24×24 to match the previous behavior
+    '& svg': {
+      width: '24px',
+      height: '24px',
+    },
     '&:hover': {
       color: 'black',
     },

@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { styled } from '@mui/material/styles';
-import { range } from 'lodash-es';
+import { range } from '@pie-element/shared-lodash';
 import { noSelect, strokeColor } from '../style-utils.js';
 
 const StyledLine: any = styled('line')(({ theme }) => ({

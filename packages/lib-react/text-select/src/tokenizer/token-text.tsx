@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { intersection, normalize } from './builder.js';
 import debug from 'debug';
-import classNames from 'classnames';
+import classNames from 'clsx';
 
 import { clearSelection, getCaretCharacterOffsetWithin } from './selection-utils.js';
 

@@ -19,7 +19,7 @@ import NumberLineComponent from './number-line/index.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import RootComponent from './number-line/index.js';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 //Expose some additional modules for configuration
@@ -220,6 +220,7 @@ export default class NumberLine extends HTMLElement {
     this._disconnectMathObserver();
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

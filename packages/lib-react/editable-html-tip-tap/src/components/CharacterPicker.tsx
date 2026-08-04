@@ -11,7 +11,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import get from 'lodash-es/get.js';
+import { get } from '@pie-element/shared-lodash';
 
 import { PureToolbar } from '@pie-lib/math-toolbar';
 
@@ -39,8 +39,11 @@ export function CharacterPicker({ editor, opts, onClose }) {
   }
 
   const containerRef = useRef(null);
+  const onCloseRef = useRef(onClose);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [popover, setPopover] = useState(null);
+
+  onCloseRef.current = onClose;
 
   const configToUse = useMemo(() => {
     if (!opts) return spanishConfig;
@@ -79,31 +82,62 @@ export function CharacterPicker({ editor, opts, onClose }) {
     [],
   );
 
+  // Keep `onClose` out of the dependency array — parents often pass a new callback each
+  // render (e.g. after each keystroke), which would re-run this effect constantly. Use a
+  // ref so click-outside always calls the latest close handler.
   useEffect(() => {
     if (!editor) return;
 
-    // Calculate position relative to selection
     const editorDOM = editor.options.element;
-    const editorRect = editorDOM.getBoundingClientRect();
-    const bodyRect = document.body.getBoundingClientRect();
-    const { from } = editor.state.selection;
-    const start = editor.view.coordsAtPos(from);
+    const editorViewDom = editor.view.dom;
 
-    let top = editorRect.top + Math.abs(bodyRect.top) + editorRect.height + 60;
+    // Position is computed in viewport coordinates (the dialog uses position: fixed),
+    // so coordsAtPos / getBoundingClientRect values can be used directly without
+    // adding scroll offsets. The dialog is then clamped to the viewport so it does
+    // not get cut off by fixed page headers/footers.
+    const updatePosition = () => {
+      if (!containerRef.current) return;
 
-    if (editorRect.y > containerRef.current.offsetHeight) {
-      top = top - (containerRef.current.offsetHeight + editorRect.height) - 80;
-    }
+      const editorRect = editorDOM.getBoundingClientRect();
+      const { from } = editor.state.selection;
+      const start = editor.view.coordsAtPos(from);
 
-    setPosition({
-      // top: start.top + Math.abs(bodyRect.top) - containerRef.current.offsetHeight - 10 + additionalTopOffset, // shift above
-      top: top,
-      left: start.left,
-    });
+      const dialogHeight = containerRef.current.offsetHeight;
+      const dialogWidth = containerRef.current.offsetWidth;
+
+      // prefer below the editor; flip above when there isn't room below.
+      const spaceBelow = window.innerHeight - (editorRect.bottom + 60);
+      let top =
+        spaceBelow >= dialogHeight || editorRect.top < dialogHeight + 80
+          ? editorRect.bottom + 60
+          : editorRect.top - dialogHeight - 20;
+
+      let left = start.left;
+
+      const margin = 8;
+      top = Math.max(margin, Math.min(top, window.innerHeight - dialogHeight - margin));
+      left = Math.max(margin, Math.min(left, window.innerWidth - dialogWidth - margin));
+
+      setPosition({ top, left });
+    };
+
+    updatePosition();
+
+    let frame = null;
+    const scheduleUpdate = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        updatePosition();
+      });
+    };
+
+    window.addEventListener('scroll', scheduleUpdate, true);
+    window.addEventListener('resize', scheduleUpdate);
 
     const handleClickOutside = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target) && !editor.view.dom.contains(e.target)) {
-        onClose();
+      if (containerRef.current && !containerRef.current.contains(e.target) && !editorViewDom.contains(e.target)) {
+        onCloseRef.current();
       }
     };
 
@@ -113,9 +147,12 @@ export function CharacterPicker({ editor, opts, onClose }) {
 
     return () => {
       clearTimeout(timeoutId);
+      if (frame !== null) cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', scheduleUpdate, true);
+      window.removeEventListener('resize', scheduleUpdate);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [editor, onClose]);
+  }, [editor]);
 
   const renderPopOver = (event, el) => setPopover({ anchorEl: event.currentTarget, el });
 
@@ -134,11 +171,11 @@ export function CharacterPicker({ editor, opts, onClose }) {
           data-toolbar-for={editor.instanceId}
           style={{
             visibility: position.top === 0 && position.left === 0 ? 'hidden' : 'initial',
-            position: 'absolute',
+            position: 'fixed',
             top: `${position.top}px`,
             left: `${position.left}px`,
             maxWidth: '500px',
-            zIndex: 99,
+            zIndex: 1000,
           }}
         >
           <div>

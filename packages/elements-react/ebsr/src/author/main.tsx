@@ -12,6 +12,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { settings, layout } from '@pie-lib/config-ui';
 import { styled } from '@mui/material/styles';
+import { EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG } from '../private-tags.js';
 
 const { Panel, toggle, radio, dropdown } = settings;
 
@@ -28,6 +29,7 @@ export class Main extends React.Component {
   static propTypes = {
     configuration: PropTypes.object,
     model: PropTypes.object,
+    multipleChoiceTagName: PropTypes.string,
     onModelChanged: PropTypes.func,
     onConfigurationChanged: PropTypes.func,
   };
@@ -69,7 +71,13 @@ export class Main extends React.Component {
   };
 
   render() {
-    const { model, configuration, onConfigurationChanged } = this.props;
+    const {
+      model,
+      configuration,
+      multipleChoiceTagName = EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG,
+      onConfigurationChanged,
+    } = this.props;
+    const MultipleChoiceConfigureElement = multipleChoiceTagName;
     const { partLabelType, partA: modelPartA, partB: modelPartB, extraCSSRules } = model;
     const {
       contentDimensions = {},
@@ -197,7 +205,7 @@ export class Main extends React.Component {
         }
       >
         {model.partLabels && <PartLabel>{firstPart}</PartLabel>}
-        <ebsr-multiple-choice-configure
+        <MultipleChoiceConfigureElement
           id="A"
           key="partA"
           ref={(ref) => {
@@ -219,7 +227,7 @@ export class Main extends React.Component {
         <Divider />
 
         {model.partLabels && <PartLabel>{secondPart}</PartLabel>}
-        <ebsr-multiple-choice-configure
+        <MultipleChoiceConfigureElement
           id="B"
           key="partB"
           ref={(ref) => {

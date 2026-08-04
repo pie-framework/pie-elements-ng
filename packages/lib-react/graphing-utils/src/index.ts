@@ -9,7 +9,7 @@
  */
 
 import debug from 'debug';
-import { concat, range, rangeRight } from 'lodash-es';
+import { concat, range, rangeRight } from '@pie-element/shared-lodash';
 import Point from '@mapbox/point-geometry';
 
 const log = debug('pie-lib:graphing:tools:utils');

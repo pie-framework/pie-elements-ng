@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { get, set } from 'lodash-es';
+import { get, set } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import Select from '@mui/material/Select';
 import Input from '@mui/material/Input';

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/element-theme-daisyui",
-  "version": "0.1.0",
+  "version": "0.1.1-next.1",
   "description": "DaisyUI-powered web component theme wrapper for PIE players",
   "type": "module",
   "main": "./dist/pie-element-theme-daisyui.js",
@@ -8,7 +8,6 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "development": "./src/index.ts",
       "default": "./dist/pie-element-theme-daisyui.js"
     }
   },
@@ -27,8 +26,8 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^8.0.1",
-    "vitest": "^4.1.0"
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
   },
   "license": "MIT",
   "publishConfig": {
@@ -36,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
     "directory": "packages/element-theme-daisyui"
   },
   "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
