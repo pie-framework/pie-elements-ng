@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/translator",
-  "version": "4.0.3-next.1",
+  "version": "4.0.3",
   "description": "React implementation of @pie-lib/translator synced from pie-lib",
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-utils",
-  "version": "0.1.1-next.1",
+  "version": "0.1.1",
   "description": "Shared utilities for PIE elements",
   "type": "module",
   "main": "./dist/index.js",

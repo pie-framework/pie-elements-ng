@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/rubric",
-  "version": "2.0.4-next.31",
+  "version": "2.0.4",
   "description": "React implementation of @pie-lib/rubric synced from pie-lib",
   "repository": {
     "type": "git",
