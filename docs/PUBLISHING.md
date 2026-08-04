@@ -32,9 +32,66 @@ Release workflow: `.github/workflows/release.yml`
 
 If branch and channel do not match, the workflow fails before publishing.
 
-## Manual Targeted Publish
+## Manual Publish Runbook (Step-by-Step)
 
-Use the approved manual publish script:
+Full checklist for cutting a one-off manual release of a single package, from a clean local branch.
+
+### 0. One-time environment setup
+
+- Install `dotenvx` (e.g. `npm install -g @dotenvx/dotenvx`).
+- Create a `.env` file at the repo root containing `NPM_TOKEN=<npm token with publish access to @pie-element>`. Never commit `.env`.
+- **Gotcha**: `dotenvx` does not override a variable that is already exported in your shell. If your shell profile (`~/.zshrc`, `~/.bash_profile`, etc.) already exports a stale `NPM_TOKEN`, the publish script will silently use that instead of `.env` and fail with `401 Unauthorized`. If you hit that, run `unset NPM_TOKEN` in the current shell before retrying.
+
+### 1. Confirm clean state
+
+```bash
+git status
+git pull origin <branch>
+```
+
+### 2. Bump the version
+
+Normal case — no pre-release mode, no unrelated pending changesets:
+
+```bash
+bun run changeset      # select the package(s), bump type, write a summary
+bun run version        # = `changeset version`; consumes changesets, bumps package.json + CHANGELOG.md
+```
+
+**Gotcha — pre-release mode / stray changesets**: check `.changeset/pre.json`. If it exists (mode `"pre"`), the branch is currently cutting `next` prereleases — this is normally the case on `develop`. Also check `.changeset/*.md` for changesets targeting packages you don't intend to touch. Running `bun run version` in this state will:
+
+- suffix your version with the active prerelease tag (e.g. `0.2.13-next.4`) instead of a clean stable bump, and
+- consume **every** pending changeset, bumping unrelated packages too.
+
+To cut a clean, isolated release for just your target package in that situation, bypass the changeset version step entirely:
+
+- Hand-edit the target package's `package.json` — bump `"version"` directly (default to a `patch` bump unless told otherwise).
+- Add a matching entry at the top of that package's `CHANGELOG.md`, following the existing format (`## <version>` / `### Patch Changes` / bullet).
+
+### 3. Build and verify
+
+```bash
+bun install                        # fixes stale/incomplete node_modules — see gotcha below
+bun run build
+bun run verify:element-contracts   # aggregate gate: publish-surface, controller, runtime-support, sourcemap checks
+```
+
+This mirrors what `bun run release:publish` runs before publishing (`bun run build && bun run verify:element-contracts`).
+
+**Gotcha**: the `lefthook` pre-commit hook runs `bun run verify:dependency-integrity --fail-on-hoist`. If your local `node_modules` is stale, this can fail with a long list of "Broken imports" across unrelated packages (missing `lodash-es`, `classnames`, etc.) even though nothing is actually wrong in the code. Run `bun install` first — it re-hoists the missing deps and the check passes clean.
+
+### 4. Commit the version bump
+
+```bash
+git add <path/to/package.json> <path/to/CHANGELOG.md>
+git commit -m "chore(release): <package-name>@<version>"
+```
+
+The pre-commit hook re-runs the dependency-integrity check; it must pass.
+
+### 5. Publish
+
+Use the approved manual publish script — never raw `npm publish`:
 
 ```bash
 sh scripts/publish-with-env-token.sh --packages @pie-element/extended-text-entry
@@ -52,6 +109,19 @@ Supported channel values:
 - `stable`
 - `next`
 - `beta`
+
+### 6. Verify the publish
+
+```bash
+npm view @pie-element/extended-text-entry version
+npm view @pie-element/extended-text-entry dist-tags --json
+```
+
+### 7. Push
+
+```bash
+git push origin <branch>
+```
 
 ## Runtime Dependency Preflight
 
