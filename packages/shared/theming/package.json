@@ -24,7 +24,7 @@
     "@pie-element/shared-types": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "^18.3.0",
+    "@types/react": "^19.2.18",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
     "vitest": "^4.1.0"
