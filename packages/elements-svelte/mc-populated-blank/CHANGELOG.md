@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.13
+
+### Patch Changes
+
+- Contool 2567 deploy updates from content review
+
 ## 0.2.12
 
 ### Patch Changes
