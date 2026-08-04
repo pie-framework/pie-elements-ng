@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@tiptap/core": "3.18.0",
+    "@tiptap/core": "3.29.2",
     "@tiptap/extension-code-block-lowlight": "3.18.0",
     "@tiptap/extension-document": "3.18.0",
     "@tiptap/extension-history": "3.18.0",

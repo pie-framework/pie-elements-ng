@@ -17,7 +17,7 @@
     "@pie-lib/math-input": "workspace:*",
     "@pie-lib/math-toolbar": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "@tiptap/core": "3.20.0",
+    "@tiptap/core": "3.29.2",
     "@tiptap/extension-character-count": "3.20.0",
     "@tiptap/extension-color": "3.20.0",
     "@tiptap/extension-image": "3.20.0",

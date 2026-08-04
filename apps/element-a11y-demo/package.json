@@ -20,7 +20,7 @@
     "@pie-element/element-bundler": "workspace:*",
     "@pie-element/element-theme-daisyui": "workspace:*",
     "@pie-element/element-player": "workspace:*",
-    "@tiptap/core": "3.18.0",
+    "@tiptap/core": "3.29.2",
     "@tiptap/extension-code-block-lowlight": "3.18.0",
     "@tiptap/extension-document": "3.18.0",
     "@tiptap/extension-history": "3.18.0",
