@@ -341,7 +341,72 @@ bun run turbo build --filter "@pie-element/*"
 
 The build outputs `dist/print/index.js` (bundler ESM) and `dist/print/index.d.ts`,
 plus `dist/browser/print/index.js` (the browser artifact the item-level player
-loads). See [How the Print Bundle Is Built](#how-the-print-bundle-is-built).
+loads) and, for packages that already have print support, `module/print.js`
+(the legacy-compatible artifact — see
+[How the Print Bundle Is Built](#how-the-print-bundle-is-built)).
+
+### Testing the Legacy-Compatible Print Artifact Locally
+
+`module/print.js` exists to satisfy one specific contract: the **unmodified**
+`@pie-framework/pie-print` client loader does a bare `import(url)` with **no
+import map**. Testing it means reproducing exactly that — not the item-level
+or element-level player.
+
+1. **Build the artifact for one package:**
+   ```bash
+   cd packages/elements-react/multiple-choice   # or any of the 12 print-enabled packages
+   rm -rf module
+   bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts
+   # Svelte packages use svelte-element-legacy-print.config.ts instead
+   ```
+
+2. **Confirm it's self-contained** — a real match here means something is
+   still an external bare specifier and will break the legacy loader:
+   ```bash
+   grep -nE '^\s*(import\s|export\s.*from\s)' module/print.js
+   ```
+
+3. **Load it the way the legacy client actually does** — a bare `import()`,
+   zero import map. Create `module/smoke.html`:
+   ```html
+   <!doctype html>
+   <html><body>
+   <mc-print-test id="el"></mc-print-test>
+   <script type="module">
+     const mod = await import('./print.js');
+     customElements.define('mc-print-test', mod.default);
+     const el = document.getElementById('el');
+     el.options = { role: 'student' };
+     el.model = {
+       prompt: 'What is 2 + 2?',
+       choices: [
+         { label: '3', value: 'a', correct: false },
+         { label: '4', value: 'b', correct: true },
+       ],
+     };
+   </script>
+   </body></html>
+   ```
+   (Adjust the tag name and `model` shape to match the target package's
+   `src/print/index.ts(x)`.)
+
+4. **Serve and open it in a real browser:**
+   ```bash
+   bun x http-server -p 8931
+   # open http://localhost:8931/smoke.html
+   ```
+   Check DevTools console — zero errors expected. `smoke.html` is a
+   throwaway fixture; delete it once you're done, it isn't part of the
+   published artifact.
+
+5. **Confirm the self-skip guard** on a package with no print component —
+   the same invocation must exit `0` and write nothing:
+   ```bash
+   cd packages/elements-react/hotspot   # any package without src/print/
+   bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts
+   echo $?          # expect 0
+   ls module 2>&1   # expect "No such file or directory"
+   ```
 
 ## Further Reading
 
