@@ -1,5 +1,14 @@
 # @pie-element/mc-populated-blank
 
+## 0.2.14
+
+### Patch Changes
+
+- 33d27e0: define and enforce packaging contracts PIE-626
+- b82e87c: Prepare all PIE element packages for the next prerelease patch wave
+- fbf3695: Trigger the next prerelease patch for all PIE element packages.
+- d0f8d8e: Trigger another prerelease patch for all PIE element packages.
+
 ## 0.2.13
 
 ### Patch Changes

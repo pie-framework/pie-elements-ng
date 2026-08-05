@@ -1,5 +1,30 @@
 # @pie-element/math-templated
 
+## 7.1.2
+
+### Patch Changes
+
+- b82e87c: Prepare all PIE element packages for the next prerelease patch wave
+- fbf3695: Trigger the next prerelease patch for all PIE element packages.
+- d0f8d8e: Trigger another prerelease patch for all PIE element packages.
+- Updated dependencies [509caf6]
+- Updated dependencies [5ca8ec1]
+- Updated dependencies [b34750c]
+- Updated dependencies [e6ef621]
+- Updated dependencies [0e9882f]
+- Updated dependencies [a4c6279]
+  - @pie-element/shared-controller-utils@0.1.2
+  - @pie-lib/config-ui@13.0.5
+  - @pie-lib/correct-answer-toggle@4.0.4
+  - @pie-lib/editable-html-tip-tap@2.1.3
+  - @pie-lib/math-input@8.1.2
+  - @pie-lib/math-toolbar@3.0.4
+  - @pie-lib/render-ui@6.1.2
+  - @pie-lib/translator@4.0.4
+  - @pie-element/shared-math-rendering-mathjax@0.1.2
+  - @pie-element/shared-lodash@0.1.2
+  - @pie-lib/mask-markup@3.0.5
+
 ## 7.1.1-next.15
 
 ### Patch Changes

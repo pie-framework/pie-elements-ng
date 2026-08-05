@@ -1,5 +1,40 @@
 # @pie-element/ebsr
 
+## 14.2.3
+
+### Patch Changes
+
+- 33d27e0: define and enforce packaging contracts PIE-626
+- 0bcd6d8: Publish corrected React element next prereleases from stable npm baselines.
+- b82e87c: Prepare all PIE element packages for the next prerelease patch wave
+- fbf3695: Trigger the next prerelease patch for all PIE element packages.
+- d0f8d8e: Trigger another prerelease patch for all PIE element packages.
+- 0e9882f: Publish the fixed vendored lodash get helper through EBSR's authoring dependency graph.
+- a4c6279: Vendor the lodash helper surface through `@pie-element/shared-lodash` so browser ESM output no longer depends on runtime lodash or lodash-es resolution.
+
+  Replace `@pie-lib/config-ui`'s tiny `mathjs` fraction-to-number usage with a generated local helper, while keeping `mathjs@^15.2.0` for packages such as `@pie-element/number-line` that use the broader math surface.
+
+- Updated dependencies [259eb4d]
+- Updated dependencies [509caf6]
+- Updated dependencies [5ca8ec1]
+- Updated dependencies [42e1684]
+- Updated dependencies [b34750c]
+- Updated dependencies [33d27e0]
+- Updated dependencies [0bcd6d8]
+- Updated dependencies [b82e87c]
+- Updated dependencies [fbf3695]
+- Updated dependencies [d0f8d8e]
+- Updated dependencies [0e9882f]
+- Updated dependencies [7bd4a51]
+- Updated dependencies [e32415a]
+- Updated dependencies [b083e3a]
+- Updated dependencies [a4c6279]
+  - @pie-element/multiple-choice@13.2.3
+  - @pie-element/shared-controller-utils@0.1.2
+  - @pie-lib/config-ui@13.0.5
+  - @pie-lib/translator@4.0.4
+  - @pie-element/shared-lodash@0.1.2
+
 ## 14.2.2-next.5
 
 ### Patch Changes

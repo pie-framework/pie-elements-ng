@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/element-a11y-demo",
-  "version": "0.1.2-next.2",
+  "version": "0.1.2",
   "private": true,
   "description": "Dedicated SvelteKit app for PIE accessibility scenario demos",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/venn-classification",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Venn diagram classification PIE element (Svelte 5) with 2-set classification, tile tray, optional tile images, pointer + keyboard placement, and MathJax-rendered math tile labels",
   "repository": {
     "type": "git",

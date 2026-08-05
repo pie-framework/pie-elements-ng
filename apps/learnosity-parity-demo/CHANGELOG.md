@@ -1,5 +1,12 @@
 # @pie-element/learnosity-parity-demo
 
+## 0.1.2
+
+### Patch Changes
+
+- @pie-element/element-theme-daisyui@0.1.2
+- @pie-element/element-player@0.1.3
+
 ## 0.1.2-next.2
 
 ### Patch Changes

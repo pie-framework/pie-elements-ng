@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/simple-cloze",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Simple cloze (text entry) demo/template PIE element built with Svelte 5",
   "repository": {
     "type": "git",
