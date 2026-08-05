@@ -15,7 +15,7 @@ import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';
 import DraggableHandle, { DragHandle } from './drag-handle.js';
 import { styled } from '@mui/material/styles';
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 
 const getData = (data, domain) => {

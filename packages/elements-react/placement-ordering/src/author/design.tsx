@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import debug from 'debug';
-import { cloneDeep, isEmpty } from 'lodash-es';
+import { cloneDeep, isEmpty } from '@pie-element/shared-lodash';
 import { get, set } from 'nested-property';
 import pluralize from 'pluralize';
 import { styled } from '@mui/material/styles';

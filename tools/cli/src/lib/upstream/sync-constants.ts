@@ -18,23 +18,18 @@ export const WORKSPACE = {
 } as const;
 
 // Upstream element packages intentionally excluded from sync.
-// These templates are not used in pie-elements-ng runtime or are temporarily disabled.
-export const EXCLUDED_UPSTREAM_ELEMENTS = [
-  'boilerplate-item-type',
-  'math-inline',
-  'math-templated',
-] as const;
+// These templates are not used in pie-elements-ng runtime.
+export const EXCLUDED_UPSTREAM_ELEMENTS = ['boilerplate-item-type'] as const;
 
 // Upstream @pie-lib packages intentionally excluded from sync.
-// These are owned locally in pie-elements-ng while ESM/math behavior is stabilized.
-export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = ['math-input', 'math-rendering'] as const;
+// math-rendering stays local (wrapper re-exports shared MathJax adapter).
+export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = ['math-rendering'] as const;
 
 // Build tool versions
 export const BUILD_TOOLS = {
   VITE: '^8.0.1',
   TYPESCRIPT: '^5.9.3',
   VITE_REACT_PLUGIN: '^6.0.1',
-  LODASH_ES: '^4.17.22',
 } as const;
 
 // React versions
@@ -65,10 +60,14 @@ export const PACKAGE_DEFAULTS = {
 } as const;
 
 // Build scripts
+export const ELEMENT_BROWSER_VITE_CONFIG = '../../../tools/vite/element-browser.config.ts';
+
 export const SCRIPTS = {
   BUILD: 'bun x vite build && bun x tsc --emitDeclarationOnly',
+  BUILD_WITH_BROWSER: `bun x vite build && bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG} && bun x tsc --emitDeclarationOnly`,
   BUILD_WITH_IIFE:
     'bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly',
+  BUILD_WITH_IIFE_AND_BROWSER: `bun x vite build && bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG} && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly`,
   DEV: 'bun x vite',
   DEMO: 'bun x vite --mode demo',
   TEST: 'bun x vitest run',

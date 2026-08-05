@@ -182,10 +182,9 @@ If webpack can't find `@pie-element/*` packages:
 To fully test the bundler:
 
 1. **Fix Transitive Dependencies**: Automatically discover and link all `@pie-element/*` deps
-2. **Test with Verdaccio**: Publish to local npm registry for more realistic testing
-3. **Integration Tests**: Test bundles with actual `pie-player-components`
-4. **Multiple Elements**: Test bundling multiple elements in one bundle
-5. **Production Comparison**: Binary diff with production bundles
+2. **Integration Tests**: Test bundles with actual `pie-player-components`
+3. **Multiple Elements**: Test bundling multiple elements in one bundle
+4. **Production Comparison**: Binary diff with production bundles
 
 ## Related Files
 

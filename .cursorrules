@@ -37,4 +37,6 @@
 - Upstream sync policy: `upstream:update` should preserve/copy package versions from upstream package.json when syncing `packages/elements-react/*` and `packages/lib-react/*`.
 - PIE API AWS builder compatibility: when an element package sets `package.json` `pie.controller` to `@pie-element/<name>/controller`, include a top-level `controller.js` file that re-exports from `./dist/controller/index.js`.
 - Ensure the top-level `controller.js` shim is published by listing it in `package.json` `files`.
-- Keep `exports["./controller"]` pointing at `./dist/controller/index.js` (or source in development) for standard ESM consumers; the shim is only for filesystem-alias resolver compatibility.
+- Keep `exports["./controller"]` and `exports["./controller.js"]` pointing at `./dist/controller/index.js` (or source in development where supported) for standard ESM consumers; the shim is only for filesystem-alias resolver compatibility.
+- Player-facing browser ESM uses static package files, not CDN package transforms. Packages that support browser ESM expose `exports["./browser/<view>"]` at `./dist/browser/<view>/index.js`, and `pie-players` loads those files directly instead of jsDelivr `+esm`.
+- Browser ESM externals are governed by `tools/vite/browser-esm-policy.json`; update that policy and `../pie-players` import-map generation together when adding a new shared external. Dependencies not in the policy should remain bundled by default.

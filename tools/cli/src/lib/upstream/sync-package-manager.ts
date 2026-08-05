@@ -5,15 +5,20 @@
  * to eliminate the massive duplication between controllers-strategy and react-strategy.
  */
 
-import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
 import { existsAny } from './sync-filesystem.js';
 import { applyPackageJsonTransforms } from './sync-transforms.js';
 import { BUILD_TOOLS, REACT, PACKAGE_DEFAULTS, SCRIPTS, WORKSPACE } from './sync-constants.js';
-import { getPieLibDependencyAugmentations, getPieLibDependencyOverride } from './sync-presets.js';
+import {
+  getPieLibDependencyAugmentations,
+  getPieLibDependencyOverride,
+  shouldGenerateConfigUiFractionHelper,
+  shouldGenerateAutosizeInputComponent,
+} from './sync-presets.js';
 
 interface EntryPointMap {
   hasIndex: boolean;
@@ -22,7 +27,43 @@ interface EntryPointMap {
   hasController: boolean;
   hasConfigure: boolean;
   hasPrint: boolean;
+  hasRuntimeSupport: boolean;
   hasTypes: boolean;
+}
+
+interface BrowserEsmPolicy {
+  sharedDependencyVersions?: Record<string, string>;
+}
+
+type LegacyConfigureEntry = 'author' | 'configure';
+
+function getLegacyConfigureEntry(entryPoints: EntryPointMap): LegacyConfigureEntry | null {
+  if (entryPoints.hasConfigure) {
+    return 'configure';
+  }
+  if (entryPoints.hasAuthor) {
+    return 'author';
+  }
+  return null;
+}
+
+function distEntryExport(entry: LegacyConfigureEntry): Record<string, string> {
+  return {
+    types: `./dist/${entry}/index.d.ts`,
+    default: `./dist/${entry}/index.js`,
+  };
+}
+
+function readBrowserEsmPolicy(rootDir: string): BrowserEsmPolicy {
+  const policyPath = join(rootDir, 'tools/vite/browser-esm-policy.json');
+  if (!existsSync(policyPath)) {
+    return {};
+  }
+  try {
+    return JSON.parse(readFileSync(policyPath, 'utf-8')) as BrowserEsmPolicy;
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -66,6 +107,12 @@ export function detectEntryPoints(elementDir: string): EntryPointMap {
       join(elementDir, 'src/print/index.js'),
       join(elementDir, 'src/print/index.jsx'),
     ]),
+    hasRuntimeSupport: existsAny([
+      join(elementDir, 'src/runtime-support.ts'),
+      join(elementDir, 'src/runtime-support.tsx'),
+      join(elementDir, 'src/runtime-support.js'),
+      join(elementDir, 'src/runtime-support.jsx'),
+    ]),
     hasTypes: existsAny([
       join(elementDir, 'src/types/index.ts'),
       join(elementDir, 'src/types/index.tsx'),
@@ -78,7 +125,11 @@ export function detectEntryPoints(elementDir: string): EntryPointMap {
 /**
  * Generate exports object based on available entry points
  */
-export function generateExportsObject(entryPoints: EntryPointMap): Record<string, unknown> {
+export function generateExportsObject(
+  entryPoints: EntryPointMap,
+  options: { includeBrowserExports?: boolean } = {}
+): Record<string, unknown> {
+  const includeBrowserExports = options.includeBrowserExports ?? false;
   const exports: Record<string, unknown> = {
     '.': {
       types: './dist/index.d.ts',
@@ -91,6 +142,11 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/delivery/index.d.ts',
       default: './dist/delivery/index.js',
     };
+    if (includeBrowserExports) {
+      exports['./browser/delivery'] = {
+        default: './dist/browser/delivery/index.js',
+      };
+    }
   }
 
   if (entryPoints.hasAuthor) {
@@ -98,6 +154,16 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/author/index.d.ts',
       default: './dist/author/index.js',
     };
+    if (includeBrowserExports) {
+      exports['./browser/author'] = {
+        default: './dist/browser/author/index.js',
+      };
+    }
+  }
+
+  const legacyConfigureEntry = getLegacyConfigureEntry(entryPoints);
+  if (legacyConfigureEntry) {
+    exports['./configure'] = distEntryExport(legacyConfigureEntry);
   }
 
   if (entryPoints.hasController) {
@@ -105,13 +171,15 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/controller/index.d.ts',
       default: './dist/controller/index.js',
     };
-  }
-
-  if (entryPoints.hasConfigure) {
-    exports['./configure'] = {
-      types: './dist/configure/index.d.ts',
-      default: './dist/configure/index.js',
+    exports['./controller.js'] = {
+      types: './dist/controller/index.d.ts',
+      default: './dist/controller/index.js',
     };
+    if (includeBrowserExports) {
+      exports['./browser/controller'] = {
+        default: './dist/browser/controller/index.js',
+      };
+    }
   }
 
   if (entryPoints.hasPrint) {
@@ -119,6 +187,11 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
       types: './dist/print/index.d.ts',
       default: './dist/print/index.js',
     };
+    if (includeBrowserExports) {
+      exports['./browser/print'] = {
+        default: './dist/browser/print/index.js',
+      };
+    }
   }
 
   if (entryPoints.hasTypes) {
@@ -128,61 +201,52 @@ export function generateExportsObject(entryPoints: EntryPointMap): Record<string
     };
   }
 
-  return exports;
-}
-
-function asObjectExports(
-  exportsValue: unknown
-): Record<string, Record<string, unknown> | string> | null {
-  if (!exportsValue || typeof exportsValue !== 'object') {
-    return null;
-  }
-  return exportsValue as Record<string, Record<string, unknown> | string>;
-}
-
-function getDevelopmentCondition(
-  exportsObj: Record<string, Record<string, unknown> | string> | null,
-  exportPath: string
-): string | null {
-  if (!exportsObj) {
-    return null;
-  }
-  const entry = exportsObj[exportPath];
-  if (!entry || typeof entry !== 'object') {
-    return null;
-  }
-  const dev = entry.development;
-  return typeof dev === 'string' ? dev : null;
-}
-
-function preserveDevelopmentExportConditions(
-  generatedExports: Record<string, unknown>,
-  currentExports: unknown,
-  upstreamExports: unknown
-): Record<string, unknown> {
-  const current = asObjectExports(currentExports);
-  const upstream = asObjectExports(upstreamExports);
-
-  for (const [exportPath, exportConfig] of Object.entries(generatedExports)) {
-    if (!exportConfig || typeof exportConfig !== 'object') {
-      continue;
-    }
-    if ('development' in (exportConfig as Record<string, unknown>)) {
-      continue;
-    }
-    const devFromCurrent = getDevelopmentCondition(current, exportPath);
-    const devFromUpstream = getDevelopmentCondition(upstream, exportPath);
-    const development = devFromCurrent ?? devFromUpstream;
-    if (!development) {
-      continue;
-    }
-    generatedExports[exportPath] = {
-      development,
-      ...(exportConfig as Record<string, unknown>),
+  if (entryPoints.hasRuntimeSupport) {
+    exports['./runtime-support'] = {
+      types: './dist/runtime-support.d.ts',
+      default: './dist/runtime-support.js',
     };
   }
 
-  return generatedExports;
+  return exports;
+}
+
+function generateRuntimeSupportSource(elementName: string, entryPoints: EntryPointMap): string {
+  const packageName = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}`;
+  return `export const runtimeSupport = {
+  schemaVersion: 1,
+  packageName: '${packageName}',
+  supports: {
+    esm: {
+      delivery: ${entryPoints.hasDelivery},
+      author: ${entryPoints.hasAuthor},
+      print: ${entryPoints.hasPrint},
+    },
+  },
+};
+
+export default runtimeSupport;
+`;
+}
+
+async function ensureBrowserRuntimeSupportSource(
+  elementName: string,
+  elementDir: string,
+  entryPoints: EntryPointMap
+): Promise<boolean> {
+  const runtimeSupportPath = join(elementDir, 'src', 'runtime-support.ts');
+  const nextContent = generateRuntimeSupportSource(elementName, entryPoints);
+  const currentContent = existsSync(runtimeSupportPath)
+    ? await readFile(runtimeSupportPath, 'utf-8').catch(() => null)
+    : null;
+
+  if (currentContent === nextContent) {
+    return false;
+  }
+
+  await mkdir(dirname(runtimeSupportPath), { recursive: true });
+  await writeFile(runtimeSupportPath, nextContent, 'utf-8');
+  return true;
 }
 
 /**
@@ -262,13 +326,15 @@ function normalizePackageImport(specifier: string): string | null {
   return specifier.split('/')[0] || null;
 }
 
+const LEGACY_PEERS_TO_SKIP = new Set(['@emotion/core']);
+
 async function findInstalledPackageJson(
   packageName: string,
   fromDir: string
 ): Promise<PackageJson | null> {
   try {
     const { createRequire } = await import('node:module');
-    const req = createRequire(join(fromDir, 'package.json'));
+    const req = createRequire(resolve(fromDir, 'package.json'));
     const resolvedEntry = req.resolve(packageName);
 
     let currentDir = dirname(resolvedEntry);
@@ -295,7 +361,8 @@ async function findInstalledPackageJson(
 
 async function addTransitivePeerDependencies(
   deps: Record<string, string>,
-  fromDir: string
+  fromDir: string,
+  declaredPeerDeps: Set<string> = new Set()
 ): Promise<void> {
   const depNames = Object.keys(deps);
 
@@ -310,9 +377,21 @@ async function addTransitivePeerDependencies(
 
     const installedPkg = await findInstalledPackageJson(depName, fromDir);
     const peerDeps = (installedPkg?.peerDependencies as Record<string, string> | undefined) ?? {};
+    const optionalPeers = new Set(
+      Object.entries(
+        (installedPkg?.peerDependenciesMeta as Record<string, { optional?: boolean }>) ?? {}
+      )
+        .filter(([, meta]) => meta?.optional)
+        .map(([peerName]) => peerName)
+    );
 
     for (const [peerName, peerVersion] of Object.entries(peerDeps)) {
-      if (deps[peerName]) {
+      if (
+        deps[peerName] ||
+        declaredPeerDeps.has(peerName) ||
+        optionalPeers.has(peerName) ||
+        LEGACY_PEERS_TO_SKIP.has(peerName)
+      ) {
         continue;
       }
 
@@ -357,7 +436,7 @@ function addKnownPeerFallbacks(deps: Record<string, string>): void {
   // Some widely used packages rely on peers that upstream metadata can omit
   // or that may not be inferable from local resolution during sync.
   if ((deps.recharts || deps['styled-components']) && !deps['react-is']) {
-    deps['react-is'] = '^19.2.0';
+    deps['react-is'] = '^18.3.1';
   }
 
   if (deps['@tiptap/extension-character-count'] && !deps['@tiptap/extensions']) {
@@ -372,6 +451,10 @@ function addKnownPeerFallbacks(deps: Record<string, string>): void {
   if (deps['@testing-library/user-event'] && !deps['@testing-library/dom']) {
     deps['@testing-library/dom'] = '^10.4.1';
   }
+
+  if (deps['@visx/curve'] && !deps['d3-shape']) {
+    deps['d3-shape'] = '^3.2.0';
+  }
 }
 
 /**
@@ -383,7 +466,7 @@ export function extractUpstreamDependencies(
   if (!upstreamPkg) return {};
 
   const upstreamDeps = (upstreamPkg.dependencies as Record<string, string> | undefined) ?? {};
-  const expectedDeps: Record<string, string> = {};
+  let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
@@ -400,12 +483,12 @@ function resolveSyncedVersion(
   upstreamPkg: PackageJson | null,
   existingPkg: PackageJson | null
 ): string {
-  const upstreamVersion = typeof upstreamPkg?.version === 'string' ? upstreamPkg.version : null;
-  if (upstreamVersion) {
-    return upstreamVersion;
-  }
   const existingVersion = typeof existingPkg?.version === 'string' ? existingPkg.version : null;
-  return existingVersion || '0.1.0';
+  if (existingVersion) {
+    return existingVersion;
+  }
+  const upstreamVersion = typeof upstreamPkg?.version === 'string' ? upstreamPkg.version : null;
+  return upstreamVersion || '0.1.0';
 }
 
 /**
@@ -462,7 +545,8 @@ function isPieFrameworkWorkspacePackage(packageName: string, config: SyncConfig)
 export async function ensureElementPackageJson(
   elementName: string,
   elementDir: string,
-  config: SyncConfig
+  config: SyncConfig,
+  options: { includeBrowserExports?: boolean } = {}
 ): Promise<boolean> {
   if (!existsSync(elementDir)) {
     return false;
@@ -470,6 +554,7 @@ export async function ensureElementPackageJson(
 
   const pkgPath = join(elementDir, 'package.json');
   const upstreamPkgPath = join(config.pieElements, 'packages', elementName, 'package.json');
+  const includeBrowserExports = options.includeBrowserExports ?? false;
 
   // Load existing package.json
   let pkg: PackageJson | null = null;
@@ -484,6 +569,11 @@ export async function ensureElementPackageJson(
 
   // Extract and normalize upstream dependencies
   const expectedDeps = extractUpstreamDependencies(upstreamPkg);
+  const declaredPeerDeps = new Set([
+    ...Object.keys((pkg?.peerDependencies as Record<string, string> | undefined) ?? {}),
+    'react',
+    'react-dom',
+  ]);
 
   // Scan source files for actual imports to catch dependencies from skipped directories
   const importedPackages = await extractImportsFromSources(elementDir);
@@ -493,6 +583,9 @@ export async function ensureElementPackageJson(
   for (const imported of importedPackages) {
     // Skip self-dependencies (package importing from itself)
     if (imported === currentPackageName) {
+      continue;
+    }
+    if (imported === 'react' || imported === 'react-dom') {
       continue;
     }
 
@@ -510,9 +603,25 @@ export async function ensureElementPackageJson(
           expectedDeps[imported] = '^1.0.0'; // Use latest 1.x version as default
         }
       }
+    } else if (!expectedDeps[imported]) {
+      // Keep element package.json aligned with actual runtime imports from src/.
+      // Upstream package.json can miss third-party deps after source transforms.
+      const installedPkg = await findInstalledPackageJson(imported, elementDir);
+      if (installedPkg?.version) {
+        expectedDeps[imported] = `^${installedPkg.version}`;
+      } else {
+        const inferredPeerVersion = await inferPeerVersionFromDeclaredDeps(
+          imported,
+          expectedDeps,
+          elementDir
+        );
+        if (inferredPeerVersion) {
+          expectedDeps[imported] = inferredPeerVersion;
+        }
+      }
     }
   }
-  await addTransitivePeerDependencies(expectedDeps, elementDir);
+  await addTransitivePeerDependencies(expectedDeps, elementDir, declaredPeerDeps);
   addKnownPeerFallbacks(expectedDeps);
 
   // Create minimal package.json if missing
@@ -536,28 +645,69 @@ export async function ensureElementPackageJson(
   if (Object.keys(expectedDeps).length > 0) {
     pkg.dependencies = expectedDeps;
   }
+  pkg.peerDependencies = {
+    ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
+    react: REACT.VERSION,
+    'react-dom': REACT.VERSION,
+  };
 
   // Preserve pie metadata (if present upstream or locally)
   const pieMetadata = ((upstreamPkg as PackageJson | null | undefined)?.pie ??
     (pkg as PackageJson | null | undefined)?.pie ??
-    undefined) as { capabilities?: string[] } | undefined;
+    undefined) as
+    | {
+        capabilities?: string[];
+        controller?: string;
+        configure?: string;
+        browserSharedDependencies?: Record<string, string>;
+      }
+    | undefined;
 
   // Apply all standard transformations
   pkg = applyPackageJsonTransforms(pkg);
 
-  if (pieMetadata) {
-    pkg.pie = pieMetadata;
-  }
-
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
+  const wroteRuntimeSupport =
+    includeBrowserExports && !entryPoints.hasRuntimeSupport
+      ? await ensureBrowserRuntimeSupportSource(elementName, elementDir, entryPoints)
+      : false;
+  if (includeBrowserExports) {
+    entryPoints.hasRuntimeSupport = true;
+  }
 
-  // Generate exports based on entry points and preserve existing/upstream dev conditions.
-  pkg.exports = preserveDevelopmentExportConditions(
-    generateExportsObject(entryPoints),
-    pkg.exports,
-    upstreamPkg?.exports
-  );
+  // Generate dist-only exports based on entry points. Do not preserve
+  // source-backed `development` conditions; PIE-605 makes raw source paths a
+  // private implementation detail and keeps public package surfaces dist-only.
+  const nextPieMetadata = pieMetadata ? { ...pieMetadata } : {};
+  if (entryPoints.hasController) {
+    nextPieMetadata.controller = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}/controller`;
+  } else {
+    delete nextPieMetadata.controller;
+  }
+  const legacyConfigureEntry = getLegacyConfigureEntry(entryPoints);
+  if (legacyConfigureEntry) {
+    nextPieMetadata.configure = `${WORKSPACE.PIE_ELEMENT_PREFIX}${elementName}/configure`;
+  } else {
+    delete nextPieMetadata.configure;
+  }
+  if (includeBrowserExports) {
+    const browserEsmPolicy = readBrowserEsmPolicy(config.pieElementsNg);
+    if (browserEsmPolicy.sharedDependencyVersions) {
+      nextPieMetadata.browserSharedDependencies = browserEsmPolicy.sharedDependencyVersions;
+    }
+  } else {
+    delete nextPieMetadata.browserSharedDependencies;
+  }
+
+  if (Object.keys(nextPieMetadata).length > 0) {
+    pkg.pie = nextPieMetadata;
+  } else {
+    delete pkg.pie;
+  }
+
+  const hasBrowserBuild = includeBrowserExports;
+  pkg.exports = generateExportsObject(entryPoints, { includeBrowserExports: hasBrowserBuild });
 
   // Warn when metadata/structure disagree for core capabilities
   const metadataCapabilities = Array.isArray(pieMetadata?.capabilities)
@@ -603,11 +753,23 @@ export async function ensureElementPackageJson(
   pkg.main = './dist/index.js';
   pkg.types = './dist/index.d.ts';
 
-  // Ensure files array
+  // Ensure publish surface is dist-only. Source remains available in the repo,
+  // but must not be published as a public package API. Controller-bearing
+  // elements additionally publish the root shim required by legacy builders.
   const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
   const normalizedFiles = new Set<string>(files.filter((v): v is string => typeof v === 'string'));
   normalizedFiles.add('dist');
-  normalizedFiles.add('src');
+  normalizedFiles.delete('src');
+  if (entryPoints.hasController) {
+    normalizedFiles.add('controller.js');
+  } else {
+    normalizedFiles.delete('controller.js');
+  }
+  if (legacyConfigureEntry) {
+    normalizedFiles.add('configure.js');
+  } else {
+    normalizedFiles.delete('configure.js');
+  }
   pkg.files = Array.from(normalizedFiles).sort();
 
   // Set sideEffects
@@ -628,10 +790,35 @@ export async function ensureElementPackageJson(
     existsSync(join(elementDir, 'src/index.iife.ts')) ||
     existsSync(join(elementDir, 'vite.config.iife.ts'));
 
-  scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE : SCRIPTS.BUILD;
+  if (hasBrowserBuild) {
+    scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE_AND_BROWSER : SCRIPTS.BUILD_WITH_BROWSER;
+  } else {
+    scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE : SCRIPTS.BUILD;
+  }
   scripts.dev = SCRIPTS.DEV;
   scripts.demo = SCRIPTS.DEMO;
   scripts.test = SCRIPTS.TEST;
+
+  const controllerShimPath = join(elementDir, 'controller.js');
+  const controllerShimContent = "export * from './dist/controller/index.js';\n";
+  const hasControllerShim = existsSync(controllerShimPath);
+  const currentControllerShim = hasControllerShim
+    ? await readFile(controllerShimPath, 'utf-8').catch(() => null)
+    : null;
+  const shouldWriteControllerShim =
+    entryPoints.hasController && currentControllerShim !== controllerShimContent;
+  const shouldRemoveControllerShim = !entryPoints.hasController && hasControllerShim;
+  const configureShimPath = join(elementDir, 'configure.js');
+  const configureShimContent = legacyConfigureEntry
+    ? `export { default } from './dist/${legacyConfigureEntry}/index.js';\nexport * from './dist/${legacyConfigureEntry}/index.js';\n`
+    : null;
+  const hasConfigureShim = existsSync(configureShimPath);
+  const currentConfigureShim = hasConfigureShim
+    ? await readFile(configureShimPath, 'utf-8').catch(() => null)
+    : null;
+  const shouldWriteConfigureShim =
+    configureShimContent !== null && currentConfigureShim !== configureShimContent;
+  const shouldRemoveConfigureShim = configureShimContent === null && hasConfigureShim;
 
   // Check if content changed
   const nextContent = `${JSON.stringify(pkg, null, 2)}\n`;
@@ -639,12 +826,31 @@ export async function ensureElementPackageJson(
     ? await readFile(pkgPath, 'utf-8').catch(() => null)
     : null;
 
-  if (currentContent === nextContent) {
+  if (
+    currentContent === nextContent &&
+    !wroteRuntimeSupport &&
+    !shouldWriteControllerShim &&
+    !shouldRemoveControllerShim &&
+    !shouldWriteConfigureShim &&
+    !shouldRemoveConfigureShim
+  ) {
     return false;
   }
 
   // Write updated package.json
-  await writeFile(pkgPath, nextContent, 'utf-8');
+  if (currentContent !== nextContent) {
+    await writeFile(pkgPath, nextContent, 'utf-8');
+  }
+  if (shouldWriteControllerShim) {
+    await writeFile(controllerShimPath, controllerShimContent, 'utf-8');
+  } else if (shouldRemoveControllerShim) {
+    await unlink(controllerShimPath).catch(() => {});
+  }
+  if (shouldWriteConfigureShim && configureShimContent !== null) {
+    await writeFile(configureShimPath, configureShimContent, 'utf-8');
+  } else if (shouldRemoveConfigureShim) {
+    await unlink(configureShimPath).catch(() => {});
+  }
   return true;
 }
 
@@ -674,7 +880,7 @@ export async function ensurePieLibPackageJson(
 
   // Extract upstream dependencies
   const upstreamDeps = (upstreamPkg?.dependencies as Record<string, string> | undefined) ?? {};
-  const expectedDeps: Record<string, string> = {};
+  let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
@@ -724,6 +930,16 @@ export async function ensurePieLibPackageJson(
     }
   }
 
+  const declaresReactRuntime =
+    typeof expectedDeps.react === 'string' || typeof expectedDeps['react-dom'] === 'string';
+
+  expectedDeps =
+    (applyPackageJsonTransforms({ dependencies: expectedDeps } as PackageJson, {
+      removeReactInputAutosize: shouldGenerateAutosizeInputComponent(pkgName),
+      removeMathjs:
+        shouldGenerateConfigUiFractionHelper(pkgName) && !importedPackages.has('mathjs'),
+    }).dependencies as Record<string, string> | undefined) ?? {};
+
   // Create minimal package.json if missing
   if (!pkg) {
     pkg = {
@@ -747,12 +963,17 @@ export async function ensurePieLibPackageJson(
     pkg.dependencies = dependencyOverride;
   }
 
-  // Generate exports and preserve existing/upstream dev conditions where applicable.
-  const exportsObj: Record<string, unknown> = {
-    ...(typeof pkg.exports === 'object' && pkg.exports
-      ? (pkg.exports as Record<string, unknown>)
-      : {}),
-  };
+  if (declaresReactRuntime) {
+    pkg.peerDependencies = {
+      ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
+      react: REACT.VERSION,
+      'react-dom': REACT.VERSION,
+    };
+  }
+
+  // Generate dist-only exports. Pie-lib packages expose only their compiled
+  // top-level entry; raw source paths are intentionally not public.
+  const exportsObj: Record<string, unknown> = {};
 
   exportsObj['.'] = {
     types: './dist/index.d.ts',
@@ -764,14 +985,11 @@ export async function ensurePieLibPackageJson(
   pkg.type = PACKAGE_DEFAULTS.TYPE;
   pkg.main = './dist/index.js';
   pkg.types = './dist/index.d.ts';
-  pkg.exports = preserveDevelopmentExportConditions(exportsObj, pkg.exports, upstreamPkg?.exports);
+  pkg.exports = exportsObj;
 
-  // Ensure files array
-  const files = Array.isArray(pkg.files) ? (pkg.files as unknown[]) : [];
-  const normalizedFiles = new Set<string>(files.filter((v): v is string => typeof v === 'string'));
-  normalizedFiles.add('dist');
-  normalizedFiles.add('src');
-  pkg.files = Array.from(normalizedFiles).sort();
+  // Ensure publish surface is dist-only. Source remains available in the repo,
+  // but must not be published as a public package API.
+  pkg.files = ['dist'];
 
   if (typeof pkg.sideEffects === 'undefined') {
     pkg.sideEffects = PACKAGE_DEFAULTS.SIDE_EFFECTS;

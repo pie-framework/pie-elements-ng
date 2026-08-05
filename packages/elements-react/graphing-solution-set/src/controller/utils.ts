@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { isEqual, differenceWith, uniq, uniqWith } from 'lodash-es';
+import { isEqual, differenceWith, uniq, uniqWith } from '@pie-element/shared-lodash';
 
 /*
  * Constant to check equal segments

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-theming-mui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Material-UI theme adapter for PIE elements",
   "type": "module",
   "main": "./dist/index.js",
@@ -29,8 +29,8 @@
     "@mui/material": "^7.3.4",
     "react": "^18.3.0",
     "typescript": "^5.9.3",
-    "vite": "^8.0.1",
-    "vitest": "^4.1.0"
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
   },
   "peerDependencies": {
     "react": "^18.0.0",
@@ -42,7 +42,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
     "directory": "packages/shared/theming-mui"
   },
   "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",

@@ -8,13 +8,14 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { keysForGrade } from './keys/grades';
-import { updateSpans } from './updateSpans';
-import * as keys from './keys';
+import { keysForGrade } from './keys/grades.js';
+import { updateSpans } from './updateSpans.js';
+import * as keys from './keys/index.js';
 
-import HorizontalKeypad from './horizontal-keypad';
+import HorizontalKeypad from './horizontal-keypad.js';
 
-import * as mq from './mq';
+import * as mq from './mq/index.js';
+import { registerEmbed, applyStaticMath } from './mq/mathquill-instance.js';
 
 const addLeftBracket = (s) => (s.indexOf('\\(') === 0 ? s : `\\(${s}`);
 const addRightBracket = (s) => (s.indexOf('\\)') === s.length - 2 ? s : `${s}\\)`);
@@ -24,4 +25,14 @@ const rmRightBracket = (s) => (s.indexOf('\\)') === s.length - 2 ? s.substring(0
 const addBrackets = (s) => addRightBracket(addLeftBracket(s));
 const removeBrackets = (s) => rmRightBracket(rmLeftBracket(s));
 
-export { keysForGrade, addBrackets, removeBrackets, keys, HorizontalKeypad, mq, updateSpans };
+export {
+  keysForGrade,
+  addBrackets,
+  removeBrackets,
+  keys,
+  HorizontalKeypad,
+  mq,
+  updateSpans,
+  registerEmbed,
+  applyStaticMath,
+};

@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { debounce } from 'lodash-es';
+import { debounce } from '@pie-element/shared-lodash';
 import debug from 'debug';
 
 import Typography from '@mui/material/Typography';
@@ -63,6 +63,7 @@ const StyledPrompt: any = styled(Typography)(({ theme }) => ({
   color: color.text(),
   marginBottom: theme.spacing(2),
   fontSize: 'inherit',
+  display: 'block',
 }));
 
 const TeacherInstructions: any = styled('div')(({ theme }) => ({

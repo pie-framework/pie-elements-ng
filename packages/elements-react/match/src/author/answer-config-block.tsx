@@ -10,14 +10,14 @@
 
 import { getPluginProps } from './utils.js';
 import * as React from 'react';
-import cx from 'classnames';
+import cx from 'clsx';
 import PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import AddRow from './add-row.js';
 import Row from './row.js';
 import debug from 'debug';
-import { set } from 'lodash-es';
+import { set } from '@pie-element/shared-lodash';
 import EditableHtml, { DEFAULT_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 import { DragProvider } from '@pie-lib/drag';
 

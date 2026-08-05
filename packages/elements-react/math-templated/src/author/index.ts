@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
-import { defaults, isArray } from 'lodash-es';
+import { defaults, isArray } from '@pie-element/shared-lodash';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
@@ -20,10 +20,10 @@ import {
   DeleteSoundEvent,
 } from '@pie-element/shared-configure-events';
 
-import Main from './design';
+import Main from './design.js';
 
-import sensibleDefaults from './defaults';
-import { processMarkup, createSlateMarkup } from './markupUtils';
+import sensibleDefaults from './defaults.js';
+import { processMarkup, createSlateMarkup } from './markupUtils.js';
 
 const log = debug('math-templated:configure');
 
@@ -187,9 +187,14 @@ export default class MathTemplateConfigure extends HTMLElement {
     this._root.render(element);
   }
 
+  connectedCallback() {
+    this._render();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

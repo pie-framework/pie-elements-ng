@@ -12,13 +12,14 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import MultipleChoiceConfigure from '@pie-element/multiple-choice/author';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 import Main from './main.js';
+import { EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG } from '../private-tags.js';
 
 import sensibleDefaults from './defaults.js';
 
 const MODEL_UPDATED = ModelUpdatedEvent.TYPE;
-const MC_TAG_NAME = 'ebsr-multiple-choice-configure';
+const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_CONFIGURE_TAG;
 
 class EbsrMCConfigure extends MultipleChoiceConfigure {}
 const defineMultipleChoice = () => {
@@ -165,6 +166,7 @@ export default class EbsrConfigure extends HTMLElement {
     let element = React.createElement(Main, {
       model: this._model,
       configuration: this._configuration,
+      multipleChoiceTagName: MC_TAG_NAME,
       onModelChanged: this.onModelChanged,
       onConfigurationChanged: this.onConfigurationChanged,
     });
@@ -179,6 +181,7 @@ export default class EbsrConfigure extends HTMLElement {
     this.removeEventListener(MODEL_UPDATED, this.onModelUpdated);
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

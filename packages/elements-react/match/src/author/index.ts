@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { isEmpty, set } from 'lodash-es';
+import { isEmpty, set } from '@pie-element/shared-lodash';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Configure from './configure.js';
@@ -21,7 +21,7 @@ import {
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
 import defaultValues from './defaults.js';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 const log = debug('pie-elements:match:configure');
 
@@ -170,9 +170,14 @@ export default class MatchConfigure extends HTMLElement {
     }
   }
 
+  connectedCallback() {
+    this._render();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

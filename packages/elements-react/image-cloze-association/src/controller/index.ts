@@ -11,7 +11,7 @@
 import debug from 'debug';
 import { camelizeKeys } from 'humps';
 import { partialScoring } from '@pie-element/shared-controller-utils';
-import { cloneDeep, isEmpty, shuffle } from 'lodash-es';
+import { cloneDeep, isEmpty, shuffle } from '@pie-element/shared-lodash';
 
 import defaults from './defaults.js';
 import { getAllUniqueCorrectness, getCompleteResponseDetails } from './utils.js';

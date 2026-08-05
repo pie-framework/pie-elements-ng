@@ -16,7 +16,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CardBar from './card-bar.js';
 import { Checkbox } from '@pie-lib/config-ui';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 const GroupInline: any = styled('div')({
   alignItems: 'center',

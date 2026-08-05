@@ -16,14 +16,14 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
-import { cloneDeep, pick, throttle } from 'lodash-es';
+import { cloneDeep, pick, throttle } from '@pie-element/shared-lodash';
 import { InputContainer, settings, layout } from '@pie-lib/config-ui';
 import EditableHtml, { ALL_PLUGINS } from '@pie-lib/editable-html-tip-tap';
 const { dropdown } = settings;
 
-import Response from './response';
-import { processMarkup, createSlateMarkup } from './markupUtils';
-import { generateValidationMessage } from './utils';
+import Response from './response.js';
+import { processMarkup, createSlateMarkup } from './markupUtils.js';
+import { generateValidationMessage } from './utils.js';
 
 const { Panel, toggle } = settings;
 
@@ -215,7 +215,7 @@ export class Design extends React.Component {
       const newCachedResponses = cachedResponses ? cloneDeep(cachedResponses) : {};
 
       nodes.forEach((node) => {
-        const keyForNode = node.data.get('index');
+        const keyForNode = node.index;
 
         if (!newChoices[keyForNode] && newCachedResponses[keyForNode]) {
           Object.assign(newChoices, pick(newCachedResponses, keyForNode));

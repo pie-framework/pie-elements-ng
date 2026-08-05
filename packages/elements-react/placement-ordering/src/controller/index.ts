@@ -10,7 +10,7 @@
 
 import { flattenCorrect, getAllCorrectResponses, score } from './scoring.js';
 
-import { every, isArray, isEmpty, isEqual, map, reduce } from 'lodash-es';
+import { every, isArray, isEmpty, isEqual, map, reduce } from '@pie-element/shared-lodash';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import debug from 'debug';

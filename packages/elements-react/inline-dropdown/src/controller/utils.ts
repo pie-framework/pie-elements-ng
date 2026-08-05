@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { forEach } from 'lodash-es';
+import { forEach } from '@pie-element/shared-lodash';
 
 export const getAllCorrectResponses = ({ choices, alternateResponse }) => {
   alternateResponse = alternateResponse || {};

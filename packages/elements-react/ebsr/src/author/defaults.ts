@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 
 const defaultConfig = {
   addChoiceButton: {
@@ -136,7 +136,7 @@ const partModel = (base) => ({
 
 export default {
   model: {
-    partLabels: true,
+    partLabels: false,
     partLabelType: 'Letters',
     // partialScoring: false,
     partA: partModel(),

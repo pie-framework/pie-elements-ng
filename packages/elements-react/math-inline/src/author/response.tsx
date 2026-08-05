@@ -35,10 +35,26 @@ const ResponseContainer: any = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
+
+  '.response-editor': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    minWidth: '500px',
+    maxWidth: '900px',
+    height: 'auto',
+    minHeight: '40px !important',
+  },
+
+  '.math-toolbar': {
+    width: '100%',
+    maxWidth: '900px',
+  },
 }));
 
 const StyledCardContent: any = styled(CardContent)(({ theme }) => ({
-  paddingBottom: `${theme.spacing(2)}px !important`,
+  paddingBottom: `${theme.spacing(2)} !important`,
 }));
 
 const Title: any = styled(Typography)({
@@ -47,8 +63,7 @@ const Title: any = styled(Typography)({
   flex: 3,
 });
 
-const SelectContainer: any = styled(InputContainer)(({ theme }) =>
-({
+const SelectContainer: any = styled(InputContainer)(({ theme }) => ({
   flex: 2,
   '& > *:not(label)': {
     marginTop: theme.spacing(1),
@@ -72,7 +87,7 @@ const FlexContainer: any = styled('div')({
 const AlternateBar: any = styled('div')({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  justifyContent: 'flex-start',
 });
 
 const ErrorText: any = styled('div')(({ theme }) => ({
@@ -96,31 +111,6 @@ const RemoveAlternateButton: any = styled(Button)(({ theme }) => ({
   color: 'gray',
   fontSize: '0.8rem',
 }));
-
-// CSS for MathToolbar classNames (used as strings)
-if (typeof document !== 'undefined') {
-  const styleId = 'math-inline-response-styles';
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style');
-    style.id = styleId;
-    style.textContent = `
-      .response-editor {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        min-width: 500px;
-        max-width: 900px;
-        height: auto;
-        min-height: 40px;
-      }
-      .math-toolbar {
-        width: 100%;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-}
 
 class Response extends React.Component {
   static propTypes = {
@@ -296,7 +286,11 @@ class Response extends React.Component {
             </Title>
 
             <SelectContainer label="Validation">
-              <Select onChange={this.onChange('validation')} value={validation || 'literal'} MenuProps={{transitionDuration: { enter: 225, exit: 195 } }}>
+              <Select
+                onChange={this.onChange('validation')}
+                value={validation || 'literal'}
+                MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}
+              >
                 <MenuItem value="literal">Literal Validation</MenuItem>
                 <MenuItem value="symbolic">Symbolic Validation</MenuItem>
               </Select>
@@ -321,10 +315,7 @@ class Response extends React.Component {
                 <FormControlLabel
                   label={cIgnoreOrder.label}
                   control={
-                    <CustomColorCheckbox
-                      checked={ignoreOrder}
-                      onChange={this.onLiteralOptionsChange('ignoreOrder')}
-                    />
+                    <CustomColorCheckbox checked={ignoreOrder} onChange={this.onLiteralOptionsChange('ignoreOrder')} />
                   }
                 />
               )}
@@ -355,10 +346,7 @@ class Response extends React.Component {
                     Alternate
                     {Object.keys(alternates).length > 1 ? ` ${altIdx + 1}` : ''}
                   </InputLabel>
-                  <RemoveAlternateButton
-                    type="secondary"
-                    onClick={this.onRemoveAlternate(alternateId)}
-                  >
+                  <RemoveAlternateButton type="secondary" onClick={this.onRemoveAlternate(alternateId)}>
                     Remove
                   </RemoveAlternateButton>
                 </AlternateBar>

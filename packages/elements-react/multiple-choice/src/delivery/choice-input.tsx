@@ -45,7 +45,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import Radio from '@mui/material/Radio';
-import classNames from 'classnames';
+import classNames from 'clsx';
 
 import FeedbackTick from './feedback-tick.js';
 
@@ -117,9 +117,6 @@ const getInputStyles = (correctness) => {
   return {
     [key('root')]: {
       ...colorStyle('color', color.text()),
-      ...(correctness ? {} : {
-        '&:hover': { color: `${color.primaryLight()} !important` },
-      }),
       ...(correctness === 'correct' ? colorStyle('correct-color', color.text()) : {}),
       ...(correctness === 'incorrect' ? colorStyle('incorrect-color', color.incorrect()) : {}),
     },
@@ -137,12 +134,12 @@ const getInputStyles = (correctness) => {
       pointerEvents: 'initial !important',
     },
     focusVisibleUnchecked: {
-      outline: `2px solid ${color.focusUncheckedBorder()}`,
-      backgroundColor: color.focusUnchecked(),
+      outline: `2px solid ${color.keyBoardFocusIndicator()}`,
+      backgroundColor: 'transparent',
     },
     focusVisibleChecked: {
-      outline: `2px solid ${color.focusCheckedBorder()}`,
-      backgroundColor: color.focusChecked(),
+      outline: `2px solid ${color.keyBoardFocusIndicator()}`,
+      backgroundColor: 'transparent',
     },
   };
 };
@@ -158,6 +155,10 @@ const StyledCheckboxBase: any = styled(Checkbox, {
       ...styles[key('root')],
       '&.Mui-checked': styles[key('checked')],
       '&.Mui-disabled': correctness ? {} : styles[key('disabled')],
+      '&:hover:not(.Mui-disabled) svg': {
+        boxShadow: `0px 0px 0px 2px ${color.keyBoardFocusIndicator()}`,
+        borderRadius: '4px',
+      },
     },
     '&.Mui-focusVisible': {
       '&:not(.Mui-checked)': styles.focusVisibleUnchecked,
@@ -195,10 +196,16 @@ const StyledRadioBase: any = styled(Radio, {
       ...styles[key('root')],
       '&.Mui-checked': styles[key('checked')],
       '&.Mui-disabled': correctness ? {} : styles[key('disabled')],
+      '&.Mui-focusVisible:not(.Mui-checked)': styles.focusVisibleUnchecked,
+      '&.Mui-focusVisible.Mui-checked': styles.focusVisibleChecked,
+      '&:hover:not(.Mui-disabled) svg': {
+        boxShadow: `0px 0px 0px 2px ${color.keyBoardFocusIndicator()}`,
+        borderRadius: '50%',
+      },
     },
     '&.Mui-focusVisible': {
-      '&:not(.Mui-checked)': styles.focusVisibleUnchecked,
-      '&.Mui-checked': styles.focusVisibleChecked,
+      '& input': { outline: 0 },
+      '& .MuiTouchRipple-root': { display: 'none' },
     },
   };
 });
@@ -385,7 +392,7 @@ export class ChoiceInput extends React.Component {
     ) : (
       <>
         {screenReaderLabel}
-        <Tag {...tagProps} slotProps={{ input: { ref: this.props.autoFocusRef } }} />
+        <Tag {...tagProps} />
       </>
     );
 

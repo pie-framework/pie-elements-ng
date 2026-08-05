@@ -8,11 +8,12 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep, get } from 'lodash-es';
+import { cloneDeep, get } from '@pie-element/shared-lodash';
 import MultipleChoice from '@pie-element/multiple-choice';
 import debug from 'debug';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
-const MC_TAG_NAME = 'ebsr-multiple-choice';
+import { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';
+const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;
 const SESSION_CHANGED = SessionChangedEvent.TYPE;
 import Translator from '@pie-lib/translator';
 

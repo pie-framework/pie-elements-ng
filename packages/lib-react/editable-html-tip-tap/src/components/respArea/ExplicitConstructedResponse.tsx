@@ -13,6 +13,7 @@ import { NodeViewWrapper } from '@tiptap/react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import CustomToolbarWrapper from '../../extensions/custom-toolbar-wrapper.js';
+import { setToolbarOpened } from '../../utils/toolbar.js';
 
 const ExplicitConstructedResponse = (props) => {
   const { editor, node, getPos, options, selected } = props;
@@ -120,7 +121,7 @@ const ExplicitConstructedResponse = (props) => {
                   tr.delete(pos, pos + node.nodeSize);
                   // Prevent the debounced onBlur/onDone from firing into the
                   // now-deleted node's stale position
-                  editor._toolbarOpened = false;
+                  setToolbarOpened(editor, false);
                   editor.view.dispatch(tr);
                   setShowToolbar(false);
                   editor.commands.focus();

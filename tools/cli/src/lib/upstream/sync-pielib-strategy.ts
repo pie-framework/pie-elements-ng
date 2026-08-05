@@ -6,21 +6,22 @@
  */
 
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, stat as fsStat, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { convertJsToTs, convertJsxToTsx } from '../../utils/conversion.js';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { getCurrentCommit } from '../../utils/git.js';
 import type { SyncStrategy, SyncContext, SyncConfig, SyncResult } from './sync-strategy.js';
 import { cleanDirectory, readdir } from './sync-filesystem.js';
-import { fixImportsInFile, containsJsx } from './sync-imports.js';
 import { generatePieLibViteConfig } from './sync-vite-config.js';
 import { createPieLibTransformPipeline } from './sync-transforms.js';
 import { ensurePieLibPackageJson } from './sync-package-manager.js';
 import { EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES } from './sync-constants.js';
+import { syncSourceTree } from './sync-source-tree.js';
 import {
   getPieLibSourcePreserveList,
   getPieLibSyncMode,
   PIE_LIB_COMPATIBILITY_APPEND_PATCHES,
+  shouldGenerateConfigUiFractionHelper,
+  shouldGenerateAutosizeInputComponent,
 } from './sync-presets.js';
 
 interface InternalSyncResult {
@@ -167,6 +168,11 @@ export class PieLibStrategy implements SyncStrategy {
         pkg,
         targetSrcDir
       );
+      const wroteAutosizeInput = await this.ensureAutosizeInputComponent(pkg, targetSrcDir);
+      const wroteConfigUiFractionHelper = await this.ensureConfigUiFractionHelper(
+        pkg,
+        targetSrcDir
+      );
 
       // Ensure package.json has ESM module support and expected exports
       let wrotePkgJson = false;
@@ -181,6 +187,8 @@ export class PieLibStrategy implements SyncStrategy {
       if (
         libChanged ||
         wroteCompatibilityPatch ||
+        wroteAutosizeInput ||
+        wroteConfigUiFractionHelper ||
         wrotePkgJson ||
         wroteViteConfig ||
         wroteTsConfig
@@ -221,109 +229,22 @@ export class PieLibStrategy implements SyncStrategy {
     pkg: string,
     upstreamCommit: string
   ): Promise<number> {
-    let filesProcessed = 0;
-    const defaultExportFiles = new Set<string>(); // Track files with default exports
+    const transformPipeline = createPieLibTransformPipeline();
+    const stats = await syncSourceTree({
+      sourceDir,
+      targetDir,
+      relativePath,
+      sourcePathPrefix: `pie-lib/packages/${pkg}`,
+      upstreamCommit,
+      transform: (content, context) => transformPipeline(content, context.absoluteSourcePath),
+    });
 
-    const items = await readdir(sourceDir);
+    this.result.filesChecked += stats.filesChecked;
+    this.result.filesCopied += stats.filesCopied;
+    this.result.filesSkipped += stats.filesSkipped;
+    this.result.filesUpdated += stats.filesUpdated;
 
-    for (const item of items) {
-      const srcPath = join(sourceDir, item);
-      const stat = await fsStat(srcPath);
-
-      if (stat.isDirectory()) {
-        // Skip __tests__, __mocks__, etc.
-        if (item.startsWith('__')) {
-          continue;
-        }
-        // Recursively sync subdirectories
-        const subFilesProcessed = await this.syncDirectory(
-          srcPath,
-          join(targetDir, item),
-          join(relativePath, item),
-          pkg,
-          upstreamCommit
-        );
-        filesProcessed += subFilesProcessed;
-        continue;
-      }
-
-      // Only process .js and .jsx files
-      if (!item.endsWith('.js') && !item.endsWith('.jsx')) {
-        continue;
-      }
-
-      this.result.filesChecked++;
-      filesProcessed++;
-
-      // Read source
-      let sourceContent = await readFile(srcPath, 'utf-8');
-
-      // Apply all standard transformations
-      const transformPipeline = createPieLibTransformPipeline();
-      sourceContent = transformPipeline(sourceContent, srcPath);
-
-      const hasJsx = item.endsWith('.jsx') || (item.endsWith('.js') && containsJsx(sourceContent));
-
-      // Convert .js → .ts/.tsx and .jsx → .tsx
-      const targetFile = item.replace(/\.jsx?$/, hasJsx ? '.tsx' : '.ts');
-      const targetPath = join(targetDir, targetFile);
-
-      // Convert based on file extension
-      const conversionResult = hasJsx
-        ? convertJsxToTsx(sourceContent, {
-            sourcePath: `pie-lib/packages/${pkg}/${relativePath}/${item}`,
-            commit: upstreamCommit,
-          })
-        : convertJsToTs(sourceContent, {
-            sourcePath: `pie-lib/packages/${pkg}/${relativePath}/${item}`,
-            commit: upstreamCommit,
-          });
-
-      let converted = conversionResult.code;
-
-      // Track files that export default objects (for import fixing later)
-      if (conversionResult.hasDefaultObjectExport) {
-        // Store the file name without extension for import matching
-        const fileNameWithoutExt = targetFile.replace(/\.(ts|tsx)$/, '');
-        defaultExportFiles.add(fileNameWithoutExt);
-      }
-
-      // Check if different
-      // NOTE: This comparison is exact (===) to ensure any changes in:
-      // - Upstream source code
-      // - Transformation logic (lodash-es, event packages, etc.)
-      // - Sync version (tracked in @sync-version header)
-      // will trigger a file update. This prioritizes correctness over speed.
-      const isNew = !existsSync(targetPath);
-      if (!isNew) {
-        const currentContent = await readFile(targetPath, 'utf-8');
-        if (currentContent === converted) {
-          this.result.filesSkipped++;
-          continue;
-        }
-        this.result.filesUpdated++;
-      } else {
-        this.result.filesCopied++;
-      }
-
-      // Write
-      await mkdir(dirname(targetPath), { recursive: true });
-      await writeFile(targetPath, converted, 'utf-8');
-    }
-
-    // After all files are synced, fix import statements in consuming files
-    if (defaultExportFiles.size > 0) {
-      const targetDirItems = await readdir(targetDir);
-      for (const item of targetDirItems) {
-        const itemPath = join(targetDir, item);
-        const stat = await fsStat(itemPath);
-        if (stat.isFile() && (item.endsWith('.tsx') || item.endsWith('.ts'))) {
-          await fixImportsInFile(itemPath, defaultExportFiles);
-        }
-      }
-    }
-
-    return filesProcessed;
+    return stats.filesProcessed;
   }
 
   /**
@@ -403,6 +324,212 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
     }
 
     await writeFile(typesPath, `${current}${patchPreset.append}`, 'utf-8');
+    return true;
+  }
+
+  private async ensureAutosizeInputComponent(
+    pkgName: string,
+    targetSrcDir: string
+  ): Promise<boolean> {
+    if (!shouldGenerateAutosizeInputComponent(pkgName)) {
+      return false;
+    }
+
+    const autosizeInputPath = join(targetSrcDir, 'autosize-input.tsx');
+    const content = `// @auto-generated by upstream:sync
+// Local ESM replacement for react-input-autosize used by graph label inputs.
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+
+export interface AutosizeInputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className' | 'style'> {
+  className?: string;
+  inputClassName?: string;
+  inputRef?: (node: HTMLInputElement | null) => void;
+  inputStyle?: React.CSSProperties;
+  minWidth?: number | string;
+  style?: React.CSSProperties;
+}
+
+const parsePixelValue = (value: string): number => {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const readMinWidth = (
+  value: number | string | undefined,
+  fallback: number | string | undefined
+): number => {
+  const candidate = value ?? fallback;
+  if (typeof candidate === 'number') {
+    return candidate;
+  }
+  if (typeof candidate === 'string' && candidate.endsWith('px')) {
+    return parsePixelValue(candidate);
+  }
+  return 1;
+};
+
+export const AutosizeInput = React.forwardRef<HTMLInputElement, AutosizeInputProps>(
+  (
+    {
+      className,
+      inputClassName,
+      inputRef,
+      inputStyle,
+      minWidth,
+      placeholder,
+      style,
+      value,
+      defaultValue,
+      ...inputProps
+    },
+    forwardedRef
+  ) => {
+    const inputNodeRef = useRef<HTMLInputElement | null>(null);
+    const inputRefCallbackRef = useRef(inputRef);
+    const forwardedRefRef = useRef(forwardedRef);
+    const measureNodeRef = useRef<HTMLSpanElement | null>(null);
+    const [width, setWidth] = useState(() => readMinWidth(minWidth, inputStyle?.minWidth));
+
+    inputRefCallbackRef.current = inputRef;
+    forwardedRefRef.current = forwardedRef;
+
+    const setInputRef = useCallback(
+      (node: HTMLInputElement | null) => {
+        inputNodeRef.current = node;
+        inputRefCallbackRef.current?.(node);
+        const currentForwardedRef = forwardedRefRef.current;
+        if (typeof currentForwardedRef === 'function') {
+          currentForwardedRef(node);
+        } else if (currentForwardedRef) {
+          (currentForwardedRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
+        }
+      },
+      []
+    );
+
+    useLayoutEffect(() => {
+      const input = inputNodeRef.current;
+      const measure = measureNodeRef.current;
+      if (!input || !measure) {
+        return;
+      }
+
+      const computed = window.getComputedStyle(input);
+      measure.style.font = computed.font;
+      measure.style.letterSpacing = computed.letterSpacing;
+      measure.style.textTransform = computed.textTransform;
+      measure.textContent = String(value ?? defaultValue ?? placeholder ?? '') || ' ';
+
+      const horizontalPadding =
+        parsePixelValue(computed.paddingLeft) +
+        parsePixelValue(computed.paddingRight) +
+        parsePixelValue(computed.borderLeftWidth) +
+        parsePixelValue(computed.borderRightWidth);
+      const measuredTextWidth = Math.ceil(measure.getBoundingClientRect().width + 2);
+      const measuredWidth =
+        computed.boxSizing === 'border-box'
+          ? measuredTextWidth + horizontalPadding
+          : measuredTextWidth;
+      setWidth(Math.max(readMinWidth(minWidth, inputStyle?.minWidth), measuredWidth));
+    }, [defaultValue, inputClassName, inputStyle, minWidth, placeholder, value]);
+
+    return (
+      <span className={className} style={{ display: 'inline-block', ...style }}>
+        <input
+          {...inputProps}
+          ref={setInputRef}
+          className={inputClassName}
+          placeholder={placeholder}
+          style={{ width, ...inputStyle }}
+          value={value}
+          defaultValue={defaultValue}
+        />
+        <span
+          ref={measureNodeRef}
+          aria-hidden="true"
+          style={{
+            height: 0,
+            left: 0,
+            overflow: 'hidden',
+            position: 'absolute',
+            top: 0,
+            visibility: 'hidden',
+            whiteSpace: 'pre',
+          }}
+        />
+      </span>
+    );
+  }
+);
+
+AutosizeInput.displayName = 'AutosizeInput';
+`;
+
+    const current = existsSync(autosizeInputPath)
+      ? await readFile(autosizeInputPath, 'utf-8').catch(() => null)
+      : null;
+    if (current === content) {
+      return false;
+    }
+
+    await writeFile(autosizeInputPath, content, 'utf-8');
+    return true;
+  }
+
+  private async ensureConfigUiFractionHelper(
+    pkgName: string,
+    targetSrcDir: string
+  ): Promise<boolean> {
+    if (!shouldGenerateConfigUiFractionHelper(pkgName)) {
+      return false;
+    }
+
+    const helperPath = join(targetSrcDir, 'fraction-to-number.ts');
+    const content = `// @auto-generated by upstream:sync
+// Local ESM replacement for config-ui's tiny mathjs fraction conversion usage.
+type FractionLike = {
+  d: number;
+  n: number;
+  s?: number;
+};
+
+const isFractionLike = (value: unknown): value is FractionLike =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as FractionLike).n === 'number' &&
+  typeof (value as FractionLike).d === 'number';
+
+export const fractionToNumber = (value: FractionLike | number | string): number => {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (isFractionLike(value)) {
+    const sign = value.s ?? 1;
+    return (sign * value.n) / value.d;
+  }
+
+  const normalized = String(value).trim();
+  const fractionMatch = normalized.match(/^([+-]?\\d+)\\s*\\/\\s*([+-]?\\d+)$/);
+  if (fractionMatch) {
+    const numerator = Number.parseInt(fractionMatch[1] ?? '0', 10);
+    const denominator = Number.parseInt(fractionMatch[2] ?? '1', 10);
+    return numerator / denominator;
+  }
+
+  return Number(normalized);
+};
+`;
+
+    const current = existsSync(helperPath)
+      ? await readFile(helperPath, 'utf-8').catch(() => null)
+      : null;
+    if (current === content) {
+      return false;
+    }
+
+    await writeFile(helperPath, content, 'utf-8');
     return true;
   }
 

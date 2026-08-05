@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { cloneDeep, reduce } from 'lodash-es';
+import { cloneDeep, reduce } from '@pie-element/shared-lodash';
 
 const replaceHtmlRegex = /<(?!img)[^>]*>?/gm;
 

@@ -9,7 +9,7 @@
  */
 
 /* eslint-disable no-console */
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { isResponseCorrect } from './utils.js';
 import defaults from './defaults.js';
 import { lockChoices, partialScoring, getShuffledChoices } from '@pie-element/shared-controller-utils';

@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { globSync } from 'glob';
 
 const repoRoot = process.cwd();
-const VALID_CHANNELS = new Set(['latest']);
 
 const usage = () => {
   console.log(`Usage:
@@ -185,10 +184,6 @@ const main = () => {
     if (!highestStable) {
       console.log(`[backfill] Skipping ${packageName} (no stable semver versions found)`);
       continue;
-    }
-
-    if (!VALID_CHANNELS.has('latest')) {
-      throw new Error('[backfill] Internal invariant violated: latest channel missing.');
     }
 
     if (latestTag === highestStable) {

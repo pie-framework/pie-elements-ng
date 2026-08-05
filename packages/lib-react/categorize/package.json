@@ -1,10 +1,15 @@
 {
   "name": "@pie-lib/categorize",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-react/categorize"
+  },
   "dependencies": {
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23"
+    "@pie-element/shared-lodash": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -16,8 +21,7 @@
     }
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "sideEffects": false,
   "scripts": {
@@ -26,7 +30,7 @@
     "test": "bun x vitest run"
   },
   "devDependencies": {
-    "vite": "^8.0.1",
+    "vite": "^8.1.5",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",

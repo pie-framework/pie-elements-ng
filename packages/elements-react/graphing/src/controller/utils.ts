@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { differenceWith, isEqual, uniq, uniqWith } from 'lodash-es';
+import { differenceWith, isEqual, uniq, uniqWith } from '@pie-element/shared-lodash';
 import {
   getAmplitudeAndFreq,
   pointsToABC,
@@ -17,6 +17,13 @@ import {
 } from '@pie-lib/graphing-utils';
 
 export const equalPoint = (A, B) => {
+  A = { ...A };
+  B = { ...B };
+
+  return isEqual(A.x, B.x) && isEqual(A.y, B.y);
+};
+
+export const equalPointWithLabel = (A, B) => {
   // x1 = x2 & y1 = y2
   // A point is only correct if both its position AND its label match.
   // Labels are not scored independently; a point in the correct position
@@ -319,8 +326,8 @@ export const equalExponential = (p1, p2) => {
   const p1edge = edgeP1 || { ...rootP1 };
   const p2edge = edgeP2 || { ...rootP2 };
 
-  const { a1, b1 } = pointsToABForExponential(rootP1, p1edge);
-  const { a2, b2 } = pointsToABForExponential(rootP2, p2edge);
+  const { a: a1, b: b1 } = pointsToABForExponential(rootP1, p1edge);
+  const { a: a2, b: b2 } = pointsToABForExponential(rootP2, p2edge);
 
   // if both a and b value are equal
   return isEqual(a2, a1) && isEqual(b2, b1);

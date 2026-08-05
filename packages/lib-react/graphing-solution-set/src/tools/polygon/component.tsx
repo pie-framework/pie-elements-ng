@@ -11,7 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { ToolPropTypeFields } from '../shared/types.js';
-import { chunk, initial, isEmpty } from 'lodash-es';
+import { chunk, initial, isEmpty } from '@pie-element/shared-lodash';
 import debug from 'debug';
 import DraggablePolygon from './polygon.js';
 import { types } from '@pie-lib/plot';

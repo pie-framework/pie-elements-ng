@@ -1,7 +1,12 @@
 {
   "name": "@pie-element/categorize",
-  "version": "13.1.0-next.1",
+  "version": "13.1.2",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/elements-react/categorize"
+  },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
     "@emotion/react": "^11.14.0",
@@ -15,8 +20,8 @@
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
     "debug": "^4.1.1",
-    "lodash-es": "^4.17.23",
-    "prop-types": "^15.6.1",
+    "prop-types": "^15.8.1",
+    "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",
@@ -30,45 +35,71 @@
   },
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./delivery": {
-      "development": "./src/delivery/index.ts",
       "types": "./dist/delivery/index.d.ts",
       "default": "./dist/delivery/index.js"
     },
+    "./browser/delivery": {
+      "default": "./dist/browser/delivery/index.js"
+    },
     "./author": {
-      "development": "./src/author/index.ts",
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    },
+    "./browser/author": {
+      "default": "./dist/browser/author/index.js"
+    },
+    "./configure": {
       "types": "./dist/author/index.d.ts",
       "default": "./dist/author/index.js"
     },
     "./controller": {
-      "development": "./src/controller/index.ts",
       "types": "./dist/controller/index.d.ts",
       "default": "./dist/controller/index.js"
+    },
+    "./controller.js": {
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller/index.js"
+    },
+    "./browser/controller": {
+      "default": "./dist/browser/controller/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
     }
   },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "configure.js",
+    "controller.js",
+    "dist"
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.0.1",
+    "vite": "^8.1.5",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },
   "scripts": {
-    "build": "bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
+    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"
+  },
+  "pie": {
+    "controller": "@pie-element/categorize/controller",
+    "configure": "@pie-element/categorize/configure",
+    "browserSharedDependencies": {
+      "react": "18.2.0",
+      "react-dom": "18.2.0"
+    }
   }
 }

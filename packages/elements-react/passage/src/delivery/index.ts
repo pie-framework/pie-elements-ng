@@ -156,6 +156,7 @@ export default class PiePassage extends HTMLElement {
     this._disconnectPlayerObserver();
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

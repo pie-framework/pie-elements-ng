@@ -13,7 +13,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { ArrowMarker, genUid } from '../shared/arrow-head.js';
 import { trig, types } from '@pie-lib/plot';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils.js';
 import { styled } from '@mui/material/styles';
 

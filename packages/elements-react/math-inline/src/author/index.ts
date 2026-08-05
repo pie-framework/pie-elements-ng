@@ -10,8 +10,8 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Configure from './configure';
-import { isEmpty } from 'lodash-es';
+import Configure from './configure.js';
+import { isEmpty } from '@pie-element/shared-lodash';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
@@ -21,7 +21,7 @@ import {
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
 
-import defaults from './defaults';
+import defaults from './defaults.js';
 
 const log = debug('pie-elements:math-inline:configure');
 
@@ -152,9 +152,14 @@ export default class MathInlineConfigure extends HTMLElement {
     }
   }
 
+  connectedCallback() {
+    this._render();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

@@ -1,7 +1,12 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
+  name?: string;
+  version?: string;
+};
 
 const resolveWorkspaceEntry = (baseDir: string): string | null => {
   const candidates = ['index.ts', 'index.tsx', 'index.js', 'index.jsx'];
@@ -56,6 +61,8 @@ export default defineConfig({
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
+    __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
+    __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
   },
   build: {
     emptyOutDir: false, // Don't wipe existing ESM builds

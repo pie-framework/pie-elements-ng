@@ -11,7 +11,7 @@
 import Main from './main.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { debounce } from 'lodash-es';
+import { debounce } from '@pie-element/shared-lodash';
 import debug from 'debug';
 import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
@@ -111,7 +111,6 @@ function getPlayerAttributes(element) {
   const srRaw = getRaw('includeSrHeading', 'include-sr-heading', 'includesrheading');
   const includeSrHeading = srRaw == null ? true : srRaw !== false && srRaw !== 'false';
 
-  console.log('getPlayerAttributes', { baseHeadingLevel, includeSrHeading });
   return { baseHeadingLevel, includeSrHeading };
 }
 
@@ -120,7 +119,6 @@ function getPlayerAttributes(element) {
 function resolveHeadingProps(element) {
   const fromPlayer = getPlayerAttributes(element);
 
-  console.log('element._baseHeadingLevel', element._baseHeadingLevel, 'element._includeSrHeading', element._includeSrHeading);
   return {
     baseHeadingLevel: element._baseHeadingLevel !== undefined ? element._baseHeadingLevel : fromPlayer.baseHeadingLevel,
     includeSrHeading: element._includeSrHeading !== undefined ? element._includeSrHeading : fromPlayer.includeSrHeading,
@@ -445,6 +443,7 @@ export default class MultipleChoice extends HTMLElement {
 
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 

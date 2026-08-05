@@ -11,7 +11,7 @@
 import FeedbackSelector, { FeedbackType } from './feedback-selector.js';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { merge } from 'lodash-es';
+import { merge } from '@pie-element/shared-lodash';
 
 import { styled } from '@mui/material/styles';
 import Accordion from '@mui/material/Accordion';

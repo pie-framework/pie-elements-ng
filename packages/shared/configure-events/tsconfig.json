@@ -12,7 +12,7 @@
     "lib": ["ES2020", "DOM"],
     "sourceMap": true,
     "declaration": true,
-    "declarationMap": true,
+    "declarationMap": false,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "types": []

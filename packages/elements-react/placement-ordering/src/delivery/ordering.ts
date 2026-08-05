@@ -8,7 +8,7 @@
  * To make changes, edit the upstream JavaScript file and run sync again.
  */
 
-import { assign, cloneDeep, isEmpty, map } from 'lodash-es';
+import { assign, cloneDeep, isEmpty, map } from '@pie-element/shared-lodash';
 import debug from 'debug';
 
 const log = debug('pie-elements:placement-ordering:ordering');

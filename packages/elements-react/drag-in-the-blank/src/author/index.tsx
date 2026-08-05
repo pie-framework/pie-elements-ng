@@ -21,7 +21,7 @@ import { createRoot } from 'react-dom/client';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Main from './main.js';
 import debug from 'debug';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
 import { processMarkup, createSlateMarkup } from './markupUtils.js';
@@ -168,9 +168,14 @@ export default class DragInTheBlank extends HTMLElement {
     }, 0);
   }
 
+  connectedCallback() {
+    this._render();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

@@ -14,7 +14,7 @@ import { applyMiddleware, createStore } from 'redux';
 import reducer from './reducer.js';
 import { changeMarks } from './actions.js';
 import PropTypes from 'prop-types';
-import { isEqual } from 'lodash-es';
+import { isEqual } from '@pie-element/shared-lodash';
 import { ActionCreators } from 'redux-undo';
 import GraphWithControls from '../graph-with-controls.js';
 import { lastActionMiddleware } from './middleware.js';
@@ -60,7 +60,15 @@ class Root extends React.Component {
     }
 
     if (!isEqual(prevProps.marks, marks)) {
-      this.store.dispatch(changeMarks(marks));
+      // Don't dispatch marks that have correctness (evaluate mode marks) into the undo history.
+      // These marks are already handled in render() via the correctnessSet path and bypass the
+      // Redux store entirely. Dispatching them would pollute the undo history and cause the graph
+      // to show the correct answer when the user presses undo after returning to gather mode.
+      const hasCorrectness = marks && marks.find((m) => m.correctness);
+
+      if (!hasCorrectness) {
+        this.store.dispatch(changeMarks(marks));
+      }
     }
   }
 

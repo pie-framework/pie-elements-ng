@@ -12,7 +12,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import Main from './main.js';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep } from '@pie-element/shared-lodash';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import FractionModelChart from './fraction-model-chart.js';
 
@@ -91,6 +91,7 @@ export default class FractionModel extends HTMLElement {
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

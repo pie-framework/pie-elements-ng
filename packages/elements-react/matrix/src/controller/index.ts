@@ -9,7 +9,7 @@
  */
 
 import defaults from './defaults.js';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 
 export const createDefaultModel = (model = {}) => new Promise((resolve) => resolve({ ...defaults, ...model }));
 

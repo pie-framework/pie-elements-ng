@@ -6,6 +6,7 @@ import { loadPointerValue } from '../src/lib/docs/source-extractor.js';
 import { generateDocsForContract } from '../src/lib/docs/generator.js';
 import { parseContract, seedContractForElement } from '../src/lib/docs/contracts.js';
 import { validateContracts } from '../src/lib/docs/contract-validator.js';
+import { inferViewsFromPackageExports } from '../src/lib/docs/discovery.js';
 
 describe('docs source extractor', () => {
   it('evaluates object defaults with const spreads and templates', async () => {
@@ -40,6 +41,24 @@ describe('docs source extractor', () => {
 });
 
 describe('docs contracts and generation', () => {
+  it('infers only user-facing docs views from package exports', () => {
+    expect(
+      inferViewsFromPackageExports({
+        '.': './dist/index.js',
+        './delivery': './dist/delivery/index.js',
+        './author': './dist/author/index.js',
+        './print': './dist/print/index.js',
+        './browser/delivery': './dist/browser/delivery/index.js',
+        './browser/author': './dist/browser/author/index.js',
+        './browser/controller': './dist/browser/controller/index.js',
+        './configure': './dist/author/index.js',
+        './controller': './dist/controller/index.js',
+        './controller.js': './dist/controller/index.js',
+        './runtime-support': './dist/runtime-support/index.js',
+      })
+    ).toEqual(['author', 'delivery', 'print']);
+  });
+
   it('seeds contract and generates html docs with defaults', async () => {
     const root = await mkdtemp(join(tmpdir(), 'pie-docs-test-'));
     const pkgDir = join(root, 'packages', 'elements-svelte', 'simple-cloze');

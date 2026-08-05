@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';

@@ -226,7 +226,6 @@ export default defineConfig({
         'prop-types',
         'lodash',
         'debug',
-        'classnames',
         /^@pie-lib\\//,
         /^@pie-framework\\//,
         /^@pie-element\\//,

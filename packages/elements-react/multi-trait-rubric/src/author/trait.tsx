@@ -11,7 +11,7 @@
 import React from 'react';
 import debug from 'debug';
 import PropTypes from 'prop-types';
-import { isEmpty } from 'lodash-es';
+import { isEmpty } from '@pie-element/shared-lodash';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 
 import { styled } from '@mui/material/styles';

@@ -2,10 +2,24 @@
  * Core PIE specification types
  */
 
+// QTI-aligned accessibility catalog entry for spoken alternatives.
+// Players/toolkits may use this to map visible model content to authored TTS.
+export interface AccessibilityCatalogCard {
+  catalog: string;
+  language?: string;
+  content: string;
+}
+
+export interface AccessibilityCatalog {
+  identifier: string;
+  cards: AccessibilityCatalogCard[];
+}
+
 // Base PIE model (all elements extend this)
 export interface PieModel {
   id: string;
   element: string; // e.g., "@pie-element/multiple-choice"
+  accessibilityCatalogs?: AccessibilityCatalog[];
 }
 
 // Environment configuration

@@ -26,7 +26,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Info from '@mui/icons-material/Info';
-import { merge } from 'lodash-es';
+import { merge } from '@pie-element/shared-lodash';
 import { generateValidationMessage } from './utils.js';
 
 const { Panel, toggle, radio, dropdown } = settings;
@@ -475,6 +475,7 @@ export class Main extends React.Component {
         }
 
         onModelChanged({
+          choiceMode: model.choiceMode,
           choices: model.choices,
         }, true);
         break;

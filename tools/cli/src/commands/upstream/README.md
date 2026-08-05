@@ -358,16 +358,21 @@ tools/cli/src/commands/upstream/
 ├── update.ts                        # Combined update command (recommended)
 ├── analyze-esm.ts                   # ESM compatibility analyzer
 ├── sync.ts                          # Sync command (orchestration)
-├── track.ts                         # Package tracking command
+├── check.ts                         # Diff upstream vs local without applying
+├── deps.ts                          # Dependency inspection
+└── track.ts                         # Package tracking command
+
+tools/cli/src/lib/upstream/
 ├── sync-strategy.ts                 # Strategy interface
 ├── sync-controllers-strategy.ts     # Controller sync strategy
 ├── sync-react-strategy.ts           # React component sync strategy
 ├── sync-pielib-strategy.ts          # Pie-lib sync strategy
 ├── sync-filesystem.ts               # File system utilities
-├── sync-package-json.ts             # Package.json utilities
+├── sync-package-manager.ts          # Package.json and workspace dependency utilities
 ├── sync-vite-config.ts              # Vite config generation
-├── sync-demo.ts                     # Demo generation utilities
-└── sync-imports.ts                  # Import fixing utilities
+├── sync-externals.ts                # Shared Rollup external rules
+├── sync-source-edit.ts              # Parser-backed source range edits
+└── sync-imports.ts                  # Source compatibility transforms
 ```
 
 ## Best Practices

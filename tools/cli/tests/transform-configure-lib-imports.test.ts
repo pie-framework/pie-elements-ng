@@ -17,7 +17,7 @@ import MultiTraitRubricConfigure from "@pie-element/multi-trait-rubric/configure
 
     expect(output).toContain("import RubricConfigure from '@pie-element/rubric/author';");
     expect(output).toContain(
-      "import MultiTraitRubricConfigure from '@pie-element/multi-trait-rubric/author';"
+      'import MultiTraitRubricConfigure from "@pie-element/multi-trait-rubric/author";'
     );
   });
 
@@ -50,6 +50,18 @@ import { choicesToMarkup } from '../utils';
     const output = transformConfigureUtilsImports(input, 'configure/src/design/main.jsx');
     expect(output).toBe(input);
   });
+
+  it('does not rewrite configure util references inside ordinary strings', () => {
+    const input = `const doc = "from '../utils' stays literal text";
+import { choicesToMarkup } from '../utils';
+`;
+
+    const output = transformConfigureUtilsImports(input, 'configure/src/main.jsx');
+
+    expect(output).toBe(`const doc = "from '../utils' stays literal text";
+import { choicesToMarkup } from './utils.js';
+`);
+  });
 });
 
 describe('transformSelfReferentialImports', () => {
@@ -64,6 +76,24 @@ import { FractionModelChart } from '@pie-element/fraction-model';
       'configure/src/main.jsx'
     );
     expect(output).toContain("from '../delivery/index.js'");
+  });
+
+  it('does not rewrite self-package references inside ordinary strings', () => {
+    const input = `const doc = "import { FractionModelChart } from '@pie-element/fraction-model'";
+import { FractionModelChart } from '@pie-element/fraction-model';
+`;
+
+    const output = transformSelfReferentialImports(
+      input,
+      '@pie-element/fraction-model',
+      'configure/src/main.jsx'
+    );
+
+    expect(
+      output
+    ).toBe(`const doc = "import { FractionModelChart } from '@pie-element/fraction-model'";
+import { FractionModelChart } from '../delivery/index.js';
+`);
   });
 });
 

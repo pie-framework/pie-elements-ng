@@ -113,7 +113,16 @@ const tabs = $derived.by(() => {
     });
   }
 
-  // Always add source (code viewer)
+  if (data.hasController) {
+    generatedTabs.push({
+      id: 'controller-source',
+      label: 'Controller',
+      path: `/${data.elementName}/controller-source${buildQueryString(false)}`,
+      description: 'View controller source and package entry points',
+    });
+  }
+
+  // Always add docs (generated documentation)
   generatedTabs.push({
     id: 'docs',
     label: 'Docs',

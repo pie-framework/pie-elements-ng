@@ -12,12 +12,12 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
-import { isFinite } from 'lodash-es';
+import { isFinite } from '@pie-element/shared-lodash';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Remove from '@mui/icons-material/Remove';
 import Add from '@mui/icons-material/Add';
-import * as math from 'mathjs';
+import { fractionToNumber } from './fraction-to-number.js';
 
 const StyledTextField: any = styled(TextField)(() => ({
   '& input[type=number]': {
@@ -150,8 +150,8 @@ export class NumberTextFieldCustom extends React.Component {
   getClosestFractionValue = (customValues, number) =>
     customValues.reduce(
       (closest, value, index) =>
-        Math.abs(math.number(math.fraction(value)) - math.number(math.fraction(number))) <
-        Math.abs(math.number(math.fraction(closest.value)) - math.number(math.fraction(number)))
+        Math.abs(fractionToNumber(value) - fractionToNumber(number)) <
+        Math.abs(fractionToNumber(closest.value) - fractionToNumber(number))
           ? { value, index }
           : closest,
       { value: customValues[0], index: 0 },

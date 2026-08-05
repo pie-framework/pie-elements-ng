@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/element-player",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shared PIE element player web component",
   "type": "module",
   "unpkg": "./dist/pie-element-player.js",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@tiptap/core": "3.18.0",
+    "@tiptap/core": "3.29.2",
     "@tiptap/extension-code-block-lowlight": "3.18.0",
     "@tiptap/extension-document": "3.18.0",
     "@tiptap/extension-history": "3.18.0",
@@ -45,7 +45,7 @@
     "daisyui": "^5.5.19",
     "svelte": "^5.54.0",
     "tailwindcss": "^4.2.2",
-    "vite": "^8.0.1",
+    "vite": "^8.1.5",
     "typescript": "^5.9.3"
   },
   "license": "MIT",
@@ -54,7 +54,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pie-framework/pie-elements-ng.git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
     "directory": "packages/element-player"
   },
   "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",

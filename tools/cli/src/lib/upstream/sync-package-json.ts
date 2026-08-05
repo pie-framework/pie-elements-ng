@@ -61,6 +61,13 @@ export function generateElementExports(options: {
       types: './dist/controller/index.d.ts',
       default: './dist/controller/index.js',
     };
+    exports['./controller.js'] = {
+      types: './dist/controller/index.d.ts',
+      default: './dist/controller/index.js',
+    };
+    exports['./browser/controller'] = {
+      default: './dist/browser/controller/index.js',
+    };
   }
 
   if (options.hasConfigure) {

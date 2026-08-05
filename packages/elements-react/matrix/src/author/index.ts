@@ -14,7 +14,7 @@ import debug from 'debug';
 import { ModelUpdatedEvent, InsertSoundEvent, DeleteSoundEvent } from '@pie-element/shared-configure-events';
 
 import Main from './Main.js';
-import { defaults } from 'lodash-es';
+import { defaults } from '@pie-element/shared-lodash';
 
 import sensibleDefaults from './defaults.js';
 
@@ -111,9 +111,14 @@ export default class Matrix extends HTMLElement {
     this._root.render(element);
   }
 
+  connectedCallback() {
+    this._render();
+  }
+
   disconnectedCallback() {
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }
