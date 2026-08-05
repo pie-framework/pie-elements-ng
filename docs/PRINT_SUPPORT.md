@@ -138,12 +138,15 @@ export default class MultipleChoicePrint extends HTMLElement {
 ## How the Print Bundle Is Built
 
 Print is bundled by **Vite**, per element package, from the single
-`src/print/index.tsx` entry. Two artifacts are produced:
+`src/print/index.tsx` entry. Three artifacts are produced:
 
 | Artifact | Built by | Purpose |
 | --- | --- | --- |
 | `dist/print/index.js` | the package's `vite.config.ts` | Node / bundler ESM. Keeps **bare imports** (`@pie-element/*`, `@pie-lib/*`, …). Loads in a browser **only when the host resolves them** — via a full import map or a bundler. Not self-contained. |
-| `dist/browser/print/index.js` | `tools/vite/element-browser.config.ts` | Browser ESM. **This is what the item-level player loads.** Self-contained except for React (only `react` / `react-dom` stay external). |
+| `dist/browser/print/index.js` | `tools/vite/element-browser.config.ts` | Browser ESM. **This is what the item-level `@pie-players/pie-print-player` loads.** Self-contained except for React (only `react` / `react-dom` stay external, resolved via an import map the player injects). |
+| `module/print.js` | `tools/vite/element-legacy-print.config.ts` (React) / `tools/vite/svelte-element-legacy-print.config.ts` (Svelte) | Browser ESM. **This is what the legacy `@pie-framework/pie-print` client loader requests** (`https://cdn.jsdelivr.net/npm/<pkg>/module/print.js`, loaded with a bare `import(url)` and **no import map at all**). Fully self-contained — React included, zero bare specifiers. See [`docs/prds/legacy-print-compatibility/PRD.md`](./prds/legacy-print-compatibility/PRD.md). |
+
+Only packages that already have `src/print/index.ts(x)` produce the `module/print.js` artifact; the build config is a no-op (exit 0, nothing emitted) for every other package, so the same build invocation runs safely across all packages without per-package special-casing.
 
 ### Self-contained except for React
 
@@ -172,13 +175,16 @@ map** that resolves `react` / `react-dom` to one pinned singleton
 
 ### Classic `pie-elements` vs `pie-elements-ng`
 
-|  | classic `pie-elements` | `pie-elements-ng` |
-| --- | --- | --- |
-| Bundler | `pslb` | Vite |
-| Print artifact | `module/print.js` | `dist/browser/print/index.js` |
-| Shared at runtime | React **and** a broad set of libs (MUI, render-ui, correct-answer-toggle, math-rendering) via shared DLL modules (`@pie-lib/shared-module`, `@pie-lib/math-rendering-module`) | **Only React** (`react` / `react-dom` / JSX runtimes) |
-| Everything else | provided by the shared modules at runtime | inlined into the element's own print bundle |
-| React provided by | shared DLL modules | an import map injected by the player |
+|  | classic `pie-elements` | `pie-elements-ng` (`dist/browser/print`) | `pie-elements-ng` (`module/print.js`) |
+| --- | --- | --- | --- |
+| Bundler | `pslb` | Vite | Vite |
+| Print artifact | `module/print.js` | `dist/browser/print/index.js` | `module/print.js` |
+| Shared at runtime | React **and** a broad set of libs (MUI, render-ui, correct-answer-toggle, math-rendering) via shared DLL modules (`@pie-lib/shared-module`, `@pie-lib/math-rendering-module`) | **Only React** (`react` / `react-dom` / JSX runtimes) | **Nothing** |
+| Everything else | provided by the shared modules at runtime | inlined into the element's own print bundle | inlined, including React |
+| React provided by | shared DLL modules | an import map injected by the player | inlined into the bundle |
+| Loaded by | `@pie-framework/pie-print` (bare `import()`, no import map) | `@pie-players/pie-print-player` (injects a React import map) | `@pie-framework/pie-print` (bare `import()`, no import map) |
+
+`module/print.js` exists specifically so the **unmodified, currently-deployed** `@pie-framework/pie-print` client loader — which never injects an import map — can load `pie-elements-ng` print bundles at the same CDN path convention it already uses for classic elements. It ships **alongside**, not instead of, `dist/browser/print/index.js`.
 
 ## When to Use Which Approach
 

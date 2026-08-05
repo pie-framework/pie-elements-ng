@@ -1,6 +1,6 @@
 # Legacy-compatible print artifact
 
-Status: **Proposal** · Impl. path: Cross-cutting
+Status: **Accepted** · Impl. path: Cross-cutting
 
 ## Context
 
@@ -48,3 +48,8 @@ No accessibility surface changes — this PRD only changes how an already-shippe
 
 - [ ] Does any client's CDN/browser cache need explicit invalidation for versions published *before* this change ships, or is it acceptable that only new element versions gain the `module/print.js` artifact (older, already-published versions never retroactively get one)?
 - [ ] Should a size budget analogous to `maxBrowserJsBytesPerPackage` in `browser-esm-policy.json` apply to the new `module/print.js` lane, given React/ReactDOM add roughly 40-45 KB gzipped per element?
+
+## Status log
+
+- Raised as proposal from PIE-647 / PIE-839 discussion.
+- Accepted — scoped explicitly to the elements that already have print support today; implementation started in the same session.
