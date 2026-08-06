@@ -99,6 +99,12 @@ const isAllowedPackedFile = (filePath, pkg) => {
   if (filePath === 'configure.js' && pkg.pie?.configure?.endsWith('/configure')) {
     return true;
   }
+  if (
+    (filePath === 'module/print.js' || filePath === 'module/print.js.map') &&
+    Boolean(pkg.exports?.['./print'])
+  ) {
+    return true;
+  }
   if (getDeclaredBinFiles(pkg).has(filePath)) return true;
   if (isMetadataFile(filePath)) return true;
   if (filePath === 'oclif.manifest.json' && pkg.oclif) return true;
