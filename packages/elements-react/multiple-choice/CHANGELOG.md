@@ -10,6 +10,11 @@
   addition to the existing `dist/browser/print/index.js` artifact for the
   new `pie-print-player`. Manual ng-tagged release for verification ahead of
   a standard prerelease. PIE-839.
+- Sync latest fixes from upstream `pie-elements`: correct `radio` mode's
+  `maxSelections` handling (a single radio selection no longer triggers the
+  max-selections error state or blocks re-selection), and a new controller
+  validation warning when the number of authored correct answers exceeds
+  `maxSelections` for non-radio choice modes.
 
 ## 13.2.2-next.5
 

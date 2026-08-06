@@ -919,7 +919,7 @@
     },
     "packages/elements-react/multiple-choice": {
       "name": "@pie-element/multiple-choice",
-      "version": "13.2.2-next.5",
+      "version": "13.3.5-ng.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -945,7 +945,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1297,7 +1297,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1530,7 +1530,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1690,7 +1690,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1754,7 +1754,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1833,7 +1833,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
