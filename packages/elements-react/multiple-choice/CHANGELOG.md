@@ -1,5 +1,16 @@
 # @pie-element/multiple-choice
 
+## 13.3.5-ng.0
+
+### Patch Changes
+
+- Add a legacy-compatible `module/print.js` print artifact (self-contained,
+  React inlined, zero externals) so print works through the unmodified
+  `@pie-framework/pie-print` client loader used in production today, in
+  addition to the existing `dist/browser/print/index.js` artifact for the
+  new `pie-print-player`. Manual ng-tagged release for verification ahead of
+  a standard prerelease. PIE-839.
+
 ## 13.2.2-next.5
 
 ### Patch Changes
