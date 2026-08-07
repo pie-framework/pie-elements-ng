@@ -304,7 +304,7 @@ $effect(() => {
   if (!group) return;
   const handleChange = (e: Event) => {
     const target = e.target as HTMLInputElement | null;
-    if (!target || target.type !== 'radio') return;
+    if (target?.type !== 'radio') return;
     onRadioChange(e);
   };
   const handleKeydown = (e: KeyboardEvent) => onRadioGroupKeydown(e);

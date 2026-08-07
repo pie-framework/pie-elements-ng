@@ -101,7 +101,7 @@ const isAllowedPackedFile = (filePath, pkg) => {
   }
   if (
     (filePath === 'module/print.js' || filePath === 'module/print.js.map') &&
-    Boolean(pkg.exports?.['./print'])
+    pkg.exports?.['./print']
   ) {
     return true;
   }

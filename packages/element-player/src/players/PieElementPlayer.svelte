@@ -132,7 +132,7 @@ let lastAppliedModelSignature = '';
 let lastAppliedSessionSignature = '';
 
 const iifeBuildWarning = $derived.by(() => {
-  if (!iifeRetryStatus || iifeRetryStatus.state !== 'retrying') return null;
+  if (iifeRetryStatus?.state !== 'retrying') return null;
   const elapsedSeconds = Math.max(1, Math.ceil(iifeRetryStatus.elapsedMs / 1000));
   const timeoutSeconds = Math.max(1, Math.ceil(iifeRetryStatus.timeoutMs / 1000));
   return `Bundle is still building. Retrying attempt ${iifeRetryStatus.attempt} (${elapsedSeconds}s of ${timeoutSeconds}s).`;

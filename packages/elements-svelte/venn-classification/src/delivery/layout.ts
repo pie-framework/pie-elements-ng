@@ -103,7 +103,7 @@ export function buildLayout2Set(
   model: Pick<VennModel, 'circles' | 'regionLabels'>,
   geometry: DiagramGeometry = defaultGeometry2Set()
 ): DiagramLayout {
-  if (!model.circles || model.circles.length !== 2) {
+  if (model.circles?.length !== 2) {
     throw new Error(
       `buildLayout2Set requires exactly 2 circles (got ${model.circles?.length ?? 0})`
     );
