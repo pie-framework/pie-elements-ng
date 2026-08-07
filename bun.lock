@@ -139,14 +139,6 @@
         "vite": "^8.1.5",
       },
     },
-    "packages/core": {
-      "name": "@pie-element/core",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@types/bun": "latest",
-        "typescript": "^5.9.3",
-      },
-    },
     "packages/element-player": {
       "name": "@pie-element/element-player",
       "version": "0.1.2-next.0",
@@ -2406,8 +2398,6 @@
     "@pie-element/cli": ["@pie-element/cli@workspace:tools/cli"],
 
     "@pie-element/complex-rubric": ["@pie-element/complex-rubric@workspace:packages/elements-react/complex-rubric"],
-
-    "@pie-element/core": ["@pie-element/core@workspace:packages/core"],
 
     "@pie-element/drag-in-the-blank": ["@pie-element/drag-in-the-blank@workspace:packages/elements-react/drag-in-the-blank"],
 

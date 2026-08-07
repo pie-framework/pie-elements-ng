@@ -18,7 +18,6 @@
     "packages/element-theme",
     "packages/element-theme-daisyui",
     "packages/print-player",
-    "packages/core",
     "tools/cli",
     "apps/element-demo",
     "apps/element-a11y-demo",

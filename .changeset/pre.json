@@ -4,7 +4,6 @@
   "initialVersions": {
     "@pie-element/element-demo": "0.1.1",
     "esm-player-test": "1.0.0",
-    "@pie-element/core": "0.1.0",
     "@pie-element/element-player": "0.1.1",
     "@pie-element/element-theme": "0.1.0",
     "@pie-element/element-theme-daisyui": "0.1.0",
