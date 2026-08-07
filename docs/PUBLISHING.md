@@ -142,6 +142,8 @@ Browser ESM for players is a separate static-file surface. Packages that can pro
 
 The same policy file drives the browser build and publish checks. `check:publish-surface` rejects unsupported bare imports, missing or drifted exact `pie.browserSharedDependencies`, and packages whose `dist/browser/**/*.js` total exceeds the browser JS budget. Packages without browser ESM exports must publish `./runtime-support` metadata that marks ESM unsupported, so players and demos cannot silently request static browser ESM for packages that do not provide it. When adding a new shared external, update the policy and `pie-players` import-map generation together; otherwise new dependencies should remain bundled by default. `dependencies` and `peerDependencies` are install metadata only; they are not the browser runtime singleton contract.
 
+Print-capable packages (those with `exports["./print"]`) have a second compatibility exception alongside `controller.js`: a root `module/print.js` (plus `module/print.js.map`), included in `files`. This is unrelated to `./browser/print` — it exists only so the legacy `@pie-framework/pie-print` client loader (bare `import()`, no import map) can load `pie-elements-ng` print bundles at the CDN path it already requests. See [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#legacy-compatible-print-packaging) and [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md).
+
 Debuggability comes from generated sourcemaps, not from importable source files. TypeScript builds must emit sourcemaps with inline source content, and package validation rejects `.js.map` files that require unpacked source files to be present in the npm tarball.
 
 The shared publish command used by CI and local targeted publishes runs the aggregate contract gate:

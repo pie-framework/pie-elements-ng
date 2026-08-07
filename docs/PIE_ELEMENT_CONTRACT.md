@@ -152,6 +152,16 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
 
 If a new dependency should become a shared browser singleton, update `tools/vite/browser-esm-policy.json`, package generation, publish checks, and `pie-players` import-map handling in the same change.
 
+### Legacy-Compatible Print Packaging
+
+Packages that declare `exports["./print"]` may additionally publish a second, unrelated print artifact at the package root:
+
+- `module/print.js` (and its sourcemap `module/print.js.map`)
+
+This exists solely so the unmodified, currently-deployed `@pie-framework/pie-print` client loader — which fetches `<pkg>/module/print.js` directly by CDN path and does a bare `import()` with no import map — can load `pie-elements-ng` print bundles. It is **not** part of the `./browser/print` contract above: `dist/browser/print/index.js` stays the artifact for the new `pie-players/pie-print-player`, which does inject an import map. `module/print.js` is fully self-contained instead (no externals, React included), because its loader injects nothing. See [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md) and [`docs/prds/legacy-print-compatibility/PRD.md`](prds/legacy-print-compatibility/PRD.md).
+
+`files` must include `module` for packages that publish it. It is permitted in the packed tarball only when the package declares `exports["./print"]` — packages without a print component may not ship a `module/` directory.
+
 ### Runtime Support Export
 
 An element may expose `./runtime-support` when it has runtime support constraints. If present, the export must point at publishable files covered by `files`.

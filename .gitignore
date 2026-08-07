@@ -23,6 +23,12 @@ esm/
 .svelte-kit/
 *.tsbuildinfo
 
+# Legacy-compatible print artifact (packages/*/*/module/print.js), built by
+# tools/vite/element-legacy-print.config.ts and
+# tools/vite/svelte-element-legacy-print.config.ts — see
+# docs/prds/legacy-print-compatibility/PRD.md
+/packages/*/*/module/
+
 # Testing
 coverage/
 .playwright/
