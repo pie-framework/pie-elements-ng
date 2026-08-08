@@ -48,10 +48,27 @@ interface PieEnvironment {
 Base interface that all element models extend.
 
 ```typescript
-interface AccessibilityCatalogCard {
-  catalog: string;                  // e.g., "spoken"
+// A card is a union discriminated on `catalog`, the QTI `support=` token.
+interface TextCatalogCard {
+  catalog: string;                  // e.g., "spoken", "braille"
   language?: string;                // BCP 47 language tag, e.g., "en-US"
   content: string;                  // Authored alternative content, often SSML
+  signLanguage?: never;
+}
+
+interface SignLanguageCatalogCard {
+  catalog: 'sign-language';
+  language?: string;
+  signLanguage: SignLanguageCardPayload;
+  content?: never;
+}
+
+type AccessibilityCatalogCard = SignLanguageCatalogCard | TextCatalogCard;
+
+interface SignLanguageCardPayload {
+  signLang: string;                 // Adaptation language, e.g., "ase" for ASL
+  media: MediaAssetRef;             // Sources, MIME types, dimensions
+  fragment?: MediaFragment;         // Optional time slice of a longer recording
 }
 
 interface AccessibilityCatalog {
@@ -74,6 +91,16 @@ to replace visible model content during text-to-speech playback, for example
 when visible math or abbreviated text needs a clearer spoken representation.
 Individual elements are not expected to render this field directly, and default
 models should omit it unless authored content provides catalog entries.
+
+A `sign-language` card carries a signed video translation of the content node it
+is docked to, as an alternate representation *alongside* the written English
+rather than a replacement for it. `signLang` is the language of the adaptation
+(a Spanish item's signed alternate is LSM, not ASL), so it must never be
+inferred from the item's content language. Narrow a card with the exported
+`isSignLanguageCard` guard; the open catalog vocabulary means TypeScript cannot
+statically rule out a bare URL in `content` on a `sign-language` card, and that
+legacy form is not supported. Rendering, resolution, and PNP gating belong to
+the player, not to elements — see `sign-language-asl-support.md` in pie-players.
 
 ### PieSession
 

@@ -17,10 +17,13 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "dev": "tsc --watch",
+    "test": "vitest",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
   },
   "publishConfig": {
     "access": "public"
