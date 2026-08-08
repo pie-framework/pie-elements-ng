@@ -21,7 +21,7 @@
  *
  * Usage:
  *   node scripts/check-provenance.mjs                        # every publishable package
- *   node scripts/check-provenance.mjs @pie-element/core ...  # only these
+ *   node scripts/check-provenance.mjs @pie-element/shared-types ...  # only these
  *   node scripts/check-provenance.mjs --strict               # also fail on not-published
  *   node scripts/check-provenance.mjs --published-json <f>   # check exactly what CI published
  *

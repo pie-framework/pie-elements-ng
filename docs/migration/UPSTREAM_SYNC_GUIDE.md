@@ -795,7 +795,7 @@ bun test
 <!-- packages/elements-svelte/multiple-choice/src/delivery/index.svelte -->
 <script lang="ts">
   import type { MultipleChoiceModel, SessionData } from '../types';
-  import type { PieEnvironment } from '@pie-element/core';
+  import type { PieEnvironment } from '@pie-element/shared-types';
 
   interface Props {
     model: MultipleChoiceModel;

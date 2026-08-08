@@ -400,7 +400,7 @@ The architecture consists of three main layers:
 
 **Element Layer**: Elements can be implemented in any framework (currently React and Svelte), as long as they export web components and implement the PIE controller interface. The unified Element Player can load elements from any framework implementation.
 
-**Foundation Layer**: Shared libraries (`@pie-lib/*` in `packages/lib-react/`), core PIE interfaces (`packages/core`), and framework-specific utilities coexist to support element development.
+**Foundation Layer**: Shared libraries (`@pie-lib/*` in `packages/lib-react/`), shared PIE interfaces and utilities (`@pie-element/shared-*` in `packages/shared/`), and framework-specific utilities coexist to support element development.
 
 ## Package Structure
 

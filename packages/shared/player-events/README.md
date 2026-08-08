@@ -18,5 +18,6 @@ Canonical runtime event contract for PIE element/player communication.
 ## Notes
 
 - Events bubble and are composed by default.
-- Legacy `pie.*` events in `@pie-element/core` are compatibility-only and not the
-  primary runtime interop contract.
+- The legacy `pie.*` events (`pie.model_set`, `pie.session_changed`,
+  `pie.model_updated`, declared in `@pie-element/shared-types`) are
+  compatibility-only and not the primary runtime interop contract.

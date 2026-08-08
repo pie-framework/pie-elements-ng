@@ -43,7 +43,7 @@
  *   node scripts/configure-trusted-publishers.mjs             # dry run, changes nothing
  *   node scripts/configure-trusted-publishers.mjs --apply     # configure
  *   node scripts/configure-trusted-publishers.mjs --verify    # assert config, per package
- *   node scripts/configure-trusted-publishers.mjs --apply --only @pie-element/core
+ *   node scripts/configure-trusted-publishers.mjs --apply --only @pie-element/shared-types
  *   node scripts/configure-trusted-publishers.mjs --apply --only pkg-a,pkg-b
  *
  * --verify parses `npm trust list --json` and asserts each package is bound to this
@@ -139,13 +139,13 @@ const mode = process.argv.includes('--apply')
  * Configuration, unlike publishing, can be done incrementally — so the real rehearsal is
  * to apply to one package and read it back:
  *
- *   node scripts/configure-trusted-publishers.mjs --apply  --only @pie-element/core
- *   node scripts/configure-trusted-publishers.mjs --verify --only @pie-element/core
+ *   node scripts/configure-trusted-publishers.mjs --apply  --only @pie-element/shared-types
+ *   node scripts/configure-trusted-publishers.mjs --verify --only @pie-element/shared-types
  */
 const onlyIndex = process.argv.indexOf('--only');
 const onlyArg = onlyIndex !== -1 ? process.argv[onlyIndex + 1] : null;
 if (onlyIndex !== -1 && (!onlyArg || onlyArg.startsWith('--'))) {
-  fail('--only requires a package name, e.g. --only @pie-element/core');
+  fail('--only requires a package name, e.g. --only @pie-element/shared-types');
 }
 const only = onlyArg
   ? onlyArg
@@ -170,9 +170,9 @@ function repositorySlug() {
  * Expand one workspace glob to directories.
  *
  * This repo's `workspaces` mixes three shapes — plain globs (`packages/lib-react/*`),
- * literal paths (`packages/core`, `tools/cli`) and a nested glob (`packages/elements-react/
+ * literal paths (`packages/element-player`, `tools/cli`) and a nested glob (`packages/elements-react/
  * *​/demo`) — so a `endsWith("/*")` shortcut would silently skip most of the repo, including
- * every package under packages/core, packages/element-*, print-player and tools/cli. A
+ * every package under packages/shared, packages/element-*, print-player and tools/cli. A
  * missed package is a package that publishes without a trusted publisher, which is exactly
  * the failure this script exists to prevent, so `*` is expanded at any position.
  */

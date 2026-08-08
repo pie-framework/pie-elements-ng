@@ -562,7 +562,7 @@ interface ConfigureProp {
 
 ## Type Exports
 
-Import types from the core package:
+Import shared types from `@pie-element/shared-types`:
 
 ```typescript
 import type {
@@ -572,7 +572,7 @@ import type {
   ViewModel,
   OutcomeResult,
   PieController
-} from '@pie-element/core';
+} from '@pie-element/shared-types';
 ```
 
 Or from element-specific packages:
@@ -590,25 +590,43 @@ import type {
 ### Session Utilities
 
 ```typescript
-import { isEmptySession, validateSession } from '@pie-element/core';
+import { isEmpty, sessionsEqual } from '@pie-element/shared-utils';
 
-// Check if session is empty
-const isEmpty = isEmptySession(session);
+// Check if a session holds no response
+const empty = isEmpty(session);
 
-// Validate session structure
-const isValid = validateSession(session, model);
+// Cheap equality check, for guarding reactive effects
+const unchanged = sessionsEqual(previousSession, session);
 ```
 
-### Model Utilities
+### Element Utilities
+
+`assignProps` is the preferred way to pass values into PIE custom elements —
+camelCase props do not map cleanly via HTML attributes, particularly for Svelte
+custom elements.
 
 ```typescript
-import { cloneModel, mergeModels } from '@pie-element/core';
+import { assignProps } from '@pie-element/shared-utils';
 
-// Deep clone a model
-const copy = cloneModel(model);
+assignProps(element, { model, session, env });
+```
 
-// Merge partial updates
-const updated = mergeModels(model, { prompt: 'New prompt' });
+`@pie-element/shared-utils` also exports `showFeedback`, `showRationale`,
+`clamp`, `shuffle`, `debounce`, `uuid`, and `debug`.
+
+### Controller Utilities
+
+```typescript
+import { getShuffledChoices, lockChoices, partialScoring } from '@pie-element/shared-controller-utils';
+
+// Should choice order stay ordinal? Honours model.lockChoiceOrder, env, and role
+if (!lockChoices(model, session, env)) {
+  // Shuffle once and persist the order in the session, so it is stable across renders
+  model.choices = await getShuffledChoices(model.choices, session, updateSession, 'value');
+}
+
+// Whether partial credit applies, given the model and env
+const usePartial = partialScoring.enabled(model, env);
 ```
 
 ## Best Practices
@@ -618,7 +636,7 @@ const updated = mergeModels(model, { prompt: 'New prompt' });
 Always use TypeScript and import types:
 
 ```typescript
-import type { PieEnvironment, PieSession } from '@pie-element/core';
+import type { PieEnvironment, PieSession } from '@pie-element/shared-types';
 import type { MultipleChoiceModel } from '@pie-element/multiple-choice';
 
 const env: PieEnvironment = { mode: 'gather', role: 'student' };
@@ -656,7 +674,7 @@ element.addEventListener('session-change', (e) => {
 
 - [README.md](../README.md) - Getting started guide
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - System design
-- [TypeScript Definitions](../packages/core/src/types.ts) - Source types
+- [TypeScript Definitions](../packages/shared/types/src/types.ts) - Source types
 
 ---
 
