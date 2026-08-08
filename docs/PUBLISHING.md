@@ -32,6 +32,47 @@ Release workflow: `.github/workflows/release.yml`
 
 If branch and channel do not match, the workflow fails before publishing.
 
+## npm Authentication and Trusted Publishers
+
+Migrating this repository to npm trusted publishing (OIDC) is tracked in PIE-834 and is
+deliberately incomplete. The blocker is package-name ownership, not workflow configuration.
+
+npm permits exactly **one** trusted publisher per package. This repository publishes `-next.N`
+prereleases of the same `@pie-element/*` and `@pie-lib/*` names that the still-active
+`pie-framework/pie-elements` and `pie-framework/pie-lib` repositories release as stable, and
+those repositories already hold the record for most of them. Measured on 2026-08-01: of 68
+publishable packages, 45 were last published via OIDC by a legacy repository, leaving roughly
+23 names free for this repository to claim.
+
+npm resolves a single auth mode for a publish run as a whole, so OIDC is not a per-package
+choice. That is why `release.yml` resolves `auto` to **token, or failure — never OIDC**: an
+OIDC run would let Changesets bump and commit versions and then fail every legacy-owned publish
+with `ENEEDAUTH`, leaving versions in git that were never released. The full rationale is in
+the workflow's "Resolve npm publish auth mode" step.
+
+So the `NPM_TOKEN` secret must not be deleted: if it ever goes missing, an automated publish
+run fails at that step by design, with remediation instructions. Opting into OIDC is a
+deliberate manual dispatch with `publish_auth=oidc`, and only once every package it would
+publish is confirmed:
+
+```bash
+bun run trusted-publishers -- --verify
+```
+
+`--verify` classifies each package as configured, wrong target (a record bound to another
+repository, which matters because it occupies the one available slot), or not configured. It
+parses npm's JSON rather than trusting the exit status, which is essential here: `npm trust
+list` exits 0 and prints an empty list for a package with no record at all.
+
+Ownership can also be audited with no 2FA round trip, because a published version records the
+publisher that produced it:
+
+```bash
+curl -s https://registry.npmjs.org/@pie-lib%2Frender-ui | jq '.versions["6.1.3"]._npmUser'
+# trustedPublisher.oidcConfigId present => published via OIDC by whichever repo holds the record
+# absent                                => published with a token
+```
+
 ## Manual Publish Runbook (Step-by-Step)
 
 Full checklist for cutting a one-off manual release of a single package, from a clean local branch.

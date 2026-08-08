@@ -1,9 +1,10 @@
 # Creates versioning PRs (changesets) and publishes to npm from CI.
 #
-# Publishing currently authenticates with the NPM_TOKEN secret: while that secret exists the
-# `auto` mode below resolves to token auth. The OIDC machinery here is complete and exercised
-# (npm floor, .npmrc scrub, provenance check), but the cutover is BLOCKED and the secret must
-# not be deleted yet.
+# Publishing currently authenticates with the NPM_TOKEN secret: `auto` mode below resolves to
+# token auth when that secret is present, and FAILS THE RUN when it is absent rather than
+# falling through to OIDC. The OIDC machinery here is complete and exercised (npm floor,
+# .npmrc scrub, provenance check), but the cutover is BLOCKED and the secret must not be
+# deleted yet. Opting into OIDC requires an explicit manual run with publish_auth=oidc.
 #
 # Why: npm permits exactly one trusted publisher per package, and most of the names this repo
 # publishes are also published by pie-framework/pie-elements and pie-framework/pie-lib, which
@@ -316,10 +317,27 @@ jobs:
           elif [ "${publish_auth_input}" = "oidc" ]; then
             echo "mode=oidc" >> "$GITHUB_OUTPUT"
           else
+            # `auto` resolves to token, or fails — it deliberately never falls through to OIDC.
+            # A missing token is overwhelmingly more likely to mean the secret expired or was
+            # removed than that the cutover happened, and OIDC cannot publish most of these
+            # names anyway (see the header). Choosing OIDC here would let changesets bump and
+            # commit versions and then fail every shared-package publish with ENEEDAUTH,
+            # leaving versions in git that were never released. Fail before the bump instead.
             if [ -n "${NPM_TOKEN:-}" ]; then
               echo "mode=token" >> "$GITHUB_OUTPUT"
             else
-              echo "mode=oidc" >> "$GITHUB_OUTPUT"
+              echo "No NPM_TOKEN secret is available, so this release cannot authenticate to npm." >&2
+              echo "" >&2
+              echo "Not defaulting to OIDC on purpose: npm permits exactly one trusted publisher" >&2
+              echo "per package, and most names this repo publishes are still published by" >&2
+              echo "pie-framework/pie-elements and pie-framework/pie-lib. An OIDC run would fail" >&2
+              echo "those publishes after versions had already been bumped and committed." >&2
+              echo "" >&2
+              echo "Fix one of:" >&2
+              echo "  - Restore the NPM_TOKEN secret (the expected state today), or" >&2
+              echo "  - Once 'bun run trusted-publishers -- --verify' reports CONFIGURED for every" >&2
+              echo "    package, re-run this workflow manually with publish_auth=oidc to opt in." >&2
+              exit 1
             fi
           fi
 
