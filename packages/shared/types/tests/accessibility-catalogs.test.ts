@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AccessibilityCatalogCard, SignLanguageCatalogCard } from '../src/types.js';
+import type { CatalogCard, SignLanguageCatalogCard } from '../src/types.js';
 import { isSignLanguageCard } from '../src/types.js';
 import {
   allCards,
@@ -31,13 +31,14 @@ describe('isSignLanguageCard', () => {
   });
 
   it('rejects a legacy bare-URL sign-language card', () => {
-    // TypeScript cannot exclude 'sign-language' from the open text arm, so this
-    // object type-checks. The guard is what keeps it out at runtime, so a URL is
-    // never rendered as visible text.
+    // `catalog` is an open `string` and `content` is optional, so TypeScript
+    // cannot state "a signing card must carry a payload" and this object
+    // type-checks. The guard is what keeps it out at runtime, so a URL is never
+    // rendered as visible text.
     const legacy = {
       catalog: 'sign-language',
       content: 'https://media.example.test/asl/prompt-1.mp4',
-    } satisfies AccessibilityCatalogCard;
+    } satisfies CatalogCard;
 
     expect(isSignLanguageCard(legacy)).toBe(false);
   });
@@ -45,7 +46,7 @@ describe('isSignLanguageCard', () => {
   it('rejects a signing card whose media carries no sources', () => {
     const malformed = {
       catalog: 'sign-language',
-      signLanguage: {
+      payload: {
         signLang: 'ase',
         media: { version: 1, id: 'empty', kind: 'video', sources: [] },
       },
@@ -57,7 +58,7 @@ describe('isSignLanguageCard', () => {
   it('rejects a signing card with a missing signLang', () => {
     const malformed = {
       catalog: 'sign-language',
-      signLanguage: {
+      payload: {
         signLang: '',
         media: {
           version: 1,
@@ -72,16 +73,16 @@ describe('isSignLanguageCard', () => {
   });
 
   it('gives access to the payload once narrowed', () => {
-    const card: AccessibilityCatalogCard = fragmentRangeCard;
+    const card: CatalogCard = fragmentRangeCard;
 
     if (!isSignLanguageCard(card)) {
       throw new Error('expected a sign-language card');
     }
 
-    // Reached only through the guard, which is the point: `card.signLanguage`
-    // is not addressable on the union without it.
-    expect(card.signLanguage.signLang).toBe('ase');
-    expect(card.signLanguage.fragment).toEqual({ startSeconds: 12.5, endSeconds: 19 });
+    // Reached only through the guard, which is the point: `payload` is optional
+    // on `CatalogCard`, so nothing may dereference it without narrowing first.
+    expect(card.payload.signLang).toBe('ase');
+    expect(card.payload.fragment).toEqual({ startSeconds: 12.5, endSeconds: 19 });
   });
 });
 
@@ -91,7 +92,7 @@ describe('sign-language card payload', () => {
       throw new Error('expected a sign-language card');
     }
 
-    expect(multiSourceCard.signLanguage.media.sources.map((s) => s.type)).toEqual([
+    expect(multiSourceCard.payload.media.sources.map((s) => s.type)).toEqual([
       'video/webm',
       'video/mp4',
     ]);
@@ -102,7 +103,7 @@ describe('sign-language card payload', () => {
       throw new Error('expected a sign-language card');
     }
 
-    expect(openEndedFragmentCard.signLanguage.fragment).toEqual({ startSeconds: 24 });
+    expect(openEndedFragmentCard.payload.fragment).toEqual({ startSeconds: 24 });
   });
 
   it('distinguishes the adaptation language from the item content language', () => {
@@ -110,7 +111,7 @@ describe('sign-language card payload', () => {
     // between them is implied.
     const langs = [singleSourceCard, alternateSignLanguageCard]
       .filter(isSignLanguageCard)
-      .map((card) => card.signLanguage.signLang);
+      .map((card) => card.payload.signLang);
 
     expect(langs).toEqual(['ase', 'bfi']);
   });
@@ -123,7 +124,7 @@ describe('catalog composition', () => {
   });
 
   it('survives a JSON round trip, since catalogs are authored wire data', () => {
-    const roundTripped = JSON.parse(JSON.stringify(allCards)) as AccessibilityCatalogCard[];
+    const roundTripped = JSON.parse(JSON.stringify(allCards)) as CatalogCard[];
 
     expect(roundTripped).toEqual(allCards);
     expect(roundTripped.filter(isSignLanguageCard)).toHaveLength(5);

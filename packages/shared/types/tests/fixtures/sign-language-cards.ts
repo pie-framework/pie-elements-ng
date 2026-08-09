@@ -2,17 +2,21 @@
  * Shared fixtures for `sign-language` accessibility catalog cards.
  *
  * These are pure data typed against the contract, so they serialize to JSON
- * unchanged. pie-players (PIE-880) and pie-api-aws (PIE-881) restate the same
- * card types structurally rather than importing this package; copying these
- * fixtures across is what keeps the three declarations from drifting.
+ * unchanged. pie-players owns the card shape (`players-shared`); this repo and
+ * pie-api-aws (PIE-881) restate it structurally rather than depending on that
+ * package, because all three read the same authored JSON and none of them should
+ * need a package edge to agree about it. Fixture parity is what keeps the three
+ * declarations from drifting — which they did once, when this repo and the
+ * importer put the signing payload under `signLanguage` and the player put it
+ * under `payload`.
  */
 
-import type { AccessibilityCatalog, AccessibilityCatalogCard } from '../../src/types.js';
+import type { AccessibilityCatalog, CatalogCard } from '../../src/types.js';
 
 /** Single source, the shape the sample ASL content actually has. */
-export const singleSourceCard: AccessibilityCatalogCard = {
+export const singleSourceCard: CatalogCard = {
   catalog: 'sign-language',
-  signLanguage: {
+  payload: {
     signLang: 'ase',
     media: {
       version: 1,
@@ -24,9 +28,9 @@ export const singleSourceCard: AccessibilityCatalogCard = {
 };
 
 /** Multiple encodings of one recording, with dimensions. */
-export const multiSourceCard: AccessibilityCatalogCard = {
+export const multiSourceCard: CatalogCard = {
   catalog: 'sign-language',
-  signLanguage: {
+  payload: {
     signLang: 'ase',
     media: {
       version: 1,
@@ -52,9 +56,9 @@ export const multiSourceCard: AccessibilityCatalogCard = {
 };
 
 /** One recording sliced by time so it can serve several content nodes. */
-export const fragmentRangeCard: AccessibilityCatalogCard = {
+export const fragmentRangeCard: CatalogCard = {
   catalog: 'sign-language',
-  signLanguage: {
+  payload: {
     signLang: 'ase',
     media: {
       version: 1,
@@ -67,9 +71,9 @@ export const fragmentRangeCard: AccessibilityCatalogCard = {
 };
 
 /** Open-ended fragment — start with no end, playing to the end of the asset. */
-export const openEndedFragmentCard: AccessibilityCatalogCard = {
+export const openEndedFragmentCard: CatalogCard = {
   catalog: 'sign-language',
-  signLanguage: {
+  payload: {
     signLang: 'ase',
     media: {
       version: 1,
@@ -86,9 +90,9 @@ export const openEndedFragmentCard: AccessibilityCatalogCard = {
  * `signLang` carries this at no extra cost; no cross-sign-language fallback is
  * implied — a consumer that cannot match the requested language shows nothing.
  */
-export const alternateSignLanguageCard: AccessibilityCatalogCard = {
+export const alternateSignLanguageCard: CatalogCard = {
   catalog: 'sign-language',
-  signLanguage: {
+  payload: {
     signLang: 'bfi',
     media: {
       version: 1,
@@ -100,14 +104,14 @@ export const alternateSignLanguageCard: AccessibilityCatalogCard = {
 };
 
 /** A spoken card, to prove text cards are unchanged by the widening. */
-export const spokenCard: AccessibilityCatalogCard = {
+export const spokenCard: CatalogCard = {
   catalog: 'spoken',
   language: 'en-US',
   content: '<speak>What is <say-as interpret-as="characters">CO2</say-as>?</speak>',
 };
 
 /** An unknown catalog type, which consumers must ignore rather than reject. */
-export const unknownTypeCard: AccessibilityCatalogCard = {
+export const unknownTypeCard: CatalogCard = {
   catalog: 'some-future-catalog-type',
   content: 'whatever the author put here',
 };
@@ -121,7 +125,7 @@ export const promptCatalog: AccessibilityCatalog = {
   cards: [spokenCard, singleSourceCard],
 };
 
-export const allCards: AccessibilityCatalogCard[] = [
+export const allCards: CatalogCard[] = [
   singleSourceCard,
   multiSourceCard,
   fragmentRangeCard,
