@@ -4,6 +4,7 @@ import { isSignLanguageCard } from '../src/types.js';
 import {
   allCards,
   alternateSignLanguageCard,
+  contentLanguageTaggedCard,
   fragmentRangeCard,
   multiSourceCard,
   openEndedFragmentCard,
@@ -46,8 +47,8 @@ describe('isSignLanguageCard', () => {
   it('rejects a signing card whose media carries no sources', () => {
     const malformed = {
       catalog: 'sign-language',
+      language: 'ase',
       payload: {
-        signLang: 'ase',
         media: { version: 1, id: 'empty', kind: 'video', sources: [] },
       },
     } satisfies SignLanguageCatalogCard;
@@ -55,21 +56,24 @@ describe('isSignLanguageCard', () => {
     expect(isSignLanguageCard(malformed)).toBe(false);
   });
 
-  it('rejects a signing card with a missing signLang', () => {
-    const malformed = {
+  it('accepts a signing card that states its language only on the card', () => {
+    // The shape the Learnosity importer writes. A guard that required
+    // `payload.signLang` would reject every imported card, so this pins that it
+    // does not.
+    const imported = {
       catalog: 'sign-language',
+      language: 'ase',
       payload: {
-        signLang: '',
         media: {
           version: 1,
-          id: 'no-lang',
+          id: 'no-payload-lang',
           kind: 'video',
           sources: [{ src: 'https://media.example.test/asl/x.mp4' }],
         },
       },
     } satisfies SignLanguageCatalogCard;
 
-    expect(isSignLanguageCard(malformed)).toBe(false);
+    expect(isSignLanguageCard(imported)).toBe(true);
   });
 
   it('gives access to the payload once narrowed', () => {
@@ -81,7 +85,7 @@ describe('isSignLanguageCard', () => {
 
     // Reached only through the guard, which is the point: `payload` is optional
     // on `CatalogCard`, so nothing may dereference it without narrowing first.
-    expect(card.payload.signLang).toBe('ase');
+    expect(card.payload.media.id).toBe('asl-item-3-full');
     expect(card.payload.fragment).toEqual({ startSeconds: 12.5, endSeconds: 19 });
   });
 });
@@ -106,14 +110,26 @@ describe('sign-language card payload', () => {
     expect(openEndedFragmentCard.payload.fragment).toEqual({ startSeconds: 24 });
   });
 
-  it('distinguishes the adaptation language from the item content language', () => {
-    // Two cards, same mechanism, different signed languages. No fallback
-    // between them is implied.
+  it('carries several signed languages on one mechanism', () => {
+    // Two cards, same mechanism, different signed languages, stated on the card
+    // where resolution reads them. No fallback between them is implied.
     const langs = [singleSourceCard, alternateSignLanguageCard]
       .filter(isSignLanguageCard)
-      .map((card) => card.payload.signLang);
+      .map((card) => card.language);
 
     expect(langs).toEqual(['ase', 'bfi']);
+  });
+
+  it('lets the payload name the adaptation language when the card names another', () => {
+    // The only shape where `signLang` is not redundant: the card is tagged with
+    // the item's content language so resolution reaches it by the
+    // default-language rung, and the payload says what the clip is signed in.
+    if (!isSignLanguageCard(contentLanguageTaggedCard)) {
+      throw new Error('expected a sign-language card');
+    }
+
+    expect(contentLanguageTaggedCard.language).toBe('en-US');
+    expect(contentLanguageTaggedCard.payload.signLang).toBe('ase');
   });
 });
 
@@ -127,6 +143,6 @@ describe('catalog composition', () => {
     const roundTripped = JSON.parse(JSON.stringify(allCards)) as CatalogCard[];
 
     expect(roundTripped).toEqual(allCards);
-    expect(roundTripped.filter(isSignLanguageCard)).toHaveLength(5);
+    expect(roundTripped.filter(isSignLanguageCard)).toHaveLength(6);
   });
 });

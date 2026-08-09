@@ -16,8 +16,8 @@ import type { AccessibilityCatalog, CatalogCard } from '../../src/types.js';
 /** Single source, the shape the sample ASL content actually has. */
 export const singleSourceCard: CatalogCard = {
   catalog: 'sign-language',
+  language: 'ase',
   payload: {
-    signLang: 'ase',
     media: {
       version: 1,
       id: 'asl-prompt-1',
@@ -30,8 +30,8 @@ export const singleSourceCard: CatalogCard = {
 /** Multiple encodings of one recording, with dimensions. */
 export const multiSourceCard: CatalogCard = {
   catalog: 'sign-language',
+  language: 'ase',
   payload: {
-    signLang: 'ase',
     media: {
       version: 1,
       id: 'asl-prompt-2',
@@ -58,8 +58,8 @@ export const multiSourceCard: CatalogCard = {
 /** One recording sliced by time so it can serve several content nodes. */
 export const fragmentRangeCard: CatalogCard = {
   catalog: 'sign-language',
+  language: 'ase',
   payload: {
-    signLang: 'ase',
     media: {
       version: 1,
       id: 'asl-item-3-full',
@@ -73,8 +73,8 @@ export const fragmentRangeCard: CatalogCard = {
 /** Open-ended fragment — start with no end, playing to the end of the asset. */
 export const openEndedFragmentCard: CatalogCard = {
   catalog: 'sign-language',
+  language: 'ase',
   payload: {
-    signLang: 'ase',
     media: {
       version: 1,
       id: 'asl-item-3-full',
@@ -86,19 +86,41 @@ export const openEndedFragmentCard: CatalogCard = {
 };
 
 /**
- * A second signed language on the same content node. The card array plus
- * `signLang` carries this at no extra cost; no cross-sign-language fallback is
- * implied — a consumer that cannot match the requested language shows nothing.
+ * A second signed language on the same content node. The card array plus the
+ * card's `language` carries this at no extra cost; no cross-sign-language
+ * fallback is implied — a consumer that cannot match the requested language
+ * shows nothing.
  */
 export const alternateSignLanguageCard: CatalogCard = {
   catalog: 'sign-language',
+  language: 'bfi',
   payload: {
-    signLang: 'bfi',
     media: {
       version: 1,
       id: 'bsl-prompt-1',
       kind: 'video',
       sources: [{ src: 'https://media.example.test/bsl/prompt-1.mp4', type: 'video/mp4' }],
+    },
+  },
+};
+
+/**
+ * The one shape where `payload.signLang` earns its place: a card tagged with the
+ * item's *content* language, so a resolver reaches it by the default-language
+ * rung, while the payload states what the clip is actually signed in. Nothing
+ * produces this today — the importer writes `language` alone — but the field
+ * exists for it, so a fixture holds the line.
+ */
+export const contentLanguageTaggedCard: CatalogCard = {
+  catalog: 'sign-language',
+  language: 'en-US',
+  payload: {
+    signLang: 'ase',
+    media: {
+      version: 1,
+      id: 'asl-prompt-4',
+      kind: 'video',
+      sources: [{ src: 'https://media.example.test/asl/prompt-4.mp4', type: 'video/mp4' }],
     },
   },
 };
@@ -131,6 +153,7 @@ export const allCards: CatalogCard[] = [
   fragmentRangeCard,
   openEndedFragmentCard,
   alternateSignLanguageCard,
+  contentLanguageTaggedCard,
   spokenCard,
   unknownTypeCard,
 ];

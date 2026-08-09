@@ -61,7 +61,7 @@ interface CatalogCard {
 type CatalogCardPayload = SignLanguageCardPayload;
 
 interface SignLanguageCardPayload {
-  signLang: string;                 // Adaptation language, e.g., "ase" for ASL
+  signLang?: string;                // Adaptation language; redundant when it equals card `language`
   media: MediaAssetRef;             // Sources, MIME types, dimensions
   fragment?: MediaFragmentRange;    // Optional time slice of a longer recording
 }
@@ -96,9 +96,14 @@ models should omit it unless authored content provides catalog entries.
 
 A `sign-language` card carries a signed video translation of the content node it
 is docked to, as an alternate representation *alongside* the written English
-rather than a replacement for it. `signLang` is the language of the adaptation
-(a Spanish item's signed alternate is LSM, not ASL), so it must never be
-inferred from the item's content language. Narrow a card with the exported
+rather than a replacement for it. Tag it with the adaptation language on the
+card's `language` — a Spanish item's signed alternate is LSM, not ASL, so it must
+never be inferred from the item's content language. That is the only field
+pie-players resolves a card on, since resolution runs before anything knows the
+card is a signing card. The payload's optional `signLang` names the same code and
+is worth authoring only where the two differ, as in a card tagged with the item's
+content language so resolution reaches it by the default-language rung; the
+Learnosity importer emits `language` alone. Narrow a card with the exported
 `isSignLanguageCard` guard; the open catalog vocabulary means TypeScript cannot
 statically rule out a bare URL in `content` on a `sign-language` card, and that
 legacy form is not supported. Rendering, resolution, and PNP gating belong to

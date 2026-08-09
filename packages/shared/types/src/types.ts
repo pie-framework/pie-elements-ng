@@ -26,10 +26,9 @@ export interface MediaAssetRef {
   label?: string;
   description?: string;
   /**
-   * Language of the asset itself, as authored metadata. For sign-language
-   * cards the authoritative adaptation language is
-   * `SignLanguageCardPayload.signLang`, so this stays optional rather than
-   * requiring the same value be stated twice.
+   * Language of the asset itself, as authored metadata. Sign-language cards
+   * leave it unset: the card's `language` already states the adaptation
+   * language, and a second copy is a second thing to keep in agreement.
    */
   lang?: string;
 }
@@ -68,8 +67,17 @@ export interface SignLanguageCardPayload {
    * language (AfA/PNP's `languageOfAdaptation`). The distinction is load
    * bearing: a Spanish item's signed alternate is LSM, not ASL, so `signLang`
    * must never be inferred from the item or assessment content language.
+   *
+   * Optional, and redundant on almost every card. The card's `language` states
+   * the same code and is the only field pie-players resolves a card on —
+   * resolution runs before anything knows the card is a signing card, so it can
+   * only key on the generic field — and the player falls back to it when this is
+   * absent. Author it only where the two differ: a card tagged with the item's
+   * content language (`language: 'en-US'`, `signLang: 'ase'`) so resolution
+   * reaches it by the default-language rung. The Learnosity importer emits
+   * `language` alone.
    */
-  signLang: string;
+  signLang?: string;
   media: MediaAssetRef;
   fragment?: MediaFragmentRange;
 }
@@ -145,6 +153,11 @@ export interface SignLanguageCatalogCard extends CatalogCard {
  * the card carries a signing payload with at least one media source. Full
  * payload validation — and the rule that an invalid payload is treated as
  * absent — belongs to the consuming player, per the sign-language PRD.
+ *
+ * Deliberately says nothing about `signLang`. It once required a non-empty one,
+ * which would have rejected every card the Learnosity importer produces: the
+ * adaptation language lives on the card's `language`, and a payload that omits
+ * `signLang` is the normal shape rather than a malformed one.
  */
 export function isSignLanguageCard(card: CatalogCard): card is SignLanguageCatalogCard {
   if (card.catalog !== 'sign-language') {
@@ -153,12 +166,7 @@ export function isSignLanguageCard(card: CatalogCard): card is SignLanguageCatal
 
   const payload = card.payload;
 
-  return (
-    typeof payload?.signLang === 'string' &&
-    payload.signLang.length > 0 &&
-    Array.isArray(payload.media?.sources) &&
-    payload.media.sources.length > 0
-  );
+  return Array.isArray(payload?.media?.sources) && payload.media.sources.length > 0;
 }
 
 export interface AccessibilityCatalog {
