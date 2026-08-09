@@ -48,32 +48,34 @@ interface PieEnvironment {
 Base interface that all element models extend.
 
 ```typescript
-// A card is a union discriminated on `catalog`, the QTI `support=` token.
-interface TextCatalogCard {
-  catalog: string;                  // e.g., "spoken", "braille"
+// `catalog` is the QTI `support=` token and the card's only discriminant.
+// QTI's single content slot is exactly one of `content` or `payload`.
+interface CatalogCard {
+  catalog: string;                  // e.g., "spoken", "sign-language", "braille"
   language?: string;                // BCP 47 language tag, e.g., "en-US"
-  content: string;                  // Authored alternative content, often SSML
-  signLanguage?: never;
+  content?: string;                 // String form — SSML for "spoken", plain text
+  payload?: CatalogCardPayload;     // Structured form, for what a string cannot express
 }
 
-interface SignLanguageCatalogCard {
-  catalog: 'sign-language';
-  language?: string;
-  signLanguage: SignLanguageCardPayload;
-  content?: never;
-}
-
-type AccessibilityCatalogCard = SignLanguageCatalogCard | TextCatalogCard;
+// One generic slot, not a field per accommodation: `catalog` says how to read it.
+type CatalogCardPayload = SignLanguageCardPayload;
 
 interface SignLanguageCardPayload {
-  signLang: string;                 // Adaptation language, e.g., "ase" for ASL
+  signLang?: string;                // Adaptation language; redundant when it equals card `language`
   media: MediaAssetRef;             // Sources, MIME types, dimensions
-  fragment?: MediaFragment;         // Optional time slice of a longer recording
+  fragment?: MediaFragmentRange;    // Optional time slice of a longer recording
+}
+
+// Narrowing for the write side; `isSignLanguageCard` is the runtime guard.
+interface SignLanguageCatalogCard extends CatalogCard {
+  catalog: 'sign-language';
+  payload: SignLanguageCardPayload;
+  content?: never;
 }
 
 interface AccessibilityCatalog {
   identifier: string;               // Stable ID referenced by visible content
-  cards: AccessibilityCatalogCard[];
+  cards: CatalogCard[];
 }
 
 interface PieModel {
@@ -94,13 +96,26 @@ models should omit it unless authored content provides catalog entries.
 
 A `sign-language` card carries a signed video translation of the content node it
 is docked to, as an alternate representation *alongside* the written English
-rather than a replacement for it. `signLang` is the language of the adaptation
-(a Spanish item's signed alternate is LSM, not ASL), so it must never be
-inferred from the item's content language. Narrow a card with the exported
+rather than a replacement for it. Tag it with the adaptation language on the
+card's `language` — a Spanish item's signed alternate is LSM, not ASL, so it must
+never be inferred from the item's content language. That is the only field
+pie-players resolves a card on, since resolution runs before anything knows the
+card is a signing card. The payload's optional `signLang` names the same code and
+is worth authoring only where the two differ, as in a card tagged with the item's
+content language so resolution reaches it by the default-language rung; the
+Learnosity importer emits `language` alone. Narrow a card with the exported
 `isSignLanguageCard` guard; the open catalog vocabulary means TypeScript cannot
 statically rule out a bare URL in `content` on a `sign-language` card, and that
 legacy form is not supported. Rendering, resolution, and PNP gating belong to
 the player, not to elements — see `sign-language-asl-support.md` in pie-players.
+
+The card shape is pie-players' contract (`packages/players-shared`), restated
+here structurally rather than imported, since all three repos in the chain
+(this one, the Learnosity importer in pie-api-aws, and the player) read the same
+authored JSON. Keep them identical: when they diverged — the payload under
+`signLanguage` here and under `payload` in the player — an imported signing card
+rendered in the player and was simultaneously reported as having no alternate by
+the player's enumeration path.
 
 ### PieSession
 

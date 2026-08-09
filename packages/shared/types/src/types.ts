@@ -26,10 +26,9 @@ export interface MediaAssetRef {
   label?: string;
   description?: string;
   /**
-   * Language of the asset itself, as authored metadata. For sign-language
-   * cards the authoritative adaptation language is
-   * `SignLanguageCardPayload.signLang`, so this stays optional rather than
-   * requiring the same value be stated twice.
+   * Language of the asset itself, as authored metadata. Sign-language cards
+   * leave it unset: the card's `language` already states the adaptation
+   * language, and a second copy is a second thing to keep in agreement.
    */
   lang?: string;
 }
@@ -49,7 +48,7 @@ export interface MediaSource {
  * A time slice within a media asset, so one recording can serve several
  * content nodes. Mirrors QTI 3's Media Fragments URI usage.
  */
-export interface MediaFragment {
+export interface MediaFragmentRange {
   startSeconds: number;
   endSeconds?: number;
 }
@@ -68,56 +67,84 @@ export interface SignLanguageCardPayload {
    * language (AfA/PNP's `languageOfAdaptation`). The distinction is load
    * bearing: a Spanish item's signed alternate is LSM, not ASL, so `signLang`
    * must never be inferred from the item or assessment content language.
+   *
+   * Optional, and redundant on almost every card. The card's `language` states
+   * the same code and is the only field pie-players resolves a card on —
+   * resolution runs before anything knows the card is a signing card, so it can
+   * only key on the generic field — and the player falls back to it when this is
+   * absent. Author it only where the two differ: a card tagged with the item's
+   * content language (`language: 'en-US'`, `signLang: 'ase'`) so resolution
+   * reaches it by the default-language rung. The Learnosity importer emits
+   * `language` alone.
    */
-  signLang: string;
+  signLang?: string;
   media: MediaAssetRef;
-  fragment?: MediaFragment;
+  fragment?: MediaFragmentRange;
 }
 
 /**
- * A signed alternate representation, docked to a content node via
- * `data-catalog-idref`. Maps to QTI `qti-card support="sign-language"`.
+ * The structured forms a card's `payload` may take.
+ *
+ * Which one applies is decided by the card's `catalog`, so this union carries no
+ * discriminant of its own — a second discriminant could contradict the first.
+ * Consumers select a card by catalog type and then validate the payload
+ * structurally, which they must do regardless: catalog data is authored,
+ * wire-facing and untrusted.
  */
-export interface SignLanguageCatalogCard {
-  catalog: 'sign-language';
-  language?: string;
-  signLanguage: SignLanguageCardPayload;
-  /**
-   * Signing content lives in `signLanguage`. A bare URL in `content` is not a
-   * supported form — see the note on `AccessibilityCatalogCard`.
-   */
-  content?: never;
-}
+export type CatalogCardPayload = SignLanguageCardPayload;
 
 /**
- * A text-bearing catalog card: `spoken` (SSML for TTS), `braille`,
- * `simplified-language`, and any catalog type this repo does not model
- * explicitly. Unknown `catalog` tokens are tolerated by design and should be
- * ignored rather than rejected by consumers.
+ * QTI-aligned accessibility catalog entry: one alternate representation of a
+ * content node, docked to it by `data-catalog-idref`.
+ *
+ * Maps onto QTI 3's `qti-card`. `catalog` is QTI's `@support` and is the only
+ * discriminant — there is deliberately no second `kind` field. `language` is the
+ * card entry's `xml:lang`. QTI's single content slot is represented by exactly
+ * one of two fields, never both, with nothing mirrored between them:
+ *
+ * - `content` — the string form, for alternates a string can express: SSML for
+ *   `spoken`, plain text for `simplified-language`.
+ * - `payload` — the structured form, for what a string cannot express. Today
+ *   only a signing video.
+ *
+ * One generic payload slot rather than a field per accommodation
+ * (`signLanguage`, `braille`, …), which is the shape pie-players canonicalises
+ * and the shape this repo now follows. A field per accommodation makes every new
+ * structured alternate a breaking widening of this type in every consumer that
+ * reads cards, and it gives the same fact two names across repos — which
+ * produced a real bug: a card carrying `signLanguage` rendered its video in the
+ * player and was simultaneously reported as carrying no payload by the player's
+ * "what alternates exist" path, because only one of the two read paths knew
+ * about the alias.
+ *
+ * `catalog` is a bare `string` because the vocabulary is open-ended and unknown
+ * tokens must be ignored rather than rejected. TypeScript therefore cannot
+ * express "a `sign-language` card must carry a payload", so a
+ * `{ catalog: 'sign-language', content: '<url>' }` object still satisfies this
+ * type. That legacy bare-URL form is not supported: runtime validation on the
+ * consuming side must reject it rather than render the URL as visible text.
+ * Narrow with `isSignLanguageCard`.
  */
-export interface TextCatalogCard {
+export interface CatalogCard {
   catalog: string;
   language?: string;
-  /** Authored alternative content, often SSML. */
-  content: string;
-  signLanguage?: never;
+  content?: string;
+  payload?: CatalogCardPayload;
 }
 
 /**
- * QTI-aligned accessibility catalog entry. Players/toolkits map visible model
- * content to an authored alternative — spoken text for TTS, or a signed video
- * translation — via `data-catalog-idref` on the content node.
+ * A `CatalogCard` narrowed to the signing case, where the payload is mandatory.
  *
- * The card is a union discriminated on `catalog`, which is already the QTI
- * `support=` token; there is deliberately no second `kind` field, since two
- * discriminants can disagree. Because the catalog vocabulary is open-ended,
- * TypeScript cannot express "any string except 'sign-language'", so a
- * `{ catalog: 'sign-language', content: '<url>' }` object still satisfies
- * `TextCatalogCard`. That legacy bare-URL form is not supported and runtime
- * validation on the consuming side must reject it rather than render the URL
- * as visible text. Narrow with `isSignLanguageCard`.
+ * Maps to QTI `qti-card support="sign-language"`. This is a refinement of the
+ * shared shape for authoring and narrowing, not a second card model: it adds
+ * only what `CatalogCard` cannot state, which is that a signing card must carry
+ * its payload and must not carry a bare URL in `content`.
  */
-export type AccessibilityCatalogCard = SignLanguageCatalogCard | TextCatalogCard;
+export interface SignLanguageCatalogCard extends CatalogCard {
+  catalog: 'sign-language';
+  payload: SignLanguageCardPayload;
+  content?: never;
+}
 
 /**
  * Narrows a catalog card to its sign-language form.
@@ -126,27 +153,25 @@ export type AccessibilityCatalogCard = SignLanguageCatalogCard | TextCatalogCard
  * the card carries a signing payload with at least one media source. Full
  * payload validation — and the rule that an invalid payload is treated as
  * absent — belongs to the consuming player, per the sign-language PRD.
+ *
+ * Deliberately says nothing about `signLang`. It once required a non-empty one,
+ * which would have rejected every card the Learnosity importer produces: the
+ * adaptation language lives on the card's `language`, and a payload that omits
+ * `signLang` is the normal shape rather than a malformed one.
  */
-export function isSignLanguageCard(
-  card: AccessibilityCatalogCard
-): card is SignLanguageCatalogCard {
+export function isSignLanguageCard(card: CatalogCard): card is SignLanguageCatalogCard {
   if (card.catalog !== 'sign-language') {
     return false;
   }
 
-  const payload = (card as SignLanguageCatalogCard).signLanguage;
+  const payload = card.payload;
 
-  return (
-    typeof payload?.signLang === 'string' &&
-    payload.signLang.length > 0 &&
-    Array.isArray(payload.media?.sources) &&
-    payload.media.sources.length > 0
-  );
+  return Array.isArray(payload?.media?.sources) && payload.media.sources.length > 0;
 }
 
 export interface AccessibilityCatalog {
   identifier: string;
-  cards: AccessibilityCatalogCard[];
+  cards: CatalogCard[];
 }
 
 // Base PIE model (all elements extend this)
