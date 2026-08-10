@@ -21,7 +21,7 @@
     "debug": "^4.1.1",
     "invariant": "^2.2.4",
     "prop-types": "^15.7.2",
-    "react-draggable": "^4.6.0",
+    "react-draggable": "^4.7.1",
     "react-redux": "^9.3.0",
     "redux": "^5.0.1",
     "@pie-element/shared-lodash": "workspace:*"
