@@ -56,7 +56,6 @@ Notes:
 - **`correctChoiceId`**
 - **`hasAudio`**, **`audioUrl`**, **`audioTranscript`** (`audioUrl` required when `hasAudio=true`)
 - **`autoplayAudioEnabled`**, **`completeAudioEnabled`** (optional integration flags)
-- **`showVisibleTranscript`** (optional): profile-driven default; override when transcript should always show/hide
 - **`layoutLimits`** (optional): numeric visual constraints; defaults are based on current CQT parity behavior and can be overridden per item
 - **`layoutProfilePresets`** (optional): named preset map by `layoutProfile`; use profile as a template and override with `layoutLimits`
 - **`audioButtonSkin`** / **`audioButtonSkinsByLocale`** (optional): override listen-button skin URLs
@@ -116,6 +115,7 @@ Notes:
 - **Audio error behavior:** no TTS fallback is used; when `hasAudio=true` and no playable `audioUrl` is provided, delivery shows an explicit error message (configurable via `uiText.audioResourceUnavailable`).
 - **Prompt-off accessibility:** when `prompt` is empty, delivery uses `choiceGroupLabel` (or fallback UI text) as the radiogroup accessible name.
 - **Print parity:** print view mirrors prompt/template/choice presentation with the same blank-token contract.
+- **Delivery renders no transcript:** it is an accessibility-catalog alternate, so on `pie-section-player` the assessment toolkit resolves the `transcript` card against the learner's personal needs profile and renders it in a labelled region above this element (PIE-902) — the same path signing takes. `model.audioTranscript` stays on the model for the print view, which has no toolkit, and as the source the Learnosity import writes the card from. A host that wants a transcript delivers the toolkit; there is no element-specific CSS class to apply.
 
 ## Theming hooks (`pie-*` classes)
 

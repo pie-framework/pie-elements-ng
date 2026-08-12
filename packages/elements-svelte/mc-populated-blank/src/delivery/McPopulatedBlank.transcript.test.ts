@@ -1,3 +1,17 @@
+/**
+ * Delivery renders no transcript.
+ *
+ * The transcript is an accessibility-catalog alternate: on `pie-section-player`
+ * the assessment toolkit resolves the card against the learner's profile and
+ * renders it in a labelled region above this element (PIE-902). An element-owned
+ * copy would be a second source of the same text, would need the host to reveal
+ * it through an element-specific CSS class, and would have to be reimplemented by
+ * every element that carries audio.
+ *
+ * `model.audioTranscript` therefore stays on the model — the print view has no
+ * toolkit and renders it, and the Learnosity import writes the card from it — but
+ * nothing in delivery reads it.
+ */
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount, unmount, flushSync } from 'svelte';
 import McPopulatedBlank from './McPopulatedBlank.svelte';
@@ -24,7 +38,6 @@ const BASE_MODEL = {
   choiceLayout: 'horizontal',
   autoplayAudioEnabled: false,
   completeAudioEnabled: false,
-  showVisibleTranscript: false,
   mode: 'gather',
 };
 
@@ -47,108 +60,42 @@ afterEach(() => {
   }
 });
 
-describe('McPopulatedBlank — transcript rendering', () => {
-  it('renders transcript in the DOM when audioTranscript is set', () => {
+describe('McPopulatedBlank — transcript is not delivered by the element', () => {
+  it('renders no transcript node even when the model carries the text', () => {
     const { target, component } = mountComponent();
-    mounts.push({ target, component });
-    flushSync();
-    expect(target.querySelector('.pie-audio-transcript')).not.toBeNull();
-  });
-
-  it('hides transcript with sr-only when showVisibleTranscript is false', () => {
-    const { target, component } = mountComponent({ showVisibleTranscript: false });
-    mounts.push({ target, component });
-    flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.classList.contains('sr-only')).toBe(true);
-  });
-
-  it('shows transcript without sr-only when ancestor has rli-with-audio-transcript class', async () => {
-    const wrapper = document.createElement('div');
-    document.body.appendChild(wrapper);
-    const target = document.createElement('div');
-    wrapper.appendChild(target);
-    const component = mount(McPopulatedBlank as any, {
-      target,
-      props: { model: { ...BASE_MODEL }, session: {} },
-    });
-    mounts.push({ target, component });
-    flushSync();
-
-    wrapper.classList.add('rli-with-audio-transcript');
-    await new Promise((r) => setTimeout(r, 0));
-    flushSync();
-
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.classList.contains('sr-only')).toBe(false);
-    wrapper.remove();
-  });
-
-  it('transcript text has no label prefix', async () => {
-    const wrapper = document.createElement('div');
-    document.body.appendChild(wrapper);
-    const target = document.createElement('div');
-    wrapper.appendChild(target);
-    const component = mount(McPopulatedBlank as any, {
-      target,
-      props: { model: { ...BASE_MODEL }, session: {} },
-    });
-    mounts.push({ target, component });
-    flushSync();
-
-    wrapper.classList.add('rli-with-audio-transcript');
-    await new Promise((r) => setTimeout(r, 0));
-    flushSync();
-
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.textContent?.trim()).not.toMatch(/^Transcript:/i);
-    wrapper.remove();
-  });
-
-  it('transcript contains the audioTranscript text', () => {
-    const { target, component } = mountComponent();
-    mounts.push({ target, component });
-    flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.textContent).toContain(BASE_MODEL.audioTranscript);
-  });
-
-  it('omits transcript element when audioTranscript is empty', () => {
-    const { target, component } = mountComponent({ audioTranscript: '' });
     mounts.push({ target, component });
     flushSync();
     expect(target.querySelector('.pie-audio-transcript')).toBeNull();
+    expect(target.textContent).not.toContain(BASE_MODEL.audioTranscript);
   });
 
-  it('transcript renders before the first choice tile', () => {
+  it('describes its content by the prompt alone, with no transcript reference', () => {
+    const { target, component } = mountComponent({ prompt: '<p>Pick one</p>' });
+    mounts.push({ target, component });
+    flushSync();
+    const describedBy = Array.from(target.querySelectorAll('[aria-describedby]')).flatMap((el) =>
+      (el.getAttribute('aria-describedby') || '').split(/\s+/)
+    );
+    expect(describedBy.length).toBeGreaterThan(0);
+    for (const id of describedBy) {
+      expect(id).not.toContain('transcript');
+    }
+  });
+
+  it('leaves the audio control undescribed, so nothing points at a node it does not own', () => {
+    const { target, component } = mountComponent({ useFeatureButtonAudio: false });
+    mounts.push({ target, component });
+    flushSync();
+    const audio = target.querySelector('audio');
+    expect(audio).not.toBeNull();
+    expect(audio?.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('renders the rest of the item unchanged when a transcript is present', () => {
     const { target, component } = mountComponent();
     mounts.push({ target, component });
     flushSync();
-    const all = Array.from(target.querySelectorAll('.pie-audio-transcript, .pie-choice'));
-    expect(all[0].classList.contains('pie-audio-transcript')).toBe(true);
-  });
-
-  it('shows transcript when ancestor gains rli-with-audio-transcript class', async () => {
-    const wrapper = document.createElement('div');
-    document.body.appendChild(wrapper);
-    const target = document.createElement('div');
-    wrapper.appendChild(target);
-    const component = mount(McPopulatedBlank as any, {
-      target,
-      props: { model: { ...BASE_MODEL, showVisibleTranscript: false }, session: {} },
-    });
-    mounts.push({ target, component });
-    flushSync();
-
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.classList.contains('sr-only')).toBe(true);
-
-    wrapper.classList.add('rli-with-audio-transcript');
-    // Allow MutationObserver microtask to fire
-    await new Promise((r) => setTimeout(r, 0));
-    flushSync();
-
-    expect(transcript?.classList.contains('sr-only')).toBe(false);
-    wrapper.remove();
+    expect(target.querySelector('.pie-audio-container')).not.toBeNull();
+    expect(target.querySelectorAll('.pie-choice').length).toBe(3);
   });
 });

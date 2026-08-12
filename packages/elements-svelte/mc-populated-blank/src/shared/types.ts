@@ -56,8 +56,16 @@ export interface McpbQuestion {
   autoplayAudioEnabled?: boolean;
   completeAudioEnabled?: boolean;
   audioUrl?: string;
+  /**
+   * Transcript text for the audio prompt.
+   *
+   * Not rendered by delivery: on `pie-section-player` the toolkit renders it from
+   * the item's accessibility catalog, gated by the learner's profile (PIE-902).
+   * It stays on the model for the print view, which has no toolkit and renders it
+   * unconditionally until print resolves catalogs itself (PIE-904), and as the
+   * source the Learnosity import writes the card from.
+   */
   audioTranscript?: string;
-  showVisibleTranscript?: boolean;
   useFeatureButtonAudio?: boolean;
   locale?: string;
   shuffle?: boolean;

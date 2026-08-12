@@ -38,7 +38,6 @@ const DEFAULT_UI_TEXT = {
   hideCorrectAnswer: 'Hide correct answer',
   clickToEnableAutoplay: 'Click to enable audio autoplay',
   audioResourceUnavailable: 'Audio is enabled but no playable audio URL is configured.',
-  transcriptLabel: 'Transcript',
 } as const;
 
 let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
@@ -46,7 +45,6 @@ let localChoiceId = $state('');
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
 let rootEl = $state<HTMLDivElement | null>(null);
-let ancestorHasTranscriptClass = $state(false);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
 // ---------------------------------------------------------------------------
@@ -87,7 +85,6 @@ const isBlankOnlyTemplate = $derived(layoutProfileFlags.isBlankOnlyTemplate);
 const isHorizontalChoices = $derived(layoutProfileFlags.isHorizontalChoices);
 const hasInlineSentenceAudioLayout = $derived(layoutProfileFlags.hasInlineSentenceAudioLayout);
 const useFeatureButtonAudio = $derived(layoutProfileFlags.useFeatureButtonAudio);
-const showVisibleTranscript = $derived(ancestorHasTranscriptClass);
 const correctAnswerStyleVars = $derived.by(() =>
   [
     `--pie-correct-answer-toggle-label-color:${color.text()}`,
@@ -155,7 +152,6 @@ const uiText = $derived.by(() => ({
   ...(model?.uiText || {}),
 }));
 const promptId = $derived(`${instanceId}-prompt`);
-const transcriptId = $derived(`${instanceId}-transcript`);
 const legendId = $derived(`${instanceId}-choices-legend`);
 const resultId = $derived(`${instanceId}-result`);
 const legendText = $derived(
@@ -172,12 +168,11 @@ const choicesGroupAriaLabel = $derived.by(() => {
   if (explicit) return explicit;
   return legendText;
 });
-const templateDescribedBy = $derived.by(() => {
-  const ids: string[] = [];
-  if (model?.prompt) ids.push(promptId);
-  if (model?.hasAudio && model?.audioTranscript) ids.push(transcriptId);
-  return ids.length ? ids.join(' ') : undefined;
-});
+// The transcript is not among these: it is rendered by the player from the item's
+// accessibility catalog (PIE-902), so this element neither owns the node nor has
+// an id to point at. It is placed immediately before this content in reading
+// order instead, as a labelled region.
+const templateDescribedBy = $derived.by(() => (model?.prompt ? promptId : undefined));
 
 // ---------------------------------------------------------------------------
 // Misc — locale, audio error, template parsing, variant CSS, style strings
@@ -319,25 +314,6 @@ $effect(() => {
 $effect(() => {
   ensureVariantCssInjected(variantCssConfig);
 });
-
-$effect(() => {
-  const el = rootEl;
-  if (!el) return;
-
-  const check = () => {
-    ancestorHasTranscriptClass = !!el.closest('.rli-with-audio-transcript');
-  };
-  check();
-
-  const observer = new MutationObserver(check);
-  // Walk up and observe each ancestor for class changes
-  let node: Element | null = el.parentElement;
-  while (node) {
-    observer.observe(node, { attributes: true, attributeFilter: ['class'] });
-    node = node.parentElement;
-  }
-  return () => observer.disconnect();
-});
 </script>
 
 <div
@@ -348,15 +324,6 @@ $effect(() => {
 >
   {#if model?.prompt}
     <div class="mb-4 prose pie-prompt" id={promptId}>{@html model.prompt}</div>
-  {/if}
-
-  {#if model?.audioTranscript}
-    <p
-      class={`text-sm mb-3 text-gray-700 text-center pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
-      id={transcriptId}
-    >
-      {model.audioTranscript}
-    </p>
   {/if}
 
   {#if shouldShowCorrectAnswerToggle}
@@ -432,9 +399,6 @@ $effect(() => {
     audioUrl={model?.audioUrl}
     {useFeatureButtonAudio}
     autoplayEnabled={!!model?.autoplayAudioEnabled}
-    audioTranscript={model?.audioTranscript}
-    {showVisibleTranscript}
-    {transcriptId}
     {featureAudioSkin}
     {uiText}
     locale={model?.locale}
@@ -603,17 +567,12 @@ $effect(() => {
     display: grid;
     grid-template-columns: minmax(var(--mpb-stimulus-min-column, 210px), 1fr) auto;
     grid-template-areas:
-      'transcript transcript'
       'sentence audio'
       '. template'
       'choices choices';
     column-gap: var(--mpb-stimulus-grid-column-gap, 2rem);
     row-gap: var(--mpb-stimulus-grid-row-gap, 0.7rem);
     align-items: start;
-  }
-
-  .layout-stimulus_image_blank .pie-audio-transcript {
-    grid-area: transcript;
   }
 
   .layout-stimulus_image_blank :global(.pie-audio-container) {
@@ -642,16 +601,12 @@ $effect(() => {
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-areas:
-      'transcript audio'
+      'audio      audio'
       'template   template'
       'choices    choices';
     column-gap: var(--mpb-token-grid-column-gap, 1.5rem);
     row-gap: var(--mpb-token-grid-row-gap, 0.8rem);
     align-items: start;
-  }
-
-  .layout-token_sequence .pie-audio-transcript {
-    grid-area: transcript;
   }
 
   .layout-token_sequence :global(.pie-audio-container) {
@@ -686,16 +641,11 @@ $effect(() => {
     display: grid;
     grid-template-columns: minmax(var(--mpb-text-min-column, 260px), 1fr) auto;
     grid-template-areas:
-      'transcript transcript'
       'template audio'
       'choices choices';
     column-gap: var(--mpb-inline-grid-column-gap, 1.5rem);
     row-gap: var(--mpb-inline-grid-row-gap, 0.65rem);
     align-items: start;
-  }
-
-  .layout-inline_sentence.has-inline-audio .pie-audio-transcript {
-    grid-area: transcript;
   }
 
   .layout-inline_sentence.has-inline-audio :global(.pie-audio-container) {
