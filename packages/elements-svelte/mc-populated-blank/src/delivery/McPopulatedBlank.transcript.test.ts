@@ -1,3 +1,12 @@
+/**
+ * Transcript DOM contract for mc-populated-blank.
+ *
+ * The transcript is always rendered and always described-by-referenced; whether
+ * it is *visible* is decided by CSS from an ancestor `.rli-with-audio-transcript`
+ * and cannot be asserted here — component styles are not applied under
+ * happy-dom. Visibility is covered by the parity e2e specs
+ * (`apps/learnosity-parity-demo/test/e2e/mc-populated-blank-transcript-parity.spec.ts`).
+ */
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount, unmount, flushSync } from 'svelte';
 import McPopulatedBlank from './McPopulatedBlank.svelte';
@@ -24,7 +33,6 @@ const BASE_MODEL = {
   choiceLayout: 'horizontal',
   autoplayAudioEnabled: false,
   completeAudioEnabled: false,
-  showVisibleTranscript: false,
   mode: 'gather',
 };
 
@@ -55,54 +63,12 @@ describe('McPopulatedBlank — transcript rendering', () => {
     expect(target.querySelector('.pie-audio-transcript')).not.toBeNull();
   });
 
-  it('hides transcript with sr-only when showVisibleTranscript is false', () => {
-    const { target, component } = mountComponent({ showVisibleTranscript: false });
+  it('transcript text has no label prefix', () => {
+    const { target, component } = mountComponent();
     mounts.push({ target, component });
     flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.classList.contains('sr-only')).toBe(true);
-  });
-
-  it('shows transcript without sr-only when ancestor has rli-with-audio-transcript class', async () => {
-    const wrapper = document.createElement('div');
-    document.body.appendChild(wrapper);
-    const target = document.createElement('div');
-    wrapper.appendChild(target);
-    const component = mount(McPopulatedBlank as any, {
-      target,
-      props: { model: { ...BASE_MODEL }, session: {} },
-    });
-    mounts.push({ target, component });
-    flushSync();
-
-    wrapper.classList.add('rli-with-audio-transcript');
-    await new Promise((r) => setTimeout(r, 0));
-    flushSync();
-
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.classList.contains('sr-only')).toBe(false);
-    wrapper.remove();
-  });
-
-  it('transcript text has no label prefix', async () => {
-    const wrapper = document.createElement('div');
-    document.body.appendChild(wrapper);
-    const target = document.createElement('div');
-    wrapper.appendChild(target);
-    const component = mount(McPopulatedBlank as any, {
-      target,
-      props: { model: { ...BASE_MODEL }, session: {} },
-    });
-    mounts.push({ target, component });
-    flushSync();
-
-    wrapper.classList.add('rli-with-audio-transcript');
-    await new Promise((r) => setTimeout(r, 0));
-    flushSync();
-
     const transcript = target.querySelector('.pie-audio-transcript');
     expect(transcript?.textContent?.trim()).not.toMatch(/^Transcript:/i);
-    wrapper.remove();
   });
 
   it('transcript contains the audioTranscript text', () => {
@@ -128,26 +94,40 @@ describe('McPopulatedBlank — transcript rendering', () => {
     expect(all[0].classList.contains('pie-audio-transcript')).toBe(true);
   });
 
-  it('shows transcript when ancestor gains rli-with-audio-transcript class', async () => {
+  it('transcript id is referenced by aria-describedby so it is announced while hidden', () => {
+    const { target, component } = mountComponent();
+    mounts.push({ target, component });
+    flushSync();
+    const transcriptId = target.querySelector('.pie-audio-transcript')?.id;
+    expect(transcriptId).toBeTruthy();
+    const describedBy = Array.from(target.querySelectorAll('[aria-describedby]')).flatMap((el) =>
+      (el.getAttribute('aria-describedby') || '').split(/\s+/)
+    );
+    expect(describedBy).toContain(transcriptId);
+  });
+
+  it('renders the same markup with and without the reveal class on an ancestor', async () => {
     const wrapper = document.createElement('div');
     document.body.appendChild(wrapper);
     const target = document.createElement('div');
     wrapper.appendChild(target);
     const component = mount(McPopulatedBlank as any, {
       target,
-      props: { model: { ...BASE_MODEL, showVisibleTranscript: false }, session: {} },
+      props: { model: { ...BASE_MODEL }, session: {} },
     });
     mounts.push({ target, component });
     flushSync();
 
     const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.classList.contains('sr-only')).toBe(true);
+    const before = transcript?.className;
 
     wrapper.classList.add('rli-with-audio-transcript');
-    // Allow MutationObserver microtask to fire
     await new Promise((r) => setTimeout(r, 0));
     flushSync();
 
+    // No class toggling, no ancestor observer: the reveal is a CSS rule keyed on
+    // the ancestor, so the element's own attributes must not change.
+    expect(transcript?.className).toBe(before);
     expect(transcript?.classList.contains('sr-only')).toBe(false);
     wrapper.remove();
   });

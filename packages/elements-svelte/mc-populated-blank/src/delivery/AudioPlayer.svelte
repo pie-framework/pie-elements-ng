@@ -30,7 +30,6 @@ let {
   useFeatureButtonAudio = false,
   autoplayEnabled = false,
   audioTranscript,
-  showVisibleTranscript,
   transcriptId,
   featureAudioSkin,
   uiText,
@@ -43,7 +42,6 @@ let {
   useFeatureButtonAudio?: boolean;
   autoplayEnabled?: boolean;
   audioTranscript?: string;
-  showVisibleTranscript: boolean;
   transcriptId: string;
   featureAudioSkin: AudioButtonSkin;
   uiText: UiText;

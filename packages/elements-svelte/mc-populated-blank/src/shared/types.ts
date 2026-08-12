@@ -57,7 +57,6 @@ export interface McpbQuestion {
   completeAudioEnabled?: boolean;
   audioUrl?: string;
   audioTranscript?: string;
-  showVisibleTranscript?: boolean;
   useFeatureButtonAudio?: boolean;
   locale?: string;
   shuffle?: boolean;

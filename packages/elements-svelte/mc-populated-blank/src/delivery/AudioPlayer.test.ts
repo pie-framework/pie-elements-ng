@@ -8,7 +8,6 @@ const BASE_PROPS = {
   useFeatureButtonAudio: false,
   autoplayEnabled: false,
   audioTranscript: 'The word is look.',
-  showVisibleTranscript: false,
   transcriptId: 'test-transcript',
   featureAudioSkin: { silentUrl: '', playingUrl: '' },
   uiText: {

@@ -5,12 +5,17 @@
  * The reference renders the transcript text when .rli-with-audio-transcript is
  * present on an ancestor element — not via a model flag.
  *
- * Transcript visibility is driven entirely by the player-level ancestor class.
- * There is no model-flag path — showVisibleTranscript on the model is ignored.
+ * Transcript visibility is driven entirely by the player-level ancestor class,
+ * as a CSS descendant rule. There is no model-flag path.
  */
 
 import { expect, test } from '@playwright/test';
-import { deliveryContainer, waitForMathRendering } from './test-helpers';
+import {
+  deliveryContainer,
+  expectTranscriptHidden,
+  expectTranscriptRevealed,
+  waitForMathRendering,
+} from './test-helpers';
 
 const DEMO_ID = 'variant-sel-r1-plusggg';
 const TRANSCRIPT_TEXT = 'The word is look. Pick the correct spelling of the word look.';
@@ -28,14 +33,13 @@ async function openRoute(page: Parameters<typeof test>[0]['page'], demo = DEMO_I
 // rli-with-audio-transcript ancestor class trigger (the bug case)
 // ---------------------------------------------------------------------------
 
-test('plusggg: transcript is sr-only without rli-with-audio-transcript ancestor', async ({
+test('plusggg: transcript is hidden without rli-with-audio-transcript ancestor', async ({
   page,
 }) => {
   await openRoute(page);
   const root = deliveryContainer(page);
   const transcript = root.locator('.pie-audio-transcript');
-  await expect(transcript).toBeAttached();
-  await expect(transcript).toHaveClass(/sr-only/);
+  await expectTranscriptHidden(transcript);
 });
 
 test('plusggg: adding rli-with-audio-transcript to ancestor makes transcript visible', async ({
@@ -46,15 +50,14 @@ test('plusggg: adding rli-with-audio-transcript to ancestor makes transcript vis
   const transcript = root.locator('.pie-audio-transcript');
 
   // Baseline: hidden
-  await expect(transcript).toHaveClass(/sr-only/);
+  await expectTranscriptHidden(transcript);
 
   // Add the class to the .demo-element-player ancestor (same as the toolbar checkbox does)
   await page.evaluate(() => {
     document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
   });
 
-  await expect(transcript).not.toHaveClass(/sr-only/);
-  await expect(transcript).toBeVisible();
+  await expectTranscriptRevealed(transcript);
 });
 
 test('plusggg: removing rli-with-audio-transcript from ancestor hides transcript again', async ({
@@ -67,12 +70,12 @@ test('plusggg: removing rli-with-audio-transcript from ancestor hides transcript
   await page.evaluate(() => {
     document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
   });
-  await expect(transcript).not.toHaveClass(/sr-only/);
+  await expectTranscriptRevealed(transcript);
 
   await page.evaluate(() => {
     document.querySelector('.demo-element-player')?.classList.remove('rli-with-audio-transcript');
   });
-  await expect(transcript).toHaveClass(/sr-only/);
+  await expectTranscriptHidden(transcript);
 });
 
 test('plusggg: transcript contains the correct text when made visible via ancestor class', async ({
@@ -104,8 +107,7 @@ test('plusggg: transcript is visible when rli-with-audio-transcript is on an anc
   });
 
   const transcript = root.locator('.pie-audio-transcript');
-  await expect(transcript).toBeVisible();
-  await expect(transcript).not.toHaveClass(/sr-only/);
+  await expectTranscriptRevealed(transcript);
 });
 
 test('plusggg: transcript text is center-aligned when visible', async ({ page }) => {
@@ -163,13 +165,12 @@ const AUDIO_TRANSCRIPT_VARIANTS: Array<{ demoId: string; label: string }> = [
 ];
 
 for (const { demoId, label } of AUDIO_TRANSCRIPT_VARIANTS) {
-  test(`${label}: transcript is sr-only by default (no rli-with-audio-transcript ancestor)`, async ({
+  test(`${label}: transcript is hidden by default (no rli-with-audio-transcript ancestor)`, async ({
     page,
   }) => {
     await openRoute(page, demoId);
     const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
-    await expect(transcript).toBeAttached();
-    await expect(transcript).toHaveClass(/sr-only/);
+    await expectTranscriptHidden(transcript);
   });
 
   test(`${label}: transcript becomes visible when rli-with-audio-transcript is added to an ancestor`, async ({
@@ -178,17 +179,16 @@ for (const { demoId, label } of AUDIO_TRANSCRIPT_VARIANTS) {
     await openRoute(page, demoId);
     const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
 
-    await expect(transcript).toHaveClass(/sr-only/);
+    await expectTranscriptHidden(transcript);
 
     await page.evaluate(() => {
       document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
     });
 
-    await expect(transcript).not.toHaveClass(/sr-only/);
-    await expect(transcript).toBeVisible();
+    await expectTranscriptRevealed(transcript);
   });
 
-  test(`${label}: transcript returns to sr-only when rli-with-audio-transcript is removed`, async ({
+  test(`${label}: transcript is hidden again when rli-with-audio-transcript is removed`, async ({
     page,
   }) => {
     await openRoute(page, demoId);
@@ -197,12 +197,12 @@ for (const { demoId, label } of AUDIO_TRANSCRIPT_VARIANTS) {
     await page.evaluate(() => {
       document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
     });
-    await expect(transcript).not.toHaveClass(/sr-only/);
+    await expectTranscriptRevealed(transcript);
 
     await page.evaluate(() => {
       document.querySelector('.demo-element-player')?.classList.remove('rli-with-audio-transcript');
     });
-    await expect(transcript).toHaveClass(/sr-only/);
+    await expectTranscriptHidden(transcript);
   });
 
   test(`${label}: transcript top is at or above all other question content when visible`, async ({

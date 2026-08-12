@@ -184,7 +184,7 @@ test.describe('sr-vic live parity — visual', () => {
     // PIE-only assertion — use the deliver route to avoid waiting on LSY rendering.
     await openSrVicRoute(page);
     const transcript = page.locator('[data-testid="role-student"] .pie-audio-transcript');
-    // sr-vic uses showVisibleTranscript: false — transcript should be sr-only or absent
+    // sr-vic has no audio, so the transcript is absent; if present it stays hidden
     const isVisible = await transcript.isVisible().catch(() => false);
     if (isVisible) {
       const clip = await transcript.evaluate((el) => getComputedStyle(el).clip);

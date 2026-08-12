@@ -46,7 +46,6 @@ let localChoiceId = $state('');
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
 let rootEl = $state<HTMLDivElement | null>(null);
-let ancestorHasTranscriptClass = $state(false);
 const instanceId = `mc-populated-blank-${Math.random().toString(36).slice(2, 10)}`;
 
 // ---------------------------------------------------------------------------
@@ -87,7 +86,6 @@ const isBlankOnlyTemplate = $derived(layoutProfileFlags.isBlankOnlyTemplate);
 const isHorizontalChoices = $derived(layoutProfileFlags.isHorizontalChoices);
 const hasInlineSentenceAudioLayout = $derived(layoutProfileFlags.hasInlineSentenceAudioLayout);
 const useFeatureButtonAudio = $derived(layoutProfileFlags.useFeatureButtonAudio);
-const showVisibleTranscript = $derived(ancestorHasTranscriptClass);
 const correctAnswerStyleVars = $derived.by(() =>
   [
     `--pie-correct-answer-toggle-label-color:${color.text()}`,
@@ -319,25 +317,6 @@ $effect(() => {
 $effect(() => {
   ensureVariantCssInjected(variantCssConfig);
 });
-
-$effect(() => {
-  const el = rootEl;
-  if (!el) return;
-
-  const check = () => {
-    ancestorHasTranscriptClass = !!el.closest('.rli-with-audio-transcript');
-  };
-  check();
-
-  const observer = new MutationObserver(check);
-  // Walk up and observe each ancestor for class changes
-  let node: Element | null = el.parentElement;
-  while (node) {
-    observer.observe(node, { attributes: true, attributeFilter: ['class'] });
-    node = node.parentElement;
-  }
-  return () => observer.disconnect();
-});
 </script>
 
 <div
@@ -351,10 +330,7 @@ $effect(() => {
   {/if}
 
   {#if model?.audioTranscript}
-    <p
-      class={`text-sm mb-3 text-gray-700 text-center pie-audio-transcript ${showVisibleTranscript ? '' : 'sr-only'}`}
-      id={transcriptId}
-    >
+    <p class="text-sm text-gray-700 text-center pie-audio-transcript" id={transcriptId}>
       {model.audioTranscript}
     </p>
   {/if}
@@ -433,7 +409,6 @@ $effect(() => {
     {useFeatureButtonAudio}
     autoplayEnabled={!!model?.autoplayAudioEnabled}
     audioTranscript={model?.audioTranscript}
-    {showVisibleTranscript}
     {transcriptId}
     {featureAudioSkin}
     {uiText}
@@ -505,6 +480,35 @@ $effect(() => {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+
+  /* The transcript is always in the DOM: it is the `aria-describedby` target of
+     the audio control, so it has to stay reachable to screen readers whether or
+     not it is on screen. Visible presentation is opt-in from an ancestor
+     carrying `.rli-with-audio-transcript` — Learnosity's contract — expressed as
+     a descendant rule so that a class applied at any point after mount takes
+     effect. A JS `closest()` check cannot: the ancestors it would observe are
+     enumerated once, and an ancestor inserted later is never watched. */
+  .pie-audio-transcript {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  :global(.rli-with-audio-transcript) .pie-audio-transcript {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 var(--mpb-transcript-margin-bottom, 0.75rem);
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 
   .mc-populated-blank-root :global(.prose) {

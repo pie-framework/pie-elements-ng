@@ -56,7 +56,6 @@ Notes:
 - **`correctChoiceId`**
 - **`hasAudio`**, **`audioUrl`**, **`audioTranscript`** (`audioUrl` required when `hasAudio=true`)
 - **`autoplayAudioEnabled`**, **`completeAudioEnabled`** (optional integration flags)
-- **`showVisibleTranscript`** (optional): profile-driven default; override when transcript should always show/hide
 - **`layoutLimits`** (optional): numeric visual constraints; defaults are based on current CQT parity behavior and can be overridden per item
 - **`layoutProfilePresets`** (optional): named preset map by `layoutProfile`; use profile as a template and override with `layoutLimits`
 - **`audioButtonSkin`** / **`audioButtonSkinsByLocale`** (optional): override listen-button skin URLs
@@ -116,6 +115,7 @@ Notes:
 - **Audio error behavior:** no TTS fallback is used; when `hasAudio=true` and no playable `audioUrl` is provided, delivery shows an explicit error message (configurable via `uiText.audioResourceUnavailable`).
 - **Prompt-off accessibility:** when `prompt` is empty, delivery uses `choiceGroupLabel` (or fallback UI text) as the radiogroup accessible name.
 - **Print parity:** print view mirrors prompt/template/choice presentation with the same blank-token contract.
+- **Transcript visibility is the host's call:** `audioTranscript` is always rendered and always the `aria-describedby` target of the audio control, visually hidden until an ancestor carries `.rli-with-audio-transcript` — Learnosity's contract, honoured as a CSS descendant rule, so the class may be applied at any time. On `pie-section-player` the player applies it from the transcript accessibility-catalog card and the learner's personal needs profile (PIE-902); other hosts apply it themselves.
 
 ## Theming hooks (`pie-*` classes)
 

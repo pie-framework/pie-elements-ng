@@ -13,7 +13,12 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { deliveryContainer, waitForMathRendering } from './test-helpers';
+import {
+  deliveryContainer,
+  expectTranscriptHidden,
+  expectTranscriptRevealed,
+  waitForMathRendering,
+} from './test-helpers';
 
 const DEMO_ID = 'variant-sel-vic';
 
@@ -186,15 +191,13 @@ test('sel-vic: hovered unselected choice row background is #f2f2f2', async ({ pa
 });
 
 // ---------------------------------------------------------------------------
-// 8. Audio transcript is sr-only by default; revealed by rli-with-audio-transcript
+// 8. Audio transcript is hidden by default; revealed by rli-with-audio-transcript
 //    sel_vic/main.scss: .rli-with-audio-transcript .rli-vic-audio-transcript { display: flex }
 //    The transcript is hidden until an ancestor carries .rli-with-audio-transcript.
 // ---------------------------------------------------------------------------
-test('sel-vic: audio transcript is sr-only by default', async ({ page }) => {
+test('sel-vic: audio transcript is hidden by default', async ({ page }) => {
   await openSelVicRoute(page);
-  const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
-  await expect(transcript).toBeAttached();
-  await expect(transcript).toHaveClass(/sr-only/);
+  await expectTranscriptHidden(deliveryContainer(page).locator('.pie-audio-transcript'));
 });
 
 test('sel-vic: audio transcript becomes visible when rli-with-audio-transcript is added to an ancestor', async ({
@@ -202,14 +205,13 @@ test('sel-vic: audio transcript becomes visible when rli-with-audio-transcript i
 }) => {
   await openSelVicRoute(page);
   const transcript = deliveryContainer(page).locator('.pie-audio-transcript');
-  await expect(transcript).toHaveClass(/sr-only/);
+  await expectTranscriptHidden(transcript);
 
   await page.evaluate(() => {
     document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
   });
 
-  await expect(transcript).not.toHaveClass(/sr-only/);
-  await expect(transcript).toBeVisible();
+  await expectTranscriptRevealed(transcript);
 });
 
 // ---------------------------------------------------------------------------
@@ -293,14 +295,14 @@ test.describe('sel-vic live parity — visual', () => {
     page,
   }) => {
     await openSelVicParityRoute(page);
-    await expect(page.locator('#pie-container .pie-audio-transcript')).toHaveClass(/sr-only/);
+    await expectTranscriptHidden(page.locator('#pie-container .pie-audio-transcript'));
 
     await page.evaluate(() => {
       document.querySelector('#pie-container')?.classList.add('rli-with-audio-transcript');
       document.querySelector('#learnosity-container')?.classList.add('rli-with-audio-transcript');
     });
 
-    await expect(page.locator('#pie-container .pie-audio-transcript')).not.toHaveClass(/sr-only/);
+    await expectTranscriptRevealed(page.locator('#pie-container .pie-audio-transcript'));
     const lrnTranscript = page
       .locator(
         '#learnosity-container [class*="audio-transcript"], #learnosity-container [class*="rli-vic-audio-transcript"]'

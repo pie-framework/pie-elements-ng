@@ -501,3 +501,25 @@ export async function switchToEvaluate(page: Page) {
   await switchRole(page, 'instructor');
   await switchMode(page, 'evaluate');
 }
+
+/**
+ * Assert that an audio transcript is present but not on screen.
+ *
+ * The transcript stays in the DOM while hidden — it is the `aria-describedby`
+ * target of the audio control — so it is hidden with the visually-hidden clip
+ * technique rather than `display: none`, and Playwright counts a 1x1 clipped
+ * element as visible. Reveal is a CSS rule keyed on an ancestor
+ * `.rli-with-audio-transcript`, not a class swap on the element, so the state
+ * has to be read off computed style.
+ */
+export async function expectTranscriptHidden(transcript: Locator) {
+  await expect(transcript).toBeAttached();
+  await expect(transcript).toHaveCSS('position', 'absolute');
+  await expect(transcript).toHaveCSS('clip', 'rect(0px, 0px, 0px, 0px)');
+}
+
+/** Assert that an audio transcript is laid out on screen. */
+export async function expectTranscriptRevealed(transcript: Locator) {
+  await expect(transcript).toBeVisible();
+  await expect(transcript).toHaveCSS('position', 'static');
+}

@@ -47,7 +47,6 @@ export default {
     completeAudioEnabled: false,
     audioUrl: '',
     audioTranscript: '',
-    showVisibleTranscript: false,
     locale: '',
     teacherInstructions: '',
     teacherInstructionsEnabled: false,
