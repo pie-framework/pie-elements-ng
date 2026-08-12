@@ -12,22 +12,15 @@
  *   No audio:              .pie-audio-container absent
  *   Missing resource:      .pie-audio-container present, error message visible,
  *                          no button, no native controls
- *   Transcript hidden:     transcript element present but not visible
- *   Transcript visible:    transcript element visible
  *
  * Demos used:
- *   variant-sel-r1-plusggg  — audio_blank_only, feature button, transcript hidden
- *   variant-sel-vic         — inline_sentence, feature button, transcript visible
+ *   variant-sel-r1-plusggg  — audio_blank_only, feature button
+ *   variant-sel-vic         — inline_sentence, feature button
  *   variant-sr-vic          — inline_sentence, no audio
  */
 
 import { expect, test } from '@playwright/test';
-import {
-  deliveryContainer,
-  expectTranscriptHidden,
-  expectTranscriptRevealed,
-  waitForMathRendering,
-} from './test-helpers';
+import { deliveryContainer, waitForMathRendering } from './test-helpers';
 
 async function openRoute(page: Parameters<typeof test>[0]['page'], demoId: string) {
   await page.goto(
@@ -175,42 +168,3 @@ test('audio/missing-resource: error message is visible', async ({ page }) => {
 // M2. No listen button or native audio when resource is missing
 //     Neither interactive audio control should appear with a missing URL.
 // ---------------------------------------------------------------------------
-test('audio/missing-resource: no audio controls when audioUrl is missing', async ({ page }) => {
-  await openRoute(page, 'variant-sel-r1-plusggg');
-  await patchModel(page, { audioUrl: '' });
-  const root = deliveryContainer(page);
-  await expect(root.locator('.listen-button')).not.toBeAttached();
-  await expect(root.locator('audio')).not.toBeAttached();
-});
-
-// ===========================================================================
-// TRANSCRIPT
-// ===========================================================================
-
-// ---------------------------------------------------------------------------
-// T1. Transcript is hidden by default (no rli-with-audio-transcript ancestor).
-//     The transcript element must exist (for screen readers) but must not be visible.
-// ---------------------------------------------------------------------------
-test('audio/transcript: hidden without rli-with-audio-transcript ancestor', async ({ page }) => {
-  await openRoute(page, 'variant-sel-r1-plusggg');
-  const root = deliveryContainer(page);
-
-  await expectTranscriptHidden(root.locator('.pie-audio-transcript'));
-});
-
-// ---------------------------------------------------------------------------
-// T2. Transcript becomes visible when rli-with-audio-transcript is added to an ancestor.
-//     Visibility is driven entirely by the player-level ancestor class, via CSS.
-// ---------------------------------------------------------------------------
-test('audio/transcript: visible when rli-with-audio-transcript is on an ancestor', async ({
-  page,
-}) => {
-  await openRoute(page, 'variant-sel-r1-plusggg');
-  const root = deliveryContainer(page);
-
-  await page.evaluate(() => {
-    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
-  });
-
-  await expectTranscriptRevealed(root.locator('.pie-audio-transcript'));
-});

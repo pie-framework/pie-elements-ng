@@ -1,11 +1,16 @@
 /**
- * Transcript DOM contract for mc-populated-blank.
+ * Delivery renders no transcript.
  *
- * The transcript is always rendered and always described-by-referenced; whether
- * it is *visible* is decided by CSS from an ancestor `.rli-with-audio-transcript`
- * and cannot be asserted here — component styles are not applied under
- * happy-dom. Visibility is covered by the parity e2e specs
- * (`apps/learnosity-parity-demo/test/e2e/mc-populated-blank-transcript-parity.spec.ts`).
+ * The transcript is an accessibility-catalog alternate: on `pie-section-player`
+ * the assessment toolkit resolves the card against the learner's profile and
+ * renders it in a labelled region above this element (PIE-902). An element-owned
+ * copy would be a second source of the same text, would need the host to reveal
+ * it through an element-specific CSS class, and would have to be reimplemented by
+ * every element that carries audio.
+ *
+ * `model.audioTranscript` therefore stays on the model — the print view has no
+ * toolkit and renders it, and the Learnosity import writes the card from it — but
+ * nothing in delivery reads it.
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount, unmount, flushSync } from 'svelte';
@@ -55,80 +60,42 @@ afterEach(() => {
   }
 });
 
-describe('McPopulatedBlank — transcript rendering', () => {
-  it('renders transcript in the DOM when audioTranscript is set', () => {
+describe('McPopulatedBlank — transcript is not delivered by the element', () => {
+  it('renders no transcript node even when the model carries the text', () => {
     const { target, component } = mountComponent();
-    mounts.push({ target, component });
-    flushSync();
-    expect(target.querySelector('.pie-audio-transcript')).not.toBeNull();
-  });
-
-  it('transcript text has no label prefix', () => {
-    const { target, component } = mountComponent();
-    mounts.push({ target, component });
-    flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.textContent?.trim()).not.toMatch(/^Transcript:/i);
-  });
-
-  it('transcript contains the audioTranscript text', () => {
-    const { target, component } = mountComponent();
-    mounts.push({ target, component });
-    flushSync();
-    const transcript = target.querySelector('.pie-audio-transcript');
-    expect(transcript?.textContent).toContain(BASE_MODEL.audioTranscript);
-  });
-
-  it('omits transcript element when audioTranscript is empty', () => {
-    const { target, component } = mountComponent({ audioTranscript: '' });
     mounts.push({ target, component });
     flushSync();
     expect(target.querySelector('.pie-audio-transcript')).toBeNull();
+    expect(target.textContent).not.toContain(BASE_MODEL.audioTranscript);
   });
 
-  it('transcript renders before the first choice tile', () => {
-    const { target, component } = mountComponent();
+  it('describes its content by the prompt alone, with no transcript reference', () => {
+    const { target, component } = mountComponent({ prompt: '<p>Pick one</p>' });
     mounts.push({ target, component });
     flushSync();
-    const all = Array.from(target.querySelectorAll('.pie-audio-transcript, .pie-choice'));
-    expect(all[0].classList.contains('pie-audio-transcript')).toBe(true);
-  });
-
-  it('transcript id is referenced by aria-describedby so it is announced while hidden', () => {
-    const { target, component } = mountComponent();
-    mounts.push({ target, component });
-    flushSync();
-    const transcriptId = target.querySelector('.pie-audio-transcript')?.id;
-    expect(transcriptId).toBeTruthy();
     const describedBy = Array.from(target.querySelectorAll('[aria-describedby]')).flatMap((el) =>
       (el.getAttribute('aria-describedby') || '').split(/\s+/)
     );
-    expect(describedBy).toContain(transcriptId);
+    expect(describedBy.length).toBeGreaterThan(0);
+    for (const id of describedBy) {
+      expect(id).not.toContain('transcript');
+    }
   });
 
-  it('renders the same markup with and without the reveal class on an ancestor', async () => {
-    const wrapper = document.createElement('div');
-    document.body.appendChild(wrapper);
-    const target = document.createElement('div');
-    wrapper.appendChild(target);
-    const component = mount(McPopulatedBlank as any, {
-      target,
-      props: { model: { ...BASE_MODEL }, session: {} },
-    });
+  it('leaves the audio control undescribed, so nothing points at a node it does not own', () => {
+    const { target, component } = mountComponent({ useFeatureButtonAudio: false });
     mounts.push({ target, component });
     flushSync();
+    const audio = target.querySelector('audio');
+    expect(audio).not.toBeNull();
+    expect(audio?.getAttribute('aria-describedby')).toBeNull();
+  });
 
-    const transcript = target.querySelector('.pie-audio-transcript');
-    const before = transcript?.className;
-
-    wrapper.classList.add('rli-with-audio-transcript');
-    await new Promise((r) => setTimeout(r, 0));
+  it('renders the rest of the item unchanged when a transcript is present', () => {
+    const { target, component } = mountComponent();
+    mounts.push({ target, component });
     flushSync();
-
-    // No class toggling, no ancestor observer: the reveal is a CSS rule keyed on
-    // the ancestor, so the element's own attributes must not change.
-    expect(transcript?.className).toBe(before);
-    expect(transcript?.classList.contains('sr-only')).toBe(false);
-    wrapper.remove();
+    expect(target.querySelector('.pie-audio-container')).not.toBeNull();
+    expect(target.querySelectorAll('.pie-choice').length).toBe(3);
   });
 });

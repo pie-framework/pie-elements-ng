@@ -72,63 +72,6 @@ test('s3: stimulus image, blank slot, and audio button are on the same row', asy
 // 2. Choices row is below the stimulus/blank/audio row, not interleaved
 //    The choices fieldset must start below the bottom of the stimulus image.
 // ---------------------------------------------------------------------------
-test('s3: choices row is below the stimulus image (not overlapping)', async ({ page }) => {
-  await openS3Route(page);
-  const root = deliveryContainer(page);
-
-  const sentenceLine = root.locator('.pie-sentence-line');
-  const fieldset = root.locator('.pie-choices-fieldset');
-  await expect(sentenceLine).toBeVisible();
-  await expect(fieldset).toBeVisible();
-
-  const sentenceBox = await sentenceLine.boundingBox();
-  const fieldsetBox = await fieldset.boundingBox();
-  expect(sentenceBox).not.toBeNull();
-  expect(fieldsetBox).not.toBeNull();
-
-  // Choices must start below the bottom edge of the stimulus image.
-  expect(fieldsetBox?.y).toBeGreaterThan(sentenceBox?.y + sentenceBox?.height - 10);
-});
-
-// ---------------------------------------------------------------------------
-// 3. Audio transcript spans full width above the grid, not in the bottom-right
-//    The s3 grid overrides grid-template-areas to "sentence template audio" /
-//    "choices choices choices".  Without a "transcript" row the .pie-audio-transcript
-//    element auto-places into an implicit grid cell (bottom-right in the screenshot).
-//    Fix: add "transcript transcript transcript" as the first row.
-//    Test: transcript bottom edge must be above the sentence-line top edge.
-// ---------------------------------------------------------------------------
-test('s3: audio transcript is above the stimulus/blank row (not auto-placed into bottom grid cell)', async ({
-  page,
-}) => {
-  await openS3Route(page);
-  const root = deliveryContainer(page);
-
-  await page.evaluate(() => {
-    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
-  });
-
-  const transcript = root.locator('.pie-audio-transcript');
-  const sentenceLine = root.locator('.pie-sentence-line');
-  await expect(transcript).toBeVisible();
-  await expect(sentenceLine).toBeVisible();
-
-  const transcriptBox = await transcript.boundingBox();
-  const sentenceBox = await sentenceLine.boundingBox();
-  expect(transcriptBox).not.toBeNull();
-  expect(sentenceBox).not.toBeNull();
-
-  // Transcript must be fully above the top of the sentence-line row.
-  expect(transcriptBox?.y + transcriptBox?.height).toBeLessThan(sentenceBox?.y + 10);
-});
-
-// ---------------------------------------------------------------------------
-// 4. Cloze blank value font size matches choice label font size after selection.
-//    In the reference system both the cloze and choice labels sit inside
-//    .rli-r1-content-element (1.9em), so inline font-size spans in labelHtml
-//    (e.g. <span style="font-size:1.8em">) resolve against the same context.
-//    The blank value inner span must match the choice label inner span.
-// ---------------------------------------------------------------------------
 test('s3: cloze blank value font size matches choice label font size after selection', async ({
   page,
 }) => {

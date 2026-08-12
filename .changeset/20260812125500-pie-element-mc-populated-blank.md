@@ -2,4 +2,4 @@
   "@pie-element/mc-populated-blank": minor
 ---
 
-reveal the audio transcript from CSS and drop `showVisibleTranscript` PIE-855
+stop rendering the audio transcript in delivery; the toolkit renders it PIE-855

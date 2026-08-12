@@ -115,7 +115,7 @@ Notes:
 - **Audio error behavior:** no TTS fallback is used; when `hasAudio=true` and no playable `audioUrl` is provided, delivery shows an explicit error message (configurable via `uiText.audioResourceUnavailable`).
 - **Prompt-off accessibility:** when `prompt` is empty, delivery uses `choiceGroupLabel` (or fallback UI text) as the radiogroup accessible name.
 - **Print parity:** print view mirrors prompt/template/choice presentation with the same blank-token contract.
-- **Transcript visibility is the host's call:** `audioTranscript` is always rendered and always the `aria-describedby` target of the audio control, visually hidden until an ancestor carries `.rli-with-audio-transcript` — Learnosity's contract, honoured as a CSS descendant rule, so the class may be applied at any time. On `pie-section-player` the player applies it from the transcript accessibility-catalog card and the learner's personal needs profile (PIE-902); other hosts apply it themselves.
+- **Delivery renders no transcript:** it is an accessibility-catalog alternate, so on `pie-section-player` the assessment toolkit resolves the `transcript` card against the learner's personal needs profile and renders it in a labelled region above this element (PIE-902) — the same path signing takes. `model.audioTranscript` stays on the model for the print view, which has no toolkit, and as the source the Learnosity import writes the card from. A host that wants a transcript delivers the toolkit; there is no element-specific CSS class to apply.
 
 ## Theming hooks (`pie-*` classes)
 

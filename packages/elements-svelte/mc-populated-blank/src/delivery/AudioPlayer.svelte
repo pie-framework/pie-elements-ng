@@ -8,7 +8,6 @@ interface AudioButtonSkin {
 
 interface UiText {
   clickToEnableAutoplay: string;
-  transcriptLabel: string;
   audioResourceUnavailable: string;
   listenSilentAlt?: string;
   listenPlayingAlt?: string;
@@ -29,8 +28,6 @@ let {
   audioUrl,
   useFeatureButtonAudio = false,
   autoplayEnabled = false,
-  audioTranscript,
-  transcriptId,
   featureAudioSkin,
   uiText,
   locale = '',
@@ -41,8 +38,6 @@ let {
   audioUrl?: string;
   useFeatureButtonAudio?: boolean;
   autoplayEnabled?: boolean;
-  audioTranscript?: string;
-  transcriptId: string;
   featureAudioSkin: AudioButtonSkin;
   uiText: UiText;
   locale?: string;
@@ -185,7 +180,6 @@ function playingAlt(loc = '') {
         class="w-full max-w-md pie-audio-player"
         preload="metadata"
         src={audioUrl}
-        aria-describedby={audioTranscript ? transcriptId : undefined}
       >
         <track kind="captions" />
       </audio>
