@@ -31,7 +31,7 @@
     "react": "^18.2.0",
     "string-hash": "^1.1.3",
     "style-loader": "^4.0.0",
-    "svelte": "^5.55.1",
+    "svelte": "^5.56.8",
     "svelte-loader": "^3.2.4",
     "webpack": "^5.99.9"
   },
