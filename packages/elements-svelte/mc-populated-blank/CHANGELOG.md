@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.4
+
+### Minor Changes
+
+- 392bfcf: stop rendering the audio transcript in delivery; the toolkit renders it PIE-855
+
 ## 0.2.13-next.3
 
 ### Patch Changes

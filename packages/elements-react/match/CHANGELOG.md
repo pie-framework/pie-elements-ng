@@ -1,5 +1,11 @@
 # @pie-element/match
 
+## 12.1.2-next.6
+
+### Patch Changes
+
+- @pie-element/shared-controller-utils@0.1.1-next.2
+
 ## 12.1.2-next.5
 
 ### Patch Changes

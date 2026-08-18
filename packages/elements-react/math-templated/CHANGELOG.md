@@ -1,5 +1,11 @@
 # @pie-element/math-templated
 
+## 7.1.1-next.16
+
+### Patch Changes
+
+- @pie-element/shared-controller-utils@0.1.1-next.2
+
 ## 7.1.1-next.15
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/mc-populated-blank",
-  "version": "0.2.13-next.3",
+  "version": "0.3.0-next.4",
   "description": "Multiple-choice option populates an inline blank in a sentence template (Svelte 5 PIE element)",
   "repository": {
     "type": "git",
