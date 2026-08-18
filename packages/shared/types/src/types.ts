@@ -83,6 +83,24 @@ export interface SignLanguageCardPayload {
 }
 
 /**
+ * Payload for a `spoken` catalog card that is a recording rather than a script.
+ *
+ * QTI 3 treats recorded audio and synthesized speech as the same support: both
+ * are `spoken`, so this is not a new accommodation, it is the other form the
+ * existing one can take. A node commonly carries both this and a `content`
+ * card in the same language — the script is both what the audio was generated
+ * from and the fallback for when the audio cannot play; pie-players resolves
+ * between them with `CatalogLookupOptions.form`.
+ *
+ * No `kind` discriminant, for the same reason `SignLanguageCardPayload` has
+ * none: the card's `catalog` already says what this is.
+ */
+export interface SpokenAudioCardPayload {
+  media: MediaAssetRef;
+  fragment?: MediaFragmentRange;
+}
+
+/**
  * The structured forms a card's `payload` may take.
  *
  * Which one applies is decided by the card's `catalog`, so this union carries no
@@ -91,7 +109,7 @@ export interface SignLanguageCardPayload {
  * structurally, which they must do regardless: catalog data is authored,
  * wire-facing and untrusted.
  */
-export type CatalogCardPayload = SignLanguageCardPayload;
+export type CatalogCardPayload = SignLanguageCardPayload | SpokenAudioCardPayload;
 
 /**
  * QTI-aligned accessibility catalog entry: one alternate representation of a
