@@ -222,7 +222,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -255,7 +255,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -287,7 +287,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -322,7 +322,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -357,7 +357,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -385,7 +385,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -421,7 +421,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -454,7 +454,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -480,14 +480,14 @@
         "@pie-lib/test-utils": "workspace:*",
         "prop-types": "^15.8.1",
         "react-is": "^18.3.1",
-        "recharts": "^3.10.1",
+        "recharts": "^3.8.1",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -522,7 +522,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -555,7 +555,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -590,7 +590,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -628,7 +628,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -661,7 +661,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -693,7 +693,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -730,7 +730,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -763,7 +763,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -800,7 +800,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -837,7 +837,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -869,7 +869,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -902,7 +902,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -977,7 +977,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1007,7 +1007,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1019,6 +1019,7 @@
       "version": "14.1.2-next.5",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
+        "@dnd-kit/modifiers": "9.0.0",
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
@@ -1048,7 +1049,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1077,7 +1078,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1111,7 +1112,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1177,7 +1178,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
     },
     "packages/lib-react/charting": {
@@ -1218,7 +1219,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1247,7 +1248,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1266,7 +1267,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
     },
     "packages/lib-react/correct-answer-toggle": {
@@ -1318,7 +1319,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1340,20 +1341,20 @@
         "@pie-lib/math-input": "workspace:*",
         "@pie-lib/math-toolbar": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "@tiptap/core": "3.29.2",
+        "@tiptap/core": "3.20.0",
         "@tiptap/extension-character-count": "3.20.0",
         "@tiptap/extension-color": "3.20.0",
         "@tiptap/extension-image": "3.20.0",
         "@tiptap/extension-list": "^3.20.0",
         "@tiptap/extension-list-item": "3.20.0",
         "@tiptap/extension-placeholder": "3.20.0",
-        "@tiptap/extension-subscript": "3.29.2",
-        "@tiptap/extension-superscript": "3.29.2",
+        "@tiptap/extension-subscript": "3.20.0",
+        "@tiptap/extension-superscript": "3.20.0",
         "@tiptap/extension-table": "3.20.0",
         "@tiptap/extension-table-cell": "3.20.0",
         "@tiptap/extension-table-header": "3.20.0",
         "@tiptap/extension-table-row": "3.20.0",
-        "@tiptap/extension-text-align": "3.29.2",
+        "@tiptap/extension-text-align": "3.20.0",
         "@tiptap/extension-text-style": "3.20.0",
         "@tiptap/extensions": "^3.20.0",
         "@tiptap/pm": "3.20.0",
@@ -1379,7 +1380,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1431,7 +1432,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1484,7 +1485,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1504,7 +1505,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
     },
     "packages/lib-react/icons": {
@@ -1554,7 +1555,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1580,7 +1581,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1620,7 +1621,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1654,7 +1655,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1710,7 +1711,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1725,7 +1726,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
     },
     "packages/lib-react/test-utils": {
@@ -1775,7 +1776,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -1804,7 +1805,7 @@
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "typescript": "^5.9.3",
-        "vite": "^8.1.5",
+        "vite": "^8.0.1",
       },
       "peerDependencies": {
         "react": "^18.0.0",
@@ -2777,9 +2778,9 @@
 
     "@tiptap/extension-strike": ["@tiptap/extension-strike@3.24.0", "", { "peerDependencies": { "@tiptap/core": "3.24.0" } }, "sha512-sfN1iQs6Fdlorrfe8wipDkTPwu/Egx3s2fkY7TAWusTGFHwlovuRUGFKqCL9dI4N3u6uqUMpEuWmQNgv+aQGjQ=="],
 
-    "@tiptap/extension-subscript": ["@tiptap/extension-subscript@3.29.2", "", { "peerDependencies": { "@tiptap/core": "3.29.2", "@tiptap/pm": "3.29.2" } }, "sha512-3fpp1B2kZWBfmVYZ1ak3yFWiKR3eV9GR/vYGPDMrkZoTdG9LKylRAJs3Fk2gDgTtOPmbrtilGQjl2o55RuoGxw=="],
+    "@tiptap/extension-subscript": ["@tiptap/extension-subscript@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-EX3GPey4Gp9W04zM2MsP5OfMnwGtQTh1Q0ZokJAdENHpyXbche9WjK31FTzwEmTSqlU5stSsH5KwhSYlDwm5rA=="],
 
-    "@tiptap/extension-superscript": ["@tiptap/extension-superscript@3.29.2", "", { "peerDependencies": { "@tiptap/core": "3.29.2", "@tiptap/pm": "3.29.2" } }, "sha512-/bPgdY7zUHtvToHizvzR6Yf4uIWO35cKj9EZsl/vyFb2mXyJ3a2mysCZgZq+5uvhZS/16eNNKOcezlkayhhkMA=="],
+    "@tiptap/extension-superscript": ["@tiptap/extension-superscript@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-NNFv58LM/7JMu4aq9Apq8yuaB8MDL5dvVZ7R6qMuQNZDVGAGgoiBqtglA1RXldNl/9IFcVg67rT8oF86qykYKA=="],
 
     "@tiptap/extension-table": ["@tiptap/extension-table@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-vaaMtQ2KnSSr8WVwgWf7NYNzPwrHx/6T0ekA5CxV8qNUEpXIaLXa5+tE7tJHWEdNR2KY3gUJ46D3lfOkxyFrBQ=="],
 
@@ -2791,7 +2792,7 @@
 
     "@tiptap/extension-text": ["@tiptap/extension-text@3.18.0", "", { "peerDependencies": { "@tiptap/core": "^3.18.0" } }, "sha512-9TvctdnBCwK/zyTi9kS7nGFNl5OvGM8xE0u38ZmQw5t79JOqJHgOroyqMjw8LHK/1PWrozfNCmsZbpq4IZuKXw=="],
 
-    "@tiptap/extension-text-align": ["@tiptap/extension-text-align@3.29.2", "", { "peerDependencies": { "@tiptap/core": "3.29.2" } }, "sha512-205FF87zjUEh79n6dgVy9SMj1P+rNserHMqPd8lF7YS2TOWikXPG4PFuQHWXXCYzaCvQXAiATSAyPXXmUWUvaQ=="],
+    "@tiptap/extension-text-align": ["@tiptap/extension-text-align@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0" } }, "sha512-4s0r+bovtH6yeGDUD+Ui8j5WOV5koB5P6AuzOMqoLwaFGRSkKf64ly6DXjjmjIgnYCLZN/XO6llaQKVVdvad2g=="],
 
     "@tiptap/extension-text-style": ["@tiptap/extension-text-style@3.20.0", "", { "peerDependencies": { "@tiptap/core": "^3.20.0" } }, "sha512-zyWW1a6W+kaXAn3wv2svJ1XuVMapujftvH7Xn2Q3QmKKiDkO+NiFkrGe8BhMopu8Im51nO3NylIgVA0X1mS1rQ=="],
 
@@ -4245,11 +4246,19 @@
 
     "@pie-framework/math-validation/mathjs": ["mathjs@9.5.2", "", { "dependencies": { "@babel/runtime": "^7.15.4", "complex.js": "^2.0.15", "decimal.js": "^10.3.1", "escape-latex": "^1.2.0", "fraction.js": "^4.1.1", "javascript-natural-sort": "^0.7.1", "seedrandom": "^3.0.5", "tiny-emitter": "^2.1.0", "typed-function": "^2.0.0" }, "bin": { "mathjs": "bin/cli.js" } }, "sha512-c0erTq0GP503/Ch2OtDOAn50GIOsuxTMjmE00NI/vKJFSWrDaQHRjx6ai+16xYv70yBSnnpUgHZGNf9FR9IwmA=="],
 
+    "@pie-lib/editable-html-tip-tap/@tiptap/core": ["@tiptap/core@3.20.0", "", { "peerDependencies": { "@tiptap/pm": "^3.20.0" } }, "sha512-aC9aROgia/SpJqhsXFiX9TsligL8d+oeoI8W3u00WI45s0VfsqjgeKQLDLF7Tu7hC+7F02teC84SAHuup003VQ=="],
+
     "@pie-lib/editable-html-tip-tap/@tiptap/pm": ["@tiptap/pm@3.20.0", "", { "dependencies": { "prosemirror-changeset": "^2.3.0", "prosemirror-collab": "^1.3.1", "prosemirror-commands": "^1.6.2", "prosemirror-dropcursor": "^1.8.1", "prosemirror-gapcursor": "^1.3.2", "prosemirror-history": "^1.4.1", "prosemirror-inputrules": "^1.4.0", "prosemirror-keymap": "^1.2.2", "prosemirror-markdown": "^1.13.1", "prosemirror-menu": "^1.2.4", "prosemirror-model": "^1.24.1", "prosemirror-schema-basic": "^1.2.3", "prosemirror-schema-list": "^1.5.0", "prosemirror-state": "^1.4.3", "prosemirror-tables": "^1.6.4", "prosemirror-trailing-node": "^3.0.0", "prosemirror-transform": "^1.10.2", "prosemirror-view": "^1.38.1" } }, "sha512-jn+2KnQZn+b+VXr8EFOJKsnjVNaA4diAEr6FOazupMt8W8ro1hfpYtZ25JL87Kao/WbMze55sd8M8BDXLUKu1A=="],
 
     "@pie-lib/editable-html-tip-tap/@tiptap/starter-kit": ["@tiptap/starter-kit@3.20.0", "", { "dependencies": { "@tiptap/core": "^3.20.0", "@tiptap/extension-blockquote": "^3.20.0", "@tiptap/extension-bold": "^3.20.0", "@tiptap/extension-bullet-list": "^3.20.0", "@tiptap/extension-code": "^3.20.0", "@tiptap/extension-code-block": "^3.20.0", "@tiptap/extension-document": "^3.20.0", "@tiptap/extension-dropcursor": "^3.20.0", "@tiptap/extension-gapcursor": "^3.20.0", "@tiptap/extension-hard-break": "^3.20.0", "@tiptap/extension-heading": "^3.20.0", "@tiptap/extension-horizontal-rule": "^3.20.0", "@tiptap/extension-italic": "^3.20.0", "@tiptap/extension-link": "^3.20.0", "@tiptap/extension-list": "^3.20.0", "@tiptap/extension-list-item": "^3.20.0", "@tiptap/extension-list-keymap": "^3.20.0", "@tiptap/extension-ordered-list": "^3.20.0", "@tiptap/extension-paragraph": "^3.20.0", "@tiptap/extension-strike": "^3.20.0", "@tiptap/extension-text": "^3.20.0", "@tiptap/extension-underline": "^3.20.0", "@tiptap/extensions": "^3.20.0", "@tiptap/pm": "^3.20.0" } }, "sha512-W4+1re35pDNY/7rpXVg+OKo/Fa4Gfrn08Bq3E3fzlJw6gjE3tYU8dY9x9vC2rK9pd9NOp7Af11qCFDaWpohXkw=="],
 
     "@pie-lib/editable-html-tip-tap/react-jss": ["react-jss@8.6.1", "", { "dependencies": { "hoist-non-react-statics": "^2.5.0", "jss": "^9.7.0", "jss-preset-default": "^4.3.0", "prop-types": "^15.6.0", "theming": "^1.3.0" }, "peerDependencies": { "react": ">=0.13" } }, "sha512-SH6XrJDJkAphp602J14JTy3puB2Zxz1FkM3bKVE8wON+va99jnUTKWnzGECb3NfIn9JPR5vHykge7K3/A747xQ=="],
+
+    "@pie-lib/editable-html-tiptap-svelte/@tiptap/extension-subscript": ["@tiptap/extension-subscript@3.29.2", "", { "peerDependencies": { "@tiptap/core": "3.29.2", "@tiptap/pm": "3.29.2" } }, "sha512-3fpp1B2kZWBfmVYZ1ak3yFWiKR3eV9GR/vYGPDMrkZoTdG9LKylRAJs3Fk2gDgTtOPmbrtilGQjl2o55RuoGxw=="],
+
+    "@pie-lib/editable-html-tiptap-svelte/@tiptap/extension-superscript": ["@tiptap/extension-superscript@3.29.2", "", { "peerDependencies": { "@tiptap/core": "3.29.2", "@tiptap/pm": "3.29.2" } }, "sha512-/bPgdY7zUHtvToHizvzR6Yf4uIWO35cKj9EZsl/vyFb2mXyJ3a2mysCZgZq+5uvhZS/16eNNKOcezlkayhhkMA=="],
+
+    "@pie-lib/editable-html-tiptap-svelte/@tiptap/extension-text-align": ["@tiptap/extension-text-align@3.29.2", "", { "peerDependencies": { "@tiptap/core": "3.29.2" } }, "sha512-205FF87zjUEh79n6dgVy9SMj1P+rNserHMqPd8lF7YS2TOWikXPG4PFuQHWXXCYzaCvQXAiATSAyPXXmUWUvaQ=="],
 
     "@pie-lib/editable-html-tiptap-svelte/@tiptap/starter-kit": ["@tiptap/starter-kit@3.24.0", "", { "dependencies": { "@tiptap/core": "^3.24.0", "@tiptap/extension-blockquote": "^3.24.0", "@tiptap/extension-bold": "^3.24.0", "@tiptap/extension-bullet-list": "^3.24.0", "@tiptap/extension-code": "^3.24.0", "@tiptap/extension-code-block": "^3.24.0", "@tiptap/extension-document": "^3.24.0", "@tiptap/extension-dropcursor": "^3.24.0", "@tiptap/extension-gapcursor": "^3.24.0", "@tiptap/extension-hard-break": "^3.24.0", "@tiptap/extension-heading": "^3.24.0", "@tiptap/extension-horizontal-rule": "^3.24.0", "@tiptap/extension-italic": "^3.24.0", "@tiptap/extension-link": "^3.24.0", "@tiptap/extension-list": "^3.24.0", "@tiptap/extension-list-item": "^3.24.0", "@tiptap/extension-list-keymap": "^3.24.0", "@tiptap/extension-ordered-list": "^3.24.0", "@tiptap/extension-paragraph": "^3.24.0", "@tiptap/extension-strike": "^3.24.0", "@tiptap/extension-text": "^3.24.0", "@tiptap/extension-underline": "^3.24.0", "@tiptap/extensions": "^3.24.0", "@tiptap/pm": "^3.24.0" } }, "sha512-Ef4PCP96vcY2GonXN9J0M8iC6zvxPTmQlL/QZiCwuYqqnH/hNpYIjNSQdTndiDpxRKofa32Sr2HWktgEnL32Bg=="],
 

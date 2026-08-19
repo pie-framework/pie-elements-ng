@@ -17,7 +17,7 @@
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/test-utils": "workspace:*",
     "prop-types": "^15.8.1",
-    "recharts": "^3.10.1",
+    "recharts": "^3.8.1",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
@@ -78,7 +78,7 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.1.5",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",

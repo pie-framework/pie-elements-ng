@@ -16,9 +16,14 @@ import { isEmpty, isUndefined, reduce } from '@pie-element/shared-lodash';
 import Arrow from './arrow.js';
 import DragAndDropAnswer from './answer.js';
 
+// matches the min width of the answer entries (see AnswerContainer in ./answer), so the two columns
+// give the row an intrinsic min width that the horizontal scroll container can overflow.
+const MIN_COLUMN_WIDTH = 200;
+
 const ArrowEntry: any = styled('div')({
   alignItems: 'normal',
   display: 'flex',
+  flexShrink: 0,
   height: 40,
   margin: '10px 20px',
 });
@@ -39,6 +44,7 @@ const PromptEntry: any = styled('div')(({ theme }) => ({
   flex: 1,
   margin: '10px 0',
   minHeight: 40,
+  minWidth: MIN_COLUMN_WIDTH,
   overflow: 'hidden',
   padding: 10,
   textAlign: 'center',
@@ -63,6 +69,9 @@ export class AnswerArea extends React.Component {
     instanceId: PropTypes.string.isRequired,
     model: PropTypes.object.isRequired,
     prompt: PropTypes.string,
+    selectedAnswer: PropTypes.object,
+    onChoiceClick: PropTypes.func,
+    onPlacementClick: PropTypes.func,
   };
 
   getAnswerFromSession: any = (promptId) => {
@@ -133,7 +142,7 @@ export class AnswerArea extends React.Component {
   };
 
   render() {
-    const { disabled, instanceId, onRemoveAnswer } = this.props;
+    const { disabled, instanceId, onRemoveAnswer, selectedAnswer, onChoiceClick, onPlacementClick } = this.props;
     const rows = this.buildRows();
     const correctnessMap = this.getCorrectOrIncorrectMap();
 
@@ -162,6 +171,9 @@ export class AnswerArea extends React.Component {
                 title={sessionAnswer.title}
                 type={'target'}
                 onRemoveChoice={() => onRemoveAnswer(id)}
+                selectedAnswer={selectedAnswer}
+                onSelectClick={onChoiceClick}
+                onPlacementClick={onPlacementClick}
               />
             </Row>
           );

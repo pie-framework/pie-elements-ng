@@ -89,14 +89,14 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.1.5",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },
   "scripts": {
-    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
+    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"

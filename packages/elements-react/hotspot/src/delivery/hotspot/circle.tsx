@@ -43,7 +43,27 @@ class CircleComponent extends React.Component {
     this.state = {
       hovered: false,
     };
+    this.groupRef = React.createRef();
   }
+
+  componentDidMount() {
+    if (this.props.focused) {
+      this.moveGroupToTop();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    // `focused` (keyboard focus) can turn on the hovered style without going through handleMouseEnter
+    if (!prevProps.focused && this.props.focused) {
+      this.moveGroupToTop();
+    }
+  }
+
+  moveGroupToTop: any = () => {
+    if (this.groupRef.current) {
+      this.groupRef.current.moveToTop();
+    }
+  };
 
   handleClick: any = (e) => {
     const { onClick, id, selected, disabled } = this.props;
@@ -61,6 +81,7 @@ class CircleComponent extends React.Component {
       document.body.style.cursor = 'pointer';
     }
     this.setState({ hovered: true });
+    this.moveGroupToTop();
   };
 
   handleMouseLeave: any = () => {
@@ -83,6 +104,7 @@ class CircleComponent extends React.Component {
       hoverOutlineColor,
       outlineColor,
       selected,
+      focused,
       x,
       y,
       evaluateText,
@@ -121,20 +143,16 @@ class CircleComponent extends React.Component {
       }
     }
 
-    const useHoveredStyle = hovered && hoverOutlineColor;
+    const useHoveredStyle = (hovered || focused) && hoverOutlineColor;
 
     return (
-      <Group scaleX={scale} scaleY={scale}>
-        {useHoveredStyle && (
-          <Rect
-            x={x - radius}
-            y={y - radius}
-            width={radius * 2}
-            height={radius * 2}
-            stroke={selected ? 'transparent' : hoverOutlineColor}
-            strokeWidth={strokeWidth}
-          />
-        )}
+      <Group
+        ref={this.groupRef}
+        scaleX={scale}
+        scaleY={scale}
+        onMouseLeave={this.handleMouseLeave}
+        onMouseEnter={this.handleMouseEnter}
+      >
         <Circle
           radius={radius}
           fill={selected && selectedHotspotColor ? selectedHotspotColor : hotspotColor}
@@ -143,11 +161,20 @@ class CircleComponent extends React.Component {
           draggable={false}
           stroke={useHoveredStyle && !selected ? 'transparent' : outlineColorParsed}
           strokeWidth={useHoveredStyle && !selected ? 0 : outlineWidth}
-          onMouseLeave={this.handleMouseLeave}
-          onMouseEnter={this.handleMouseEnter}
           x={x}
           y={y}
         />
+        {useHoveredStyle && (
+          <Rect
+            x={x - radius}
+            y={y - radius}
+            width={radius * 2}
+            height={radius * 2}
+            stroke={hoverOutlineColor}
+            strokeWidth={strokeWidth}
+            listening={false}
+          />
+        )}
         {isEvaluateMode && iconSrc ? <ImageComponent src={iconSrc} x={iconX} y={iconY} tooltip={evaluateText} /> : null}
       </Group>
     );
@@ -161,6 +188,7 @@ CircleComponent.propTypes = {
   isCorrect: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   isEvaluateMode: PropTypes.bool.isRequired,
   disabled: PropTypes.bool.isRequired,
+  focused: PropTypes.bool,
   hoverOutlineColor: PropTypes.string,
   onClick: PropTypes.func.isRequired,
   outlineColor: PropTypes.string.isRequired,
@@ -178,6 +206,7 @@ CircleComponent.propTypes = {
 CircleComponent.defaultProps = {
   isCorrect: false,
   evaluateText: null,
+  focused: false,
   strokeWidth: 5,
   scale: 1,
 };

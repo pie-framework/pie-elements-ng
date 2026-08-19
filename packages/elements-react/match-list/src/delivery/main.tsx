@@ -11,8 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { swap } from '@pie-lib/drag';
-import { DndContext, DragOverlay } from '@dnd-kit/core';
+import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode, rectIntersection } from '@dnd-kit/core';
 import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
+import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { color, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
@@ -50,12 +51,56 @@ import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
 import { Answer } from './answer.js';
 
+// A click that lands right after a real drag gesture ends (pointer drag-and-drop, or
+// the browser's own synthetic click for a keyboard Space/Enter) must be ignored by the
+// new click-to-select/click-to-place handlers below, or it would immediately reopen or
+// re-trigger a selection for a drag that just completed.
+const CLICK_AFTER_DRAG_GUARD_MS = 250;
+
+const sensors = [
+  // Without an activationConstraint, dnd-kit's PointerSensor calls its internal
+  // handleStart() synchronously on pointerdown, before any movement — meaning a plain
+  // click is itself "activated" as a drag. Once activated, dnd-kit adds a capture-phase
+  // document click listener that calls stopPropagation() (to suppress the native
+  // "ghost click" a real drag leaves behind), which also swallows the click for a
+  // gesture with zero movement, before it ever reaches our own onClick handlers below.
+  // Requiring 8px of movement (matching @pie-lib/drag's DragProvider convention used
+  // elsewhere in this codebase) defers activation until an actual drag gesture is
+  // underway, so a plain click passes through untouched.
+  { sensor: PointerSensor, options: { activationConstraint: { distance: 8 } } },
+  {
+    sensor: KeyboardSensor,
+    options: {
+      coordinateGetter: closestDroppableKeyboardCoordinates,
+      keyboardCodes: {
+        start: [KeyboardCode.Space, KeyboardCode.Enter],
+        cancel: [KeyboardCode.Esc],
+        end: [KeyboardCode.Space, KeyboardCode.Enter],
+      },
+    },
+  },
+];
+
 const MainContainer: any = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   color: color.text(),
   backgroundColor: color.background(),
+});
+
+const InteractiveRegion: any = styled('div')({
+  width: '100%',
+  overflowX: 'auto',
+  overflowY: 'hidden',
+});
+
+// A block child of a scroll port is sized to the scroll port, so it has to opt out explicitly for
+// the content to be able to overflow. min-content keeps the rows and the pool the same width.
+const InteractiveRegionContent: any = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  minWidth: 'min-content',
 });
 
 export class Main extends React.Component {
@@ -73,7 +118,9 @@ export class Main extends React.Component {
     this.state = {
       showCorrectAnswer: false,
       draggingElement: null,
+      selectedAnswer: null,
     };
+    this.lastDragEndAt = 0;
   }
 
   onRemoveAnswer(id) {
@@ -99,21 +146,19 @@ export class Main extends React.Component {
       this.setState({
         draggingElement: { ...active.data.current, rect },
       });
+      this.selectAnswer(active.data.current);
     }
   };
 
-  onPlaceAnswer: any = (event) => {
+  onDragCancel: any = () => {
     this.setState({ draggingElement: null });
-    const { active, over } = event;
+    this.cancelSelection();
+    this.lastDragEndAt = Date.now();
+  };
 
-    if (!active) {
-      return;
-    }
-
-    const activeData = active.data.current;
-    const overData = over?.data.current;
-
-    if (!activeData) {
+  // Pure placement logic
+  placeAnswer: any = (activeData, overData) => {
+    if (!activeData || !overData) {
       return;
     }
 
@@ -122,25 +167,25 @@ export class Main extends React.Component {
       config: { duplicates },
     } = model;
 
-      if (isUndefined(session.value)) {
-        session.value = {};
-      }
+    if (isUndefined(session.value)) {
+      session.value = {};
+    }
 
-      // dropping a placed answer back to the choices pool = remove it
-      if (overData.type === 'choices-pool' && activeData.promptId !== undefined) {
-        session.value[activeData.promptId] = undefined;
-        onSessionChange(session);
-        return;
-      }
+    // dropping a placed answer back to the choices pool = remove it
+    if (overData.type === 'choices-pool' && activeData.promptId !== undefined) {
+      session.value[activeData.promptId] = undefined;
+      onSessionChange(session);
+      return;
+    }
 
     const answerId = activeData.id;
     const sourcePromptId = activeData.promptId;
 
     // Handle dropping onto a drop zone
-    if (overData && overData.type === 'drop-zone' && overData.promptId != null) {
+    if (overData.type === 'drop-zone' && overData.promptId != null) {
       const targetPromptId = overData.promptId;
 
-      if (activeData.type === 'choice' && overData.type === 'drop-zone' && targetPromptId !== undefined) {
+      if (activeData.type === 'choice' && targetPromptId !== undefined) {
         // check if this choice is already placed somewhere
         const existingPlacement = findKey(session.value, (val) => val === answerId);
 
@@ -175,6 +220,91 @@ export class Main extends React.Component {
     }
   };
 
+  onPlaceAnswer: any = (event) => {
+    this.setState({ draggingElement: null });
+    const { active, over } = event;
+
+    if (!active) {
+      return;
+    }
+
+    const activeData = active.data.current;
+    const overData = over?.data.current;
+
+    if (!activeData) {
+      return;
+    }
+
+    this.placeAnswer(activeData, overData);
+    this.cancelSelection();
+    this.lastDragEndAt = Date.now();
+  };
+
+  isSameAnswer = (a, b) => !!a && !!b && a.type === b.type && a.id === b.id && a.promptId === b.promptId;
+
+  // Unconditionally selects (used by the drag-start mirror, and internally when
+  // switching from one choice to another).
+  selectAnswer: any = (data) => {
+    this.setState({ selectedAnswer: data });
+  };
+
+  // Click-to-select semantics: selecting the currently-selected answer again clears
+  // the selection instead of re-selecting it.
+  toggleAnswerSelection: any = (data) => {
+    this.setState((state) => ({
+      selectedAnswer: this.isSameAnswer(state.selectedAnswer, data) ? null : data,
+    }));
+  };
+
+  cancelSelection: any = () => {
+    this.setState({ selectedAnswer: null });
+  };
+
+  // If a real dnd-kit drag (started via keyboard Space/Enter) is still live when a
+  // click completes the placement below, it needs to be cleanly ended — otherwise
+  // dnd-kit would still think a drag is in progress (still listening for Tab/arrow/
+  // Space/Escape, still showing the drag overlay) for a placement the click already
+  // performed. Escape is already configured as this sensor's cancel key, and
+  // dispatching it as a real DOM KeyboardEvent is how dnd-kit's own document-level
+  // listener is reached from outside its sensor. onDragCancel is intentionally not
+  // wired to redo any placement — it only resets local UI state — so this is safe to
+  // call unconditionally, including when no drag is actually live (dnd-kit simply has
+  // no listener attached in that case, and the dispatch is a no-op).
+  endAnyLiveKeyboardDrag: any = () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+  };
+
+  placeSelectedAnswer: any = (overData) => {
+    const { selectedAnswer } = this.state;
+
+    if (!selectedAnswer) {
+      return;
+    }
+
+    this.placeAnswer(selectedAnswer, overData);
+    this.cancelSelection();
+    this.endAnyLiveKeyboardDrag();
+    this.lastDragEndAt = Date.now();
+  };
+
+  isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;
+
+  onChoiceClick: any = (data) => {
+    if (this.isClickSoonAfterDragEnd()) {
+      return;
+    }
+
+    this.toggleAnswerSelection(data);
+  };
+
+  onPlacementClick: any = (overData) => {
+    if (this.isClickSoonAfterDragEnd()) {
+      return;
+    }
+
+    this.placeSelectedAnswer(overData);
+  };
+
   toggleShowCorrect: any = () => {
     this.setState({ showCorrectAnswer: !this.state.showCorrectAnswer });
   };
@@ -205,11 +335,80 @@ export class Main extends React.Component {
     const { config, mode } = model;
     const { prompt, language } = config;
 
+    // Helpers for accessible announcements
+    const getChoiceLabel = (dragId) => {
+      // dragId is like "choice-123" or "target-123"
+      const answerId = String(dragId).replace(/^(choice|target)-/, '');
+      const answer = config.answers.find((a) => String(a.id) === answerId);
+
+      if (answer?.title) {
+        // Strip HTML tags for screen reader
+        const text = answer.title.replace(/<[^>]*>/g, '').trim();
+        return text || `Answer ${answerId}`;
+      }
+
+      return `Answer ${answerId}`;
+    };
+
+    const getDropTargetLabel = (dropId) => {
+      // dropId is like "drop-456" or "choices-pool"
+      if (dropId === 'choices-pool') {
+        return { label: 'Choices list', choiceId: null };
+      }
+
+      const promptId = String(dropId).replace(/^drop-/, '');
+      const promptItem = config.prompts.find((p) => String(p.id) === promptId);
+      const label = promptItem?.title
+        ? `Response area for ${promptItem.title.replace(/<[^>]*>/g, '').trim()}`
+        : `Response area ${promptId}`;
+      const choiceId = session.value?.[promptId];
+
+      return { label, choiceId: choiceId || null };
+    };
+
+    const announcements = {
+      onDragStart({ active }) {
+        return `Picked up ${getChoiceLabel(active.id)}. Use Tab to move between response areas, then press Space or Enter to drop.`;
+      },
+
+      onDragOver({ active, over }) {
+        if (!over) {
+          return `${getChoiceLabel(active.id)} is not over a response area.`;
+        }
+
+        const target = getDropTargetLabel(over.id);
+        const content = target.choiceId ? `Currently contains ${getChoiceLabel(target.choiceId)}.` : 'Currently empty.';
+
+        return `Over ${target.label}. ${content}`;
+      },
+
+      onDragEnd({ active, over }) {
+        if (!over) {
+          return `${getChoiceLabel(active.id)} was returned to its original position.`;
+        }
+
+        return `Dropped ${getChoiceLabel(active.id)} in ${getDropTargetLabel(over.id).label}.`;
+      },
+
+      onDragCancel({ active }) {
+        return `Cancelled. ${getChoiceLabel(active.id)} was returned to its original position.`;
+      },
+    };
+
     return (
       <DndContext
+        sensors={sensors}
+        collisionDetection={rectIntersection}
         onDragStart={this.onDragStart}
         onDragEnd={this.onPlaceAnswer}
+        onDragCancel={this.onDragCancel}
         modifiers={[restrictToFirstScrollableAncestor]}
+        accessibility={{
+          screenReaderInstructions: {
+            draggable:
+              'Press Space or Enter to pick up this answer choice. Once picked up, use Tab or Shift+Tab to cycle through response areas, or use arrow keys to move it freely. Press Space or Enter to drop, or Escape to cancel. You can also click an answer choice to select it, then click a response area to place it there.',
+          },
+        }}
       >
         <MainContainer>
           <PreviewPrompt className="prompt" prompt={prompt} />
@@ -221,22 +420,32 @@ export class Main extends React.Component {
             language={language}
           />
 
-          <AnswerArea
-            instanceId={this.instanceId}
-            model={model}
-            session={session}
-            onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
-            disabled={mode !== 'gather'}
-            showCorrect={showCorrectAnswer}
-          />
+          <InteractiveRegion>
+            <InteractiveRegionContent>
+              <AnswerArea
+                instanceId={this.instanceId}
+                model={model}
+                session={session}
+                onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
+                disabled={mode !== 'gather'}
+                showCorrect={showCorrectAnswer}
+                selectedAnswer={this.state.selectedAnswer}
+                onChoiceClick={this.onChoiceClick}
+                onPlacementClick={this.onPlacementClick}
+              />
 
-          <ChoicesList
-            instanceId={this.instanceId}
-            model={model}
-            session={session}
-            disabled={mode !== 'gather'}
-            onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
-          />
+              <ChoicesList
+                instanceId={this.instanceId}
+                model={model}
+                session={session}
+                disabled={mode !== 'gather'}
+                onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
+                selectedAnswer={this.state.selectedAnswer}
+                onChoiceClick={this.onChoiceClick}
+                onPlacementClick={this.onPlacementClick}
+              />
+            </InteractiveRegionContent>
+          </InteractiveRegion>
 
           {model.correctness && model.feedback && !showCorrectAnswer && (
             <Feedback correctness={model.correctness.correctness} feedback={model.feedback} />

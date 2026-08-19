@@ -26,7 +26,15 @@ export class Point extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    // which label is being edited, null if none - a point only has the one
+    this.state = { editingLabel: null };
+  }
+
+  componentDidUpdate(prevProps) {
+    // leaving label mode closes any label that is still being edited
+    if (prevProps.labelModeEnabled && !this.props.labelModeEnabled && this.state.editingLabel !== null) {
+      this.setState({ editingLabel: null });
+    }
   }
 
   move: any = (p) => {
@@ -69,6 +77,12 @@ export class Point extends React.Component {
     });
   };
 
+  stopEditingLabel: any = () => {
+    if (this.state.editingLabel !== null) {
+      this.setState({ editingLabel: null });
+    }
+  };
+
   clickPoint: any = () => {
     const { labelModeEnabled, onChange, onClick, mark } = this.props;
 
@@ -83,17 +97,14 @@ export class Point extends React.Component {
 
     onChange(mark, { label: '', ...mark });
 
-    // MarkLabel is only rendered after the parent re-renders with the new label prop,
-    // so we defer focus until after that render cycle completes.
-    setTimeout(() => {
-      if (this.input) {
-        this.input.focus();
-      }
-    }, 0);
+    // MarkLabel focuses itself once it is rendered - it also holds on to the focus if the model
+    // that comes back from the host (api save) remounts the input.
+    this.setState({ editingLabel: 'label' });
   };
 
   render() {
     const { coordinatesOnHover, graphProps, labelNode, labelModeEnabled } = this.props;
+    const { editingLabel } = this.state;
     const mark = this.state.mark ? this.state.mark : this.props.mark;
 
     return (
@@ -121,9 +132,11 @@ export class Point extends React.Component {
           ReactDOM.createPortal(
             <MarkLabel
               inputRef={(r) => (this.input = r)}
+              autoFocus={editingLabel === 'label'}
               disabled={!labelModeEnabled}
               mark={mark}
               graphProps={graphProps}
+              onBlur={this.stopEditingLabel}
               onChange={this.labelChange}
             />,
             labelNode,
