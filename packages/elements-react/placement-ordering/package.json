@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/modifiers": "9.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",
     "@mui/icons-material": "^7.3.4",
@@ -86,7 +87,7 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.1.5",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@types/react": "^18.2.0",

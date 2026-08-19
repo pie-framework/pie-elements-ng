@@ -1416,6 +1416,7 @@
       "compatible": true,
       "directDeps": [
         "@dnd-kit/core",
+        "@dnd-kit/modifiers",
         "@emotion/react",
         "@emotion/style",
         "@mui/icons-material",

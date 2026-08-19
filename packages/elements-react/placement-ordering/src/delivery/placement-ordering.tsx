@@ -14,7 +14,8 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import { difference, isEqual, uniqueId } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
-import { closestCenter } from '@dnd-kit/core';
+import { rectIntersection } from '@dnd-kit/core';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
 
 import { Collapsible as CollapsibleImport, color, Feedback as FeedbackImport, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
@@ -56,6 +57,30 @@ import { DragProvider } from '@pie-lib/drag';
 import { HorizontalTiler, VerticalTiler } from './tiler.js';
 import { buildState, reducer } from './ordering.js';
 import { haveSameValuesButDifferentOrder } from './utils.js';
+import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
+
+// A click that lands right after a real drag gesture ends must be ignored by the
+// click-to-select/click-to-place handlers below, or it would immediately reopen or
+// re-trigger a selection for a drag that just completed.
+const CLICK_AFTER_DRAG_GUARD_MS = 250;
+
+const getKeyboardDragOptions = (includeTargets) =>
+  includeTargets
+    ? {
+        keyboardCoordinateGetter: closestDroppableKeyboardCoordinates,
+        keyboardCodes: {
+          start: ['Space', 'Enter'],
+          cancel: ['Escape'],
+          end: ['Space', 'Enter'],
+        },
+        accessibility: {
+          screenReaderInstructions: {
+            draggable:
+              'Press Space or Enter to pick up this answer choice. Once picked up, use Tab or Shift+Tab to cycle through response areas, or use arrow keys to move it freely. Press Space or Enter to drop, or Escape to cancel.',
+          },
+        },
+      }
+    : {};
 
 const { translator } = Translator;
 
@@ -68,6 +93,26 @@ const PlacementOrderingContainer: any = styled('div')({
   flexDirection: 'column',
   alignItems: 'center',
   boxSizing: 'border-box',
+});
+
+// The interactive region - the choices and answers columns for a vertical item, or the choices and
+// answers rows for a horizontal one - scrolls horizontally when it does not fit the available width.
+const InteractiveRegion: any = styled('div')({
+  // the ancestors centre their children, which shrink-wraps this box to its content. without a
+  // definite width it grows with the tiler and the overflow escapes outwards instead of scrolling.
+  alignSelf: 'stretch',
+  maxWidth: '100%',
+  overflowX: 'auto',
+  // tiles are dragged by transform, which counts towards scrollable overflow, so leaving this axis
+  // scrollable would pop a vertical scrollbar mid-drag
+  overflowY: 'hidden',
+});
+
+// keeps the tiler at its natural width, and centred while it still fits
+const InteractiveRegionContent: any = styled('div')({
+  display: 'flex',
+  justifyContent: 'center',
+  minWidth: 'min-content',
 });
 
 const StyledPrompt: any = styled('div')(({ theme }) => ({
@@ -123,7 +168,9 @@ export class PlacementOrdering extends React.Component {
 
     this.state = {
       showingCorrect: false,
+      selectedChoice: null,
     };
+    this.lastDragEndAt = 0;
 
     const { model } = props || {};
     const { env } = model || {};
@@ -301,6 +348,12 @@ export class PlacementOrdering extends React.Component {
     const { over, active } = event;
     const ordering = this.createOrdering();
 
+    // A real drag (pointer or keyboard) just ended — whatever mirrored selection it
+    // set on start is now resolved, and any click landing immediately after this must
+    // not be misread as a fresh selection/placement
+    this.cancelSelection();
+    this.lastDragEndAt = Date.now();
+
     if (over && active) {
       const draggedItem = active.data.current;
       const droppedOnItem = over.data.current;
@@ -319,6 +372,86 @@ export class PlacementOrdering extends React.Component {
         this.onRemoveChoice(draggedItem, ordering);
       }
     }
+  };
+
+  onDragStart: any = (event) => {
+    const { active } = event;
+
+    if (active?.data?.current) {
+      // A real drag (pointer or keyboard) is itself a selection — mirror it into the
+      // same selectedChoice state that click-to-select uses, so the two interaction
+      // models can be freely intermixed
+      this.selectChoice(active.data.current);
+    }
+  };
+
+  onDragCancel: any = () => {
+    this.cancelSelection();
+    this.lastDragEndAt = Date.now();
+  };
+
+  isSameChoice = (a, b) => !!a && !!b && a.type === b.type && a.id === b.id && a.index === b.index;
+
+  selectChoice: any = (data) => {
+    this.setState({ selectedChoice: data });
+  };
+
+  // Click-to-select semantics: selecting the currently-selected choice again clears
+  // the selection instead of re-selecting it.
+  toggleChoiceSelection: any = (data) => {
+    this.setState((state) => ({
+      selectedChoice: this.isSameChoice(state.selectedChoice, data) ? null : data,
+    }));
+  };
+
+  cancelSelection: any = () => {
+    this.setState({ selectedChoice: null });
+  };
+
+  // If a real dnd-kit drag (started via keyboard Space/Enter) is still live when a
+  // click completes the placement below, it needs to be cleanly ended — otherwise
+  // dnd-kit would still think a drag is in progress. Escape is already configured as
+  // this sensor's cancel key (see getKeyboardDragOptions), and dispatching it as a real
+  // DOM KeyboardEvent is how dnd-kit's own document-level listener is reached from
+  // outside its sensor. onDragCancel only resets local UI state, not the session, so
+  // this is safe to call unconditionally, including when no drag is actually live
+  // (dnd-kit simply has no listener attached in that case, and the dispatch is a
+  // no-op).
+  endAnyLiveKeyboardDrag: any = () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+  };
+
+  placeSelectedChoice: any = (targetTileData) => {
+    const { selectedChoice } = this.state;
+
+    if (!selectedChoice) {
+      return;
+    }
+
+    const ordering = this.createOrdering();
+
+    this.onDropChoice(targetTileData, selectedChoice, ordering);
+    this.cancelSelection();
+    this.endAnyLiveKeyboardDrag();
+    this.lastDragEndAt = Date.now();
+  };
+
+  isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;
+
+  onChoiceClick: any = (data) => {
+    if (this.isClickSoonAfterDragEnd()) {
+      return;
+    }
+
+    this.toggleChoiceSelection(data);
+  };
+
+  onPlacementClick: any = (targetTileData) => {
+    if (this.isClickSoonAfterDragEnd()) {
+      return;
+    }
+
+    this.placeSelectedChoice(targetTileData);
   };
 
   render() {
@@ -362,10 +495,26 @@ export class PlacementOrdering extends React.Component {
       flexDirection: 'column',
       alignItems: 'center',
       boxSizing: 'border-box',
+      width: '100%',
     };
 
+    const clickPlacementProps = includeTargets
+      ? {
+          selectedChoice: this.state.selectedChoice,
+          onChoiceClick: this.onChoiceClick,
+          onPlacementClick: this.onPlacementClick,
+        }
+      : {};
+
     return (
-      <DragProvider onDragStart={() => { }} onDragEnd={this.onDragEnd} collisionDetection={closestCenter}>
+      <DragProvider
+        onDragStart={this.onDragStart}
+        onDragEnd={this.onDragEnd}
+        onDragCancel={this.onDragCancel}
+        collisionDetection={rectIntersection}
+        modifiers={[restrictToParentElement]}
+        {...getKeyboardDragOptions(includeTargets)}
+      >
         <PlacementOrderingContainer>
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>
             {showTeacherInstructions && (
@@ -388,18 +537,23 @@ export class PlacementOrdering extends React.Component {
               language={language}
             />
 
-            <OrderingTiler
-              instanceId={this.instanceId}
-              choiceLabel={config.choiceLabel}
-              targetLabel={config.targetLabel}
-              ordering={ordering}
-              tiler={Tiler}
-              disabled={disabled}
-              addGuide={config.showOrdering}
-              tileSize={config.tileSize}
-              includeTargets={includeTargets}
-              choiceLabelEnabled={model.config && model.config.choiceLabelEnabled}
-            />
+            <InteractiveRegion>
+              <InteractiveRegionContent>
+                <OrderingTiler
+                  instanceId={this.instanceId}
+                  choiceLabel={config.choiceLabel}
+                  targetLabel={config.targetLabel}
+                  ordering={ordering}
+                  tiler={Tiler}
+                  disabled={disabled}
+                  addGuide={config.showOrdering}
+                  tileSize={config.tileSize}
+                  includeTargets={includeTargets}
+                  choiceLabelEnabled={model.config && model.config.choiceLabelEnabled}
+                  {...clickPlacementProps}
+                />
+              </InteractiveRegionContent>
+            </InteractiveRegion>
 
             {displayNote && <StyledNote dangerouslySetInnerHTML={{ __html: note }} />}
 

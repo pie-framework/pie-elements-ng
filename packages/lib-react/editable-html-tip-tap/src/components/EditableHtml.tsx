@@ -253,7 +253,7 @@ export const EditableHtml = (props) => {
               let cb;
 
               if (scheduled && result) {
-                // finish editing only on success
+              // finish editing only on success
                 cb = props.onChange;
               }
 
@@ -434,10 +434,12 @@ const StyledEditorContent: any = styled(EditorContent, {
     },
 
     // Out of flow so the caret stays at the start of the block; in-flow ::before pushes the caret after the hint text.
-    '& p.is-editor-empty, & div.is-editor-empty': {
+    // :only-child ensures the placeholder is hidden whenever the editor has other content (images, upload nodes, etc.)
+    // and covers the type+backspace edge case where Tiptap only adds is-empty (not is-editor-empty).
+    '& p[data-placeholder].is-empty:only-child, & div[data-placeholder].is-empty:only-child': {
       position: 'relative',
     },
-    '& p.is-editor-empty::before, & div.is-editor-empty::before': {
+    '& p[data-placeholder].is-empty:only-child::before, & div[data-placeholder].is-empty:only-child::before': {
       content: 'attr(data-placeholder)',
       position: 'absolute',
       left: 0,
