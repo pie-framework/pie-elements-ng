@@ -85,10 +85,9 @@ test('g-stem: blank slot underline is 6px', async ({ page }) => {
 // ---------------------------------------------------------------------------
 // 3. Selected choice tile background is yellow (#fcfcd3)
 //    r1.scss: .rli-r1-selected { background-color: #fcfcd3 }
-//    The component exposes --mpb-choice-selected-bg (checked first) and
-//    --pie-correct-answer-choice-selected-bg (checked second). The latter is
-//    set by the rootStyle inline binding and overrides the variant CSS value,
-//    so the variant must set --mpb-choice-selected-bg directly to win.
+//    The component resolves --mpb-choice-selected-bg first, then the canonical
+//    --pie-secondary-background, so the variant sets --mpb-choice-selected-bg
+//    to override the theme without touching a broad semantic token.
 // ---------------------------------------------------------------------------
 test('g-stem: selected choice tile background is yellow (#fcfcd3)', async ({ page }) => {
   await openGStemRoute(page);

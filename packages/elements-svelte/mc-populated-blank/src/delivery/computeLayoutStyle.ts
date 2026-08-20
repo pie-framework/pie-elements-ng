@@ -84,9 +84,8 @@ export function computeLayoutStyle(params: {
   isBlankOnlyTemplate: boolean;
   configuredLimits: unknown;
   customProfilePresets: unknown;
-  correctAnswerStyleVars: string;
 }): LayoutStyleResult {
-  const { layoutProfile, isBlankOnlyTemplate, correctAnswerStyleVars } = params;
+  const { layoutProfile, isBlankOnlyTemplate } = params;
 
   const configured =
     params.configuredLimits && typeof params.configuredLimits === 'object'
@@ -122,7 +121,7 @@ export function computeLayoutStyle(params: {
   const cssVars = (Object.keys(CSS_VAR_SPEC) as (keyof typeof CSS_VAR_SPEC)[]).map(
     (key) => `${CSS_VAR_SPEC[key].varName}:${l[key]}${CSS_VAR_SPEC[key].unit}`
   );
-  const rootStyle = [...cssVars, correctAnswerStyleVars].join(';');
+  const rootStyle = cssVars.join(';');
 
   return { rootStyle, blankWidth, blankBorderWidth, legendMaxChars: l.legendMaxChars };
 }

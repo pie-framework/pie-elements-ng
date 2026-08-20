@@ -63,6 +63,38 @@ Use these first:
 
 Component-specific tokens still exist (e.g. `--choice-input-*`, `--feedback-*`) but should be optional refinements.
 
+## Token Ownership
+
+`pie-players` owns the `--pie-*` namespace. Its token registry
+(`packages/theme/src/token-registry.json`, published as
+`@pie-players/pie-theme/token-registry.json`) records what a host may theme and
+who owns each name. An element must not invent a `--pie-*` name: an unregistered
+one is invisible to that registry's gate, so no color scheme overrides it and no
+contrast rule covers it. It renders its hardcoded fallback in every scheme.
+
+Elements read canonical tokens and declare none. Where an element needs a local
+hook — sizing, a Learnosity variant override, a per-instance handoff — it uses
+its own prefix (`--mpb-*` for `mc-populated-blank`), which is element-private and
+outside the host contract. A per-component `--pie-*` hook is possible but is a
+`component-public` registry entry owned by the defining package, so it needs a
+registry change in `pie-players` first.
+
+`tests/pie-token-contract.test.ts` pins this for the Svelte element packages: it
+fails on any unregistered `--pie-*` read and on any `--pie-*` declaration.
+
+Focus outlines chain through registered focus tokens rather than a literal
+color:
+
+```css
+outline: 2px solid
+  var(--pie-focus-outline, var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0)));
+```
+
+`--pie-focus-outline` is `planned` in the registry and not yet defined by the
+theme, so the chain falls through to `--pie-button-focus-outline` (set by every
+`pie-players` scheme) and then `--pie-focus-checked-border` (also defined by
+`packages/shared/theming`).
+
 ## Runtime Theme Changes
 
 Theme changes apply immediately because elements consume CSS variables at render time.  

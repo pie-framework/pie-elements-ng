@@ -56,7 +56,7 @@ let {
   }
 
   .cloze-marker:focus-within {
-    outline: 2px solid var(--pie-focus, #2563eb);
+    outline: 2px solid var(--mpb-focus-ring, #1565c0);
     outline-offset: 2px;
   }
 

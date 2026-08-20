@@ -467,6 +467,10 @@ function onSplitKeyDown(e: KeyboardEvent) {
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     color: #0f172a;
     box-sizing: border-box;
+    --vc-focus-ring: var(
+      --pie-focus-outline,
+      var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))
+    );
   }
   .author-shell {
     display: flex;
@@ -504,7 +508,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
     background: #cbd5e1;
   }
   .split-gutter:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--vc-focus-ring, #1565c0);
     outline-offset: 2px;
   }
   @media (max-width: 900px) {

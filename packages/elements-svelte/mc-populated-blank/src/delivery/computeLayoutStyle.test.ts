@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
 
-const NO_CORRECT_ANSWER_VARS = '';
 const base = {
   configuredLimits: {},
   customProfilePresets: {},
-  correctAnswerStyleVars: NO_CORRECT_ANSWER_VARS,
 };
 
 // ---------------------------------------------------------------------------
@@ -155,13 +153,12 @@ describe('rootStyle structure', () => {
     expect(rootStyle).toContain('--mpb-inline-grid-column-gap:');
   });
 
-  it('appends correctAnswerStyleVars at the end', () => {
+  it('emits only --mpb-* layout vars, never a --pie-* token', () => {
     const { rootStyle } = computeLayoutStyle({
       ...base,
       layoutProfile: '',
       isBlankOnlyTemplate: false,
-      correctAnswerStyleVars: '--pie-foo:bar',
     });
-    expect(rootStyle).toMatch(/--pie-foo:bar$/);
+    expect(rootStyle).not.toMatch(/--pie-/);
   });
 });

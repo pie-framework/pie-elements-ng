@@ -603,6 +603,10 @@ const draggedTile = $derived<VennTile | null>(
     padding: 16px;
     color: #0f172a;
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    --vc-focus-ring: var(
+      --pie-focus-outline,
+      var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))
+    );
   }
   .venn-prompt {
     font-size: 16px;
@@ -627,7 +631,7 @@ const draggedTile = $derived<VennTile | null>(
     user-select: none;
   }
   .toggle-correct:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--vc-focus-ring, #1565c0);
     outline-offset: 2px;
     border-radius: 2px;
   }

@@ -124,7 +124,7 @@ let {
   }
 
   .choice-row-horizontal:hover .choice-tile {
-    background: var(--mpb-choice-hover-bg, var(--pie-correct-answer-choice-hover-bg, #f2f2f2));
+    background: var(--mpb-choice-hover-bg, var(--pie-background-dark, #ecedf1));
   }
 
   .pie-choice-horizontal:not(.is-selected):not(:hover) .pie-choice-tile {
@@ -132,15 +132,15 @@ let {
   }
 
   .choice-row-horizontal.is-selected .choice-tile {
-    background: var(--mpb-choice-selected-bg, var(--pie-correct-answer-choice-selected-bg, #fcfcd3));
+    background: var(--mpb-choice-selected-bg, var(--pie-secondary-background, rgba(241, 241, 241, 1)));
   }
 
   .choice-row-horizontal.is-selected:hover .choice-tile {
-    background: var(--mpb-choice-selected-bg, var(--pie-correct-answer-choice-selected-bg, #fcfcd3));
+    background: var(--mpb-choice-selected-bg, var(--pie-secondary-background, rgba(241, 241, 241, 1)));
   }
 
   .pie-choice:not(.pie-choice-horizontal):hover .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-hover-bg, #ececec);
+    background: var(--pie-background-dark, #ecedf1);
   }
 
   .pie-choice:not(.pie-choice-horizontal):not(.is-selected):not(:hover) .pie-choice-label-wrap {
@@ -148,28 +148,28 @@ let {
   }
 
   .pie-choice:not(.pie-choice-horizontal).is-selected .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
+    background: var(--pie-secondary-background, rgba(241, 241, 241, 1));
     border-radius: 6px;
   }
 
   .pie-choice:not(.pie-choice-horizontal).is-selected:hover .pie-choice-label-wrap {
-    background: var(--pie-correct-answer-choice-selected-bg, #f1f1f1);
+    background: var(--pie-secondary-background, rgba(241, 241, 241, 1));
   }
 
   .pie-choice.choice-correct {
-    border-left: 3px solid var(--pie-correct-answer-choice-correct-border, #0ea449);
+    border-left: 3px solid var(--pie-correct-tertiary, #0ea449);
   }
 
   .pie-choice.choice-incorrect {
-    border-left: 3px solid var(--pie-correct-answer-choice-incorrect-border, #bf0d00);
+    border-left: 3px solid var(--pie-incorrect-icon, #bf0d00);
   }
 
   .pie-choice-horizontal.choice-correct .choice-tile {
-    background: var(--pie-correct-answer-choice-correct-bg, #e8f5e9);
+    background: var(--pie-correct-secondary, #e8f5e9);
   }
 
   .pie-choice-horizontal.choice-incorrect .choice-tile {
-    background: var(--pie-correct-answer-choice-incorrect-bg, #ffebee);
+    background: var(--pie-incorrect-secondary, #ffebee);
   }
 
   .pie-choice-feedback-badge {
@@ -183,15 +183,15 @@ let {
     font-size: 0.72rem;
     line-height: 1;
     font-weight: 700;
-    color: var(--pie-correct-answer-feedback-glyph-color, #fff);
+    color: var(--pie-white, #ffffff);
   }
 
   .pie-choice-feedback-correct {
-    background: var(--pie-correct-answer-feedback-correct-bg, #087d38);
+    background: var(--pie-correct-icon, #087d38);
   }
 
   .pie-choice-feedback-incorrect {
-    background: var(--pie-correct-answer-feedback-incorrect-bg, #bf0d00);
+    background: var(--pie-incorrect-icon, #bf0d00);
   }
 
   .choice-row-horizontal :global(p) {

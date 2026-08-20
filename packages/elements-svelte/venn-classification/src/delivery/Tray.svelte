@@ -46,7 +46,7 @@ let {
     border-color: #0ea5e9;
   }
   .venn-tray.focused {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--vc-focus-ring, #1565c0);
     outline-offset: 2px;
   }
   .tray-label {

@@ -108,7 +108,7 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
   }
   .venn-tile:focus-visible,
   .venn-tile.focused {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--vc-focus-ring, #1565c0);
     outline-offset: 2px;
   }
   .venn-tile:hover:not(:disabled) {
