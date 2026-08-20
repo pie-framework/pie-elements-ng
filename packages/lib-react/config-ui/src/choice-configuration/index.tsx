@@ -15,7 +15,7 @@ import TextField from '@mui/material/TextField';
 import ActionDelete from '@mui/icons-material/Delete';
 import ArrowRight from '@mui/icons-material/SubdirectoryArrowRight';
 import IconButton from '@mui/material/IconButton';
-import { InputContainer as InputContainerImport } from '@pie-lib/render-ui';
+import { InputContainer as InputContainerImport, color } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -99,8 +99,10 @@ const StyledFeedbackContainer: any = styled('div')(() => ({
   position: 'relative',
 }));
 
-const StyledArrowIcon: any = styled(ArrowRight)(({ theme }) => ({
-  fill: theme.palette.grey[400],
+// The arrow is a connector: it is the only thing tying the feedback field to the
+// choice above it, so it takes a stroke token that clears 3:1 in every scheme.
+const StyledArrowIcon: any = styled(ArrowRight)(() => ({
+  fill: color.border(),
   left: -56,
   position: 'absolute',
   top: 40,
