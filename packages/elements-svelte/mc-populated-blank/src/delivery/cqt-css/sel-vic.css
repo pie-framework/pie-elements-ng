@@ -12,8 +12,6 @@
   --mpb-inline-grid-row-gap: 0.5rem;
   --mpb-inline-template-margin-top: 0.2rem;
   --mpb-inline-choices-margin-top: 0.2rem;
-  --pie-correct-answer-choice-hover-bg: #e2e2e2;
-  --pie-correct-answer-choice-selected-bg: #fcfcd3;
 }
 
 .mc-populated-blank-root.variant-sel-vic .pie-audio-transcript {

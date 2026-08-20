@@ -10,7 +10,6 @@
 />
 
 <script lang="ts">
-import { color } from '@pie-lib/styling-svelte';
 import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import AudioPlayer from './AudioPlayer.svelte';
 import ClozeMarker from './ClozeMarker.svelte';
@@ -85,30 +84,12 @@ const isBlankOnlyTemplate = $derived(layoutProfileFlags.isBlankOnlyTemplate);
 const isHorizontalChoices = $derived(layoutProfileFlags.isHorizontalChoices);
 const hasInlineSentenceAudioLayout = $derived(layoutProfileFlags.hasInlineSentenceAudioLayout);
 const useFeatureButtonAudio = $derived(layoutProfileFlags.useFeatureButtonAudio);
-const correctAnswerStyleVars = $derived.by(() =>
-  [
-    `--pie-correct-answer-toggle-label-color:${color.text()}`,
-    `--pie-correct-answer-toggle-icon-open-bg:${color.tertiaryLight()}`,
-    `--pie-correct-answer-toggle-icon-closed-bg:${color.backgroundDark()}`,
-    `--pie-correct-answer-toggle-icon-glyph-color:${color.tertiary()}`,
-    `--pie-correct-answer-choice-hover-bg:${color.backgroundDark()}`,
-    `--pie-correct-answer-choice-selected-bg:${color.secondaryBackground()}`,
-    `--pie-correct-answer-choice-correct-bg:${color.correctSecondary()}`,
-    `--pie-correct-answer-choice-incorrect-bg:${color.incorrectSecondary()}`,
-    `--pie-correct-answer-choice-correct-border:${color.correctTertiary()}`,
-    `--pie-correct-answer-choice-incorrect-border:${color.incorrectWithIcon()}`,
-    `--pie-correct-answer-feedback-correct-bg:${color.correctWithIcon()}`,
-    `--pie-correct-answer-feedback-incorrect-bg:${color.incorrectWithIcon()}`,
-    `--pie-correct-answer-feedback-glyph-color:${color.white()}`,
-  ].join(';')
-);
 const layout = $derived(
   computeLayoutStyle({
     layoutProfile,
     isBlankOnlyTemplate,
     configuredLimits: model?.layoutLimits,
     customProfilePresets: model?.layoutProfilePresets,
-    correctAnswerStyleVars,
   })
 );
 
@@ -345,14 +326,14 @@ $effect(() => {
                 version="1.1"
                 viewBox="-283 359 34 35"
               >
-                <circle cx="-266" cy="375.9" r="14" fill="var(--pie-correct-answer-toggle-icon-open-bg, #bce2ff)" />
+                <circle cx="-266" cy="375.9" r="14" fill="var(--pie-tertiary-light, #d0e2f0)" />
                 <path
                   d="M-280.5,375.9c0-8,6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5s-6.5,14.5-14.5,14.5S-280.5,383.9-280.5,375.9z M-279.5,375.9c0,7.4,6.1,13.5,13.5,13.5c7.4,0,13.5-6.1,13.5-13.5s-6.1-13.5-13.5-13.5C-273.4,362.4-279.5,368.5-279.5,375.9z"
-                  fill="var(--pie-correct-answer-toggle-icon-open-bg, #bce2ff)"
+                  fill="var(--pie-tertiary-light, #d0e2f0)"
                 />
                 <polygon
                   points="-265.4,383.1 -258.6,377.2 -261.2,374.2 -264.3,376.9 -268.9,368.7 -272.4,370.6"
-                  fill="var(--pie-correct-answer-toggle-icon-glyph-color, #1a9cff)"
+                  fill="var(--pie-tertiary, #146eb3)"
                 />
               </svg>
             {:else}
@@ -377,11 +358,11 @@ $effect(() => {
                 <circle cx="-114.2" cy="143.5" r="14" fill="white" />
                 <path
                   d="M-114.2,158c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-106.2,158-114.2,158z M-114.2,130c-7.4,0-13.5,6.1-13.5,13.5s6.1,13.5,13.5,13.5s13.5-6.1,13.5-13.5S-106.8,130-114.2,130z"
-                  fill="var(--pie-correct-answer-toggle-icon-closed-bg, #bce2ff)"
+                  fill="var(--pie-background-dark, #ecedf1)"
                 />
                 <polygon
                   points="-114.8,150.7 -121.6,144.8 -119,141.8 -115.9,144.5 -111.3,136.3 -107.8,138.2"
-                  fill="var(--pie-correct-answer-toggle-icon-glyph-color, #1a9cff)"
+                  fill="var(--pie-tertiary, #146eb3)"
                 />
               </svg>
             {/if}
@@ -471,6 +452,13 @@ $effect(() => {
     border: 0;
   }
 
+  .mc-populated-blank-root {
+    --mpb-focus-ring: var(
+      --pie-focus-outline,
+      var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))
+    );
+  }
+
   .mc-populated-blank-root :global(.prose) {
     max-width: none;
   }
@@ -484,7 +472,7 @@ $effect(() => {
     display: flex;
     justify-content: center;
     text-align: center;
-    color: var(--pie-correct-answer-toggle-label-color, var(--pie-text, black));
+    color: var(--pie-text, black);
   }
 
   .pie-correct-answer-toggle-row {
