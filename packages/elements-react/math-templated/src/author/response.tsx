@@ -30,7 +30,7 @@ const ResponseContainer: any = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
   width: '100%',
   minWidth: '548px',
-  border: `1px solid ${theme.palette.grey[700]}`,
+  border: `1px solid ${color.borderDark()}`,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
@@ -67,8 +67,8 @@ const FlexContainer: any = styled('div')({
   display: 'flex',
 });
 
-const AlternateButton: any = styled(Button)(({ theme }) => ({
-  border: `1px solid ${theme.palette.grey['A400']}`,
+const AlternateButton: any = styled(Button)(() => ({
+  border: `1px solid ${color.border()}`,
   color: color.text(),
 }));
 
@@ -82,13 +82,16 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-const ResponseBox: any = styled('div')(({ theme }) => ({
-  background: theme.palette.grey['A100'],
-  color: theme.palette.grey['A700'],
+// Fill and ink move together so the slot label stays legible on whatever the fill becomes.
+const ResponseBox: any = styled('div')(() => ({
+  background: color.backgroundDark(),
+  color: color.text(),
   display: 'inline',
   minWidth: '50px',
   padding: '8px',
-  border: '1px solid #C0C3CF',
+  // #C0C3CF is `--pie-blue-grey-300`'s default, but that token is a fill and measures
+  // 1.00:1 against some schemes' backgrounds; the slot outline needs the stroke token.
+  border: `1px solid ${color.border()}`,
 }));
 
 const AlternateBar: any = styled('div')({

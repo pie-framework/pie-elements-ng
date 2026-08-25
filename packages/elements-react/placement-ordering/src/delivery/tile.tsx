@@ -47,7 +47,7 @@ const StyledTileContent: any = styled('div')(
     padding: '10px',
     boxSizing: 'border-box',
     overflow: 'hidden',
-    border: type === 'choice' || type === 'target' ? `1px solid ${theme.palette.grey[400]}` : '1px solid transparent',
+    border: type === 'choice' || type === 'target' ? `1px solid ${color.border()}` : '1px solid transparent',
     backgroundColor: type === 'choice' || type === 'target' ? color.background() : 'transparent',
     transition:
       type === 'choice' || type === 'target'
@@ -59,7 +59,9 @@ const StyledTileContent: any = styled('div')(
     ...((type === 'choice' || type === 'target') && {
       '&:hover': {
         backgroundColor: disabled ? color.background() : color.secondary(),
-        borderColor: disabled ? theme.palette.grey[400] : theme.palette.primary.main,
+        // The disabled branch says "disabled", so it takes the disabled token rather
+        // than the neutral stroke the resting state uses.
+        borderColor: disabled ? color.disabled() : theme.palette.primary.main,
         transform: disabled ? 'none' : 'scale(1.02)',
       },
     }),
