@@ -31,7 +31,7 @@ const ResponseContainer: any = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
   width: '100%',
   minWidth: '548px',
-  border: `1px solid ${theme.palette.grey[700]}`,
+  border: `1px solid ${color.borderDark()}`,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
@@ -100,15 +100,17 @@ const CustomColorCheckbox: any = styled(Checkbox)({
   color: `${color.tertiary()} !important`,
 });
 
-const AlternateButton: any = styled(Button)(({ theme }) => ({
-  border: `1px solid ${theme.palette.grey['A400']}`,
+const AlternateButton: any = styled(Button)(() => ({
+  border: `1px solid ${color.border()}`,
   color: color.text(),
 }));
 
 const RemoveAlternateButton: any = styled(Button)(({ theme }) => ({
   marginLeft: theme.spacing(2),
-  border: `1px solid ${theme.palette.grey['A400']}`,
-  color: 'gray',
+  border: `1px solid ${color.border()}`,
+  // `--pie-disabled` defaults to the same `gray` this replaces, so the resting
+  // appearance is unchanged and it now steps with the scheme.
+  color: color.disabled(),
   fontSize: '0.8rem',
 }));
 

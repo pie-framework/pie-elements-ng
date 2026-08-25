@@ -15,6 +15,7 @@ import { isEmpty, isUndefined, reduce } from '@pie-element/shared-lodash';
 
 import Arrow from './arrow.js';
 import DragAndDropAnswer from './answer.js';
+import { color } from '@pie-lib/render-ui';
 
 // matches the min width of the answer entries (see AnswerContainer in ./answer), so the two columns
 // give the row an intrinsic min width that the horizontal scroll container can overflow.
@@ -38,8 +39,8 @@ const ItemList: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const PromptEntry: any = styled('div')(({ theme }) => ({
-  border: `1px solid ${theme.palette.grey[400]}`,
+const PromptEntry: any = styled('div')(() => ({
+  border: `1px solid ${color.border()}`,
   boxSizing: 'border-box',
   flex: 1,
   margin: '10px 0',
