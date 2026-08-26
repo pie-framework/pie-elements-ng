@@ -1,0 +1,49 @@
+{
+  "name": "@pie-lib/media-svelte",
+  "version": "0.1.0",
+  "description": "Shared accessible media UI helpers and transcript component for Svelte PIE elements",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/lib-svelte/media-svelte"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@pie-element/shared-types": "workspace:*",
+    "dompurify": "^3.4.14",
+    "svelte": "^5.56.8"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "jsdom": "^30.0.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
+  "bugs": {
+    "url": "https://github.com/pie-framework/pie-elements-ng/issues"
+  }
+}

@@ -41,7 +41,12 @@ const REGISTERED_CANONICAL_TOKENS = new Set([
  */
 const REGISTERED_PLANNED_TOKENS = new Set(['--pie-focus-outline']);
 
-const SVELTE_ELEMENT_PACKAGES = ['mc-populated-blank', 'simple-cloze', 'venn-classification'];
+const SVELTE_ELEMENT_PACKAGES = [
+  'mc-populated-blank',
+  'simple-cloze',
+  'video-stimulus',
+  'venn-classification',
+];
 const SOURCE_EXTENSIONS = new Set(['.css', '.svelte', '.ts']);
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 

@@ -1,71 +1,96 @@
 # Video stimulus
 
-Status: **Proposal** · Tier: 2 · Impl. path: New `@pie-element/video-stimulus`
+Status: **Accepted** · Tier: 2 · Impl. path: New `@pie-element/video-stimulus`
+
+Detailed facets:
+
+- [Delivery interface](./delivery.md)
+- [Authoring interface](./authoring.md)
+- [Delivery HTML mockup](./wireframes/delivery.html)
+- [Authoring HTML mockup](./wireframes/authoring.html)
 
 ## Context
 
-PIE needs a reusable video stimulus element for timed-media assessment, online course, and vocational/training workflows. The element renders media and exposes playback state/control APIs, while section-level composition in `pie-players` owns cue-to-question orchestration, child item sessions, playback policy, and aggregate completion.
+PIE needs an accessible video passage for timed-media assessments, courses, and training workflows. The element owns media rendering, alternatives, authoring, and validation; [`pie-players`](https://github.com/pie-framework/pie-players) owns cue orchestration, playback policy, child sessions, progress persistence, completion, and TTS/media arbitration.
 
-This PRD consumes the sibling `../pie-players` contracts rather than defining parallel media or timeline APIs:
-
-- [Timed-media section contract](https://github.com/pie-framework/pie-players/blob/develop/docs/prds/timed-media-section-contract.md) — implemented section data/session, cue policy, and the `MediaTimeSource` integration port.
-- [Timed-media architecture](https://github.com/pie-framework/pie-players/blob/develop/docs/architecture/timed-media-section.md) — layer ownership and rationale; its older `VideoStimulusHandle` sketch is superseded by the implemented port.
-- [Media asset contract](https://github.com/pie-framework/pie-players/blob/develop/docs/prds/shared-contracts/media-asset-contract.md) — Accepted and shipped `MediaAssetRef`, `MediaSource`, `TextTrackRef`, `TranscriptRef`, and `MediaFragmentRange` types.
-- [Section-player timed-media documentation](https://github.com/pie-framework/pie-players/blob/develop/packages/section-player/README.md#timed-media) and [browser coverage](https://github.com/pie-framework/pie-players/blob/develop/packages/section-player/tests/section-player-timed-media.spec.ts) — the actual passage/stimulus attachment behavior.
-
-`pie-players` owns cue orchestration, playback policy, progress persistence, child sessions, TTS/media arbitration, and aggregate completion. This repo owns the leaf element's media rendering, accessibility, authoring, and stable exposure of a media time source.
+This PRD consumes the accepted [media asset](https://github.com/pie-framework/pie-players/blob/develop/docs/prds/shared-contracts/media-asset-contract.md) and [timed-media section](https://github.com/pie-framework/pie-players/blob/develop/docs/prds/timed-media-section-contract.md) contracts. The implementation proof is not complete when video renders in isolation: a packed element must be loaded by `pie-players`, discovered as the section time source, and reveal at least two linked questions at distinct cues.
 
 ## Goals
 
-- Provide a Svelte-based `@pie-element/video-stimulus` package that follows the PIE element packaging and runtime contract.
-- Render accessible video stimulus media with sources, poster, captions/subtitles, transcript, labels, and descriptions.
-- Satisfy the shipped `MediaTimeSource` port—current time, duration, paused and seekable state, capability declarations, play/pause/seek, and subscription notifications—without exposing a dependency-specific API.
-- Render a discoverable native media element so the existing section passage card can attach `createMediaElementTimeSource`; a wrapped player that cannot expose one must provide an equivalent port without moving cue policy into this element.
-- Keep the underlying media-player dependency isolated behind the PIE-owned element API.
+- Render video sources, poster, text tracks, transcript, label, and description using the shared media vocabulary.
+- Give authors a previewable source/track/transcript workflow with actionable accessibility validation.
+- Integrate with `MediaTimeSource` without a second timing interface, playback Session, or lifecycle-event vocabulary.
+- Localize element-owned strings and consume registered `--pie-*` theme tokens.
+- Prove the package-to-question architecture through a real timed-section demo and browser test.
 
 ## Non-goals
 
-- No cue-to-question binding; cue orchestration belongs to `pie-players` timed-media section behavior.
-- No child item sessions, section completion, section scoring, or playback-lock policy.
-- No media upload, storage, CDN, signed URL, transcoding, retention, or authorization.
-- No composition authoring UI for cue timelines or item bindings.
-- No standards adapter or QTI/PCI conformance claim.
+- **No cue timeline or child-item binding in this package.** Those are `TimedMediaSectionData` composition concerns.
+- **No element scoring or learner response.** Watching and cue progress are section state, not a leaf-element response.
+- **No upload, transcoding, storage, authorization, or signed-URL management.** The element consumes authored asset references.
+- **No custom media controls in v1.** `@videojs/html` remains a future option, but v10 is currently beta and its package is too large to adopt before proving the native seam under the browser bundle budget.
+- **No autoplay or automatic resume.** Playback starts only from a learner action or player command.
+- **No print custom element in v1.** A video has no faithful static representation; timed-section printing owns cue-item expansion.
+- **No leaf-owned custom time-source registration in v1.** The current registration event requires passage identity the leaf does not naturally own; native discovery is the ratified path.
 
 ## Proposed surface
 
-- **Model**: consume the ratified `MediaAssetRef` v1 vocabulary from `@pie-players/pie-players-shared/types`, requiring `kind: "video"`, at least one safe playable `source`, and the element-specific accessibility subset decided below. Do not introduce aliases such as `captions` or `expectedDuration`: the shared names are `tracks` and `durationSeconds`.
-- **Session**: none for playback progress. `SectionControllerSessionState.timedMedia` already persists position, furthest position, reached cues, gate state, and media completion. Standalone playback may reset when remounted; adding a second progress owner would create conflicting restore behavior.
-- **Modes supported**: `gather`, `view`, `evaluate`, `configure`; media rendering is consistent across delivery modes, while configure exposes authoring controls.
-- **Key delivery interactions**: native or wrapped video controls, keyboard play/pause/seek/track controls, visible transcript access, caption selection, and error state presentation.
-- **Controller responsibilities**: validate the consumer-required `MediaAssetRef` subset and reject unsupported versions/kinds; expose view-model data; return no score; avoid cue, gate, playback-policy, or section-session logic. URL normalization and scheme policy must reuse the shared `pie-players` catalog-media validation rather than create another allow-list; an exported package boundary for that helper must be confirmed before implementation.
-- **Authoring surface**: sources, poster, tracks, transcript, accessible label/description, language, and dependency-specific preview settings. Cue points and child item bindings are explicitly out of scope and belong to composition authoring around `TimedMediaSectionData`.
+**Model**:
 
-**Timed-media integration.** The canonical API is `MediaTimeSource` from `@pie-players/pie-players-shared/timed-media`, with `capabilities.canPause`, `capabilities.canRestrictSeeking`, `currentTime`, `duration`, `paused`, `seekable`, `play()`, `pause()`, `seekTo()`, and `subscribe()` notifications for `time`, `seek`, `play`, `pause`, and `ended`. Do not add a parallel `media-ready` / `media-time-changed` / lifecycle-event vocabulary.
+- `id` / `element` — normal PIE Model identity.
+- `media` — nested `MediaAssetRef` with `version: 1` and `kind: "video"`; nesting prevents collision between element and asset IDs.
+- `language` — BCP 47 locale for element-owned learner UI, distinct from `media.lang`.
+- `presentation` — visible label/description and initial transcript expansion.
+- `accessibilityProfile` — author declarations for meaningful audio, caption provision, and whether important visuals are described.
+- `uiText` — optional typed learner-string overrides; built-in English and Spanish resources provide defaults.
 
-For a discoverable native `<video>`, the implemented `SectionPassageCard` finds the element in the stimulus passage subtree and wraps it with `createMediaElementTimeSource`; that adapter attaches to `SectionController` through the internal bubbling `pie-media-time-source` registration seam. A host-owned third-party port outranks native discovery. The element must therefore keep its media node discoverable from the passage card (not hidden behind an inaccessible shadow boundary), or explicitly integrate through the same port if its chosen player library prevents discovery.
+`@pie-element/shared-types` remains the compile-time owner of the structural media mirror and gains the accepted additive poster, duration, track, transcript, and bitrate fields. Runtime URL policy comes from the public `@pie-players/pie-assessment-toolkit` helpers; the element does not define another safe-scheme list.
+
+**Session**: none. `SectionControllerSessionState.timedMedia` remains the sole owner of current/furthest position, reached cues, gate state, and media completion. Delivery never dispatches `session-changed` for playback.
+
+**Modes**: `gather`, `view`, and `evaluate` use the same playable surface. `configure` is the package author export. Read-only response mode does not disable stimulus playback.
+
+**Controller responsibilities**:
+
+- `createDefaultModel()` returns a structurally valid source-less authoring draft; `validateDraft()` accepts missing content but rejects malformed supplied values.
+- `validate()` is strict publish validation: correct version/kind, asset ID/label/language, at least one safe source, durable URLs, valid numeric metadata, complete tracks, one default track, valid transcript, and resolved accessibility declarations.
+- `model()` returns a typed safe ViewModel, preserves source order, applies presentation/i18n defaults, and ignores the generic Session argument.
+- `reviewAccessibility()` distinguishes blocking content obligations from recommendations software cannot verify.
+- No `outcome()` or `createCorrectResponseSession()` is exported, following the non-scoring `passage` capability precedent.
+
+**Shared Svelte media module**: reusable transcript sanitization/rendering and typed media UI messages live in `packages/lib-svelte/media-svelte`. It hides DOMPurify and transcript precedence behind a small PIE-owned interface; it does not wrap a media player or define timing events.
+
+**Timed-media integration**: delivery renders exactly one intended `<video>` as the first/only discoverable `video, audio` descendant with `shadow: "none"`. `SectionPassageCard` finds it and attaches `createMediaElementTimeSource`, yielding native pause/seek capabilities and `time`, `seek`, `play`, `pause`, and `ended` notifications. The element emits no parallel media events and implements no cue, gate, seek-lock, restore, or TTS policy.
 
 ## Worked example
 
-> *Prompt*: Watch the lab safety video. Questions will appear in the section player as the timeline reaches authored cue points.
+> *Prompt*: Watch the lab safety demonstration. Questions appear when the video reaches relevant steps.
 
-The video stimulus renders the video, captions, and transcript inside the passage identified by `TimedMediaSectionData.stimulusRef`. The section passage card discovers its native `<video>`, adapts it to `MediaTimeSource`, and the section controller receives a `time` notification at 42.5 seconds. The controller—not the element—activates the authored cue, pauses through the port if the cue is a gate and `canPause` is true, reveals the child question, and persists timed-media state. The video stimulus does not know which question appeared or how the section aggregates completion.
+The element renders local demo video, captions, and transcript in the passage selected by `TimedMediaSectionData.stimulusRef`. At cue 1, the section controller reveals a safety-equipment question. At a later required cue, it pauses through `MediaTimeSource`, reveals a handling-procedure question, and persists timed-media state. The element knows neither question identity nor completion state.
 
 ## Accessibility
 
-WCAG 2.2 AA is the baseline.
+WCAG 2.2 AA is the baseline; element-specific details are in the facet files.
 
-- **Keyboard model**: all media controls, captions/subtitle selection, transcript toggle, error details, and retry controls are keyboard reachable and operable.
-- **Screen-reader model**: the element exposes a labelled media region, announces media load/error state, labels track controls, and keeps transcript access discoverable.
-- **Captions/transcripts**: captions and transcript metadata are first-class model fields, not optional implementation afterthoughts.
-- **Hit-target / motion / contrast specifics**: controls meet touch target and contrast expectations; reduced-motion preferences are respected for animated UI; zoom layouts keep controls, captions, and transcript usable.
-- **Audio coordination**: the element satisfies `MediaTimeSource`; `SectionController.pauseMediaForCompetingAudio()` and the `timed-media-audio-started` controller event feed the implemented toolkit-level last-action-wins TTS/media handoff. The element does not implement a second TTS policy.
-- **Timed-media focus and announcements**: cue announcements, gate focus movement, and advisory degradation when pause/seek capabilities are absent are section-player responsibilities and already have browser coverage. The element must not cover the caption region when embedded beside a revealed question.
+- Meaningful synchronized audio requires captions; subtitles do not automatically count.
+- Important visual information must be described in main/integrated audio in v1. A native `descriptions` text track is rendered but does not count as verified spoken audio description without browser/AT evidence.
+- Transcript is strongly recommended and remains available on playback failure, but does not universally replace captions or audio description.
+- Transcript content is normal navigable content, never a long `aria-describedby` value or live region.
+- No autoplay, focus stealing, global character shortcuts, orientation lock, or element-owned motion.
+
+## Architecture proof
+
+Release evidence must cover both sides of the seam:
+
+- `pie-elements-ng`: packed browser exports load a versioned element whose light-DOM video, tracks, transcript, authoring, and error states work without a Session.
+- `pie-players`: a package-backed timed-media section has two linked question cues; real muted playback reveals them separately, reports an attached media source, and does not fall through the missing-source degradation path.
+
+The integration uses an extracted `npm pack` artifact routed through the existing browser ESM loader. No published manifest may contain a sibling `file:` or `link:` dependency.
 
 ## Open questions
 
-- [ ] Should the first implementation target Video.js v10, Vidstack, Media Chrome, or native media with custom controls?
-- [ ] Which `MediaAssetRef` accessibility fields are required for this consumer? At minimum, decide when `tracks`, `transcript`, `label`, `description`, and `lang` are validation requirements rather than optional schema fields.
-- [ ] What exported package path should provide the existing `assessment-toolkit/src/services/catalog-media.ts` source normalization and safe-scheme validation to an element package without creating an invalid dependency direction?
-- [ ] What standalone print/export representation should a video stimulus provide? Timed-media **section** print behavior is already decided: when section printing exists, every cued item prints revealed because a printed page has no timeline.
-- [ ] Should transcript HTML be sanitized by the element package, shared utilities, or host pipeline?
-- [ ] Can the chosen media-player dependency leave a native `<video>` discoverable in the passage subtree, or must the element register its own `MediaTimeSource` port?
+*(none at this time)*
+
+## Status log
+
+- Accepted for implementation after review of the Svelte package, accessibility profile, native timed-media seam, author/delivery mockups, and linked-question architecture proof.

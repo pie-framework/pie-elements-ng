@@ -310,6 +310,16 @@ export const ELEMENT_REGISTRY: readonly ElementMetadata[] = [
     "demoCount": 8
   },
   {
+    "name": "video-stimulus",
+    "title": "Video Stimulus",
+    "packageName": "@pie-element/video-stimulus",
+    "hasAuthor": true,
+    "hasPrint": false,
+    "hasConfig": true,
+    "hasSession": false,
+    "demoCount": 1
+  },
+  {
     "name": "venn-classification",
     "title": "Venn Classification",
     "packageName": "@pie-element/venn-classification",

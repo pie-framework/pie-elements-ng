@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video stimulus authoring mockup</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --pie-text: #172033;
+        --pie-background-dark: #eef1f5;
+        --pie-border-light: #c8ced8;
+        --pie-button-focus-outline: #155eef;
+        --pie-focus-checked-border: #155eef;
+        --pie-focus-outline: #155eef;
+        --pie-incorrect-icon: #b42318;
+        --pie-incorrect-secondary: #fee4e2;
+        --pie-correct-icon: #067647;
+        --pie-correct-secondary: #d1fadf;
+        --pie-secondary-background: #eef4ff;
+        --pie-tertiary: #475467;
+        --pie-tertiary-light: #f8fafc;
+        --pie-white: #ffffff;
+        --author-page: #eef1f5;
+        --author-panel: #ffffff;
+        --author-topbar: #12233f;
+        --author-topbar-text: #ffffff;
+        --author-warning: #b54708;
+        --author-warning-bg: #fffaeb;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --pie-text: #f2f4f7;
+        --pie-background-dark: #202939;
+        --pie-border-light: #475467;
+        --pie-button-focus-outline: #84adff;
+        --pie-focus-checked-border: #84adff;
+        --pie-focus-outline: #84adff;
+        --pie-incorrect-icon: #fda29b;
+        --pie-incorrect-secondary: #55160c;
+        --pie-correct-icon: #6ce9a6;
+        --pie-correct-secondary: #073d2a;
+        --pie-secondary-background: #182230;
+        --pie-tertiary: #d0d5dd;
+        --pie-tertiary-light: #1d2939;
+        --pie-white: #101828;
+        --author-page: #0c111d;
+        --author-panel: #161b26;
+        --author-topbar: #101828;
+        --author-warning: #fec84b;
+        --author-warning-bg: #4e1d09;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: var(--author-page);
+        color: var(--pie-text);
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid
+          var(--pie-focus-outline, var(--pie-button-focus-outline, var(--pie-focus-checked-border)));
+        outline-offset: 2px;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        min-height: 64px;
+        padding: 10px 18px;
+        background: var(--author-topbar);
+        color: var(--author-topbar-text);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+
+      .brand,
+      .top-actions,
+      .status-cluster {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .pie-mark {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 10px;
+        background: #ee4923;
+        color: white;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .brand-copy strong,
+      .brand-copy span {
+        display: block;
+      }
+
+      .brand-copy span {
+        margin-top: 2px;
+        color: #d0d5dd;
+        font-size: 12px;
+      }
+
+      .draft-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+        padding: 5px 9px;
+        color: #f2f4f7;
+        font-size: 12px;
+      }
+
+      .draft-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #fec84b;
+      }
+
+      .top-actions select,
+      .top-actions button {
+        min-height: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        color: white;
+        padding: 8px 11px;
+      }
+
+      .top-actions option {
+        color: #101828;
+      }
+
+      .top-actions button {
+        cursor: pointer;
+      }
+
+      .top-actions .primary {
+        border-color: #ee4923;
+        background: #ee4923;
+        font-weight: 700;
+      }
+
+      .author-shell {
+        display: grid;
+        grid-template-columns: minmax(400px, 48%) minmax(420px, 1fr);
+        min-height: calc(100vh - 64px);
+      }
+
+      .editor-panel {
+        border-right: 1px solid var(--pie-border-light);
+        background: var(--author-panel);
+      }
+
+      .editor-heading {
+        padding: 22px 24px 16px;
+        border-bottom: 1px solid var(--pie-border-light);
+      }
+
+      .editor-heading h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+
+      .editor-heading p {
+        margin: 7px 0 0;
+        color: var(--pie-tertiary);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .validation-summary {
+        margin: 18px 24px 0;
+        padding: 14px 16px;
+        border: 1px solid var(--author-warning);
+        border-radius: 10px;
+        background: var(--author-warning-bg);
+      }
+
+      .validation-summary strong {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .validation-summary ul {
+        margin: 8px 0 0 22px;
+        padding: 0;
+        line-height: 1.5;
+      }
+
+      .validation-summary a {
+        color: inherit;
+        font-weight: 650;
+      }
+
+      .editor-form {
+        padding: 18px 24px 60px;
+      }
+
+      .form-section {
+        margin-bottom: 18px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 12px;
+        background: var(--author-panel);
+      }
+
+      .form-section > summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 52px;
+        padding: 12px 15px;
+        cursor: pointer;
+        font-weight: 750;
+        list-style: none;
+      }
+
+      .form-section > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .summary-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .summary-number {
+        display: grid;
+        width: 25px;
+        height: 25px;
+        place-items: center;
+        border-radius: 999px;
+        background: var(--pie-secondary-background);
+        color: var(--pie-text);
+        font-size: 12px;
+      }
+
+      .summary-meta {
+        color: var(--pie-tertiary);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .chevron {
+        transition: transform 150ms ease;
+      }
+
+      details[open] .chevron {
+        transform: rotate(180deg);
+      }
+
+      .section-content {
+        padding: 0 15px 16px;
+        border-top: 1px solid var(--pie-border-light);
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 15px;
+      }
+
+      .field,
+      fieldset {
+        min-width: 0;
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
+      }
+
+      .field label,
+      .field-label,
+      fieldset legend {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .required::after {
+        content: " *";
+        color: var(--pie-incorrect-icon);
+      }
+
+      input[type="text"],
+      input[type="url"],
+      select,
+      textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 8px;
+        background: var(--pie-white);
+        color: var(--pie-text);
+        padding: 9px 10px;
+      }
+
+      textarea {
+        min-height: 118px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      .hint,
+      .field-error {
+        display: block;
+        margin-top: 6px;
+        color: var(--pie-tertiary);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .field-error {
+        color: var(--pie-incorrect-icon);
+        font-weight: 650;
+      }
+
+      .check-row,
+      .radio-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        min-height: 38px;
+        padding: 7px 0;
+        line-height: 1.45;
+      }
+
+      .check-row input,
+      .radio-row input {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 auto;
+        margin: 0;
+      }
+
+      .list-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 15px 0 10px;
+      }
+
+      .list-toolbar p {
+        margin: 0;
+        color: var(--pie-tertiary);
+        font-size: 12px;
+      }
+
+      .secondary-button,
+      .icon-button,
+      .load-preview-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 40px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 8px;
+        background: var(--pie-white);
+        color: var(--pie-text);
+        padding: 8px 11px;
+        cursor: pointer;
+        font-weight: 650;
+      }
+
+      .secondary-button:hover,
+      .icon-button:hover,
+      .load-preview-button:hover {
+        background: var(--pie-background-dark);
+      }
+
+      .source-row,
+      .track-row {
+        margin-bottom: 10px;
+        padding: 12px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 10px;
+        background: var(--pie-tertiary-light);
+      }
+
+      .row-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .row-heading strong {
+        font-size: 13px;
+      }
+
+      .row-actions {
+        display: flex;
+        gap: 5px;
+      }
+
+      .icon-button {
+        width: 38px;
+        min-height: 38px;
+        padding: 0;
+      }
+
+      .source-fields {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(120px, 0.8fr);
+        gap: 10px;
+      }
+
+      .track-fields {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(105px, 0.7fr) minmax(90px, 0.6fr);
+        gap: 10px;
+      }
+
+      fieldset {
+        margin: 14px 0 0;
+        border: 0;
+        padding: 0;
+      }
+
+      .compliance-result {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: 14px;
+        padding: 12px;
+        border: 1px solid var(--author-warning);
+        border-radius: 9px;
+        background: var(--author-warning-bg);
+        line-height: 1.5;
+      }
+
+      .compliance-result[data-state="ready"] {
+        border-color: var(--pie-correct-icon);
+        background: var(--pie-correct-secondary);
+      }
+
+      .result-icon {
+        display: grid;
+        flex: 0 0 26px;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        border-radius: 999px;
+        background: var(--author-warning);
+        color: var(--pie-white);
+        font-weight: 800;
+      }
+
+      .compliance-result[data-state="ready"] .result-icon {
+        background: var(--pie-correct-icon);
+      }
+
+      .preview-panel {
+        min-width: 0;
+        padding: 24px;
+        background:
+          radial-gradient(circle at 80% 4%, color-mix(in srgb, var(--pie-secondary-background) 72%, transparent), transparent 30%),
+          var(--author-page);
+      }
+
+      .preview-sticky {
+        position: sticky;
+        top: 88px;
+      }
+
+      .preview-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .preview-toolbar h2 {
+        margin: 0;
+        font-size: 17px;
+      }
+
+      .preview-toolbar span {
+        color: var(--pie-tertiary);
+        font-size: 12px;
+      }
+
+      .preview-canvas {
+        border: 1px solid var(--pie-border-light);
+        border-radius: 14px;
+        background: var(--author-panel);
+        box-shadow: 0 18px 48px rgba(16, 24, 40, 0.12);
+      }
+
+      .preview-browser-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 13px;
+        border-bottom: 1px solid var(--pie-border-light);
+        background: var(--pie-tertiary-light);
+        border-radius: 14px 14px 0 0;
+        color: var(--pie-tertiary);
+        font-size: 12px;
+      }
+
+      .preview-dots {
+        display: flex;
+        gap: 5px;
+      }
+
+      .preview-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--pie-border-light);
+      }
+
+      .delivery-preview {
+        padding: clamp(18px, 4vw, 30px);
+      }
+
+      .preview-label {
+        margin: 0 0 7px;
+        font-size: clamp(19px, 2vw, 25px);
+        line-height: 1.25;
+      }
+
+      .preview-description {
+        margin: 0 0 16px;
+        color: var(--pie-tertiary);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .preview-transcript-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        margin-bottom: 11px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 8px;
+        background: var(--pie-white);
+        color: var(--pie-text);
+        padding: 8px 12px;
+        cursor: pointer;
+        font-weight: 650;
+      }
+
+      .preview-transcript {
+        margin: 0 0 12px;
+        padding: 13px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 9px;
+        background: var(--pie-tertiary-light);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .preview-transcript[hidden] {
+        display: none;
+      }
+
+      .preview-video-frame {
+        overflow: hidden;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 10px;
+        background: #101828;
+      }
+
+      .preview-video-frame video {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #101828;
+        object-fit: contain;
+      }
+
+      .preview-footnote {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 12px 2px 0;
+        color: var(--pie-tertiary);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      @media (max-width: 980px) {
+        .author-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .editor-panel {
+          border-right: 0;
+        }
+
+        .preview-panel {
+          border-top: 1px solid var(--pie-border-light);
+        }
+
+        .preview-sticky {
+          position: static;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .topbar,
+        .top-actions,
+        .status-cluster,
+        .source-fields,
+        .track-fields,
+        .field-grid {
+          align-items: stretch;
+          grid-template-columns: 1fr;
+          flex-direction: column;
+        }
+
+        .top-actions,
+        .top-actions select,
+        .top-actions button {
+          width: 100%;
+        }
+
+        .editor-heading,
+        .editor-form,
+        .preview-panel {
+          padding-right: 15px;
+          padding-left: 15px;
+        }
+
+        .validation-summary {
+          margin-right: 15px;
+          margin-left: 15px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="pie-mark" aria-hidden="true">PIE</div>
+        <div class="brand-copy">
+          <strong>Element author</strong>
+          <span>Video stimulus · Accepted design mockup</span>
+        </div>
+      </div>
+      <div class="status-cluster">
+        <span class="draft-badge"><span class="draft-dot" aria-hidden="true"></span> Draft has 1 warning</span>
+        <div class="top-actions">
+          <select id="theme-select" aria-label="Preview theme">
+            <option value="light">Light theme</option>
+            <option value="dark">Dark theme</option>
+          </select>
+          <button type="button" id="review-button">Review accessibility</button>
+          <button type="button" class="primary" id="save-button">Save draft</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="author-shell">
+      <section class="editor-panel" aria-labelledby="author-title">
+        <header class="editor-heading">
+          <h1 id="author-title">Configure video stimulus</h1>
+          <p>Add playable sources, alternatives, and the metadata learners need. Cue points are configured by the timed-media section composer.</p>
+        </header>
+
+        <div class="validation-summary" id="validation-summary" role="status">
+          <strong><span aria-hidden="true">⚠</span> Accessibility review needs attention</strong>
+          <ul id="validation-list">
+            <li><a href="#transcript-section">A transcript is strongly recommended.</a></li>
+          </ul>
+        </div>
+
+        <form class="editor-form" novalidate>
+          <details class="form-section" open>
+            <summary>
+              <span class="summary-title"><span class="summary-number">1</span> Basics</span>
+              <span class="summary-meta">Name and language <span class="chevron">⌄</span></span>
+            </summary>
+            <div class="section-content">
+              <div class="field-grid">
+                <div class="field full">
+                  <label class="required" for="video-label">Video label</label>
+                  <input id="video-label" type="text" value="Lab safety demonstration" />
+                  <span class="hint">Used as the visible caption and accessible media-region name.</span>
+                </div>
+                <div class="field full">
+                  <label for="video-description">Description</label>
+                  <textarea id="video-description">Watch how the student prepares a work area, handles a heated container, and disposes of materials safely.</textarea>
+                </div>
+                <div class="field">
+                  <label class="required" for="media-language">Media language</label>
+                  <select id="media-language">
+                    <option value="en-US">English (United States)</option>
+                    <option value="es-US">Spanish (United States)</option>
+                    <option value="zxx">No linguistic content</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="required" for="ui-language">Learner UI language</label>
+                  <select id="ui-language">
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <label class="check-row"><input id="show-label" type="checkbox" checked /> <span>Show label above the video</span></label>
+                  <label class="check-row"><input id="show-description" type="checkbox" checked /> <span>Show description above the video</span></label>
+                  <label class="check-row"><input id="transcript-expanded" type="checkbox" /> <span>Start with transcript expanded</span></label>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="form-section" open id="sources-section">
+            <summary>
+              <span class="summary-title"><span class="summary-number">2</span> Video sources</span>
+              <span class="summary-meta"><span id="source-count">1 source</span> <span class="chevron">⌄</span></span>
+            </summary>
+            <div class="section-content">
+              <div class="list-toolbar">
+                <p>The browser tries sources in authored order.</p>
+                <button class="secondary-button" id="add-source" type="button">＋ Add source</button>
+              </div>
+              <div id="source-list">
+                <div class="source-row" data-source-row>
+                  <div class="row-heading">
+                    <strong>Source 1 · Preferred</strong>
+                    <div class="row-actions">
+                      <button class="icon-button" type="button" aria-label="Move source up" title="Move up">↑</button>
+                      <button class="icon-button" type="button" aria-label="Move source down" title="Move down">↓</button>
+                      <button class="icon-button remove-row" type="button" aria-label="Remove source" title="Remove">×</button>
+                    </div>
+                  </div>
+                  <div class="source-fields">
+                    <div class="field">
+                      <label class="required" for="source-url-1">Video URL</label>
+                      <input id="source-url-1" class="source-url" type="url" value="../../../../apps/element-demo/static/video-stimulus/sample.webm" />
+                    </div>
+                    <div class="field">
+                      <label for="source-type-1">MIME type</label>
+                      <input id="source-type-1" type="text" value="video/webm" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button class="load-preview-button" id="load-preview" type="button">▶ Load preview from sources</button>
+              <span class="hint">Preview loading occurs after an explicit action, not while a URL is partially typed.</span>
+            </div>
+          </details>
+
+          <details class="form-section" open>
+            <summary>
+              <span class="summary-title"><span class="summary-number">3</span> Poster and text tracks</span>
+              <span class="summary-meta"><span id="track-count">1 track</span> <span class="chevron">⌄</span></span>
+            </summary>
+            <div class="section-content">
+              <div class="field" style="margin-top: 15px">
+                <label for="poster-url">Poster URL</label>
+                <input id="poster-url" type="url" placeholder="https://…/poster.jpg" />
+                <span class="hint">A poster helps orientation but is not a transcript or media alternative.</span>
+              </div>
+              <div class="list-toolbar">
+                <p>Captions and subtitles are different accessibility claims.</p>
+                <button class="secondary-button" id="add-track" type="button">＋ Add track</button>
+              </div>
+              <div id="track-list">
+                <div class="track-row" data-track-row>
+                  <div class="row-heading">
+                    <strong>Track 1 · Default</strong>
+                    <div class="row-actions">
+                      <button class="icon-button remove-track" type="button" aria-label="Remove track" title="Remove">×</button>
+                    </div>
+                  </div>
+                  <div class="track-fields">
+                    <div class="field">
+                      <label class="required" for="track-url-1">Track URL</label>
+                      <input id="track-url-1" type="url" value="https://example.org/lab-safety-en.vtt" />
+                    </div>
+                    <div class="field">
+                      <label for="track-kind-1">Kind</label>
+                      <select id="track-kind-1">
+                        <option selected>captions</option>
+                        <option>subtitles</option>
+                        <option>descriptions</option>
+                        <option>chapters</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="track-lang-1">Language</label>
+                      <input id="track-lang-1" type="text" value="en" />
+                    </div>
+                  </div>
+                  <div class="field" style="margin-top: 10px">
+                    <label for="track-label-1">Visible track label</label>
+                    <input id="track-label-1" type="text" value="English" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="form-section" open id="transcript-section">
+            <summary>
+              <span class="summary-title"><span class="summary-number">4</span> Transcript</span>
+              <span class="summary-meta">Recommended <span class="chevron">⌄</span></span>
+            </summary>
+            <div class="section-content">
+              <fieldset>
+                <legend>Transcript representation</legend>
+                <label class="radio-row"><input type="radio" name="transcript-mode" value="none" checked /> <span>No transcript yet</span></label>
+                <label class="radio-row"><input type="radio" name="transcript-mode" value="plain" /> <span>Plain text</span></label>
+                <label class="radio-row"><input type="radio" name="transcript-mode" value="external" /> <span>External transcript URL</span></label>
+              </fieldset>
+              <div class="field" id="transcript-value-field" hidden>
+                <label id="transcript-value-label" for="transcript-value">Transcript text</label>
+                <textarea id="transcript-value" placeholder="Speaker names, dialogue, meaningful sounds, and visual descriptions…"></textarea>
+              </div>
+            </div>
+          </details>
+
+          <details class="form-section" open id="accessibility-section">
+            <summary>
+              <span class="summary-title"><span class="summary-number">5</span> Accessibility review</span>
+              <span class="summary-meta">Content facts <span class="chevron">⌄</span></span>
+            </summary>
+            <div class="section-content">
+              <fieldset>
+                <legend>Does the video contain meaningful synchronized audio?</legend>
+                <label class="radio-row"><input type="radio" name="audio-content" value="meaningful" checked /> <span>Yes — speech or meaningful sound is present</span></label>
+                <label class="radio-row"><input type="radio" name="audio-content" value="none" /> <span>No — the video is silent</span></label>
+              </fieldset>
+              <fieldset>
+                <legend>How are captions provided?</legend>
+                <label class="radio-row"><input type="radio" name="caption-support" value="track" checked /> <span>A reviewed captions track is included</span></label>
+                <label class="radio-row"><input type="radio" name="caption-support" value="open" /> <span>Captions are permanently visible in the video</span></label>
+                <label class="radio-row"><input type="radio" name="caption-support" value="missing" /> <span>Captions are not provided yet</span></label>
+              </fieldset>
+              <fieldset>
+                <legend>Are important visual actions described in the main or integrated audio?</legend>
+                <label class="radio-row"><input type="radio" name="visual-support" value="described" checked /> <span>Yes — all instructionally meaningful visuals are described</span></label>
+                <label class="radio-row"><input type="radio" name="visual-support" value="missing" /> <span>No — audio description work remains</span></label>
+              </fieldset>
+              <div class="compliance-result" id="compliance-result" data-state="warning">
+                <span class="result-icon" aria-hidden="true">!</span>
+                <span id="compliance-copy"><strong>1 recommendation remains.</strong><br />Add a transcript to improve access and study support.</span>
+              </div>
+            </div>
+          </details>
+        </form>
+      </section>
+
+      <aside class="preview-panel" aria-labelledby="preview-title">
+        <div class="preview-sticky">
+          <div class="preview-toolbar">
+            <div>
+              <h2 id="preview-title">Learner preview</h2>
+              <span>Delivery · view mode · native controls</span>
+            </div>
+            <span id="preview-status">Preview ready</span>
+          </div>
+          <div class="preview-canvas">
+            <div class="preview-browser-bar">
+              <div class="preview-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+              <span>Shared passage</span>
+              <span>Timed media</span>
+            </div>
+            <section class="delivery-preview" aria-labelledby="preview-label">
+              <h3 class="preview-label" id="preview-label">Lab safety demonstration</h3>
+              <p class="preview-description" id="preview-description">Watch how the student prepares a work area, handles a heated container, and disposes of materials safely.</p>
+              <button class="preview-transcript-button" id="preview-transcript-button" type="button" aria-expanded="false" aria-controls="preview-transcript">Show transcript</button>
+              <div class="preview-transcript" id="preview-transcript" hidden>No transcript has been authored yet.</div>
+              <div class="preview-video-frame">
+                <video id="preview-video" controls playsinline preload="metadata">
+                  <source id="preview-source" src="../../../../apps/element-demo/static/video-stimulus/sample.webm" type="video/webm" />
+                  <track kind="captions" src="../../../../apps/element-demo/static/video-stimulus/captions-en.vtt" srclang="en" label="English" default />
+                </video>
+              </div>
+            </section>
+          </div>
+          <p class="preview-footnote"><span aria-hidden="true">ⓘ</span> The real delivery component is embedded directly in authoring. The preview keeps one light-DOM video node so the timed-media integration shape is visible during implementation.</p>
+        </div>
+      </aside>
+    </main>
+
+    <template id="source-template">
+      <div class="source-row" data-source-row>
+        <div class="row-heading">
+          <strong>Source</strong>
+          <div class="row-actions">
+            <button class="icon-button" type="button" aria-label="Move source up" title="Move up">↑</button>
+            <button class="icon-button" type="button" aria-label="Move source down" title="Move down">↓</button>
+            <button class="icon-button remove-row" type="button" aria-label="Remove source" title="Remove">×</button>
+          </div>
+        </div>
+        <div class="source-fields">
+          <div class="field"><label class="required">Video URL<input class="source-url" type="url" placeholder="https://…/video.webm" /></label></div>
+          <div class="field"><label>MIME type<input type="text" placeholder="video/webm" /></label></div>
+        </div>
+      </div>
+    </template>
+
+    <template id="track-template">
+      <div class="track-row" data-track-row>
+        <div class="row-heading">
+          <strong>Track</strong>
+          <button class="icon-button remove-track" type="button" aria-label="Remove track" title="Remove">×</button>
+        </div>
+        <div class="track-fields">
+          <div class="field"><label class="required">Track URL<input type="url" placeholder="https://…/captions.vtt" /></label></div>
+          <div class="field"><label>Kind<select><option>captions</option><option>subtitles</option><option>descriptions</option><option>chapters</option></select></label></div>
+          <div class="field"><label>Language<input type="text" placeholder="en" /></label></div>
+        </div>
+        <div class="field" style="margin-top: 10px"><label>Visible track label<input type="text" placeholder="English" /></label></div>
+      </div>
+    </template>
+
+    <script>
+      const themeSelect = document.querySelector('#theme-select');
+      const labelInput = document.querySelector('#video-label');
+      const descriptionInput = document.querySelector('#video-description');
+      const showLabel = document.querySelector('#show-label');
+      const showDescription = document.querySelector('#show-description');
+      const transcriptExpanded = document.querySelector('#transcript-expanded');
+      const uiLanguage = document.querySelector('#ui-language');
+      const previewLabel = document.querySelector('#preview-label');
+      const previewDescription = document.querySelector('#preview-description');
+      const previewTranscriptButton = document.querySelector('#preview-transcript-button');
+      const previewTranscript = document.querySelector('#preview-transcript');
+      const previewVideo = document.querySelector('#preview-video');
+      const previewSource = document.querySelector('#preview-source');
+      const previewStatus = document.querySelector('#preview-status');
+      const sourceList = document.querySelector('#source-list');
+      const trackList = document.querySelector('#track-list');
+      const transcriptField = document.querySelector('#transcript-value-field');
+      const transcriptValueLabel = document.querySelector('#transcript-value-label');
+      const transcriptValue = document.querySelector('#transcript-value');
+      const validationSummary = document.querySelector('#validation-summary');
+      const validationList = document.querySelector('#validation-list');
+      const complianceResult = document.querySelector('#compliance-result');
+      const complianceCopy = document.querySelector('#compliance-copy');
+
+      const posterSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+          <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#183153"/><stop offset="1" stop-color="#315b7d"/></linearGradient></defs>
+          <rect width="1280" height="720" fill="url(#bg)"/>
+          <circle cx="1050" cy="145" r="210" fill="#64c8d0" opacity=".18"/>
+          <rect y="475" width="1280" height="245" fill="#b9ccd8"/>
+          <rect x="140" y="235" width="150" height="240" rx="16" fill="#eff7fa"/>
+          <path d="M190 235v-75h50v75" fill="none" stroke="#eff7fa" stroke-width="22" stroke-linecap="round"/>
+          <path d="M190 355c48 30 66 30 100 0v120H140V355c18-11 32-11 50 0Z" fill="#44bba4"/>
+          <path d="M430 475 505 240h110l75 235" fill="#f7fbfc"/>
+          <path d="M479 357h162l38 118H441l38-118Z" fill="#f6b73c"/>
+          <rect x="765" y="250" width="260" height="225" rx="24" fill="#f7fbfc"/>
+          <path d="m860 340 24 24 49-54" fill="none" stroke="#12a87a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="640" y="105" fill="#fff" font-family="system-ui" font-size="46" text-anchor="middle" font-weight="700">Lab safety demonstration</text>
+        </svg>`;
+      previewVideo.poster = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(posterSvg)}`;
+
+      const copy = {
+        en: { show: 'Show transcript', hide: 'Hide transcript', empty: 'No transcript has been authored yet.' },
+        es: { show: 'Mostrar transcripción', hide: 'Ocultar transcripción', empty: 'Todavía no se ha creado una transcripción.' }
+      };
+
+      function transcriptMode() {
+        return document.querySelector('input[name="transcript-mode"]:checked').value;
+      }
+
+      function updatePreview() {
+        previewLabel.textContent = labelInput.value.trim() || 'Untitled video';
+        previewLabel.hidden = !showLabel.checked;
+        previewDescription.textContent = descriptionInput.value.trim();
+        previewDescription.hidden = !showDescription.checked || !descriptionInput.value.trim();
+
+        const locale = uiLanguage.value;
+        const isOpen = previewTranscriptButton.getAttribute('aria-expanded') === 'true';
+        previewTranscriptButton.textContent = isOpen ? copy[locale].hide : copy[locale].show;
+
+        const mode = transcriptMode();
+        const value = transcriptValue.value.trim();
+        previewTranscript.textContent = value || copy[locale].empty;
+        if (mode === 'external' && value) previewTranscript.textContent = `External transcript: ${value}`;
+      }
+
+      function setPreviewTranscript(open) {
+        previewTranscriptButton.setAttribute('aria-expanded', String(open));
+        previewTranscript.hidden = !open;
+        updatePreview();
+      }
+
+      function refreshRowLabels() {
+        const sources = [...sourceList.querySelectorAll('[data-source-row]')];
+        sources.forEach((row, index) => {
+          row.querySelector('.row-heading strong').textContent = `Source ${index + 1}${index === 0 ? ' · Preferred' : ''}`;
+        });
+        document.querySelector('#source-count').textContent = `${sources.length} source${sources.length === 1 ? '' : 's'}`;
+
+        const tracks = [...trackList.querySelectorAll('[data-track-row]')];
+        tracks.forEach((row, index) => {
+          row.querySelector('.row-heading strong').textContent = `Track ${index + 1}${index === 0 ? ' · Default' : ''}`;
+        });
+        document.querySelector('#track-count').textContent = `${tracks.length} track${tracks.length === 1 ? '' : 's'}`;
+      }
+
+      function updateTranscriptMode() {
+        const mode = transcriptMode();
+        transcriptField.hidden = mode === 'none';
+        transcriptValueLabel.textContent = mode === 'external' ? 'External transcript URL' : 'Transcript text';
+        transcriptValue.placeholder = mode === 'external'
+          ? 'https://…/lab-safety-transcript'
+          : 'Speaker names, dialogue, meaningful sounds, and visual descriptions…';
+        reviewAccessibility();
+        updatePreview();
+      }
+
+      function reviewAccessibility() {
+        const findings = [];
+        const audio = document.querySelector('input[name="audio-content"]:checked').value;
+        const captions = document.querySelector('input[name="caption-support"]:checked').value;
+        const visuals = document.querySelector('input[name="visual-support"]:checked').value;
+        const mode = transcriptMode();
+
+        if (audio === 'meaningful' && captions === 'missing') findings.push('Add captions for meaningful synchronized audio.');
+        if (visuals === 'missing') findings.push('Describe important visual actions in the main or integrated audio.');
+        if (mode === 'none') findings.push('A transcript is strongly recommended.');
+
+        validationList.innerHTML = '';
+        for (const finding of findings) {
+          const item = document.createElement('li');
+          item.textContent = finding;
+          validationList.append(item);
+        }
+
+        if (findings.length === 0) {
+          validationSummary.hidden = true;
+          complianceResult.dataset.state = 'ready';
+          complianceCopy.innerHTML = '<strong>Accessibility profile is ready for review.</strong><br />Manual caption accuracy and audio-description review are still required.';
+        } else {
+          validationSummary.hidden = false;
+          complianceResult.dataset.state = 'warning';
+          const blockers = findings.filter((item) => !item.includes('recommended')).length;
+          complianceCopy.innerHTML = blockers
+            ? `<strong>${blockers} blocking finding${blockers === 1 ? '' : 's'}.</strong><br />Resolve the issues above before publishing.`
+            : '<strong>1 recommendation remains.</strong><br />Add a transcript to improve access and study support.';
+        }
+      }
+
+      themeSelect.addEventListener('change', () => {
+        document.documentElement.dataset.theme = themeSelect.value;
+      });
+      labelInput.addEventListener('input', updatePreview);
+      descriptionInput.addEventListener('input', updatePreview);
+      showLabel.addEventListener('change', updatePreview);
+      showDescription.addEventListener('change', updatePreview);
+      uiLanguage.addEventListener('change', updatePreview);
+      transcriptExpanded.addEventListener('change', () => setPreviewTranscript(transcriptExpanded.checked));
+      previewTranscriptButton.addEventListener('click', () => {
+        setPreviewTranscript(previewTranscriptButton.getAttribute('aria-expanded') !== 'true');
+      });
+      transcriptValue.addEventListener('input', updatePreview);
+      document.querySelectorAll('input[name="transcript-mode"]').forEach((input) => {
+        input.addEventListener('change', updateTranscriptMode);
+      });
+      document.querySelectorAll('input[name="audio-content"], input[name="caption-support"], input[name="visual-support"]').forEach((input) => {
+        input.addEventListener('change', reviewAccessibility);
+      });
+
+      document.querySelector('#add-source').addEventListener('click', () => {
+        sourceList.append(document.querySelector('#source-template').content.cloneNode(true));
+        refreshRowLabels();
+      });
+      document.querySelector('#add-track').addEventListener('click', () => {
+        trackList.append(document.querySelector('#track-template').content.cloneNode(true));
+        refreshRowLabels();
+      });
+      document.addEventListener('click', (event) => {
+        const removeSource = event.target.closest('.remove-row');
+        if (removeSource && sourceList.querySelectorAll('[data-source-row]').length > 1) {
+          removeSource.closest('[data-source-row]').remove();
+          refreshRowLabels();
+        }
+        const removeTrack = event.target.closest('.remove-track');
+        if (removeTrack) {
+          removeTrack.closest('[data-track-row]').remove();
+          refreshRowLabels();
+          reviewAccessibility();
+        }
+      });
+
+      document.querySelector('#load-preview').addEventListener('click', () => {
+        const url = sourceList.querySelector('.source-url').value.trim();
+        if (!url) {
+          previewStatus.textContent = 'Add a source URL';
+          return;
+        }
+        previewStatus.textContent = 'Loading metadata…';
+        previewSource.src = url;
+        previewVideo.load();
+        window.setTimeout(() => {
+          previewStatus.textContent = 'Preview ready';
+        }, 450);
+      });
+
+      document.querySelector('#review-button').addEventListener('click', () => {
+        reviewAccessibility();
+        document.querySelector('#accessibility-section').open = true;
+        document.querySelector('#accessibility-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      document.querySelector('#save-button').addEventListener('click', (event) => {
+        const button = event.currentTarget;
+        const prior = button.textContent;
+        button.textContent = 'Saved';
+        window.setTimeout(() => (button.textContent = prior), 1200);
+      });
+
+      updatePreview();
+      refreshRowLabels();
+      reviewAccessibility();
+    </script>
+  </body>
+</html>
