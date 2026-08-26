@@ -45,6 +45,85 @@ const SVELTE_ELEMENT_PACKAGES = ['mc-populated-blank', 'simple-cloze', 'venn-cla
 const SOURCE_EXTENSIONS = new Set(['.css', '.svelte', '.ts']);
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
+/**
+ * The React packages reach `--pie-*` through the `color.*()` accessors in
+ * `@pie-lib/render-ui`, so that module is the chokepoint: a token it can emit is
+ * a token any of the twelve element packages can paint with. PIE-856 moved the
+ * `theme.palette.grey` reads onto those accessors, which is only an improvement
+ * while every accessor resolves to a name the registry owns.
+ *
+ * These names predate PIE-856 and no scheme can reach them. `--pie-primary-text`
+ * and `--pie-secondary-text` chain through to `--pie-text` so they degrade to a
+ * themed value; the keypad and keyboard-focus names do not, and fall back to a
+ * fixed literal under every scheme. Closing the gap means a registry entry in
+ * `pie-players`, so they are recorded here rather than silently tolerated.
+ */
+const KNOWN_UNREGISTERED_TOKENS = new Set([
+  '--pie-keyboard-focus-indicator',
+  '--pie-keypad-button',
+  '--pie-keypad-button-hover',
+  '--pie-keypad-button-operator',
+  '--pie-keypad-empty-placeholder',
+  '--pie-primary-text',
+  '--pie-prompt-holder-max-width',
+  '--pie-secondary-text',
+  '--pie-zoom',
+]);
+
+/**
+ * Every `--pie-*` the React source tree may name, whether through a `color.*()`
+ * accessor or a literal `var()` string. `canonical-semantic` unless noted.
+ */
+const REACT_ALLOWED_TOKENS = new Set([
+  '--pie-background',
+  '--pie-background-dark',
+  '--pie-black',
+  '--pie-blue-grey-100',
+  '--pie-blue-grey-300',
+  '--pie-blue-grey-600',
+  '--pie-blue-grey-900',
+  '--pie-border',
+  '--pie-border-dark',
+  '--pie-border-gray',
+  '--pie-border-light',
+  '--pie-button-border',
+  '--pie-button-focus-outline',
+  '--pie-button-hover-bg',
+  '--pie-correct',
+  '--pie-correct-icon',
+  '--pie-correct-secondary',
+  '--pie-correct-tertiary',
+  '--pie-disabled',
+  '--pie-disabled-secondary',
+  '--pie-dropdown-background',
+  '--pie-faded-primary',
+  '--pie-focus-checked',
+  '--pie-focus-checked-border',
+  '--pie-focus-unchecked',
+  '--pie-focus-unchecked-border',
+  '--pie-incorrect',
+  '--pie-incorrect-icon',
+  '--pie-incorrect-secondary',
+  '--pie-missing',
+  '--pie-missing-icon',
+  // component-public: owned by the passage element, registered in pie-players.
+  '--pie-passage-header-background',
+  '--pie-primary',
+  '--pie-primary-dark',
+  '--pie-primary-light',
+  '--pie-secondary',
+  '--pie-secondary-background',
+  '--pie-secondary-dark',
+  '--pie-secondary-light',
+  '--pie-tertiary',
+  '--pie-tertiary-light',
+  '--pie-text',
+  '--pie-white',
+]);
+
+const REACT_SOURCE_ROOTS = ['packages/elements-react', 'packages/lib-react'];
+const REACT_SOURCE_EXTENSIONS = new Set(['.css', '.ts', '.tsx']);
+
 function sourceFiles(dir: string): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(dir)) {
@@ -96,5 +175,73 @@ describe.each(SVELTE_ELEMENT_PACKAGES)('%s --pie-* token contract', (pkg) => {
     }
 
     expect(declared).toEqual([]);
+  });
+});
+
+function reactSourceFiles(): string[] {
+  const found: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      if (entry === 'node_modules' || entry === 'dist') continue;
+      const path = join(dir, entry);
+      if (statSync(path).isDirectory()) {
+        walk(path);
+      } else if (REACT_SOURCE_EXTENSIONS.has(extname(path))) {
+        found.push(path);
+      }
+    }
+  };
+  for (const root of REACT_SOURCE_ROOTS) walk(join(repoRoot, root));
+  return found;
+}
+
+describe('React --pie-* token contract', () => {
+  it('every color.*() accessor resolves to a registered token', () => {
+    const colorModule = readFileSync(
+      join(repoRoot, 'packages/lib-react/render-ui/src/color.ts'),
+      'utf8'
+    );
+
+    // pv('a', 'b', fallback) reads --pie-a, falling back through --pie-b.
+    const emitted: string[] = [];
+    for (const [, accessor, args] of colorModule.matchAll(
+      /export const (\w+) = \(\) => pv\(([^)]*)\)/g
+    )) {
+      for (const [, token] of args.matchAll(/'([a-z0-9-]+)'/g)) {
+        const name = `--pie-${token}`;
+        if (!REACT_ALLOWED_TOKENS.has(name) && !KNOWN_UNREGISTERED_TOKENS.has(name)) {
+          emitted.push(`${name} (color.${accessor}())`);
+        }
+      }
+    }
+
+    expect(emitted).toEqual([]);
+  });
+
+  it('names no --pie-* token outside the registered set', () => {
+    const unregistered: string[] = [];
+    for (const file of reactSourceFiles()) {
+      for (const [name] of readFileSync(file, 'utf8').matchAll(/--pie-[a-z0-9-]+/g)) {
+        if (REACT_ALLOWED_TOKENS.has(name) || KNOWN_UNREGISTERED_TOKENS.has(name)) continue;
+        unregistered.push(`${name} (${file.slice(repoRoot.length + 1)})`);
+      }
+    }
+
+    expect([...new Set(unregistered)]).toEqual([]);
+  });
+
+  it('reads no MUI grey from the palette', () => {
+    /*
+     * The regression PIE-856 closed. MUI's palette does not follow `--pie-*`, so a
+     * `theme.palette.grey[N]` read holds one hex under every colour scheme -- below
+     * the 3:1 non-text minimum in most of them.
+     */
+    const offenders: string[] = [];
+    for (const file of reactSourceFiles()) {
+      const contents = readFileSync(file, 'utf8');
+      if (/palette\??\.grey/.test(contents)) offenders.push(file.slice(repoRoot.length + 1));
+    }
+
+    expect(offenders).toEqual([]);
   });
 });
