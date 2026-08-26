@@ -23,7 +23,7 @@
     "@pie-lib/translator": "workspace:*",
     "@visx/axis": "^3.0.0",
     "@visx/clip-path": "^3.0.0",
-    "@visx/curve": "^3.0.0",
+    "@visx/curve": "^4.0.0",
     "@visx/event": "^3.0.0",
     "@visx/grid": "^3.0.0",
     "@visx/group": "^3.0.0",
