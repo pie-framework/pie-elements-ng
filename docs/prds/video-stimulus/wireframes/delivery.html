@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video stimulus delivery mockup</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --pie-text: #172033;
+        --pie-background-dark: #eef1f5;
+        --pie-border-light: #c8ced8;
+        --pie-button-focus-outline: #155eef;
+        --pie-focus-checked-border: #155eef;
+        --pie-focus-outline: #155eef;
+        --pie-incorrect-icon: #b42318;
+        --pie-incorrect-secondary: #fee4e2;
+        --pie-secondary-background: #eef4ff;
+        --pie-tertiary: #475467;
+        --pie-tertiary-light: #f8fafc;
+        --pie-white: #ffffff;
+        --mockup-page: #f4f6f9;
+        --mockup-panel: #ffffff;
+        --mockup-shadow: 0 18px 50px rgba(16, 24, 40, 0.11);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --pie-text: #f2f4f7;
+        --pie-background-dark: #202939;
+        --pie-border-light: #475467;
+        --pie-button-focus-outline: #84adff;
+        --pie-focus-checked-border: #84adff;
+        --pie-focus-outline: #84adff;
+        --pie-incorrect-icon: #fda29b;
+        --pie-incorrect-secondary: #55160c;
+        --pie-secondary-background: #182230;
+        --pie-tertiary: #d0d5dd;
+        --pie-tertiary-light: #1d2939;
+        --pie-white: #101828;
+        --mockup-page: #0c111d;
+        --mockup-panel: #161b26;
+        --mockup-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: var(--mockup-page);
+        color: var(--pie-text);
+      }
+
+      button,
+      select {
+        font: inherit;
+      }
+
+      button:focus-visible,
+      select:focus-visible,
+      a:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid
+          var(--pie-focus-outline, var(--pie-button-focus-outline, var(--pie-focus-checked-border)));
+        outline-offset: 3px;
+      }
+
+      .mockup-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 58px;
+        padding: 9px 20px;
+        border-bottom: 1px solid var(--pie-border-light);
+        background: color-mix(in srgb, var(--mockup-panel) 94%, transparent);
+        backdrop-filter: blur(14px);
+      }
+
+      .mockup-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .pie-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 9px;
+        background: #ee4923;
+        color: white;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .mockup-title strong,
+      .mockup-title span {
+        display: block;
+      }
+
+      .mockup-title span {
+        color: var(--pie-tertiary);
+        font-size: 12px;
+      }
+
+      .toolbar-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .toolbar-controls label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--pie-tertiary);
+        font-size: 13px;
+      }
+
+      select,
+      .state-button {
+        min-height: 38px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 8px;
+        background: var(--mockup-panel);
+        color: var(--pie-text);
+        padding: 7px 10px;
+      }
+
+      .state-button {
+        cursor: pointer;
+      }
+
+      .state-button[aria-pressed="true"] {
+        border-color: var(--pie-focus-checked-border);
+        background: var(--pie-secondary-background);
+        box-shadow: inset 0 0 0 1px var(--pie-focus-checked-border);
+      }
+
+      main {
+        padding: clamp(20px, 4vw, 48px) 16px 80px;
+      }
+
+      .assessment-shell {
+        width: min(100%, 980px);
+        margin: 0 auto;
+      }
+
+      .context-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 12px;
+        color: var(--pie-tertiary);
+        font-size: 13px;
+      }
+
+      .context-line .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #12b76a;
+      }
+
+      .passage-card {
+        overflow: clip;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 14px;
+        background: var(--mockup-panel);
+        box-shadow: var(--mockup-shadow);
+      }
+
+      .passage-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--pie-border-light);
+        background: var(--pie-tertiary-light);
+      }
+
+      .passage-header strong {
+        font-size: 14px;
+      }
+
+      .timed-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 28px;
+        padding: 4px 9px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 999px;
+        color: var(--pie-tertiary);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .video-stimulus {
+        width: min(100%, var(--video-stimulus-max-width, 820px));
+        margin: 0 auto;
+        padding: clamp(20px, 4vw, 34px);
+      }
+
+      .video-figure {
+        margin: 0;
+      }
+
+      .video-caption {
+        margin-bottom: 8px;
+        font-size: clamp(20px, 2.5vw, 27px);
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+      }
+
+      .video-description {
+        max-width: 68ch;
+        margin: 0 0 18px;
+        color: var(--pie-tertiary);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .transcript-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .transcript-toggle,
+      .retry-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 44px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 9px;
+        background: var(--pie-white);
+        color: var(--pie-text);
+        padding: 9px 14px;
+        cursor: pointer;
+        font-weight: 650;
+      }
+
+      .transcript-toggle:hover,
+      .retry-button:hover {
+        background: var(--pie-background-dark);
+      }
+
+      .transcript-toggle svg {
+        transition: transform 150ms ease;
+      }
+
+      .transcript-toggle[aria-expanded="true"] svg {
+        transform: rotate(180deg);
+      }
+
+      .alternative-note {
+        color: var(--pie-tertiary);
+        font-size: 13px;
+      }
+
+      .transcript-region {
+        margin: 0 0 16px;
+        padding: 16px 18px;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 10px;
+        background: var(--pie-tertiary-light);
+        line-height: 1.65;
+      }
+
+      .transcript-region[hidden] {
+        display: none;
+      }
+
+      .transcript-region p {
+        margin: 0 0 10px;
+      }
+
+      .transcript-region p:last-child {
+        margin-bottom: 0;
+      }
+
+      .speaker {
+        font-weight: 700;
+      }
+
+      .sound {
+        color: var(--pie-tertiary);
+        font-style: italic;
+      }
+
+      .video-frame {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 12px;
+        background: #101828;
+      }
+
+      video {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        max-height: 70vh;
+        background: #101828;
+        object-fit: contain;
+      }
+
+      .media-status {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 14px;
+        padding: 14px;
+        border: 1px solid var(--pie-incorrect-icon);
+        border-radius: 10px;
+        background: var(--pie-incorrect-secondary);
+      }
+
+      .media-status[hidden] {
+        display: none;
+      }
+
+      .status-icon {
+        display: grid;
+        flex: 0 0 30px;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 999px;
+        background: var(--pie-incorrect-icon);
+        color: var(--pie-white);
+        font-weight: 800;
+      }
+
+      .status-copy {
+        flex: 1;
+      }
+
+      .status-copy strong,
+      .status-copy span {
+        display: block;
+      }
+
+      .status-copy span {
+        margin-top: 4px;
+        line-height: 1.45;
+      }
+
+      .retry-button {
+        flex: 0 0 auto;
+        border-color: var(--pie-incorrect-icon);
+      }
+
+      .integration-note {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
+        margin-top: 16px;
+        color: var(--pie-tertiary);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .integration-note code {
+        color: var(--pie-text);
+      }
+
+      .info-icon {
+        display: grid;
+        width: 22px;
+        height: 22px;
+        place-items: center;
+        border: 1px solid var(--pie-border-light);
+        border-radius: 999px;
+        font-weight: 700;
+      }
+
+      @media (max-width: 700px) {
+        .mockup-toolbar,
+        .passage-header,
+        .media-status {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .toolbar-controls {
+          justify-content: flex-start;
+        }
+
+        .toolbar-controls label,
+        .toolbar-controls select,
+        .state-button,
+        .retry-button {
+          width: 100%;
+        }
+
+        .timed-badge {
+          align-self: flex-start;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto;
+          transition-duration: 0.01ms;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="mockup-toolbar">
+      <div class="mockup-title">
+        <div class="pie-mark" aria-hidden="true">PIE</div>
+        <div>
+          <strong>Video stimulus</strong>
+          <span>Delivery interface mockup</span>
+        </div>
+      </div>
+      <div class="toolbar-controls">
+        <label>
+          Theme
+          <select id="theme-select">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+        <label>
+          UI language
+          <select id="language-select">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </label>
+        <button class="state-button" id="transcript-state" type="button" aria-pressed="false">
+          Open transcript
+        </button>
+        <button class="state-button" id="error-state" type="button" aria-pressed="false">
+          Simulate error
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="assessment-shell">
+        <p class="context-line"><span class="dot" aria-hidden="true"></span> Section 2 · Lab safety</p>
+        <article class="passage-card" aria-labelledby="passage-title">
+          <header class="passage-header">
+            <strong id="passage-title">Shared passage</strong>
+            <span class="timed-badge">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              <span id="timed-label">Timed media</span>
+            </span>
+          </header>
+
+          <section class="video-stimulus" aria-labelledby="video-label">
+            <figure class="video-figure" lang="en">
+              <figcaption class="video-caption" id="video-label">Lab safety demonstration</figcaption>
+              <p class="video-description" id="video-description">
+                Watch how the student prepares a work area, handles a heated container, and disposes of materials safely.
+              </p>
+
+              <div class="transcript-actions">
+                <button
+                  class="transcript-toggle"
+                  id="transcript-toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="video-transcript"
+                >
+                  <span id="transcript-button-label">Show transcript</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <span class="alternative-note" id="alternative-note">English captions · Transcript available</span>
+              </div>
+
+              <section
+                class="transcript-region"
+                id="video-transcript"
+                aria-label="Video transcript"
+                lang="en"
+                hidden
+              >
+                <p><span class="speaker">Narrator:</span> Before beginning, clear the work surface and put on your safety goggles.</p>
+                <p><span class="sound">[Glassware is placed gently on the table.]</span></p>
+                <p><span class="speaker">Narrator:</span> Point the opening of a heated container away from yourself and everyone nearby.</p>
+              </section>
+
+              <div class="video-frame">
+                <video id="stimulus-video" controls playsinline preload="metadata" aria-describedby="video-description">
+                  <source src="../../../../apps/element-demo/static/video-stimulus/sample.webm" type="video/webm" />
+                  <track id="caption-track" src="../../../../apps/element-demo/static/video-stimulus/captions-en.vtt" kind="captions" srclang="en" label="English" default />
+                </video>
+              </div>
+
+              <div class="media-status" id="media-error" role="alert" hidden>
+                <span class="status-icon" aria-hidden="true">!</span>
+                <div class="status-copy">
+                  <strong id="error-title">Video unavailable</strong>
+                  <span id="error-copy">Check your connection and try again. The transcript is still available above.</span>
+                </div>
+                <button class="retry-button" id="retry-button" type="button">Try again</button>
+              </div>
+            </figure>
+
+            <div class="integration-note">
+              <span class="info-icon" aria-hidden="true">i</span>
+              <span>
+                Mockup note: the intended <code>&lt;video&gt;</code> remains in light DOM so <code>pie-players</code> can attach its canonical <code>MediaTimeSource</code> adapter.
+              </span>
+            </div>
+          </section>
+        </article>
+      </div>
+    </main>
+
+    <script>
+      const messages = {
+        en: {
+          htmlLang: 'en',
+          context: 'Section 2 · Lab safety',
+          passage: 'Shared passage',
+          timed: 'Timed media',
+          label: 'Lab safety demonstration',
+          description:
+            'Watch how the student prepares a work area, handles a heated container, and disposes of materials safely.',
+          showTranscript: 'Show transcript',
+          hideTranscript: 'Hide transcript',
+          alternative: 'English captions · Transcript available',
+          transcriptRegion: 'Video transcript',
+          transcriptHtml:
+            '<p><span class="speaker">Narrator:</span> Before beginning, clear the work surface and put on your safety goggles.</p><p><span class="sound">[Glassware is placed gently on the table.]</span></p><p><span class="speaker">Narrator:</span> Point the opening of a heated container away from yourself and everyone nearby.</p>',
+          openState: 'Open transcript',
+          closeState: 'Close transcript',
+          simulateError: 'Simulate error',
+          clearError: 'Clear error',
+          errorTitle: 'Video unavailable',
+          errorCopy: 'Check your connection and try again. The transcript is still available above.',
+          retry: 'Try again'
+        },
+        es: {
+          htmlLang: 'es',
+          context: 'Sección 2 · Seguridad en el laboratorio',
+          passage: 'Lectura compartida',
+          timed: 'Contenido multimedia cronometrado',
+          label: 'Demostración de seguridad en el laboratorio',
+          description:
+            'Observe cómo la estudiante prepara el área de trabajo, manipula un recipiente caliente y desecha los materiales de forma segura.',
+          showTranscript: 'Mostrar transcripción',
+          hideTranscript: 'Ocultar transcripción',
+          alternative: 'Subtítulos en español · Transcripción disponible',
+          transcriptRegion: 'Transcripción del video',
+          transcriptHtml:
+            '<p><span class="speaker">Narradora:</span> Antes de comenzar, despeje la superficie de trabajo y póngase las gafas de seguridad.</p><p><span class="sound">[El material de vidrio se coloca con cuidado sobre la mesa.]</span></p><p><span class="speaker">Narradora:</span> Oriente la abertura de un recipiente caliente lejos de usted y de las personas cercanas.</p>',
+          openState: 'Abrir transcripción',
+          closeState: 'Cerrar transcripción',
+          simulateError: 'Simular error',
+          clearError: 'Quitar error',
+          errorTitle: 'Video no disponible',
+          errorCopy: 'Compruebe su conexión e inténtelo de nuevo. La transcripción sigue disponible arriba.',
+          retry: 'Intentar de nuevo'
+        }
+      };
+
+      const themeSelect = document.querySelector('#theme-select');
+      const languageSelect = document.querySelector('#language-select');
+      const transcriptStateButton = document.querySelector('#transcript-state');
+      const errorStateButton = document.querySelector('#error-state');
+      const transcriptToggle = document.querySelector('#transcript-toggle');
+      const transcriptRegion = document.querySelector('#video-transcript');
+      const video = document.querySelector('#stimulus-video');
+      const errorPanel = document.querySelector('#media-error');
+      const retryButton = document.querySelector('#retry-button');
+
+      const posterSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+          <defs>
+            <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#183153"/>
+              <stop offset="1" stop-color="#315b7d"/>
+            </linearGradient>
+            <linearGradient id="bench" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#d7e3eb"/>
+              <stop offset="1" stop-color="#9eb6c7"/>
+            </linearGradient>
+          </defs>
+          <rect width="1280" height="720" fill="url(#bg)"/>
+          <circle cx="1050" cy="145" r="210" fill="#64c8d0" opacity=".18"/>
+          <rect x="0" y="475" width="1280" height="245" fill="url(#bench)"/>
+          <rect x="140" y="235" width="150" height="240" rx="16" fill="#eff7fa" opacity=".9"/>
+          <path d="M190 235v-75h50v75" fill="none" stroke="#eff7fa" stroke-width="22" stroke-linecap="round"/>
+          <path d="M190 355c48 30 66 30 100 0v120H140V355c18-11 32-11 50 0Z" fill="#44bba4"/>
+          <path d="M430 475 505 240h110l75 235" fill="#f7fbfc" opacity=".95"/>
+          <path d="M479 357h162l38 118H441l38-118Z" fill="#f6b73c" opacity=".9"/>
+          <rect x="765" y="250" width="260" height="225" rx="24" fill="#f7fbfc" opacity=".94"/>
+          <circle cx="895" cy="340" r="58" fill="#183153" opacity=".14"/>
+          <path d="m860 340 24 24 49-54" fill="none" stroke="#12a87a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="640" y="105" fill="#fff" font-family="system-ui, sans-serif" font-size="46" text-anchor="middle" font-weight="700">Lab safety demonstration</text>
+          <text x="640" y="158" fill="#d7e3eb" font-family="system-ui, sans-serif" font-size="25" text-anchor="middle">Protective equipment · Heated materials · Safe cleanup</text>
+        </svg>`;
+      video.poster = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(posterSvg)}`;
+
+      const captionVtt = `WEBVTT\n\n00:00.000 --> 00:03.500\nBefore beginning, clear the work surface.\n\n00:03.500 --> 00:07.000\nPut on your safety goggles.`;
+      document.querySelector('#caption-track').src = `data:text/vtt;charset=utf-8,${encodeURIComponent(captionVtt)}`;
+
+      function isTranscriptOpen() {
+        return transcriptToggle.getAttribute('aria-expanded') === 'true';
+      }
+
+      function isErrorVisible() {
+        return !errorPanel.hidden;
+      }
+
+      function setTranscript(open) {
+        transcriptToggle.setAttribute('aria-expanded', String(open));
+        transcriptRegion.hidden = !open;
+        transcriptStateButton.setAttribute('aria-pressed', String(open));
+        updateMessages();
+      }
+
+      function setError(show) {
+        errorPanel.hidden = !show;
+        errorStateButton.setAttribute('aria-pressed', String(show));
+        if (show) video.pause();
+        updateMessages();
+      }
+
+      function updateMessages() {
+        const locale = languageSelect.value;
+        const t = messages[locale];
+        document.documentElement.lang = t.htmlLang;
+        document.querySelector('.context-line').lastChild.textContent = ` ${t.context}`;
+        document.querySelector('#passage-title').textContent = t.passage;
+        document.querySelector('#timed-label').textContent = t.timed;
+        document.querySelector('#video-label').textContent = t.label;
+        document.querySelector('#video-description').textContent = t.description;
+        document.querySelector('#transcript-button-label').textContent = isTranscriptOpen()
+          ? t.hideTranscript
+          : t.showTranscript;
+        document.querySelector('#alternative-note').textContent = t.alternative;
+        transcriptRegion.setAttribute('aria-label', t.transcriptRegion);
+        transcriptRegion.innerHTML = t.transcriptHtml;
+        transcriptStateButton.textContent = isTranscriptOpen() ? t.closeState : t.openState;
+        errorStateButton.textContent = isErrorVisible() ? t.clearError : t.simulateError;
+        document.querySelector('#error-title').textContent = t.errorTitle;
+        document.querySelector('#error-copy').textContent = t.errorCopy;
+        retryButton.textContent = t.retry;
+      }
+
+      themeSelect.addEventListener('change', () => {
+        document.documentElement.dataset.theme = themeSelect.value;
+      });
+      languageSelect.addEventListener('change', updateMessages);
+      transcriptToggle.addEventListener('click', () => setTranscript(!isTranscriptOpen()));
+      transcriptStateButton.addEventListener('click', () => setTranscript(!isTranscriptOpen()));
+      errorStateButton.addEventListener('click', () => setError(!isErrorVisible()));
+      retryButton.addEventListener('click', () => {
+        setError(false);
+        video.load();
+      });
+    </script>
+  </body>
+</html>

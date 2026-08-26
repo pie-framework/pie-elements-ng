@@ -1,0 +1,86 @@
+{
+  "name": "@pie-element/video-stimulus",
+  "version": "0.1.0",
+  "description": "Accessible native-video stimulus PIE element with captions, transcript, authoring, and timed-media discovery support",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
+    "directory": "packages/elements-svelte/video-stimulus"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "pie": {
+    "controller": "@pie-element/video-stimulus/controller",
+    "configure": "@pie-element/video-stimulus/configure"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./delivery": {
+      "types": "./dist/delivery/index.d.ts",
+      "default": "./dist/delivery/index.js"
+    },
+    "./browser/delivery": {
+      "default": "./dist/browser/delivery/index.js"
+    },
+    "./controller": {
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller/index.js"
+    },
+    "./controller.js": {
+      "types": "./dist/controller/index.d.ts",
+      "default": "./dist/controller/index.js"
+    },
+    "./browser/controller": {
+      "default": "./dist/browser/controller/index.js"
+    },
+    "./author": {
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    },
+    "./browser/author": {
+      "default": "./dist/browser/author/index.js"
+    },
+    "./configure": {
+      "types": "./dist/author/index.d.ts",
+      "default": "./dist/author/index.js"
+    },
+    "./runtime-support": {
+      "types": "./dist/runtime-support.d.ts",
+      "default": "./dist/runtime-support.js"
+    }
+  },
+  "files": [
+    "configure.js",
+    "controller.js",
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
+    "dev": "vite",
+    "demo": "vite --mode demo",
+    "test": "vitest run --config vitest.config.ts",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@pie-element/shared-types": "workspace:*",
+    "@pie-lib/delivery-events-svelte": "workspace:*",
+    "@pie-lib/media-svelte": "workspace:*",
+    "@pie-players/pie-assessment-toolkit": "^0.3.68"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "svelte": "^5.56.8",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

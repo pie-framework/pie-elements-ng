@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { collectPublishSurfaceViolations } from '../scripts/check-publish-surface.mjs';
-import { createPackageSnapshots } from '../scripts/lib/package-inspection.mjs';
+import { createPackageSnapshots, parseNpmPackJson } from '../scripts/lib/package-inspection.mjs';
 import { runElementContractVerification } from '../scripts/verify-element-contracts.mjs';
 
 async function makeWorkspaceFixture(): Promise<string> {
@@ -83,6 +83,16 @@ async function makeWorkspaceFixture(): Promise<string> {
 }
 
 describe('package inspection quality-gate helpers', () => {
+  it('accepts npm pack JSON from both array and package-keyed npm versions', () => {
+    const packageData = { files: [{ path: 'package.json' }, { path: 'dist/index.js' }] };
+    expect(parseNpmPackJson(JSON.stringify([packageData]))).toEqual([packageData]);
+    expect(
+      parseNpmPackJson(
+        `npm notice preamble\n${JSON.stringify({ '@pie-test/example': packageData })}`
+      )
+    ).toEqual([packageData]);
+  });
+
   it('discovers publishable package and tool workspaces and packs each once', async () => {
     const root = await makeWorkspaceFixture();
     const packedPackages: string[] = [];

@@ -12,17 +12,21 @@
  * both read the same authored JSON, so structural typing is sufficient for
  * interop. Fixture parity — not a package edge — is what pins them together.
  *
- * Only the fields sign-language catalog cards need are declared. `poster`,
- * `thumbnail` and `durationSeconds` do not apply to a signing clip, and
- * `tracks`/`transcript` are meaningless for one: captions on a signing video
- * would be the English text already on screen. Add fields additively when a
- * second consumer (e.g. a video stimulus element) needs them.
+ * Sign-language catalog cards were the first consumer and use only the core
+ * source fields. The optional presentation, track, and transcript metadata is
+ * declared for broader consumers such as video stimuli; it remains meaningless
+ * for a signing clip, where captions would duplicate the text already on screen.
  */
 export interface MediaAssetRef {
   version: 1;
   id: string;
   kind: MediaKind;
   sources: MediaSource[];
+  poster?: string;
+  thumbnail?: string;
+  durationSeconds?: number;
+  tracks?: TextTrackRef[];
+  transcript?: TranscriptRef;
   label?: string;
   description?: string;
   /**
@@ -42,6 +46,24 @@ export interface MediaSource {
   type?: string;
   width?: number;
   height?: number;
+  bitrate?: number;
+}
+
+/** One authored text track associated with an audio or video asset. */
+export interface TextTrackRef {
+  src: string;
+  kind: 'captions' | 'subtitles' | 'descriptions' | 'chapters' | 'metadata';
+  lang: string;
+  label: string;
+  default?: boolean;
+}
+
+/** Inline or externally hosted transcript content for a media asset. */
+export interface TranscriptRef {
+  src?: string;
+  html?: string;
+  plainText?: string;
+  lang?: string;
 }
 
 /**

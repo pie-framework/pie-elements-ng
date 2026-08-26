@@ -4,12 +4,16 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vitest/config';
 
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
+const mediaSvelteSource = fileURLToPath(
+  new URL('./packages/lib-svelte/media-svelte/src/index.ts', import.meta.url)
+);
 
 export default defineConfig({
   plugins: [svelte({ hot: !process.env.VITEST })],
   resolve: {
     alias: {
       '@workspace': workspaceRoot,
+      '@pie-lib/media-svelte': mediaSvelteSource,
     },
     conditions: process.env.VITEST ? ['browser'] : [],
   },
