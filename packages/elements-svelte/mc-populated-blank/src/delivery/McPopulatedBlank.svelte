@@ -520,6 +520,7 @@ $effect(() => {
 
   .template-line :global(p) {
     margin: 0;
+    display: inline;
   }
 
   .layout-audio_blank_only :global(.pie-audio-container),
