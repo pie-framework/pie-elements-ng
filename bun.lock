@@ -1535,7 +1535,6 @@
       "version": "3.0.4-next.33",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
-        "@dnd-kit/utilities": "^3.2.2",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@mui/icons-material": "^7.3.4",
