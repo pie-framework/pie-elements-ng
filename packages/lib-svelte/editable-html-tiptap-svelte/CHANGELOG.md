@@ -1,5 +1,12 @@
 # @pie-lib/editable-html-tiptap-svelte
 
+## 0.1.3-next.0
+
+### Patch Changes
+
+- Updated dependencies [7634975]
+  - @pie-lib/styling-svelte@0.1.3-next.0
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/styling-svelte",
-  "version": "0.1.2",
+  "version": "0.1.3-next.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

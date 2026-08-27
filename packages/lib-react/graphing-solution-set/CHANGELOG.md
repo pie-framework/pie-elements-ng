@@ -1,5 +1,19 @@
 # @pie-lib/graphing-solution-set
 
+## 4.0.4-next.32
+
+### Patch Changes
+
+- Updated dependencies [d6e12a5]
+- Updated dependencies [991b31a]
+  - @pie-lib/config-ui@13.0.4-next.32
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.32
+  - @pie-lib/render-ui@6.1.1-next.39
+  - @pie-lib/graphing-utils@3.0.3-next.2
+  - @pie-lib/translator@4.0.3-next.2
+  - @pie-lib/plot@4.0.4-next.32
+  - @pie-lib/drag@4.0.3-next.39
+
 ## 4.0.4-next.31
 
 ### Patch Changes

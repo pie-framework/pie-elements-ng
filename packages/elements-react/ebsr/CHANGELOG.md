@@ -1,5 +1,16 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.6
+
+### Patch Changes
+
+- Updated dependencies [d6e12a5]
+- Updated dependencies [991b31a]
+  - @pie-element/multiple-choice@13.3.5-next.1
+  - @pie-lib/config-ui@13.0.4-next.32
+  - @pie-lib/translator@4.0.3-next.2
+  - @pie-element/shared-controller-utils@0.1.1-next.2
+
 ## 14.2.2-next.5
 
 ### Patch Changes
