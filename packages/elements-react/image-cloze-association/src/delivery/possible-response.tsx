@@ -50,6 +50,9 @@ const BaseContainer: any = styled('div')(() => ({
   '&.baseIncorrect': {
     border: `2px solid ${color.incorrect()} !important`,
   },
+  '&.selected': {
+    opacity: 0.7,
+  },
 }));
 
 const StyledSpan: any = styled(StaticHTMLSpan)(() => ({
@@ -60,7 +63,17 @@ const StyledSpan: any = styled(StaticHTMLSpan)(() => ({
   },
 }));
 
-const PossibleResponse = ({ canDrag, containerStyle, data, onDragBegin, answerChoiceTransparency, isOverlay }) => {
+const PossibleResponse = ({
+  canDrag,
+  containerStyle,
+  data,
+  onDragBegin,
+  answerChoiceTransparency,
+  isOverlay,
+  selectedResponse,
+  onSelectClick,
+  onPlacementClick,
+}) => {
   const rootRef = useRef(null);
   const longPressTimer = useRef(null);
 
@@ -73,6 +86,31 @@ const PossibleResponse = ({ canDrag, containerStyle, data, onDragBegin, answerCh
     },
     disabled: !canDrag,
   });
+
+  const isSelected =
+    !!selectedResponse && selectedResponse.id === data.id && selectedResponse.containerIndex === data.containerIndex;
+
+  const handleClick = (e) => {
+    if (!canDrag) return;
+
+    e.stopPropagation();
+
+    const isPlaced = data.containerIndex !== undefined;
+
+    if (isSelected) {
+      // Clicking the already-selected tile again deselects it.
+      onSelectClick?.(data);
+    } else if (selectedResponse && isPlaced) {
+      // Something else is selected, and this tile is already inside a container:
+      // place the selection into that same container (a swap/insert, handled by the
+      // existing handleOnAnswerSelect logic).
+      onPlacementClick?.(data.containerIndex);
+    } else {
+      // Nothing selected yet, or this is a pool item (pool items are never placement
+      // targets — the pool itself, in possible-responses.jsx, is): select this tile.
+      onSelectClick?.(data);
+    }
+  };
 
   const handleTouchEnd = () => {
     clearTimeout(longPressTimer.current);
@@ -123,6 +161,7 @@ const PossibleResponse = ({ canDrag, containerStyle, data, onDragBegin, answerCh
     answerChoiceTransparency: answerChoiceTransparency && !isDragging,
     [correctnessClass]: !!correctnessClass,
     textAnswerChoiceStyle: !containsImage && !isOverlay,
+    selected: isSelected && !isDragging,
   });
 
   const promptClassNames = classNames({ hiddenSpan: data.hidden });
@@ -135,6 +174,7 @@ const PossibleResponse = ({ canDrag, containerStyle, data, onDragBegin, answerCh
         rootRef.current = ref;
         setNodeRef(ref);
       }}
+      onClick={handleClick}
       {...listeners}
       {...attributes}
     >
@@ -151,12 +191,16 @@ PossibleResponse.propTypes = {
   onDragBegin: PropTypes.func.isRequired,
   answerChoiceTransparency: PropTypes.bool,
   isOverlay: PropTypes.bool,
+  selectedResponse: PropTypes.object,
+  onSelectClick: PropTypes.func,
+  onPlacementClick: PropTypes.func,
 };
 
 PossibleResponse.defaultProps = {
   containerStyle: {},
   answerChoiceTransparency: false,
   isOverlay: false,
+  selectedResponse: null,
 };
 
 export default PossibleResponse;

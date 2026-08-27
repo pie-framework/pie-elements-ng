@@ -18,12 +18,12 @@ import { color } from '@pie-lib/render-ui';
 
 export const DRAG_TYPE = 'MaskBlank';
 
-const StyledChoice: any = styled('span')(({ theme, disabled }) => ({
+const StyledChoice: any = styled('span')(({ theme, disabled, selected }) => ({
   border: `solid 0px ${theme.palette.primary.main}`,
-  borderRadius: theme.spacing(2),
   margin: theme.spacing(0.5),
   transform: 'translate(0, 0)',
   display: 'inline-flex',
+  opacity: selected ? 0.7 : 1,
   ...(disabled && {}),
 }));
 
@@ -65,7 +65,7 @@ const StyledChipLabel: any = styled('span')(() => ({
   },
 }));
 
-export default function Choice({ choice, disabled, instanceId }) {
+export default function Choice({ choice, disabled, instanceId, selectedItem, onSelectClick }) {
   const rootRef = useRef(null);
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -77,6 +77,15 @@ export default function Choice({ choice, disabled, instanceId }) {
   useEffect(() => {
     renderMath(rootRef.current);
   }, [choice.value]);
+
+  const isSelected = !!selectedItem && selectedItem.fromChoice === true && selectedItem.choice.id === choice.id;
+
+  const handleClick = (e) => {
+    if (disabled) return;
+
+    e.stopPropagation();
+    onSelectClick?.({ choice, instanceId, fromChoice: true, type: DRAG_TYPE });
+  };
 
   return (
     <StyledChoice
@@ -90,6 +99,8 @@ export default function Choice({ choice, disabled, instanceId }) {
           : {}
       }
       disabled={disabled}
+      selected={isSelected}
+      onClick={handleClick}
       {...listeners}
       {...attributes}
     >
@@ -107,4 +118,6 @@ Choice.propTypes = {
   choice: PropTypes.object.isRequired,
   disabled: PropTypes.bool,
   instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectedItem: PropTypes.object,
+  onSelectClick: PropTypes.func,
 };
