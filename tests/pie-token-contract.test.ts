@@ -52,11 +52,17 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
  * `theme.palette.grey` reads onto those accessors, which is only an improvement
  * while every accessor resolves to a name the registry owns.
  *
- * These names predate PIE-856 and no scheme can reach them. `--pie-primary-text`
- * and `--pie-secondary-text` chain through to `--pie-text` so they degrade to a
- * themed value; the keypad and keyboard-focus names do not, and fall back to a
- * fixed literal under every scheme. Closing the gap means a registry entry in
- * `pie-players`, so they are recorded here rather than silently tolerated.
+ * These names are not in that registry and no scheme can reach them directly.
+ * `--pie-primary-text`, `--pie-secondary-text` and the three `--pie-table-*`
+ * names chain through to a registered token, so they degrade to a themed value;
+ * the keypad and keyboard-focus names do not, and fall back to a fixed literal
+ * under every scheme. Closing the gap means a registry entry in `pie-players`,
+ * so they are recorded here rather than silently tolerated.
+ *
+ * The `--pie-table-*` trio arrived with the upstream `pie-lib` sync that added
+ * `color.tableGrid()` / `tableGridLight()` / `tableStripe()` for authored tables.
+ * They chain onto `--pie-text`, `--pie-border-light` and `--pie-background-dark`
+ * respectively, which the registry does own.
  */
 const KNOWN_UNREGISTERED_TOKENS = new Set([
   '--pie-keyboard-focus-indicator',
@@ -67,6 +73,9 @@ const KNOWN_UNREGISTERED_TOKENS = new Set([
   '--pie-primary-text',
   '--pie-prompt-holder-max-width',
   '--pie-secondary-text',
+  '--pie-table-grid',
+  '--pie-table-grid-light',
+  '--pie-table-stripe',
   '--pie-zoom',
 ]);
 
