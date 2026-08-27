@@ -1,5 +1,16 @@
 # @pie-element/hotspot
 
+## 11.1.2-next.6
+
+### Patch Changes
+
+- Updated dependencies [d6e12a5]
+  - @pie-lib/config-ui@13.0.4-next.32
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.32
+  - @pie-lib/render-ui@6.1.1-next.39
+  - @pie-element/shared-controller-utils@0.1.1-next.2
+  - @pie-lib/correct-answer-toggle@4.0.3-next.39
+
 ## 11.1.2-next.5
 
 ### Patch Changes

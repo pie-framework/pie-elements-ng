@@ -1,5 +1,11 @@
 # @pie-lib/categorize
 
+## 2.0.3-next.2
+
+### Patch Changes
+
+- 991b31a: Publish ng builds of translator, categorize and graphing-utils so published elements pin ng-built lib tarballs instead of legacy ones
+
 ## 2.0.3-next.1
 
 ### Patch Changes

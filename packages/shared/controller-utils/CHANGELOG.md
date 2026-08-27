@@ -1,5 +1,12 @@
 # @pie-element/shared-controller-utils
 
+## 0.1.1-next.2
+
+### Patch Changes
+
+- Updated dependencies [1d74cc2]
+  - @pie-element/shared-types@0.2.0-next.0
+
 ## 0.1.1-next.1
 
 ### Patch Changes

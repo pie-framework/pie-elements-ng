@@ -1,5 +1,12 @@
 # @pie-lib/drag
 
+## 4.0.3-next.39
+
+### Patch Changes
+
+- Updated dependencies [d6e12a5]
+  - @pie-lib/render-ui@6.1.1-next.39
+
 ## 4.0.3-next.38
 
 ### Patch Changes

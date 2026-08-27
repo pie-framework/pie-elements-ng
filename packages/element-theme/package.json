@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/element-theme",
-  "version": "0.1.1-next.1",
+  "version": "0.1.1-next.2",
   "description": "Generic web component theme wrapper for PIE element players",
   "type": "module",
   "main": "./dist/pie-element-theme.js",

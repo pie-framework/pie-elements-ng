@@ -1,5 +1,14 @@
 # @pie-element/rubric
 
+## 8.1.2-next.6
+
+### Patch Changes
+
+- Updated dependencies [d6e12a5]
+  - @pie-lib/config-ui@13.0.4-next.32
+  - @pie-lib/render-ui@6.1.1-next.39
+  - @pie-lib/rubric@2.0.4-next.32
+
 ## 8.1.2-next.5
 
 ### Patch Changes
