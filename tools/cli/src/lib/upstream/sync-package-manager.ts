@@ -666,6 +666,40 @@ export async function ensureElementPackageJson(
   // Apply all standard transformations
   pkg = applyPackageJsonTransforms(pkg);
 
+  // React must also be a real dependency, not only a peer. Legacy webpack
+  // bundlers (builder.pie-api.com) install `dependencies` and never install
+  // peers, so peer-only React leaves node_modules/react absent in the build
+  // snapshot and every @mui / @emotion / @dnd-kit peer fails with
+  // "Module not found: Can't resolve 'react'".
+  //
+  // This must run AFTER applyPackageJsonTransforms: transformPackageJsonBrowserEsmDependencies
+  // unconditionally deletes react/react-dom from dependencies to drop whatever
+  // arbitrary range upstream declared. We re-add them here as the final word,
+  // pinned to the policy version.
+  //
+  // Install metadata only. The browser runtime singleton contract stays governed
+  // by pie.browserSharedDependencies plus the player import map, and isExternal()
+  // in sync-externals.ts keeps React external in every bundle regardless of what
+  // is declared here, so bundle output is unaffected.
+  //
+  // Versions come from tools/vite/browser-esm-policy.json - the same source as
+  // pie.browserSharedDependencies below.
+  //
+  // Declared as a caret range, NOT an exact pin. An exact pin resolves to its own
+  // copy alongside the root's `^`-resolved one, and two React instances break
+  // hooks at runtime ("Invalid hook call", useRef of null). The installed version
+  // only has to resolve for the legacy webpack path, so a range is sufficient.
+  const sharedRuntimeDeps = readBrowserEsmPolicy(config.pieElementsNg).sharedDependencyVersions;
+  if (sharedRuntimeDeps && Object.keys(sharedRuntimeDeps).length > 0) {
+    const rangedRuntimeDeps = Object.fromEntries(
+      Object.entries(sharedRuntimeDeps).map(([name, version]) => [name, `^${version}`])
+    );
+    pkg.dependencies = {
+      ...((pkg.dependencies as Record<string, string> | undefined) ?? {}),
+      ...rangedRuntimeDeps,
+    };
+  }
+
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
   const wroteRuntimeSupport =

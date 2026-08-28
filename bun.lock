@@ -216,6 +216,8 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -249,6 +251,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -281,6 +285,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -316,6 +322,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.4.3",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -350,6 +358,8 @@
         "debug": "^4.4.3",
         "konva": "8.3.0",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-konva": "^18.2.14",
       },
       "devDependencies": {
@@ -379,6 +389,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -415,6 +427,8 @@
         "debug": "^4.4.3",
         "he": "^1.2.0",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -448,6 +462,8 @@
         "debug": "^4.1.1",
         "lodash.throttle": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -479,6 +495,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/test-utils": "workspace:*",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-is": "^18.3.1",
         "recharts": "^3.8.1",
       },
@@ -516,6 +534,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -549,6 +569,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -583,6 +605,8 @@
         "debug": "^4.4.3",
         "konva": "8.3.0",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-konva": "^18.2.14",
       },
       "devDependencies": {
@@ -621,6 +645,8 @@
         "debug": "^4.4.3",
         "humps": "^2.0.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -655,6 +681,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.4.3",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -686,6 +714,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-test-renderer": "18.2.0",
       },
       "devDependencies": {
@@ -724,6 +754,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -757,6 +789,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -794,6 +828,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -831,6 +867,8 @@
         "@pie-lib/translator": "workspace:*",
         "debug": "^4.4.3",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -861,6 +899,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-is": "^18.3.1",
         "styled-components": "^5.2.1",
       },
@@ -896,6 +936,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.4.3",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -930,6 +972,8 @@
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -969,6 +1013,8 @@
         "d3-selection": "^3.0.0",
         "mathjs": "^15.2.0",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-jss": "^10.10.0",
         "react-transition-group": "^4.4.5",
       },
@@ -1001,6 +1047,8 @@
         "@pie-lib/render-ui": "workspace:*",
         "debug": "^4.4.3",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1042,6 +1090,8 @@
         "nested-property": "^4.0.0",
         "pluralize": "^8.0.0",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
@@ -1072,6 +1122,8 @@
         "@pie-lib/rubric": "workspace:*",
         "debug": "^4.4.3",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",
@@ -1106,6 +1158,8 @@
         "@pie-lib/text-select": "workspace:*",
         "debug": "^4.4.3",
         "prop-types": "^15.8.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
       },
       "devDependencies": {
         "@types/react": "^18.2.0",

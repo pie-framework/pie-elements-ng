@@ -375,6 +375,55 @@ const collectBrowserEsmViolations = (dir, pkg) => {
   return violations;
 };
 
+/**
+ * Shared runtime dependencies (React, React DOM) must be installable, not only
+ * declared as peers.
+ *
+ * Legacy webpack bundlers such as builder.pie-api.com install `dependencies` and
+ * do not install peers. A peer-only React declaration therefore leaves
+ * node_modules/react absent in the build snapshot, and every @mui / @emotion /
+ * @dnd-kit peer fails with "Module not found: Can't resolve 'react'". That
+ * shipped once: @pie-lib/translator was the only package in the graph declaring
+ * React as a real dependency, so every element free-rode on it, and republishing
+ * translator with a correct peer-only declaration broke every React element at
+ * once.
+ *
+ * Scope: element packages only, identified by pie.controller. Library packages
+ * (@pie-lib/*, @pie-element/shared-*) are correct to declare React peer-only -
+ * the element that consumes them owns the installable pin. Svelte elements
+ * declare no React peer and are exempt automatically.
+ */
+const collectSharedRuntimeDependencyViolations = (pkg) => {
+  const violations = [];
+  if (!pkg.pie?.controller) return violations;
+
+  const dependencies = pkg.dependencies || {};
+  const peerDependencies = pkg.peerDependencies || {};
+
+  for (const [dependencyName, expectedVersion] of Object.entries(
+    expectedBrowserSharedDependencies
+  )) {
+    if (!peerDependencies[dependencyName]) continue;
+    const actualVersion = dependencies[dependencyName];
+    // A caret range, not an exact pin. An exact pin resolves to its own copy
+    // alongside the root's `^`-resolved one, and two React instances break hooks
+    // ("Invalid hook call", useRef of null). React is external in every ng bundle,
+    // so the installed version only has to resolve for the legacy webpack path.
+    const requiredRange = `^${expectedVersion}`;
+    if (actualVersion === undefined) {
+      violations.push(
+        `dependencies.${dependencyName} is missing: peerDependencies.${dependencyName} alone is not installable by webpack bundlers; use "${requiredRange}"`
+      );
+    } else if (actualVersion !== requiredRange) {
+      violations.push(
+        `dependencies.${dependencyName} must be "${requiredRange}" (matching pie.browserSharedDependencies ${expectedVersion}), got "${actualVersion}"; an exact pin duplicates React and breaks hooks`
+      );
+    }
+  }
+
+  return violations;
+};
+
 export const collectManifestViolations = (dir, pkg) => {
   const violations = [];
   if (Array.isArray(pkg.files)) {
@@ -407,6 +456,7 @@ export const collectManifestViolations = (dir, pkg) => {
   collectExportKeyViolations(pkg, violations);
   violations.push(...collectControllerContractViolations(dir, pkg));
   violations.push(...collectBrowserEsmViolations(dir, pkg));
+  violations.push(...collectSharedRuntimeDependencyViolations(pkg));
 
   const targets = new Set();
   for (const field of ['main', 'module', 'types', 'unpkg', 'jsdelivr']) {

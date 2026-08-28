@@ -19,7 +19,9 @@
     "@pie-lib/rubric": "workspace:*",
     "@pie-lib/config-ui": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-lodash": "workspace:*"
+    "@pie-element/shared-lodash": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "peerDependencies": {
     "react": "^18.0.0",

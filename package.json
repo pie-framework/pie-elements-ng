@@ -88,6 +88,7 @@
     "upstream:sync:element": "bun run cli upstream:sync --element",
     "upstream:update": "bun run cli upstream:update",
     "upstream:update:dry": "bun run cli upstream:update --dry-run",
+    "upstream:verify-no-regressions": "node scripts/check-sync-regressions.mjs",
     "verify:no-local-paths": "node scripts/check-no-local-paths.mjs",
     "verify:runtime-support": "node scripts/verify-runtime-support-exports.mjs",
     "verify:element-contracts": "bun ./scripts/verify-element-contracts.mjs",
