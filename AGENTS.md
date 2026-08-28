@@ -89,13 +89,70 @@ CLI upstream commands (`upstream:update`, `upstream:check`, `upstream:sync`, etc
 
 The synced packages (`packages/elements-react/*` and `packages/lib-react/*`) are committed to git. You don't need to check out pie-elements or pie-lib - just `git pull` to get the latest synced packages.
 
-**Edit policy for synced packages:**
+**Edit policy for synced packages (transition in progress):**
 
-- Do not directly edit files under `packages/elements-react/*` or `packages/lib-react/*`.
-- Make source fixes in upstream repos (`../pie-elements`, `../pie-lib`) and sync them into this repo using `upstream:update` or targeted `upstream:sync`.
-- Preserve/copy upstream package versions from upstream `package.json` files during sync; do not reset them to local defaults.
-- Re-verify behavior in `apps/element-demo` and run diagnostics on touched files after a sync.
-- Only use direct local edits in those synced folders when explicitly approved as an emergency local-only debugging patch.
+This repo is migrating away from syncing. **This repo is now the source of truth** for
+`packages/elements-react/*` and `packages/lib-react/*`: fixes are made and published from
+here. Editing those directories directly is expected, not an exception.
+
+Sync is retained only for occasional cases - picking up an upstream fix for a package that
+has not been reimplemented here yet. Treat every sync as a potentially destructive
+operation on work this repo owns.
+
+- Prefer fixing here. Only reach for `upstream:update` / `upstream:sync` when you
+  specifically want to pull upstream changes for a package this repo has not taken over.
+- If a fix belongs in the sync tooling (so it survives future syncs), put it in
+  `tools/cli/**` *and* apply it to the committed manifests. Tooling alone is not enough
+  while sync is optional; committed files alone are not enough while sync still runs.
+- Never sync with a dirty working tree. You cannot tell sync's output from your own edits
+  afterwards.
+
+**Required check after any sync:**
+
+```bash
+bun run upstream:verify-no-regressions    # compare working tree against HEAD
+bun run upstream:verify-no-regressions -- --ref=develop
+```
+
+A sync replaces each synced package's `dependencies` **wholesale** with upstream's ranges.
+Package `version` fields survive (`resolveSyncedVersion` prefers the local value), but any
+dependency range raised locally - by Dependabot or by hand - is silently reset to
+upstream's older range. This has already required manual repair once: commit `dba8c652`
+restored `@mdi/js` (`^7.4.47` -> `^3.6.95`), `@tiptap/pm` (`3.30.2` -> `3.20.0`),
+`@visx/curve` (`^4.0.0` -> `^3.0.0`) and others after a sync walked them backwards.
+
+`upstream:verify-no-regressions` fails on a downgraded dependency range, a downgraded
+package `version`, or a dependency that disappeared. Run it before committing sync output
+and restore anything it flags.
+
+**What a sync overwrites — review these by hand in the diff:**
+
+| Field | Behaviour on sync |
+| --- | --- |
+| `version` | Preserved (local value wins) |
+| `dependencies` | **Replaced wholesale** from upstream - local bumps lost |
+| `peerDependencies` | Merged (local entries kept) |
+| `exports`, `main`, `types`, `files`, `scripts.build` | Regenerated - hand edits lost |
+| `pie.*` | Regenerated from entry points + `tools/vite/browser-esm-policy.json` |
+
+**Invariants that must hold after a sync** (all are enforced, so run the gates):
+
+- Every `packages/elements-react/*` package declares `react` and `react-dom` in
+  `dependencies` pinned to `sharedDependencyVersions` in
+  `tools/vite/browser-esm-policy.json`, not as peers alone. Legacy webpack bundlers
+  (`builder.pie-api.com`) install `dependencies` and never peers, so peer-only React
+  leaves `node_modules/react` absent and every `@mui` / `@emotion` / `@dnd-kit` peer fails
+  with `Module not found: Can't resolve 'react'`. Enforced by `check:publish-surface`.
+- Library packages (`@pie-lib/*`, `@pie-element/shared-*`) keep React peer-only. The
+  consuming element owns the installable pin.
+
+Then re-verify behavior in `apps/element-demo` and run diagnostics on touched files:
+
+```bash
+bun run upstream:verify-no-regressions
+bun run verify:element-contracts
+bun run lint:all && bun run test
+```
 
 ## Shared Infra Guardrails
 
@@ -294,7 +351,7 @@ When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-
 - Prefer dedicated a11y scenarios in `apps/element-a11y-demo/src/lib/a11y/scenarios/catalog.ts` over broad demo inventory coverage.
 - Keep automated scope explicit: document Axe-covered checks, custom Playwright checks, manual-only concerns, and unclear gaps in `docs/a11y/`.
 - Add reusable checks in `apps/element-a11y-demo/test/a11y/axe-scenarios.spec.ts` only when the concern applies across multiple elements.
-- Do not edit synced outputs in `packages/elements-react/*` or `packages/lib-react/*`; fix upstream first or document the issue for follow-up.
+- Fixes in `packages/elements-react/*` or `packages/lib-react/*` are made in this repo - see [Upstream Sync](#upstream-sync-maintainers-only) for the current edit policy and the required post-sync check.
 
 ### Rich Text Editing
 
