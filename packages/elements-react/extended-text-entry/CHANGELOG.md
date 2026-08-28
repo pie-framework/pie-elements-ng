@@ -1,5 +1,11 @@
 # @pie-element/extended-text-entry
 
+## 15.1.2-next.7
+
+### Patch Changes
+
+- a644ec3: Declare react and react-dom as installable dependencies pinned to the browser ESM shared version (18.2.0), not peer-only. Legacy webpack bundlers install dependencies and never peers, so peer-only React left node_modules/react absent and every @mui/@emotion/@dnd-kit peer failed to resolve. Bundle output is unchanged - React stays external in every build.
+
 ## 15.1.2-next.6
 
 ### Patch Changes
