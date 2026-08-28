@@ -435,8 +435,57 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies).not.toHaveProperty('classnames');
     expect(pkgJson.dependencies).not.toHaveProperty('lodash');
     expect(pkgJson.dependencies).not.toHaveProperty('lodash-es');
+    // Upstream's own React ranges are dropped. React is re-added as an
+    // installable pin only when tools/vite/browser-esm-policy.json supplies the
+    // shared version, which this fixture deliberately omits - see the next test.
     expect(pkgJson.dependencies).not.toHaveProperty('react');
     expect(pkgJson.dependencies).not.toHaveProperty('react-dom');
+  });
+
+  it('pins shared React runtime deps as installable dependencies, not peers alone', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await writeBrowserEsmPolicy(rootDir);
+    await createElementBase(elementDir);
+    await writeFile(
+      join(elementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          version: '13.1.2-next.0',
+          peerDependencies: {
+            react: '^16.8.0 || ^17.0.0',
+            'react-dom': '^16.8.0 || ^17.0.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+
+    // Legacy webpack bundlers install `dependencies` and never peers, so a
+    // peer-only declaration leaves node_modules/react absent and every
+    // @mui / @emotion / @dnd-kit peer fails to resolve.
+    expect(pkgJson.dependencies.react).toBe('18.2.0');
+    expect(pkgJson.dependencies['react-dom']).toBe('18.2.0');
+
+    // The peer declaration is still the compatibility contract for ESM hosts
+    // that provide React themselves via an import map.
+    expect(pkgJson.peerDependencies).toEqual({
+      react: '^18.0.0',
+      'react-dom': '^18.0.0',
+    });
   });
 
   it('removes development export conditions and emits the controller package contract', async () => {

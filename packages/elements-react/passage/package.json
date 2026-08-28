@@ -20,7 +20,9 @@
     "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "debug": "^4.4.3"
+    "debug": "^4.4.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "peerDependencies": {
     "react": "^18.0.0",
