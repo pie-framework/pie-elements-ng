@@ -1,5 +1,11 @@
 # @pie-lib/graphing
 
+## 4.0.5-next.33
+
+### Patch Changes
+
+- 26b17f1: Give a new graphing label a caret, not just the focus (PIE-681)
+
 ## 4.0.5-next.32
 
 ### Patch Changes
