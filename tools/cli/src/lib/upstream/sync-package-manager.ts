@@ -683,13 +683,20 @@ export async function ensureElementPackageJson(
   // is declared here, so bundle output is unaffected.
   //
   // Versions come from tools/vite/browser-esm-policy.json - the same source as
-  // pie.browserSharedDependencies below - so the installed copy cannot drift
-  // from the version the players pin.
+  // pie.browserSharedDependencies below.
+  //
+  // Declared as a caret range, NOT an exact pin. An exact pin resolves to its own
+  // copy alongside the root's `^`-resolved one, and two React instances break
+  // hooks at runtime ("Invalid hook call", useRef of null). The installed version
+  // only has to resolve for the legacy webpack path, so a range is sufficient.
   const sharedRuntimeDeps = readBrowserEsmPolicy(config.pieElementsNg).sharedDependencyVersions;
   if (sharedRuntimeDeps && Object.keys(sharedRuntimeDeps).length > 0) {
+    const rangedRuntimeDeps = Object.fromEntries(
+      Object.entries(sharedRuntimeDeps).map(([name, version]) => [name, `^${version}`])
+    );
     pkg.dependencies = {
       ...((pkg.dependencies as Record<string, string> | undefined) ?? {}),
-      ...sharedRuntimeDeps,
+      ...rangedRuntimeDeps,
     };
   }
 

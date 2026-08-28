@@ -476,9 +476,10 @@ describe('ensureElementPackageJson iife build script generation', () => {
 
     // Legacy webpack bundlers install `dependencies` and never peers, so a
     // peer-only declaration leaves node_modules/react absent and every
-    // @mui / @emotion / @dnd-kit peer fails to resolve.
-    expect(pkgJson.dependencies.react).toBe('18.2.0');
-    expect(pkgJson.dependencies['react-dom']).toBe('18.2.0');
+    // @mui / @emotion / @dnd-kit peer fails to resolve. A caret range, not an exact
+    // pin: an exact pin installs a second React copy and breaks hooks.
+    expect(pkgJson.dependencies.react).toBe('^18.2.0');
+    expect(pkgJson.dependencies['react-dom']).toBe('^18.2.0');
 
     // The peer declaration is still the compatibility contract for ESM hosts
     // that provide React themselves via an import map.

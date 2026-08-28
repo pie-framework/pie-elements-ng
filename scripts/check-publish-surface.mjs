@@ -405,13 +405,18 @@ const collectSharedRuntimeDependencyViolations = (pkg) => {
   )) {
     if (!peerDependencies[dependencyName]) continue;
     const actualVersion = dependencies[dependencyName];
+    // A caret range, not an exact pin. An exact pin resolves to its own copy
+    // alongside the root's `^`-resolved one, and two React instances break hooks
+    // ("Invalid hook call", useRef of null). React is external in every ng bundle,
+    // so the installed version only has to resolve for the legacy webpack path.
+    const requiredRange = `^${expectedVersion}`;
     if (actualVersion === undefined) {
       violations.push(
-        `dependencies.${dependencyName} is missing: peerDependencies.${dependencyName} alone is not installable by webpack bundlers; pin "${expectedVersion}"`
+        `dependencies.${dependencyName} is missing: peerDependencies.${dependencyName} alone is not installable by webpack bundlers; use "${requiredRange}"`
       );
-    } else if (actualVersion !== expectedVersion) {
+    } else if (actualVersion !== requiredRange) {
       violations.push(
-        `dependencies.${dependencyName} must be "${expectedVersion}" to match pie.browserSharedDependencies, got "${actualVersion}"`
+        `dependencies.${dependencyName} must be "${requiredRange}" (matching pie.browserSharedDependencies ${expectedVersion}), got "${actualVersion}"; an exact pin duplicates React and breaks hooks`
       );
     }
   }
