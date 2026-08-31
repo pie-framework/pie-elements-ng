@@ -16,7 +16,7 @@
     "@pie-lib/plot": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "@visx/axis": "^3.0.0",
+    "@visx/axis": "^4.0.0",
     "@visx/event": "^3.0.0",
     "@visx/grid": "^3.0.0",
     "@visx/group": "^3.0.0",
