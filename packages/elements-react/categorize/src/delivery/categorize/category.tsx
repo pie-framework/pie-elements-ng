@@ -28,6 +28,9 @@ export class Category extends React.Component {
     onDropChoice: PropTypes.func,
     onRemoveChoice: PropTypes.func,
     minRowHeight: PropTypes.string,
+    selectedItem: PropTypes.object,
+    onSelectClick: PropTypes.func,
+    onPlacementClick: PropTypes.func,
   };
 
   static defaultProps = {};
@@ -42,6 +45,9 @@ export class Category extends React.Component {
       id,
       correct,
       minRowHeight,
+      selectedItem,
+      onSelectClick,
+      onPlacementClick,
     } = this.props;
 
     return (
@@ -52,6 +58,8 @@ export class Category extends React.Component {
           disabled={disabled}
           correct={correct}
           minRowHeight={minRowHeight}
+          selectedItem={selectedItem}
+          onPlacementClick={onPlacementClick}
         >
           {choices.map((c, index) => (
             <Choice
@@ -60,6 +68,8 @@ export class Category extends React.Component {
               key={index}
               choiceIndex={index}
               categoryId={id}
+              selectedItem={selectedItem}
+              onSelectClick={onSelectClick}
               {...c}
             />
           ))}
