@@ -86,7 +86,7 @@ const AnswerContent = (props) => {
   }
 };
 
-const AnswerContainer: any = styled('div')(({ correct, theme }) => ({
+const AnswerContainer: any = styled('div')(({ correct, isSelected, isDragging, theme }) => ({
   boxSizing: 'border-box',
   minHeight: 40,
   minWidth: '200px',
@@ -100,7 +100,9 @@ const AnswerContainer: any = styled('div')(({ correct, theme }) => ({
       ? `1px solid var(--feedback-correct-bg-color, ${color.correct()})`
       : correct === false
         ? `1px solid var(--feedback-incorrect-bg-color, ${color.incorrect()})`
-        : 'none',
+        : isSelected && !isDragging
+          ? `2px solid ${color.buttonFocusOutline()}`
+          : 'none',
 }));
 
 export class Answer extends React.Component {
@@ -153,7 +155,7 @@ export class Answer extends React.Component {
     log('[render], props: ', this.props);
 
     return (
-      <AnswerContainer correct={correct} className={className} ref={(ref) => (this.ref = ref)}>
+      <AnswerContainer correct={correct} isSelected={isSelected} isDragging={isDragging} className={className} ref={(ref) => (this.ref = ref)}>
         <AnswerContent
           title={title}
           id={id}
@@ -313,7 +315,10 @@ function DragAndDropAnswer(props) {
         onMouseLeave={() => setIsHovered(false)}
         style={{
           flex: 1,
-          opacity: isDragging || isSelected ? 0.5 : 1,
+          // Selection's own dimming happens inside AnswerContentContainer (nested inside
+          // AnswerContainer, which now carries the selection border) — not dropped here
+          // too, or the border above would inherit this wrapper's reduced opacity.
+          opacity: isDragging ? 0.5 : 1,
           backgroundColor: isDragging || isSelected || showsHoverEffect ? 'rgba(0,0,0,0.05)' : 'transparent',
           cursor: hasSelection && !disabled ? 'pointer' : undefined,
         }}
@@ -345,7 +350,10 @@ function DragAndDropAnswer(props) {
         transform: transformStyle,
         transition,
         cursor: disabled ? 'not-allowed' : 'grab',
-        opacity: isDragging || isSelected ? 0.5 : 1,
+        // Selection's own dimming happens inside AnswerContentContainer (nested inside
+        // AnswerContainer, which now carries the selection border) — not dropped here
+        // too, or the border above would inherit this wrapper's reduced opacity.
+        opacity: isDragging ? 0.5 : 1,
         touchAction: draggable && !disabled ? 'none' : 'auto',
       }}
     >
