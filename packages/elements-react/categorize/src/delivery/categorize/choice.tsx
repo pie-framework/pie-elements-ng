@@ -32,7 +32,9 @@ const ChoiceContainer: any = styled('div', {
   cursor: disabled ? 'not-allowed' : isDragging ? 'move' : 'pointer',
   width: '100%',
   borderRadius: '6px',
-  opacity: isSelected ? 0.5 : 1,
+  ...(isSelected && {
+    border: `solid 2px ${color.buttonFocusOutline()}`,
+  }),
   ...(correct === true && {
     border: `solid 2px ${color.correct()}`,
   }),
@@ -41,11 +43,14 @@ const ChoiceContainer: any = styled('div', {
   }),
 }));
 
-const StyledCard: any = styled(Card)({
+const StyledCard: any = styled(Card, {
+  shouldForwardProp: (prop) => prop !== 'isSelected',
+})(({ isSelected }) => ({
   color: color.text(),
   backgroundColor: color.background(),
   width: '100%',
-});
+  opacity: isSelected ? 0.5 : 1,
+}));
 
 const StyledCardContent: any = styled(CardContent)(({ theme }) => ({
   color: color.text(),
@@ -70,11 +75,16 @@ export class Layout extends React.Component {
   };
   static defaultProps = {};
   render() {
-    const { content, isDragging, disabled, correct, isSelected } = this.props;
+    const { content, isDragging, disabled, correct, isSelected, showsSelectionBorder } = this.props;
 
     return (
-      <ChoiceContainer isDragging={isDragging} disabled={disabled} correct={correct} isSelected={isSelected}>
-        <StyledCard>
+      <ChoiceContainer
+        isDragging={isDragging}
+        disabled={disabled}
+        correct={correct}
+        isSelected={isSelected}
+      >
+        <StyledCard isSelected={isSelected}>
           <StyledCardContent dangerouslySetInnerHTML={{ __html: content }} />
         </StyledCard>
       </ChoiceContainer>

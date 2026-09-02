@@ -13,6 +13,7 @@ vi.mock('@pie-lib/render-ui', () => ({
     white: () => '#fff',
     correct: () => '#00ff00',
     incorrect: () => '#ff0000',
+    buttonFocusOutline: () => '#3B82F6',
   },
 }));
 
@@ -89,8 +90,35 @@ describe('Layout', () => {
       const { container } = renderLayout({ isSelected: true });
 
       expect(container.firstChild!.firstChild).toBeInTheDocument();
-      // ChoiceContainer is Layout's outer node; emotion applies the opacity rule to it.
-      expect(getComputedStyle(container.firstChild as Element).opacity).toBe('0.5');
+      // Opacity lives on StyledCard (one level inside ChoiceContainer) so the selection
+      // border on ChoiceContainer itself stays fully opaque.
+      expect(getComputedStyle(container.firstChild!.firstChild as Element).opacity).toBe('0.5');
+    });
+
+    it('shows the blue selection border when selected', () => {
+      const { container } = renderLayout({ isSelected: true });
+
+      expect(getComputedStyle(container.firstChild as Element).border).toBe('2px solid #3B82F6');
+    });
+
+    it('does not show the blue selection border by default', () => {
+      const { container } = renderLayout();
+
+      expect(getComputedStyle(container.firstChild as Element).border).not.toBe('2px solid #3B82F6');
+    });
+
+    it('lets a correct/incorrect border take precedence over the selection border', () => {
+      const { container } = renderLayout({ isSelected: true, correct: true });
+
+      expect(getComputedStyle(container.firstChild as Element).border).toBe('2px solid #00ff00');
+    });
+
+    it('keeps the selection border fully opaque even when the choice is selected and dimmed', () => {
+      const { container } = renderLayout({ isSelected: true });
+
+      expect(getComputedStyle(container.firstChild as Element).border).toBe('2px solid #3B82F6');
+      expect(getComputedStyle(container.firstChild as Element).opacity).not.toBe('0.5');
+      expect(getComputedStyle(container.firstChild!.firstChild as Element).opacity).toBe('0.5');
     });
   });
 });
