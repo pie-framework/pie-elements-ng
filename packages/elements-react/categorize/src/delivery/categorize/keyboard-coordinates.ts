@@ -51,19 +51,32 @@ export const closestDroppableKeyboardCoordinates = (event, { context, currentCoo
   for (const [id, container] of droppableContainers) {
     if (container?.disabled) continue;
 
-    const rect = droppableRects.get(id);
+    // dnd-kit's own `droppableRects` is a cached snapshot that isn't guaranteed to be
+    // populated for every registered droppable yet on the very first keyboard-driven
+    // drag of a session (before any DOM-mutating interaction has forced a full
+    // remeasure). A container silently missing from that cache here would otherwise
+    // drop out of `targets` entirely, corrupting the Tab cycle. Reading the container's
+    // live node directly sidesteps that cache entirely.
+    const rect = container?.node?.current?.getBoundingClientRect() ?? droppableRects.get(id);
     if (!rect) continue;
 
     const center = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
     };
-    // Land the dragged item's own top-left corner at the target's center-left point,
-    // rather than at the target's own top-left corner (avoids overshooting into a
-    // neighboring droppable when the target is much larger than the dragged item).
+    // Land the dragged item's own left edge at the target's left edge (avoids
+    // overshooting into a neighboring droppable when the target is much larger than
+    // the dragged item), and vertically CENTER the item on the target's own center —
+    // not top-align it there. When the dragged item's rendered height differs from the
+    // target's, top-aligning the item's edge to the target's center lets it bleed into
+    // a neighboring target, and dnd-kit's own area-based collision detection
+    // (rectIntersection) can then flag that neighbor as "over" even though the item
+    // visually landed on the intended target (confirmed live in the equivalent
+    // drag-in-the-blank bug this was ported from a fix for).
+    const itemHeight = collisionRect?.height ?? 0;
     const dropPosition = {
       x: rect.left,
-      y: rect.top + rect.height / 2,
+      y: rect.top + rect.height / 2 - itemHeight / 2,
     };
 
     const target = { id, rect, dropPosition, center };
