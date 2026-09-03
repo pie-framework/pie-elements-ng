@@ -64,19 +64,36 @@ export const closestDroppableKeyboardCoordinates = (event, { active, context, cu
     if (container?.disabled) continue;
     if (id === ownDropId) continue;
 
-    const rect = droppableRects.get(id);
+    // dnd-kit's own `droppableRects` is a cached snapshot that isn't guaranteed to be
+    // populated for every registered droppable yet on the very first keyboard-driven
+    // drag of a session (before any DOM-mutating interaction — e.g. a placement — has
+    // forced a full remeasure). A container silently missing from that cache here would
+    // otherwise drop out of `targets` entirely, corrupting the Tab cycle (confirmed live:
+    // fresh page load, pick up a choice, Tab — lands on the wrong blank and cycles
+    // through only a subset of them; placing one answer first "fixes" every keyboard
+    // drag afterward, since the placement's DOM change forces dnd-kit to catch up).
+    // Reading the container's live node directly sidesteps that cache entirely.
+    const rect = container?.node?.current?.getBoundingClientRect() ?? droppableRects.get(id);
     if (!rect) continue;
 
     const center = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
     };
-    // Land the dragged item's own top-left corner at the target's center-left point,
-    // rather than at the target's own top-left corner (avoids overshooting into a
-    // neighboring droppable when the target is much wider than the dragged item).
+    // Land the dragged item's own left edge at the target's left edge (avoids
+    // overshooting into a neighboring droppable when the target is much wider than the
+    // dragged item), and vertically CENTER the item on the target's own center — not
+    // top-align it there. A blank's placeholder is a thin inline slot (as short as
+    // 18px), while the dragged chip renders much taller (a full choice tile, ~50px);
+    // top-aligning the item's edge to the target's center let its bottom half bleed
+    // deep into the row below, and dnd-kit's own area-based collision detection would
+    // then flag that neighboring row as "over" even though the item visually landed on
+    // the right target (confirmed live: chip renders at blank 0's position, but the
+    // hover highlight lands on blank 3 — directly below it in the next row).
+    const itemHeight = collisionRect?.height ?? 0;
     const dropPosition = {
       x: rect.left,
-      y: rect.top + rect.height / 2,
+      y: rect.top + rect.height / 2 - itemHeight / 2,
     };
 
     const target = { id, rect, dropPosition, center };
