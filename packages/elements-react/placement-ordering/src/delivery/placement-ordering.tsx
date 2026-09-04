@@ -64,6 +64,36 @@ import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 // re-trigger a selection for a drag that just completed.
 const CLICK_AFTER_DRAG_GUARD_MS = 250;
 
+// Used by onDragEnd below to tell "dropped back on the exact slot the drag started
+// from" apart from "dropped somewhere with no valid target at all" — both leave
+// dnd-kit's own `over` null (tile.tsx disables a droppable for the whole duration of
+// its own drag, and dnd-kit excludes disabled droppables from collision detection
+// entirely, so the origin slot can never become `over` again — see
+// `enabledDroppableContainers` in dnd-kit's own DndContext), but only the first should
+// be a no-op rather than a removal.
+//
+// dnd-kit gives no id for "whatever the item is currently over" once that candidate is
+// disabled, so there's no droppable id to compare against directly. What IS available
+// is `active.rect.current.initial` — and because the draggable and its paired
+// droppable are the same DOM node (see tile.tsx), that rect IS the origin slot's own
+// bounds; nothing else could ever measure there. So checking whether the item's
+// current center still falls inside its own initial rect is exactly equivalent to
+// asking "does the slot here still hold the same choice id it was picked up from" —
+// just resolved geometrically, since that's the only id that rect could ever belong to.
+const isOverOwnOriginSlot = (initialRect, translatedRect) => {
+  if (!initialRect || !translatedRect) return false;
+
+  const centerX = translatedRect.left + translatedRect.width / 2;
+  const centerY = translatedRect.top + translatedRect.height / 2;
+
+  return (
+    centerX >= initialRect.left &&
+    centerX <= initialRect.right &&
+    centerY >= initialRect.top &&
+    centerY <= initialRect.bottom
+  );
+};
+
 const getKeyboardDragOptions = (includeTargets) =>
   includeTargets
     ? {
@@ -368,7 +398,9 @@ export class PlacementOrdering extends React.Component {
       }
     } else if (!over && active) {
       const draggedItem = active.data.current;
-      if (draggedItem && draggedItem.type === 'target') {
+      const returnedToOwnSlot = isOverOwnOriginSlot(active.rect?.current?.initial, active.rect?.current?.translated);
+
+      if (draggedItem && draggedItem.type === 'target' && !returnedToOwnSlot) {
         this.onRemoveChoice(draggedItem, ordering);
       }
     }
