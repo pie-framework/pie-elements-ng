@@ -457,7 +457,6 @@ let showAudioTranscript = $state(false);
       {@const isActive = activeTab === tab.id}
       <a
         href={tab.path}
-        data-sveltekit-reload
         role="tab"
         class="tab"
         class:tab-active={isActive}
