@@ -51,7 +51,12 @@ const BaseContainer: any = styled('div')(() => ({
     border: `2px solid ${color.incorrect()} !important`,
   },
   '&.selected': {
-    opacity: 0.7,
+    border: `2px solid ${color.buttonFocusOutline()}`,
+    // Dimming lives on the direct children, not here, so the selection border above
+    // stays fully opaque even while the tile content dims.
+    '& > *': {
+      opacity: 0.7,
+    },
   },
 }));
 
