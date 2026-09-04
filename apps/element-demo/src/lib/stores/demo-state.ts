@@ -186,6 +186,10 @@ export function updateModel(newModel: any) {
     const newVersion = get(modelVersion) + 1;
     modelVersion.update((v) => v + 1);
     console.log('[demo-state] Model updated, modelVersion incremented to', newVersion);
+    // An author/source edit can invalidate a session that was recorded against the
+    // previous model (e.g. a choice the session references no longer exists), so any
+    // in-progress answers from before the edit shouldn't carry forward.
+    resetSession();
   } else {
     console.log('[demo-state] Model unchanged, not updating');
   }
