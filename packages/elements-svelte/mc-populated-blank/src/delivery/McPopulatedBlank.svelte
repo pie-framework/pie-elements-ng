@@ -33,6 +33,7 @@ const BLANK_TOKEN = '{{blank}}';
 const DEFAULT_UI_TEXT = {
   answerChoices: 'Answer choices',
   selectedAnswerInSentence: 'Selected answer in sentence',
+  blankPreSelectionHint: 'The answer you choose will appear on the blank line above.',
   showCorrectAnswer: 'Show correct answer',
   hideCorrectAnswer: 'Hide correct answer',
   clickToEnableAutoplay: 'Click to enable audio autoplay',
@@ -135,6 +136,7 @@ const uiText = $derived.by(() => ({
 const promptId = $derived(`${instanceId}-prompt`);
 const legendId = $derived(`${instanceId}-choices-legend`);
 const resultId = $derived(`${instanceId}-result`);
+const blankHintId = $derived(`${instanceId}-blank-hint`);
 const legendText = $derived(
   computeLegendText({
     prompt: model?.prompt || '',
@@ -410,6 +412,8 @@ $effect(() => {
     <p id={resultId} class="sr-only pie-result-feedback" role="status" aria-live="polite">{resultText}</p>
   {/if}
 
+  <p id={blankHintId} class="sr-only pie-blank-hint">{uiText.blankPreSelectionHint}</p>
+
   <fieldset class="border-0 p-0 m-0 pie-choices-fieldset" disabled={model?.disabled}>
     <legend class="sr-only pie-choices-legend" id={legendId}>{legendText}</legend>
     <div
@@ -420,7 +424,7 @@ $effect(() => {
       tabindex="-1"
       aria-labelledby={choicesGroupLabelledBy}
       aria-label={choicesGroupAriaLabel}
-      aria-describedby={resultText ? resultId : undefined}
+      aria-describedby={[blankHintId, resultText ? resultId : undefined].filter(Boolean).join(' ')}
     >
       {#each choices as c (c.id)}
         <ChoiceRow
