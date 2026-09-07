@@ -98,10 +98,33 @@ export class AnswerGrid extends React.Component {
     );
   };
 
-  render() {
-    const { showCorrect, headers, rows, choiceMode, answers, disabled, view } = this.props;
-    const Tag = choiceMode === 'radio' ? Radio : Checkbox;
+  // The colour the control paints in every state. Kept in one place because it has to
+  // be applied to `.Mui-checked` and `.Mui-disabled` as well as the root.
+  controlColor: any = (rowId, rowValue, rowValueIndex) => {
+    const { showCorrect, disabled, view } = this.props;
     const evaluate = disabled && !view;
+
+    if (
+      (showCorrect && rowValue === true) ||
+      (evaluate && this.answerIsCorrect(rowId, rowValue, rowValueIndex))
+    ) {
+      return color.correct();
+    }
+
+    if (evaluate && this.answerIsIncorrect(rowId, rowValue, rowValueIndex)) {
+      return color.incorrect();
+    }
+
+    if (rowValue === true && !evaluate) {
+      return color.primary();
+    }
+
+    return disabled ? color.disabled() : color.text();
+  };
+
+  render() {
+    const { headers, rows, choiceMode, answers, disabled } = this.props;
+    const Tag = choiceMode === 'radio' ? Radio : Checkbox;
 
     if (!rows || rows.length === 0) {
       return (
@@ -145,48 +168,45 @@ export class AnswerGrid extends React.Component {
                   />
                 </td>
 
-                {(answers[row.id] || []).map((rowItem, answerIndex) => (
-                  <Column key={`td-${idx}-${answerIndex}`} data-colno={`${answerIndex + 1}`}>
-                    <RowItem>
-                      <Tag
-                        sx={{
-                          padding: '6px',
-                          color: (showCorrect && rowItem === true) ||
-                                (evaluate && this.answerIsCorrect(row.id, rowItem, answerIndex)) 
-                                ? color.correct() :
-                                evaluate && this.answerIsIncorrect(row.id, rowItem, answerIndex)
-                                ? color.incorrect() :
-                                rowItem === true && !evaluate
-                                ? color.primary() :
-                                disabled 
-                                ? color.disabled() : color.text(),
-                          cursor: disabled ? 'not-allowed' : 'pointer',
-                          pointerEvents: disabled ? 'initial' : 'auto',
-                          opacity: disabled ? 0.7 : 1,
-                          '& input': {
-                            width: '100% !important',
-                          },
-                          '&:hover': {
-                            color: disabled ? color.disabled() : color.primaryLight(),
-                          },
-                          '&.Mui-disabled': {
-                            color: `${(showCorrect && rowItem === true) ||
-                                  (evaluate && this.answerIsCorrect(row.id, rowItem, answerIndex)) 
-                                  ? color.correct() :
-                                  evaluate && this.answerIsIncorrect(row.id, rowItem, answerIndex)
-                                  ? color.incorrect() :
-                                  rowItem === true && !evaluate
-                                  ? color.primary() :
-                                  color.disabled()}`,
-                          },
-                        }}
-                        disabled={disabled}
-                        onChange={this.onRowValueChange(row.id, answerIndex)}
-                        checked={rowItem === true}
-                      />
-                    </RowItem>
-                  </Column>
-                ))}
+                {(answers[row.id] || []).map((rowItem, answerIndex) => {
+                  const controlColor = this.controlColor(row.id, rowItem, answerIndex);
+
+                  return (
+                    <Column key={`td-${idx}-${answerIndex}`} data-colno={`${answerIndex + 1}`}>
+                      <RowItem>
+                        <Tag
+                          sx={{
+                            padding: '6px',
+                            color: controlColor,
+                            // MUI paints the checked state from `palette.primary.main` via
+                            // `.MuiCheckbox-root.Mui-checked` / `.MuiRadio-root.Mui-checked`.
+                            // That is two classes, so a bare `color` above loses to it and the
+                            // control renders MUI's default blue under every PIE theme. `&&`
+                            // matches the specificity so the token wins.
+                            '&&.Mui-checked': {
+                              color: controlColor,
+                            },
+                            '&&.Mui-disabled': {
+                              color: controlColor,
+                            },
+                            cursor: disabled ? 'not-allowed' : 'pointer',
+                            pointerEvents: disabled ? 'initial' : 'auto',
+                            opacity: disabled ? 0.7 : 1,
+                            '& input': {
+                              width: '100% !important',
+                            },
+                            '&&:hover:not(.Mui-disabled)': {
+                              color: color.primaryLight(),
+                            },
+                          }}
+                          disabled={disabled}
+                          onChange={this.onRowValueChange(row.id, answerIndex)}
+                          checked={rowItem === true}
+                        />
+                      </RowItem>
+                    </Column>
+                  );
+                })}
               </Separator>
             </tbody>
           ))}
