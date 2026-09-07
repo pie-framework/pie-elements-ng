@@ -52,9 +52,7 @@ describe('McPopulatedBlank — pre-selection blank hint', () => {
     flushSync();
     const hint = target.querySelector('.pie-blank-hint');
     expect(hint).not.toBeNull();
-    expect(hint?.textContent).toBe(
-      'The answer you choose will appear on the blank line above.'
-    );
+    expect(hint?.textContent).toBe('The answer you choose will appear on the blank line above.');
   });
 
   it('describes the radiogroup with the blank hint', () => {
