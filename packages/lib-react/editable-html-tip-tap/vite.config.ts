@@ -3,6 +3,12 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // ESM-first resolution. A dependency with no exports map (@visx/* v3,
+  // @hello-pangea/dnd) otherwise falls back to its CommonJS main entry, and
+  // bundling CommonJS while React is external makes rolldown emit a
+  // require("react") shim that throws in the browser. Preferring the module
+  // field resolves those dependencies to their ESM build instead.
+  resolve: { mainFields: ['module', 'browser', 'main'] },
   plugins: [react()],
   build: {
     lib: {
