@@ -1,5 +1,12 @@
 # @pie-lib/mask-markup
 
+## 3.0.4-next.35
+
+### Patch Changes
+
+- Updated dependencies [425feaf]
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.33
+
 ## 3.0.4-next.34
 
 ### Patch Changes
