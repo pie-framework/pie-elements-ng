@@ -781,12 +781,34 @@ export function transformPackageJsonBrowserEsmDependencies<T extends Record<stri
     delete deps.mathjs;
   }
 
+  // Ranges forced onto synced packages after the copy.
+  //
+  // Only pin a dependency here when this repo has a reason upstream does not
+  // share, and state that reason. A pin silently overrides whatever upstream
+  // declares, so a pin that has outlived its reason quietly undoes upstream's
+  // decisions on every sync.
+  //
+  // mathjs is pinned to satisfy two constraints that pull in opposite
+  // directions:
+  //   - This repo needs an `exports` map. mathjs 7.x (upstream's range) has
+  //     none, so it resolves to its CJS `main` and reintroduces the runtime
+  //     require leaks that "fix: stabilize browser ESM packaging" (481671b0)
+  //     removed from the browser ESM bundles.
+  //   - Upstream needs fraction.js 4. mathjs >= 14 depends on fraction.js ^5,
+  //     which uses BigInt and breaks number-line bundling (PIE-926, PIE-1005).
+  // mathjs 13.2.3 is the newest release that has an `exports` map AND still
+  // depends on fraction.js ^4.3.7, so it satisfies both. Do not raise this to
+  // 14+ without resolving the BigInt problem first.
+  //
+  // react-draggable is deliberately NOT pinned: upstream moved the synced
+  // packages to ^4.7.1 and fixed the v4 drag regressions against that exact
+  // version, so a pin here would downgrade away from the code those fixes were
+  // written for.
   const versionPins: Record<string, string> = {
     '@types/react': '^18.2.0',
     '@types/react-dom': '^18.2.0',
     clsx: '^2.1.1',
-    mathjs: '^15.2.0',
-    'react-draggable': '^4.6.0',
+    mathjs: '^13.2.3',
     'react-is': '^18.3.1',
     'react-redux': '^9.3.0',
     redux: '^5.0.1',

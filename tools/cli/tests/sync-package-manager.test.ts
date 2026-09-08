@@ -425,8 +425,8 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
-      mathjs: '^15.2.0',
-      'react-draggable': '^4.6.0',
+      mathjs: '^13.2.3',
+      'react-draggable': '^3.3.0',
       'react-is': '^18.3.1',
       'react-redux': '^9.3.0',
       recharts: '^3.8.1',
@@ -890,8 +890,8 @@ describe('ensurePieLibPackageJson', () => {
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
-      mathjs: '^15.2.0',
-      'react-draggable': '^4.6.0',
+      mathjs: '^13.2.3',
+      'react-draggable': '^3.3.0',
       'react-redux': '^9.3.0',
       redux: '^5.0.1',
     });
@@ -968,7 +968,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.dependencies.mathjs).toBe('^15.2.0');
+    expect(pkgJson.dependencies.mathjs).toBe('^13.2.3');
   });
 
   it('keeps mathjs pinned for pie-lib packages without a generated math helper', async () => {
@@ -999,7 +999,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.dependencies.mathjs).toBe('^15.2.0');
+    expect(pkgJson.dependencies.mathjs).toBe('^13.2.3');
   });
 
   it('does not remove react-input-autosize from pie-lib packages without the generated local component', async () => {
