@@ -1,5 +1,11 @@
 # @pie-element/match-list
 
+## 7.1.2-next.8
+
+### Patch Changes
+
+- 425feaf: Sync upstream drag fixes, visx v4, tiptap and number-line math changes
+
 ## 7.1.2-next.7
 
 ### Patch Changes
