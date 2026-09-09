@@ -74,6 +74,49 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(buildScript).toBe(SCRIPTS.BUILD_WITH_IIFE);
   });
 
+  it('includes the legacy print lane when the package has a print entry point', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'print'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'print', 'index.ts'),
+      'export default class PrintElement {}\n',
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    // module/print.js is what the current @pie-framework/pie-print loader fetches.
+    // It comes from a separate build lane, so losing this step from the generated
+    // script silently breaks print for every published element (PIE-839).
+    const buildScript = await readBuildScript(elementDir);
+    expect(buildScript).toContain('tools/vite/element-legacy-print.config.ts');
+  });
+
+  it('omits the legacy print lane when the package has no print entry point', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const buildScript = await readBuildScript(elementDir);
+    expect(buildScript).not.toContain('element-legacy-print.config.ts');
+  });
+
   it('uses standard build script when no IIFE files exist', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
