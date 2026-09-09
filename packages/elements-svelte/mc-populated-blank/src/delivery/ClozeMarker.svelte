@@ -37,7 +37,7 @@ let {
       src={displayChoice.imageUrl}
       alt={displayChoice.imageAlt || 'Selected answer image'}
       class="w-auto object-contain pie-blank-image"
-      style="max-height:var(--mpb-selected-image-max-height, 4rem);"
+      style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
     />
   {:else if displayChoiceLabelHtml}
     <span class="cloze-marker-value pie-blank-value">{@html displayChoiceLabelHtml}</span>

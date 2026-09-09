@@ -972,6 +972,43 @@
       }
     },
     {
+      "id": "variant-sel-r1-image-cap-150",
+      "title": "sel_r1-g_plusggg — image choice size cap regression (CONTOOL-3159)",
+      "description": "Regression fixture for CONTOOL-3159: choices use the imageUrl/imageAlt contract (the shape real Learnosity graphic items map to) with 150x150 SVG assets. Choice images must render at their full 150x150 size, not be squeezed down by an undersized default max-height cap.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "graphic", "image-cap-regression"],
+      "model": {
+        "id": "21",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p><span>Pick the shape.</span> {{blank}}</p>",
+        "choiceMode": "image",
+        "choices": [
+          { "id": "distractor_1", "imageUrl": "/mc-populated-blank-150.svg", "imageAlt": "Square" },
+          { "id": "distractor_2", "imageUrl": "/mc-populated-blank-150.svg", "imageAlt": "Circle" },
+          { "id": "distractor_3", "imageUrl": "/mc-populated-blank-150.svg", "imageAlt": "Triangle" }
+        ],
+        "correctChoiceId": "distractor_1",
+        "hasAudio": false,
+        "audioUrl": "",
+        "audioTranscript": "",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "token_sequence",
+        "customType": "sel_r1-g_plusggg",
+        "useFeatureButtonAudio": false,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": false,
+        "completeAudioEnabled": false
+      },
+      "session": {
+        "id": "21",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
       "id": "variant-sel-r1-plusggg-graphic",
       "title": "sel_r1-_plusggg \u2014 graphic choices English (097f87c5)",
       "description": "Graphic choice variant from item 097f87c5-c474-4dda-97b2-46b30d598a54.",

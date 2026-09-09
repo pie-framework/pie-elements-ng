@@ -44,7 +44,7 @@ let {
             src={choice.imageUrl}
             alt={choice.imageAlt || `Choice ${choice.id}`}
             class="object-contain pie-choice-image"
-            style="max-height:var(--mpb-choice-image-max-height, 5rem);"
+            style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
           />
         {:else}
           <span class="choice-html pie-choice-label">{@html choice.labelHtml || ''}</span>
