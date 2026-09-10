@@ -1,5 +1,16 @@
 # @pie-lib/mask-markup
 
+## 3.0.4-next.36
+
+### Patch Changes
+
+- f568994: Keep the inline-dropdown menu opaque when the host sets no --pie-background (PIE-1008)
+- 7cae8f9: Fix keyboard placement: center the dragged item on its target instead of top-aligning it there, which let the item bleed into a neighbouring target and register the wrong drop; and correct the placement-ordering Tab cycle (PIE-803, PIE-963, PIE-964)
+- Updated dependencies [7cae8f9]
+  - @pie-lib/drag@4.1.0-next.40
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.34
+
 ## 3.0.4-next.35
 
 ### Patch Changes

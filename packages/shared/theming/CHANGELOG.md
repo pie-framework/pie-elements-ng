@@ -1,5 +1,11 @@
 # @pie-element/shared-theming
 
+## 0.2.0-next.3
+
+### Minor Changes
+
+- 7cae8f9: Add a surface theming token and use it for drag placeholders, so placeholder fills come from the theme instead of hard-coded greys (PIE-865, PIE-870, PIE-874, PIE-878)
+
 ## 0.1.1-next.2
 
 ### Patch Changes

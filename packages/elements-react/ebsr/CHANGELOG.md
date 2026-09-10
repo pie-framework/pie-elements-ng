@@ -1,5 +1,14 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.9
+
+### Patch Changes
+
+- 9f6033c: Restore the legacy print bundle (module/print.js) so print works with the current @pie-framework/pie-print client loader
+- Updated dependencies [9f6033c]
+  - @pie-element/multiple-choice@13.3.5-next.4
+  - @pie-lib/config-ui@13.0.4-next.34
+
 ## 14.2.2-next.8
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @pie-lib/charting
 
+## 7.0.4-next.34
+
+### Patch Changes
+
+- Updated dependencies [7cae8f9]
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-lib/config-ui@13.0.4-next.34
+  - @pie-lib/plot@4.0.4-next.34
+
 ## 7.0.4-next.33
 
 ### Patch Changes

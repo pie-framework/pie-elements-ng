@@ -1,5 +1,16 @@
 # @pie-lib/drag
 
+## 4.1.0-next.40
+
+### Minor Changes
+
+- 7cae8f9: Add a surface theming token and use it for drag placeholders, so placeholder fills come from the theme instead of hard-coded greys (PIE-865, PIE-870, PIE-874, PIE-878)
+
+### Patch Changes
+
+- Updated dependencies [7cae8f9]
+  - @pie-lib/render-ui@6.2.0-next.40
+
 ## 4.0.3-next.39
 
 ### Patch Changes
