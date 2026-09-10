@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/multiple-choice",
-  "version": "13.3.5-next.2",
+  "version": "13.3.5-next.3",
   "description": "React implementation of multiple-choice element synced from pie-elements",
   "repository": {
     "type": "git",
@@ -97,7 +97,7 @@
     "@types/react-dom": "^18.2.0"
   },
   "scripts": {
-    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
+    "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",
     "dev": "bun x vite",
     "demo": "bun x vite --mode demo",
     "test": "bun x vitest run"

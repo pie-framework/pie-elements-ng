@@ -485,6 +485,28 @@ export const collectManifestViolations = (dir, pkg) => {
   return violations;
 };
 
+/**
+ * A package that declares exports["./print"] must also pack module/print.js.
+ *
+ * The current @pie-framework/pie-print client loader fetches that path with a
+ * bare import() and no import map, so it cannot read exports["./print"] at all
+ * (PIE-839, docs/PRINT_SUPPORT.md). module/print.js is a separate self-contained
+ * build lane, and module/ is gitignored, so a lost build step leaves no trace
+ * locally - print simply stops working for every published element.
+ *
+ * That happened once already: the lane was added to the twelve print-enabled
+ * manifests by hand, a sync regenerated scripts.build without it, and the
+ * artifact vanished from every release for three weeks. This check is what makes
+ * that loud instead of silent.
+ */
+const collectLegacyPrintViolations = (packedFiles, pkg) => {
+  if (!pkg?.exports?.['./print']) return [];
+  if (packedFiles.has('module/print.js')) return [];
+  return [
+    'module/print.js is missing: a package exporting "./print" must pack the self-contained legacy print bundle for the @pie-framework/pie-print loader (check the legacy print lane is in scripts.build)',
+  ];
+};
+
 export const collectPackViolations = (snapshot) => {
   const { packedFiles, pkg, packError } = snapshot;
   if (packedFiles == null && pkg == null) {
@@ -498,10 +520,11 @@ export const collectPackViolations = (snapshot) => {
       'package snapshot is missing packedFiles; create snapshots with includePackedFiles'
     );
   }
-  return [...packedFiles]
+  const unexpected = [...packedFiles]
     .filter((filePath) => isRawSourceFile(filePath) || !isAllowedPackedFile(filePath, pkg))
     .map((filePath) => `packed file is outside dist/metadata/assets: ${filePath}`)
     .sort();
+  return [...unexpected, ...collectLegacyPrintViolations(packedFiles, pkg)];
 };
 
 export const collectPublishSurfaceViolations = (snapshot) => {

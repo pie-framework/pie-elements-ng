@@ -74,6 +74,49 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(buildScript).toBe(SCRIPTS.BUILD_WITH_IIFE);
   });
 
+  it('includes the legacy print lane when the package has a print entry point', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'print'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'print', 'index.ts'),
+      'export default class PrintElement {}\n',
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    // module/print.js is what the current @pie-framework/pie-print loader fetches.
+    // It comes from a separate build lane, so losing this step from the generated
+    // script silently breaks print for every published element (PIE-839).
+    const buildScript = await readBuildScript(elementDir);
+    expect(buildScript).toContain('tools/vite/element-legacy-print.config.ts');
+  });
+
+  it('omits the legacy print lane when the package has no print entry point', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const buildScript = await readBuildScript(elementDir);
+    expect(buildScript).not.toContain('element-legacy-print.config.ts');
+  });
+
   it('uses standard build script when no IIFE files exist', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
@@ -425,8 +468,8 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
-      mathjs: '^15.2.0',
-      'react-draggable': '^4.6.0',
+      mathjs: '^13.2.3',
+      'react-draggable': '^3.3.0',
       'react-is': '^18.3.1',
       'react-redux': '^9.3.0',
       recharts: '^3.8.1',
@@ -890,8 +933,8 @@ describe('ensurePieLibPackageJson', () => {
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
-      mathjs: '^15.2.0',
-      'react-draggable': '^4.6.0',
+      mathjs: '^13.2.3',
+      'react-draggable': '^3.3.0',
       'react-redux': '^9.3.0',
       redux: '^5.0.1',
     });
@@ -968,7 +1011,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.dependencies.mathjs).toBe('^15.2.0');
+    expect(pkgJson.dependencies.mathjs).toBe('^13.2.3');
   });
 
   it('keeps mathjs pinned for pie-lib packages without a generated math helper', async () => {
@@ -999,7 +1042,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.dependencies.mathjs).toBe('^15.2.0');
+    expect(pkgJson.dependencies.mathjs).toBe('^13.2.3');
   });
 
   it('does not remove react-input-autosize from pie-lib packages without the generated local component', async () => {

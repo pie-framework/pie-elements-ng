@@ -1,5 +1,14 @@
 # @pie-lib/plot
 
+## 4.0.4-next.33
+
+### Patch Changes
+
+- 425feaf: Sync upstream drag fixes, visx v4, tiptap and number-line math changes
+- 425feaf: Resolve ESM-first and externalize the @hello-pangea/dnd and react-redux chain so built bundles no longer emit a require('react') shim that throws in the browser
+- Updated dependencies [425feaf]
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.33
+
 ## 4.0.4-next.32
 
 ### Patch Changes

@@ -13,7 +13,6 @@ import { styled } from '@mui/material/styles';
 import classNames from 'clsx';
 import PropTypes from 'prop-types';
 import { color } from '@pie-lib/render-ui';
-import { grey } from '@mui/material/colors';
 
 const StyledPlaceholder: any = styled('div')(({ theme }) => ({
   '&.placeholder': {
@@ -36,11 +35,11 @@ const StyledPlaceholder: any = styled('div')(({ theme }) => ({
   },
   '&.placeholderDisabled': {
     boxShadow: 'none',
-    background: theme.palette.background.paper,
+    background: color.white(),
   },
   '&.over': {
-    border: `1px solid ${grey[500]}`,
-    backgroundColor: `${grey[300]}`,
+    border: `1px solid ${color.border()}`,
+    backgroundColor: color.backgroundDark(),
   },
   '&.board': {
     padding: theme.spacing(1),
@@ -51,7 +50,7 @@ const StyledPlaceholder: any = styled('div')(({ theme }) => ({
     justifyContent: 'center',
     overflow: 'hidden',
     touchAction: 'none',
-    backgroundColor: color.backgroundDark(),
+    backgroundColor: color.surface(),
   },
   '&.categorizeBoard': {
     padding: theme.spacing(0.5),
@@ -62,7 +61,7 @@ const StyledPlaceholder: any = styled('div')(({ theme }) => ({
     justifyContent: 'center',
     overflow: 'hidden',
     touchAction: 'none',
-    backgroundColor: color.backgroundDark(),
+    backgroundColor: color.surface(),
   },
   '&.verticalPool': {
     display: 'flex',

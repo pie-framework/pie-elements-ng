@@ -75,13 +75,13 @@ export const renderChildren = (layout, value, onChange, rootRenderChildren, pare
         const isDndComponent = n.data?.dataset?.component === 'blank';
 
         if (isDndComponent) {
-          children.push(<Spacer key={`spacer-${index}`} />);
+          children.push(<Spacer key={`spacer-${index}-before`} />);
         }
 
         children.push(c);
 
         if (isDndComponent) {
-          children.push(<Spacer key={`spacer-${index}`} />);
+          children.push(<Spacer key={`spacer-${index}-after`} />);
         }
         return;
       }

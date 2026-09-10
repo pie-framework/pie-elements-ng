@@ -1,5 +1,12 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.8
+
+### Patch Changes
+
+- @pie-element/multiple-choice@13.3.5-next.3
+- @pie-lib/config-ui@13.0.4-next.33
+
 ## 14.2.2-next.7
 
 ### Patch Changes

@@ -39,6 +39,7 @@ export interface PieThemeExtended extends PieTheme {
   'background-dark'?: string;
   'dropdown-background'?: string;
   'secondary-background'?: string;
+  surface?: string;
   border?: string;
   'border-light'?: string;
   'border-dark'?: string;

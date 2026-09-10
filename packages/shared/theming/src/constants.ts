@@ -27,6 +27,7 @@ export const PIE_COLOR_DEFAULTS = {
   BACKGROUND_DARK: '#ECEDF1',
   DROPDOWN_BACKGROUND: '#E0E1E6',
   SECONDARY_BACKGROUND: 'rgba(241,241,241,1)',
+  SURFACE: '#E0E1E6',
   BORDER: '#9A9A9A',
   BORDER_LIGHT: '#D1D1D1',
   BORDER_DARK: '#646464',
@@ -102,6 +103,11 @@ export const DEFAULT_CSS_MAPPINGS = [
     variableName: '--pie-dropdown-background',
     themeKey: 'dropdown-background' as const,
     fallback: PIE_COLOR_DEFAULTS.DROPDOWN_BACKGROUND,
+  },
+  {
+    variableName: '--pie-surface',
+    themeKey: 'surface' as const,
+    fallback: PIE_COLOR_DEFAULTS.SURFACE,
   },
 
   // Primary colors

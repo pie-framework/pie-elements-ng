@@ -48,6 +48,26 @@ export function isExternal(id: string, _variant: 'element' | 'pielib'): boolean 
   // DnD Kit libraries - external for drag and drop functionality
   if (/^@dnd-kit\//.test(id)) return true;
 
+  // Redux-family drag/state libraries - external because their dependency chain
+  // reaches use-sync-external-store, which is CJS-only in every published
+  // version (exports map, no ESM build). Bundling it while React is external
+  // makes rolldown emit a `__require("react")` shim that throws in the browser:
+  // "Calling `require` for \"react\" in an environment that doesn't expose the
+  // `require` function". Keeping the chain external hands it to the consumer's
+  // bundler, which resolves CJS natively.
+  //
+  //   @pie-lib/rubric                 -> @hello-pangea/dnd -> react-redux -> use-sync-external-store
+  //   @pie-lib/graphing               -> react-redux       -> use-sync-external-store
+  //   @pie-lib/graphing-solution-set  -> react-redux       -> use-sync-external-store
+  //   @pie-lib/plot                   -> react-redux       -> use-sync-external-store
+  //
+  // Each carrier is a declared dependency of the package that needs it, so the
+  // published manifests still resolve. use-sync-external-store is listed only
+  // as a guard; it never appears as a bare import in our own output.
+  if (/^@hello-pangea\//.test(id)) return true;
+  if (/^react-redux($|\/)/.test(id)) return true;
+  if (/^use-sync-external-store($|\/)/.test(id)) return true;
+
   // Material Design Icons - external for graphing/drawing packages
   if (id === '@mdi/react' || /^@mdi\/react\//.test(id)) return true;
   if (id === '@mdi/js' || /^@mdi\/js\//.test(id)) return true;
@@ -113,6 +133,9 @@ export function createExternalFunction(
           id === '@mdi/react' || /^@mdi\\/react\\//.test(id) ||
           id === '@mdi/js' || /^@mdi\\/js\\//.test(id) ||
           id === 'recharts' || /^recharts\\//.test(id) ||
+          /^@hello-pangea\\//.test(id) ||
+          /^react-redux($|\\/)/.test(id) ||
+          /^use-sync-external-store($|\\/)/.test(id) ||
           ${JSON.stringify(sharedExternals).replace(/"/g, "'")}.includes(id)
         );
       }`;

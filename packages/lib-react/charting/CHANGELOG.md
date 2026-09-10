@@ -1,5 +1,16 @@
 # @pie-lib/charting
 
+## 7.0.4-next.33
+
+### Patch Changes
+
+- 425feaf: Sync upstream drag fixes, visx v4, tiptap and number-line math changes
+- 425feaf: Resolve ESM-first and externalize the @hello-pangea/dnd and react-redux chain so built bundles no longer emit a require('react') shim that throws in the browser
+- Updated dependencies [425feaf]
+- Updated dependencies [425feaf]
+  - @pie-lib/plot@4.0.4-next.33
+  - @pie-lib/config-ui@13.0.4-next.33
+
 ## 7.0.4-next.32
 
 ### Patch Changes

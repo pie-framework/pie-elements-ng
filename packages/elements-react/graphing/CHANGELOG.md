@@ -1,5 +1,15 @@
 # @pie-element/graphing
 
+## 10.1.2-next.8
+
+### Patch Changes
+
+- Updated dependencies [425feaf]
+- Updated dependencies [425feaf]
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.33
+  - @pie-lib/graphing@4.0.5-next.34
+  - @pie-lib/config-ui@13.0.4-next.33
+
 ## 10.1.2-next.7
 
 ### Patch Changes

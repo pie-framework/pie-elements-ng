@@ -42,7 +42,10 @@ let {
   {:else if displayChoiceLabelHtml}
     <span class="cloze-marker-value pie-blank-value">{@html displayChoiceLabelHtml}</span>
   {:else}
-    <span class="cloze-marker-empty" aria-hidden="true">&nbsp;</span>
+    <span class="cloze-marker-empty">
+      <span aria-hidden="true">&nbsp;</span>
+      <span class="sr-only">(blank)</span>
+    </span>
   {/if}
 </span>
 
@@ -79,5 +82,17 @@ let {
 
   .cloze-marker-value :global(p) {
     margin: 0;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>

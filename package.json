@@ -110,7 +110,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@biomejs/biome": "^2.5.9",
+    "@biomejs/biome": "^2.5.12",
     "@changesets/cli": "^2.31.1",
     "@playwright/test": "^1.62.1",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
@@ -129,7 +129,7 @@
     "import-meta-resolve": "^4.2.0",
     "js-yaml": "^4.1.1",
     "lefthook": "^2.1.10",
-    "obug": "^2.1.1",
+    "obug": "^2.1.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "svelte": "^5.56.8",
