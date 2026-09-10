@@ -1,5 +1,17 @@
 # @pie-element/placement-ordering
 
+## 14.1.2-next.9
+
+### Patch Changes
+
+- 7cae8f9: Fix keyboard placement: center the dragged item on its target instead of top-aligning it there, which let the item bleed into a neighbouring target and register the wrong drop; and correct the placement-ordering Tab cycle (PIE-803, PIE-963, PIE-964)
+- Updated dependencies [7cae8f9]
+  - @pie-lib/drag@4.1.0-next.40
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.34
+  - @pie-lib/config-ui@13.0.4-next.34
+  - @pie-lib/correct-answer-toggle@4.0.3-next.40
+
 ## 14.1.2-next.8
 
 ### Patch Changes

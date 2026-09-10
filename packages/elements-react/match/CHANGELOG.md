@@ -1,5 +1,17 @@
 # @pie-element/match
 
+## 12.1.2-next.9
+
+### Patch Changes
+
+- 7cae8f9: Fix match-list color theming so its colors follow the theme tokens, and remove the duplicated styling code behind it (PIE-869)
+- Updated dependencies [7cae8f9]
+  - @pie-lib/drag@4.1.0-next.40
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.34
+  - @pie-lib/config-ui@13.0.4-next.34
+  - @pie-lib/correct-answer-toggle@4.0.3-next.40
+
 ## 12.1.2-next.8
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @pie-element/extended-text-entry
 
+## 15.1.2-next.9
+
+### Patch Changes
+
+- 9f6033c: Restore the legacy print bundle (module/print.js) so print works with the current @pie-framework/pie-print client loader
+- Updated dependencies [7cae8f9]
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.34
+  - @pie-lib/config-ui@13.0.4-next.34
+
 ## 15.1.2-next.8
 
 ### Patch Changes

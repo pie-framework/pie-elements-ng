@@ -1,5 +1,12 @@
 # @pie-lib/text-select
 
+## 3.0.3-next.40
+
+### Patch Changes
+
+- Updated dependencies [7cae8f9]
+  - @pie-lib/render-ui@6.2.0-next.40
+
 ## 3.0.3-next.39
 
 ### Patch Changes

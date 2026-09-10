@@ -1,5 +1,21 @@
 # @pie-element/categorize
 
+## 13.2.0-next.9
+
+### Minor Changes
+
+- 7cae8f9: Add Tab/Shift+Tab placement and click-to-select/click-to-place to categorize. Tab cycles a picked-up choice through the enabled categories in reading order and then the choices pool; arrow-key dragging is unchanged. Clicking a choice selects it and clicking a category places it, so placement no longer requires a drag (PIE-804, PIE-797)
+- 7cae8f9: Give a selected categorize choice a visible border, so keyboard and pointer users can tell which choice is picked up before placing it (PIE-960)
+
+### Patch Changes
+
+- Updated dependencies [7cae8f9]
+  - @pie-lib/drag@4.1.0-next.40
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.34
+  - @pie-lib/config-ui@13.0.4-next.34
+  - @pie-lib/correct-answer-toggle@4.0.3-next.40
+
 ## 13.1.2-next.8
 
 ### Patch Changes
