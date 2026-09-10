@@ -129,7 +129,7 @@
     "import-meta-resolve": "^4.2.0",
     "js-yaml": "^4.1.1",
     "lefthook": "^2.1.10",
-    "obug": "^2.1.1",
+    "obug": "^2.1.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "svelte": "^5.56.8",
