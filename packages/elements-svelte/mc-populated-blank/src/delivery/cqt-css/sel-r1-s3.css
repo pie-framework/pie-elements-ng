@@ -45,11 +45,27 @@
     "sentence template audio"
     "choices choices choices";
   justify-content: center;
+  /* question.css: .rli-s3-cloze-container { justify-content:end } bottom-anchors
+     the cloze against the shared sentence/audio row instead of top-aligning it —
+     matches every item sitting on the same visual baseline. See CONTOOL-3159. */
+  align-items: end;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-template-line {
   grid-area: template;
   justify-self: center;
+}
+
+/* ClozeMarker.svelte's shared .cloze-marker rule vertically *centers* its content
+   (align-items:center). question.css's .rli-s3-cloze-container uses
+   justify-content:end instead, bottom-anchoring the answer text against the
+   underline. Centering leaves it floating well above both the underline and the
+   sentence image's own (bottom-anchored) baseline. The blank's own box height
+   (160px, from McPopulatedBlank.svelte's shared audio_blank_only/stimulus_image_blank
+   rule) is left as-is — it already matches the Learnosity reference (~161px)
+   closely; only the internal alignment was wrong. See CONTOOL-3159. */
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-slot {
+  align-items: flex-end;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-sentence-line {

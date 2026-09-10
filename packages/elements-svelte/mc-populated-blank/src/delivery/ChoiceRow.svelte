@@ -211,6 +211,16 @@ let {
     text-align: center;
   }
 
+  /* Choices carrying raw <img> markup in labelHtml (rather than the dedicated
+     imageUrl/imageAlt fields) render unconstrained at their authored size
+     otherwise — 3rd-party/CQT-sourced content is typically authored well above
+     the platform's 150x150 content-element spec. Applies regardless of
+     customType, unlike the r1-CQT-specific cqt-css overlays. See CONTOOL-3159. */
+  .choice-html :global(img) {
+    width: 150px;
+    height: 150px;
+  }
+
   .choice-radio-bottom {
     margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
     padding: var(--mpb-choice-radio-padding, 0px);

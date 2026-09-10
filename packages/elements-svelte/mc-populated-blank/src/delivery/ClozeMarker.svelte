@@ -80,4 +80,12 @@ let {
   .cloze-marker-value :global(p) {
     margin: 0;
   }
+
+  /* Same 150x150 content-element constraint as ChoiceRow.svelte's .choice-html
+     img — the selected choice's raw labelHtml can carry an embedded <img> here
+     too, regardless of customType. See CONTOOL-3159. */
+  .cloze-marker-value :global(img) {
+    width: 150px;
+    height: 150px;
+  }
 </style>

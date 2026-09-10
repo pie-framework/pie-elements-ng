@@ -63,15 +63,40 @@
   margin-right: 2px;
 }
 
+/* .pie-template-line's align-items:baseline (above) computes a shared baseline
+   across all its flex items. .pie-blank-slot has no baseline-participating child
+   of its own (.cloze-marker centers internally, align-items:center) — so it
+   contributes a *synthesized* baseline back to the row, based on its own box
+   geometry. That geometry swings wildly depending on the blank's content: an
+   empty placeholder vs. a selected choice's image (up to 150x150). Every time a
+   choice is selected the row's shared baseline is recomputed from that new
+   geometry, visibly shifting sibling tokens like a leading/trailing stem word.
+   align-self removes the blank from that shared computation entirely — its
+   siblings' position no longer depends on what's currently displayed inside it.
+   See CONTOOL-3159. */
+[class*="variant-sel-r1-"] .pie-template-line .pie-blank-slot {
+  align-self: flex-end;
+}
+
 /* In token_sequence layouts the blank itself is also a content-element box (no
    surrounding .rli-r1-cloze container at 160px). audio_blank_only / stimulus_image_blank
    keep their own 160px min-height set on the blank slot in McPopulatedBlank.svelte to
    mirror LSY's .rli-r1-cloze height. The 2px per-side margin matches LSY's
-   .rli-r1-content-element pattern (overriding the default Tailwind mx-1). */
+   .rli-r1-content-element pattern (overriding the default Tailwind mx-1).
+   .pie-blank-slot is box-sizing:border-box with a permanent 6px border-bottom
+   (the underline) — min-height:150px therefore only leaves 144px for content,
+   so an empty blank (content ~0px, clamped to the 150px floor) and a blank
+   showing a 150px choice image (150 + 6 border = 156px, exceeding the floor)
+   render at two different total heights. Since .pie-blank-slot is bottom-anchored
+   in its row (align-self:flex-end above), that 6px height difference shows up as
+   a visible shift of the blank/image every time a choice is selected or cleared.
+   min-height:156px keeps the total box height constant regardless of content, so
+   the 150px is fully available to the image/text and the border no longer
+   competes with it. See CONTOOL-3159. */
 [class*="variant-sel-r1-"].layout-token_sequence .pie-template-line .pie-blank-slot {
   min-width: 150px;
   max-width: 150px;
-  min-height: 150px;
+  min-height: 156px;
   line-height: 89px;
   margin-left: 2px;
   margin-right: 2px;
@@ -85,6 +110,27 @@
 [class*="variant-sel-r1-"].layout-stimulus_image_blank .pie-template-line .pie-blank-slot {
   margin-left: 2px;
   margin-right: 2px;
+}
+
+/* The `.pie-template-line span:not([class])` rule above has no depth limit, so it
+   also matches the unclassed answer <span> ClozeMarker.svelte renders inside
+   .pie-blank-value once a choice is selected (e.g. author font-size overrides like
+   <span style="font-size:3em">). For token_sequence that coincides with the blank
+   slot's own 150px/89px box above, so outer and inner agree. audio_blank_only /
+   stimulus_image_blank instead keep .pie-blank-slot at LSY's separate, taller
+   .rli-r1-cloze box (160px) — forcing the answer span into the stem token's
+   150px/89px box there is wrong: a plain (non-flex) span whose min-height exceeds
+   its line-height renders that line top-anchored, pinning the answer text to the
+   top of the blank with the rest of the box empty beneath it, instead of centered
+   on the underline the way LSY renders it. See CONTOOL-3159. */
+[class*="variant-sel-r1-"].layout-audio_blank_only .pie-blank-value span:not([class]),
+[class*="variant-sel-r1-"].layout-stimulus_image_blank .pie-blank-value span:not([class]) {
+  min-width: 0;
+  max-width: none;
+  min-height: 0;
+  line-height: normal;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 /* r1.scss: .rli-r1-content-element { font-size:1.9em; line-height:89px } on distractors */

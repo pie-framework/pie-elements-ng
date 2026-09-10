@@ -1213,6 +1213,43 @@
       }
     },
     {
+      "id": "variant-sel-r1-s3-cloze-baseline",
+      "title": "sel_r1-s3_plusggg — cloze baseline regression (CONTOOL-3159, item 021a4255)",
+      "description": "Regression fixture reproducing item 021a4255-c675-43a2-8b4f-94e2768143a2: stimulus_image_blank layout with an image-flattened sentence (\"9, 8,\") and a standalone blank whose selected-choice content carries an inline font-size:3em override, matching real Learnosity data shape.",
+      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "cloze-baseline-regression"],
+      "model": {
+        "id": "25",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "text",
+        "choices": [
+          { "id": "distractor_1", "labelHtml": "<span style=\"font-size:3em;\">6</span>" },
+          { "id": "distractor_2", "labelHtml": "<span style=\"font-size:3em;\">7</span>" },
+          { "id": "distractor_3", "labelHtml": "<span style=\"font-size:3em;\">5</span>" }
+        ],
+        "correctChoiceId": "distractor_2",
+        "hasAudio": true,
+        "audioUrl": "https://assets.learnosity.com/organisations/844/f2c5abba-f857-444d-ae8f-62c5bd44efe6.mp3",
+        "audioTranscript": "Pick the number that is nine minus two.",
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "<span aria-hidden=\"true\"></span><span aria-hidden=\"true\"><img alt=\"9, 8, \" height=\"175\" src=\"/mc-populated-blank-stimulus-988.svg\" width=\"330\"></span> <span aria-label=\"9,\"></span> <span aria-label=\"8\"></span>",
+        "layoutProfile": "stimulus_image_blank",
+        "customType": "sel_r1-s3_plusggg",
+        "useFeatureButtonAudio": true,
+        "choiceLayout": "horizontal",
+        "locale": "",
+        "autoplayAudioEnabled": true,
+        "completeAudioEnabled": true
+      },
+      "session": {
+        "id": "25",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
       "id": "variant-sel-r1-plusggg-graphic-es",
       "title": "sel_r1-_plusggg \u2014 graphic choices Spanish (a83f1d87)",
       "description": "Spanish graphic choice variant from item a83f1d87-f3e5-4c0e-8eb4-408275336c0b.",
