@@ -21,6 +21,7 @@ export default {
     uiText: {
       answerChoices: 'Answer choices',
       selectedAnswerInSentence: 'blank',
+      blankPreSelectionHint: 'The answer you choose will appear on the blank line above.',
       showCorrectAnswer: 'Show correct answer',
       hideCorrectAnswer: 'Hide correct answer',
       clickToEnableAutoplay: 'Click to enable audio autoplay',
