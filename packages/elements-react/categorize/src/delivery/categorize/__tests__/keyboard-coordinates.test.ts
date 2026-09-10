@@ -41,7 +41,10 @@ const gridRects = {
 };
 const itemSize = { width: 100, height: 40 };
 
-const dropPositionOf = (rect: any) => ({ x: rect.left, y: rect.top + rect.height / 2 });
+// Mirrors keyboard-coordinates.ts's own dropPosition math: land the target's left edge,
+// but vertically CENTER the dragged item (itemSize.height) on the target's own center,
+// rather than top-aligning the item's edge there.
+const dropPositionOf = (rect: any) => ({ x: rect.left, y: rect.top + rect.height / 2 - itemSize.height / 2 });
 
 describe('closestDroppableKeyboardCoordinates', () => {
   describe('arrow keys', () => {
