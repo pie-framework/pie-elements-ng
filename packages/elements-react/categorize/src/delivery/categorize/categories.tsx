@@ -28,6 +28,9 @@ export class Categories extends React.Component {
     onDropChoice: PropTypes.func.isRequired,
     onRemoveChoice: PropTypes.func.isRequired,
     rowLabels: PropTypes.array,
+    selectedItem: PropTypes.object,
+    onSelectClick: PropTypes.func,
+    onPlacementClick: PropTypes.func,
   };
 
   static defaultProps = {
@@ -37,7 +40,17 @@ export class Categories extends React.Component {
   };
 
   render() {
-    const { categories, model, disabled, onDropChoice, onRemoveChoice, rowLabels } = this.props;
+    const {
+      categories,
+      model,
+      disabled,
+      onDropChoice,
+      onRemoveChoice,
+      rowLabels,
+      selectedItem,
+      onSelectClick,
+      onPlacementClick,
+    } = this.props;
     const { categoriesPerRow, minRowHeight } = model;
 
     // split categories into an array of arrays (inner array),
@@ -94,6 +107,9 @@ export class Categories extends React.Component {
                     onRemoveChoice={onRemoveChoice}
                     disabled={disabled}
                     key={`category-element-${rowIndex}-${columnIndex}`}
+                    selectedItem={selectedItem}
+                    onSelectClick={onSelectClick}
+                    onPlacementClick={onPlacementClick}
                     {...c}
                   />
                 </StyledCategoryWrapper>
