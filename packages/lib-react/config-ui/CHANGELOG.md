@@ -1,5 +1,12 @@
 # @pie-lib/config-ui
 
+## 13.0.4-next.33
+
+### Patch Changes
+
+- Updated dependencies [425feaf]
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.33
+
 ## 13.0.4-next.32
 
 ### Patch Changes

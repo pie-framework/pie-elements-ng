@@ -1,5 +1,14 @@
 # @pie-element/number-line
 
+## 13.1.2-next.8
+
+### Patch Changes
+
+- 425feaf: Sync upstream drag fixes, visx v4, tiptap and number-line math changes
+- Updated dependencies [425feaf]
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.33
+  - @pie-lib/config-ui@13.0.4-next.33
+
 ## 13.1.2-next.7
 
 ### Patch Changes

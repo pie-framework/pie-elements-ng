@@ -1,5 +1,13 @@
 # @pie-element/math-inline
 
+## 12.1.1-next.18
+
+### Patch Changes
+
+- Updated dependencies [425feaf]
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.33
+  - @pie-lib/config-ui@13.0.4-next.33
+
 ## 12.1.1-next.17
 
 ### Patch Changes

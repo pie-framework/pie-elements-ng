@@ -12,7 +12,14 @@ import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
 import { existsAny } from './sync-filesystem.js';
 import { applyPackageJsonTransforms } from './sync-transforms.js';
-import { BUILD_TOOLS, REACT, PACKAGE_DEFAULTS, SCRIPTS, WORKSPACE } from './sync-constants.js';
+import {
+  BUILD_TOOLS,
+  PACKAGE_DEFAULTS,
+  REACT,
+  SCRIPTS,
+  WORKSPACE,
+  composeElementBuildScript,
+} from './sync-constants.js';
 import {
   getPieLibDependencyAugmentations,
   getPieLibDependencyOverride,
@@ -824,11 +831,13 @@ export async function ensureElementPackageJson(
     existsSync(join(elementDir, 'src/index.iife.ts')) ||
     existsSync(join(elementDir, 'vite.config.iife.ts'));
 
-  if (hasBrowserBuild) {
-    scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE_AND_BROWSER : SCRIPTS.BUILD_WITH_BROWSER;
-  } else {
-    scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE : SCRIPTS.BUILD;
-  }
+  // A print entry point means this package also needs the legacy print lane, so
+  // module/print.js is emitted for the current @pie-framework/pie-print loader.
+  scripts.build = composeElementBuildScript({
+    browser: hasBrowserBuild,
+    legacyPrint: entryPoints.hasPrint,
+    iife: hasIifeEntry,
+  });
   scripts.dev = SCRIPTS.DEV;
   scripts.demo = SCRIPTS.DEMO;
   scripts.test = SCRIPTS.TEST;

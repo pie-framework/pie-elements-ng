@@ -33,9 +33,13 @@ export const defaults = {
   TERTIARY_LIGHT: '#D0E2F0',
   BACKGROUND: 'rgba(255,255,255,0)',
   BACKGROUND_DARK: '#ECEDF1',
-  DROPDOWN_BACKGROUND: '#E0E1E6', // this is used for inline-dropdown
+  // hover/selected fill - inline-dropdown menu items, its authoring toolbar, graphing's
+  // selected tools. Not the dropdown menu's own background: the menu paper reads BACKGROUND.
+  DROPDOWN_BACKGROUND: '#E0E1E6',
   // this is only used for multi-trait-rubric, we might want to use BACKGROUND_DARK instead
   SECONDARY_BACKGROUND: 'rgba(241,241,241,1)',
+  // raised surface for cards, answer pools, and menus;
+  SURFACE: '#E0E1E6',
   BORDER: '#9A9A9A',
   BORDER_LIGHT: '#D1D1D1',
   BORDER_DARK: '#646464',
@@ -114,6 +118,7 @@ export const background = () => pv('background', defaults.BACKGROUND);
 export const backgroundDark = () => pv('background-dark', defaults.BACKGROUND_DARK);
 export const secondaryBackground = () => pv('secondary-background', defaults.SECONDARY_BACKGROUND);
 export const dropdownBackground = () => pv('dropdown-background', defaults.DROPDOWN_BACKGROUND);
+export const surface = () => pv('surface', defaults.SURFACE);
 
 export const tertiary = () => pv('tertiary', defaults.TERTIARY);
 export const tertiaryLight = () => pv('tertiary-light', defaults.TERTIARY_LIGHT);

@@ -1,5 +1,14 @@
 # @pie-element/inline-dropdown
 
+## 10.1.2-next.8
+
+### Patch Changes
+
+- Updated dependencies [425feaf]
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.33
+  - @pie-lib/config-ui@13.0.4-next.33
+  - @pie-lib/mask-markup@3.0.4-next.35
+
 ## 10.1.2-next.7
 
 ### Patch Changes

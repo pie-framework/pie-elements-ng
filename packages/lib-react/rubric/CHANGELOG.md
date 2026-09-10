@@ -1,5 +1,14 @@
 # @pie-lib/rubric
 
+## 2.0.4-next.33
+
+### Patch Changes
+
+- 425feaf: Resolve ESM-first and externalize the @hello-pangea/dnd and react-redux chain so built bundles no longer emit a require('react') shim that throws in the browser
+- Updated dependencies [425feaf]
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.33
+  - @pie-lib/config-ui@13.0.4-next.33
+
 ## 2.0.4-next.32
 
 ### Patch Changes

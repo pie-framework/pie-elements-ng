@@ -1,5 +1,11 @@
 # @pie-lib/editable-html-tip-tap
 
+## 2.1.2-next.33
+
+### Patch Changes
+
+- 425feaf: Sync upstream drag fixes, visx v4, tiptap and number-line math changes
+
 ## 2.1.2-next.32
 
 ### Patch Changes
