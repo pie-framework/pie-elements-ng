@@ -61,13 +61,56 @@ export const PACKAGE_DEFAULTS = {
 
 // Build scripts
 export const ELEMENT_BROWSER_VITE_CONFIG = '../../../tools/vite/element-browser.config.ts';
+export const ELEMENT_LEGACY_PRINT_VITE_CONFIG =
+  '../../../tools/vite/element-legacy-print.config.ts';
 
+export type ElementBuildLanes = {
+  /** dist/browser/** - the browser ESM surface consumed by pie-players. */
+  browser?: boolean;
+  /**
+   * module/print.js - a self-contained print bundle (React inlined, zero
+   * externals) for the unmodified @pie-framework/pie-print client loader, which
+   * uses a bare import() with no import map and so cannot read exports["./print"].
+   * See PIE-839 and docs/PRINT_SUPPORT.md.
+   */
+  legacyPrint?: boolean;
+  /** dist/index.iife.js - the fully self-contained script-tag surface. */
+  iife?: boolean;
+};
+
+/**
+ * Compose a synced element's build script from the lanes it needs.
+ *
+ * Composed rather than enumerated on purpose. This used to be four hardcoded
+ * constants covering the browser/iife combinations, so when PIE-839 added the
+ * legacy print lane there was nowhere for it to live: it was written straight
+ * into the twelve print-enabled manifests, and the next sync regenerated
+ * `scripts.build` from the constants and silently dropped it. Print then broke
+ * for every synced element with no failing check. Adding a lane here keeps it in
+ * the generated output instead of relying on a hand-edited manifest surviving.
+ */
+export function composeElementBuildScript(lanes: ElementBuildLanes = {}): string {
+  const steps = ['bun x vite build'];
+  if (lanes.browser) {
+    steps.push(`bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG}`);
+  }
+  if (lanes.legacyPrint) {
+    steps.push(`bun x vite build --config ${ELEMENT_LEGACY_PRINT_VITE_CONFIG}`);
+  }
+  if (lanes.iife) {
+    steps.push('bun x vite build --config vite.config.iife.ts');
+  }
+  steps.push('bun x tsc --emitDeclarationOnly');
+  return steps.join(' && ');
+}
+
+// Derived from composeElementBuildScript so the named variants cannot drift from
+// the composer. Prefer calling the composer directly for new lane combinations.
 export const SCRIPTS = {
-  BUILD: 'bun x vite build && bun x tsc --emitDeclarationOnly',
-  BUILD_WITH_BROWSER: `bun x vite build && bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG} && bun x tsc --emitDeclarationOnly`,
-  BUILD_WITH_IIFE:
-    'bun x vite build && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly',
-  BUILD_WITH_IIFE_AND_BROWSER: `bun x vite build && bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG} && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly`,
+  BUILD: composeElementBuildScript(),
+  BUILD_WITH_BROWSER: composeElementBuildScript({ browser: true }),
+  BUILD_WITH_IIFE: composeElementBuildScript({ iife: true }),
+  BUILD_WITH_IIFE_AND_BROWSER: composeElementBuildScript({ browser: true, iife: true }),
   DEV: 'bun x vite',
   DEMO: 'bun x vite --mode demo',
   TEST: 'bun x vitest run',
