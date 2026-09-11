@@ -14,6 +14,7 @@ export const defaults = {
   TEXT: 'black',
   DISABLED: 'grey',
   DISABLED_SECONDARY: '#ABABAB',
+  DISABLED_TEXT: '#545454', // for text that is disabled but still has to be read - a non-editable label
   CORRECT: green[500],
   CORRECT_SECONDARY: green[50],
   CORRECT_TERTIARY: '#0EA449',
@@ -89,6 +90,7 @@ const pv = v('pie');
 export const text = () => pv('text', defaults.TEXT);
 export const disabled = () => pv('disabled', defaults.DISABLED);
 export const disabledSecondary = () => pv('disabled-secondary', defaults.DISABLED_SECONDARY);
+export const disabledText = () => pv('disabled-text', 'text', defaults.DISABLED_TEXT);
 export const correct = () => pv('correct', defaults.CORRECT);
 export const correctSecondary = () => pv('correct-secondary', defaults.CORRECT_SECONDARY);
 export const correctTertiary = () => pv('correct-tertiary', defaults.CORRECT_TERTIARY);

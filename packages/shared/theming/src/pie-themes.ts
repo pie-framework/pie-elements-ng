@@ -60,6 +60,7 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   // Disabled states
   disabled: '#9E9E9E',
   'disabled-secondary': '#E0E0E0',
+  'disabled-text': '#545454', // dimmed, but 7.4:1 on base-100 so it stays readable
 
   // Backgrounds
   'background-dark': '#F5F5F5',
@@ -150,6 +151,7 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
   // Disabled states
   disabled: '#757575',
   'disabled-secondary': '#424242',
+  'disabled-text': '#A0AEC0', // dimmed, but 7.2:1 on base-100 so it stays readable
 
   // Backgrounds
   'background-dark': '#0f1419', // Very dark background

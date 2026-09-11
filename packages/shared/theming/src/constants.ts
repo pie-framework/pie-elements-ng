@@ -6,6 +6,7 @@ export const PIE_COLOR_DEFAULTS = {
   TEXT: 'black',
   DISABLED: 'grey',
   DISABLED_SECONDARY: '#ABABAB',
+  DISABLED_TEXT: '#545454',
   CORRECT: '#4CAF50',
   CORRECT_SECONDARY: '#E8F5E9',
   CORRECT_TERTIARY: '#0EA449',
@@ -216,6 +217,11 @@ export const DEFAULT_CSS_MAPPINGS = [
     variableName: '--pie-disabled-secondary',
     themeKey: 'disabled-secondary' as const,
     fallback: PIE_COLOR_DEFAULTS.DISABLED_SECONDARY,
+  },
+  {
+    variableName: '--pie-disabled-text',
+    themeKey: 'disabled-text' as const,
+    fallback: PIE_COLOR_DEFAULTS.DISABLED_TEXT,
   },
 
   // Border colors
