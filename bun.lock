@@ -16,7 +16,7 @@
         "@types/js-yaml": "^4.0.9",
         "@types/node": "^25.0.3",
         "@types/prop-types": "^15.7.15",
-        "@vitejs/plugin-react": "^6.0.2",
+        "@vitejs/plugin-react": "^6.1.1",
         "@vitest/coverage-v8": "^4.1.0",
         "@vitest/ui": "^4.1.0",
         "bun-types": "^1.3.11",
@@ -37,7 +37,7 @@
     },
     "apps/element-a11y-demo": {
       "name": "@pie-element/element-a11y-demo",
-      "version": "0.1.2-next.3",
+      "version": "0.1.2-next.4",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -59,7 +59,7 @@
         "@sveltejs/kit": "^2.55.0",
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "@tailwindcss/vite": "^4.2.2",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "daisyui": "^5.5.19",
         "svelte": "^5.57.0",
         "tailwindcss": "^4.2.2",
@@ -69,7 +69,7 @@
     },
     "apps/element-demo": {
       "name": "@pie-element/element-demo",
-      "version": "0.1.2-next.3",
+      "version": "0.1.2-next.4",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -91,7 +91,7 @@
         "@sveltejs/kit": "^2.55.0",
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "@tailwindcss/vite": "^4.2.2",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "daisyui": "^5.5.19",
         "svelte": "^5.57.0",
         "tailwindcss": "^4.2.2",
@@ -109,7 +109,7 @@
     },
     "apps/learnosity-parity-demo": {
       "name": "@pie-element/learnosity-parity-demo",
-      "version": "0.1.2-next.3",
+      "version": "0.1.2-next.4",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -131,7 +131,7 @@
         "@sveltejs/kit": "^2.55.0",
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "@tailwindcss/vite": "^4.2.2",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "daisyui": "^5.5.19",
         "svelte": "^5.57.0",
         "tailwindcss": "^4.2.2",
@@ -168,7 +168,7 @@
     },
     "packages/element-theme": {
       "name": "@pie-element/element-theme",
-      "version": "0.1.1-next.2",
+      "version": "0.1.1-next.3",
       "dependencies": {
         "@pie-element/shared-theming": "workspace:*",
       },
@@ -180,7 +180,7 @@
     },
     "packages/element-theme-daisyui": {
       "name": "@pie-element/element-theme-daisyui",
-      "version": "0.1.1-next.2",
+      "version": "0.1.1-next.3",
       "dependencies": {
         "@pie-element/element-theme": "workspace:*",
         "@pie-element/shared-theming": "workspace:*",
@@ -194,7 +194,7 @@
     },
     "packages/elements-react/categorize": {
       "name": "@pie-element/categorize",
-      "version": "13.1.2-next.8",
+      "version": "13.2.0-next.9",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -225,7 +225,7 @@
         "@testing-library/react": "^16.3.2",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "happy-dom": "^20.0.11",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
@@ -238,7 +238,7 @@
     },
     "packages/elements-react/charting": {
       "name": "@pie-element/charting",
-      "version": "12.1.2-next.8",
+      "version": "12.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -262,7 +262,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -273,7 +273,7 @@
     },
     "packages/elements-react/complex-rubric": {
       "name": "@pie-element/complex-rubric",
-      "version": "7.1.2-next.8",
+      "version": "7.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -296,7 +296,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -307,7 +307,7 @@
     },
     "packages/elements-react/drag-in-the-blank": {
       "name": "@pie-element/drag-in-the-blank",
-      "version": "10.1.2-next.8",
+      "version": "10.1.2-next.9",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -333,7 +333,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -344,7 +344,7 @@
     },
     "packages/elements-react/drawing-response": {
       "name": "@pie-element/drawing-response",
-      "version": "12.1.2-next.8",
+      "version": "12.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -370,7 +370,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -381,7 +381,7 @@
     },
     "packages/elements-react/ebsr": {
       "name": "@pie-element/ebsr",
-      "version": "14.2.2-next.8",
+      "version": "14.2.2-next.9",
       "dependencies": {
         "@mui/material": "^7.3.11",
         "@pie-element/multiple-choice": "workspace:*",
@@ -400,7 +400,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -411,7 +411,7 @@
     },
     "packages/elements-react/explicit-constructed-response": {
       "name": "@pie-element/explicit-constructed-response",
-      "version": "11.1.2-next.8",
+      "version": "11.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -438,7 +438,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -449,7 +449,7 @@
     },
     "packages/elements-react/extended-text-entry": {
       "name": "@pie-element/extended-text-entry",
-      "version": "15.1.2-next.8",
+      "version": "15.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -473,7 +473,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -484,7 +484,7 @@
     },
     "packages/elements-react/fraction-model": {
       "name": "@pie-element/fraction-model",
-      "version": "6.1.2-next.8",
+      "version": "6.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -508,7 +508,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -519,7 +519,7 @@
     },
     "packages/elements-react/graphing": {
       "name": "@pie-element/graphing",
-      "version": "10.1.2-next.8",
+      "version": "10.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -545,7 +545,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -556,7 +556,7 @@
     },
     "packages/elements-react/graphing-solution-set": {
       "name": "@pie-element/graphing-solution-set",
-      "version": "6.1.2-next.8",
+      "version": "6.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -580,7 +580,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -591,7 +591,7 @@
     },
     "packages/elements-react/hotspot": {
       "name": "@pie-element/hotspot",
-      "version": "11.1.2-next.8",
+      "version": "11.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -617,7 +617,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -628,7 +628,7 @@
     },
     "packages/elements-react/image-cloze-association": {
       "name": "@pie-element/image-cloze-association",
-      "version": "10.1.2-next.8",
+      "version": "10.1.2-next.9",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -657,7 +657,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -668,7 +668,7 @@
     },
     "packages/elements-react/inline-dropdown": {
       "name": "@pie-element/inline-dropdown",
-      "version": "10.1.2-next.8",
+      "version": "10.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -692,7 +692,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -703,7 +703,7 @@
     },
     "packages/elements-react/likert": {
       "name": "@pie-element/likert",
-      "version": "4.1.2-next.8",
+      "version": "4.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -726,7 +726,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -737,7 +737,7 @@
     },
     "packages/elements-react/match": {
       "name": "@pie-element/match",
-      "version": "12.1.2-next.8",
+      "version": "12.1.2-next.9",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -765,7 +765,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -776,7 +776,7 @@
     },
     "packages/elements-react/match-list": {
       "name": "@pie-element/match-list",
-      "version": "7.1.2-next.8",
+      "version": "7.1.2-next.9",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -800,7 +800,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -811,7 +811,7 @@
     },
     "packages/elements-react/math-inline": {
       "name": "@pie-element/math-inline",
-      "version": "12.1.1-next.18",
+      "version": "12.1.1-next.19",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -839,7 +839,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -850,7 +850,7 @@
     },
     "packages/elements-react/math-templated": {
       "name": "@pie-element/math-templated",
-      "version": "7.1.1-next.18",
+      "version": "7.1.1-next.19",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -878,7 +878,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -889,7 +889,7 @@
     },
     "packages/elements-react/matrix": {
       "name": "@pie-element/matrix",
-      "version": "4.1.2-next.8",
+      "version": "4.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -912,7 +912,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -923,7 +923,7 @@
     },
     "packages/elements-react/multi-trait-rubric": {
       "name": "@pie-element/multi-trait-rubric",
-      "version": "8.1.2-next.8",
+      "version": "8.1.2-next.9",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -947,7 +947,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -958,7 +958,7 @@
     },
     "packages/elements-react/multiple-choice": {
       "name": "@pie-element/multiple-choice",
-      "version": "13.3.5-next.3",
+      "version": "13.3.5-next.4",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -984,7 +984,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -995,7 +995,7 @@
     },
     "packages/elements-react/number-line": {
       "name": "@pie-element/number-line",
-      "version": "13.1.2-next.8",
+      "version": "13.1.2-next.9",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -1026,7 +1026,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1037,7 +1037,7 @@
     },
     "packages/elements-react/passage": {
       "name": "@pie-element/passage",
-      "version": "7.1.2-next.8",
+      "version": "7.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1058,7 +1058,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1069,7 +1069,7 @@
     },
     "packages/elements-react/placement-ordering": {
       "name": "@pie-element/placement-ordering",
-      "version": "14.1.2-next.8",
+      "version": "14.1.2-next.9",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -1102,7 +1102,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1113,7 +1113,7 @@
     },
     "packages/elements-react/rubric": {
       "name": "@pie-element/rubric",
-      "version": "8.1.2-next.8",
+      "version": "8.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1133,7 +1133,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1144,7 +1144,7 @@
     },
     "packages/elements-react/select-text": {
       "name": "@pie-element/select-text",
-      "version": "13.1.2-next.8",
+      "version": "13.1.2-next.9",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/style": "^0.8.0",
@@ -1169,7 +1169,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1180,7 +1180,7 @@
     },
     "packages/elements-svelte/mc-populated-blank": {
       "name": "@pie-element/mc-populated-blank",
-      "version": "0.3.0-next.4",
+      "version": "0.3.0-next.5",
       "devDependencies": {
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/styling-svelte": "workspace:*",
@@ -1235,14 +1235,14 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
     },
     "packages/lib-react/charting": {
       "name": "@pie-lib/charting",
-      "version": "7.0.4-next.33",
+      "version": "7.0.4-next.34",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1276,7 +1276,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1287,7 +1287,7 @@
     },
     "packages/lib-react/config-ui": {
       "name": "@pie-lib/config-ui",
-      "version": "13.0.4-next.33",
+      "version": "13.0.4-next.34",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1305,7 +1305,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1324,14 +1324,14 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
     },
     "packages/lib-react/correct-answer-toggle": {
       "name": "@pie-lib/correct-answer-toggle",
-      "version": "4.0.3-next.39",
+      "version": "4.0.3-next.40",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1347,7 +1347,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1358,7 +1358,7 @@
     },
     "packages/lib-react/drag": {
       "name": "@pie-lib/drag",
-      "version": "4.0.3-next.39",
+      "version": "4.1.0-next.40",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "10.0.0",
@@ -1376,7 +1376,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1387,7 +1387,7 @@
     },
     "packages/lib-react/editable-html-tip-tap": {
       "name": "@pie-lib/editable-html-tip-tap",
-      "version": "2.1.2-next.33",
+      "version": "2.1.2-next.34",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -1437,7 +1437,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1448,7 +1448,7 @@
     },
     "packages/lib-react/graphing": {
       "name": "@pie-lib/graphing",
-      "version": "4.0.5-next.34",
+      "version": "4.0.5-next.35",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "10.0.0",
@@ -1489,7 +1489,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1500,7 +1500,7 @@
     },
     "packages/lib-react/graphing-solution-set": {
       "name": "@pie-lib/graphing-solution-set",
-      "version": "4.0.4-next.33",
+      "version": "4.0.4-next.34",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "10.0.0",
@@ -1542,7 +1542,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1562,7 +1562,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1580,7 +1580,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1591,7 +1591,7 @@
     },
     "packages/lib-react/mask-markup": {
       "name": "@pie-lib/mask-markup",
-      "version": "3.0.4-next.35",
+      "version": "3.0.4-next.36",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -1611,7 +1611,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1622,7 +1622,7 @@
     },
     "packages/lib-react/math-input": {
       "name": "@pie-lib/math-input",
-      "version": "8.1.1-next.4",
+      "version": "8.1.1-next.5",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1637,7 +1637,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1655,14 +1655,14 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
       },
     },
     "packages/lib-react/math-toolbar": {
       "name": "@pie-lib/math-toolbar",
-      "version": "3.0.3-next.39",
+      "version": "3.0.3-next.40",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1677,7 +1677,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1688,7 +1688,7 @@
     },
     "packages/lib-react/plot": {
       "name": "@pie-lib/plot",
-      "version": "4.0.4-next.33",
+      "version": "4.0.4-next.34",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1711,7 +1711,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1722,7 +1722,7 @@
     },
     "packages/lib-react/render-ui": {
       "name": "@pie-lib/render-ui",
-      "version": "6.1.1-next.39",
+      "version": "6.2.0-next.40",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1739,7 +1739,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1750,7 +1750,7 @@
     },
     "packages/lib-react/rubric": {
       "name": "@pie-lib/rubric",
-      "version": "2.0.4-next.33",
+      "version": "2.0.4-next.34",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1767,7 +1767,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1782,7 +1782,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1803,7 +1803,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1814,7 +1814,7 @@
     },
     "packages/lib-react/text-select": {
       "name": "@pie-lib/text-select",
-      "version": "3.0.3-next.39",
+      "version": "3.0.3-next.40",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1832,7 +1832,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1861,7 +1861,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -1882,7 +1882,7 @@
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
@@ -2065,7 +2065,7 @@
     },
     "packages/shared/theming": {
       "name": "@pie-element/shared-theming",
-      "version": "0.1.1-next.2",
+      "version": "0.2.0-next.3",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
       },
@@ -2078,7 +2078,7 @@
     },
     "packages/shared/theming-mui": {
       "name": "@pie-element/shared-theming-mui",
-      "version": "0.1.1-next.2",
+      "version": "0.1.1-next.3",
       "dependencies": {
         "@pie-element/shared-theming": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
@@ -3006,7 +3006,7 @@
 
     "@visx/vendor": ["@visx/vendor@4.0.0", "", { "dependencies": { "@types/d3-array": "3.0.3", "@types/d3-color": "3.1.0", "@types/d3-delaunay": "6.0.1", "@types/d3-format": "3.0.1", "@types/d3-geo": "3.1.0", "@types/d3-interpolate": "3.0.1", "@types/d3-path": "3.1.1", "@types/d3-scale": "4.0.2", "@types/d3-shape": "3.1.7", "@types/d3-time": "3.0.0", "@types/d3-time-format": "2.1.0", "d3-array": "3.2.1", "d3-color": "3.1.0", "d3-delaunay": "6.0.2", "d3-format": "3.1.0", "d3-geo": "3.1.0", "d3-interpolate": "3.0.1", "d3-path": "3.1.0", "d3-scale": "4.0.2", "d3-shape": "3.2.0", "d3-time": "3.1.0", "d3-time-format": "4.1.0", "internmap": "2.0.3" } }, "sha512-LoBNzWjTXzBfu095BQxB14IwZQHHOLs8ZMzM6t2FL4ZGORaACgLcmXRRLhFo0VmRR8L7iNTM4HHc1j6yFvzsAA=="],
 
-    "@vitejs/plugin-react": ["@vitejs/plugin-react@6.0.2", "", { "dependencies": { "@rolldown/pluginutils": "^1.0.0" }, "peerDependencies": { "@rolldown/plugin-babel": "^0.1.7 || ^0.2.0", "babel-plugin-react-compiler": "^1.0.0", "vite": "^8.0.0" }, "optionalPeers": ["@rolldown/plugin-babel", "babel-plugin-react-compiler"] }, "sha512-DlSMqo4WhThw4vB8Mpn0Woe9J+Jfq1geJ61AKW0QEgLzGMNwtIMdxbDUzLxcun8W7NbJO0e2Jg/Nxm3cCSVzzg=="],
+    "@vitejs/plugin-react": ["@vitejs/plugin-react@6.1.1", "", { "dependencies": { "@rolldown/pluginutils": "^1.0.1" }, "peerDependencies": { "@rolldown/plugin-babel": "^0.1.7 || ^0.2.0", "babel-plugin-react-compiler": "^1.0.0", "oxc-transform-react": "^0.145.0", "vite": "^8.0.0" }, "optionalPeers": ["@rolldown/plugin-babel", "babel-plugin-react-compiler", "oxc-transform-react"] }, "sha512-yxLaQV9gkhS8ezJqCM6+ndU7mDY6gqAg75NQ+0IjwEI8IYOmQCgkRwHKVSfWXW076DsqMo0Dk+0FK1U+M5RgFw=="],
 
     "@vitest/coverage-v8": ["@vitest/coverage-v8@4.1.8", "", { "dependencies": { "@bcoe/v8-coverage": "^1.0.2", "@vitest/utils": "4.1.8", "ast-v8-to-istanbul": "^1.0.0", "istanbul-lib-coverage": "^3.2.2", "istanbul-lib-report": "^3.0.1", "istanbul-reports": "^3.2.0", "magicast": "^0.5.2", "obug": "^2.1.1", "std-env": "^4.0.0-rc.1", "tinyrainbow": "^3.1.0" }, "peerDependencies": { "@vitest/browser": "4.1.8", "vitest": "4.1.8" }, "optionalPeers": ["@vitest/browser"] }, "sha512-lt3kovsyHwYe00wq4D1ti0Z974fWj4NLp6siqiyEufUpyFwK9Yhi7rBhac9JL5aA0zoMrJqc4vYPZRUnI7l7nw=="],
 
