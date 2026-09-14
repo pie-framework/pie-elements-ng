@@ -112,7 +112,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "^2.5.12",
     "@changesets/cli": "^2.31.1",
-    "@playwright/test": "^1.62.1",
+    "@playwright/test": "^1.63.0",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/dompurify": "^3.2.0",
