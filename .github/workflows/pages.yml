@@ -31,7 +31,7 @@ jobs:
         env:
           PUBLIC_ELEMENT_DEMO_STATIC: "true"
           PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE: hosted
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: apps/element-demo/build
 
