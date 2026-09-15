@@ -477,43 +477,90 @@ jobs:
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
           RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
           RELEASE_PACKAGES: ${{ github.event_name == 'workflow_dispatch' && inputs.release_packages || '' }}
+          RELEASE_PUBLISHED_MANIFEST: ${{ runner.temp }}/published.json
+
+      # Publishing runs through release:publish:checked, so changesets/action never performs the
+      # publish and its `published`/`publishedPackages` outputs stay empty on every successful
+      # release. Gating on them silently skipped provenance verification, the GitHub release and
+      # the Slack notification for every publish this repo has ever made. The publish script now
+      # writes RELEASE_PUBLISHED_MANIFEST instead, and this step turns it into the outputs the
+      # steps below gate on.
+      # Runs whenever the publish step ran at all, a failure included: a partial publish is
+      # exactly when knowing which packages already reached npm decides the recovery.
+      - name: Read published manifest
+        id: published
+        if: always() && steps.changesets.conclusion != 'skipped'
+        shell: bash
+        env:
+          MANIFEST: ${{ runner.temp }}/published.json
+        run: |
+          set -euo pipefail
+
+          if [ ! -f "$MANIFEST" ]; then
+            # The action took its version-PR branch, so the publish script never ran.
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            echo "No published manifest at ${MANIFEST}; this run did not publish."
+            exit 0
+          fi
+
+          count="$(node -e 'const m=require(process.argv[1]); if(!Array.isArray(m)) throw new Error("manifest is not a JSON array"); console.log(m.length)' "$MANIFEST")"
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
+
+          if [ "${count}" = "0" ]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "Publish script ran and published nothing."
+            exit 0
+          fi
+
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          # `names` is capped: a full release can run to 70+ packages, past Slack's per-field
+          # text limit, which would reject the whole payload.
+          node -e '
+            const m = require(process.argv[1]);
+            const labels = m.map((p) => `${p.name}@${p.version}`);
+            const shown = labels.slice(0, 10);
+            const rest = labels.length - shown.length;
+            console.log(`first_name=${m[0].name}`);
+            console.log(`first_version=${m[0].version}`);
+            console.log(`names=${shown.join(", ")}${rest > 0 ? `, and ${rest} more` : ""}`);
+          ' "$MANIFEST" >> "$GITHUB_OUTPUT"
+
+          echo "Published ${count} package(s):"
+          node -e 'for (const p of require(process.argv[1])) console.log(`  - ${p.name}@${p.version}`)' "$MANIFEST"
 
       # Attestations are the only external signal that a release actually went out via the
       # trusted publisher: the registry does not expose trusted-publisher configuration, so a
       # package silently falling back to token auth is otherwise invisible. Checks exactly the
-      # set changesets reported, since versioning here is independent. Advisory on token runs,
-      # where no provenance is expected.
+      # set the publish script reported, since versioning here is independent. Advisory on token
+      # runs, where no provenance is expected.
       - name: Verify provenance attestations
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         continue-on-error: ${{ steps.npm_auth.outputs.mode != 'oidc' }}
         shell: bash
-        env:
-          PUBLISHED_PACKAGES_JSON: ${{ steps.changesets.outputs.publishedPackages }}
-        run: |
-          set -euo pipefail
-          printf '%s' "$PUBLISHED_PACKAGES_JSON" > "$RUNNER_TEMP/published.json"
-          bun ./scripts/check-provenance.mjs --published-json "$RUNNER_TEMP/published.json"
+        run: bun ./scripts/check-provenance.mjs --published-json "${{ runner.temp }}/published.json"
 
+      # Named after the first published package, since versioning here is independent and there
+      # is no single repo-wide version to tag. Marked prerelease off the stable channel.
       - name: Create GitHub Release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # changesets/action outputs `publishedPackages` as a JSON string; parse it before indexing.
-          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          release_name: Release v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          tag_name: ${{ steps.published.outputs.first_name }}@${{ steps.published.outputs.first_version }}
+          release_name: ${{ steps.published.outputs.first_name }}@${{ steps.published.outputs.first_version }}
           body: |
-            ## Changes
+            ## Published
 
-            ${{ steps.changesets.outputs.publishedPackages }}
+            ${{ steps.published.outputs.names }}
 
             See CHANGELOG.md files in each package for detailed changes.
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.release_channel.outputs.channel != 'stable' }}
 
       - name: Notify Slack on Successful Publish
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         continue-on-error: true
         uses: slackapi/slack-github-action@v1.27.0
         with:
@@ -537,11 +584,11 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version:*\nv${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}"
+                      "text": "*Published:*\n${{ steps.published.outputs.count }} package(s)"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Package:*\n${{ fromJson(steps.changesets.outputs.publishedPackages)[0].name }}"
+                      "text": "*Packages:*\n${{ steps.published.outputs.names }}"
                     },
                     {
                       "type": "mrkdwn",
@@ -573,7 +620,7 @@ jobs:
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Notify Slack on Release PR Created/Updated
-        if: steps.changesets.outputs.hasChangesets == 'true' && steps.changesets.outputs.published != 'true'
+        if: steps.changesets.outputs.hasChangesets == 'true' && steps.published.outputs.published != 'true' && steps.gate.outputs.auto_release != 'true'
         continue-on-error: true
         uses: slackapi/slack-github-action@v1.27.0
         with:

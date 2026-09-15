@@ -14,6 +14,7 @@ const explicitPackages = (process.env.RELEASE_PACKAGES || '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+const publishedManifestPath = String(process.env.RELEASE_PUBLISHED_MANIFEST || '').trim();
 
 const rootPackage = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
 const workspacePatterns = Array.isArray(rootPackage.workspaces) ? rootPackage.workspaces : [];
@@ -658,6 +659,28 @@ const sortTargetsByRuntimeWorkspaceDependencies = (targetPackages) => {
   return sorted;
 };
 
+// What this run actually pushed to the registry, in publish order. Packages skipped as
+// already-published are deliberately absent: nothing new reached npm for them.
+const publishedPackages = [];
+
+// changesets/action cannot report a publish it did not perform, so its `published` and
+// `publishedPackages` outputs are always empty here and every step gated on them — provenance
+// verification, the GitHub release, the Slack notification — silently skipped. This manifest is
+// the replacement signal. Shaped as a bare [{name, version}] array so it feeds
+// check-provenance.mjs --published-json unchanged. Written even on a partial failure, so a
+// recovery run can see what already landed.
+const writePublishedManifest = () => {
+  if (!publishedManifestPath) return;
+  try {
+    writeFileSync(publishedManifestPath, `${JSON.stringify(publishedPackages, null, 2)}\n`, 'utf8');
+    console.log(
+      `[release] Wrote published manifest (${publishedPackages.length} package(s)) to ${publishedManifestPath}`
+    );
+  } catch (error) {
+    console.error(`[release] Failed to write published manifest: ${error.message}`);
+  }
+};
+
 const publishWorkspaceOnce = ({ packageName, version, publishTag }) =>
   new Promise((resolve, reject) => {
     console.log(`[release] Publishing ${packageName}@${version} with npm tag "${publishTag}"`);
@@ -739,6 +762,9 @@ try {
     console.log(
       '[release] No version-bumped publish targets detected. Nothing to publish; exiting cleanly.'
     );
+    // process.exit skips the finally below, so the empty manifest is written here too —
+    // downstream steps must be able to read "published nothing" rather than a missing file.
+    writePublishedManifest();
     restoreWorkspaceRanges();
     if (changedFiles.length > 0) {
       console.log('[release] Restored workspace ranges after preflight');
@@ -773,8 +799,10 @@ try {
       continue;
     }
     await publishWorkspaceWithRetry({ packageName: name, version, publishTag });
+    publishedPackages.push({ name, version });
   }
 } finally {
+  writePublishedManifest();
   restoreWorkspaceRanges();
   if (changedFiles.length > 0) {
     console.log('[release] Restored workspace ranges after publish');
