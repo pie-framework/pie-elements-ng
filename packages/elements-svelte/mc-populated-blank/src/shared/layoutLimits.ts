@@ -7,8 +7,8 @@ export type LayoutLimits = {
   horizontalChoiceWidthVw: number;
   horizontalChoiceTileMinHeightRem: number;
   horizontalChoiceContentMinHeightRem: number;
-  selectedImageMaxHeightRem: number;
   choiceImageMaxHeightRem: number;
+  choiceImageMaxWidthRem: number;
   listenButtonSizePx: number;
   stimulusMinColumnPx: number;
   textMinColumnPx: number;
@@ -46,8 +46,12 @@ export const DEFAULT_LAYOUT_LIMITS: LayoutLimits = {
   horizontalChoiceWidthVw: 30,
   horizontalChoiceTileMinHeightRem: 11,
   horizontalChoiceContentMinHeightRem: 7.5,
-  selectedImageMaxHeightRem: 4,
-  choiceImageMaxHeightRem: 5,
+  // 9.375rem = 150px at the standard 16px root font size — Learnosity graphic-choice
+  // SVGs are authored at 150x150; images up to that size must render at full size.
+  // Shared by the choice tile image and the selected-answer image inside the cloze
+  // blank, so the same choice image always renders at the same size in both places.
+  choiceImageMaxHeightRem: 9.375,
+  choiceImageMaxWidthRem: 9.375,
   listenButtonSizePx: 128,
   stimulusMinColumnPx: 210,
   textMinColumnPx: 260,

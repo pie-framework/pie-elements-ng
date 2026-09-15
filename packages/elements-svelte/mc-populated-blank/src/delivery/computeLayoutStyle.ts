@@ -20,7 +20,7 @@ export const CSS_VAR_SPEC: Record<
   horizontalChoiceTileMinHeightRem: { varName: '--mpb-choice-tile-min-height', unit: 'rem' },
   horizontalChoiceContentMinHeightRem: { varName: '--mpb-choice-content-min-height', unit: 'rem' },
   choiceImageMaxHeightRem: { varName: '--mpb-choice-image-max-height', unit: 'rem' },
-  selectedImageMaxHeightRem: { varName: '--mpb-selected-image-max-height', unit: 'rem' },
+  choiceImageMaxWidthRem: { varName: '--mpb-choice-image-max-width', unit: 'rem' },
   choiceGroupGapRem: { varName: '--mpb-choice-group-gap', unit: 'rem' },
   choiceRowGapRem: { varName: '--mpb-choice-row-gap', unit: 'rem' },
   horizontalChoiceRadioTopMarginRem: {

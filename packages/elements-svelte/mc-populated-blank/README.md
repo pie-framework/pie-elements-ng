@@ -72,8 +72,8 @@ Notes:
 - `horizontalChoiceWidthVw`
 - `horizontalChoiceTileMinHeightRem`
 - `horizontalChoiceContentMinHeightRem`
-- `selectedImageMaxHeightRem`
 - `choiceImageMaxHeightRem`
+- `choiceImageMaxWidthRem` (shared by the choice tile image and the selected-answer image inside the cloze blank, so they always render at the same size)
 - `listenButtonSizePx`
 - `stimulusMinColumnPx`
 - `textMinColumnPx`
