@@ -186,6 +186,49 @@ jobs:
 
           echo "has_version_bumps=${has_version_bumps}" >> "$GITHUB_OUTPUT"
 
+      # A merge into develop publishes `-next.N` on its own. Packages whose shipping files
+      # changed in this push get a patch changeset synthesized here, so no author has to
+      # remember one; a hand-written changeset in the same push wins and is left untouched.
+      # Skipped when the push already carries version bumps (the master version-PR flow).
+      - name: Synthesize changesets for develop auto-release
+        id: synthesize
+        if: github.event_name == 'push' && github.ref_name == 'develop' && steps.detect.outputs.has_version_bumps != 'true'
+        shell: bash
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: node scripts/release-synthesize-changesets.mjs >> "$GITHUB_OUTPUT"
+
+      # One gate for every publish-only step below, so the conditions cannot drift apart.
+      #   auto_release: develop versions and publishes in this run, with no version PR.
+      #   publish_run:  this run publishes to npm at all.
+      - name: Resolve release gate
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          auto_release=false
+          if [ "${{ github.event_name }}" = "push" ] \
+            && [ "${{ github.ref_name }}" = "develop" ] \
+            && [ "${{ steps.detect.outputs.has_version_bumps }}" != "true" ] \
+            && { [ "${{ steps.detect.outputs.has_changesets }}" = "true" ] \
+              || [ "${{ steps.synthesize.outputs.synthesized }}" = "true" ]; }; then
+            auto_release=true
+          fi
+
+          publish_run=false
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.release_intent }}" = "publish" ]; then
+              publish_run=true
+            fi
+          elif [ "${{ steps.detect.outputs.has_version_bumps }}" = "true" ] || [ "$auto_release" = "true" ]; then
+            publish_run=true
+          fi
+
+          echo "auto_release=${auto_release}" >> "$GITHUB_OUTPUT"
+          echo "publish_run=${publish_run}" >> "$GITHUB_OUTPUT"
+          echo "Release gate: auto_release=${auto_release} publish_run=${publish_run}"
+
       - name: Validate manual release intent prerequisites
         if: github.event_name == 'workflow_dispatch'
         shell: bash
@@ -214,7 +257,7 @@ jobs:
           fi
 
       - name: Resolve release channel
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         id: release_channel
         shell: bash
         run: |
@@ -257,7 +300,7 @@ jobs:
           echo "Resolved release channel: ${channel}"
 
       - name: Enforce branch to channel policy
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -276,21 +319,21 @@ jobs:
           echo "Branch/channel policy validated: ${ref_name} -> ${channel}"
 
       - name: Stop early (no changesets / no version bumps)
-        if: github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_changesets != 'true' && steps.detect.outputs.has_version_bumps != 'true'
+        if: github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_changesets != 'true' && steps.detect.outputs.has_version_bumps != 'true' && steps.gate.outputs.auto_release != 'true'
         run: |
           echo "No .changeset files and no package version/changelog updates in this push. Skipping release."
           exit 0
 
       - name: Build packages (publish runs only)
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         run: bun run build
 
       - name: Run tests (publish runs only)
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         run: bun run test
 
       - name: Resolve npm publish auth mode
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         id: npm_auth
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -381,14 +424,39 @@ jobs:
       # already committed the bumped versions, leaving a version in git that was never
       # published. OIDC has no credential to check, hence the token-mode gate.
       - name: Verify npm publish credentials (token mode, publish runs only)
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.npm_auth.outputs.mode == 'token' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.npm_auth.outputs.mode == 'token' && steps.gate.outputs.publish_run == 'true'
         env:
           NPM_TOKEN: ${{ env.PUBLISH_NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ env.PUBLISH_NODE_AUTH_TOKEN }}
         run: node scripts/check-npm-auth.mjs
 
+      # Versions and pushes the bump straight to develop, replacing the version PR. Runs only
+      # after build, test and the npm credential check, so a bump never lands on develop for a
+      # release that cannot publish. Pushes made with GITHUB_TOKEN do not trigger workflows, so
+      # this cannot retrigger Release; the publish therefore has to happen in this same run,
+      # which the changesets step below does once it sees the bumped versions and no pending
+      # changesets.
+      - name: Version packages and push to develop (auto-release)
+        if: steps.gate.outputs.auto_release == 'true'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          bun run version
+
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changeset version produced no changes; refusing to publish nothing." >&2
+            exit 1
+          fi
+
+          git add -A
+          git commit -m "chore(release): version packages (next)"
+          git push origin "HEAD:${{ github.ref_name }}"
+          echo "Pushed version bump to ${{ github.ref_name }}: $(git rev-parse --short HEAD)"
+
       - name: Run Changesets release
-        if: github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_changesets == 'true' || steps.detect.outputs.has_version_bumps == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_changesets == 'true' || steps.detect.outputs.has_version_bumps == 'true' || steps.gate.outputs.auto_release == 'true'
         id: changesets
         uses: changesets/action@v1
         with:
@@ -409,43 +477,90 @@ jobs:
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
           RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
           RELEASE_PACKAGES: ${{ github.event_name == 'workflow_dispatch' && inputs.release_packages || '' }}
+          RELEASE_PUBLISHED_MANIFEST: ${{ runner.temp }}/published.json
+
+      # Publishing runs through release:publish:checked, so changesets/action never performs the
+      # publish and its `published`/`publishedPackages` outputs stay empty on every successful
+      # release. Gating on them silently skipped provenance verification, the GitHub release and
+      # the Slack notification for every publish this repo has ever made. The publish script now
+      # writes RELEASE_PUBLISHED_MANIFEST instead, and this step turns it into the outputs the
+      # steps below gate on.
+      # Runs whenever the publish step ran at all, a failure included: a partial publish is
+      # exactly when knowing which packages already reached npm decides the recovery.
+      - name: Read published manifest
+        id: published
+        if: always() && steps.changesets.conclusion != 'skipped'
+        shell: bash
+        env:
+          MANIFEST: ${{ runner.temp }}/published.json
+        run: |
+          set -euo pipefail
+
+          if [ ! -f "$MANIFEST" ]; then
+            # The action took its version-PR branch, so the publish script never ran.
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            echo "No published manifest at ${MANIFEST}; this run did not publish."
+            exit 0
+          fi
+
+          count="$(node -e 'const m=require(process.argv[1]); if(!Array.isArray(m)) throw new Error("manifest is not a JSON array"); console.log(m.length)' "$MANIFEST")"
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
+
+          if [ "${count}" = "0" ]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "Publish script ran and published nothing."
+            exit 0
+          fi
+
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          # `names` is capped: a full release can run to 70+ packages, past Slack's per-field
+          # text limit, which would reject the whole payload.
+          node -e '
+            const m = require(process.argv[1]);
+            const labels = m.map((p) => `${p.name}@${p.version}`);
+            const shown = labels.slice(0, 10);
+            const rest = labels.length - shown.length;
+            console.log(`first_name=${m[0].name}`);
+            console.log(`first_version=${m[0].version}`);
+            console.log(`names=${shown.join(", ")}${rest > 0 ? `, and ${rest} more` : ""}`);
+          ' "$MANIFEST" >> "$GITHUB_OUTPUT"
+
+          echo "Published ${count} package(s):"
+          node -e 'for (const p of require(process.argv[1])) console.log(`  - ${p.name}@${p.version}`)' "$MANIFEST"
 
       # Attestations are the only external signal that a release actually went out via the
       # trusted publisher: the registry does not expose trusted-publisher configuration, so a
       # package silently falling back to token auth is otherwise invisible. Checks exactly the
-      # set changesets reported, since versioning here is independent. Advisory on token runs,
-      # where no provenance is expected.
+      # set the publish script reported, since versioning here is independent. Advisory on token
+      # runs, where no provenance is expected.
       - name: Verify provenance attestations
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         continue-on-error: ${{ steps.npm_auth.outputs.mode != 'oidc' }}
         shell: bash
-        env:
-          PUBLISHED_PACKAGES_JSON: ${{ steps.changesets.outputs.publishedPackages }}
-        run: |
-          set -euo pipefail
-          printf '%s' "$PUBLISHED_PACKAGES_JSON" > "$RUNNER_TEMP/published.json"
-          bun ./scripts/check-provenance.mjs --published-json "$RUNNER_TEMP/published.json"
+        run: bun ./scripts/check-provenance.mjs --published-json "${{ runner.temp }}/published.json"
 
+      # Named after the first published package, since versioning here is independent and there
+      # is no single repo-wide version to tag. Marked prerelease off the stable channel.
       - name: Create GitHub Release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # changesets/action outputs `publishedPackages` as a JSON string; parse it before indexing.
-          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          release_name: Release v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          tag_name: ${{ steps.published.outputs.first_name }}@${{ steps.published.outputs.first_version }}
+          release_name: ${{ steps.published.outputs.first_name }}@${{ steps.published.outputs.first_version }}
           body: |
-            ## Changes
+            ## Published
 
-            ${{ steps.changesets.outputs.publishedPackages }}
+            ${{ steps.published.outputs.names }}
 
             See CHANGELOG.md files in each package for detailed changes.
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.release_channel.outputs.channel != 'stable' }}
 
       - name: Notify Slack on Successful Publish
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         continue-on-error: true
         uses: slackapi/slack-github-action@v1.27.0
         with:
@@ -469,11 +584,11 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version:*\nv${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}"
+                      "text": "*Published:*\n${{ steps.published.outputs.count }} package(s)"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Package:*\n${{ fromJson(steps.changesets.outputs.publishedPackages)[0].name }}"
+                      "text": "*Packages:*\n${{ steps.published.outputs.names }}"
                     },
                     {
                       "type": "mrkdwn",
@@ -505,7 +620,7 @@ jobs:
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Notify Slack on Release PR Created/Updated
-        if: steps.changesets.outputs.hasChangesets == 'true' && steps.changesets.outputs.published != 'true'
+        if: steps.changesets.outputs.hasChangesets == 'true' && steps.published.outputs.published != 'true' && steps.gate.outputs.auto_release != 'true'
         continue-on-error: true
         uses: slackapi/slack-github-action@v1.27.0
         with:

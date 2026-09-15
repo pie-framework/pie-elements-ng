@@ -62,6 +62,7 @@
     "release:manual": "bun run release:publish",
     "release:publish:packages": "node ./scripts/release-publish-selective.mjs",
     "release:publish:packages:env-token": "sh ./scripts/publish-with-env-token.sh",
+    "release:synthesize-changesets": "node ./scripts/release-synthesize-changesets.mjs",
     "release:dist-tags:audit": "node ./scripts/backfill-dist-tags.mjs",
     "release:dist-tags:apply": "node ./scripts/backfill-dist-tags.mjs --apply",
     "release:label": "node ./scripts/create-release-label.mjs",
