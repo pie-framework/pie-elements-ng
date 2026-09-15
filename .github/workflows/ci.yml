@@ -82,7 +82,7 @@ jobs:
       # Tests include package output validation, so build workspace outputs first.
       - run: bun run build
       - run: bun run test
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v7
         if: always()
         with:
           files: ./coverage/coverage-final.json
