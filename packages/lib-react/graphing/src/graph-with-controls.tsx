@@ -32,14 +32,16 @@ const StyledControls: any = styled('div')(({ theme }) => ({
   justifyContent: 'space-between',
   padding: theme.spacing(1),
   color: color.text(),
-  backgroundColor: color.primaryLight(),
+  backgroundColor: color.backgroundDark(),
   '& button': {
     fontSize: theme.typography.fontSize,
   },
+  border: `1px solid ${color.primaryLight()}`,
+  borderBottom: 'none'
 }));
 
 const StyledAccordion: any = styled(Accordion)({
-  backgroundColor: color.primaryLight(),
+  backgroundColor: color.backgroundDark(),
   width: '100%',
 });
 

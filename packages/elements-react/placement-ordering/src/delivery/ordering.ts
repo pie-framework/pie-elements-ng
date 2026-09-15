@@ -90,6 +90,7 @@ function buildTiles(choices, response, outcomes, opts) {
       if (response.indexOf(m.id) !== -1 && !opts.allowSameChoiceInTargets) {
         return {
           type: 'choice',
+          id: m.id, // Keep the original choice's id on its vacated gap
           empty: true,
           droppable: true,
           draggable: false,

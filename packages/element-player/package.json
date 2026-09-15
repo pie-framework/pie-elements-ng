@@ -37,13 +37,13 @@
     "lowlight": "^3.3.0",
     "@tiptap/pm": "^3.30.2",
     "@tiptap/extension-code-block": "^3.20.0",
-    "@tiptap/extensions": "^3.30.3"
+    "@tiptap/extensions": "^3.31.3"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@tailwindcss/vite": "^4.2.2",
     "daisyui": "^5.5.19",
-    "svelte": "^5.56.8",
+    "svelte": "^5.57.0",
     "tailwindcss": "^4.2.2",
     "vite": "^8.1.5",
     "typescript": "^5.9.3"

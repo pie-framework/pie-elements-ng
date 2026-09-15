@@ -65,6 +65,7 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   'background-dark': '#F5F5F5',
   'secondary-background': '#FAFAFA',
   'dropdown-background': '#ffffff',
+  surface: '#E0E1E6',
 
   // Borders
   border: '#BDBDBD',
@@ -155,6 +156,7 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
   'background-dark': '#0f1419', // Very dark background
   'secondary-background': '#2d3748', // Medium dark background
   'dropdown-background': '#2d3748',
+  surface: '#2d3748',
 
   // Borders
   border: '#616161',

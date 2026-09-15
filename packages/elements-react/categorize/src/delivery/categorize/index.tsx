@@ -54,9 +54,19 @@ import { AlertDialog } from '@pie-lib/config-ui';
 import Choices from './choices.js';
 import Choice from './choice.js';
 import Categories from './categories.js';
+import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 
 const { translator } = Translator;
 const log = debug('@pie-ui:categorize');
+
+// Matches the id `choices.jsx` gives the choice pool's DroppablePlaceholder.
+const CHOICES_BOARD_ID = 'choices-board';
+
+// A click that lands right after a real drag gesture ends (a pointer drag-and-drop, or
+// the browser's own synthetic click following a keyboard Space/Enter drop) must be ignored
+// by the click-to-select/click-to-place handlers below, or it would immediately reopen or
+// re-trigger a selection for a drag that just completed.
+const CLICK_AFTER_DRAG_GUARD_MS = 250;
 
 class DragPreviewWrapper extends React.Component {
   static propTypes = {
@@ -91,6 +101,9 @@ export class Categorize extends React.Component {
     onShowCorrectToggle: PropTypes.func.isRequired,
     pauseMathObserver: PropTypes.func,
     resumeMathObserver: PropTypes.func,
+    selectedItem: PropTypes.object,
+    onSelectClick: PropTypes.func,
+    onPlacementClick: PropTypes.func,
   };
 
   static defaultProps = {
@@ -231,7 +244,7 @@ export class Categorize extends React.Component {
     correctResponse?.some((correctRes) => correctRes.alternateResponses?.length > 0);
 
   render() {
-    const { model, session } = this.props;
+    const { model, session, selectedItem, onSelectClick, onPlacementClick } = this.props;
     const { showCorrect, showMaxChoiceAlert } = this.state;
     const {
       choicesPosition,
@@ -322,6 +335,9 @@ export class Categorize extends React.Component {
               onDropChoice={this.dropChoice}
               onRemoveChoice={this.removeChoice}
               rowLabels={(rowLabels || []).slice(0, nbOfRows)}
+              selectedItem={selectedItem}
+              onSelectClick={onSelectClick}
+              onPlacementClick={onPlacementClick}
             />
           </div>
           <Choices
@@ -332,6 +348,9 @@ export class Categorize extends React.Component {
             onDropChoice={this.dropChoice}
             onRemoveChoice={this.removeChoice}
             correct={correct}
+            selectedItem={selectedItem}
+            onSelectClick={onSelectClick}
+            onPlacementClick={onPlacementClick}
           />
         </StyledCategorize>
         {displayNote && (
@@ -386,7 +405,10 @@ class CategorizeProvider extends React.Component {
     this.state = {
       activeDragItem: null,
       isValidDrop: false,
+      selectedItem: null,
     };
+    this.lastDragEndAt = 0;
+    this.isInternalDragCancel = false;
   }
 
   onDragStart: any = (event) => {
@@ -401,7 +423,29 @@ class CategorizeProvider extends React.Component {
       this.setState({
         activeDragItem: active.data.current,
         isValidDrop: false,
+        selectedItem: active.data.current,
       });
+    }
+  };
+
+  // Shared answer-mutation routing for both the drag-end path and the click-to-place path,
+  // so neither reimplements the other's rules. Reproduces the original onDragEnd routing
+  // exactly: a `targetId` of undefined (dropped outside any known target) and the choices
+  // pool both return the choice to the pool by removing it from its source category;
+  // anything else is a category drop, which goes through dropChoice — and therefore
+  // inherits all of its maxChoicesPerCategory handling unchanged.
+  commitPlacement: any = (choiceData, targetId) => {
+    if (!this.categorizeRef) return;
+
+    if (targetId === undefined || targetId === CHOICES_BOARD_ID) {
+      if (choiceData.categoryId && this.categorizeRef.removeChoice) {
+        this.categorizeRef.removeChoice(choiceData);
+      }
+      return;
+    }
+
+    if (this.categorizeRef.dropChoice) {
+      this.categorizeRef.dropChoice(targetId, choiceData);
     }
   };
 
@@ -418,11 +462,14 @@ class CategorizeProvider extends React.Component {
     this.setState({
       activeDragItem: null,
       isValidDrop: isValidDrop,
+      selectedItem: null,
     });
 
     if (resumeMathObserver) {
       resumeMathObserver();
     }
+
+    this.lastDragEndAt = Date.now();
 
     if (!active || !draggedItem || draggedItem.type !== 'choice') {
       return;
@@ -436,25 +483,100 @@ class CategorizeProvider extends React.Component {
       itemType: draggedItem.itemType,
     };
 
-    // Dropped outside a valid/known target: remove from source category,
-    // which returns the choice to the choices pool.
-    if (!over) {
-      if (this.categorizeRef && this.categorizeRef.removeChoice && draggedItem.categoryId) {
-        this.categorizeRef.removeChoice(choiceData);
-      }
-      return;
+    this.commitPlacement(choiceData, over ? over.id : undefined);
+  };
+
+  onDragCancel: any = () => {
+    const { resumeMathObserver } = this.props;
+
+    this.setState({ activeDragItem: null, isValidDrop: false, selectedItem: null });
+
+    // onDragStart paused the math observer, so a cancelled drag must resume it too —
+    // otherwise Escape leaves the observer paused for good.
+    if (resumeMathObserver) {
+      resumeMathObserver();
     }
 
-    if (over.id === 'choices-board') {
-      if (this.categorizeRef && this.categorizeRef.removeChoice && draggedItem.categoryId) {
-        this.categorizeRef.removeChoice(choiceData);
-      }
-      return;
+    if (this.isInternalDragCancel) {
+      // This onDragCancel invocation was fired synchronously as a direct side effect of
+      // endAnyLiveKeyboardDrag's own synthetic Escape dispatch below, not by a real user-driven
+      // drag cancellation. No browser-generated synthetic click follows this internal cleanup
+      // the way one follows a genuine Space/Enter drop or mouse drag-end, so there is nothing
+      // for the post-drag click guard to protect against here — skip arming it.
+      this.isInternalDragCancel = false;
+    } else {
+      this.lastDragEndAt = Date.now();
     }
+  };
 
-    if (this.categorizeRef && this.categorizeRef.dropChoice) {
-      this.categorizeRef.dropChoice(over.id, choiceData);
-    }
+  isSameItem = (a, b) =>
+    !!a && !!b && a.id === b.id && a.categoryId === b.categoryId && a.choiceIndex === b.choiceIndex;
+
+  // Click-to-select semantics: selecting the currently-selected choice again clears the
+  // selection instead of re-selecting it.
+  toggleItemSelection: any = (data) => {
+    this.setState((state) => ({
+      selectedItem: this.isSameItem(state.selectedItem, data) ? null : data,
+    }));
+  };
+
+  cancelSelection: any = () => {
+    this.setState({ selectedItem: null });
+  };
+
+  // If a real dnd-kit drag (started via keyboard Space/Enter) is still live when a click
+  // completes the placement below, it needs to be cleanly ended — otherwise dnd-kit still
+  // thinks a drag is in progress. Escape is configured as this sensor's cancel key (see the
+  // keyboardCodes passed to DragProvider below), and dispatching it as a real DOM
+  // KeyboardEvent is how dnd-kit's own document-level listener is reached from outside its
+  // sensor.
+  //
+  // Only dispatch when a drag is actually live — this is a synthetic Escape keydown on
+  // `document`, so an unconditional dispatch would also be observed by any other
+  // document-level Escape listener (host player modals, another mounted instance of this
+  // same component) even when nothing here needed cancelling.
+  endAnyLiveKeyboardDrag: any = () => {
+    if (!this.state.activeDragItem) return;
+
+    // The dispatch below synchronously invokes onDragCancel as a direct side effect (dnd-kit's
+    // KeyboardSensor handles Escape synchronously). Mark this specific cancellation as internal
+    // cleanup — not a real user-driven drag end — so onDragCancel skips arming the post-drag
+    // click guard: no browser-generated synthetic click follows this dispatch the way one
+    // follows a genuine Space/Enter drop or mouse drag-end, so there is nothing to guard against.
+    this.isInternalDragCancel = true;
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+    // dnd-kit handles Escape synchronously, so onDragCancel (which resets this flag) has
+    // already run by this point under normal operation — this reset is defensive, in case
+    // that assumption ever stops holding, so a stuck flag can't suppress a later genuine cancel.
+    this.isInternalDragCancel = false;
+  };
+
+  placeSelectedItem: any = (targetId) => {
+    const { selectedItem } = this.state;
+
+    if (!selectedItem) return;
+
+    this.commitPlacement(selectedItem, targetId);
+    this.cancelSelection();
+    this.endAnyLiveKeyboardDrag();
+  };
+
+  isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;
+
+  onItemClick: any = (data) => {
+    if (this.isClickSoonAfterDragEnd()) return;
+
+    // End any still-live keyboard drag BEFORE toggling the new selection: ending it also
+    // clears the current selection as a side effect (see onDragCancel above), so doing it
+    // first lets this click's own selection be the one that sticks.
+    this.endAnyLiveKeyboardDrag();
+    this.toggleItemSelection(data);
+  };
+
+  onPlacementClick: any = (targetId) => {
+    if (this.isClickSoonAfterDragEnd()) return;
+
+    this.placeSelectedItem(targetId);
   };
 
   renderDragOverlay: any = () => {
@@ -474,15 +596,27 @@ class CategorizeProvider extends React.Component {
   };
 
   render() {
-    const { isValidDrop } = this.state;
+    const { isValidDrop, selectedItem } = this.state;
     // Disable drop animation for valid drops to prevent visual snap-back
     // Keep default animation for invalid drops to show visual feedback
     const dropAnimation = isValidDrop ? null : undefined;
 
     return (
-      <DragProvider onDragStart={this.onDragStart} onDragEnd={this.onDragEnd}>
+      <DragProvider
+        onDragStart={this.onDragStart}
+        onDragEnd={this.onDragEnd}
+        onDragCancel={this.onDragCancel}
+        keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
+        keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
+      >
         <uid.Provider value={this.uid}>
-          <Categorize ref={(ref) => (this.categorizeRef = ref)} {...this.props} />
+          <Categorize
+            ref={(ref) => (this.categorizeRef = ref)}
+            {...this.props}
+            selectedItem={selectedItem}
+            onSelectClick={this.onItemClick}
+            onPlacementClick={this.onPlacementClick}
+          />
           <DragOverlay dropAnimation={dropAnimation}>
             <DragPreviewWrapper>{this.renderDragOverlay()}</DragPreviewWrapper>
           </DragOverlay>

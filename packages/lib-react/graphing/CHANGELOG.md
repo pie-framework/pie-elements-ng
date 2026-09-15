@@ -1,5 +1,17 @@
 # @pie-lib/graphing
 
+## 4.0.5-next.35
+
+### Patch Changes
+
+- a204d11: Lock the graphing background and disabled mark colors to the palette default instead of letting them follow the host color scheme, so a background mark's stroke, arrowheads and endpoints keep a predictable contrast against the plane. The graph controls and accordion now use the dark background token with a primary-light border. The plot plane itself is still transparent, so this makes the mark color predictable and reviewable rather than WCAG 1.4.11 compliant (PIE-877, PIE-994)
+- Updated dependencies [7cae8f9]
+  - @pie-lib/drag@4.1.0-next.40
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.34
+  - @pie-lib/config-ui@13.0.4-next.34
+  - @pie-lib/plot@4.0.4-next.34
+
 ## 4.0.5-next.34
 
 ### Patch Changes

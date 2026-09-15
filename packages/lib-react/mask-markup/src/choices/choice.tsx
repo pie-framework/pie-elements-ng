@@ -18,18 +18,18 @@ import { color } from '@pie-lib/render-ui';
 
 export const DRAG_TYPE = 'MaskBlank';
 
-const StyledChoice: any = styled('span')(({ theme, disabled, selected }) => ({
+const StyledChoice: any = styled('span')(({ theme, disabled }) => ({
   border: `solid 0px ${theme.palette.primary.main}`,
   margin: theme.spacing(0.5),
   transform: 'translate(0, 0)',
   display: 'inline-flex',
-  opacity: selected ? 0.7 : 1,
   ...(disabled && {}),
 }));
 
-const StyledChip: any = styled(Chip)(() => ({
+const StyledChip: any = styled(Chip)(({selected}) => ({
   backgroundColor: color.white(),
-  border: `1px solid ${color.text()}`,
+  border: selected ? `solid 2px ${color.buttonFocusOutline()}` : `1px solid ${color.text()}`,
+  opacity: selected ? 0.7 : 1,
   color: color.text(),
   alignItems: 'center',
   display: 'inline-flex',
@@ -107,6 +107,7 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
       <StyledChip
         clickable={false}
         disabled={disabled}
+        selected={isSelected}
         ref={rootRef}
         label={<StyledChipLabel dangerouslySetInnerHTML={{ __html: choice.value }} />}
       />

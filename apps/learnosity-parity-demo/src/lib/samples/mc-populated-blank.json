@@ -975,7 +975,13 @@
       "id": "variant-sel-r1-image-cap-150",
       "title": "sel_r1-g_plusggg — image choice size cap regression (CONTOOL-3159)",
       "description": "Regression fixture for CONTOOL-3159: choices use the imageUrl/imageAlt contract (the shape real Learnosity graphic items map to) with 150x150 SVG assets. Choice images must render at their full 150x150 size, not be squeezed down by an undersized default max-height cap.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-g_plusggg", "graphic", "image-cap-regression"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-g_plusggg",
+        "graphic",
+        "image-cap-regression"
+      ],
       "model": {
         "id": "21",
         "element": "mc-populated-blank",
@@ -986,7 +992,11 @@
         "choices": [
           { "id": "distractor_1", "imageUrl": "/mc-populated-blank-150.svg", "imageAlt": "Square" },
           { "id": "distractor_2", "imageUrl": "/mc-populated-blank-150.svg", "imageAlt": "Circle" },
-          { "id": "distractor_3", "imageUrl": "/mc-populated-blank-150.svg", "imageAlt": "Triangle" }
+          {
+            "id": "distractor_3",
+            "imageUrl": "/mc-populated-blank-150.svg",
+            "imageAlt": "Triangle"
+          }
         ],
         "correctChoiceId": "distractor_1",
         "hasAudio": false,
@@ -1216,7 +1226,12 @@
       "id": "variant-sel-r1-s3-cloze-baseline",
       "title": "sel_r1-s3_plusggg — cloze baseline regression (CONTOOL-3159, item 021a4255)",
       "description": "Regression fixture reproducing item 021a4255-c675-43a2-8b4f-94e2768143a2: stimulus_image_blank layout with an image-flattened sentence (\"9, 8,\") and a standalone blank whose selected-choice content carries an inline font-size:3em override, matching real Learnosity data shape.",
-      "tags": ["mc-populated-blank", "cqt-sample", "sel_r1-s3_plusggg", "cloze-baseline-regression"],
+      "tags": [
+        "mc-populated-blank",
+        "cqt-sample",
+        "sel_r1-s3_plusggg",
+        "cloze-baseline-regression"
+      ],
       "model": {
         "id": "25",
         "element": "mc-populated-blank",

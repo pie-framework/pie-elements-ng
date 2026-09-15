@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.5
+
+### Minor Changes
+
+- 7cae8f9: Announce the blank's state and the options available in it to screen readers, so a blank's current value and its choices are reachable without sight (PIE-784)
+
 ## 0.3.0-next.4
 
 ### Minor Changes

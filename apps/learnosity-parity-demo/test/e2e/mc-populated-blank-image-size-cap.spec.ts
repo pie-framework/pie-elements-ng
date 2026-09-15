@@ -40,9 +40,7 @@ async function openImageCapRoute(page: Page) {
   await waitForMathRendering(page);
   await page.waitForFunction(
     () => {
-      const imgs = Array.from(
-        document.querySelectorAll('.pie-choice-image')
-      ) as HTMLImageElement[];
+      const imgs = Array.from(document.querySelectorAll('.pie-choice-image')) as HTMLImageElement[];
       return imgs.length > 0 && imgs.every((img) => img.complete && img.naturalWidth > 0);
     },
     { timeout: 30_000 }
@@ -55,14 +53,12 @@ test('image-cap-150: choice image natural size is 150x150 (fixture sanity check)
   await openImageCapRoute(page);
   const root = deliveryContainer(page);
 
-  const naturalSizes = await root
-    .locator('.pie-choice-image')
-    .evaluateAll((imgs) =>
-      (imgs as HTMLImageElement[]).map((img) => ({
-        w: img.naturalWidth,
-        h: img.naturalHeight,
-      }))
-    );
+  const naturalSizes = await root.locator('.pie-choice-image').evaluateAll((imgs) =>
+    (imgs as HTMLImageElement[]).map((img) => ({
+      w: img.naturalWidth,
+      h: img.naturalHeight,
+    }))
+  );
 
   expect(naturalSizes.length).toBeGreaterThanOrEqual(1);
   for (const size of naturalSizes) {

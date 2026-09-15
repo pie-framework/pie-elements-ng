@@ -124,6 +124,7 @@ const REACT_ALLOWED_TOKENS = new Set([
   '--pie-secondary-background',
   '--pie-secondary-dark',
   '--pie-secondary-light',
+  '--pie-surface',
   '--pie-tertiary',
   '--pie-tertiary-light',
   '--pie-text',

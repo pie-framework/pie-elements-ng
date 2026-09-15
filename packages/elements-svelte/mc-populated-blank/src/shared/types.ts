@@ -21,6 +21,7 @@ export interface McpbAudioButtonSkin {
 export interface McpbUiText {
   answerChoices?: string;
   selectedAnswerInSentence?: string;
+  blankPreSelectionHint?: string;
   showCorrectAnswer?: string;
   hideCorrectAnswer?: string;
   clickToEnableAutoplay?: string;

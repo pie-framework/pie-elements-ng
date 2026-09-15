@@ -1,5 +1,11 @@
 # @pie-lib/render-ui
 
+## 6.2.0-next.40
+
+### Minor Changes
+
+- 7cae8f9: Add a surface theming token and use it for drag placeholders, so placeholder fills come from the theme instead of hard-coded greys (PIE-865, PIE-870, PIE-874, PIE-878)
+
 ## 6.1.1-next.39
 
 ### Patch Changes

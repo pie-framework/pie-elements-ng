@@ -1,5 +1,19 @@
 # @pie-element/explicit-constructed-response
 
+## 11.1.2-next.9
+
+### Patch Changes
+
+- 9f6033c: Restore the legacy print bundle (module/print.js) so print works with the current @pie-framework/pie-print client loader
+- Updated dependencies [f568994]
+- Updated dependencies [7cae8f9]
+- Updated dependencies [7cae8f9]
+  - @pie-lib/mask-markup@3.0.4-next.36
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-lib/editable-html-tip-tap@2.1.2-next.34
+  - @pie-lib/config-ui@13.0.4-next.34
+  - @pie-lib/correct-answer-toggle@4.0.3-next.40
+
 ## 11.1.2-next.8
 
 ### Patch Changes

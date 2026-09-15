@@ -1,5 +1,18 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.9
+
+### Patch Changes
+
+- 9f6033c: Restore the legacy print bundle (module/print.js) so print works with the current @pie-framework/pie-print client loader
+- Updated dependencies [9f6033c]
+- Updated dependencies [7cae8f9]
+  - @pie-element/rubric@8.1.2-next.9
+  - @pie-lib/render-ui@6.2.0-next.40
+  - @pie-element/multi-trait-rubric@8.1.2-next.9
+  - @pie-lib/config-ui@13.0.4-next.34
+  - @pie-lib/rubric@2.0.4-next.34
+
 ## 7.1.2-next.8
 
 ### Patch Changes
