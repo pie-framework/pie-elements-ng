@@ -113,7 +113,11 @@ const main = async () => {
       packument = await fetchPackument(pkg.name);
     } catch (error) {
       // A registry that cannot be reached must not wave a release through.
-      problems.push({ ...pkg, kind: 'registry-unreachable', detail: String(error.message ?? error) });
+      problems.push({
+        ...pkg,
+        kind: 'registry-unreachable',
+        detail: String(error.message ?? error),
+      });
       continue;
     }
 
@@ -130,9 +134,13 @@ const main = async () => {
   }
 
   if (AS_JSON) {
-    console.log(JSON.stringify({ ok: problems.length === 0, checked: bumped.length, problems }, null, 2));
+    console.log(
+      JSON.stringify({ ok: problems.length === 0, checked: bumped.length, problems }, null, 2)
+    );
   } else {
-    console.log(`[check-version-availability] checked ${bumped.length} bumped package(s) vs ${REF}`);
+    console.log(
+      `[check-version-availability] checked ${bumped.length} bumped package(s) vs ${REF}`
+    );
     for (const p of problems) {
       if (p.kind === 'registry-unreachable') {
         console.error(`\n- ${p.name}@${p.version}\n  registry lookup failed: ${p.detail}`);
