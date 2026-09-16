@@ -93,6 +93,7 @@
     "verify:runtime-support": "node scripts/verify-runtime-support-exports.mjs",
     "verify:element-contracts": "bun ./scripts/verify-element-contracts.mjs",
     "check:publish-surface": "bun ./scripts/check-publish-surface.mjs",
+    "check:version-availability": "node ./scripts/check-version-availability.mjs",
     "check:repository-metadata": "bun ./scripts/check-repository-metadata.mjs",
     "check:npm-auth": "node ./scripts/check-npm-auth.mjs",
     "check:provenance": "bun ./scripts/check-provenance.mjs",
