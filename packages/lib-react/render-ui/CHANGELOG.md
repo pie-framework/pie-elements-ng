@@ -1,5 +1,13 @@
 # @pie-lib/render-ui
 
+## 6.2.0-next.41
+
+### Patch Changes
+
+- Updated dependencies [ed2cbd6]
+  - @pie-lib/icons@5.0.0-next.0
+  - @pie-lib/test-utils@3.0.0-next.0
+
 ## 6.2.0-next.40
 
 ### Minor Changes

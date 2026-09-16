@@ -1,5 +1,17 @@
 # @pie-element/explicit-constructed-response
 
+## 11.1.2-next.11
+
+### Patch Changes
+
+- Updated dependencies [ed2cbd6]
+  - @pie-lib/config-ui@14.0.0-next.35
+  - @pie-lib/correct-answer-toggle@5.0.0-next.41
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.35
+  - @pie-lib/mask-markup@4.0.0-next.37
+  - @pie-lib/translator@5.0.0-next.3
+  - @pie-lib/render-ui@6.2.0-next.41
+
 ## 11.1.2-next.10
 
 ### Patch Changes

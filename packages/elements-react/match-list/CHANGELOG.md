@@ -1,5 +1,14 @@
 # @pie-element/match-list
 
+## 7.1.2-next.10
+
+### Patch Changes
+
+- Updated dependencies [ed2cbd6]
+  - @pie-lib/correct-answer-toggle@5.0.0-next.41
+  - @pie-lib/render-ui@6.2.0-next.41
+  - @pie-lib/drag@4.1.0-next.41
+
 ## 7.1.2-next.9
 
 ### Patch Changes

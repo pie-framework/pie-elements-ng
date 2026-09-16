@@ -1,5 +1,15 @@
 # @pie-element/drawing-response
 
+## 12.1.2-next.10
+
+### Patch Changes
+
+- Updated dependencies [ed2cbd6]
+  - @pie-lib/config-ui@14.0.0-next.35
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.35
+  - @pie-lib/translator@5.0.0-next.3
+  - @pie-lib/render-ui@6.2.0-next.41
+
 ## 12.1.2-next.9
 
 ### Patch Changes

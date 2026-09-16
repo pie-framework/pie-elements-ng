@@ -1,5 +1,15 @@
 # @pie-element/multi-trait-rubric
 
+## 8.1.2-next.10
+
+### Patch Changes
+
+- Updated dependencies [ed2cbd6]
+  - @pie-lib/config-ui@14.0.0-next.35
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.35
+  - @pie-lib/render-ui@6.2.0-next.41
+  - @pie-lib/drag@4.1.0-next.41
+
 ## 8.1.2-next.9
 
 ### Patch Changes

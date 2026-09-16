@@ -1,5 +1,16 @@
 # @pie-element/select-text
 
+## 13.1.2-next.11
+
+### Patch Changes
+
+- Updated dependencies [ed2cbd6]
+  - @pie-lib/config-ui@14.0.0-next.35
+  - @pie-lib/correct-answer-toggle@5.0.0-next.41
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.35
+  - @pie-lib/text-select@4.0.0-next.41
+  - @pie-lib/render-ui@6.2.0-next.41
+
 ## 13.1.2-next.10
 
 ### Patch Changes

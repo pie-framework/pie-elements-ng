@@ -1,5 +1,14 @@
 # @pie-element/passage
 
+## 7.1.2-next.11
+
+### Patch Changes
+
+- Updated dependencies [ed2cbd6]
+  - @pie-lib/config-ui@14.0.0-next.35
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.35
+  - @pie-lib/render-ui@6.2.0-next.41
+
 ## 7.1.2-next.10
 
 ### Patch Changes

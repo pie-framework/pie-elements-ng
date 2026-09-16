@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-toolbar",
-  "version": "3.0.3-next.40",
+  "version": "4.0.0-next.41",
   "description": "Math toolbar for editing math equations",
   "repository": {
     "type": "git",

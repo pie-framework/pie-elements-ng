@@ -1,5 +1,18 @@
 # @pie-element/categorize
 
+## 13.2.0-next.10
+
+### Patch Changes
+
+- Updated dependencies [ed2cbd6]
+  - @pie-lib/categorize@3.0.0-next.3
+  - @pie-lib/config-ui@14.0.0-next.35
+  - @pie-lib/correct-answer-toggle@5.0.0-next.41
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.35
+  - @pie-lib/translator@5.0.0-next.3
+  - @pie-lib/render-ui@6.2.0-next.41
+  - @pie-lib/drag@4.1.0-next.41
+
 ## 13.2.0-next.9
 
 ### Minor Changes
