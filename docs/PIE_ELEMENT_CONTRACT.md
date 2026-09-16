@@ -118,6 +118,27 @@ Standard ESM consumers should prefer `exports["./author"]`. The configure alias
 exists so `pie-api-aws` can build `editor.js` for legacy `pie-author` consumers
 without learning the modern author subpath first.
 
+Print-capable packages carry the same root shim contract:
+
+- `exports["./print"]`: the generated print JS and type targets
+- `exports["./print.js"]`: same targets as `./print`
+- root `print.js`
+- `files`: includes `print.js` and covers the `dist` output
+
+The root `print.js` file must re-export the default component:
+
+```js
+export { default } from './dist/print/index.js';
+export * from './dist/print/index.js';
+```
+
+An alias-based builder resolves `@pie-element/<name>/print` as a filesystem path,
+so without this shim the request never reaches the exports map. A declared print
+export with no resolvable target drops the print view from an IIFE bundle, which
+is why the shim is required rather than optional. This is distinct from the
+legacy `module/print.js` artifact described below, which serves a different
+loader.
+
 ### Browser ESM Packaging
 
 Browser ESM is the player-facing module surface. Element packages that support browser ESM expose static files under:
@@ -182,7 +203,12 @@ When multiple elements request different minor or patch versions of a shared sin
 
 ### IIFE
 
-IIFE is a legacy runtime strategy but remains supported. Builders import package exports, including `@pie-element/<name>/controller` and `@pie-element/<name>/configure`, and may rely on the root `controller.js` and `configure.js` shims for filesystem alias compatibility.
+IIFE is a legacy runtime strategy but remains supported. Builders import package exports, including `@pie-element/<name>/controller`, `@pie-element/<name>/configure` and `@pie-element/<name>/print`, and may rely on the root `controller.js`, `configure.js` and `print.js` shims for filesystem alias compatibility.
+
+A builder that aliases `@pie-element` to a directory resolves those subpaths as
+literal paths, so the root shims are what the request lands on. A subpath a
+package declares without shipping a resolvable target is omitted from the
+generated entry rather than failing the whole bundle.
 
 Element package runtime entry points must not require raw source files to be present in the npm tarball.
 

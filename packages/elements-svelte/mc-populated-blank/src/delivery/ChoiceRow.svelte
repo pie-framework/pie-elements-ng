@@ -44,7 +44,7 @@ let {
             src={choice.imageUrl}
             alt={choice.imageAlt || `Choice ${choice.id}`}
             class="object-contain pie-choice-image"
-            style="max-height:var(--mpb-choice-image-max-height, 5rem);"
+            style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
           />
         {:else}
           <span class="choice-html pie-choice-label">{@html choice.labelHtml || ''}</span>
@@ -209,6 +209,16 @@ let {
     align-items: center;
     justify-content: center;
     text-align: center;
+  }
+
+  /* Choices carrying raw <img> markup in labelHtml (rather than the dedicated
+     imageUrl/imageAlt fields) render unconstrained at their authored size
+     otherwise — 3rd-party/CQT-sourced content is typically authored well above
+     the platform's 150x150 content-element spec. Applies regardless of
+     customType, unlike the r1-CQT-specific cqt-css overlays. See CONTOOL-3159. */
+  .choice-html :global(img) {
+    width: 150px;
+    height: 150px;
   }
 
   .choice-radio-bottom {

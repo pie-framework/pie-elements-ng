@@ -14,6 +14,7 @@ const explicitPackages = (process.env.RELEASE_PACKAGES || '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+const publishedManifestPath = String(process.env.RELEASE_PUBLISHED_MANIFEST || '').trim();
 
 const rootPackage = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
 const workspacePatterns = Array.isArray(rootPackage.workspaces) ? rootPackage.workspaces : [];
@@ -98,6 +99,19 @@ const rewriteWorkspaceRanges = () => {
     const original = readFileSync(packageJsonPath, 'utf8');
     const pkg = JSON.parse(original);
     let changed = false;
+
+    // Published tarballs are dist-only, so devDependencies describe a build that is not in
+    // the package. Nothing installs them for a consumer of a dependency — but pie-api-aws
+    // extracts each element tarball as a yarn WORKSPACE MEMBER, and yarn installs workspace
+    // members' devDependencies. That makes every workspace-only devDependency a hard install
+    // failure there (`@pie-lib/delivery-events-svelte@0.1.0` is versioned but never
+    // published, which blocks every Svelte element), and makes it fetch vite, vitest and a
+    // rolldown native binary once per element. Drop the section at publish time; the repo
+    // manifests keep it, and the finally block restores them.
+    if (pkg.name && pkg.private !== true && pkg.devDependencies) {
+      delete pkg.devDependencies;
+      changed = true;
+    }
 
     for (const section of depSections) {
       const deps = pkg[section];
@@ -658,6 +672,28 @@ const sortTargetsByRuntimeWorkspaceDependencies = (targetPackages) => {
   return sorted;
 };
 
+// What this run actually pushed to the registry, in publish order. Packages skipped as
+// already-published are deliberately absent: nothing new reached npm for them.
+const publishedPackages = [];
+
+// changesets/action cannot report a publish it did not perform, so its `published` and
+// `publishedPackages` outputs are always empty here and every step gated on them — provenance
+// verification, the GitHub release, the Slack notification — silently skipped. This manifest is
+// the replacement signal. Shaped as a bare [{name, version}] array so it feeds
+// check-provenance.mjs --published-json unchanged. Written even on a partial failure, so a
+// recovery run can see what already landed.
+const writePublishedManifest = () => {
+  if (!publishedManifestPath) return;
+  try {
+    writeFileSync(publishedManifestPath, `${JSON.stringify(publishedPackages, null, 2)}\n`, 'utf8');
+    console.log(
+      `[release] Wrote published manifest (${publishedPackages.length} package(s)) to ${publishedManifestPath}`
+    );
+  } catch (error) {
+    console.error(`[release] Failed to write published manifest: ${error.message}`);
+  }
+};
+
 const publishWorkspaceOnce = ({ packageName, version, publishTag }) =>
   new Promise((resolve, reject) => {
     console.log(`[release] Publishing ${packageName}@${version} with npm tag "${publishTag}"`);
@@ -705,7 +741,7 @@ try {
   rewriteWorkspaceRanges();
   if (changedFiles.length > 0) {
     console.log(
-      `[release] Rewrote workspace ranges in ${changedFiles.length} package.json file(s) for publish`
+      `[release] Prepared ${changedFiles.length} package.json file(s) for publish (workspace ranges resolved, devDependencies dropped)`
     );
   }
 
@@ -739,9 +775,12 @@ try {
     console.log(
       '[release] No version-bumped publish targets detected. Nothing to publish; exiting cleanly.'
     );
+    // process.exit skips the finally below, so the empty manifest is written here too —
+    // downstream steps must be able to read "published nothing" rather than a missing file.
+    writePublishedManifest();
     restoreWorkspaceRanges();
     if (changedFiles.length > 0) {
-      console.log('[release] Restored workspace ranges after preflight');
+      console.log('[release] Restored repo package.json files after preflight');
     }
     process.exit(0);
   }
@@ -773,10 +812,12 @@ try {
       continue;
     }
     await publishWorkspaceWithRetry({ packageName: name, version, publishTag });
+    publishedPackages.push({ name, version });
   }
 } finally {
+  writePublishedManifest();
   restoreWorkspaceRanges();
   if (changedFiles.length > 0) {
-    console.log('[release] Restored workspace ranges after publish');
+    console.log('[release] Restored repo package.json files after publish');
   }
 }

@@ -194,6 +194,10 @@ export function generateExportsObject(
       types: './dist/print/index.d.ts',
       default: './dist/print/index.js',
     };
+    exports['./print.js'] = {
+      types: './dist/print/index.d.ts',
+      default: './dist/print/index.js',
+    };
     if (includeBrowserExports) {
       exports['./browser/print'] = {
         default: './dist/browser/print/index.js',
@@ -811,6 +815,11 @@ export async function ensureElementPackageJson(
   } else {
     normalizedFiles.delete('configure.js');
   }
+  if (entryPoints.hasPrint) {
+    normalizedFiles.add('print.js');
+  } else {
+    normalizedFiles.delete('print.js');
+  }
   pkg.files = Array.from(normalizedFiles).sort();
 
   // Set sideEffects
@@ -862,6 +871,20 @@ export async function ensureElementPackageJson(
   const shouldWriteConfigureShim =
     configureShimContent !== null && currentConfigureShim !== configureShimContent;
   const shouldRemoveConfigureShim = configureShimContent === null && hasConfigureShim;
+  // The IIFE bundlers alias `@pie-element/<element>` to a directory, so a `/print`
+  // request resolves as a literal path and never consults `exports`. The root shim is
+  // what makes that request land on the built print entry, the same way controller.js
+  // and configure.js do for their views.
+  const printShimPath = join(elementDir, 'print.js');
+  const printShimContent = entryPoints.hasPrint
+    ? "export { default } from './dist/print/index.js';\nexport * from './dist/print/index.js';\n"
+    : null;
+  const hasPrintShim = existsSync(printShimPath);
+  const currentPrintShim = hasPrintShim
+    ? await readFile(printShimPath, 'utf-8').catch(() => null)
+    : null;
+  const shouldWritePrintShim = printShimContent !== null && currentPrintShim !== printShimContent;
+  const shouldRemovePrintShim = printShimContent === null && hasPrintShim;
 
   // Check if content changed
   const nextContent = `${JSON.stringify(pkg, null, 2)}\n`;
@@ -875,7 +898,9 @@ export async function ensureElementPackageJson(
     !shouldWriteControllerShim &&
     !shouldRemoveControllerShim &&
     !shouldWriteConfigureShim &&
-    !shouldRemoveConfigureShim
+    !shouldRemoveConfigureShim &&
+    !shouldWritePrintShim &&
+    !shouldRemovePrintShim
   ) {
     return false;
   }
@@ -893,6 +918,11 @@ export async function ensureElementPackageJson(
     await writeFile(configureShimPath, configureShimContent, 'utf-8');
   } else if (shouldRemoveConfigureShim) {
     await unlink(configureShimPath).catch(() => {});
+  }
+  if (shouldWritePrintShim && printShimContent !== null) {
+    await writeFile(printShimPath, printShimContent, 'utf-8');
+  } else if (shouldRemovePrintShim) {
+    await unlink(printShimPath).catch(() => {});
   }
   return true;
 }

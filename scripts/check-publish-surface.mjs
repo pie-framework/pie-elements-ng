@@ -99,6 +99,9 @@ const isAllowedPackedFile = (filePath, pkg) => {
   if (filePath === 'configure.js' && pkg.pie?.configure?.endsWith('/configure')) {
     return true;
   }
+  if (filePath === 'print.js' && pkg.exports?.['./print']) {
+    return true;
+  }
   if (
     (filePath === 'module/print.js' || filePath === 'module/print.js.map') &&
     pkg.exports?.['./print']
@@ -184,6 +187,46 @@ const collectControllerContractViolations = (dir, pkg) => {
         const configureShim = readFileSync(configureShimPath, 'utf8');
         if (configureShim !== expectedConfigureShim) {
           violations.push(`root configure.js shim must re-export ${configureTarget}`);
+        }
+      }
+    }
+  }
+
+  // Print carries the same shim contract as controller and configure: the IIFE bundlers
+  // alias `@pie-element/<element>` to a directory, so `<pkg>/print` resolves to the root
+  // shim as a literal path rather than through the exports map.
+  const printExport = pkg.exports?.['./print'];
+  if (printExport || files.includes('print.js')) {
+    const printJsExport = pkg.exports?.['./print.js'];
+    if (!printExport) {
+      violations.push('exports["./print"] is required for print packages');
+    }
+    if (!printJsExport) {
+      violations.push('exports["./print.js"] is required for print packages');
+    } else if (printExport) {
+      if (printJsExport.default !== printExport.default) {
+        violations.push('exports["./print.js"].default must match exports["./print"].default');
+      }
+      if (printJsExport.types !== printExport.types) {
+        violations.push('exports["./print.js"].types must match exports["./print"].types');
+      }
+    }
+    if (!files.includes('print.js')) {
+      violations.push('files[] must include print.js for print packages');
+    }
+
+    const printTarget = printExport?.default;
+    if (typeof printTarget !== 'string' || !printTarget.startsWith('./dist/')) {
+      violations.push('exports["./print"].default must point at ./dist/...');
+    } else {
+      const printShimPath = path.join(dir, 'print.js');
+      const expectedPrintShim = `export { default } from '${printTarget}';\nexport * from '${printTarget}';\n`;
+      if (!existsSync(printShimPath)) {
+        violations.push('root print.js compatibility shim is missing');
+      } else {
+        const printShim = readFileSync(printShimPath, 'utf8');
+        if (printShim !== expectedPrintShim) {
+          violations.push(`root print.js shim must re-export ${printTarget}`);
         }
       }
     }

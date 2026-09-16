@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/rubric",
-  "version": "8.1.2-next.9",
+  "version": "8.1.2-next.10",
   "description": "Rubric Scoring Interaction",
   "repository": {
     "type": "git",
@@ -65,6 +65,10 @@
       "types": "./dist/print/index.d.ts",
       "default": "./dist/print/index.js"
     },
+    "./print.js": {
+      "types": "./dist/print/index.d.ts",
+      "default": "./dist/print/index.js"
+    },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
     },
@@ -80,7 +84,8 @@
     "configure.js",
     "controller.js",
     "dist",
-    "module"
+    "module",
+    "print.js"
   ],
   "sideEffects": false,
   "devDependencies": {

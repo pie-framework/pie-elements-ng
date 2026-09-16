@@ -1,5 +1,37 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.8
+
+### Patch Changes
+
+- b59ecfe: Republish with no `devDependencies` in the manifest, so the production bundler can install
+  this element.
+
+  `pie-api-aws` extracts each element tarball as a yarn workspace member, and yarn installs
+  workspace members' devDependencies. This element's manifest pinned
+  `@pie-lib/delivery-events-svelte@0.1.0`, a workspace package that is versioned but never
+  published, so the install failed before webpack ran and no bundle containing this element
+  could be built.
+
+## 0.3.0-next.7
+
+### Patch Changes
+
+- 8d69fb5: Publish a root `print.js` shim from print-bearing elements, and resolve bundler entry
+  subpaths from what a package declares.
+
+  An alias-based IIFE builder resolves `@pie-element/<element>/print` as a filesystem path
+  and never reads the exports map, so print needs the same root shim `controller.js` and
+  `configure.js` already provide. Without it the subpath resolved only from TypeScript
+  sources, so print worked in a workspace build and failed every build against published
+  tarballs — taking the whole bundle with it rather than just the print view.
+
+## 0.3.0-next.6
+
+### Patch Changes
+
+- 9eaefde: Bottom-anchor a selected answer against the blank's underline and keep the blank out of the stem's shared baseline row, so choosing an option no longer shifts sibling stem tokens in the r1 CQT layouts, and size distractor images embedded as raw markup in labelHtml at 150x150 (CONTOOL-3159)
+
 ## 0.3.0-next.5
 
 ### Minor Changes
