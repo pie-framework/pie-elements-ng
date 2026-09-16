@@ -100,6 +100,19 @@ const rewriteWorkspaceRanges = () => {
     const pkg = JSON.parse(original);
     let changed = false;
 
+    // Published tarballs are dist-only, so devDependencies describe a build that is not in
+    // the package. Nothing installs them for a consumer of a dependency — but pie-api-aws
+    // extracts each element tarball as a yarn WORKSPACE MEMBER, and yarn installs workspace
+    // members' devDependencies. That makes every workspace-only devDependency a hard install
+    // failure there (`@pie-lib/delivery-events-svelte@0.1.0` is versioned but never
+    // published, which blocks every Svelte element), and makes it fetch vite, vitest and a
+    // rolldown native binary once per element. Drop the section at publish time; the repo
+    // manifests keep it, and the finally block restores them.
+    if (pkg.name && pkg.private !== true && pkg.devDependencies) {
+      delete pkg.devDependencies;
+      changed = true;
+    }
+
     for (const section of depSections) {
       const deps = pkg[section];
       if (!deps) continue;
@@ -728,7 +741,7 @@ try {
   rewriteWorkspaceRanges();
   if (changedFiles.length > 0) {
     console.log(
-      `[release] Rewrote workspace ranges in ${changedFiles.length} package.json file(s) for publish`
+      `[release] Prepared ${changedFiles.length} package.json file(s) for publish (workspace ranges resolved, devDependencies dropped)`
     );
   }
 
@@ -767,7 +780,7 @@ try {
     writePublishedManifest();
     restoreWorkspaceRanges();
     if (changedFiles.length > 0) {
-      console.log('[release] Restored workspace ranges after preflight');
+      console.log('[release] Restored repo package.json files after preflight');
     }
     process.exit(0);
   }
@@ -805,6 +818,6 @@ try {
   writePublishedManifest();
   restoreWorkspaceRanges();
   if (changedFiles.length > 0) {
-    console.log('[release] Restored workspace ranges after publish');
+    console.log('[release] Restored repo package.json files after publish');
   }
 }
