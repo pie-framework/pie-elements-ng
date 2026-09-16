@@ -70,6 +70,10 @@
       "types": "./dist/print/index.d.ts",
       "default": "./dist/print/index.js"
     },
+    "./print.js": {
+      "types": "./dist/print/index.d.ts",
+      "default": "./dist/print/index.js"
+    },
     "./browser/print": {
       "default": "./dist/browser/print/index.js"
     },
@@ -85,7 +89,8 @@
     "configure.js",
     "controller.js",
     "dist",
-    "module"
+    "module",
+    "print.js"
   ],
   "sideEffects": false,
   "devDependencies": {

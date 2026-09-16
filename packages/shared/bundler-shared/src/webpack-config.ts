@@ -67,11 +67,18 @@ function resolvePieElementSourceAliases(
 
     aliases[`@pie-element/${element}$`] = mainSource;
 
+    // `configure` is the specifier the bundlers emit, and most elements implement it at
+    // src/author — mirroring the package's own `exports`, where "./configure" targets the
+    // author build. Prefer a real src/configure when one exists.
+    const configureSource = existsSync(join(packageRoot, 'src', 'configure', 'index.ts'))
+      ? join(packageRoot, 'src', 'configure', 'index.ts')
+      : join(packageRoot, 'src', 'author', 'index.ts');
+
     const subpathMap: Record<string, string> = {
       controller: join(packageRoot, 'src', 'controller', 'index.ts'),
       author: join(packageRoot, 'src', 'author', 'index.ts'),
       print: join(packageRoot, 'src', 'print', 'index.ts'),
-      configure: join(packageRoot, 'src', 'configure', 'index.ts'),
+      configure: configureSource,
       delivery: join(packageRoot, 'src', 'delivery', 'index.ts'),
     };
 

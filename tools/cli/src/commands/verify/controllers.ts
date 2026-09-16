@@ -26,6 +26,16 @@ function hasAnyControllerSource(elementDir: string): boolean {
   );
 }
 
+function hasAnyPrintSource(elementDir: string): boolean {
+  const base = join(elementDir, 'src', 'print', 'index');
+  return (
+    existsSync(base + '.ts') ||
+    existsSync(base + '.tsx') ||
+    existsSync(base + '.js') ||
+    existsSync(base + '.jsx')
+  );
+}
+
 function hasAnyAuthorOrConfigureSource(elementDir: string): boolean {
   for (const view of ['author', 'configure']) {
     const base = join(elementDir, 'src', view, 'index');
@@ -55,7 +65,8 @@ async function verifyControllerPackage(elementDir: string, element: string): Pro
 
   const hasController = hasAnyControllerSource(elementDir);
   const hasAuthorOrConfigure = hasAnyAuthorOrConfigureSource(elementDir);
-  if (!hasController && !hasAuthorOrConfigure) {
+  const hasPrint = hasAnyPrintSource(elementDir);
+  if (!hasController && !hasAuthorOrConfigure && !hasPrint) {
     return { element, elementDir, ok: true, errors: [], warnings: [] };
   }
 
@@ -65,6 +76,8 @@ async function verifyControllerPackage(elementDir: string, element: string): Pro
   const controllerExport = exportsObj?.['./controller'];
   const controllerJsExport = exportsObj?.['./controller.js'];
   const configureExport = exportsObj?.['./configure'];
+  const printExport = exportsObj?.['./print'];
+  const printJsExport = exportsObj?.['./print.js'];
   const expectedControllerSpecifier = `${pkg.name}/controller`;
   const expectedConfigureSpecifier = `${pkg.name}/configure`;
   const expectedShim = "export * from './dist/controller/index.js';\n";
@@ -149,6 +162,45 @@ async function verifyControllerPackage(elementDir: string, element: string): Pro
         if (configureShim !== expectedConfigureShim) {
           errors.push(`Root configure.js shim must re-export ${configureTarget}`);
         }
+      }
+    }
+  }
+
+  // Print is checked on the same terms as controller and configure: the root shim is a
+  // publish contract, because a directory-aliasing bundler resolves `<pkg>/print` to it
+  // rather than through the exports map.
+  if (hasPrint) {
+    if (!files.includes('print.js')) {
+      errors.push('package.json files[] must include "print.js"');
+    }
+    if (!printExport) {
+      errors.push('Missing exports["./print"] in package.json');
+    }
+    if (!printJsExport) {
+      errors.push('Missing exports["./print.js"] in package.json');
+    } else if (printExport) {
+      if (printJsExport?.default !== printExport?.default) {
+        errors.push('exports["./print.js"].default must match exports["./print"].default');
+      }
+      if (printJsExport?.types !== printExport?.types) {
+        errors.push('exports["./print.js"].types must match exports["./print"].types');
+      }
+    }
+
+    const printTarget = (printExport?.default as string | undefined) ?? './dist/print/index.js';
+    const printArtifact = join(elementDir, printTarget.replace(/^\.\//, ''));
+    if (!existsSync(printArtifact)) {
+      errors.push(`Print JS artifact missing: ${printTarget}`);
+    }
+
+    const printShimPath = join(elementDir, 'print.js');
+    const expectedPrintShim = `export { default } from '${printTarget}';\nexport * from '${printTarget}';\n`;
+    if (!existsSync(printShimPath)) {
+      errors.push('Missing root print.js compatibility shim');
+    } else {
+      const printShim = await readFile(printShimPath, 'utf-8');
+      if (printShim !== expectedPrintShim) {
+        errors.push(`Root print.js shim must re-export ${printTarget}`);
       }
     }
   }
@@ -259,6 +311,7 @@ export default class VerifyControllers extends Command {
       this.log('  - Ensure package.json pie.controller is "@pie-element/<element>/controller"');
       this.log('  - Ensure package.json files[] includes "controller.js"');
       this.log('  - Ensure root controller.js re-exports "./dist/controller/index.js"');
+      this.log('  - Ensure print-bearing elements publish "print.js" and export "./print.js"');
       this.log('  - Ensure build outputs exist under dist/controller/');
       this.log(`  - Rebuild: cd ${ELEMENTS_REACT_DIR}/<element> && bun run build`);
       this.log(`  - Or: cd ${ELEMENTS_SVELTE_DIR}/<element> && bun run build`);
