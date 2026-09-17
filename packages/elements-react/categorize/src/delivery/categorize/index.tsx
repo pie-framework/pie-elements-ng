@@ -13,6 +13,7 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import { styled } from '@mui/material/styles';
 import { DragOverlay } from '@dnd-kit/core';
+import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { buildState, removeChoiceFromCategory, moveChoiceToCategory } from '@pie-lib/categorize';
 import { DragProvider, uid } from '@pie-lib/drag';
@@ -326,32 +327,34 @@ export class Categorize extends React.Component {
           language={language}
         />
 
-        <StyledCategorize style={style}>
-          <div style={{ display: 'flex', flex: 1 }}>
-            <Categories
-              model={model}
+        <StyledCategorize>
+          <StyledCategorizeContent style={style}>
+            <div style={{ display: 'flex', flex: 1 }}>
+              <Categories
+                model={model}
+                disabled={model.disabled}
+                categories={categories}
+                onDropChoice={this.dropChoice}
+                onRemoveChoice={this.removeChoice}
+                rowLabels={(rowLabels || []).slice(0, nbOfRows)}
+                selectedItem={selectedItem}
+                onSelectClick={onSelectClick}
+                onPlacementClick={onPlacementClick}
+              />
+            </div>
+            <Choices
               disabled={model.disabled}
-              categories={categories}
+              model={model}
+              choices={choices}
+              choicePosition={choicePosition}
               onDropChoice={this.dropChoice}
               onRemoveChoice={this.removeChoice}
-              rowLabels={(rowLabels || []).slice(0, nbOfRows)}
+              correct={correct}
               selectedItem={selectedItem}
               onSelectClick={onSelectClick}
               onPlacementClick={onPlacementClick}
             />
-          </div>
-          <Choices
-            disabled={model.disabled}
-            model={model}
-            choices={choices}
-            choicePosition={choicePosition}
-            onDropChoice={this.dropChoice}
-            onRemoveChoice={this.removeChoice}
-            correct={correct}
-            selectedItem={selectedItem}
-            onSelectClick={onSelectClick}
-            onPlacementClick={onPlacementClick}
-          />
+          </StyledCategorizeContent>
         </StyledCategorize>
         {displayNote && (
           <StyledNote
@@ -608,6 +611,7 @@ class CategorizeProvider extends React.Component {
         onDragCancel={this.onDragCancel}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
+        modifiers={[restrictToFirstScrollableAncestor]}
       >
         <uid.Provider value={this.uid}>
           <Categorize
@@ -636,10 +640,23 @@ const StyledNote: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
+// The interactive region - the categories table and the choices pool - scrolls
+// horizontally as a unit when it doesn't fit the available width (e.g. under heavy
+// browser zoom), instead of being squeezed.
 const StyledCategorize: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(1),
+  maxWidth: '100%',
+  overflowX: 'auto',
+  // dragged choices move via transform, which counts toward scrollable overflow, so
+  // leaving this axis scrollable would pop a vertical scrollbar mid-drag
+  overflowY: 'hidden',
+}));
+
+// keeps the categories table + choices pool at their natural width so the scroll
+// container above has something to scroll instead of shrinking them to fit
+const StyledCategorizeContent: any = styled('div')(() => ({
   display: 'flex',
-  flexDirection: 'column',
+  minWidth: 'min-content',
 }));
 
 const StyledCollapsible: any = styled(Collapsible)(({ theme }) => ({
