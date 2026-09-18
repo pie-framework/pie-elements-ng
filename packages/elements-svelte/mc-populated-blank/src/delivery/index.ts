@@ -1,5 +1,9 @@
 import McPopulatedBlankComponent from './McPopulatedBlank.svelte';
-import { ModelSetEvent, SessionChangedEvent } from '@pie-lib/delivery-events-svelte';
+import {
+  ModelSetEvent,
+  SessionChangedEvent,
+  writeSessionInPlace,
+} from '@pie-lib/delivery-events-svelte';
 
 function isComplete(model: any, session: any, audioComplete = false): boolean {
   if (!session?.choiceId) return false;
@@ -13,6 +17,12 @@ const SvelteElementClass = (McPopulatedBlankComponent as any).element;
 
 class McPopulatedBlankElement extends SvelteElementClass {
   _internalSession: any = null;
+  /**
+   * The session object the player handed us. A player reads the learner's
+   * response back off this object, so every update is written into it as well
+   * as into the copy the component renders from.
+   */
+  _playerSession: any = null;
   _model: any = null;
   _options: any = null;
   audioComplete = false;
@@ -39,6 +49,7 @@ class McPopulatedBlankElement extends SvelteElementClass {
   }
 
   set session(s: any) {
+    this._playerSession = s;
     this._internalSession = s;
     super.session = s;
     this._dispatchSessionChanged();
@@ -58,25 +69,30 @@ class McPopulatedBlankElement extends SvelteElementClass {
   }
 
   onSessionChange = (updatedSession: any) => {
-    this._internalSession = updatedSession;
+    this._writeSession(updatedSession);
     super.session = updatedSession;
     this._dispatchSessionChanged();
   };
 
   onAudioStarted = () => {
-    this._internalSession = {
+    this._writeSession({
       ...(this._internalSession || {}),
       audioStartTime: Date.now(),
-    };
+    });
   };
 
   onAudioEnded = () => {
     this.audioComplete = true;
-    this._internalSession = {
+    this._writeSession({
       ...(this._internalSession || {}),
       audioEndTime: Date.now(),
-    };
+    });
     this._dispatchSessionChanged();
+  };
+
+  _writeSession = (updatedSession: any) => {
+    writeSessionInPlace(this._playerSession, updatedSession);
+    this._internalSession = updatedSession;
   };
 
   _isComplete = () => {

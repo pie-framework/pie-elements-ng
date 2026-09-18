@@ -54,3 +54,10 @@ export class SessionChangedEvent extends CustomEvent<SessionChangedDetail> {
     });
   }
 }
+
+export {
+  SESSION_COMMIT_METHOD,
+  createSessionNotifier,
+  flushSessionNotifiers,
+} from './session-notifier.js';
+export type { SessionNotifier, SessionNotifierOptions } from './session-notifier.js';

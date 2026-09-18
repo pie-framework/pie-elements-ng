@@ -11,8 +11,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import debug from 'debug';
-import { debounce } from '@pie-element/shared-lodash';
-import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
+import {
+  ModelSetEvent,
+  SessionChangedEvent,
+  createSessionNotifier,
+  flushSessionNotifiers,
+} from '@pie-element/shared-player-events';
 
 // Inlined from configure/lib/defaults (configure/ not synced - ESM-incompatible)
 const defaults = {
@@ -32,9 +36,16 @@ export default class MathInline extends HTMLElement {
     super();
     this._root = null;
     this._configuration = defaults.configuration;
-    this.sessionChangedEventCaller = debounce(() => {
-      this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), true));
-    }, 1000);
+    // Session state is already written synchronously in `sessionChanged`; only
+    // this dispatch is coalesced, and `disconnectedCallback` flushes it.
+    this._sessionNotifier = createSessionNotifier(
+      this,
+      () => {
+        this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), true));
+      },
+      { delayMs: 1000 },
+    );
+    this.sessionChangedEventCaller = () => this._sessionNotifier.notify();
   }
 
   setLangAttribute() {
@@ -105,6 +116,8 @@ export default class MathInline extends HTMLElement {
   }
 
   disconnectedCallback() {
+    flushSessionNotifiers(this);
+
     if (this._root) {
       this._root.unmount();
       this._root = null;

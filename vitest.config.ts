@@ -26,7 +26,12 @@ export default defineConfig({
       '**/e2e/**', // Exclude E2E tests (use Playwright for those)
       '**/tests/e2e/**', // Exclude E2E tests in tests directory
       '**/*.spec.ts', // Exclude Playwright spec files
-      'packages/elements-react/**',
+      // React component tests under `src` need each package's own vite config
+      // and run through `turbo run test`. A package's `tests/` directory does
+      // not: it exercises the published delivery element against the DOM, and
+      // it runs here so CI and pre-push see it. Excluding the whole tree meant
+      // the element teardown tests never ran anywhere.
+      'packages/elements-react/**/src/**',
       'packages/lib-react/**',
     ],
     coverage: {

@@ -1,11 +1,21 @@
 import VennClassificationComponent from './VennClassification.svelte';
 import { isComplete as isControllerComplete } from '../controller/index.js';
-import { ModelSetEvent, SessionChangedEvent } from '@pie-lib/delivery-events-svelte';
+import {
+  ModelSetEvent,
+  SessionChangedEvent,
+  writeSessionInPlace,
+} from '@pie-lib/delivery-events-svelte';
 
 const SvelteElementClass = (VennClassificationComponent as any).element;
 
 class VennClassificationElement extends SvelteElementClass {
   _internalSession: any = null;
+  /**
+   * The session object the player handed us. A player reads the learner's
+   * response back off this object, so every update is written into it as well
+   * as into the copy the component renders from.
+   */
+  _playerSession: any = null;
   _model: any = null;
 
   _isComplete = () => {
@@ -36,6 +46,7 @@ class VennClassificationElement extends SvelteElementClass {
     // Avoid redundant reactive loops: if the incoming session is structurally
     // identical to the last one we saw, skip the update.
     if (s === this._internalSession) return;
+    this._playerSession = s;
     this._internalSession = s;
     super.session = s;
     this._dispatchSessionChanged();
@@ -46,6 +57,7 @@ class VennClassificationElement extends SvelteElementClass {
   }
 
   onSessionChange = (updatedSession: any) => {
+    writeSessionInPlace(this._playerSession, updatedSession);
     this._internalSession = updatedSession;
     super.session = updatedSession;
     this._dispatchSessionChanged();

@@ -10,17 +10,28 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { SessionChangedEvent, ModelSetEvent } from '@pie-element/shared-player-events';
+import {
+  SessionChangedEvent,
+  ModelSetEvent,
+  createSessionNotifier,
+  flushSessionNotifiers,
+} from '@pie-element/shared-player-events';
 import Main from './main.js';
-import { debounce } from '@pie-element/shared-lodash';
 
 export default class MathTemplated extends HTMLElement {
   constructor() {
     super();
     this._root = null;
-    this.sessionChangedEventCaller = debounce(() => {
-      this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), true));
-    }, 1000);
+    // Session state is already written synchronously in `onSessionChange`; only
+    // this dispatch is coalesced, and `disconnectedCallback` flushes it.
+    this._sessionNotifier = createSessionNotifier(
+      this,
+      () => {
+        this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), true));
+      },
+      { delayMs: 1000 },
+    );
+    this.sessionChangedEventCaller = () => this._sessionNotifier.notify();
   }
 
   set model(m) {
@@ -87,6 +98,8 @@ export default class MathTemplated extends HTMLElement {
   }
 
   disconnectedCallback() {
+    flushSessionNotifiers(this);
+
     if (this._root) {
       this._root.unmount();
       this._root = null;
