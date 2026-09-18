@@ -78,6 +78,20 @@ element as committed while the pending dispatch was dropped. `dispose()` on the
 last notifier removes the method again, because an element that still advertises
 it but flushes nothing suppresses the player's synthesized fallback for good.
 
+### Elements that do not defer
+
+The `elements-svelte` packages (`mc-populated-blank`, `simple-cloze`,
+`venn-classification`) dispatch `session-changed` synchronously on every change,
+so nothing is ever pending and a commit seam has nothing to flush. They must
+also not install `commitPendingSession()`: a player that finds the method counts
+the element as having committed itself and never synthesizes an event from
+`element.session`, which is the path that does cover them.
+
+What those elements owe a player instead is that `element.session` carries the
+response by the time the event is dispatched, written into the object the player
+handed the element rather than a replacement reference — `writeSessionInPlace` in
+`@pie-lib/delivery-events-svelte`.
+
 ## Notes
 
 - Events bubble and are composed by default.

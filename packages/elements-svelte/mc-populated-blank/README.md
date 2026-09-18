@@ -102,7 +102,11 @@ Notes:
 
 ## Session
 
-- **`choiceId`**: selected choice id
+- **`value`**: selected choice id. `value` is the key the players read a
+  response from, so an element-specific name is invisible to the item controller's
+  overwrite guard and to the teardown commit's discriminant. Renamed from
+  `choiceId` in the same change that made the element write into the session the
+  player owns; no session migration, because no host had rendered the element.
 
 ## Implementation hints
 

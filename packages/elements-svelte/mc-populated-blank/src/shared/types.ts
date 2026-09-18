@@ -79,7 +79,17 @@ export interface McpbQuestion {
 export interface McpbSession {
   id?: string;
   element?: string;
-  choiceId?: string;
+  /**
+   * The selected choice's id.
+   *
+   * Named `value` because that is the key the players read a response from:
+   * `hasResponseValue` in `players-shared`, the item controller's
+   * overwrite guard and the teardown commit's discriminant all key on it, and
+   * an element-specific name is invisible to all three. Renamed from
+   * `choiceId` with no migration: no stored session carried the old key,
+   * because Quiz Engine could not render this element until now.
+   */
+  value?: string;
   audioStartTime?: number;
   audioEndTime?: number;
   shuffledValues?: string[];

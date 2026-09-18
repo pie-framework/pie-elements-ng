@@ -20,18 +20,18 @@ export function countBlankTokens(template: string): number {
 }
 
 export const getCorrectness = (question: McpbQuestion, session: McpbSession): McpbCorrectness => {
-  if (!session?.choiceId) {
+  if (!session?.value) {
     return 'unanswered';
   }
   const correct = question?.correctChoiceId || '';
-  if (session.choiceId === correct) {
+  if (session.value === correct) {
     return 'correct';
   }
   return 'incorrect';
 };
 
 export const getPartialScore = (_question: McpbQuestion, session: McpbSession) => {
-  if (!session || isEmptyObject(session) || !session.choiceId) {
+  if (!session || isEmptyObject(session) || !session.value) {
     return 0;
   }
   return 1;
@@ -63,7 +63,7 @@ export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbE
     const score = correctness === 'correct' ? 1 : 0;
     const traceLog = [
       `Mode: ${env?.mode || 'unknown'}.`,
-      `Student selected choice: ${session.choiceId}.`,
+      `Student selected choice: ${session.value}.`,
       `Correct choice: ${question?.correctChoiceId || 'none'}.`,
       `Final score: ${score}.`,
     ];
@@ -241,7 +241,7 @@ export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEn
       resolve({
         id: '1',
         element: 'mc-populated-blank',
-        choiceId: question?.correctChoiceId || '',
+        value: question?.correctChoiceId || '',
       });
     } else {
       resolve(null);
