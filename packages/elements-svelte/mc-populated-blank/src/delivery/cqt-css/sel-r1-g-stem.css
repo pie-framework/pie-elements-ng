@@ -18,7 +18,9 @@
    keeps it untouched, while text-only blanks here drop to their real content height. Shrinks
    every classless span, not just the placed-answer one, so empty and filled states match
    height with no jump (same reason sel-r1-base.css picked one constant height - CONTOOL-3159). */
-.mc-populated-blank-root.variant-sel-r1-g-stem.layout-token_sequence.choice-mode-text .pie-blank-slot span:not([class]) {
+.mc-populated-blank-root.variant-sel-r1-g-stem.layout-token_sequence.choice-mode-text
+  .pie-blank-slot
+  span:not([class]) {
   min-height: 0;
 }
 
@@ -27,7 +29,8 @@
    with "will" while the underline moves up to meet it, instead of the text dropping to a
    bottom-pinned underline. Any align-self value still decouples this from the shared
    baseline calc (see sel-r1-base.css:66-79), so "will" still won't jump on selection. */
-.mc-populated-blank-root.variant-sel-r1-g-stem.layout-token_sequence.choice-mode-text .pie-blank-slot {
+.mc-populated-blank-root.variant-sel-r1-g-stem.layout-token_sequence.choice-mode-text
+.pie-blank-slot {
   min-height: 0;
   align-self: flex-start;
 }
