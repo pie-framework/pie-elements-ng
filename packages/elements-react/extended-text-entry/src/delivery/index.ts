@@ -14,9 +14,18 @@ import { createRoot } from 'react-dom/client';
 import debug from 'debug';
 
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
+import {
+  ModelSetEvent,
+  SessionChangedEvent,
+  createSessionNotifier,
+  flushSessionNotifiers,
+} from '@pie-element/shared-player-events';
 
 const log = debug('@pie-elements:extended-text-entry');
+
+// Coalesce a burst of editor commits. The editor only calls back on blur and on
+// a `done` transaction, so this window is short-lived in practice.
+const SESSION_NOTIFY_DELAY_MS = 1500;
 
 const domParser = typeof window !== undefined ? new DOMParser() : { parseFromString: (v) => v };
 
@@ -49,6 +58,29 @@ export default class RootExtendedTextEntry extends HTMLElement {
     this._model = null;
     this._session = null;
     this._root = null;
+
+    // The session is written synchronously on commit; only the notification is
+    // deferred, so a player reading `.session` always sees the committed
+    // response. `disconnectedCallback` flushes what is still pending.
+    this._valueNotifier = createSessionNotifier(
+      this,
+      () => {
+        this.dispatchEvent(
+          new SessionChangedEvent(this.tagName.toLowerCase(), isComplete(this._session && this._session.value)),
+        );
+      },
+      { delayMs: SESSION_NOTIFY_DELAY_MS },
+    );
+
+    this._commentNotifier = createSessionNotifier(
+      this,
+      () => {
+        this.dispatchEvent(
+          new SessionChangedEvent(this.tagName.toLowerCase(), isComplete(this._session && this._session.comment)),
+        );
+      },
+      { delayMs: SESSION_NOTIFY_DELAY_MS },
+    );
   }
 
   setLangAttribute() {
@@ -76,7 +108,7 @@ export default class RootExtendedTextEntry extends HTMLElement {
   valueChange(value) {
     this._session.value = value;
 
-    this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), isComplete(value)));
+    this._valueNotifier.notify();
 
     this.render();
   }
@@ -92,7 +124,7 @@ export default class RootExtendedTextEntry extends HTMLElement {
   commentChange(comment) {
     this._session.comment = comment;
 
-    this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), isComplete(comment)));
+    this._commentNotifier.notify();
 
     this.render();
   }
@@ -127,6 +159,8 @@ export default class RootExtendedTextEntry extends HTMLElement {
   }
 
   disconnectedCallback() {
+    flushSessionNotifiers(this);
+
     if (this._root) {
       this._root.unmount();
       this._root = null;

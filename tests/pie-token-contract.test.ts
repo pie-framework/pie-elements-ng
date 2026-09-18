@@ -205,7 +205,12 @@ function reactSourceFiles(): string[] {
   return found;
 }
 
-describe('React --pie-* token contract', () => {
+/*
+ * These assertions read every React source file from disk on each run. 5s is
+ * comfortable in isolation and not under a loaded suite, and the failure mode
+ * is a timeout that reads as a token regression.
+ */
+describe('React --pie-* token contract', { timeout: 30_000 }, () => {
   it('every color.*() accessor resolves to a registered token', () => {
     const colorModule = readFileSync(
       join(repoRoot, 'packages/lib-react/render-ui/src/color.ts'),

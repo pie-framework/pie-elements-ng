@@ -10,7 +10,6 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { debounce } from '@pie-element/shared-lodash';
 import debug from 'debug';
 
 import Typography from '@mui/material/Typography';
@@ -97,9 +96,14 @@ export class Main extends React.Component {
     }).isRequired,
   };
 
-  changeSessionValue = debounce(this.props.onValueChange, 1500);
+  // The editor calls back on commit points (blur, `done` transactions), and the
+  // custom element writes the session synchronously and defers only its
+  // `session-changed` dispatch. Coalescing belongs on that dispatch, where a
+  // teardown can flush it; holding the value here instead left `.session` stale
+  // and unreadable by any other layer.
+  changeSessionValue = (value: any) => this.props.onValueChange(value);
 
-  changeSessionComment = debounce(this.props.onCommentChange, 1500);
+  changeSessionComment = (comment: any) => this.props.onCommentChange(comment);
 
   render() {
     const { model, session, onAnnotationsChange } = this.props;

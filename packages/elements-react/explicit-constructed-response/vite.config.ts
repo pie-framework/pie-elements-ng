@@ -20,6 +20,10 @@ export default defineConfig(({ mode, command }) => {
   // Build mode: build the library
   return {
   plugins: [react()],
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+  },
   define: {
     __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
     __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
