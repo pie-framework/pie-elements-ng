@@ -50,6 +50,22 @@ describe('writeSessionInPlace', () => {
     expect(writeSessionInPlace(session, session)).toBe(session);
     expect(session).toEqual({ id: '1', value: 'b' });
   });
+
+  it('returns the replacement for a frozen target instead of throwing', () => {
+    // A throw here would land before the element stored the update, losing the
+    // learner's response rather than just the player's view of it.
+    const frozen = Object.freeze({ id: '1' });
+    const next = { id: '1', value: 'b' };
+
+    expect(writeSessionInPlace(frozen, next)).toBe(next);
+  });
+
+  it('returns the replacement for a sealed target', () => {
+    const sealed = Object.seal({ id: '1' });
+    const next = { id: '1', value: 'b' };
+
+    expect(writeSessionInPlace(sealed, next)).toBe(next);
+  });
 });
 
 describe('forwardSessionChange', () => {

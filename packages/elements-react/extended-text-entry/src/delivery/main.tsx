@@ -100,13 +100,9 @@ export class Main extends React.Component {
   // custom element writes the session synchronously and defers only its
   // `session-changed` dispatch. Coalescing belongs on that dispatch, where a
   // teardown can flush it; holding the value here instead left `.session` stale
-  // and unreadable by any other layer.
-  changeSessionValue = (value: any) => this.props.onValueChange(value);
-
-  changeSessionComment = (comment: any) => this.props.onCommentChange(comment);
-
+  // and unreadable by any other layer, so the callbacks pass straight through.
   render() {
-    const { model, session, onAnnotationsChange } = this.props;
+    const { model, session, onAnnotationsChange, onCommentChange, onValueChange } = this.props;
     const {
       animationsDisabled,
       annotatorMode,
@@ -183,7 +179,7 @@ export class Main extends React.Component {
             comment={comment || ''}
             predefinedAnnotations={predefinedAnnotations || []}
             onChange={onAnnotationsChange}
-            onCommentChange={this.changeSessionComment}
+            onCommentChange={onCommentChange}
             width={width}
             height={height}
             maxHeight={maxHeight}
@@ -195,7 +191,7 @@ export class Main extends React.Component {
         ) : (
           <Editor
             className="response-area-editor"
-            onChange={this.changeSessionValue}
+            onChange={onValueChange}
             markup={value || ''}
             maxWidth={width && width.toString()}
             minWidth={'100px'}

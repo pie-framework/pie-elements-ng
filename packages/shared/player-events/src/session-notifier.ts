@@ -27,12 +27,6 @@ export interface SessionNotifier {
   notify(): void;
   /** Dispatch immediately if one is pending; no-op otherwise. */
   flush(): void;
-  /** Drop a pending dispatch without dispatching. */
-  cancel(): void;
-  /** True while a scheduled dispatch has not run yet. */
-  readonly pending: boolean;
-  /** Unregister from the host. The notifier is inert afterwards. */
-  dispose(): void;
 }
 
 export interface SessionNotifierOptions {
@@ -46,13 +40,6 @@ export interface SessionNotifierOptions {
    * Upper bound on how long repeated `notify()` calls may postpone a dispatch.
    */
   maxWaitMs?: number;
-  /**
-   * Called when a dispatch throws during `flush()`. The throw is contained
-   * either way - a commit runs on teardown, where an element is mid-unmount -
-   * but a silent catch makes a lost response indistinguishable from no
-   * response. Defaults to `console.warn`.
-   */
-  onDispatchError?: (error: unknown) => void;
 }
 
 type Timer = ReturnType<typeof setTimeout>;
@@ -101,15 +88,6 @@ function installCommitMethod(host: object): void {
   });
 }
 
-function uninstallCommitMethod(host: object): void {
-  if (!hasOwnCommitMethod(host)) return;
-  try {
-    delete (host as Record<string, unknown>)[SESSION_COMMIT_METHOD];
-  } catch {
-    // Non-configurable, so the fallback stays suppressed for this element.
-  }
-}
-
 export function createSessionNotifier(
   host: object,
   dispatch: () => void,
@@ -119,16 +97,10 @@ export function createSessionNotifier(
   const resolveDelay: () => number =
     typeof configuredDelay === 'function' ? configuredDelay : () => configuredDelay ?? 0;
   const maxWaitMs = options.maxWaitMs;
-  const reportDispatchError =
-    options.onDispatchError ??
-    ((error: unknown) => {
-      console.warn('[session-notifier] a committed session-changed dispatch threw', error);
-    });
 
   let delayTimer: Timer | null = null;
   let maxWaitTimer: Timer | null = null;
   let pending = false;
-  let disposed = false;
 
   const clearTimers = (): void => {
     if (delayTimer !== null) {
@@ -150,7 +122,6 @@ export function createSessionNotifier(
 
   const notifier: SessionNotifier = {
     notify(): void {
-      if (disposed) return;
       pending = true;
       if (delayTimer !== null) clearTimeout(delayTimer);
       delayTimer = setTimeout(invoke, Math.max(0, resolveDelay()));
@@ -167,29 +138,9 @@ export function createSessionNotifier(
         invoke();
       } catch (error) {
         // A commit runs on teardown, where an element is mid-unmount. A throwing
-        // dispatch must not take the rest of the teardown with it.
-        reportDispatchError(error);
-      }
-    },
-    cancel(): void {
-      pending = false;
-      clearTimers();
-    },
-    get pending(): boolean {
-      return pending;
-    },
-    dispose(): void {
-      disposed = true;
-      pending = false;
-      clearTimers();
-      const notifiers = notifiersByHost.get(host);
-      notifiers?.delete(notifier);
-      if (notifiers && notifiers.size === 0) {
-        // Leaving the method installed makes a player count the element as
-        // having committed itself, which permanently suppresses the
-        // synthesized fallback for an element that no longer defers anything.
-        notifiersByHost.delete(host);
-        uninstallCommitMethod(host);
+        // dispatch must not take the rest of the teardown with it, and a silent
+        // catch would make a lost response indistinguishable from no response.
+        console.warn('[session-notifier] a committed session-changed dispatch threw', error);
       }
     },
   };

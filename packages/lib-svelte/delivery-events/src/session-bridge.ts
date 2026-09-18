@@ -74,15 +74,23 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  *
  * Keys absent from `next` are removed, so clearing a response clears it on the
  * player's object too. Anything that is not a plain object on both sides is
- * returned as the replacement it already was.
+ * returned as the replacement it already was, and so is a frozen or sealed
+ * target: writing into one throws in strict mode, which would take the
+ * learner's update with it before the element ever stored it.
  */
 export function writeSessionInPlace(target: unknown, next: unknown): unknown {
   if (target === next) return target;
   if (!isPlainObject(target) || !isPlainObject(next)) return next;
-  for (const key of Object.keys(target)) {
-    if (!(key in next)) delete target[key];
+  if (Object.isFrozen(target) || !Object.isExtensible(target)) return next;
+  try {
+    for (const key of Object.keys(target)) {
+      if (!(key in next)) delete target[key];
+    }
+    Object.assign(target, next);
+  } catch {
+    // A non-writable or non-configurable key on an otherwise extensible object.
+    return next;
   }
-  Object.assign(target, next);
   return target;
 }
 
