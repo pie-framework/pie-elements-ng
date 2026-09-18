@@ -15,7 +15,7 @@
     "@pie-element/shared-configure-events": "workspace:*",
     "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
-    "@mui/material": "^7.3.11",
+    "@mui/material": "^9.4.0",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
     "clsx": "^2.1.1",
