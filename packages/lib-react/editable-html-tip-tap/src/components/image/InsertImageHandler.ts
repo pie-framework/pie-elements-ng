@@ -9,6 +9,7 @@
  */
 
 import debug from 'debug';
+import { findImageNodeByKey } from './findImageNode.js';
 
 const log = debug('@pie-lib:editable-html:image:insert-image-handler');
 
@@ -29,6 +30,18 @@ class InsertImageHandler {
     this.onFinish = onFinish;
     this.isPasted = isPasted;
     this.chosenFile = null;
+    this.nodeKey = this.node?.attrs?.nodeKey || null;
+  }
+
+  // Prefer a lookup by key; the constructor position is only a fallback for a keyless node.
+  resolveNodePos() {
+    const found = findImageNodeByKey(this.editor, this.nodeKey);
+
+    if (found) {
+      return found[1];
+    }
+
+    return this.nodeKey ? null : this.nodePos;
   }
 
   cancel() {
@@ -45,22 +58,36 @@ class InsertImageHandler {
   }
 
   updateNode(newAttrs) {
+    const nodePos = this.resolveNodePos();
+
+    if (nodePos === null) {
+      log('[updateNode] node is gone, dropping update: ', newAttrs);
+      return;
+    }
+
     const { state, view } = this.editor;
     const { tr } = state;
-    const node = state.doc.nodeAt(this.nodePos);
+    const node = state.doc.nodeAt(nodePos);
 
     if (node) {
-      const transaction = tr.setNodeMarkup(this.nodePos, undefined, { ...node.attrs, ...newAttrs });
+      const transaction = tr.setNodeMarkup(nodePos, undefined, { ...node.attrs, ...newAttrs });
 
       view.dispatch(transaction);
     }
   }
 
   deleteNode() {
+    const nodePos = this.resolveNodePos();
+
+    if (nodePos === null) {
+      return;
+    }
+
     const { state, view } = this.editor;
     const { tr } = state;
+    const node = state.doc.nodeAt(nodePos) || this.node;
 
-    const transaction = tr.delete(this.nodePos, this.nodePos + this.node.nodeSize);
+    const transaction = tr.delete(nodePos, nodePos + node.nodeSize);
 
     view.dispatch(transaction);
   }
