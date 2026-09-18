@@ -100,7 +100,7 @@ const layout = $derived(
 // ---------------------------------------------------------------------------
 const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
 const choiceMode = $derived(model?.choiceMode || 'text');
-const selectedId = $derived(session?.value || localChoiceId || '');
+const selectedId = $derived(session?.choiceId || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
 const displayChoiceId = $derived(
   computeDisplayChoiceId({
@@ -196,7 +196,7 @@ function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
     fallbackSelector: 'mc-populated-blank',
     component: 'mc-populated-blank',
     session: updatedSession,
-    complete: !!updatedSession?.value,
+    complete: !!updatedSession?.choiceId,
   });
 }
 
@@ -209,7 +209,7 @@ function onRadioChange(e: Event) {
     ...session,
     id: session?.id || model?.id || '1',
     element: 'mc-populated-blank',
-    value: choiceId,
+    choiceId,
   };
   emitSession(updatedSession, input);
 }
@@ -264,8 +264,8 @@ function onAudioEnded() {
 }
 
 $effect(() => {
-  if (session?.value) {
-    localChoiceId = session.value;
+  if (session?.choiceId) {
+    localChoiceId = session.choiceId;
   }
 });
 

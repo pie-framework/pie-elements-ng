@@ -48,7 +48,7 @@
       "session": {
         "id": "1",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -103,7 +103,7 @@
       "session": {
         "id": "2",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -154,7 +154,7 @@
       "session": {
         "id": "3",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -205,7 +205,7 @@
       "session": {
         "id": "4",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -256,7 +256,7 @@
       "session": {
         "id": "5",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -307,7 +307,7 @@
       "session": {
         "id": "6",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -358,7 +358,7 @@
       "session": {
         "id": "7",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -409,7 +409,7 @@
       "session": {
         "id": "8",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -459,7 +459,7 @@
       "session": {
         "id": "9",
         "element": "mc-populated-blank",
-        "value": "distractor_1"
+        "choiceId": "distractor_1"
       }
     },
     {
@@ -510,7 +510,7 @@
       "session": {
         "id": "12",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -561,7 +561,7 @@
       "session": {
         "id": "13",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -612,7 +612,7 @@
       "session": {
         "id": "14",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -663,7 +663,7 @@
       "session": {
         "id": "15",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -714,7 +714,7 @@
       "session": {
         "id": "16",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -765,7 +765,7 @@
       "session": {
         "id": "17",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -816,7 +816,7 @@
       "session": {
         "id": "18",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -866,7 +866,7 @@
       "session": {
         "id": "18b",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -917,7 +917,7 @@
       "session": {
         "id": "19",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -968,7 +968,7 @@
       "session": {
         "id": "20",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1015,7 +1015,7 @@
       "session": {
         "id": "21",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1066,7 +1066,7 @@
       "session": {
         "id": "21",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1117,7 +1117,7 @@
       "session": {
         "id": "22",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1168,7 +1168,7 @@
       "session": {
         "id": "23",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1219,7 +1219,7 @@
       "session": {
         "id": "24",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1261,7 +1261,7 @@
       "session": {
         "id": "25",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1312,7 +1312,7 @@
       "session": {
         "id": "25",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1363,7 +1363,7 @@
       "session": {
         "id": "26",
         "element": "mc-populated-blank",
-        "value": ""
+        "choiceId": ""
       }
     },
     {
@@ -1413,7 +1413,7 @@
       "session": {
         "id": "10",
         "element": "mc-populated-blank",
-        "value": "distractor_2"
+        "choiceId": "distractor_2"
       }
     }
   ]

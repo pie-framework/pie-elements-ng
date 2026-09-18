@@ -1,12 +1,6 @@
 /**
- * What the component reports when the learner picks a choice.
- *
- * The response goes out under `value`. `value` is the key the players read a
- * response from - `hasResponseValue` in `players-shared`, the item controller's
- * overwrite guard, and the teardown commit's discriminant all key on it - so
- * the element-specific `choiceId` was invisible to all three and the selection
- * never reached a host. Renamed with no session migration: Quiz Engine could
- * not render this element, so no stored session carries the old key.
+ * What the component reports when the learner picks a choice, and what it
+ * renders from a restored session.
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
@@ -75,7 +69,7 @@ afterEach(() => {
 });
 
 describe('mc-populated-blank delivery session', () => {
-  it('reports the selected choice id under `value`', () => {
+  it('reports the selected choice id', () => {
     const { target, emitted } = mountWithHost();
 
     selectChoice(target, 1);
@@ -84,16 +78,8 @@ describe('mc-populated-blank delivery session', () => {
     expect(emitted[0]).toMatchObject({
       id: '1',
       element: 'mc-populated-blank',
-      value: 'b',
+      choiceId: 'b',
     });
-  });
-
-  it('carries no `choiceId`, the key no player reads', () => {
-    const { target, emitted } = mountWithHost();
-
-    selectChoice(target, 0);
-
-    expect(emitted[0]).not.toHaveProperty('choiceId');
   });
 
   it('hands the host a fresh object so the component re-renders', () => {
@@ -107,11 +93,11 @@ describe('mc-populated-blank delivery session', () => {
     expect(emitted[0]).not.toBe(session);
   });
 
-  it('renders a restored `value` into the blank', () => {
+  it('renders a restored `choiceId` into the blank', () => {
     const { target } = mountWithHost({
       id: '1',
       element: 'mc-populated-blank',
-      value: 'b',
+      choiceId: 'b',
     });
 
     const checked = target.querySelector('input[type="radio"]:checked') as HTMLInputElement | null;

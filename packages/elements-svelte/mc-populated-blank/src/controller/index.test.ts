@@ -5,13 +5,13 @@
  *
  * getCorrectness
  *   G1. No session → unanswered
- *   G2. No value → unanswered
+ *   G2. No choiceId → unanswered
  *   G3. Correct choice selected → correct
  *   G4. Wrong choice selected → incorrect
  *
  * outcome
  *   O1. Empty session → score 0, empty: true
- *   O2. No value → score 0, empty: true
+ *   O2. No choiceId → score 0, empty: true
  *   O3. Correct choice → score 1, empty: false
  *   O4. Wrong choice → score 0, empty: false
  *   O5. traceLog includes mode, selected id, correct id, final score
@@ -55,7 +55,7 @@
  *   V15. layoutLimits with a valid value → no error
  *
  * createCorrectResponseSession
- *   CR1. Instructor + mode≠evaluate → session with correct value
+ *   CR1. Instructor + mode≠evaluate → session with correct choiceId
  *   CR2. Student role → null
  *   CR3. Evaluate mode → null
  */
@@ -98,16 +98,16 @@ describe('getCorrectness', () => {
     expect(getCorrectness(BASE_QUESTION, null as any)).toBe('unanswered');
   });
 
-  it('G2: session with no value → unanswered', () => {
+  it('G2: session with no choiceId → unanswered', () => {
     expect(getCorrectness(BASE_QUESTION, {})).toBe('unanswered');
   });
 
   it('G3: correct choice selected → correct', () => {
-    expect(getCorrectness(BASE_QUESTION, { value: 'b' })).toBe('correct');
+    expect(getCorrectness(BASE_QUESTION, { choiceId: 'b' })).toBe('correct');
   });
 
   it('G4: wrong choice selected → incorrect', () => {
-    expect(getCorrectness(BASE_QUESTION, { value: 'a' })).toBe('incorrect');
+    expect(getCorrectness(BASE_QUESTION, { choiceId: 'a' })).toBe('incorrect');
   });
 });
 
@@ -121,23 +121,23 @@ describe('outcome', () => {
     expect(result).toMatchObject({ score: 0, empty: true });
   });
 
-  it('O2: session with no value → score 0, empty: true', async () => {
-    const result = await outcome(BASE_QUESTION, { value: '' }, GATHER_ENV);
+  it('O2: session with no choiceId → score 0, empty: true', async () => {
+    const result = await outcome(BASE_QUESTION, { choiceId: '' }, GATHER_ENV);
     expect(result).toMatchObject({ score: 0, empty: true });
   });
 
   it('O3: correct choice → score 1, empty: false', async () => {
-    const result = await outcome(BASE_QUESTION, { value: 'b' }, EVALUATE_ENV);
+    const result = await outcome(BASE_QUESTION, { choiceId: 'b' }, EVALUATE_ENV);
     expect(result).toMatchObject({ score: 1, empty: false });
   });
 
   it('O4: wrong choice → score 0, empty: false', async () => {
-    const result = await outcome(BASE_QUESTION, { value: 'a' }, EVALUATE_ENV);
+    const result = await outcome(BASE_QUESTION, { choiceId: 'a' }, EVALUATE_ENV);
     expect(result).toMatchObject({ score: 0, empty: false });
   });
 
   it('O5: traceLog includes mode, selected id, correct id, final score', async () => {
-    const result = (await outcome(BASE_QUESTION, { value: 'a' }, EVALUATE_ENV)) as any;
+    const result = (await outcome(BASE_QUESTION, { choiceId: 'a' }, EVALUATE_ENV)) as any;
     const log = result.traceLog.join('\n');
     expect(log).toContain('evaluate');
     expect(log).toContain('a');
@@ -221,14 +221,14 @@ describe('model — choice ordering', () => {
 
 describe('model — output fields', () => {
   it('M9: evaluate mode → correctness, responseCorrect, correctChoiceId in output', async () => {
-    const result = await model(BASE_QUESTION, { value: 'b' }, EVALUATE_ENV);
+    const result = await model(BASE_QUESTION, { choiceId: 'b' }, EVALUATE_ENV);
     expect(result.correctness).toBe('correct');
     expect(result.responseCorrect).toBe(true);
     expect(result.correctChoiceId).toBe('b');
   });
 
   it('M10: gather mode → correctness fields absent', async () => {
-    const result = await model(BASE_QUESTION, { value: 'b' }, GATHER_ENV);
+    const result = await model(BASE_QUESTION, { choiceId: 'b' }, GATHER_ENV);
     expect(result.correctness).toBeUndefined();
     expect(result.responseCorrect).toBeUndefined();
     expect(result.correctChoiceId).toBeUndefined();
@@ -402,12 +402,12 @@ describe('validate', () => {
 // ---------------------------------------------------------------------------
 
 describe('createCorrectResponseSession', () => {
-  it('CR1: instructor + mode≠evaluate → session with correct value', async () => {
+  it('CR1: instructor + mode≠evaluate → session with correct choiceId', async () => {
     const result = await createCorrectResponseSession(BASE_QUESTION, {
       mode: 'view',
       role: 'instructor',
     });
-    expect(result).toMatchObject({ value: 'b' });
+    expect(result).toMatchObject({ choiceId: 'b' });
   });
 
   it('CR2: student role → null', async () => {

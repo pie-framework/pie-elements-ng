@@ -6,7 +6,7 @@ import {
 } from '@pie-lib/delivery-events-svelte';
 
 function isComplete(model: any, session: any, audioComplete = false): boolean {
-  if (!session?.value) return false;
+  if (!session?.choiceId) return false;
   const requiresAudioCompletion =
     !!model?.autoplayAudioEnabled && !!model?.completeAudioEnabled && !!model?.hasAudio;
   if (requiresAudioCompletion && !audioComplete) return false;

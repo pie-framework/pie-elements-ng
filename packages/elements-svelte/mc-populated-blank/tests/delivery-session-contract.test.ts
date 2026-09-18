@@ -78,17 +78,17 @@ describe('mc-populated-blank session contract', () => {
     element.onSessionChange({
       id: '1',
       element: 'mc-populated-blank',
-      value: 'b',
+      choiceId: 'b',
     });
 
-    expect(playerSession).toEqual({ id: '1', element: 'mc-populated-blank', value: 'b' });
-    expect(element.session.value).toBe('b');
+    expect(playerSession).toEqual({ id: '1', element: 'mc-populated-blank', choiceId: 'b' });
+    expect(element.session.choiceId).toBe('b');
   });
 
   it('announces the change to a document-level listener', () => {
     const { element, atDocument } = mount();
 
-    element.onSessionChange({ id: '1', element: 'mc-populated-blank', value: 'b' });
+    element.onSessionChange({ id: '1', element: 'mc-populated-blank', choiceId: 'b' });
 
     expect(atDocument).toHaveLength(1);
     expect(atDocument[0].detail).toEqual({
@@ -106,7 +106,7 @@ describe('mc-populated-blank session contract', () => {
     element.onSessionChange({ id: '1', element: 'mc-populated-blank' });
     expect(atDocument[0].detail.complete).toBe(false);
 
-    element.onSessionChange({ id: '1', element: 'mc-populated-blank', value: 'a' });
+    element.onSessionChange({ id: '1', element: 'mc-populated-blank', choiceId: 'a' });
     expect(atDocument[1].detail.complete).toBe(true);
   });
 
@@ -114,14 +114,14 @@ describe('mc-populated-blank session contract', () => {
     // A config swap sets a new session; the element must follow the new object,
     // not keep writing into the discarded one.
     const { element, playerSession } = mount();
-    element.onSessionChange({ id: '1', element: 'mc-populated-blank', value: 'a' });
+    element.onSessionChange({ id: '1', element: 'mc-populated-blank', choiceId: 'a' });
 
     const replacement: Record<string, unknown> = { id: '2', element: 'mc-populated-blank' };
     element.session = replacement;
-    element.onSessionChange({ id: '2', element: 'mc-populated-blank', value: 'b' });
+    element.onSessionChange({ id: '2', element: 'mc-populated-blank', choiceId: 'b' });
 
-    expect(replacement.value).toBe('b');
-    expect(playerSession.value).toBe('a');
+    expect(replacement.choiceId).toBe('b');
+    expect(playerSession.choiceId).toBe('a');
   });
 
   it('writes audio timing into the player session too', () => {
