@@ -1,5 +1,12 @@
 # @pie-element/inline-dropdown
 
+## 10.1.2-next.11
+
+### Patch Changes
+
+- Updated dependencies [285c07c]
+  - @pie-element/shared-player-events@0.1.1-next.0
+
 ## 10.1.2-next.10
 
 ### Patch Changes

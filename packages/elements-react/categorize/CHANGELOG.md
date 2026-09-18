@@ -1,5 +1,12 @@
 # @pie-element/categorize
 
+## 13.2.0-next.11
+
+### Patch Changes
+
+- Updated dependencies [285c07c]
+  - @pie-element/shared-player-events@0.1.1-next.0
+
 ## 13.2.0-next.10
 
 ### Patch Changes
