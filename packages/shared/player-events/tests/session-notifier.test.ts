@@ -5,6 +5,20 @@ import {
   flushSessionNotifiers,
 } from '../src/session-notifier.js';
 
+/**
+ * `pie-players` declares this same literal in
+ * `packages/players-shared/src/pie/session-commit.ts`: a shared package for one
+ * string would buy a cross-repo dependency neither side otherwise needs, so
+ * each side pins it. A rename here alone leaves the player reading the session
+ * shape instead, which loses the element's own `complete` semantics with no
+ * error.
+ */
+describe('SESSION_COMMIT_METHOD', () => {
+  it('is the method name pie-players looks for', () => {
+    expect(SESSION_COMMIT_METHOD).toBe('commitPendingSession');
+  });
+});
+
 describe('createSessionNotifier', () => {
   beforeEach(() => {
     vi.useFakeTimers();
