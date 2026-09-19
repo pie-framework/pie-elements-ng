@@ -11,6 +11,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DragOverlay } from '@dnd-kit/core';
+import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
 import { DragProvider } from '@pie-lib/drag';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
@@ -542,6 +543,7 @@ export class ImageClozeAssociationComponent extends React.Component {
         onDragCancel={this.onDragCancel}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
+        modifiers={[restrictToFirstScrollableAncestor]}
       >
         <StyledUiLayout extraCSSRules={extraCSSRules} id={'main-container'} fontSizeFactor={fontSizeFactor}>
           {showTeacherInstructions && (
