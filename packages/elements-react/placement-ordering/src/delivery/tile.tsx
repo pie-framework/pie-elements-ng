@@ -238,7 +238,14 @@ export const Tile = (props) => {
   // "select a choice, then Tab to a placement area and press Space/Enter" to work.
   // Gated to non-draggable tiles specifically so it never overrides dnd-kit's own
   // keydown handling (see the conditional spread order below).
-  const isNativeTabStop = !(draggable && !disabled) && !disabled;
+  //
+  // Only made a native Tab stop when something is currently selected: with nothing
+  // selected, an empty tile has nothing to land on (handleClick above no-ops for every
+  // type when selectedChoice is falsy), so plain page Tab navigation skips it entirely,
+  // landing only on draggable choice/target tiles (PIE-997). Once a choice is selected,
+  // it becomes tabbable again so "select a choice, then Tab to an empty tile and press
+  // Space/Enter" still works.
+  const isNativeTabStop = !(draggable && !disabled) && !disabled && hasSelection;
 
   const handleKeyDown = (e) => {
     if (e.code === 'Space' || e.code === 'Enter') {
@@ -275,6 +282,18 @@ export const Tile = (props) => {
 
   log('[render], props: ', props);
 
+  // A stable, content-independent handle onto this slot, used by placement-ordering.tsx
+  // to focus the destination tile after a move commits — dnd-kit's own drag/drop ids
+  // (dragId/dropId above) embed the currently-held choice's id, so they change identity
+  // across the very move that needs to find them. A target slot's own identity is its
+  // response-array position (`index`), which a move never changes; a choice/pool slot's
+  // identity is its original choice id, which ordering.ts keeps on the tile even once
+  // vacated. There's no equivalent stable identity for a plain reordering-mode spacer
+  // ('empty' type — no targets/click-to-select there), so it's left untagged.
+  const slotId = type === 'target' ? `target-${index}` : type === 'choice' ? `choice-${id}` : null;
+
+  const dataTileId = slotId ? `${instanceId}:${slotId}` : undefined;
+
   const style = {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     boxSizing: 'border-box',
@@ -298,6 +317,7 @@ export const Tile = (props) => {
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      data-tile-id={dataTileId}
       {...(draggable && !disabled ? { ...listeners, ...attributes } : {})}
     >
       <TileContent

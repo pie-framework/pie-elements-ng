@@ -390,11 +390,13 @@ export class PlacementOrdering extends React.Component {
 
       if (draggedItem && droppedOnItem && droppedOnItem.type === 'target') {
         this.onDropChoice(droppedOnItem, draggedItem, ordering);
+        this.focusTile(this.getDestinationSlotId(droppedOnItem));
         return;
       }
 
       if (draggedItem && droppedOnItem) {
         this.onDropChoice(droppedOnItem, draggedItem, ordering);
+        this.focusTile(this.getDestinationSlotId(droppedOnItem));
       }
     } else if (!over && active) {
       const draggedItem = active.data.current;
@@ -402,6 +404,9 @@ export class PlacementOrdering extends React.Component {
 
       if (draggedItem && draggedItem.type === 'target' && !returnedToOwnSlot) {
         this.onRemoveChoice(draggedItem, ordering);
+        // Removed straight back to the pool (dragged off with no valid drop target) —
+        // the destination is the choice's own vacated slot, identified by its id.
+        this.focusTile(this.getDestinationSlotId({ type: 'choice', id: draggedItem.id }));
       }
     }
   };
@@ -461,11 +466,57 @@ export class PlacementOrdering extends React.Component {
     }
 
     const ordering = this.createOrdering();
+    const destinationSlotId = this.getDestinationSlotId(targetTileData);
 
     this.onDropChoice(targetTileData, selectedChoice, ordering);
     this.cancelSelection();
     this.endAnyLiveKeyboardDrag();
     this.lastDragEndAt = Date.now();
+    this.focusTile(destinationSlotId);
+  };
+
+  // dnd-kit's KeyboardSensor keeps/restores native DOM focus on the originally
+  // picked-up tile throughout and after a drag. After a target-to-target move (or a
+  // move back to the pool) that tile is the SOURCE, which then re-renders holding
+  // whatever the destination displaced (or nothing) — so native focus (and its browser
+  // :focus outline) reads as "the source is still selected" even though the custom
+  // selection border is correctly cleared. Move focus to wherever the item actually
+  // landed instead: the standard accessible pattern for keyboard drag-and-drop.
+  getDestinationSlotId: any = (destinationTile) => {
+    if (!destinationTile) {
+      return null;
+    }
+
+    // Mirrors tile.tsx's own slotId derivation — see the comment there for why `index`
+    // (target) / `id` (choice) are the content-independent identities to key off of.
+    if (destinationTile.type === 'target') {
+      return `target-${destinationTile.index}`;
+    }
+
+    if (destinationTile.type === 'choice') {
+      return `choice-${destinationTile.id}`;
+    }
+
+    return null;
+  };
+
+  // The destination tile only appears in the DOM (re-tagged with its new slotId) after
+  // this component's re-render commits, so wait a couple of animation frames — long
+  // enough for React's DOM commit and the browser's next paint — before querying for it.
+  focusTile: any = (slotId) => {
+    if (!slotId) {
+      return;
+    }
+
+    const selector = `[data-tile-id="${this.instanceId}:${slotId}"]`;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const node = document.querySelector(selector);
+
+        node?.focus();
+      });
+    });
   };
 
   isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;
