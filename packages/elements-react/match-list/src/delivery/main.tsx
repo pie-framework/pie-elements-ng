@@ -49,7 +49,7 @@ import { styled } from '@mui/material/styles';
 import { findKey, isUndefined, uniqueId } from '@pie-element/shared-lodash';
 import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
-import { Answer } from './answer.js';
+import { Answer, buildDragId } from './answer.js';
 
 // A click that lands right after a real drag gesture ends (pointer drag-and-drop, or
 // the browser's own synthetic click for a keyboard Space/Enter) must be ignored by the
@@ -243,9 +243,57 @@ export class Main extends React.Component {
       return;
     }
 
+    const destinationDragId = this.getDestinationDragId(activeData, overData);
+
     this.placeAnswer(activeData, overData);
     this.cancelSelection();
     this.lastDragEndAt = Date.now();
+    this.focusTile(destinationDragId);
+  };
+
+  // dnd-kit's KeyboardSensor keeps/restores native DOM focus on the originally
+  // picked-up node throughout and after a drag. After a target-to-target move that
+  // node is the SOURCE response area, which then re-renders holding whatever the
+  // destination displaced (or nothing) — so native focus (and its browser :focus
+  // outline) reads as "the source area is still selected" even though the custom
+  // selection border above is correctly cleared. Move focus to wherever the item
+  // actually landed instead: the standard accessible pattern for keyboard drag-and-drop.
+  getDestinationDragId: any = (activeData, overData) => {
+    if (!activeData || !overData) {
+      return null;
+    }
+
+    // Mirrors the two branches placeAnswer actually commits below — the destination
+    // tile's identity is determined by overData alone, independent of duplicates/
+    // swap details.
+    if (overData.type === 'choices-pool' && activeData.promptId !== undefined) {
+      return buildDragId({ type: 'choice', id: activeData.id });
+    }
+
+    if (overData.type === 'drop-zone' && overData.promptId != null) {
+      return buildDragId({ type: 'target', promptId: overData.promptId });
+    }
+
+    return null;
+  };
+
+  // The destination tile only appears in the DOM after this component (and the host's
+  // session-driven re-render) commits, so wait a couple of animation frames — long
+  // enough for React's DOM commit and the browser's next paint — before querying for it.
+  focusTile: any = (dragId) => {
+    if (!dragId) {
+      return;
+    }
+
+    const selector = `[data-tile-id="${this.instanceId}:${dragId}"]`;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const node = document.querySelector(selector);
+
+        node?.focus();
+      });
+    });
   };
 
   isSameAnswer = (a, b) => !!a && !!b && a.type === b.type && a.id === b.id && a.promptId === b.promptId;
@@ -289,10 +337,13 @@ export class Main extends React.Component {
       return;
     }
 
+    const destinationDragId = this.getDestinationDragId(selectedAnswer, overData);
+
     this.placeAnswer(selectedAnswer, overData);
     this.cancelSelection();
     this.endAnyLiveKeyboardDrag();
     this.lastDragEndAt = Date.now();
+    this.focusTile(destinationDragId);
   };
 
   isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;
