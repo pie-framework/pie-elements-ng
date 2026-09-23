@@ -18,6 +18,12 @@ const BaseContainer: any = styled('div')(({ theme }) => ({
   margin: theme.spacing(2),
   position: 'relative',
   width: 'fit-content',
+  // the drop-target overlays below are positioned as pixel offsets against the
+  // image's native width/height, so the image must never be shrunk to fit (that
+  // would desync the overlays) - it scrolls horizontally instead when it doesn't
+  // fit the available width, e.g. under browser zoom
+  maxWidth: '100%',
+  overflowX: 'auto',
 }));
 
 class ImageContainer extends Component {
@@ -44,7 +50,9 @@ class ImageContainer extends Component {
 
     return (
       <BaseContainer>
-        <img src={src} height={height} width={width} />
+        {/* inline style beats the global '& img' max-width:100%/height:auto rule (root.tsx) that
+            keeps other in-content images fluid - this image must stay at its native pixel size */}
+        <img src={src} height={height} width={width} style={{ width, height, maxWidth: 'none' }} />
 
         {(responseContainers || []).map((r, i) => {
           const rHeight = (r.height.replace('%', '') / 100) * height;
