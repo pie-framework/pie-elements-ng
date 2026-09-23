@@ -8,7 +8,6 @@ import SuperScript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
-import Underline from '@tiptap/extension-underline';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
@@ -95,16 +94,24 @@ onMount(() => {
   editor = new Editor({
     element: editorElement,
     extensions: [
+      // StarterKit v3 already registers Underline and Link. PIE editors keep typed and pasted URLs
+      // as text (PIE-980); the Link mark stays registered so links already in the markup
+      // round-trip. `autolink` and `linkOnPaste` match the React editor, but Link's paste rule
+      // consults neither and still links a pasted URL, so `shouldAutoLink` turns that path off.
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
+        },
+        link: {
+          autolink: false,
+          linkOnPaste: false,
+          shouldAutoLink: () => false,
         },
       }),
       TextStyle,
       CharacterCount.configure({
         limit: 1000000,
       }),
-      Underline,
       SubScript,
       SuperScript,
       TextAlign.configure({
@@ -154,17 +161,19 @@ onDestroy(() => {
   }
 });
 
-// Watch for markup changes
+// Markup and `disabled` pushed in by the host are not edits: applying them must not echo back
+// through `onChange`. TipTap 3 takes `setContent(content, { emitUpdate })`, and `setEditable`
+// emits an update unless told otherwise.
 $effect(() => {
   if (editor && markup !== editor.getHTML()) {
-    editor.commands.setContent(markup || '', false);
+    editor.commands.setContent(markup || '', { emitUpdate: false });
   }
 });
 
-// Watch for disabled changes
 $effect(() => {
-  if (editor) {
-    editor.setEditable(!disabled);
+  const editable = !disabled;
+  if (editor && editor.isEditable !== editable) {
+    editor.setEditable(editable, false);
   }
 });
 
@@ -270,30 +279,19 @@ function handleMouseDown(e: MouseEvent) {
 function handleDoneClick() {
   if (editor) {
     const html = editor.getHTML();
-    if (onChange) {
-      onChange(html);
+    if (html !== markup) {
+      onChange?.(html);
     }
     editor.commands.blur();
   }
 }
 </script>
 
-<div
-  class="editor-container editable-html"
-  style="position: relative; padding: 0; border: 1px solid #ccc; border-radius: 4px; cursor: text; background-color: var(--pie-background, white); width: 100%;"
->
+<div class="pie-editable-html editor-container editable-html">
   <!-- Editor Content -->
-  <div
-    class="editor-holder"
-    class:disabled={disabled}
-    style="position: relative; padding: 0; overflow-y: auto; color: var(--pie-text, rgba(0, 0, 0, 0.87)); background-color: var(--pie-background, white); min-height: 120px;"
-  >
-    <div class="editor-children" style="padding: 10px 16px;">
-      <div
-        bind:this={editorElement}
-        class="editor"
-        style="padding: 5px; min-height: 100px;"
-      ></div>
+  <div class="editor-holder" class:disabled={disabled}>
+    <div class="editor-children">
+      <div bind:this={editorElement} class="editor"></div>
     </div>
   </div>
 
@@ -305,7 +303,6 @@ function handleDoneClick() {
       class="toolbar"
       class:focused={isFocused}
       onmousedown={handleMouseDown}
-      style={`position: absolute; z-index: 20; cursor: pointer; justify-content: space-between; background: var(--editable-html-toolbar-bg, #efefef); min-width: 280px; margin: 5px 0 0 0; padding: 2px; box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12); box-sizing: border-box; display: flex; top: 100%; left: 0; opacity: ${isFocused ? 1 : 0}; pointer-events: ${isFocused ? "auto" : "none"};`}
     >
       <div class="toolbar-content">
         <div class="toolbar-buttons">
@@ -314,7 +311,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             disabled={!editorState.canTable}
             onclick={insertTable}
             title="Insert Table"
@@ -328,7 +324,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isTable}
             disabled={!editorState.canTable}
             onclick={addRowAfter}
@@ -339,7 +334,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isTable}
             disabled={!editorState.canTable}
             onclick={deleteRow}
@@ -350,7 +344,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isTable}
             disabled={!editorState.canTable}
             onclick={addColumnAfter}
@@ -361,7 +354,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isTable}
             disabled={!editorState.canTable}
             onclick={deleteColumn}
@@ -372,7 +364,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isTable}
             disabled={!editorState.canTable}
             onclick={deleteTable}
@@ -383,7 +374,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.tableHasBorder}
             disabled={!editorState.canTable}
             onclick={toggleTableBorder}
@@ -398,7 +388,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isBold}
             disabled={!editorState.canBold}
             onclick={toggleBold}
@@ -409,7 +398,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isItalic}
             disabled={!editorState.canItalic}
             onclick={toggleItalic}
@@ -420,7 +408,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isStrike}
             disabled={!editorState.canStrike}
             onclick={toggleStrike}
@@ -431,7 +418,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isCode}
             disabled={!editorState.canCode}
             onclick={toggleCode}
@@ -442,7 +428,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isUnderline}
             onclick={toggleUnderline}
             title="Underline"
@@ -452,7 +437,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isSubScript}
             onclick={toggleSubscript}
             title="Subscript"
@@ -462,7 +446,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isSuperScript}
             onclick={toggleSuperscript}
             title="Superscript"
@@ -472,7 +455,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isHeading3}
             onclick={toggleHeading3}
             title="Heading"
@@ -482,7 +464,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             onclick={insertImage}
             title="Insert Image"
           >
@@ -494,7 +475,6 @@ function handleDoneClick() {
             <button
               type="button"
               class="pie-toolbar-btn"
-              style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
               onclick={() => showAlignMenu = !showAlignMenu}
               title="Text Alignment"
             >
@@ -543,7 +523,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isBulletList}
             onclick={toggleBulletList}
             title="Bullet List"
@@ -553,7 +532,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             class:active={editorState.isOrderedList}
             onclick={toggleOrderedList}
             title="Numbered List"
@@ -563,7 +541,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             disabled={!editorState.canUndo}
             onclick={undo}
             title="Undo"
@@ -573,7 +550,6 @@ function handleDoneClick() {
           <button
             type="button"
             class="pie-toolbar-btn"
-            style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
             disabled={!editorState.canRedo}
             onclick={redo}
             title="Redo"
@@ -598,42 +574,48 @@ function handleDoneClick() {
   {/if}
 </div>
 
+<!--
+  The consuming elements render with `shadow: 'none'`, so this stylesheet lands in the host page's
+  <head>. Every rule is anchored under `.pie-editable-html`, which Svelte scopes to this component,
+  so none of these generic class names (`.toolbar`, `.editor`, `.ProseMirror`) can match outside an
+  instance. The anchor is uniform, which keeps the rules' specificity relative to each other
+  unchanged. Colour fallbacks are render-ui's defaults for the same token.
+-->
 <style>
-  :global(.editor-container) {
+  .pie-editable-html {
     position: relative;
     padding: 0px;
     border: 1px solid #ccc;
     border-radius: 4px;
     cursor: text;
-    background-color: var(--pie-background, white);
+    background-color: var(--pie-background, rgba(255, 255, 255, 0));
     width: 100%;
   }
 
-  :global(.editor-holder) {
+  .pie-editable-html :global(.editor-holder) {
     position: relative;
     padding: 0px;
     overflow-y: auto;
-    color: var(--pie-text, rgba(0, 0, 0, 0.87));
-    background-color: var(--pie-background, white);
+    color: var(--pie-text, black);
+    background-color: var(--pie-background, rgba(255, 255, 255, 0));
     min-height: 120px;
   }
 
-  :global(.editor-holder.disabled) {
-    background-color: var(--pie-background-dark, #f5f5f5);
+  .pie-editable-html :global(.editor-holder.disabled) {
     cursor: not-allowed;
   }
 
-  :global(.editor-children) {
+  .pie-editable-html :global(.editor-children) {
     padding: 10px 16px;
   }
 
-  :global(.editor) {
+  .pie-editable-html :global(.editor) {
     padding: 5px;
     min-height: 100px;
   }
 
   /* Toolbar styles matching React version EXACTLY */
-  :global(.toolbar) {
+  .pie-editable-html :global(.toolbar) {
     position: absolute;
     z-index: 20;
     cursor: pointer;
@@ -654,24 +636,24 @@ function handleDoneClick() {
     left: 0;
   }
 
-  :global(.toolbar.focused) {
+  .pie-editable-html :global(.toolbar.focused) {
     opacity: 1;
     pointer-events: auto;
   }
 
-  :global(.toolbar-content) {
+  .pie-editable-html :global(.toolbar-content) {
     display: flex;
     width: 100%;
     justify-content: space-between;
   }
 
-  :global(.toolbar-buttons) {
+  .pie-editable-html :global(.toolbar-buttons) {
     align-items: center;
     display: flex;
     width: 100%;
   }
 
-  :global(.toolbar button.pie-toolbar-btn) {
+  .pie-editable-html :global(.toolbar button.pie-toolbar-btn) {
     /* Reset all browser defaults */
     appearance: none;
     -webkit-appearance: none;
@@ -699,35 +681,35 @@ function handleDoneClick() {
     text-transform: none !important;
   }
 
-  :global(.pie-toolbar-btn:hover:not(:disabled)) {
+  .pie-editable-html :global(.pie-toolbar-btn:hover:not(:disabled)) {
     color: black;
   }
 
-  :global(.pie-toolbar-btn:focus) {
+  .pie-editable-html :global(.pie-toolbar-btn:focus) {
     outline: 2px solid #666;
   }
 
-  :global(.pie-toolbar-btn:disabled) {
+  .pie-editable-html :global(.pie-toolbar-btn:disabled) {
     opacity: 0.7;
     cursor: not-allowed;
   }
 
-  :global(.pie-toolbar-btn:disabled:hover) {
+  .pie-editable-html :global(.pie-toolbar-btn:disabled:hover) {
     color: grey;
   }
 
-  :global(.pie-toolbar-btn.active) {
-    background: var(--pie-primary, #9c27b0);
+  .pie-editable-html :global(.pie-toolbar-btn.active) {
+    background: var(--pie-primary, #3f51b5);
     color: var(--pie-white, #ffffff);
   }
 
-  :global(.pie-toolbar-btn svg) {
+  .pie-editable-html :global(.pie-toolbar-btn svg) {
     width: 24px;
     height: 24px;
   }
 
   /* Done Button - matching React DoneButton component */
-  :global(.done-btn) {
+  .pie-editable-html :global(.done-btn) {
     vertical-align: top;
     width: 28px;
     height: 28px;
@@ -741,31 +723,31 @@ function handleDoneClick() {
     cursor: pointer;
   }
 
-  :global(.done-btn:hover) {
+  .pie-editable-html :global(.done-btn:hover) {
     background-color: rgba(0, 187, 0, 0.08);
     border-radius: 4px;
   }
 
-  :global(.done-btn svg) {
+  .pie-editable-html :global(.done-btn svg) {
     width: 24px;
     height: 24px;
   }
 
   /* Text alignment dropdown */
-  :global(.align-dropdown) {
+  .pie-editable-html :global(.align-dropdown) {
     position: relative;
   }
 
-  :global(.dropdown-arrow) {
+  .pie-editable-html :global(.dropdown-arrow) {
     margin-left: 2px;
     font-size: 8px;
   }
 
-  :global(.align-menu) {
+  .pie-editable-html :global(.align-menu) {
     position: absolute;
     top: 100%;
     left: 0;
-    background: var(--pie-white, #fff);
+    background: var(--pie-white, #ffffff);
     display: flex;
     flex-direction: row;
     padding: 2px;
@@ -776,7 +758,7 @@ function handleDoneClick() {
     z-index: 30;
   }
 
-  :global(.align-menu-btn) {
+  .pie-editable-html :global(.align-menu-btn) {
     color: var(--pie-disabled, grey);
     display: inline-flex;
     padding: 4px;
@@ -789,73 +771,73 @@ function handleDoneClick() {
     min-height: 32px;
   }
 
-  :global(.align-menu-btn:hover) {
-    color: var(--pie-black, black);
+  .pie-editable-html :global(.align-menu-btn:hover) {
+    color: var(--pie-black, #000000);
     background-color: rgba(0, 0, 0, 0.04);
   }
 
   /* ProseMirror editor styles */
-  :global(.ProseMirror) {
+  .pie-editable-html :global(.ProseMirror) {
     outline: none !important;
     min-height: 100px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.6;
-    color: var(--pie-text, rgba(0, 0, 0, 0.87));
+    color: var(--pie-text, black);
   }
 
-  :global(.ProseMirror p) {
+  .pie-editable-html :global(.ProseMirror p) {
     margin: 0;
   }
 
-  :global(.ProseMirror ul),
-  :global(.ProseMirror ol) {
+  .pie-editable-html :global(.ProseMirror ul),
+  .pie-editable-html :global(.ProseMirror ol) {
     padding: 0 1rem;
     margin: 1.25rem 1rem 1.25rem 0.4rem;
   }
 
-  :global(.ProseMirror ul li p),
-  :global(.ProseMirror ol li p) {
+  .pie-editable-html :global(.ProseMirror ul li p),
+  .pie-editable-html :global(.ProseMirror ol li p) {
     margin-top: 0.25em;
     margin-bottom: 0.25em;
   }
 
-  :global(.ProseMirror h1),
-  :global(.ProseMirror h2),
-  :global(.ProseMirror h3),
-  :global(.ProseMirror h4),
-  :global(.ProseMirror h5),
-  :global(.ProseMirror h6) {
+  .pie-editable-html :global(.ProseMirror h1),
+  .pie-editable-html :global(.ProseMirror h2),
+  .pie-editable-html :global(.ProseMirror h3),
+  .pie-editable-html :global(.ProseMirror h4),
+  .pie-editable-html :global(.ProseMirror h5),
+  .pie-editable-html :global(.ProseMirror h6) {
     line-height: 1.1;
     margin-top: 2.5rem;
     text-wrap: pretty;
   }
 
-  :global(.ProseMirror h1),
-  :global(.ProseMirror h2) {
+  .pie-editable-html :global(.ProseMirror h1),
+  .pie-editable-html :global(.ProseMirror h2) {
     margin-top: 3.5rem;
     margin-bottom: 1.5rem;
   }
 
-  :global(.ProseMirror h1) {
+  .pie-editable-html :global(.ProseMirror h1) {
     font-size: 1.4rem;
   }
 
-  :global(.ProseMirror h2) {
+  .pie-editable-html :global(.ProseMirror h2) {
     font-size: 1.2rem;
   }
 
-  :global(.ProseMirror h3) {
+  .pie-editable-html :global(.ProseMirror h3) {
     font-size: 1.1rem;
   }
 
-  :global(.ProseMirror h4),
-  :global(.ProseMirror h5),
-  :global(.ProseMirror h6) {
+  .pie-editable-html :global(.ProseMirror h4),
+  .pie-editable-html :global(.ProseMirror h5),
+  .pie-editable-html :global(.ProseMirror h6) {
     font-size: 1rem;
   }
 
-  :global(.ProseMirror code) {
+  .pie-editable-html :global(.ProseMirror code) {
     background-color: rgba(88, 5, 255, 0.05);
     border-radius: 0.4rem;
     color: #2e2b29;
@@ -863,7 +845,7 @@ function handleDoneClick() {
     padding: 0.25em 0.3em;
   }
 
-  :global(.ProseMirror pre) {
+  .pie-editable-html :global(.ProseMirror pre) {
     background: #2e2b29;
     border-radius: 0.5rem;
     color: #fff;
@@ -872,72 +854,72 @@ function handleDoneClick() {
     padding: 0.75rem 1rem;
   }
 
-  :global(.ProseMirror pre code) {
+  .pie-editable-html :global(.ProseMirror pre code) {
     background: none;
     color: inherit;
     font-size: 0.8rem;
     padding: 0;
   }
 
-  :global(.ProseMirror blockquote) {
+  .pie-editable-html :global(.ProseMirror blockquote) {
     border-left: 3px solid rgba(61, 37, 20, 0.12);
     margin: 1.5rem 0;
     padding-left: 1rem;
   }
 
-  :global(.ProseMirror hr) {
+  .pie-editable-html :global(.ProseMirror hr) {
     border: none;
     border-top: 1px solid rgba(61, 37, 20, 0.08);
     margin: 2rem 0;
   }
 
-  :global(.ProseMirror img) {
+  .pie-editable-html :global(.ProseMirror img) {
     max-width: 100%;
     height: auto;
   }
 
   /* Table styles */
-  :global(.ProseMirror table) {
+  .pie-editable-html :global(.ProseMirror table) {
     table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
-    color: var(--pie-text, rgba(0, 0, 0, 0.87));
-    background-color: var(--pie-background, white);
+    color: var(--pie-text, black);
+    background-color: var(--pie-background, rgba(255, 255, 255, 0));
     margin: 1rem 0;
   }
 
-  :global(.ProseMirror table:not([border="1"]) tr) {
+  .pie-editable-html :global(.ProseMirror table:not([border="1"]) tr) {
     border-top: 1px solid #dfe2e5;
   }
 
-  :global(.ProseMirror td),
-  :global(.ProseMirror th) {
+  .pie-editable-html :global(.ProseMirror td),
+  .pie-editable-html :global(.ProseMirror th) {
     padding: 0.6em 1em;
     text-align: center;
     vertical-align: top;
     position: relative;
   }
 
-  :global(.ProseMirror table:not([border="1"]) td),
-  :global(.ProseMirror table:not([border="1"]) th) {
+  .pie-editable-html :global(.ProseMirror table:not([border="1"]) td),
+  .pie-editable-html :global(.ProseMirror table:not([border="1"]) th) {
     border: 1px solid #dfe2e5;
   }
 
-  :global(.ProseMirror table[border="1"]) {
-    border: 2px solid var(--pie-black, #000);
+  .pie-editable-html :global(.ProseMirror table[border="1"]) {
+    border: 2px solid var(--pie-black, #000000);
   }
 
-  :global(.ProseMirror table[border="1"] td),
-  :global(.ProseMirror table[border="1"] th) {
-    border: 1px solid var(--pie-black, #000);
+  .pie-editable-html :global(.ProseMirror table[border="1"] td),
+  .pie-editable-html :global(.ProseMirror table[border="1"] th) {
+    border: 1px solid var(--pie-black, #000000);
   }
 
-  :global(.ProseMirror .selectedCell) {
+  .pie-editable-html :global(.ProseMirror .selectedCell) {
     background-color: rgba(200, 200, 255, 0.4);
   }
 
   /* Placeholder */
-  :global(.ProseMirror p.is-editor-empty:first-child::before) {
+  .pie-editable-html :global(.ProseMirror p.is-editor-empty:first-child::before) {
     content: attr(data-placeholder);
     float: left;
     color: #adb5bd;
@@ -945,7 +927,7 @@ function handleDoneClick() {
     height: 0;
   }
 
-  :global(.ProseMirror:focus) {
+  .pie-editable-html :global(.ProseMirror:focus) {
     outline: none;
   }
 </style>
