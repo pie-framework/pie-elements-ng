@@ -1,5 +1,23 @@
 # @pie-lib/render-ui
 
+## 6.2.0-next.42
+
+### Patch Changes
+
+- 2f26122: Add a `disabled-text` color for disabled text that still has to be read, and use it for charting tick labels (PIE-922)
+
+  `@pie-lib/render-ui` gains `color.disabledText()` (`--pie-disabled-text`, default
+  `#545454`), registered in `@pie-element/shared-theming` and set in the light and dark
+  themes. Charting's disabled tick labels took two different colors: the MathJax fraction
+  variant used the `disabled` grey, while the plain-text variant fell through to the
+  browser's own disabled-input color. Both now use `disabled-text`, which stays dimmed but
+  keeps text-grade contrast - the `disabled` grey is 3.94:1 on white, below WCAG AA for
+  normal text, and fraction numerals render smaller still.
+
+- 4fe8ce6: Let the custom audio button start playback when autoplay is off (PIE-1068)
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/test-utils@3.0.0-next.1
+
 ## 6.2.0-next.41
 
 ### Patch Changes

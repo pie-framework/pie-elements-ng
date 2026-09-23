@@ -1,5 +1,11 @@
 # @pie-lib/test-utils
 
+## 3.0.0-next.1
+
+### Patch Changes
+
+- 4fe8ce6: Raise the `@testing-library/dom` dependency floor from `>=7.21.4` to `>=10.4.2`, matching the version the package is actually tested against
+
 ## 3.0.0-next.0
 
 ### Major Changes

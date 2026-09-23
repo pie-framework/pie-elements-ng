@@ -1,5 +1,20 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.0.0-next.36
+
+### Patch Changes
+
+- f3f1abb: Upload pasted images instead of inlining them as base64. The tiptap paste handler read the clipboard file into a data URL and inserted it as the node's `src` without ever calling `imageSupport.add`, so a pasted image was persisted inline - inflating the item by roughly a third of the file size and failing to save with a 413 for large images - while the toolbar button stored a short uploaded URL. Paste now inserts the data URL only as a preview and hands the file to the host through `insertImageRequested` with `isPasted` and `getChosenFile`, the same contract the toolbar path uses, so the stored markup carries the uploaded URL. `InsertImageHandler` also resolves its target node by `nodeKey` rather than by the position captured when the upload started, because nothing stops the author from typing while a pasted image uploads and a stale position wrote the uploaded URL onto the wrong node (PIE-1017)
+- d22cfb1: Pin every @tiptap/\* dependency to exactly 3.31.3, so installing more than one PIE element resolves a single @tiptap/core instead of three. tiptap pins its own peers exactly from 3.24.0 on, so a mixed set cannot be satisfied and the duplicate core breaks ProseMirror on schema and plugin identity. Also dedupes prosemirror-model and prosemirror-view, which tiptap was warning about ("wrapping and splitting nodes will fail"). element-player drops its 8 @tiptap/\* dependencies plus lowlight and highlight.js: they were only reachable from an orphaned JsonEditor/ModelInspector pair that nothing imported, so none of them ever reached its bundle (PIE-1042)
+- 4fe8ce6: Keep the toolbar background under buttons that overflow the editor (PIE-1057)
+- Updated dependencies [2f26122]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/drag@4.1.0-next.42
+  - @pie-lib/math-input@9.0.0-next.7
+  - @pie-lib/math-toolbar@4.0.0-next.42
+
 ## 3.0.0-next.35
 
 ### Major Changes

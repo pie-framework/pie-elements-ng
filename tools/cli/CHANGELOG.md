@@ -1,5 +1,11 @@
 # @pie-element/cli
 
+## 0.1.2-next.1
+
+### Patch Changes
+
+- 4fe8ce6: `upstream:sync` now forces every `@tiptap/*` dependency of a synced `@pie-lib` package to one exact version instead of taking the upstream manifest's. tiptap pins its own peers exactly from 3.24.0 on, so the mixed set upstream declares resolves a second `@tiptap/core` and breaks ProseMirror on duplicate schema and plugin identity (PIE-1042)
+
 ## 0.1.2-next.0
 
 ### Patch Changes

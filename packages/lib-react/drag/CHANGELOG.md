@@ -1,5 +1,14 @@
 # @pie-lib/drag
 
+## 4.1.0-next.42
+
+### Patch Changes
+
+- 4fe8ce6: Paint the empty choice slot on the surface token, so placement-ordering's empty slots follow the theme (PIE-872)
+- Updated dependencies [2f26122]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+
 ## 4.1.0-next.41
 
 ### Patch Changes

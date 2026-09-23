@@ -1,5 +1,17 @@
 # @pie-element/match-list
 
+## 7.1.2-next.12
+
+### Patch Changes
+
+- 4fe8ce6: Skip empty response areas in the native Tab order, and move focus to the destination tile after a move (PIE-996)
+- Updated dependencies [2f26122]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/drag@4.1.0-next.42
+  - @pie-lib/correct-answer-toggle@5.0.0-next.42
+
 ## 7.1.2-next.11
 
 ### Patch Changes

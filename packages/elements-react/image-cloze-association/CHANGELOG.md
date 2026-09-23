@@ -1,5 +1,22 @@
 # @pie-element/image-cloze-association
 
+## 10.1.2-next.12
+
+### Patch Changes
+
+- 4fe8ce6: Make the main image horizontally scrollable when its full width does not fit (PIE-807)
+- Updated dependencies [2f26122]
+- Updated dependencies [f3f1abb]
+- Updated dependencies [d22cfb1]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.36
+  - @pie-lib/drag@4.1.0-next.42
+  - @pie-lib/config-ui@14.0.0-next.36
+  - @pie-lib/correct-answer-toggle@5.0.0-next.42
+
 ## 10.1.2-next.11
 
 ### Patch Changes
