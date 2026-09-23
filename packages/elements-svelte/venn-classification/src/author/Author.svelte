@@ -8,8 +8,8 @@
 />
 
 <script lang="ts">
+import { resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
-import { createEventDispatcher } from 'svelte';
 import RegionPicker from './RegionPicker.svelte';
 import VennClassification from '../delivery/VennClassification.svelte';
 import { buildPreviewSession } from '../controller/index.js';
@@ -22,23 +22,33 @@ import {
 import type { Region, ScoringPolicy, VennModel, VennTile } from '../types.js';
 import { stripHtml } from '../delivery/tile-accessible-name.js';
 
-const dispatch = createEventDispatcher();
-
 let {
   model = $bindable(),
   onChange,
 }: { model?: VennModel; onChange?: (model: VennModel) => void } = $props();
 
+const isAuthorHost = (node: unknown) => typeof (node as any)?.onModelChange === 'function';
+
+/** The wrapper owns the model and announces the edit; `onChange` serves a component mounted without one. */
 function emit(next: VennModel) {
-  if (onChange) onChange(next);
-  dispatch('model.updated', { update: next, reset: false });
+  const host = resolveDeliveryHost(authorShellEl, { hostPredicate: isAuthorHost }) as any;
+  if (host) {
+    host.onModelChange(next);
+  } else {
+    model = next;
+    onChange?.(next);
+  }
 }
 
+/**
+ * The model with the fields this form edits filled in. Every other field,
+ * `id` and `element` included, passes through untouched: the player owns those
+ * two, and an edit must not drop what the form does not show.
+ */
 function safeModel(): VennModel {
   const m = (model || {}) as VennModel;
   return {
-    id: m.id ?? '1',
-    element: m.element ?? 'venn-classification',
+    ...m,
     prompt: m.prompt ?? '',
     promptEnabled: m.promptEnabled !== false,
     circles:
@@ -159,10 +169,23 @@ function setRegionLabelOverride(key: string, label: string) {
 const m = $derived(safeModel());
 const regions = $derived(enumerateRegions(m.circles?.length || 0));
 
-const previewSession = $derived(buildPreviewSession(m));
+/**
+ * Each tile id once. Delivery keys tiles by id, and an id being typed can
+ * repeat another's for a keystroke: `validate` reports that, and the preview
+ * leaves the repeat out until it is resolved.
+ */
+const previewTiles = $derived.by(() => {
+  const seen = new Set<string>();
+  return m.tiles.filter((tile) => {
+    if (seen.has(tile.id)) return false;
+    seen.add(tile.id);
+    return true;
+  });
+});
+const previewSession = $derived(buildPreviewSession({ ...m, tiles: previewTiles }));
 const previewModel = $derived({
   circles: m.circles,
-  tiles: m.tiles,
+  tiles: previewTiles,
   regionLabels: m.regionLabels ?? {},
   prompt: m.promptEnabled === false ? null : (m.prompt ?? null),
   disabled: true,
@@ -299,7 +322,9 @@ function onSplitKeyDown(e: KeyboardEvent) {
         </div>
       {/if}
       <ul class="tile-list">
-        {#each m.tiles as tile, idx (tile.id)}
+        <!-- Unkeyed: the key would be the id this row edits, so typing in it
+             would remount the row, and two tiles sharing an id would throw. -->
+        {#each m.tiles as tile, idx}
           <li class="tile-row">
             <div class="tile-row-header">
               <div class="tile-inputs">

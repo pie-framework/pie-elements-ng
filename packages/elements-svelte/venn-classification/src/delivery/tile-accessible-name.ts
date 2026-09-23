@@ -16,3 +16,28 @@ export function tileAccessibleName(
   const t = stripHtml(tile.label ?? '');
   return t || 'Tile';
 }
+
+export type TileVerdict = 'correct' | 'incorrect' | 'unanswered';
+
+/**
+ * A tile button's accessible name: what it is, where it sits, and in `evaluate`
+ * mode whether that is right - "Crocodile, in Reptile and Egg-layer, incorrect".
+ * The placed tiles render in a layer apart from the region anchors, and the
+ * verdict badge is an `aria-hidden` icon, so the name is where assistive
+ * technology learns both.
+ *
+ * `regionLabel` is `null` for a tile in the tray. An unplaced tile's verdict is
+ * `unanswered`, which "not placed" already says.
+ */
+export function tileStatusName(
+  tile: Pick<VennTile, 'label' | 'imageUrl' | 'imageAlt'>,
+  regionLabel: string | null,
+  verdict?: TileVerdict | null
+): string {
+  const parts = [
+    tileAccessibleName(tile),
+    regionLabel === null ? 'not placed' : `in ${regionLabel}`,
+  ];
+  if (verdict === 'correct' || verdict === 'incorrect') parts.push(verdict);
+  return parts.join(', ');
+}

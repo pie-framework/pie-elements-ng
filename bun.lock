@@ -1186,6 +1186,7 @@
       "name": "@pie-element/simple-cloze",
       "version": "0.1.4-next.5",
       "devDependencies": {
+        "@pie-element/shared-configure-events": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
         "@pie-lib/styling-svelte": "workspace:*",
@@ -1202,6 +1203,7 @@
       "name": "@pie-element/venn-classification",
       "version": "0.1.1-next.5",
       "devDependencies": {
+        "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
@@ -1909,7 +1911,6 @@
         "@tiptap/extension-table-row": "3.31.3",
         "@tiptap/extension-text-align": "3.31.3",
         "@tiptap/extension-text-style": "3.31.3",
-        "@tiptap/extension-underline": "3.31.3",
         "@tiptap/extensions": "3.31.3",
         "@tiptap/pm": "3.31.3",
         "@tiptap/starter-kit": "3.31.3",

@@ -9,11 +9,11 @@
 />
 
 <script lang="ts">
-import { onMount, tick } from 'svelte';
+import { onDestroy, onMount, tick, untrack } from 'svelte';
 import { forwardSessionChange } from '@pie-lib/delivery-events-svelte';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Tile from './Tile.svelte';
-import { tileAccessibleName } from './tile-accessible-name.js';
+import { tileAccessibleName, tileStatusName, type TileVerdict } from './tile-accessible-name.js';
 import Tray from './Tray.svelte';
 import {
   buildLayout2Set,
@@ -22,8 +22,14 @@ import {
   type DiagramLayout,
   type RegionLayout,
 } from './layout.js';
-import { applyPlacement, groupTilesByRegion, unplacedTiles } from './dnd.js';
-import { regionsEqual, regionKey as regionKeyFn } from '../controller/region.js';
+import {
+  applyPlacement,
+  currentPlacement,
+  groupTilesByRegion,
+  isSamePlacement,
+  unplacedTiles,
+} from './dnd.js';
+import { regionKey } from '../controller/region.js';
 import type { Region, VennModel, VennSession, VennTile } from '../types.js';
 
 type VmTile = {
@@ -49,10 +55,25 @@ let props = $props<{ model?: ViewModel; session?: VennSession }>();
 /** Grid cell for tile stacking (image + caption tiles need extra height). */
 const TILE_W = 132;
 const TILE_H = 68;
+/** The only circle count the v1 layout draws; `validate()` rejects any other. */
+const SUPPORTED_CIRCLES = 2;
+const DEFAULT_CIRCLES: VennModel['circles'] = [{ label: 'Set A' }, { label: 'Set B' }];
+
+/**
+ * `url(#…)` references resolve page-wide, so two diagrams on one page (or the
+ * author preview beside delivery) would draw each other's masks. A random
+ * suffix, as mc-populated-blank uses, stays unique across separately bundled
+ * Svelte runtimes, which `$props.id()` does not.
+ */
+const instanceId = `venn-${Math.random().toString(36).slice(2, 10)}`;
+const maskLeftOnlyId = `${instanceId}-mask-left-only`;
+const maskRightOnlyId = `${instanceId}-mask-right-only`;
+const maskOutsideId = `${instanceId}-mask-outside`;
+const clipLeftId = `${instanceId}-clip-left`;
 
 let containerEl: HTMLDivElement | null = null;
-let diagramEl: HTMLDivElement | null = null;
-let svgEl: SVGSVGElement | null = null;
+// `$state` because the diagram only renders for a circle count it can lay out.
+let diagramEl = $state<HTMLDivElement | null>(null);
 let liveRegion: HTMLDivElement | null = null;
 
 let showCorrect = $state(false);
@@ -61,20 +82,27 @@ let hoveredRegionKey = $state<string | null>(null);
 let keyboardFocusKey = $state<string | null>(null);
 let dragPos = $state<{ x: number; y: number } | null>(null);
 
+/** Removes the `window` listeners of the pointer drag in progress, if any. */
+let detachPointerDrag: (() => void) | null = null;
+
 const geometry = defaultGeometry2Set();
 
+const circles = $derived<VennModel['circles']>(
+  (props?.model?.circles ?? DEFAULT_CIRCLES) as VennModel['circles']
+);
+const circleCountSupported = $derived(circles.length === SUPPORTED_CIRCLES);
+
 const modelShape = $derived<VennModel>({
-  circles: (props?.model?.circles ?? [
-    { label: 'Set A' },
-    { label: 'Set B' },
-  ]) as VennModel['circles'],
+  circles,
   tiles: (props?.model?.tiles ?? []) as VennTile[],
   regionLabels: props?.model?.regionLabels ?? {},
   scoringPolicy: 'partialPerTile',
   promptEnabled: true,
 });
 
-const layout = $derived<DiagramLayout>(buildLayout2Set(modelShape as VennModel, geometry));
+const layout = $derived<DiagramLayout | null>(
+  circleCountSupported ? buildLayout2Set(modelShape as VennModel, geometry) : null
+);
 const isEvaluate = $derived(props?.model?.env?.mode === 'evaluate');
 const disabled = $derived(props?.model?.disabled === true);
 const prompt = $derived<string | null>(props?.model?.prompt ?? null);
@@ -91,6 +119,31 @@ const grouped = $derived<Record<string, VennTile[]>>(
 const trayTiles = $derived<VennTile[]>(unplacedTiles(modelShape as VennModel, visibleSession));
 
 const navigableTargets = $derived<string[]>(['0', '0,1', '1', '', 'tray']);
+
+/**
+ * "Show correct answer" belongs to one evaluate view of one session: it goes
+ * off when the mode leaves evaluate, when the view model carries no correct
+ * regions to show, and when the player hands over a different session.
+ */
+let showCorrectSession: VennSession | undefined;
+$effect.pre(() => {
+  const session = props?.session;
+  const canShowCorrect = isEvaluate && !!props?.model?.correctRegionsById;
+  untrack(() => {
+    if (!canShowCorrect || session !== showCorrectSession) showCorrect = false;
+    showCorrectSession = session;
+  });
+});
+
+// A tile held while the element turns read-only (evaluate, view) must not
+// stay picked up, and its drag must not commit on release.
+$effect(() => {
+  if (disabled) untrack(cancelInteraction);
+});
+
+onDestroy(() => {
+  detachPointerDrag?.();
+});
 
 function buildVisiblePlacements(
   session: VennSession | undefined,
@@ -144,8 +197,6 @@ function commitPlacement(tileId: string, placement: Region | null) {
 
   forwardSessionChange({
     sourceEl: containerEl,
-    fallbackSelector: 'venn-classification',
-    component: 'venn-classification',
     session: next,
     complete: next.completed === true,
   });
@@ -157,15 +208,54 @@ function findTile(id: string | null | undefined): VennTile | null {
 }
 
 function regionByKey(key: string): RegionLayout | undefined {
-  return layout.regionByKey[key];
+  return layout?.regionByKey[key];
+}
+
+function targetLabel(key: string): string {
+  return key === 'tray' ? 'Tiles to classify' : (regionByKey(key)?.label ?? 'unknown');
+}
+
+function clearHeld() {
+  heldTileId = null;
+  keyboardFocusKey = null;
+  hoveredRegionKey = null;
+  dragPos = null;
+}
+
+function cancelInteraction() {
+  detachPointerDrag?.();
+  if (heldTileId !== null) clearHeld();
+}
+
+/**
+ * Drop `tile` on the target named by `targetKey` (a region key or `'tray'`).
+ * A drop that leaves the tile where it is commits nothing: a player counts a
+ * session with content as a learner response, so a bare click must not write.
+ */
+function dropTile(tile: VennTile, targetKey: string | null) {
+  const name = tileAccessibleName(tile);
+  const placement =
+    targetKey === 'tray' ? null : targetKey === null ? undefined : regionByKey(targetKey)?.region;
+  if (placement === undefined || isSamePlacement(props?.session, tile.id, placement)) {
+    announce('Cancelled');
+    return;
+  }
+  commitPlacement(tile.id, placement);
+  announce(
+    placement === null
+      ? `${name} returned to tray`
+      : `${name} placed in ${targetLabel(targetKey as string)}`
+  );
 }
 
 function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   if (disabled) return;
   e.preventDefault();
+  detachPointerDrag?.();
   const target = e.currentTarget as HTMLElement;
   target.setPointerCapture?.(e.pointerId);
   heldTileId = tile.id;
+  keyboardFocusKey = null;
   dragPos = { x: e.clientX, y: e.clientY };
   hoveredRegionKey = resolveHoverKeyFromPointer(e.clientX, e.clientY);
   announce(`Picked up ${tileAccessibleName(tile)}`);
@@ -175,44 +265,38 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
     hoveredRegionKey = resolveHoverKeyFromPointer(ev.clientX, ev.clientY);
   };
   const onUp = (ev: PointerEvent) => {
+    detach();
+    const hoverKey = resolveHoverKeyFromPointer(ev.clientX, ev.clientY);
+    const snapped = hoveredRegionKey;
+    clearHeld();
+    // The element can turn read-only mid-drag; a release then writes nothing.
+    if (disabled) return;
+    dropTile(tile, hoverKey ?? snapped);
+  };
+  // The browser took the gesture over, e.g. to scroll: where the pointer was
+  // then is no drop the learner chose.
+  const onCancel = () => {
+    detach();
+    clearHeld();
+    announce('Cancelled');
+  };
+  const detach = () => {
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
-    window.removeEventListener('pointercancel', onUp);
-
-    const hoverKey = resolveHoverKeyFromPointer(ev.clientX, ev.clientY);
-    heldTileId = null;
-    dragPos = null;
-    const snapped = hoveredRegionKey;
-    hoveredRegionKey = null;
-
-    const targetKey = hoverKey ?? snapped;
-    if (targetKey === null) {
-      announce('Cancelled');
-      return;
-    }
-    if (targetKey === 'tray') {
-      commitPlacement(tile.id, null);
-      announce(`${tileAccessibleName(tile)} returned to tray`);
-      return;
-    }
-    const region = regionByKey(targetKey);
-    if (!region) {
-      announce('Cancelled');
-      return;
-    }
-    commitPlacement(tile.id, region.region);
-    announce(`${tileAccessibleName(tile)} placed in ${region.label}`);
+    window.removeEventListener('pointercancel', onCancel);
+    if (detachPointerDrag === detach) detachPointerDrag = null;
   };
 
+  detachPointerDrag = detach;
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
-  window.addEventListener('pointercancel', onUp);
+  window.addEventListener('pointercancel', onCancel);
 }
 
 function resolveHoverKeyFromPointer(clientX: number, clientY: number): string | null {
   if (isOverTray(clientX, clientY)) return 'tray';
   const p = clientToViewBox(clientX, clientY);
-  if (!p) return null;
+  if (!p || !layout) return null;
   const r = hitTest(layout, p.x, p.y);
   return r ? r.key : null;
 }
@@ -226,31 +310,38 @@ function isOverTray(clientX: number, clientY: number): boolean {
   );
 }
 
+/**
+ * Tray and region tiles are separate keyed blocks, so a drop replaces the
+ * focused button; focus follows the tile to its new place once it renders.
+ */
+async function focusTile(tileId: string) {
+  await tick();
+  const buttons = containerEl?.querySelectorAll<HTMLButtonElement>('button[data-tile-id]') ?? [];
+  for (const button of buttons) {
+    if (button.dataset.tileId === tileId && button.getAttribute('aria-hidden') !== 'true') {
+      button.focus();
+      return;
+    }
+  }
+}
+
 function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
   if (disabled) return;
   if (e.key === ' ' || e.key === 'Enter') {
     e.preventDefault();
     if (heldTileId === tile.id) {
       const targetKey = keyboardFocusKey;
-      heldTileId = null;
-      if (!targetKey) {
-        announce('Cancelled');
-        return;
-      }
-      if (targetKey === 'tray') {
-        commitPlacement(tile.id, null);
-        announce(`${tileAccessibleName(tile)} returned to tray`);
-        return;
-      }
-      const region = regionByKey(targetKey);
-      if (!region) return;
-      commitPlacement(tile.id, region.region);
-      announce(`${tileAccessibleName(tile)} placed in ${region.label}`);
+      clearHeld();
+      dropTile(tile, targetKey);
+      void focusTile(tile.id);
     } else {
+      // A placed tile starts at the region it is in; a tray tile at the first region.
+      const placed = currentPlacement(visibleSession, tile.id);
+      const startKey = placed === null ? (navigableTargets[0] ?? null) : regionKey(placed);
       heldTileId = tile.id;
-      keyboardFocusKey = navigableTargets[0] ?? null;
+      keyboardFocusKey = startKey;
       announce(
-        `Picked up ${tileAccessibleName(tile)}. Use arrow keys to choose a region, then press Enter to commit.`
+        `Picked up ${tileAccessibleName(tile)}, drop target: ${targetLabel(startKey ?? '')}. Use arrow keys to choose a drop target, Enter to drop, Escape to cancel.`
       );
     }
     return;
@@ -258,8 +349,7 @@ function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
 
   if (e.key === 'Escape' && heldTileId === tile.id) {
     e.preventDefault();
-    heldTileId = null;
-    keyboardFocusKey = null;
+    clearHeld();
     announce('Cancelled');
     return;
   }
@@ -280,24 +370,33 @@ function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
       e.key === 'ArrowLeft' || e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey) ? -1 : 1;
     idx = (idx + delta + navigableTargets.length) % navigableTargets.length;
     keyboardFocusKey = navigableTargets[idx];
-    const r = keyboardFocusKey === 'tray' ? { label: 'Tiles tray' } : regionByKey(keyboardFocusKey);
-    announce(`Drop target: ${r?.label ?? 'unknown'}`);
+    announce(`Drop target: ${targetLabel(keyboardFocusKey)}`);
   }
 }
 
-function tileCorrectness(id: string): 'correct' | 'incorrect' | 'unanswered' | 'neutral' {
-  if (!isEvaluate || showCorrect) return 'neutral';
+/** A keyboard pickup ends when focus leaves the component. */
+function onRootFocusOut(e: FocusEvent) {
+  if (heldTileId === null || dragPos !== null) return;
+  const next = e.relatedTarget as Node | null;
+  if (next && containerEl?.contains(next)) return;
+  clearHeld();
+  announce('Cancelled');
+}
+
+function tileVerdict(id: string): TileVerdict | null {
+  if (!isEvaluate || showCorrect) return null;
   const c = props?.model?.correctness?.[id];
-  if (c === 'correct' || c === 'incorrect' || c === 'unanswered') return c;
-  return 'neutral';
+  return c === 'correct' || c === 'incorrect' || c === 'unanswered' ? c : null;
 }
 
 function typeset() {
   if (!containerEl) return;
+  // `renderMath` is async: a MathJax load failure arrives as a rejection.
+  const warn = (err: unknown) => console.warn('venn-classification: MathJax render failed', err);
   try {
-    renderMath(containerEl);
+    Promise.resolve(renderMath(containerEl)).catch(warn);
   } catch (err) {
-    console.warn('venn-classification: MathJax render failed', err);
+    warn(err);
   }
 }
 
@@ -342,9 +441,9 @@ const draggedTile = $derived<VennTile | null>(
 );
 </script>
 
-<div class="venn-root" bind:this={containerEl}>
+<div class="venn-root" bind:this={containerEl} onfocusout={onRootFocusOut}>
   {#if prompt}
-    <div class="venn-prompt prose">{@html prompt}</div>
+    <div class="venn-prompt">{@html prompt}</div>
   {/if}
 
   {#if isEvaluate && incorrectCount > 0}
@@ -387,186 +486,194 @@ const draggedTile = $derived<VennTile | null>(
     </button>
   {/if}
 
-  <div class="venn-diagram" bind:this={diagramEl}>
-    <svg
-      viewBox="0 0 {geometry.width} {geometry.height}"
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden="true"
-      bind:this={svgEl}
-    >
-      <!--
-        Shape masks for drop-target highlights. SVG masks use white=visible,
-        black=hidden; combining them with a coloured fill lets us highlight
-        the actual crescent / lens / "rect-minus-circles" shape of each
-        region instead of a rectangular bounding box, matching the way the
-        Venn diagram is drawn.
-      -->
-      <defs>
-        <mask id="venn-mask-left-only" maskUnits="userSpaceOnUse" x="0" y="0" width={geometry.width} height={geometry.height}>
-          <rect x="0" y="0" width={geometry.width} height={geometry.height} fill="black" />
-          <circle cx={geometry.circles[0].cx} cy={geometry.circles[0].cy} r={geometry.circles[0].r} fill="white" />
-          <circle cx={geometry.circles[1].cx} cy={geometry.circles[1].cy} r={geometry.circles[1].r} fill="black" />
-        </mask>
-        <mask id="venn-mask-right-only" maskUnits="userSpaceOnUse" x="0" y="0" width={geometry.width} height={geometry.height}>
-          <rect x="0" y="0" width={geometry.width} height={geometry.height} fill="black" />
-          <circle cx={geometry.circles[1].cx} cy={geometry.circles[1].cy} r={geometry.circles[1].r} fill="white" />
-          <circle cx={geometry.circles[0].cx} cy={geometry.circles[0].cy} r={geometry.circles[0].r} fill="black" />
-        </mask>
-        <clipPath id="venn-clip-left" clipPathUnits="userSpaceOnUse">
-          <circle cx={geometry.circles[0].cx} cy={geometry.circles[0].cy} r={geometry.circles[0].r} />
-        </clipPath>
-        <mask id="venn-mask-outside" maskUnits="userSpaceOnUse" x="0" y="0" width={geometry.width} height={geometry.height}>
-          <rect x="0" y="0" width={geometry.width} height={geometry.height} fill="white" />
-          <circle cx={geometry.circles[0].cx} cy={geometry.circles[0].cy} r={geometry.circles[0].r} fill="black" />
-          <circle cx={geometry.circles[1].cx} cy={geometry.circles[1].cy} r={geometry.circles[1].r} fill="black" />
-        </mask>
-      </defs>
-
-      <!--
-        Universal-set frame: the entire diagram rect is one continuous space.
-        Circles sit in the upper portion and the bottom strip (everything
-        below `outsideStripTop`) is where outside-region tiles land. A thin
-        dashed divider is the only visual hint that the bottom strip is
-        "outside the sets" — it's part of the same framed universe, not a
-        separate widget.
-      -->
-      <rect
-        x="1"
-        y="1"
-        width={geometry.width - 2}
-        height={geometry.height - 2}
-        fill="#ffffff"
-        stroke="#cbd5e1"
-        stroke-width="1.5"
-        rx="12"
-      />
-
-      <!-- Circle fills (so overlap shows a darker shade) -->
-      {#each geometry.circles as c}
-        <circle cx={c.cx} cy={c.cy} r={c.r} fill="rgba(14, 165, 233, 0.12)" />
-      {/each}
-
-      <!--
-        Shape-matching drop-target highlights. Rendered only while a tile is
-        being dragged (pointer or keyboard) over / aimed at the region, so
-        the highlight visually echoes the Venn shape students are targeting
-        rather than a rectangular hit-box.
-      -->
-      {#if hitLeftOnly}
-        <rect x="0" y="0" width={geometry.width} height={geometry.height} fill={highlightFill} mask="url(#venn-mask-left-only)" />
-      {/if}
-      {#if hitRightOnly}
-        <rect x="0" y="0" width={geometry.width} height={geometry.height} fill={highlightFill} mask="url(#venn-mask-right-only)" />
-      {/if}
-      {#if hitOverlap}
-        <circle cx={geometry.circles[1].cx} cy={geometry.circles[1].cy} r={geometry.circles[1].r} fill={highlightFill} clip-path="url(#venn-clip-left)" />
-      {/if}
-      {#if hitOutside}
-        <rect x="0" y="0" width={geometry.width} height={geometry.height} fill={highlightFill} mask="url(#venn-mask-outside)" />
-      {/if}
-
-      <!-- Circle outlines -->
-      {#each geometry.circles as c}
-        <circle cx={c.cx} cy={c.cy} r={c.r} fill="none" stroke="#1e293b" stroke-width="2.5" />
-      {/each}
-
-      <!-- Circle labels -->
-      {#each geometry.circles as c, idx}
-        <text
-          x={idx === 0 ? Math.max(20, c.cx - c.r) : Math.min(geometry.width - 20, c.cx + c.r)}
-          y={Math.max(26, c.cy - c.r - 12)}
-          text-anchor={idx === 0 ? 'start' : 'end'}
-          font-size="22"
-          font-weight="600"
-          fill="#0f172a"
-        >
-          {(modelShape.circles[idx]?.label) ?? ''}
-        </text>
-      {/each}
-
-      <!--
-        The bottom strip IS the outside region. We follow classic Venn
-        convention and leave the "universe" unlabeled visually — a thin
-        dashed divider is the only cue that the strip is a distinct
-        landing area. Screen readers still get the region name via the
-        aria-labelled region element below (`.region-aria`), and keyboard
-        pickup announces it via the live region, so the name isn't lost.
-      -->
-      <line
-        x1="16"
-        x2={geometry.width - 16}
-        y1={layout.outsideStripTop}
-        y2={layout.outsideStripTop}
-        stroke="#cbd5e1"
-        stroke-width="1"
-        stroke-dasharray="4 6"
-      />
-    </svg>
-
-    <!-- Accessible region targets (semantic) -->
-    <div class="region-labels" aria-hidden="false">
-      {#each layout.regions as region}
-        {@const pct = viewBoxToPercent(region.hitRect.x + region.hitRect.w / 2, region.hitRect.y + region.hitRect.h / 2)}
-        <div
-          class="region-aria"
-          role="region"
-          aria-label={region.label}
-          data-region-key={region.key}
-          style="left: {pct.left}%; top: {pct.top}%;"
-        ></div>
-      {/each}
+  {#if !layout}
+    <div class="venn-error" role="alert">
+      This diagram cannot be shown: it has {circles.length}
+      {circles.length === 1 ? 'circle' : 'circles'}, and only {SUPPORTED_CIRCLES} are supported.
     </div>
+  {:else}
+    <div class="venn-diagram" bind:this={diagramEl}>
+      <svg
+        viewBox="0 0 {geometry.width} {geometry.height}"
+        preserveAspectRatio="xMidYMid meet"
+        aria-hidden="true"
+      >
+        <!--
+          Shape masks for drop-target highlights. SVG masks use white=visible,
+          black=hidden; combining them with a coloured fill lets us highlight
+          the actual crescent / lens / "rect-minus-circles" shape of each
+          region instead of a rectangular bounding box, matching the way the
+          Venn diagram is drawn.
+        -->
+        <defs>
+          <mask id={maskLeftOnlyId} maskUnits="userSpaceOnUse" x="0" y="0" width={geometry.width} height={geometry.height}>
+            <rect x="0" y="0" width={geometry.width} height={geometry.height} fill="black" />
+            <circle cx={geometry.circles[0].cx} cy={geometry.circles[0].cy} r={geometry.circles[0].r} fill="white" />
+            <circle cx={geometry.circles[1].cx} cy={geometry.circles[1].cy} r={geometry.circles[1].r} fill="black" />
+          </mask>
+          <mask id={maskRightOnlyId} maskUnits="userSpaceOnUse" x="0" y="0" width={geometry.width} height={geometry.height}>
+            <rect x="0" y="0" width={geometry.width} height={geometry.height} fill="black" />
+            <circle cx={geometry.circles[1].cx} cy={geometry.circles[1].cy} r={geometry.circles[1].r} fill="white" />
+            <circle cx={geometry.circles[0].cx} cy={geometry.circles[0].cy} r={geometry.circles[0].r} fill="black" />
+          </mask>
+          <clipPath id={clipLeftId} clipPathUnits="userSpaceOnUse">
+            <circle cx={geometry.circles[0].cx} cy={geometry.circles[0].cy} r={geometry.circles[0].r} />
+          </clipPath>
+          <mask id={maskOutsideId} maskUnits="userSpaceOnUse" x="0" y="0" width={geometry.width} height={geometry.height}>
+            <rect x="0" y="0" width={geometry.width} height={geometry.height} fill="white" />
+            <circle cx={geometry.circles[0].cx} cy={geometry.circles[0].cy} r={geometry.circles[0].r} fill="black" />
+            <circle cx={geometry.circles[1].cx} cy={geometry.circles[1].cy} r={geometry.circles[1].r} fill="black" />
+          </mask>
+        </defs>
 
-    <!-- Placed tiles, absolutely positioned in viewBox space -->
-    <div class="placed-tiles">
-      {#each Object.entries(grouped) as [key, tilesInRegion]}
-        {@const region = layout.regionByKey[key]}
-        {#if region}
-          {#each tilesInRegion as tile, index (tile.id)}
-            {@const slot = region.gridSlot(index, TILE_W, TILE_H)}
-            {@const pct = viewBoxToPercent(slot.x, slot.y)}
-            <div
-              class="tile-wrapper"
-              style="left: {pct.left}%; top: {pct.top}%;"
-            >
-              <Tile
-                id={tile.id}
-                label={tile.label}
-                imageUrl={tile.imageUrl}
-                imageAlt={tile.imageAlt}
-                correctness={tileCorrectness(tile.id)}
-                held={heldTileId === tile.id}
-                invisible={heldTileId === tile.id && dragPos !== null}
-                disabled={disabled}
-                onpointerdown={(e) => onTilePointerDown(tile, e)}
-                onkeydown={(e) => onTileKeyDown(tile, e)}
-              />
-            </div>
-          {/each}
+        <!--
+          Universal-set frame: the entire diagram rect is one continuous space.
+          Circles sit in the upper portion and the bottom strip (everything
+          below `outsideStripTop`) is where outside-region tiles land. A thin
+          dashed divider is the only visual hint that the bottom strip is
+          "outside the sets" — it's part of the same framed universe, not a
+          separate widget.
+        -->
+        <rect
+          x="1"
+          y="1"
+          width={geometry.width - 2}
+          height={geometry.height - 2}
+          fill="#ffffff"
+          stroke="#cbd5e1"
+          stroke-width="1.5"
+          rx="12"
+        />
+
+        <!-- Circle fills (so overlap shows a darker shade) -->
+        {#each geometry.circles as c}
+          <circle cx={c.cx} cy={c.cy} r={c.r} fill="rgba(14, 165, 233, 0.12)" />
+        {/each}
+
+        <!--
+          Shape-matching drop-target highlights. Rendered only while a tile is
+          being dragged (pointer or keyboard) over / aimed at the region, so
+          the highlight visually echoes the Venn shape students are targeting
+          rather than a rectangular hit-box.
+        -->
+        {#if hitLeftOnly}
+          <rect x="0" y="0" width={geometry.width} height={geometry.height} fill={highlightFill} mask="url(#{maskLeftOnlyId})" />
         {/if}
-      {/each}
-    </div>
-  </div>
+        {#if hitRightOnly}
+          <rect x="0" y="0" width={geometry.width} height={geometry.height} fill={highlightFill} mask="url(#{maskRightOnlyId})" />
+        {/if}
+        {#if hitOverlap}
+          <circle cx={geometry.circles[1].cx} cy={geometry.circles[1].cy} r={geometry.circles[1].r} fill={highlightFill} clip-path="url(#{clipLeftId})" />
+        {/if}
+        {#if hitOutside}
+          <rect x="0" y="0" width={geometry.width} height={geometry.height} fill={highlightFill} mask="url(#{maskOutsideId})" />
+        {/if}
 
-  <Tray
-    isDropTarget={hoveredRegionKey === 'tray' || (heldTileId !== null && keyboardFocusKey === 'tray')}
-    label="Tiles to classify"
-  >
-    {#each trayTiles as tile (tile.id)}
-      <Tile
-        id={tile.id}
-        label={tile.label}
-        imageUrl={tile.imageUrl}
-        imageAlt={tile.imageAlt}
-        correctness={'neutral'}
-        held={heldTileId === tile.id}
-        invisible={heldTileId === tile.id && dragPos !== null}
-        disabled={disabled}
-        onpointerdown={(e) => onTilePointerDown(tile, e)}
-        onkeydown={(e) => onTileKeyDown(tile, e)}
-      />
-    {/each}
-  </Tray>
+        <!-- Circle outlines -->
+        {#each geometry.circles as c}
+          <circle cx={c.cx} cy={c.cy} r={c.r} fill="none" stroke="#1e293b" stroke-width="2.5" />
+        {/each}
+
+        <!-- Circle labels -->
+        {#each geometry.circles as c, idx}
+          <text
+            x={idx === 0 ? Math.max(20, c.cx - c.r) : Math.min(geometry.width - 20, c.cx + c.r)}
+            y={Math.max(26, c.cy - c.r - 12)}
+            text-anchor={idx === 0 ? 'start' : 'end'}
+            font-size="22"
+            font-weight="600"
+            fill="#0f172a"
+          >
+            {(modelShape.circles[idx]?.label) ?? ''}
+          </text>
+        {/each}
+
+        <!--
+          The bottom strip IS the outside region. We follow classic Venn
+          convention and leave the "universe" unlabeled visually — a thin
+          dashed divider is the only cue that the strip is a distinct
+          landing area. Screen readers still get the region name via the
+          aria-labelled region element below (`.region-aria`), and keyboard
+          pickup announces it via the live region, so the name isn't lost.
+        -->
+        <line
+          x1="16"
+          x2={geometry.width - 16}
+          y1={layout.outsideStripTop}
+          y2={layout.outsideStripTop}
+          stroke="#cbd5e1"
+          stroke-width="1"
+          stroke-dasharray="4 6"
+        />
+      </svg>
+
+      <!-- Accessible region targets (semantic) -->
+      <div class="region-labels" aria-hidden="false">
+        {#each layout.regions as region}
+          {@const pct = viewBoxToPercent(region.hitRect.x + region.hitRect.w / 2, region.hitRect.y + region.hitRect.h / 2)}
+          <div
+            class="region-aria"
+            role="region"
+            aria-label={region.label}
+            data-region-key={region.key}
+            style="left: {pct.left}%; top: {pct.top}%;"
+          ></div>
+        {/each}
+      </div>
+
+      <!-- Placed tiles, absolutely positioned in viewBox space -->
+      <div class="placed-tiles">
+        {#each Object.entries(grouped) as [key, tilesInRegion]}
+          {@const region = layout.regionByKey[key]}
+          {#if region}
+            {#each tilesInRegion as tile, index (tile.id)}
+              {@const slot = region.gridSlot(index, TILE_W, TILE_H)}
+              {@const pct = viewBoxToPercent(slot.x, slot.y)}
+              <div
+                class="tile-wrapper"
+                style="left: {pct.left}%; top: {pct.top}%;"
+              >
+                <Tile
+                  id={tile.id}
+                  label={tile.label}
+                  imageUrl={tile.imageUrl}
+                  imageAlt={tile.imageAlt}
+                  name={tileStatusName(tile, region.label, tileVerdict(tile.id))}
+                  correctness={tileVerdict(tile.id) ?? 'neutral'}
+                  held={heldTileId === tile.id}
+                  invisible={heldTileId === tile.id && dragPos !== null}
+                  disabled={disabled}
+                  onpointerdown={(e) => onTilePointerDown(tile, e)}
+                  onkeydown={(e) => onTileKeyDown(tile, e)}
+                />
+              </div>
+            {/each}
+          {/if}
+        {/each}
+      </div>
+    </div>
+
+    <Tray
+      isDropTarget={hoveredRegionKey === 'tray' || (heldTileId !== null && keyboardFocusKey === 'tray')}
+      label="Tiles to classify"
+    >
+      {#each trayTiles as tile (tile.id)}
+        <Tile
+          id={tile.id}
+          label={tile.label}
+          imageUrl={tile.imageUrl}
+          imageAlt={tile.imageAlt}
+          name={tileStatusName(tile, null, tileVerdict(tile.id))}
+          correctness={tileVerdict(tile.id) ?? 'neutral'}
+          held={heldTileId === tile.id}
+          invisible={heldTileId === tile.id && dragPos !== null}
+          disabled={disabled}
+          onpointerdown={(e) => onTilePointerDown(tile, e)}
+          onkeydown={(e) => onTileKeyDown(tile, e)}
+        />
+      {/each}
+    </Tray>
+  {/if}
 
   <!--
     Drag ghost: a free-floating copy of the tile that follows the cursor
@@ -689,11 +796,21 @@ const draggedTile = $derived<VennTile | null>(
     opacity: 0;
     pointer-events: none;
   }
+  .venn-error {
+    padding: 12px 16px;
+    border: 1.5px solid #bf0d00;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #7f1d1d;
+    font-size: 14px;
+  }
+  /* Tailwind's `sr-only`, scoped: PIE players ship no Tailwind. */
   .sr-only {
     position: absolute;
     width: 1px;
     height: 1px;
     padding: 0;
+    margin: -1px;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
