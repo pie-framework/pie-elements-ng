@@ -308,14 +308,20 @@ function DragAndDropAnswer(props) {
     // empty. This is independent of, and doesn't change, the existing in-drag
     // Tab-cycling (that's driven by an active dnd-kit drag, not native focus).
     //
-    // Only made a native Tab stop when NOT draggable (i.e. empty): when the target is
-    // filled, the inner node is already independently tabbable via dnd-kit's own
-    // attributes for the existing pick-up-to-move gesture, and adding a second,
-    // outer Tab stop for the same visual tile would add an extra stop to the existing
-    // Tab order. Placing into an occupied area is still fully reachable by mouse click
-    // here, or by the existing keyboard drag flow (Tab+Space/Enter on the choice,
-    // Tab-cycle to the occupied target, Space/Enter to swap).
-    const isNativeTabStop = !draggable && !disabled;
+    // Only made a native Tab stop when NOT draggable (i.e. empty) AND something is
+    // currently selected: with nothing selected, an empty area has nothing to land on
+    // (a bare click/Enter there is a no-op — see handleResponseAreaClick above), so
+    // plain page Tab navigation skips it entirely, landing only on pool choices and
+    // already-filled response areas (PIE-996). Once a choice is selected, it becomes
+    // tabbable again so "select a choice, then Tab to an empty area and press
+    // Space/Enter" still works. When the target is filled, the inner node is already
+    // independently tabbable via dnd-kit's own attributes for the existing
+    // pick-up-to-move gesture, and adding a second, outer Tab stop for the same visual
+    // tile would add an extra stop to the existing Tab order. Placing into an occupied
+    // area is still fully reachable by mouse click here, or by the existing keyboard
+    // drag flow (Tab+Space/Enter on the choice, Tab-cycle to the occupied target,
+    // Space/Enter to swap).
+    const isNativeTabStop = !draggable && !disabled && hasSelection;
 
     const handleResponseAreaKeyDown = (e) => {
       if (e.code === 'Space' || e.code === 'Enter') {
@@ -343,7 +349,13 @@ function DragAndDropAnswer(props) {
           cursor: hasSelection && !disabled ? 'pointer' : undefined,
         }}
       >
-        <div ref={setDragRef} {...listeners} {...attributes} style={{ transform: transformStyle, transition }}>
+        <div
+          ref={setDragRef}
+          {...listeners}
+          {...attributes}
+          data-tile-id={`${instanceId}:${dragId}`}
+          style={{ transform: transformStyle, transition }}
+        >
           <Answer {...props} isDragging={isDragging} isSelected={isSelected} isOver={showsHoverEffect} />
         </div>
       </div>
@@ -365,6 +377,7 @@ function DragAndDropAnswer(props) {
       ref={setDragRef}
       {...listeners}
       {...attributes}
+      data-tile-id={`${instanceId}:${dragId}`}
       onClick={handleChoiceClick}
       style={{
         transform: transformStyle,
