@@ -2,48 +2,89 @@
   customElement={{
     shadow: 'none',
     props: {
-      model: { type: 'Object' }
+      model: { type: 'Object' },
+      options: { type: 'Object' }
     }
   }}
 />
 
 <script lang="ts">
-// Destructure props so Svelte can infer what to expose as custom element properties
-let { model = null }: { model?: any } = $props();
+// Print players set `options` ({ role }) and the authored model, not a
+// controller view model, so answer visibility is decided here.
+let { model = null, options = null }: { model?: any; options?: any } = $props();
 
-let prompt = $state('');
-$effect(() => {
-  prompt = model?.prompt || '';
-});
+const isInstructor = $derived(options?.role === 'instructor');
+const prompt = $derived(
+  model?.promptEnabled !== false && typeof model?.prompt === 'string' ? model.prompt : ''
+);
+const correctAnswer = $derived(
+  typeof model?.correctAnswer === 'string' ? model.correctAnswer.trim() : ''
+);
+const showAnswerKey = $derived(isInstructor && !!correctAnswer);
 </script>
 
-<div class="p-4 print:p-0">
+<div class="simple-cloze-print">
   {#if prompt}
-    <div class="mb-4 prose prose-sm">{@html prompt}</div>
+    <div class="simple-cloze-print-prompt">{@html prompt}</div>
   {/if}
 
-  <div class="inline-block">
-    <input
-      type="text"
-      placeholder="______________________"
-      class="px-3 py-2 border-b-2 border-gray-400 bg-transparent print:border-black"
-      style="border-top: none; border-left: none; border-right: none;"
-      disabled
-    />
+  <div class="simple-cloze-print-response">
+    {#if showAnswerKey}
+      <span class="simple-cloze-print-key-label">Correct answer:</span>
+      <span class="simple-cloze-print-blank simple-cloze-print-blank--key">{correctAnswer}</span>
+    {:else}
+      <span class="simple-cloze-print-blank" role="img" aria-label="Answer blank"></span>
+    {/if}
   </div>
 </div>
 
 <style>
-  @media print {
-    input {
-      border-color: black !important;
-    }
+  /* Self-contained: print players ship no Tailwind or CSS reset. */
+  .simple-cloze-print {
+    padding: 1rem;
+    color: var(--pie-text, black);
   }
 
-  .prose :global(p) {
+  .simple-cloze-print-prompt {
+    margin-bottom: 1rem;
+  }
+
+  .simple-cloze-print-prompt :global(p) {
     margin: 0.5em 0;
   }
-  .prose :global(strong) {
+
+  .simple-cloze-print-prompt :global(strong) {
     font-weight: 600;
+  }
+
+  .simple-cloze-print-response {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .simple-cloze-print-key-label {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+  }
+
+  .simple-cloze-print-blank {
+    display: inline-block;
+    min-width: 12rem;
+    min-height: 1.5rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid var(--pie-text, black);
+  }
+
+  .simple-cloze-print-blank--key {
+    min-width: 6rem;
+    font-weight: 600;
+  }
+
+  @media print {
+    .simple-cloze-print {
+      padding: 0;
+    }
   }
 </style>
