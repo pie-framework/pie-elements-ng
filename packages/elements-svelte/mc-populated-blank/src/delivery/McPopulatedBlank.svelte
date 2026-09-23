@@ -16,7 +16,7 @@ import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
 import { computeLayoutProfile } from './computeLayoutProfile';
-import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
+import { computeLayoutStyle } from './computeLayoutStyle';
 import {
   computeFeatureAudioSkin,
   computeDisplayChoiceId,
@@ -28,17 +28,9 @@ import {
   getVariantCssConfig,
   getVariantRootClass,
 } from './variant-css-map';
+import { DEFAULT_UI_TEXT } from '../shared/uiText';
 
 const BLANK_TOKEN = '{{blank}}';
-const DEFAULT_UI_TEXT = {
-  answerChoices: 'Answer choices',
-  selectedAnswerInSentence: 'Selected answer in sentence',
-  blankPreSelectionHint: 'The answer you choose will appear on the blank line above.',
-  showCorrectAnswer: 'Show correct answer',
-  hideCorrectAnswer: 'Hide correct answer',
-  clickToEnableAutoplay: 'Click to enable audio autoplay',
-  audioResourceUnavailable: 'Audio is enabled but no playable audio URL is configured.',
-} as const;
 
 let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
 let localChoiceId = $state('');
@@ -190,11 +182,11 @@ const templateParts = $derived.by(() => {
   return { before, after };
 });
 
+// The player owns the session's `id` and `element` (the versioned tag it
+// registered this element under), so neither is written here.
 function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
   forwardSessionChange({
     sourceEl,
-    fallbackSelector: 'mc-populated-blank',
-    component: 'mc-populated-blank',
     session: updatedSession,
     complete: !!updatedSession?.choiceId,
   });
@@ -205,13 +197,7 @@ function onRadioChange(e: Event) {
   if (!input.checked) return;
   const choiceId = input.value;
   localChoiceId = choiceId;
-  const updatedSession = {
-    ...session,
-    id: session?.id || model?.id || '1',
-    element: 'mc-populated-blank',
-    choiceId,
-  };
-  emitSession(updatedSession, input);
+  emitSession({ ...session, choiceId }, input);
 }
 
 function toggleCorrectAnswer() {
@@ -256,17 +242,17 @@ const featureAudioSkin = $derived(
 );
 
 function onAudioStarted() {
-  resolveDeliveryHost(rootEl, { fallbackSelector: 'mc-populated-blank' })?.onAudioStarted?.();
+  resolveDeliveryHost(rootEl)?.onAudioStarted?.();
 }
 
 function onAudioEnded() {
-  resolveDeliveryHost(rootEl, { fallbackSelector: 'mc-populated-blank' })?.onAudioEnded?.();
+  resolveDeliveryHost(rootEl)?.onAudioEnded?.();
 }
 
+// Follows the session both ways: a player that resets or replaces the session
+// clears the selection instead of leaving the previous pick on screen.
 $effect(() => {
-  if (session?.choiceId) {
-    localChoiceId = session.choiceId;
-  }
+  localChoiceId = session?.choiceId || '';
 });
 
 $effect(() => {

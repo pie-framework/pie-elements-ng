@@ -52,6 +52,8 @@ export interface McpbQuestion {
   template?: string;
   choiceMode?: McpbChoiceMode;
   choices?: McpbChoice[];
+  /** The choice group's accessible name when the item has no prompt to label it. */
+  choiceGroupLabel?: string;
   correctChoiceId?: string;
   hasAudio?: boolean;
   autoplayAudioEnabled?: boolean;
@@ -73,6 +75,8 @@ export interface McpbQuestion {
   lockChoiceOrder?: boolean;
   teacherInstructions?: string;
   teacherInstructionsEnabled?: boolean;
+  /** `false` leaves the answer key out of print. */
+  printAnswerKey?: boolean;
   customType?: string;
 }
 

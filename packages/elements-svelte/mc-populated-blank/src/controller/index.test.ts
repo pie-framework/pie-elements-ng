@@ -16,6 +16,11 @@
  *   O4. Wrong choice → score 0, empty: false
  *   O5. traceLog includes mode, selected id, correct id, final score
  *
+ * getPartialScore
+ *   P1. Correct choice → 1
+ *   P2. Wrong choice → 0
+ *   P3. No choiceId → 0
+ *
  * model — choice ordering
  *   M1. shuffle=false → original order preserved
  *   M2. shuffle=true, instructor role → original order locked
@@ -36,6 +41,13 @@
  *   M15. audioUrl null when hasAudio=false
  *   M16. audioUrl passed through when hasAudio=true
  *   M17. disabled=true in view/evaluate mode, false in gather
+ *   M18. Fields the item leaves out stay empty: no starter content
+ *   M19. A partial uiText override keeps the other default strings
+ *   M20. Choices carry only the fields delivery renders
+ *   M21. choiceGroupLabel passed through
+ *
+ * createDefaultModel
+ *   D1. The authoring starter passes validate with no errors, and carries no id or element
  *
  * validate
  *   V1. Valid question → empty errors object
@@ -53,6 +65,7 @@
  *   V13. hasAudio=true with no audioUrl → audioUrl error
  *   V14. layoutLimits with a non-positive value → layoutLimits error
  *   V15. layoutLimits with a valid value → no error
+ *   V16. Two choices sharing an id → choices error
  *
  * createCorrectResponseSession
  *   CR1. Instructor + mode≠evaluate → session with correct choiceId
@@ -61,7 +74,15 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { getCorrectness, outcome, model, validate, createCorrectResponseSession } from './index';
+import {
+  createDefaultModel,
+  getCorrectness,
+  getPartialScore,
+  outcome,
+  model,
+  validate,
+  createCorrectResponseSession,
+} from './index';
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -147,6 +168,24 @@ describe('outcome', () => {
 });
 
 // ---------------------------------------------------------------------------
+// getPartialScore
+// ---------------------------------------------------------------------------
+
+describe('getPartialScore', () => {
+  it('P1: correct choice → 1', () => {
+    expect(getPartialScore(BASE_QUESTION, { choiceId: 'b' })).toBe(1);
+  });
+
+  it('P2: wrong choice → 0', () => {
+    expect(getPartialScore(BASE_QUESTION, { choiceId: 'a' })).toBe(0);
+  });
+
+  it('P3: no choiceId → 0', () => {
+    expect(getPartialScore(BASE_QUESTION, {})).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // model — choice ordering
 // ---------------------------------------------------------------------------
 
@@ -197,13 +236,13 @@ describe('model — choice ordering', () => {
   });
 
   it('M7: shuffle=true, no stored shuffle → shuffled; updateSession called with new order', async () => {
-    const session = { id: 'sess-1', element: 'mc-populated-blank' };
+    const session = { id: 'sess-1', element: 'mc-populated-blank--version-0-3-0' };
     const updateSession = vi.fn().mockResolvedValue(undefined);
     await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV, updateSession);
     expect(updateSession).toHaveBeenCalledOnce();
     const [id, element, data] = updateSession.mock.calls[0];
     expect(id).toBe('sess-1');
-    expect(element).toBe('mc-populated-blank');
+    expect(element).toBe('mc-populated-blank--version-0-3-0');
     expect(data.shuffledValues).toHaveLength(3);
     expect(new Set(data.shuffledValues)).toEqual(new Set(['a', 'b', 'c']));
   });
@@ -283,6 +322,55 @@ describe('model — output fields', () => {
     const view = await model(BASE_QUESTION, {}, { mode: 'view', role: 'student' });
     expect(gather.disabled).toBe(false);
     expect(view.disabled).toBe(true);
+  });
+
+  it('M18: fields the item leaves out stay empty, with no starter content', async () => {
+    const result = await model({ promptEnabled: true }, {}, EVALUATE_ENV);
+    expect(result.prompt).toBe('');
+    expect(result.template).toBe('');
+    expect(result.choices).toEqual([]);
+    expect(result.correctChoiceId).toBe('');
+  });
+
+  it('M19: a partial uiText override keeps the other default strings', async () => {
+    const q = { ...BASE_QUESTION, uiText: { answerChoices: 'Choices' } };
+    const result = (await model(q, {}, GATHER_ENV)) as any;
+    expect(result.uiText.answerChoices).toBe('Choices');
+    expect(result.uiText.selectedAnswerInSentence).toBe('blank');
+  });
+
+  it('M20: choices carry only the fields delivery renders', async () => {
+    const q = {
+      ...BASE_QUESTION,
+      choices: [
+        { id: 'a', labelHtml: '<p>Alpha</p>', correct: false, feedback: 'No' },
+        { id: 'b', imageUrl: 'b.png', imageAlt: 'Beta', correct: true },
+      ] as any,
+    };
+    const result = await model(q, {}, GATHER_ENV);
+    expect(result.choices).toEqual([
+      { id: 'a', labelHtml: '<p>Alpha</p>' },
+      { id: 'b', imageUrl: 'b.png', imageAlt: 'Beta' },
+    ]);
+  });
+
+  it('M21: choiceGroupLabel passed through', async () => {
+    const q = { ...BASE_QUESTION, choiceGroupLabel: 'Pick the missing word' };
+    const result = await model(q, {}, GATHER_ENV);
+    expect(result.choiceGroupLabel).toBe('Pick the missing word');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// createDefaultModel
+// ---------------------------------------------------------------------------
+
+describe('createDefaultModel', () => {
+  it('D1: the authoring starter passes validate, with no id or element', () => {
+    const starter = createDefaultModel();
+    expect(validate(starter)).toEqual({});
+    expect(starter).not.toHaveProperty('id');
+    expect(starter).not.toHaveProperty('element');
   });
 });
 
@@ -395,6 +483,14 @@ describe('validate', () => {
     });
     expect(errors.layoutLimits).toBeUndefined();
   });
+
+  it('V16: two choices sharing an id → choices error', () => {
+    const errors = validate({
+      ...BASE_QUESTION,
+      choices: [...CHOICES, { id: 'a', labelHtml: '<p>Again</p>' }],
+    });
+    expect(errors.choices).toContain('"a"');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -407,7 +503,8 @@ describe('createCorrectResponseSession', () => {
       mode: 'view',
       role: 'instructor',
     });
-    expect(result).toMatchObject({ choiceId: 'b' });
+    // `element` is the player's: it stamps the tag it registered the element under.
+    expect(result).toEqual({ id: '1', choiceId: 'b' });
   });
 
   it('CR2: student role → null', async () => {

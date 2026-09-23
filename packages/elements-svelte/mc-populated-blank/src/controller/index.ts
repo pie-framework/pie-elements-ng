@@ -1,3 +1,4 @@
+import authorDefaults from '../author/defaults';
 import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults';
 import type {
   McpbChoice,
@@ -30,12 +31,9 @@ export const getCorrectness = (question: McpbQuestion, session: McpbSession): Mc
   return 'incorrect';
 };
 
-export const getPartialScore = (_question: McpbQuestion, session: McpbSession) => {
-  if (!session || isEmptyObject(session) || !session.choiceId) {
-    return 0;
-  }
-  return 1;
-};
+/** One blank, one key: an answered session scores 1 only when it picked the key. */
+export const getPartialScore = (question: McpbQuestion, session: McpbSession) =>
+  getCorrectness(question, session) === 'correct' ? 1 : 0;
 
 export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbEnv) =>
   new Promise((resolve) => {
@@ -49,7 +47,8 @@ export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbE
     }
 
     session = normalizeSession(session);
-    const correctness = getCorrectness(question, session);
+    const normalizedQuestion = normalize(question);
+    const correctness = getCorrectness(normalizedQuestion, session);
 
     if (correctness === 'unanswered') {
       resolve({
@@ -60,26 +59,40 @@ export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbE
       return;
     }
 
-    const score = correctness === 'correct' ? 1 : 0;
+    const score = getPartialScore(normalizedQuestion, session);
     const traceLog = [
       `Mode: ${env?.mode || 'unknown'}.`,
       `Student selected choice: ${session.choiceId}.`,
-      `Correct choice: ${question?.correctChoiceId || 'none'}.`,
+      `Correct choice: ${normalizedQuestion.correctChoiceId || 'none'}.`,
       `Final score: ${score}.`,
     ];
     resolve({ score, empty: false, traceLog });
   });
 
-export const createDefaultModel = (model: McpbQuestion = {}) => ({
-  ...defaults.model,
+const withDefaults = (base: McpbQuestion, model: McpbQuestion = {}) => ({
+  ...base,
   ...model,
   layoutLimits: {
     ...DEFAULT_LAYOUT_LIMITS,
     ...(model?.layoutLimits || {}),
   },
+  // An item that overrides one string keeps the defaults for the rest.
+  uiText: {
+    ...defaults.model.uiText,
+    ...(model?.uiText && typeof model.uiText === 'object' ? model.uiText : {}),
+  },
 });
 
-export const normalize = (question: McpbQuestion = {}) => createDefaultModel(question);
+/** The authoring starting point: a question that passes `validate()` as it stands. */
+export const createDefaultModel = (model: McpbQuestion = {}) =>
+  withDefaults(authorDefaults.model, model);
+
+/**
+ * What `model()` and `outcome()` read: the item's own fields, with neutral
+ * values for the rest. Starter content here would reach a learner as the
+ * item's prompt or choices.
+ */
+export const normalize = (question: McpbQuestion = {}) => withDefaults(defaults.model, question);
 
 export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
 
@@ -99,6 +112,17 @@ function shuffleArray<T>(items: T[]): T[] {
   }
   return out;
 }
+
+/**
+ * The fields delivery renders. An imported choice can carry more, such as a
+ * correctness flag or feedback, which must not reach a learner's browser.
+ */
+const toDeliveryChoice = ({ id, labelHtml, imageUrl, imageAlt }: McpbChoice): McpbChoice => ({
+  id,
+  ...(labelHtml !== undefined ? { labelHtml } : {}),
+  ...(imageUrl !== undefined ? { imageUrl } : {}),
+  ...(imageAlt !== undefined ? { imageAlt } : {}),
+});
 
 const getStoredShuffle = (session: McpbSession): string[] =>
   Array.isArray(session?.data?.shuffledValues)
@@ -172,7 +196,9 @@ export const model = async (
   const safeSession: McpbSession = session || {};
   const safeEnv: McpbEnv = env || {};
   const normalizedQuestion = normalize(question);
-  const choices = await getOrderedChoices(normalizedQuestion, safeSession, safeEnv, updateSession);
+  const choices = (await getOrderedChoices(normalizedQuestion, safeSession, safeEnv, updateSession))
+    .filter((c): c is McpbChoice => !!c && typeof c === 'object')
+    .map(toDeliveryChoice);
 
   const out: Record<string, unknown> = {
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
@@ -194,14 +220,12 @@ export const model = async (
       typeof normalizedQuestion.audioButtonSkinsByLocale === 'object'
         ? normalizedQuestion.audioButtonSkinsByLocale
         : {},
-    uiText:
-      normalizedQuestion.uiText && typeof normalizedQuestion.uiText === 'object'
-        ? normalizedQuestion.uiText
-        : {},
+    uiText: normalizedQuestion.uiText,
     sentenceHtml: normalizedQuestion.sentenceHtml || null,
     template: normalizedQuestion.template,
     choiceMode: normalizedQuestion.choiceMode,
     choices,
+    choiceGroupLabel: normalizedQuestion.choiceGroupLabel || '',
     hasAudio: normalizedQuestion.hasAudio,
     autoplayAudioEnabled: !!normalizedQuestion.autoplayAudioEnabled,
     completeAudioEnabled: !!normalizedQuestion.completeAudioEnabled,
@@ -238,9 +262,9 @@ export const model = async (
 export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEnv) => {
   return new Promise((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
+      // The player sets `id` and `element` on the entry from the item config.
       resolve({
         id: '1',
-        element: 'mc-populated-blank',
         choiceId: question?.correctChoiceId || '',
       });
     } else {
@@ -282,12 +306,19 @@ export const validate = (question: McpbQuestion = {}, _config: Record<string, un
   }
 
   const mode = question.choiceMode || 'text';
+  const seenIds = new Set<string>();
   for (let i = 0; i < choices.length; i++) {
     const c = choices[i];
     if (!c?.id) {
       errors.choices = `Choice ${i + 1} is missing an id`;
       break;
     }
+    // The session stores the picked id, so two choices sharing one cannot be told apart.
+    if (seenIds.has(c.id)) {
+      errors.choices = `Choice ${i + 1} repeats the id "${c.id}"`;
+      break;
+    }
+    seenIds.add(c.id);
     if (mode === 'text') {
       const lbl = (c.labelHtml || '').trim();
       if (!lbl || lbl === '<p></p>') {
