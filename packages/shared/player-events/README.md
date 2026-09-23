@@ -61,31 +61,29 @@ response.
 `delayMs` accepts a function, for an element whose delay depends on its model.
 `maxWaitMs` bounds how long repeated calls may postpone a dispatch. `flush()` is
 a no-op when nothing is pending, so a teardown adds no event in the normal path.
-`onDispatchError` receives a dispatch that throws during a flush; the throw is
-contained either way, since a commit runs mid-unmount, and the default reports it
-through `console.warn` so a lost response is not silent.
+A dispatch that throws during a flush is contained, since a commit runs
+mid-unmount, and reported through `console.warn` so a lost response is not
+silent.
 
 The helper also installs `commitPendingSession()` on the host. A player calls it
 on each mounted element before discarding it, so the element dispatches its own
 event — with its own `complete` semantics — while still attached and therefore
 still able to reach a `document`-level listener. An element's own
 `disconnectedCallback` runs after removal, where the event never gets that far.
+When the call dispatches nothing, the player synthesizes the event from
+`element.session`.
 
-The install is an own-property check: an element class that declares its own
-`commitPendingSession` keeps it, and the installed method calls it before
-flushing the notifiers. Yielding to it instead would let a player count the
-element as committed while the pending dispatch was dropped. `dispose()` on the
-last notifier removes the method again, because an element that still advertises
-it but flushes nothing suppresses the player's synthesized fallback for good.
+The installed method is an own property of the host. A `commitPendingSession`
+the element class declares still runs: the installed method calls it, then
+flushes the notifiers, so a player's call never skips a pending dispatch.
 
 ### Elements that do not defer
 
 The `elements-svelte` packages (`mc-populated-blank`, `simple-cloze`,
 `venn-classification`) dispatch `session-changed` synchronously on every change,
-so nothing is ever pending and a commit seam has nothing to flush. They must
-also not install `commitPendingSession()`: a player that finds the method counts
-the element as having committed itself and never synthesizes an event from
-`element.session`, which is the path that does cover them.
+so nothing is ever pending and they install no `commitPendingSession()`. A
+player's commit sweep synthesizes their event from `element.session` whenever
+the host has not heard the response it holds.
 
 What those elements owe a player instead is that `element.session` carries the
 response by the time the event is dispatched, written into the object the player
