@@ -22,6 +22,7 @@ export interface PieThemeExtended extends PieTheme {
   // Extended PIE-specific colors (45+ total)
   disabled?: string;
   'disabled-secondary'?: string;
+  'disabled-text'?: string;
   'correct-secondary'?: string;
   'correct-tertiary'?: string;
   'correct-icon'?: string;
