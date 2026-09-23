@@ -144,16 +144,6 @@
       "version": "0.1.2-next.0",
       "dependencies": {
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-        "@tiptap/core": "3.31.3",
-        "@tiptap/extension-code-block": "3.31.3",
-        "@tiptap/extension-code-block-lowlight": "3.31.3",
-        "@tiptap/extension-document": "3.31.3",
-        "@tiptap/extension-history": "3.31.3",
-        "@tiptap/extension-text": "3.31.3",
-        "@tiptap/extensions": "3.31.3",
-        "@tiptap/pm": "3.31.3",
-        "highlight.js": "^11.11.1",
-        "lowlight": "^3.3.0",
       },
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
