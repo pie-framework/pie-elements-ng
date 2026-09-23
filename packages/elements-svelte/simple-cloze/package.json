@@ -83,9 +83,9 @@
     "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
     "@pie-lib/styling-svelte": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "@tiptap/core": "^3.29.2",
-    "@tiptap/pm": "^3.30.2",
-    "@tiptap/starter-kit": "^3.19.0",
+    "@tiptap/core": "3.31.3",
+    "@tiptap/pm": "3.31.3",
+    "@tiptap/starter-kit": "3.31.3",
     "svelte": "^5.57.0",
     "typescript": "^5.9.3",
     "vite": "^8.1.5"

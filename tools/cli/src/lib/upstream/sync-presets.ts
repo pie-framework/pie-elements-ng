@@ -191,6 +191,38 @@ export function getPieLibDependencyOverride(pkgName: string): Record<string, str
   return null;
 }
 
+/**
+ * Exact versions forced onto a synced package's dependencies, whatever upstream declares.
+ *
+ * tiptap pins its own peers exactly from 3.24.0 on — `@tiptap/core@3.31.3` peers on
+ * `@tiptap/pm: "3.31.3"`, not a range — so every `@tiptap/*` package in one install tree has
+ * to be the same exact version. Mix them and a second `@tiptap/core` resolves, which breaks
+ * ProseMirror on duplicate schema and plugin identity.
+ *
+ * Upstream pie-lib still declares 3.20.0 and is no longer maintained, so the version lives
+ * here instead of being fixed there. This matters because `ensurePieLibPackageJson` rebuilds
+ * `dependencies` from the upstream manifest on every sync: without this pin, one
+ * `upstream:sync` walks the whole set back to 3.20.0 and silently undoes the alignment.
+ *
+ * Matched by prefix rather than by name so a newly imported `@tiptap/*` package is pinned as
+ * well, instead of arriving as a caret range off whatever happens to be installed. Keep in
+ * step with the root `package.json` `overrides`.
+ */
+const PIE_LIB_DEPENDENCY_VERSION_PINS: ReadonlyArray<{ prefix: string; version: string }> = [
+  { prefix: '@tiptap/', version: '3.31.3' },
+];
+
+export function applyPieLibDependencyVersionPins(
+  deps: Record<string, string>
+): Record<string, string> {
+  const pinned: Record<string, string> = {};
+  for (const [depName, version] of Object.entries(deps)) {
+    const pin = PIE_LIB_DEPENDENCY_VERSION_PINS.find(({ prefix }) => depName.startsWith(prefix));
+    pinned[depName] = pin ? pin.version : version;
+  }
+  return pinned;
+}
+
 export const PIE_LIB_COMPATIBILITY_APPEND_PATCHES: Record<
   string,
   { id: string; append: string; requiredMarker: string }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyPieLibDependencyVersionPins,
   getPieLibDependencyAugmentations,
   getPieLibDependencyOverride,
   getPieLibSourcePreserveList,
@@ -77,5 +78,44 @@ describe('sync preset registry', () => {
     expect(plotPatch.id).toBe(PRESET_IDS.plotToolPropTypesCompatibility);
     expect(plotPatch.requiredMarker).toBe('ToolPropTypeFields');
     expect(plotPatch.append).toContain('ToolPropType');
+  });
+
+  describe('dependency version pins', () => {
+    it('forces every @tiptap/* dependency onto one exact version', () => {
+      expect(
+        applyPieLibDependencyVersionPins({
+          '@tiptap/core': '3.20.0',
+          '@tiptap/starter-kit': '3.20.0',
+          '@tiptap/extension-table-row': '3.30.1',
+          '@tiptap/extensions': '^3.31.3',
+        })
+      ).toEqual({
+        '@tiptap/core': '3.31.3',
+        '@tiptap/starter-kit': '3.31.3',
+        '@tiptap/extension-table-row': '3.31.3',
+        '@tiptap/extensions': '3.31.3',
+      });
+    });
+
+    it('pins a @tiptap/* package the pin list never named', () => {
+      // Matching is by prefix, so a newly imported extension is pinned rather than arriving
+      // as a caret range off whatever happened to be installed.
+      expect(applyPieLibDependencyVersionPins({ '@tiptap/extension-youtube': '^3.28.0' })).toEqual({
+        '@tiptap/extension-youtube': '3.31.3',
+      });
+    });
+
+    it('leaves unrelated dependencies untouched', () => {
+      const deps = {
+        react: '^18.2.0',
+        '@pie-lib/render-ui': 'workspace:*',
+        lowlight: '^3.3.0',
+      };
+      expect(applyPieLibDependencyVersionPins(deps)).toEqual(deps);
+    });
+
+    it('does not add a dependency the package does not declare', () => {
+      expect(applyPieLibDependencyVersionPins({})).toEqual({});
+    });
   });
 });

@@ -21,6 +21,7 @@ import {
   composeElementBuildScript,
 } from './sync-constants.js';
 import {
+  applyPieLibDependencyVersionPins,
   getPieLibDependencyAugmentations,
   getPieLibDependencyOverride,
   shouldGenerateConfigUiFractionHelper,
@@ -1012,6 +1013,10 @@ export async function ensurePieLibPackageJson(
       removeMathjs:
         shouldGenerateConfigUiFractionHelper(pkgName) && !importedPackages.has('mathjs'),
     }).dependencies as Record<string, string> | undefined) ?? {};
+
+  // Last word on versions, so it beats both the upstream manifest and the installed-version
+  // inference above. Without it a sync walks @tiptap/* back to upstream's 3.20.0.
+  expectedDeps = applyPieLibDependencyVersionPins(expectedDeps);
 
   // Create minimal package.json if missing
   if (!pkg) {
