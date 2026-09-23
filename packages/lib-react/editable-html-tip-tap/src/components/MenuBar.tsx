@@ -624,13 +624,20 @@ const StyledMenuBarRoot: any = styled('div')(() => ({
     right: 0,
   },
   '& .fullWidth': {
-    width: '100%',
+    // In normal flow (see `.toolbar`) `width: 100%` is only the editor's width, so a field narrower
+    // than the button row left the overflowing buttons with no background behind them. fit-content
+    // covers the buttons; min-width still spans the editor when the editor is wider. DNAFORM-2093.
+    width: 'fit-content',
+    minWidth: '100%',
   },
   '& .hidden': {
     visibility: 'hidden',
   },
   '& .autoWidth': {
-    width: 'auto',
+    // Out of flow, `width: auto` meant shrink-to-fit - the whole point of this class. In normal
+    // flow it means "fill the container" instead, which cropped the background. fit-content is
+    // the in-flow spelling of the old behaviour, and matches the slate toolbar. DNAFORM-2093.
+    width: 'fit-content',
   },
   '& .focused': {
     opacity: 1,
