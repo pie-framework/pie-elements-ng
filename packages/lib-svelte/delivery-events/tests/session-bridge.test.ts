@@ -5,16 +5,19 @@ import {
   writeSessionInPlace,
 } from '../src/session-bridge.js';
 
+// Players register elements under a versioned tag and stamp it on the session.
+const PLAYER_TAG = 'simple-cloze--version-0-2-0';
+
 describe('writeSessionInPlace', () => {
   it('keeps the target reference so a player reading its own object sees the response', () => {
     // The defect this exists for: a player hands the element a session object,
     // reads the response back off that object, and an element that replaced its
     // own reference left the player's entry at its load-time value.
-    const playerSession: Record<string, unknown> = { id: '1', element: 'mc-populated-blank' };
+    const playerSession: Record<string, unknown> = { id: '1', element: PLAYER_TAG };
 
     const written = writeSessionInPlace(playerSession, {
       id: '1',
-      element: 'mc-populated-blank',
+      element: PLAYER_TAG,
       value: 'b',
     });
 
@@ -70,9 +73,10 @@ describe('writeSessionInPlace', () => {
 
 describe('forwardSessionChange', () => {
   function mountHost() {
-    const host = document.createElement('div') as HTMLDivElement & {
+    const host = document.createElement(PLAYER_TAG) as HTMLElement & {
       session?: unknown;
       onSessionChange?: (session: unknown) => void;
+      onAudioEnded?: () => void;
     };
     const inner = document.createElement('span');
     host.appendChild(inner);
@@ -93,7 +97,6 @@ describe('forwardSessionChange', () => {
 
     const resolved = forwardSessionChange({
       sourceEl: inner,
-      component: 'mc-populated-blank',
       complete: true,
       session: next,
     });
@@ -103,7 +106,7 @@ describe('forwardSessionChange', () => {
     host.remove();
   });
 
-  it('dispatches the metadata event when the host exposes no session callback', () => {
+  it('dispatches the metadata event under the tag the host was registered as', () => {
     const { host, inner } = mountHost();
     host.onAudioEnded = () => {};
     const events: CustomEvent[] = [];
@@ -111,26 +114,51 @@ describe('forwardSessionChange', () => {
 
     forwardSessionChange({
       sourceEl: inner,
-      component: 'simple-cloze',
       complete: false,
       session: { id: '1' },
     });
 
     expect(events).toHaveLength(1);
-    expect(events[0].detail).toEqual({ complete: false, component: 'simple-cloze' });
+    expect(events[0].detail).toEqual({ complete: false, component: PLAYER_TAG });
+    host.remove();
+  });
+
+  it('writes the update into the session the player gave a host without a session callback', () => {
+    // The metadata event carries no session: the player reads the response off
+    // the object it handed the element.
+    const { host, inner } = mountHost();
+    const playerSession = { id: '1', element: PLAYER_TAG };
+    host.session = playerSession;
+    host.onAudioEnded = () => {};
+    let seenAtEvent: unknown = null;
+    host.addEventListener('session-changed', () => {
+      seenAtEvent = { ...(host.session as object) };
+    });
+
+    forwardSessionChange({
+      sourceEl: inner,
+      complete: true,
+      session: { id: '1', element: PLAYER_TAG, value: 'b' },
+    });
+
+    expect(host.session).toBe(playerSession);
+    expect(playerSession).toEqual({ id: '1', element: PLAYER_TAG, value: 'b' });
+    expect(seenAtEvent).toEqual({ id: '1', element: PLAYER_TAG, value: 'b' });
     host.remove();
   });
 
   it('returns null when no delivery host is in the ancestor chain', () => {
+    // A host elsewhere in the document is another instance, never this one's.
+    const { host } = mountHost();
+    const onSessionChange = vi.fn();
+    host.onSessionChange = onSessionChange;
     const orphan = document.createElement('span');
-    expect(
-      forwardSessionChange({
-        sourceEl: orphan,
-        component: 'mc-populated-blank',
-        complete: false,
-        session: {},
-      })
-    ).toBeNull();
+    document.body.appendChild(orphan);
+
+    expect(forwardSessionChange({ sourceEl: orphan, complete: false, session: {} })).toBeNull();
+    expect(onSessionChange).not.toHaveBeenCalled();
+    host.remove();
+    orphan.remove();
   });
 });
 

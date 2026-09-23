@@ -20,13 +20,15 @@ const hasDeliveryCallbacks: HostPredicate = (node: unknown): boolean => {
 };
 
 export interface ResolveDeliveryHostOptions {
-  fallbackSelector?: string;
   hostPredicate?: HostPredicate;
 }
 
 /**
  * Walk up the DOM from a source element and find the nearest delivery host wrapper.
- * Falls back to selector lookup to support detached nested render roots.
+ *
+ * There is no lookup by tag name: a player registers the element under a tag it
+ * chooses (versioned, e.g. `simple-cloze--version-0-2-0`), so the element cannot
+ * know it, and a document-wide query could reach a different instance.
  */
 export function resolveDeliveryHost(
   sourceEl?: HTMLElement | null,
@@ -40,13 +42,6 @@ export function resolveDeliveryHost(
       return cursor as DeliveryHostElement;
     }
     cursor = cursor.parentElement;
-  }
-
-  if (typeof document !== 'undefined' && options.fallbackSelector) {
-    const fallback = document.querySelector(options.fallbackSelector);
-    if (hostPredicate(fallback)) {
-      return fallback as DeliveryHostElement;
-    }
   }
 
   return null;
@@ -96,24 +91,23 @@ export function writeSessionInPlace(target: unknown, next: unknown): unknown {
 
 export interface ForwardSessionChangeOptions {
   sourceEl?: HTMLElement | null;
-  fallbackSelector?: string;
-  component: string;
   complete: boolean;
   session: unknown;
 }
 
 /**
  * Forward a delivery session update using the host callback when available.
- * If no callback is exposed, dispatch the canonical session-changed metadata event.
+ * If no callback is exposed, write the update into the host's session, as
+ * `writeSessionInPlace` does for a wrapper, and dispatch the canonical
+ * session-changed metadata event, named for the tag the host was registered
+ * under: the event carries no session, so a player reads the response off it.
  */
 export function forwardSessionChange({
   sourceEl,
-  fallbackSelector,
-  component,
   complete,
   session,
 }: ForwardSessionChangeOptions): DeliveryHostElement | null {
-  const host = resolveDeliveryHost(sourceEl, { fallbackSelector });
+  const host = resolveDeliveryHost(sourceEl);
   if (!host) {
     return null;
   }
@@ -123,6 +117,8 @@ export function forwardSessionChange({
     return host;
   }
 
-  host.dispatchEvent(new SessionChangedEvent(component, complete));
+  const written = writeSessionInPlace(host.session, session);
+  if (written !== host.session) host.session = written;
+  host.dispatchEvent(new SessionChangedEvent(host.tagName.toLowerCase(), complete));
   return host;
 }
