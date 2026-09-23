@@ -17,6 +17,7 @@ import { styled } from '@mui/material/styles';
 import { NodeViewWrapper } from '@tiptap/react';
 import ReactDOM from 'react-dom';
 import InsertImageHandler from '../components/image/InsertImageHandler.js';
+import { findImageNodeByKey } from '../components/image/findImageNode.js';
 import ImageToolbar from '../components/image/ImageToolbar.js';
 import CustomToolbarWrapper from './custom-toolbar-wrapper.js';
 
@@ -110,16 +111,9 @@ function ImageComponent(props) {
   }, []);
 
   const findNodePos = useCallback(() => {
-    const key = latestNodeRef.current.attrs.nodeKey;
-    let found = null;
-    editor.state.doc.descendants((n, pos) => {
-      if (found !== null) return false;
-      if (n.type.name === 'imageUploadNode' && n.attrs.nodeKey === key) {
-        found = pos;
-        return false;
-      }
-    });
-    return found;
+    const found = findImageNodeByKey(editor, latestNodeRef.current.attrs.nodeKey);
+
+    return found ? found[1] : null;
   }, [editor]);
 
   // dispatch an attribute update targeted precisely at this node by nodeKey.
