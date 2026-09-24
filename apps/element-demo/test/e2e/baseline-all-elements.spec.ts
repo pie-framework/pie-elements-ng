@@ -63,7 +63,12 @@ const IGNORE_RUNTIME_PATTERNS = [
   /i18next: initialized/i,
   /Download the React DevTools for a better development experience/i,
 ];
-const NON_ACTIONABLE_DELIVERY_ELEMENTS = new Set(['passage', 'rubric', 'complex-rubric']);
+const NON_ACTIONABLE_DELIVERY_ELEMENTS = new Set([
+  'passage',
+  'rubric',
+  'complex-rubric',
+  'video-stimulus',
+]);
 const NON_ACTIONABLE_AUTHOR_ELEMENTS = new Set(['rubric', 'complex-rubric']);
 const ELEMENT_FILTER = process.env.E2E_BASELINE_ELEMENT?.trim();
 const MULTIPLE_CHOICE_DEMO_ID = 'math-algebra-quadratic';
