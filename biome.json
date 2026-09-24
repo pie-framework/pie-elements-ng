@@ -17,7 +17,7 @@
       "!**/coverage",
       "!**/.svelte-kit",
       "!**/.changeset",
-      "!**/.claude",
+      "!.claude",
       "!**/test-results",
       "!**/playwright-a11y-report",
       "!**/playwright-report",
