@@ -10,6 +10,9 @@
 
 <script lang="ts">
 import { forwardSessionChange } from '@pie-lib/delivery-events-svelte';
+import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { t, tCommon } from '../i18n';
+import TeacherInstructions from './TeacherInstructions.svelte';
 
 let { model = null, session = null }: { model?: any; session?: any } = $props();
 
@@ -19,6 +22,7 @@ const instanceId = `simple-cloze-${Math.random().toString(36).slice(2, 10)}`;
 const promptId = `${instanceId}-prompt`;
 const feedbackId = `${instanceId}-feedback`;
 
+let promptElement: HTMLDivElement | null = $state(null);
 let inputElement: HTMLInputElement | null = $state(null);
 let showCorrectAnswer = $state(false);
 
@@ -26,34 +30,51 @@ const isEvaluateMode = $derived(model?.mode === 'evaluate');
 const correctness = $derived(model?.correctness);
 const isCorrect = $derived(correctness === 'correct');
 const isIncorrect = $derived(correctness === 'incorrect');
+const isUnanswered = $derived(correctness === 'unanswered');
+const prompt = $derived(typeof model?.prompt === 'string' ? model.prompt : '');
 const correctAnswer = $derived(typeof model?.correctAnswer === 'string' ? model.correctAnswer : '');
-const sessionResponse = $derived(typeof session?.response === 'string' ? session.response : '');
-const canShowCorrectAnswer = $derived(isEvaluateMode && isIncorrect && !!correctAnswer.trim());
+const sessionValue = $derived(typeof session?.value === 'string' ? session.value : '');
+// As in multiple-choice, any response short of correct can be revealed,
+// including none.
+const canShowCorrectAnswer = $derived(isEvaluateMode && !isCorrect && !!correctAnswer.trim());
 const showingCorrectAnswer = $derived(showCorrectAnswer && canShowCorrectAnswer);
 
 const feedbackText = $derived.by(() => {
   if (!isEvaluateMode) return '';
-  if (showingCorrectAnswer) return 'Correct answer';
-  if (isCorrect) return 'Correct';
-  if (isIncorrect) return 'Incorrect';
+  if (showingCorrectAnswer) return t('correctAnswerShown', model?.language);
+  if (isCorrect) return t('correct', model?.language);
+  if (isIncorrect) return t('incorrect', model?.language);
+  if (isUnanswered) return t('unanswered', model?.language);
   return '';
 });
 
-// Leaving evaluate mode, or a response that is no longer incorrect, turns the
-// reveal off, so gather mode never starts on the answer key.
+// Leaving evaluate mode, or a response that turned correct, turns the reveal
+// off, so gather mode never starts on the answer key.
 $effect(() => {
   if (!canShowCorrectAnswer) {
     showCorrectAnswer = false;
   }
 });
 
-// The input shows the session response, or the answer key while it is revealed.
+// The input shows the session value, or the answer key while it is revealed.
 // A player that resets or replaces the session clears or restores it.
 $effect(() => {
   if (!inputElement) return;
-  const next = showingCorrectAnswer ? correctAnswer : sessionResponse;
+  const next = showingCorrectAnswer ? correctAnswer : sessionValue;
   if (inputElement.value !== next) {
     inputElement.value = next;
+  }
+});
+
+// Typesets the prompt's math each time it renders. `renderMath` resolves once
+// MathJax has run, so a load failure arrives as a rejection.
+$effect(() => {
+  if (!promptElement || !prompt) return;
+  const warn = (err: unknown) => console.warn('simple-cloze: MathJax render failed', err);
+  try {
+    Promise.resolve(renderMath(promptElement)).catch(warn);
+  } catch (err) {
+    warn(err);
   }
 });
 
@@ -65,7 +86,7 @@ function handleInput(event: Event) {
   // registered this element under), so neither is written here.
   forwardSessionChange({
     sourceEl: target,
-    session: { ...session, response: newValue },
+    session: { ...session, value: newValue },
     complete: newValue.trim().length > 0,
   });
 }
@@ -77,8 +98,12 @@ function toggleCorrectAnswer() {
 </script>
 
 <div class="simple-cloze-root">
-  {#if model?.prompt}
-    <div id={promptId} class="simple-cloze-prompt">{@html model.prompt}</div>
+  {#if model?.teacherInstructions}
+    <TeacherInstructions html={model.teacherInstructions} language={model?.language} />
+  {/if}
+
+  {#if prompt}
+    <div bind:this={promptElement} id={promptId} class="simple-cloze-prompt">{@html prompt}</div>
   {/if}
 
   {#if canShowCorrectAnswer}
@@ -106,7 +131,7 @@ function toggleCorrectAnswer() {
         {/if}
       </span>
       <span class="simple-cloze-toggle-label">
-        {showingCorrectAnswer ? 'Hide' : 'Show'} correct answer
+        {tCommon(showingCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer', model?.language)}
       </span>
     </button>
   {/if}
@@ -131,10 +156,10 @@ function toggleCorrectAnswer() {
       class="simple-cloze-input"
       class:simple-cloze-input--correct={isEvaluateMode && (isCorrect || showingCorrectAnswer)}
       class:simple-cloze-input--incorrect={isEvaluateMode && isIncorrect && !showingCorrectAnswer}
-      placeholder="Enter your answer..."
+      placeholder={t('placeholder', model?.language)}
       spellcheck="false"
-      aria-labelledby={model?.prompt ? promptId : undefined}
-      aria-label={model?.prompt ? undefined : 'Your answer'}
+      aria-labelledby={prompt ? promptId : undefined}
+      aria-label={prompt ? undefined : t('answerInput', model?.language)}
       aria-describedby={feedbackText ? feedbackId : undefined}
       disabled={model?.disabled}
       readonly={showingCorrectAnswer}

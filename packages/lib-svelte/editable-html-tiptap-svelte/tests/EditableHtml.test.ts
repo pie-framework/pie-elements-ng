@@ -17,6 +17,7 @@ type Props = {
   markup?: string;
   onChange?: (html: string) => void;
   disabled?: boolean;
+  placeholder?: string;
 };
 
 // A string, not a URL object: happy-dom replaces the global `URL`, which `readFileSync` rejects.
@@ -129,6 +130,22 @@ describe('EditableHtml onChange', () => {
   });
 });
 
+describe('EditableHtml placeholder', () => {
+  it('shows the placeholder in an empty editor', () => {
+    const { target } = mountEditor({ markup: '', placeholder: 'Enter your question here...' });
+    const paragraph = target.querySelector('.ProseMirror p') as HTMLElement;
+
+    expect(paragraph.getAttribute('data-placeholder')).toBe('Enter your question here...');
+    expect(paragraph.classList.contains('is-editor-empty')).toBe(true);
+  });
+
+  it('shows no placeholder once there is content', () => {
+    const { target } = mountEditor({ markup: '<p>Hello</p>', placeholder: 'Enter text' });
+
+    expect(target.querySelector('.ProseMirror [data-placeholder]')).toBeNull();
+  });
+});
+
 describe('EditableHtml links', () => {
   it('leaves a typed URL as text', () => {
     const { editor } = mountEditor({ markup: '' });
@@ -223,5 +240,27 @@ describe('EditableHtml styles', () => {
     expect(getComputedStyle(otherToolbar).pointerEvents).not.toBe('none');
     expect(getComputedStyle(otherToolbar).position).not.toBe('absolute');
     expect(getComputedStyle(otherParagraph).marginTop).toBe(paragraphMarginBefore);
+  });
+
+  it('styles the Done and align-menu buttons from the stylesheet alone', () => {
+    const { target } = mountEditor({ markup: '<p>Hello</p>' });
+    const root = target.firstElementChild as HTMLElement;
+    const hash = [...root.classList].find((name) => name.startsWith('svelte-'));
+    const style = document.createElement('style');
+    style.setAttribute('data-test-editable-html', '');
+    style.textContent = compiledCss(hash);
+    document.head.appendChild(style);
+
+    (target.querySelector('button[title="Text Alignment"]') as HTMLButtonElement).click();
+    flushSync();
+
+    const buttons = ['Done', 'Align Left', 'Align Center', 'Align Right'].map(
+      (title) => target.querySelector(`button[title="${title}"]`) as HTMLButtonElement
+    );
+    for (const button of buttons) {
+      // An inline `style` overrode the stylesheet's padding and colour tokens.
+      expect(button.getAttribute('style')).toBeNull();
+      expect(getComputedStyle(button).paddingTop).toBe('4px');
+    }
   });
 });

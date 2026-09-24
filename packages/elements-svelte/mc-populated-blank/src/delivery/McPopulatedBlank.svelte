@@ -14,25 +14,28 @@ import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-eve
 import AudioPlayer from './AudioPlayer.svelte';
 import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
+import TeacherInstructions from './TeacherInstructions.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
 import { computeLayoutProfile } from './computeLayoutProfile';
 import { computeLayoutStyle } from './computeLayoutStyle';
 import {
   computeFeatureAudioSkin,
   computeDisplayChoiceId,
-  computeResultText,
+  computeResultStatus,
   computeLegendText,
 } from './computeDisplayState';
 import {
   ensureVariantCssInjected,
   getVariantCssConfig,
   getVariantRootClass,
+  VARIANT_CSS_KEY,
 } from './variant-css-map';
-import { DEFAULT_UI_TEXT } from '../shared/uiText';
+import { t as translate, tCommon } from './i18n';
 
 const BLANK_TOKEN = '{{blank}}';
 
 let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
+const t = (key: string) => translate(key, model?.language);
 let localChoiceId = $state('');
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
@@ -99,14 +102,20 @@ const displayChoiceId = $derived(
     selectedId,
     isEvaluateMode,
     showCorrectAnswer,
-    alwaysShowCorrect: !!model?.alwaysShowCorrect,
     correctChoiceId: String(model?.correctChoiceId || ''),
   })
 );
 const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
 const displayChoiceLabelHtml = $derived.by(() => String(displayChoice?.labelHtml || ''));
+const resultStatus = $derived(
+  computeResultStatus({ isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId })
+);
 const resultText = $derived(
-  computeResultText({ isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId })
+  resultStatus === 'correct'
+    ? t('correctAnswerSelected')
+    : resultStatus === 'incorrect'
+      ? t('incorrectAnswerSelected')
+      : ''
 );
 const choiceCorrectnessById = $derived(
   computeChoiceCorrectness({
@@ -121,10 +130,6 @@ const choiceCorrectnessById = $derived(
 // Cluster: a11y — stable IDs, aria labelling, described-by relationships
 // Feeds: fieldset legend, radiogroup labelling, template described-by
 // ---------------------------------------------------------------------------
-const uiText = $derived.by(() => ({
-  ...DEFAULT_UI_TEXT,
-  ...(model?.uiText || {}),
-}));
 const promptId = $derived(`${instanceId}-prompt`);
 const legendId = $derived(`${instanceId}-choices-legend`);
 const resultId = $derived(`${instanceId}-result`);
@@ -133,7 +138,7 @@ const legendText = $derived(
   computeLegendText({
     prompt: model?.prompt || '',
     legendMaxChars: layout.legendMaxChars,
-    answerChoicesLabel: uiText.answerChoices,
+    answerChoicesLabel: t('answerChoices'),
   })
 );
 const choicesGroupLabelledBy = $derived(model?.prompt ? promptId : undefined);
@@ -152,9 +157,11 @@ const templateDescribedBy = $derived.by(() => (model?.prompt ? promptId : undefi
 // ---------------------------------------------------------------------------
 // Misc — locale, audio error, template parsing, variant CSS, style strings
 // ---------------------------------------------------------------------------
+// An item with no language gets no `lang`, so it inherits the host page's instead
+// of being announced as English. `es_MX` is written as the BCP 47 tag `es-MX`.
 const lang = $derived.by(() => {
-  const locale = model?.locale || '';
-  return locale ? locale.slice(0, 2) : 'en';
+  const language = String(model?.language || model?.locale || '').trim();
+  return language ? language.replace(/_/g, '-') : undefined;
 });
 const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
 const variantRootClass = $derived(getVariantRootClass(model?.customType));
@@ -281,18 +288,23 @@ $effect(() => {
 });
 
 $effect(() => {
-  ensureVariantCssInjected(variantCssConfig);
+  if (rootEl) ensureVariantCssInjected(variantCssConfig, rootEl);
 });
 </script>
 
 <div
   bind:this={rootEl}
-  class={`p-4 mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
+  class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
   style={layout.rootStyle}
+  data-mpb-css={VARIANT_CSS_KEY}
 >
+  {#if model?.teacherInstructions}
+    <TeacherInstructions html={model.teacherInstructions} language={model?.language} />
+  {/if}
+
   {#if model?.prompt}
-    <div class="mb-4 prose pie-prompt" id={promptId}>{@html model.prompt}</div>
+    <div class="pie-prompt" id={promptId}>{@html model.prompt}</div>
   {/if}
 
   {#if shouldShowCorrectAnswerToggle}
@@ -300,7 +312,7 @@ $effect(() => {
       <button
         bind:this={toggleCorrectAnswerButtonEl}
         type="button"
-        class="mb-3 pie-toggle-correct-answer"
+        class="pie-toggle-correct-answer"
         style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
         aria-pressed={showCorrectAnswer}
         data-testid="show-correct-answer"
@@ -356,7 +368,7 @@ $effect(() => {
             {/if}
           </span>
           <span class="pie-correct-answer-toggle-label">
-            {showCorrectAnswer ? uiText.hideCorrectAnswer : uiText.showCorrectAnswer}
+            {tCommon(showCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer', model?.language)}
           </span>
         </span>
       </button>
@@ -369,20 +381,19 @@ $effect(() => {
     {useFeatureButtonAudio}
     autoplayEnabled={!!model?.autoplayAudioEnabled}
     {featureAudioSkin}
-    {uiText}
-    locale={model?.locale}
+    language={model?.language}
     onaudiostarted={onAudioStarted}
     onaudioended={onAudioEnded}
   />
 
   {#if model?.sentenceHtml}
-    <div class="mb-3 prose prose-p:my-1 sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
+    <div class="sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
       {@html model.sentenceHtml}
     </div>
   {/if}
 
   {#if !isAudioOnlyMode}
-    <div class="mb-4 template-line pie-template-line" aria-describedby={templateDescribedBy}
+    <div class="template-line pie-template-line" aria-describedby={templateDescribedBy}
       >{@html templateParts.before}<ClozeMarker
         {choiceMode}
         displayChoice={displayChoice}
@@ -390,7 +401,8 @@ $effect(() => {
         isStandalone={isBlankOnlyTemplate}
         blankWidth={layout.blankWidth}
         blankBorderWidth={layout.blankBorderWidth}
-        ariaLabel={uiText.selectedAnswerInSentence}
+        ariaLabel={t('blankLabel')}
+        language={model?.language}
       />{@html templateParts.after}</div>
   {/if}
 
@@ -398,13 +410,13 @@ $effect(() => {
     <p id={resultId} class="sr-only pie-result-feedback" role="status" aria-live="polite">{resultText}</p>
   {/if}
 
-  <p id={blankHintId} class="sr-only pie-blank-hint">{uiText.blankPreSelectionHint}</p>
+  <p id={blankHintId} class="sr-only pie-blank-hint">{t('blankPreSelectionHint')}</p>
 
-  <fieldset class="border-0 p-0 m-0 pie-choices-fieldset" disabled={model?.disabled}>
+  <fieldset class="pie-choices-fieldset" disabled={model?.disabled}>
     <legend class="sr-only pie-choices-legend" id={legendId}>{legendText}</legend>
     <div
       bind:this={choicesGroupEl}
-      class={`pie-choices ${isHorizontalChoices ? 'flex flex-row flex-wrap items-start justify-center' : 'flex flex-col'}`}
+      class={`pie-choices ${isHorizontalChoices ? 'choices-horizontal' : 'choices-vertical'}`}
       style="gap:var(--mpb-choice-group-gap, 0.5rem);"
       role="radiogroup"
       tabindex="-1"
@@ -423,6 +435,7 @@ $effect(() => {
           {isEvaluateMode}
           {instanceId}
           {radioGroupName}
+          language={model?.language}
         />
       {/each}
     </div>
@@ -442,15 +455,42 @@ $effect(() => {
     border: 0;
   }
 
+  /* Layout is self-contained: PIE players ship no Tailwind, so no utility class or
+     preflight reset can be assumed. The blank slot, choice tiles and variant
+     max-widths are sized for border-box. */
+  .mc-populated-blank-root,
+  .mc-populated-blank-root :global(*),
+  .mc-populated-blank-root :global(*::before),
+  .mc-populated-blank-root :global(*::after) {
+    box-sizing: border-box;
+  }
+
+  /* An authored image on its own line (the sel_r1-s3 stimulus) would otherwise sit
+     on the text baseline and add the descender gap below it. */
+  .mc-populated-blank-root :global(img) {
+    vertical-align: middle;
+  }
+
   .mc-populated-blank-root {
     --mpb-focus-ring: var(
       --pie-focus-outline,
       var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))
     );
+    padding: 1rem;
   }
 
-  .mc-populated-blank-root :global(.prose) {
-    max-width: none;
+  .pie-prompt {
+    margin-bottom: 1rem;
+  }
+
+  /* Flush paragraphs, as the demo app's preflight reset rendered them. */
+  .pie-prompt :global(p),
+  .sentence-line :global(p) {
+    margin: 0;
+  }
+
+  .sentence-line {
+    margin-bottom: 0.75rem;
   }
 
   .pie-toggle-correct-answer {
@@ -459,9 +499,11 @@ $effect(() => {
     border: 0;
     background: transparent;
     padding: 0;
+    margin-bottom: 0.75rem;
     display: flex;
     justify-content: center;
     text-align: center;
+    font: inherit;
     color: var(--pie-text, black);
   }
 
@@ -506,11 +548,33 @@ $effect(() => {
 
   .template-line {
     white-space: pre-wrap;
+    margin-bottom: 1rem;
   }
 
   .template-line :global(p) {
     margin: 0;
     display: inline;
+  }
+
+  .pie-choices-fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .pie-choices {
+    display: flex;
+  }
+
+  .choices-horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .choices-vertical {
+    flex-direction: column;
   }
 
   .layout-audio_blank_only :global(.pie-audio-container),

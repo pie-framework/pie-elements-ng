@@ -1,13 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/translator/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
-
 import i18next, { type i18n, type TOptions } from 'i18next';
 import en from './en.js';
 import es from './es.js';
@@ -15,7 +6,7 @@ import es from './es.js';
 i18next.init({
   fallbackLng: 'en',
   lng: 'en',
-  debug: true,
+  showSupportNotice: false,
   resources: {
     en: en,
     es: es,

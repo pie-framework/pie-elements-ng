@@ -18,23 +18,6 @@ export interface McpbAudioButtonSkin {
   playingUrl: string;
 }
 
-export interface McpbUiText {
-  answerChoices?: string;
-  selectedAnswerInSentence?: string;
-  blankPreSelectionHint?: string;
-  showCorrectAnswer?: string;
-  hideCorrectAnswer?: string;
-  clickToEnableAutoplay?: string;
-  audioResourceUnavailable?: string;
-  transcriptLabel?: string;
-  listenLabelEn?: string;
-  listenLabelEs?: string;
-  listenSilentAlt?: string;
-  listenPlayingAlt?: string;
-  listenSilentAltEs?: string;
-  listenPlayingAltEs?: string;
-}
-
 export interface McpbQuestion {
   id?: string;
   element?: string;
@@ -47,7 +30,6 @@ export interface McpbQuestion {
   layoutLimits?: Partial<LayoutLimits>;
   audioButtonSkin?: McpbAudioButtonSkin | null;
   audioButtonSkinsByLocale?: Record<string, McpbAudioButtonSkin>;
-  uiText?: McpbUiText;
   sentenceHtml?: string;
   template?: string;
   choiceMode?: McpbChoiceMode;
@@ -70,10 +52,16 @@ export interface McpbQuestion {
    */
   audioTranscript?: string;
   useFeatureButtonAudio?: boolean;
+  /** Picks the audio button skin; also the learner-facing strings' language when `language` is unset. */
   locale?: string;
-  shuffle?: boolean;
+  /** The learner-facing strings' language, as `@pie-lib/translator` reads it (`en_US`, `es_ES`, …). */
+  language?: string;
+  /** `false` shuffles the choices for a student; unset or `true` keeps the authored order. */
   lockChoiceOrder?: boolean;
+  /** The older spelling of `lockChoiceOrder: false`, read only when `lockChoiceOrder` is unset. */
+  shuffle?: boolean;
   teacherInstructions?: string;
+  /** `false` hides `teacherInstructions`; unset shows them, as in multiple-choice. */
   teacherInstructionsEnabled?: boolean;
   /** `false` leaves the answer key out of print. */
   printAnswerKey?: boolean;

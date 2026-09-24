@@ -102,6 +102,15 @@ describe('venn-classification author model contract', () => {
     expect(element.querySelectorAll('.tile-row')).toHaveLength(2);
   });
 
+  it("names each tile's correct region in the preview list as delivery does, overrides included", async () => {
+    const { element } = await mount({ ...MODEL, regionLabels: { '0,1': 'Both' } });
+    const regions = [...element.querySelectorAll('.preview-list .preview-region')].map(
+      (el: Element) => el.textContent
+    );
+
+    expect(regions).toEqual(['Both', 'Mammals only']);
+  });
+
   it('calls an onChange callback without recursing into its own setter', async () => {
     const { element } = await mount();
     const onChange = vi.fn();

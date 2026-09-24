@@ -1,6 +1,9 @@
 /* Shared base styles for all sel_r1-*_plusggg variants.
    Applied via the data-mpb-variant="sel-r1-base" style element.
-   Uses [class*="variant-sel-r1-"] so it covers every r1 variant class.
+   Every selector starts at .mc-populated-blank-root carrying any r1 variant class,
+   so it cannot match outside this element. :where() keeps the attribute match out
+   of the specificity, so each per-variant file still overrides a base rule with
+   the selector shapes it already uses.
    Source: web-ItemBankViewer/learnosity/templates/Renaissance/r1.scss */
 
 /* r1.scss: Starial font throughout.
@@ -9,13 +12,13 @@
    and any em-based author content (e.g. <span style="font-size:1.8em">). Without
    this base PIE inherits the 16px browser default and renders ~14% larger than
    the LSY reference. See CONTOOL-2567. */
-[class*="variant-sel-r1-"] {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) {
   font-family: Starial, Arial, sans-serif;
   font-size: 14px;
 }
 
 /* r1.scss: .rli-r1-audio-transcript { font-family:Roboto; font-size:16px } */
-[class*="variant-sel-r1-"] .pie-audio-transcript {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-audio-transcript {
   font-family: Roboto, Arial, sans-serif;
   font-size: 16px;
   font-style: normal;
@@ -24,7 +27,7 @@
 
 /* r1.scss: .rli-r1-content-element { font-size: 1.9em } wraps all stem tokens.
    Makes inline font-size spans in the template multiply on top of this base. */
-[class*="variant-sel-r1-"] .pie-template-line {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line {
   font-size: 1.9em;
 }
 
@@ -33,16 +36,16 @@
    Apply the per-element margin to both classless tokens and the blank slot
    (which is the cloze equivalent) so the gap stacks with whitespace text-nodes
    between flex items the same way LSY does. Earlier this used column-gap:4px,
-   but flex column-gap accumulates with the cloze-side mx-1 and the implicit
+   but flex column-gap accumulates with the cloze margin and the implicit
    whitespace, producing a wider gap than LSY shows. See CONTOOL-2569. */
-[class*="variant-sel-r1-"] .pie-template-line {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line {
   display: flex;
   flex-direction: row;
   align-items: baseline;
   justify-content: center;
 }
 
-[class*="variant-sel-r1-"] .pie-template-line p {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line p {
   margin: 0;
   display: flex;
   flex-direction: row;
@@ -54,7 +57,7 @@
    (blank slot and adjacent inline spans) in LSY, giving each a 150px box with a
    2px per-side margin. Apply to inline tokens in all r1 variants so trailing
    tokens in audio_blank_only (gplusggg) match the blank's height the way LSY does. */
-[class*="variant-sel-r1-"] .pie-template-line span:not([class]) {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line span:not([class]) {
   min-width: 150px;
   max-width: 150px;
   min-height: 150px;
@@ -74,7 +77,7 @@
    align-self removes the blank from that shared computation entirely — its
    siblings' position no longer depends on what's currently displayed inside it.
    See CONTOOL-3159. */
-[class*="variant-sel-r1-"] .pie-template-line .pie-blank-slot {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line .pie-blank-slot {
   align-self: flex-end;
 }
 
@@ -82,9 +85,10 @@
    surrounding .rli-r1-cloze container at 160px). audio_blank_only / stimulus_image_blank
    keep their own 160px min-height set on the blank slot in McPopulatedBlank.svelte to
    mirror LSY's .rli-r1-cloze height. The 2px per-side margin matches LSY's
-   .rli-r1-content-element pattern (overriding the default Tailwind mx-1).
-   .pie-blank-slot is box-sizing:border-box with a permanent 6px border-bottom
-   (the underline) — min-height:150px therefore only leaves 144px for content,
+   .rli-r1-content-element pattern.
+   .pie-blank-slot is box-sizing:border-box (McPopulatedBlank.svelte sets it for
+   the whole element) with a permanent 6px border-bottom (the underline) —
+   min-height:150px therefore only leaves 144px for content,
    so an empty blank (content ~0px, clamped to the 150px floor) and a blank
    showing a 150px choice image (150 + 6 border = 156px, exceeding the floor)
    render at two different total heights. Since .pie-blank-slot is bottom-anchored
@@ -93,7 +97,9 @@
    min-height:156px keeps the total box height constant regardless of content, so
    the 150px is fully available to the image/text and the border no longer
    competes with it. See CONTOOL-3159. */
-[class*="variant-sel-r1-"].layout-token_sequence .pie-template-line .pie-blank-slot {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-token_sequence
+  .pie-template-line
+  .pie-blank-slot {
   min-width: 150px;
   max-width: 150px;
   min-height: 156px;
@@ -104,10 +110,13 @@
 
 /* audio_blank_only / stimulus_image_blank keep the 160px wide blank slot, but
    still need the 2px per-side margin so the gap to the trailing token mirrors
-   LSY's .rli-r1-content-element rhythm. Without this, Tailwind's mx-1 (4px)
-   would dominate and the cloze→token gap diverges from LSY. See CONTOOL-2569. */
-[class*="variant-sel-r1-"].layout-audio_blank_only .pie-template-line .pie-blank-slot,
-[class*="variant-sel-r1-"].layout-stimulus_image_blank .pie-template-line .pie-blank-slot {
+   LSY's .rli-r1-content-element rhythm. See CONTOOL-2569. */
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-audio_blank_only
+  .pie-template-line
+  .pie-blank-slot,
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-stimulus_image_blank
+  .pie-template-line
+  .pie-blank-slot {
   margin-left: 2px;
   margin-right: 2px;
 }
@@ -123,8 +132,12 @@
    its line-height renders that line top-anchored, pinning the answer text to the
    top of the blank with the rest of the box empty beneath it, instead of centered
    on the underline the way LSY renders it. See CONTOOL-3159. */
-[class*="variant-sel-r1-"].layout-audio_blank_only .pie-blank-value span:not([class]),
-[class*="variant-sel-r1-"].layout-stimulus_image_blank .pie-blank-value span:not([class]) {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-audio_blank_only
+  .pie-blank-value
+  span:not([class]),
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-stimulus_image_blank
+  .pie-blank-value
+  span:not([class]) {
   min-width: 0;
   max-width: none;
   min-height: 0;
@@ -134,7 +147,7 @@
 }
 
 /* r1.scss: .rli-r1-content-element { font-size:1.9em; line-height:89px } on distractors */
-[class*="variant-sel-r1-"] .pie-choice-label {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-choice-label {
   font-size: 1.9em;
   line-height: 89px;
 }
@@ -145,8 +158,8 @@
    to 150 server-side. PIE keeps the authored attributes (typically 108×108),
    so without an explicit override images render ~28% smaller than LSY.
    See CONTOOL-2570. */
-[class*="variant-sel-r1-"] .pie-template-line img,
-[class*="variant-sel-r1-"] .pie-choice-label img {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line img,
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-choice-label img {
   width: 150px;
   height: 150px;
 }

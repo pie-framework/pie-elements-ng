@@ -2,8 +2,11 @@
  * What assistive technology gets from the rendered delivery element: an input
  * named by the prompt, and evaluate-mode correctness as text, not colour alone.
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
+
+vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: vi.fn() }));
+
 import SimpleClozeElement from '../src/delivery/index.js';
 import { model as buildViewModel } from '../src/controller/index.js';
 
@@ -79,7 +82,7 @@ describe('simple-cloze accessibility', () => {
   it('describes an incorrect response as text', async () => {
     const { input } = await render(
       QUESTION,
-      { id: '1', element: TAG, response: '5' },
+      { id: '1', element: TAG, value: '5' },
       { mode: 'evaluate' }
     );
 
@@ -89,17 +92,23 @@ describe('simple-cloze accessibility', () => {
   it('describes a correct response as text', async () => {
     const { input } = await render(
       QUESTION,
-      { id: '1', element: TAG, response: '4' },
+      { id: '1', element: TAG, value: '4' },
       { mode: 'evaluate' }
     );
 
     expect(describedBy(input)).toBe('Correct');
   });
 
+  it('describes an unanswered response as text', async () => {
+    const { input } = await render(QUESTION, { id: '1', element: TAG }, { mode: 'evaluate' });
+
+    expect(describedBy(input)).toBe('No answer');
+  });
+
   it('adds no correctness description outside evaluate mode', async () => {
     const { input } = await render(
       QUESTION,
-      { id: '1', element: TAG, response: '5' },
+      { id: '1', element: TAG, value: '5' },
       { mode: 'gather' }
     );
 
@@ -109,7 +118,7 @@ describe('simple-cloze accessibility', () => {
   it('hides decorative icons from assistive technology', async () => {
     const { element } = await render(
       QUESTION,
-      { id: '1', element: TAG, response: '5' },
+      { id: '1', element: TAG, value: '5' },
       { mode: 'evaluate' }
     );
 
@@ -118,5 +127,48 @@ describe('simple-cloze accessibility', () => {
     for (const svg of svgs) {
       expect(svg.closest('[aria-hidden="true"]')).not.toBeNull();
     }
+  });
+
+  it('labels the correct-answer toggle in the item language', async () => {
+    const { element } = await render(
+      { ...QUESTION, language: 'es_ES' },
+      { id: '1', element: TAG, value: '5' },
+      { mode: 'evaluate' }
+    );
+
+    expect(element.querySelector('.simple-cloze-toggle-label')?.textContent?.trim()).toBe(
+      'Mostrar respuesta correcta'
+    );
+  });
+
+  it('shows an instructor the teacher instructions behind a collapsed toggle', async () => {
+    const { element } = await render(
+      { ...QUESTION, teacherInstructions: '<p>Read aloud.</p>' },
+      { id: '1', element: TAG },
+      { mode: 'view', role: 'instructor' }
+    );
+    const toggle = element.querySelector('.teacher-instructions-toggle') as HTMLButtonElement;
+    const panel = element.querySelector('.teacher-instructions-content') as HTMLElement;
+
+    expect(toggle.textContent?.trim()).toBe('Show Teacher Instructions');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.getAttribute('aria-controls')).toBe(panel.id);
+    expect(panel.hidden).toBe(true);
+
+    toggle.click();
+    flushSync();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(panel.hidden).toBe(false);
+    expect(panel.textContent?.trim()).toBe('Read aloud.');
+  });
+
+  it('shows a student no teacher instructions', async () => {
+    const { element } = await render(
+      { ...QUESTION, teacherInstructions: '<p>Read aloud.</p>' },
+      { id: '1', element: TAG },
+      { mode: 'view', role: 'student' }
+    );
+
+    expect(element.querySelector('.teacher-instructions')).toBeNull();
   });
 });

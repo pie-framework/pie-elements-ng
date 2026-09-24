@@ -23,8 +23,17 @@ export interface ResolveDeliveryHostOptions {
   hostPredicate?: HostPredicate;
 }
 
+/** The parent element, or the shadow host when `node` is a top-level child of a shadow root. */
+function parentAcrossShadowRoots(node: HTMLElement): HTMLElement | null {
+  if (node.parentElement) return node.parentElement;
+  const root = node.getRootNode();
+  return root instanceof ShadowRoot ? (root.host as HTMLElement) : null;
+}
+
 /**
  * Walk up the DOM from a source element and find the nearest delivery host wrapper.
+ * The walk continues from a shadow root to its host, so a wrapper that renders the
+ * element inside its own shadow root is still found.
  *
  * There is no lookup by tag name: a player registers the element under a tag it
  * chooses (versioned, e.g. `simple-cloze--version-0-2-0`), so the element cannot
@@ -41,7 +50,7 @@ export function resolveDeliveryHost(
     if (hostPredicate(cursor)) {
       return cursor as DeliveryHostElement;
     }
-    cursor = cursor.parentElement;
+    cursor = parentAcrossShadowRoots(cursor);
   }
 
   return null;
@@ -95,12 +104,33 @@ export interface ForwardSessionChangeOptions {
   session: unknown;
 }
 
+// Stands in for a missing `sourceEl`, which a WeakSet cannot hold.
+const NO_SOURCE = {};
+const sourcesWarnedWithoutHost = new WeakSet<object>();
+
+/**
+ * Warn that an update was dropped, once per source element: a source fires on
+ * every keystroke, and one line per element is enough to show the host is missing.
+ */
+function warnNoDeliveryHost(sourceEl?: HTMLElement | null): void {
+  const key = sourceEl ?? NO_SOURCE;
+  if (sourcesWarnedWithoutHost.has(key)) return;
+  sourcesWarnedWithoutHost.add(key);
+  const where = sourceEl
+    ? `above <${sourceEl.tagName.toLowerCase()}>`
+    : 'for an update with no source element';
+  console.warn(
+    `[session-bridge] no delivery host ${where}; the session change was not forwarded to the player`
+  );
+}
+
 /**
  * Forward a delivery session update using the host callback when available.
  * If no callback is exposed, write the update into the host's session, as
  * `writeSessionInPlace` does for a wrapper, and dispatch the canonical
  * session-changed metadata event, named for the tag the host was registered
  * under: the event carries no session, so a player reads the response off it.
+ * Returns `null`, and warns, when the source element has no delivery host.
  */
 export function forwardSessionChange({
   sourceEl,
@@ -109,6 +139,7 @@ export function forwardSessionChange({
 }: ForwardSessionChangeOptions): DeliveryHostElement | null {
   const host = resolveDeliveryHost(sourceEl);
   if (!host) {
+    warnNoDeliveryHost(sourceEl);
     return null;
   }
 

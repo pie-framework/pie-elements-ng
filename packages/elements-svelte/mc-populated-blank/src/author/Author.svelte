@@ -8,8 +8,8 @@
 />
 
 <script lang="ts">
-// Keep the same prop shape expected by the wrapper.
-let { model = $bindable(), onChange }: { model?: any; onChange?: (model: any) => void } = $props();
+// The wrapper sets `model`; the placeholder renders nothing from it yet.
+let { model = $bindable() }: { model?: any } = $props();
 </script>
 
 <div class="mc-populated-blank-author-placeholder" role="status" aria-live="polite">

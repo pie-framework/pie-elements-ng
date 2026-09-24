@@ -328,6 +328,15 @@ describe('createCorrectResponseSession', () => {
 });
 
 describe('model (view-model builder)', () => {
+  it('passes the language through for the translated strings', async () => {
+    const vm = await buildViewModel(
+      twoSetModel({ language: 'es_ES' }),
+      { placements: {} },
+      { mode: 'gather' }
+    );
+    expect(vm.language).toBe('es_ES');
+  });
+
   it('strips correctRegion from tiles in gather mode', async () => {
     const vm = await buildViewModel(twoSetModel(), { placements: {} }, { mode: 'gather' });
     expect(vm.tiles.every((t) => !('correctRegion' in t))).toBe(true);
@@ -375,5 +384,27 @@ describe('buildPreviewSession', () => {
     expect(s.placements).toEqual({ t1: [0], t2: [1], t3: [0, 1], t4: [] });
     expect(s.completed).toBe(true);
     expect(s).not.toHaveProperty('element');
+  });
+});
+
+describe('model teacher instructions', () => {
+  const question = twoSetModel({ teacherInstructions: '<p>Read aloud.</p>' });
+  const instructor = { mode: 'view', role: 'instructor' };
+
+  it('sends them to an instructor when the flag is unset, as multiple-choice does', async () => {
+    const { teacherInstructionsEnabled: _flag, ...unset } = question;
+    expect((await buildViewModel(unset as VennModel, {}, instructor)).teacherInstructions).toBe(
+      '<p>Read aloud.</p>'
+    );
+  });
+
+  it('withholds them when turned off, and from a student', async () => {
+    expect(
+      (await buildViewModel({ ...question, teacherInstructionsEnabled: false }, {}, instructor))
+        .teacherInstructions
+    ).toBeNull();
+    expect(
+      (await buildViewModel(question, {}, { mode: 'view', role: 'student' })).teacherInstructions
+    ).toBeNull();
   });
 });

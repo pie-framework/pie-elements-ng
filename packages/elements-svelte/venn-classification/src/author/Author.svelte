@@ -17,6 +17,7 @@ import {
   enumerateRegions,
   regionKey,
   composeRegionLabel,
+  getRegionLabel,
   normalizeRegion,
 } from '../controller/region.js';
 import type { Region, ScoringPolicy, VennModel, VennTile } from '../types.js';
@@ -477,7 +478,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
               {stripHtml(tile.label) || (tile.imageAlt ?? '').trim() || tile.id}
             </span>
             <span class="preview-arrow">→</span>
-            <span class="preview-region">{composeRegionLabel(m.circles, tile.correctRegion)}</span>
+            <span class="preview-region">{getRegionLabel(m, tile.correctRegion)}</span>
           </li>
         {/each}
       </ol>

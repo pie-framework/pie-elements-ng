@@ -7,14 +7,17 @@ let {
   imageUrl,
   imageAlt,
   name,
+  language,
   correctness = 'neutral',
   held = false,
   invisible = false,
   ghost = false,
   disabled = false,
   focused = false,
+  fit = false,
   onpointerdown,
   onkeydown,
+  onkeyup,
   onfocus,
   onclick,
 }: {
@@ -24,6 +27,8 @@ let {
   imageAlt?: string;
   /** Accessible name override; the delivery diagram adds the tile's region and verdict. */
   name?: string;
+  /** The model's `language`, for the fallback name of a tile with no label. */
+  language?: string;
   correctness?: 'correct' | 'incorrect' | 'unanswered' | 'neutral';
   held?: boolean;
   /** Origin tile during pointer drag: reserved in layout but visually hidden so the ghost shows instead. */
@@ -32,13 +37,21 @@ let {
   ghost?: boolean;
   disabled?: boolean;
   focused?: boolean;
+  /**
+   * Fill the parent's box: a placed tile takes its grid cell's size, clamping
+   * the label to two lines (one under an image).
+   */
+  fit?: boolean;
   onpointerdown?: (e: PointerEvent) => void;
   onkeydown?: (e: KeyboardEvent) => void;
+  onkeyup?: (e: KeyboardEvent) => void;
   onfocus?: (e: FocusEvent) => void;
   onclick?: (e: MouseEvent) => void;
 } = $props();
 
-const accessibleName = $derived(name ?? tileAccessibleName({ label, imageUrl, imageAlt }));
+const accessibleName = $derived(
+  name ?? tileAccessibleName({ label, imageUrl, imageAlt }, language)
+);
 const hasImage = $derived(!!(imageUrl ?? '').trim());
 const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
 </script>
@@ -50,6 +63,7 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
   class:focused
   class:invisible
   class:ghost
+  class:fit
   class:correct={correctness === 'correct'}
   class:incorrect={correctness === 'incorrect'}
   data-tile-id={id}
@@ -60,6 +74,7 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
   tabindex={ghost || disabled ? -1 : 0}
   {onpointerdown}
   {onkeydown}
+  {onkeyup}
   {onfocus}
   {onclick}
 >
@@ -171,6 +186,30 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
   .tile-label-below {
     font-size: 12px;
     font-weight: 600;
+  }
+  .venn-tile.fit {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 6px 10px;
+  }
+  .fit .tile-body {
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  .fit .tile-label {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+  .fit .tile-label-below {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
   }
   .venn-badge {
     position: absolute;

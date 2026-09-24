@@ -15,12 +15,20 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Tile from './Tile.svelte';
 import { tileAccessibleName, tileStatusName, type TileVerdict } from './tile-accessible-name.js';
 import Tray from './Tray.svelte';
+import TeacherInstructions from './TeacherInstructions.svelte';
+import { t, tCommon } from '../i18n.js';
 import {
   buildLayout2Set,
-  defaultGeometry2Set,
+  diagramCssWidth,
+  fitGeometry2Set,
   hitTest,
+  IMAGE_TILE_CELL,
+  placedTileScale,
+  TEXT_TILE_CELL,
+  type DiagramGeometry,
   type DiagramLayout,
   type RegionLayout,
+  type TileCell,
 } from './layout.js';
 import {
   applyPlacement,
@@ -44,17 +52,16 @@ type ViewModel = {
   circles?: Array<{ label: string }>;
   tiles?: VmTile[];
   regionLabels?: Record<string, string>;
+  language?: string;
   disabled?: boolean;
   env?: { mode?: string };
   correctRegionsById?: Record<string, Region>;
   correctness?: Record<string, 'correct' | 'incorrect' | 'unanswered'>;
+  teacherInstructions?: string | null;
 };
 
 let props = $props<{ model?: ViewModel; session?: VennSession }>();
 
-/** Grid cell for tile stacking (image + caption tiles need extra height). */
-const TILE_W = 132;
-const TILE_H = 68;
 /** The only circle count the v1 layout draws; `validate()` rejects any other. */
 const SUPPORTED_CIRCLES = 2;
 const DEFAULT_CIRCLES: VennModel['circles'] = [{ label: 'Set A' }, { label: 'Set B' }];
@@ -81,28 +88,33 @@ let heldTileId = $state<string | null>(null);
 let hoveredRegionKey = $state<string | null>(null);
 let keyboardFocusKey = $state<string | null>(null);
 let dragPos = $state<{ x: number; y: number } | null>(null);
+/** Rendered width of the diagram, in CSS px; 0 until measured. */
+let diagramWidth = $state(0);
 
 /** Removes the `window` listeners of the pointer drag in progress, if any. */
 let detachPointerDrag: (() => void) | null = null;
 
-const geometry = defaultGeometry2Set();
+/**
+ * The tile whose Space / Enter keydown was handled. A browser that still sends
+ * the click that key press produces must not have it activate the tile again.
+ */
+let keyActivatedTileId: string | null = null;
 
 const circles = $derived<VennModel['circles']>(
   (props?.model?.circles ?? DEFAULT_CIRCLES) as VennModel['circles']
 );
 const circleCountSupported = $derived(circles.length === SUPPORTED_CIRCLES);
+const language = $derived<string | undefined>(props?.model?.language);
 
 const modelShape = $derived<VennModel>({
   circles,
   tiles: (props?.model?.tiles ?? []) as VennTile[],
   regionLabels: props?.model?.regionLabels ?? {},
+  language,
   scoringPolicy: 'partialPerTile',
   promptEnabled: true,
 });
 
-const layout = $derived<DiagramLayout | null>(
-  circleCountSupported ? buildLayout2Set(modelShape as VennModel, geometry) : null
-);
 const isEvaluate = $derived(props?.model?.env?.mode === 'evaluate');
 const disabled = $derived(props?.model?.disabled === true);
 const prompt = $derived<string | null>(props?.model?.prompt ?? null);
@@ -117,6 +129,25 @@ const grouped = $derived<Record<string, VennTile[]>>(
   groupTilesByRegion(modelShape as VennModel, visibleSession)
 );
 const trayTiles = $derived<VennTile[]>(unplacedTiles(modelShape as VennModel, visibleSession));
+
+/** One tile with an image puts every tile on the taller image grid. */
+const cell = $derived<TileCell>(
+  (modelShape.tiles ?? []).some((tile) => (tile.imageUrl ?? '').trim())
+    ? IMAGE_TILE_CELL
+    : TEXT_TILE_CELL
+);
+/** The diagram grows when a region holds more tiles than it has cells. */
+const geometry = $derived<DiagramGeometry>(
+  fitGeometry2Set(
+    Object.fromEntries(Object.entries(grouped).map(([key, tiles]) => [key, tiles.length])),
+    cell
+  )
+);
+const layout = $derived<DiagramLayout | null>(
+  circleCountSupported ? buildLayout2Set(modelShape as VennModel, geometry, cell) : null
+);
+/** Placed tiles scale with the rendered diagram, not below the PRD's 44 px hit target. */
+const tileScale = $derived(placedTileScale(diagramWidth, geometry, cell));
 
 const navigableTargets = $derived<string[]>(['0', '0,1', '1', '', 'tray']);
 
@@ -212,7 +243,9 @@ function regionByKey(key: string): RegionLayout | undefined {
 }
 
 function targetLabel(key: string): string {
-  return key === 'tray' ? 'Tiles to classify' : (regionByKey(key)?.label ?? 'unknown');
+  return key === 'tray'
+    ? t('tray', language)
+    : (regionByKey(key)?.label ?? t('unknownTarget', language));
 }
 
 function clearHeld() {
@@ -233,18 +266,18 @@ function cancelInteraction() {
  * session with content as a learner response, so a bare click must not write.
  */
 function dropTile(tile: VennTile, targetKey: string | null) {
-  const name = tileAccessibleName(tile);
+  const name = tileAccessibleName(tile, language);
   const placement =
     targetKey === 'tray' ? null : targetKey === null ? undefined : regionByKey(targetKey)?.region;
   if (placement === undefined || isSamePlacement(props?.session, tile.id, placement)) {
-    announce('Cancelled');
+    announce(t('cancelled', language));
     return;
   }
   commitPlacement(tile.id, placement);
   announce(
     placement === null
-      ? `${name} returned to tray`
-      : `${name} placed in ${targetLabel(targetKey as string)}`
+      ? t('returnedToTray', language, { name })
+      : t('placedIn', language, { name, target: targetLabel(targetKey as string) })
   );
 }
 
@@ -258,7 +291,7 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   keyboardFocusKey = null;
   dragPos = { x: e.clientX, y: e.clientY };
   hoveredRegionKey = resolveHoverKeyFromPointer(e.clientX, e.clientY);
-  announce(`Picked up ${tileAccessibleName(tile)}`);
+  announce(t('pickedUp', language, { name: tileAccessibleName(tile, language) }));
 
   const onMove = (ev: PointerEvent) => {
     dragPos = { x: ev.clientX, y: ev.clientY };
@@ -278,7 +311,7 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   const onCancel = () => {
     detach();
     clearHeld();
-    announce('Cancelled');
+    announce(t('cancelled', language));
   };
   const detach = () => {
     window.removeEventListener('pointermove', onMove);
@@ -325,32 +358,63 @@ async function focusTile(tileId: string) {
   }
 }
 
+/** Space / Enter, or a screen reader's click: pick the tile up, or drop the held tile. */
+function activateTile(tile: VennTile) {
+  if (heldTileId === tile.id) {
+    const targetKey = keyboardFocusKey;
+    clearHeld();
+    dropTile(tile, targetKey);
+    void focusTile(tile.id);
+  } else {
+    // A placed tile starts at the region it is in; a tray tile at the first region.
+    const placed = currentPlacement(visibleSession, tile.id);
+    const startKey = placed === null ? (navigableTargets[0] ?? null) : regionKey(placed);
+    heldTileId = tile.id;
+    keyboardFocusKey = startKey;
+    announce(
+      t('pickedUpWithKeyboard', language, {
+        name: tileAccessibleName(tile, language),
+        target: targetLabel(startKey ?? ''),
+      })
+    );
+  }
+}
+
+/**
+ * A screen reader in browse mode activates a tile with a click whose `detail`
+ * (the click count) is 0, as `element.click()` does. A pointer click has a
+ * count: its pointerdown / pointerup already ran as a drag, which commits
+ * nothing when the tile does not move.
+ */
+function onTileClick(tile: VennTile, e: MouseEvent) {
+  if (disabled || e.detail !== 0) return;
+  if (keyActivatedTileId === tile.id) {
+    keyActivatedTileId = null;
+    return;
+  }
+  activateTile(tile);
+}
+
+function onTileKeyUp() {
+  // The click a key press produces follows its keyup in the same task.
+  setTimeout(() => {
+    keyActivatedTileId = null;
+  }, 0);
+}
+
 function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
   if (disabled) return;
   if (e.key === ' ' || e.key === 'Enter') {
     e.preventDefault();
-    if (heldTileId === tile.id) {
-      const targetKey = keyboardFocusKey;
-      clearHeld();
-      dropTile(tile, targetKey);
-      void focusTile(tile.id);
-    } else {
-      // A placed tile starts at the region it is in; a tray tile at the first region.
-      const placed = currentPlacement(visibleSession, tile.id);
-      const startKey = placed === null ? (navigableTargets[0] ?? null) : regionKey(placed);
-      heldTileId = tile.id;
-      keyboardFocusKey = startKey;
-      announce(
-        `Picked up ${tileAccessibleName(tile)}, drop target: ${targetLabel(startKey ?? '')}. Use arrow keys to choose a drop target, Enter to drop, Escape to cancel.`
-      );
-    }
+    keyActivatedTileId = tile.id;
+    activateTile(tile);
     return;
   }
 
   if (e.key === 'Escape' && heldTileId === tile.id) {
     e.preventDefault();
     clearHeld();
-    announce('Cancelled');
+    announce(t('cancelled', language));
     return;
   }
 
@@ -370,7 +434,7 @@ function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
       e.key === 'ArrowLeft' || e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey) ? -1 : 1;
     idx = (idx + delta + navigableTargets.length) % navigableTargets.length;
     keyboardFocusKey = navigableTargets[idx];
-    announce(`Drop target: ${targetLabel(keyboardFocusKey)}`);
+    announce(t('dropTarget', language, { target: targetLabel(keyboardFocusKey) }));
   }
 }
 
@@ -380,7 +444,7 @@ function onRootFocusOut(e: FocusEvent) {
   const next = e.relatedTarget as Node | null;
   if (next && containerEl?.contains(next)) return;
   clearHeld();
-  announce('Cancelled');
+  announce(t('cancelled', language));
 }
 
 function tileVerdict(id: string): TileVerdict | null {
@@ -442,6 +506,10 @@ const draggedTile = $derived<VennTile | null>(
 </script>
 
 <div class="venn-root" bind:this={containerEl} onfocusout={onRootFocusOut}>
+  {#if props?.model?.teacherInstructions}
+    <TeacherInstructions html={props.model.teacherInstructions} language={language} />
+  {/if}
+
   {#if prompt}
     <div class="venn-prompt">{@html prompt}</div>
   {/if}
@@ -481,18 +549,23 @@ const draggedTile = $derived<VennTile | null>(
         </svg>
       {/if}
       <span class="toggle-label">
-        {showCorrect ? 'Hide' : 'Show'} correct answer
+        {tCommon(showCorrect ? 'hideCorrectAnswer' : 'showCorrectAnswer', language)}
       </span>
     </button>
   {/if}
 
   {#if !layout}
     <div class="venn-error" role="alert">
-      This diagram cannot be shown: it has {circles.length}
-      {circles.length === 1 ? 'circle' : 'circles'}, and only {SUPPORTED_CIRCLES} are supported.
+      {t('unsupportedCircles', language, { count: circles.length, supported: SUPPORTED_CIRCLES })}
     </div>
   {:else}
-    <div class="venn-diagram" bind:this={diagramEl}>
+    <div
+      class="venn-diagram"
+      bind:this={diagramEl}
+      bind:clientWidth={diagramWidth}
+      style:width={diagramCssWidth(geometry, cell)}
+      style:aspect-ratio="{geometry.width} / {geometry.height}"
+    >
       <svg
         viewBox="0 0 {geometry.width} {geometry.height}"
         preserveAspectRatio="xMidYMid meet"
@@ -535,14 +608,14 @@ const draggedTile = $derived<VennTile | null>(
           separate widget.
         -->
         <rect
-          x="1"
-          y="1"
-          width={geometry.width - 2}
-          height={geometry.height - 2}
+          x={geometry.scale}
+          y={geometry.scale}
+          width={geometry.width - 2 * geometry.scale}
+          height={geometry.height - 2 * geometry.scale}
           fill="#ffffff"
           stroke="#cbd5e1"
-          stroke-width="1.5"
-          rx="12"
+          stroke-width={1.5 * geometry.scale}
+          rx={12 * geometry.scale}
         />
 
         <!-- Circle fills (so overlap shows a darker shade) -->
@@ -571,16 +644,18 @@ const draggedTile = $derived<VennTile | null>(
 
         <!-- Circle outlines -->
         {#each geometry.circles as c}
-          <circle cx={c.cx} cy={c.cy} r={c.r} fill="none" stroke="#1e293b" stroke-width="2.5" />
+          <circle cx={c.cx} cy={c.cy} r={c.r} fill="none" stroke="#1e293b" stroke-width={2 * geometry.scale} />
         {/each}
 
         <!-- Circle labels -->
         {#each geometry.circles as c, idx}
           <text
-            x={idx === 0 ? Math.max(20, c.cx - c.r) : Math.min(geometry.width - 20, c.cx + c.r)}
-            y={Math.max(26, c.cy - c.r - 12)}
+            x={idx === 0
+              ? Math.max(20 * geometry.scale, c.cx - c.r)
+              : Math.min(geometry.width - 20 * geometry.scale, c.cx + c.r)}
+            y={Math.max(26 * geometry.scale, c.cy - c.r - 12 * geometry.scale)}
             text-anchor={idx === 0 ? 'start' : 'end'}
-            font-size="22"
+            font-size={18 * geometry.scale}
             font-weight="600"
             fill="#0f172a"
           >
@@ -597,13 +672,13 @@ const draggedTile = $derived<VennTile | null>(
           pickup announces it via the live region, so the name isn't lost.
         -->
         <line
-          x1="16"
-          x2={geometry.width - 16}
+          x1={16 * geometry.scale}
+          x2={geometry.width - 16 * geometry.scale}
           y1={layout.outsideStripTop}
           y2={layout.outsideStripTop}
           stroke="#cbd5e1"
-          stroke-width="1"
-          stroke-dasharray="4 6"
+          stroke-width={geometry.scale}
+          stroke-dasharray="{4 * geometry.scale} {6 * geometry.scale}"
         />
       </svg>
 
@@ -626,25 +701,28 @@ const draggedTile = $derived<VennTile | null>(
         {#each Object.entries(grouped) as [key, tilesInRegion]}
           {@const region = layout.regionByKey[key]}
           {#if region}
+            {@const slots = region.slots(tilesInRegion.length)}
             {#each tilesInRegion as tile, index (tile.id)}
-              {@const slot = region.gridSlot(index, TILE_W, TILE_H)}
-              {@const pct = viewBoxToPercent(slot.x, slot.y)}
+              {@const pct = viewBoxToPercent(slots[index].x, slots[index].y)}
               <div
                 class="tile-wrapper"
-                style="left: {pct.left}%; top: {pct.top}%;"
+                style="left: {pct.left}%; top: {pct.top}%; width: {cell.w}px; height: {cell.h}px; transform: translate(-50%, -50%) scale({tileScale});"
               >
                 <Tile
+                  fit
                   id={tile.id}
                   label={tile.label}
                   imageUrl={tile.imageUrl}
                   imageAlt={tile.imageAlt}
-                  name={tileStatusName(tile, region.label, tileVerdict(tile.id))}
+                  name={tileStatusName(tile, region.label, tileVerdict(tile.id), language)}
                   correctness={tileVerdict(tile.id) ?? 'neutral'}
                   held={heldTileId === tile.id}
                   invisible={heldTileId === tile.id && dragPos !== null}
                   disabled={disabled}
                   onpointerdown={(e) => onTilePointerDown(tile, e)}
                   onkeydown={(e) => onTileKeyDown(tile, e)}
+                  onkeyup={onTileKeyUp}
+                  onclick={(e) => onTileClick(tile, e)}
                 />
               </div>
             {/each}
@@ -655,7 +733,7 @@ const draggedTile = $derived<VennTile | null>(
 
     <Tray
       isDropTarget={hoveredRegionKey === 'tray' || (heldTileId !== null && keyboardFocusKey === 'tray')}
-      label="Tiles to classify"
+      label={t('tray', language)}
     >
       {#each trayTiles as tile (tile.id)}
         <Tile
@@ -663,13 +741,15 @@ const draggedTile = $derived<VennTile | null>(
           label={tile.label}
           imageUrl={tile.imageUrl}
           imageAlt={tile.imageAlt}
-          name={tileStatusName(tile, null, tileVerdict(tile.id))}
+          name={tileStatusName(tile, null, tileVerdict(tile.id), language)}
           correctness={tileVerdict(tile.id) ?? 'neutral'}
           held={heldTileId === tile.id}
           invisible={heldTileId === tile.id && dragPos !== null}
           disabled={disabled}
           onpointerdown={(e) => onTilePointerDown(tile, e)}
           onkeydown={(e) => onTileKeyDown(tile, e)}
+          onkeyup={onTileKeyUp}
+          onclick={(e) => onTileClick(tile, e)}
         />
       {/each}
     </Tray>
@@ -692,6 +772,7 @@ const draggedTile = $derived<VennTile | null>(
         label={draggedTile.label}
         imageUrl={draggedTile.imageUrl}
         imageAlt={draggedTile.imageAlt}
+        {language}
         correctness="neutral"
         ghost={true}
       />
@@ -755,21 +836,13 @@ const draggedTile = $derived<VennTile | null>(
     text-decoration: underline;
   }
   .venn-diagram {
-    position: relative;
-    width: 100%;
     /*
-     * Keep the diagram "smart" about vertical space: it should not monopolise
-     * the viewport and force the tray below the fold.
-     *   - aspect-ratio preserves the 3:2 geometry the SVG is tuned for
-     *   - max-width keeps the diagram from dominating wide layouts
-     *   - max-height (viewport-relative) shrinks it further in short windows
-     *     so the prompt, toggle, and tray remain in view without scrolling
-     *     whenever possible. The SVG uses preserveAspectRatio="xMidYMid meet",
-     *     so when max-height wins the width reduces in lockstep.
+     * Width and aspect ratio come from the geometry, inline. The width cap
+     * keeps the diagram from dominating wide layouts, and the viewport-height
+     * share keeps the prompt, toggle and tray in view in short windows, down
+     * to the width that keeps tiles at 44 px (`diagramCssWidth`).
      */
-    max-width: 720px;
-    aspect-ratio: 900 / 540;
-    max-height: min(60vh, 430px);
+    position: relative;
     margin: 0 auto;
   }
   .venn-diagram svg {
@@ -785,7 +858,7 @@ const draggedTile = $derived<VennTile | null>(
   }
   .tile-wrapper {
     position: absolute;
-    transform: translate(-50%, -50%);
+    display: flex;
     pointer-events: auto;
   }
   .region-aria {

@@ -47,7 +47,7 @@ Wireframes (2-set; 3-set layout is triangular and will be wireframed alongside d
 
 **Session** (key fields):
 
-- `placements` — `{ [tileId]: number[] | null }`. `null` means the tile is still in the tray; the key is always present per tile so consumers don't need to diff against `model.tiles` to tell "unplaced" from "never asked". `[]` is the outside region, `[0]` is circle 0 only, `[0, 1]` is the overlap of 0 and 1, etc. Arrays are always sorted.
+- `placements` — `{ [tileId]: number[] | null }`. `null` means the tile is still in the tray. An untouched session carries no `placements`, because a player counts a session with content as a learner response; the learner's first placement writes a key for every tile, so from then on consumers don't need to diff against `model.tiles` to tell "unplaced" from "never asked". `[]` is the outside region, `[0]` is circle 0 only, `[0, 1]` is the overlap of 0 and 1, etc. Arrays are always sorted.
 - `completed` — boolean — true once every tile is placed (no `null` values remain). Host players (e.g. the assessment players Renaissance Star uses) gate learner navigation on this, so it must flip deterministically and atomically on the last placement.
 
 **Modes**: `gather`, `view`, `evaluate`, `configure`. In `evaluate`, delivery is responsible for showing the learner's placements *and* the authored correct regions (per-tile correctness markers plus a "correct answer" reveal affordance); correct-answer rendering is owned by the element, not the player, consistent with other PIE elements.
@@ -58,7 +58,7 @@ The PRD targets **`pie-venn-circle` / `pie-venn-circle-{n}` hooks** and host-the
 
 **Key delivery interactions**:
 
-- **Pointer / touch**: drag a tile from the tray (or any region) into a region, or back into the tray. Drop zones highlight on dragover. Tiles snap to a light grid within their region so placements look neat without the learner having to pixel-aim, especially when multiple tiles share a region.
+- **Pointer / touch**: drag a tile from the tray (or any region) into a region, or back into the tray. Drop zones highlight on dragover. Tiles snap to a light grid within their region so placements look neat without the learner having to pixel-aim, especially when multiple tiles share a region. A region that runs out of grid cells grows the diagram, which then draws its tiles smaller, down to the 44 px hit target, and past that renders wider, up to its container's width.
 - **Keyboard (two-step)**: `Tab` moves focus through tiles and regions; on a focused tile, `Space` / `Enter` "picks up" the tile (enters placement mode), `Tab` / arrow keys move focus between the tray and each named region, `Space` / `Enter` drops into the focused region, `Esc` cancels the pickup.
 - **Atomic drops**: a tile that leaves region A and lands in region B updates `placements[id]` once. No intermediate "held" session state.
 

@@ -253,6 +253,7 @@ export function model(
       }),
       regionLabels: { ...(normalizedQuestion.regionLabels || {}) },
       scoringPolicy: normalizedQuestion.scoringPolicy ?? 'partialPerTile',
+      language: normalizedQuestion.language,
       disabled: safeEnv.mode !== 'gather',
       mode: safeEnv.mode,
       env: safeEnv,
@@ -269,12 +270,8 @@ export function model(
 
     const isInstructor = safeEnv.role === 'instructor';
     if (isInstructor && (safeEnv.mode === 'view' || safeEnv.mode === 'evaluate')) {
-      const anyQ = normalizedQuestion as unknown as {
-        teacherInstructionsEnabled?: boolean;
-        teacherInstructions?: string;
-      };
-      out.teacherInstructions = anyQ.teacherInstructionsEnabled
-        ? (anyQ.teacherInstructions ?? null)
+      out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
+        ? (normalizedQuestion.teacherInstructions ?? null)
         : null;
     } else {
       out.teacherInstructions = null;

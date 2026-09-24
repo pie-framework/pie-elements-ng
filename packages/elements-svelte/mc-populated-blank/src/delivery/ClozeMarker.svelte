@@ -1,4 +1,6 @@
 <script lang="ts">
+import { t } from './i18n';
+
 interface DisplayChoice {
   imageUrl?: string;
   imageAlt?: string;
@@ -13,6 +15,7 @@ let {
   blankWidth,
   blankBorderWidth,
   ariaLabel,
+  language,
 }: {
   choiceMode?: 'text' | 'image';
   displayChoice?: DisplayChoice;
@@ -21,11 +24,12 @@ let {
   blankWidth: string;
   blankBorderWidth: string;
   ariaLabel: string;
+  language?: string;
 } = $props();
 </script>
 
 <span
-  class={`inline-flex items-center min-h-[1.5em] px-2 mx-1 border-b-2 border-gray-500 align-baseline cloze-marker pie-blank-slot ${isStandalone ? 'cloze-marker-standalone pie-blank-slot-standalone' : ''}`}
+  class={`cloze-marker pie-blank-slot ${isStandalone ? 'cloze-marker-standalone pie-blank-slot-standalone' : ''}`}
   style={`width:${blankWidth};border-bottom-width:${blankBorderWidth};`}
   role="status"
   aria-live="polite"
@@ -35,8 +39,8 @@ let {
   {#if choiceMode === 'image' && displayChoice?.imageUrl}
     <img
       src={displayChoice.imageUrl}
-      alt={displayChoice.imageAlt || 'Selected answer image'}
-      class="w-auto object-contain pie-blank-image"
+      alt={displayChoice.imageAlt || t('selectedAnswerImage', language)}
+      class="cloze-marker-image pie-blank-image"
       style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
     />
   {:else if displayChoiceLabelHtml}
@@ -44,18 +48,22 @@ let {
   {:else}
     <span class="cloze-marker-empty">
       <span aria-hidden="true">&nbsp;</span>
-      <span class="sr-only">(blank)</span>
+      <span class="sr-only">{t('emptyBlank', language)}</span>
     </span>
   {/if}
 </span>
 
 <style>
+  /* The underline width comes from the inline style (layoutLimits); the colour
+     follows the text. */
   .cloze-marker {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     vertical-align: baseline;
+    padding-inline: 0.5rem;
+    border-bottom: 2px solid currentColor;
   }
 
   .cloze-marker:focus-within {
@@ -65,6 +73,10 @@ let {
 
   .cloze-marker-standalone {
     width: var(--mpb-blank-standalone-width, 7rem);
+  }
+
+  .cloze-marker-image {
+    object-fit: contain;
   }
 
   .cloze-marker-empty {
