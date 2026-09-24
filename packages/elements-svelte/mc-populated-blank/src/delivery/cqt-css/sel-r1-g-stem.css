@@ -13,22 +13,19 @@
   --mpb-blank-underline-wide-width: 6px;
 }
 
-/* sel-r1-base.css's shared 156px box also fits a 150x150 choice image (variant-sel-r1-g-stem-
-   graphic, same customType, choiceMode:"image") - scoped to .choice-mode-text so that sample
-   keeps it untouched, while text-only blanks here drop to their real content height. Shrinks
-   every classless span, not just the placed-answer one, so empty and filled states match
-   height with no jump (same reason sel-r1-base.css picked one constant height - CONTOOL-3159). */
+/* PIE-793: sel-r1-base.css's 156px blank box fits a 150x150 image answer, which image
+   choices (variant-sel-r1-g-stem-graphic) keep. Text answers drop it on every classless
+   span, so the empty and filled blank match height (CONTOOL-3159). */
 .mc-populated-blank-root.variant-sel-r1-g-stem.layout-token_sequence.choice-mode-text
   .pie-blank-slot
   span:not([class]) {
   min-height: 0;
 }
 
-/* Drop the 156px floor so the slot shrinks to match its now-short content, and anchor it
-   to the TOP of the row (not sel-r1-base.css's align-self:flex-end) so the text stays level
-   with "will" while the underline moves up to meet it, instead of the text dropping to a
-   bottom-pinned underline. Any align-self value still decouples this from the shared
-   baseline calc (see sel-r1-base.css:66-79), so "will" still won't jump on selection. */
+/* The slot shrinks to its content and anchors to the top of the row, so the answer stays
+   level with the stem token and the underline rises to meet it. Any align-self keeps the
+   slot out of the row's shared baseline (see sel-r1-base.css), so the stem token does not
+   move on selection. */
 .mc-populated-blank-root.variant-sel-r1-g-stem.layout-token_sequence.choice-mode-text
 .pie-blank-slot {
   min-height: 0;

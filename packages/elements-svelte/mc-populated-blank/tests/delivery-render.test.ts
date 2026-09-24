@@ -116,6 +116,12 @@ describe('variant CSS', () => {
     expect(root(el).getAttribute('data-mpb-css')).toBe(VARIANT_CSS_KEY);
   });
 
+  // sel-r1-g-stem.css shrinks the blank for text answers only (PIE-793).
+  it.each(['text', 'image'])('marks the root with choice mode %s', async (choiceMode) => {
+    const el = await mount({ customType: 'sel_r1-g_plusggg', choiceMode });
+    expect(root(el).classList).toContain(`choice-mode-${choiceMode}`);
+  });
+
   it('narrows every root selector of a sheet to roots carrying the key', () => {
     const css = keyVariantCss(sheet('sel-r1-base.css'));
     const roots = css.match(/\.mc-populated-blank-root(?![\w-])/g) || [];
