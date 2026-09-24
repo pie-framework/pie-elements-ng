@@ -8,36 +8,14 @@ export const readJson = (filePath) => JSON.parse(readFileSync(filePath, 'utf8'))
 
 export const toPosix = (value) => value.replaceAll(path.sep, '/');
 
-const normalizeNpmPackPayload = (payload) => {
-  if (Array.isArray(payload)) return payload;
-  if (!payload || typeof payload !== 'object') return null;
-  if (Array.isArray(payload.files)) return [payload];
-
-  const packageEntries = Object.values(payload).filter(
-    (entry) => entry && typeof entry === 'object' && Array.isArray(entry.files)
-  );
-  return packageEntries.length > 0 ? packageEntries : null;
-};
-
 export const parseNpmPackJson = (rawOutput) => {
   const text = String(rawOutput || '');
-  const candidates = [
-    { start: text.indexOf('['), end: text.lastIndexOf(']') },
-    { start: text.indexOf('{'), end: text.lastIndexOf('}') },
-  ]
-    .filter(({ start, end }) => start >= 0 && end >= start)
-    .sort((a, b) => a.start - b.start);
-
-  for (const { start, end } of candidates) {
-    try {
-      const normalized = normalizeNpmPackPayload(JSON.parse(text.slice(start, end + 1)));
-      if (normalized) return normalized;
-    } catch {
-      // Try the next possible JSON envelope before reporting a malformed payload.
-    }
+  const start = text.indexOf('[');
+  const end = text.lastIndexOf(']');
+  if (start < 0 || end < 0 || end < start) {
+    throw new Error('npm pack --dry-run --json did not include a JSON payload');
   }
-
-  throw new Error('npm pack --dry-run --json did not include a supported JSON payload');
+  return JSON.parse(text.slice(start, end + 1));
 };
 
 export const getWorkspaceDirs = ({
