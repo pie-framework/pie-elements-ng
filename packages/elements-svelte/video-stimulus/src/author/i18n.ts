@@ -1,3 +1,5 @@
+import { CONTROLLER_MESSAGES, type ControllerMessageKey } from '../controller/messages.js';
+
 export const AUTHOR_MESSAGES = {
   en: {
     heading: 'Video stimulus',
@@ -146,97 +148,82 @@ export const AUTHOR_MESSAGES = {
   },
 } as const;
 
-const SPANISH_CONTROLLER_MESSAGES: Readonly<Record<string, string>> = Object.freeze({
-  'A source URL is required.': 'Se requiere una URL para la fuente.',
-  'A valid BCP 47 media language is required.':
-    'Se requiere un idioma del contenido válido en formato BCP 47.',
-  'Accessibility profile must be an object.': 'El perfil de accesibilidad debe ser un objeto.',
-  'Add a transcript so content remains available when playback or hearing access is limited.':
-    'Agregue una transcripción para que el contenido siga disponible cuando la reproducción o el acceso auditivo sean limitados.',
-  'Asset ID is required.': 'Se requiere el ID del recurso.',
-  'At least one safe, durable video source is required.':
-    'Se requiere al menos una fuente de video segura y permanente.',
-  'Bitrate must be a positive number.': 'La tasa de bits debe ser un número positivo.',
-  'Blob URLs are temporary and cannot be published.':
-    'Las URL blob son temporales y no se pueden publicar.',
-  'Choose captions, subtitles, descriptions, chapters, or metadata.':
-    'Elija subtítulos descriptivos, subtítulos de traducción, descripciones, capítulos o metadatos.',
-  'Choose unknown, none, or meaningful.':
-    'Elija necesita revisión, sin audio significativo o audio significativo.',
-  'Choose unknown, not meaningful, described, or missing.':
-    'Elija necesita revisión, sin información importante, descrita o no descrita.',
-  'Choose unknown, not required, track, open captions, or missing.':
+const SPANISH_CONTROLLER_MESSAGES: Readonly<Record<ControllerMessageKey, string>> = Object.freeze({
+  accessibilityProfileNotObject: 'El perfil de accesibilidad debe ser un objeto.',
+  assetIdRequired: 'Se requiere el ID del recurso.',
+  audioContentInvalid: 'Elija necesita revisión, sin audio significativo o audio significativo.',
+  audioContentUnresolved: 'Revise si el video contiene audio sincronizado significativo.',
+  bitrateInvalid: 'La tasa de bits debe ser un número positivo.',
+  blobUrlNotDurable: 'Las URL blob son temporales y no se pueden publicar.',
+  captionSupportInvalid:
     'Elija necesita revisión, no se requieren, pista, subtítulos abiertos o faltantes.',
-  'Declare the video MIME type to improve browser source selection.':
-    'Declare el tipo MIME del video para mejorar la selección de fuentes del navegador.',
-  'Default must be true or false.': 'El valor predeterminado debe ser verdadero o falso.',
-  'Duration must be a positive number of seconds.':
-    'La duración debe ser un número positivo de segundos.',
-  'Each source URL must be unique.': 'Cada URL de fuente debe ser única.',
-  'Each text-track URL must be unique.': 'Cada URL de pista de texto debe ser única.',
-  'Enter a safe HTTP(S) or relative transcript URL.':
-    'Ingrese una URL HTTP(S) segura o una URL relativa para la transcripción.',
-  'Enter a safe HTTP(S), data, blob, or relative media URL.':
-    'Ingrese una URL HTTP(S), data, blob o relativa que sea segura.',
-  'Enter a safe HTTP(S), data, blob, or relative video URL.':
-    'Ingrese una URL HTTP(S), data, blob o relativa para el video que sea segura.',
-  'Enter a safe text-track URL.': 'Ingrese una URL segura para la pista de texto.',
-  'Enter a valid BCP 47 language tag.': 'Ingrese una etiqueta de idioma BCP 47 válida.',
-  'Enter a valid BCP 47 learner UI language.':
-    'Ingrese un idioma BCP 47 válido para la interfaz del estudiante.',
-  'Enter a valid BCP 47 media language.': 'Ingrese un idioma BCP 47 válido para el contenido.',
-  'Height must be a positive whole number.': 'La altura debe ser un número entero positivo.',
-  'Important visual information must be described in the main or integrated audio.':
-    'La información visual importante debe describirse en el audio principal o integrado.',
-  'Inline transcript HTML must be text.': 'El HTML integrado de la transcripción debe ser texto.',
-  'Inline transcript HTML must contain safe readable content.':
-    'El HTML integrado de la transcripción debe contener contenido seguro y legible.',
-  'Learner UI text overrides must be an object.':
-    'Las sustituciones de texto de la interfaz del estudiante deben ser un objeto.',
-  'Learner UI text overrides must be non-empty strings.':
-    'Las sustituciones de texto de la interfaz del estudiante deben ser cadenas no vacías.',
-  'MIME type must start with "video/".': 'El tipo MIME debe comenzar con «video/».',
-  'Manually review caption timing, accuracy, speaker identification, and meaningful sounds.':
-    'Revise manualmente la sincronización y precisión de los subtítulos, la identificación de hablantes y los sonidos relevantes.',
-  'Manually verify that the integrated audio describes every important visual detail.':
-    'Verifique manualmente que el audio integrado describa cada detalle visual importante.',
-  'Meaningful synchronized audio requires captions.':
-    'El audio sincronizado significativo requiere subtítulos descriptivos.',
-  'Media asset version must be 1.': 'La versión del recurso multimedia debe ser 1.',
-  'Media is required.': 'Se requiere contenido multimedia.',
-  'Media kind must be "video".': 'El tipo de contenido multimedia debe ser «video».',
-  'Media must be an object.': 'El contenido multimedia debe ser un objeto.',
-  'Model must be an object.': 'El modelo debe ser un objeto.',
-  'Only one text track can be the default.': 'Solo una pista de texto puede ser la predeterminada.',
-  'Plain transcript content must be text.':
-    'El contenido sin formato de la transcripción debe ser texto.',
-  'Provide inline HTML, plain text, or an external transcript URL.':
-    'Proporcione HTML integrado, texto sin formato o una URL externa para la transcripción.',
-  'Resolve how captions are provided before publishing.':
+  captionSupportUnresolved:
     'Defina cómo se proporcionan los subtítulos descriptivos antes de publicar.',
-  'Review whether important visual information is described in the audio.':
-    'Revise si la información visual importante se describe en el audio.',
-  'Review whether the video contains meaningful synchronized audio.':
-    'Revise si el video contiene audio sincronizado significativo.',
-  'Source must be an object with a URL.': 'La fuente debe ser un objeto con una URL.',
-  'Subtitles do not automatically include speakers and meaningful sounds; add captions when audio is meaningful.':
-    'Los subtítulos de traducción no incluyen automáticamente hablantes ni sonidos relevantes; agregue subtítulos descriptivos cuando el audio sea significativo.',
-  'Text tracks must be an array.': 'Las pistas de texto deben ser una matriz.',
-  'The captions-track declaration requires a complete captions track.':
+  captionsRequired: 'El audio sincronizado significativo requiere subtítulos descriptivos.',
+  captionsTrackMissing:
     'La declaración de pista de subtítulos requiere una pista de subtítulos descriptivos completa.',
-  'The transcript is external-only; verify that the linked resource remains available and accessible.':
+  durationInvalid: 'La duración debe ser un número positivo de segundos.',
+  heightInvalid: 'La altura debe ser un número entero positivo.',
+  labelRequired: 'Se requiere la etiqueta del video.',
+  labelTooGeneric: 'Use una etiqueta específica que identifique el contenido del video.',
+  languageTagInvalid: 'Ingrese una etiqueta de idioma BCP 47 válida.',
+  mediaKindNotVideo: 'El tipo de contenido multimedia debe ser «video».',
+  mediaLanguageInvalid: 'Ingrese un idioma BCP 47 válido para el contenido.',
+  mediaLanguageRequired: 'Se requiere un idioma del contenido válido en formato BCP 47.',
+  mediaNotObject: 'El contenido multimedia debe ser un objeto.',
+  mediaRequired: 'Se requiere contenido multimedia.',
+  mediaUrlUnsafe: 'Ingrese una URL HTTP(S), data, blob o relativa que sea segura.',
+  mediaVersionUnsupported: 'La versión del recurso multimedia debe ser 1.',
+  modelNotObject: 'El modelo debe ser un objeto.',
+  multipleDefaultTracks: 'Solo una pista de texto puede ser la predeterminada.',
+  playableSourceRequired: 'Se requiere al menos una fuente de video segura y permanente.',
+  reviewAudioDescription:
+    'Verifique manualmente que el audio integrado describa cada detalle visual importante.',
+  reviewCaptionQuality:
+    'Revise manualmente la sincronización y precisión de los subtítulos, la identificación de hablantes y los sonidos relevantes.',
+  sourceNotObject: 'La fuente debe ser un objeto con una URL.',
+  sourceTypeNotVideo: 'El tipo MIME debe comenzar con «video/».',
+  sourceTypeRecommended:
+    'Declare el tipo MIME del video para mejorar la selección de fuentes del navegador.',
+  sourceTypeUncommon: 'Verifique esta codificación de video en todos los navegadores compatibles.',
+  sourceUrlDuplicate: 'Cada URL de fuente debe ser única.',
+  sourceUrlRequired: 'Se requiere una URL para la fuente.',
+  sourceUrlUnsafe: 'Ingrese una URL HTTP(S), data, blob o relativa para el video que sea segura.',
+  sourcesNotArray: 'Las fuentes de video deben ser una matriz.',
+  subtitlesAreNotCaptions:
+    'Los subtítulos de traducción no incluyen automáticamente hablantes ni sonidos relevantes; agregue subtítulos descriptivos cuando el audio sea significativo.',
+  trackDefaultInvalid: 'El valor predeterminado debe ser verdadero o falso.',
+  trackKindInvalid:
+    'Elija subtítulos descriptivos, subtítulos de traducción, descripciones, capítulos o metadatos.',
+  trackLabelRequired: 'Se requiere la etiqueta de la pista.',
+  trackNotObject: 'La pista debe ser un objeto.',
+  trackUrlDuplicate: 'Cada URL de pista de texto debe ser única.',
+  trackUrlRequired: 'Se requiere la URL de la pista.',
+  trackUrlUnsafe: 'Ingrese una URL segura para la pista de texto.',
+  tracksNotArray: 'Las pistas de texto deben ser una matriz.',
+  transcriptContentRequired:
+    'Proporcione HTML integrado, texto sin formato o una URL externa para la transcripción.',
+  transcriptExternalOnly:
     'La transcripción es solo externa; verifique que el recurso enlazado siga disponible y sea accesible.',
-  'Track URL is required.': 'Se requiere la URL de la pista.',
-  'Track label is required.': 'Se requiere la etiqueta de la pista.',
-  'Track must be an object.': 'La pista debe ser un objeto.',
-  'Transcript must be an object.': 'La transcripción debe ser un objeto.',
-  'Use a specific label that identifies the video content.':
-    'Use una etiqueta específica que identifique el contenido del video.',
-  'Verify this video encoding in all supported browsers.':
-    'Verifique esta codificación de video en todos los navegadores compatibles.',
-  'Video label is required.': 'Se requiere la etiqueta del video.',
-  'Video sources must be an array.': 'Las fuentes de video deben ser una matriz.',
-  'Width must be a positive whole number.': 'El ancho debe ser un número entero positivo.',
+  transcriptHtmlNotText: 'El HTML integrado de la transcripción debe ser texto.',
+  transcriptHtmlUnreadable:
+    'El HTML integrado de la transcripción debe contener contenido seguro y legible.',
+  transcriptNotObject: 'La transcripción debe ser un objeto.',
+  transcriptPlainTextNotText: 'El contenido sin formato de la transcripción debe ser texto.',
+  transcriptRecommended:
+    'Agregue una transcripción para que el contenido siga disponible cuando la reproducción o el acceso auditivo sean limitados.',
+  transcriptUrlUnsafe: 'Ingrese una URL HTTP(S) segura o una URL relativa para la transcripción.',
+  uiLanguageInvalid: 'Ingrese un idioma BCP 47 válido para la interfaz del estudiante.',
+  uiTextNotObject: 'Las sustituciones de texto de la interfaz del estudiante deben ser un objeto.',
+  uiTextValueInvalid:
+    'Las sustituciones de texto de la interfaz del estudiante deben ser cadenas no vacías.',
+  visualSupportInvalid:
+    'Elija necesita revisión, sin información importante, descrita o no descrita.',
+  visualSupportUnresolved: 'Revise si la información visual importante se describe en el audio.',
+  visualsUndescribed:
+    'La información visual importante debe describirse en el audio principal o integrado.',
+  widthInvalid: 'El ancho debe ser un número entero positivo.',
+  unknownUiTextKey: 'Clave de texto desconocida:',
 });
 
 export type AuthorLocale = keyof typeof AUTHOR_MESSAGES;
@@ -246,10 +233,19 @@ export function resolveAuthorLocale(locale: string | undefined): AuthorLocale {
   return locale?.toLowerCase().startsWith('es') ? 'es' : 'en';
 }
 
+const CONTROLLER_MESSAGE_KEYS: ReadonlyMap<string, ControllerMessageKey> = new Map(
+  (Object.entries(CONTROLLER_MESSAGES) as Array<[ControllerMessageKey, string]>).map(
+    ([key, message]) => [message, key]
+  )
+);
+
 export function localizeAuthorFinding(message: string, locale: AuthorLocale): string {
   if (locale !== 'es') return message;
-  if (message.startsWith('Unknown learner UI text key:')) {
-    return message.replace('Unknown learner UI text key:', 'Clave de texto desconocida:');
+  const key = CONTROLLER_MESSAGE_KEYS.get(message);
+  if (key) return SPANISH_CONTROLLER_MESSAGES[key];
+  const unknownKeyPrefix = CONTROLLER_MESSAGES.unknownUiTextKey;
+  if (message.startsWith(unknownKeyPrefix)) {
+    return `${SPANISH_CONTROLLER_MESSAGES.unknownUiTextKey}${message.slice(unknownKeyPrefix.length)}`;
   }
-  return SPANISH_CONTROLLER_MESSAGES[message] ?? message;
+  return message;
 }

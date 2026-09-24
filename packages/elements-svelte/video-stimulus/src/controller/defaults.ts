@@ -1,4 +1,20 @@
-import type { VideoStimulusModel } from '../types.js';
+import type {
+  VideoStimulusAccessibilityProfile,
+  VideoStimulusModel,
+  VideoStimulusPresentation,
+} from '../types.js';
+
+export const presentation: Required<VideoStimulusPresentation> = {
+  showLabel: true,
+  showDescription: true,
+  transcriptInitiallyExpanded: false,
+};
+
+export const accessibilityProfile: Required<VideoStimulusAccessibilityProfile> = {
+  audioContent: 'unknown',
+  captionSupport: 'unknown',
+  visualSupport: 'unknown',
+};
 
 export const model: VideoStimulusModel = {
   element: 'video-stimulus',
@@ -11,16 +27,8 @@ export const model: VideoStimulusModel = {
     lang: '',
   },
   language: 'en',
-  presentation: {
-    showLabel: true,
-    showDescription: true,
-    transcriptInitiallyExpanded: false,
-  },
-  accessibilityProfile: {
-    audioContent: 'unknown',
-    captionSupport: 'unknown',
-    visualSupport: 'unknown',
-  },
+  presentation,
+  accessibilityProfile,
 };
 
 export const configuration = {

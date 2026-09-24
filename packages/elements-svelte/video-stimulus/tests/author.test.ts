@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
+import { localizeAuthorFinding } from '../src/author/i18n.js';
 import { AuthorComponent } from '../src/author/index.js';
+import { CONTROLLER_MESSAGES } from '../src/controller/messages.js';
 import type { VideoStimulusModel } from '../src/types.js';
 
 type Mounted = ReturnType<typeof mount>;
@@ -185,6 +187,17 @@ describe('video-stimulus author', () => {
     flushSync();
     expect(target.querySelector('select option[value="captions"]')).toHaveTextContent(
       'Subtítulos descriptivos'
+    );
+  });
+
+  it('translates every controller message by key', () => {
+    const messages = Object.values(CONTROLLER_MESSAGES);
+    expect(new Set(messages).size).toBe(messages.length);
+    for (const message of messages) {
+      expect(localizeAuthorFinding(message, 'es')).not.toBe(message);
+    }
+    expect(localizeAuthorFinding(`${CONTROLLER_MESSAGES.unknownUiTextKey} replay.`, 'es')).toBe(
+      'Clave de texto desconocida: replay.'
     );
   });
 });

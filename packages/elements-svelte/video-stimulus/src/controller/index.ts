@@ -1,10 +1,15 @@
 import type { MediaSource, TextTrackRef, TranscriptRef } from '@pie-element/shared-types';
 import { isSafeMediaSrc, normalizeMediaSources } from '@pie-players/pie-assessment-toolkit';
 import { resolveVideoStimulusUiText, VIDEO_STIMULUS_UI_TEXT_KEYS } from '../i18n.js';
+import {
+  accessibilityProfile as DEFAULT_ACCESSIBILITY_PROFILE,
+  model as DEFAULT_MODEL,
+  presentation as DEFAULT_PRESENTATION,
+} from './defaults.js';
+import { CONTROLLER_MESSAGES } from './messages.js';
 import type {
   AccessibilityFinding,
   AccessibilityReview,
-  VideoStimulusAccessibilityProfile,
   VideoStimulusEnvironment,
   VideoStimulusFieldKey,
   VideoStimulusMediaViewModel,
@@ -40,33 +45,6 @@ const VISUAL_SUPPORT_VALUES = new Set(['unknown', 'notMeaningful', 'described', 
 const GENERIC_LABELS = new Set(['media', 'untitled', 'video', 'video stimulus']);
 const COMMON_VIDEO_TYPES = new Set(['video/mp4', 'video/webm', 'video/ogg']);
 const UI_TEXT_KEYS = new Set<string>(VIDEO_STIMULUS_UI_TEXT_KEYS);
-
-const DEFAULT_PRESENTATION: Required<VideoStimulusPresentation> = {
-  showLabel: true,
-  showDescription: true,
-  transcriptInitiallyExpanded: false,
-};
-
-const DEFAULT_ACCESSIBILITY_PROFILE: Required<VideoStimulusAccessibilityProfile> = {
-  audioContent: 'unknown',
-  captionSupport: 'unknown',
-  visualSupport: 'unknown',
-};
-
-const DEFAULT_MODEL: VideoStimulusModel = {
-  element: 'video-stimulus',
-  media: {
-    version: 1,
-    id: '',
-    kind: 'video',
-    sources: [],
-    label: '',
-    lang: '',
-  },
-  language: 'en',
-  presentation: DEFAULT_PRESENTATION,
-  accessibilityProfile: DEFAULT_ACCESSIBILITY_PROFILE,
-};
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -196,9 +174,9 @@ function validateOptionalUrl(
 ): void {
   if (value === undefined || value === null || value === '') return;
   if (!isSafeMediaSrc(value)) {
-    setError(errors, field, 'Enter a safe HTTP(S), data, blob, or relative media URL.');
+    setError(errors, field, CONTROLLER_MESSAGES.mediaUrlUnsafe);
   } else if (durable && isBlobUrl(value)) {
-    setError(errors, field, 'Blob URLs are temporary and cannot be published.');
+    setError(errors, field, CONTROLLER_MESSAGES.blobUrlNotDurable);
   }
 }
 
@@ -209,42 +187,34 @@ function validateSourceRows(
 ): void {
   if (rawSources === undefined) return;
   if (!Array.isArray(rawSources)) {
-    setError(errors, 'media.sources', 'Video sources must be an array.');
+    setError(errors, 'media.sources', CONTROLLER_MESSAGES.sourcesNotArray);
     return;
   }
 
   const seen = new Set<string>();
   rawSources.forEach((rawSource, index) => {
     if (!isRecord(rawSource)) {
-      setError(errors, `media.sources.${index}.src`, 'Source must be an object with a URL.');
+      setError(errors, `media.sources.${index}.src`, CONTROLLER_MESSAGES.sourceNotObject);
       return;
     }
 
     const src = trimmed(rawSource.src);
     if (src) {
       if (!isSafeMediaSrc(src)) {
-        setError(
-          errors,
-          `media.sources.${index}.src`,
-          'Enter a safe HTTP(S), data, blob, or relative video URL.'
-        );
+        setError(errors, `media.sources.${index}.src`, CONTROLLER_MESSAGES.sourceUrlUnsafe);
       } else if (strict && isBlobUrl(src)) {
-        setError(
-          errors,
-          `media.sources.${index}.src`,
-          'Blob URLs are temporary and cannot be published.'
-        );
+        setError(errors, `media.sources.${index}.src`, CONTROLLER_MESSAGES.blobUrlNotDurable);
       } else if (seen.has(src)) {
-        setError(errors, `media.sources.${index}.src`, 'Each source URL must be unique.');
+        setError(errors, `media.sources.${index}.src`, CONTROLLER_MESSAGES.sourceUrlDuplicate);
       }
       seen.add(src);
     } else if (strict) {
-      setError(errors, `media.sources.${index}.src`, 'A source URL is required.');
+      setError(errors, `media.sources.${index}.src`, CONTROLLER_MESSAGES.sourceUrlRequired);
     }
 
     const type = trimmed(rawSource.type);
     if (type && !/^video\/[a-z0-9.+-]+$/i.test(type)) {
-      setError(errors, `media.sources.${index}.type`, 'MIME type must start with "video/".');
+      setError(errors, `media.sources.${index}.type`, CONTROLLER_MESSAGES.sourceTypeNotVideo);
     }
 
     for (const field of ['width', 'height'] as const) {
@@ -252,12 +222,12 @@ function validateSourceRows(
         setError(
           errors,
           `media.sources.${index}.${field}`,
-          `${field === 'width' ? 'Width' : 'Height'} must be a positive whole number.`
+          field === 'width' ? CONTROLLER_MESSAGES.widthInvalid : CONTROLLER_MESSAGES.heightInvalid
         );
       }
     }
     if (rawSource.bitrate !== undefined && finitePositive(rawSource.bitrate) === undefined) {
-      setError(errors, `media.sources.${index}.bitrate`, 'Bitrate must be a positive number.');
+      setError(errors, `media.sources.${index}.bitrate`, CONTROLLER_MESSAGES.bitrateInvalid);
     }
   });
 }
@@ -269,7 +239,7 @@ function validateTrackRows(
 ): void {
   if (rawTracks === undefined) return;
   if (!Array.isArray(rawTracks)) {
-    setError(errors, 'media.tracks', 'Text tracks must be an array.');
+    setError(errors, 'media.tracks', CONTROLLER_MESSAGES.tracksNotArray);
     return;
   }
 
@@ -277,47 +247,39 @@ function validateTrackRows(
   const seenSources = new Set<string>();
   rawTracks.forEach((rawTrack, index) => {
     if (!isRecord(rawTrack)) {
-      setError(errors, `media.tracks.${index}.src`, 'Track must be an object.');
+      setError(errors, `media.tracks.${index}.src`, CONTROLLER_MESSAGES.trackNotObject);
       return;
     }
 
     const src = trimmed(rawTrack.src);
     if (!src) {
-      setError(errors, `media.tracks.${index}.src`, 'Track URL is required.');
+      setError(errors, `media.tracks.${index}.src`, CONTROLLER_MESSAGES.trackUrlRequired);
     } else if (!isSafeMediaSrc(src)) {
-      setError(errors, `media.tracks.${index}.src`, 'Enter a safe text-track URL.');
+      setError(errors, `media.tracks.${index}.src`, CONTROLLER_MESSAGES.trackUrlUnsafe);
     } else if (strict && isBlobUrl(src)) {
-      setError(
-        errors,
-        `media.tracks.${index}.src`,
-        'Blob URLs are temporary and cannot be published.'
-      );
+      setError(errors, `media.tracks.${index}.src`, CONTROLLER_MESSAGES.blobUrlNotDurable);
     } else if (seenSources.has(src)) {
-      setError(errors, `media.tracks.${index}.src`, 'Each text-track URL must be unique.');
+      setError(errors, `media.tracks.${index}.src`, CONTROLLER_MESSAGES.trackUrlDuplicate);
     }
     if (src) seenSources.add(src);
 
     if (typeof rawTrack.kind !== 'string' || !TRACK_KINDS.has(rawTrack.kind)) {
-      setError(
-        errors,
-        `media.tracks.${index}.kind`,
-        'Choose captions, subtitles, descriptions, chapters, or metadata.'
-      );
+      setError(errors, `media.tracks.${index}.kind`, CONTROLLER_MESSAGES.trackKindInvalid);
     }
     if (!isValidLanguageTag(rawTrack.lang)) {
-      setError(errors, `media.tracks.${index}.lang`, 'Enter a valid BCP 47 language tag.');
+      setError(errors, `media.tracks.${index}.lang`, CONTROLLER_MESSAGES.languageTagInvalid);
     }
     if (!trimmed(rawTrack.label)) {
-      setError(errors, `media.tracks.${index}.label`, 'Track label is required.');
+      setError(errors, `media.tracks.${index}.label`, CONTROLLER_MESSAGES.trackLabelRequired);
     }
     if (rawTrack.default !== undefined && typeof rawTrack.default !== 'boolean') {
-      setError(errors, `media.tracks.${index}.default`, 'Default must be true or false.');
+      setError(errors, `media.tracks.${index}.default`, CONTROLLER_MESSAGES.trackDefaultInvalid);
     }
     if (rawTrack.default === true) defaultCount += 1;
   });
 
   if (defaultCount > 1) {
-    setError(errors, 'media.tracks', 'Only one text track can be the default.');
+    setError(errors, 'media.tracks', CONTROLLER_MESSAGES.multipleDefaultTracks);
   }
 }
 
@@ -357,63 +319,55 @@ function validateTranscript(
 ): void {
   if (rawTranscript === undefined) return;
   if (!isRecord(rawTranscript)) {
-    setError(errors, 'media.transcript', 'Transcript must be an object.');
+    setError(errors, 'media.transcript', CONTROLLER_MESSAGES.transcriptNotObject);
     return;
   }
 
   if (trimmed(rawTranscript.src)) {
     if (strict && isBlobUrl(rawTranscript.src)) {
-      setError(errors, 'media.transcript.src', 'Blob URLs are temporary and cannot be published.');
+      setError(errors, 'media.transcript.src', CONTROLLER_MESSAGES.blobUrlNotDurable);
     } else if (!isSafeTranscriptSrc(rawTranscript.src)) {
-      setError(errors, 'media.transcript.src', 'Enter a safe HTTP(S) or relative transcript URL.');
+      setError(errors, 'media.transcript.src', CONTROLLER_MESSAGES.transcriptUrlUnsafe);
     }
   }
   if (rawTranscript.html !== undefined && typeof rawTranscript.html !== 'string') {
-    setError(errors, 'media.transcript.html', 'Inline transcript HTML must be text.');
+    setError(errors, 'media.transcript.html', CONTROLLER_MESSAGES.transcriptHtmlNotText);
   }
   if (rawTranscript.plainText !== undefined && typeof rawTranscript.plainText !== 'string') {
-    setError(errors, 'media.transcript.plainText', 'Plain transcript content must be text.');
+    setError(errors, 'media.transcript.plainText', CONTROLLER_MESSAGES.transcriptPlainTextNotText);
   }
   if (rawTranscript.lang !== undefined && !isValidLanguageTag(rawTranscript.lang)) {
-    setError(errors, 'media.transcript.lang', 'Enter a valid BCP 47 language tag.');
+    setError(errors, 'media.transcript.lang', CONTROLLER_MESSAGES.languageTagInvalid);
   }
 
   const hasSuppliedContent = Boolean(
     trimmed(rawTranscript.src) || trimmed(rawTranscript.html) || trimmed(rawTranscript.plainText)
   );
   if (strict && !hasSuppliedContent) {
-    setError(
-      errors,
-      'media.transcript',
-      'Provide inline HTML, plain text, or an external transcript URL.'
-    );
+    setError(errors, 'media.transcript', CONTROLLER_MESSAGES.transcriptContentRequired);
   }
   if (trimmed(rawTranscript.html) && !hasReadableTranscriptHtml(String(rawTranscript.html))) {
-    setError(
-      errors,
-      'media.transcript.html',
-      'Inline transcript HTML must contain safe readable content.'
-    );
+    setError(errors, 'media.transcript.html', CONTROLLER_MESSAGES.transcriptHtmlUnreadable);
   }
 }
 
 function validateUiText(rawUiText: unknown, errors: VideoStimulusValidationErrors): void {
   if (rawUiText === undefined) return;
   if (!isRecord(rawUiText)) {
-    setError(errors, 'uiText', 'Learner UI text overrides must be an object.');
+    setError(errors, 'uiText', CONTROLLER_MESSAGES.uiTextNotObject);
     return;
   }
 
   for (const [key, value] of Object.entries(rawUiText)) {
     if (!UI_TEXT_KEYS.has(key)) {
-      setError(errors, 'uiText', `Unknown learner UI text key: ${key}.`);
+      setError(errors, 'uiText', `${CONTROLLER_MESSAGES.unknownUiTextKey} ${key}.`);
       continue;
     }
     if (!trimmed(value)) {
       setError(
         errors,
         `uiText.${key as VideoStimulusUiTextKey}`,
-        'Learner UI text overrides must be non-empty strings.'
+        CONTROLLER_MESSAGES.uiTextValueInvalid
       );
     }
   }
@@ -428,7 +382,7 @@ function validateAccessibilityShape(
     setError(
       errors,
       'accessibilityProfile.audioContent',
-      'Accessibility profile must be an object.'
+      CONTROLLER_MESSAGES.accessibilityProfileNotObject
     );
     return;
   }
@@ -437,7 +391,7 @@ function validateAccessibilityShape(
     (typeof rawProfile.audioContent !== 'string' ||
       !AUDIO_CONTENT_VALUES.has(rawProfile.audioContent))
   ) {
-    setError(errors, 'accessibilityProfile.audioContent', 'Choose unknown, none, or meaningful.');
+    setError(errors, 'accessibilityProfile.audioContent', CONTROLLER_MESSAGES.audioContentInvalid);
   }
   if (
     rawProfile.captionSupport !== undefined &&
@@ -447,7 +401,7 @@ function validateAccessibilityShape(
     setError(
       errors,
       'accessibilityProfile.captionSupport',
-      'Choose unknown, not required, track, open captions, or missing.'
+      CONTROLLER_MESSAGES.captionSupportInvalid
     );
   }
   if (
@@ -458,7 +412,7 @@ function validateAccessibilityShape(
     setError(
       errors,
       'accessibilityProfile.visualSupport',
-      'Choose unknown, not meaningful, described, or missing.'
+      CONTROLLER_MESSAGES.visualSupportInvalid
     );
   }
 }
@@ -467,36 +421,36 @@ export function validateDraft(model: unknown): VideoStimulusValidationErrors {
   const errors: VideoStimulusValidationErrors = {};
   if (model === undefined || model === null) return errors;
   if (!isRecord(model)) {
-    setError(errors, 'model', 'Model must be an object.');
+    setError(errors, 'model', CONTROLLER_MESSAGES.modelNotObject);
     return errors;
   }
 
   if (model.language !== undefined && !isValidLanguageTag(model.language)) {
-    setError(errors, 'language', 'Enter a valid BCP 47 learner UI language.');
+    setError(errors, 'language', CONTROLLER_MESSAGES.uiLanguageInvalid);
   }
   validateUiText(model.uiText, errors);
 
   if (model.media === undefined || model.media === null) return errors;
   if (!isRecord(model.media)) {
-    setError(errors, 'media', 'Media must be an object.');
+    setError(errors, 'media', CONTROLLER_MESSAGES.mediaNotObject);
     return errors;
   }
 
   const media = model.media;
   if (media.version !== undefined && media.version !== 1) {
-    setError(errors, 'media.version', 'Media asset version must be 1.');
+    setError(errors, 'media.version', CONTROLLER_MESSAGES.mediaVersionUnsupported);
   }
   if (media.kind !== undefined && media.kind !== 'video') {
-    setError(errors, 'media.kind', 'Media kind must be "video".');
+    setError(errors, 'media.kind', CONTROLLER_MESSAGES.mediaKindNotVideo);
   }
   if (media.lang !== undefined && media.lang !== '' && !isValidLanguageTag(media.lang)) {
-    setError(errors, 'media.lang', 'Enter a valid BCP 47 media language.');
+    setError(errors, 'media.lang', CONTROLLER_MESSAGES.mediaLanguageInvalid);
   }
   validateSourceRows(media.sources, errors, false);
   validateOptionalUrl(media.poster, 'media.poster', errors, false);
   validateOptionalUrl(media.thumbnail, 'media.thumbnail', errors, false);
   if (media.durationSeconds !== undefined && finitePositive(media.durationSeconds) === undefined) {
-    setError(errors, 'media.durationSeconds', 'Duration must be a positive number of seconds.');
+    setError(errors, 'media.durationSeconds', CONTROLLER_MESSAGES.durationInvalid);
   }
   validateTrackRows(media.tracks, errors, false);
   validateTranscript(media.transcript, errors, false);
@@ -545,77 +499,57 @@ export function reviewAccessibility(model: unknown): AccessibilityReview {
     setError(
       errors,
       'accessibilityProfile.audioContent',
-      'Review whether the video contains meaningful synchronized audio.'
+      CONTROLLER_MESSAGES.audioContentUnresolved
     );
   }
   if (captionSupport === undefined || captionSupport === 'unknown') {
     setError(
       errors,
       'accessibilityProfile.captionSupport',
-      'Resolve how captions are provided before publishing.'
+      CONTROLLER_MESSAGES.captionSupportUnresolved
     );
   }
   if (visualSupport === undefined || visualSupport === 'unknown') {
     setError(
       errors,
       'accessibilityProfile.visualSupport',
-      'Review whether important visual information is described in the audio.'
+      CONTROLLER_MESSAGES.visualSupportUnresolved
     );
   }
 
   if (audioContent === 'meaningful') {
     if (captionSupport === 'missing' || captionSupport === 'notRequired') {
-      setError(
-        errors,
-        'accessibilityProfile.captionSupport',
-        'Meaningful synchronized audio requires captions.'
-      );
+      setError(errors, 'accessibilityProfile.captionSupport', CONTROLLER_MESSAGES.captionsRequired);
     }
     if (captionSupport === 'track' && captionTracks === 0) {
       setError(
         errors,
         'accessibilityProfile.captionSupport',
-        'The captions-track declaration requires a complete captions track.'
+        CONTROLLER_MESSAGES.captionsTrackMissing
       );
     }
   }
 
   if (visualSupport === 'missing') {
-    setError(
-      errors,
-      'accessibilityProfile.visualSupport',
-      'Important visual information must be described in the main or integrated audio.'
-    );
+    setError(errors, 'accessibilityProfile.visualSupport', CONTROLLER_MESSAGES.visualsUndescribed);
   }
 
   const transcript = transcriptFromMedia(media);
   if (!transcript) {
-    addWarning(
-      warnings,
-      'media.transcript',
-      'Add a transcript so content remains available when playback or hearing access is limited.'
-    );
+    addWarning(warnings, 'media.transcript', CONTROLLER_MESSAGES.transcriptRecommended);
   } else if (transcript.src && !transcript.html && !transcript.plainText) {
-    addWarning(
-      warnings,
-      'media.transcript.src',
-      'The transcript is external-only; verify that the linked resource remains available and accessible.'
-    );
+    addWarning(warnings, 'media.transcript.src', CONTROLLER_MESSAGES.transcriptExternalOnly);
   }
 
   const tracks = media && Array.isArray(media.tracks) ? media.tracks : [];
   const hasSubtitles = tracks.some((track) => isRecord(track) && track.kind === 'subtitles');
   if (hasSubtitles && captionTracks === 0) {
-    addWarning(
-      warnings,
-      'media.tracks',
-      'Subtitles do not automatically include speakers and meaningful sounds; add captions when audio is meaningful.'
-    );
+    addWarning(warnings, 'media.tracks', CONTROLLER_MESSAGES.subtitlesAreNotCaptions);
   }
 
   const label = trimmed(media?.label)?.toLowerCase();
   if (label && GENERIC_LABELS.has(label)) {
-    addWarning(warnings, 'media.label', 'Use a specific label that identifies the video content.');
+    addWarning(warnings, 'media.label', CONTROLLER_MESSAGES.labelTooGeneric);
   }
 
   const sources = media && Array.isArray(media.sources) ? media.sources : [];
@@ -626,14 +560,10 @@ export function reviewAccessibility(model: unknown): AccessibilityReview {
       addWarning(
         warnings,
         `media.sources.${index}.type`,
-        'Declare the video MIME type to improve browser source selection.'
+        CONTROLLER_MESSAGES.sourceTypeRecommended
       );
     } else if (/^video\//.test(type) && !COMMON_VIDEO_TYPES.has(type)) {
-      addWarning(
-        warnings,
-        `media.sources.${index}.type`,
-        'Verify this video encoding in all supported browsers.'
-      );
+      addWarning(warnings, `media.sources.${index}.type`, CONTROLLER_MESSAGES.sourceTypeUncommon);
     }
   });
 
@@ -641,14 +571,14 @@ export function reviewAccessibility(model: unknown): AccessibilityReview {
     addWarning(
       warnings,
       'accessibilityProfile.captionSupport',
-      'Manually review caption timing, accuracy, speaker identification, and meaningful sounds.'
+      CONTROLLER_MESSAGES.reviewCaptionQuality
     );
   }
   if (visualSupport === 'described') {
     addWarning(
       warnings,
       'accessibilityProfile.visualSupport',
-      'Manually verify that the integrated audio describes every important visual detail.'
+      CONTROLLER_MESSAGES.reviewAudioDescription
     );
   }
 
@@ -658,28 +588,28 @@ export function reviewAccessibility(model: unknown): AccessibilityReview {
 export function validate(model: unknown): VideoStimulusValidationErrors {
   const errors: VideoStimulusValidationErrors = { ...validateDraft(model) };
   if (!isRecord(model)) {
-    setError(errors, 'model', 'Model must be an object.');
+    setError(errors, 'model', CONTROLLER_MESSAGES.modelNotObject);
     return errors;
   }
   if (!isRecord(model.media)) {
-    setError(errors, 'media', 'Media is required.');
+    setError(errors, 'media', CONTROLLER_MESSAGES.mediaRequired);
     return errors;
   }
 
   const media = model.media;
   if (media.version !== 1) {
-    setError(errors, 'media.version', 'Media asset version must be 1.');
+    setError(errors, 'media.version', CONTROLLER_MESSAGES.mediaVersionUnsupported);
   }
   if (media.kind !== 'video') {
-    setError(errors, 'media.kind', 'Media kind must be "video".');
+    setError(errors, 'media.kind', CONTROLLER_MESSAGES.mediaKindNotVideo);
   }
-  if (!trimmed(media.id)) setError(errors, 'media.id', 'Asset ID is required.');
-  if (!trimmed(media.label)) setError(errors, 'media.label', 'Video label is required.');
+  if (!trimmed(media.id)) setError(errors, 'media.id', CONTROLLER_MESSAGES.assetIdRequired);
+  if (!trimmed(media.label)) setError(errors, 'media.label', CONTROLLER_MESSAGES.labelRequired);
   if (!isValidLanguageTag(media.lang)) {
-    setError(errors, 'media.lang', 'A valid BCP 47 media language is required.');
+    setError(errors, 'media.lang', CONTROLLER_MESSAGES.mediaLanguageRequired);
   }
   if (model.language !== undefined && !isValidLanguageTag(model.language)) {
-    setError(errors, 'language', 'Enter a valid BCP 47 learner UI language.');
+    setError(errors, 'language', CONTROLLER_MESSAGES.uiLanguageInvalid);
   }
 
   validateSourceRows(media.sources, errors, true);
@@ -687,7 +617,7 @@ export function validate(model: unknown): VideoStimulusValidationErrors {
     ? media.sources.filter((source) => isRecord(source) && isSafeDurableUrl(source.src))
     : [];
   if (playableSources.length === 0) {
-    setError(errors, 'media.sources', 'At least one safe, durable video source is required.');
+    setError(errors, 'media.sources', CONTROLLER_MESSAGES.playableSourceRequired);
   }
 
   validateOptionalUrl(media.poster, 'media.poster', errors, true);
