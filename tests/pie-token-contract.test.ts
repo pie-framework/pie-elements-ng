@@ -27,6 +27,7 @@ const REGISTERED_CANONICAL_TOKENS = new Set([
   '--pie-focus-checked-border',
   '--pie-incorrect-icon',
   '--pie-incorrect-secondary',
+  '--pie-primary',
   '--pie-secondary-background',
   '--pie-tertiary',
   '--pie-tertiary-light',
