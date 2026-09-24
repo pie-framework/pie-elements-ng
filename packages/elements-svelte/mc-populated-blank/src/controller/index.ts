@@ -87,11 +87,18 @@ export const createDefaultModel = (model: McpbQuestion = {}) =>
  * values for the rest. Starter content here would reach a learner as the
  * item's prompt or choices.
  */
-export const normalize = (question: McpbQuestion = {}) => withDefaults(defaults.model, question);
+export const normalize = (question: McpbQuestion = {}) => {
+  const { shuffle, ...rest } = question || {};
+  return {
+    ...withDefaults(defaults.model, rest),
+    // `lockChoiceOrder` alone decides the order, as in multiple-choice. Older items
+    // spell an unlocked order `shuffle: true`, which counts only when it is unset.
+    lockChoiceOrder:
+      typeof rest.lockChoiceOrder === 'boolean' ? rest.lockChoiceOrder : shuffle !== true,
+  };
+};
 
 export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
-
-const shouldShuffleChoices = (question: McpbQuestion) => !!question?.shuffle;
 
 const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) => {
   if (question?.lockChoiceOrder) return true;
@@ -157,11 +164,7 @@ const getOrderedChoices = async (
   updateSession?: UpdateSessionFn
 ) => {
   const choices = Array.isArray(question?.choices) ? [...question.choices] : [];
-  if (!choices.length || !shouldShuffleChoices(question)) {
-    return choices;
-  }
-
-  if (shouldLockChoices(question, env || {})) {
+  if (!choices.length || shouldLockChoices(question, env || {})) {
     return choices;
   }
 
@@ -268,14 +271,31 @@ export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEn
   });
 };
 
-export const validate = (question: McpbQuestion = {}, _config: Record<string, unknown> = {}) => {
-  const errors: Record<string, string> = {};
+/** Markup with its tags removed, keeping media an author can answer from. */
+const getContent = (html?: string) =>
+  (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '').trim();
 
-  if (question.promptEnabled) {
-    const p = question.prompt?.trim() || '';
-    if (!p || p === '<p></p>') {
-      errors.prompt = 'Prompt is required when prompt is enabled';
-    }
+type ValidateConfig = {
+  minAnswerChoices?: number;
+  maxAnswerChoices?: number;
+  prompt?: { required?: boolean };
+  teacherInstructions?: { required?: boolean };
+};
+
+/**
+ * Authoring errors in multiple-choice's shape: a message per field, and under
+ * `choices` a message per choice keyed by its id.
+ */
+export const validate = (question: McpbQuestion = {}, config: ValidateConfig = {}) => {
+  const errors: Record<string, string | Record<string, string>> = {};
+  const { minAnswerChoices = 2, maxAnswerChoices } = config;
+
+  if ((question.promptEnabled || config.prompt?.required) && !getContent(question.prompt)) {
+    errors.prompt = 'This field is required.';
+  }
+
+  if (config.teacherInstructions?.required && !getContent(question.teacherInstructions)) {
+    errors.teacherInstructions = 'This field is required.';
   }
 
   const interactionMode = question.interactionMode || 'populate_blank';
@@ -296,45 +316,51 @@ export const validate = (question: McpbQuestion = {}, _config: Record<string, un
   }
 
   const choices = Array.isArray(question.choices) ? question.choices : [];
-  if (choices.length < 2) {
-    errors.choices = 'At least two choices are required';
+  if (choices.length < minAnswerChoices) {
+    errors.answerChoices = `There should be at least ${minAnswerChoices} choices defined.`;
+  } else if (maxAnswerChoices != null && choices.length > maxAnswerChoices) {
+    errors.answerChoices = `No more than ${maxAnswerChoices} choices should be defined.`;
   }
 
   const mode = question.choiceMode || 'text';
+  const choicesErrors: Record<string, string> = {};
   const seenIds = new Set<string>();
-  for (let i = 0; i < choices.length; i++) {
-    const c = choices[i];
+  const seenLabels = new Set<string>();
+  choices.forEach((c, i) => {
+    const key = c?.id || String(i);
     if (!c?.id) {
-      errors.choices = `Choice ${i + 1} is missing an id`;
-      break;
+      choicesErrors[key] = 'Choice needs an id.';
+      return;
     }
     // The session stores the picked id, so two choices sharing one cannot be told apart.
     if (seenIds.has(c.id)) {
-      errors.choices = `Choice ${i + 1} repeats the id "${c.id}"`;
-      break;
+      choicesErrors[key] = 'Choice id should be unique.';
+      return;
     }
     seenIds.add(c.id);
     if (mode === 'text') {
-      const lbl = (c.labelHtml || '').trim();
-      if (!lbl || lbl === '<p></p>') {
-        errors.choices = `Choice ${i + 1} needs label text`;
-        break;
+      const label = getContent(c.labelHtml);
+      if (!label) {
+        choicesErrors[key] = 'Content should not be empty.';
+      } else if (seenLabels.has(label)) {
+        choicesErrors[key] = 'Content should be unique.';
       }
-    } else {
-      if (!c.imageUrl?.trim()) {
-        errors.choices = `Choice ${i + 1} needs an image URL`;
-        break;
-      }
-      if (!c.imageAlt?.trim()) {
-        errors.choices = `Choice ${i + 1} needs image alt text`;
-        break;
-      }
+      seenLabels.add(label);
+    } else if (!c.imageUrl?.trim()) {
+      choicesErrors[key] = 'An image is required.';
+    } else if (!c.imageAlt?.trim()) {
+      choicesErrors[key] = 'Image alt text is required.';
     }
+  });
+  if (Object.keys(choicesErrors).length) {
+    errors.choices = choicesErrors;
   }
 
   const correct = question.correctChoiceId;
-  if (!correct || !choices.some((c) => c.id === correct)) {
-    errors.correctChoiceId = 'Correct choice must match one of the choice ids';
+  if (!correct) {
+    errors.correctResponse = 'No correct response defined.';
+  } else if (!choices.some((c) => c?.id === correct)) {
+    errors.correctResponse = 'The correct response must be one of the choices.';
   }
 
   if (question.hasAudio) {

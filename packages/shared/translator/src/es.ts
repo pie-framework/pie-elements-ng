@@ -84,6 +84,9 @@ export default {
       listen: 'Escuchar',
       listenSilentAlt: 'Escuchar. Repetir las instrucciones.',
       listenPlayingAlt: 'Escuchar. Estas son las instrucciones.',
+      printAudio: 'Audio:',
+      printTranscript: 'Transcripción:',
+      printKey: '(clave)',
     },
     multipleChoice: {
       minSelections: 'Seleccione al menos {{minSelections}}.',
@@ -140,6 +143,8 @@ export default {
     incorrect: 'Incorrect',
     showCorrectAnswer: 'Mostrar respuesta correcta',
     hideCorrectAnswer: 'Ocultar respuesta correcta',
+    showTeacherInstructions: 'Mostrar instrucciones para el maestro',
+    hideTeacherInstructions: 'Ocultar instrucciones para el maestro',
     commonCorrectAnswerWithAlternates:
       'Nota: La respuesta que se muestra arriba es la respuesta correcta más común para esta pregunta. También se definen una o más respuestas correctas adicionales, y también se reconocerán como correctas.',
     warning: 'Advertencia',

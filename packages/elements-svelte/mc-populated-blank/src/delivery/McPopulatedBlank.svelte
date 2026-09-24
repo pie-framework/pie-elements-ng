@@ -14,6 +14,7 @@ import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-eve
 import AudioPlayer from './AudioPlayer.svelte';
 import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
+import TeacherInstructions from './TeacherInstructions.svelte';
 import { computeChoiceCorrectness } from './computeChoiceCorrectness';
 import { computeLayoutProfile } from './computeLayoutProfile';
 import { computeLayoutStyle } from './computeLayoutStyle';
@@ -27,6 +28,7 @@ import {
   ensureVariantCssInjected,
   getVariantCssConfig,
   getVariantRootClass,
+  VARIANT_CSS_KEY,
 } from './variant-css-map';
 import { t as translate, tCommon } from './i18n';
 
@@ -100,7 +102,6 @@ const displayChoiceId = $derived(
     selectedId,
     isEvaluateMode,
     showCorrectAnswer,
-    alwaysShowCorrect: !!model?.alwaysShowCorrect,
     correctChoiceId: String(model?.correctChoiceId || ''),
   })
 );
@@ -156,9 +157,11 @@ const templateDescribedBy = $derived.by(() => (model?.prompt ? promptId : undefi
 // ---------------------------------------------------------------------------
 // Misc — locale, audio error, template parsing, variant CSS, style strings
 // ---------------------------------------------------------------------------
+// An item with no language gets no `lang`, so it inherits the host page's instead
+// of being announced as English. `es_MX` is written as the BCP 47 tag `es-MX`.
 const lang = $derived.by(() => {
-  const language = model?.language || model?.locale || '';
-  return language ? language.slice(0, 2) : 'en';
+  const language = String(model?.language || model?.locale || '').trim();
+  return language ? language.replace(/_/g, '-') : undefined;
 });
 const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
 const variantRootClass = $derived(getVariantRootClass(model?.customType));
@@ -285,18 +288,23 @@ $effect(() => {
 });
 
 $effect(() => {
-  ensureVariantCssInjected(variantCssConfig);
+  if (rootEl) ensureVariantCssInjected(variantCssConfig, rootEl);
 });
 </script>
 
 <div
   bind:this={rootEl}
-  class={`p-4 mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
+  class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
   style={layout.rootStyle}
+  data-mpb-css={VARIANT_CSS_KEY}
 >
+  {#if model?.teacherInstructions}
+    <TeacherInstructions html={model.teacherInstructions} language={model?.language} />
+  {/if}
+
   {#if model?.prompt}
-    <div class="mb-4 prose pie-prompt" id={promptId}>{@html model.prompt}</div>
+    <div class="pie-prompt" id={promptId}>{@html model.prompt}</div>
   {/if}
 
   {#if shouldShowCorrectAnswerToggle}
@@ -304,7 +312,7 @@ $effect(() => {
       <button
         bind:this={toggleCorrectAnswerButtonEl}
         type="button"
-        class="mb-3 pie-toggle-correct-answer"
+        class="pie-toggle-correct-answer"
         style="gap:var(--mpb-toggle-button-gap, 0.5rem);"
         aria-pressed={showCorrectAnswer}
         data-testid="show-correct-answer"
@@ -379,13 +387,13 @@ $effect(() => {
   />
 
   {#if model?.sentenceHtml}
-    <div class="mb-3 prose prose-p:my-1 sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
+    <div class="sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
       {@html model.sentenceHtml}
     </div>
   {/if}
 
   {#if !isAudioOnlyMode}
-    <div class="mb-4 template-line pie-template-line" aria-describedby={templateDescribedBy}
+    <div class="template-line pie-template-line" aria-describedby={templateDescribedBy}
       >{@html templateParts.before}<ClozeMarker
         {choiceMode}
         displayChoice={displayChoice}
@@ -404,11 +412,11 @@ $effect(() => {
 
   <p id={blankHintId} class="sr-only pie-blank-hint">{t('blankPreSelectionHint')}</p>
 
-  <fieldset class="border-0 p-0 m-0 pie-choices-fieldset" disabled={model?.disabled}>
+  <fieldset class="pie-choices-fieldset" disabled={model?.disabled}>
     <legend class="sr-only pie-choices-legend" id={legendId}>{legendText}</legend>
     <div
       bind:this={choicesGroupEl}
-      class={`pie-choices ${isHorizontalChoices ? 'flex flex-row flex-wrap items-start justify-center' : 'flex flex-col'}`}
+      class={`pie-choices ${isHorizontalChoices ? 'choices-horizontal' : 'choices-vertical'}`}
       style="gap:var(--mpb-choice-group-gap, 0.5rem);"
       role="radiogroup"
       tabindex="-1"
@@ -447,15 +455,42 @@ $effect(() => {
     border: 0;
   }
 
+  /* Layout is self-contained: PIE players ship no Tailwind, so no utility class or
+     preflight reset can be assumed. The blank slot, choice tiles and variant
+     max-widths are sized for border-box. */
+  .mc-populated-blank-root,
+  .mc-populated-blank-root :global(*),
+  .mc-populated-blank-root :global(*::before),
+  .mc-populated-blank-root :global(*::after) {
+    box-sizing: border-box;
+  }
+
+  /* An authored image on its own line (the sel_r1-s3 stimulus) would otherwise sit
+     on the text baseline and add the descender gap below it. */
+  .mc-populated-blank-root :global(img) {
+    vertical-align: middle;
+  }
+
   .mc-populated-blank-root {
     --mpb-focus-ring: var(
       --pie-focus-outline,
       var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))
     );
+    padding: 1rem;
   }
 
-  .mc-populated-blank-root :global(.prose) {
-    max-width: none;
+  .pie-prompt {
+    margin-bottom: 1rem;
+  }
+
+  /* Flush paragraphs, as the demo app's preflight reset rendered them. */
+  .pie-prompt :global(p),
+  .sentence-line :global(p) {
+    margin: 0;
+  }
+
+  .sentence-line {
+    margin-bottom: 0.75rem;
   }
 
   .pie-toggle-correct-answer {
@@ -464,9 +499,11 @@ $effect(() => {
     border: 0;
     background: transparent;
     padding: 0;
+    margin-bottom: 0.75rem;
     display: flex;
     justify-content: center;
     text-align: center;
+    font: inherit;
     color: var(--pie-text, black);
   }
 
@@ -511,11 +548,33 @@ $effect(() => {
 
   .template-line {
     white-space: pre-wrap;
+    margin-bottom: 1rem;
   }
 
   .template-line :global(p) {
     margin: 0;
     display: inline;
+  }
+
+  .pie-choices-fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .pie-choices {
+    display: flex;
+  }
+
+  .choices-horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .choices-vertical {
+    flex-direction: column;
   }
 
   .layout-audio_blank_only :global(.pie-audio-container),

@@ -34,6 +34,6 @@ export default {
     audioTranscript: '',
     locale: '',
     teacherInstructions: '',
-    teacherInstructionsEnabled: false,
+    teacherInstructionsEnabled: true,
   },
 };

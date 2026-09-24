@@ -82,6 +82,9 @@ export default {
       listen: 'Listen',
       listenSilentAlt: 'Repeat instructions',
       listenPlayingAlt: 'Instructions are playing',
+      printAudio: 'Audio:',
+      printTranscript: 'Transcript:',
+      printKey: '(key)',
     },
     multipleChoice: {
       minSelections: 'Select at least {{minSelections}}.',
@@ -138,6 +141,8 @@ export default {
     incorrect: 'Incorrect',
     showCorrectAnswer: 'Show correct answer',
     hideCorrectAnswer: 'Hide correct answer',
+    showTeacherInstructions: 'Show Teacher Instructions',
+    hideTeacherInstructions: 'Hide Teacher Instructions',
     commonCorrectAnswerWithAlternates:
       'Note: The answer shown above is the most common correct answer for this item. One or more additional correct answers are also defined, and will also be recognized as correct.',
     warning: 'Warning',

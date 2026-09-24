@@ -61,6 +61,9 @@ Notes:
 - **`audioButtonSkin`** / **`audioButtonSkinsByLocale`** (optional): override listen-button skin URLs
 - **`language`** (optional): the language of the learner-facing strings (`en_US`, `es_ES`, …), which come from `@pie-lib/translator` as in the React elements; `locale` stands in when it is unset
 - **`choiceGroupLabel`** (optional): accessibility label used when no visible prompt is present
+- **`lockChoiceOrder`** (optional): `false` shuffles the choices for a student, as in multiple-choice; `shuffle: true` is the older spelling and counts only when `lockChoiceOrder` is unset
+- **`teacherInstructions`** and **`teacherInstructionsEnabled`** (optional): shown to instructors in view and evaluate mode, and in an instructor's printout; unset `teacherInstructionsEnabled` shows them
+- **`printAnswerKey`** (optional): `false` leaves the answer key out of an instructor's printout; a student's printout never has it
 
 ### `layoutLimits` keys (all optional, positive numbers)
 
@@ -137,7 +140,7 @@ To avoid runtime dependency on cross-origin Learnosity stylesheet loading, this 
 - Variant mapping: `src/delivery/variant-css-map.ts`
 - Applied by `model.customType` (for example `sel_r1-_plusggg`)
 
-Each variant CSS file is intentionally scoped with `.mc-populated-blank-root.variant-*` selectors so styles only apply to this element instance and do not leak into other PIE elements.
+Every selector in a variant CSS file starts at `.mc-populated-blank-root` (`variant-css-scope.test.ts` enforces it), so the styles cannot leak into other PIE elements. At injection each root selector is narrowed to roots whose `data-mpb-css` carries a hash of this build's sheets, so two versions of the element on one page style only their own instances. The sheets go into the document head, or into the shadow root the element renders in.
 
 ### Maintenance workflow
 

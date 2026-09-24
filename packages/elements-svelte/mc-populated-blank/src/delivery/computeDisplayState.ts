@@ -46,19 +46,17 @@ export function computeFeatureAudioSkin(params: {
 
 /**
  * Returns the choice id that the ClozeMarker and selected-state highlight should display.
- * When the correct answer is revealed (alwaysShowCorrect or evaluate+showCorrectAnswer),
- * it shows the correct choice rather than the student's selection.
+ * While the correct answer is revealed in evaluate mode it is the correct choice.
+ * A player that shows the key outside evaluate hands over the correct-response
+ * session from `createCorrectResponseSession`, which is displayed as the selection.
  */
 export function computeDisplayChoiceId(params: {
   selectedId: string;
   isEvaluateMode: boolean;
   showCorrectAnswer: boolean;
-  alwaysShowCorrect: boolean;
   correctChoiceId: string;
 }): string {
-  const { selectedId, isEvaluateMode, showCorrectAnswer, alwaysShowCorrect, correctChoiceId } =
-    params;
-  if (alwaysShowCorrect && correctChoiceId) return correctChoiceId;
+  const { selectedId, isEvaluateMode, showCorrectAnswer, correctChoiceId } = params;
   if (isEvaluateMode && showCorrectAnswer && correctChoiceId) return correctChoiceId;
   return selectedId;
 }

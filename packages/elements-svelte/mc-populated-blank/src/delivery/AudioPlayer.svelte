@@ -122,7 +122,7 @@ $effect(() => {
 </script>
 
 {#if audioMode !== 'none'}
-  <div class="mb-4 audio-container pie-audio-container">
+  <div class="audio-container pie-audio-container">
     {#if audioMode === 'feature-button'}
       <audio
         bind:this={audioEl}
@@ -153,7 +153,7 @@ $effect(() => {
       <audio
         bind:this={audioEl}
         controls
-        class="w-full max-w-md pie-audio-player"
+        class="audio-controls pie-audio-player"
         preload="metadata"
         src={audioUrl}
       >
@@ -162,19 +162,48 @@ $effect(() => {
       {#if autoPlayPromptOpen}
         <button
           bind:this={autoplayEnableButtonEl}
-          class="mt-2 text-sm underline pie-audio-autoplay-enable"
+          class="autoplay-enable pie-audio-autoplay-enable"
           type="button"
         >
           {t('clickToEnableAutoplay', language)}
         </button>
       {/if}
     {:else if audioMode === 'error'}
-      <p class="text-sm text-red-700 pie-audio-error" role="alert">{audioErrorMessage}</p>
+      <p class="audio-error pie-audio-error" role="alert">{audioErrorMessage}</p>
     {/if}
   </div>
 {/if}
 
 <style>
+  .audio-container {
+    margin-bottom: 1rem;
+  }
+
+  .audio-controls {
+    display: block;
+    width: 100%;
+    max-width: 28rem;
+  }
+
+  .autoplay-enable {
+    margin-top: 0.5rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 0.875rem;
+    line-height: calc(1.25 / 0.875);
+    color: inherit;
+    text-decoration-line: underline;
+  }
+
+  .audio-error {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: calc(1.25 / 0.875);
+    color: var(--pie-incorrect-icon, #c10007);
+  }
+
   .listen-button {
     width: var(--mpb-listen-button-size, 128px);
     height: var(--mpb-listen-button-size, 128px);

@@ -12,11 +12,9 @@
  *
  * computeDisplayChoiceId
  *   D1. Normal gather: returns selectedId
- *   D2. alwaysShowCorrect=true: returns correctChoiceId regardless
- *   D3. alwaysShowCorrect=true, no correctChoiceId: returns selectedId
- *   D4. evaluate + showCorrectAnswer=true: returns correctChoiceId
- *   D5. evaluate + showCorrectAnswer=false: returns selectedId
- *   D6. Not evaluate + showCorrectAnswer=true: returns selectedId (not overridden outside evaluate)
+ *   D2. evaluate + showCorrectAnswer=true: returns correctChoiceId
+ *   D3. evaluate + showCorrectAnswer=false: returns selectedId
+ *   D4. Not evaluate + showCorrectAnswer=true: returns selectedId (not overridden outside evaluate)
  *
  * computeResultStatus
  *   R1. Not evaluate mode → empty string
@@ -134,7 +132,6 @@ describe('computeDisplayChoiceId', () => {
     selectedId: 'a',
     isEvaluateMode: false,
     showCorrectAnswer: false,
-    alwaysShowCorrect: false,
     correctChoiceId: 'b',
   };
 
@@ -142,29 +139,19 @@ describe('computeDisplayChoiceId', () => {
     expect(computeDisplayChoiceId({ ...base })).toBe('a');
   });
 
-  it('D2: alwaysShowCorrect=true → correctChoiceId', () => {
-    expect(computeDisplayChoiceId({ ...base, alwaysShowCorrect: true })).toBe('b');
-  });
-
-  it('D3: alwaysShowCorrect=true, no correctChoiceId → selectedId', () => {
-    expect(computeDisplayChoiceId({ ...base, alwaysShowCorrect: true, correctChoiceId: '' })).toBe(
-      'a'
-    );
-  });
-
-  it('D4: evaluate + showCorrectAnswer=true → correctChoiceId', () => {
+  it('D2: evaluate + showCorrectAnswer=true → correctChoiceId', () => {
     expect(computeDisplayChoiceId({ ...base, isEvaluateMode: true, showCorrectAnswer: true })).toBe(
       'b'
     );
   });
 
-  it('D5: evaluate + showCorrectAnswer=false → selectedId', () => {
+  it('D3: evaluate + showCorrectAnswer=false → selectedId', () => {
     expect(
       computeDisplayChoiceId({ ...base, isEvaluateMode: true, showCorrectAnswer: false })
     ).toBe('a');
   });
 
-  it('D6: not evaluate + showCorrectAnswer=true → selectedId (not overridden)', () => {
+  it('D4: not evaluate + showCorrectAnswer=true → selectedId (not overridden)', () => {
     expect(
       computeDisplayChoiceId({ ...base, isEvaluateMode: false, showCorrectAnswer: true })
     ).toBe('a');
