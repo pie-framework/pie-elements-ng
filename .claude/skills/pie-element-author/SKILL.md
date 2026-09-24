@@ -98,7 +98,7 @@ Use Svelte 5 runes throughout. Key rules:
 - Side effects: `$effect(() => { … })` — not `$: { … }`.
 - No `$:` reactive statements — those are Svelte 4 and silently misbehave in Svelte 5 rune-mode files.
 - Never add `tag: '...'` inside `<svelte:options customElement={...}>`. Svelte auto-defines that tag at module evaluation, conflicting with player-controlled registration and causing `CustomElementRegistry` duplicate-name errors.
-- Never use `createEventDispatcher` in a custom-element component: in Svelte 5 its events reach no listener on the host or above. Dispatch a DOM event on `$host()`, or use the helpers the dispatch sections below name.
+- Never use `createEventDispatcher` in a custom-element component: in Svelte 5 its events reach only listeners added on the element itself, never an ancestor's, where players listen. Dispatch a DOM event on `$host()`, or use the helpers the dispatch sections below name.
 - Prefix every class name in an element rendered with `shadow: 'none'` (`pie-settings-toggle`, not `toggle`): the host page's CSS reaches it, and a daisyUI `.toggle` or Tailwind `.contents` restyles a bare name.
 
 ## `session-changed` Event Dispatch

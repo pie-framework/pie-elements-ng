@@ -197,30 +197,32 @@ bun install
 
 ### Event Listeners Not Firing
 
-**Problem:** `session-change` events aren't received.
+**Problem:** `session-changed` events aren't received, or carry no session.
 
 **Solution:**
 1. Check event name spelling:
    ```javascript
    // ✅ Correct
-   element.addEventListener('session-change', handler);
+   element.addEventListener('session-changed', handler);
 
    // ❌ Wrong
+   element.addEventListener('session-change', handler);
    element.addEventListener('sessionChange', handler);
    ```
 2. Ensure element is mounted:
    ```javascript
    window.addEventListener('DOMContentLoaded', () => {
      const element = document.querySelector('pie-multiple-choice');
-     element.addEventListener('session-change', handler);
+     element.addEventListener('session-changed', handler);
    });
    ```
-3. Check event bubbles up:
+3. Read the response off the session object you set. The event bubbles, and its `detail` is `{ complete, component }` with no session ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract)):
    ```javascript
-   // Listen on parent
-   document.addEventListener('session-change', (e) => {
-     if (e.target.tagName === 'PIE-MULTIPLE-CHOICE') {
-       console.log('Session changed:', e.detail);
+   element.session = session;
+
+   document.addEventListener('session-changed', (e) => {
+     if (e.detail.component === 'pie-multiple-choice') {
+       console.log('Session changed:', session, 'complete:', e.detail.complete);
      }
    });
    ```
@@ -330,14 +332,7 @@ bun install
 **Problem:** "Warning: Invalid prop X supplied to Component"
 
 **Solution:**
-1. Use correct casing:
-   ```tsx
-   {/* ✅ Correct */}
-   <MultipleChoice onSessionChange={handler} />
-
-   {/* ❌ Wrong */}
-   <MultipleChoice onSessionchange={handler} />
-   ```
+1. Elements are custom elements with no callback props. React 18 passes JSX props to them as attributes, so set `model` and `session` through a ref and listen for `session-changed`, as in [React Components](API_REFERENCE.md#react-components).
 2. Check prop types match:
    ```tsx
    // Ensure session is object, not null initially
@@ -416,7 +411,7 @@ bun install
    ```javascript
    // Svelte: automatic cleanup
    onDestroy(() => {
-     element.removeEventListener('session-change', handler);
+     element.removeEventListener('session-changed', handler);
    });
    ```
 2. Destroy rich text editors:
