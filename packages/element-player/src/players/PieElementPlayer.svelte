@@ -48,7 +48,7 @@
 />
 
 <script lang="ts">
-import { createEventDispatcher, onMount } from 'svelte';
+import { onMount, untrack } from 'svelte';
 import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
 import type { MathRenderer } from '../lib/math-rendering-types';
 import { loadUnifiedPlayer } from '../lib/unified-player-loader';
@@ -103,7 +103,18 @@ let {
   session = $bindable(),
 }: Props = $props();
 
-const dispatch = createEventDispatcher();
+/**
+ * Dispatches from the host, bubbling and composed, as React elements and
+ * `<pie-item-player>` do; `createEventDispatcher` reaches only listeners on
+ * the element. Untracked, because the load effect emits synchronously and a
+ * listener's reads would become its dependencies.
+ */
+function emit(type: string, detail?: unknown) {
+  untrack(() => {
+    $host().dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
+  });
+}
+
 let container: HTMLElement;
 let elementMount: HTMLElement;
 let elementInstance = $state<HTMLElement | null>(null);
@@ -293,7 +304,7 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
       session = cloneValue(nextSession);
       lastAppliedSessionSignature = createValueSignature(nextSession);
       try {
-        dispatch('session-changed', forwardedDetail);
+        emit('session-changed', forwardedDetail);
       } finally {
         setTimeout(() => {
           isForwardingSessionEvent = false;
@@ -319,7 +330,7 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
       ) {
         nextModel = { ...currentModel, ...detail.update };
       }
-      dispatch('model-changed', nextModel);
+      emit('model-changed', nextModel);
     };
     elementInstance.addEventListener('model.updated', modelHandler, true);
   }
@@ -378,7 +389,7 @@ async function ensureLoaded() {
   const currentRequestId = ++requestId;
   if (activeLoadAbortController) {
     activeLoadAbortController.abort();
-    dispatch('build-state', {
+    emit('build-state', {
       loading: false,
       error: null,
       stage: 'cancelled',
@@ -393,7 +404,7 @@ async function ensureLoaded() {
         reason: 'superseded by new load request',
       },
     });
-    dispatch('load-cancelled', {
+    emit('load-cancelled', {
       reason: 'superseded by new load request',
       strategy: resolvedStrategy,
       view: resolvedView,
@@ -423,7 +434,7 @@ async function ensureLoaded() {
           return;
         }
         iifeRetryStatus = status;
-        dispatch('bundle-retry-status', status);
+        emit('bundle-retry-status', status);
         const loadingState = status.state === 'retrying';
         const detail = {
           loading: loadingState,
@@ -433,7 +444,7 @@ async function ensureLoaded() {
           view: resolvedView,
           retry: status,
         };
-        dispatch('build-state', detail);
+        emit('build-state', detail);
       },
       preloadedFallbackStrategy,
       rebuildVersion,
@@ -444,13 +455,13 @@ async function ensureLoaded() {
     }
 
     if (loaded.bundleMeta) {
-      dispatch('bundle-meta', loaded.bundleMeta);
+      emit('bundle-meta', loaded.bundleMeta);
     }
     if (loaded.controllerDiagnostic) {
-      dispatch('controller-load', loaded.controllerDiagnostic);
+      emit('controller-load', loaded.controllerDiagnostic);
     }
     if (loaded.controller && loaded.view === 'delivery' && loaded.strategy === 'iife') {
-      dispatch('controller-changed', loaded.controller);
+      emit('controller-changed', loaded.controller);
     }
 
     if (!elementInstance || currentTagName !== loaded.tagName) {
@@ -476,12 +487,12 @@ async function ensureLoaded() {
       elementMount.replaceChildren(elementInstance);
     }
 
-    dispatch('build-state', {
+    emit('build-state', {
       loading: false,
       error: null,
       stage: 'completed',
     });
-    dispatch('load-complete', {
+    emit('load-complete', {
       strategy: loaded.strategy,
       view: loaded.view,
       tagName: loaded.tagName,
@@ -511,8 +522,8 @@ async function ensureLoaded() {
       error = null;
       loading = false;
       iifeRetryStatus = retry;
-      dispatch('bundle-retry-status', retry);
-      dispatch('build-state', {
+      emit('bundle-retry-status', retry);
+      emit('build-state', {
         loading: false,
         error: null,
         stage: 'cancelled',
@@ -520,7 +531,7 @@ async function ensureLoaded() {
         view: resolvedView,
         retry,
       });
-      dispatch('load-cancelled', {
+      emit('load-cancelled', {
         reason: retry.reason || 'load cancelled',
         strategy: resolvedStrategy,
         view: resolvedView,
@@ -537,7 +548,7 @@ async function ensureLoaded() {
       existingRetry && (existingRetry.state === 'timeout' || existingRetry.state === 'completed')
         ? existingRetry
         : undefined;
-    dispatch('build-state', {
+    emit('build-state', {
       loading: false,
       error,
       stage: 'error',
@@ -545,7 +556,7 @@ async function ensureLoaded() {
       view: resolvedView,
       retry: terminalRetry,
     });
-    dispatch('player-error', {
+    emit('player-error', {
       error,
       strategy: resolvedStrategy,
       view: resolvedView,

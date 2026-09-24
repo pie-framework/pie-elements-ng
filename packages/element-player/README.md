@@ -126,6 +126,23 @@ For elements with import maps:
 - Handle math rendering automatically
 - Support for both React and Svelte elements
 
+### Events
+
+The player dispatches each event from `<pie-element-player>`, bubbling and composed, so a listener on the player, on an ancestor or on `document` hears it once, with `event.target` the player. The element's own `session-changed` stops at the player, which dispatches its copy in its place.
+
+| Event | When | `detail` |
+|---|---|---|
+| `session-changed` | delivery: the learner changes the session | the element's detail, with `session` the new session |
+| `model-changed` | author: the author edits the model | the whole model |
+| `load-complete` | the element is mounted | `strategy`, `view`, `tagName` |
+| `load-cancelled` | a newer load supersedes this one | `reason`, `strategy`, `view` |
+| `player-error` | the load fails | `error`, `strategy`, `view`, `retry` |
+| `build-state` | the load changes stage | `loading`, `error`, `stage`, and `strategy`, `view`, `retry` where known |
+| `bundle-retry-status` | IIFE: a bundle build is polled | the retry state |
+| `bundle-meta` | IIFE: the bundle loads | the bundle's metadata |
+| `controller-load` | the controller resolves | `status`, `source`, `packageName`, `strategy`, `view`, `message` |
+| `controller-changed` | IIFE delivery: the bundle's controller loads | the controller |
+
 ## Testing Elements Locally
 
 Use the existing demo commands to test elements:
