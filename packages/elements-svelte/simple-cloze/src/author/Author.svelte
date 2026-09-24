@@ -50,6 +50,7 @@ function handleAnswerChange(e: Event) {
       markup={model?.prompt || ""}
       onChange={handlePromptChange}
       placeholder="Enter your question here..."
+      ariaLabel="Prompt"
     />
   </div>
 

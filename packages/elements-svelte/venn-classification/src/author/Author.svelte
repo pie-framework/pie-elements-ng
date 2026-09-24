@@ -290,6 +290,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
           markup={m.prompt || ''}
           onChange={onPromptChange}
           placeholder="Enter a prompt for the Venn classification question..."
+          ariaLabel="Prompt"
         />
       {/if}
     </div>
