@@ -31,20 +31,26 @@
   text-align: start;
 }
 
-/* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 } */
+/* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 }
+   The red holds AA only on LSY's white page (5.1:1), so the answer carries that
+   surface: on a dark host it is 3.08:1. light-dark() would miss pie-players'
+   colour schemes, which declare no color-scheme. */
 .mc-populated-blank-root.variant-sr-vic .pie-blank-value {
   color: #cc3333;
+  background-color: #fff;
 }
 
 /* vic.scss: .rli-vic-selected { background-color: #fcfcd3 } applied to the
    whole distractor row (radio + label), not just the label wrapper. */
 .mc-populated-blank-root.variant-sr-vic .pie-choice.is-selected {
   background-color: #fcfcd3;
+  color: #000;
   border-radius: 6px;
 }
 
 .mc-populated-blank-root.variant-sr-vic .pie-choice.is-selected .pie-choice-label-wrap {
   background-color: transparent;
+  color: inherit;
 }
 
 /* vic.scss: distractor label text sits to the right of the radio — no centering. */
@@ -57,6 +63,7 @@
    the full row element, not only the inner label wrapper. */
 .mc-populated-blank-root.variant-sr-vic .pie-choice:not(.pie-choice-horizontal):hover {
   background-color: #f2f2f2;
+  color: #000;
   border-radius: 6px;
 }
 
@@ -64,9 +71,11 @@
   .pie-choice:not(.pie-choice-horizontal):hover
   .pie-choice-label-wrap {
   background-color: transparent;
+  color: inherit;
 }
 
 /* Selected state must win over hover — yellow persists when hovering a chosen row. */
 .mc-populated-blank-root.variant-sr-vic .pie-choice:not(.pie-choice-horizontal).is-selected:hover {
   background-color: #fcfcd3;
+  color: #000;
 }

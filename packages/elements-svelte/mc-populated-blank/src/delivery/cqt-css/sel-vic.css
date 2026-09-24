@@ -64,9 +64,13 @@
   margin-right: 6px;
 }
 
-/* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 } */
+/* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 }
+   The red holds AA only on LSY's white page (5.1:1), so the answer carries that
+   surface: on a dark host it is 3.08:1. light-dark() would miss pie-players'
+   colour schemes, which declare no color-scheme. */
 .mc-populated-blank-root.variant-sel-vic .pie-blank-value {
   color: #cc3333;
+  background-color: #fff;
 }
 
 /* sel_vic/main.scss: .sel-vic { max-width: 800px } — the fieldset/choices must
@@ -85,21 +89,25 @@
 /* vic.scss: .rli-vic-selected { background-color: #fcfcd3 } on the full row. */
 .mc-populated-blank-root.variant-sel-vic .pie-choice.is-selected {
   background-color: #fcfcd3;
+  color: #000;
   border-radius: 6px;
 }
 
 .mc-populated-blank-root.variant-sel-vic .pie-choice.is-selected .pie-choice-label-wrap {
   background-color: transparent;
+  color: inherit;
 }
 
 /* Selected state must win over hover. */
 .mc-populated-blank-root.variant-sel-vic .pie-choice:not(.pie-choice-horizontal).is-selected:hover {
   background-color: #fcfcd3;
+  color: #000;
 }
 
 /* vic.scss: .rli-vic-distractor:hover { background-color: #F2F2F2 } on the full row. */
 .mc-populated-blank-root.variant-sel-vic .pie-choice:not(.pie-choice-horizontal):hover {
   background-color: #f2f2f2;
+  color: #000;
   border-radius: 6px;
 }
 
@@ -107,6 +115,7 @@
   .pie-choice:not(.pie-choice-horizontal):hover
   .pie-choice-label-wrap {
   background-color: transparent;
+  color: inherit;
 }
 
 @media (min-width: 620px) {
