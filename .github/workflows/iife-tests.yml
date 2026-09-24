@@ -37,8 +37,6 @@ jobs:
         with:
           bun-version: 1.3.13
       - run: bun install --frozen-lockfile
-      - run: bun x svelte-kit sync
-        working-directory: apps/element-demo
       - run: bun run --cwd apps/element-demo generate-imports
       - run: bun run build
       - run: bunx playwright install --with-deps
