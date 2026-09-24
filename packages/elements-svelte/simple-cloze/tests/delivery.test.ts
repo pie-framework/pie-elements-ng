@@ -1,13 +1,10 @@
 /**
- * The session contract between this element and a player.
+ * The delivery element through its rendered component: what it shows for the
+ * session and model a player sets. The session contract every Svelte element
+ * shares is tested in `@pie-lib/delivery-events-svelte`.
  *
- * A player creates each entry with `findOrAddSession(session, model.id,
- * model.element)`, hands that object to `element.session`, and reads the
- * learner's response back off the same object. It registers the element under a
- * versioned tag and stamps that tag on the entry as `element`; `TAG` stands in
- * for it. On load it sets `element.model = …; element.session = …` in one task,
- * once the controller has run. The rendered component mounts a microtask after
- * connect.
+ * `TAG` stands in for the versioned tag a player registers the element under.
+ * The rendered component mounts a microtask after connect.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
@@ -18,7 +15,7 @@ vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath }));
 import SimpleClozeElement from '../src/delivery/index.js';
 import { model as buildViewModel } from '../src/controller/index.js';
 
-const TAG = 'simple-cloze--version-0-0-0-session-contract-test';
+const TAG = 'simple-cloze--version-0-0-0-delivery-test';
 if (!customElements.get(TAG)) {
   customElements.define(TAG, SimpleClozeElement as CustomElementConstructor);
 }
@@ -33,11 +30,12 @@ const QUESTION = {
 type Harness = {
   element: any;
   playerSession: Record<string, unknown>;
-  atDocument: CustomEvent[];
-  stop: () => void;
 };
 
-let harness: Harness | null = null;
+async function settle() {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  flushSync();
+}
 
 async function mountRendered(
   playerSession: Record<string, unknown> = { id: '1', element: TAG },
@@ -47,20 +45,8 @@ async function mountRendered(
   document.body.appendChild(element);
   element.model = await buildViewModel(QUESTION, playerSession, env);
   element.session = playerSession;
-
-  const atDocument: CustomEvent[] = [];
-  const listener = (event: Event) => atDocument.push(event as CustomEvent);
-  document.addEventListener('session-changed', listener);
-  harness = {
-    element,
-    playerSession,
-    atDocument,
-    stop: () => document.removeEventListener('session-changed', listener),
-  };
-
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  flushSync();
-  return harness;
+  await settle();
+  return { element, playerSession };
 }
 
 function input(element: HTMLElement): HTMLInputElement {
@@ -77,127 +63,12 @@ function type(element: HTMLElement, value: string) {
 }
 
 afterEach(() => {
-  harness?.stop();
-  harness = null;
   renderMath.mockReset();
   vi.restoreAllMocks();
   document.body.innerHTML = '';
 });
 
-async function settle() {
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  flushSync();
-}
-
-/** Every `model-set` and `session-changed` detail, in order, from creation on. */
-function recordEvents() {
-  const events: { type: string; complete: boolean }[] = [];
-  const listener = (event: Event) =>
-    events.push({ type: event.type, complete: (event as CustomEvent).detail.complete });
-  document.addEventListener('model-set', listener);
-  document.addEventListener('session-changed', listener);
-  return {
-    events,
-    stop: () => {
-      document.removeEventListener('model-set', listener);
-      document.removeEventListener('session-changed', listener);
-    },
-  };
-}
-
-describe('simple-cloze session contract', () => {
-  it("writes the response into the player's session object, keeping `id` and `element`", async () => {
-    const { element, playerSession } = await mountRendered();
-
-    type(element, '4');
-
-    expect(playerSession).toEqual({ id: '1', element: TAG, value: '4' });
-    expect(element.session.value).toBe('4');
-  });
-
-  it("returns the player's own session object after an update", async () => {
-    const { element, playerSession } = await mountRendered();
-
-    type(element, '4');
-
-    expect(element.session).toBe(playerSession);
-  });
-
-  it('returns a replacement it could not write into a frozen session', async () => {
-    const frozen = Object.freeze({ id: '1', element: TAG });
-    const { element } = await mountRendered(frozen);
-
-    type(element, '4');
-
-    expect(element.session).toEqual({ id: '1', element: TAG, value: '4' });
-    expect(frozen).toEqual({ id: '1', element: TAG });
-  });
-
-  it('reports a restored answered session as complete on model-set', async () => {
-    const recorded = recordEvents();
-    const playerSession = { id: '1', element: TAG, value: '4' };
-    const element = document.createElement(TAG) as any;
-    document.body.appendChild(element);
-
-    const env = { mode: 'gather', role: 'student' };
-    element.model = await buildViewModel(QUESTION, playerSession, env);
-    element.session = playerSession;
-    await settle();
-    recorded.stop();
-
-    expect(recorded.events).toContainEqual({ type: 'model-set', complete: true });
-    expect(recorded.events).not.toContainEqual({ type: 'model-set', complete: false });
-  });
-
-  it('reports a restored complete session as complete after the model arrives', async () => {
-    // As venn-classification: session, controller, model, the same session again.
-    const recorded = recordEvents();
-    const playerSession = { id: '1', element: TAG, value: '4' };
-    const element = document.createElement(TAG) as any;
-    document.body.appendChild(element);
-
-    element.session = playerSession;
-    element.model = await buildViewModel(QUESTION, playerSession, { mode: 'gather' });
-    element.session = playerSession;
-    await settle();
-    recorded.stop();
-
-    expect(recorded.events.filter((e) => e.type === 'session-changed').at(-1)).toEqual({
-      type: 'session-changed',
-      complete: true,
-    });
-  });
-
-  it('writes neither `id` nor `element` when the player set none', async () => {
-    const { element, playerSession } = await mountRendered({});
-
-    type(element, '4');
-
-    expect(playerSession).toEqual({ value: '4' });
-  });
-
-  it('announces the change under the player tag, with `complete` following the response', async () => {
-    const { element, atDocument } = await mountRendered();
-
-    type(element, '4');
-    type(element, '   ');
-
-    expect(atDocument.map((event) => event.detail)).toEqual([
-      { complete: true, component: TAG },
-      { complete: false, component: TAG },
-    ]);
-  });
-
-  it('clears the input when the player resets the session', async () => {
-    const { element } = await mountRendered();
-    type(element, '4');
-
-    element.session = { id: '1', element: TAG };
-    flushSync();
-
-    expect(input(element).value).toBe('');
-  });
-
+describe('simple-cloze session', () => {
   it('shows and follows a replacement session', async () => {
     const { element, playerSession } = await mountRendered();
     type(element, '4');

@@ -1,6 +1,8 @@
 /**
- * The session contract between this element and a player, through the rendered
- * custom element.
+ * The delivery element through its rendered component: the placements it
+ * writes, and how it lays out, announces and evaluates them. The session
+ * contract every Svelte element shares is tested in
+ * `@pie-lib/delivery-events-svelte`.
  *
  * A player creates the session entry with `findOrAddSession(session, model.id,
  * model.element)`, so the entry carries an `id` and the versioned tag it
@@ -31,7 +33,7 @@ import {
 import { model as controllerModel } from '../src/controller/index.js';
 import type { VennModel, VennSession } from '../src/types.js';
 
-const TAG = 'venn-classification--version-0-0-0-session-contract-test';
+const TAG = 'venn-classification--version-0-0-0-delivery-test';
 if (!customElements.get(TAG)) {
   customElements.define(TAG, VennClassificationElement as unknown as CustomElementConstructor);
 }
@@ -219,7 +221,7 @@ const placedEverywhere = (): PlayerSession => ({
   completed: true,
 });
 
-describe('venn-classification session contract', () => {
+describe('venn-classification placements', () => {
   it("writes a placement into the player's session, keeping its `id` and versioned `element`", async () => {
     const h = await mount();
 
@@ -254,40 +256,6 @@ describe('venn-classification session contract', () => {
     expect(h.playerSession).toEqual({ id: '1', element: TAG });
   });
 
-  it('names the registered tag as `component` on session-changed', async () => {
-    const h = await mount();
-    const before = h.events.length;
-
-    drag(h, 'frog', POINT.tray, POINT['1']);
-
-    expect(h.events).toHaveLength(before + 1);
-    expect(h.events.at(-1)?.detail).toEqual({ complete: false, component: TAG });
-  });
-
-  it('reports a restored complete session as complete after the model arrives', async () => {
-    const h = await mount(placedEverywhere());
-
-    expect(h.events.at(-1)?.detail).toEqual({ complete: true, component: TAG });
-  });
-
-  it('reports a restored complete session as complete on model-set', async () => {
-    // A player sets the model and then the session in the same task.
-    const modelSet: boolean[] = [];
-    const listener = (event: Event) => modelSet.push((event as CustomEvent).detail.complete);
-    document.addEventListener('model-set', listener);
-    const playerSession = placedEverywhere();
-    const element = document.createElement(TAG) as Harness['element'];
-    document.body.appendChild(element);
-    const vm = await controllerModel(QUESTION, playerSession, GATHER);
-
-    element.model = { id: QUESTION.id, element: QUESTION.element, ...vm };
-    element.session = playerSession;
-    await settle();
-    document.removeEventListener('model-set', listener);
-
-    expect(modelSet).toEqual([true]);
-  });
-
   it('flips `complete` on the last placement', async () => {
     const h = await mount({
       id: '1',
@@ -300,20 +268,6 @@ describe('venn-classification session contract', () => {
 
     expect(h.playerSession.completed).toBe(true);
     expect(h.events.at(-1)?.detail.complete).toBe(true);
-  });
-
-  it('re-renders when the player resets the session in place', async () => {
-    const h = await mount(placedEverywhere());
-    expect(where(h, 'crocodile')).toBe('diagram');
-
-    h.playerSession.placements = { crocodile: null, frog: null, dolphin: null };
-    h.playerSession.completed = false;
-    h.element.session = h.playerSession;
-    flushSync();
-
-    expect(where(h, 'crocodile')).toBe('tray');
-    expect(where(h, 'frog')).toBe('tray');
-    expect(h.events.at(-1)?.detail.complete).toBe(false);
   });
 
   it('commits nothing for a click that does not move the tile', async () => {

@@ -2,21 +2,26 @@
   customElement={{
     shadow: 'none',
     props: {
-      model: { type: 'Object' }
+      model: { type: 'Object' },
+      onModelChange: {}
     }
   }}
 />
 
 <script lang="ts">
-import { resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
 
-let { model = $bindable(), onChange }: { model?: any; onChange?: (model: any) => void } = $props();
+let {
+  model = $bindable(),
+  onChange,
+  onModelChange,
+}: {
+  model?: any;
+  onChange?: (model: any) => void;
+  onModelChange?: (model: any) => void;
+} = $props();
 
-let rootEl = $state<HTMLDivElement | null>(null);
 const answerInputId = `simple-cloze-correct-answer-${Math.random().toString(36).slice(2, 10)}`;
-
-const isAuthorHost = (node: unknown) => typeof (node as any)?.onModelChange === 'function';
 
 /**
  * The wrapper owns the model and announces the edit; `onChange` serves a
@@ -25,9 +30,8 @@ const isAuthorHost = (node: unknown) => typeof (node as any)?.onModelChange === 
  */
 function emitModelUpdate(patch: Record<string, unknown>) {
   const nextModel = { ...(model || {}), ...patch };
-  const host = resolveDeliveryHost(rootEl, { hostPredicate: isAuthorHost }) as any;
-  if (host) {
-    host.onModelChange(nextModel);
+  if (onModelChange) {
+    onModelChange(nextModel);
   } else {
     model = nextModel;
     onChange?.(nextModel);
@@ -43,7 +47,7 @@ function handleAnswerChange(e: Event) {
 }
 </script>
 
-<div class="simple-cloze-author" bind:this={rootEl}>
+<div class="simple-cloze-author">
   <div class="input-container">
     <span class="input-label">Prompt</span>
     <EditableHtml

@@ -2,13 +2,13 @@
   customElement={{
     shadow: 'none',
     props: {
-      model: { type: 'Object' }
+      model: { type: 'Object' },
+      onModelChange: {}
     }
   }}
 />
 
 <script lang="ts">
-import { resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
 import RegionPicker from './RegionPicker.svelte';
 import VennClassification from '../delivery/VennClassification.svelte';
@@ -26,15 +26,17 @@ import { stripHtml } from '../delivery/tile-accessible-name.js';
 let {
   model = $bindable(),
   onChange,
-}: { model?: VennModel; onChange?: (model: VennModel) => void } = $props();
-
-const isAuthorHost = (node: unknown) => typeof (node as any)?.onModelChange === 'function';
+  onModelChange,
+}: {
+  model?: VennModel;
+  onChange?: (model: VennModel) => void;
+  onModelChange?: (model: VennModel) => void;
+} = $props();
 
 /** The wrapper owns the model and announces the edit; `onChange` serves a component mounted without one. */
 function emit(next: VennModel) {
-  const host = resolveDeliveryHost(authorShellEl, { hostPredicate: isAuthorHost }) as any;
-  if (host) {
-    host.onModelChange(next);
+  if (onModelChange) {
+    onModelChange(next);
   } else {
     model = next;
     onChange?.(next);
