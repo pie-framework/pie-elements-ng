@@ -77,8 +77,6 @@ jobs:
         with:
           bun-version: 1.3.13
       - run: bun install --frozen-lockfile
-      - run: bun x svelte-kit sync
-        working-directory: apps/element-demo
       # Tests include package output validation, so build workspace outputs first.
       - run: bun run build
       - run: bun run test
