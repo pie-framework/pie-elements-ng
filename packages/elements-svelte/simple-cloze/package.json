@@ -65,6 +65,7 @@
     }
   },
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist",
