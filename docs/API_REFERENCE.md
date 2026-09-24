@@ -418,7 +418,7 @@ Fired by the author element on each edit, as a bubbling `ModelUpdatedEvent` from
 ```typescript
 interface ModelUpdatedEvent extends CustomEvent<{ update: ElementModel; reset: boolean }> {
   update: ElementModel; // the whole model, id and element included
-  reset: boolean; // true replaces the stored model, false merges over it
+  reset: boolean; // true: the item player replaces the stored model; legacy pie-author always merges
 }
 ```
 

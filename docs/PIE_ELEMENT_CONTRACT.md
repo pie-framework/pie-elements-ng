@@ -79,10 +79,10 @@ A player registers an element's author view under `<tag>-config` and sets two pr
 Each edit dispatches one `ModelUpdatedEvent` from `@pie-element/shared-configure-events`, on the author element itself:
 
 - `update` is the whole model, `id` and `element` included. The item player matches the stored model by `id` and drops an update without one; legacy `pie-author` matches by `id` and `element`.
-- `reset: false` merges `update` over the stored model and `reset: true` replaces it, so an edit that removes a top-level field sends `reset: true`.
+- `reset: true` tells the item player to replace the stored model and `reset: false` to merge `update` over it, so an edit that removes a top-level field sends `reset: true`. Legacy `pie-author` ignores `reset` and always merges, so it keeps a removed field.
 - The event bubbles. The item player listens on its root in the capture phase, legacy `pie-author` on its host in the bubble phase.
-- It is a `ModelUpdatedEvent` instance: `pie-author` reads `event.update` and `event.reset`, the item player `event.detail`, which carries the same two values.
-- Where the element exposes `model` for reading, it holds the edit before the event fires; `@pie-element/element-player` reads it in its handler.
+- It is a `ModelUpdatedEvent` instance: `pie-author` reads `event.update`, the item player `event.detail`, which carries `update` and `reset`.
+- `model`, where the element exposes it for reading, holds the edit before the event fires and keeps it when the element is detached and re-attached; `@pie-element/element-player` reads it in its handler. A Svelte custom element remounts from the value last assigned to its property, so a Svelte author assigns each edit through `$host().model`.
 
 `configuration` is the host's customization of the authoring view, merged over the element's defaults. Its entries follow `@pie-lib/config-ui`: an entry's `label` names its field in the design view and its setting in the settings panel, `settings: true` offers that setting, and `settingsPanelDisabled: true` hides the panel. Svelte author elements build the panel from `@pie-lib/config-ui-svelte`.
 
