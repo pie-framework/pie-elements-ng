@@ -140,8 +140,8 @@ export default {
   common: {
     undo: 'Deshacer',
     clearAll: 'Borrar todo',
-    correct: 'Correct',
-    incorrect: 'Incorrect',
+    correct: 'Correcto',
+    incorrect: 'Incorrecto',
     showCorrectAnswer: 'Mostrar respuesta correcta',
     hideCorrectAnswer: 'Ocultar respuesta correcta',
     showTeacherInstructions: 'Mostrar instrucciones para el maestro',
