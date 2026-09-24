@@ -260,7 +260,7 @@ test('audio-gated variant: isComplete is false when choice selected but audio no
 
   const isComplete = await page.evaluate(() => {
     const el = document.querySelector('mc-populated-blank-element') as any;
-    return el?._isComplete?.() ?? null;
+    return el?.isComplete?.() ?? null;
   });
   expect(isComplete).toBe(false);
 });
@@ -283,7 +283,7 @@ test('audio-gated variant: isComplete is true after audio ends', async ({ page }
 
   const isComplete = await page.evaluate(() => {
     const el = document.querySelector('mc-populated-blank-element') as any;
-    return el?._isComplete?.() ?? null;
+    return el?.isComplete?.() ?? null;
   });
   expect(isComplete).toBe(true);
 });

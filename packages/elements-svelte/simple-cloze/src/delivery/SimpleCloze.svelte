@@ -3,18 +3,22 @@
     shadow: 'none',
     props: {
       model: { type: 'Object' },
-      session: { type: 'Object' }
+      session: { type: 'Object' },
+      onSessionChange: {}
     }
   }}
 />
 
 <script lang="ts">
-import { forwardSessionChange } from '@pie-lib/delivery-events-svelte';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { t, tCommon } from '../i18n';
 import TeacherInstructions from './TeacherInstructions.svelte';
 
-let { model = null, session = null }: { model?: any; session?: any } = $props();
+let {
+  model = null,
+  session = null,
+  onSessionChange,
+}: { model?: any; session?: any; onSessionChange?: (session: any) => void } = $props();
 
 // Per-instance ids: a page can hold several instances, and several versions of
 // this element, each with its own Svelte runtime.
@@ -84,11 +88,7 @@ function handleInput(event: Event) {
 
   // The player owns the session's `id` and `element` (the versioned tag it
   // registered this element under), so neither is written here.
-  forwardSessionChange({
-    sourceEl: target,
-    session: { ...session, value: newValue },
-    complete: newValue.trim().length > 0,
-  });
+  onSessionChange?.({ ...session, value: newValue });
 }
 
 function toggleCorrectAnswer() {

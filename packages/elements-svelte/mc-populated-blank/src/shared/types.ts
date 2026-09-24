@@ -74,6 +74,7 @@ export interface McpbSession {
   choiceId?: string;
   audioStartTime?: number;
   audioEndTime?: number;
+  waitTime?: number;
   shuffledValues?: string[];
   data?: { shuffledValues?: string[] };
 }
