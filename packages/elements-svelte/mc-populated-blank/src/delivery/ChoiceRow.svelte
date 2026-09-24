@@ -144,8 +144,14 @@ let {
     cursor: pointer;
   }
 
+  /* Every background painted here carries its own text colour: a variant that
+     pins a light surface (the CQT sheets' #fcfcd3) would otherwise sit under
+     the scheme's text colour, which is near-white in a dark scheme. With neither
+     the hook nor --pie-text defined the declaration is invalid at computed-value
+     time and the colour inherits. */
   .choice-row-horizontal:hover .choice-tile {
     background: var(--mpb-choice-hover-bg, var(--pie-background-dark, #ecedf1));
+    color: var(--mpb-choice-hover-color, var(--pie-text));
   }
 
   .pie-choice-horizontal:not(.is-selected):not(:hover) .pie-choice-tile {
@@ -154,14 +160,17 @@ let {
 
   .choice-row-horizontal.is-selected .choice-tile {
     background: var(--mpb-choice-selected-bg, var(--pie-secondary-background, rgba(241, 241, 241, 1)));
+    color: var(--mpb-choice-selected-color, var(--pie-text));
   }
 
   .choice-row-horizontal.is-selected:hover .choice-tile {
     background: var(--mpb-choice-selected-bg, var(--pie-secondary-background, rgba(241, 241, 241, 1)));
+    color: var(--mpb-choice-selected-color, var(--pie-text));
   }
 
   .pie-choice:not(.pie-choice-horizontal):hover .pie-choice-label-wrap {
     background: var(--pie-background-dark, #ecedf1);
+    color: var(--pie-text);
   }
 
   .pie-choice:not(.pie-choice-horizontal):not(.is-selected):not(:hover) .pie-choice-label-wrap {
@@ -170,11 +179,13 @@ let {
 
   .pie-choice:not(.pie-choice-horizontal).is-selected .pie-choice-label-wrap {
     background: var(--pie-secondary-background, rgba(241, 241, 241, 1));
+    color: var(--pie-text);
     border-radius: 6px;
   }
 
   .pie-choice:not(.pie-choice-horizontal).is-selected:hover .pie-choice-label-wrap {
     background: var(--pie-secondary-background, rgba(241, 241, 241, 1));
+    color: var(--pie-text);
   }
 
   .pie-choice.choice-correct {
@@ -187,10 +198,12 @@ let {
 
   .pie-choice-horizontal.choice-correct .choice-tile {
     background: var(--pie-correct-secondary, #e8f5e9);
+    color: var(--pie-text);
   }
 
   .pie-choice-horizontal.choice-incorrect .choice-tile {
     background: var(--pie-incorrect-secondary, #ffebee);
+    color: var(--pie-text);
   }
 
   .pie-choice-feedback-badge {

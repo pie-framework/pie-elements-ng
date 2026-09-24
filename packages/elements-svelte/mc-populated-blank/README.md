@@ -88,7 +88,6 @@ Notes:
 - `audioBlankTemplateMarginTopRem`
 - `audioBlankTemplateMarginBottomRem`
 - `audioInstructionsMaxWidthPx`
-- `narrowHorizontalChoiceMaxWidthPx`
 - `stimulusGridColumnGapRem`
 - `stimulusGridRowGapRem`
 - `stimulusSentenceMarginTopRem`
@@ -113,7 +112,7 @@ Notes:
 - **Choice normalization:** choices are polymorphic by `choiceMode` (text via `labelHtml`, image via `imageUrl`/`imageAlt`).
 - **Delivery rendering:** template is split around `{{blank}}`; selected choice content is rendered into the blank slot.
 - **Layout limits are model-driven:** delivery reads `model.layoutLimits` (blank widths/underline widths, choice tile sizing, image max heights, listen button size, layout column minimums); defaults are CQT-informed but overrideable.
-- **Responsive parity controls:** `audioInstructionsMaxWidthPx` and `narrowHorizontalChoiceMaxWidthPx` are explicitly configurable to tune desktop vs narrow-width CQT behavior.
+- **Responsive parity control:** `audioInstructionsMaxWidthPx` is configurable to tune desktop vs narrow-width CQT behavior.
 - **Evaluate mode behavior:** when evaluate/correct-answer mode is enabled, delivery can render `correctChoiceId` in the blank/choice state.
 - **Audio error behavior:** no TTS fallback is used; when `hasAudio=true` and no playable `audioUrl` is provided, delivery shows an explicit error message.
 - **Prompt-off accessibility:** when `prompt` is empty, delivery uses `choiceGroupLabel` (or fallback UI text) as the radiogroup accessible name.
