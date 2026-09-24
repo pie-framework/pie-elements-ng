@@ -42,31 +42,39 @@ function removeResponse(state, targetTile) {
       `Tried to remove from index: ${targetTile.index}, but the id doesn't match: array: ${update}, target: ${targetTile.id}`,
     );
   }
+
   return update;
 }
 
 function updateResponse(state, from, to) {
   const { response, opts } = state;
   const update = cloneDeep(response);
+
   if (opts.includeTargets) {
     if (from.type === 'choice' && to.type === 'target') {
       update[to.index] = from.id;
       return update;
-    } else if (from.type === 'target' && to.type === 'choice') {
+    }
+
+    if (from.type === 'target' && to.type === 'choice') {
       update[from.index] = undefined;
       return update;
-    } else if (from.type === 'target' && to.type === 'target') {
-      return swap(response, from.index, to.index);
-    } else {
-      log('do nothing to the response');
-      return response;
     }
-  } else {
-    const fromIndex = state.response.findIndex((r) => r !== undefined && r === from.id);
-    const toIndex = state.response.findIndex((r) => r !== undefined && r === to.id);
-    log('fromIndex: ', fromIndex, 'toIndex:', toIndex);
-    return push(state.response, fromIndex, toIndex);
+
+    if (from.type === 'target' && to.type === 'target') {
+      update[to.index] = from.id;
+      update[from.index] = undefined;
+      return update;
+    }
+
+    log('do nothing to the response');
+    return response;
   }
+
+  const fromIndex = state.response.findIndex((r) => r !== undefined && r === from.id);
+  const toIndex = state.response.findIndex((r) => r !== undefined && r === to.id);
+  log('fromIndex: ', fromIndex, 'toIndex:', toIndex);
+  return push(state.response, fromIndex, toIndex);
 }
 
 function buildTiles(choices, response, outcomes, opts) {
