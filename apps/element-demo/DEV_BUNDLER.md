@@ -25,7 +25,8 @@ Notes:
 - The dev server uses a per-run temp workspace and cache.
 - Restarting `dev:demo` starts with a fresh local bundler cache/output.
 - Optional env var `DEMO_BUNDLER_RESOLUTION_MODE` controls dependency resolution:
-  - `workspace-fast` (default): resolves `@pie-*` from local workspace
+  - `workspace-fast` (default): bundles `@pie-*` from local workspace sources, so no package needs
+    building first
   - `prod-faithful`: resolves from package versions like production
 
 ## Switching IIFE bundle backends
