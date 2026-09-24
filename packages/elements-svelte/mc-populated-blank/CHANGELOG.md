@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.12
+
+### Patch Changes
+
+- 80b5869: A text answer in a sel_r1-g_plusggg blank sits on its underline, level with the stem word, as in Learnosity; image answers keep the 156px box.
+
 ## 0.3.0-next.11
 
 ### Patch Changes
