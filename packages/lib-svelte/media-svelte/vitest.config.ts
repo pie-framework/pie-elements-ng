@@ -7,6 +7,6 @@ export default defineConfig({
     conditions: ['browser'],
   },
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
   },
 });
