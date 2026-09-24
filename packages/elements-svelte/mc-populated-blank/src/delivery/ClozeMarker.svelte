@@ -1,4 +1,6 @@
 <script lang="ts">
+import { t } from './i18n';
+
 interface DisplayChoice {
   imageUrl?: string;
   imageAlt?: string;
@@ -13,6 +15,7 @@ let {
   blankWidth,
   blankBorderWidth,
   ariaLabel,
+  language,
 }: {
   choiceMode?: 'text' | 'image';
   displayChoice?: DisplayChoice;
@@ -21,6 +24,7 @@ let {
   blankWidth: string;
   blankBorderWidth: string;
   ariaLabel: string;
+  language?: string;
 } = $props();
 </script>
 
@@ -35,7 +39,7 @@ let {
   {#if choiceMode === 'image' && displayChoice?.imageUrl}
     <img
       src={displayChoice.imageUrl}
-      alt={displayChoice.imageAlt || 'Selected answer image'}
+      alt={displayChoice.imageAlt || t('selectedAnswerImage', language)}
       class="w-auto object-contain pie-blank-image"
       style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
     />
@@ -44,7 +48,7 @@ let {
   {:else}
     <span class="cloze-marker-empty">
       <span aria-hidden="true">&nbsp;</span>
-      <span class="sr-only">(blank)</span>
+      <span class="sr-only">{t('emptyBlank', language)}</span>
     </span>
   {/if}
 </span>

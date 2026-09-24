@@ -100,7 +100,7 @@ function makeGridSlot(
  * compose accessible names, and `model.regionLabels` for overrides).
  */
 export function buildLayout2Set(
-  model: Pick<VennModel, 'circles' | 'regionLabels'>,
+  model: Pick<VennModel, 'circles' | 'regionLabels' | 'language'>,
   geometry: DiagramGeometry = defaultGeometry2Set()
 ): DiagramLayout {
   if (model.circles?.length !== 2) {

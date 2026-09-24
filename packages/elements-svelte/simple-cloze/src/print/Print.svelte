@@ -9,6 +9,8 @@
 />
 
 <script lang="ts">
+import { t } from '../i18n';
+
 // Print players set `options` ({ role }) and the authored model, not a
 // controller view model, so answer visibility is decided here.
 let { model = null, options = null }: { model?: any; options?: any } = $props();
@@ -30,10 +32,10 @@ const showAnswerKey = $derived(isInstructor && !!correctAnswer);
 
   <div class="simple-cloze-print-response">
     {#if showAnswerKey}
-      <span class="simple-cloze-print-key-label">Correct answer:</span>
+      <span class="simple-cloze-print-key-label">{t('printCorrectAnswer', model?.language)}</span>
       <span class="simple-cloze-print-blank simple-cloze-print-blank--key">{correctAnswer}</span>
     {:else}
-      <span class="simple-cloze-print-blank" role="img" aria-label="Answer blank"></span>
+      <span class="simple-cloze-print-blank" role="img" aria-label={t('printAnswerBlank', model?.language)}></span>
     {/if}
   </div>
 </div>

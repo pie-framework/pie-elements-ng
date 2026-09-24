@@ -7,6 +7,7 @@ let {
   imageUrl,
   imageAlt,
   name,
+  language,
   correctness = 'neutral',
   held = false,
   invisible = false,
@@ -24,6 +25,8 @@ let {
   imageAlt?: string;
   /** Accessible name override; the delivery diagram adds the tile's region and verdict. */
   name?: string;
+  /** The model's `language`, for the fallback name of a tile with no label. */
+  language?: string;
   correctness?: 'correct' | 'incorrect' | 'unanswered' | 'neutral';
   held?: boolean;
   /** Origin tile during pointer drag: reserved in layout but visually hidden so the ghost shows instead. */
@@ -38,7 +41,9 @@ let {
   onclick?: (e: MouseEvent) => void;
 } = $props();
 
-const accessibleName = $derived(name ?? tileAccessibleName({ label, imageUrl, imageAlt }));
+const accessibleName = $derived(
+  name ?? tileAccessibleName({ label, imageUrl, imageAlt }, language)
+);
 const hasImage = $derived(!!(imageUrl ?? '').trim());
 const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
 </script>

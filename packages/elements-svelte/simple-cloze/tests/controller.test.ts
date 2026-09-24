@@ -197,4 +197,10 @@ describe('model', () => {
 
     expect(out.prompt).toBeNull();
   });
+
+  it('passes the language through for the translated strings', async () => {
+    const out = await model({ ...QUESTION, language: 'es_ES' }, session, { mode: 'gather' });
+
+    expect(out.language).toBe('es_ES');
+  });
 });

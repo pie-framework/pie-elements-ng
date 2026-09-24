@@ -80,6 +80,7 @@
   "devDependencies": {
     "@pie-lib/delivery-events-svelte": "workspace:*",
     "@pie-lib/styling-svelte": "workspace:*",
+    "@pie-lib/translator": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "svelte": "^5.57.0",
     "typescript": "^5.9.3",

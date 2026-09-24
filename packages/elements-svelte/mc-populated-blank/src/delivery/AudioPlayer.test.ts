@@ -10,15 +10,7 @@ const BASE_PROPS = {
   audioTranscript: 'The word is look.',
   transcriptId: 'test-transcript',
   featureAudioSkin: { silentUrl: '', playingUrl: '' },
-  uiText: {
-    clickToEnableAutoplay: 'Click to enable',
-    transcriptLabel: 'Transcript',
-    audioResourceUnavailable: 'Unavailable',
-    listenSilentAlt: 'Repeat instructions',
-    listenPlayingAlt: 'Instructions are playing',
-    listenSilentAltEs: 'Escuchar. Repetir las instrucciones.',
-    listenPlayingAltEs: 'Escuchar. Estas son las instrucciones.',
-  },
+  language: undefined as string | undefined,
 };
 
 function mountPlayer(props: Partial<typeof BASE_PROPS>) {
@@ -82,6 +74,18 @@ describe('AudioPlayer — audio element', () => {
     const imgs = target.querySelectorAll('.pie-listen-icon');
     const alts = Array.from(imgs).map((el) => (el as HTMLImageElement).alt);
     expect(alts).toContain('Instructions are playing');
+  });
+
+  it('labels the feature button in Spanish when the language is Spanish', () => {
+    const { target, component } = mountPlayer({ useFeatureButtonAudio: true, language: 'es_MX' });
+    mounts.push({ target, component });
+    flushSync();
+    expect(target.querySelector('.pie-listen-button')?.getAttribute('aria-label')).toBe('Escuchar');
+    const alts = Array.from(target.querySelectorAll('.pie-listen-icon')).map(
+      (el) => (el as HTMLImageElement).alt
+    );
+    expect(alts).toContain('Escuchar. Repetir las instrucciones.');
+    expect(alts).toContain('Escuchar. Estas son las instrucciones.');
   });
 });
 

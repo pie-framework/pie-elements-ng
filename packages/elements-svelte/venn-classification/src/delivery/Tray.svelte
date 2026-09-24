@@ -2,14 +2,14 @@
 let {
   isDropTarget = false,
   focused = false,
-  label = 'Tiles to classify',
+  label,
   onpointerenter,
   onpointerleave,
   children,
 }: {
   isDropTarget?: boolean;
   focused?: boolean;
-  label?: string;
+  label: string;
   onpointerenter?: (e: PointerEvent) => void;
   onpointerleave?: (e: PointerEvent) => void;
   children?: import('svelte').Snippet;

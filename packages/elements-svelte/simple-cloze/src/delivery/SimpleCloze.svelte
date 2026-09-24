@@ -10,6 +10,7 @@
 
 <script lang="ts">
 import { forwardSessionChange } from '@pie-lib/delivery-events-svelte';
+import { t, tCommon } from '../i18n';
 
 let { model = null, session = null }: { model?: any; session?: any } = $props();
 
@@ -33,9 +34,9 @@ const showingCorrectAnswer = $derived(showCorrectAnswer && canShowCorrectAnswer)
 
 const feedbackText = $derived.by(() => {
   if (!isEvaluateMode) return '';
-  if (showingCorrectAnswer) return 'Correct answer';
-  if (isCorrect) return 'Correct';
-  if (isIncorrect) return 'Incorrect';
+  if (showingCorrectAnswer) return t('correctAnswerShown', model?.language);
+  if (isCorrect) return t('correct', model?.language);
+  if (isIncorrect) return t('incorrect', model?.language);
   return '';
 });
 
@@ -106,7 +107,7 @@ function toggleCorrectAnswer() {
         {/if}
       </span>
       <span class="simple-cloze-toggle-label">
-        {showingCorrectAnswer ? 'Hide' : 'Show'} correct answer
+        {tCommon(showingCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer', model?.language)}
       </span>
     </button>
   {/if}
@@ -131,10 +132,10 @@ function toggleCorrectAnswer() {
       class="simple-cloze-input"
       class:simple-cloze-input--correct={isEvaluateMode && (isCorrect || showingCorrectAnswer)}
       class:simple-cloze-input--incorrect={isEvaluateMode && isIncorrect && !showingCorrectAnswer}
-      placeholder="Enter your answer..."
+      placeholder={t('placeholder', model?.language)}
       spellcheck="false"
       aria-labelledby={model?.prompt ? promptId : undefined}
-      aria-label={model?.prompt ? undefined : 'Your answer'}
+      aria-label={model?.prompt ? undefined : t('answerInput', model?.language)}
       aria-describedby={feedbackText ? feedbackId : undefined}
       disabled={model?.disabled}
       readonly={showingCorrectAnswer}

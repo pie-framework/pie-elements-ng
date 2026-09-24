@@ -8,6 +8,8 @@ export type SimpleClozeQuestion = {
   correctAnswer?: string;
   teacherInstructions?: string;
   teacherInstructionsEnabled?: boolean;
+  /** The learner-facing strings' language, as `@pie-lib/translator` reads it (`en_US`, `es_ES`, …). */
+  language?: string;
   [key: string]: unknown;
 };
 
@@ -143,6 +145,7 @@ export const model = (
       view: safeEnv.mode === 'view',
       mode: safeEnv.mode,
       role: safeEnv.role,
+      language: normalizedQuestion.language,
     };
 
     if (safeEnv.mode === 'evaluate') {

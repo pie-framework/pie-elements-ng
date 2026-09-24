@@ -119,4 +119,16 @@ describe('simple-cloze accessibility', () => {
       expect(svg.closest('[aria-hidden="true"]')).not.toBeNull();
     }
   });
+
+  it('labels the correct-answer toggle in the item language', async () => {
+    const { element } = await render(
+      { ...QUESTION, language: 'es_ES' },
+      { id: '1', element: TAG, response: '5' },
+      { mode: 'evaluate' }
+    );
+
+    expect(element.querySelector('.simple-cloze-toggle-label')?.textContent?.trim()).toBe(
+      'Mostrar respuesta correcta'
+    );
+  });
 });

@@ -253,6 +253,7 @@ export function model(
       }),
       regionLabels: { ...(normalizedQuestion.regionLabels || {}) },
       scoringPolicy: normalizedQuestion.scoringPolicy ?? 'partialPerTile',
+      language: normalizedQuestion.language,
       disabled: safeEnv.mode !== 'gather',
       mode: safeEnv.mode,
       env: safeEnv,

@@ -1,3 +1,4 @@
+import { t } from '../i18n.js';
 import type { VennTile } from '../types.js';
 
 export function stripHtml(s: string): string {
@@ -9,12 +10,12 @@ export function stripHtml(s: string): string {
 
 /** Accessible name for a tile (button aria-label, live-region announcements). */
 export function tileAccessibleName(
-  tile: Pick<VennTile, 'label' | 'imageUrl' | 'imageAlt'>
+  tile: Pick<VennTile, 'label' | 'imageUrl' | 'imageAlt'>,
+  language?: string
 ): string {
   const alt = (tile.imageAlt ?? '').trim();
   if ((tile.imageUrl ?? '').trim() && alt) return alt;
-  const t = stripHtml(tile.label ?? '');
-  return t || 'Tile';
+  return stripHtml(tile.label ?? '') || t('tileFallbackName', language);
 }
 
 export type TileVerdict = 'correct' | 'incorrect' | 'unanswered';
@@ -32,12 +33,16 @@ export type TileVerdict = 'correct' | 'incorrect' | 'unanswered';
 export function tileStatusName(
   tile: Pick<VennTile, 'label' | 'imageUrl' | 'imageAlt'>,
   regionLabel: string | null,
-  verdict?: TileVerdict | null
+  verdict?: TileVerdict | null,
+  language?: string
 ): string {
   const parts = [
-    tileAccessibleName(tile),
-    regionLabel === null ? 'not placed' : `in ${regionLabel}`,
+    tileAccessibleName(tile, language),
+    regionLabel === null
+      ? t('tileNotPlaced', language)
+      : t('tileInRegion', language, { region: regionLabel }),
   ];
-  if (verdict === 'correct' || verdict === 'incorrect') parts.push(verdict);
+  if (verdict === 'correct') parts.push(t('tileCorrect', language));
+  if (verdict === 'incorrect') parts.push(t('tileIncorrect', language));
   return parts.join(', ');
 }

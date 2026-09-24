@@ -20,7 +20,7 @@ import { computeLayoutStyle } from './computeLayoutStyle';
 import {
   computeFeatureAudioSkin,
   computeDisplayChoiceId,
-  computeResultText,
+  computeResultStatus,
   computeLegendText,
 } from './computeDisplayState';
 import {
@@ -28,11 +28,12 @@ import {
   getVariantCssConfig,
   getVariantRootClass,
 } from './variant-css-map';
-import { DEFAULT_UI_TEXT } from '../shared/uiText';
+import { t as translate, tCommon } from './i18n';
 
 const BLANK_TOKEN = '{{blank}}';
 
 let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
+const t = (key: string) => translate(key, model?.language);
 let localChoiceId = $state('');
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
 let choicesGroupEl = $state<HTMLDivElement | null>(null);
@@ -105,8 +106,15 @@ const displayChoiceId = $derived(
 );
 const displayChoice = $derived.by(() => choices.find((c: any) => c.id === displayChoiceId));
 const displayChoiceLabelHtml = $derived.by(() => String(displayChoice?.labelHtml || ''));
+const resultStatus = $derived(
+  computeResultStatus({ isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId })
+);
 const resultText = $derived(
-  computeResultText({ isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId })
+  resultStatus === 'correct'
+    ? t('correctAnswerSelected')
+    : resultStatus === 'incorrect'
+      ? t('incorrectAnswerSelected')
+      : ''
 );
 const choiceCorrectnessById = $derived(
   computeChoiceCorrectness({
@@ -121,10 +129,6 @@ const choiceCorrectnessById = $derived(
 // Cluster: a11y — stable IDs, aria labelling, described-by relationships
 // Feeds: fieldset legend, radiogroup labelling, template described-by
 // ---------------------------------------------------------------------------
-const uiText = $derived.by(() => ({
-  ...DEFAULT_UI_TEXT,
-  ...(model?.uiText || {}),
-}));
 const promptId = $derived(`${instanceId}-prompt`);
 const legendId = $derived(`${instanceId}-choices-legend`);
 const resultId = $derived(`${instanceId}-result`);
@@ -133,7 +137,7 @@ const legendText = $derived(
   computeLegendText({
     prompt: model?.prompt || '',
     legendMaxChars: layout.legendMaxChars,
-    answerChoicesLabel: uiText.answerChoices,
+    answerChoicesLabel: t('answerChoices'),
   })
 );
 const choicesGroupLabelledBy = $derived(model?.prompt ? promptId : undefined);
@@ -153,8 +157,8 @@ const templateDescribedBy = $derived.by(() => (model?.prompt ? promptId : undefi
 // Misc — locale, audio error, template parsing, variant CSS, style strings
 // ---------------------------------------------------------------------------
 const lang = $derived.by(() => {
-  const locale = model?.locale || '';
-  return locale ? locale.slice(0, 2) : 'en';
+  const language = model?.language || model?.locale || '';
+  return language ? language.slice(0, 2) : 'en';
 });
 const variantCssConfig = $derived(getVariantCssConfig(model?.customType));
 const variantRootClass = $derived(getVariantRootClass(model?.customType));
@@ -356,7 +360,7 @@ $effect(() => {
             {/if}
           </span>
           <span class="pie-correct-answer-toggle-label">
-            {showCorrectAnswer ? uiText.hideCorrectAnswer : uiText.showCorrectAnswer}
+            {tCommon(showCorrectAnswer ? 'hideCorrectAnswer' : 'showCorrectAnswer', model?.language)}
           </span>
         </span>
       </button>
@@ -369,8 +373,7 @@ $effect(() => {
     {useFeatureButtonAudio}
     autoplayEnabled={!!model?.autoplayAudioEnabled}
     {featureAudioSkin}
-    {uiText}
-    locale={model?.locale}
+    language={model?.language}
     onaudiostarted={onAudioStarted}
     onaudioended={onAudioEnded}
   />
@@ -390,7 +393,8 @@ $effect(() => {
         isStandalone={isBlankOnlyTemplate}
         blankWidth={layout.blankWidth}
         blankBorderWidth={layout.blankBorderWidth}
-        ariaLabel={uiText.selectedAnswerInSentence}
+        ariaLabel={t('blankLabel')}
+        language={model?.language}
       />{@html templateParts.after}</div>
   {/if}
 
@@ -398,7 +402,7 @@ $effect(() => {
     <p id={resultId} class="sr-only pie-result-feedback" role="status" aria-live="polite">{resultText}</p>
   {/if}
 
-  <p id={blankHintId} class="sr-only pie-blank-hint">{uiText.blankPreSelectionHint}</p>
+  <p id={blankHintId} class="sr-only pie-blank-hint">{t('blankPreSelectionHint')}</p>
 
   <fieldset class="border-0 p-0 m-0 pie-choices-fieldset" disabled={model?.disabled}>
     <legend class="sr-only pie-choices-legend" id={legendId}>{legendText}</legend>
@@ -423,6 +427,7 @@ $effect(() => {
           {isEvaluateMode}
           {instanceId}
           {radioGroupName}
+          language={model?.language}
         />
       {/each}
     </div>

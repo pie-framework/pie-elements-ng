@@ -42,7 +42,7 @@
  *   M16. audioUrl passed through when hasAudio=true
  *   M17. disabled=true in view/evaluate mode, false in gather
  *   M18. Fields the item leaves out stay empty: no starter content
- *   M19. A partial uiText override keeps the other default strings
+ *   M19. language passes through, falling back to locale
  *   M20. Choices carry only the fields delivery renders
  *   M21. choiceGroupLabel passed through
  *
@@ -332,11 +332,17 @@ describe('model — output fields', () => {
     expect(result.correctChoiceId).toBe('');
   });
 
-  it('M19: a partial uiText override keeps the other default strings', async () => {
-    const q = { ...BASE_QUESTION, uiText: { answerChoices: 'Choices' } };
-    const result = (await model(q, {}, GATHER_ENV)) as any;
-    expect(result.uiText.answerChoices).toBe('Choices');
-    expect(result.uiText.selectedAnswerInSentence).toBe('blank');
+  it('M19: language passes through, falling back to locale', async () => {
+    const byLanguage = await model(
+      { ...BASE_QUESTION, language: 'es_ES', locale: 'en_US' },
+      {},
+      GATHER_ENV
+    );
+    const byLocale = await model({ ...BASE_QUESTION, locale: 'es_MX' }, {}, GATHER_ENV);
+    const neither = await model(BASE_QUESTION, {}, GATHER_ENV);
+    expect(byLanguage.language).toBe('es_ES');
+    expect(byLocale.language).toBe('es_MX');
+    expect(neither.language).toBeUndefined();
   });
 
   it('M20: choices carry only the fields delivery renders', async () => {

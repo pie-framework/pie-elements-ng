@@ -18,11 +18,11 @@
  *   D5. evaluate + showCorrectAnswer=false: returns selectedId
  *   D6. Not evaluate + showCorrectAnswer=true: returns selectedId (not overridden outside evaluate)
  *
- * computeResultText
+ * computeResultStatus
  *   R1. Not evaluate mode → empty string
  *   R2. Evaluate + showCorrectAnswer=true → empty string (suppressed while reveal active)
- *   R3. Evaluate + correct → 'Correct answer selected'
- *   R4. Evaluate + incorrect + has selection → 'Incorrect answer selected'
+ *   R3. Evaluate + correct → 'correct'
+ *   R4. Evaluate + incorrect + has selection → 'incorrect'
  *   R5. Evaluate + incorrect + no selection → empty string (unanswered, no message)
  *   R6. Evaluate + unanswered (not correct, not incorrect) → empty string
  *
@@ -39,7 +39,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeFeatureAudioSkin,
   computeDisplayChoiceId,
-  computeResultText,
+  computeResultStatus,
   computeLegendText,
   DEFAULT_AUDIO_BUTTON_SKINS,
 } from './computeDisplayState';
@@ -172,10 +172,10 @@ describe('computeDisplayChoiceId', () => {
 });
 
 // ---------------------------------------------------------------------------
-// computeResultText
+// computeResultStatus
 // ---------------------------------------------------------------------------
 
-describe('computeResultText', () => {
+describe('computeResultStatus', () => {
   const base = {
     isEvaluateMode: true,
     showCorrectAnswer: false,
@@ -185,29 +185,27 @@ describe('computeResultText', () => {
   };
 
   it('R1: not evaluate mode → empty string', () => {
-    expect(computeResultText({ ...base, isEvaluateMode: false })).toBe('');
+    expect(computeResultStatus({ ...base, isEvaluateMode: false })).toBe('');
   });
 
   it('R2: evaluate + showCorrectAnswer=true → empty string', () => {
-    expect(computeResultText({ ...base, isCorrect: true, showCorrectAnswer: true })).toBe('');
+    expect(computeResultStatus({ ...base, isCorrect: true, showCorrectAnswer: true })).toBe('');
   });
 
-  it('R3: evaluate + correct → Correct answer selected', () => {
-    expect(computeResultText({ ...base, isCorrect: true })).toBe('Correct answer selected');
+  it('R3: evaluate + correct → correct', () => {
+    expect(computeResultStatus({ ...base, isCorrect: true })).toBe('correct');
   });
 
-  it('R4: evaluate + incorrect + has selection → Incorrect answer selected', () => {
-    expect(computeResultText({ ...base, isIncorrect: true, selectedId: 'a' })).toBe(
-      'Incorrect answer selected'
-    );
+  it('R4: evaluate + incorrect + has selection → incorrect', () => {
+    expect(computeResultStatus({ ...base, isIncorrect: true, selectedId: 'a' })).toBe('incorrect');
   });
 
   it('R5: evaluate + incorrect + no selection → empty string', () => {
-    expect(computeResultText({ ...base, isIncorrect: true, selectedId: '' })).toBe('');
+    expect(computeResultStatus({ ...base, isIncorrect: true, selectedId: '' })).toBe('');
   });
 
   it('R6: evaluate + unanswered (neither correct nor incorrect) → empty string', () => {
-    expect(computeResultText({ ...base })).toBe('');
+    expect(computeResultStatus({ ...base })).toBe('');
   });
 });
 

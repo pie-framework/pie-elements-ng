@@ -328,6 +328,15 @@ describe('createCorrectResponseSession', () => {
 });
 
 describe('model (view-model builder)', () => {
+  it('passes the language through for the translated strings', async () => {
+    const vm = await buildViewModel(
+      twoSetModel({ language: 'es_ES' }),
+      { placements: {} },
+      { mode: 'gather' }
+    );
+    expect(vm.language).toBe('es_ES');
+  });
+
   it('strips correctRegion from tiles in gather mode', async () => {
     const vm = await buildViewModel(twoSetModel(), { placements: {} }, { mode: 'gather' });
     expect(vm.tiles.every((t) => !('correctRegion' in t))).toBe(true);

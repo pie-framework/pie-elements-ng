@@ -76,11 +76,6 @@ const withDefaults = (base: McpbQuestion, model: McpbQuestion = {}) => ({
     ...DEFAULT_LAYOUT_LIMITS,
     ...(model?.layoutLimits || {}),
   },
-  // An item that overrides one string keeps the defaults for the rest.
-  uiText: {
-    ...defaults.model.uiText,
-    ...(model?.uiText && typeof model.uiText === 'object' ? model.uiText : {}),
-  },
 });
 
 /** The authoring starting point: a question that passes `validate()` as it stands. */
@@ -220,7 +215,6 @@ export const model = async (
       typeof normalizedQuestion.audioButtonSkinsByLocale === 'object'
         ? normalizedQuestion.audioButtonSkinsByLocale
         : {},
-    uiText: normalizedQuestion.uiText,
     sentenceHtml: normalizedQuestion.sentenceHtml || null,
     template: normalizedQuestion.template,
     choiceMode: normalizedQuestion.choiceMode,
@@ -237,6 +231,7 @@ export const model = async (
         ? normalizedQuestion.useFeatureButtonAudio
         : undefined,
     locale: normalizedQuestion.locale || '',
+    language: normalizedQuestion.language || normalizedQuestion.locale || undefined,
     disabled: safeEnv.mode !== 'gather',
     mode: safeEnv.mode,
   };

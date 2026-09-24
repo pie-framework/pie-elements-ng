@@ -15,6 +15,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Tile from './Tile.svelte';
 import { tileAccessibleName, tileStatusName, type TileVerdict } from './tile-accessible-name.js';
 import Tray from './Tray.svelte';
+import { t, tCommon } from '../i18n.js';
 import {
   buildLayout2Set,
   defaultGeometry2Set,
@@ -44,6 +45,7 @@ type ViewModel = {
   circles?: Array<{ label: string }>;
   tiles?: VmTile[];
   regionLabels?: Record<string, string>;
+  language?: string;
   disabled?: boolean;
   env?: { mode?: string };
   correctRegionsById?: Record<string, Region>;
@@ -91,11 +93,13 @@ const circles = $derived<VennModel['circles']>(
   (props?.model?.circles ?? DEFAULT_CIRCLES) as VennModel['circles']
 );
 const circleCountSupported = $derived(circles.length === SUPPORTED_CIRCLES);
+const language = $derived<string | undefined>(props?.model?.language);
 
 const modelShape = $derived<VennModel>({
   circles,
   tiles: (props?.model?.tiles ?? []) as VennTile[],
   regionLabels: props?.model?.regionLabels ?? {},
+  language,
   scoringPolicy: 'partialPerTile',
   promptEnabled: true,
 });
@@ -212,7 +216,9 @@ function regionByKey(key: string): RegionLayout | undefined {
 }
 
 function targetLabel(key: string): string {
-  return key === 'tray' ? 'Tiles to classify' : (regionByKey(key)?.label ?? 'unknown');
+  return key === 'tray'
+    ? t('tray', language)
+    : (regionByKey(key)?.label ?? t('unknownTarget', language));
 }
 
 function clearHeld() {
@@ -233,18 +239,18 @@ function cancelInteraction() {
  * session with content as a learner response, so a bare click must not write.
  */
 function dropTile(tile: VennTile, targetKey: string | null) {
-  const name = tileAccessibleName(tile);
+  const name = tileAccessibleName(tile, language);
   const placement =
     targetKey === 'tray' ? null : targetKey === null ? undefined : regionByKey(targetKey)?.region;
   if (placement === undefined || isSamePlacement(props?.session, tile.id, placement)) {
-    announce('Cancelled');
+    announce(t('cancelled', language));
     return;
   }
   commitPlacement(tile.id, placement);
   announce(
     placement === null
-      ? `${name} returned to tray`
-      : `${name} placed in ${targetLabel(targetKey as string)}`
+      ? t('returnedToTray', language, { name })
+      : t('placedIn', language, { name, target: targetLabel(targetKey as string) })
   );
 }
 
@@ -258,7 +264,7 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   keyboardFocusKey = null;
   dragPos = { x: e.clientX, y: e.clientY };
   hoveredRegionKey = resolveHoverKeyFromPointer(e.clientX, e.clientY);
-  announce(`Picked up ${tileAccessibleName(tile)}`);
+  announce(t('pickedUp', language, { name: tileAccessibleName(tile, language) }));
 
   const onMove = (ev: PointerEvent) => {
     dragPos = { x: ev.clientX, y: ev.clientY };
@@ -278,7 +284,7 @@ function onTilePointerDown(tile: VennTile, e: PointerEvent) {
   const onCancel = () => {
     detach();
     clearHeld();
-    announce('Cancelled');
+    announce(t('cancelled', language));
   };
   const detach = () => {
     window.removeEventListener('pointermove', onMove);
@@ -341,7 +347,10 @@ function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
       heldTileId = tile.id;
       keyboardFocusKey = startKey;
       announce(
-        `Picked up ${tileAccessibleName(tile)}, drop target: ${targetLabel(startKey ?? '')}. Use arrow keys to choose a drop target, Enter to drop, Escape to cancel.`
+        t('pickedUpWithKeyboard', language, {
+          name: tileAccessibleName(tile, language),
+          target: targetLabel(startKey ?? ''),
+        })
       );
     }
     return;
@@ -350,7 +359,7 @@ function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
   if (e.key === 'Escape' && heldTileId === tile.id) {
     e.preventDefault();
     clearHeld();
-    announce('Cancelled');
+    announce(t('cancelled', language));
     return;
   }
 
@@ -370,7 +379,7 @@ function onTileKeyDown(tile: VennTile, e: KeyboardEvent) {
       e.key === 'ArrowLeft' || e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey) ? -1 : 1;
     idx = (idx + delta + navigableTargets.length) % navigableTargets.length;
     keyboardFocusKey = navigableTargets[idx];
-    announce(`Drop target: ${targetLabel(keyboardFocusKey)}`);
+    announce(t('dropTarget', language, { target: targetLabel(keyboardFocusKey) }));
   }
 }
 
@@ -380,7 +389,7 @@ function onRootFocusOut(e: FocusEvent) {
   const next = e.relatedTarget as Node | null;
   if (next && containerEl?.contains(next)) return;
   clearHeld();
-  announce('Cancelled');
+  announce(t('cancelled', language));
 }
 
 function tileVerdict(id: string): TileVerdict | null {
@@ -481,15 +490,14 @@ const draggedTile = $derived<VennTile | null>(
         </svg>
       {/if}
       <span class="toggle-label">
-        {showCorrect ? 'Hide' : 'Show'} correct answer
+        {tCommon(showCorrect ? 'hideCorrectAnswer' : 'showCorrectAnswer', language)}
       </span>
     </button>
   {/if}
 
   {#if !layout}
     <div class="venn-error" role="alert">
-      This diagram cannot be shown: it has {circles.length}
-      {circles.length === 1 ? 'circle' : 'circles'}, and only {SUPPORTED_CIRCLES} are supported.
+      {t('unsupportedCircles', language, { count: circles.length, supported: SUPPORTED_CIRCLES })}
     </div>
   {:else}
     <div class="venn-diagram" bind:this={diagramEl}>
@@ -638,7 +646,7 @@ const draggedTile = $derived<VennTile | null>(
                   label={tile.label}
                   imageUrl={tile.imageUrl}
                   imageAlt={tile.imageAlt}
-                  name={tileStatusName(tile, region.label, tileVerdict(tile.id))}
+                  name={tileStatusName(tile, region.label, tileVerdict(tile.id), language)}
                   correctness={tileVerdict(tile.id) ?? 'neutral'}
                   held={heldTileId === tile.id}
                   invisible={heldTileId === tile.id && dragPos !== null}
@@ -655,7 +663,7 @@ const draggedTile = $derived<VennTile | null>(
 
     <Tray
       isDropTarget={hoveredRegionKey === 'tray' || (heldTileId !== null && keyboardFocusKey === 'tray')}
-      label="Tiles to classify"
+      label={t('tray', language)}
     >
       {#each trayTiles as tile (tile.id)}
         <Tile
@@ -663,7 +671,7 @@ const draggedTile = $derived<VennTile | null>(
           label={tile.label}
           imageUrl={tile.imageUrl}
           imageAlt={tile.imageAlt}
-          name={tileStatusName(tile, null, tileVerdict(tile.id))}
+          name={tileStatusName(tile, null, tileVerdict(tile.id), language)}
           correctness={tileVerdict(tile.id) ?? 'neutral'}
           held={heldTileId === tile.id}
           invisible={heldTileId === tile.id && dragPos !== null}
@@ -692,6 +700,7 @@ const draggedTile = $derived<VennTile | null>(
         label={draggedTile.label}
         imageUrl={draggedTile.imageUrl}
         imageAlt={draggedTile.imageAlt}
+        {language}
         correctness="neutral"
         ghost={true}
       />

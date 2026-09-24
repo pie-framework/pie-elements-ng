@@ -1,18 +1,10 @@
 <script lang="ts">
 import { computeAudioMode } from './computeAudioMode';
+import { t } from './i18n';
 
 interface AudioButtonSkin {
   silentUrl: string;
   playingUrl: string;
-}
-
-interface UiText {
-  clickToEnableAutoplay: string;
-  audioResourceUnavailable: string;
-  listenSilentAlt?: string;
-  listenPlayingAlt?: string;
-  listenSilentAltEs?: string;
-  listenPlayingAltEs?: string;
 }
 
 const AUDIO_PLAYBACK = {
@@ -29,8 +21,7 @@ let {
   useFeatureButtonAudio = false,
   autoplayEnabled = false,
   featureAudioSkin,
-  uiText,
-  locale = '',
+  language,
   onaudiostarted,
   onaudioended,
 }: {
@@ -39,8 +30,7 @@ let {
   useFeatureButtonAudio?: boolean;
   autoplayEnabled?: boolean;
   featureAudioSkin: AudioButtonSkin;
-  uiText: UiText;
-  locale?: string;
+  language?: string;
   onaudiostarted?: () => void;
   onaudioended?: () => void;
 } = $props();
@@ -53,7 +43,9 @@ let audioPlaybackState = $state<AudioPlaybackState>(AUDIO_PLAYBACK.IDLE);
 const audioMode = $derived(computeAudioMode({ hasAudio, audioUrl, useFeatureButtonAudio }));
 const isMediaPlaying = $derived(audioPlaybackState === AUDIO_PLAYBACK.PLAYING);
 const autoPlayPromptOpen = $derived(audioPlaybackState === AUDIO_PLAYBACK.BLOCKED);
-const audioErrorMessage = $derived(audioMode === 'error' ? uiText.audioResourceUnavailable : '');
+const audioErrorMessage = $derived(
+  audioMode === 'error' ? t('audioResourceUnavailable', language) : ''
+);
 
 // Reset playback state when audioUrl changes so autoplay re-fires for a new question.
 $effect(() => {
@@ -127,22 +119,6 @@ $effect(() => {
     });
   }
 });
-
-function speechButtonLabel(loc = '') {
-  return loc.toLowerCase().startsWith('es') ? 'Escuchar' : 'Listen';
-}
-
-function silentAlt(loc = '') {
-  return loc.toLowerCase().startsWith('es')
-    ? (uiText.listenSilentAltEs ?? 'Escuchar. Repetir las instrucciones.')
-    : (uiText.listenSilentAlt ?? 'Repeat instructions');
-}
-
-function playingAlt(loc = '') {
-  return loc.toLowerCase().startsWith('es')
-    ? (uiText.listenPlayingAltEs ?? 'Escuchar. Estas son las instrucciones.')
-    : (uiText.listenPlayingAlt ?? 'Instructions are playing');
-}
 </script>
 
 {#if audioMode !== 'none'}
@@ -160,17 +136,17 @@ function playingAlt(loc = '') {
         bind:this={featureAudioButtonEl}
         class="listen-button pie-listen-button rli-feature-audio"
         type="button"
-        aria-label={speechButtonLabel(locale)}
+        aria-label={t('listen', language)}
       >
         <img
           class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? '' : 'listen-active'}`}
           src={featureAudioSkin.silentUrl}
-          alt={silentAlt(locale)}
+          alt={t('listenSilentAlt', language)}
         />
         <img
           class={`listen-feature-icon pie-listen-icon rli-feature-listen ${isMediaPlaying ? 'listen-active' : ''}`}
           src={featureAudioSkin.playingUrl}
-          alt={playingAlt(locale)}
+          alt={t('listenPlayingAlt', language)}
         />
       </button>
     {:else if audioMode === 'controls'}
@@ -189,7 +165,7 @@ function playingAlt(loc = '') {
           class="mt-2 text-sm underline pie-audio-autoplay-enable"
           type="button"
         >
-          {uiText.clickToEnableAutoplay}
+          {t('clickToEnableAutoplay', language)}
         </button>
       {/if}
     {:else if audioMode === 'error'}

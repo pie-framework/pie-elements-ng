@@ -64,20 +64,20 @@ export function computeDisplayChoiceId(params: {
 }
 
 /**
- * Returns the screen-reader-only result announcement text shown after evaluate mode scoring.
- * Empty string means nothing is announced.
+ * Returns the result the screen-reader-only announcement reports after evaluate
+ * mode scoring. Empty string means nothing is announced.
  */
-export function computeResultText(params: {
+export function computeResultStatus(params: {
   isEvaluateMode: boolean;
   showCorrectAnswer: boolean;
   isCorrect: boolean;
   isIncorrect: boolean;
   selectedId: string;
-}): string {
+}): 'correct' | 'incorrect' | '' {
   const { isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId } = params;
   if (!isEvaluateMode || showCorrectAnswer) return '';
-  if (isCorrect) return 'Correct answer selected';
-  if (isIncorrect && selectedId) return 'Incorrect answer selected';
+  if (isCorrect) return 'correct';
+  if (isIncorrect && selectedId) return 'incorrect';
   return '';
 }
 

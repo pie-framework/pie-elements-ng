@@ -1,4 +1,6 @@
 <script lang="ts">
+import { t } from './i18n';
+
 interface Choice {
   id: string;
   labelHtml?: string;
@@ -16,6 +18,7 @@ let {
   isEvaluateMode = false,
   instanceId,
   radioGroupName,
+  language,
 }: {
   choice: Choice;
   choiceMode?: 'text' | 'image';
@@ -26,6 +29,7 @@ let {
   isEvaluateMode?: boolean;
   instanceId: string;
   radioGroupName: string;
+  language?: string;
 } = $props();
 </script>
 
@@ -42,7 +46,7 @@ let {
         {#if choiceMode === 'image' && choice.imageUrl}
           <img
             src={choice.imageUrl}
-            alt={choice.imageAlt || `Choice ${choice.id}`}
+            alt={choice.imageAlt || t('choiceImage', language, { id: choice.id })}
             class="object-contain pie-choice-image"
             style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
           />
@@ -74,7 +78,7 @@ let {
       {#if choiceMode === 'image' && choice.imageUrl}
         <img
           src={choice.imageUrl}
-          alt={choice.imageAlt || `Choice ${choice.id}`}
+          alt={choice.imageAlt || t('choiceImage', language, { id: choice.id })}
           class="object-contain pie-choice-image"
           style="max-height:var(--mpb-choice-image-max-height, 5rem);"
         />

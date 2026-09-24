@@ -1,5 +1,4 @@
 import { DEFAULT_LAYOUT_LIMITS } from '../shared/layoutLimits';
-import { DEFAULT_UI_TEXT } from '../shared/uiText';
 
 export { DEFAULT_LAYOUT_LIMITS };
 
@@ -22,7 +21,6 @@ export default {
     layoutLimits: { ...DEFAULT_LAYOUT_LIMITS },
     audioButtonSkin: null,
     audioButtonSkinsByLocale: {},
-    uiText: { ...DEFAULT_UI_TEXT },
     sentenceHtml: '',
     template: '',
     choiceMode: 'text' as const,
