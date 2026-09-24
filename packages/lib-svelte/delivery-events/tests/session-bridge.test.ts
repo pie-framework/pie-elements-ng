@@ -147,8 +147,9 @@ describe('forwardSessionChange', () => {
     host.remove();
   });
 
-  it('returns null when no delivery host is in the ancestor chain', () => {
+  it('returns null and warns when no delivery host is in the ancestor chain', () => {
     // A host elsewhere in the document is another instance, never this one's.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { host } = mountHost();
     const onSessionChange = vi.fn();
     host.onSessionChange = onSessionChange;
@@ -157,8 +158,44 @@ describe('forwardSessionChange', () => {
 
     expect(forwardSessionChange({ sourceEl: orphan, complete: false, session: {} })).toBeNull();
     expect(onSessionChange).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('<span>');
     host.remove();
     orphan.remove();
+    warn.mockRestore();
+  });
+
+  it('warns once per source element, not on every update', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const input = document.createElement('input');
+    const other = document.createElement('select');
+
+    for (const value of ['a', 'ab', 'abc']) {
+      forwardSessionChange({ sourceEl: input, complete: true, session: { value } });
+    }
+    forwardSessionChange({ sourceEl: other, complete: true, session: {} });
+
+    expect(warn.mock.calls.map(([message]) => String(message).match(/<(\w+)>/)?.[1])).toEqual([
+      'input',
+      'select',
+    ]);
+    warn.mockRestore();
+  });
+
+  it('reaches a host that renders the element inside its own shadow root', () => {
+    const host = document.createElement(PLAYER_TAG) as HTMLElement & {
+      onSessionChange?: (session: unknown) => void;
+    };
+    const onSessionChange = vi.fn();
+    host.onSessionChange = onSessionChange;
+    const input = document.createElement('input');
+    host.attachShadow({ mode: 'open' }).appendChild(input);
+    document.body.appendChild(host);
+    const next = { id: '1', value: 'b' };
+
+    expect(forwardSessionChange({ sourceEl: input, complete: true, session: next })).toBe(host);
+    expect(onSessionChange).toHaveBeenCalledWith(next);
+    host.remove();
   });
 });
 
@@ -175,5 +212,30 @@ describe('resolveDeliveryHost', () => {
     middle.appendChild(leaf);
 
     expect(resolveDeliveryHost(leaf)).toBe(middle);
+  });
+
+  it('continues from a shadow root to its host and on up the light DOM', () => {
+    // The wrapper exposing the callback sits above a custom element that
+    // renders the source inside a shadow root.
+    const wrapper = document.createElement('div') as HTMLDivElement & {
+      onSessionChange?: () => void;
+    };
+    wrapper.onSessionChange = () => {};
+    const shadowHost = document.createElement('div');
+    wrapper.appendChild(shadowHost);
+    const inner = document.createElement('div');
+    const leaf = document.createElement('span');
+    inner.appendChild(leaf);
+    shadowHost.attachShadow({ mode: 'open' }).appendChild(inner);
+
+    expect(resolveDeliveryHost(leaf)).toBe(wrapper);
+  });
+
+  it('stops at a detached subtree with no shadow host', () => {
+    const fragment = document.createDocumentFragment();
+    const leaf = document.createElement('span');
+    fragment.appendChild(leaf);
+
+    expect(resolveDeliveryHost(leaf)).toBeNull();
   });
 });
