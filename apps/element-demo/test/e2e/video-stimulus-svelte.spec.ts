@@ -16,6 +16,14 @@ function video(page: Page): Locator {
   return player(page).locator('video').first();
 }
 
+function transcriptToggle(page: Page): Locator {
+  return player(page)
+    .getByRole('button', { name: /transcript/i })
+    .first();
+}
+
+const HAVE_METADATA = 1;
+
 async function openVideoStimulus(page: Page) {
   await openDeliverRoute(page, ELEMENT, DEMO_ID);
   await expect(player(page)).toHaveAttribute('package-name', '@pie-element/video-stimulus');
@@ -151,5 +159,150 @@ test.describe('Video Stimulus (Svelte 5)', () => {
       )
       .toBe(0);
     expect(await getSessionState(page)).toEqual({});
+  });
+});
+
+test.describe('Video Stimulus (Svelte 5) media failures', () => {
+  test('reports a failing source and restores the video on retry', async ({ page }) => {
+    let failSource = true;
+    await page.route('**/video-stimulus/sample.webm', (route) =>
+      failSource ? route.fulfill({ status: 404, body: '' }) : route.continue()
+    );
+    await openVideoStimulus(page);
+
+    const status = player(page).getByRole('alert');
+    await expect(status).toContainText('Video unavailable');
+    await expect(page.getByText(LABEL, { exact: true }).first()).toBeVisible();
+    await expect(transcriptToggle(page)).toBeVisible();
+
+    const retry = status.getByRole('button', { name: 'Try again' });
+    const target = await retry.boundingBox();
+    expect(target?.width).toBeGreaterThanOrEqual(44);
+    expect(target?.height).toBeGreaterThanOrEqual(44);
+
+    failSource = false;
+    await retry.focus();
+    await retry.press('Enter');
+    await expect(status).toHaveCount(0);
+    await expect(video(page)).toBeFocused();
+  });
+
+  test('reports a failing caption track while the video stays playable', async ({ page }) => {
+    await page.route('**/video-stimulus/captions-en.vtt', (route) =>
+      route.fulfill({ status: 404, body: '' })
+    );
+    await openVideoStimulus(page);
+
+    const status = player(page).getByRole('alert');
+    await expect(status).toContainText('Text track unavailable');
+    await expect(status).toContainText('English');
+    await expect
+      .poll(() => video(page).evaluate((node) => (node as HTMLVideoElement).readyState))
+      .toBeGreaterThanOrEqual(HAVE_METADATA);
+    await expect(video(page)).toHaveJSProperty('error', null);
+  });
+});
+
+test.describe('Video Stimulus (Svelte 5) keyboard and layout', () => {
+  test('operates by keyboard without stealing focus or adding global shortcuts', async ({
+    page,
+  }) => {
+    await openVideoStimulus(page);
+    const nativeVideo = video(page);
+    const within = await player(page).evaluate((host) => host.contains(document.activeElement));
+    expect(within).toBe(false);
+
+    await page.keyboard.press('k');
+    await page.keyboard.press('Space');
+    await expect(nativeVideo).toHaveJSProperty('paused', true);
+
+    const toggle = transcriptToggle(page);
+    await toggle.focus();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(toggle).toBeFocused();
+    const regionId = await toggle.getAttribute('aria-controls');
+    const region = player(page).locator(`[id="${regionId}"]`);
+    await expect(region).toBeVisible();
+    await expect(region).not.toHaveAttribute('aria-live', /.+/);
+
+    await page.keyboard.press('Tab');
+    await expect(nativeVideo).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(nativeVideo).toHaveJSProperty('paused', false);
+    await page.keyboard.press('Space');
+    await expect(nativeVideo).toHaveJSProperty('paused', true);
+
+    await page.keyboard.press('Shift+Tab');
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toBeFocused();
+  });
+
+  test('reflows to one column at 320 CSS px without horizontal scrolling', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await openVideoStimulus(page);
+    await transcriptToggle(page).click();
+
+    const layout = await player(page)
+      .locator('.video-stimulus')
+      .evaluate((root) => {
+        const bounds = root.getBoundingClientRect();
+        const overflowing = Array.from(root.querySelectorAll<HTMLElement>('*'))
+          .filter((node) => !node.closest('.visually-hidden'))
+          .filter((node) => {
+            const rect = node.getBoundingClientRect();
+            return rect.width > 0 && (rect.left < bounds.left - 1 || rect.right > bounds.right + 1);
+          })
+          .map((node) => `${node.tagName.toLowerCase()}.${node.className}`);
+        const region = root.querySelector<HTMLElement>('.media-transcript__region');
+        const media = root.querySelector('video');
+        const transcript = root.querySelector('.media-transcript');
+        const frame = root.querySelector('.video-frame');
+        return {
+          width: bounds.width,
+          scrollWidth: root.scrollWidth,
+          clientWidth: root.clientWidth,
+          overflowing,
+          transcriptScrolls: region ? region.scrollWidth > region.clientWidth : true,
+          videoFits: media ? media.getBoundingClientRect().width <= bounds.width : false,
+          stacked:
+            transcript !== null &&
+            frame !== null &&
+            transcript.getBoundingClientRect().bottom <= frame.getBoundingClientRect().top,
+        };
+      });
+
+    expect(layout.width).toBeLessThanOrEqual(320);
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
+    expect(layout.overflowing).toEqual([]);
+    expect(layout.transcriptScrolls).toBe(false);
+    expect(layout.videoFits).toBe(true);
+    expect(layout.stacked).toBe(true);
+  });
+});
+
+test.describe('Video Stimulus (Svelte 5) IIFE bundle', () => {
+  test('renders the same light-DOM video from the IIFE bundle', async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.goto(`/${ELEMENT}/deliver?mode=gather&role=student&demo=${DEMO_ID}&player=iife`);
+    const iifeElement = page.locator(`pie-iife-${ELEMENT}`);
+    await expect(iifeElement.locator('video')).toHaveCount(1, { timeout: 60_000 });
+
+    const nativeVideo = iifeElement.locator('video');
+    await expect(nativeVideo.locator('source')).toHaveAttribute(
+      'src',
+      '/video-stimulus/sample.webm'
+    );
+    await expect(nativeVideo.locator('track[kind="captions"]')).toHaveAttribute('srclang', 'en');
+    await expect(iifeElement.getByText(LABEL, { exact: true })).toBeVisible();
+    await expect(iifeElement.getByRole('button', { name: /transcript/i })).toBeVisible();
+    expect(await nativeVideo.evaluate((node) => node.getRootNode() === document)).toBe(true);
+    await expect
+      .poll(() => nativeVideo.evaluate((node) => (node as HTMLVideoElement).readyState))
+      .toBeGreaterThanOrEqual(HAVE_METADATA);
+    await expect(page.locator('pie-element-player .error')).toHaveCount(0);
   });
 });
