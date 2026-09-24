@@ -3,12 +3,13 @@
  * Simplified from pie-api-aws/packages/bundler/src/webpack/player.ts
  */
 
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import webpack from 'webpack';
 import { EsbuildPlugin } from 'esbuild-loader';
 import { getLibPackagePathMap } from './dependency-resolver.js';
+import { resolveSourceAliases } from './source-aliases.js';
 
 const BUNDLE_LIB_PACKAGES = ['@pie-lib/pie-toolbox', '@pie-lib/math-rendering'];
 const SHIM_DIR = resolveShimDir();
@@ -53,79 +54,18 @@ interface ControllerWebpackConfigOptions {
   sourceMaps?: boolean;
 }
 
-function resolvePieElementSourceAliases(
-  workspaceDir: string,
-  elements: string[]
-): Record<string, string> {
-  const aliases: Record<string, string> = {};
-  for (const element of elements) {
-    const packageRoot = join(workspaceDir, 'node_modules', '@pie-element', element);
-    const mainSource = join(packageRoot, 'src', 'index.ts');
-    if (!existsSync(mainSource)) {
-      continue;
-    }
-
-    aliases[`@pie-element/${element}$`] = mainSource;
-
-    // `configure` is the specifier the bundlers emit, and most elements implement it at
-    // src/author — mirroring the package's own `exports`, where "./configure" targets the
-    // author build. Prefer a real src/configure when one exists.
-    const configureSource = existsSync(join(packageRoot, 'src', 'configure', 'index.ts'))
-      ? join(packageRoot, 'src', 'configure', 'index.ts')
-      : join(packageRoot, 'src', 'author', 'index.ts');
-
-    const subpathMap: Record<string, string> = {
-      controller: join(packageRoot, 'src', 'controller', 'index.ts'),
-      author: join(packageRoot, 'src', 'author', 'index.ts'),
-      print: join(packageRoot, 'src', 'print', 'index.ts'),
-      configure: configureSource,
-      delivery: join(packageRoot, 'src', 'delivery', 'index.ts'),
-    };
-
-    for (const [subpath, sourcePath] of Object.entries(subpathMap)) {
-      if (existsSync(sourcePath)) {
-        aliases[`@pie-element/${element}/${subpath}$`] = sourcePath;
-      }
-    }
-  }
-  return aliases;
-}
-
-function resolvePieLibSourceAliases(workspaceDir: string): Record<string, string> {
-  const aliases: Record<string, string> = {};
-  const pieLibRoot = join(workspaceDir, 'node_modules', '@pie-lib');
-
-  if (!existsSync(pieLibRoot)) {
-    return aliases;
-  }
-
-  for (const entry of readdirSync(pieLibRoot, { withFileTypes: true })) {
-    if (!entry.isDirectory() && !entry.isSymbolicLink()) {
-      continue;
-    }
-
-    const packageName = entry.name;
-    const packageRoot = join(pieLibRoot, packageName);
-    const sourceRoot = join(packageRoot, 'src');
-    const sourcePath = join(sourceRoot, 'index.ts');
-    if (!existsSync(sourcePath)) {
-      continue;
-    }
-
-    aliases[`@pie-lib/${packageName}$`] = sourcePath;
-    // Also route subpath imports through source to avoid dist CJS wrappers in IIFE output.
-    aliases[`@pie-lib/${packageName}`] = sourceRoot;
-  }
-
-  return aliases;
-}
-
 const moduleRules: webpack.RuleSetRule[] = [
   {
     test: /\.svelte$/,
     use: [
       {
         loader: 'svelte-loader',
+        // The compile options every Svelte element builds with (tools/vite/svelte-element-*):
+        // `defineDeliveryElement` extends the class `customElement` generates.
+        options: {
+          compilerOptions: { customElement: true },
+          emitCss: false,
+        },
       },
     ],
   },
@@ -198,8 +138,7 @@ const moduleRules: webpack.RuleSetRule[] = [
 
 export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configuration {
   const libPackagePathMap = getLibPackagePathMap(opts.workspaceDir, opts.elements);
-  const pieElementSourceAliases = resolvePieElementSourceAliases(opts.workspaceDir, opts.elements);
-  const pieLibSourceAliases = resolvePieLibSourceAliases(opts.workspaceDir);
+  const sourceAliases = resolveSourceAliases(join(opts.workspaceDir, 'node_modules'));
   const moduleSearchPaths = [
     join(opts.workspaceDir, 'node_modules'),
     ...opts.elements.flatMap((element) => [
@@ -212,12 +151,6 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
   ];
 
   console.log('[webpack-config] Creating config for elements:', opts.elements);
-  if (pieLibSourceAliases['@pie-lib/charting$']) {
-    console.log('[webpack-config] charting source alias', {
-      exact: pieLibSourceAliases['@pie-lib/charting$'],
-      prefix: pieLibSourceAliases['@pie-lib/charting'],
-    });
-  }
 
   return {
     target: 'web',
@@ -247,10 +180,11 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
     },
 
     resolve: {
+      // Aliases apply in order and the first match decides, so the exact source aliases
+      // precede the scope alias, which would otherwise route every element to its dist.
       alias: {
+        ...sourceAliases,
         '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
-        ...pieElementSourceAliases,
-        ...pieLibSourceAliases,
         // Some linked workspace packages emit jsxDEV calls.
         // In production bundles React's jsx-dev-runtime can end up without a callable jsxDEV.
         // Route both import forms to a tiny shim backed by react/jsx-runtime.
@@ -337,6 +271,7 @@ export function createControllerWebpackConfig(
     },
     resolve: {
       alias: {
+        ...resolveSourceAliases(join(opts.workspaceDir, 'node_modules')),
         '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
       },
       conditionNames: ['development', '...'],

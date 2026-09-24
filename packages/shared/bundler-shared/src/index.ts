@@ -42,7 +42,7 @@ interface BuildMetadata {
 }
 
 // Bump when bundle output compatibility changes so stale cached assets are rebuilt.
-const BUILD_OUTPUT_SCHEMA_VERSION = 3;
+const BUILD_OUTPUT_SCHEMA_VERSION = 4;
 
 export class Bundler {
   private outputDir: string;

@@ -4,11 +4,22 @@
  */
 
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readdirSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import pacote from 'pacote';
 import type { BuildDependency, BuildResolutionMode } from './types.js';
 import { createWorkspacePackageJson } from './runtime-template.js';
+import { WORKSPACE_SCOPES, findWorkspacePackages } from './workspace-packages.js';
 
 export async function installPackages(
   deps: BuildDependency[],
@@ -101,75 +112,38 @@ function prepareWorkspaceLink(workspaceDir: string, workspaceRoot: string): void
     }
   }
 
-  // Add @pie-element aliases expected by bundler input names.
-  const pieElementScopeDir = join(workspaceNodeModules, '@pie-element');
-  mkdirSync(pieElementScopeDir, { recursive: true });
-  linkPackageDir(join(workspaceRoot, 'packages', 'elements-react'), pieElementScopeDir, '', true);
-  linkPackageDir(join(workspaceRoot, 'packages', 'elements-svelte'), pieElementScopeDir, '', true);
-  linkPackageDir(join(workspaceRoot, 'packages', 'shared'), pieElementScopeDir, 'shared-');
-
-  // Add @pie-lib aliases expected by bundler internals.
-  const pieLibScopeDir = join(workspaceNodeModules, '@pie-lib');
-  mkdirSync(pieLibScopeDir, { recursive: true });
-  linkPackageDir(join(workspaceRoot, 'packages', 'lib-react'), pieLibScopeDir);
-  linkPackageDir(join(workspaceRoot, 'packages', 'lib-svelte'), pieLibScopeDir);
+  linkWorkspacePackages(workspaceRoot, workspaceNodeModules);
 }
 
-function linkPackageDir(
-  sourceDir: string,
-  targetScopeDir: string,
-  namePrefix = '',
-  createLegacySubpathLinks = false
-): void {
-  if (!existsSync(sourceDir)) return;
+/**
+ * Link every workspace package into `nodeModulesDir` under its package name. Bundling resolves
+ * each one from its sources (see `resolveSourceAliases`), so no package needs a build first.
+ */
+export function linkWorkspacePackages(workspaceRoot: string, nodeModulesDir: string): void {
+  for (const scope of WORKSPACE_SCOPES) {
+    ensureOwnScopeDir(join(nodeModulesDir, scope));
+  }
+  for (const pkg of findWorkspacePackages(workspaceRoot)) {
+    const target = join(nodeModulesDir, pkg.name);
+    rmSync(target, { recursive: true, force: true });
+    symlinkSync(pkg.dir, target, 'dir');
+  }
+}
 
-  for (const packageFolder of readdirSync(sourceDir)) {
-    const packagePath = join(sourceDir, packageFolder);
-    if (!existsSync(join(packagePath, 'package.json'))) {
-      continue;
-    }
-    const targetName = `${namePrefix}${packageFolder}`;
-    const targetPath = join(targetScopeDir, targetName);
-    rmSync(targetPath, { recursive: true, force: true });
-
-    if (!createLegacySubpathLinks) {
-      symlinkSync(packagePath, targetPath, 'dir');
-      continue;
-    }
-
-    // Create a compat layout for imports like @pie-element/foo/controller.
-    // Keep both source and dist available so development export conditions
-    // resolve to source (avoids dist-only CJS wrappers in IIFE output).
-    mkdirSync(targetPath, { recursive: true });
-    const sourcePath = join(packagePath, 'src');
-    const distPath = join(packagePath, 'dist');
-    if (existsSync(sourcePath)) {
-      symlinkSync(sourcePath, join(targetPath, 'src'), 'dir');
-    }
-    if (existsSync(distPath)) {
-      symlinkSync(distPath, join(targetPath, 'dist'), 'dir');
-      for (const subPath of ['controller', 'author', 'configure', 'delivery', 'print']) {
-        const preferredSourceSubPath = join(sourcePath, subPath);
-        const fallbackDistSubPath = join(distPath, subPath);
-        if (existsSync(preferredSourceSubPath)) {
-          symlinkSync(preferredSourceSubPath, join(targetPath, subPath), 'dir');
-        } else if (existsSync(fallbackDistSubPath)) {
-          symlinkSync(fallbackDistSubPath, join(targetPath, subPath), 'dir');
-        }
-      }
-    }
-    // Link the published root shims too, so this layout presents the same surface as a
-    // published tarball. `<pkg>/configure` resolves only through configure.js: the source
-    // lives at src/author, so no `configure` directory exists to fall back on.
-    for (const shim of ['controller.js', 'configure.js', 'author.js', 'print.js']) {
-      const shimPath = join(packagePath, shim);
-      if (existsSync(shimPath)) {
-        symlinkSync(shimPath, join(targetPath, shim));
-      }
-    }
-    const packageJsonPath = join(packagePath, 'package.json');
-    if (existsSync(packageJsonPath)) {
-      symlinkSync(packageJsonPath, join(targetPath, 'package.json'));
-    }
+/**
+ * Make `scopeDir` a real directory. Mirroring the root `node_modules` can leave it a symlink into
+ * the root install, and linking through that would rewrite the root's own entries; the mirrored
+ * entries are relinked individually instead.
+ */
+function ensureOwnScopeDir(scopeDir: string): void {
+  if (!lstatSync(scopeDir, { throwIfNoEntry: false })?.isSymbolicLink()) {
+    mkdirSync(scopeDir, { recursive: true });
+    return;
+  }
+  const mirroredDir = realpathSync(scopeDir);
+  unlinkSync(scopeDir);
+  mkdirSync(scopeDir);
+  for (const entry of readdirSync(mirroredDir)) {
+    symlinkSync(join(mirroredDir, entry), join(scopeDir, entry), 'dir');
   }
 }
