@@ -421,6 +421,8 @@ export { mkDependencyHash } from './dependency-hash.js';
 export { mkBundleCacheKey } from './dependency-hash.js';
 export { generateEntries } from './entry-generator.js';
 export { createWebpackConfig, createControllerWebpackConfig } from './webpack-config.js';
+export { findWorkspacePackages, workspaceDependencyClosure } from './workspace-packages.js';
+export type { WorkspacePackage } from './workspace-packages.js';
 
 // Export types
 export type {

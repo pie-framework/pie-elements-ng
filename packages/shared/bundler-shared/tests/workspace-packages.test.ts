@@ -12,14 +12,17 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { linkWorkspacePackages } from '../src/installer.js';
-import { findWorkspacePackages } from '../src/workspace-packages.js';
+import { findWorkspacePackages, workspaceDependencyClosure } from '../src/workspace-packages.js';
 
-function makeRepo(workspaces: string[], packages: Record<string, string>): string {
+type Manifest = { name: string } & Record<string, unknown>;
+
+function makeRepo(workspaces: string[], packages: Record<string, string | Manifest>): string {
   const root = mkdtempSync(join(tmpdir(), 'pie-workspace-packages-'));
   writeFileSync(join(root, 'package.json'), JSON.stringify({ workspaces }), 'utf8');
-  for (const [dir, name] of Object.entries(packages)) {
+  for (const [dir, manifest] of Object.entries(packages)) {
     mkdirSync(join(root, dir), { recursive: true });
-    writeFileSync(join(root, dir, 'package.json'), JSON.stringify({ name }), 'utf8');
+    const content = typeof manifest === 'string' ? { name: manifest } : manifest;
+    writeFileSync(join(root, dir, 'package.json'), JSON.stringify(content), 'utf8');
   }
   return root;
 }
@@ -55,6 +58,65 @@ describe('findWorkspacePackages', () => {
     });
 
     expect(() => findWorkspacePackages(root)).toThrow(/@pie-lib\/same is declared twice/);
+  });
+});
+
+describe('workspaceDependencyClosure', () => {
+  const closureOf = (root: string, names: string[]) =>
+    workspaceDependencyClosure(findWorkspacePackages(root), names).map((pkg) => pkg.name);
+
+  it('follows the libraries a Svelte element inlines, wherever each package lives', () => {
+    const root = makeRepo(
+      ['packages/elements-svelte/*', 'packages/shared/*', 'packages/lib-svelte/*'],
+      {
+        'packages/elements-svelte/simple-cloze': {
+          name: '@pie-element/simple-cloze',
+          devDependencies: { '@pie-lib/delivery-events-svelte': 'workspace:*', svelte: '^5.0.0' },
+        },
+        'packages/lib-svelte/delivery-events': {
+          name: '@pie-lib/delivery-events-svelte',
+          dependencies: { '@pie-element/shared-player-events': '^1.0.0' },
+        },
+        'packages/shared/player-events': '@pie-element/shared-player-events',
+        'packages/lib-svelte/unrelated': '@pie-lib/unrelated',
+      }
+    );
+
+    expect(closureOf(root, ['@pie-element/simple-cloze'])).toEqual([
+      '@pie-element/shared-player-events',
+      '@pie-element/simple-cloze',
+      '@pie-lib/delivery-events-svelte',
+    ]);
+  });
+
+  it('follows peer and optional dependencies', () => {
+    const root = makeRepo(['packages/*'], {
+      'packages/element': {
+        name: '@pie-element/element',
+        peerDependencies: { '@pie-lib/peer': 'workspace:*' },
+        optionalDependencies: { '@pie-lib/optional': 'workspace:*' },
+      },
+      'packages/peer': '@pie-lib/peer',
+      'packages/optional': '@pie-lib/optional',
+    });
+
+    expect(closureOf(root, ['@pie-element/element'])).toEqual([
+      '@pie-element/element',
+      '@pie-lib/optional',
+      '@pie-lib/peer',
+    ]);
+  });
+
+  it('terminates on a dependency cycle and ignores names outside the workspace', () => {
+    const root = makeRepo(['packages/*'], {
+      'packages/a': { name: '@pie-lib/a', dependencies: { '@pie-lib/b': 'workspace:*' } },
+      'packages/b': { name: '@pie-lib/b', dependencies: { '@pie-lib/a': 'workspace:*' } },
+    });
+
+    expect(closureOf(root, ['@pie-lib/a', '@pie-element/from-registry'])).toEqual([
+      '@pie-lib/a',
+      '@pie-lib/b',
+    ]);
   });
 });
 

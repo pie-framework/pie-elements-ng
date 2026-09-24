@@ -49,6 +49,45 @@ export function findWorkspacePackages(workspaceRoot: string): WorkspacePackage[]
   return Array.from(byName.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+const DEPENDENCY_SECTIONS = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+] as const;
+
+/**
+ * The workspace packages a `workspace-fast` build of `names` reads: each named package among
+ * `packages`, plus every one reachable from it through any dependency section. A source build reads
+ * whatever a package imports, and a Svelte element declares the libraries its own build inlines as
+ * `devDependencies`. A dependency is followed whatever version it declares, because the build links
+ * the workspace copy by name. Names outside `packages`, such as registry-only packages, contribute
+ * nothing.
+ */
+export function workspaceDependencyClosure(
+  packages: readonly WorkspacePackage[],
+  names: readonly string[]
+): WorkspacePackage[] {
+  const byName = new Map(packages.map((pkg) => [pkg.name, pkg]));
+  const reached = new Map<string, WorkspacePackage>();
+  const pending = [...names];
+  while (pending.length > 0) {
+    const pkg = byName.get(pending.pop() as string);
+    if (!pkg || reached.has(pkg.name)) {
+      continue;
+    }
+    reached.set(pkg.name, pkg);
+    const manifest = readManifest(join(pkg.dir, 'package.json'));
+    for (const section of DEPENDENCY_SECTIONS) {
+      const declared = manifest?.[section];
+      if (isRecord(declared)) {
+        pending.push(...Object.keys(declared));
+      }
+    }
+  }
+  return Array.from(reached.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
 function isWorkspaceScoped(name: string): boolean {
   return WORKSPACE_SCOPES.some((scope) => name.startsWith(`${scope}/`));
 }
