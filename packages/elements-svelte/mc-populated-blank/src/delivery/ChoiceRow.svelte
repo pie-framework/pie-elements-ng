@@ -1,4 +1,6 @@
 <script lang="ts">
+import { t } from './i18n';
+
 interface Choice {
   id: string;
   labelHtml?: string;
@@ -16,6 +18,7 @@ let {
   isEvaluateMode = false,
   instanceId,
   radioGroupName,
+  language,
 }: {
   choice: Choice;
   choiceMode?: 'text' | 'image';
@@ -26,24 +29,25 @@ let {
   isEvaluateMode?: boolean;
   instanceId: string;
   radioGroupName: string;
+  language?: string;
 } = $props();
 </script>
 
 <div
-  class={`flex items-start choice-row pie-choice ${isHorizontal ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${isSelected ? 'is-selected pie-choice-selected' : ''} ${correctness ? `choice-${correctness} pie-choice-${correctness}` : ''}`}
+  class={`choice-row pie-choice ${isHorizontal ? 'choice-row-horizontal pie-choice-horizontal' : ''} ${isSelected ? 'is-selected pie-choice-selected' : ''} ${correctness ? `choice-${correctness} pie-choice-${correctness}` : ''}`}
   style="gap:var(--mpb-choice-row-gap, 0.5rem);"
 >
   {#if isHorizontal}
     <label
       for={`${instanceId}-opt-${choice.id}`}
-      class="cursor-pointer choice-tile text-center pie-choice-tile"
+      class="choice-tile pie-choice-tile"
     >
       <span class="choice-tile-content pie-choice-tile-content">
         {#if choiceMode === 'image' && choice.imageUrl}
           <img
             src={choice.imageUrl}
-            alt={choice.imageAlt || `Choice ${choice.id}`}
-            class="object-contain pie-choice-image"
+            alt={choice.imageAlt || t('choiceImage', language, { id: choice.id })}
+            class="choice-image pie-choice-image"
             style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
           />
         {:else}
@@ -70,12 +74,12 @@ let {
       disabled={isDisabled}
       class="choice-radio-inline pie-choice-radio pie-choice-radio-inline"
     />
-    <label for={`${instanceId}-opt-${choice.id}`} class="cursor-pointer flex-1 pie-choice-label-wrap">
+    <label for={`${instanceId}-opt-${choice.id}`} class="choice-label-wrap pie-choice-label-wrap">
       {#if choiceMode === 'image' && choice.imageUrl}
         <img
           src={choice.imageUrl}
-          alt={choice.imageAlt || `Choice ${choice.id}`}
-          class="object-contain pie-choice-image"
+          alt={choice.imageAlt || t('choiceImage', language, { id: choice.id })}
+          class="choice-image pie-choice-image"
           style="max-height:var(--mpb-choice-image-max-height, 5rem);"
         />
       {:else}
@@ -94,6 +98,11 @@ let {
 </div>
 
 <style>
+  .choice-row {
+    display: flex;
+    align-items: flex-start;
+  }
+
   .choice-row-horizontal {
     flex-direction: column;
     align-items: center;
@@ -113,6 +122,8 @@ let {
     border-radius: 8px;
     background: transparent;
     transition: background-color 120ms ease-in-out;
+    cursor: pointer;
+    text-align: center;
   }
 
   .choice-tile-content {
@@ -121,6 +132,16 @@ let {
     align-items: center;
     justify-content: center;
     min-height: var(--mpb-choice-content-min-height, 7.5rem);
+  }
+
+  .choice-image {
+    display: block;
+    object-fit: contain;
+  }
+
+  .choice-label-wrap {
+    flex: 1 1 0%;
+    cursor: pointer;
   }
 
   .choice-row-horizontal:hover .choice-tile {
@@ -221,12 +242,14 @@ let {
     height: 150px;
   }
 
+  /* Only the top margin is spaced; the browser's own radio side margins would
+     otherwise offset the control from its label (the demo app's preflight zeroed them). */
   .choice-radio-bottom {
-    margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
+    margin: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem) 0 0;
     padding: var(--mpb-choice-radio-padding, 0px);
   }
 
   .choice-radio-inline {
-    margin-top: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem);
+    margin: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem) 0 0;
   }
 </style>

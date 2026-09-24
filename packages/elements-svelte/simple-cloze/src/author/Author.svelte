@@ -8,40 +8,42 @@
 />
 
 <script lang="ts">
+import { resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
-import { createEventDispatcher } from 'svelte';
-
-const dispatch = createEventDispatcher();
 
 let { model = $bindable(), onChange }: { model?: any; onChange?: (model: any) => void } = $props();
 
-function emitModelUpdate(nextModel: any) {
-  // Match the expected contract used by AuthorView:
-  // detail contains { update, reset }
-  dispatch('model.updated', { update: nextModel, reset: false });
+let rootEl = $state<HTMLDivElement | null>(null);
+const answerInputId = `simple-cloze-correct-answer-${Math.random().toString(36).slice(2, 10)}`;
+
+const isAuthorHost = (node: unknown) => typeof (node as any)?.onModelChange === 'function';
+
+/**
+ * The wrapper owns the model and announces the edit; `onChange` serves a
+ * component mounted without one. The update spreads the whole model, so fields
+ * this form does not edit survive.
+ */
+function emitModelUpdate(patch: Record<string, unknown>) {
+  const nextModel = { ...(model || {}), ...patch };
+  const host = resolveDeliveryHost(rootEl, { hostPredicate: isAuthorHost }) as any;
+  if (host) {
+    host.onModelChange(nextModel);
+  } else {
+    model = nextModel;
+    onChange?.(nextModel);
+  }
 }
 
 function handlePromptChange(html: string) {
-  if (onChange && model) {
-    onChange({ ...model, prompt: html });
-  }
-  if (model) {
-    emitModelUpdate({ ...model, prompt: html });
-  }
+  emitModelUpdate({ prompt: html });
 }
 
 function handleAnswerChange(e: Event) {
-  const target = e.target as HTMLInputElement;
-  if (onChange && model) {
-    onChange({ ...model, correctAnswer: target.value });
-  }
-  if (model) {
-    emitModelUpdate({ ...model, correctAnswer: target.value });
-  }
+  emitModelUpdate({ correctAnswer: (e.target as HTMLInputElement).value });
 }
 </script>
 
-<div class="simple-cloze-author">
+<div class="simple-cloze-author" bind:this={rootEl}>
   <div class="input-container">
     <span class="input-label">Prompt</span>
     <EditableHtml
@@ -52,11 +54,11 @@ function handleAnswerChange(e: Event) {
   </div>
 
   <div class="mb-6">
-    <label for="simple-cloze-correct-answer" class="block text-sm text-gray-600 mb-2">
+    <label for={answerInputId} class="block text-sm text-gray-600 mb-2">
       Correct Answer
     </label>
     <input
-      id="simple-cloze-correct-answer"
+      id={answerInputId}
       type="text"
       class="input input-bordered w-full"
       placeholder="Enter the correct answer"

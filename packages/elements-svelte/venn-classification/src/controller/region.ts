@@ -7,6 +7,7 @@
  * can share them.
  */
 
+import { t } from '../i18n.js';
 import type { Region, VennCircle, VennModel } from '../types.js';
 
 /**
@@ -69,26 +70,27 @@ export function enumerateRegions(circleCount: number): Region[] {
  *   [0,1]      -> "<X> and <Y>"
  *   [0,1,2]    -> "<X> and <Y> and <Z>"
  */
-export function composeRegionLabel(circles: VennCircle[], region: Region): string {
+export function composeRegionLabel(
+  circles: VennCircle[],
+  region: Region,
+  language?: string
+): string {
   const norm = normalizeRegion(region);
-  const labels = norm.map((i) => circles[i]?.label ?? `Set ${i + 1}`);
-  const circleCount = circles.length;
+  const setLabel = (i: number) => circles[i]?.label ?? t('setNumber', language, { number: i + 1 });
+  const labels = norm.map(setLabel);
 
   if (norm.length === 0) {
-    if (circleCount === 2) {
-      const a = circles[0]?.label ?? 'Set 1';
-      const b = circles[1]?.label ?? 'Set 2';
-      return `Neither ${a} nor ${b}`;
+    if (circles.length === 2) {
+      return t('regionNeither', language, { first: setLabel(0), second: setLabel(1) });
     }
-    const all = circles.map((c, i) => c?.label ?? `Set ${i + 1}`).join(', ');
-    return `None of ${all}`;
+    return t('regionNoneOf', language, { sets: circles.map((_, i) => setLabel(i)).join(', ') });
   }
 
   if (norm.length === 1) {
-    return `${labels[0]} only`;
+    return t('regionOnly', language, { set: labels[0] });
   }
 
-  return labels.join(' and ');
+  return labels.join(t('regionAndSeparator', language));
 }
 
 /**
@@ -97,7 +99,7 @@ export function composeRegionLabel(circles: VennCircle[], region: Region): strin
  * label.
  */
 export function getRegionLabel(
-  model: Pick<VennModel, 'circles' | 'regionLabels'>,
+  model: Pick<VennModel, 'circles' | 'regionLabels' | 'language'>,
   region: Region
 ): string {
   const key = regionKey(region);
@@ -105,5 +107,5 @@ export function getRegionLabel(
   if (typeof override === 'string' && override.trim().length > 0) {
     return override;
   }
-  return composeRegionLabel(model.circles ?? [], region);
+  return composeRegionLabel(model.circles ?? [], region, model.language);
 }

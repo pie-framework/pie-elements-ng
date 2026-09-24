@@ -64,13 +64,4 @@ describe('McPopulatedBlank — pre-selection blank hint', () => {
     const describedBy = (radiogroup.getAttribute('aria-describedby') || '').split(/\s+/);
     expect(describedBy).toContain(hint.id);
   });
-
-  it('honors a custom blankPreSelectionHint from uiText', () => {
-    const { target, component } = mountComponent({
-      uiText: { blankPreSelectionHint: 'Your pick shows up above.' },
-    });
-    mounts.push({ target, component });
-    flushSync();
-    expect(target.querySelector('.pie-blank-hint')?.textContent).toBe('Your pick shows up above.');
-  });
 });

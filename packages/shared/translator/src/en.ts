@@ -1,18 +1,8 @@
-// @ts-nocheck
-/**
- * @synced-from pie-lib/packages/translator/src/en.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
-
 export default {
   translation: {
     categorize: {
       limitMaxChoicesPerCategory:
-        'You\'ve reached the limit of {{maxChoicesPerCategory}} responses per area. To add another response, one must first be removed.',
+        "You've reached the limit of {{maxChoicesPerCategory}} responses per area. To add another response, one must first be removed.",
       maxChoicesPerCategoryRestriction:
         'To change this value to {{maxChoicesPerCategory}}, each category must have {{maxChoicesPerCategory}} or fewer answer choice[s].',
     },
@@ -78,6 +68,24 @@ export default {
       primaryCorrectWithAlternates:
         'Note: The answer shown above is the primary correct answer specified by the author for this item, but other answers may also be recognized as correct.',
     },
+    mcPopulatedBlank: {
+      answerChoices: 'Answer choices',
+      blankLabel: 'blank',
+      emptyBlank: '(blank)',
+      blankPreSelectionHint: 'The answer you choose will appear on the blank line above.',
+      correctAnswerSelected: 'Correct answer selected',
+      incorrectAnswerSelected: 'Incorrect answer selected',
+      selectedAnswerImage: 'Selected answer image',
+      choiceImage: 'Choice {{id}}',
+      clickToEnableAutoplay: 'Click to enable audio autoplay',
+      audioResourceUnavailable: 'Audio is enabled but no playable audio URL is configured.',
+      listen: 'Listen',
+      listenSilentAlt: 'Repeat instructions',
+      listenPlayingAlt: 'Instructions are playing',
+      printAudio: 'Audio:',
+      printTranscript: 'Transcript:',
+      printKey: '(key)',
+    },
     multipleChoice: {
       minSelections: 'Select at least {{minSelections}}.',
       maxSelections_one: 'Only {{maxSelections}} answer is allowed.',
@@ -91,6 +99,41 @@ export default {
       incorrectSelection: 'Incorrect Selection',
       key: 'Key',
     },
+    simpleCloze: {
+      correctAnswerShown: 'Correct answer',
+      correct: 'Correct',
+      incorrect: 'Incorrect',
+      unanswered: 'No answer',
+      placeholder: 'Enter your answer...',
+      answerInput: 'Your answer',
+      printCorrectAnswer: 'Correct answer:',
+      printAnswerBlank: 'Answer blank',
+    },
+    vennClassification: {
+      tray: 'Tiles to classify',
+      unknownTarget: 'unknown',
+      cancelled: 'Cancelled',
+      returnedToTray: '{{name}} returned to tray',
+      placedIn: '{{name}} placed in {{target}}',
+      pickedUp: 'Picked up {{name}}',
+      pickedUpWithKeyboard:
+        'Picked up {{name}}, drop target: {{target}}. Use arrow keys to choose a drop target, Enter to drop, Escape to cancel.',
+      dropTarget: 'Drop target: {{target}}',
+      unsupportedCircles_one:
+        'This diagram cannot be shown: it has {{count}} circle, and only {{supported}} are supported.',
+      unsupportedCircles_other:
+        'This diagram cannot be shown: it has {{count}} circles, and only {{supported}} are supported.',
+      setNumber: 'Set {{number}}',
+      regionOnly: '{{set}} only',
+      regionNeither: 'Neither {{first}} nor {{second}}',
+      regionNoneOf: 'None of {{sets}}',
+      regionAndSeparator: ' and ',
+      tileFallbackName: 'Tile',
+      tileNotPlaced: 'not placed',
+      tileInRegion: 'in {{region}}',
+      tileCorrect: 'correct',
+      tileIncorrect: 'incorrect',
+    },
   },
   common: {
     undo: 'Undo',
@@ -99,6 +142,8 @@ export default {
     incorrect: 'Incorrect',
     showCorrectAnswer: 'Show correct answer',
     hideCorrectAnswer: 'Hide correct answer',
+    showTeacherInstructions: 'Show Teacher Instructions',
+    hideTeacherInstructions: 'Hide Teacher Instructions',
     commonCorrectAnswerWithAlternates:
       'Note: The answer shown above is the most common correct answer for this item. One or more additional correct answers are also defined, and will also be recognized as correct.',
     warning: 'Warning',

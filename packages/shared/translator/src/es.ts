@@ -1,13 +1,3 @@
-// @ts-nocheck
-/**
- * @synced-from pie-lib/packages/translator/src/es.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
-
 export default {
   translation: {
     categorize: {
@@ -43,7 +33,8 @@ export default {
       green: 'Verde',
       white: 'Blanco',
       black: 'Negro',
-      onDoubleClick: 'Haz doble clic para revisar este texto. Presiona el botón de ingreso para enviar',
+      onDoubleClick:
+        'Haz doble clic para revisar este texto. Presiona el botón de ingreso para enviar',
     },
     charting: {
       addCategory: 'Añadir categoría',
@@ -78,6 +69,25 @@ export default {
       primaryCorrectWithAlternates:
         'Nota: La respuesta que se muestra arriba es la respuesta correcta principal especificada por el autor para esta pregunta, pero también se pueden reconocer otras respuestas como correctas.',
     },
+    mcPopulatedBlank: {
+      answerChoices: 'Opciones de respuesta',
+      blankLabel: 'espacio en blanco',
+      emptyBlank: '(en blanco)',
+      blankPreSelectionHint: 'La respuesta que elijas aparecerá en la línea en blanco de arriba.',
+      correctAnswerSelected: 'Respuesta correcta seleccionada',
+      incorrectAnswerSelected: 'Respuesta incorrecta seleccionada',
+      selectedAnswerImage: 'Imagen de la respuesta seleccionada',
+      choiceImage: 'Opción {{id}}',
+      clickToEnableAutoplay: 'Haz clic para activar la reproducción automática del audio',
+      audioResourceUnavailable:
+        'El audio está activado, pero no hay una URL de audio reproducible configurada.',
+      listen: 'Escuchar',
+      listenSilentAlt: 'Escuchar. Repetir las instrucciones.',
+      listenPlayingAlt: 'Escuchar. Estas son las instrucciones.',
+      printAudio: 'Audio:',
+      printTranscript: 'Transcripción:',
+      printKey: '(clave)',
+    },
     multipleChoice: {
       minSelections: 'Seleccione al menos {{minSelections}}.',
       maxSelections_one: 'Sólo se permite {{maxSelections}} respuesta.',
@@ -91,14 +101,51 @@ export default {
       incorrectSelection: 'Selección Incorrecta',
       key: 'Clave',
     },
+    simpleCloze: {
+      correctAnswerShown: 'Respuesta correcta',
+      correct: 'Correcto',
+      incorrect: 'Incorrecto',
+      unanswered: 'Sin respuesta',
+      placeholder: 'Escribe tu respuesta...',
+      answerInput: 'Tu respuesta',
+      printCorrectAnswer: 'Respuesta correcta:',
+      printAnswerBlank: 'Espacio para la respuesta',
+    },
+    vennClassification: {
+      tray: 'Fichas para clasificar',
+      unknownTarget: 'desconocido',
+      cancelled: 'Cancelado',
+      returnedToTray: 'Se devolvió {{name}} a la bandeja',
+      placedIn: 'Se colocó {{name}} en {{target}}',
+      pickedUp: 'Se tomó {{name}}',
+      pickedUpWithKeyboard:
+        'Se tomó {{name}}, destino: {{target}}. Usa las flechas para elegir un destino, Enter para soltar y Escape para cancelar.',
+      dropTarget: 'Destino: {{target}}',
+      unsupportedCircles_one:
+        'No se puede mostrar este diagrama: tiene {{count}} círculo, y solo se admiten {{supported}}.',
+      unsupportedCircles_other:
+        'No se puede mostrar este diagrama: tiene {{count}} círculos, y solo se admiten {{supported}}.',
+      setNumber: 'Conjunto {{number}}',
+      regionOnly: 'Solo {{set}}',
+      regionNeither: 'Ni {{first}} ni {{second}}',
+      regionNoneOf: 'Ninguno de {{sets}}',
+      regionAndSeparator: ' y ',
+      tileFallbackName: 'Ficha',
+      tileNotPlaced: 'sin colocar',
+      tileInRegion: 'en {{region}}',
+      tileCorrect: 'correcta',
+      tileIncorrect: 'incorrecta',
+    },
   },
   common: {
     undo: 'Deshacer',
     clearAll: 'Borrar todo',
-    correct: 'Correct',
-    incorrect: 'Incorrect',
+    correct: 'Correcto',
+    incorrect: 'Incorrecto',
     showCorrectAnswer: 'Mostrar respuesta correcta',
     hideCorrectAnswer: 'Ocultar respuesta correcta',
+    showTeacherInstructions: 'Mostrar instrucciones para el maestro',
+    hideTeacherInstructions: 'Ocultar instrucciones para el maestro',
     commonCorrectAnswerWithAlternates:
       'Nota: La respuesta que se muestra arriba es la respuesta correcta más común para esta pregunta. También se definen una o más respuestas correctas adicionales, y también se reconocerán como correctas.',
     warning: 'Advertencia',

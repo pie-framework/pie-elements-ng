@@ -1,3 +1,4 @@
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import AuthorComponent from './Author.svelte';
 
 const SvelteElementClass = (AuthorComponent as any).element;
@@ -17,12 +18,23 @@ class SimpleClozeAuthor extends SvelteElementClass {
 
   set onChange(fn: (model: any) => void) {
     this._onChange = fn;
-    (this as any).onChange = fn;
   }
 
   get onChange() {
     return this._onChange || (() => {});
   }
+
+  /**
+   * The component reports each edit here. The host keeps the edited model,
+   * renders from it, and announces it as `model.updated`, which bubbles to
+   * the listener an authoring player registers at its root.
+   */
+  onModelChange = (update: any) => {
+    this._model = update;
+    super.model = update;
+    this._onChange?.(update);
+    this.dispatchEvent(new ModelUpdatedEvent(update, false));
+  };
 }
 
 export default SimpleClozeAuthor;

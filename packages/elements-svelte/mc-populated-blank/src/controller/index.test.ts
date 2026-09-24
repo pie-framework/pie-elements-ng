@@ -16,15 +16,21 @@
  *   O4. Wrong choice → score 0, empty: false
  *   O5. traceLog includes mode, selected id, correct id, final score
  *
+ * getPartialScore
+ *   P1. Correct choice → 1
+ *   P2. Wrong choice → 0
+ *   P3. No choiceId → 0
+ *
  * model — choice ordering
- *   M1. shuffle=false → original order preserved
- *   M2. shuffle=true, instructor role → original order locked
- *   M3. shuffle=true, lockChoiceOrder=true → original order locked
- *   M4. shuffle=true, stored shuffle in session.data.shuffledValues → restored
- *   M5. shuffle=true, stored shuffle in session.shuffledValues (legacy) → restored
- *   M6. shuffle=true, stored shuffle has unknown ids → extras appended at end
- *   M7. shuffle=true, no stored shuffle → shuffled; updateSession called with new order
- *   M8. shuffle=true, no stored shuffle, no updateSession → shuffled silently (no throw)
+ *   M1. Neither flag set → original order preserved
+ *   M2. lockChoiceOrder=false, instructor role → original order locked
+ *   M3. lockChoiceOrder=true wins over shuffle=true → original order locked
+ *   M4. lockChoiceOrder=false, stored shuffle in session.data.shuffledValues → restored
+ *   M5. lockChoiceOrder=false, stored shuffle in session.shuffledValues (legacy) → restored
+ *   M6. lockChoiceOrder=false, stored shuffle has unknown ids → extras appended at end
+ *   M7. lockChoiceOrder=false, no stored shuffle → shuffled; updateSession called with new order
+ *   M8. lockChoiceOrder=false, no stored shuffle, no updateSession → shuffled silently (no throw)
+ *   M8a. shuffle=true with lockChoiceOrder unset → shuffled, as the older spelling
  *
  * model — output fields
  *   M9. evaluate mode → correctness, responseCorrect, correctChoiceId present
@@ -36,6 +42,14 @@
  *   M15. audioUrl null when hasAudio=false
  *   M16. audioUrl passed through when hasAudio=true
  *   M17. disabled=true in view/evaluate mode, false in gather
+ *   M18. Fields the item leaves out stay empty: no starter content
+ *   M19. language passes through, falling back to locale
+ *   M20. Choices carry only the fields delivery renders
+ *   M21. choiceGroupLabel passed through
+ *   M22. teacherInstructions shown to an instructor when teacherInstructionsEnabled is unset
+ *
+ * createDefaultModel
+ *   D1. The authoring starter passes validate with no errors, and carries no id or element
  *
  * validate
  *   V1. Valid question → empty errors object
@@ -44,15 +58,21 @@
  *   V4. populate_blank with two blank tokens → template error
  *   V5. audio_mc_only with a blank token → template error
  *   V6. Unknown interactionMode → interactionMode error
- *   V7. Fewer than two choices → choices error
- *   V8. Choice missing id → choices error
- *   V9. Text mode choice missing labelHtml → choices error
- *   V10. Image mode choice missing imageUrl → choices error
- *   V11. Image mode choice missing imageAlt → choices error
- *   V12. correctChoiceId not in choices → correctChoiceId error
+ *   V7. Fewer than two choices → answerChoices error
+ *   V8. Choice missing id → choices error keyed by its position
+ *   V9. Text mode choice missing labelHtml → choices error keyed by id
+ *   V10. Image mode choice missing imageUrl → choices error keyed by id
+ *   V11. Image mode choice missing imageAlt → choices error keyed by id
+ *   V12. correctChoiceId not in choices → correctResponse error
  *   V13. hasAudio=true with no audioUrl → audioUrl error
  *   V14. layoutLimits with a non-positive value → layoutLimits error
  *   V15. layoutLimits with a valid value → no error
+ *   V16. Two choices sharing an id → choices error on the repeat
+ *   V17. config minAnswerChoices / maxAnswerChoices → answerChoices error
+ *   V18. config prompt.required with no prompt → prompt error
+ *   V19. config teacherInstructions.required with none → teacherInstructions error
+ *   V20. Two text choices with the same label → choices error on the repeat
+ *   V21. No correctChoiceId → correctResponse error
  *
  * createCorrectResponseSession
  *   CR1. Instructor + mode≠evaluate → session with correct choiceId
@@ -61,7 +81,15 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { getCorrectness, outcome, model, validate, createCorrectResponseSession } from './index';
+import {
+  createDefaultModel,
+  getCorrectness,
+  getPartialScore,
+  outcome,
+  model,
+  validate,
+  createCorrectResponseSession,
+} from './index';
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -147,25 +175,46 @@ describe('outcome', () => {
 });
 
 // ---------------------------------------------------------------------------
+// getPartialScore
+// ---------------------------------------------------------------------------
+
+describe('getPartialScore', () => {
+  it('P1: correct choice → 1', () => {
+    expect(getPartialScore(BASE_QUESTION, { choiceId: 'b' })).toBe(1);
+  });
+
+  it('P2: wrong choice → 0', () => {
+    expect(getPartialScore(BASE_QUESTION, { choiceId: 'a' })).toBe(0);
+  });
+
+  it('P3: no choiceId → 0', () => {
+    expect(getPartialScore(BASE_QUESTION, {})).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // model — choice ordering
 // ---------------------------------------------------------------------------
 
 describe('model — choice ordering', () => {
-  it('M1: shuffle=false → original order preserved', async () => {
-    const result = (await model({ ...BASE_QUESTION, shuffle: false }, {}, GATHER_ENV)) as any;
+  const UNLOCKED = { ...BASE_QUESTION, lockChoiceOrder: false };
+
+  it('M1: neither flag set → original order preserved', async () => {
+    const { shuffle: _shuffle, ...question } = BASE_QUESTION;
+    const result = (await model(question, {}, GATHER_ENV)) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['a', 'b', 'c']);
   });
 
-  it('M2: shuffle=true, instructor role → original order locked', async () => {
+  it('M2: lockChoiceOrder=false, instructor role → original order locked', async () => {
     const result = (await model(
-      { ...BASE_QUESTION, shuffle: true },
+      { ...BASE_QUESTION, lockChoiceOrder: false },
       {},
       { mode: 'view', role: 'instructor' }
     )) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['a', 'b', 'c']);
   });
 
-  it('M3: shuffle=true, lockChoiceOrder=true → original order locked', async () => {
+  it('M3: lockChoiceOrder=true wins over shuffle=true → original order locked', async () => {
     const result = (await model(
       { ...BASE_QUESTION, shuffle: true, lockChoiceOrder: true },
       {},
@@ -174,21 +223,21 @@ describe('model — choice ordering', () => {
     expect(result.choices.map((c: any) => c.id)).toEqual(['a', 'b', 'c']);
   });
 
-  it('M4: shuffle=true, stored shuffle in session.data.shuffledValues → order restored', async () => {
+  it('M4: lockChoiceOrder=false, stored shuffle in session.data.shuffledValues → order restored', async () => {
     const session = { data: { shuffledValues: ['c', 'a', 'b'] } };
-    const result = (await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV)) as any;
+    const result = (await model(UNLOCKED, session, GATHER_ENV)) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['c', 'a', 'b']);
   });
 
-  it('M5: shuffle=true, stored shuffle in session.shuffledValues (legacy) → order restored', async () => {
+  it('M5: lockChoiceOrder=false, stored shuffle in session.shuffledValues (legacy) → order restored', async () => {
     const session = { shuffledValues: ['b', 'c', 'a'] };
-    const result = (await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV)) as any;
+    const result = (await model(UNLOCKED, session, GATHER_ENV)) as any;
     expect(result.choices.map((c: any) => c.id)).toEqual(['b', 'c', 'a']);
   });
 
-  it('M6: shuffle=true, stored shuffle has unknown id → known ids first, extras appended', async () => {
+  it('M6: lockChoiceOrder=false, stored shuffle has unknown id → known ids first, extras appended', async () => {
     const session = { data: { shuffledValues: ['c', 'a', 'unknown'] } };
-    const result = (await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV)) as any;
+    const result = (await model(UNLOCKED, session, GATHER_ENV)) as any;
     const ids = result.choices.map((c: any) => c.id);
     expect(ids[0]).toBe('c');
     expect(ids[1]).toBe('a');
@@ -196,22 +245,29 @@ describe('model — choice ordering', () => {
     expect(ids).not.toContain('unknown');
   });
 
-  it('M7: shuffle=true, no stored shuffle → shuffled; updateSession called with new order', async () => {
-    const session = { id: 'sess-1', element: 'mc-populated-blank' };
+  it('M7: lockChoiceOrder=false, no stored shuffle → shuffled; updateSession called with new order', async () => {
+    const session = { id: 'sess-1', element: 'mc-populated-blank--version-0-3-0' };
     const updateSession = vi.fn().mockResolvedValue(undefined);
-    await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV, updateSession);
+    await model(UNLOCKED, session, GATHER_ENV, updateSession);
     expect(updateSession).toHaveBeenCalledOnce();
     const [id, element, data] = updateSession.mock.calls[0];
     expect(id).toBe('sess-1');
-    expect(element).toBe('mc-populated-blank');
+    expect(element).toBe('mc-populated-blank--version-0-3-0');
     expect(data.shuffledValues).toHaveLength(3);
     expect(new Set(data.shuffledValues)).toEqual(new Set(['a', 'b', 'c']));
   });
 
-  it('M8: shuffle=true, no stored shuffle, no updateSession → shuffled silently without throw', async () => {
+  it('M8: lockChoiceOrder=false, no stored shuffle, no updateSession → shuffled silently without throw', async () => {
     const session = { id: 'sess-1', element: 'mc-populated-blank' };
-    const result = (await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV)) as any;
+    const result = (await model(UNLOCKED, session, GATHER_ENV)) as any;
     expect(result.choices).toHaveLength(3);
+  });
+
+  it('M8a: shuffle=true with lockChoiceOrder unset → shuffled, as the older spelling', async () => {
+    const session = { id: 'sess-1', element: 'mc-populated-blank--version-0-3-0' };
+    const updateSession = vi.fn().mockResolvedValue(undefined);
+    await model({ ...BASE_QUESTION, shuffle: true }, session, GATHER_ENV, updateSession);
+    expect(updateSession).toHaveBeenCalledOnce();
   });
 });
 
@@ -284,6 +340,70 @@ describe('model — output fields', () => {
     expect(gather.disabled).toBe(false);
     expect(view.disabled).toBe(true);
   });
+
+  it('M18: fields the item leaves out stay empty, with no starter content', async () => {
+    const result = await model({ promptEnabled: true }, {}, EVALUATE_ENV);
+    expect(result.prompt).toBe('');
+    expect(result.template).toBe('');
+    expect(result.choices).toEqual([]);
+    expect(result.correctChoiceId).toBe('');
+  });
+
+  it('M19: language passes through, falling back to locale', async () => {
+    const byLanguage = await model(
+      { ...BASE_QUESTION, language: 'es_ES', locale: 'en_US' },
+      {},
+      GATHER_ENV
+    );
+    const byLocale = await model({ ...BASE_QUESTION, locale: 'es_MX' }, {}, GATHER_ENV);
+    const neither = await model(BASE_QUESTION, {}, GATHER_ENV);
+    expect(byLanguage.language).toBe('es_ES');
+    expect(byLocale.language).toBe('es_MX');
+    expect(neither.language).toBeUndefined();
+  });
+
+  it('M20: choices carry only the fields delivery renders', async () => {
+    const q = {
+      ...BASE_QUESTION,
+      choices: [
+        { id: 'a', labelHtml: '<p>Alpha</p>', correct: false, feedback: 'No' },
+        { id: 'b', imageUrl: 'b.png', imageAlt: 'Beta', correct: true },
+      ] as any,
+    };
+    const result = await model(q, {}, GATHER_ENV);
+    expect(result.choices).toEqual([
+      { id: 'a', labelHtml: '<p>Alpha</p>' },
+      { id: 'b', imageUrl: 'b.png', imageAlt: 'Beta' },
+    ]);
+  });
+
+  it('M21: choiceGroupLabel passed through', async () => {
+    const q = { ...BASE_QUESTION, choiceGroupLabel: 'Pick the missing word' };
+    const result = await model(q, {}, GATHER_ENV);
+    expect(result.choiceGroupLabel).toBe('Pick the missing word');
+  });
+
+  it('M22: teacherInstructions shown to an instructor when teacherInstructionsEnabled is unset', async () => {
+    const result = await model(
+      { ...BASE_QUESTION, teacherInstructions: 'Do this.' },
+      {},
+      INSTRUCTOR_VIEW_ENV
+    );
+    expect(result.teacherInstructions).toBe('Do this.');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// createDefaultModel
+// ---------------------------------------------------------------------------
+
+describe('createDefaultModel', () => {
+  it('D1: the authoring starter passes validate, with no id or element', () => {
+    const starter = createDefaultModel();
+    expect(validate(starter)).toEqual({});
+    expect(starter).not.toHaveProperty('id');
+    expect(starter).not.toHaveProperty('element');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -324,26 +444,26 @@ describe('validate', () => {
     expect(errors.interactionMode).toBeTruthy();
   });
 
-  it('V7: fewer than two choices → choices error', () => {
-    const errors = validate({ ...BASE_QUESTION, choices: [CHOICES[0]] });
-    expect(errors.choices).toBeTruthy();
+  it('V7: fewer than two choices → answerChoices error', () => {
+    const errors = validate({ ...BASE_QUESTION, choices: [CHOICES[0]], correctChoiceId: 'a' });
+    expect(errors.answerChoices).toBe('There should be at least 2 choices defined.');
   });
 
-  it('V8: choice missing id → choices error', () => {
+  it('V8: choice missing id → choices error keyed by its position', () => {
     const errors = validate({
       ...BASE_QUESTION,
       choices: [{ id: '', labelHtml: '<p>A</p>' }, CHOICES[1]],
     });
-    expect(errors.choices).toBeTruthy();
+    expect(errors.choices).toEqual({ 0: 'Choice needs an id.' });
   });
 
   it('V9: text mode choice missing labelHtml → choices error', () => {
     const errors = validate({
       ...BASE_QUESTION,
       choiceMode: 'text',
-      choices: [{ id: 'a', labelHtml: '' }, CHOICES[1]],
+      choices: [{ id: 'a', labelHtml: '<p></p>' }, CHOICES[1]],
     });
-    expect(errors.choices).toBeTruthy();
+    expect(errors.choices).toEqual({ a: 'Content should not be empty.' });
   });
 
   it('V10: image mode choice missing imageUrl → choices error', () => {
@@ -355,7 +475,7 @@ describe('validate', () => {
         { id: 'b', imageUrl: 'https://example.com/b.png', imageAlt: 'B' },
       ],
     });
-    expect(errors.choices).toBeTruthy();
+    expect(errors.choices).toEqual({ a: 'An image is required.' });
   });
 
   it('V11: image mode choice missing imageAlt → choices error', () => {
@@ -367,12 +487,12 @@ describe('validate', () => {
         { id: 'b', imageUrl: 'https://example.com/b.png', imageAlt: 'B' },
       ],
     });
-    expect(errors.choices).toBeTruthy();
+    expect(errors.choices).toEqual({ a: 'Image alt text is required.' });
   });
 
-  it('V12: correctChoiceId not in choices → correctChoiceId error', () => {
+  it('V12: correctChoiceId not in choices → correctResponse error', () => {
     const errors = validate({ ...BASE_QUESTION, correctChoiceId: 'z' });
-    expect(errors.correctChoiceId).toBeTruthy();
+    expect(errors.correctResponse).toBe('The correct response must be one of the choices.');
   });
 
   it('V13: hasAudio=true with no audioUrl → audioUrl error', () => {
@@ -395,6 +515,54 @@ describe('validate', () => {
     });
     expect(errors.layoutLimits).toBeUndefined();
   });
+
+  it('V16: two choices sharing an id → choices error', () => {
+    const errors = validate({
+      ...BASE_QUESTION,
+      choices: [...CHOICES, { id: 'a', labelHtml: '<p>Again</p>' }],
+    });
+    expect(errors.choices).toEqual({ a: 'Choice id should be unique.' });
+  });
+
+  it('V17: config minAnswerChoices / maxAnswerChoices → answerChoices error', () => {
+    expect(validate(BASE_QUESTION, { minAnswerChoices: 4 }).answerChoices).toBe(
+      'There should be at least 4 choices defined.'
+    );
+    expect(validate(BASE_QUESTION, { maxAnswerChoices: 2 }).answerChoices).toBe(
+      'No more than 2 choices should be defined.'
+    );
+    expect(validate(BASE_QUESTION, { minAnswerChoices: 3, maxAnswerChoices: 3 })).toEqual({});
+  });
+
+  it('V18: config prompt.required with no prompt → prompt error', () => {
+    const q = { ...BASE_QUESTION, promptEnabled: false, prompt: '<p> </p>' };
+    expect(validate(q).prompt).toBeUndefined();
+    expect(validate(q, { prompt: { required: true } }).prompt).toBe('This field is required.');
+  });
+
+  it('V19: config teacherInstructions.required with none → teacherInstructions error', () => {
+    const errors = validate(BASE_QUESTION, { teacherInstructions: { required: true } });
+    expect(errors.teacherInstructions).toBe('This field is required.');
+    expect(
+      validate(
+        { ...BASE_QUESTION, teacherInstructions: '<p>Read aloud.</p>' },
+        { teacherInstructions: { required: true } }
+      )
+    ).toEqual({});
+  });
+
+  it('V20: two text choices with the same label → choices error on the repeat', () => {
+    const errors = validate({
+      ...BASE_QUESTION,
+      choices: [...CHOICES, { id: 'd', labelHtml: '<p>Beta</p>' }],
+    });
+    expect(errors.choices).toEqual({ d: 'Content should be unique.' });
+  });
+
+  it('V21: no correctChoiceId → correctResponse error', () => {
+    const errors = validate({ ...BASE_QUESTION, correctChoiceId: '' });
+    expect(errors.correctResponse).toBe('No correct response defined.');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -407,7 +575,8 @@ describe('createCorrectResponseSession', () => {
       mode: 'view',
       role: 'instructor',
     });
-    expect(result).toMatchObject({ choiceId: 'b' });
+    // `element` is the player's: it stamps the tag it registered the element under.
+    expect(result).toEqual({ id: '1', choiceId: 'b' });
   });
 
   it('CR2: student role → null', async () => {

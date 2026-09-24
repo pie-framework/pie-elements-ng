@@ -30,8 +30,7 @@
       "!apps/*/src/lib/elements/registry.ts",
       "!apps/*/src/lib/element-imports.js",
       "!apps/*/src/lib/element-imports.d.ts",
-      "!apps/esm-player-test/index.html",
-      "!packages/elements-svelte/simple-cloze/test.html"
+      "!apps/esm-player-test/index.html"
     ]
   },
   "formatter": {

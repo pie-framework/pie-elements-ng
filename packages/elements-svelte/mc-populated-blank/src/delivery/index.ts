@@ -38,8 +38,10 @@ class McPopulatedBlankElement extends SvelteElementClass {
   };
 
   set model(m: any) {
+    // Autoplay re-fires only for a new `audioUrl`, so a re-set of the same
+    // model must keep a finished playback counted.
+    if (m?.audioUrl !== this._model?.audioUrl) this.audioComplete = false;
     this._model = m;
-    this.audioComplete = false;
     super.model = m;
     this._dispatchModelSet();
   }
@@ -70,29 +72,49 @@ class McPopulatedBlankElement extends SvelteElementClass {
 
   onSessionChange = (updatedSession: any) => {
     this._writeSession(updatedSession);
-    super.session = updatedSession;
     this._dispatchSessionChanged();
   };
 
   onAudioStarted = () => {
-    this._writeSession({
-      ...(this._internalSession || {}),
-      audioStartTime: Date.now(),
-    });
+    this._writeAudioTiming({ audioStartTime: Date.now() });
   };
 
   onAudioEnded = () => {
     this.audioComplete = true;
-    this._writeSession({
-      ...(this._internalSession || {}),
-      audioEndTime: Date.now(),
-    });
+    this._writeAudioTiming({ audioEndTime: Date.now() });
     this._dispatchSessionChanged();
   };
 
+  /**
+   * The first playback's timing, as multiple-choice's `updateSessionMetadata`
+   * records it: a replay does not move either timestamp, and `waitTime` is set
+   * once both exist.
+   */
+  _writeAudioTiming = (timing: { audioStartTime?: number; audioEndTime?: number }) => {
+    const session = this._internalSession || {};
+    const audioStartTime = session.audioStartTime || timing.audioStartTime;
+    const audioEndTime = session.audioEndTime || timing.audioEndTime;
+    const next = {
+      ...session,
+      ...(audioStartTime ? { audioStartTime } : {}),
+      ...(audioEndTime ? { audioEndTime } : {}),
+    };
+    if (!next.waitTime && audioStartTime && audioEndTime) {
+      next.waitTime = audioEndTime - audioStartTime;
+    }
+    this._writeSession(next);
+  };
+
+  /**
+   * The component builds its next update from the session it renders, and
+   * `writeSessionInPlace` drops keys that update lacks, so every write reaches
+   * the component too: audio timing written behind its back was erased by the
+   * learner's next pick.
+   */
   _writeSession = (updatedSession: any) => {
     writeSessionInPlace(this._playerSession, updatedSession);
     this._internalSession = updatedSession;
+    super.session = updatedSession;
   };
 
   _isComplete = () => {
