@@ -9,6 +9,7 @@ const model: VennModel = {
   tiles: [],
   regionLabels: {},
   scoringPolicy: 'partialPerTile',
+  teacherInstructionsEnabled: true,
 };
 
 export default {

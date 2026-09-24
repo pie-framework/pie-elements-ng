@@ -11,9 +11,9 @@
  * the `complete` flag of `session-changed`.
  *
  * The component mounts a microtask after connect, and happy-dom lays nothing
- * out, so the diagram and tray rects are stubbed: the diagram fills
- * (0,0)-(900,540), which makes client coordinates equal viewBox coordinates,
- * and the tray sits below it.
+ * out, so the diagram and tray rects are stubbed: the diagram fills the base
+ * geometry's viewBox from (0,0), which makes client coordinates equal viewBox
+ * coordinates, and the tray sits below it.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
@@ -22,6 +22,12 @@ const { renderMath } = vi.hoisted(() => ({ renderMath: vi.fn() }));
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath }));
 
 import VennClassificationElement from '../src/delivery/index.js';
+import {
+  buildLayout2Set,
+  defaultGeometry2Set,
+  hitTest,
+  TEXT_TILE_CELL,
+} from '../src/delivery/layout.js';
 import { model as controllerModel } from '../src/controller/index.js';
 import type { VennModel, VennSession } from '../src/types.js';
 
@@ -45,13 +51,23 @@ const QUESTION: VennModel = {
 const GATHER = { mode: 'gather', role: 'student' };
 const EVALUATE = { mode: 'evaluate', role: 'student' };
 
+/** Three tiles never grow the diagram, so it keeps the base geometry. */
+const GEOMETRY = defaultGeometry2Set();
+const LAYOUT = buildLayout2Set(QUESTION, GEOMETRY);
+const TRAY_TOP = GEOMETRY.height + 60;
+
+function middleOf(key: string) {
+  const r = LAYOUT.regionByKey[key].hitRect;
+  return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
+}
+
 /** Client points inside each drop target, given the stubbed rects. */
 const POINT = {
-  '0': { x: 240, y: 210 },
-  '0,1': { x: 450, y: 210 },
-  '1': { x: 660, y: 210 },
-  '': { x: 450, y: 500 },
-  tray: { x: 450, y: 650 },
+  '0': middleOf('0'),
+  '0,1': middleOf('0,1'),
+  '1': middleOf('1'),
+  '': middleOf(''),
+  tray: { x: GEOMETRY.width / 2, y: TRAY_TOP + 50 },
 } as const;
 
 type PlayerSession = VennSession & Record<string, unknown>;
@@ -84,8 +100,10 @@ beforeEach(() => {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
   ) {
-    if (this.classList.contains('venn-diagram')) return rect(0, 0, 900, 540);
-    if (this.dataset.regionKey === 'tray') return rect(0, 600, 900, 120);
+    if (this.classList.contains('venn-diagram')) {
+      return rect(0, 0, GEOMETRY.width, GEOMETRY.height);
+    }
+    if (this.dataset.regionKey === 'tray') return rect(0, TRAY_TOP, GEOMETRY.width, 120);
     return rect(0, 0, 0, 0);
   });
   // Announcements land a frame later; run them now so the live region is readable.
@@ -155,8 +173,14 @@ function where(h: Harness, id: string): 'tray' | 'diagram' {
   return tile(h, id).closest('[data-region-key="tray"]') ? 'tray' : 'diagram';
 }
 
-function key(target: HTMLElement, k: string) {
-  target.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+function key(target: HTMLElement, k: string, type: 'keydown' | 'keyup' = 'keydown') {
+  target.dispatchEvent(new KeyboardEvent(type, { key: k, bubbles: true, cancelable: true }));
+  flushSync();
+}
+
+/** A click with `detail` clicks: 0 is a screen reader's or `element.click()`, 1 a pointer's. */
+function click(target: HTMLElement, detail: number) {
+  target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail }));
   flushSync();
 }
 
@@ -244,6 +268,24 @@ describe('venn-classification session contract', () => {
     const h = await mount(placedEverywhere());
 
     expect(h.events.at(-1)?.detail).toEqual({ complete: true, component: TAG });
+  });
+
+  it('reports a restored complete session as complete on model-set', async () => {
+    // A player sets the model and then the session in the same task.
+    const modelSet: boolean[] = [];
+    const listener = (event: Event) => modelSet.push((event as CustomEvent).detail.complete);
+    document.addEventListener('model-set', listener);
+    const playerSession = placedEverywhere();
+    const element = document.createElement(TAG) as Harness['element'];
+    document.body.appendChild(element);
+    const vm = await controllerModel(QUESTION, playerSession, GATHER);
+
+    element.model = { id: QUESTION.id, element: QUESTION.element, ...vm };
+    element.session = playerSession;
+    await settle();
+    document.removeEventListener('model-set', listener);
+
+    expect(modelSet).toEqual([true]);
   });
 
   it('flips `complete` on the last placement', async () => {
@@ -389,6 +431,100 @@ describe('venn-classification keyboard placement', () => {
     await switchMode(h, EVALUATE);
 
     expect(tile(h, 'crocodile').getAttribute('aria-pressed')).toBe('false');
+  });
+});
+
+describe('venn-classification screen-reader activation', () => {
+  it('picks up and drops a tile on a click with no click count', async () => {
+    const h = await mount();
+    tile(h, 'crocodile').focus();
+
+    click(tile(h, 'crocodile'), 0);
+    expect(tile(h, 'crocodile').getAttribute('aria-pressed')).toBe('true');
+    expect(announced(h)).toMatch(/^Picked up Crocodile, drop target: Reptile only\b/);
+
+    click(tile(h, 'crocodile'), 0);
+    await settle();
+
+    expect(h.playerSession.placements?.crocodile).toEqual([0]);
+    expect(announced(h)).toBe('Crocodile placed in Reptile only');
+    expect(document.activeElement).toBe(tile(h, 'crocodile'));
+  });
+
+  it('picks up nothing and commits nothing for a pointer click', async () => {
+    const h = await mount();
+    const before = h.events.length;
+
+    pointer(tile(h, 'crocodile'), 'pointerdown', POINT.tray);
+    pointer(window, 'pointerup', POINT.tray);
+    click(tile(h, 'crocodile'), 1);
+
+    expect(tile(h, 'crocodile').getAttribute('aria-pressed')).toBe('false');
+    expect(h.playerSession).toEqual({ id: '1', element: TAG });
+    expect(h.events).toHaveLength(before);
+  });
+
+  it('takes the click a key press produces as part of that key press', async () => {
+    const h = await mount();
+
+    key(tile(h, 'crocodile'), 'Enter');
+    click(tile(h, 'crocodile'), 0);
+    expect(tile(h, 'crocodile').getAttribute('aria-pressed')).toBe('true');
+
+    key(tile(h, 'crocodile'), 'Enter', 'keyup');
+    await settle();
+    click(tile(h, 'crocodile'), 0);
+    await settle();
+
+    expect(h.playerSession.placements?.crocodile).toEqual([0]);
+  });
+
+  it('ignores the click while read-only', async () => {
+    const h = await mount(placedEverywhere(), EVALUATE);
+    const before = h.events.length;
+
+    click(tile(h, 'crocodile'), 0);
+
+    expect(tile(h, 'crocodile').getAttribute('aria-pressed')).toBe('false');
+    expect(h.events).toHaveLength(before);
+  });
+});
+
+describe('venn-classification placed tiles', () => {
+  it('draws every tile in a shared region inside it, in a cell of its own', async () => {
+    const h = await mount({
+      id: '1',
+      element: TAG,
+      placements: { crocodile: [0, 1], frog: [0, 1], dolphin: [0, 1] },
+      completed: true,
+    });
+    const cell = TEXT_TILE_CELL;
+    const centers = ['crocodile', 'frog', 'dolphin'].map((id) => {
+      const wrapper = tile(h, id).closest<HTMLElement>('.tile-wrapper');
+      if (!wrapper) throw new Error(`tile ${id} has no wrapper`);
+      expect(wrapper.style.width).toBe(`${cell.w}px`);
+      expect(wrapper.style.height).toBe(`${cell.h}px`);
+      return {
+        x: (Number.parseFloat(wrapper.style.left) / 100) * GEOMETRY.width,
+        y: (Number.parseFloat(wrapper.style.top) / 100) * GEOMETRY.height,
+      };
+    });
+
+    for (const { x, y } of centers) {
+      for (const dx of [-cell.w / 2, cell.w / 2]) {
+        for (const dy of [-cell.h / 2, cell.h / 2]) {
+          expect(hitTest(LAYOUT, x + dx, y + dy)?.key).toBe('0,1');
+        }
+      }
+    }
+    const [a, b, c] = centers;
+    for (const [p, q] of [
+      [a, b],
+      [a, c],
+      [b, c],
+    ]) {
+      expect(Math.abs(p.x - q.x) >= cell.w || Math.abs(p.y - q.y) >= cell.h).toBe(true);
+    }
   });
 });
 

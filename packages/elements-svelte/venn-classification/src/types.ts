@@ -42,6 +42,10 @@ export interface VennModel {
    */
   regionLabels?: Record<string, string>;
   scoringPolicy?: ScoringPolicy;
+  /** Shown collapsed to instructors in view and evaluate mode. */
+  teacherInstructions?: string;
+  /** Unset shows `teacherInstructions`, as in multiple-choice. */
+  teacherInstructionsEnabled?: boolean;
   /** The learner-facing strings' language, as `@pie-lib/translator` reads it (`en_US`, `es_ES`, …). */
   language?: string;
 }

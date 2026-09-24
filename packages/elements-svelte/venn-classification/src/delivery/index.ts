@@ -22,10 +22,17 @@ class VennClassificationElement extends SvelteElementClass {
     return isControllerComplete(this._model, this._internalSession);
   };
 
+  /**
+   * Dispatched a microtask later: on load a player sets the model and then the
+   * session in the same task (`element.model = …; element.session = …`), and
+   * `complete` can only report a restored placement once the session is here.
+   */
   _dispatchModelSet = () => {
-    this.dispatchEvent(
-      new ModelSetEvent(this.tagName.toLowerCase(), this._isComplete(), this._model !== undefined)
-    );
+    queueMicrotask(() => {
+      this.dispatchEvent(
+        new ModelSetEvent(this.tagName.toLowerCase(), this._isComplete(), this._model !== undefined)
+      );
+    });
   };
 
   _dispatchSessionChanged = () => {

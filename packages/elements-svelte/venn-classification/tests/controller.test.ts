@@ -386,3 +386,25 @@ describe('buildPreviewSession', () => {
     expect(s).not.toHaveProperty('element');
   });
 });
+
+describe('model teacher instructions', () => {
+  const question = twoSetModel({ teacherInstructions: '<p>Read aloud.</p>' });
+  const instructor = { mode: 'view', role: 'instructor' };
+
+  it('sends them to an instructor when the flag is unset, as multiple-choice does', async () => {
+    const { teacherInstructionsEnabled: _flag, ...unset } = question;
+    expect((await buildViewModel(unset as VennModel, {}, instructor)).teacherInstructions).toBe(
+      '<p>Read aloud.</p>'
+    );
+  });
+
+  it('withholds them when turned off, and from a student', async () => {
+    expect(
+      (await buildViewModel({ ...question, teacherInstructionsEnabled: false }, {}, instructor))
+        .teacherInstructions
+    ).toBeNull();
+    expect(
+      (await buildViewModel(question, {}, { mode: 'view', role: 'student' })).teacherInstructions
+    ).toBeNull();
+  });
+});
