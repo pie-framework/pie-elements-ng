@@ -151,10 +151,26 @@ describe('video-stimulus delivery', () => {
     expect(loadSpy).toHaveBeenCalledTimes(1);
   });
 
+  it('reports a failure only once the last source fails', () => {
+    const candidate = authoredModel();
+    candidate.media.sources = [
+      { src: 'https://cdn.example.org/video.webm', type: 'video/webm' },
+      { src: 'https://cdn.example.org/video.mp4', type: 'video/mp4' },
+    ];
+    const { target } = mountComponent(buildViewModel(candidate, undefined, { mode: 'view' }));
+    const sources = Array.from(target.querySelectorAll('source'));
+    sources[0].dispatchEvent(new Event('error'));
+    flushSync();
+    expect(target.querySelector('[role="alert"]')).toBeNull();
+    sources[1].dispatchEvent(new Event('error'));
+    flushSync();
+    expect(target.querySelector('[role="alert"]')).toHaveTextContent('Video unavailable');
+  });
+
   it('keeps a failure and focused retry control available until media succeeds', () => {
     const { target } = mountComponent();
     const video = requiredElement<HTMLVideoElement>(target, 'video');
-    video.dispatchEvent(new Event('error'));
+    requiredElement<HTMLSourceElement>(target, 'source').dispatchEvent(new Event('error'));
     flushSync();
     const status = target.querySelector('[role="alert"]');
     const retry = target.querySelector('.retry-button') as HTMLButtonElement;
@@ -228,6 +244,7 @@ describe('video-stimulus delivery', () => {
     element.addEventListener('session-changed', sessionChanged);
     element.model = viewModel();
     expect(element.shadowRoot).toBeNull();
+    expect(element.hasAttribute('lang')).toBe(false);
     expect(modelSet).toHaveBeenCalledTimes(1);
     expect(sessionChanged).not.toHaveBeenCalled();
   });

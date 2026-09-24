@@ -187,8 +187,14 @@ let instanceNumber = 0;
           onloadeddata={clearMediaFailure}
           oncanplay={clearMediaFailure}
         >
-          {#each sources as source (source.src)}
-            <source src={source.src} type={source.type} />
+          <!-- A failing <source> fires `error` on itself and leaves `video.error` null, so the
+               video's own handler never sees it. The last source failing means none can play. -->
+          {#each sources as source, index (source.src)}
+            <source
+              src={source.src}
+              type={source.type}
+              onerror={index === sources.length - 1 ? reportMediaFailure : undefined}
+            />
           {/each}
           {#each tracks as track, index (`${index}:${track.src}:${track.kind}:${track.lang}:${track.label}`)}
             <track
