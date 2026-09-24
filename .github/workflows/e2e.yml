@@ -20,8 +20,6 @@ jobs:
         with:
           bun-version: 1.3.13
       - run: bun install --frozen-lockfile
-      - run: bun x svelte-kit sync
-        working-directory: apps/element-demo
       - run: bun run --cwd apps/element-demo generate-imports
       # Build workspace outputs before app build so package exports resolve in CI.
       - run: bun run build

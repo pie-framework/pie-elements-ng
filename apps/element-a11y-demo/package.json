@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "prepare": "svelte-kit sync",
     "prebuild": "bun run generate-imports && bun run --cwd ../.. verify:no-local-paths apps/element-a11y-demo/src/lib/element-imports.js apps/element-a11y-demo/src/lib/element-imports.d.ts",
     "build": "vite build",
     "preview": "vite preview",
