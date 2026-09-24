@@ -192,18 +192,18 @@ interface CommonElementProps {
 
 ```svelte
 <script lang="ts">
-  import { MultipleChoice } from '@pie-element/multiple-choice';
+  import SimpleCloze from '@pie-element/simple-cloze/delivery';
 
-  let model = $state({...});
-  let session = $state({...});
-  let env = { mode: 'gather', role: 'student' };
+  if (!customElements.get('simple-cloze')) customElements.define('simple-cloze', SimpleCloze);
+
+  let { model, session } = $props(); // model: the controller's view model for the env
 </script>
 
-<MultipleChoice
+<!-- The element writes each change into `session`; the event only says it happened. -->
+<simple-cloze
   {model}
   {session}
-  {env}
-  on:session-change={(e) => session = e.detail}
+  onsession-changed={(e) => saveSession(session, { complete: e.detail.complete })}
 />
 ```
 
@@ -231,9 +231,9 @@ element.model = {...};
 element.session = {...};
 element.env = {...};
 
-// Listen to events
-element.addEventListener('session-change', (e) => {
-  console.log('New session:', e.detail);
+// Listen to events: the element has written the change into `element.session`.
+element.addEventListener('session-changed', (e) => {
+  console.log('Session:', element.session, 'complete:', e.detail.complete);
 });
 ```
 
@@ -373,24 +373,24 @@ console.log(result.score); // 1.0
 
 ## Events
 
-### session-change
+### session-changed
 
-Fired when student response changes.
+Fired by the delivery element after it writes a learner change into the session object the player set. The event carries metadata only, so read the response off that object. [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#delivery-contract) sets out the full contract.
 
 ```typescript
-interface SessionChangeEvent {
-  detail: PieSession;
+interface SessionChangedEvent extends CustomEvent<{ complete: boolean; component: string }> {
+  complete: boolean; // whether the session is a complete response
+  component: string; // the tag the element is registered under
 }
 ```
 
 **Example:**
 ```javascript
-element.addEventListener('session-change', (event) => {
-  const session = event.detail;
-  console.log('Student answered:', session.value);
+element.session = session;
 
-  // Save to database
-  saveSession(session);
+element.addEventListener('session-changed', (event) => {
+  // The element has written the change into `session`.
+  saveSession(session, { complete: event.detail.complete });
 });
 ```
 
@@ -677,8 +677,8 @@ Always handle session changes:
 
 ```typescript
 // ✅ Good: Persist session changes
-element.addEventListener('session-change', (e) => {
-  saveSession(e.detail);
+element.addEventListener('session-changed', () => {
+  saveSession(session); // the object set as `element.session`
 });
 
 // ❌ Bad: Ignore session changes (data loss)

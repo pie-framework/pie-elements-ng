@@ -11,7 +11,7 @@ This is the normative contract for publishable PIE element packages. It covers t
 Every element consumes a model, a session, and an environment object.
 
 - The model is authored item data. It must include a stable `id` and an `element` package name such as `@pie-element/multiple-choice`.
-- The session is learner response data. Its shape is element-specific and must be treated as immutable by players; emit a replacement object when it changes.
+- The session is learner response data. Its shape is element-specific. The player owns the session object it sets, and the element writes each change into that object, as the Delivery Contract below sets out.
 - The environment describes mode and role. Supported modes are `gather`, `view`, `evaluate`, and `configure`; supported roles are `student` and `instructor`.
 
 Element-specific model and session fields are part of that element's public contract once published. Breaking shape changes require normal semver treatment.
@@ -59,7 +59,18 @@ Players set data via properties, not attributes:
 - `element.session = session`
 - `element.env = env`
 
-Elements emit session changes as DOM events with the replacement session in `event.detail`. Author elements emit model changes as the Authoring Contract below sets out.
+Delivery elements announce session changes as the Delivery Contract below sets out, and author elements announce model changes as the Authoring Contract sets out.
+
+### Delivery Contract
+
+The element writes each learner change into the session object the player set, keeping its reference, and then dispatches `session-changed` (`SessionChangedEvent` from `@pie-element/shared-player-events`). Players read the response off their own object: `pie-player` holds its entry in the host's `session.data`, and `pie-item-player` forwards the array it holds, so an element that only replaces its own reference loses the response.
+
+- `detail` is `{ complete, component }`: whether the session is a complete response, and the tag the element is registered under. It carries no session.
+- The event bubbles and is composed.
+- Setting `model` dispatches `model-set` (`ModelSetEvent`), `detail` `{ complete, component, hasModel }`, a microtask later, so `complete` counts a session the player sets in the same task.
+- The item player stops the element's `session-changed` and re-emits one from its own host, adding `detail.session` with the session container it holds.
+
+Svelte elements get this from `defineDeliveryElement` in `@pie-lib/delivery-events-svelte`; React elements mutate the session they were given.
 
 ### Authoring Contract
 
