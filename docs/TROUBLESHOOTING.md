@@ -197,33 +197,34 @@ bun install
 
 ### Event Listeners Not Firing
 
-**Problem:** `session-change` events aren't received.
+**Problem:** `session-changed` events aren't received.
 
 **Solution:**
 1. Check event name spelling:
    ```javascript
    // ✅ Correct
-   element.addEventListener('session-change', handler);
+   element.addEventListener('session-changed', handler);
 
    // ❌ Wrong
-   element.addEventListener('sessionChange', handler);
+   element.addEventListener('sessionChanged', handler);
    ```
 2. Ensure element is mounted:
    ```javascript
    window.addEventListener('DOMContentLoaded', () => {
      const element = document.querySelector('pie-multiple-choice');
-     element.addEventListener('session-change', handler);
+     element.addEventListener('session-changed', handler);
    });
    ```
 3. Check event bubbles up:
    ```javascript
    // Listen on parent
-   document.addEventListener('session-change', (e) => {
+   document.addEventListener('session-changed', (e) => {
      if (e.target.tagName === 'PIE-MULTIPLE-CHOICE') {
        console.log('Session changed:', e.detail);
      }
    });
    ```
+   Inside `<pie-element-player>`, the element's event stops at the player and the document hears the player's copy, whose target is `PIE-ELEMENT-PLAYER`; match that tag instead.
 
 ### Props Not Updating
 
@@ -416,7 +417,7 @@ bun install
    ```javascript
    // Svelte: automatic cleanup
    onDestroy(() => {
-     element.removeEventListener('session-change', handler);
+     element.removeEventListener('session-changed', handler);
    });
    ```
 2. Destroy rich text editors:

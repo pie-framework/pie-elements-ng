@@ -188,24 +188,28 @@ interface CommonElementProps {
 }
 ```
 
-### Svelte Components
+### Svelte
+
+The package exports the element class; the host registers its tag and renders it as a custom element. Svelte sets `model` and `session` as properties because the class declares them.
 
 ```svelte
 <script lang="ts">
-  import { MultipleChoice } from '@pie-element/multiple-choice';
+  import MultipleChoice from '@pie-element/multiple-choice';
 
-  let model = $state({...});
-  let session = $state({...});
-  let env = { mode: 'gather', role: 'student' };
+  if (!customElements.get('pie-multiple-choice')) {
+    customElements.define('pie-multiple-choice', MultipleChoice);
+  }
+
+  const model = {...};
+  // The element writes each change into this object.
+  const session = {...};
 </script>
 
-<MultipleChoice
+<pie-multiple-choice
   {model}
   {session}
-  {env}
-  on:session-change={(e) => session = e.detail}
-  on:model-change={(e) => model = e.detail}
-/>
+  onsession-changed={() => saveSession(session)}
+></pie-multiple-choice>
 ```
 
 ### React Components
@@ -233,8 +237,8 @@ element.session = {...};
 element.env = {...};
 
 // Listen to events
-element.addEventListener('session-change', (e) => {
-  console.log('New session:', e.detail);
+element.addEventListener('session-changed', () => {
+  console.log('New session:', element.session);
 });
 ```
 
@@ -374,20 +378,20 @@ console.log(result.score); // 1.0
 
 ## Events
 
-### session-change
+### session-changed
 
-Fired when student response changes.
+Fired when student response changes. The element has already written the change into `element.session`.
 
 ```typescript
-interface SessionChangeEvent {
-  detail: PieSession;
+interface SessionChangedEvent {
+  detail: { complete: boolean; component: string };
 }
 ```
 
 **Example:**
 ```javascript
-element.addEventListener('session-change', (event) => {
-  const session = event.detail;
+element.addEventListener('session-changed', () => {
+  const session = element.session;
   console.log('Student answered:', session.value);
 
   // Save to database
@@ -395,20 +399,20 @@ element.addEventListener('session-change', (event) => {
 });
 ```
 
-### model-change
+### model.updated
 
 Fired when model is modified (`configure` mode only).
 
 ```typescript
-interface ModelChangeEvent {
-  detail: ElementModel;
+interface ModelUpdatedEvent {
+  detail: { update: ElementModel; reset: boolean };
 }
 ```
 
 **Example:**
 ```javascript
-element.addEventListener('model-change', (event) => {
-  const model = event.detail;
+element.addEventListener('model.updated', (event) => {
+  const model = event.detail.update;
   console.log('Model updated:', model);
 
   // Auto-save
@@ -678,8 +682,8 @@ Always handle session changes:
 
 ```typescript
 // ✅ Good: Persist session changes
-element.addEventListener('session-change', (e) => {
-  saveSession(e.detail);
+element.addEventListener('session-changed', () => {
+  saveSession(element.session);
 });
 
 // ❌ Bad: Ignore session changes (data loss)
