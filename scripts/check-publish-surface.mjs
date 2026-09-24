@@ -99,6 +99,9 @@ const isAllowedPackedFile = (filePath, pkg) => {
   if (filePath === 'configure.js' && pkg.pie?.configure?.endsWith('/configure')) {
     return true;
   }
+  if (filePath === 'author.js' && pkg.exports?.['./author']) {
+    return true;
+  }
   if (filePath === 'print.js' && pkg.exports?.['./print']) {
     return true;
   }
@@ -187,6 +190,37 @@ const collectControllerContractViolations = (dir, pkg) => {
         const configureShim = readFileSync(configureShimPath, 'utf8');
         if (configureShim !== expectedConfigureShim) {
           violations.push(`root configure.js shim must re-export ${configureTarget}`);
+        }
+      }
+    }
+  }
+
+  // `./author` needs the shim for the same reason `./configure` does, and is the subpath one
+  // element uses to reach another's authoring view: complex-rubric imports
+  // `@pie-element/rubric/author` and ebsr imports `@pie-element/multiple-choice/author`. The
+  // IIFE bundlers alias `@pie-element/<element>` to a directory, so those requests resolve as
+  // a literal path and never consult the exports map. Without the shim the import is
+  // unresolvable and the whole bundle fails - not just the authoring view - which is why a
+  // combination pairing a composite element with an element it imports could not be built.
+  // `./configure` points at the same dist target, so the shim contents are identical.
+  const authorExport = pkg.exports?.['./author'];
+  if (authorExport) {
+    if (!files.includes('author.js')) {
+      violations.push('files[] must include author.js for packages declaring ./author');
+    }
+
+    const authorTarget = authorExport?.default;
+    if (typeof authorTarget !== 'string' || !authorTarget.startsWith('./dist/')) {
+      violations.push('exports["./author"].default must point at ./dist/...');
+    } else {
+      const authorShimPath = path.join(dir, 'author.js');
+      const expectedAuthorShim = `export { default } from '${authorTarget}';\nexport * from '${authorTarget}';\n`;
+      if (!existsSync(authorShimPath)) {
+        violations.push('root author.js compatibility shim is missing');
+      } else {
+        const authorShim = readFileSync(authorShimPath, 'utf8');
+        if (authorShim !== expectedAuthorShim) {
+          violations.push(`root author.js shim must re-export ${authorTarget}`);
         }
       }
     }
