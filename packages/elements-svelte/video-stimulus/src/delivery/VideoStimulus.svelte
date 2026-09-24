@@ -288,9 +288,9 @@ let instanceNumber = 0;
     gap: 0.75rem;
     margin-top: 0.875rem;
     padding: 0.875rem;
-    border: 1px solid var(--pie-incorrect-icon);
+    border: 1px solid var(--pie-text);
     border-radius: var(--video-stimulus-border-radius, 0.75rem);
-    background: var(--pie-incorrect-secondary);
+    background: var(--pie-secondary-background);
     color: var(--pie-text);
   }
 
@@ -300,9 +300,9 @@ let instanceNumber = 0;
     width: 1.875rem;
     height: 1.875rem;
     place-items: center;
+    border: 2px solid var(--pie-text);
     border-radius: 50%;
-    background: var(--pie-incorrect-icon);
-    color: var(--pie-white);
+    color: var(--pie-text);
     font-weight: 800;
   }
 
@@ -325,7 +325,7 @@ let instanceNumber = 0;
     flex: 0 0 auto;
     min-width: 44px;
     min-height: 44px;
-    border: 1px solid var(--pie-incorrect-icon);
+    border: 1px solid var(--pie-text);
     border-radius: 0.5rem;
     background: var(--pie-white);
     color: var(--pie-text);

@@ -19,7 +19,6 @@ class VideoStimulusElement extends GeneratedElement {
     this.currentModel = nextModel;
     // @ts-expect-error Svelte's generated HTMLElement subclass has an untyped model accessor.
     super.model = nextModel;
-    if (nextModel?.language) this.lang = nextModel.language;
     this.dispatchEvent(
       new ModelSetEvent(this.tagName.toLowerCase(), true, nextModel !== undefined)
     );
