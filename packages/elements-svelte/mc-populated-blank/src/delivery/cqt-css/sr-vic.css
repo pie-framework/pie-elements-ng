@@ -2,10 +2,6 @@
 /* Reference layout: web-ItemBankViewer/learnosity/templates/Renaissance/vic.scss */
 .mc-populated-blank-root.variant-sr-vic {
   font-family: Starial, Arial, sans-serif;
-  --mpb-inline-grid-column-gap: 1rem;
-  --mpb-inline-grid-row-gap: 0.5rem;
-  --mpb-inline-template-margin-top: 0.2rem;
-  --mpb-inline-choices-margin-top: 0.2rem;
 }
 
 .mc-populated-blank-root.variant-sr-vic .pie-template-line,
