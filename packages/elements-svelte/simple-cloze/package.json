@@ -83,7 +83,6 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*",
     "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
-    "@pie-lib/styling-svelte": "workspace:*",
     "@pie-lib/translator": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@tiptap/core": "3.31.3",
