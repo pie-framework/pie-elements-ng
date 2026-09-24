@@ -63,7 +63,7 @@ export interface McpbQuestion {
   teacherInstructions?: string;
   /** `false` hides `teacherInstructions`; unset shows them, as in multiple-choice. */
   teacherInstructionsEnabled?: boolean;
-  /** `false` leaves the answer key out of print. */
+  /** `false` leaves the answer key out of an instructor's printout; a student's never has it. */
   printAnswerKey?: boolean;
   customType?: string;
 }
