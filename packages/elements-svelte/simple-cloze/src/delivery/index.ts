@@ -11,24 +11,31 @@ const SvelteElementClass = (SimpleClozeComponent as any).element;
 
 // Create a wrapper that properly handles session updates
 class SimpleClozeElement extends SvelteElementClass {
-  _internalSession: any = null;
   /**
-   * The session object the player handed us. A player reads the learner's
-   * response back off this object, so every update is written into it as well
-   * as into the copy the component renders from.
+   * The session object the player handed us, which `session` returns. A player
+   * reads the learner's response back off this object, so every update is
+   * written into it; the component renders from a fresh copy so its `$derived`
+   * reads re-run.
    */
   _playerSession: any = null;
   _model: any = null;
 
   _isComplete = () => {
-    const response = this._internalSession?.response;
-    return typeof response === 'string' && response.trim().length > 0;
+    const value = this._playerSession?.value;
+    return typeof value === 'string' && value.trim().length > 0;
   };
 
+  /**
+   * Dispatched a microtask later: on load a player sets the model and then the
+   * session in the same task (`element.model = …; element.session = …`), and
+   * `complete` can only report a restored response once the session is here.
+   */
   _dispatchModelSet = () => {
-    this.dispatchEvent(
-      new ModelSetEvent(this.tagName.toLowerCase(), this._isComplete(), this._model !== undefined)
-    );
+    queueMicrotask(() => {
+      this.dispatchEvent(
+        new ModelSetEvent(this.tagName.toLowerCase(), this._isComplete(), this._model !== undefined)
+      );
+    });
   };
 
   _dispatchSessionChanged = () => {
@@ -47,18 +54,18 @@ class SimpleClozeElement extends SvelteElementClass {
 
   set session(s: any) {
     this._playerSession = s;
-    this._internalSession = s;
     super.session = s;
     this._dispatchSessionChanged();
   }
 
   get session() {
-    return this._internalSession;
+    return this._playerSession;
   }
 
   onSessionChange = (updatedSession: any) => {
-    writeSessionInPlace(this._playerSession, updatedSession);
-    this._internalSession = updatedSession;
+    // A frozen or missing player session cannot be written into; the update
+    // then replaces it, as `writeSessionInPlace` returns.
+    this._playerSession = writeSessionInPlace(this._playerSession, updatedSession);
     super.session = updatedSession;
     this._dispatchSessionChanged();
   };

@@ -80,6 +80,7 @@
   },
   "devDependencies": {
     "@pie-element/shared-configure-events": "workspace:*",
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*",
     "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
     "@pie-lib/styling-svelte": "workspace:*",

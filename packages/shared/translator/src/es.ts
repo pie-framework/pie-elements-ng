@@ -105,6 +105,7 @@ export default {
       correctAnswerShown: 'Respuesta correcta',
       correct: 'Correcto',
       incorrect: 'Incorrecto',
+      unanswered: 'Sin respuesta',
       placeholder: 'Escribe tu respuesta...',
       answerInput: 'Tu respuesta',
       printCorrectAnswer: 'Respuesta correcta:',

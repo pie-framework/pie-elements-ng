@@ -1,4 +1,5 @@
 import defaults from './defaults';
+import { toPlainText } from './plain-text';
 
 export type SimpleClozeQuestion = {
   id?: string;
@@ -16,7 +17,8 @@ export type SimpleClozeQuestion = {
 export type SimpleClozeSession = {
   id?: string;
   element?: string;
-  response?: unknown;
+  /** The learner's typed answer. */
+  value?: unknown;
   [key: string]: unknown;
 };
 
@@ -40,9 +42,11 @@ export type SimpleClozeValidationConfig = {
   [key: string]: unknown;
 };
 
-/** Answers compare case-insensitively, ignoring surrounding whitespace. */
-const comparable = (value: unknown): string =>
-  typeof value === 'string' ? value.trim().toLowerCase() : '';
+/**
+ * Both sides compare as plain text, case-insensitively: an answer key authored
+ * as HTML matches the text a learner types.
+ */
+const comparable = (value: unknown): string => toPlainText(value).toLowerCase();
 
 // Strips tags except img, iframe and source (media counts as content), as
 // multiple-choice's `getContent` does.
@@ -54,14 +58,14 @@ const hasContent = (html: unknown): boolean =>
     .trim().length > 0;
 
 /**
- * A response that is empty after trimming is unanswered; an answer key that is
- * empty after trimming matches nothing, so a blank key never scores.
+ * A response with no text is unanswered; an answer key with no text matches
+ * nothing, so a blank key never scores.
  */
 export const getCorrectness = (
   question: SimpleClozeQuestion | null | undefined,
   session: SimpleClozeSession | null | undefined
 ): SimpleClozeCorrectness => {
-  const response = comparable(session?.response);
+  const response = comparable(session?.value);
   if (!response) {
     return 'unanswered';
   }
@@ -85,7 +89,9 @@ const getTraceLog = (
   correctness: SimpleClozeCorrectness,
   score: number
 ): string[] => {
-  const traceLog = ['Response is compared with the answer key, ignoring case and outer spaces.'];
+  const traceLog = [
+    'Response is compared with the answer key as plain text, ignoring case and extra spaces.',
+  ];
   if (!comparable(question?.correctAnswer)) {
     traceLog.push('No correct answer is defined, so no response can score.');
   } else {
@@ -142,7 +148,6 @@ export const model = (
     const out: Record<string, unknown> = {
       prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
       disabled: safeEnv.mode !== 'gather',
-      view: safeEnv.mode === 'view',
       mode: safeEnv.mode,
       role: safeEnv.role,
       language: normalizedQuestion.language,
@@ -150,7 +155,8 @@ export const model = (
 
     if (safeEnv.mode === 'evaluate') {
       out.correctness = getCorrectness(normalizedQuestion, safeSession);
-      out.correctAnswer = normalizedQuestion.correctAnswer;
+      // The key is shown in the text input, so it goes out as plain text.
+      out.correctAnswer = toPlainText(normalizedQuestion.correctAnswer);
     }
 
     if (safeEnv.role === 'instructor' && (safeEnv.mode === 'view' || safeEnv.mode === 'evaluate')) {
@@ -172,7 +178,7 @@ export const createCorrectResponseSession = (
   return new Promise((resolve) => {
     if (env?.mode !== 'evaluate' && env?.role === 'instructor') {
       // The player sets `id` and `element` on the entry from the item config.
-      resolve({ id: '1', response: question?.correctAnswer || '' });
+      resolve({ id: '1', value: toPlainText(question?.correctAnswer) });
     } else {
       resolve(null);
     }
