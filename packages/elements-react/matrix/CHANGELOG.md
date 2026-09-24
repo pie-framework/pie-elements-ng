@@ -1,5 +1,11 @@
 # @pie-element/matrix
 
+## 4.1.2-next.13
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+
 ## 4.1.2-next.12
 
 ### Patch Changes

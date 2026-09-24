@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/correct-answer-toggle",
-  "version": "5.0.0-next.42",
+  "version": "5.0.0-next.43",
   "description": "A react based toggle component",
   "repository": {
     "type": "git",

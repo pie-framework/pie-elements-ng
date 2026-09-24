@@ -1,5 +1,18 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.14
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+- Updated dependencies
+  - @pie-lib/translator@5.0.0-next.4
+  - @pie-element/multiple-choice@13.3.5-next.9
+
 ## 14.2.2-next.13
 
 ### Patch Changes

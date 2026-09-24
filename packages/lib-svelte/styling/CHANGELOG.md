@@ -1,5 +1,11 @@
 # @pie-lib/styling-svelte
 
+## 0.1.3-next.1
+
+### Patch Changes
+
+- d9851cc: Add the `@pie-lib/render-ui` colour tokens this package lacked: `disabledText`, `surface`, the table, keypad and button tokens, `buttonFocusOutline` and `SHAPES_FILL_COLOR`, with render-ui's values and fallbacks (PIE-1075).
+
 ## 0.1.3-next.0
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @pie-lib/delivery-events-svelte
 
+## 0.1.1-next.1
+
+### Patch Changes
+
+- a84b6c5: Write the session before the fallback `session-changed`.
+- 54d6ad4: `resolveDeliveryHost` continues from a shadow root to its host, so a wrapper that renders the element inside its own shadow root is found. `forwardSessionChange` warns once per source element when there is no host to forward to (PIE-1075).
+- a84b6c5: Leave the session's `element` to the player (PIE-1075).
+
 ## 0.1.1-next.0
 
 ### Patch Changes

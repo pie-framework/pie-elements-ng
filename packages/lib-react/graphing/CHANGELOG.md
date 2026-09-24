@@ -1,5 +1,15 @@
 # @pie-lib/graphing
 
+## 5.0.0-next.38
+
+### Patch Changes
+
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+
 ## 5.0.0-next.37
 
 ### Patch Changes

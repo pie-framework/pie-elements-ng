@@ -1,5 +1,16 @@
 # @pie-element/venn-classification
 
+## 0.1.1-next.7
+
+### Patch Changes
+
+- 85910c0: The rich-text editor shows its `placeholder` while empty, as the React editor does; the prop was accepted and never displayed (PIE-1075).
+- 3f989fb: The rich-text editor's Done and alignment buttons take the editor stylesheet's padding, colours and hover states, which hard-coded inline styles overrode (PIE-1075).
+- a84b6c5: Leave the session's `element` to the player (PIE-1075).
+- 2bb02ad: Take learner-facing strings from `@pie-lib/translator` in the item's `language`, as the React elements do. mc-populated-blank no longer reads `uiText`, and uses `locale` when `language` is unset.
+- cee9377: Session, scoring, accessibility and authoring fixes.
+- 681c694: Placed tiles stay inside their region, with the diagram growing when a region fills, and every drop zone is at least 120×120 px. Screen-reader activation picks up and drops tiles, the author preview uses region-label overrides, and a restored complete session reports `complete: true` on load. Instructors see teacher instructions, collapsed, including when `teacherInstructionsEnabled` is unset (PIE-1075).
+
 ## 0.1.1-next.6
 
 ### Patch Changes

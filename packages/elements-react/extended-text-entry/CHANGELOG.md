@@ -1,5 +1,11 @@
 # @pie-element/extended-text-entry
 
+## 15.1.2-next.14
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+
 ## 15.1.2-next.13
 
 ### Patch Changes

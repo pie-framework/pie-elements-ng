@@ -1,5 +1,11 @@
 # @pie-element/element-bundler
 
+## 0.1.2-next.1
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+
 ## 0.1.2-next.0
 
 ### Patch Changes

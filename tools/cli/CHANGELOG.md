@@ -1,5 +1,13 @@
 # @pie-element/cli
 
+## 0.1.2-next.3
+
+### Patch Changes
+
+- 2bb02ad: Depend on `i18next` alone: the package no longer declares React, `prop-types`, `debug` or `@pie-element/shared-lodash`, none of which it imports. Add English and Spanish strings for the Svelte elements mc-populated-blank, simple-cloze and venn-classification, and stop logging i18next's configuration to the console. Upstream sync leaves the package alone, since this repo now owns it.
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.1
+
 ## 0.1.2-next.2
 
 ### Patch Changes

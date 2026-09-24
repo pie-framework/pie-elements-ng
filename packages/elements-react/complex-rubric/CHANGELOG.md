@@ -1,5 +1,14 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.14
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+- Updated dependencies
+  - @pie-element/multi-trait-rubric@8.1.2-next.13
+  - @pie-element/rubric@8.1.2-next.13
+
 ## 7.1.2-next.13
 
 ### Patch Changes

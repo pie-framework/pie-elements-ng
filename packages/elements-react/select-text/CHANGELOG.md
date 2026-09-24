@@ -1,5 +1,13 @@
 # @pie-element/select-text
 
+## 13.1.2-next.14
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+  - @pie-lib/correct-answer-toggle@5.0.0-next.43
+  - @pie-lib/text-select@4.0.0-next.43
+
 ## 13.1.2-next.13
 
 ### Patch Changes
