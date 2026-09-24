@@ -55,9 +55,19 @@
 /* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px; min-height:150px;
    line-height:89px; margin-right:2px; margin-left:2px } — wraps every stem token
    (blank slot and adjacent inline spans) in LSY, giving each a 150px box with a
-   2px per-side margin. Apply to inline tokens in all r1 variants so trailing
-   tokens in audio_blank_only (gplusggg) match the blank's height the way LSY does. */
-.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line span:not([class]) {
+   2px per-side margin. Applies to the token layouts, the same set that gets the
+   feature button and the wide underline, so trailing tokens in audio_blank_only
+   (gplusggg) match the blank's height the way LSY does. Stems on other layouts are
+   prose, which the box would stack a word or two per line. */
+.mc-populated-blank-root:where(
+    [class*="variant-sel-r1-"]:is(
+      .layout-audio_blank_only,
+      .layout-stimulus_image_blank,
+      .layout-token_sequence
+    )
+  )
+  .pie-template-line
+  span:not([class]) {
   min-width: 150px;
   max-width: 150px;
   min-height: 150px;
