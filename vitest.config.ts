@@ -23,6 +23,8 @@ export default defineConfig({
       '**/build/**',
       '**/.svelte-kit/**',
       '**/.bun-tests/**',
+      // Agent worktrees are full checkouts; the root-anchored excludes below miss their copies.
+      '.claude/**',
       '**/e2e/**', // Exclude E2E tests (use Playwright for those)
       '**/tests/e2e/**', // Exclude E2E tests in tests directory
       '**/*.spec.ts', // Exclude Playwright spec files
