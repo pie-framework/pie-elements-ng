@@ -2,8 +2,13 @@
 import { getPath, setPath } from './configuration.js';
 import type { Setting, SettingsPanelProps } from './types.js';
 
-let { groups, model, configuration = {}, onChangeModel, onChangeConfiguration }: SettingsPanelProps =
-  $props();
+let {
+  groups,
+  model,
+  configuration = {},
+  onChangeModel,
+  onChangeConfiguration,
+}: SettingsPanelProps = $props();
 
 const uid = Math.random().toString(36).slice(2, 10);
 
@@ -12,12 +17,15 @@ const visibleGroups = $derived(
   Object.entries(groups)
     .map(
       ([name, group]) =>
-        [name, Object.entries(group).filter((entry): entry is [string, Setting] => !!entry[1])] as const
+        [
+          name,
+          Object.entries(group).filter((entry): entry is [string, Setting] => !!entry[1]),
+        ] as const
     )
     .filter(([, entries]) => entries.length > 0)
 );
 
-const valueOf = (key: string, setting: Setting) =>
+const settingValue = (key: string, setting: Setting) =>
   getPath(setting.isConfigProperty ? configuration : model, key);
 
 function change(key: string, setting: Setting, value: unknown) {
@@ -40,7 +48,7 @@ function change(key: string, setting: Setting, value: unknown) {
             <input
               type="checkbox"
               role="switch"
-              checked={!!valueOf(key, setting)}
+              checked={!!settingValue(key, setting)}
               disabled={setting.disabled}
               onchange={(e) => change(key, setting, (e.currentTarget as HTMLInputElement).checked)}
             />
@@ -54,7 +62,7 @@ function change(key: string, setting: Setting, value: unknown) {
                   type="radio"
                   name={`${uid}-${key}`}
                   value={choice.value}
-                  checked={valueOf(key, setting) === choice.value}
+                  checked={settingValue(key, setting) === choice.value}
                   onchange={() => change(key, setting, choice.value)}
                 />
                 <span>{choice.label}</span>

@@ -65,14 +65,17 @@ describe('SettingsPanel', () => {
       model: {},
       groups: {
         Settings: { promptEnabled: false && toggle('Prompt') },
-        Properties: { teacherInstructionsEnabled: toggle('Teacher Instructions'), other: undefined },
+        Properties: {
+          teacherInstructionsEnabled: toggle('Teacher Instructions'),
+          other: undefined,
+        },
       },
       onChangeModel: vi.fn(),
     });
 
-    expect([...el.querySelectorAll('legend.pie-settings-group-name')].map((l) => l.textContent)).toEqual([
-      'Properties',
-    ]);
+    expect(
+      [...el.querySelectorAll('legend.pie-settings-group-name')].map((l) => l.textContent)
+    ).toEqual(['Properties']);
     expect(el.querySelectorAll('input')).toHaveLength(1);
   });
 

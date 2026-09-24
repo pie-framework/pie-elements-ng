@@ -1869,7 +1869,7 @@
         "react-dom": "^18.0.0",
       },
     },
-    "packages/lib-svelte/config-ui": {
+    "packages/lib-svelte/config-ui-svelte": {
       "name": "@pie-lib/config-ui-svelte",
       "version": "0.1.0",
       "devDependencies": {
@@ -2606,7 +2606,7 @@
 
     "@pie-lib/config-ui": ["@pie-lib/config-ui@workspace:packages/lib-react/config-ui"],
 
-    "@pie-lib/config-ui-svelte": ["@pie-lib/config-ui-svelte@workspace:packages/lib-svelte/config-ui"],
+    "@pie-lib/config-ui-svelte": ["@pie-lib/config-ui-svelte@workspace:packages/lib-svelte/config-ui-svelte"],
 
     "@pie-lib/controller-utils": ["@pie-lib/controller-utils@workspace:packages/lib-react/controller-utils"],
 

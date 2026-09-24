@@ -8,7 +8,10 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
  * entry: `{ prompt: { settings: false } }` keeps the default `prompt.label`.
  * React elements merge only top-level keys, which drops that label.
  */
-export function mergeConfiguration<T extends Configuration>(defaults: T, configuration: unknown): T {
+export function mergeConfiguration<T extends Configuration>(
+  defaults: T,
+  configuration: unknown
+): T {
   if (!isRecord(configuration)) return defaults;
   const merged: Configuration = { ...defaults };
   for (const [key, value] of Object.entries(configuration)) {
@@ -29,7 +32,11 @@ export function hasSettings(configuration: unknown): boolean {
   );
 }
 
-export const toggle = (label: string, isConfigProperty = false, disabled = false): ToggleSetting => ({
+export const toggle = (
+  label: string,
+  isConfigProperty = false,
+  disabled = false
+): ToggleSetting => ({
   type: 'toggle',
   label,
   isConfigProperty,
@@ -59,7 +66,11 @@ export function getPath(source: unknown, path: string): unknown {
 }
 
 /** A copy of `source` with `path` set; the objects along the path are copied, the rest shared. */
-export function setPath<T extends Record<string, unknown>>(source: T, path: string, value: unknown): T {
+export function setPath<T extends Record<string, unknown>>(
+  source: T,
+  path: string,
+  value: unknown
+): T {
   const [key, ...rest] = path.split('.');
   const current = source[key];
   const next =
