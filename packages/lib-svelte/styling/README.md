@@ -27,9 +27,9 @@ Use PIE color variables directly in your component styles:
 
 <style>
   .container {
-    color: var(--pie-text, rgba(0, 0, 0, 0.87));
-    background-color: var(--pie-background, white);
-    border: 1px solid var(--pie-border-light, #ccc);
+    color: var(--pie-text, black);
+    background-color: var(--pie-background, rgba(255, 255, 255, 0));
+    border: 1px solid var(--pie-border-light, #D1D1D1);
     padding: 1rem;
   }
 
@@ -70,24 +70,31 @@ All color functions return CSS variable references with fallback values:
 ### Basic Colors
 - `text()` - Main text color
 - `background()` - Background color
-- `disabled()` - Disabled state color
-- `border()`, `borderLight()`, `borderDark()` - Border colors
+- `disabled()`, `disabledSecondary()` - Disabled state colors
+- `disabledText()` - Disabled text that must stay readable, such as a non-editable label
+- `border()`, `borderLight()`, `borderDark()`, `borderGray()` - Border colors
 - `black()`, `white()`, `transparent()`
 
 ### Status Colors
-- `correct()`, `correctSecondary()`, `correctWithIcon()` - Correct answer states
+- `correct()`, `correctSecondary()`, `correctTertiary()`, `correctWithIcon()` - Correct answer states
 - `incorrect()`, `incorrectSecondary()`, `incorrectWithIcon()` - Incorrect answer states
 - `missing()`, `missingWithIcon()` - Missing/unanswered states
 
 ### Theme Colors
-- `primary()`, `primaryLight()`, `primaryDark()` - Primary theme color
-- `secondary()`, `secondaryLight()`, `secondaryDark()` - Secondary theme color
+- `primary()`, `primaryLight()`, `primaryDark()`, `primaryText()`, `fadedPrimary()` - Primary theme color
+- `secondary()`, `secondaryLight()`, `secondaryDark()`, `secondaryText()` - Secondary theme color
 - `tertiary()`, `tertiaryLight()` - Tertiary theme color
 
 ### Special Colors
 - `backgroundDark()`, `secondaryBackground()`, `dropdownBackground()`
-- `focusChecked()`, `focusUnchecked()` - Focus states
+- `surface()` - Raised surface for cards, answer pools and menus
+- `tableGrid()`, `tableGridLight()`, `tableStripe()` - Authored tables
+- `focusChecked()`, `focusCheckedBorder()`, `focusUnchecked()`, `focusUncheckedBorder()` - Focus states
+- `buttonFocusOutline()` - Keyboard focus ring on a button or toolbar control
 - `blueGrey100()`, `blueGrey300()`, `blueGrey600()`, `blueGrey900()` - Blue-grey scale
+- `keypadButton()`, `keypadButtonOperator()`, `keypadEmptyPlaceholder()`, `keypadButtonHover()`, `keypadButtonOperatorHover()`, `keyBoardFocusIndicator()` - Math keypad
+- `buttonBorder()`, `buttonHoverBg()` - Graphing controls
+- `visualElementsColors` - Fixed charting and graphing colors, including `SHAPES_FILL_COLOR`
 
 ## How It Works
 
@@ -95,7 +102,7 @@ Each color function generates a CSS variable reference with a fallback:
 
 ```typescript
 color.primary() // Returns: var(--pie-primary, #3f51b5)
-color.text()    // Returns: var(--pie-text, rgba(0, 0, 0, 0.87))
+color.text()    // Returns: var(--pie-text, black)
 ```
 
 This allows:
@@ -126,8 +133,8 @@ const StyledDiv = styled('div')({
 
 <style>
   div {
-    color: var(--pie-text, rgba(0, 0, 0, 0.87));
-    background-color: var(--pie-background, white);
+    color: var(--pie-text, black);
+    background-color: var(--pie-background, rgba(255, 255, 255, 0));
   }
 </style>
 ```
@@ -152,4 +159,4 @@ See [packages/lib-svelte/editable-html-tiptap-svelte/src/EditableHtml.svelte](..
 
 ## License
 
-Private package for PIE Elements monorepo.
+MIT, as the rest of the pie-elements-ng monorepo. Published to npm as `@pie-lib/styling-svelte`.

@@ -1,5 +1,55 @@
 # @pie-element/placement-ordering
 
+## 14.1.2-next.15
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
+## 14.1.2-next.14
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+  - @pie-lib/correct-answer-toggle@5.0.0-next.43
+
+## 14.1.2-next.13
+
+### Patch Changes
+
+- Merge pull request #164 from pie-framework/fix/PIE-1066
+
+## 14.1.2-next.12
+
+### Patch Changes
+
+- 4fe8ce6: Skip empty source and target areas in the native Tab order, and move focus to the destination tile after a move (PIE-997)
+- Updated dependencies [2f26122]
+- Updated dependencies [f3f1abb]
+- Updated dependencies [d22cfb1]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.36
+  - @pie-lib/drag@4.1.0-next.42
+  - @pie-lib/config-ui@14.0.0-next.36
+  - @pie-lib/correct-answer-toggle@5.0.0-next.42
+
+## 14.1.2-next.11
+
+### Patch Changes
+
+- Updated dependencies [285c07c]
+  - @pie-element/shared-player-events@0.1.1-next.0
+
 ## 14.1.2-next.10
 
 ### Patch Changes

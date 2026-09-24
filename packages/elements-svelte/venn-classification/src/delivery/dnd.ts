@@ -8,7 +8,12 @@
  */
 
 import type { Region, VennModel, VennSession, VennTile } from '../types.js';
-import { isComplete, normalizeRegion } from '../controller/index.js';
+import {
+  isComplete,
+  normalizeRegion,
+  normalizeSession,
+  regionsEqual,
+} from '../controller/index.js';
 
 export type PlacementValue = Region | null;
 
@@ -27,6 +32,11 @@ export interface ApplyPlacementArgs {
  * session reference strictly changes so host players that compare by identity
  * detect the update; callers that compare by value still observe the single
  * field change.
+ *
+ * `placements` comes back with a key for every authored tile (`null` = tray),
+ * as the PRD requires. The keys are seeded here, on the learner's first
+ * placement, and never on `set session`: a player counts a session carrying
+ * content as a response.
  */
 export function applyPlacement({
   model,
@@ -34,20 +44,36 @@ export function applyPlacement({
   tileId,
   placement,
 }: ApplyPlacementArgs): VennSession {
-  const prev = session || {};
-  const prevPlacements = (prev.placements ?? {}) as Record<string, PlacementValue>;
-  const normalized: PlacementValue = placement === null ? null : normalizeRegion(placement);
-  const nextPlacements: Record<string, PlacementValue> = {
-    ...prevPlacements,
-    [tileId]: normalized,
-  };
-
+  const base = normalizeSession(session, model);
   const nextSession: VennSession = {
-    ...prev,
-    placements: nextPlacements,
+    ...base,
+    placements: {
+      ...base.placements,
+      [tileId]: placement === null ? null : normalizeRegion(placement),
+    },
   };
   nextSession.completed = isComplete(model, nextSession);
   return nextSession;
+}
+
+/** The tile's current placement: `null` when it is in the tray or has no key. */
+export function currentPlacement(
+  session: VennSession | null | undefined,
+  tileId: string
+): PlacementValue {
+  const p = session?.placements?.[tileId];
+  return Array.isArray(p) ? normalizeRegion(p) : null;
+}
+
+/** True when dropping `tileId` at `placement` would leave the session as it is. */
+export function isSamePlacement(
+  session: VennSession | null | undefined,
+  tileId: string,
+  placement: PlacementValue
+): boolean {
+  const current = currentPlacement(session, tileId);
+  if (current === null || placement === null) return current === placement;
+  return regionsEqual(current, placement);
 }
 
 /**

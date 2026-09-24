@@ -1,5 +1,20 @@
 # @pie-element/element-a11y-demo
 
+## 0.1.2-next.7
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.1
+
+## 0.1.2-next.6
+
+### Patch Changes
+
+- Updated dependencies [d22cfb1]
+  - @pie-element/element-player@0.1.2-next.1
+  - @pie-element/element-theme-daisyui@0.1.1-next.4
+
 ## 0.1.2-next.5
 
 ### Patch Changes

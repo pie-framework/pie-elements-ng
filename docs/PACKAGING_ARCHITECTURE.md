@@ -186,9 +186,26 @@ migration-generated React configs resolve `@pie-element/shared-*` and
 `@pie-lib/*` imports to workspace source and set webpack/Rollup externalization
 to false, producing a self-contained `dist/index.iife.js` for that package.
 
-Svelte elements use hand-maintained per-view Vite configs but follow the same
-public packaging rule: exported package surfaces point at generated files, not
-raw source.
+Svelte elements carry no Vite configs of their own; every one runs the same
+build script against shared configs in `tools/vite/`:
+
+```bash
+vite build --config ../../../tools/vite/svelte-element-esm.config.ts
+vite build --config ../../../tools/vite/svelte-element-browser.config.ts
+vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts
+vite build --config ../../../tools/vite/svelte-element-iife.config.ts
+tsc --emitDeclarationOnly
+```
+
+`svelte-element-esm.config.ts` empties `dist/` and builds each npm ESM lane
+whose entry exists (`src/index.ts`, `src/{delivery,controller,author,print}/index.ts`,
+`src/runtime-support.ts`) as a separate self-contained file, compiling Svelte
+only in the component lanes. `dist/index.js` imports `./delivery/index.js`
+instead of bundling it again, so the root and `/delivery` exports are one
+element class. `svelte-element-iife.config.ts` names the IIFE global after the
+package: `@pie-element/simple-cloze` becomes `SimpleClozeElement`. Exported
+package surfaces point at generated files, not raw source, as for React
+elements.
 
 ## Controller And Configure Packaging
 

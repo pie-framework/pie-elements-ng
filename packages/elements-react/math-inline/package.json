@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/math-inline",
-  "version": "12.1.1-next.21",
+  "version": "12.1.1-next.25",
   "description": "",
   "repository": {
     "type": "git",
@@ -89,6 +89,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist",

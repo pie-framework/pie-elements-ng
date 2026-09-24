@@ -1,5 +1,55 @@
 # @pie-element/math-templated
 
+## 7.1.1-next.25
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
+## 7.1.1-next.24
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+  - @pie-lib/correct-answer-toggle@5.0.0-next.43
+
+## 7.1.1-next.23
+
+### Patch Changes
+
+- Updated dependencies [2f26122]
+- Updated dependencies [f3f1abb]
+- Updated dependencies [d22cfb1]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.36
+  - @pie-lib/config-ui@14.0.0-next.36
+  - @pie-lib/correct-answer-toggle@5.0.0-next.42
+  - @pie-lib/mask-markup@4.0.0-next.38
+  - @pie-lib/math-input@9.0.0-next.7
+  - @pie-lib/math-toolbar@4.0.0-next.42
+
+## 7.1.1-next.22
+
+### Patch Changes
+
+- 285c07c: A coalesced `session-changed` is no longer dropped when the element is torn down inside its own debounce window (PIE-1058).
+
+  `@pie-element/shared-player-events` gains `createSessionNotifier`, which registers each deferred notification against its host element. One `flushSessionNotifiers(this)` call in `disconnectedCallback` commits everything the element owns, and the helper installs `commitPendingSession()` for a player to call before discarding the element — while it is still attached, so the event still reaches a `document`-level host listener. The install wraps an element-declared method of the same name, and disposing the last notifier removes it again, so a player never counts an element as committed while a pending dispatch is dropped. A dispatch that throws is reported through `onDispatchError`, defaulting to `console.warn`.
+
+  All five elements that coalesced their session write adopt it. `extended-text-entry` and `explicit-constructed-response` also move their debounce off the value path onto the dispatch, so `.session` holds the response as soon as the editor commits it. No debounce delay changes.
+
+- Updated dependencies [285c07c]
+  - @pie-element/shared-player-events@0.1.1-next.0
+
 ## 7.1.1-next.21
 
 ### Patch Changes

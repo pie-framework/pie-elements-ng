@@ -3,93 +3,73 @@
     shadow: 'none',
     props: {
       model: { type: 'Object' },
+      options: { type: 'Object' },
     },
   }}
 />
 
 <script lang="ts">
-const BLANK_TOKEN = '{{blank}}';
+import McPopulatedBlank from '../delivery/McPopulatedBlank.svelte';
+import { t as translate } from '../delivery/i18n';
+import { preparePrint, type PrintView } from './preparePrint';
 
-let { model = null }: { model?: any } = $props();
+let { model = null, options = null }: { model?: any; options?: any } = $props();
 
-let prompt = $state('');
-let template = $state('');
+let view = $state<PrintView | null>(null);
+
 $effect(() => {
-  prompt = model?.prompt || '';
-  template = model?.template || '';
+  const question = model;
+  const role = options?.role;
+  if (!question) {
+    view = null;
+    return;
+  }
+  let current = true;
+  preparePrint(question, role).then((next) => {
+    if (current) view = next;
+  });
+  return () => {
+    current = false;
+  };
 });
 
-const parts = $derived.by(() => {
-  const idx = template.indexOf(BLANK_TOKEN);
-  if (idx < 0) return { before: template, after: '' };
-  return { before: template.slice(0, idx), after: template.slice(idx + BLANK_TOKEN.length) };
-});
-
-const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
-const correct = $derived(model?.choices?.find((c: any) => c.id === model?.correctChoiceId));
-const mode = $derived(model?.choiceMode || 'text');
-const isAudioOnlyMode = $derived(model?.interactionMode === 'audio_mc_only');
-const showAnswerKey = $derived(model?.printAnswerKey !== false);
+const t = (key: string) => translate(key, (view?.model.language as string) || undefined);
 </script>
 
-<div class="p-4 print:p-0">
-  {#if prompt && model?.promptEnabled !== false}
-    <div class="mb-4 prose prose-sm">{@html prompt}</div>
-  {/if}
+{#if view}
+  <div class="mpb-print">
+    {#if view.teacherInstructions}
+      <div class="mpb-print-block mpb-print-teacher-instructions">{@html view.teacherInstructions}</div>
+    {/if}
 
-  {#if model?.sentenceHtml}
-    <div class="mb-2 prose prose-sm">{@html model.sentenceHtml}</div>
-  {/if}
-
-  {#if !isAudioOnlyMode}
-    <div class="mb-4 prose prose-sm">
-      {@html parts.before}
-      <span class="inline-block min-w-[6rem] border-b-2 border-gray-600 print:border-black px-1">
-        {#if showAnswerKey && mode === 'image' && correct?.imageUrl}
-          <img src={correct.imageUrl} alt={correct.imageAlt || ''} class="max-h-14 object-contain" />
-        {:else if showAnswerKey && correct?.labelHtml}
-          {@html correct.labelHtml}
-        {:else}
-          ________
+    {#if view.audioUrl || view.audioTranscript}
+      <div class="mpb-print-block mpb-print-audio">
+        {#if view.audioUrl}
+          <div><strong>{t('printAudio')}</strong> {view.audioUrl}</div>
         {/if}
-      </span>
-      {@html parts.after}
-    </div>
-  {/if}
-
-  {#if model?.hasAudio}
-    <div class="text-sm mb-4">
-      {#if model?.audioUrl}
-        <div><strong>Audio:</strong> {model.audioUrl}</div>
-      {/if}
-      {#if model?.audioTranscript}
-        <div><strong>Transcript:</strong> {model.audioTranscript}</div>
-      {/if}
-    </div>
-  {/if}
-
-  <ul class="text-sm list-disc pl-5">
-    {#each choices as c}
-      <li>
-        {#if mode === 'image'}
-          <span class="font-medium">{c.id}</span>
-          {#if showAnswerKey && c.id === model?.correctChoiceId}(key){/if}
-        {:else}
-          {@html c.labelHtml || ''}
-          {#if showAnswerKey && c.id === model?.correctChoiceId}
-            <span class="font-medium"> (key)</span>
-          {/if}
+        {#if view.audioTranscript}
+          <div><strong>{t('printTranscript')}</strong> {view.audioTranscript}</div>
         {/if}
-      </li>
-    {/each}
-  </ul>
-</div>
+      </div>
+    {/if}
+
+    <McPopulatedBlank model={view.model} session={view.session} />
+  </div>
+{/if}
 
 <style>
-  .prose :global(p) {
+  /* Inset to line up with the delivery root's padding. */
+  .mpb-print-block {
+    padding: 0 1rem;
+    margin: 1rem 0;
+  }
+
+  .mpb-print-teacher-instructions :global(p) {
     margin: 0.5em 0;
   }
-  .prose :global(strong) {
-    font-weight: 600;
+
+  .mpb-print-audio {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
   }
 </style>

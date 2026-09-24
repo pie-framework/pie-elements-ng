@@ -110,7 +110,7 @@ export const PlaceHolder = (props) => {
   // For any other type, use a dashed black border and a white fill
   if (type === 'choice') {
     style.border = `1px solid ${color.borderLight()}`;
-    style.background = color.backgroundDark();
+    style.background = color.surface();
   }
 
   const boardStyle = isCategorize ? 'categorizeBoard' : 'board';

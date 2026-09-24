@@ -1185,13 +1185,73 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    // The peer fallbacks still get added by name — @tiptap/extensions and
+    // @tiptap/extension-list are absent from the upstream manifest above. Their versions come
+    // out at 3.31.3 rather than upstream's 3.0.9 because applyPieLibDependencyVersionPins has
+    // the last word on every @tiptap/* version; tiptap peers are exact, so a sync that let
+    // these differ would resolve a second @tiptap/core. See PIE-1042.
     expect(pkgJson.dependencies).toMatchObject({
       '@testing-library/user-event': '^14.5.2',
       '@testing-library/dom': '^10.4.1',
-      '@tiptap/extension-character-count': '3.0.9',
-      '@tiptap/extensions': '^3.20.0',
-      '@tiptap/extension-list-item': '3.0.9',
-      '@tiptap/extension-list': '3.0.9',
+      '@tiptap/extension-character-count': '3.31.3',
+      '@tiptap/extensions': '3.31.3',
+      '@tiptap/extension-list-item': '3.31.3',
+      '@tiptap/extension-list': '3.31.3',
     });
+  });
+
+  it('pins @tiptap/* even when the upstream manifest declares older versions', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'editable-html-tip-tap');
+    const upstreamLibDir = join(
+      rootDir,
+      'upstream',
+      'pie-lib',
+      'packages',
+      'editable-html-tip-tap'
+    );
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(
+      join(libDir, 'src', 'index.ts'),
+      `
+      import { Editor } from '@tiptap/core';
+      export { Editor };
+      `,
+      'utf-8'
+    );
+    // What upstream pie-lib actually declares, and will keep declaring: it is no longer
+    // maintained, so the alignment has to survive on this side of the sync.
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/editable-html-tip-tap',
+          dependencies: {
+            '@tiptap/core': '3.20.0',
+            '@tiptap/starter-kit': '3.20.0',
+            '@tiptap/extension-table-row': '3.30.1',
+            '@tiptap/pm': '3.30.2',
+            lowlight: '^3.3.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    await ensurePieLibPackageJson('editable-html-tip-tap', libDir, createConfig(rootDir));
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    const tiptapVersions = new Set(
+      Object.entries(pkgJson.dependencies as Record<string, string>)
+        .filter(([name]) => name.startsWith('@tiptap/'))
+        .map(([, version]) => version)
+    );
+    expect([...tiptapVersions]).toEqual(['3.31.3']);
+    // Non-tiptap dependencies keep whatever upstream said.
+    expect(pkgJson.dependencies.lowlight).toBe('^3.3.0');
   });
 });

@@ -13,7 +13,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { debounce } from '@pie-element/shared-lodash';
 import debug from 'debug';
-import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
+import {
+  ModelSetEvent,
+  SessionChangedEvent,
+  createSessionNotifier,
+  flushSessionNotifiers,
+} from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
 
@@ -178,7 +183,9 @@ export default class MultipleChoice extends HTMLElement {
       { leading: false, trailing: true },
     );
 
-    this._dispatchResponseChanged = debounce(() => {
+    // `_onChange` already wrote the session; only this dispatch is deferred to
+    // the next tick, and `disconnectedCallback` flushes it.
+    this._sessionNotifier = createSessionNotifier(this, () => {
       this.dispatchEvent(
         new SessionChangedEvent(
           this.tagName.toLowerCase(),
@@ -186,6 +193,7 @@ export default class MultipleChoice extends HTMLElement {
         ),
       );
     });
+    this._dispatchResponseChanged = () => this._sessionNotifier.notify();
 
     this._dispatchModelSet = debounce(
       () => {
@@ -427,6 +435,8 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   disconnectedCallback() {
+    flushSessionNotifiers(this);
+
     this._disconnectMathObserver();
     this._disconnectPlayerObserver();
     if (this._keyboardEventsEnabled) {

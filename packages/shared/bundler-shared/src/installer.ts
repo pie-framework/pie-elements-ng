@@ -161,7 +161,7 @@ function linkPackageDir(
     // Link the published root shims too, so this layout presents the same surface as a
     // published tarball. `<pkg>/configure` resolves only through configure.js: the source
     // lives at src/author, so no `configure` directory exists to fall back on.
-    for (const shim of ['controller.js', 'configure.js', 'print.js']) {
+    for (const shim of ['controller.js', 'configure.js', 'author.js', 'print.js']) {
       const shimPath = join(packagePath, shim);
       if (existsSync(shimPath)) {
         symlinkSync(shimPath, join(targetPath, shim));

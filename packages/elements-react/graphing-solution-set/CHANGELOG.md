@@ -1,5 +1,42 @@
 # @pie-element/graphing-solution-set
 
+## 6.1.2-next.14
+
+### Patch Changes
+
+- @pie-lib/correct-answer-toggle@5.0.0-next.44
+- @pie-lib/graphing-solution-set@5.0.0-next.38
+
+## 6.1.2-next.13
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+  - @pie-lib/correct-answer-toggle@5.0.0-next.43
+  - @pie-lib/graphing-solution-set@5.0.0-next.37
+
+## 6.1.2-next.12
+
+### Patch Changes
+
+- Updated dependencies [2f26122]
+- Updated dependencies [f3f1abb]
+- Updated dependencies [d22cfb1]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.36
+  - @pie-lib/config-ui@14.0.0-next.36
+  - @pie-lib/correct-answer-toggle@5.0.0-next.42
+  - @pie-lib/graphing-solution-set@5.0.0-next.36
+
+## 6.1.2-next.11
+
+### Patch Changes
+
+- Updated dependencies [285c07c]
+  - @pie-element/shared-player-events@0.1.1-next.0
+
 ## 6.1.2-next.10
 
 ### Patch Changes

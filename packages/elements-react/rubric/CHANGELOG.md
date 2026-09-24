@@ -1,5 +1,21 @@
 # @pie-element/rubric
 
+## 8.1.2-next.13
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+
+## 8.1.2-next.12
+
+### Patch Changes
+
+- Updated dependencies [2f26122]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/config-ui@14.0.0-next.36
+  - @pie-lib/rubric@3.0.0-next.36
+
 ## 8.1.2-next.11
 
 ### Patch Changes

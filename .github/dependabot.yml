@@ -55,6 +55,21 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      # tiptap moves as one package or not at all. From 3.24.0 on, every @tiptap/* package
+      # pins its peers to an exact version (@tiptap/core@3.31.3 peers on @tiptap/pm:
+      # "3.31.3"), so bumping one name on its own leaves the set unsatisfiable and a second
+      # @tiptap/core resolves — which breaks ProseMirror on duplicate schema/plugin identity.
+      # That is exactly how PR #103 broke it: @tiptap/extension-image went to 3.31.3 while
+      # @tiptap/core stayed on 3.20.0. `major` is included deliberately; a single-package
+      # major here is never mergeable on its own. See the `overrides` note in the root
+      # package.json. PIE-1042.
+      tiptap:
+        patterns:
+          - "@tiptap/*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"

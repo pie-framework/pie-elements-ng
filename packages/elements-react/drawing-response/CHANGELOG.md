@@ -1,5 +1,43 @@
 # @pie-element/drawing-response
 
+## 12.1.2-next.14
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
+## 12.1.2-next.13
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+
+## 12.1.2-next.12
+
+### Patch Changes
+
+- Updated dependencies [2f26122]
+- Updated dependencies [f3f1abb]
+- Updated dependencies [d22cfb1]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.36
+  - @pie-lib/config-ui@14.0.0-next.36
+
+## 12.1.2-next.11
+
+### Patch Changes
+
+- Updated dependencies [285c07c]
+  - @pie-element/shared-player-events@0.1.1-next.0
+
 ## 12.1.2-next.10
 
 ### Patch Changes

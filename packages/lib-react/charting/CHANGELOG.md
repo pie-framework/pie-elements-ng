@@ -1,5 +1,42 @@
 # @pie-lib/charting
 
+## 8.0.0-next.38
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
+## 8.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+
+## 8.0.0-next.36
+
+### Patch Changes
+
+- 2f26122: Add a `disabled-text` color for disabled text that still has to be read, and use it for charting tick labels (PIE-922)
+
+  `@pie-lib/render-ui` gains `color.disabledText()` (`--pie-disabled-text`, default
+  `#545454`), registered in `@pie-element/shared-theming` and set in the light and dark
+  themes. Charting's disabled tick labels took two different colors: the MathJax fraction
+  variant used the `disabled` grey, while the plain-text variant fell through to the
+  browser's own disabled-input color. Both now use `disabled-text`, which stays dimmed but
+  keeps text-grade contrast - the `disabled` grey is 3.94:1 on white, below WCAG AA for
+  normal text, and fraction numerals render smaller still.
+
+- Updated dependencies [2f26122]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/config-ui@14.0.0-next.36
+  - @pie-lib/plot@5.0.0-next.36
+
 ## 8.0.0-next.35
 
 ### Major Changes

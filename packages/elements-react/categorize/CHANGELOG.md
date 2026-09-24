@@ -1,5 +1,49 @@
 # @pie-element/categorize
 
+## 13.2.0-next.14
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
+## 13.2.0-next.13
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+  - @pie-lib/correct-answer-toggle@5.0.0-next.43
+
+## 13.2.0-next.12
+
+### Patch Changes
+
+- 4fe8ce6: Make the interactive region horizontally scrollable when its full width does not fit (PIE-808)
+- Updated dependencies [2f26122]
+- Updated dependencies [f3f1abb]
+- Updated dependencies [d22cfb1]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.36
+  - @pie-lib/drag@4.1.0-next.42
+  - @pie-lib/config-ui@14.0.0-next.36
+  - @pie-lib/correct-answer-toggle@5.0.0-next.42
+
+## 13.2.0-next.11
+
+### Patch Changes
+
+- Updated dependencies [285c07c]
+  - @pie-element/shared-player-events@0.1.1-next.0
+
 ## 13.2.0-next.10
 
 ### Patch Changes

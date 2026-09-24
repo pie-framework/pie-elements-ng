@@ -5,7 +5,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "esm/**", "build/**"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/vite/**"],
+      "outputs": ["dist/**", "esm/**", "build/**", "module/**"],
       "env": ["NODE_ENV"]
     },
     "@pie-element/element-demo#build": {

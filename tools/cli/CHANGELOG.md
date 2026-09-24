@@ -1,5 +1,25 @@
 # @pie-element/cli
 
+## 0.1.2-next.3
+
+### Patch Changes
+
+- 2bb02ad: Depend on `i18next` alone: the package no longer declares React, `prop-types`, `debug` or `@pie-element/shared-lodash`, none of which it imports. Add English and Spanish strings for the Svelte elements mc-populated-blank, simple-cloze and venn-classification, and stop logging i18next's configuration to the console. Upstream sync leaves the package alone, since this repo now owns it.
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.1
+
+## 0.1.2-next.2
+
+### Patch Changes
+
+- fbc32d5: Read upstream commits from the repository passed in, even when run from a git hook.
+
+## 0.1.2-next.1
+
+### Patch Changes
+
+- 4fe8ce6: `upstream:sync` now forces every `@tiptap/*` dependency of a synced `@pie-lib` package to one exact version instead of taking the upstream manifest's. tiptap pins its own peers exactly from 3.24.0 on, so the mixed set upstream declares resolves a second `@tiptap/core` and breaks ProseMirror on duplicate schema and plugin identity (PIE-1042)
+
 ## 0.1.2-next.0
 
 ### Patch Changes

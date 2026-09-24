@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/element-bundler",
-  "version": "0.1.2-next.0",
+  "version": "0.1.2-next.1",
   "type": "module",
   "description": "PIE element bundler that produces IIFE bundles compatible with pie-player-components",
   "main": "./dist/index.js",

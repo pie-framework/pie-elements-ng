@@ -1,8 +1,8 @@
 {
   "name": "@pie-lib/math-input-svelte",
-  "version": "0.1.0",
+  "version": "0.1.1-next.0",
   "private": true,
-  "description": "MathQuill wrapper components for Svelte 5",
+  "description": "Placeholder math input and static math components for Svelte 5",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,7 +21,9 @@
     "dev": "vite build --watch",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
+  },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "svelte": "^5.57.0",

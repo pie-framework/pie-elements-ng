@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/multi-trait-rubric",
-  "version": "8.1.2-next.10",
+  "version": "8.1.2-next.13",
   "description": "React implementation of multi-trait-rubric element synced from pie-elements",
   "repository": {
     "type": "git",
@@ -74,6 +74,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist"

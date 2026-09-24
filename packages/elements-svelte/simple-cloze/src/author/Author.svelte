@@ -2,42 +2,48 @@
   customElement={{
     shadow: 'none',
     props: {
-      model: { type: 'Object' }
+      model: { type: 'Object' },
+      onModelChange: {}
     }
   }}
 />
 
 <script lang="ts">
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
-import { createEventDispatcher } from 'svelte';
 
-const dispatch = createEventDispatcher();
+let {
+  model = $bindable(),
+  onChange,
+  onModelChange,
+}: {
+  model?: any;
+  onChange?: (model: any) => void;
+  onModelChange?: (model: any) => void;
+} = $props();
 
-let { model = $bindable(), onChange }: { model?: any; onChange?: (model: any) => void } = $props();
+const answerInputId = `simple-cloze-correct-answer-${Math.random().toString(36).slice(2, 10)}`;
 
-function emitModelUpdate(nextModel: any) {
-  // Match the expected contract used by AuthorView:
-  // detail contains { update, reset }
-  dispatch('model.updated', { update: nextModel, reset: false });
+/**
+ * The wrapper owns the model and announces the edit; `onChange` serves a
+ * component mounted without one. The update spreads the whole model, so fields
+ * this form does not edit survive.
+ */
+function emitModelUpdate(patch: Record<string, unknown>) {
+  const nextModel = { ...(model || {}), ...patch };
+  if (onModelChange) {
+    onModelChange(nextModel);
+  } else {
+    model = nextModel;
+    onChange?.(nextModel);
+  }
 }
 
 function handlePromptChange(html: string) {
-  if (onChange && model) {
-    onChange({ ...model, prompt: html });
-  }
-  if (model) {
-    emitModelUpdate({ ...model, prompt: html });
-  }
+  emitModelUpdate({ prompt: html });
 }
 
 function handleAnswerChange(e: Event) {
-  const target = e.target as HTMLInputElement;
-  if (onChange && model) {
-    onChange({ ...model, correctAnswer: target.value });
-  }
-  if (model) {
-    emitModelUpdate({ ...model, correctAnswer: target.value });
-  }
+  emitModelUpdate({ correctAnswer: (e.target as HTMLInputElement).value });
 }
 </script>
 
@@ -48,15 +54,16 @@ function handleAnswerChange(e: Event) {
       markup={model?.prompt || ""}
       onChange={handlePromptChange}
       placeholder="Enter your question here..."
+      ariaLabel="Prompt"
     />
   </div>
 
   <div class="mb-6">
-    <label for="simple-cloze-correct-answer" class="block text-sm text-gray-600 mb-2">
+    <label for={answerInputId} class="block text-sm text-gray-600 mb-2">
       Correct Answer
     </label>
     <input
-      id="simple-cloze-correct-answer"
+      id={answerInputId}
       type="text"
       class="input input-bordered w-full"
       placeholder="Enter the correct answer"

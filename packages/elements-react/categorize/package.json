@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/categorize",
-  "version": "13.2.0-next.10",
+  "version": "13.2.0-next.14",
   "description": "",
   "repository": {
     "type": "git",
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/modifiers": "9.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",
     "@mui/icons-material": "^7.3.4",
@@ -78,6 +79,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist"
@@ -93,7 +95,7 @@
     "happy-dom": "^20.0.11",
     "@testing-library/react": "^16.3.2",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/dom": "^10.4.1"
+    "@testing-library/dom": "^10.4.2"
   },
   "scripts": {
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",

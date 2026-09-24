@@ -28,8 +28,6 @@ jobs:
         with:
           bun-version: 1.3.13
       - run: bun install --frozen-lockfile
-      - run: bun x svelte-kit sync
-        working-directory: apps/element-a11y-demo
       - run: bun run --cwd apps/element-a11y-demo generate-imports
       # No build step: the Playwright config serves the app via `bun run dev`
       # (Vite), which compiles element sources on the fly, so a production build

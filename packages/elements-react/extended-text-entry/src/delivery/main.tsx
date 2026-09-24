@@ -10,7 +10,6 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { debounce } from '@pie-element/shared-lodash';
 import debug from 'debug';
 
 import Typography from '@mui/material/Typography';
@@ -97,12 +96,13 @@ export class Main extends React.Component {
     }).isRequired,
   };
 
-  changeSessionValue = debounce(this.props.onValueChange, 1500);
-
-  changeSessionComment = debounce(this.props.onCommentChange, 1500);
-
+  // The editor calls back on commit points (blur, `done` transactions), and the
+  // custom element writes the session synchronously and defers only its
+  // `session-changed` dispatch. Coalescing belongs on that dispatch, where a
+  // teardown can flush it; holding the value here instead left `.session` stale
+  // and unreadable by any other layer, so the callbacks pass straight through.
   render() {
-    const { model, session, onAnnotationsChange } = this.props;
+    const { model, session, onAnnotationsChange, onCommentChange, onValueChange } = this.props;
     const {
       animationsDisabled,
       annotatorMode,
@@ -179,7 +179,7 @@ export class Main extends React.Component {
             comment={comment || ''}
             predefinedAnnotations={predefinedAnnotations || []}
             onChange={onAnnotationsChange}
-            onCommentChange={this.changeSessionComment}
+            onCommentChange={onCommentChange}
             width={width}
             height={height}
             maxHeight={maxHeight}
@@ -191,7 +191,7 @@ export class Main extends React.Component {
         ) : (
           <Editor
             className="response-area-editor"
-            onChange={this.changeSessionValue}
+            onChange={onValueChange}
             markup={value || ''}
             maxWidth={width && width.toString()}
             minWidth={'100px'}

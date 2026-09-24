@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/ebsr",
-  "version": "14.2.2-next.11",
+  "version": "14.2.2-next.15",
   "description": "",
   "repository": {
     "type": "git",
@@ -80,6 +80,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist",

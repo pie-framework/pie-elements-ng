@@ -1,5 +1,38 @@
 # @pie-lib/graphing
 
+## 5.0.0-next.39
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
+## 5.0.0-next.38
+
+### Patch Changes
+
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+
+## 5.0.0-next.37
+
+### Patch Changes
+
+- Updated dependencies [2f26122]
+- Updated dependencies [f3f1abb]
+- Updated dependencies [d22cfb1]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+- Updated dependencies [4fe8ce6]
+  - @pie-lib/render-ui@6.2.0-next.42
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.36
+  - @pie-lib/drag@4.1.0-next.42
+  - @pie-lib/config-ui@14.0.0-next.36
+  - @pie-lib/plot@5.0.0-next.36
+
 ## 5.0.0-next.36
 
 ### Major Changes

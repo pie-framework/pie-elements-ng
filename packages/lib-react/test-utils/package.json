@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/test-utils",
-  "version": "3.0.0-next.0",
+  "version": "3.0.0-next.1",
   "description": "Testing utilities for pie-lib packages with React Testing Library and MUI support",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
     "prop-types": "^15.8.1",
     "@testing-library/react": "^16.3.3",
     "@mui/material": "^7.3.11",
-    "@testing-library/dom": ">=7.21.4"
+    "@testing-library/dom": ">=10.4.2"
   },
   "type": "module",
   "main": "./dist/index.js",
