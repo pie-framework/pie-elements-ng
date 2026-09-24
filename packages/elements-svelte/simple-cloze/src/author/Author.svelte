@@ -8,30 +8,23 @@
 />
 
 <script lang="ts">
-import { resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
 
-let { model = $bindable(), onChange }: { model?: any; onChange?: (model: any) => void } = $props();
+let { model = $bindable() }: { model?: any } = $props();
 
-let rootEl = $state<HTMLDivElement | null>(null);
 const answerInputId = `simple-cloze-correct-answer-${Math.random().toString(36).slice(2, 10)}`;
 
-const isAuthorHost = (node: unknown) => typeof (node as any)?.onModelChange === 'function';
-
 /**
- * The wrapper owns the model and announces the edit; `onChange` serves a
- * component mounted without one. The update spreads the whole model, so fields
- * this form does not edit survive.
+ * Keeps the edit as the element's model, so the next edit builds on it, and
+ * announces it as a bubbling `model.updated` for the player listening at its
+ * root. The update spreads the whole model, so fields this form does not edit
+ * survive.
  */
 function emitModelUpdate(patch: Record<string, unknown>) {
   const nextModel = { ...(model || {}), ...patch };
-  const host = resolveDeliveryHost(rootEl, { hostPredicate: isAuthorHost }) as any;
-  if (host) {
-    host.onModelChange(nextModel);
-  } else {
-    model = nextModel;
-    onChange?.(nextModel);
-  }
+  model = nextModel;
+  $host().dispatchEvent(new ModelUpdatedEvent(nextModel));
 }
 
 function handlePromptChange(html: string) {
@@ -43,7 +36,7 @@ function handleAnswerChange(e: Event) {
 }
 </script>
 
-<div class="simple-cloze-author" bind:this={rootEl}>
+<div class="simple-cloze-author">
   <div class="input-container">
     <span class="input-label">Prompt</span>
     <EditableHtml

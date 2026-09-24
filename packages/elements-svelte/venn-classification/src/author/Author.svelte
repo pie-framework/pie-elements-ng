@@ -8,11 +8,11 @@
 />
 
 <script lang="ts">
-import { resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
 import RegionPicker from './RegionPicker.svelte';
 import VennClassification from '../delivery/VennClassification.svelte';
-import { buildPreviewSession } from '../controller/index.js';
+import { buildPreviewSession, createDefaultModel } from '../controller/index.js';
 import {
   enumerateRegions,
   regionKey,
@@ -23,43 +23,25 @@ import {
 import type { Region, ScoringPolicy, VennModel, VennTile } from '../types.js';
 import { stripHtml } from '../delivery/tile-accessible-name.js';
 
-let {
-  model = $bindable(),
-  onChange,
-}: { model?: VennModel; onChange?: (model: VennModel) => void } = $props();
+let { model = $bindable() }: { model?: VennModel } = $props();
 
-const isAuthorHost = (node: unknown) => typeof (node as any)?.onModelChange === 'function';
-
-/** The wrapper owns the model and announces the edit; `onChange` serves a component mounted without one. */
+/**
+ * Keeps the edit as the element's model, so the next edit builds on it, and
+ * announces it as a bubbling `model.updated` for the player listening at its
+ * root.
+ */
 function emit(next: VennModel) {
-  const host = resolveDeliveryHost(authorShellEl, { hostPredicate: isAuthorHost }) as any;
-  if (host) {
-    host.onModelChange(next);
-  } else {
-    model = next;
-    onChange?.(next);
-  }
+  model = next;
+  $host().dispatchEvent(new ModelUpdatedEvent(next));
 }
 
 /**
- * The model with the fields this form edits filled in. Every other field,
- * `id` and `element` included, passes through untouched: the player owns those
- * two, and an edit must not drop what the form does not show.
+ * The model with the controller's defaults filled in. Every other field, `id`
+ * and `element` included, passes through untouched: the player owns those two,
+ * and an edit must not drop what the form does not show.
  */
 function safeModel(): VennModel {
-  const m = (model || {}) as VennModel;
-  return {
-    ...m,
-    prompt: m.prompt ?? '',
-    promptEnabled: m.promptEnabled !== false,
-    circles:
-      Array.isArray(m.circles) && m.circles.length > 0
-        ? m.circles
-        : [{ label: 'Set A' }, { label: 'Set B' }],
-    tiles: Array.isArray(m.tiles) ? m.tiles : [],
-    regionLabels: m.regionLabels ?? {},
-    scoringPolicy: m.scoringPolicy ?? 'partialPerTile',
-  };
+  return createDefaultModel(model || undefined);
 }
 
 function update(patch: Partial<VennModel>) {

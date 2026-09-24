@@ -4,7 +4,7 @@
  * of the element as that event, carrying the whole model: the fields the form
  * does not edit, `id` and the player's versioned `element` included.
  */
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { flushSync } from 'svelte';
 import SimpleClozeAuthor from '../src/author/index.js';
 
@@ -27,13 +27,22 @@ async function mount() {
   root = document.createElement('div');
   document.body.appendChild(root);
   const updates: CustomEvent[] = [];
-  root.addEventListener('model.updated', (e) => updates.push(e as CustomEvent), true);
+  const modelsAtDispatch: unknown[] = [];
   const element = document.createElement(TAG) as any;
+  // Capture phase on an ancestor, as an authoring player registers it.
+  root.addEventListener(
+    'model.updated',
+    (e) => {
+      updates.push(e as CustomEvent);
+      modelsAtDispatch.push(element.model);
+    },
+    true
+  );
   root.appendChild(element);
   element.model = { ...MODEL };
   await new Promise((resolve) => setTimeout(resolve, 0));
   flushSync();
-  return { element, updates };
+  return { element, updates, modelsAtDispatch };
 }
 
 function typeAnswer(element: HTMLElement, value: string) {
@@ -69,13 +78,11 @@ describe('simple-cloze author model contract', () => {
     expect(updates.at(-1)?.detail.update).toEqual({ ...MODEL, correctAnswer: 'looked' });
   });
 
-  it('calls an onChange callback without recursing into its own setter', async () => {
-    const { element } = await mount();
-    const onChange = vi.fn();
-    element.onChange = onChange;
+  it('holds the edited model by the time the player hears the edit', async () => {
+    const { element, modelsAtDispatch } = await mount();
     typeAnswer(element, 'looks');
 
-    expect(onChange).toHaveBeenCalledWith({ ...MODEL, correctAnswer: 'looks' });
+    expect(modelsAtDispatch).toEqual([{ ...MODEL, correctAnswer: 'looks' }]);
   });
 
   it('gives each instance its own answer input id', async () => {

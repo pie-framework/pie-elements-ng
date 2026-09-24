@@ -7,6 +7,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
 import VennClassificationAuthor from '../src/author/index.js';
+import defaults from '../src/controller/defaults.js';
 
 // The author's live preview typesets math, and the test DOM cannot load MathJax.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: vi.fn() }));
@@ -37,13 +38,22 @@ async function mount(model: Record<string, unknown> = MODEL) {
   root = document.createElement('div');
   document.body.appendChild(root);
   const updates: CustomEvent[] = [];
-  root.addEventListener('model.updated', (e) => updates.push(e as CustomEvent), true);
+  const modelsAtDispatch: unknown[] = [];
   const element = document.createElement(TAG) as any;
+  // Capture phase on an ancestor, as an authoring player registers it.
+  root.addEventListener(
+    'model.updated',
+    (e) => {
+      updates.push(e as CustomEvent);
+      modelsAtDispatch.push(element.model);
+    },
+    true
+  );
   root.appendChild(element);
   element.model = structuredClone(model);
   await new Promise((resolve) => setTimeout(resolve, 0));
   flushSync();
-  return { element, updates };
+  return { element, updates, modelsAtDispatch };
 }
 
 function tileInputs(element: HTMLElement, row: number) {
@@ -111,12 +121,29 @@ describe('venn-classification author model contract', () => {
     expect(regions).toEqual(['Both', 'Mammals only']);
   });
 
-  it('calls an onChange callback without recursing into its own setter', async () => {
-    const { element } = await mount();
-    const onChange = vi.fn();
-    element.onChange = onChange;
+  it('holds the edited model by the time the player hears the edit', async () => {
+    const { element, updates, modelsAtDispatch } = await mount();
     type(tileInputs(element, 0)[1], 'Orca');
 
-    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(modelsAtDispatch).toEqual([updates[0].detail.update]);
+  });
+
+  it('builds each edit on the previous one', async () => {
+    const { element, updates } = await mount();
+    type(tileInputs(element, 0)[1], 'Orca');
+    type(tileInputs(element, 1)[1], 'Wolf');
+
+    expect(updates.at(-1)?.detail.update.tiles.map((t: any) => t.label)).toEqual(['Orca', 'Wolf']);
+  });
+
+  it("fills fields the item lacks from the controller's defaults", async () => {
+    const { element, updates } = await mount({ tiles: MODEL.tiles, rubricNotes: 'Kept' });
+    type(tileInputs(element, 0)[1], 'Orca');
+
+    expect(updates[0].detail.update).toEqual({
+      ...defaults.model,
+      tiles: [{ ...MODEL.tiles[0], label: 'Orca' }, MODEL.tiles[1]],
+      rubricNotes: 'Kept',
+    });
   });
 });
