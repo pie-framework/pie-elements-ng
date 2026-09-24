@@ -1,5 +1,12 @@
 # @pie-element/learnosity-parity-demo
 
+## 0.1.2-next.7
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.1
+
 ## 0.1.2-next.6
 
 ### Patch Changes

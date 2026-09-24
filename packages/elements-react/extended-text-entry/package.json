@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/extended-text-entry",
-  "version": "15.1.2-next.13",
+  "version": "15.1.2-next.14",
   "description": "",
   "repository": {
     "type": "git",
@@ -85,6 +85,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist",

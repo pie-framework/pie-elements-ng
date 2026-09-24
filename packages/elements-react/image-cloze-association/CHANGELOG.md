@@ -1,5 +1,25 @@
 # @pie-element/image-cloze-association
 
+## 10.1.2-next.14
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
+## 10.1.2-next.13
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+  - @pie-lib/correct-answer-toggle@5.0.0-next.43
+
 ## 10.1.2-next.12
 
 ### Patch Changes

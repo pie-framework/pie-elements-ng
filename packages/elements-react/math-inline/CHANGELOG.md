@@ -1,5 +1,25 @@
 # @pie-element/math-inline
 
+## 12.1.1-next.25
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
+## 12.1.1-next.24
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+  - @pie-lib/correct-answer-toggle@5.0.0-next.43
+
 ## 12.1.1-next.23
 
 ### Patch Changes

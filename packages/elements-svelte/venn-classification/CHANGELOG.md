@@ -1,5 +1,23 @@
 # @pie-element/venn-classification
 
+## 0.1.1-next.8
+
+### Patch Changes
+
+- 53bed4b: `defineDeliveryElement` builds a Svelte delivery element from its component and an `isComplete` rule, and hands the component `onSessionChange` as a prop. `resolveDeliveryHost`, `forwardSessionChange` and `DeliveryHostElement` are removed. The three Svelte elements are built on it: `element.session` returns the player's session object after an update, and mc-populated-blank's `model-set` now reports a restored response as complete.
+- 34065a2: The package root re-exports `./delivery/index.js` instead of bundling a second copy of it, so `@pie-element/<name>` and `@pie-element/<name>/delivery` export the same element class. `dist/index.js.map` is no longer published.
+
+## 0.1.1-next.7
+
+### Patch Changes
+
+- 85910c0: The rich-text editor shows its `placeholder` while empty, as the React editor does; the prop was accepted and never displayed (PIE-1075).
+- 3f989fb: The rich-text editor's Done and alignment buttons take the editor stylesheet's padding, colours and hover states, which hard-coded inline styles overrode (PIE-1075).
+- a84b6c5: Leave the session's `element` to the player (PIE-1075).
+- 2bb02ad: Take learner-facing strings from `@pie-lib/translator` in the item's `language`, as the React elements do. mc-populated-blank no longer reads `uiText`, and uses `locale` when `language` is unset.
+- cee9377: Session, scoring, accessibility and authoring fixes.
+- 681c694: Placed tiles stay inside their region, with the diagram growing when a region fills, and every drop zone is at least 120×120 px. Screen-reader activation picks up and drops tiles, the author preview uses region-label overrides, and a restored complete session reports `complete: true` on load. Instructors see teacher instructions, collapsed, including when `teacherInstructionsEnabled` is unset (PIE-1075).
+
 ## 0.1.1-next.6
 
 ### Patch Changes

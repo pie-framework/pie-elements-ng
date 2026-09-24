@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/explicit-constructed-response",
-  "version": "11.1.2-next.13",
+  "version": "11.1.2-next.15",
   "description": "",
   "repository": {
     "type": "git",
@@ -88,6 +88,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist",

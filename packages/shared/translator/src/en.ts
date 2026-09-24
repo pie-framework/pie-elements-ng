@@ -84,7 +84,6 @@ export default {
       listenPlayingAlt: 'Instructions are playing',
       printAudio: 'Audio:',
       printTranscript: 'Transcript:',
-      printKey: '(key)',
     },
     multipleChoice: {
       minSelections: 'Select at least {{minSelections}}.',

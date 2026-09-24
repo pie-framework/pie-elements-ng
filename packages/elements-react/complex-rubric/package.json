@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/complex-rubric",
-  "version": "7.1.2-next.13",
+  "version": "7.1.2-next.14",
   "description": "Complex Rubric Scoring Interaction",
   "repository": {
     "type": "git",
@@ -84,6 +84,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist",

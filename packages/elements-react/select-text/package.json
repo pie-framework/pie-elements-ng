@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/select-text",
-  "version": "13.1.2-next.13",
+  "version": "13.1.2-next.15",
   "description": "",
   "repository": {
     "type": "git",
@@ -86,6 +86,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist",

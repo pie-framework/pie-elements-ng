@@ -1,5 +1,20 @@
 # @pie-element/graphing
 
+## 10.1.2-next.14
+
+### Patch Changes
+
+- @pie-lib/correct-answer-toggle@5.0.0-next.44
+- @pie-lib/graphing@5.0.0-next.39
+
+## 10.1.2-next.13
+
+### Patch Changes
+
+- Merge pull request #175 from pie-framework/fix/author-shim-cross-element-bundles
+  - @pie-lib/correct-answer-toggle@5.0.0-next.43
+  - @pie-lib/graphing@5.0.0-next.38
+
 ## 10.1.2-next.12
 
 ### Patch Changes

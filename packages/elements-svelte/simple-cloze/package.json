@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/simple-cloze",
-  "version": "0.1.4-next.6",
+  "version": "0.1.4-next.8",
   "description": "Simple cloze (text entry) demo/template PIE element built with Svelte 5",
   "repository": {
     "type": "git",
@@ -65,6 +65,7 @@
     }
   },
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist",
@@ -73,9 +74,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
-    "dev": "vite",
-    "demo": "vite --mode demo",
+    "build": "vite build --config ../../../tools/vite/svelte-element-esm.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config ../../../tools/vite/svelte-element-iife.config.ts && tsc --emitDeclarationOnly",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "devDependencies": {
