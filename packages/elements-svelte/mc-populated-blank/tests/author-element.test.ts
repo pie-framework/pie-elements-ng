@@ -32,4 +32,13 @@ describe('mc-populated-blank author element', () => {
     expect(element.model).toEqual(model);
     expect(element.querySelector('[role="status"]')?.textContent).toContain('placeholder');
   });
+
+  it('takes configuration as an element property, as players set it', () => {
+    const accessor = Object.getOwnPropertyDescriptor(
+      customElements.get(TAG)?.prototype ?? {},
+      'configuration'
+    );
+
+    expect(typeof accessor?.set).toBe('function');
+  });
 });

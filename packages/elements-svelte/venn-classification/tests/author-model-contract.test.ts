@@ -34,7 +34,10 @@ const MODEL = {
 
 let root: HTMLElement | null = null;
 
-async function mount(model: Record<string, unknown> = MODEL) {
+async function mount(
+  model: Record<string, unknown> = MODEL,
+  configuration?: Record<string, unknown>
+) {
   root = document.createElement('div');
   document.body.appendChild(root);
   const updates: CustomEvent[] = [];
@@ -51,6 +54,7 @@ async function mount(model: Record<string, unknown> = MODEL) {
   );
   root.appendChild(element);
   element.model = structuredClone(model);
+  if (configuration) element.configuration = configuration;
   await new Promise((resolve) => setTimeout(resolve, 0));
   flushSync();
   return { element, updates, modelsAtDispatch };
@@ -65,6 +69,11 @@ function type(input: Element, value: string) {
   input.dispatchEvent(new Event('input', { bubbles: true }));
   flushSync();
 }
+
+const settingLabels = (element: HTMLElement) =>
+  [
+    ...element.querySelectorAll('aside input[role="switch"], aside .pie-settings-choice > legend'),
+  ].map((el) => (el.closest('label') ?? el).textContent?.trim());
 
 afterEach(() => {
   root?.remove();
@@ -145,5 +154,36 @@ describe('venn-classification author model contract', () => {
       tiles: [{ ...MODEL.tiles[0], label: 'Orca' }, MODEL.tiles[1]],
       rubricNotes: 'Kept',
     });
+  });
+
+  it('names its settings and fields after the configuration', async () => {
+    const { element } = await mount(MODEL, {
+      prompt: { label: 'Question' },
+      scoringPolicy: { label: 'Scoring' },
+    });
+
+    expect(settingLabels(element)).toEqual(['Question', 'Teacher Instructions', 'Scoring']);
+    expect(
+      [...element.querySelectorAll('.editor-column > .field-group > .field-header')]
+        .slice(0, 2)
+        .map((el) => el.textContent?.trim())
+    ).toEqual(['Teacher Instructions', 'Question']);
+  });
+
+  it('sets the scoring policy from the settings panel', async () => {
+    const { element, updates } = await mount();
+    (element.querySelector('aside input[value="allOrNothing"]') as HTMLInputElement).click();
+    flushSync();
+
+    expect(updates.at(-1)?.detail.update).toMatchObject({
+      scoringPolicy: 'allOrNothing',
+      rubricNotes: 'Kept',
+    });
+  });
+
+  it('leaves out settings the configuration does not offer', async () => {
+    const { element } = await mount(MODEL, { scoringPolicy: { settings: false } });
+
+    expect(settingLabels(element)).toEqual(['Prompt', 'Teacher Instructions']);
   });
 });

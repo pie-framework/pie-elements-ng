@@ -3,12 +3,13 @@
     shadow: 'none',
     props: {
       model: { type: 'Object' },
+      configuration: { type: 'Object' },
     },
   }}
 />
 
 <script lang="ts">
-// The wrapper sets `model`; the placeholder renders nothing from it yet.
+// A player sets `model` and `configuration`, both declared above; the placeholder renders nothing from them yet.
 let { model = $bindable() }: { model?: any } = $props();
 </script>
 

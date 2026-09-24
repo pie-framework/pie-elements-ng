@@ -7,6 +7,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { flushSync } from 'svelte';
 import SimpleClozeAuthor from '../src/author/index.js';
+import defaults from '../src/controller/defaults.js';
 
 const TAG = 'simple-cloze-config--version-0-0-0-author-contract-test';
 if (!customElements.get(TAG)) {
@@ -21,9 +22,12 @@ const MODEL = {
   rationale: '<p>Kept</p>',
 };
 
+/** The item after an edit: the controller's defaults filled in, the edit applied. */
+const edited = (patch: Record<string, unknown>) => ({ ...defaults.model, ...MODEL, ...patch });
+
 let root: HTMLElement | null = null;
 
-async function mount() {
+async function mount(configuration?: Record<string, unknown>) {
   root = document.createElement('div');
   document.body.appendChild(root);
   const updates: CustomEvent[] = [];
@@ -40,6 +44,7 @@ async function mount() {
   );
   root.appendChild(element);
   element.model = { ...MODEL };
+  if (configuration) element.configuration = configuration;
   await new Promise((resolve) => setTimeout(resolve, 0));
   flushSync();
   return { element, updates, modelsAtDispatch };
@@ -51,6 +56,20 @@ function typeAnswer(element: HTMLElement, value: string) {
   input.dispatchEvent(new Event('input', { bubbles: true }));
   flushSync();
 }
+
+const switches = (element: HTMLElement) =>
+  [...element.querySelectorAll('aside input[role="switch"]')] as HTMLInputElement[];
+
+const switchLabels = (element: HTMLElement) =>
+  switches(element).map((input) => input.closest('label')?.textContent?.trim());
+
+const switchFor = (element: HTMLElement, label: string) =>
+  switches(element).find(
+    (input) => input.closest('label')?.textContent?.trim() === label
+  ) as HTMLInputElement;
+
+const fieldLabels = (element: HTMLElement) =>
+  [...element.querySelectorAll('.input-label')].map((el) => el.textContent?.trim());
 
 afterEach(() => {
   root?.remove();
@@ -64,10 +83,10 @@ describe('simple-cloze author model contract', () => {
 
     expect(updates).toHaveLength(1);
     expect(updates[0].detail).toEqual({
-      update: { ...MODEL, correctAnswer: 'looks' },
+      update: edited({ correctAnswer: 'looks' }),
       reset: false,
     });
-    expect(element.model).toEqual({ ...MODEL, correctAnswer: 'looks' });
+    expect(element.model).toEqual(edited({ correctAnswer: 'looks' }));
   });
 
   it('builds each edit on the previous one', async () => {
@@ -75,14 +94,46 @@ describe('simple-cloze author model contract', () => {
     typeAnswer(element, 'looks');
     typeAnswer(element, 'looked');
 
-    expect(updates.at(-1)?.detail.update).toEqual({ ...MODEL, correctAnswer: 'looked' });
+    expect(updates.at(-1)?.detail.update).toEqual(edited({ correctAnswer: 'looked' }));
   });
 
   it('holds the edited model by the time the player hears the edit', async () => {
     const { element, modelsAtDispatch } = await mount();
     typeAnswer(element, 'looks');
 
-    expect(modelsAtDispatch).toEqual([{ ...MODEL, correctAnswer: 'looks' }]);
+    expect(modelsAtDispatch).toEqual([edited({ correctAnswer: 'looks' })]);
+  });
+
+  it('names its settings and fields after the configuration', async () => {
+    const { element } = await mount({
+      prompt: { label: 'Question' },
+      teacherInstructions: { label: 'Notes for teachers' },
+    });
+
+    expect(switchLabels(element)).toEqual(['Question', 'Notes for teachers']);
+    expect(fieldLabels(element)).toEqual(['Notes for teachers', 'Question']);
+  });
+
+  it('announces a setting turned off and hides its field', async () => {
+    const { element, updates } = await mount();
+    switchFor(element, 'Prompt').click();
+    flushSync();
+
+    expect(updates.at(-1)?.detail.update).toEqual(edited({ promptEnabled: false }));
+    expect(fieldLabels(element)).toEqual(['Teacher Instructions']);
+  });
+
+  it('leaves out settings the configuration does not offer', async () => {
+    const { element } = await mount({ prompt: { settings: false } });
+
+    expect(switchLabels(element)).toEqual(['Teacher Instructions']);
+  });
+
+  it('hides the settings panel when the configuration disables it', async () => {
+    const { element } = await mount({ settingsPanelDisabled: true });
+
+    expect(element.querySelector('aside')).toBeNull();
+    expect(fieldLabels(element)).toEqual(['Teacher Instructions', 'Prompt']);
   });
 
   it('gives each instance its own answer input id', async () => {
