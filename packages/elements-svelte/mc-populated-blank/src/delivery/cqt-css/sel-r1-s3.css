@@ -35,7 +35,6 @@
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal .pie-choice-tile {
   border-radius: 6px;
-  background: #f1f1f1;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank {
@@ -89,6 +88,7 @@
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal:hover .pie-choice-tile {
   background: #e2e2e2;
+  color: #000;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal.is-selected .pie-choice-tile,
@@ -96,6 +96,7 @@
   .pie-choice-horizontal.is-selected:hover
   .pie-choice-tile {
   background: #fcfcd3;
+  color: #000;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal .pie-choice-radio {

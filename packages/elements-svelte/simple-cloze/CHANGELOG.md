@@ -1,5 +1,11 @@
 # @pie-element/simple-cloze
 
+## 0.1.4-next.9
+
+### Patch Changes
+
+- e1b65e6: The authoring view's Correct Answer field styles itself, so it keeps its layout and border in hosts that load no Tailwind or daisyUI.
+
 ## 0.1.4-next.8
 
 ### Patch Changes

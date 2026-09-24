@@ -27,7 +27,6 @@ export const CSS_VAR_SPEC: Record<
     varName: '--mpb-horizontal-choice-radio-top-margin',
     unit: 'rem',
   },
-  narrowHorizontalChoiceMaxWidthPx: { varName: '--mpb-narrow-choice-max-width', unit: 'px' },
   toggleButtonGapRem: { varName: '--mpb-toggle-button-gap', unit: 'rem' },
   listenButtonSizePx: { varName: '--mpb-listen-button-size', unit: 'px' },
   audioBlankTemplateMarginTopRem: { varName: '--mpb-audio-blank-template-margin-top', unit: 'rem' },

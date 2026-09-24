@@ -1,5 +1,18 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.13
+
+### Patch Changes
+
+- 7ed1380: The `narrowHorizontalChoiceMaxWidthPx` layout limit is removed: it has had no effect since the choice tiles moved into their own component.
+- 2a4317f: Hovered, selected and scored choices set their text colour along with their background, and the vic variants' red blank answer carries its white surface, so a CQT variant's fixed colours keep AA contrast under a dark colour scheme.
+
+## 0.3.0-next.12
+
+### Patch Changes
+
+- 80b5869: A text answer in a sel_r1-g_plusggg blank sits on its underline, level with the stem word, as in Learnosity; image answers keep the 156px box.
+
 ## 0.3.0-next.11
 
 ### Patch Changes

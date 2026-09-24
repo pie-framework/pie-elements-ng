@@ -92,14 +92,14 @@ function handleAnswerChange(e: Event) {
         </div>
       {/if}
 
-      <div class="mb-6">
-        <label for={answerInputId} class="block text-sm text-gray-600 mb-2">
+      <div class="answer-container">
+        <label for={answerInputId} class="answer-label">
           Correct Answer
         </label>
         <input
           id={answerInputId}
           type="text"
-          class="input input-bordered w-full"
+          class="answer-input"
           placeholder="Enter the correct answer"
           value={m.correctAnswer || ''}
           oninput={handleAnswerChange}
@@ -133,6 +133,27 @@ function handleAnswerChange(e: Event) {
     transform: scale(0.75) translate(0, -0.75em);
     color: var(--pie-text, rgba(0, 0, 0, 0.6));
     pointer-events: none;
+  }
+
+  .answer-container {
+    margin-bottom: 24px;
+  }
+
+  .answer-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+    color: var(--pie-text, rgba(0, 0, 0, 0.6));
+  }
+
+  .answer-input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 2.5rem;
+    padding: 0 12px;
+    border: 1px solid var(--pie-border-light, #ccc);
+    border-radius: 4px;
+    font: inherit;
   }
 
   :global(.simple-cloze-author .editor-container) {

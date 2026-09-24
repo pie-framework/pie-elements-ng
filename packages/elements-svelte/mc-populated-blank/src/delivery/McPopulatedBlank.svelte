@@ -287,7 +287,7 @@ $effect(() => {
 
 <div
   bind:this={rootEl}
-  class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
+  class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} choice-mode-${choiceMode} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
   style={layout.rootStyle}
   data-mpb-css={VARIANT_CSS_KEY}
@@ -723,14 +723,6 @@ $effect(() => {
       flex-direction: column;
       align-items: flex-start;
       justify-content: flex-start;
-    }
-
-    .layout-audio_blank_only .choice-row-horizontal,
-    .layout-token_sequence .choice-row-horizontal,
-    .layout-stimulus_image_blank .choice-row-horizontal,
-    .layout-inline_sentence.has-inline-audio .choice-row-horizontal {
-      width: min(100%, var(--mpb-narrow-choice-max-width, 230px));
-      align-items: flex-start;
     }
   }
 </style>
