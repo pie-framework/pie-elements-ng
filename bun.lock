@@ -1171,7 +1171,7 @@
     },
     "packages/elements-svelte/mc-populated-blank": {
       "name": "@pie-element/mc-populated-blank",
-      "version": "0.3.0-next.12",
+      "version": "0.3.0-next.13",
       "devDependencies": {
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/translator": "workspace:*",
@@ -1184,7 +1184,7 @@
     },
     "packages/elements-svelte/simple-cloze": {
       "name": "@pie-element/simple-cloze",
-      "version": "0.1.4-next.8",
+      "version": "0.1.4-next.9",
       "devDependencies": {
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
