@@ -1,5 +1,11 @@
 # @pie-element/cli
 
+## 0.1.2-next.2
+
+### Patch Changes
+
+- fbc32d5: Read upstream commits from the repository passed in, even when run from a git hook.
+
 ## 0.1.2-next.1
 
 ### Patch Changes

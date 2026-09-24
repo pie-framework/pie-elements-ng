@@ -1,5 +1,11 @@
 # @pie-element/placement-ordering
 
+## 14.1.2-next.13
+
+### Patch Changes
+
+- Merge pull request #164 from pie-framework/fix/PIE-1066
+
 ## 14.1.2-next.12
 
 ### Patch Changes
