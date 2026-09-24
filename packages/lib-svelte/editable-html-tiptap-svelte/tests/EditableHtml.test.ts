@@ -17,6 +17,7 @@ type Props = {
   markup?: string;
   onChange?: (html: string) => void;
   disabled?: boolean;
+  placeholder?: string;
 };
 
 // A string, not a URL object: happy-dom replaces the global `URL`, which `readFileSync` rejects.
@@ -126,6 +127,22 @@ describe('EditableHtml onChange', () => {
     (target.querySelector('button[title="Done"]') as HTMLButtonElement).click();
 
     expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('EditableHtml placeholder', () => {
+  it('shows the placeholder in an empty editor', () => {
+    const { target } = mountEditor({ markup: '', placeholder: 'Enter your question here...' });
+    const paragraph = target.querySelector('.ProseMirror p') as HTMLElement;
+
+    expect(paragraph.getAttribute('data-placeholder')).toBe('Enter your question here...');
+    expect(paragraph.classList.contains('is-editor-empty')).toBe(true);
+  });
+
+  it('shows no placeholder once there is content', () => {
+    const { target } = mountEditor({ markup: '<p>Hello</p>', placeholder: 'Enter text' });
+
+    expect(target.querySelector('.ProseMirror [data-placeholder]')).toBeNull();
   });
 });
 
