@@ -1,3 +1,4 @@
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import AuthorComponent from './Author.svelte';
 import type { VideoStimulusModel } from '../types.js';
 
@@ -26,23 +27,30 @@ class VideoStimulusAuthorElement extends GeneratedElement {
 
   set onChange(handler: ((model: VideoStimulusModel) => void) | undefined) {
     this.changeHandler = handler;
-    // @ts-expect-error Svelte exposes component props as untyped generated accessors.
-    super.onChange = handler;
   }
 
   get onChange(): ((model: VideoStimulusModel) => void) | undefined {
     return this.changeHandler;
   }
 
+  /**
+   * The component reports each edit here. The host keeps the edited model, renders
+   * from it, and announces it as `model.updated`, which bubbles to the listener an
+   * authoring player registers at its root.
+   */
+  onModelChange = (update: VideoStimulusModel): void => {
+    this.currentModel = update;
+    // @ts-expect-error Svelte's generated HTMLElement subclass has an untyped model accessor.
+    super.model = update;
+    this.changeHandler?.(update);
+    this.dispatchEvent(new ModelUpdatedEvent(update, false));
+  };
+
   connectedCallback(): void {
     super.connectedCallback();
     if (this.currentModel !== undefined) {
       // @ts-expect-error Svelte's generated HTMLElement subclass has an untyped model accessor.
       super.model = this.currentModel;
-    }
-    if (this.changeHandler !== undefined) {
-      // @ts-expect-error Svelte exposes component props as untyped generated accessors.
-      super.onChange = this.changeHandler;
     }
   }
 }

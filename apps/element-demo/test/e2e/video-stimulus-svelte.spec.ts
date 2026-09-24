@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { getSessionState, openDeliverRoute, switchTab } from './test-helpers';
+import { getModelFromSource, getSessionState, openDeliverRoute, switchTab } from './test-helpers';
 
 const ELEMENT = 'video-stimulus';
 const DEMO_ID = 'accessible-lab-safety';
@@ -119,6 +119,37 @@ test.describe('Video Stimulus (Svelte 5)', () => {
     ]) {
       expect(values).toContain(expectedValue);
     }
+  });
+
+  test('reports an authoring edit to the player through model.updated', async ({ page }) => {
+    await switchTab(page, 'author');
+    const label = page.locator('.author-view input[id$="-media-label"]').first();
+    await expect(label).toHaveValue(LABEL);
+    await page.evaluate(() => {
+      const state = window as Window & { __videoStimulusModelUpdates?: string[] };
+      state.__videoStimulusModelUpdates = [];
+      document.addEventListener('model.updated', (event) => {
+        const detail = (event as CustomEvent<{ update?: { media?: { label?: string } } }>).detail;
+        state.__videoStimulusModelUpdates?.push(detail?.update?.media?.label ?? '');
+      });
+    });
+    await label.fill('Heated container handling');
+    await label.press('Tab');
+
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as Window & { __videoStimulusModelUpdates?: string[] })
+              .__videoStimulusModelUpdates ?? []
+        )
+      )
+      .toEqual(['Heated container handling']);
+
+    await switchTab(page, 'source');
+    await expect
+      .poll(async () => (await getModelFromSource(page))?.media?.label)
+      .toBe('Heated container handling');
   });
 
   test('does not create or mutate a leaf session for media and transcript activity', async ({

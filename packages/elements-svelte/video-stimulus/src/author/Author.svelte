@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import type { MediaSource, TextTrackRef, TranscriptRef } from '@pie-element/shared-types';
-import { createEventDispatcher } from 'svelte';
+import { resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import {
   createDefaultModel,
   model as buildViewModel,
@@ -35,10 +35,10 @@ import {
   type AuthorMessageKey,
 } from './i18n.js';
 
-type ModelUpdatedDetail = {
-  update: VideoStimulusModel;
-  reset: false;
-};
+type AuthorHost = HTMLElement & { onModelChange(model: VideoStimulusModel): void };
+
+const isAuthorHost = (node: unknown): boolean =>
+  typeof (node as Partial<AuthorHost> | null)?.onModelChange === 'function';
 
 let {
   model: suppliedModel,
@@ -50,7 +50,6 @@ let {
   locale?: string;
 } = $props();
 
-const dispatch = createEventDispatcher<{ 'model.updated': ModelUpdatedDetail }>();
 const authorPropsId = $props.id();
 const authorInstanceId = `video-stimulus-author-${authorPropsId}`;
 const errorsHeadingId = `${authorInstanceId}-errors-heading`;
@@ -58,6 +57,7 @@ const warningsHeadingId = `${authorInstanceId}-warnings-heading`;
 const previewHeadingId = `${authorInstanceId}-preview-heading`;
 let workingModel = $state<VideoStimulusModel>(createDefaultModel());
 let lastSuppliedModel: VideoStimulusModel | undefined;
+let authorRoot: HTMLDivElement | undefined;
 let errors = $state<VideoStimulusValidationErrors>({});
 let warnings = $state<AccessibilityFinding[]>([]);
 let editorPercent = $state(48);
@@ -129,10 +129,14 @@ function runReview(strict: boolean): void {
   errors = strict ? validate(workingModel) : validateDraft(workingModel);
 }
 
+/** The wrapper owns the model and announces the edit; `onChange` serves a component mounted without one. */
 function emit(nextModel: VideoStimulusModel): void {
   workingModel = nextModel;
-  onChange?.(nextModel);
-  dispatch('model.updated', { update: nextModel, reset: false });
+  const host = resolveDeliveryHost(authorRoot, {
+    hostPredicate: isAuthorHost,
+  }) as AuthorHost | null;
+  if (host) host.onModelChange(nextModel);
+  else onChange?.(nextModel);
   runReview(false);
 }
 
@@ -276,7 +280,7 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
 }
 </script>
 
-<div class="video-stimulus-author" lang={authorLocale}>
+<div class="video-stimulus-author" lang={authorLocale} bind:this={authorRoot}>
   <header class="author-header">
     <div>
       <h1>{t('heading')}</h1>
