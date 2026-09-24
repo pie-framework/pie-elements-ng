@@ -347,6 +347,11 @@ function applySession(nextSession: any) {
   if (nextSession === null || nextSession === undefined) {
     return;
   }
+  // Elements may read the model in their session setter, so the session waits for one.
+  // An IIFE controller arrives with its bundle, after the element is created.
+  if (!lastAppliedModelSignature) {
+    return;
+  }
   const nextSignature = createValueSignature(nextSession ?? {});
   if (nextSignature === lastAppliedSessionSignature) {
     return;
