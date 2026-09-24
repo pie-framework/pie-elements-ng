@@ -40,21 +40,22 @@ src/
     index.ts
   controller/
     index.ts                 # Pure TS controller (no DOM, no Svelte)
-  index.ts                   # ESM root — re-exports all three sub-entries
+  index.ts                   # ESM root — re-exports the delivery default
   index.iife.ts              # IIFE entry — exports delivery component default; NO customElements.define
+  runtime-support.ts         # Runtime support metadata
   types.ts                   # Model, Session, ViewModel — no `any`
 
 package.json                 # "pie": { "controller": "@pie-element/<slug>/controller" }
                              # "exports" map with ./delivery, ./controller, ./controller.js, ./author subpaths
                              # "files" includes controller.js
+                             # "scripts" copied verbatim from venn-classification
 controller.js                # Shim: export * from './dist/controller/index.js'
 docs.contract.json           # PieDocsContract
-vite.config.ts               # ESM delivery build
-vite.config.iife.ts          # IIFE delivery build
-vite.config.controller.ts    # Controller build
-vite.config.author.ts        # Author build
-vitest.config.ts
+svelte.config.js
+tsconfig.json
 ```
+
+The package has no Vite or Vitest config. The build script runs the shared configs in `tools/vite/` (see `docs/PACKAGING_ARCHITECTURE.md`), which discover lanes from the `src/` entries present, and the root `vitest.config.ts` runs the package's tests.
 
 ## Controller Contract
 
