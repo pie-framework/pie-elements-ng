@@ -1,5 +1,13 @@
 # @pie-element/image-cloze-association
 
+## 10.1.2-next.14
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
 ## 10.1.2-next.13
 
 ### Patch Changes

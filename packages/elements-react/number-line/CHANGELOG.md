@@ -1,5 +1,13 @@
 # @pie-element/number-line
 
+## 13.1.2-next.13
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
 ## 13.1.2-next.12
 
 ### Patch Changes

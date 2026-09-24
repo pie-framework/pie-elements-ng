@@ -1,5 +1,13 @@
 # @pie-element/categorize
 
+## 13.2.0-next.14
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
 ## 13.2.0-next.13
 
 ### Patch Changes

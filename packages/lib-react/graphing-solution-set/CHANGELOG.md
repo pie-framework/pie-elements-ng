@@ -1,5 +1,12 @@
 # @pie-lib/graphing-solution-set
 
+## 5.0.0-next.38
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
 ## 5.0.0-next.37
 
 ### Patch Changes

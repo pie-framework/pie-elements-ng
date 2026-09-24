@@ -1,5 +1,13 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.15
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-element/multiple-choice@13.3.5-next.10
+
 ## 14.2.2-next.14
 
 ### Patch Changes

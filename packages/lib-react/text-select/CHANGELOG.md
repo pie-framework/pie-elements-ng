@@ -1,5 +1,12 @@
 # @pie-lib/text-select
 
+## 4.0.0-next.44
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
 ## 4.0.0-next.43
 
 ### Patch Changes

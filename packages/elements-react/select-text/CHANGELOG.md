@@ -1,5 +1,12 @@
 # @pie-element/select-text
 
+## 13.1.2-next.15
+
+### Patch Changes
+
+- @pie-lib/correct-answer-toggle@5.0.0-next.44
+- @pie-lib/text-select@4.0.0-next.44
+
 ## 13.1.2-next.14
 
 ### Patch Changes

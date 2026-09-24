@@ -1,5 +1,13 @@
 # @pie-element/multiple-choice
 
+## 13.3.5-next.10
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-lib/correct-answer-toggle@5.0.0-next.44
+
 ## 13.3.5-next.9
 
 ### Patch Changes

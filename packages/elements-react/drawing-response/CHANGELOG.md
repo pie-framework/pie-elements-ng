@@ -1,5 +1,12 @@
 # @pie-element/drawing-response
 
+## 12.1.2-next.14
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
 ## 12.1.2-next.13
 
 ### Patch Changes

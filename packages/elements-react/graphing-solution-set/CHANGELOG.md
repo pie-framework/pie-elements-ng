@@ -1,5 +1,12 @@
 # @pie-element/graphing-solution-set
 
+## 6.1.2-next.14
+
+### Patch Changes
+
+- @pie-lib/correct-answer-toggle@5.0.0-next.44
+- @pie-lib/graphing-solution-set@5.0.0-next.38
+
 ## 6.1.2-next.13
 
 ### Patch Changes
