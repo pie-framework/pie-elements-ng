@@ -155,6 +155,11 @@ describe('venn-classification author model contract', () => {
         .slice(0, 2)
         .map((el) => el.textContent?.trim())
     ).toEqual(['Teacher Instructions', 'Question']);
+    expect(
+      [...element.querySelectorAll('.editor-column [contenteditable]')]
+        .slice(0, 2)
+        .map((el) => el.getAttribute('aria-label'))
+    ).toEqual(['Teacher Instructions', 'Question']);
   });
 
   it('sets the scoring policy from the settings panel', async () => {

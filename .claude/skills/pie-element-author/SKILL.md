@@ -171,7 +171,7 @@ function emitModelUpdate(patch: Record<string, unknown>) {
 </script>
 ```
 
-Settings come from `configuration`: each entry's `label` names its field and its setting, and `settings: true` offers the setting. Lay the view out with `ConfigLayout` and `SettingsPanel` from `@pie-lib/config-ui-svelte`, hiding the panel when `config.settingsPanelDisabled` is true; `simple-cloze` is the smallest complete example. An author view that cannot edit yet still declares both properties and sets `supports.esm.author: false` in `src/runtime-support.ts`, as `mc-populated-blank` does.
+Settings come from `configuration`: each entry's `label` names its field and its setting, and `settings: true` offers the setting. Lay the view out with `ConfigLayout` and `SettingsPanel` from `@pie-lib/config-ui-svelte`, hiding the panel when `config.settingsPanelDisabled` is true, and pass each rich-text field's label to `EditableHtml` as `ariaLabel`, since its visible label is not tied to the text box. `simple-cloze` is the smallest complete example. An author view that cannot edit yet still declares both properties and sets `supports.esm.author: false` in `src/runtime-support.ts`, as `mc-populated-blank` does.
 
 ## Testing Requirements
 

@@ -66,6 +66,9 @@ const switchFor = (element: HTMLElement, label: string) =>
 const fieldLabels = (element: HTMLElement) =>
   [...element.querySelectorAll('.input-label')].map((el) => el.textContent?.trim());
 
+const editorNames = (element: HTMLElement) =>
+  [...element.querySelectorAll('[contenteditable]')].map((el) => el.getAttribute('aria-label'));
+
 afterEach(() => {
   root?.remove();
   root = null;
@@ -100,6 +103,7 @@ describe('simple-cloze author model contract', () => {
 
     expect(switchLabels(element)).toEqual(['Question', 'Notes for teachers']);
     expect(fieldLabels(element)).toEqual(['Notes for teachers', 'Question']);
+    expect(editorNames(element)).toEqual(['Notes for teachers', 'Question']);
   });
 
   it('announces a setting turned off and hides its field', async () => {

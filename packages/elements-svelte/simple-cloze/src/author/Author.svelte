@@ -75,6 +75,7 @@ function handleAnswerChange(e: Event) {
           <EditableHtml
             markup={m.teacherInstructions || ''}
             onChange={(html) => emitModelUpdate({ teacherInstructions: html })}
+            ariaLabel={config.teacherInstructions?.label}
           />
         </div>
       {/if}
@@ -86,6 +87,7 @@ function handleAnswerChange(e: Event) {
             markup={m.prompt || ''}
             onChange={(html) => emitModelUpdate({ prompt: html })}
             placeholder="Enter your question here..."
+            ariaLabel={config.prompt?.label}
           />
         </div>
       {/if}

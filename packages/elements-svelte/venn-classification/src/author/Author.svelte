@@ -295,6 +295,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
         <EditableHtml
           markup={m.teacherInstructions || ''}
           onChange={(html) => update({ teacherInstructions: html })}
+          ariaLabel={config.teacherInstructions?.label}
         />
       </div>
     {/if}
@@ -306,6 +307,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
           markup={m.prompt || ''}
           onChange={onPromptChange}
           placeholder="Enter a prompt for the Venn classification question..."
+          ariaLabel={config.prompt?.label}
         />
       </div>
     {/if}
