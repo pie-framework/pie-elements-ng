@@ -12,6 +12,7 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
+import type { EditableHtmlProps } from './types.js';
 
 let {
   markup = '',
@@ -19,13 +20,7 @@ let {
   placeholder = 'Enter text here...',
   showToolbar = true,
   disabled = false,
-}: {
-  markup?: string;
-  onChange?: (html: string) => void;
-  placeholder?: string;
-  showToolbar?: boolean;
-  disabled?: boolean;
-} = $props();
+}: EditableHtmlProps = $props();
 
 let editorElement: HTMLElement;
 let editor = $state<Editor | null>(null);
@@ -492,7 +487,6 @@ function handleDoneClick() {
                 <button
                   type="button"
                   class="align-menu-btn"
-                  style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
                   onclick={() => setTextAlign('left')}
                   title="Align Left"
                 >
@@ -501,7 +495,6 @@ function handleDoneClick() {
                 <button
                   type="button"
                   class="align-menu-btn"
-                  style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
                   onclick={() => setTextAlign('center')}
                   title="Align Center"
                 >
@@ -510,7 +503,6 @@ function handleDoneClick() {
                 <button
                   type="button"
                   class="align-menu-btn"
-                  style="border: none; background: none; padding: 2px; color: grey; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
                   onclick={() => setTextAlign('right')}
                   title="Align Right"
                 >
@@ -563,7 +555,6 @@ function handleDoneClick() {
         <button
           type="button"
           class="done-btn"
-          style="border: none; background: none; padding: 2px; color: #00bb00; display: inline-flex; cursor: pointer; align-items: center; justify-content: center;"
           onclick={handleDoneClick}
           title="Done"
         >
