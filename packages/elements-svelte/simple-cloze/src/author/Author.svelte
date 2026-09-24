@@ -21,10 +21,7 @@ import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
 import { createDefaultModel } from '../controller/index';
 import defaults from '../controller/defaults';
 
-let {
-  model = $bindable(),
-  configuration,
-}: { model?: any; configuration?: Record<string, unknown> } = $props();
+let { model, configuration }: { model?: any; configuration?: Record<string, unknown> } = $props();
 
 const answerInputId = `simple-cloze-correct-answer-${Math.random().toString(36).slice(2, 10)}`;
 
@@ -33,14 +30,15 @@ const m = $derived(createDefaultModel(model || undefined));
 const config = $derived(mergeConfiguration(defaults.configuration, configuration));
 
 /**
- * Keeps the edit as the element's model, so the next edit builds on it, and
- * announces it as a bubbling `model.updated` for the player listening at its
- * root. The update spreads the whole model, so fields this form does not edit
- * survive.
+ * Keeps the edit as the element's model, so the next edit builds on it,
+ * assigning it through the host: a remount after a detach starts from the
+ * host's property. Announces it as a bubbling `model.updated` for the player
+ * listening at its root. The update spreads the whole model, so fields this
+ * form does not edit survive.
  */
 function emitModelUpdate(patch: Record<string, unknown>) {
   const nextModel = { ...m, ...patch };
-  model = nextModel;
+  $host<HTMLElement & { model: unknown }>().model = nextModel;
   $host().dispatchEvent(new ModelUpdatedEvent(nextModel));
 }
 

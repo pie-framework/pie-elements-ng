@@ -75,7 +75,8 @@ export function assertAuthorElementProperties(tag: string): void {
 /**
  * Mounts the element under an ancestor, sets `model` and `configuration` as a
  * player does, makes the edit, and throws unless exactly one `model.updated`
- * meets the contract. Returns that event for element-specific assertions.
+ * meets the contract and a readable `model` keeps the edit across a detach and
+ * re-attach. Returns that event for element-specific assertions.
  */
 export async function assertAuthorModelUpdate(
   options: AuthorModelUpdateOptions
@@ -138,10 +139,29 @@ export async function assertAuthorModelUpdate(
         "`detail.update` lacks the model's `id` and `element`, which hosts match it by"
       );
     }
+    if (update && event.detail?.reset === false) {
+      const dropped = Object.keys(model).filter((k) => model[k] !== undefined && !(k in update));
+      if (dropped.length) {
+        problems.push(
+          `\`detail.update\` leaves out ${dropped.map((k) => `\`${k}\``).join(', ')}; it is the whole model`
+        );
+      }
+    }
     if (modelAtDispatch !== undefined && !sameJson(modelAtDispatch, update)) {
       problems.push('`element.model` does not hold the edit when `model.updated` fires');
     }
     fail(tag, problems);
+
+    if (modelAtDispatch !== undefined) {
+      // A host may move the element; the edit has to outlive the remount.
+      element.remove();
+      await settle();
+      root.appendChild(element);
+      await settle();
+      if (!sameJson(element.model, update)) {
+        fail(tag, ['`element.model` loses the edit when the element is detached and re-attached']);
+      }
+    }
 
     return { element, event, cleanup };
   } catch (error) {

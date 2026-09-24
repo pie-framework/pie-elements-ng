@@ -33,10 +33,8 @@ import {
 import type { Region, VennModel, VennTile } from '../types.js';
 import { stripHtml } from '../delivery/tile-accessible-name.js';
 
-let {
-  model = $bindable(),
-  configuration,
-}: { model?: VennModel; configuration?: Record<string, unknown> } = $props();
+let { model, configuration }: { model?: VennModel; configuration?: Record<string, unknown> } =
+  $props();
 
 const config = $derived(mergeConfiguration(defaults.configuration, configuration));
 
@@ -46,12 +44,13 @@ const SCORING_POLICY_CHOICES = [
 ];
 
 /**
- * Keeps the edit as the element's model, so the next edit builds on it, and
- * announces it as a bubbling `model.updated` for the player listening at its
- * root.
+ * Keeps the edit as the element's model, so the next edit builds on it,
+ * assigning it through the host: a remount after a detach starts from the
+ * host's property. Announces it as a bubbling `model.updated` for the player
+ * listening at its root.
  */
 function emit(next: VennModel) {
-  model = next;
+  $host<HTMLElement & { model: unknown }>().model = next;
   $host().dispatchEvent(new ModelUpdatedEvent(next));
 }
 

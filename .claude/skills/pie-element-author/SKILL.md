@@ -148,7 +148,7 @@ import AuthorComponent from './Author.svelte';
 export default (AuthorComponent as any).element;
 ```
 
-`Author.svelte` declares both properties a player sets, fills the model from the controller's defaults and the configuration from `defaults.ts`, and dispatches each edit on `$host()` after keeping it as the element's model:
+`Author.svelte` declares both properties a player sets, fills the model from the controller's defaults and the configuration from `defaults.ts`, and dispatches each edit on `$host()` after assigning it to the host's `model`:
 
 ```svelte
 <svelte:options customElement={{ shadow: 'none', props: { model: { type: 'Object' }, configuration: { type: 'Object' } } }} />
@@ -159,13 +159,14 @@ import { mergeConfiguration } from '@pie-lib/config-ui-svelte';
 import { createDefaultModel } from '../controller/index';
 import defaults from '../controller/defaults';
 
-let { model = $bindable(), configuration } = $props();
+let { model, configuration } = $props();
 const m = $derived(createDefaultModel(model || undefined));
 const config = $derived(mergeConfiguration(defaults.configuration, configuration));
 
 function emitModelUpdate(patch: Record<string, unknown>) {
   const next = { ...m, ...patch };
-  model = next;
+  // Through the host: a remount after a detach starts from the host's property.
+  $host<HTMLElement & { model: unknown }>().model = next;
   $host().dispatchEvent(new ModelUpdatedEvent(next));
 }
 </script>
