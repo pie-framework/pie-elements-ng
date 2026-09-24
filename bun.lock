@@ -1173,6 +1173,7 @@
       "name": "@pie-element/mc-populated-blank",
       "version": "0.3.0-next.9",
       "devDependencies": {
+        "@pie-element/shared-test-utils": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
@@ -1188,6 +1189,7 @@
       "devDependencies": {
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+        "@pie-element/shared-test-utils": "workspace:*",
         "@pie-lib/config-ui-svelte": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
@@ -1207,6 +1209,7 @@
       "devDependencies": {
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+        "@pie-element/shared-test-utils": "workspace:*",
         "@pie-lib/config-ui-svelte": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",

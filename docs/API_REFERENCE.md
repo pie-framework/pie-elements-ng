@@ -204,7 +204,6 @@ interface CommonElementProps {
   {session}
   {env}
   on:session-change={(e) => session = e.detail}
-  on:model-change={(e) => model = e.detail}
 />
 ```
 
@@ -395,24 +394,24 @@ element.addEventListener('session-change', (event) => {
 });
 ```
 
-### model-change
+### model.updated
 
-Fired when model is modified (`configure` mode only).
+Fired by the author element on each edit, as a bubbling `ModelUpdatedEvent` from `@pie-element/shared-configure-events`. [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#authoring-contract) sets out the full contract.
 
 ```typescript
-interface ModelChangeEvent {
-  detail: ElementModel;
+interface ModelUpdatedEvent extends CustomEvent<{ update: ElementModel; reset: boolean }> {
+  update: ElementModel; // the whole model, id and element included
+  reset: boolean; // true replaces the stored model, false merges over it
 }
 ```
 
 **Example:**
 ```javascript
-element.addEventListener('model-change', (event) => {
-  const model = event.detail;
-  console.log('Model updated:', model);
+authorElement.addEventListener('model.updated', (event) => {
+  const { update, reset } = event.detail;
 
   // Auto-save
-  saveModel(model);
+  saveModel(update, { replace: reset });
 });
 ```
 

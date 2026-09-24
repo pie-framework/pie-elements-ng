@@ -4,6 +4,7 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import { flushSync } from 'svelte';
+import { assertAuthorElementProperties } from '@pie-element/shared-test-utils';
 import McPopulatedBlankAuthor from '../src/author/index.js';
 
 const TAG = 'mc-populated-blank-config--version-0-0-0-author-element-test';
@@ -33,12 +34,7 @@ describe('mc-populated-blank author element', () => {
     expect(element.querySelector('[role="status"]')?.textContent).toContain('placeholder');
   });
 
-  it('takes configuration as an element property, as players set it', () => {
-    const accessor = Object.getOwnPropertyDescriptor(
-      customElements.get(TAG)?.prototype ?? {},
-      'configuration'
-    );
-
-    expect(typeof accessor?.set).toBe('function');
+  it('declares the properties a player sets', () => {
+    expect(() => assertAuthorElementProperties(TAG)).not.toThrow();
   });
 });

@@ -59,7 +59,25 @@ Players set data via properties, not attributes:
 - `element.session = session`
 - `element.env = env`
 
-Elements emit session changes as DOM events with the replacement session in `event.detail`. Authoring views may emit model changes with the replacement model in `event.detail`.
+Elements emit session changes as DOM events with the replacement session in `event.detail`. Author elements emit model changes as the Authoring Contract below sets out.
+
+### Authoring Contract
+
+A player registers an element's author view under `<tag>-config` and sets two properties on it, `model` and then `configuration`. The element declares both; an undeclared property lands on the instance, where the element never reads it.
+
+Each edit dispatches one `ModelUpdatedEvent` from `@pie-element/shared-configure-events`, on the author element itself:
+
+- `update` is the whole model, `id` and `element` included. The item player matches the stored model by `id` and drops an update without one; legacy `pie-author` matches by `id` and `element`.
+- `reset: false` merges `update` over the stored model and `reset: true` replaces it, so an edit that removes a top-level field sends `reset: true`.
+- The event bubbles. The item player listens on its root in the capture phase, legacy `pie-author` on its host in the bubble phase.
+- It is a `ModelUpdatedEvent` instance: `pie-author` reads `event.update` and `event.reset`, the item player `event.detail`, which carries the same two values.
+- Where the element exposes `model` for reading, it holds the edit before the event fires; `@pie-element/element-player` reads it in its handler.
+
+`configuration` is the host's customization of the authoring view, merged over the element's defaults. Its entries follow `@pie-lib/config-ui`: an entry's `label` names its field in the design view and its setting in the settings panel, `settings: true` offers that setting, and `settingsPanelDisabled: true` hides the panel. Svelte author elements build the panel from `@pie-lib/config-ui-svelte`.
+
+Layout, styling and the settings an element defines are the element's choice.
+
+`@pie-element/shared-test-utils` checks the property and event rules with `assertAuthorElementProperties(tag)` and `assertAuthorModelUpdate({ tag, model, configuration, edit })`. Each Svelte author element's tests run them.
 
 ## NPM Packaging Contract
 

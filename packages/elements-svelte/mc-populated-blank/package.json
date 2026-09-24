@@ -78,6 +78,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "devDependencies": {
+    "@pie-element/shared-test-utils": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*",
     "@pie-lib/translator": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",

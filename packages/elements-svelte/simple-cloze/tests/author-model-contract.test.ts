@@ -1,11 +1,11 @@
 /**
- * The authoring contract between this element and a player. An authoring
- * player listens for `model.updated` at its root, so each edit must bubble out
- * of the element as that event, carrying the whole model: the fields the form
- * does not edit, `id` and the player's versioned `element` included.
+ * This element's side of the authoring contract. `assertAuthorModelUpdate`
+ * checks what every author element owes a host; the rest covers what this
+ * element's edits and configuration produce.
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import { flushSync } from 'svelte';
+import { assertAuthorModelUpdate } from '@pie-element/shared-test-utils';
 import SimpleClozeAuthor from '../src/author/index.js';
 import defaults from '../src/controller/defaults.js';
 
@@ -27,27 +27,22 @@ const edited = (patch: Record<string, unknown>) => ({ ...defaults.model, ...MODE
 
 let root: HTMLElement | null = null;
 
+async function settle() {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  flushSync();
+}
+
 async function mount(configuration?: Record<string, unknown>) {
   root = document.createElement('div');
   document.body.appendChild(root);
   const updates: CustomEvent[] = [];
-  const modelsAtDispatch: unknown[] = [];
   const element = document.createElement(TAG) as any;
-  // Capture phase on an ancestor, as an authoring player registers it.
-  root.addEventListener(
-    'model.updated',
-    (e) => {
-      updates.push(e as CustomEvent);
-      modelsAtDispatch.push(element.model);
-    },
-    true
-  );
+  root.addEventListener('model.updated', (e) => updates.push(e as CustomEvent), true);
   root.appendChild(element);
   element.model = { ...MODEL };
   if (configuration) element.configuration = configuration;
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  flushSync();
-  return { element, updates, modelsAtDispatch };
+  await settle();
+  return { element, updates };
 }
 
 function typeAnswer(element: HTMLElement, value: string) {
@@ -77,16 +72,16 @@ afterEach(() => {
 });
 
 describe('simple-cloze author model contract', () => {
-  it('announces an edit at the player root with the whole model', async () => {
-    const { element, updates } = await mount();
-    typeAnswer(element, 'looks');
-
-    expect(updates).toHaveLength(1);
-    expect(updates[0].detail).toEqual({
-      update: edited({ correctAnswer: 'looks' }),
-      reset: false,
+  it('meets the authoring contract, announcing the whole model', async () => {
+    const { event, cleanup } = await assertAuthorModelUpdate({
+      tag: TAG,
+      model: MODEL,
+      settle,
+      edit: (element) => typeAnswer(element, 'looks'),
     });
-    expect(element.model).toEqual(edited({ correctAnswer: 'looks' }));
+
+    expect(event.detail).toEqual({ update: edited({ correctAnswer: 'looks' }), reset: false });
+    cleanup();
   });
 
   it('builds each edit on the previous one', async () => {
@@ -95,13 +90,6 @@ describe('simple-cloze author model contract', () => {
     typeAnswer(element, 'looked');
 
     expect(updates.at(-1)?.detail.update).toEqual(edited({ correctAnswer: 'looked' }));
-  });
-
-  it('holds the edited model by the time the player hears the edit', async () => {
-    const { element, modelsAtDispatch } = await mount();
-    typeAnswer(element, 'looks');
-
-    expect(modelsAtDispatch).toEqual([edited({ correctAnswer: 'looks' })]);
   });
 
   it('names its settings and fields after the configuration', async () => {

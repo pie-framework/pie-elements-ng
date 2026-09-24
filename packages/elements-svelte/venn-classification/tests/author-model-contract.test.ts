@@ -1,11 +1,11 @@
 /**
- * The authoring contract between this element and a player. An authoring
- * player listens for `model.updated` at its root, so each edit must bubble out
- * of the element as that event, carrying the whole model: fields the form does
- * not edit, `id` and the player's versioned `element` included.
+ * This element's side of the authoring contract. `assertAuthorModelUpdate`
+ * checks what every author element owes a host; the rest covers what this
+ * element's edits and configuration produce.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
+import { assertAuthorModelUpdate } from '@pie-element/shared-test-utils';
 import VennClassificationAuthor from '../src/author/index.js';
 import defaults from '../src/controller/defaults.js';
 
@@ -34,6 +34,11 @@ const MODEL = {
 
 let root: HTMLElement | null = null;
 
+async function settle() {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  flushSync();
+}
+
 async function mount(
   model: Record<string, unknown> = MODEL,
   configuration?: Record<string, unknown>
@@ -41,23 +46,13 @@ async function mount(
   root = document.createElement('div');
   document.body.appendChild(root);
   const updates: CustomEvent[] = [];
-  const modelsAtDispatch: unknown[] = [];
   const element = document.createElement(TAG) as any;
-  // Capture phase on an ancestor, as an authoring player registers it.
-  root.addEventListener(
-    'model.updated',
-    (e) => {
-      updates.push(e as CustomEvent);
-      modelsAtDispatch.push(element.model);
-    },
-    true
-  );
+  root.addEventListener('model.updated', (e) => updates.push(e as CustomEvent), true);
   root.appendChild(element);
   element.model = structuredClone(model);
   if (configuration) element.configuration = configuration;
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  flushSync();
-  return { element, updates, modelsAtDispatch };
+  await settle();
+  return { element, updates };
 }
 
 function tileInputs(element: HTMLElement, row: number) {
@@ -81,19 +76,18 @@ afterEach(() => {
 });
 
 describe('venn-classification author model contract', () => {
-  it('announces an edit at the player root with the whole model', async () => {
-    const { element, updates } = await mount();
-    type(tileInputs(element, 1)[1], 'Wolf');
-
-    expect(updates).toHaveLength(1);
-    const update = updates[0].detail.update;
-    expect(update.tiles[1]).toEqual({ id: 't2', label: 'Wolf', correctRegion: [0] });
-    expect(update).toMatchObject({
-      id: '7',
-      element: 'venn-classification--version-0-0-0',
-      rubricNotes: 'Kept',
+  it('meets the authoring contract, announcing the whole model', async () => {
+    const { event, cleanup } = await assertAuthorModelUpdate({
+      tag: TAG,
+      model: MODEL,
+      settle,
+      edit: (element) => type(tileInputs(element, 1)[1], 'Wolf'),
     });
-    expect(element.model).toEqual(update);
+    const update = event.detail.update as any;
+
+    expect(update.tiles[1]).toEqual({ id: 't2', label: 'Wolf', correctRegion: [0] });
+    expect(update.rubricNotes).toBe('Kept');
+    cleanup();
   });
 
   it('adds no id or element the item did not have', async () => {
@@ -128,13 +122,6 @@ describe('venn-classification author model contract', () => {
     );
 
     expect(regions).toEqual(['Both', 'Mammals only']);
-  });
-
-  it('holds the edited model by the time the player hears the edit', async () => {
-    const { element, updates, modelsAtDispatch } = await mount();
-    type(tileInputs(element, 0)[1], 'Orca');
-
-    expect(modelsAtDispatch).toEqual([updates[0].detail.update]);
   });
 
   it('builds each edit on the previous one', async () => {
