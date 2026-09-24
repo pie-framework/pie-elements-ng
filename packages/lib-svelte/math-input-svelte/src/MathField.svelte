@@ -1,12 +1,11 @@
 <script lang="ts">
-export let latex = '';
-export let disabled = false;
-export let onChange: ((value: string) => void) | undefined;
+import type { MathFieldProps } from './types.js';
 
-const handleInput = (event: Event) => {
-  const value = (event.currentTarget as HTMLInputElement).value;
-  onChange?.(value);
-};
+let { latex = '', disabled = false, onChange = () => {} }: MathFieldProps = $props();
+
+function handleInput(event: Event) {
+  onChange((event.currentTarget as HTMLInputElement).value);
+}
 </script>
 
-<input type="text" value={latex} on:input={handleInput} {disabled} />
+<input type="text" value={latex} oninput={handleInput} {disabled} />

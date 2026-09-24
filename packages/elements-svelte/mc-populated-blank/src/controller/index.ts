@@ -1,3 +1,4 @@
+import authorDefaults from '../author/defaults';
 import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults';
 import type {
   McpbChoice,
@@ -30,12 +31,9 @@ export const getCorrectness = (question: McpbQuestion, session: McpbSession): Mc
   return 'incorrect';
 };
 
-export const getPartialScore = (_question: McpbQuestion, session: McpbSession) => {
-  if (!session || isEmptyObject(session) || !session.choiceId) {
-    return 0;
-  }
-  return 1;
-};
+/** One blank, one key: an answered session scores 1 only when it picked the key. */
+export const getPartialScore = (question: McpbQuestion, session: McpbSession) =>
+  getCorrectness(question, session) === 'correct' ? 1 : 0;
 
 export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbEnv) =>
   new Promise((resolve) => {
@@ -49,7 +47,8 @@ export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbE
     }
 
     session = normalizeSession(session);
-    const correctness = getCorrectness(question, session);
+    const normalizedQuestion = normalize(question);
+    const correctness = getCorrectness(normalizedQuestion, session);
 
     if (correctness === 'unanswered') {
       resolve({
@@ -60,18 +59,18 @@ export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbE
       return;
     }
 
-    const score = correctness === 'correct' ? 1 : 0;
+    const score = getPartialScore(normalizedQuestion, session);
     const traceLog = [
       `Mode: ${env?.mode || 'unknown'}.`,
       `Student selected choice: ${session.choiceId}.`,
-      `Correct choice: ${question?.correctChoiceId || 'none'}.`,
+      `Correct choice: ${normalizedQuestion.correctChoiceId || 'none'}.`,
       `Final score: ${score}.`,
     ];
     resolve({ score, empty: false, traceLog });
   });
 
-export const createDefaultModel = (model: McpbQuestion = {}) => ({
-  ...defaults.model,
+const withDefaults = (base: McpbQuestion, model: McpbQuestion = {}) => ({
+  ...base,
   ...model,
   layoutLimits: {
     ...DEFAULT_LAYOUT_LIMITS,
@@ -79,11 +78,27 @@ export const createDefaultModel = (model: McpbQuestion = {}) => ({
   },
 });
 
-export const normalize = (question: McpbQuestion = {}) => createDefaultModel(question);
+/** The authoring starting point: a question that passes `validate()` as it stands. */
+export const createDefaultModel = (model: McpbQuestion = {}) =>
+  withDefaults(authorDefaults.model, model);
+
+/**
+ * What `model()` and `outcome()` read: the item's own fields, with neutral
+ * values for the rest. Starter content here would reach a learner as the
+ * item's prompt or choices.
+ */
+export const normalize = (question: McpbQuestion = {}) => {
+  const { shuffle, ...rest } = question || {};
+  return {
+    ...withDefaults(defaults.model, rest),
+    // `lockChoiceOrder` alone decides the order, as in multiple-choice. Older items
+    // spell an unlocked order `shuffle: true`, which counts only when it is unset.
+    lockChoiceOrder:
+      typeof rest.lockChoiceOrder === 'boolean' ? rest.lockChoiceOrder : shuffle !== true,
+  };
+};
 
 export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
-
-const shouldShuffleChoices = (question: McpbQuestion) => !!question?.shuffle;
 
 const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) => {
   if (question?.lockChoiceOrder) return true;
@@ -99,6 +114,17 @@ function shuffleArray<T>(items: T[]): T[] {
   }
   return out;
 }
+
+/**
+ * The fields delivery renders. An imported choice can carry more, such as a
+ * correctness flag or feedback, which must not reach a learner's browser.
+ */
+const toDeliveryChoice = ({ id, labelHtml, imageUrl, imageAlt }: McpbChoice): McpbChoice => ({
+  id,
+  ...(labelHtml !== undefined ? { labelHtml } : {}),
+  ...(imageUrl !== undefined ? { imageUrl } : {}),
+  ...(imageAlt !== undefined ? { imageAlt } : {}),
+});
 
 const getStoredShuffle = (session: McpbSession): string[] =>
   Array.isArray(session?.data?.shuffledValues)
@@ -138,11 +164,7 @@ const getOrderedChoices = async (
   updateSession?: UpdateSessionFn
 ) => {
   const choices = Array.isArray(question?.choices) ? [...question.choices] : [];
-  if (!choices.length || !shouldShuffleChoices(question)) {
-    return choices;
-  }
-
-  if (shouldLockChoices(question, env || {})) {
+  if (!choices.length || shouldLockChoices(question, env || {})) {
     return choices;
   }
 
@@ -172,7 +194,9 @@ export const model = async (
   const safeSession: McpbSession = session || {};
   const safeEnv: McpbEnv = env || {};
   const normalizedQuestion = normalize(question);
-  const choices = await getOrderedChoices(normalizedQuestion, safeSession, safeEnv, updateSession);
+  const choices = (await getOrderedChoices(normalizedQuestion, safeSession, safeEnv, updateSession))
+    .filter((c): c is McpbChoice => !!c && typeof c === 'object')
+    .map(toDeliveryChoice);
 
   const out: Record<string, unknown> = {
     prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
@@ -194,14 +218,11 @@ export const model = async (
       typeof normalizedQuestion.audioButtonSkinsByLocale === 'object'
         ? normalizedQuestion.audioButtonSkinsByLocale
         : {},
-    uiText:
-      normalizedQuestion.uiText && typeof normalizedQuestion.uiText === 'object'
-        ? normalizedQuestion.uiText
-        : {},
     sentenceHtml: normalizedQuestion.sentenceHtml || null,
     template: normalizedQuestion.template,
     choiceMode: normalizedQuestion.choiceMode,
     choices,
+    choiceGroupLabel: normalizedQuestion.choiceGroupLabel || '',
     hasAudio: normalizedQuestion.hasAudio,
     autoplayAudioEnabled: !!normalizedQuestion.autoplayAudioEnabled,
     completeAudioEnabled: !!normalizedQuestion.completeAudioEnabled,
@@ -213,6 +234,7 @@ export const model = async (
         ? normalizedQuestion.useFeatureButtonAudio
         : undefined,
     locale: normalizedQuestion.locale || '',
+    language: normalizedQuestion.language || normalizedQuestion.locale || undefined,
     disabled: safeEnv.mode !== 'gather',
     mode: safeEnv.mode,
   };
@@ -238,9 +260,9 @@ export const model = async (
 export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEnv) => {
   return new Promise((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
+      // The player sets `id` and `element` on the entry from the item config.
       resolve({
         id: '1',
-        element: 'mc-populated-blank',
         choiceId: question?.correctChoiceId || '',
       });
     } else {
@@ -249,14 +271,31 @@ export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEn
   });
 };
 
-export const validate = (question: McpbQuestion = {}, _config: Record<string, unknown> = {}) => {
-  const errors: Record<string, string> = {};
+/** Markup with its tags removed, keeping media an author can answer from. */
+const getContent = (html?: string) =>
+  (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '').trim();
 
-  if (question.promptEnabled) {
-    const p = question.prompt?.trim() || '';
-    if (!p || p === '<p></p>') {
-      errors.prompt = 'Prompt is required when prompt is enabled';
-    }
+type ValidateConfig = {
+  minAnswerChoices?: number;
+  maxAnswerChoices?: number;
+  prompt?: { required?: boolean };
+  teacherInstructions?: { required?: boolean };
+};
+
+/**
+ * Authoring errors in multiple-choice's shape: a message per field, and under
+ * `choices` a message per choice keyed by its id.
+ */
+export const validate = (question: McpbQuestion = {}, config: ValidateConfig = {}) => {
+  const errors: Record<string, string | Record<string, string>> = {};
+  const { minAnswerChoices = 2, maxAnswerChoices } = config;
+
+  if ((question.promptEnabled || config.prompt?.required) && !getContent(question.prompt)) {
+    errors.prompt = 'This field is required.';
+  }
+
+  if (config.teacherInstructions?.required && !getContent(question.teacherInstructions)) {
+    errors.teacherInstructions = 'This field is required.';
   }
 
   const interactionMode = question.interactionMode || 'populate_blank';
@@ -277,38 +316,51 @@ export const validate = (question: McpbQuestion = {}, _config: Record<string, un
   }
 
   const choices = Array.isArray(question.choices) ? question.choices : [];
-  if (choices.length < 2) {
-    errors.choices = 'At least two choices are required';
+  if (choices.length < minAnswerChoices) {
+    errors.answerChoices = `There should be at least ${minAnswerChoices} choices defined.`;
+  } else if (maxAnswerChoices != null && choices.length > maxAnswerChoices) {
+    errors.answerChoices = `No more than ${maxAnswerChoices} choices should be defined.`;
   }
 
   const mode = question.choiceMode || 'text';
-  for (let i = 0; i < choices.length; i++) {
-    const c = choices[i];
+  const choicesErrors: Record<string, string> = {};
+  const seenIds = new Set<string>();
+  const seenLabels = new Set<string>();
+  choices.forEach((c, i) => {
+    const key = c?.id || String(i);
     if (!c?.id) {
-      errors.choices = `Choice ${i + 1} is missing an id`;
-      break;
+      choicesErrors[key] = 'Choice needs an id.';
+      return;
     }
+    // The session stores the picked id, so two choices sharing one cannot be told apart.
+    if (seenIds.has(c.id)) {
+      choicesErrors[key] = 'Choice id should be unique.';
+      return;
+    }
+    seenIds.add(c.id);
     if (mode === 'text') {
-      const lbl = (c.labelHtml || '').trim();
-      if (!lbl || lbl === '<p></p>') {
-        errors.choices = `Choice ${i + 1} needs label text`;
-        break;
+      const label = getContent(c.labelHtml);
+      if (!label) {
+        choicesErrors[key] = 'Content should not be empty.';
+      } else if (seenLabels.has(label)) {
+        choicesErrors[key] = 'Content should be unique.';
       }
-    } else {
-      if (!c.imageUrl?.trim()) {
-        errors.choices = `Choice ${i + 1} needs an image URL`;
-        break;
-      }
-      if (!c.imageAlt?.trim()) {
-        errors.choices = `Choice ${i + 1} needs image alt text`;
-        break;
-      }
+      seenLabels.add(label);
+    } else if (!c.imageUrl?.trim()) {
+      choicesErrors[key] = 'An image is required.';
+    } else if (!c.imageAlt?.trim()) {
+      choicesErrors[key] = 'Image alt text is required.';
     }
+  });
+  if (Object.keys(choicesErrors).length) {
+    errors.choices = choicesErrors;
   }
 
   const correct = question.correctChoiceId;
-  if (!correct || !choices.some((c) => c.id === correct)) {
-    errors.correctChoiceId = 'Correct choice must match one of the choice ids';
+  if (!correct) {
+    errors.correctResponse = 'No correct response defined.';
+  } else if (!choices.some((c) => c?.id === correct)) {
+    errors.correctResponse = 'The correct response must be one of the choices.';
   }
 
   if (question.hasAudio) {

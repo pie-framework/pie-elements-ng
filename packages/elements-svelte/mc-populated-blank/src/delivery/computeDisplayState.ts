@@ -46,38 +46,36 @@ export function computeFeatureAudioSkin(params: {
 
 /**
  * Returns the choice id that the ClozeMarker and selected-state highlight should display.
- * When the correct answer is revealed (alwaysShowCorrect or evaluate+showCorrectAnswer),
- * it shows the correct choice rather than the student's selection.
+ * While the correct answer is revealed in evaluate mode it is the correct choice.
+ * A player that shows the key outside evaluate hands over the correct-response
+ * session from `createCorrectResponseSession`, which is displayed as the selection.
  */
 export function computeDisplayChoiceId(params: {
   selectedId: string;
   isEvaluateMode: boolean;
   showCorrectAnswer: boolean;
-  alwaysShowCorrect: boolean;
   correctChoiceId: string;
 }): string {
-  const { selectedId, isEvaluateMode, showCorrectAnswer, alwaysShowCorrect, correctChoiceId } =
-    params;
-  if (alwaysShowCorrect && correctChoiceId) return correctChoiceId;
+  const { selectedId, isEvaluateMode, showCorrectAnswer, correctChoiceId } = params;
   if (isEvaluateMode && showCorrectAnswer && correctChoiceId) return correctChoiceId;
   return selectedId;
 }
 
 /**
- * Returns the screen-reader-only result announcement text shown after evaluate mode scoring.
- * Empty string means nothing is announced.
+ * Returns the result the screen-reader-only announcement reports after evaluate
+ * mode scoring. Empty string means nothing is announced.
  */
-export function computeResultText(params: {
+export function computeResultStatus(params: {
   isEvaluateMode: boolean;
   showCorrectAnswer: boolean;
   isCorrect: boolean;
   isIncorrect: boolean;
   selectedId: string;
-}): string {
+}): 'correct' | 'incorrect' | '' {
   const { isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId } = params;
   if (!isEvaluateMode || showCorrectAnswer) return '';
-  if (isCorrect) return 'Correct answer selected';
-  if (isIncorrect && selectedId) return 'Incorrect answer selected';
+  if (isCorrect) return 'correct';
+  if (isIncorrect && selectedId) return 'incorrect';
   return '';
 }
 

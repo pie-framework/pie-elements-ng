@@ -3,6 +3,7 @@ export default {
     prompt: '<p>Enter your answer:</p>',
     promptEnabled: true,
     correctAnswer: '',
+    teacherInstructionsEnabled: true,
   },
   configuration: {
     prompt: {

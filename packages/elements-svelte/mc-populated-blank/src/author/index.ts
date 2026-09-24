@@ -17,7 +17,6 @@ class McPopulatedBlankAuthor extends SvelteElementClass {
 
   set onChange(fn: (model: any) => void) {
     this._onChange = fn;
-    (this as any).onChange = fn;
   }
 
   get onChange() {

@@ -101,28 +101,28 @@ Use Svelte 5 runes throughout. Key rules:
 
 ## `session-changed` Event Dispatch
 
-Every session mutation must dispatch a `session-changed` event so the player and host can react. Use the shared helper from `@pie-lib/delivery-events-svelte` (or the equivalent in `packages/lib-svelte/`):
+Every session mutation must reach the player: the response written into the session object the player handed the element, then a `session-changed` dispatched from the host. The element wrapper (`src/delivery/index.ts`) owns both; the component reports the update through `forwardSessionChange` from `@pie-lib/delivery-events-svelte`, which walks up to the wrapper:
 
 ```typescript
-import { dispatchSessionChanged } from '@pie-lib/delivery-events-svelte';
+// Component
+import { forwardSessionChange } from '@pie-lib/delivery-events-svelte';
 
 function handleInteraction(update) {
-  session = { ...session, ...update, completed: isComplete(...) };
-  dispatchSessionChanged(hostElement, session);
+  forwardSessionChange({ sourceEl: rootEl, session: { ...session, ...update }, complete: isComplete(...) });
 }
+
+// Wrapper
+import { SessionChangedEvent, writeSessionInPlace } from '@pie-lib/delivery-events-svelte';
+
+onSessionChange = (updatedSession) => {
+  writeSessionInPlace(this._playerSession, updatedSession);
+  this._internalSession = updatedSession;
+  super.session = updatedSession;
+  this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this._isComplete()));
+};
 ```
 
-If the lib helper is not available, dispatch manually:
-
-```typescript
-hostElement.dispatchEvent(
-  new CustomEvent('session-changed', {
-    detail: { session },
-    bubbles: true,
-    composed: true,
-  })
-);
-```
+`simple-cloze` is the smallest complete example. The session's `id` and `element` are the player's: it registers the element under a versioned tag and stamps that tag on the entry, so the element never writes either, and names its events after `this.tagName`. Dispatch synchronously; an element that defers the dispatch uses `createSessionNotifier` from `@pie-element/shared-player-events`.
 
 Never skip dispatching — the player will not know the session changed.
 

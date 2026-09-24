@@ -5,7 +5,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "esm/**", "build/**"],
+      "outputs": ["dist/**", "esm/**", "build/**", "module/**"],
       "env": ["NODE_ENV"]
     },
     "@pie-element/element-demo#build": {

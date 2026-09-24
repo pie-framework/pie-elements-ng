@@ -22,10 +22,17 @@ class VennClassificationElement extends SvelteElementClass {
     return isControllerComplete(this._model, this._internalSession);
   };
 
+  /**
+   * Dispatched a microtask later: on load a player sets the model and then the
+   * session in the same task (`element.model = …; element.session = …`), and
+   * `complete` can only report a restored placement once the session is here.
+   */
   _dispatchModelSet = () => {
-    this.dispatchEvent(
-      new ModelSetEvent(this.tagName.toLowerCase(), this._isComplete(), this._model !== undefined)
-    );
+    queueMicrotask(() => {
+      this.dispatchEvent(
+        new ModelSetEvent(this.tagName.toLowerCase(), this._isComplete(), this._model !== undefined)
+      );
+    });
   };
 
   _dispatchSessionChanged = () => {
@@ -42,10 +49,14 @@ class VennClassificationElement extends SvelteElementClass {
     return this._model;
   }
 
+  /**
+   * A re-set of the same object is an update, not a no-op: a player sets the
+   * session before the model on load and again after it (`element.model = …;
+   * element.session = sameObject`), and only that second event can report a
+   * restored session as complete. A player that clears the response in place
+   * re-sets its object the same way, and the component must re-render it.
+   */
   set session(s: any) {
-    // Avoid redundant reactive loops: if the incoming session is structurally
-    // identical to the last one we saw, skip the update.
-    if (s === this._internalSession) return;
     this._playerSession = s;
     this._internalSession = s;
     super.session = s;
