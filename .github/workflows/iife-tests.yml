@@ -22,6 +22,8 @@ jobs:
         with:
           bun-version: 1.3.13
       - run: bun install --frozen-lockfile
+      # The contract script imports the bundler's dist and bundles every React element.
+      - run: bunx turbo run build --filter=@pie-element/element-bundler... --filter='{./packages/elements-react/*}...'
       - run: bun run test:iife:bundle
 
   iife-usefulness-e2e:
