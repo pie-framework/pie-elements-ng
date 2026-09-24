@@ -1904,6 +1904,9 @@
     "packages/lib-svelte/math-input-svelte": {
       "name": "@pie-lib/math-input-svelte",
       "version": "0.1.0",
+      "dependencies": {
+        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+      },
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "svelte": "^5.57.0",
