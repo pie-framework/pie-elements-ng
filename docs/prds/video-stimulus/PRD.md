@@ -75,6 +75,7 @@ WCAG 2.2 AA is the baseline; element-specific details are in the facet files.
 - Meaningful synchronized audio requires captions; subtitles do not automatically count.
 - Important visual information must be described in main/integrated audio in v1. A native `descriptions` text track is rendered but does not count as verified spoken audio description without browser/AT evidence.
 - Transcript is strongly recommended and remains available on playback failure, but does not universally replace captions or audio description.
+- The element renders `media.transcript` itself through `@pie-lib/media-svelte` because the transcript is part of the stimulus asset; PIE-855 (e00e141a) moved transcripts attached to an element's audio into the toolkit as an accessibility-catalog alternate, and a catalog transcript for this element would be rendered by the toolkit the same way.
 - Transcript content is normal navigable content, never a long `aria-describedby` value or live region.
 - No autoplay, focus stealing, global character shortcuts, orientation lock, or element-owned motion.
 
@@ -93,4 +94,4 @@ The integration uses an extracted `npm pack` artifact routed through the existin
 
 ## Status log
 
-- Accepted for implementation after review of the Svelte package, accessibility profile, native timed-media seam, author/delivery mockups, and linked-question architecture proof.
+- Proposal → Accepted on sign-off by Eelco Hillenius.
