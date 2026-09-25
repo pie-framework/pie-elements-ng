@@ -71,6 +71,8 @@ describe('vendored lodash helpers', () => {
     expect(tail(values)).toEqual([2, 3, 4]);
     expect(takeRight(values, 2)).toEqual([3, 4]);
     expect(uniq([1, 1, 2, 2])).toEqual([1, 2]);
+    expect(uniq({ foo: true } as unknown as number[])).toEqual([]);
+    expect(uniq('aab')).toEqual(['a', 'b']);
     expect(uniqWith([{ id: 1 }, { id: 1 }], (a, b) => a.id === b.id)).toEqual([{ id: 1 }]);
 
     const mutable = [1, 2, 3, 4];
