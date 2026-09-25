@@ -1,5 +1,11 @@
 # @pie-element/graphing-solution-set
 
+## 6.1.2-next.15
+
+### Patch Changes
+
+- @pie-lib/graphing-solution-set@5.0.0-next.39
+
 ## 6.1.2-next.14
 
 ### Patch Changes

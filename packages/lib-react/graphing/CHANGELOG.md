@@ -1,5 +1,12 @@
 # @pie-lib/graphing
 
+## 5.0.0-next.40
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/plot@5.0.0-next.37
+
 ## 5.0.0-next.39
 
 ### Patch Changes

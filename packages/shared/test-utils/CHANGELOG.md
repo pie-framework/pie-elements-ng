@@ -1,5 +1,11 @@
 # @pie-element/shared-test-utils
 
+## 0.1.1-next.2
+
+### Patch Changes
+
+- 335a8a2: Add `assertAuthorElementProperties` and `assertAuthorModelUpdate`, which check an author element against the Authoring Contract in `docs/PIE_ELEMENT_CONTRACT.md`.
+
 ## 0.1.1-next.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.15
+
+### Patch Changes
+
+- 76a901f: Author elements dispatch each edit as a bubbling `model.updated` from the element itself and keep the edit as the element's `model` across a detach and re-attach. venn-classification fills missing fields from its controller defaults, and mc-populated-blank's placeholder author view declares `model` and `configuration` and reports browser-ESM authoring unsupported.
+
 ## 0.3.0-next.14
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pie-lib/plot
 
+## 5.0.0-next.37
+
+### Patch Changes
+
+- Merge pull request #186 from pie-framework/fix/PIE-1074
+
 ## 5.0.0-next.36
 
 ### Patch Changes

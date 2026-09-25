@@ -1,5 +1,11 @@
 # @pie-element/charting
 
+## 12.1.2-next.15
+
+### Patch Changes
+
+- @pie-lib/charting@8.0.0-next.39
+
 ## 12.1.2-next.14
 
 ### Patch Changes

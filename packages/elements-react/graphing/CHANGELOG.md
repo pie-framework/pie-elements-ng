@@ -1,5 +1,11 @@
 # @pie-element/graphing
 
+## 10.1.2-next.15
+
+### Patch Changes
+
+- @pie-lib/graphing@5.0.0-next.40
+
 ## 10.1.2-next.14
 
 ### Patch Changes
