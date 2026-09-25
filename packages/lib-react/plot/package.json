@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/plot",
-  "version": "5.0.0-next.37",
+  "version": "5.0.0-next.38",
   "description": "Some underlying components for building charts/graphs",
   "repository": {
     "type": "git",

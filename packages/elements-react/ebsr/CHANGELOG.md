@@ -1,5 +1,14 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.16
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-element/multiple-choice@13.3.5-next.11
+  - @pie-lib/config-ui@14.0.0-next.37
+
 ## 14.2.2-next.15
 
 ### Patch Changes
