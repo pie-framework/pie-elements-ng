@@ -4,7 +4,7 @@ export const runtimeSupport = {
   supports: {
     esm: {
       delivery: true,
-      author: true,
+      author: false,
       print: true,
     },
   },

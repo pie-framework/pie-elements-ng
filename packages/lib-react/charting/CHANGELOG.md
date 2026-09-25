@@ -1,5 +1,22 @@
 # @pie-lib/charting
 
+## 8.0.0-next.40
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/config-ui@14.0.0-next.37
+  - @pie-lib/plot@5.0.0-next.38
+  - @pie-lib/render-ui@6.2.0-next.43
+
+## 8.0.0-next.39
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/plot@5.0.0-next.37
+
 ## 8.0.0-next.38
 
 ### Patch Changes

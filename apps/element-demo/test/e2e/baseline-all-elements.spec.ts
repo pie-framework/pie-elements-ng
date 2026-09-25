@@ -1,8 +1,10 @@
-import { test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { ELEMENT_REGISTRY } from '../../src/lib/elements/registry';
 import {
+  clickNumberLineTick,
   dragBetween,
   dragAnyCandidateToTarget,
+  evaluateSignal,
   getSelectedValue,
   getSessionState,
   selectDemo,
@@ -10,7 +12,10 @@ import {
   switchMode,
   switchRole,
   switchTab,
+  switchToEvaluate,
   waitForElementReady,
+  mountedElement,
+  mountedElementSelector,
 } from './test-helpers';
 
 type CheckName =
@@ -63,11 +68,17 @@ const IGNORE_RUNTIME_PATTERNS = [
   /i18next: initialized/i,
   /Download the React DevTools for a better development experience/i,
 ];
-const NON_ACTIONABLE_DELIVERY_ELEMENTS = new Set(['passage', 'rubric', 'complex-rubric']);
+const NON_ACTIONABLE_DELIVERY_ELEMENTS = new Set([
+  'passage',
+  'rubric',
+  'complex-rubric',
+  'multi-trait-rubric',
+]);
 const NON_ACTIONABLE_AUTHOR_ELEMENTS = new Set(['rubric', 'complex-rubric']);
 const ELEMENT_FILTER = process.env.E2E_BASELINE_ELEMENT?.trim();
 const MULTIPLE_CHOICE_DEMO_ID = 'math-algebra-quadratic';
-const MULTIPLE_CHOICE_TAG = 'pie-multiple-choice';
+// No correct answer to show: evaluate locks the response instead.
+const NO_CORRECT_ANSWER_ELEMENTS = new Set(['extended-text-entry', 'likert', 'matrix']);
 const TEMP_EXCLUDED_ELEMENTS = new Set<string>();
 
 type RuntimeTracker = {
@@ -121,10 +132,6 @@ function assertNoCriticalRuntimeErrors(runtime: RuntimeTracker, context: string,
   throw new Error(
     `${context}: critical runtime errors detected: ${critical.slice(0, 4).join(' | ')}`
   );
-}
-
-function elementTagCandidates(name: string): string[] {
-  return [name, `pie-${name}`, `${name}-element`];
 }
 
 async function isVisibleAndEnabled(locator: Locator): Promise<boolean> {
@@ -225,14 +232,16 @@ async function loadDeliver(page: Page, element: string, demoId?: string) {
   await assertNoCriticalUiErrors(page);
 }
 
-async function assertDeliveryVisible(page: Page, element: string) {
+async function assertDeliveryVisible(page: Page) {
   const container = await getDeliveryContainer(page);
-  const expectedTags = elementTagCandidates(element);
-  for (const tag of expectedTags) {
-    const loc = container.locator(tag).first();
-    if (await loc.isVisible().catch(() => false)) {
-      return;
-    }
+  if (
+    await container
+      .locator(mountedElementSelector())
+      .first()
+      .isVisible()
+      .catch(() => false)
+  ) {
+    return;
   }
 
   const anyCustomVisible = await container.evaluate((node) => {
@@ -304,8 +313,19 @@ async function attemptInput(scope: Locator, marker: string): Promise<string> {
 
   const checkbox = await firstVisibleEnabled(scope, 'input[type="checkbox"]');
   if (checkbox) {
-    await checkbox.setChecked(true);
-    if (await checkbox.isChecked().catch(() => false)) {
+    // Elements re-render the box from their session after the click, so `setChecked`
+    // reads it before it settles.
+    if (!(await checkbox.isChecked())) {
+      await checkbox.click();
+    }
+    if (
+      await expect(checkbox)
+        .toBeChecked()
+        .then(
+          () => true,
+          () => false
+        )
+    ) {
       return 'checkbox';
     }
   }
@@ -375,7 +395,7 @@ async function attemptInput(scope: Locator, marker: string): Promise<string> {
 
   const hostElement = await firstVisibleEnabled(
     scope,
-    'pie-ebsr, pie-explicit-constructed-response, pie-multi-trait-rubric, pie-select-text, [class*="element"]'
+    `${mountedElementSelector()}, [class*="element"]`
   );
   if (hostElement) {
     const box = await hostElement.boundingBox();
@@ -398,24 +418,14 @@ async function assertGatherAcceptsInput(page: Page, element: string) {
   await switchMode(page, 'gather');
   const container = await getDeliveryContainer(page);
   const beforeState = await getSessionState(page);
-  const beforeSession = await page
-    .locator('[data-testid="session-panel-content"]')
-    .textContent()
-    .catch(() => '');
 
   const marker = `e2e-${element}-${Date.now()}`;
   const method = await attemptInput(container, marker);
   await page.waitForTimeout(700);
 
   const afterState = await getSessionState(page);
-  const afterSession = await page
-    .locator('[data-testid="session-panel-content"]')
-    .textContent()
-    .catch(() => '');
-
-  const sessionPanelChanged = (beforeSession || '') !== (afterSession || '');
   const sessionJsonChanged = JSON.stringify(beforeState ?? {}) !== JSON.stringify(afterState ?? {});
-  if (sessionPanelChanged || sessionJsonChanged || method) {
+  if (sessionJsonChanged || method) {
     return;
   }
   throw new Error('interaction did not produce a measurable session change');
@@ -455,26 +465,15 @@ async function assertEvaluateShowsCorrectAnswers(page: Page, element: string) {
   if (NON_ACTIONABLE_DELIVERY_ELEMENTS.has(element)) {
     return;
   }
-  await switchRole(page, 'instructor');
-  await switchMode(page, 'evaluate');
+  await switchToEvaluate(page);
   await page.waitForTimeout(600);
 
-  const showCorrectById = page.locator('[data-testid="show-correct-answer"]').first();
-  const showCorrectByText = page.locator('button:has-text("Show correct answer")').first();
-  const showCorrectByLabel = page
+  const showCorrect = page
     .locator('.delivery-view')
     .getByText(/show correct answer|hide correct answer/i)
     .first();
-  if (await showCorrectById.isVisible().catch(() => false)) {
-    await showCorrectById.click();
-    await page.waitForTimeout(500);
-    return;
-  } else if (await showCorrectByText.isVisible().catch(() => false)) {
-    await showCorrectByText.click();
-    await page.waitForTimeout(500);
-    return;
-  } else if (await showCorrectByLabel.isVisible().catch(() => false)) {
-    await showCorrectByLabel.click({ force: true });
+  if (await showCorrect.isVisible().catch(() => false)) {
+    await showCorrect.click({ force: true });
     await page.waitForTimeout(500);
     return;
   }
@@ -484,21 +483,13 @@ async function assertEvaluateShowsCorrectAnswers(page: Page, element: string) {
   if (hasSignal) {
     return;
   }
-
-  // Fallback: if score is computed and shown, evaluate mode is functionally active.
-  const scoringPanel = page.locator('[data-testid="scoring-panel"], .scoring-panel').first();
-  if (await scoringPanel.isVisible().catch(() => false)) {
-    const scoreValue = page.locator('[data-testid="score-value"]').first();
-    if (await scoreValue.isVisible().catch(() => false)) {
-      const valueText = ((await scoreValue.innerText().catch(() => '')) || '').trim();
-      if (/\d/.test(valueText)) {
-        return;
-      }
-    }
-    const scoreText = ((await scoringPanel.innerText().catch(() => '')) || '').trim();
-    if (/\d/.test(scoreText)) {
-      return;
-    }
+  if (
+    NO_CORRECT_ANSWER_ELEMENTS.has(element) &&
+    (await evaluateSignal(container)
+      .isVisible()
+      .catch(() => false))
+  ) {
+    return;
   }
   throw new Error('no visible correct-answer signal detected in evaluate mode');
 }
@@ -613,11 +604,11 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
   'multiple-choice': {
     prepareDeliver: async (page) => {
       await selectDemo(page, MULTIPLE_CHOICE_DEMO_ID);
-      await waitForElementReady(page, MULTIPLE_CHOICE_TAG);
+      await waitForElementReady(page);
     },
     assertDeliveryVisible: async (page) => {
-      await waitForElementReady(page, MULTIPLE_CHOICE_TAG);
-      const mc = page.locator(MULTIPLE_CHOICE_TAG).first();
+      await waitForElementReady(page);
+      const mc = mountedElement(page);
       if (!(await mc.isVisible().catch(() => false))) {
         throw new Error('multiple-choice delivery component not visible');
       }
@@ -640,11 +631,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
   graphing: {
     assertGatherAcceptsInput: async (page) => {
       await switchMode(page, 'gather');
-      const root = page
-        .locator(
-          '.delivery-view .element-container pie-graphing, .delivery-view .element-container graphing-element'
-        )
-        .first();
+      const root = mountedElement(page);
       await root.waitFor({ state: 'visible', timeout: 15_000 });
       const toolBtn = root.locator('button.MuiButtonBase-root').first();
       if (await toolBtn.isVisible().catch(() => false)) {
@@ -679,39 +666,25 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       }
     },
     assertEvaluateShowsCorrectAnswers: async (page) => {
-      await switchRole(page, 'instructor');
-      await switchMode(page, 'evaluate');
-      const scoring = page
-        .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
-        .first();
+      await switchToEvaluate(page);
       const toggle = page
         .locator('.delivery-view')
         .getByText(/show correct answer|hide correct answer/i)
         .first();
-      const hasScoring = await scoring.isVisible().catch(() => false);
-      const hasToggle = await toggle.isVisible().catch(() => false);
-      if (!hasScoring && !hasToggle) {
-        throw new Error('graphing evaluate: no scoring or correct-answer toggle signal');
+      if (!(await toggle.isVisible().catch(() => false))) {
+        throw new Error('graphing evaluate: no correct-answer toggle');
       }
     },
   },
   'graphing-solution-set': {
     assertEvaluateShowsCorrectAnswers: async (page) => {
-      await switchRole(page, 'instructor');
-      await switchMode(page, 'evaluate');
-      const scoring = page
-        .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
-        .first();
+      await switchToEvaluate(page);
       const toggle = page
         .locator('.delivery-view')
         .getByText(/show correct answer|hide correct answer/i)
         .first();
-      const hasScoring = await scoring.isVisible().catch(() => false);
-      const hasToggle = await toggle.isVisible().catch(() => false);
-      if (!hasScoring && !hasToggle) {
-        throw new Error(
-          'graphing-solution-set evaluate: no scoring or correct-answer toggle signal'
-        );
+      if (!(await toggle.isVisible().catch(() => false))) {
+        throw new Error('graphing-solution-set evaluate: no correct-answer toggle');
       }
     },
   },
@@ -764,9 +737,9 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       }
       await page.keyboard.press('Escape').catch(() => {});
     },
-    assertDeliveryVisible: async (page, element) => {
+    assertDeliveryVisible: async (page) => {
       try {
-        await assertDeliveryVisible(page, element);
+        await assertDeliveryVisible(page);
         return;
       } catch {
         // Charting may present an always-visible demo tile shell instead of mounted chart DOM.
@@ -792,37 +765,33 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       }
     },
     assertEvaluateShowsCorrectAnswers: async (page) => {
-      await switchRole(page, 'instructor');
-      await switchMode(page, 'evaluate');
-      const scoring = page
-        .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
-        .first();
+      await switchToEvaluate(page);
       const toggle = page
         .locator('.delivery-view')
         .getByText(/show correct answer|hide correct answer/i)
         .first();
-      const hasScoring = await scoring.isVisible().catch(() => false);
-      const hasToggle = await toggle.isVisible().catch(() => false);
-      if (!hasScoring && !hasToggle) {
-        throw new Error('charting evaluate: no scoring or correct-answer toggle signal');
+      if (!(await toggle.isVisible().catch(() => false))) {
+        throw new Error('charting evaluate: no correct-answer toggle');
       }
     },
   },
   'fraction-model': {
+    assertGatherAcceptsInput: async (page) => {
+      await switchMode(page, 'gather');
+      const before = await getSessionState(page);
+      // The last part shades the whole bar (2/2), an incorrect answer, so evaluate offers the toggle.
+      const root = await getDeliveryContainer(page);
+      await root.locator('.recharts-bar-rectangle rect').last().click();
+      await expect.poll(() => getSessionState(page)).not.toEqual(before);
+    },
     assertEvaluateShowsCorrectAnswers: async (page) => {
-      await switchRole(page, 'instructor');
-      await switchMode(page, 'evaluate');
-      const scoring = page
-        .locator('[data-testid="scoring-panel"], [data-testid="score-value"]')
-        .first();
+      await switchToEvaluate(page);
       const toggle = page
         .locator('.delivery-view')
         .getByText(/show correct answer|hide correct answer/i)
         .first();
-      const hasScoring = await scoring.isVisible().catch(() => false);
-      const hasToggle = await toggle.isVisible().catch(() => false);
-      if (!hasScoring && !hasToggle) {
-        throw new Error('fraction-model evaluate: no scoring or correct-answer toggle signal');
+      if (!(await toggle.isVisible().catch(() => false))) {
+        throw new Error('fraction-model evaluate: no correct-answer toggle');
       }
     },
   },
@@ -860,9 +829,30 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
   'number-line': {
     deliverDemoId: 'basic-points',
     authorDemoId: 'basic-points',
+    assertGatherAcceptsInput: async (page) => {
+      await switchMode(page, 'gather');
+      const before = await getSessionState(page);
+      await clickNumberLineTick(page, await getDeliveryContainer(page));
+      await expect.poll(() => getSessionState(page)).not.toEqual(before);
+    },
   },
   'math-inline': {
     assertGatherAcceptsInput: async (page) => assertMathGatherInput(page, 'math-inline'),
+    // Evaluate puts the correct-answer toggle in a tooltip on the response.
+    assertEvaluateShowsCorrectAnswers: async (page) => {
+      await switchToEvaluate(page);
+      const root = await getDeliveryContainer(page);
+      await root.locator('.static-math').first().hover();
+      await expect(page.getByText('Show correct answer')).toBeVisible();
+    },
+  },
+  'drawing-response': {
+    // Not auto-scored: evaluate locks the toolbar and shows no correct answer.
+    assertEvaluateShowsCorrectAnswers: async (page) => {
+      await switchToEvaluate(page);
+      const root = await getDeliveryContainer(page);
+      await expect(root.getByRole('button', { name: 'Undo' })).toBeDisabled();
+    },
   },
   'math-templated': {
     assertGatherAcceptsInput: async (page) => assertMathGatherInput(page, 'math-templated'),
@@ -940,7 +930,7 @@ test.describe('Baseline minimum coverage across all elements', () => {
               if (adapter.assertDeliveryVisible) {
                 await adapter.assertDeliveryVisible(page, element);
               } else {
-                await assertDeliveryVisible(page, element);
+                await assertDeliveryVisible(page);
               }
               assertNoCriticalRuntimeErrors(runtime, `${element} delivery visibility`, element);
             })

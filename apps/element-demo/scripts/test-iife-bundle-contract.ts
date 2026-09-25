@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { Bundler, mkDependencyHash, type BuildBundleName } from '@pie-element/element-bundler';
 import { loadReactElementMatrix } from '../src/lib/testing/react-element-matrix';
-import { createWorkspaceCacheSalt } from '../src/lib/testing/workspace-fingerprint';
+import { createWorkspaceCacheSaltForDependencies } from '../src/lib/testing/workspace-fingerprint';
 import { findWorkspaceRoot } from '../src/vite-plugin-workspace-resolver';
 
 interface ContractFailure {
@@ -89,14 +89,12 @@ async function main() {
       ? ['client-player', 'editor']
       : ['client-player'];
     const baseHash = mkDependencyHash([dependency]);
-    const cacheSalt = createWorkspaceCacheSalt({
+    const cacheSalt = createWorkspaceCacheSaltForDependencies({
       workspaceRoot,
       dependencies: [dependency],
-      packageDirs: [entry.packageDir],
       requestedBundles,
       resolutionMode: 'workspace-fast',
       sourceMaps: false,
-      extraFiles: [join('packages', 'shared', 'bundler-shared', 'src', 'index.ts')],
     });
 
     console.log(

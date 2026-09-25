@@ -1,5 +1,14 @@
 # @pie-lib/math-toolbar
 
+## 4.0.0-next.43
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/math-input@9.0.0-next.8
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 4.0.0-next.42
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/render-ui",
-  "version": "6.2.0-next.42",
+  "version": "6.2.0-next.43",
   "description": "Some shared ui elements when rendering - but not worthy of their own package yet.",
   "repository": {
     "type": "git",
@@ -41,7 +41,7 @@
   "devDependencies": {
     "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

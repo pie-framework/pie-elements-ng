@@ -1,5 +1,17 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.15
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-element/multi-trait-rubric@8.1.2-next.14
+  - @pie-element/rubric@8.1.2-next.14
+  - @pie-lib/config-ui@14.0.0-next.37
+  - @pie-lib/render-ui@6.2.0-next.43
+  - @pie-lib/rubric@3.0.0-next.37
+
 ## 7.1.2-next.14
 
 ### Patch Changes

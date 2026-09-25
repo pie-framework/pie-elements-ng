@@ -1,5 +1,15 @@
 # @pie-element/matrix
 
+## 4.1.2-next.14
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/config-ui@14.0.0-next.37
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.37
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 4.1.2-next.13
 
 ### Patch Changes

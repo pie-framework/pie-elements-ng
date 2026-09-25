@@ -1,5 +1,15 @@
 # @pie-lib/mask-markup
 
+## 4.0.0-next.39
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.43
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.37
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 4.0.0-next.38
 
 ### Patch Changes

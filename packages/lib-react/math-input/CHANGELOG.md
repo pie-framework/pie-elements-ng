@@ -1,5 +1,13 @@
 # @pie-lib/math-input
 
+## 9.0.0-next.8
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 9.0.0-next.7
 
 ### Patch Changes

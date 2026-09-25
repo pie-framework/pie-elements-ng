@@ -1,5 +1,12 @@
 # @pie-element/venn-classification
 
+## 0.1.1-next.9
+
+### Patch Changes
+
+- d1e429c: Author elements take `configuration` as the React author elements do: an entry's `label` names its field and setting, `settings: true` offers the setting in a settings panel, and `settingsPanelDisabled` hides the panel. simple-cloze and venn-classification gain a teacher-instructions editor, and venn-classification's scoring policy moves into the panel.
+- 76a901f: Author elements dispatch each edit as a bubbling `model.updated` from the element itself and keep the edit as the element's `model` across a detach and re-attach. venn-classification fills missing fields from its controller defaults, and mc-populated-blank's placeholder author view declares `model` and `configuration` and reports browser-ESM authoring unsupported.
+
 ## 0.1.1-next.8
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @pie-lib/text-select
 
+## 4.0.0-next.45
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/render-ui@6.2.0-next.43
+  - @pie-lib/style-utils@3.0.0-next.1
+
 ## 4.0.0-next.44
 
 ### Patch Changes

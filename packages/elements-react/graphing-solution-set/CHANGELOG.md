@@ -1,5 +1,23 @@
 # @pie-element/graphing-solution-set
 
+## 6.1.2-next.16
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/config-ui@14.0.0-next.37
+  - @pie-lib/correct-answer-toggle@5.0.0-next.45
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.37
+  - @pie-lib/graphing-solution-set@5.0.0-next.40
+  - @pie-lib/render-ui@6.2.0-next.43
+
+## 6.1.2-next.15
+
+### Patch Changes
+
+- @pie-lib/graphing-solution-set@5.0.0-next.39
+
 ## 6.1.2-next.14
 
 ### Patch Changes

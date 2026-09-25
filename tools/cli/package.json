@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/cli",
-  "version": "0.1.2-next.3",
+  "version": "0.1.2-next.4",
   "description": "CLI tools for managing PIE Elements NG",
   "type": "module",
   "bin": {
@@ -30,7 +30,7 @@
     "webpack": "^5.104.1"
   },
   "devDependencies": {
-    "@types/node": "^25.0.3",
+    "@types/node": "^26.6.2",
     "bun-types": "^1.3.11",
     "typescript": "^5.9.3"
   },

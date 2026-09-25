@@ -66,6 +66,26 @@ const button = querySelector(element, 'button');
 simulateClick(button);
 ```
 
+### Author Element Contract
+
+`assertAuthorModelUpdate` mounts an author element, sets `model` and `configuration` as a player does, makes one edit, and throws unless the edit's `model.updated` meets the Authoring Contract in `docs/PIE_ELEMENT_CONTRACT.md`. `assertAuthorElementProperties` checks only that the element declares both properties.
+
+```typescript
+import { assertAuthorModelUpdate } from '@pie-element/shared-test-utils';
+
+const { event, cleanup } = await assertAuthorModelUpdate({
+  tag: 'my-element-config',
+  model: { id: '1', element: 'my-element', prompt: '<p>Q</p>' },
+  settle: async () => {
+    await new Promise((r) => setTimeout(r, 0));
+    flushSync(); // Svelte
+  },
+  edit: (element) => typeInto(element.querySelector('input'), 'edited'),
+});
+expect(event.detail.update).toMatchObject({ prompt: '<p>Q</p>' });
+cleanup();
+```
+
 ## API Reference
 
 See [TypeScript definitions](./src/index.ts) for complete API documentation.

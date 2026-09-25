@@ -4,6 +4,7 @@
  * Testing utilities for PIE element development.
  */
 
+export * from './author-contract.js';
 export * from './controller-test-harness.js';
 export * from './fixtures.js';
 export * from './web-component-helpers.js';

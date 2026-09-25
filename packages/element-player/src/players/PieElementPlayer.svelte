@@ -261,7 +261,9 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
   detachInstanceHandlers();
   if (viewMode === 'delivery') {
     sessionHandler = (event: Event) => {
-      if (suppressSessionEvents || isForwardingSessionEvent) {
+      // Before its model the element holds no session from the player, so a session it reports
+      // is its own default and must not replace the host's.
+      if (suppressSessionEvents || isForwardingSessionEvent || !lastAppliedModelSignature) {
         event.stopPropagation();
         return;
       }
@@ -356,6 +358,11 @@ function applySession(nextSession: any) {
     return;
   }
   if (nextSession === null || nextSession === undefined) {
+    return;
+  }
+  // Elements may read the model in their session setter, so the session waits for one.
+  // Under IIFE the host computes the model from the bundle's controller, after the element exists.
+  if (!lastAppliedModelSignature) {
     return;
   }
   const nextSignature = createValueSignature(nextSession ?? {});

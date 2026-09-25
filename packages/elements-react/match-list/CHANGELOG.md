@@ -1,5 +1,15 @@
 # @pie-element/match-list
 
+## 7.1.2-next.15
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/correct-answer-toggle@5.0.0-next.45
+  - @pie-lib/drag@4.1.0-next.43
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 7.1.2-next.14
 
 ### Patch Changes

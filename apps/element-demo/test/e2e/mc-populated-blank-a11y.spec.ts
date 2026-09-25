@@ -20,6 +20,7 @@ import {
   openDeliverRoute,
   switchRole,
   waitForMathRendering,
+  mountedElementSelector,
 } from './test-helpers';
 
 const NO_AUDIO_DEMO = 'variant-sr-vic';
@@ -49,7 +50,7 @@ test('axe: no violations in gather mode (no selection)', async ({ page }) => {
   await container.waitFor({ state: 'visible' });
 
   const results = await new AxeBuilder({ page })
-    .include('mc-populated-blank-element')
+    .include(mountedElementSelector())
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
 
@@ -64,7 +65,7 @@ test('axe: no violations in gather mode after selecting a choice', async ({ page
   await page.waitForTimeout(100);
 
   const results = await new AxeBuilder({ page })
-    .include('mc-populated-blank-element')
+    .include(mountedElementSelector())
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
 
@@ -81,7 +82,7 @@ test('axe: no violations in evaluate mode with correct answer', async ({ page })
   await container.waitFor({ state: 'visible' });
 
   const results = await new AxeBuilder({ page })
-    .include('mc-populated-blank-element')
+    .include(mountedElementSelector())
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
 
@@ -94,7 +95,7 @@ test('axe: no violations in evaluate mode with wrong answer', async ({ page }) =
   await container.waitFor({ state: 'visible' });
 
   const results = await new AxeBuilder({ page })
-    .include('mc-populated-blank-element')
+    .include(mountedElementSelector())
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
 
@@ -109,7 +110,7 @@ test('axe: no violations in evaluate mode after toggling show-correct-answer', a
   await toggle.click();
 
   const results = await new AxeBuilder({ page })
-    .include('mc-populated-blank-element')
+    .include(mountedElementSelector())
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
 
@@ -142,7 +143,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
         const scan = async () => {
           await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
           return new AxeBuilder({ page })
-            .include('mc-populated-blank-element')
+            .include(mountedElementSelector())
             .withRules(['color-contrast'])
             .analyze();
         };

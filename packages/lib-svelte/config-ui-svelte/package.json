@@ -1,0 +1,30 @@
+{
+  "name": "@pie-lib/config-ui-svelte",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Authoring layout and settings panel for Svelte 5 PIE author elements, after @pie-lib/config-ui",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "dev": "vite build --watch",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "svelte": "^5.57.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5"
+  }
+}

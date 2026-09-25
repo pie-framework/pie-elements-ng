@@ -19,6 +19,7 @@ import {
   getSessionState,
   openDeliverRoute,
   waitForMathRendering,
+  mountedElement,
 } from './test-helpers';
 
 const NO_AUDIO_DEMO = 'variant-sr-vic';
@@ -258,10 +259,7 @@ test('audio-gated variant: isComplete is false when choice selected but audio no
   const session = await getSessionState(page);
   expect(session?.choiceId).toBeDefined();
 
-  const isComplete = await page.evaluate(() => {
-    const el = document.querySelector('mc-populated-blank-element') as any;
-    return el?.isComplete?.() ?? null;
-  });
+  const isComplete = await mountedElement(page).evaluate((el: any) => el.isComplete?.() ?? null);
   expect(isComplete).toBe(false);
 });
 
@@ -275,16 +273,10 @@ test('audio-gated variant: isComplete is true after audio ends', async ({ page }
 
   // Simulate audio completion by directly calling onAudioEnded on the element
   // (real audio can't play in headless; this exercises the same code path as a real end event)
-  await page.evaluate(() => {
-    const el = document.querySelector('mc-populated-blank-element') as any;
-    el?.onAudioEnded?.();
-  });
+  await mountedElement(page).evaluate((el: any) => el.onAudioEnded?.());
   await page.waitForTimeout(100);
 
-  const isComplete = await page.evaluate(() => {
-    const el = document.querySelector('mc-populated-blank-element') as any;
-    return el?.isComplete?.() ?? null;
-  });
+  const isComplete = await mountedElement(page).evaluate((el: any) => el.isComplete?.() ?? null);
   expect(isComplete).toBe(true);
 });
 

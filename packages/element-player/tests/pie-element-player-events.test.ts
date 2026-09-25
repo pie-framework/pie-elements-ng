@@ -74,6 +74,8 @@ describe('PieElementPlayer events', () => {
     player.elementName = 'simple-cloze';
     player.packageName = '@pie-element/simple-cloze';
     player.view = 'delivery';
+    // The player drops an element's session reports until it has applied a model.
+    player.model = { id: '1' };
     root.appendChild(player);
 
     const own = listen(player);
