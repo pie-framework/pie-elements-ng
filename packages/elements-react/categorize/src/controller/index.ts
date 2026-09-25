@@ -338,7 +338,8 @@ export const outcome = (question, session, env) => {
     return Promise.reject(new Error('Can not call outcome when mode is not evaluate'));
   } else {
     return new Promise((resolve) => {
-      if (!session || isEmpty(session)) {
+      // A player sends an untouched item's session as `{ id, element }`, without `answers`.
+      if (!session || isEmpty(session) || !session.answers) {
         resolve({
           score: 0,
           empty: true,

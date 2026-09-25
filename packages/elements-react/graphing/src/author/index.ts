@@ -122,12 +122,13 @@ export default class GraphLinesConfigure extends HTMLElement {
     // if a default item model includes a language value (e.g., en_US) and the corresponding authoring view settings have language:settings = true,
     // then (a) language:enabled should also be true, and (b) that default language value should be represented in languageChoices[] (as a key).
     //TODO: add logic in controller and add tests
-    if (c.language?.enabled) {
-      if (c.languageChoices?.options?.length) {
-        this._model.language = c.languageChoices.options[0].value;
+    const { language, languageChoices } = this._configuration;
+    if (language?.enabled) {
+      if (languageChoices?.options?.length) {
+        this._model.language = languageChoices.options[0].value;
       }
     } else {
-      if (c.language.settings) {
+      if (language?.settings) {
         if (this._model.language) {
           this._configuration.language.enabled = true;
         }
