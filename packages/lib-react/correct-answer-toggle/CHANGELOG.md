@@ -1,5 +1,13 @@
 # @pie-lib/correct-answer-toggle
 
+## 5.0.0-next.46
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/render-ui@6.2.0-next.44
+
 ## 5.0.0-next.45
 
 ### Patch Changes

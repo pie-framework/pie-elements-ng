@@ -1,5 +1,12 @@
 # @pie-lib/categorize
 
+## 3.0.0-next.5
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+
 ## 3.0.0-next.4
 
 ### Patch Changes

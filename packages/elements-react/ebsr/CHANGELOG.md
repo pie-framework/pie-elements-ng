@@ -1,5 +1,14 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.17
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-element/multiple-choice@13.3.5-next.12
+  - @pie-lib/config-ui@14.0.0-next.38
+
 ## 14.2.2-next.16
 
 ### Patch Changes

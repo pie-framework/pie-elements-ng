@@ -1,5 +1,15 @@
 # @pie-element/extended-text-entry
 
+## 15.1.2-next.16
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/config-ui@14.0.0-next.38
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.38
+  - @pie-lib/render-ui@6.2.0-next.44
+
 ## 15.1.2-next.15
 
 ### Patch Changes

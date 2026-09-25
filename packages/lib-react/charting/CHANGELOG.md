@@ -1,5 +1,15 @@
 # @pie-lib/charting
 
+## 8.0.0-next.41
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/config-ui@14.0.0-next.38
+  - @pie-lib/plot@5.0.0-next.39
+  - @pie-lib/render-ui@6.2.0-next.44
+
 ## 8.0.0-next.40
 
 ### Patch Changes

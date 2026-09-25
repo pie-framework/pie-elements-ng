@@ -1,5 +1,16 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.0.0-next.38
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/drag@4.1.0-next.44
+  - @pie-lib/math-input@9.0.0-next.9
+  - @pie-lib/math-toolbar@4.0.0-next.44
+  - @pie-lib/render-ui@6.2.0-next.44
+
 ## 3.0.0-next.37
 
 ### Patch Changes

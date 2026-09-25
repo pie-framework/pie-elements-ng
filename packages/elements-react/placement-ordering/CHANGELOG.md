@@ -1,5 +1,21 @@
 # @pie-element/placement-ordering
 
+## 14.1.2-next.17
+
+### Patch Changes
+
+- d242e4c: The placement-ordering controller scores responses of two or more tiles, where it threw for every one (PIE-1098). Its scorer called js-combinatorics 0.5's `combination(seed, size)` against the 2.x dependency, which counts combinations instead; the upstream sync now rewrites that call to 2.x's `Combination` class.
+
+  `uniq` from `@pie-element/shared-lodash` returns `[]` for a value without a length, as lodash does, where it threw on a non-iterable.
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/config-ui@14.0.0-next.38
+  - @pie-lib/correct-answer-toggle@5.0.0-next.46
+  - @pie-lib/drag@4.1.0-next.44
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.38
+  - @pie-lib/render-ui@6.2.0-next.44
+
 ## 14.1.2-next.16
 
 ### Patch Changes
