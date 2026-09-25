@@ -194,6 +194,10 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
   React 16/17 compatibility shims in browser-facing dependency policy.
 - `dependencies` and `peerDependencies` are install metadata only; they are not browser runtime singleton contracts.
 - Browser JS output must stay within the policy size budget unless the policy is intentionally changed.
+- Hosts load no element CSS. A stylesheet the bundled code imports ships beside the chunks, and
+  the chunk that imports it loads it before evaluating; see
+  [`PACKAGING_ARCHITECTURE.md`](PACKAGING_ARCHITECTURE.md#browser-esm-stylesheets). A stylesheet
+  in `dist/browser` that no reachable module loads fails the publish check.
 - Browser ESM output must not leak runtime `require` calls. The shared browser
   build may rewrite known Rolldown CJS helper calls only for the allow-listed
   interop targets documented in
@@ -207,6 +211,7 @@ If a new dependency should become a shared browser singleton, update `tools/vite
 Packages that declare `exports["./print"]` may additionally publish a second, unrelated print artifact at the package root:
 
 - `module/print.js` (and its sourcemap `module/print.js.map`)
+- any stylesheet `module/print.js` imports, which `module/print.js` loads itself as browser ESM chunks do
 
 This exists solely so the unmodified, currently-deployed `@pie-framework/pie-print` client loader — which fetches `<pkg>/module/print.js` directly by CDN path and does a bare `import()` with no import map — can load `pie-elements-ng` print bundles. It is **not** part of the `./browser/print` contract above: `dist/browser/print/index.js` stays the artifact for the new `pie-players/pie-print-player`, which does inject an import map. `module/print.js` is fully self-contained instead (no externals, React included), because its loader injects nothing. See [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md) and [`docs/prds/legacy-print-compatibility/PRD.md`](prds/legacy-print-compatibility/PRD.md).
 

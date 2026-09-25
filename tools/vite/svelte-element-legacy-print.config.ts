@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
+import { browserCssLoaderPlugin } from './browser-css-loader.ts';
 
 const packageDir = process.cwd();
 
@@ -36,6 +37,7 @@ export default defineConfig({
       },
       emitCss: false,
     }),
+    browserCssLoaderPlugin(),
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),

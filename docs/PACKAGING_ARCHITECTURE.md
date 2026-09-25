@@ -108,6 +108,29 @@ Whether or not EBSR's "two multiple-choice children" design is the ideal
 architecture, it is the behavior that existing IIFE bundles have shipped for a
 long time, so browser ESM must support it for compatibility.
 
+### Browser ESM Stylesheets
+
+Library mode extracts every stylesheet the bundled code imports into a `.css` file and
+references it nowhere, and browser ESM hosts, `pie-players` and the legacy
+`@pie-framework/pie-print` client alike, load no element CSS. MathQuill's stylesheet shipped
+that way, and math-inline rendered `$$$` and a bare textarea.
+
+`tools/vite/browser-css-loader.ts`, which the React and Svelte browser and legacy print configs
+all use, splits CSS per chunk and prepends a loader to each chunk that owns some. The loader
+links the stylesheet relative to `import.meta.url` and holds the chunk's evaluation with
+top-level await until the stylesheet has loaded, so an element's first render is styled, as it
+is under IIFE, where style-loader inserts the CSS synchronously. A failed load warns and lets
+the element register unstyled.
+
+Loads are deduplicated per page by content hash through a
+`Symbol.for('pie-elements-ng.browser-css')` registry, so the MathQuill stylesheet that most
+elements ship is fetched once however many of them a page loads. Packages built by different
+versions of the plugin share that registry, so its value shape (a `Map` from hash to load
+promise) changes only under a new key.
+
+The bundler-facing `dist/` builds and the IIFE builds keep their CSS imports for the consuming
+bundler, and are untouched.
+
 ### Browser ESM CommonJS Interop
 
 Browser ESM builds are static browser files. They must not depend on a runtime
@@ -345,8 +368,9 @@ That command orchestrates the contract-relevant checks:
 
 - `scripts/check-publish-surface.mjs` verifies dist-only exports, rejects
   forbidden export conditions such as `development` and `svelte`, checks browser
-  ESM policy, verifies packed tarball contents, and enforces runtime-support
-  metadata for non-browser-ESM elements.
+  ESM policy, rejects stylesheets in `dist/browser` or `module/` that no
+  reachable module loads, verifies packed tarball contents, and enforces
+  runtime-support metadata for non-browser-ESM elements.
 - `tools/cli/src/commands/verify/controllers.ts` checks `pie.controller`,
   `./controller`, `./controller.js`, the root `controller.js` shim,
   `pie.configure`, `./configure`, the root `configure.js` shim, and built

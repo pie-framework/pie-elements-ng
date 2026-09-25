@@ -317,6 +317,83 @@ describe('package inspection quality-gate helpers', () => {
     expect(violations.some((violation) => violation.includes('exceeds policy budget'))).toBe(true);
   });
 
+  it('rejects browser stylesheets that no reachable module loads', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'styled');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'import "../shared-AAAAAAAA.js";\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'shared-AAAAAAAA.js'),
+      'await load([["0123456789abcdef","./shared.css"]]);\nexport const shared = 1;\n',
+      'utf8'
+    );
+    await writeFile(join(packageDir, 'dist', 'browser', 'shared.css'), '.a{}\n', 'utf8');
+    await writeFile(join(packageDir, 'dist', 'browser', 'extracted.css'), '.b{}\n', 'utf8');
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/styled',
+      pkg: {
+        name: '@pie-element/styled',
+        version: '1.0.0',
+        files: ['dist'],
+        exports: {
+          './browser/delivery': {
+            default: './dist/browser/delivery/index.js',
+          },
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+    });
+
+    const stylesheetViolations = violations.filter((violation) => violation.includes('.css'));
+    expect(stylesheetViolations).toEqual([
+      'dist/browser/extracted.css is not loaded by any module reachable from the ./browser/* exports, and hosts load no element CSS',
+    ]);
+  });
+
+  it('rejects legacy print stylesheets that module/print.js does not load', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'printable');
+    await mkdir(join(packageDir, 'module'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'module', 'print.js'),
+      'await load([["0123456789abcdef","./index.css"]]);\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(join(packageDir, 'module', 'index.css'), '.a{}\n', 'utf8');
+    await writeFile(join(packageDir, 'module', 'print.css'), '.b{}\n', 'utf8');
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/printable',
+      pkg: {
+        name: '@pie-element/printable',
+        version: '1.0.0',
+        files: ['dist', 'module', 'print.js'],
+        exports: {
+          './print': { default: './dist/print/index.js' },
+          './print.js': { default: './dist/print/index.js' },
+        },
+      },
+      packedFiles: new Set([
+        'package.json',
+        'module/print.js',
+        'module/index.css',
+        'module/print.css',
+      ]),
+    });
+
+    const stylesheetViolations = violations.filter((violation) => violation.includes('.css'));
+    expect(stylesheetViolations).toEqual([
+      'module/print.css is not loaded by module/print.js, and hosts load no element CSS',
+    ]);
+  });
+
   it('rejects browser ESM packages that register their public element tag', async () => {
     const root = await makeWorkspaceFixture();
     const packageDir = join(root, 'packages', 'elements-react', 'public-registering');

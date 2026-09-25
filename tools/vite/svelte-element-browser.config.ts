@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig, esmExternalRequirePlugin } from 'vite';
+import { browserCssLoaderPlugin } from './browser-css-loader.ts';
 
 const packageDir = process.cwd();
 const configDir = dirname(fileURLToPath(import.meta.url));
@@ -52,6 +53,7 @@ export default defineConfig({
       },
       emitCss: false,
     }),
+    browserCssLoaderPlugin(),
   ],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
