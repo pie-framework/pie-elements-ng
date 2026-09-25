@@ -3,6 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { parseAst } from 'vite';
 import {
   collectJsFiles as collectPackageJsFiles,
   createPackageSnapshots,
@@ -15,6 +16,11 @@ const POLICY_PATH = path.join(ROOT, 'scripts', 'publish-policy.json');
 const BROWSER_ESM_POLICY_PATH = path.join(ROOT, 'tools', 'vite', 'browser-esm-policy.json');
 const MAX_DETAILS_PER_PACKAGE = 20;
 const FORBIDDEN_EXPORT_CONDITIONS = new Set(['development', 'svelte']);
+// element-bundler compiles elements, so svelte is its own runtime dependency and reaches its
+// clients transitively by design.
+const SVELTE_DEPENDENCY_OWNERS = new Set(['@pie-element/element-bundler']);
+const SHIPPED_JS_FILE = /\.[cm]?js$/;
+const REQUIRE_CALLEES = new Set(['require', '__require']);
 
 const policy = existsSync(POLICY_PATH) ? readJson(POLICY_PATH) : {};
 const browserEsmPolicy = readJson(BROWSER_ESM_POLICY_PATH);
@@ -552,6 +558,103 @@ const collectLegacyPrintStylesheetViolations = (dir, pkg) => {
   );
 };
 
+const staticSpecifier = (node) => {
+  if (node?.type === 'Literal' && typeof node.value === 'string') return node.value;
+  if (node?.type === 'TemplateLiteral' && node.expressions.length === 0) {
+    return node.quasis[0].value.cooked;
+  }
+  return null;
+};
+
+const moduleSpecifierOf = (node) => {
+  switch (node.type) {
+    case 'ImportDeclaration':
+    case 'ExportAllDeclaration':
+    case 'ExportNamedDeclaration':
+      return node.source?.value ?? null;
+    case 'ImportExpression':
+      return staticSpecifier(node.source);
+    case 'CallExpression':
+      return node.callee.type === 'Identifier' && REQUIRE_CALLEES.has(node.callee.name)
+        ? staticSpecifier(node.arguments[0])
+        : null;
+    default:
+      return null;
+  }
+};
+
+/**
+ * Every module a file loads at runtime: static imports and re-exports, and import() or
+ * require() of a literal specifier. Parsed rather than pattern-matched: a bundle that inlines
+ * Svelte also inlines Svelte's JSDoc, and `@import { Fork } from 'svelte'` reads as an import
+ * to a regex.
+ */
+const collectRuntimeSpecifiers = (source) => {
+  const specifiers = new Set();
+  const pending = [parseAst(source)];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    const specifier = moduleSpecifierOf(node);
+    if (specifier) specifiers.add(specifier);
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) if (child && typeof child === 'object') pending.push(child);
+      } else if (value && typeof value === 'object') {
+        pending.push(value);
+      }
+    }
+  }
+  return specifiers;
+};
+
+const isSvelteSpecifier = (specifier) => specifier === 'svelte' || specifier.startsWith('svelte/');
+
+/**
+ * Svelte is an implementation detail. A client installs a PIE package and nothing else, so no
+ * manifest asks it for svelte and no shipped file imports svelte: element builds inline the
+ * Svelte runtime.
+ *
+ * `files` are the package-relative paths that ship, npm's packed file list at release.
+ */
+export const collectSvelteLeakViolations = ({ dir, pkg, files = [] }) => {
+  const violations = [];
+  const ownsSvelte = SVELTE_DEPENDENCY_OWNERS.has(pkg.name);
+
+  if (pkg.svelte) {
+    violations.push('package-level svelte field is not allowed');
+  }
+  for (const dependencyBucket of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
+    if (dependencyBucket === 'dependencies' && ownsSvelte) continue;
+    if (pkg[dependencyBucket]?.svelte) {
+      violations.push(`${dependencyBucket}.svelte is not allowed`);
+    }
+  }
+  if (pkg.peerDependenciesMeta?.svelte) {
+    violations.push('peerDependenciesMeta.svelte is not allowed');
+  }
+  if (ownsSvelte) return violations;
+
+  for (const file of [...files].sort()) {
+    const filePath = path.join(dir, file);
+    if (!SHIPPED_JS_FILE.test(file) || !existsSync(filePath)) continue;
+    const source = readFileSync(filePath, 'utf8');
+    if (!source.includes('svelte')) continue;
+    let specifiers;
+    try {
+      specifiers = collectRuntimeSpecifiers(source);
+    } catch (error) {
+      violations.push(`${file} could not be parsed to check its imports: ${error.message}`);
+      continue;
+    }
+    for (const specifier of [...specifiers].sort()) {
+      if (isSvelteSpecifier(specifier)) {
+        violations.push(`${file} imports "${specifier}" at runtime; the build must inline Svelte`);
+      }
+    }
+  }
+  return violations;
+};
+
 export const collectManifestViolations = (dir, pkg) => {
   const violations = [];
   if (Array.isArray(pkg.files)) {
@@ -567,18 +670,6 @@ export const collectManifestViolations = (dir, pkg) => {
         violations.push(`files[] includes raw TypeScript source: ${entry}`);
       }
     }
-  }
-
-  if (pkg.svelte) {
-    violations.push('package-level svelte field is not allowed');
-  }
-  for (const dependencyBucket of ['optionalDependencies', 'peerDependencies']) {
-    if (pkg[dependencyBucket]?.svelte) {
-      violations.push(`${dependencyBucket}.svelte is not allowed`);
-    }
-  }
-  if (pkg.peerDependenciesMeta?.svelte) {
-    violations.push('peerDependenciesMeta.svelte is not allowed');
   }
 
   collectExportKeyViolations(pkg, violations);
@@ -657,7 +748,14 @@ export const collectPackViolations = (snapshot) => {
 };
 
 export const collectPublishSurfaceViolations = (snapshot) => {
-  const violations = collectManifestViolations(snapshot.dir, snapshot.pkg);
+  const violations = [
+    ...collectManifestViolations(snapshot.dir, snapshot.pkg),
+    ...collectSvelteLeakViolations({
+      dir: snapshot.dir,
+      pkg: snapshot.pkg,
+      files: snapshot.packedFiles,
+    }),
+  ];
   try {
     violations.push(...collectPackViolations(snapshot));
   } catch (error) {
