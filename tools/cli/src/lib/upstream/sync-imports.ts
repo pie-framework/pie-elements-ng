@@ -552,6 +552,78 @@ export function transformClassnamesToClsx(content: string): string {
 }
 
 /**
+ * Rewrite js-combinatorics 0.5 `combination(seed, size)` calls to the 2.x `Combination` class.
+ *
+ * Upstream depends on 0.5, a UMD script with no ESM entrypoint; synced packages depend on 2.x,
+ * where `combination(n, k)` counts combinations as a BigInt and throws when given an array.
+ * `new Combination(seed, size)` enumerates the same pairs in the same order.
+ */
+export function transformJsCombinatoricsToV2(content: string): string {
+  if (!content.includes('js-combinatorics')) {
+    return content;
+  }
+
+  const sourceFile = ts.createSourceFile(
+    'source.tsx',
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+  const edits: SourceEdit[] = [];
+  const callees = new Map<string, string>();
+
+  for (const statement of sourceFile.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteral(statement.moduleSpecifier) ||
+      statement.moduleSpecifier.text !== 'js-combinatorics'
+    ) {
+      continue;
+    }
+    const bindings = statement.importClause?.namedBindings;
+    if (!bindings || !ts.isNamedImports(bindings)) {
+      continue;
+    }
+    for (const element of bindings.elements) {
+      if ((element.propertyName ?? element.name).text !== 'combination') {
+        continue;
+      }
+      const local = element.name.text;
+      const aliased = local !== 'combination';
+      callees.set(local, aliased ? local : 'Combination');
+      edits.push({
+        start: element.getStart(sourceFile),
+        end: element.getEnd(),
+        text: aliased ? `Combination as ${local}` : 'Combination',
+      });
+    }
+  }
+
+  if (callees.size === 0) {
+    return content;
+  }
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      callees.has(node.expression.text)
+    ) {
+      edits.push({
+        start: node.expression.getStart(sourceFile),
+        end: node.expression.getEnd(),
+        text: `new ${callees.get(node.expression.text)}`,
+      });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+
+  return applySourceEdits(content, edits);
+}
+
+/**
  * Replace react-input-autosize with the local ESM autosize input component.
  *
  * The upstream dependency is CommonJS-era and only used by graph label inputs.
