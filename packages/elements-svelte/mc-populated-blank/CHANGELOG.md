@@ -1,5 +1,38 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.15
+
+### Patch Changes
+
+- 76a901f: Author elements dispatch each edit as a bubbling `model.updated` from the element itself and keep the edit as the element's `model` across a detach and re-attach. venn-classification fills missing fields from its controller defaults, and mc-populated-blank's placeholder author view declares `model` and `configuration` and reports browser-ESM authoring unsupported.
+
+## 0.3.0-next.14
+
+### Patch Changes
+
+- 0f34f86: An r1 item on the `inline_sentence` layout keeps its stem on one line: the 150px Learnosity token box now applies only to the r1 token layouts.
+
+## 0.3.0-next.13
+
+### Patch Changes
+
+- 7ed1380: The `narrowHorizontalChoiceMaxWidthPx` layout limit is removed: it has had no effect since the choice tiles moved into their own component.
+- 2a4317f: Hovered, selected and scored choices set their text colour along with their background, and the vic variants' red blank answer carries its white surface, so a CQT variant's fixed colours keep AA contrast under a dark colour scheme.
+
+## 0.3.0-next.12
+
+### Patch Changes
+
+- 80b5869: A text answer in a sel_r1-g_plusggg blank sits on its underline, level with the stem word, as in Learnosity; image answers keep the 156px box.
+
+## 0.3.0-next.11
+
+### Patch Changes
+
+- 53bed4b: `defineDeliveryElement` builds a Svelte delivery element from its component and an `isComplete` rule, and hands the component `onSessionChange` as a prop. `resolveDeliveryHost`, `forwardSessionChange` and `DeliveryHostElement` are removed. The three Svelte elements are built on it: `element.session` returns the player's session object after an update, and mc-populated-blank's `model-set` now reports a restored response as complete.
+- dad31dc: Print renders the delivery component as a player shows the printout's role in `view` mode, so it takes the variant layout and inline-sentence spacing; an instructor's key fills the blank and checks the key's choice, in place of the `(key)` label, which is removed from the translator.
+- 34065a2: The package root re-exports `./delivery/index.js` instead of bundling a second copy of it, so `@pie-element/<name>` and `@pie-element/<name>/delivery` export the same element class. `dist/index.js.map` is no longer published.
+
 ## 0.3.0-next.10
 
 ### Patch Changes

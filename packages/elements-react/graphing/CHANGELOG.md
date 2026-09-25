@@ -1,5 +1,44 @@
 # @pie-element/graphing
 
+## 10.1.2-next.17
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/config-ui@14.0.0-next.38
+  - @pie-lib/correct-answer-toggle@5.0.0-next.46
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.38
+  - @pie-lib/graphing@5.0.0-next.42
+  - @pie-lib/graphing-utils@4.0.0-next.5
+  - @pie-lib/render-ui@6.2.0-next.44
+
+## 10.1.2-next.16
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/config-ui@14.0.0-next.37
+  - @pie-lib/correct-answer-toggle@5.0.0-next.45
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.37
+  - @pie-lib/graphing@5.0.0-next.41
+  - @pie-lib/graphing-utils@4.0.0-next.4
+  - @pie-lib/render-ui@6.2.0-next.43
+
+## 10.1.2-next.15
+
+### Patch Changes
+
+- @pie-lib/graphing@5.0.0-next.40
+
+## 10.1.2-next.14
+
+### Patch Changes
+
+- @pie-lib/correct-answer-toggle@5.0.0-next.44
+- @pie-lib/graphing@5.0.0-next.39
+
 ## 10.1.2-next.13
 
 ### Patch Changes

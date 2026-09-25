@@ -1,5 +1,29 @@
 # @pie-lib/correct-answer-toggle
 
+## 5.0.0-next.46
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/render-ui@6.2.0-next.44
+
+## 5.0.0-next.45
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/icons@5.0.0-next.1
+  - @pie-lib/render-ui@6.2.0-next.43
+
+## 5.0.0-next.44
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
 ## 5.0.0-next.43
 
 ### Patch Changes

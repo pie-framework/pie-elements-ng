@@ -88,7 +88,6 @@ Notes:
 - `audioBlankTemplateMarginTopRem`
 - `audioBlankTemplateMarginBottomRem`
 - `audioInstructionsMaxWidthPx`
-- `narrowHorizontalChoiceMaxWidthPx`
 - `stimulusGridColumnGapRem`
 - `stimulusGridRowGapRem`
 - `stimulusSentenceMarginTopRem`
@@ -113,11 +112,11 @@ Notes:
 - **Choice normalization:** choices are polymorphic by `choiceMode` (text via `labelHtml`, image via `imageUrl`/`imageAlt`).
 - **Delivery rendering:** template is split around `{{blank}}`; selected choice content is rendered into the blank slot.
 - **Layout limits are model-driven:** delivery reads `model.layoutLimits` (blank widths/underline widths, choice tile sizing, image max heights, listen button size, layout column minimums); defaults are CQT-informed but overrideable.
-- **Responsive parity controls:** `audioInstructionsMaxWidthPx` and `narrowHorizontalChoiceMaxWidthPx` are explicitly configurable to tune desktop vs narrow-width CQT behavior.
+- **Responsive parity control:** `audioInstructionsMaxWidthPx` is configurable to tune desktop vs narrow-width CQT behavior.
 - **Evaluate mode behavior:** when evaluate/correct-answer mode is enabled, delivery can render `correctChoiceId` in the blank/choice state.
 - **Audio error behavior:** no TTS fallback is used; when `hasAudio=true` and no playable `audioUrl` is provided, delivery shows an explicit error message.
 - **Prompt-off accessibility:** when `prompt` is empty, delivery uses `choiceGroupLabel` (or fallback UI text) as the radiogroup accessible name.
-- **Print parity:** print view mirrors prompt/template/choice presentation with the same blank-token contract.
+- **Print parity:** print renders the delivery component as a player shows the printout's `role` in `view` mode, with the choices in authored order; an instructor's key is the correct-response session, filling the blank and checking the key's choice. Teacher instructions print expanded, and audio prints as its URL and transcript in place of a player.
 - **Delivery renders no transcript:** it is an accessibility-catalog alternate, so on `pie-section-player` the assessment toolkit resolves the `transcript` card against the learner's personal needs profile and renders it in a labelled region above this element (PIE-902) — the same path signing takes. `model.audioTranscript` stays on the model for the print view, which has no toolkit, and as the source the Learnosity import writes the card from. A host that wants a transcript delivers the toolkit; there is no element-specific CSS class to apply.
 
 ## Theming hooks (`pie-*` classes)

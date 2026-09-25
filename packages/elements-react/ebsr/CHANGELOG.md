@@ -1,5 +1,31 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.17
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-element/multiple-choice@13.3.5-next.12
+  - @pie-lib/config-ui@14.0.0-next.38
+
+## 14.2.2-next.16
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-element/multiple-choice@13.3.5-next.11
+  - @pie-lib/config-ui@14.0.0-next.37
+
+## 14.2.2-next.15
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+  - @pie-element/multiple-choice@13.3.5-next.10
+
 ## 14.2.2-next.14
 
 ### Patch Changes

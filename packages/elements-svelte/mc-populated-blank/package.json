@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/mc-populated-blank",
-  "version": "0.3.0-next.10",
+  "version": "0.3.0-next.15",
   "description": "Multiple-choice option populates an inline blank in a sentence template (Svelte 5 PIE element)",
   "repository": {
     "type": "git",
@@ -74,14 +74,14 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config vite.print.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
-    "dev": "vite",
+    "build": "vite build --config ../../../tools/vite/svelte-element-esm.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config ../../../tools/vite/svelte-element-iife.config.ts && tsc --emitDeclarationOnly",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "devDependencies": {
+    "@pie-element/shared-test-utils": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "svelte": "^5.57.0",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",

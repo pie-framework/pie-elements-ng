@@ -1,5 +1,21 @@
 # @pie-lib/math-input
 
+## 9.0.0-next.9
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/render-ui@6.2.0-next.44
+
+## 9.0.0-next.8
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 9.0.0-next.7
 
 ### Patch Changes

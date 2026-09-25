@@ -174,52 +174,68 @@ interface OutcomeResult {
 
 ### Common Props
 
-All PIE elements accept these props:
+All PIE elements accept these props, which hosts set as element properties:
 
 ```typescript
 interface CommonElementProps {
   model: ElementModel;            // Element configuration
-  session: PieSession;            // Student response
+  session: PieSession;            // Student response; the element writes each change into it
   env: PieEnvironment;            // Interaction mode and role
-
-  // Optional callbacks
-  onSessionChange?: (session: PieSession) => void;
-  onModelChange?: (model: ElementModel) => void;
 }
 ```
+
+Elements report changes as events: a delivery element dispatches `session-changed` ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract)) and an author element dispatches `model.updated` ([Authoring Contract](PIE_ELEMENT_CONTRACT.md#authoring-contract)).
 
 ### Svelte Components
 
 ```svelte
 <script lang="ts">
-  import { MultipleChoice } from '@pie-element/multiple-choice';
+  import SimpleCloze from '@pie-element/simple-cloze/delivery';
 
-  let model = $state({...});
-  let session = $state({...});
-  let env = { mode: 'gather', role: 'student' };
+  if (!customElements.get('simple-cloze')) customElements.define('simple-cloze', SimpleCloze);
+
+  let { model, session } = $props(); // model: the controller's view model for the env
 </script>
 
-<MultipleChoice
+<!-- The element writes each change into `session`; the event only says it happened. -->
+<simple-cloze
   {model}
   {session}
-  {env}
-  on:session-change={(e) => session = e.detail}
-  on:model-change={(e) => model = e.detail}
-/>
+  onsession-changed={(e) => saveSession(session, { complete: e.detail.complete })}
+></simple-cloze>
 ```
 
 ### React Components
 
-```tsx
-import { MultipleChoice } from '@pie-element/multiple-choice';
+React 18 passes JSX props to a custom element as attributes, so a ref sets the properties:
 
-<MultipleChoice
-  model={model}
-  session={session}
-  env={env}
-  onSessionChange={setSession}
-  onModelChange={setModel}
-/>
+```jsx
+import MultipleChoice from '@pie-element/multiple-choice/delivery';
+import { useEffect, useRef } from 'react';
+
+if (!customElements.get('pie-multiple-choice')) {
+  customElements.define('pie-multiple-choice', MultipleChoice);
+}
+
+function Item({ model, session, onSave }) {
+  const ref = useRef(null);
+
+  // Setting `session` dispatches `session-changed`, so set it only when the object changes.
+  useEffect(() => {
+    ref.current.model = model;
+    ref.current.session = session;
+  }, [model, session]);
+
+  useEffect(() => {
+    const element = ref.current;
+    // The element has written the change into `session`.
+    const handler = (e) => onSave(session, { complete: e.detail.complete });
+    element.addEventListener('session-changed', handler);
+    return () => element.removeEventListener('session-changed', handler);
+  }, [session, onSave]);
+
+  return <pie-multiple-choice ref={ref} />;
+}
 ```
 
 ### Web Components
@@ -232,9 +248,9 @@ element.model = {...};
 element.session = {...};
 element.env = {...};
 
-// Listen to events
-element.addEventListener('session-change', (e) => {
-  console.log('New session:', e.detail);
+// Listen to events: the element has written the change into `element.session`.
+element.addEventListener('session-changed', (e) => {
+  console.log('Session:', element.session, 'complete:', e.detail.complete);
 });
 ```
 
@@ -374,45 +390,45 @@ console.log(result.score); // 1.0
 
 ## Events
 
-### session-change
+### session-changed
 
-Fired when student response changes.
+Fired by the delivery element after it writes a learner change into the session object the player set. The event carries metadata only, so read the response off that object. [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#delivery-contract) sets out the full contract.
 
 ```typescript
-interface SessionChangeEvent {
-  detail: PieSession;
+interface SessionChangedEvent extends CustomEvent<{ complete: boolean; component: string }> {
+  complete: boolean; // whether the session is a complete response
+  component: string; // the tag the element is registered under
 }
 ```
 
 **Example:**
 ```javascript
-element.addEventListener('session-change', (event) => {
-  const session = event.detail;
-  console.log('Student answered:', session.value);
+element.session = session;
 
-  // Save to database
-  saveSession(session);
+element.addEventListener('session-changed', (event) => {
+  // The element has written the change into `session`.
+  saveSession(session, { complete: event.detail.complete });
 });
 ```
 
-### model-change
+### model.updated
 
-Fired when model is modified (`configure` mode only).
+Fired by the author element on each edit, as a bubbling `ModelUpdatedEvent` from `@pie-element/shared-configure-events`. [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#authoring-contract) sets out the full contract.
 
 ```typescript
-interface ModelChangeEvent {
-  detail: ElementModel;
+interface ModelUpdatedEvent extends CustomEvent<{ update: ElementModel; reset: boolean }> {
+  update: ElementModel; // the whole model, id and element included
+  reset: boolean; // true: the item player replaces the stored model; legacy pie-author always merges
 }
 ```
 
 **Example:**
 ```javascript
-element.addEventListener('model-change', (event) => {
-  const model = event.detail;
-  console.log('Model updated:', model);
+authorElement.addEventListener('model.updated', (event) => {
+  const { update, reset } = event.detail;
 
   // Auto-save
-  saveModel(model);
+  saveModel(update, { replace: reset });
 });
 ```
 
@@ -678,8 +694,8 @@ Always handle session changes:
 
 ```typescript
 // ✅ Good: Persist session changes
-element.addEventListener('session-change', (e) => {
-  saveSession(e.detail);
+element.addEventListener('session-changed', () => {
+  saveSession(session); // the object set as `element.session`
 });
 
 // ❌ Bad: Ignore session changes (data loss)

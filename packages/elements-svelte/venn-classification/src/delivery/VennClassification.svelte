@@ -3,14 +3,14 @@
     shadow: 'none',
     props: {
       model: { type: 'Object' },
-      session: { type: 'Object' }
+      session: { type: 'Object' },
+      onSessionChange: {}
     }
   }}
 />
 
 <script lang="ts">
 import { onDestroy, onMount, tick, untrack } from 'svelte';
-import { forwardSessionChange } from '@pie-lib/delivery-events-svelte';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Tile from './Tile.svelte';
 import { tileAccessibleName, tileStatusName, type TileVerdict } from './tile-accessible-name.js';
@@ -60,7 +60,11 @@ type ViewModel = {
   teacherInstructions?: string | null;
 };
 
-let props = $props<{ model?: ViewModel; session?: VennSession }>();
+let props = $props<{
+  model?: ViewModel;
+  session?: VennSession;
+  onSessionChange?: (session: VennSession) => void;
+}>();
 
 /** The only circle count the v1 layout draws; `validate()` rejects any other. */
 const SUPPORTED_CIRCLES = 2;
@@ -226,11 +230,7 @@ function commitPlacement(tileId: string, placement: Region | null) {
     placement,
   });
 
-  forwardSessionChange({
-    sourceEl: containerEl,
-    session: next,
-    complete: next.completed === true,
-  });
+  props.onSessionChange?.(next);
 }
 
 function findTile(id: string | null | undefined): VennTile | null {

@@ -9,23 +9,24 @@ import {
   getModelFromSource,
   updateModelInSource,
   openDeliverRoute,
+  mountedElement,
 } from './test-helpers';
 
 /**
  * Stabilized browser tests for simple-cloze author/delivery flows.
  */
 
-const ELEMENT_NAME = 'pie-simple-cloze';
+const ELEMENT = 'simple-cloze';
 
 test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
   test.beforeEach(async ({ page }) => {
-    await openDeliverRoute(page, 'simple-cloze');
-    await expect(page.locator(ELEMENT_NAME).first()).toBeVisible();
+    await openDeliverRoute(page, ELEMENT);
+    await expect(mountedElement(page)).toBeVisible();
   });
 
   test('1. Demo loads correctly on delivery tab', async ({ page }) => {
     await expect(page).toHaveURL(/\/deliver/);
-    const element = page.locator(ELEMENT_NAME);
+    const element = mountedElement(page);
     await expect(element).toBeVisible();
     await expect(element.locator('input, textarea').first()).toBeVisible();
   });
@@ -61,7 +62,7 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
     await updateModelInSource(page, model);
 
     await switchTab(page, 'deliver');
-    await expect(page.locator(ELEMENT_NAME).first()).toBeVisible();
+    await expect(mountedElement(page)).toBeVisible();
 
     await switchTab(page, 'source');
     model.prompt = originalPrompt;
@@ -70,7 +71,7 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
 
   test('6. Switching tabs maintains session state on deliver tab', async ({ page }) => {
     await switchMode(page, 'gather');
-    const input = page.locator(`${ELEMENT_NAME} input[type="text"], ${ELEMENT_NAME} input`).first();
+    const input = mountedElement(page).locator('input[type="text"], input').first();
     await input.fill('5');
     await page.waitForTimeout(600);
     const before = await getSessionState(page);
@@ -78,9 +79,7 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
     await switchTab(page, 'author');
     await page.waitForTimeout(500);
     await switchTab(page, 'deliver');
-    const inputAfter = page
-      .locator(`${ELEMENT_NAME} input[type="text"], ${ELEMENT_NAME} input`)
-      .first();
+    const inputAfter = mountedElement(page).locator('input[type="text"], input').first();
     expect(await inputAfter.inputValue()).toBeTruthy();
     const after = await getSessionState(page);
     expect(JSON.stringify(after ?? {})).toBe(JSON.stringify(before ?? {}));
@@ -120,7 +119,7 @@ test.describe('Simple Cloze (Svelte 5) - Author and Delivery', () => {
 
     await switchTab(page, 'source');
     const sourceModel = await getModelFromSource(page);
-    expect(sourceModel?.element).toBe('simple-cloze');
+    expect(sourceModel?.element).toBe(ELEMENT);
     await switchTab(page, 'deliver');
     await switchMode(page, 'gather');
     await expect(root.locator('input[type="text"], input').first()).toHaveValue(responseValue);

@@ -46,4 +46,37 @@ describe('BuildManager', () => {
     expect(b).toBe('b');
     expect(maxActive).toBeGreaterThanOrEqual(2);
   });
+
+  it('runs builds that share a directory one after another, in request order', async () => {
+    const manager = new BuildManager<string>();
+    const events: string[] = [];
+
+    const makeRunner =
+      (value: string, fail = false) =>
+      async () => {
+        events.push(`start:${value}`);
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        events.push(`end:${value}`);
+        if (fail) {
+          throw new Error(value);
+        }
+        return value;
+      };
+
+    const results = await Promise.allSettled([
+      manager.run('hash:editor', makeRunner('editor', true), 'hash'),
+      manager.run('hash:client-player', makeRunner('client-player'), 'hash'),
+      manager.run('hash:player', makeRunner('player'), 'hash'),
+    ]);
+
+    expect(results.map((result) => result.status)).toEqual(['rejected', 'fulfilled', 'fulfilled']);
+    expect(events).toEqual([
+      'start:editor',
+      'end:editor',
+      'start:client-player',
+      'end:client-player',
+      'start:player',
+      'end:player',
+    ]);
+  });
 });

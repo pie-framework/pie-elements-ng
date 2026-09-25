@@ -9,7 +9,7 @@
  */
 
 import { differenceWith, isEqual, uniq } from '@pie-element/shared-lodash';
-import { combination } from 'js-combinatorics';
+import { Combination } from 'js-combinatorics';
 import debug from 'debug';
 
 const log = debug('pie-elements:placement-ordering:controller');
@@ -50,8 +50,8 @@ export const pairwiseCombinationScore = (correct, answer, opts) => {
     return 0;
   }
 
-  const correctCombo = combination(correct, 2).toArray();
-  const answerCombo = combination(answer, 2).toArray();
+  const correctCombo = new Combination(correct, 2).toArray();
+  const answerCombo = new Combination(answer, 2).toArray();
 
   const diff = differenceWith(answerCombo, correctCombo, isEqual);
 

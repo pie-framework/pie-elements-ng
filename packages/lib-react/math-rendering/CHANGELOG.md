@@ -1,5 +1,11 @@
 # @pie-lib/math-rendering
 
+## 6.0.0-next.4
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+
 ## 6.0.0-next.3
 
 ### Major Changes

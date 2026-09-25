@@ -1,5 +1,18 @@
 # @pie-lib/controller-utils
 
+## 3.0.0-next.4
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+
+## 3.0.0-next.3
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+
 ## 3.0.0-next.2
 
 ### Major Changes

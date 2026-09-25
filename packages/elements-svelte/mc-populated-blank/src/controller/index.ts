@@ -394,7 +394,6 @@ export const validate = (question: McpbQuestion = {}, config: ValidateConfig = {
       'audioBlankTemplateMarginTopRem',
       'audioBlankTemplateMarginBottomRem',
       'audioInstructionsMaxWidthPx',
-      'narrowHorizontalChoiceMaxWidthPx',
       'stimulusGridColumnGapRem',
       'stimulusGridRowGapRem',
       'stimulusSentenceMarginTopRem',

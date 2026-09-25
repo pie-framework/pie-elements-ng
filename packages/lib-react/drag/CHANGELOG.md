@@ -1,5 +1,21 @@
 # @pie-lib/drag
 
+## 4.1.0-next.44
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/render-ui@6.2.0-next.44
+
+## 4.1.0-next.43
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 4.1.0-next.42
 
 ### Patch Changes

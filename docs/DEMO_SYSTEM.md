@@ -144,24 +144,18 @@ export default defineConfig({
 
 **Symptom:** Browser lockup after dragging items in interactive elements.
 
-**Cause:** Bidirectional `$bindable` on session creates infinite loops - player updates element, element fires session-changed, player updates element again.
+**Cause:** The host sets the session back on the element when it hears `session-changed`. Setting `session` dispatches `session-changed` again, so each change triggers itself; a bidirectional `$bindable` on session does this on every update.
 
-**Solution:** Session flows ONE WAY only (element → player):
+**Solution:** Set `session` when the item loads and read each change off that object, which the element writes into ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract)):
 
-```ts
-// ❌ Wrong: bidirectional binding creates loops
-let { session = $bindable({}) } = $props();
+```svelte
+<!-- ❌ Wrong: hands the element a new session on every change -->
+<simple-cloze {model} session={current} onsession-changed={() => (current = { ...current })}></simple-cloze>
 
-// ✅ Correct: read-only, no loop possible
-let { session = {} } = $props();
-let internalSession = $state(session);  // Internal tracking if needed
-
-function handleSessionChange(event) {
-  internalSession = event.detail.session;
-  dispatch('session-changed', event.detail);
-}
+<!-- ✅ Correct: the element writes into `session`; the host only reads it -->
+<simple-cloze {model} {session} onsession-changed={(e) => save(session, e.detail.complete)}></simple-cloze>
 ```
 
-**Key Rule:** Elements own session state. Players observe via events, never push back.
+**Key Rule:** The player owns the session object and the element writes into it. Never set the session back in response to its event.
 
 ---

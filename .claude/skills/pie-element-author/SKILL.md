@@ -40,21 +40,22 @@ src/
     index.ts
   controller/
     index.ts                 # Pure TS controller (no DOM, no Svelte)
-  index.ts                   # ESM root — re-exports all three sub-entries
+  index.ts                   # ESM root — re-exports the delivery default
   index.iife.ts              # IIFE entry — exports delivery component default; NO customElements.define
+  runtime-support.ts         # Runtime support metadata
   types.ts                   # Model, Session, ViewModel — no `any`
 
 package.json                 # "pie": { "controller": "@pie-element/<slug>/controller" }
                              # "exports" map with ./delivery, ./controller, ./controller.js, ./author subpaths
                              # "files" includes controller.js
+                             # "scripts" copied verbatim from venn-classification
 controller.js                # Shim: export * from './dist/controller/index.js'
 docs.contract.json           # PieDocsContract
-vite.config.ts               # ESM delivery build
-vite.config.iife.ts          # IIFE delivery build
-vite.config.controller.ts    # Controller build
-vite.config.author.ts        # Author build
-vitest.config.ts
+svelte.config.js
+tsconfig.json
 ```
+
+The package has no Vite or Vitest config. The build script runs the shared configs in `tools/vite/` (see `docs/PACKAGING_ARCHITECTURE.md`), which discover lanes from the `src/` entries present, and the root `vitest.config.ts` runs the package's tests.
 
 ## Controller Contract
 
@@ -80,9 +81,8 @@ Pattern:
 // In the delivery component, on tile placement / choice selection / etc.
 function handleInteraction(update: SessionUpdate) {
   const next = applyUpdate(session, update);
-  next.completed = isComplete(next, model);  // computed in the same update
-  session = next;
-  dispatch('session-changed', { session });
+  next.completed = isComplete(model, next);  // computed in the same update
+  onSessionChange?.(next);
 }
 ```
 
@@ -98,33 +98,81 @@ Use Svelte 5 runes throughout. Key rules:
 - Side effects: `$effect(() => { … })` — not `$: { … }`.
 - No `$:` reactive statements — those are Svelte 4 and silently misbehave in Svelte 5 rune-mode files.
 - Never add `tag: '...'` inside `<svelte:options customElement={...}>`. Svelte auto-defines that tag at module evaluation, conflicting with player-controlled registration and causing `CustomElementRegistry` duplicate-name errors.
+- Never use `createEventDispatcher` in a custom-element component: in Svelte 5 its events reach only listeners added on the element itself, never an ancestor's, where players listen. Dispatch a DOM event on `$host()`, or use the helpers the dispatch sections below name.
+- Prefix every class name in an element rendered with `shadow: 'none'` (`pie-settings-toggle`, not `toggle`): the host page's CSS reaches it, and a daisyUI `.toggle` or Tailwind `.contents` restyles a bare name.
 
 ## `session-changed` Event Dispatch
 
-Every session mutation must reach the player: the response written into the session object the player handed the element, then a `session-changed` dispatched from the host. The element wrapper (`src/delivery/index.ts`) owns both; the component reports the update through `forwardSessionChange` from `@pie-lib/delivery-events-svelte`, which walks up to the wrapper:
+Every session mutation must reach the player: the response written into the session object the player handed the element, then `session-changed` dispatched from the element. `defineDeliveryElement` from `@pie-lib/delivery-events-svelte` builds the element in `src/delivery/index.ts` and owns both. The component declares an `onSessionChange` callback prop and calls it with each update:
 
-```typescript
-// Component
-import { forwardSessionChange } from '@pie-lib/delivery-events-svelte';
+```svelte
+<svelte:options
+  customElement={{
+    shadow: 'none',
+    props: { model: { type: 'Object' }, session: { type: 'Object' }, onSessionChange: {} },
+  }}
+/>
 
-function handleInteraction(update) {
-  forwardSessionChange({ sourceEl: rootEl, session: { ...session, ...update }, complete: isComplete(...) });
+<script lang="ts">
+let { model, session, onSessionChange } = $props();
+
+function handleInput(value: string) {
+  onSessionChange?.({ ...session, value });
 }
-
-// Wrapper
-import { SessionChangedEvent, writeSessionInPlace } from '@pie-lib/delivery-events-svelte';
-
-onSessionChange = (updatedSession) => {
-  writeSessionInPlace(this._playerSession, updatedSession);
-  this._internalSession = updatedSession;
-  super.session = updatedSession;
-  this.dispatchEvent(new SessionChangedEvent(this.tagName.toLowerCase(), this._isComplete()));
-};
+</script>
 ```
 
-`simple-cloze` is the smallest complete example. The session's `id` and `element` are the player's: it registers the element under a versioned tag and stamps that tag on the entry, so the element never writes either, and names its events after `this.tagName`. Dispatch synchronously; an element that defers the dispatch uses `createSessionNotifier` from `@pie-element/shared-player-events`.
+```typescript
+// src/delivery/index.ts
+import { defineDeliveryElement } from '@pie-lib/delivery-events-svelte';
+import MyElementComponent from './MyElement.svelte';
 
-Never skip dispatching — the player will not know the session changed.
+export default defineDeliveryElement<MyModel, MySession>(MyElementComponent, {
+  isComplete: (model, session) => typeof session?.value === 'string' && session.value.trim() !== '',
+});
+```
+
+The element writes each update into the player's session object (`writeSessionInPlace`), hands the component a fresh reference, and dispatches `session-changed` synchronously with `detail: { complete, component }`: `complete` from `isComplete`, `component` the tag the player registered the element under. The event carries no session; the player reads the response off `element.session`. `model-set` follows a microtask after the model is set, so it reports a restored session's completeness.
+
+`simple-cloze` is the smallest complete example. `mc-populated-blank` subclasses the returned class for element state: it assigns its audio callback props in its constructor, through the component's accessors, and overrides `isComplete()` to wait for the audio. The session's `id` and `element` are the player's, so the component never writes either. A plain `mount()` of the component takes `onSessionChange` as an ordinary prop, which is how component tests observe updates. An element that must defer its dispatch uses `createSessionNotifier` from `@pie-element/shared-player-events` instead.
+
+Never change the session except through `onSessionChange` — the player will not see the response.
+
+## `model.updated` Event Dispatch
+
+The author element meets the Authoring Contract in `docs/PIE_ELEMENT_CONTRACT.md`. `src/author/index.ts` exports the compiled element with no wrapper class:
+
+```typescript
+import AuthorComponent from './Author.svelte';
+
+export default (AuthorComponent as any).element;
+```
+
+`Author.svelte` declares both properties a player sets, fills the model from the controller's defaults and the configuration from `defaults.ts`, and dispatches each edit on `$host()` after assigning it to the host's `model`:
+
+```svelte
+<svelte:options customElement={{ shadow: 'none', props: { model: { type: 'Object' }, configuration: { type: 'Object' } } }} />
+
+<script lang="ts">
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
+import { mergeConfiguration } from '@pie-lib/config-ui-svelte';
+import { createDefaultModel } from '../controller/index';
+import defaults from '../controller/defaults';
+
+let { model, configuration } = $props();
+const m = $derived(createDefaultModel(model || undefined));
+const config = $derived(mergeConfiguration(defaults.configuration, configuration));
+
+function emitModelUpdate(patch: Record<string, unknown>) {
+  const next = { ...m, ...patch };
+  // Through the host: a remount after a detach starts from the host's property.
+  $host<HTMLElement & { model: unknown }>().model = next;
+  $host().dispatchEvent(new ModelUpdatedEvent(next));
+}
+</script>
+```
+
+Settings come from `configuration`: each entry's `label` names its field and its setting, and `settings: true` offers the setting. Lay the view out with `ConfigLayout` and `SettingsPanel` from `@pie-lib/config-ui-svelte`, hiding the panel when `config.settingsPanelDisabled` is true, and pass each rich-text field's label to `EditableHtml` as `ariaLabel`, since its visible label is not tied to the text box. `simple-cloze` is the smallest complete example. An author view that cannot edit yet still declares both properties and sets `supports.esm.author: false` in `src/runtime-support.ts`, as `mc-populated-blank` does.
 
 ## Testing Requirements
 
@@ -147,8 +195,16 @@ Tests must cover all 10 dimensions from `CLAUDE.md`. At minimum:
 - [ ] Renders in `view` mode (read-only, no interaction).
 - [ ] Renders in `evaluate` mode (shows correctness).
 - [ ] Dispatches `session-changed` on interaction.
+- [ ] Listed in the shared contract test, `packages/lib-svelte/delivery-events/tests/delivery-session-contract.test.ts`.
 - [ ] `session.completed` is true after the last required interaction.
 - [ ] Passes axe-core with zero violations in each mode.
+
+**Author element tests** (happy-dom, `tests/author-model-contract.test.ts`):
+
+- [ ] `assertAuthorModelUpdate` from `@pie-element/shared-test-utils` passes for an edit, and the returned event's `detail.update` is the whole edited model.
+- [ ] A second edit builds on the first.
+- [ ] Configured labels name the fields and settings, a `settings: false` entry leaves its setting out, and `settingsPanelDisabled: true` hides the panel.
+- [ ] A placeholder author view runs `assertAuthorElementProperties` instead.
 
 **E2E / accessibility** (Playwright):
 

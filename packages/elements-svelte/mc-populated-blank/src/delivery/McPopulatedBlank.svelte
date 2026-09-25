@@ -5,12 +5,14 @@
       model: { type: 'Object' },
       session: { type: 'Object' },
       options: { type: 'Object' },
+      onSessionChange: {},
+      onAudioStarted: {},
+      onAudioEnded: {},
     },
   }}
 />
 
 <script lang="ts">
-import { forwardSessionChange, resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
 import AudioPlayer from './AudioPlayer.svelte';
 import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
@@ -34,7 +36,14 @@ import { t as translate, tCommon } from './i18n';
 
 const BLANK_TOKEN = '{{blank}}';
 
-let { model, session } = $props<{ model?: any; session?: any; options?: any }>();
+let { model, session, onSessionChange, onAudioStarted, onAudioEnded } = $props<{
+  model?: any;
+  session?: any;
+  options?: any;
+  onSessionChange?: (session: any) => void;
+  onAudioStarted?: () => void;
+  onAudioEnded?: () => void;
+}>();
 const t = (key: string) => translate(key, model?.language);
 let localChoiceId = $state('');
 let toggleCorrectAnswerButtonEl = $state<HTMLButtonElement | null>(null);
@@ -189,22 +198,14 @@ const templateParts = $derived.by(() => {
   return { before, after };
 });
 
-// The player owns the session's `id` and `element` (the versioned tag it
-// registered this element under), so neither is written here.
-function emitSession(updatedSession: any, sourceEl?: HTMLElement | null) {
-  forwardSessionChange({
-    sourceEl,
-    session: updatedSession,
-    complete: !!updatedSession?.choiceId,
-  });
-}
-
 function onRadioChange(e: Event) {
   const input = e.target as HTMLInputElement;
   if (!input.checked) return;
   const choiceId = input.value;
   localChoiceId = choiceId;
-  emitSession({ ...session, choiceId }, input);
+  // The player owns the session's `id` and `element` (the versioned tag it
+  // registered this element under), so neither is written here.
+  onSessionChange?.({ ...session, choiceId });
 }
 
 function toggleCorrectAnswer() {
@@ -248,14 +249,6 @@ const featureAudioSkin = $derived(
   })
 );
 
-function onAudioStarted() {
-  resolveDeliveryHost(rootEl)?.onAudioStarted?.();
-}
-
-function onAudioEnded() {
-  resolveDeliveryHost(rootEl)?.onAudioEnded?.();
-}
-
 // Follows the session both ways: a player that resets or replaces the session
 // clears the selection instead of leaving the previous pick on screen.
 $effect(() => {
@@ -294,7 +287,7 @@ $effect(() => {
 
 <div
   bind:this={rootEl}
-  class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
+  class={`mc-populated-blank-root pie-element pie-element-mc-populated-blank pie-delivery-root layout-${layoutProfile} choice-mode-${choiceMode} ${variantRootClass} ${hasInlineSentenceAudioLayout ? 'has-inline-audio' : ''}`}
   lang={lang}
   style={layout.rootStyle}
   data-mpb-css={VARIANT_CSS_KEY}
@@ -730,14 +723,6 @@ $effect(() => {
       flex-direction: column;
       align-items: flex-start;
       justify-content: flex-start;
-    }
-
-    .layout-audio_blank_only .choice-row-horizontal,
-    .layout-token_sequence .choice-row-horizontal,
-    .layout-stimulus_image_blank .choice-row-horizontal,
-    .layout-inline_sentence.has-inline-audio .choice-row-horizontal {
-      width: min(100%, var(--mpb-narrow-choice-max-width, 230px));
-      align-items: flex-start;
     }
   }
 </style>

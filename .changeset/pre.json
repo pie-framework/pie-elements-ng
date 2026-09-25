@@ -80,7 +80,8 @@
     "@pie-element/cli": "0.1.1",
     "@pie-element/element-a11y-demo": "0.1.1",
     "@pie-element/learnosity-parity-demo": "0.1.1",
-    "@pie-element/shared-lodash": "0.1.0"
+    "@pie-element/shared-lodash": "0.1.0",
+    "@pie-lib/config-ui-svelte": "0.1.0"
   },
   "changesets": [
     "20260501125058-pie-element-multiple-choice",
@@ -147,8 +148,25 @@
     "20260923110007-pie-element-image-cloze-association",
     "20260923110008-pie-lib-test-utils",
     "20260923110009-pie-element-cli",
+    "20260924-delivery-events-svelte-define-delivery-element",
+    "20260924-element-bundler-queue-shared-directory",
+    "20260924-element-bundler-svelte-rune-modules",
+    "20260924-element-bundler-workspace-closure",
+    "20260924-element-bundler-workspace-sources",
+    "20260924-element-player-model-before-session",
+    "20260924-mc-populated-blank-narrow-tile-limit",
+    "20260924-mc-populated-blank-print-renders-delivery",
+    "20260924-pie-1091-simple-cloze-author-host-css",
+    "20260924-pie-1092-mc-populated-blank-choice-contrast",
+    "20260924-pie-1093-mc-populated-blank-r1-inline-sentence",
+    "20260924-pie-1098-placement-ordering-scoring",
+    "20260924-pie-793-mc-populated-blank-g-stem-underline",
+    "20260924-svelte-element-root-reexports-delivery",
     "20260924003325-pie-element-placement-ordering",
     "20260924073633-pie-element-categorize-pie-element-chart",
+    "20260925014324-pie-lib-plot",
+    "20260925021601-pie-element-categorize-pie-element-chart",
+    "author-contract-test-helpers",
     "common-cougars-hang",
     "floppy-sites-watch",
     "mc-populated-blank-installable-manifest",
@@ -156,6 +174,8 @@
     "passage-tabs-follow-the-theme",
     "pie-1041-move-lib-versions-off-contested-bases",
     "print-shim-publish-contract",
+    "svelte-author-configuration",
+    "svelte-author-model-updated",
     "vendored-lodash-runtime"
   ]
 }

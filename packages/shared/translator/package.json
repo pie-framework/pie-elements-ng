@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/translator",
-  "version": "5.0.0-next.4",
+  "version": "5.0.0-next.5",
   "description": "UI string translations shared by the React and Svelte PIE elements",
   "repository": {
     "type": "git",

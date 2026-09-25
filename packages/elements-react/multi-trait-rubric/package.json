@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/multi-trait-rubric",
-  "version": "8.1.2-next.13",
+  "version": "8.1.2-next.15",
   "description": "React implementation of multi-trait-rubric element synced from pie-elements",
   "repository": {
     "type": "git",
@@ -83,7 +83,7 @@
   "devDependencies": {
     "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

@@ -51,18 +51,24 @@ export async function selectDemo(page: Page, demoId: string) {
 }
 
 /**
- * Navigate by query param, preserving current route state.
+ * Navigate by query param through the SvelteKit router, so the demo's in-memory
+ * session survives; `page.goto` reloads the document and clears it.
  */
 async function navigateWithQueryParam(page: Page, name: string, value: string) {
-  const nextUrl = await page.evaluate(
+  await page.evaluate(
     ({ key, nextValue }) => {
       const url = new URL(window.location.href);
       url.searchParams.set(key, nextValue);
-      return url.toString();
+      const link = document.createElement('a');
+      link.href = url.pathname + url.search;
+      // The router handles clicks on links inside its container, app.html's body wrapper.
+      (document.querySelector('body > div[style*="contents"]') ?? document.body).append(link);
+      link.click();
+      link.remove();
     },
     { key: name, nextValue: value }
   );
-  await page.goto(nextUrl);
+  await page.waitForURL((url) => url.searchParams.get(name) === value, { timeout: 10_000 });
 }
 
 /**
@@ -130,8 +136,10 @@ export async function getSessionState(page: Page): Promise<any> {
  */
 export async function selectMultipleChoiceOption(page: Page, optionValue: string) {
   // Multiple choice element uses labels with data-value or input with value
-  const selector = `pie-multiple-choice input[value="${optionValue}"], pie-multiple-choice label[data-value="${optionValue}"]`;
-  await page.click(selector);
+  await deliveryContainer(page)
+    .locator(`input[value="${optionValue}"], label[data-value="${optionValue}"]`)
+    .first()
+    .click();
 
   // Wait for any state updates
   await page.waitForTimeout(500);
@@ -149,22 +157,6 @@ export async function getScore(page: Page): Promise<number | null> {
 
   const match = scoreText.match(/(\d+(?:\.\d+)?)/);
   return match ? parseFloat(match[1]) : null;
-}
-
-/**
- * Check if element is marked as correct
- */
-export async function isMarkedCorrect(page: Page): Promise<boolean> {
-  const correctIndicator = page.locator('[data-testid="correct-indicator"]');
-  return await correctIndicator.isVisible().catch(() => false);
-}
-
-/**
- * Click the "Show correct answer" button
- */
-export async function clickShowCorrectAnswer(page: Page) {
-  await page.click('[data-testid="show-correct-answer"]');
-  await page.waitForTimeout(500);
 }
 
 /**
@@ -197,12 +189,25 @@ export async function getModelFromSource(page: Page): Promise<any> {
  * Update the model in the source tab and apply changes
  */
 export async function updateModelInSource(page: Page, model: any) {
-  // Focus the editor
-  await page.click('[data-testid="source-editor"]');
+  const editor = page.locator('[data-testid="source-editor"] [contenteditable="true"]');
 
-  // Select all and replace
+  // Clear the editor first: pasting over a whole-document selection drops the newlines, and
+  // pasting into the emptied code block keeps them
+  await editor.click();
   await page.keyboard.press('ControlOrMeta+A');
-  await page.keyboard.type(JSON.stringify(model, null, 2));
+  await page.keyboard.press('Backspace');
+
+  // Paste in one event; typing a model key by key nears the test timeout
+  await editor.evaluate(
+    (node, text) => {
+      const clipboardData = new DataTransfer();
+      clipboardData.setData('text/plain', text);
+      node.dispatchEvent(
+        new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true })
+      );
+    },
+    JSON.stringify(model, null, 2)
+  );
 
   // Click apply button
   await page.click('[data-testid="apply-changes"]');
@@ -218,41 +223,40 @@ export async function hasUnsavedChanges(page: Page): Promise<boolean> {
   return isEnabled;
 }
 
+export type PlayerView = 'delivery' | 'author' | 'print';
+
 /**
- * Wait for element to be loaded and ready
+ * Selector for the element the player mounted for a view. The ESM and IIFE strategies register
+ * the delivery element under different tags, so specs find it through the player.
  */
-export async function waitForElementReady(page: Page, elementName: string) {
-  const candidates = elementName.includes('-')
-    ? [elementName, `pie-${elementName}`]
-    : [elementName];
+export function mountedElementSelector(view: PlayerView = 'delivery'): string {
+  return `pie-element-player[view="${view}"] .element-player-mount > *`;
+}
 
-  await page.waitForFunction(
-    (names) => names.some((name: string) => customElements.get(name) !== undefined),
-    candidates,
-    {
-      timeout: 10_000,
-    }
-  );
+/**
+ * The element the player mounted for a view.
+ */
+export function mountedElement(page: Page, view: PlayerView = 'delivery'): Locator {
+  return page.locator(mountedElementSelector(view)).first();
+}
 
-  for (const candidate of candidates) {
-    if (
-      await page
-        .locator(candidate)
-        .first()
-        .isVisible()
-        .catch(() => false)
-    ) {
-      return;
-    }
-  }
-  await page.waitForSelector(candidates.join(', '), { state: 'attached', timeout: 10_000 });
+/**
+ * Wait for the player to mount the element for a view and for its tag to be defined.
+ */
+export async function waitForElementReady(page: Page, view: PlayerView = 'delivery') {
+  const element = mountedElement(page, view);
+  await element.waitFor({ state: 'attached', timeout: 10_000 });
+  const tagName = await element.evaluate((node) => node.localName);
+  await page.waitForFunction((name) => customElements.get(name) !== undefined, tagName, {
+    timeout: 10_000,
+  });
 }
 
 /**
  * Get all available choices from a multiple choice element
  */
 export async function getMultipleChoiceOptions(page: Page): Promise<string[]> {
-  const inputs = await page.locator('pie-multiple-choice input[type="radio"]').all();
+  const inputs = await deliveryContainer(page).locator('input[type="radio"]').all();
   const values: string[] = [];
 
   for (const input of inputs) {
@@ -267,7 +271,7 @@ export async function getMultipleChoiceOptions(page: Page): Promise<string[]> {
  * Get the selected value from a multiple choice element
  */
 export async function getSelectedValue(page: Page): Promise<string | null> {
-  const selected = await page.locator('pie-multiple-choice input[type="radio"]:checked').first();
+  const selected = deliveryContainer(page).locator('input[type="radio"]:checked').first();
   return await selected.getAttribute('value').catch(() => null);
 }
 
@@ -321,17 +325,19 @@ export async function waitForSessionMutation(
   return await getSessionState(page);
 }
 
-/**
- * Click inside first visible SVG in scope.
- */
-export async function clickSvgCenter(scope: Locator, page: Page) {
-  const svg = scope.locator('svg').first();
-  await svg.waitFor({ state: 'visible', timeout: 10_000 });
-  const box = await svg.boundingBox();
-  if (!box) {
-    throw new Error('SVG bounding box unavailable');
+/** Click the number line at the tick labelled `tick`; the preselected point type is added there. */
+export async function clickNumberLineTick(page: Page, root: Locator, tick = '0') {
+  // The line is the only svg with explicit width/height; the correct-answer toggle's
+  // hidden icons come first in DOM order.
+  const line = root.locator(`${mountedElementSelector()} svg[width][height]`).first();
+  await line.waitFor({ state: 'visible', timeout: 10_000 });
+  const lineBox = await line.boundingBox();
+  const tickBox = await line.locator('text').getByText(tick, { exact: true }).first().boundingBox();
+  if (!lineBox || !tickBox) {
+    throw new Error('Number line or tick label has no bounding box');
   }
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.click(tickBox.x + tickBox.width / 2, lineBox.y + lineBox.height / 2);
+  await page.waitForTimeout(150);
 }
 
 /**
@@ -495,9 +501,26 @@ export async function dragAnyCandidateToTarget(
 }
 
 /**
- * Move to evaluate mode as instructor.
+ * The element's evaluate state: its correct-answer toggle, a correctness marker, or,
+ * for elements without a correct answer, its locked controls. The demo shows no score.
+ */
+export function evaluateSignal(root: Locator): Locator {
+  return root
+    .getByText(/show correct answer|hide correct answer/i)
+    .or(root.locator('.correct, .incorrect, .correct-fill, .incorrect-fill'))
+    .or(
+      root.locator('input:disabled, input[readonly], textarea[readonly], [contenteditable="false"]')
+    )
+    .filter({ visible: true })
+    .first();
+}
+
+/**
+ * Move to evaluate mode as instructor; the Scorer toggle sets both.
  */
 export async function switchToEvaluate(page: Page) {
   await switchRole(page, 'instructor');
-  await switchMode(page, 'evaluate');
+  await page.waitForURL((url) => url.searchParams.get('mode') === 'evaluate', {
+    timeout: 10_000,
+  });
 }

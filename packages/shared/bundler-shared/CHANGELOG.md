@@ -1,5 +1,14 @@
 # @pie-element/element-bundler
 
+## 0.1.2-next.2
+
+### Patch Changes
+
+- ec4e868: Builds of the same dependencies for different bundles, such as separate `editor` and `client-player` requests, run one after another, because they install into and write to the same directory.
+- 0b4b1a9: Svelte rune modules (`.svelte.ts`, `.svelte.js`) are compiled by Svelte, so runes such as `$state` work in a bundle.
+- 0611171: Exports `findWorkspacePackages` and `workspaceDependencyClosure`, which give the workspace packages a `workspace-fast` build of given elements reads, so a caller can key its bundle cache on them.
+- 67e7141: `workspace-fast` builds bundle every workspace package from its sources, so no element, shared or `@pie-lib` package needs building first and an edited element bundles its current source. Workspace packages are linked by package name, and Svelte components compile with `customElement` as the elements' own builds do.
+
 ## 0.1.2-next.1
 
 ### Patch Changes

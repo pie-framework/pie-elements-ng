@@ -900,30 +900,21 @@ bun add @pie-element/multiple-choice
 
 ## Usage
 
-### React
+The package exports a custom element. The host sets `model` and `session` as properties; the element writes each change into `session` and dispatches `session-changed`, as the [Delivery Contract](https://github.com/pie-framework/pie-elements-ng/blob/develop/docs/PIE_ELEMENT_CONTRACT.md#delivery-contract) sets out.
 
-\`\`\`tsx
-import { MultipleChoice } from '@pie-element/multiple-choice';
+\`\`\`js
+import MultipleChoice from '@pie-element/multiple-choice/delivery';
 
-<MultipleChoice
-  model={model}
-  session={session}
-  env={env}
-  onSessionChange={setSession}
-/>
+customElements.define('pie-multiple-choice', MultipleChoice);
+
+const element = document.createElement('pie-multiple-choice');
+element.model = model;
+element.session = session;
+element.addEventListener('session-changed', (e) => save(session, e.detail.complete));
+document.body.append(element);
 \`\`\`
 
-### Svelte
-
-\`\`\`svelte
-<script>
-  import { MultipleChoice } from '@pie-element/multiple-choice';
-
-  let session = $state({ value: null });
-</script>
-
-<MultipleChoice {model} bind:session {env} />
-\`\`\`
+The [API reference](https://github.com/pie-framework/pie-elements-ng/blob/develop/docs/API_REFERENCE.md#component-props) shows React and Svelte hosts.
 ```
 
 #### 7. Update Tracking

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/number-line",
-  "version": "13.1.2-next.12",
+  "version": "13.1.2-next.15",
   "description": "",
   "repository": {
     "type": "git",
@@ -90,7 +90,7 @@
   "devDependencies": {
     "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

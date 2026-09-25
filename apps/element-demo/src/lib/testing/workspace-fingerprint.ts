@@ -1,21 +1,21 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
+import { findWorkspacePackages, workspaceDependencyClosure } from '@pie-element/element-bundler';
 
 type BuildDependency = { name: string; version: string };
 
 interface CacheSaltInput {
   workspaceRoot: string;
   dependencies: BuildDependency[];
-  packageDirs: string[];
   requestedBundles: string[];
   resolutionMode: 'workspace-fast' | 'prod-faithful';
   sourceMaps: boolean;
-  extraFiles?: string[];
 }
 
-const FINGERPRINT_SCHEMA_VERSION = '1';
-const DEFAULT_ROOT_FILES = ['bun.lock', 'package.json'];
+const FINGERPRINT_SCHEMA_VERSION = '2';
+const BUNDLER_PACKAGE = '@pie-element/element-bundler';
+const ROOT_FILES = ['bun.lock', 'package.json'];
 const SKIP_DIRS = new Set([
   '.git',
   '.cache',
@@ -46,7 +46,6 @@ const HASHED_EXTENSIONS = new Set([
 ]);
 
 const fileHashCache = new Map<string, { cacheKey: string; digest: string }>();
-const dirFileCache = new Map<string, { cacheKey: string; files: string[] }>();
 
 function extension(path: string): string {
   const idx = path.lastIndexOf('.');
@@ -61,14 +60,9 @@ function sortUnique(values: string[]): string[] {
   return Array.from(new Set(values)).sort();
 }
 
+// Walked on every call: a directory's mtime changes only when its own entries do, so a file list
+// cached on it would miss files added or removed in nested directories.
 function listRelevantFiles(dir: string): string[] {
-  const stats = statSync(dir);
-  const cacheKey = `${stats.mtimeMs}:${stats.size}`;
-  const cached = dirFileCache.get(dir);
-  if (cached && cached.cacheKey === cacheKey) {
-    return cached.files;
-  }
-
   const files: string[] = [];
   const stack = [dir];
 
@@ -94,9 +88,7 @@ function listRelevantFiles(dir: string): string[] {
     }
   }
 
-  files.sort();
-  dirFileCache.set(dir, { cacheKey, files });
-  return files;
+  return files.sort();
 }
 
 function fileDigest(path: string): string {
@@ -119,35 +111,33 @@ function dependencySignature(dependencies: BuildDependency[]): string {
     .join('+');
 }
 
-function normalizedPackageDirs(workspaceRoot: string, packageDirs: string[]): string[] {
-  return sortUnique(
-    packageDirs
-      .map((dir) => resolve(dir))
-      .filter((dir) => dir.startsWith(resolve(workspaceRoot)))
-      .filter((dir) => existsSync(dir))
-  );
-}
-
-export function resolveElementPackageDir(
+/**
+ * The directories a `workspace-fast` build of `dependencies` reads: every workspace package in
+ * their `dependencies` closure, and the bundler's own sources. A bundler resolved from the registry
+ * has no workspace sources; `bun.lock` pins it instead.
+ */
+export function workspaceBuildInputDirs(
   workspaceRoot: string,
-  packageName: string
-): string | null {
-  if (!packageName.startsWith('@pie-element/')) {
-    return null;
+  dependencies: BuildDependency[]
+): string[] {
+  const packages = findWorkspacePackages(workspaceRoot);
+  const dirs = workspaceDependencyClosure(
+    packages,
+    dependencies.map((dep) => dep.name)
+  ).map((pkg) => pkg.dir);
+  const bundler = packages.find((pkg) => pkg.name === BUNDLER_PACKAGE);
+  if (bundler) {
+    dirs.push(join(bundler.dir, 'src'));
   }
-  const elementName = packageName.replace('@pie-element/', '');
-  const dir = join(workspaceRoot, 'packages', 'elements-react', elementName);
-  return existsSync(dir) ? dir : null;
+  return sortUnique(dirs.map((dir) => resolve(dir)).filter((dir) => existsSync(dir)));
 }
 
-export function createWorkspaceCacheSalt(input: CacheSaltInput): string {
+export function createWorkspaceCacheSaltForDependencies(input: CacheSaltInput): string {
   const workspaceRoot = resolve(input.workspaceRoot);
   const manifestHash = createHash('sha256');
-  const packageDirs = normalizedPackageDirs(workspaceRoot, input.packageDirs);
-  const rootFiles = [...DEFAULT_ROOT_FILES, ...(input.extraFiles || [])]
-    .map((file) => join(workspaceRoot, file))
-    .filter((file) => existsSync(file))
-    .sort();
+  const rootFiles = ROOT_FILES.map((file) => join(workspaceRoot, file)).filter((file) =>
+    existsSync(file)
+  );
 
   manifestHash.update(`schema:${FINGERPRINT_SCHEMA_VERSION}\n`);
   manifestHash.update(`resolution:${input.resolutionMode}\n`);
@@ -161,9 +151,8 @@ export function createWorkspaceCacheSalt(input: CacheSaltInput): string {
     );
   }
 
-  for (const packageDir of packageDirs) {
-    const files = listRelevantFiles(packageDir);
-    for (const filePath of files) {
+  for (const dir of workspaceBuildInputDirs(workspaceRoot, input.dependencies)) {
+    for (const filePath of listRelevantFiles(dir)) {
       manifestHash.update(
         `file:${toPosix(relative(workspaceRoot, filePath))}:${fileDigest(filePath)}\n`
       );
@@ -171,27 +160,4 @@ export function createWorkspaceCacheSalt(input: CacheSaltInput): string {
   }
 
   return `workspace-v${FINGERPRINT_SCHEMA_VERSION}-${manifestHash.digest('hex').slice(0, 24)}`;
-}
-
-export function createWorkspaceCacheSaltForDependencies(input: {
-  workspaceRoot: string;
-  dependencies: BuildDependency[];
-  requestedBundles: string[];
-  resolutionMode: 'workspace-fast' | 'prod-faithful';
-  sourceMaps: boolean;
-  extraFiles?: string[];
-}): string {
-  const packageDirs = input.dependencies
-    .map((dep) => resolveElementPackageDir(input.workspaceRoot, dep.name))
-    .filter((dir): dir is string => Boolean(dir));
-
-  return createWorkspaceCacheSalt({
-    workspaceRoot: input.workspaceRoot,
-    dependencies: input.dependencies,
-    packageDirs,
-    requestedBundles: input.requestedBundles,
-    resolutionMode: input.resolutionMode,
-    sourceMaps: input.sourceMaps,
-    extraFiles: input.extraFiles,
-  });
 }

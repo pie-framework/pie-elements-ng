@@ -79,6 +79,7 @@ describe('PieElementPlayer runtimeSupportCheck reactivity', () => {
     player.strategy = 'esm';
     player.view = 'delivery';
     player.runtimeSupportCheck = 'off';
+    player.model = { id: '1' };
     document.body.appendChild(player);
 
     await waitForAssertion(() => {

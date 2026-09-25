@@ -1,5 +1,24 @@
 # @pie-lib/config-ui
 
+## 14.0.0-next.38
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.38
+  - @pie-lib/render-ui@6.2.0-next.44
+
+## 14.0.0-next.37
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.37
+  - @pie-lib/icons@5.0.0-next.1
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 14.0.0-next.36
 
 ### Patch Changes

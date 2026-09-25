@@ -1,12 +1,13 @@
 /**
- * The authoring contract between this element and a player. An authoring
- * player listens for `model.updated` at its root, so each edit must bubble out
- * of the element as that event, carrying the whole model: fields the form does
- * not edit, `id` and the player's versioned `element` included.
+ * This element's side of the authoring contract. `assertAuthorModelUpdate`
+ * checks what every author element owes a host; the rest covers what this
+ * element's edits and configuration produce.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushSync } from 'svelte';
+import { assertAuthorModelUpdate } from '@pie-element/shared-test-utils';
 import VennClassificationAuthor from '../src/author/index.js';
+import defaults from '../src/controller/defaults.js';
 
 // The author's live preview typesets math, and the test DOM cannot load MathJax.
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: vi.fn() }));
@@ -33,16 +34,24 @@ const MODEL = {
 
 let root: HTMLElement | null = null;
 
-async function mount(model: Record<string, unknown> = MODEL) {
+async function settle() {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  flushSync();
+}
+
+async function mount(
+  model: Record<string, unknown> = MODEL,
+  configuration?: Record<string, unknown>
+) {
   root = document.createElement('div');
   document.body.appendChild(root);
   const updates: CustomEvent[] = [];
-  root.addEventListener('model.updated', (e) => updates.push(e as CustomEvent), true);
   const element = document.createElement(TAG) as any;
+  root.addEventListener('model.updated', (e) => updates.push(e as CustomEvent), true);
   root.appendChild(element);
   element.model = structuredClone(model);
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  flushSync();
+  if (configuration) element.configuration = configuration;
+  await settle();
   return { element, updates };
 }
 
@@ -56,25 +65,29 @@ function type(input: Element, value: string) {
   flushSync();
 }
 
+const settingLabels = (element: HTMLElement) =>
+  [
+    ...element.querySelectorAll('aside input[role="switch"], aside .pie-settings-choice > legend'),
+  ].map((el) => (el.closest('label') ?? el).textContent?.trim());
+
 afterEach(() => {
   root?.remove();
   root = null;
 });
 
 describe('venn-classification author model contract', () => {
-  it('announces an edit at the player root with the whole model', async () => {
-    const { element, updates } = await mount();
-    type(tileInputs(element, 1)[1], 'Wolf');
-
-    expect(updates).toHaveLength(1);
-    const update = updates[0].detail.update;
-    expect(update.tiles[1]).toEqual({ id: 't2', label: 'Wolf', correctRegion: [0] });
-    expect(update).toMatchObject({
-      id: '7',
-      element: 'venn-classification--version-0-0-0',
-      rubricNotes: 'Kept',
+  it('meets the authoring contract, announcing the whole model', async () => {
+    const { event, cleanup } = await assertAuthorModelUpdate({
+      tag: TAG,
+      model: MODEL,
+      settle,
+      edit: (element) => type(tileInputs(element, 1)[1], 'Wolf'),
     });
-    expect(element.model).toEqual(update);
+    const update = event.detail.update as any;
+
+    expect(update.tiles[1]).toEqual({ id: 't2', label: 'Wolf', correctRegion: [0] });
+    expect(update.rubricNotes).toBe('Kept');
+    cleanup();
   });
 
   it('adds no id or element the item did not have', async () => {
@@ -111,12 +124,58 @@ describe('venn-classification author model contract', () => {
     expect(regions).toEqual(['Both', 'Mammals only']);
   });
 
-  it('calls an onChange callback without recursing into its own setter', async () => {
-    const { element } = await mount();
-    const onChange = vi.fn();
-    element.onChange = onChange;
+  it('builds each edit on the previous one', async () => {
+    const { element, updates } = await mount();
+    type(tileInputs(element, 0)[1], 'Orca');
+    type(tileInputs(element, 1)[1], 'Wolf');
+
+    expect(updates.at(-1)?.detail.update.tiles.map((t: any) => t.label)).toEqual(['Orca', 'Wolf']);
+  });
+
+  it("fills fields the item lacks from the controller's defaults", async () => {
+    const { element, updates } = await mount({ tiles: MODEL.tiles, rubricNotes: 'Kept' });
     type(tileInputs(element, 0)[1], 'Orca');
 
-    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(updates[0].detail.update).toEqual({
+      ...defaults.model,
+      tiles: [{ ...MODEL.tiles[0], label: 'Orca' }, MODEL.tiles[1]],
+      rubricNotes: 'Kept',
+    });
+  });
+
+  it('names its settings and fields after the configuration', async () => {
+    const { element } = await mount(MODEL, {
+      prompt: { label: 'Question' },
+      scoringPolicy: { label: 'Scoring' },
+    });
+
+    expect(settingLabels(element)).toEqual(['Question', 'Teacher Instructions', 'Scoring']);
+    expect(
+      [...element.querySelectorAll('.editor-column > .field-group > .field-header')]
+        .slice(0, 2)
+        .map((el) => el.textContent?.trim())
+    ).toEqual(['Teacher Instructions', 'Question']);
+    expect(
+      [...element.querySelectorAll('.editor-column [contenteditable]')]
+        .slice(0, 2)
+        .map((el) => el.getAttribute('aria-label'))
+    ).toEqual(['Teacher Instructions', 'Question']);
+  });
+
+  it('sets the scoring policy from the settings panel', async () => {
+    const { element, updates } = await mount();
+    (element.querySelector('aside input[value="allOrNothing"]') as HTMLInputElement).click();
+    flushSync();
+
+    expect(updates.at(-1)?.detail.update).toMatchObject({
+      scoringPolicy: 'allOrNothing',
+      rubricNotes: 'Kept',
+    });
+  });
+
+  it('leaves out settings the configuration does not offer', async () => {
+    const { element } = await mount(MODEL, { scoringPolicy: { settings: false } });
+
+    expect(settingLabels(element)).toEqual(['Prompt', 'Teacher Instructions']);
   });
 });
