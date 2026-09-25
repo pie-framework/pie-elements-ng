@@ -14,6 +14,7 @@ import {
   getSelectedValue,
   deliveryContainer,
   switchToEvaluate,
+  mountedElement,
 } from './test-helpers';
 
 /**
@@ -23,7 +24,6 @@ import {
 
 const DEMO_ID = 'math-algebra-quadratic';
 const ELEMENT = 'multiple-choice';
-const ELEMENT_NAME = `${ELEMENT}-element`;
 const CORRECT_ANSWER = 'opt2'; // The correct quadratic formula
 const INCORRECT_ANSWER = 'opt1'; // Incorrect formula with wrong discriminant sign
 
@@ -34,7 +34,7 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for the element to be ready
-    await waitForElementReady(page, ELEMENT_NAME);
+    await waitForElementReady(page);
     await waitForMathRendering(page);
   });
 
@@ -55,14 +55,14 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
 
     // Wait for page to reload with the selected demo
     await page.waitForLoadState('networkidle');
-    await waitForElementReady(page, ELEMENT_NAME);
+    await waitForElementReady(page);
     await waitForMathRendering(page);
 
     // Verify the URL contains the demo parameter
     expect(page.url()).toContain(`demo=${DEMO_ID}`);
 
     // Verify the prompt is displayed (contains "quadratic formula")
-    const prompt = page.locator(ELEMENT_NAME);
+    const prompt = mountedElement(page);
     await expect(prompt).toContainText('quadratic formula');
 
     // Verify LaTeX math is rendered (should see the equation ax^2 + bx + c = 0)
@@ -238,10 +238,10 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     // Switch back to deliver
     await switchTab(page, 'deliver');
     await expect(page).toHaveURL(/\/deliver/);
-    await waitForElementReady(page, ELEMENT_NAME);
+    await waitForElementReady(page);
 
     // Verify we're back on the delivery view
-    const multipleChoice = page.locator(ELEMENT_NAME);
+    const multipleChoice = mountedElement(page);
     await expect(multipleChoice).toBeVisible();
   });
 
@@ -266,11 +266,11 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
 
     // Switch to deliver tab
     await switchTab(page, 'deliver');
-    await waitForElementReady(page, ELEMENT_NAME);
+    await waitForElementReady(page);
     await waitForMathRendering(page);
 
     // Delivery should remain usable after source apply.
-    const multipleChoice = page.locator(ELEMENT_NAME);
+    const multipleChoice = mountedElement(page);
     await expect(multipleChoice).toBeVisible();
 
     // Restore original prompt
@@ -314,10 +314,10 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
 
         // Switch to deliver tab
         await switchTab(page, 'deliver');
-        await waitForElementReady(page, ELEMENT_NAME);
+        await waitForElementReady(page);
 
         // The change should be reflected in the delivery view
-        const deliverView = page.locator(ELEMENT_NAME);
+        const deliverView = mountedElement(page);
         if (originalValue !== 'AUTHOR_MODIFIED_TEST') {
           // Only check if we actually made a change
           await expect(deliverView).toContainText('AUTHOR_MODIFIED_TEST');
@@ -364,7 +364,7 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
 
     // 8. Switch back to deliver
     await switchTab(page, 'deliver');
-    await waitForElementReady(page, ELEMENT_NAME);
+    await waitForElementReady(page);
 
     // 9. Verify selection is still active
     const selectedValue = await getSelectedValue(page);
