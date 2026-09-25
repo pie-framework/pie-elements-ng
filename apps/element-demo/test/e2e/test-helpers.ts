@@ -189,12 +189,25 @@ export async function getModelFromSource(page: Page): Promise<any> {
  * Update the model in the source tab and apply changes
  */
 export async function updateModelInSource(page: Page, model: any) {
-  // Focus the editor
-  await page.click('[data-testid="source-editor"]');
+  const editor = page.locator('[data-testid="source-editor"] [contenteditable="true"]');
 
-  // Select all and replace
+  // Clear the editor first: pasting over a whole-document selection drops the newlines, and
+  // pasting into the emptied code block keeps them
+  await editor.click();
   await page.keyboard.press('ControlOrMeta+A');
-  await page.keyboard.type(JSON.stringify(model, null, 2));
+  await page.keyboard.press('Backspace');
+
+  // Paste in one event; typing a model key by key nears the test timeout
+  await editor.evaluate(
+    (node, text) => {
+      const clipboardData = new DataTransfer();
+      clipboardData.setData('text/plain', text);
+      node.dispatchEvent(
+        new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true })
+      );
+    },
+    JSON.stringify(model, null, 2)
+  );
 
   // Click apply button
   await page.click('[data-testid="apply-changes"]');
