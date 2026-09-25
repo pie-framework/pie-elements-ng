@@ -55,7 +55,7 @@ Notes:
 - **`choices`**: `{ id, labelHtml? }` or `{ id, imageUrl, imageAlt }` per mode
 - **`correctChoiceId`**
 - **`hasAudio`**, **`audioUrl`**, **`audioTranscript`** (`audioUrl` required when `hasAudio=true`)
-- **`autoplayAudioEnabled`**, **`completeAudioEnabled`** (optional integration flags)
+- **`autoplayAudioEnabled`**, **`completeAudioEnabled`** (optional integration flags). `completeAudioEnabled` keeps the item incomplete until the audio has played to the end, whether or not autoplay is on.
 - **`layoutLimits`** (optional): numeric visual constraints; defaults are based on current CQT parity behavior and can be overridden per item
 - **`layoutProfilePresets`** (optional): named preset map by `layoutProfile`; use profile as a template and override with `layoutLimits`
 - **`audioButtonSkin`** / **`audioButtonSkinsByLocale`** (optional): override listen-button skin URLs

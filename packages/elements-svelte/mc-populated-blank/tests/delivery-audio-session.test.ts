@@ -128,6 +128,32 @@ describe('mc-populated-blank audio session', () => {
     expect(atDocument.at(-1)?.detail.complete).toBe(true);
   });
 
+  it('waits for the audio with autoplay off too', () => {
+    // The learner starts the audio with the listen button; it still has to
+    // play to the end before the pick counts.
+    const { element, atDocument } = mount(undefined, {
+      ...AUDIO_MODEL,
+      autoplayAudioEnabled: false,
+    });
+
+    element.onSessionChange({ id: '1', element: TAG, choiceId: 'a' });
+    expect(atDocument.at(-1)?.detail.complete).toBe(false);
+
+    element.onAudioEnded();
+    expect(atDocument.at(-1)?.detail.complete).toBe(true);
+  });
+
+  it('does not wait for the audio when completeAudioEnabled is off', () => {
+    const { element, atDocument } = mount(undefined, {
+      ...AUDIO_MODEL,
+      completeAudioEnabled: false,
+    });
+
+    element.onSessionChange({ id: '1', element: TAG, choiceId: 'a' });
+
+    expect(atDocument.at(-1)?.detail.complete).toBe(true);
+  });
+
   it('stays complete when the player re-sets the model after the audio ended', () => {
     // Autoplay re-fires only for a new `audioUrl`, so the finished playback
     // must survive a re-set of the same model.
