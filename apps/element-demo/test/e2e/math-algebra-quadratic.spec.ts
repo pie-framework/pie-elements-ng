@@ -6,13 +6,14 @@ import {
   switchRole,
   getSessionState,
   selectMultipleChoiceOption,
-  getScore,
   switchTab,
   getModelFromSource,
   updateModelInSource,
   waitForElementReady,
   getMultipleChoiceOptions,
   getSelectedValue,
+  deliveryContainer,
+  switchToEvaluate,
 } from './test-helpers';
 
 /**
@@ -21,14 +22,15 @@ import {
  */
 
 const DEMO_ID = 'math-algebra-quadratic';
-const ELEMENT_NAME = 'pie-multiple-choice';
+const ELEMENT = 'multiple-choice';
+const ELEMENT_NAME = `${ELEMENT}-element`;
 const CORRECT_ANSWER = 'opt2'; // The correct quadratic formula
 const INCORRECT_ANSWER = 'opt1'; // Incorrect formula with wrong discriminant sign
 
 test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to multiple-choice element demo page
-    await page.goto('/multiple-choice/deliver');
+    await page.goto(`/${ELEMENT}/deliver`);
     await page.waitForLoadState('networkidle');
 
     // Wait for the element to be ready
@@ -60,7 +62,7 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     expect(page.url()).toContain(`demo=${DEMO_ID}`);
 
     // Verify the prompt is displayed (contains "quadratic formula")
-    const prompt = page.locator('pie-multiple-choice');
+    const prompt = page.locator(ELEMENT_NAME);
     await expect(prompt).toContainText('quadratic formula');
 
     // Verify LaTeX math is rendered (should see the equation ax^2 + bx + c = 0)
@@ -149,140 +151,52 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     expect(sessionState.value).toContain(CORRECT_ANSWER);
   });
 
-  test('4. In evaluate mode as instructor, correct answer is marked and "Show correct answer" button works', async ({
+  test('4. In evaluate mode as instructor, an incorrect selection is marked and "Show correct answer" reveals the answer', async ({
     page,
   }) => {
     await selectDemo(page, DEMO_ID);
 
-    // Make a selection (any answer)
     await switchMode(page, 'gather');
     await selectMultipleChoiceOption(page, INCORRECT_ANSWER);
     await page.waitForTimeout(1000);
 
-    // Switch to instructor role and evaluate mode
-    await switchRole(page, 'instructor');
-    await switchMode(page, 'evaluate');
+    await switchToEvaluate(page);
+    const root = deliveryContainer(page);
+    await expect(root.locator('.incorrect-fill').first()).toBeVisible();
+    await expect(root.locator('.correct-fill')).toHaveCount(0);
 
-    // Check if "Show correct answer" button exists
-    const showCorrectButton = page.locator('[data-testid="show-correct-answer"]');
-
-    // If button doesn't exist with data-testid, try finding by text
-    const buttonByText = page.locator('button:has-text("Show correct answer")');
-    const button = (await showCorrectButton.count()) > 0 ? showCorrectButton : buttonByText;
-
-    if ((await button.count()) > 0) {
-      // Verify button is visible
-      await expect(button.first()).toBeVisible();
-
-      // Click the button
-      await button.first().click();
-      await page.waitForTimeout(1000);
-
-      // Verify correct answer is now shown/highlighted
-      // The correct answer should be visible in the element
-      const correctChoice = page.locator(`pie-multiple-choice [data-value="${CORRECT_ANSWER}"]`);
-      if ((await correctChoice.count()) > 0) {
-        await expect(correctChoice.first()).toBeVisible();
-      }
-    }
-
-    // Check for correct answer indicator/marking
-    // Multiple choice elements typically show which answer is correct in evaluate mode
-    const multipleChoice = page.locator(ELEMENT_NAME);
-    await expect(multipleChoice).toBeVisible();
-
-    // Some themes expose explicit correctness classes, others only score/show-correct controls.
-    const feedbackOrMarking = page.locator('.correct, [data-correct="true"], .feedback');
-    const scoringOrToggle = page.locator(
-      '[data-testid="score-value"], [data-testid="scoring-panel"], button:has-text("Show correct answer"), button:has-text("Hide correct answer")'
-    );
-    const hasFeedback = (await feedbackOrMarking.count()) > 0;
-    const hasScoringOrToggle = (await scoringOrToggle.count()) > 0;
-    expect(hasFeedback || hasScoringOrToggle).toBeTruthy();
+    const toggle = root.getByText('Show correct answer');
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+    await expect(root.getByText('Hide correct answer')).toBeVisible();
+    await expect(root.locator('.correct-fill').first()).toBeVisible();
   });
 
-  test('5. Incorrect selection in evaluate mode shows score of 0', async ({ page }) => {
+  test('5. Incorrect selection in evaluate mode is marked incorrect', async ({ page }) => {
     await selectDemo(page, DEMO_ID);
 
-    // Select incorrect answer
     await switchMode(page, 'gather');
     await selectMultipleChoiceOption(page, INCORRECT_ANSWER);
     await page.waitForTimeout(1000);
 
-    // Switch to evaluate mode as instructor
-    await switchRole(page, 'instructor');
-    await switchMode(page, 'evaluate');
-    await page.waitForTimeout(1000);
-
-    // Check the scoring panel for score
-    const scoringPanel = page.locator('[data-testid="scoring-panel"]');
-
-    if ((await scoringPanel.count()) > 0) {
-      await expect(scoringPanel).toBeVisible();
-
-      // Look for score display
-      const scoreDisplay = page.locator('[data-testid="score-value"], .score');
-      if ((await scoreDisplay.count()) > 0) {
-        const scoreText = await scoreDisplay.first().textContent();
-        expect(scoreText).toContain('0');
-      }
-    }
-
-    // Also check if we can get score from helper function
-    const score = await getScore(page);
-    if (score !== null) {
-      expect(score).toBe(0);
-    }
-
-    // Verify evaluate signals are visible for an incorrect selection.
-    const incorrectIndicator = page.locator('.incorrect, [data-correct="false"]');
-    const hasIncorrectIndicator = (await incorrectIndicator.count()) > 0;
-    const hasScoringSignal =
-      (await page.locator('[data-testid="score-value"], [data-testid="scoring-panel"]').count()) >
-      0;
-    expect(hasIncorrectIndicator || hasScoringSignal || score !== null).toBeTruthy();
+    await switchToEvaluate(page);
+    const root = deliveryContainer(page);
+    await expect(root.locator('.incorrect-fill').first()).toBeVisible();
+    await expect(root.locator('.correct-fill')).toHaveCount(0);
   });
 
-  test('6. Correct selection in evaluate mode shows score of 1', async ({ page }) => {
+  test('6. Correct selection in evaluate mode is marked correct', async ({ page }) => {
     await selectDemo(page, DEMO_ID);
 
-    // Select correct answer
     await switchMode(page, 'gather');
     await selectMultipleChoiceOption(page, CORRECT_ANSWER);
     await page.waitForTimeout(1000);
 
-    // Switch to evaluate mode as instructor
-    await switchRole(page, 'instructor');
-    await switchMode(page, 'evaluate');
-    await page.waitForTimeout(1000);
-
-    // Check the scoring panel for score
-    const scoringPanel = page.locator('[data-testid="scoring-panel"]');
-
-    if ((await scoringPanel.count()) > 0) {
-      await expect(scoringPanel).toBeVisible();
-
-      // Look for score display showing 1
-      const scoreDisplay = page.locator('[data-testid="score-value"], .score');
-      if ((await scoreDisplay.count()) > 0) {
-        const scoreText = await scoreDisplay.first().textContent();
-        expect(scoreText).toContain('1');
-      }
-    }
-
-    // Also check if we can get score from helper function
-    const score = await getScore(page);
-    if (score !== null) {
-      expect(score).toBe(1);
-    }
-
-    // Verify evaluate signals are visible for a correct selection.
-    const correctIndicator = page.locator('.correct, [data-correct="true"]');
-    const hasCorrectIndicator = (await correctIndicator.count()) > 0;
-    const hasScoringSignal =
-      (await page.locator('[data-testid="score-value"], [data-testid="scoring-panel"]').count()) >
-      0;
-    expect(hasCorrectIndicator || hasScoringSignal || score !== null).toBeTruthy();
+    await switchToEvaluate(page);
+    const root = deliveryContainer(page);
+    await expect(root.locator('.correct-fill')).toHaveCount(1);
+    await expect(root.locator('.incorrect-fill')).toHaveCount(0);
+    await expect(root.getByText('Show correct answer')).not.toBeVisible();
   });
 
   test('7. Switching between author, print, and source tabs works (session state not maintained)', async ({
@@ -372,7 +286,7 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     await switchTab(page, 'author');
 
     // Check if configure component is present
-    const configureElement = page.locator('pie-multiple-choice-configure');
+    const configureElement = page.locator(`${ELEMENT}-configure`);
 
     if ((await configureElement.count()) > 0) {
       await expect(configureElement).toBeVisible();
@@ -432,15 +346,11 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     expect(sessionState.value).toContain(CORRECT_ANSWER);
 
     // 4. Switch to evaluate mode as instructor
-    await switchRole(page, 'instructor');
-    await switchMode(page, 'evaluate');
+    await switchToEvaluate(page);
 
-    // 5. Verify score is 1
-    await page.waitForTimeout(1000);
-    const scoringPanel = page.locator('[data-testid="scoring-panel"], .scoring');
-    if ((await scoringPanel.count()) > 0) {
-      await expect(scoringPanel.first()).toContainText('1');
-    }
+    // 5. Verify the selection is marked correct
+    const root = deliveryContainer(page);
+    await expect(root.locator('.correct-fill')).toHaveCount(1);
 
     // 6. Switch to source tab
     await switchTab(page, 'source');
@@ -468,14 +378,10 @@ test.describe('Math Algebra Quadratic Demo - Multiple Choice Element', () => {
     await page.waitForTimeout(1000);
 
     // 12. Evaluate again
-    await switchRole(page, 'instructor');
-    await switchMode(page, 'evaluate');
-    await page.waitForTimeout(1000);
+    await switchToEvaluate(page);
 
-    // 13. Verify score is now 0
-    if ((await scoringPanel.count()) > 0) {
-      const scoreText = await scoringPanel.first().textContent();
-      expect(scoreText).toContain('0');
-    }
+    // 13. Verify the selection is now marked incorrect
+    await expect(root.locator('.incorrect-fill').first()).toBeVisible();
+    await expect(root.locator('.correct-fill')).toHaveCount(0);
   });
 });

@@ -1,6 +1,7 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import {
   deliveryContainer,
+  evaluateSignal,
   getSessionState,
   interactOnce,
   openDeliverRoute,
@@ -55,7 +56,11 @@ async function interactStructured(page: Page, element: string, root: Locator) {
   }
 
   if (element === 'select-text') {
-    const token = root.locator('.tokenRootClass, [data-indexkey]').first();
+    // Hidden sample tokens precede the selectable ones.
+    const token = root
+      .locator('.tokenRootClass, [data-indexkey]')
+      .filter({ visible: true })
+      .first();
     if (await token.isVisible().catch(() => false)) {
       await token.click({ force: true });
       return;
@@ -99,12 +104,13 @@ test.describe('Phase 2: Structured and matching interactions', () => {
 
       await switchToEvaluate(page);
       await expect(root).toBeVisible();
-      const evaluateSignal = page
-        .locator(
-          '[data-testid="score-value"], [data-testid="scoring-panel"], [data-testid="show-correct-answer"], button:has-text("Show correct answer"), button:has-text("Hide correct answer")'
-        )
-        .first();
-      await expect(evaluateSignal).toBeVisible({ timeout: 15_000 });
+      if (element === 'math-inline') {
+        // math-inline puts its correct-answer toggle in a tooltip on the response.
+        await root.locator('.static-math').first().hover();
+        await expect(page.getByText('Show correct answer')).toBeVisible({ timeout: 15_000 });
+        return;
+      }
+      await expect(evaluateSignal(root)).toBeVisible({ timeout: 15_000 });
     });
   }
 });
