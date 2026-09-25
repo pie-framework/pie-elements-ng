@@ -336,6 +336,35 @@ const collectReachableBrowserJsFiles = (dir, browserExportTargets) => {
   return reachable;
 };
 
+const RELATIVE_CSS_REFERENCE_PATTERN = /["'`](\.{1,2}\/[^"'`\s]+\.css)["'`]/g;
+
+/**
+ * Every stylesheet in a browser-loaded output directory must be referenced by a module
+ * reachable from that directory's entries.
+ *
+ * Browser ESM hosts load no element CSS, so a stylesheet no module loads never applies. Vite
+ * library mode produces exactly that by default: it extracted MathQuill's CSS into
+ * dist/browser/<name>.css, nothing loaded it, and every math field rendered unstyled.
+ * tools/vite/browser-css-loader.ts makes each chunk load its own CSS; this is the tripwire
+ * for a build lane that loses it.
+ */
+const collectUnloadedStylesheetViolations = (dir, outputDir, reachableJsFiles, loadedFrom) => {
+  const referenced = new Set();
+  for (const filePath of reachableJsFiles) {
+    const source = readFileSync(filePath, 'utf8');
+    for (const match of source.matchAll(RELATIVE_CSS_REFERENCE_PATTERN)) {
+      referenced.add(path.resolve(path.dirname(filePath), match[1]));
+    }
+  }
+  return collectPackageJsFiles(outputDir, { extensions: ['.css'] })
+    .filter((cssFile) => !referenced.has(cssFile))
+    .map(
+      (cssFile) =>
+        `${toPosix(path.relative(dir, cssFile))} is not loaded by ${loadedFrom}, and hosts load no element CSS`
+    )
+    .sort();
+};
+
 const collectBareImportSpecifiers = (source) => {
   const specifiers = [];
   for (const line of source.split(/\r?\n/)) {
@@ -433,6 +462,14 @@ const collectBrowserEsmViolations = (dir, pkg) => {
       violations.push(`${relPath} must not auto-register the public element tag`);
     }
   }
+  violations.push(
+    ...collectUnloadedStylesheetViolations(
+      dir,
+      browserDir,
+      reachableJsFiles,
+      'any module reachable from the ./browser/* exports'
+    )
+  );
   if (maxBrowserJsBytesPerPackage > 0 && browserJsBytes > maxBrowserJsBytesPerPackage) {
     violations.push(
       `dist/browser reachable JS size ${browserJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
@@ -501,6 +538,20 @@ const collectSharedRuntimeDependencyViolations = (pkg) => {
   return violations;
 };
 
+// module/print.js is loaded by the same kind of host: the @pie-framework/pie-print client
+// injects no CSS either. A missing module/print.js is reported by collectLegacyPrintViolations.
+const collectLegacyPrintStylesheetViolations = (dir, pkg) => {
+  if (!pkg.exports?.['./print'] || !existsSync(path.join(dir, 'module', 'print.js'))) {
+    return [];
+  }
+  return collectUnloadedStylesheetViolations(
+    dir,
+    path.join(dir, 'module'),
+    collectReachableBrowserJsFiles(dir, ['./module/print.js']),
+    'module/print.js'
+  );
+};
+
 export const collectManifestViolations = (dir, pkg) => {
   const violations = [];
   if (Array.isArray(pkg.files)) {
@@ -533,6 +584,7 @@ export const collectManifestViolations = (dir, pkg) => {
   collectExportKeyViolations(pkg, violations);
   violations.push(...collectControllerContractViolations(dir, pkg));
   violations.push(...collectBrowserEsmViolations(dir, pkg));
+  violations.push(...collectLegacyPrintStylesheetViolations(dir, pkg));
   violations.push(...collectSharedRuntimeDependencyViolations(pkg));
 
   const targets = new Set();
