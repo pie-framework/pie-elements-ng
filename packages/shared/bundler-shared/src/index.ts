@@ -87,9 +87,10 @@ export class Bundler {
     emit('queued');
     console.log(`[bundler] Building bundle ${hash} with ${request.dependencies.length} dependencies`);
 
-    return this.buildManager.run(buildKey, async () =>
-      this.runBuild(request, hash, requestedBundles, includeControllers, sourceMaps, startTime, emit)
-    );
+    const runner = () =>
+      this.runBuild(request, hash, requestedBundles, includeControllers, sourceMaps, startTime, emit);
+    // Every build of `hash` installs into and writes to the same directories, so they queue.
+    return this.buildManager.run(buildKey, runner, hash);
   }
 
   private async runBuild(
