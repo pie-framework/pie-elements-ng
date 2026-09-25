@@ -380,17 +380,28 @@ oclif-based CLI for:
 - **CI/CD**: GitHub Actions (ci.yml, e2e.yml, release.yml)
 - **Automated releases**: Via GitHub Actions
 - **`develop` auto-releases `-next.N`**: A merge into `develop` versions and publishes in the
-  same Release run, with no version PR. Packages whose shipping files changed in the push get a
+  same Release run, with no version PR. Every package holding unreleased shipping code gets a
   `patch` changeset synthesized by `scripts/release-synthesize-changesets.mjs`, then CI runs
   `changeset version`, commits the bump directly to `develop`, and publishes under the `next`
   dist-tag. `master` keeps the version-PR flow.
-- **A hand-written changeset still wins**: synthesis skips any package a pending changeset in the
-  same push already names, so an authored bump type and summary survive. Write one whenever the
-  change deserves a real changelog entry or a `minor`/`major` bump — the synthesized summary is
-  only the merge commit subject.
+- **Release intent is per package, not per push**: a package counts as unreleased when its own
+  shipping files changed after its own `version` last moved. That is what makes the pipeline
+  self-healing — a Release run that fails or is cancelled loses nothing, because the next run
+  measures the same question and picks its packages up. Do not reintroduce a push range or a
+  single repo-wide "last release commit" baseline: the auto-release push rebases onto the branch
+  tip when a merge lands mid-run, which leaves the bump commit sitting above code it never
+  released, and both of those baselines then drop that code silently (PIE-1073).
+- **A hand-written changeset still wins**: synthesis skips any package a pending changeset
+  already names, so an authored bump type and summary survive. Write one whenever the change
+  deserves a real changelog entry or a `minor`/`major` bump — the synthesized summary is only the
+  head commit subject.
 - **Non-shipping paths do not release**: changes confined to tests, specs, snapshots and
   package-local vitest/playwright config synthesize nothing. Private packages and
   `.changeset/config.json`'s `ignore` list are never selected.
+- **A dropped release is never silent**: after an auto-release run, `scripts/release-report-dropped.mjs`
+  re-measures what the run set out to release and fails an otherwise-green run that left any of it
+  unpublished. Packages that became outstanding mid-run are listed, not failed — their own Release
+  run releases them.
 - **Default bump policy**: Always use `patch` by default for releases/versioning.
 - Use `minor` or `major` only when the user explicitly requests it.
 - **Selective publish only**: Publish only selected packages and changeset-propagated dependents, never all unpublished packages.
