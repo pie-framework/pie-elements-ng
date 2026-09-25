@@ -1,5 +1,12 @@
 # @pie-lib/delivery-events-svelte
 
+## 0.2.0-next.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-player-events@0.1.1-next.1
+
 ## 0.2.0-next.2
 
 ### Minor Changes

@@ -1,5 +1,17 @@
 # @pie-element/match-list
 
+## 7.1.2-next.17
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-feedback@0.1.1-next.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.1
+  - @pie-element/shared-player-events@0.1.1-next.1
+  - @pie-lib/drag@4.1.0-next.45
+  - @pie-lib/render-ui@6.2.0-next.45
+  - @pie-lib/correct-answer-toggle@5.0.0-next.47
+
 ## 7.1.2-next.16
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @pie-element/rubric
 
+## 8.1.2-next.16
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-configure-events@0.1.1-next.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.1
+  - @pie-lib/render-ui@6.2.0-next.45
+  - @pie-lib/config-ui@14.0.0-next.39
+  - @pie-lib/rubric@3.0.0-next.39
+
 ## 8.1.2-next.15
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @pie-element/extended-text-entry
 
+## 15.1.2-next.17
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-configure-events@0.1.1-next.0
+  - @pie-element/shared-feedback@0.1.1-next.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.1
+  - @pie-element/shared-player-events@0.1.1-next.1
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.39
+  - @pie-lib/render-ui@6.2.0-next.45
+  - @pie-lib/config-ui@14.0.0-next.39
+
 ## 15.1.2-next.16
 
 ### Patch Changes

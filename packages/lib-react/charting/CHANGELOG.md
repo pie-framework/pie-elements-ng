@@ -1,5 +1,15 @@
 # @pie-lib/charting
 
+## 8.0.0-next.42
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.1
+  - @pie-lib/render-ui@6.2.0-next.45
+  - @pie-lib/config-ui@14.0.0-next.39
+  - @pie-lib/plot@5.0.0-next.40
+
 ## 8.0.0-next.41
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pie-element/learnosity-parity-demo
 
+## 0.1.2-next.10
+
+### Patch Changes
+
+- @pie-element/element-player@0.1.2-next.4
+
 ## 0.1.2-next.9
 
 ### Patch Changes

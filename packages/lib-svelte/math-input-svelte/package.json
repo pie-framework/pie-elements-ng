@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-input-svelte",
-  "version": "0.1.1-next.0",
+  "version": "0.1.1-next.1",
   "private": true,
   "description": "Placeholder math input and static math components for Svelte 5",
   "type": "module",

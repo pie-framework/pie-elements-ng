@@ -1,5 +1,12 @@
 # @pie-lib/math-input-svelte
 
+## 0.1.1-next.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.1
+
 ## 0.1.1-next.0
 
 ### Patch Changes

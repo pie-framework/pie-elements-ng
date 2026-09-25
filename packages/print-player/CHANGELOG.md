@@ -1,5 +1,11 @@
 # @pie-element/print-player
 
+## 1.0.2-next.0
+
+### Patch Changes
+
+- Merge pull request #193 from pie-framework/feat/PIE-1085
+
 ## 1.0.1
 
 ### Patch Changes

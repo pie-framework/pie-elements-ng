@@ -1,5 +1,16 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.18
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [7077034]
+  - @pie-element/shared-configure-events@0.1.1-next.0
+  - @pie-element/shared-player-events@0.1.1-next.1
+  - @pie-element/multiple-choice@13.4.0-next.13
+  - @pie-lib/config-ui@14.0.0-next.39
+
 ## 14.2.2-next.17
 
 ### Patch Changes

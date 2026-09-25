@@ -1,5 +1,24 @@
 # @pie-element/multiple-choice
 
+## 13.4.0-next.13
+
+### Minor Changes
+
+- 7077034: `completeAudioEnabled` now works on its own. With prompt audio present, the item only reports `complete: true` once the audio has played to the end, whether autoplay, the audio button or the native controls started it. Previously the setting only took effect when `autoplayAudioEnabled` was also on.
+
+  Behaviour change for hosts that set `completeAudioEnabled` without `autoplayAudioEnabled`: those items no longer report complete right after a response; they wait for the prompt audio to finish. The "click to enable audio" overlay still only appears with autoplay on.
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/shared-configure-events@0.1.1-next.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.1
+  - @pie-element/shared-player-events@0.1.1-next.1
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.39
+  - @pie-lib/render-ui@6.2.0-next.45
+  - @pie-lib/config-ui@14.0.0-next.39
+  - @pie-lib/correct-answer-toggle@5.0.0-next.47
+
 ## 13.3.5-next.12
 
 ### Patch Changes

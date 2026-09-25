@@ -1,5 +1,18 @@
 # @pie-element/matrix
 
+## 4.1.2-next.16
+
+### Patch Changes
+
+- e79662b: `outcome()` scores a session without `value`, as a player sends for an untouched item, as `{ score: 0, empty: true }`, where it threw.
+- Updated dependencies
+  - @pie-element/shared-configure-events@0.1.1-next.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.1
+  - @pie-element/shared-player-events@0.1.1-next.1
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.39
+  - @pie-lib/render-ui@6.2.0-next.45
+  - @pie-lib/config-ui@14.0.0-next.39
+
 ## 4.1.2-next.15
 
 ### Patch Changes

@@ -1,5 +1,20 @@
 # @pie-element/graphing-solution-set
 
+## 6.1.2-next.18
+
+### Patch Changes
+
+- e79662b: The author element merges the host's configuration over its defaults, as the element contract requires, so a configuration without `language` no longer throws.
+- Updated dependencies
+  - @pie-element/shared-configure-events@0.1.1-next.0
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.1
+  - @pie-element/shared-player-events@0.1.1-next.1
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.39
+  - @pie-lib/render-ui@6.2.0-next.45
+  - @pie-lib/graphing-solution-set@5.0.0-next.42
+  - @pie-lib/config-ui@14.0.0-next.39
+  - @pie-lib/correct-answer-toggle@5.0.0-next.47
+
 ## 6.1.2-next.17
 
 ### Patch Changes
