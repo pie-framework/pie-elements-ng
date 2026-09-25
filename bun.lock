@@ -1173,6 +1173,7 @@
       "name": "@pie-element/mc-populated-blank",
       "version": "0.3.0-next.14",
       "devDependencies": {
+        "@pie-element/shared-test-utils": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
@@ -1188,6 +1189,8 @@
       "devDependencies": {
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+        "@pie-element/shared-test-utils": "workspace:*",
+        "@pie-lib/config-ui-svelte": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
         "@pie-lib/translator": "workspace:*",
@@ -1206,6 +1209,8 @@
       "devDependencies": {
         "@pie-element/shared-configure-events": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+        "@pie-element/shared-test-utils": "workspace:*",
+        "@pie-lib/config-ui-svelte": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
         "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
         "@pie-lib/translator": "workspace:*",
@@ -1862,6 +1867,16 @@
       "peerDependencies": {
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
+      },
+    },
+    "packages/lib-svelte/config-ui-svelte": {
+      "name": "@pie-lib/config-ui-svelte",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@sveltejs/vite-plugin-svelte": "^7.0.0",
+        "svelte": "^5.57.0",
+        "typescript": "^5.9.3",
+        "vite": "^8.1.5",
       },
     },
     "packages/lib-svelte/delivery-events": {
@@ -2590,6 +2605,8 @@
     "@pie-lib/charting": ["@pie-lib/charting@workspace:packages/lib-react/charting"],
 
     "@pie-lib/config-ui": ["@pie-lib/config-ui@workspace:packages/lib-react/config-ui"],
+
+    "@pie-lib/config-ui-svelte": ["@pie-lib/config-ui-svelte@workspace:packages/lib-svelte/config-ui-svelte"],
 
     "@pie-lib/controller-utils": ["@pie-lib/controller-utils@workspace:packages/lib-react/controller-utils"],
 

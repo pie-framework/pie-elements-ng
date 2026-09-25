@@ -631,8 +631,8 @@ interface Session {
 **Flow**:
 
 1. User interacts with element
-2. Component updates `session` via `$bindable()`
-3. Parent receives `onSessionChange` event
+2. The element writes the change into the session object the player set
+3. The element dispatches `session-changed`, and the player reads that session object ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract))
 4. Session persisted (by consumer application)
 5. On page reload, session passed back to element
 
@@ -1114,26 +1114,21 @@ Planned extension points:
 
 ## Best Practices
 
-### Session State: One-Way Data Flow
+### Session State Write-Through
 
-**Rule:** Session flows from element → player only, never back.
+**Rule:** The player sets `session` when the item loads; the element writes each change into that object and dispatches `session-changed`, which carries no session ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract)). The player reads the response off its object and never sets it back.
 
 ```svelte
-<!-- ❌ Wrong: bidirectional creates infinite loops -->
-let { session = $bindable({}) } = $props();
-$effect(() => { element.session = session; });  // Triggers loop
+<!-- ❌ Wrong: hands the element a new session on every change -->
+<simple-cloze {model} session={current} onsession-changed={() => (current = { ...current })}></simple-cloze>
 
-<!-- ✅ Correct: read-only, observe via events -->
-let { session = {} } = $props();
-let internalSession = $state(session);
-
-function handleSessionChange(event) {
-  internalSession = event.detail.session;
-  dispatch('session-changed', event.detail);
-}
+<!-- ✅ Correct: the element writes into `session`; the host only reads it -->
+<simple-cloze {model} {session} onsession-changed={(e) => save(session, e.detail.complete)}></simple-cloze>
 ```
 
-**Why:** Elements own their session state (user responses). Players observe changes via events. Pushing session back to elements creates loops: update → effect → element fires event → update → repeat.
+**Why:** Setting `session` dispatches `session-changed`, so a player that sets it back on each event loops: event → set → event.
+
+A player built as a Svelte custom element forwards the change with a DOM event from its host (`$host().dispatchEvent(...)`). `createEventDispatcher` in a custom element reaches only listeners added on that element, never an ancestor's.
 
 ### Use $bindable Sparingly
 
@@ -1141,7 +1136,7 @@ Use `$bindable` only for true bidirectional flow:
 
 - ✅ UI controls: `mode`, `playerRole`, `splitRatio`
 - ✅ Settings: `partialScoring`, `addCorrectResponse`
-- ❌ Session state (element owns it)
+- ❌ Session state (the element writes into the player's object)
 - ❌ Derived values (use `$derived` instead)
 
 ## Future Enhancements
