@@ -59,7 +59,6 @@ export default class ImageClozeAssociation extends HTMLElement {
 
   isComplete() {
     const {
-      autoplayAudioEnabled,
       completeAudioEnabled,
       completeResponses,
       duplicateResponses,
@@ -69,8 +68,9 @@ export default class ImageClozeAssociation extends HTMLElement {
     } = this._model || {};
     const elementContext = this;
 
-    // check audio completion if audio settings are enabled and audio actually exists
-    if (autoplayAudioEnabled && completeAudioEnabled && !this.audioComplete) {
+    // check audio completion if the setting is enabled and audio actually exists,
+    // whether the audio is started by autoplay or by the student
+    if (completeAudioEnabled && !this.audioComplete) {
       if (elementContext) {
         const audio = elementContext.querySelector('audio');
         const isInsidePrompt = audio && audio.closest('.preview-prompt');
@@ -185,7 +185,10 @@ export default class ImageClozeAssociation extends HTMLElement {
           const isInsidePrompt = audio && audio.closest('.preview-prompt');
 
           if (!this._model) return;
-          if (!this._model.autoplayAudioEnabled) return;
+
+          const { autoplayAudioEnabled, completeAudioEnabled } = this._model;
+
+          if (!autoplayAudioEnabled && !completeAudioEnabled) return;
           if (audio && !isInsidePrompt) return;
           if (!audio) return;
 
@@ -200,17 +203,19 @@ export default class ImageClozeAssociation extends HTMLElement {
             document.removeEventListener('click', enableAudio);
           };
 
-          // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
-          // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
-          setTimeout(() => {
-            if (audio.paused && !this.querySelector('#play-audio-info')) {
-              // add info message as a toast to enable audio playback
-              container.appendChild(info);
-              document.addEventListener('click', enableAudio);
-            } else {
-              document.removeEventListener('click', enableAudio);
-            }
-          }, 500);
+          if (autoplayAudioEnabled) {
+            // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
+            // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
+            setTimeout(() => {
+              if (audio.paused && !this.querySelector('#play-audio-info')) {
+                // add info message as a toast to enable audio playback
+                container.appendChild(info);
+                document.addEventListener('click', enableAudio);
+              } else {
+                document.removeEventListener('click', enableAudio);
+              }
+            }, 500);
+          }
 
           // we need to listen for the playing event to remove the toast in case the audio plays because of re-rendering
           const handlePlaying = () => {

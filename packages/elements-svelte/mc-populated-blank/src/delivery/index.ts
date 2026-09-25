@@ -7,9 +7,12 @@ const DeliveryElement = defineDeliveryElement<McpbQuestion, McpbSession>(
   { isComplete: (_model, session) => !!session?.choiceId }
 );
 
-/** Autoplayed audio the learner must hear to the end before a pick counts as complete. */
+/**
+ * Audio the learner must hear to the end before a pick counts as complete,
+ * whether autoplay or the learner started it.
+ */
 function requiresAudioCompletion(model: McpbQuestion | undefined): boolean {
-  return !!model?.autoplayAudioEnabled && !!model?.completeAudioEnabled && !!model?.hasAudio;
+  return !!model?.completeAudioEnabled && !!model?.hasAudio;
 }
 
 class McPopulatedBlankElement extends DeliveryElement {
