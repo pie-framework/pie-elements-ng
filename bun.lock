@@ -37,7 +37,7 @@
     },
     "apps/element-a11y-demo": {
       "name": "@pie-element/element-a11y-demo",
-      "version": "0.1.2-next.8",
+      "version": "0.1.2-next.9",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -69,7 +69,7 @@
     },
     "apps/element-demo": {
       "name": "@pie-element/element-demo",
-      "version": "0.1.2-next.8",
+      "version": "0.1.2-next.9",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -109,7 +109,7 @@
     },
     "apps/learnosity-parity-demo": {
       "name": "@pie-element/learnosity-parity-demo",
-      "version": "0.1.2-next.8",
+      "version": "0.1.2-next.9",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -141,7 +141,7 @@
     },
     "packages/element-player": {
       "name": "@pie-element/element-player",
-      "version": "0.1.2-next.2",
+      "version": "0.1.2-next.3",
       "dependencies": {
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
       },
