@@ -152,6 +152,31 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      # When merges land close together, the run for an earlier one starts after develop has
+      # already moved on, so this checkout is behind the branch. Versioning from a stale tree is
+      # how PIE-1073 produced its worst outcomes: `changeset version` recomputes bumps from the
+      # versions in the tree, so it lands on numbers a previous run already published, and the
+      # tarball is built from code that is not what develop holds. Release runs on develop are
+      # serialized by the concurrency group above, so at this point the remote tip is the whole
+      # truth about the branch — release that instead.
+      #
+      # develop only. master keeps the version-PR flow, where the run must publish exactly the
+      # merged version commit and nothing that landed after it.
+      - name: Fast-forward to the branch tip (develop auto-release)
+        if: github.event_name == 'push' && github.ref_name == 'develop'
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git fetch --force origin "+refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+          tip="$(git rev-parse "refs/remotes/origin/${BRANCH}")"
+          if [ "${tip}" != "${{ github.sha }}" ]; then
+            echo "::notice::${BRANCH} advanced from ${{ github.sha }} to ${tip} before this run started; releasing the tip."
+          fi
+          git reset --hard "${tip}"
+          git --no-pager log -1 --format='Releasing %h %s' HEAD
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -186,18 +211,22 @@ jobs:
 
           echo "has_version_bumps=${has_version_bumps}" >> "$GITHUB_OUTPUT"
 
-      # A merge into develop publishes `-next.N` on its own. Packages whose shipping files
-      # changed in this push get a patch changeset synthesized here, so no author has to
-      # remember one; a hand-written changeset in the same push wins and is left untouched.
-      # Skipped when the push already carries version bumps (the master version-PR flow).
+      # A merge into develop publishes `-next.N` on its own. Every package with unreleased
+      # shipping code gets a patch changeset synthesized here, so no author has to remember one;
+      # a hand-written changeset wins and is left untouched. Skipped when the push already
+      # carries version bumps (the master version-PR flow).
+      #
+      # The selection is everything outstanding, not just this push's range, so a run that was
+      # cancelled or failed does not take its packages down with it — see the header of
+      # scripts/release-synthesize-changesets.mjs. `release-intent.json` records what this run
+      # set out to release, which the last step checks against the branch.
       - name: Synthesize changesets for develop auto-release
         id: synthesize
         if: github.event_name == 'push' && github.ref_name == 'develop' && steps.detect.outputs.has_version_bumps != 'true'
         shell: bash
-        env:
-          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
-          GITHUB_SHA: ${{ github.sha }}
-        run: node scripts/release-synthesize-changesets.mjs >> "$GITHUB_OUTPUT"
+        run: |
+          node scripts/release-synthesize-changesets.mjs \
+            --selection-out "${{ runner.temp }}/release-intent.json" >> "$GITHUB_OUTPUT"
 
       # One gate for every publish-only step below, so the conditions cannot drift apart.
       #   auto_release: develop versions and publishes in this run, with no version PR.
@@ -437,10 +466,12 @@ jobs:
       # which the changesets step below does once it sees the bumped versions and no pending
       # changesets.
       - name: Version packages and push to develop (auto-release)
+        id: version_push
         if: steps.gate.outputs.auto_release == 'true'
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           bun run version
@@ -452,8 +483,47 @@ jobs:
 
           git add -A
           git commit -m "chore(release): version packages (next)"
-          git push origin "HEAD:${{ github.ref_name }}"
-          echo "Pushed version bump to ${{ github.ref_name }}: $(git rev-parse --short HEAD)"
+
+          # Build and test take long enough that a merge can land between the fast-forward above
+          # and this push, which git then refuses as a non-fast-forward. That used to fail the run
+          # here, after build and test and immediately before publishing. Rebase the bump onto the
+          # new tip and try again instead.
+          rebased=false
+          for attempt in 1 2 3; do
+            if git push origin "HEAD:${BRANCH}"; then
+              echo "rebased=${rebased}" >> "$GITHUB_OUTPUT"
+              echo "Pushed version bump to ${BRANCH}: $(git rev-parse --short HEAD)"
+              exit 0
+            fi
+
+            if [ "${attempt}" = "3" ]; then
+              echo "Push to ${BRANCH} was still rejected after ${attempt} attempts; nothing was published." >&2
+              exit 1
+            fi
+
+            echo "::warning::Push to ${BRANCH} was rejected on attempt ${attempt}: a merge landed during this run. Rebasing the version bump onto the new tip."
+            git fetch --force origin "+refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+
+            if ! git rebase "refs/remotes/origin/${BRANCH}"; then
+              git rebase --abort || true
+              echo "The version bump does not rebase onto ${BRANCH}: the merge that landed during this run touches the same files." >&2
+              echo "Nothing was pushed and nothing was published, so no version number has been consumed." >&2
+              echo "That merge's own Release run releases these packages, because release intent is derived from" >&2
+              echo "unreleased code rather than from one push. The step below lists exactly what is outstanding." >&2
+              exit 1
+            fi
+            rebased=true
+          done
+
+      # A rebase replayed the version bump onto a merge that landed mid-run, so the tree that was
+      # pushed is not the tree that was built. Publishing the earlier build would ship a tarball
+      # whose contents do not match the commit its version points at. Reinstall first: that merge
+      # may have added a dependency the install at the top of this run never saw.
+      - name: Rebuild after rebase (auto-release)
+        if: steps.version_push.outputs.rebased == 'true'
+        run: |
+          bun install --frozen-lockfile
+          bun run build
 
       - name: Run Changesets release
         if: github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_changesets == 'true' || steps.detect.outputs.has_version_bumps == 'true' || steps.gate.outputs.auto_release == 'true'
@@ -661,6 +731,34 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_PR_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      # A merged change must never reach develop unpublished and unflagged. Everything this run
+      # set out to release is re-measured against the branch now that the run is over: anything
+      # still unreleased was dropped, and is named here rather than left to be noticed months
+      # later. Packages that became outstanding *during* the run are listed separately and are
+      # not a problem — the merge that introduced them triggers its own Release run.
+      #
+      # Only fails a run that would otherwise be green, which is the silent case. A run that has
+      # already failed is red for the underlying reason; this step's job there is the list.
+      - name: Report dropped releases (auto-release)
+        if: always() && steps.gate.outputs.auto_release == 'true'
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+          JOB_STATUS: ${{ job.status }}
+          INTENT: ${{ runner.temp }}/release-intent.json
+          REMAINING: ${{ runner.temp }}/release-remaining.json
+        run: |
+          set -euo pipefail
+          git fetch --force origin "+refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+          node scripts/release-synthesize-changesets.mjs --dry-run --ignore-pending \
+            --head "refs/remotes/origin/${BRANCH}" \
+            --selection-out "${REMAINING}" > /dev/null
+          node scripts/release-report-dropped.mjs \
+            --intent "${INTENT}" \
+            --remaining "${REMAINING}" \
+            --branch "${BRANCH}" \
+            --job-status "${JOB_STATUS}"
 
       - name: Notify Slack on Release Failure
         if: failure()
