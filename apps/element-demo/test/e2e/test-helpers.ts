@@ -210,34 +210,33 @@ export async function hasUnsavedChanges(page: Page): Promise<boolean> {
   return isEnabled;
 }
 
+export type PlayerView = 'delivery' | 'author' | 'print';
+
 /**
- * Wait for element to be loaded and ready
+ * Selector for the element the player mounted for a view. The ESM and IIFE strategies register
+ * the delivery element under different tags, so specs find it through the player.
  */
-export async function waitForElementReady(page: Page, elementName: string) {
-  const candidates = elementName.includes('-')
-    ? [elementName, `pie-${elementName}`]
-    : [elementName];
+export function mountedElementSelector(view: PlayerView = 'delivery'): string {
+  return `pie-element-player[view="${view}"] .element-player-mount > *`;
+}
 
-  await page.waitForFunction(
-    (names) => names.some((name: string) => customElements.get(name) !== undefined),
-    candidates,
-    {
-      timeout: 10_000,
-    }
-  );
+/**
+ * The element the player mounted for a view.
+ */
+export function mountedElement(page: Page, view: PlayerView = 'delivery'): Locator {
+  return page.locator(mountedElementSelector(view)).first();
+}
 
-  for (const candidate of candidates) {
-    if (
-      await page
-        .locator(candidate)
-        .first()
-        .isVisible()
-        .catch(() => false)
-    ) {
-      return;
-    }
-  }
-  await page.waitForSelector(candidates.join(', '), { state: 'attached', timeout: 10_000 });
+/**
+ * Wait for the player to mount the element for a view and for its tag to be defined.
+ */
+export async function waitForElementReady(page: Page, view: PlayerView = 'delivery') {
+  const element = mountedElement(page, view);
+  await element.waitFor({ state: 'attached', timeout: 10_000 });
+  const tagName = await element.evaluate((node) => node.localName);
+  await page.waitForFunction((name) => customElements.get(name) !== undefined, tagName, {
+    timeout: 10_000,
+  });
 }
 
 /**
@@ -317,7 +316,7 @@ export async function waitForSessionMutation(
 export async function clickNumberLineTick(page: Page, root: Locator, tick = '0') {
   // The line is the only svg with explicit width/height; the correct-answer toggle's
   // hidden icons come first in DOM order.
-  const line = root.locator('number-line-element svg[width][height]').first();
+  const line = root.locator(`${mountedElementSelector()} svg[width][height]`).first();
   await line.waitFor({ state: 'visible', timeout: 10_000 });
   const lineBox = await line.boundingBox();
   const tickBox = await line.locator('text').getByText(tick, { exact: true }).first().boundingBox();

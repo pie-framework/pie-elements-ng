@@ -14,6 +14,8 @@ import {
   switchTab,
   switchToEvaluate,
   waitForElementReady,
+  mountedElement,
+  mountedElementSelector,
 } from './test-helpers';
 
 type CheckName =
@@ -75,7 +77,6 @@ const NON_ACTIONABLE_DELIVERY_ELEMENTS = new Set([
 const NON_ACTIONABLE_AUTHOR_ELEMENTS = new Set(['rubric', 'complex-rubric']);
 const ELEMENT_FILTER = process.env.E2E_BASELINE_ELEMENT?.trim();
 const MULTIPLE_CHOICE_DEMO_ID = 'math-algebra-quadratic';
-const MULTIPLE_CHOICE_TAG = 'multiple-choice-element';
 // No correct answer to show: evaluate locks the response instead.
 const NO_CORRECT_ANSWER_ELEMENTS = new Set(['extended-text-entry', 'likert', 'matrix']);
 const TEMP_EXCLUDED_ELEMENTS = new Set<string>();
@@ -131,10 +132,6 @@ function assertNoCriticalRuntimeErrors(runtime: RuntimeTracker, context: string,
   throw new Error(
     `${context}: critical runtime errors detected: ${critical.slice(0, 4).join(' | ')}`
   );
-}
-
-function elementTagCandidates(name: string): string[] {
-  return [name, `pie-${name}`, `${name}-element`];
 }
 
 async function isVisibleAndEnabled(locator: Locator): Promise<boolean> {
@@ -235,14 +232,16 @@ async function loadDeliver(page: Page, element: string, demoId?: string) {
   await assertNoCriticalUiErrors(page);
 }
 
-async function assertDeliveryVisible(page: Page, element: string) {
+async function assertDeliveryVisible(page: Page) {
   const container = await getDeliveryContainer(page);
-  const expectedTags = elementTagCandidates(element);
-  for (const tag of expectedTags) {
-    const loc = container.locator(tag).first();
-    if (await loc.isVisible().catch(() => false)) {
-      return;
-    }
+  if (
+    await container
+      .locator(mountedElementSelector())
+      .first()
+      .isVisible()
+      .catch(() => false)
+  ) {
+    return;
   }
 
   const anyCustomVisible = await container.evaluate((node) => {
@@ -396,7 +395,7 @@ async function attemptInput(scope: Locator, marker: string): Promise<string> {
 
   const hostElement = await firstVisibleEnabled(
     scope,
-    'pie-ebsr, pie-explicit-constructed-response, pie-multi-trait-rubric, pie-select-text, [class*="element"]'
+    `${mountedElementSelector()}, [class*="element"]`
   );
   if (hostElement) {
     const box = await hostElement.boundingBox();
@@ -605,11 +604,11 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
   'multiple-choice': {
     prepareDeliver: async (page) => {
       await selectDemo(page, MULTIPLE_CHOICE_DEMO_ID);
-      await waitForElementReady(page, MULTIPLE_CHOICE_TAG);
+      await waitForElementReady(page);
     },
     assertDeliveryVisible: async (page) => {
-      await waitForElementReady(page, MULTIPLE_CHOICE_TAG);
-      const mc = page.locator(MULTIPLE_CHOICE_TAG).first();
+      await waitForElementReady(page);
+      const mc = mountedElement(page);
       if (!(await mc.isVisible().catch(() => false))) {
         throw new Error('multiple-choice delivery component not visible');
       }
@@ -632,11 +631,7 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
   graphing: {
     assertGatherAcceptsInput: async (page) => {
       await switchMode(page, 'gather');
-      const root = page
-        .locator(
-          '.delivery-view .element-container pie-graphing, .delivery-view .element-container graphing-element'
-        )
-        .first();
+      const root = mountedElement(page);
       await root.waitFor({ state: 'visible', timeout: 15_000 });
       const toolBtn = root.locator('button.MuiButtonBase-root').first();
       if (await toolBtn.isVisible().catch(() => false)) {
@@ -742,9 +737,9 @@ const ADAPTERS: Record<string, BaselineAdapter> = {
       }
       await page.keyboard.press('Escape').catch(() => {});
     },
-    assertDeliveryVisible: async (page, element) => {
+    assertDeliveryVisible: async (page) => {
       try {
-        await assertDeliveryVisible(page, element);
+        await assertDeliveryVisible(page);
         return;
       } catch {
         // Charting may present an always-visible demo tile shell instead of mounted chart DOM.
@@ -935,7 +930,7 @@ test.describe('Baseline minimum coverage across all elements', () => {
               if (adapter.assertDeliveryVisible) {
                 await adapter.assertDeliveryVisible(page, element);
               } else {
-                await assertDeliveryVisible(page, element);
+                await assertDeliveryVisible(page);
               }
               assertNoCriticalRuntimeErrors(runtime, `${element} delivery visibility`, element);
             })

@@ -7,6 +7,7 @@ import {
   interactOnce,
   openDeliverRoute,
   switchToEvaluate,
+  mountedElementSelector,
 } from './test-helpers';
 
 type SpatialCase = {
@@ -54,7 +55,7 @@ async function dragFirstChoiceToFirstDropZone(page: Page, root: Locator) {
 }
 
 async function interactHotspot(page: Page, root: Locator): Promise<boolean> {
-  const host = root.locator('hotspot-element, pie-hotspot').first();
+  const host = root.locator(mountedElementSelector()).first();
   const canvas = host.locator('canvas').first();
   if (
     !(await host.isVisible().catch(() => false)) ||
@@ -221,7 +222,7 @@ async function clickGridFraction(page: Page, graphRoot: Locator, fx: number, fy:
 }
 
 async function interactGraphing(page: Page, element: string, root: Locator) {
-  const graphRoot = root.locator('graphing-element, graphing-solution-set-element').first();
+  const graphRoot = root.locator(mountedElementSelector()).first();
   if (element === 'graphing') {
     // The tool buttons sit inside a dnd-kit wrapper marked aria-disabled, hence force.
     await graphRoot.locator('button[value="point"]').click({ force: true });

@@ -172,7 +172,8 @@ Reusable utility functions for tests:
 - `switchTab()` - Switch between deliver/author/print/source tabs
 - `getModelFromSource()` - Get model JSON from source editor
 - `updateModelInSource()` - Edit model in source editor and apply
-- `waitForElementReady()` - Wait for custom element to load
+- `waitForElementReady()` - Wait for the player to mount the element and its tag to be defined
+- `mountedElement()` / `mountedElementSelector()` - The element the player mounted for a view; ESM and IIFE register the delivery element under different tags, so specs locate it through the player
 - `getMultipleChoiceOptions()` - Get all available options
 - `getSelectedValue()` - Get currently selected option
 
@@ -367,7 +368,7 @@ import { selectDemo, waitForElementReady } from './test-helpers';
 test.describe('My New Feature', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/multiple-choice/deliver');
-    await waitForElementReady(page, 'pie-multiple-choice');
+    await waitForElementReady(page);
   });
 
   test('should do something', async ({ page }) => {

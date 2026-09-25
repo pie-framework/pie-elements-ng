@@ -7,6 +7,7 @@ import {
   openDeliverRoute,
   switchToEvaluate,
   waitForSessionMutation,
+  mountedElementSelector,
 } from './test-helpers';
 
 const ELEMENTS = [
@@ -30,7 +31,7 @@ async function interactStructured(page: Page, element: string, root: Locator) {
   }
 
   if (element === 'ebsr') {
-    const host = root.locator('pie-ebsr, ebsr-element').first();
+    const host = root.locator(mountedElementSelector()).first();
     if (await host.isVisible().catch(() => false)) {
       const box = await host.boundingBox();
       if (box) {
