@@ -1,11 +1,14 @@
 // @vitest-environment node
-import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import webpack from 'webpack';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createControllerWebpackConfig, createWebpackConfig } from '../src/webpack-config.js';
 
+const bundlerNodeModules = fileURLToPath(new URL('../node_modules', import.meta.url));
 const workspaces: string[] = [];
 
 function write(root: string, relative: string, content: string): void {
@@ -37,6 +40,18 @@ function resolveRequest(config: webpack.Configuration, request: string): Promise
         return;
       }
       resolve(result);
+    });
+  });
+}
+
+function runWebpack(config: webpack.Configuration): Promise<webpack.Stats> {
+  return new Promise((resolve, reject) => {
+    webpack(config).run((error, stats) => {
+      if (error || !stats) {
+        reject(error ?? new Error('webpack returned no stats'));
+        return;
+      }
+      resolve(stats);
     });
   });
 }
@@ -103,4 +118,46 @@ describe('webpack resolve aliases', () => {
       );
     }
   );
+});
+
+describe('Svelte rune modules', () => {
+  it('compiles the runes in a .svelte.ts module', async () => {
+    const workspaceDir = makeWorkspace();
+    for (const tool of ['esbuild-loader', 'svelte', 'svelte-loader']) {
+      symlinkSync(
+        realpathSync(join(bundlerNodeModules, tool)),
+        join(workspaceDir, 'node_modules', tool),
+        'dir'
+      );
+    }
+    write(
+      workspaceDir,
+      'src/counter.svelte.ts',
+      [
+        'export class Counter {',
+        '  count: number = $state(0);',
+        '  increment(): void {',
+        '    this.count += 1;',
+        '  }',
+        '}',
+        '',
+      ].join('\n')
+    );
+    const outputPath = join(workspaceDir, 'out');
+
+    const stats = await runWebpack(
+      createControllerWebpackConfig({
+        context: workspaceDir,
+        entry: { counter: './src/counter.svelte.ts' },
+        outputPath,
+        workspaceDir,
+      })
+    );
+
+    expect(stats.toJson({ errors: true }).errors ?? []).toEqual([]);
+    const { Counter } = createRequire(import.meta.url)(join(outputPath, 'counter.js'));
+    const counter = new Counter();
+    counter.increment();
+    expect(counter.count).toBe(1);
+  }, 60_000);
 });

@@ -54,24 +54,45 @@ interface ControllerWebpackConfigOptions {
   sourceMaps?: boolean;
 }
 
+// Svelte 5 rune modules (`x.svelte.ts`, `x.svelte.js`), matched as svelte-loader matches them.
+const SVELTE_MODULE = /\.svelte(\.[^./\\]+)*\.(js|ts)$/;
+
+const svelteLoader: webpack.RuleSetUseItem = {
+  loader: 'svelte-loader',
+  // The compile options every Svelte element builds with (tools/vite/svelte-element-*):
+  // `defineDeliveryElement` extends the class `customElement` generates.
+  options: {
+    compilerOptions: { customElement: true },
+    emitCss: false,
+  },
+};
+
 const moduleRules: webpack.RuleSetRule[] = [
   {
     test: /\.svelte$/,
-    use: [
+    use: [svelteLoader],
+  },
+  {
+    test: SVELTE_MODULE,
+    oneOf: [
       {
-        loader: 'svelte-loader',
-        // The compile options every Svelte element builds with (tools/vite/svelte-element-*):
-        // `defineDeliveryElement` extends the class `customElement` generates.
-        options: {
-          compilerOptions: { customElement: true },
-          emitCss: false,
-        },
+        test: /\.ts$/,
+        // Loaders run last to first: esbuild strips the types, then Svelte compiles the runes. The
+        // strip targets esnext because runes such as `$state` must stay in class field position.
+        use: [
+          svelteLoader,
+          { loader: 'esbuild-loader', options: { loader: 'ts', target: 'esnext' } },
+        ],
       },
+      { use: [svelteLoader] },
     ],
   },
   {
     test: /\.(ts|tsx)$/,
     exclude: (filePath: string) => {
+      if (SVELTE_MODULE.test(filePath)) {
+        return true;
+      }
       if (!filePath.includes('/node_modules/')) {
         return false;
       }
@@ -99,6 +120,9 @@ const moduleRules: webpack.RuleSetRule[] = [
   {
     test: /\.(js|jsx)$/,
     exclude: (filePath: string) => {
+      if (SVELTE_MODULE.test(filePath)) {
+        return true;
+      }
       if (!filePath.includes('/node_modules/')) {
         return false;
       }
