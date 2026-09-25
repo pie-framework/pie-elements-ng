@@ -128,20 +128,28 @@ For elements with import maps:
 
 ### Events
 
-The player dispatches each event from `<pie-element-player>`, bubbling and composed, so a listener on the player, on an ancestor or on `document` hears it once, with `event.target` the player. The element's own `session-changed` stops at the player, which dispatches its copy in its place.
+The player dispatches each event from `<pie-element-player>`, bubbling and composed. A bubble-phase listener on the player, on an ancestor or on `document` hears each event once, with `event.target` the player; a listener outside a shadow root that contains the player sees that root's host instead. The element's own `session-changed` stops at the element, and the player dispatches its copy in its place. A capture-phase listener on the player or above it also hears every `session-changed` the element dispatches, ahead of the player's copy, and should ignore events whose `event.composedPath()[0]` is not the player. That equals `event.target` when no shadow root lies between listener and player. A closed shadow root hides the player from both, so listen in the bubble phase there.
 
 | Event | When | `detail` |
 |---|---|---|
-| `session-changed` | delivery: the learner changes the session | the element's detail, with `session` the new session |
+| `session-changed` | delivery: the learner changes the session, or the element re-reports a session the player set (below) | the element's detail, with `session` the new session |
 | `model-changed` | author: the author edits the model | the whole model |
 | `load-complete` | the element is mounted | `strategy`, `view`, `tagName` |
-| `load-cancelled` | a newer load supersedes this one | `reason`, `strategy`, `view` |
+| `load-cancelled` | a newer load supersedes this one, or the load fails with an abort error (below) | `reason`, `strategy`, `view` |
 | `player-error` | the load fails | `error`, `strategy`, `view`, `retry` |
 | `build-state` | the load changes stage | `loading`, `error`, `stage`, and `strategy`, `view`, `retry` where known |
-| `bundle-retry-status` | IIFE: a bundle build is polled | the retry state |
+| `bundle-retry-status` | IIFE: a bundle build is polled; any strategy: the load fails with an abort error | the retry state |
 | `bundle-meta` | IIFE: the bundle loads | the bundle's metadata |
-| `controller-load` | the controller resolves | `status`, `source`, `packageName`, `strategy`, `view`, `message` |
+| `controller-load` | a load completes, except a `preloaded` one that finds its tag defined (below) | `status`, `source`, `packageName`, `strategy`, `view`, `message` |
 | `controller-changed` | IIFE delivery: the bundle's controller loads | the controller |
+
+`session-changed` also fires with no learner action. Once the element has a model, the player sets `session` on it, and sets it again whenever the host assigns a different session. An element that reports that assignment after its setter returns, as multiple-choice does, has the report forwarded.
+
+An abort error is a load error whose message contains `aborted`, whatever the strategy. The player then emits `bundle-retry-status` with state `cancelled`, `build-state` with stage `cancelled` and `load-cancelled`, in place of `player-error`.
+
+`controller-load` reports `status` `loaded` in delivery view, where any other status fails the load. Author view can also report `missing` or `failed`, and print view reports `not-required` unless an IIFE bundle carries a controller.
+
+A player removed from the document mid-load emits nothing more from that load, and re-attaching it starts a new one; a synchronous move keeps the load.
 
 ## Testing Elements Locally
 

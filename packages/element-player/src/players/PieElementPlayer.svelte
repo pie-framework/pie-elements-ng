@@ -642,6 +642,9 @@ onMount(() => {
     if (elementMount) {
       elementMount.replaceChildren();
     }
+    // Retire the pending load: the host outlives this instance, and a re-attach mounts a new one
+    // that must be the only one emitting from it.
+    requestId++;
     activeLoadAbortController?.abort();
     activeLoadAbortController = null;
     detachInstanceHandlers();
