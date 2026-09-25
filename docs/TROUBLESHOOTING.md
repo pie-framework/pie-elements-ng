@@ -226,6 +226,7 @@ bun install
      }
    });
    ```
+   Inside `<pie-element-player>`, the element's event stops at the element and the document hears the player's copy: the same detail plus `session`, with `target` the player.
 
 ### Props Not Updating
 
