@@ -139,8 +139,11 @@ export default class Ebsr extends HTMLElement {
 
   setPartSession(part, key) {
     if (this._session && this._model && part) {
-      const { value } = this._session;
-      part.session = value && value[key] ? value[key] : { id: key };
+      // A part records each answer in the session object it is given, so this session holds
+      // that object and is current before the part's session-changed reaches this element.
+      const partSession = this._session.value?.[key] ?? { id: key };
+      this._session.value = { ...this._session.value, [key]: partSession };
+      part.session = partSession;
     }
   }
 
