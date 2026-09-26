@@ -111,7 +111,6 @@ See [../TESTING.md](../TESTING.md) for complete documentation on workspace testi
 
 4. **Version Resolution**
    - Different @pie-lib versions per element
-   - Webpack NormalModuleReplacementPlugin behavior
 
 5. **Error Handling**
    - Invalid package names
