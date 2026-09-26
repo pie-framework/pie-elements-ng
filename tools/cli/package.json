@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/cli",
-  "version": "0.1.2-next.5",
+  "version": "0.1.2-next.6",
   "description": "CLI tools for managing PIE Elements NG",
   "type": "module",
   "bin": {

@@ -1,5 +1,12 @@
 # @pie-element/element-player
 
+## 0.1.2-next.5
+
+### Patch Changes
+
+- Updated dependencies [7abcbd2]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.2
+
 ## 0.1.2-next.4
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pie-element/element-bundler
 
+## 0.1.2-next.3
+
+### Patch Changes
+
+- 06c1926: Subpath imports of `@pie-lib/math-rendering` and `@pie-lib/pie-toolbox`, and imports of packages whose names begin with theirs, such as `@pie-lib/math-rendering-accessible`, bundle from `node_modules`; the two packages themselves stay external.
+
 ## 0.1.2-next.2
 
 ### Patch Changes

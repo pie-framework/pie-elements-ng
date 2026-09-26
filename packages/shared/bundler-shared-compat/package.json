@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/bundler-shared",
-  "version": "0.1.2-next.2",
+  "version": "0.1.2-next.3",
   "type": "module",
   "description": "Deprecated compatibility wrapper for @pie-element/element-bundler",
   "main": "./dist/index.js",

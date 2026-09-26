@@ -1,5 +1,17 @@
 # @pie-element/match-list
 
+## 7.1.2-next.18
+
+### Patch Changes
+
+- 7abcbd2: Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Updated dependencies [7abcbd2]
+  - @pie-element/shared-controller-utils@0.1.1-next.3
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.2
+  - @pie-lib/correct-answer-toggle@5.0.0-next.48
+  - @pie-lib/drag@4.1.0-next.46
+  - @pie-lib/render-ui@6.2.0-next.46
+
 ## 7.1.2-next.17
 
 ### Patch Changes

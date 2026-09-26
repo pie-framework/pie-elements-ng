@@ -1,5 +1,13 @@
 # @pie-element/cli
 
+## 0.1.2-next.6
+
+### Patch Changes
+
+- Merge pull request #198 from pie-framework/fix/browser-packaging
+- Updated dependencies [06c1926]
+  - @pie-element/element-bundler@0.1.2-next.3
+
 ## 0.1.2-next.5
 
 ### Patch Changes

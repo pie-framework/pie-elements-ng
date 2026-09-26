@@ -1,5 +1,14 @@
 # @pie-element/element-theme-daisyui
 
+## 0.1.1-next.5
+
+### Patch Changes
+
+- Updated dependencies [7abcbd2]
+  - @pie-element/shared-types@0.2.0-next.1
+  - @pie-element/shared-theming@0.2.0-next.5
+  - @pie-element/element-theme@0.1.1-next.5
+
 ## 0.1.1-next.4
 
 ### Patch Changes

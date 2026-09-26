@@ -1,5 +1,17 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.19
+
+### Patch Changes
+
+- 473da8e: Browser ESM and legacy print bundles install the stylesheets they import, MathQuill's among them, so math fields render styled in the player and in hosts that bundle the elements with Vite or webpack. MathQuill's font ships as a WOFF2 file beside the bundle.
+- 7abcbd2: Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Updated dependencies [473da8e]
+- Updated dependencies [7abcbd2]
+  - @pie-element/multiple-choice@13.4.0-next.14
+  - @pie-element/shared-controller-utils@0.1.1-next.3
+  - @pie-lib/config-ui@14.0.0-next.40
+
 ## 14.2.2-next.18
 
 ### Patch Changes

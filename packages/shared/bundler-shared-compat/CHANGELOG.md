@@ -1,5 +1,12 @@
 # @pie-element/bundler-shared
 
+## 0.1.2-next.3
+
+### Patch Changes
+
+- Updated dependencies [06c1926]
+  - @pie-element/element-bundler@0.1.2-next.3
+
 ## 0.1.2-next.2
 
 ### Patch Changes
