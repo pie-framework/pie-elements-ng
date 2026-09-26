@@ -6,9 +6,8 @@
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import webpack from 'webpack';
+import type webpack from 'webpack';
 import { EsbuildPlugin } from 'esbuild-loader';
-import { getLibPackagePathMap } from './dependency-resolver.js';
 import { resolveSourceAliases } from './source-aliases.js';
 
 const BUNDLE_LIB_PACKAGES = ['@pie-lib/pie-toolbox', '@pie-lib/math-rendering'];
@@ -161,7 +160,6 @@ const moduleRules: webpack.RuleSetRule[] = [
 ];
 
 export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configuration {
-  const libPackagePathMap = getLibPackagePathMap(opts.workspaceDir, opts.elements);
   const sourceAliases = resolveSourceAliases(join(opts.workspaceDir, 'node_modules'));
   const moduleSearchPaths = [
     join(opts.workspaceDir, 'node_modules'),
@@ -214,7 +212,6 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
         // Route both import forms to a tiny shim backed by react/jsx-runtime.
         'react/jsx-dev-runtime$': join(SHIM_DIR, 'react-jsx-dev-runtime.js'),
         'react/jsx-dev-runtime.js$': join(SHIM_DIR, 'react-jsx-dev-runtime.js'),
-        ...libPackagePathMap,
       },
       // Prefer workspace package development exports in demo builds.
       // This keeps IIFE behavior aligned with the Vite dev player and avoids stale dist-only mismatches.
@@ -228,43 +225,6 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
       },
       modules: moduleSearchPaths,
     },
-
-    plugins: [
-      // Version resolution plugin - handles different @pie-lib versions per element
-      new webpack.NormalModuleReplacementPlugin(
-        new RegExp(BUNDLE_LIB_PACKAGES.map((p) => `(${p})`).join('|')),
-        (resource) => {
-          const element = opts.elements.find((el) => resource.context.includes(el));
-          const libPackage = BUNDLE_LIB_PACKAGES.find((p) => resource.request.includes(p));
-
-          if (!libPackage) return;
-
-          let replacement = `${libPackage}-root`;
-
-          if (element) {
-            const isConfigure = resource.context.includes('configure');
-            const isController = resource.context.includes('controller');
-            const isAuthor = resource.context.includes('author');
-
-            if (isConfigure && libPackagePathMap[`${libPackage}-${element}-configure`]) {
-              replacement = `${libPackage}-${element}-configure`;
-            } else if (isController && libPackagePathMap[`${libPackage}-${element}-controller`]) {
-              replacement = `${libPackage}-${element}-controller`;
-            } else if (isAuthor && libPackagePathMap[`${libPackage}-${element}-author`]) {
-              replacement = `${libPackage}-${element}-author`;
-            } else if (libPackagePathMap[`${libPackage}-${element}`]) {
-              replacement = `${libPackage}-${element}`;
-            }
-          }
-
-          console.log(
-            `[webpack-config] Replacing ${libPackage} with ${replacement} in ${resource.context}`
-          );
-
-          resource.request = resource.request.replace(libPackage, replacement);
-        }
-      ),
-    ],
 
     output: {
       filename: '[name].js',

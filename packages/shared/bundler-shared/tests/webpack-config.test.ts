@@ -1,9 +1,18 @@
 // @vitest-environment node
-import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runInNewContext } from 'node:vm';
 import webpack from 'webpack';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createControllerWebpackConfig, createWebpackConfig } from '../src/webpack-config.js';
@@ -159,5 +168,59 @@ describe('Svelte rune modules', () => {
     const counter = new Counter();
     counter.increment();
     expect(counter.count).toBe(1);
+  }, 60_000);
+});
+
+describe('host-provided @pie-lib packages', () => {
+  it('stay external while subpaths and prefix-named packages bundle from node_modules', async () => {
+    const workspaceDir = makeWorkspace();
+    symlinkSync(
+      realpathSync(join(bundlerNodeModules, 'esbuild-loader')),
+      join(workspaceDir, 'node_modules', 'esbuild-loader'),
+      'dir'
+    );
+    const libDir = join(workspaceDir, 'node_modules', '@pie-lib');
+    for (const name of ['math-rendering', 'math-rendering-accessible']) {
+      write(
+        libDir,
+        `${name}/package.json`,
+        JSON.stringify({ name: `@pie-lib/${name}`, main: 'index.js' })
+      );
+    }
+    write(libDir, 'math-rendering/index.js', "export const source = 'bundled';\n");
+    write(libDir, 'math-rendering/lib/mml.js', "export const mml = 'subpath';\n");
+    write(libDir, 'math-rendering-accessible/index.js', "export const accessible = 'sibling';\n");
+    write(
+      workspaceDir,
+      'player.js',
+      [
+        "import { source } from '@pie-lib/math-rendering';",
+        "import { mml } from '@pie-lib/math-rendering/lib/mml.js';",
+        "import { accessible } from '@pie-lib/math-rendering-accessible';",
+        'export const result = { source, mml, accessible };',
+        '',
+      ].join('\n')
+    );
+    const outputPath = join(workspaceDir, 'out');
+
+    const stats = await runWebpack(
+      createWebpackConfig({
+        context: workspaceDir,
+        entry: { player: './player.js' },
+        outputPath,
+        workspaceDir,
+        elements: ['sample'],
+      })
+    );
+
+    expect(stats.toJson({ errors: true }).errors ?? []).toEqual([]);
+    // PieElementPlayer provides this global to the bundles it loads.
+    const window: Record<string, unknown> = { '@pie-lib/math-rendering': { source: 'host' } };
+    runInNewContext(readFileSync(join(outputPath, 'player.js'), 'utf8'), { window });
+    expect((window.pie as { result: unknown }).result).toEqual({
+      source: 'host',
+      mml: 'subpath',
+      accessible: 'sibling',
+    });
   }, 60_000);
 });
