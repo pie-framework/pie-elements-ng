@@ -100,6 +100,10 @@ Package `exports`, `main`, `module`, `types`, `unpkg`, and `jsdelivr` entries mu
 
 Sourcemaps may be published, but they must include source content so consumers can debug without unpacked source files.
 
+### Self-Contained Svelte
+
+A client installs a PIE package and nothing else. No publishable manifest lists `svelte` in `dependencies`, `peerDependencies` or `optionalDependencies`, and no shipped JavaScript imports `svelte` or `svelte/*`: Svelte element builds inline the Svelte runtime. `@pie-element/element-bundler` is exempt from the `dependencies` rule, because it compiles elements.
+
 ### Controller And Configure Packaging
 
 Controller-bearing packages must publish all of these:

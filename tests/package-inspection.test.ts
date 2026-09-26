@@ -2,7 +2,10 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { collectPublishSurfaceViolations } from '../scripts/check-publish-surface.mjs';
+import {
+  collectPublishSurfaceViolations,
+  collectSvelteLeakViolations,
+} from '../scripts/check-publish-surface.mjs';
 import { createPackageSnapshots } from '../scripts/lib/package-inspection.mjs';
 import { runElementContractVerification } from '../scripts/verify-element-contracts.mjs';
 
@@ -423,5 +426,106 @@ describe('package inspection quality-gate helpers', () => {
     expect(violations).toContain(
       'dist/browser/delivery/index.js must not auto-register the public element tag'
     );
+  });
+
+  it('rejects packed files that load svelte at runtime, not the comments of an inlined Svelte', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-svelte', 'leaky');
+    await mkdir(join(packageDir, 'dist', 'delivery'), { recursive: true });
+    // An element build that inlines Svelte also inlines Svelte's JSDoc.
+    await writeFile(
+      join(packageDir, 'dist', 'index.js'),
+      [
+        '//#region node_modules/svelte/src/internal/client/reactivity/batch.js',
+        "/** @import { Fork } from 'svelte' */",
+        "/**\n * import { createSubscriber } from 'svelte/reactivity';\n */",
+        "export const framework = 'svelte';",
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'delivery', 'index.js'),
+      "import { mount } from 'svelte';\nexport * from 'svelte/store';\nexport default mount;\n",
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'lazy.js'),
+      "export const load = () => import('svelte/reactivity');\n",
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'legacy.cjs'),
+      "module.exports = require('svelte/internal');\n",
+      'utf8'
+    );
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-svelte/leaky',
+      pkg: {
+        name: '@pie-element/leaky',
+        version: '1.0.0',
+        files: ['dist'],
+        exports: { '.': { default: './dist/index.js' } },
+      },
+      packedFiles: new Set([
+        'package.json',
+        'dist/index.js',
+        'dist/delivery/index.js',
+        'dist/lazy.js',
+        'dist/legacy.cjs',
+      ]),
+    });
+
+    expect(violations).toEqual([
+      'dist/delivery/index.js imports "svelte" at runtime; the build must inline Svelte',
+      'dist/delivery/index.js imports "svelte/store" at runtime; the build must inline Svelte',
+      'dist/lazy.js imports "svelte/reactivity" at runtime; the build must inline Svelte',
+      'dist/legacy.cjs imports "svelte/internal" at runtime; the build must inline Svelte',
+    ]);
+  });
+
+  it('rejects svelte in every dependency bucket except element-bundler dependencies', async () => {
+    const root = await makeWorkspaceFixture();
+    const bundlerDir = join(root, 'packages', 'bundler');
+    await mkdir(join(bundlerDir, 'dist'), { recursive: true });
+    await writeFile(
+      join(bundlerDir, 'dist', 'index.js'),
+      "import { compile } from 'svelte/compiler';\nexport { compile };\n",
+      'utf8'
+    );
+    const svelte = '^5.57.0';
+
+    expect(
+      collectSvelteLeakViolations({
+        dir: root,
+        pkg: {
+          name: '@pie-element/leaky',
+          dependencies: { svelte },
+          optionalDependencies: { svelte },
+          peerDependencies: { svelte },
+          peerDependenciesMeta: { svelte: { optional: true } },
+        },
+      })
+    ).toEqual([
+      'dependencies.svelte is not allowed',
+      'optionalDependencies.svelte is not allowed',
+      'peerDependencies.svelte is not allowed',
+      'peerDependenciesMeta.svelte is not allowed',
+    ]);
+    expect(
+      collectSvelteLeakViolations({
+        dir: bundlerDir,
+        pkg: { name: '@pie-element/element-bundler', dependencies: { svelte } },
+        files: ['dist/index.js'],
+      })
+    ).toEqual([]);
+    expect(
+      collectSvelteLeakViolations({
+        dir: bundlerDir,
+        pkg: { name: '@pie-element/element-bundler', peerDependencies: { svelte } },
+      })
+    ).toEqual(['peerDependencies.svelte is not allowed']);
   });
 });

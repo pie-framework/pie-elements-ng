@@ -367,10 +367,12 @@ bun run verify:element-contracts
 That command orchestrates the contract-relevant checks:
 
 - `scripts/check-publish-surface.mjs` verifies dist-only exports, rejects
-  forbidden export conditions such as `development` and `svelte`, checks browser
-  ESM policy, rejects stylesheets in `dist/browser` or `module/` that no
-  reachable module loads, verifies packed tarball contents, and enforces
-  runtime-support metadata for non-browser-ESM elements.
+  forbidden export conditions such as `development` and `svelte`, rejects a
+  `svelte` dependency or a runtime `svelte` import in any publishable package,
+  checks browser ESM policy, rejects stylesheets in `dist/browser` or `module/`
+  that no reachable module loads, verifies packed tarball contents, and enforces
+  runtime-support metadata for non-browser-ESM elements. `tests/svelte-leak.test.ts`
+  runs its Svelte rules over the built workspace on every pull request.
 - `tools/cli/src/commands/verify/controllers.ts` checks `pie.controller`,
   `./controller`, `./controller.js`, the root `controller.js` shim,
   `pie.configure`, `./configure`, the root `configure.js` shim, and built
@@ -388,6 +390,8 @@ exercise representative ESM, IIFE, and preloaded flows.
 - Do not add `development` or `svelte` export conditions to package manifests.
   Local source loading belongs in demo resolver tooling, not published package
   exports.
+- Do not externalize `svelte` from an element build or declare it as a
+  dependency or peer. Clients install no Svelte; element builds inline its runtime.
 - Do not expose `src`, `.ts`, `.tsx`, `.svelte`, or `.svelte.ts` files as public
   package entry points.
 - Do not rely on jsDelivr `+esm` or other CDN package transforms for element
