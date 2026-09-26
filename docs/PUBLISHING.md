@@ -96,7 +96,7 @@ Normal case — no pre-release mode, no unrelated pending changesets:
 
 ```bash
 bun run changeset      # select the package(s), bump type, write a summary
-bun run version        # = `changeset version`; consumes changesets, bumps package.json + CHANGELOG.md
+bun run version        # consumes changesets, bumps package.json + CHANGELOG.md, skips -next.N numbers npm holds
 ```
 
 **Gotcha — pre-release mode / stray changesets**: check `.changeset/pre.json`. If it exists (mode `"pre"`), the branch is currently cutting `next` prereleases — this is normally the case on `develop`. Also check `.changeset/*.md` for changesets targeting packages you don't intend to touch. Running `bun run version` in this state will:
