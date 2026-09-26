@@ -99,6 +99,14 @@ the element package directory. It discovers existing `src/delivery`,
 as build-time constants so browser artifacts can derive deterministic,
 version-scoped private child custom element tags.
 
+An element whose browser build bundles the editor engine then runs
+`tools/vite/element-browser-editor-runtime.config.ts`
+(`svelte-element-browser-editor-runtime.config.ts` for Svelte elements). It rebuilds the same
+entries into `dist/browser/editor-runtime` with the specifiers of
+`@pie-element/shared-editor-runtime` external, and fails when an engine module is still bundled:
+the runtime's `pie.browserModules` then lacks the specifier that reaches it. It runs after the
+standard browser build, which empties `dist/browser`.
+
 Browser ESM keeps the same registration boundary as the runtime contract:
 players own authored top-level PIE tag registration, while an element package
 owns the package-private child custom elements it renders internally. This is
@@ -293,6 +301,7 @@ Dependency handling is different for each runtime surface:
 | --- | --- | --- |
 | Node/builder ESM | Host package manager and host bundler | Generated Vite configs externalize common runtime libraries and workspace packages |
 | Browser player ESM | Static `dist/browser` files plus player import map | Only `allowedBareImports` are external; currently React, JSX runtimes, React DOM, and React DOM client |
+| Browser player ESM, editor-runtime variant | Static `dist/browser/editor-runtime` files plus the runtime's modules in the player import map | `allowedBareImports` and the specifiers in `@pie-element/shared-editor-runtime`'s `pie.browserModules` are external |
 | Per-element IIFE | The element's IIFE build output | Everything is bundled into that element's IIFE |
 | Multi-element IIFE bundler | Temporary install workspace created by `@pie-element/element-bundler` | `@pie-lib/pie-toolbox` and `@pie-lib/math-rendering` are externalized shared PIE libs |
 | Demo dev server | Workspace files and optimized dependencies | Additional ProseMirror aliases pin editor packages to one physical Bun store copy |
