@@ -22,7 +22,7 @@ Controller-bearing elements expose their controller at `@pie-element/<name>/cont
 
 The required controller entry point is:
 
-- `model(model, session, env, updateSession?)`: returns the view model used by delivery, author, or print rendering.
+- `model(model, session, env, updateSession?)`: returns the view model used by delivery, author, or print rendering. `updateSession(id, element, properties)` persists `properties`, such as a drawn choice order, into the stored session; `PieUpdateSession` in `@pie-element/shared-types` types it.
 
 Controller modules may also expose these helpers when the element supports the capability:
 
@@ -97,6 +97,8 @@ Publishable packages expose generated artifacts only. Package entry points must 
 ### Dist-Only Surface
 
 Package `exports`, `main`, `module`, `types`, `unpkg`, and `jsdelivr` entries must point at generated `dist` artifacts. Packages must not publish or expose raw `src`, `.ts`, `.tsx`, `.svelte`, or `.svelte.ts` files as public API.
+
+Every element package also exports `./package.json`, so a host reads the installed version from the package itself.
 
 Sourcemaps may be published, but they must include source content so consumers can debug without unpacked source files.
 
@@ -194,14 +196,17 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
 
 - Bare imports are allowed only when listed in `allowedBareImports`.
 - Shared browser singleton versions are exact and declared in `pie.browserSharedDependencies`.
-- The browser ESM React contract is React 18. Synced packages must not preserve
+- The browser ESM React contract is React 18, the version `pie.browserSharedDependencies`
+  names for the player's import map. A host that bundles the elements may provide React 18.2
+  or 19 instead, which element `peerDependencies` accept. Synced packages must not preserve
   React 16/17 compatibility shims in browser-facing dependency policy.
 - `dependencies` and `peerDependencies` are install metadata only; they are not browser runtime singleton contracts.
 - Browser JS output must stay within the policy size budget unless the policy is intentionally changed.
-- Hosts load no element CSS. A stylesheet the bundled code imports ships beside the chunks, and
-  the chunk that imports it loads it before evaluating; see
+- Hosts load no element CSS. The chunk that imports a stylesheet installs its rules before its
+  own code runs, and the assets they reference ship in `dist/browser/assets`; see
   [`PACKAGING_ARCHITECTURE.md`](PACKAGING_ARCHITECTURE.md#browser-esm-stylesheets). A stylesheet
   in `dist/browser` that no reachable module loads fails the publish check.
+- Browser ESM modules do not use top-level await, which default Vite 6 builds reject.
 - Browser ESM output must not leak runtime `require` calls. The shared browser
   build may rewrite known Rolldown CJS helper calls only for the allow-listed
   interop targets documented in
@@ -215,7 +220,7 @@ If a new dependency should become a shared browser singleton, update `tools/vite
 Packages that declare `exports["./print"]` may additionally publish a second, unrelated print artifact at the package root:
 
 - `module/print.js` (and its sourcemap `module/print.js.map`)
-- any stylesheet `module/print.js` imports, which `module/print.js` loads itself as browser ESM chunks do
+- `module/assets/`, the assets the stylesheets `module/print.js` installs reference, as browser ESM chunks do
 
 This exists solely so the unmodified, currently-deployed `@pie-framework/pie-print` client loader — which fetches `<pkg>/module/print.js` directly by CDN path and does a bare `import()` with no import map — can load `pie-elements-ng` print bundles. It is **not** part of the `./browser/print` contract above: `dist/browser/print/index.js` stays the artifact for the new `pie-players/pie-print-player`, which does inject an import map. `module/print.js` is fully self-contained instead (no externals, React included), because its loader injects nothing. See [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md) and [`docs/prds/legacy-print-compatibility/PRD.md`](prds/legacy-print-compatibility/PRD.md).
 

@@ -4,6 +4,8 @@
  * Functions for managing shuffled choice order and session persistence.
  */
 
+import type { PieUpdateSession } from '@pie-element/shared-types';
+
 interface Session {
   id?: string;
   element?: string;
@@ -27,12 +29,6 @@ interface Environment {
   };
   role?: 'student' | 'instructor';
 }
-
-type UpdateSessionFunction = (
-  sessionId: string,
-  element: string,
-  data: { shuffledValues: string[] }
-) => Promise<void>;
 
 /**
  * Remove null and undefined values from an array.
@@ -83,7 +79,7 @@ function isEmpty(value: any): boolean {
 export async function getShuffledChoices<T extends Choice>(
   choices: T[],
   session: Session | undefined,
-  updateSession?: UpdateSessionFunction,
+  updateSession?: PieUpdateSession,
   choiceKey: string = 'value'
 ): Promise<T[] | undefined> {
   const currentShuffled = compact(session?.data?.shuffledValues ?? session?.shuffledValues ?? []);

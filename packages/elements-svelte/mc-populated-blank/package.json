@@ -62,7 +62,8 @@
     "./runtime-support": {
       "types": "./dist/runtime-support.d.ts",
       "default": "./dist/runtime-support.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "author.js",

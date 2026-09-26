@@ -2,12 +2,42 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMathjaxRenderer } from '../src/adapter.js';
 import { mmlToLatex, renderMath, wrapMath } from '../src/render-math.js';
 
+const MATHJAX_LOADING = Symbol.for('@pie-element/shared-math-rendering-mathjax/loading');
+
 describe('createMathjaxRenderer', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
     document.body.innerHTML = '';
     delete window.MathJax;
     delete (window as any)['@pie-lib/math-rendering'];
+    delete (globalThis as any)[MATHJAX_LOADING];
+  });
+
+  it('starts one MathJax load per page however many copies of the adapter render', async () => {
+    vi.useFakeTimers();
+    const scripts: HTMLScriptElement[] = [];
+    vi.spyOn(document.head, 'appendChild').mockImplementation((node) => {
+      if (node instanceof HTMLScriptElement) scripts.push(node);
+      return node;
+    });
+    // Each element bundles the adapter, so a page holds one module instance per element.
+    vi.resetModules();
+    const { createMathjaxRenderer: fromOtherBundle } = await import('../src/adapter.js');
+    expect(fromOtherBundle).not.toBe(createMathjaxRenderer);
+
+    const first = document.createElement('div');
+    const second = document.createElement('div');
+    const rendering = Promise.all([createMathjaxRenderer()(first), fromOtherBundle()(second)]);
+
+    expect(scripts).toHaveLength(1);
+    const typesetPromise = vi.fn(async () => {});
+    window.MathJax = { version: '4.0.0', startup: { defaultReady: vi.fn() }, typesetPromise };
+    scripts[0].onload?.(new Event('load'));
+    await vi.advanceTimersByTimeAsync(100);
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[first]], [[second]]]);
   });
 
   it('attaches assistive MathML for screen readers after typesetting', async () => {

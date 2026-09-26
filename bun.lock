@@ -26,6 +26,7 @@
         "js-yaml": "^4.1.1",
         "lefthook": "^2.1.10",
         "obug": "^2.1.4",
+        "postcss": "^8.5.25",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "svelte": "^5.57.0",
@@ -188,7 +189,6 @@
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -222,8 +222,8 @@
         "vitest": "^4.1.11",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/charting": {
@@ -231,7 +231,6 @@
       "version": "12.1.2-next.18",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -257,8 +256,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/complex-rubric": {
@@ -266,7 +265,6 @@
       "version": "7.1.2-next.17",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/multi-trait-rubric": "workspace:*",
@@ -291,8 +289,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/drag-in-the-blank": {
@@ -301,7 +299,6 @@
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -328,8 +325,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/drawing-response": {
@@ -337,7 +334,6 @@
       "version": "12.1.2-next.17",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mdi/js": "^7.4.47",
         "@mdi/react": "^1.1.1",
         "@mui/icons-material": "^7.3.4",
@@ -365,8 +361,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/ebsr": {
@@ -395,8 +391,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/explicit-constructed-response": {
@@ -404,7 +400,6 @@
       "version": "11.1.2-next.18",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -433,8 +428,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/extended-text-entry": {
@@ -442,7 +437,6 @@
       "version": "15.1.2-next.17",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -468,8 +462,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/fraction-model": {
@@ -477,7 +471,6 @@
       "version": "6.1.2-next.17",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -488,7 +481,6 @@
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "@pie-lib/test-utils": "workspace:*",
         "prop-types": "^15.8.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -503,8 +495,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/graphing": {
@@ -512,7 +504,6 @@
       "version": "10.1.2-next.18",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -540,8 +531,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/graphing-solution-set": {
@@ -549,7 +540,6 @@
       "version": "6.1.2-next.18",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -575,8 +565,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/hotspot": {
@@ -584,7 +574,6 @@
       "version": "11.2.0-next.17",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -596,7 +585,6 @@
         "@pie-lib/correct-answer-toggle": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "@pie-lib/test-utils": "workspace:*",
         "debug": "^4.4.3",
         "konva": "8.3.0",
         "prop-types": "^15.8.1",
@@ -612,8 +600,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/image-cloze-association": {
@@ -623,7 +611,6 @@
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -653,8 +640,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/inline-dropdown": {
@@ -662,7 +649,6 @@
       "version": "10.1.2-next.17",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -688,8 +674,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/likert": {
@@ -697,7 +683,6 @@
       "version": "4.1.2-next.16",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -722,8 +707,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/match": {
@@ -732,7 +717,6 @@
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -746,7 +730,6 @@
         "@pie-lib/drag": "workspace:*",
         "@pie-lib/editable-html-tip-tap": "workspace:*",
         "@pie-lib/render-ui": "workspace:*",
-        "@pie-lib/test-utils": "workspace:*",
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
         "prop-types": "^15.8.1",
@@ -761,8 +744,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/match-list": {
@@ -772,7 +755,6 @@
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-controller-utils": "workspace:*",
@@ -796,8 +778,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/math-inline": {
@@ -805,7 +787,6 @@
       "version": "12.1.1-next.28",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -835,8 +816,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/math-templated": {
@@ -844,7 +825,6 @@
       "version": "7.1.1-next.28",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -874,8 +854,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/matrix": {
@@ -883,7 +863,6 @@
       "version": "4.1.2-next.16",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -908,8 +887,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/multi-trait-rubric": {
@@ -918,7 +897,6 @@
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -943,8 +921,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/multiple-choice": {
@@ -952,7 +930,6 @@
       "version": "13.4.0-next.13",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -980,8 +957,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/number-line": {
@@ -990,7 +967,6 @@
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -1022,8 +998,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/passage": {
@@ -1031,7 +1007,6 @@
       "version": "7.1.2-next.17",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -1054,8 +1029,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/placement-ordering": {
@@ -1065,7 +1040,6 @@
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -1098,8 +1072,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/rubric": {
@@ -1107,7 +1081,6 @@
       "version": "8.1.2-next.16",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -1129,8 +1102,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/select-text": {
@@ -1138,7 +1111,6 @@
       "version": "13.1.2-next.18",
       "dependencies": {
         "@emotion/react": "^11.14.0",
-        "@emotion/style": "^0.8.0",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
         "@pie-element/shared-configure-events": "workspace:*",
@@ -1165,8 +1137,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.2.0 || ^19.0.0",
+        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-svelte/mc-populated-blank": {
@@ -1280,8 +1252,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/config-ui": {
@@ -1309,8 +1281,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/controller-utils": {
@@ -1351,8 +1323,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/drag": {
@@ -1380,8 +1352,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/editable-html-tip-tap": {
@@ -1441,8 +1413,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/graphing": {
@@ -1493,8 +1465,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/graphing-solution-set": {
@@ -1546,8 +1518,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/graphing-utils": {
@@ -1584,8 +1556,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/mask-markup": {
@@ -1615,8 +1587,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/math-input": {
@@ -1641,8 +1613,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/math-rendering": {
@@ -1681,8 +1653,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/plot": {
@@ -1715,8 +1687,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/render-ui": {
@@ -1730,7 +1702,6 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
         "@pie-lib/icons": "workspace:*",
-        "@pie-lib/test-utils": "workspace:*",
         "debug": "^4.1.1",
         "prop-types": "^15.7.2",
         "react-transition-group": "^4.4.5",
@@ -1743,8 +1714,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/rubric": {
@@ -1771,8 +1742,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/style-utils": {
@@ -1807,8 +1778,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/text-select": {
@@ -1836,8 +1807,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-react/tools": {
@@ -1865,8 +1836,8 @@
         "vite": "^8.0.1",
       },
       "peerDependencies": {
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
     "packages/lib-svelte/config-ui-svelte": {
@@ -2306,9 +2277,7 @@
 
     "@emotion/cache": ["@emotion/cache@11.14.0", "", { "dependencies": { "@emotion/memoize": "^0.9.0", "@emotion/sheet": "^1.4.0", "@emotion/utils": "^1.4.2", "@emotion/weak-memoize": "^0.4.0", "stylis": "4.2.0" } }, "sha512-L/B1lc/TViYk4DcpGxtAVbx0ZyiKM5ktoIyafGkH6zg/tj+mA+NE//aPYKG0k8kCHSHVJrpLpcAlOBEXQ3SavA=="],
 
-    "@emotion/core": ["@emotion/core@0.13.1", "", { "dependencies": { "@emotion/cache": "^0.8.8", "@emotion/css": "^0.9.8", "@emotion/serialize": "^0.9.1", "@emotion/sheet": "^0.8.1", "@emotion/utils": "^0.8.2" }, "peerDependencies": { "react": ">=16.3.0" } }, "sha512-5qzKP6bTe2Ah7Wvh1sgtzgy6ycdpxwgMAjQ/K/VxvqBxveG9PCpq+Z0GdVg7Houb1AwYjTfNtXstjSk4sqi/7g=="],
-
-    "@emotion/css": ["@emotion/css@0.9.8", "", { "dependencies": { "@emotion/serialize": "^0.9.1", "@emotion/utils": "^0.8.2" } }, "sha512-Stov3+9+KWZAte/ED9Hts3r4DVBADd5erDrhrywokM31ctQsRPD3qk8W4d1ca48ry57g/nc0qUHNis/xd1SoFg=="],
+    "@emotion/css": ["@emotion/css@11.13.5", "", { "dependencies": { "@emotion/babel-plugin": "^11.13.5", "@emotion/cache": "^11.13.5", "@emotion/serialize": "^1.3.3", "@emotion/sheet": "^1.4.0", "@emotion/utils": "^1.4.2" } }, "sha512-wQdD0Xhkn3Qy2VNcIzbLP9MR8TafI0MJb7BEAXKp+w4+XqErksWR4OXomuDzPsN4InLdGhVe6EYcn2ZIUCpB8w=="],
 
     "@emotion/hash": ["@emotion/hash@0.9.2", "", {}, "sha512-MyqliTZGuOm3+5ZRSaaBGP3USLw6+EGykkwZns2EPC5g8jJ4z9OrdZY9apkl3+UP9+sdz76YYkwCKP5gh8iY3g=="],
 
@@ -2322,13 +2291,7 @@
 
     "@emotion/sheet": ["@emotion/sheet@1.4.0", "", {}, "sha512-fTBW9/8r2w3dXWYM4HCB1Rdp8NLibOw2+XELH5m5+AkWiL/KqYX6dc0kKYlaYyKjrQ6ds33MCdMPEwgs2z1rqg=="],
 
-    "@emotion/style": ["@emotion/style@0.8.0", "", { "dependencies": { "@emotion/types": "^0.6.2", "@emotion/utils": "^0.6.1" }, "peerDependencies": { "@emotion/core": "0.x.x", "react": ">=16.3.0" } }, "sha512-Hw2hoarCADedyFIteTUM5PIxPAGl8PX+o+oNUlgnpttCD99hwCklY2PGGt9L30FbAT+PFSCiZooGmQTY4ueTyA=="],
-
     "@emotion/styled": ["@emotion/styled@11.14.1", "", { "dependencies": { "@babel/runtime": "^7.18.3", "@emotion/babel-plugin": "^11.13.5", "@emotion/is-prop-valid": "^1.3.0", "@emotion/serialize": "^1.3.3", "@emotion/use-insertion-effect-with-fallbacks": "^1.2.0", "@emotion/utils": "^1.4.2" }, "peerDependencies": { "@emotion/react": "^11.0.0-rc.0", "react": ">=16.8.0" } }, "sha512-qEEJt42DuToa3gurlH4Qqc1kVpNq8wO8cJtDzU46TjlzWjDlsVyevtYCRijVq3SrHsROS+gVQ8Fnea108GnKzw=="],
-
-    "@emotion/stylis": ["@emotion/stylis@0.7.1", "", {}, "sha512-/SLmSIkN13M//53TtNxgxo57mcJk/UJIDFRKwOiLIBEyBHEcipgR6hNMQ/59Sl4VjCJ0Z/3zeAZyvnSLPG/1HQ=="],
-
-    "@emotion/types": ["@emotion/types@0.6.2", "", {}, "sha512-uVXdC6lW+xbuLSR5zFydd3HChdvuNBad5uT1l1HX2vZLHqsMNq0HizY5W34UzASoCF2aNAskIqAmWkZ5bpF+rQ=="],
 
     "@emotion/unitless": ["@emotion/unitless@0.10.0", "", {}, "sha512-dFoMUuQA20zvtVTuxZww6OHoJYgrzfKM1t52mVySDJnMSEa08ruEvdYQbhvyu6soU+NeLVd3yKfTfT0NeV6qGg=="],
 
@@ -4272,20 +4235,6 @@
 
     "@emotion/cache/stylis": ["stylis@4.2.0", "", {}, "sha512-Orov6g6BB1sDfYgzWfTHDOxamtX1bE/zo104Dh9e6fqJ3PooipYyfJ0pUmrZO2wAvO8YbEyeFrkV91XTsGMSrw=="],
 
-    "@emotion/core/@emotion/cache": ["@emotion/cache@0.8.8", "", { "dependencies": { "@emotion/sheet": "^0.8.1", "@emotion/stylis": "^0.7.1", "@emotion/utils": "^0.8.2" } }, "sha512-yaQQjNAVkKclMX6D8jTU3rhQKjCnXU1KS+Ok0lgZcarGHI2yydU/kKHyF3PZnQhbTpIFBK5W4+HmLCtCie7ESw=="],
-
-    "@emotion/core/@emotion/serialize": ["@emotion/serialize@0.9.1", "", { "dependencies": { "@emotion/hash": "^0.6.6", "@emotion/memoize": "^0.6.6", "@emotion/unitless": "^0.6.7", "@emotion/utils": "^0.8.2" } }, "sha512-zTuAFtyPvCctHBEL8KZ5lJuwBanGSutFEncqLn/m9T1a6a93smBStK+bZzcNPgj4QS8Rkw9VTwJGhRIUVO8zsQ=="],
-
-    "@emotion/core/@emotion/sheet": ["@emotion/sheet@0.8.1", "", {}, "sha512-p82hFBHbNkPLZ410HOeaRJZMrN1uh9rI7JAaRXIp62PP5evspPXyi3xYtxZc1+sCSlwjnQPuOIa6N88iJNtPXw=="],
-
-    "@emotion/core/@emotion/utils": ["@emotion/utils@0.8.2", "", {}, "sha512-rLu3wcBWH4P5q1CGoSSH/i9hrXs7SlbRLkoq9IGuoPYNGQvDJ3pt/wmOM+XgYjIDRMVIdkUWt0RsfzF50JfnCw=="],
-
-    "@emotion/css/@emotion/serialize": ["@emotion/serialize@0.9.1", "", { "dependencies": { "@emotion/hash": "^0.6.6", "@emotion/memoize": "^0.6.6", "@emotion/unitless": "^0.6.7", "@emotion/utils": "^0.8.2" } }, "sha512-zTuAFtyPvCctHBEL8KZ5lJuwBanGSutFEncqLn/m9T1a6a93smBStK+bZzcNPgj4QS8Rkw9VTwJGhRIUVO8zsQ=="],
-
-    "@emotion/css/@emotion/utils": ["@emotion/utils@0.8.2", "", {}, "sha512-rLu3wcBWH4P5q1CGoSSH/i9hrXs7SlbRLkoq9IGuoPYNGQvDJ3pt/wmOM+XgYjIDRMVIdkUWt0RsfzF50JfnCw=="],
-
-    "@emotion/style/@emotion/utils": ["@emotion/utils@0.6.1", "", {}, "sha512-HZlSY1AxnK/Vi/zZx7Lacliqo74G/5zn0HqgCtC0ucBkO3BW2S1XCErlZxVMVoYi6r3qyn8wE0nQltbu/bx1+A=="],
-
     "@jest/pattern/@types/node": ["@types/node@25.9.1", "", { "dependencies": { "undici-types": ">=7.24.0 <7.24.7" } }, "sha512-xfrlY7UD5rMJk3ZVJP8BNzS28J36YJg+xp+LPXV1TdWxr8uMH5A860QNxYDGQe/ylDSgjxE52Q9VnO7p75tJxg=="],
 
     "@jest/types/@types/node": ["@types/node@25.9.1", "", { "dependencies": { "undici-types": ">=7.24.0 <7.24.7" } }, "sha512-xfrlY7UD5rMJk3ZVJP8BNzS28J36YJg+xp+LPXV1TdWxr8uMH5A860QNxYDGQe/ylDSgjxE52Q9VnO7p75tJxg=="],
@@ -4311,8 +4260,6 @@
     "@pie-lib/editable-html-tip-tap/react-jss": ["react-jss@8.6.1", "", { "dependencies": { "hoist-non-react-statics": "^2.5.0", "jss": "^9.7.0", "jss-preset-default": "^4.3.0", "prop-types": "^15.6.0", "theming": "^1.3.0" }, "peerDependencies": { "react": ">=0.13" } }, "sha512-SH6XrJDJkAphp602J14JTy3puB2Zxz1FkM3bKVE8wON+va99jnUTKWnzGECb3NfIn9JPR5vHykge7K3/A747xQ=="],
 
     "@pie-lib/test-utils/@testing-library/jest-dom": ["@testing-library/jest-dom@5.17.0", "", { "dependencies": { "@adobe/css-tools": "^4.0.1", "@babel/runtime": "^7.9.2", "@types/testing-library__jest-dom": "^5.9.1", "aria-query": "^5.0.0", "chalk": "^3.0.0", "css.escape": "^1.5.1", "dom-accessibility-api": "^0.5.6", "lodash": "^4.17.15", "redent": "^3.0.0" } }, "sha512-ynmNeT7asXyH3aSVv4vvX4Rb+0qjOhdNHnO/3vuZNqPmhDpV/+rCSGwQ7bLcmU2cJ4dvoheIO85LQj0IbJHEtg=="],
-
-    "@pigment-css/react/@emotion/css": ["@emotion/css@11.13.5", "", { "dependencies": { "@emotion/babel-plugin": "^11.13.5", "@emotion/cache": "^11.13.5", "@emotion/serialize": "^1.3.3", "@emotion/sheet": "^1.4.0", "@emotion/utils": "^1.4.2" } }, "sha512-wQdD0Xhkn3Qy2VNcIzbLP9MR8TafI0MJb7BEAXKp+w4+XqErksWR4OXomuDzPsN4InLdGhVe6EYcn2ZIUCpB8w=="],
 
     "@pigment-css/react/@mui/system": ["@mui/system@6.5.0", "", { "dependencies": { "@babel/runtime": "^7.26.0", "@mui/private-theming": "^6.4.9", "@mui/styled-engine": "^6.5.0", "@mui/types": "~7.2.24", "@mui/utils": "^6.4.9", "clsx": "^2.1.1", "csstype": "^3.1.3", "prop-types": "^15.8.1" }, "peerDependencies": { "@emotion/react": "^11.5.0", "@emotion/styled": "^11.3.0", "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0", "react": "^17.0.0 || ^18.0.0 || ^19.0.0" }, "optionalPeers": ["@emotion/react", "@emotion/styled", "@types/react"] }, "sha512-XcbBYxDS+h/lgsoGe78ExXFZXtuIlSBpn/KsZq8PtZcIkUNJInkuDqcLd2rVBQrDC1u+rvVovdaWPf2FHKJf3w=="],
 
@@ -4543,18 +4490,6 @@
     "wsl-utils/is-wsl": ["is-wsl@3.1.1", "", { "dependencies": { "is-inside-container": "^1.0.0" } }, "sha512-e6rvdUCiQCAuumZslxRJWR/Doq4VpPR82kqclvcS0efgt430SlGIk05vdCN58+VrzgtIcfNODjozVielycD4Sw=="],
 
     "@babel/helper-compilation-targets/lru-cache/yallist": ["yallist@3.1.1", "", {}, "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g=="],
-
-    "@emotion/core/@emotion/serialize/@emotion/hash": ["@emotion/hash@0.6.6", "", {}, "sha512-ojhgxzUHZ7am3D2jHkMzPpsBAiB005GF5YU4ea+8DNPybMk01JJUM9V9YRlF/GE95tcOm8DxQvWA2jq19bGalQ=="],
-
-    "@emotion/core/@emotion/serialize/@emotion/memoize": ["@emotion/memoize@0.6.6", "", {}, "sha512-h4t4jFjtm1YV7UirAFuSuFGyLa+NNxjdkq6DpFLANNQY5rHueFZHVY+8Cu1HYVP6DrheB0kv4m5xPjo7eKT7yQ=="],
-
-    "@emotion/core/@emotion/serialize/@emotion/unitless": ["@emotion/unitless@0.6.7", "", {}, "sha512-Arj1hncvEVqQ2p7Ega08uHLr1JuRYBuO5cIvcA+WWEQ5+VmkOE3ZXzl04NbQxeQpWX78G7u6MqxKuNX3wvYZxg=="],
-
-    "@emotion/css/@emotion/serialize/@emotion/hash": ["@emotion/hash@0.6.6", "", {}, "sha512-ojhgxzUHZ7am3D2jHkMzPpsBAiB005GF5YU4ea+8DNPybMk01JJUM9V9YRlF/GE95tcOm8DxQvWA2jq19bGalQ=="],
-
-    "@emotion/css/@emotion/serialize/@emotion/memoize": ["@emotion/memoize@0.6.6", "", {}, "sha512-h4t4jFjtm1YV7UirAFuSuFGyLa+NNxjdkq6DpFLANNQY5rHueFZHVY+8Cu1HYVP6DrheB0kv4m5xPjo7eKT7yQ=="],
-
-    "@emotion/css/@emotion/serialize/@emotion/unitless": ["@emotion/unitless@0.6.7", "", {}, "sha512-Arj1hncvEVqQ2p7Ega08uHLr1JuRYBuO5cIvcA+WWEQ5+VmkOE3ZXzl04NbQxeQpWX78G7u6MqxKuNX3wvYZxg=="],
 
     "@jest/pattern/@types/node/undici-types": ["undici-types@7.24.6", "", {}, "sha512-WRNW+sJgj5OBN4/0JpHFqtqzhpbnV0GuB+OozA9gCL7a993SmU+1JBZCzLNxYsbMfIeDL+lTsphD5jN5N+n0zg=="],
 

@@ -384,6 +384,10 @@ oclif-based CLI for:
   `patch` changeset synthesized by `scripts/release-synthesize-changesets.mjs`, then CI runs
   `changeset version`, commits the bump directly to `develop`, and publishes under the `next`
   dist-tag. `master` keeps the version-PR flow.
+- **Taken prerelease numbers are skipped**: pie-elements and pie-lib publish the same names
+  into the same `-next.N` series, so `bun run version` moves a bump that lands on a number npm
+  already holds to the lowest free number above it (`scripts/skip-taken-prereleases.mjs`). A
+  taken stable version still fails `scripts/check-version-availability.mjs`, which runs last.
 - **Release intent is per package, not per push**: a package counts as unreleased when its own
   shipping files changed after its own `version` last moved. That is what makes the pipeline
   self-healing — a Release run that fails or is cancelled loses nothing, because the next run

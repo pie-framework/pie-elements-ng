@@ -154,6 +154,28 @@ describe('package inspection quality-gate helpers', () => {
     );
   });
 
+  it('requires element packages to export their package.json', () => {
+    const violationsFor = (pkg: Record<string, unknown>) =>
+      collectPublishSurfaceViolations({
+        dir: join(process.cwd(), 'packages', 'elements-react', 'example'),
+        relativeDir: 'packages/elements-react/example',
+        pkg: { version: '1.0.0', files: ['dist'], ...pkg },
+        packedFiles: new Set(['package.json', 'dist/index.js']),
+      });
+    const exports = { '.': { default: './dist/index.js' } };
+    const missing = 'exports["./package.json"] must be "./package.json" for element packages';
+
+    expect(violationsFor({ name: '@pie-element/example', pie: {}, exports })).toContain(missing);
+    expect(
+      violationsFor({
+        name: '@pie-element/example',
+        pie: {},
+        exports: { ...exports, './package.json': './package.json' },
+      })
+    ).not.toContain(missing);
+    expect(violationsFor({ name: '@pie-lib/example', exports })).not.toContain(missing);
+  });
+
   it('requires browser shared dependency metadata only for browser outputs that import it', async () => {
     const root = await makeWorkspaceFixture();
     const svelteDir = join(root, 'packages', 'elements-svelte', 'simple-cloze');
@@ -331,7 +353,7 @@ describe('package inspection quality-gate helpers', () => {
     );
     await writeFile(
       join(packageDir, 'dist', 'browser', 'shared-AAAAAAAA.js'),
-      'await load([["0123456789abcdef","./shared.css"]]);\nexport const shared = 1;\n',
+      'export const shared = new URL("./shared.css", import.meta.url);\n',
       'utf8'
     );
     await writeFile(join(packageDir, 'dist', 'browser', 'shared.css'), '.a{}\n', 'utf8');
@@ -365,7 +387,7 @@ describe('package inspection quality-gate helpers', () => {
     await mkdir(join(packageDir, 'module'), { recursive: true });
     await writeFile(
       join(packageDir, 'module', 'print.js'),
-      'await load([["0123456789abcdef","./index.css"]]);\nexport default class extends HTMLElement {}\n',
+      'const href = new URL("./index.css", import.meta.url);\nexport default class extends HTMLElement {}\n',
       'utf8'
     );
     await writeFile(join(packageDir, 'module', 'index.css'), '.a{}\n', 'utf8');
@@ -394,6 +416,53 @@ describe('package inspection quality-gate helpers', () => {
     const stylesheetViolations = violations.filter((violation) => violation.includes('.css'));
     expect(stylesheetViolations).toEqual([
       'module/print.css is not loaded by module/print.js, and hosts load no element CSS',
+    ]);
+  });
+
+  it('rejects top-level await in shipped browser modules', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'awaiting');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await mkdir(join(packageDir, 'module'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'import "../held-AAAAAAAA.js";\nimport "../async-AAAAAAAA.js";\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'held-AAAAAAAA.js'),
+      'await Promise.resolve();\nexport const held = 1;\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'async-AAAAAAAA.js'),
+      'export const load = async () => { await Promise.resolve(); };\nexport async function* each(items) { for await (const item of items) yield item; }\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'module', 'print.js'),
+      'for await (const part of []) {}\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/awaiting',
+      pkg: {
+        name: '@pie-element/awaiting',
+        version: '1.0.0',
+        files: ['dist', 'module'],
+        exports: {
+          './browser/delivery': { default: './dist/browser/delivery/index.js' },
+          './print': { default: './dist/print/index.js' },
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js', 'module/print.js']),
+    });
+
+    expect(violations.filter((violation) => violation.includes('top-level await'))).toEqual([
+      'dist/browser/held-AAAAAAAA.js uses top-level await, which default Vite 6 builds reject',
+      'module/print.js uses top-level await, which default Vite 6 builds reject',
     ]);
   });
 

@@ -116,17 +116,28 @@ references it nowhere, and browser ESM hosts, `pie-players` and the legacy
 that way, and math-inline rendered `$$$` and a bare textarea.
 
 `tools/vite/browser-css-loader.ts`, which the React and Svelte browser and legacy print configs
-all use, splits CSS per chunk and prepends a loader to each chunk that owns some. The loader
-links the stylesheet relative to `import.meta.url` and holds the chunk's evaluation with
-top-level await until the stylesheet has loaded, so an element's first render is styled, as it
-is under IIFE, where style-loader inserts the CSS synchronously. A failed load warns and lets
-the element register unstyled.
+all use, compiles each extracted stylesheet into the chunks that import it and deletes the
+`.css` file. Such a chunk starts by appending the rules to `<head>` in a `<style>` element, so
+they apply before the chunk's own code runs and an element's first render is styled, as under
+IIFE, where style-loader does the same.
 
-Loads are deduplicated per page by content hash through a
-`Symbol.for('pie-elements-ng.browser-css')` registry, so the MathQuill stylesheet that most
-elements ship is fetched once however many of them a page loads. Packages built by different
-versions of the plugin share that registry, so its value shape (a `Map` from hash to load
-promise) changes only under a new key.
+The rules travel as a string because a host bundler breaks both alternatives: it copies a
+stylesheet reached through `new URL(..., import.meta.url)` verbatim, so the `url()` references
+inside it dangle, and holding a chunk until a `<link>` loads takes top-level await, which
+default Vite 6 builds reject. `check:publish-surface` rejects top-level await in any shipped
+browser module.
+
+Assets the rules reference ship as files in `assets/` beside the chunks, each named by a
+literal `new URL("./assets/…", import.meta.url)`, which Vite, webpack and the browser resolve
+alike. Library mode inlines every asset as a data URI whatever its size; the plugin applies the
+app-build limit instead, keeping data URIs of 4 KiB or less inline and writing larger ones out.
+A `@font-face` rule with a WOFF2 source keeps only its `local()` and WOFF2 sources, because every
+browser that runs these modules reads WOFF2. MathQuill's Symbola font ships as one 148 KB file
+this way, where the extracted stylesheet embedded it in five formats and weighed 2.6 MB.
+
+Each `<style>` carries a hash of its stylesheet as `data-pie-css`, and a chunk skips a
+stylesheet the document already has, so the MathQuill stylesheet that most elements ship
+installs once however many of them a page loads.
 
 The bundler-facing `dist/` builds and the IIFE builds keep their CSS imports for the consuming
 bundler, and are untouched.
@@ -370,7 +381,8 @@ That command orchestrates the contract-relevant checks:
   forbidden export conditions such as `development` and `svelte`, rejects a
   `svelte` dependency or a runtime `svelte` import in any publishable package,
   checks browser ESM policy, rejects stylesheets in `dist/browser` or `module/`
-  that no reachable module loads, verifies packed tarball contents, and enforces
+  that no reachable module loads and top-level await in any module those
+  directories ship, verifies packed tarball contents, and enforces
   runtime-support metadata for non-browser-ESM elements. `tests/svelte-leak.test.ts`
   runs its Svelte rules over the built workspace on every pull request.
 - `tools/cli/src/commands/verify/controllers.ts` checks `pie.controller`,
