@@ -1,5 +1,14 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.19
+
+### Patch Changes
+
+- c4e2ba3: Add `@pie-element/shared-editor-runtime`, one browser ESM build of the tiptap editor engine, and an editor-runtime variant of each browser view of the elements that bundle the engine, declared in `pie.browserEditorRuntime`, which `pie-cli` sync now writes. `./browser/*` and the IIFE builds are unchanged.
+- Updated dependencies [c4e2ba3]
+  - @pie-element/multi-trait-rubric@8.1.2-next.18
+  - @pie-element/rubric@8.1.2-next.18
+
 ## 7.1.2-next.18
 
 ### Patch Changes

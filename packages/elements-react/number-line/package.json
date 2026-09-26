@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/number-line",
-  "version": "13.1.2-next.17",
+  "version": "13.1.2-next.18",
   "description": "",
   "repository": {
     "type": "git",
@@ -109,7 +109,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.0",
+      "version": "0.1.1-next.0",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

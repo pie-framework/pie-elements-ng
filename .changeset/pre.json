@@ -81,7 +81,8 @@
     "@pie-element/element-a11y-demo": "0.1.1",
     "@pie-element/learnosity-parity-demo": "0.1.1",
     "@pie-element/shared-lodash": "0.1.0",
-    "@pie-lib/config-ui-svelte": "0.1.0"
+    "@pie-lib/config-ui-svelte": "0.1.0",
+    "@pie-element/shared-editor-runtime": "0.1.0"
   },
   "changesets": [
     "20260501125058-pie-element-multiple-choice",
@@ -176,6 +177,7 @@
     "20260925014324-pie-lib-plot",
     "20260925021601-pie-element-categorize-pie-element-chart",
     "20260925203817-pie-element-print-player-pie-element-sha",
+    "20260926-shared-editor-runtime",
     "20260926145804-pie-element-cli",
     "author-contract-test-helpers",
     "common-cougars-hang",
