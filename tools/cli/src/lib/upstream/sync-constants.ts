@@ -64,12 +64,19 @@ export const PACKAGE_DEFAULTS = {
 
 // Build scripts
 export const ELEMENT_BROWSER_VITE_CONFIG = '../../../tools/vite/element-browser.config.ts';
+export const ELEMENT_BROWSER_EDITOR_RUNTIME_VITE_CONFIG =
+  '../../../tools/vite/element-browser-editor-runtime.config.ts';
 export const ELEMENT_LEGACY_PRINT_VITE_CONFIG =
   '../../../tools/vite/element-legacy-print.config.ts';
 
 export type ElementBuildLanes = {
   /** dist/browser/** - the browser ESM surface consumed by pie-players. */
   browser?: boolean;
+  /**
+   * dist/browser/editor-runtime/** - the browser build with the editor engine imported from
+   * @pie-element/shared-editor-runtime, declared in pie.browserEditorRuntime. Needs `browser`.
+   */
+  editorRuntime?: boolean;
   /**
    * module/print.js - a self-contained print bundle (React inlined, zero
    * externals) for the unmodified @pie-framework/pie-print client loader, which
@@ -96,6 +103,9 @@ export function composeElementBuildScript(lanes: ElementBuildLanes = {}): string
   const steps = ['bun x vite build'];
   if (lanes.browser) {
     steps.push(`bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG}`);
+    if (lanes.editorRuntime) {
+      steps.push(`bun x vite build --config ${ELEMENT_BROWSER_EDITOR_RUNTIME_VITE_CONFIG}`);
+    }
   }
   if (lanes.legacyPrint) {
     steps.push(`bun x vite build --config ${ELEMENT_LEGACY_PRINT_VITE_CONFIG}`);

@@ -790,6 +790,108 @@ describe('ensureElementPackageJson iife build script generation', () => {
   });
 });
 
+describe('ensureElementPackageJson editor runtime variant', () => {
+  const writeEditorWorkspace = async (rootDir: string) => {
+    await writeBrowserEsmPolicy(rootDir);
+    await mkdir(join(rootDir, 'packages', 'shared', 'editor-runtime'), { recursive: true });
+    await writeFile(
+      join(rootDir, 'packages', 'shared', 'editor-runtime', 'package.json'),
+      JSON.stringify({ name: '@pie-element/shared-editor-runtime', version: '0.1.3' }),
+      'utf-8'
+    );
+    await mkdir(join(rootDir, 'packages', 'lib-react', 'editable-html-tip-tap'), {
+      recursive: true,
+    });
+    await writeFile(
+      join(rootDir, 'packages', 'lib-react', 'editable-html-tip-tap', 'package.json'),
+      JSON.stringify({
+        name: '@pie-lib/editable-html-tip-tap',
+        dependencies: { '@tiptap/core': '3.31.3', '@tiptap/react': '3.31.3' },
+      }),
+      'utf-8'
+    );
+    await mkdir(join(rootDir, 'packages', 'lib-react', 'render-ui'), { recursive: true });
+    await writeFile(
+      join(rootDir, 'packages', 'lib-react', 'render-ui', 'package.json'),
+      JSON.stringify({ name: '@pie-lib/render-ui', dependencies: { '@tiptap/react': '3.31.3' } }),
+      'utf-8'
+    );
+  };
+
+  const writeViews = async (elementDir: string, deliveryImport: string) => {
+    await createElementBase(elementDir);
+    for (const view of ['delivery', 'author', 'controller']) {
+      await mkdir(join(elementDir, 'src', view), { recursive: true });
+      await writeFile(
+        join(elementDir, 'src', view, 'index.ts'),
+        view === 'delivery'
+          ? `import '${deliveryImport}';\nexport default class DeliveryElement {}\n`
+          : 'export default class View {}\n',
+        'utf-8'
+      );
+    }
+  };
+
+  it('declares the variant and adds its build step when a dependency reaches the editor engine', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+    await writeEditorWorkspace(rootDir);
+    await writeViews(elementDir, '@pie-lib/editable-html-tip-tap');
+
+    await ensureElementPackageJson('test-element', elementDir, createConfig(rootDir), {
+      includeBrowserExports: true,
+    });
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.pie.browserEditorRuntime).toEqual({
+      name: '@pie-element/shared-editor-runtime',
+      version: '0.1.3',
+      views: {
+        delivery: 'editor-runtime/delivery',
+        author: 'editor-runtime/author',
+        controller: 'editor-runtime/controller',
+      },
+    });
+    const steps = pkgJson.scripts.build.split(' && ');
+    const browserStep = steps.indexOf(
+      'bun x vite build --config ../../../tools/vite/element-browser.config.ts'
+    );
+    expect(browserStep).toBeGreaterThan(-1);
+    expect(steps[browserStep + 1]).toBe(
+      'bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts'
+    );
+  });
+
+  it('removes a stale declaration when only @tiptap/react is reached', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+    await writeEditorWorkspace(rootDir);
+    await writeViews(elementDir, '@pie-lib/render-ui');
+    await writeFile(
+      join(elementDir, 'package.json'),
+      JSON.stringify({
+        name: '@pie-element/test-element',
+        pie: {
+          browserEditorRuntime: {
+            name: '@pie-element/shared-editor-runtime',
+            version: '0.1.0',
+            views: { delivery: 'editor-runtime/delivery' },
+          },
+        },
+      }),
+      'utf-8'
+    );
+
+    await ensureElementPackageJson('test-element', elementDir, createConfig(rootDir), {
+      includeBrowserExports: true,
+    });
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.pie.browserEditorRuntime).toBeUndefined();
+    expect(pkgJson.scripts.build).not.toContain('element-browser-editor-runtime.config.ts');
+  });
+});
+
 describe('ensurePieLibPackageJson', () => {
   it('preserves local pie-lib package versions during sync', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));

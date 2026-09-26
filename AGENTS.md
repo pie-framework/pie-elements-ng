@@ -133,7 +133,7 @@ and restore anything it flags.
 | `dependencies` | **Replaced wholesale** from upstream - local bumps lost |
 | `peerDependencies` | Merged (local entries kept) |
 | `exports`, `main`, `types`, `files`, `scripts.build` | Regenerated - hand edits lost |
-| `pie.*` | Regenerated from entry points + `tools/vite/browser-esm-policy.json` |
+| `pie.*` | Regenerated from entry points + `tools/vite/browser-esm-policy.json`; `pie.browserEditorRuntime` from the dependency closure + `packages/shared/editor-runtime/package.json` |
 
 **Invariants that must hold after a sync** (all are enforced, so run the gates):
 

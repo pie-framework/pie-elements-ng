@@ -10,6 +10,7 @@ import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
+import { browserEditorRuntimeDeclaration, reachesEditorEngine } from './editor-runtime.js';
 import { existsAny } from './sync-filesystem.js';
 import { applyPackageJsonTransforms } from './sync-transforms.js';
 import {
@@ -675,6 +676,7 @@ export async function ensureElementPackageJson(
         controller?: string;
         configure?: string;
         browserSharedDependencies?: Record<string, string>;
+        browserEditorRuntime?: unknown;
       }
     | undefined;
 
@@ -747,6 +749,31 @@ export async function ensureElementPackageJson(
     }
   } else {
     delete nextPieMetadata.browserSharedDependencies;
+  }
+  // An element whose browser build bundles the editor engine also builds the editor-runtime
+  // variant, which imports the engine from @pie-element/shared-editor-runtime.
+  const browserEditorRuntime =
+    includeBrowserExports &&
+    reachesEditorEngine(
+      config.pieElementsNg,
+      (pkg.dependencies as Record<string, string> | undefined) ?? {}
+    )
+      ? browserEditorRuntimeDeclaration(
+          config.pieElementsNg,
+          new Set(
+            [
+              entryPoints.hasDelivery && 'delivery',
+              entryPoints.hasAuthor && 'author',
+              entryPoints.hasPrint && 'print',
+              entryPoints.hasController && 'controller',
+            ].filter((view): view is string => typeof view === 'string')
+          )
+        )
+      : null;
+  if (browserEditorRuntime) {
+    nextPieMetadata.browserEditorRuntime = browserEditorRuntime;
+  } else {
+    delete nextPieMetadata.browserEditorRuntime;
   }
 
   if (Object.keys(nextPieMetadata).length > 0) {
@@ -848,6 +875,7 @@ export async function ensureElementPackageJson(
   // module/print.js is emitted for the current @pie-framework/pie-print loader.
   scripts.build = composeElementBuildScript({
     browser: hasBrowserBuild,
+    editorRuntime: browserEditorRuntime !== null,
     legacyPrint: entryPoints.hasPrint,
     iife: hasIifeEntry,
   });

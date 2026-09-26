@@ -21,6 +21,16 @@ const FORBIDDEN_EXPORT_CONDITIONS = new Set(['development', 'svelte']);
 const SVELTE_DEPENDENCY_OWNERS = new Set(['@pie-element/element-bundler']);
 const SHIPPED_JS_FILE = /\.[cm]?js$/;
 const REQUIRE_CALLEES = new Set(['require', '__require']);
+const EDITOR_RUNTIME_PACKAGE = '@pie-element/shared-editor-runtime';
+const EDITOR_RUNTIME_DIR = path.join('packages', 'shared', 'editor-runtime');
+// An element's editor-runtime variant lives in dist/browser/<directory>/<view>/index.js.
+const EDITOR_RUNTIME_VARIANT_DIRECTORY = 'editor-runtime';
+// tiptap and ProseMirror sources, which the editor runtime provides. @tiptap/react stays inside
+// the element with the rest of its React code.
+const EDITOR_ENGINE_SOURCE =
+  /(?:^|[\\/])node_modules[\\/](?:@tiptap[\\/](?!react[\\/])[^\\/]+|prosemirror-[^\\/]+)[\\/]/;
+const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+const RUNTIME_VIEW_NAME = /^[a-z0-9][a-z0-9-]*$/;
 
 const policy = existsSync(POLICY_PATH) ? readJson(POLICY_PATH) : {};
 const browserEsmPolicy = readJson(BROWSER_ESM_POLICY_PATH);
@@ -354,7 +364,13 @@ const RELATIVE_CSS_REFERENCE_PATTERN = /["'`](\.{1,2}\/[^"'`\s]+\.css)["'`]/g;
  * tools/vite/browser-css-loader.ts compiles each stylesheet into the chunks that import it;
  * this is the tripwire for a build lane that loses it.
  */
-const collectUnloadedStylesheetViolations = (dir, outputDir, reachableJsFiles, loadedFrom) => {
+const collectUnloadedStylesheetViolations = (
+  dir,
+  outputDir,
+  reachableJsFiles,
+  loadedFrom,
+  isExcluded = () => false
+) => {
   const referenced = new Set();
   for (const filePath of reachableJsFiles) {
     const source = readFileSync(filePath, 'utf8');
@@ -363,7 +379,7 @@ const collectUnloadedStylesheetViolations = (dir, outputDir, reachableJsFiles, l
     }
   }
   return collectPackageJsFiles(outputDir, { extensions: ['.css'] })
-    .filter((cssFile) => !referenced.has(cssFile))
+    .filter((cssFile) => !referenced.has(cssFile) && !isExcluded(cssFile))
     .map(
       (cssFile) =>
         `${toPosix(path.relative(dir, cssFile))} is not loaded by ${loadedFrom}, and hosts load no element CSS`
@@ -465,12 +481,14 @@ const hasPublicElementAutoRegistration = (source, pkg) => {
   return new RegExp(`customElements\\.define\\(\\s*['"]${publicTag}['"]`).test(source);
 };
 
-const collectBrowserEsmViolations = (dir, pkg) => {
+const collectBrowserEsmViolations = (dir, pkg, context) => {
   const browserExports = Object.entries(pkg.exports ?? {}).filter(([key]) =>
     key.startsWith('./browser/')
   );
   if (browserExports.length === 0) {
-    return [];
+    return pkg.pie?.browserEditorRuntime === undefined
+      ? []
+      : ['pie.browserEditorRuntime is declared, but the package has no ./browser/* exports'];
   }
 
   const violations = [];
@@ -493,9 +511,13 @@ const collectBrowserEsmViolations = (dir, pkg) => {
   }
 
   const browserDir = path.join(dir, 'dist/browser');
+  const declaresVariant = pkg.pie?.browserEditorRuntime !== undefined;
+  const variantDir = path.join(browserDir, EDITOR_RUNTIME_VARIANT_DIRECTORY);
+  const inVariant = (filePath) =>
+    declaresVariant && filePath.startsWith(`${variantDir}${path.sep}`);
   let browserJsBytes = 0;
   const requiredBrowserSharedDependencies = new Set();
-  const jsFiles = collectPackageJsFiles(browserDir);
+  const jsFiles = collectPackageJsFiles(browserDir).filter((filePath) => !inVariant(filePath));
   const reachableJsFiles = collectReachableBrowserJsFiles(dir, browserExportTargets);
   for (const filePath of jsFiles) {
     // Budget only counts the payload reachable from the declared browser exports.
@@ -526,7 +548,8 @@ const collectBrowserEsmViolations = (dir, pkg) => {
       dir,
       browserDir,
       reachableJsFiles,
-      'any module reachable from the ./browser/* exports'
+      'any module reachable from the ./browser/* exports',
+      inVariant
     ),
     ...collectTopLevelAwaitViolations(dir, reachableJsFiles)
   );
@@ -546,7 +569,382 @@ const collectBrowserEsmViolations = (dir, pkg) => {
     }
   }
 
+  const engine = findBundledEditorEngine(reachableJsFiles);
+  if (engine && !declaresVariant) {
+    violations.push(
+      `${toPosix(path.relative(dir, engine.filePath))} bundles the editor engine (${engine.packageName}), so the package must build the editor-runtime variant and declare it in pie.browserEditorRuntime`
+    );
+  }
+  if (!engine && declaresVariant) {
+    violations.push(
+      'pie.browserEditorRuntime is declared, but no module reachable from the ./browser/* exports bundles the editor engine'
+    );
+  }
+  violations.push(...collectEditorRuntimeVariantViolations(dir, pkg, browserExports, context));
+
   return violations;
+};
+
+const packageNameOfSource = (source) => {
+  const segments = source
+    .split(/(?:^|[\\/])node_modules[\\/]/)
+    .pop()
+    .split(/[\\/]/);
+  return segments[0].startsWith('@') ? `${segments[0]}/${segments[1]}` : segments[0];
+};
+
+/** The first file among `jsFiles` whose sourcemap lists a tiptap or ProseMirror source. */
+const findBundledEditorEngine = (jsFiles) => {
+  for (const filePath of [...jsFiles].sort()) {
+    const mapPath = `${filePath}.map`;
+    if (!existsSync(mapPath)) continue;
+    let sources;
+    try {
+      sources = readJson(mapPath).sources ?? [];
+    } catch {
+      continue;
+    }
+    const source = sources.find((candidate) => EDITOR_ENGINE_SOURCE.test(candidate));
+    if (source) return { filePath, packageName: packageNameOfSource(source) };
+  }
+  return null;
+};
+
+const nameOf = (node) => (node.type === 'Identifier' ? node.name : String(node.value));
+
+/**
+ * Every module a file loads: its specifier, whether it is loaded by import or by require(), and
+ * the names the file takes from it by name.
+ */
+const collectModuleImports = (source) => {
+  const imports = [];
+  const pending = [parseAst(source)];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (node.type === 'ImportDeclaration') {
+      imports.push({
+        specifier: node.source.value,
+        kind: 'import',
+        names: node.specifiers.flatMap((specifier) => {
+          if (specifier.type === 'ImportSpecifier') return [nameOf(specifier.imported)];
+          if (specifier.type === 'ImportDefaultSpecifier') return ['default'];
+          return [];
+        }),
+      });
+    } else if (node.type === 'ExportNamedDeclaration' && node.source) {
+      imports.push({
+        specifier: node.source.value,
+        kind: 'import',
+        names: node.specifiers.map((specifier) => nameOf(specifier.local)),
+      });
+    } else if (node.type === 'ExportAllDeclaration') {
+      imports.push({ specifier: node.source.value, kind: 'import', names: [] });
+    } else if (node.type === 'ImportExpression') {
+      const specifier = staticSpecifier(node.source);
+      if (specifier) imports.push({ specifier, kind: 'import', names: [] });
+    } else if (
+      node.type === 'CallExpression' &&
+      node.callee.type === 'Identifier' &&
+      REQUIRE_CALLEES.has(node.callee.name)
+    ) {
+      const specifier = staticSpecifier(node.arguments[0]);
+      if (specifier) imports.push({ specifier, kind: 'require', names: [] });
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) if (child && typeof child === 'object') pending.push(child);
+      } else if (value && typeof value === 'object') {
+        pending.push(value);
+      }
+    }
+  }
+  return imports;
+};
+
+/** The names a built module exports, following its relative `export *` re-exports. */
+const collectModuleExportNames = (filePath, seen = new Set()) => {
+  if (!existsSync(filePath)) return null;
+  const names = new Set();
+  if (seen.has(filePath)) return names;
+  seen.add(filePath);
+  for (const node of parseAst(readFileSync(filePath, 'utf8')).body) {
+    if (node.type === 'ExportDefaultDeclaration') {
+      names.add('default');
+    } else if (node.type === 'ExportNamedDeclaration') {
+      for (const specifier of node.specifiers) names.add(nameOf(specifier.exported));
+      if (node.declaration?.id) names.add(node.declaration.id.name);
+      for (const declarator of node.declaration?.declarations ?? []) {
+        if (declarator.id.type === 'Identifier') names.add(declarator.id.name);
+      }
+    } else if (node.type === 'ExportAllDeclaration') {
+      if (node.exported) {
+        names.add(nameOf(node.exported));
+      } else if (node.source.value.startsWith('.')) {
+        const target = path.resolve(path.dirname(filePath), node.source.value);
+        for (const name of collectModuleExportNames(target, seen) ?? []) {
+          if (name !== 'default') names.add(name);
+        }
+      }
+    }
+  }
+  return names;
+};
+
+const sumFileBytes = (files) =>
+  [...files].reduce((total, filePath) => total + readFileSync(filePath).byteLength, 0);
+
+/**
+ * The editor-runtime variant (dist/browser/editor-runtime) is the element's browser build with
+ * the editor engine left to @pie-element/shared-editor-runtime. pie.browserEditorRuntime names the
+ * runtime and the exact version the variant links against, and maps each ./browser/* view to its
+ * variant. The variant may import what ./browser/* imports plus the runtime's specifiers, and
+ * every name it imports from a specifier must be one that version's view for it exports, so the
+ * variant links against the runtime in any browser.
+ */
+const collectEditorRuntimeVariantViolations = (dir, pkg, browserExports, context) => {
+  const declared = pkg.pie?.browserEditorRuntime;
+  if (declared === undefined) return [];
+  if (!declared || typeof declared !== 'object' || Array.isArray(declared)) {
+    return ['pie.browserEditorRuntime must be an object with name, version and views'];
+  }
+
+  const violations = [];
+  const runtime = context?.editorRuntime ?? null;
+  const fields = Object.keys(declared).sort().join(', ');
+  if (fields !== 'name, version, views') {
+    violations.push(
+      `pie.browserEditorRuntime must have exactly name, version and views, found ${fields || 'none'}`
+    );
+  }
+  if (declared.name !== EDITOR_RUNTIME_PACKAGE) {
+    violations.push(`pie.browserEditorRuntime.name must be "${EDITOR_RUNTIME_PACKAGE}"`);
+  }
+  if (typeof declared.version !== 'string' || !EXACT_VERSION.test(declared.version)) {
+    violations.push('pie.browserEditorRuntime.version must be an exact version');
+  } else if (!runtime) {
+    violations.push(`${EDITOR_RUNTIME_PACKAGE} is not in this workspace`);
+  } else if (declared.version !== runtime.pkg.version) {
+    violations.push(
+      `pie.browserEditorRuntime.version must be "${runtime.pkg.version}", the ${EDITOR_RUNTIME_PACKAGE} version the variant is built against (run node scripts/sync-editor-runtime-version.mjs)`
+    );
+  }
+
+  const runtimeModules = runtime?.pkg.pie?.browserModules ?? {};
+  for (const dependencyName of Object.keys(pkg.pie?.browserSharedDependencies ?? {})) {
+    if (
+      dependencyName === EDITOR_RUNTIME_PACKAGE ||
+      Object.hasOwn(runtimeModules, dependencyName)
+    ) {
+      violations.push(
+        `pie.browserSharedDependencies.${dependencyName} is not allowed: the editor runtime is declared in pie.browserEditorRuntime`
+      );
+    }
+  }
+
+  const standardViews = browserExports.map(([key]) => key.slice('./browser/'.length)).sort();
+  const views =
+    declared.views && typeof declared.views === 'object' && !Array.isArray(declared.views)
+      ? declared.views
+      : {};
+  const declaredViews = Object.keys(views).sort();
+  if (declaredViews.join(', ') !== standardViews.join(', ')) {
+    violations.push(
+      `pie.browserEditorRuntime.views must map every ./browser/* view (${standardViews.join(', ')}), found ${declaredViews.join(', ') || 'none'}`
+    );
+  }
+  const variantEntries = [];
+  for (const view of declaredViews) {
+    const expected = `${EDITOR_RUNTIME_VARIANT_DIRECTORY}/${view}`;
+    if (views[view] !== expected) {
+      violations.push(`pie.browserEditorRuntime.views.${view} must be "${expected}"`);
+      continue;
+    }
+    const entry = `./dist/browser/${expected}/index.js`;
+    if (!existsSync(path.join(dir, entry.slice(2)))) {
+      violations.push(`pie.browserEditorRuntime.views.${view} target is missing: ${entry}`);
+      continue;
+    }
+    variantEntries.push(entry);
+  }
+
+  const variantDir = path.join(dir, 'dist/browser', EDITOR_RUNTIME_VARIANT_DIRECTORY);
+  const variantFiles = collectPackageJsFiles(variantDir).sort();
+  const runtimeExportNames = new Map();
+  const runtimeExportsOf = (view) => {
+    if (!runtimeExportNames.has(view)) {
+      runtimeExportNames.set(
+        view,
+        collectModuleExportNames(path.join(runtime.dir, 'dist/browser', view, 'index.js'))
+      );
+    }
+    return runtimeExportNames.get(view);
+  };
+  for (const filePath of variantFiles) {
+    const relPath = toPosix(path.relative(dir, filePath));
+    const source = readFileSync(filePath, 'utf8');
+    let imports;
+    try {
+      imports = collectModuleImports(source);
+    } catch (error) {
+      violations.push(`${relPath} could not be parsed to check its imports: ${error.message}`);
+      continue;
+    }
+    for (const { specifier, kind, names } of imports) {
+      if (specifier.startsWith('.')) continue;
+      if (!Object.hasOwn(runtimeModules, specifier)) {
+        if (!allowedBrowserBareImports.has(specifier)) {
+          violations.push(`${relPath} contains unsupported bare browser import "${specifier}"`);
+        }
+        continue;
+      }
+      if (kind === 'require') {
+        violations.push(
+          `${relPath} loads "${specifier}" with require(), which a browser cannot run`
+        );
+        continue;
+      }
+      const view = runtimeModules[specifier];
+      const exported = runtimeExportsOf(view);
+      if (!exported) {
+        violations.push(
+          `${relPath} imports "${specifier}", but ${EDITOR_RUNTIME_PACKAGE} has no dist/browser/${view}/index.js`
+        );
+        continue;
+      }
+      for (const name of names) {
+        if (!exported.has(name)) {
+          violations.push(
+            `${relPath} imports ${name} from "${specifier}", which ${EDITOR_RUNTIME_PACKAGE} dist/browser/${view}/index.js does not export`
+          );
+        }
+      }
+    }
+    if (hasPublicElementAutoRegistration(source, pkg)) {
+      violations.push(`${relPath} must not auto-register the public element tag`);
+    }
+  }
+
+  const engine = findBundledEditorEngine(variantFiles);
+  if (engine) {
+    violations.push(
+      `${toPosix(path.relative(dir, engine.filePath))} bundles the editor engine (${engine.packageName}), which the editor-runtime variant imports from ${EDITOR_RUNTIME_PACKAGE}`
+    );
+  }
+
+  const reachableVariantFiles = collectReachableBrowserJsFiles(dir, variantEntries);
+  violations.push(
+    ...collectUnloadedStylesheetViolations(
+      dir,
+      variantDir,
+      reachableVariantFiles,
+      'any module reachable from the pie.browserEditorRuntime views'
+    ),
+    ...collectTopLevelAwaitViolations(dir, reachableVariantFiles)
+  );
+  const variantJsBytes = sumFileBytes(reachableVariantFiles);
+  if (maxBrowserJsBytesPerPackage > 0 && variantJsBytes > maxBrowserJsBytesPerPackage) {
+    violations.push(
+      `dist/browser/${EDITOR_RUNTIME_VARIANT_DIRECTORY} reachable JS size ${variantJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
+    );
+  }
+
+  return violations;
+};
+
+/**
+ * @pie-element/shared-editor-runtime is one browser module per editor specifier the element
+ * builds import, at dist/browser/<pie.browserModules[specifier]>/index.js. It imports nothing
+ * bare, React included, so a page without React loads it, and it installs nothing.
+ */
+const collectEditorRuntimePackageViolations = (dir, pkg) => {
+  if (pkg.name !== EDITOR_RUNTIME_PACKAGE) return [];
+  const violations = [];
+  for (const bucket of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
+    if (Object.keys(pkg[bucket] ?? {}).length > 0) {
+      violations.push(`${bucket} must be empty: the editor runtime bundles everything it runs`);
+    }
+  }
+
+  const modules = pkg.pie?.browserModules;
+  if (!modules || typeof modules !== 'object' || Array.isArray(modules)) {
+    return [...violations, 'pie.browserModules must map each editor specifier to its browser view'];
+  }
+  const entries = [];
+  const specifierByView = new Map();
+  for (const [specifier, view] of Object.entries(modules)) {
+    if (specifier.startsWith('.') || specifier.startsWith('/')) {
+      violations.push(`pie.browserModules key "${specifier}" must be a bare specifier`);
+    }
+    if (typeof view !== 'string' || !RUNTIME_VIEW_NAME.test(view)) {
+      violations.push(`pie.browserModules["${specifier}"] must be a view name like "tiptap-core"`);
+      continue;
+    }
+    if (specifierByView.has(view)) {
+      violations.push(
+        `pie.browserModules["${specifier}"] reuses the view of "${specifierByView.get(view)}"`
+      );
+      continue;
+    }
+    specifierByView.set(view, specifier);
+    const entry = `./dist/browser/${view}/index.js`;
+    if (!existsSync(path.join(dir, entry.slice(2)))) {
+      violations.push(`pie.browserModules["${specifier}"] target is missing: ${entry}`);
+      continue;
+    }
+    entries.push(entry);
+  }
+  if (specifierByView.size === 0) {
+    violations.push('pie.browserModules must map each editor specifier to its browser view');
+  }
+
+  const browserDir = path.join(dir, 'dist/browser');
+  for (const filePath of collectPackageJsFiles(browserDir).sort()) {
+    const relPath = toPosix(path.relative(dir, filePath));
+    let imports;
+    try {
+      imports = collectModuleImports(readFileSync(filePath, 'utf8'));
+    } catch (error) {
+      violations.push(`${relPath} could not be parsed to check its imports: ${error.message}`);
+      continue;
+    }
+    for (const specifier of new Set(imports.map((entry) => entry.specifier))) {
+      if (!specifier.startsWith('./') && !specifier.startsWith('../')) {
+        violations.push(
+          `${relPath} imports "${specifier}"; the editor runtime imports nothing bare`
+        );
+      }
+    }
+  }
+
+  const reachableFiles = collectReachableBrowserJsFiles(dir, entries);
+  violations.push(
+    ...collectUnloadedStylesheetViolations(
+      dir,
+      browserDir,
+      reachableFiles,
+      'any module reachable from the pie.browserModules views'
+    ),
+    ...collectTopLevelAwaitViolations(dir, reachableFiles)
+  );
+  const runtimeJsBytes = sumFileBytes(reachableFiles);
+  if (maxBrowserJsBytesPerPackage > 0 && runtimeJsBytes > maxBrowserJsBytesPerPackage) {
+    violations.push(
+      `dist/browser reachable JS size ${runtimeJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
+    );
+  }
+  return violations;
+};
+
+/** The editor runtime a workspace root holds: its directory and manifest, or null. */
+const readEditorRuntime = (root) => {
+  const dir = path.join(root, EDITOR_RUNTIME_DIR);
+  const manifestPath = path.join(dir, 'package.json');
+  return existsSync(manifestPath) ? { dir, pkg: readJson(manifestPath) } : null;
+};
+
+const findEditorRuntime = (snapshots, root) => {
+  const snapshot = snapshots.find((candidate) => candidate.pkg?.name === EDITOR_RUNTIME_PACKAGE);
+  return snapshot ? { dir: snapshot.dir, pkg: snapshot.pkg } : readEditorRuntime(root);
 };
 
 /**
@@ -722,7 +1120,11 @@ const collectManifestExportViolations = (pkg) =>
     ? ['exports["./package.json"] must be "./package.json" for element packages']
     : [];
 
-export const collectManifestViolations = (dir, pkg) => {
+export const collectManifestViolations = (
+  dir,
+  pkg,
+  context = { editorRuntime: readEditorRuntime(ROOT) }
+) => {
   const violations = [];
   if (Array.isArray(pkg.files)) {
     for (const entry of pkg.files) {
@@ -742,7 +1144,8 @@ export const collectManifestViolations = (dir, pkg) => {
   collectExportKeyViolations(pkg, violations);
   violations.push(...collectManifestExportViolations(pkg));
   violations.push(...collectControllerContractViolations(dir, pkg));
-  violations.push(...collectBrowserEsmViolations(dir, pkg));
+  violations.push(...collectBrowserEsmViolations(dir, pkg, context));
+  violations.push(...collectEditorRuntimePackageViolations(dir, pkg));
   violations.push(...collectLegacyPrintModuleViolations(dir, pkg));
   violations.push(...collectSharedRuntimeDependencyViolations(pkg));
 
@@ -815,9 +1218,12 @@ export const collectPackViolations = (snapshot) => {
   return [...unexpected, ...collectLegacyPrintViolations(packedFiles, pkg)];
 };
 
-export const collectPublishSurfaceViolations = (snapshot) => {
+export const collectPublishSurfaceViolations = (
+  snapshot,
+  context = { editorRuntime: readEditorRuntime(ROOT) }
+) => {
   const violations = [
-    ...collectManifestViolations(snapshot.dir, snapshot.pkg),
+    ...collectManifestViolations(snapshot.dir, snapshot.pkg, context),
     ...collectSvelteLeakViolations({
       dir: snapshot.dir,
       pkg: snapshot.pkg,
@@ -839,8 +1245,9 @@ export const collectPublishSurfaceFailures = ({
   snapshots = createPackageSnapshots({ root, includePackedFiles: true }),
 } = {}) => {
   const failures = [];
+  const context = { editorRuntime: findEditorRuntime(snapshots, root) };
   for (const snapshot of snapshots) {
-    const violations = collectPublishSurfaceViolations(snapshot);
+    const violations = collectPublishSurfaceViolations(snapshot, context);
     if (violations.length > 0) {
       failures.push({
         name: snapshot.pkg.name || path.basename(snapshot.dir),

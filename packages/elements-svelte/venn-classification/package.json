@@ -12,7 +12,16 @@
   "types": "./dist/index.d.ts",
   "pie": {
     "controller": "@pie-element/venn-classification/controller",
-    "configure": "@pie-element/venn-classification/configure"
+    "configure": "@pie-element/venn-classification/configure",
+    "browserEditorRuntime": {
+      "name": "@pie-element/shared-editor-runtime",
+      "version": "0.1.0",
+      "views": {
+        "delivery": "editor-runtime/delivery",
+        "author": "editor-runtime/author",
+        "controller": "editor-runtime/controller"
+      }
+    }
   },
   "exports": {
     ".": {
@@ -62,7 +71,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build --config ../../../tools/vite/svelte-element-esm.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config ../../../tools/vite/svelte-element-iife.config.ts && tsc --emitDeclarationOnly",
+    "build": "vite build --config ../../../tools/vite/svelte-element-esm.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-browser-editor-runtime.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config ../../../tools/vite/svelte-element-iife.config.ts && tsc --emitDeclarationOnly",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "devDependencies": {

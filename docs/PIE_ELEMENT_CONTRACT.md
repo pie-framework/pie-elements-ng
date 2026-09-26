@@ -215,6 +215,69 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
 
 If a new dependency should become a shared browser singleton, update `tools/vite/browser-esm-policy.json`, package generation, publish checks, and `pie-players` import-map handling in the same change.
 
+### Shared Editor Runtime
+
+`@pie-element/shared-editor-runtime` publishes the editor engine as browser ESM: `@tiptap/core`,
+the `@tiptap/pm/*` ProseMirror modules, and the tiptap extensions and starter kit the elements
+import. Its `pie.browserModules` maps each bare specifier it provides to a view, and the module
+for a view is `dist/browser/<view>/index.js`:
+
+```json
+"pie": {
+  "browserModules": {
+    "@tiptap/core": "tiptap-core",
+    "@tiptap/pm/state": "tiptap-pm-state",
+    "@tiptap/starter-kit": "tiptap-starter-kit"
+  }
+}
+```
+
+Runtime modules import each other through relative paths only. They have no bare imports, React
+included, and the package has no `dependencies` or `peerDependencies`. Within a caret range the
+runtime only adds specifiers and exports, so a variant runs against every compatible runtime
+version at or above the one it declares; compatibility and ordering are defined under
+[Browser ESM](#browser-esm) below. A change that removes a specifier or an export starts a new
+caret range.
+
+An element whose `./browser/*` build bundles the editor engine also publishes an editor-runtime
+variant of each browser view at `dist/browser/editor-runtime/<view>/index.js`, built from the same
+entries with the runtime's specifiers external. React and React DOM stay external as in
+`./browser/*`; `@tiptap/react`, the editable-html components, Emotion, MUI and the element's styles
+stay bundled. The variant has no `exports` entry: players load it by path. `./browser/*` is
+unchanged and stays self-contained. The element declares the variant in
+`pie.browserEditorRuntime`:
+
+```json
+"pie": {
+  "browserSharedDependencies": { "react": "18.2.0", "react-dom": "18.2.0" },
+  "browserEditorRuntime": {
+    "name": "@pie-element/shared-editor-runtime",
+    "version": "0.1.0",
+    "views": {
+      "delivery": "editor-runtime/delivery",
+      "author": "editor-runtime/author",
+      "print": "editor-runtime/print",
+      "controller": "editor-runtime/controller"
+    }
+  }
+}
+```
+
+- `name` is the runtime package.
+- `version` is the exact runtime version the variant was built against. `bun run version`
+  rewrites it to the runtime version the same release publishes, and the publish step releases
+  the runtime before the elements that declare it.
+- `views` maps every `./browser/*` view to its variant's path under `dist/browser`.
+- `pie.browserSharedDependencies` names only the bare imports of `./browser/*`. The variant's
+  runtime imports resolve through the runtime's `pie.browserModules`.
+
+`check:publish-surface` requires the declaration exactly when `./browser/*` bundles the engine. It
+checks that the declared version is exact and equals the workspace runtime's, that the variant's
+bare imports are `allowedBareImports` plus the runtime's specifiers, that every name the variant
+imports from the runtime is exported by the runtime module, and that the variant bundles no engine
+module. The stylesheet, top-level await and size rules above apply to the variant and to the
+runtime.
+
 ### Legacy-Compatible Print Packaging
 
 Packages that declare `exports["./print"]` may additionally publish a second, unrelated print artifact at the package root:
@@ -242,7 +305,21 @@ The same npm package must be usable by three runtime strategies.
 
 `pie-players` loads static browser ESM entries and builds an import map for shared browser dependencies from `pie.browserSharedDependencies`.
 
-When multiple elements request different minor or patch versions of a shared singleton, the player may select the highest same-major version and report the conflict through console and instrumentation. Different major versions, or attempts to upgrade a singleton after it has already been injected, fail the load and are also reported.
+Two versions of a shared browser dependency are compatible when they fall in the same semver caret
+range: the same major version, and below 1.0.0 the same major and minor version. Versions are
+ordered by semver precedence, prerelease identifiers included, so `0.1.1-next.9` precedes
+`0.1.1-next.10`, which precedes `0.1.1`.
+
+When multiple elements request different compatible versions of a shared singleton, the player may select the highest and report the conflict through console and instrumentation. Incompatible versions, or attempts to upgrade a singleton after it has already been injected, fail the load and are also reported.
+
+A player that loads the shared editor runtime loads each view from `pie.browserEditorRuntime.views`
+in place of `./browser/*` and maps every specifier in the runtime's `pie.browserModules` to
+`<runtime>@<version>/dist/browser/<view>/index.js` in the import map, so every editor on the page
+shares one engine. It serves an element from the highest compatible runtime version the page maps,
+which must be at least the version the element declares. A player that cannot serve the declared
+version, for example because the page already maps a lower or incompatible runtime, loads that
+element's `./browser/*` views, which are self-contained, and reports the conflict through console
+and instrumentation. The load does not fail.
 
 ### IIFE
 
