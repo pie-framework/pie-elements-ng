@@ -250,7 +250,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies).not.toHaveProperty('react');
   });
 
-  it('does not promote legacy Emotion peers into element package dependencies', async () => {
+  it('drops the upstream @emotion/style and @pie-lib/test-utils dependencies and their peers', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
     const upstreamElementDir = join(
@@ -290,6 +290,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
           name: '@pie-element/test-element',
           dependencies: {
             '@emotion/style': '^0.8.0',
+            '@pie-lib/test-utils': '2.0.2',
           },
         },
         null,
@@ -306,10 +307,9 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.dependencies).toMatchObject({
-      '@emotion/style': '^0.8.0',
-    });
+    expect(pkgJson.dependencies).not.toHaveProperty('@emotion/style');
     expect(pkgJson.dependencies).not.toHaveProperty('@emotion/core');
+    expect(pkgJson.dependencies).not.toHaveProperty('@pie-lib/test-utils');
   });
 
   it('declares third-party packages detected from transformed element source imports', async () => {
@@ -462,8 +462,8 @@ describe('ensureElementPackageJson iife build script generation', () => {
     const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
     expect(pkgJson.version).toBe('13.1.2-next.0');
     expect(pkgJson.peerDependencies).toEqual({
-      react: '^18.0.0',
-      'react-dom': '^18.0.0',
+      react: '^18.2.0 || ^19.0.0',
+      'react-dom': '^18.2.0 || ^19.0.0',
     });
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-element/shared-lodash': 'workspace:*',
@@ -527,8 +527,8 @@ describe('ensureElementPackageJson iife build script generation', () => {
     // The peer declaration is still the compatibility contract for ESM hosts
     // that provide React themselves via an import map.
     expect(pkgJson.peerDependencies).toEqual({
-      react: '^18.0.0',
-      'react-dom': '^18.0.0',
+      react: '^18.2.0 || ^19.0.0',
+      'react-dom': '^18.2.0 || ^19.0.0',
     });
   });
 
@@ -606,6 +606,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.exports['./browser/controller']).toEqual({
       default: './dist/browser/controller/index.js',
     });
+    expect(pkgJson.exports['./package.json']).toBe('./package.json');
     expect(pkgJson.files).toContain('dist');
     expect(pkgJson.files).toContain('controller.js');
     expect(pkgJson.files).not.toContain('src');
@@ -830,7 +831,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(pkgJson.version).toBe('4.2.0-next.3');
   });
 
-  it('moves pie-lib React runtime metadata to React 18 peer dependencies', async () => {
+  it('moves pie-lib React runtime metadata to React 18 or 19 peer dependencies', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const libDir = join(rootDir, 'packages', 'lib-react', 'test-utils');
     const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'test-utils');
@@ -887,9 +888,40 @@ describe('ensurePieLibPackageJson', () => {
     expect(pkgJson.dependencies).not.toHaveProperty('react');
     expect(pkgJson.dependencies).not.toHaveProperty('react-dom');
     expect(pkgJson.peerDependencies).toEqual({
-      react: '^18.0.0',
-      'react-dom': '^18.0.0',
+      react: '^18.0.0 || ^19.0.0',
+      'react-dom': '^18.0.0 || ^19.0.0',
     });
+  });
+
+  it('drops the upstream @pie-lib/test-utils dependency from pie-lib packages', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'render-ui');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'render-ui');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(join(libDir, 'src', 'index.ts'), 'export {};\n', 'utf-8');
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/render-ui',
+          version: '1.0.0',
+          dependencies: {
+            '@pie-lib/icons': '^3.0.0',
+            '@pie-lib/test-utils': '^2.0.2',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    await ensurePieLibPackageJson('render-ui', libDir, createConfig(rootDir));
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toEqual({ '@pie-lib/icons': 'workspace:*' });
   });
 
   it('applies the browser ESM dependency policy to pie-lib package dependencies', async () => {

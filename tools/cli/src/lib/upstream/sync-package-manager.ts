@@ -220,6 +220,8 @@ export function generateExportsObject(
     };
   }
 
+  exports['./package.json'] = './package.json';
+
   return exports;
 }
 
@@ -338,7 +340,10 @@ function normalizePackageImport(specifier: string): string | null {
   return specifier.split('/')[0] || null;
 }
 
-const LEGACY_PEERS_TO_SKIP = new Set(['@emotion/core']);
+// Upstream manifests declare these as runtime dependencies, and no synced module imports them:
+// @emotion/style is a deprecated 0.8 package, and @pie-lib/test-utils is a test helper whose
+// testing-library dependencies would install into every host.
+const UPSTREAM_DEPENDENCIES_TO_DROP = new Set(['@emotion/style', '@pie-lib/test-utils']);
 
 async function findInstalledPackageJson(
   packageName: string,
@@ -398,12 +403,7 @@ async function addTransitivePeerDependencies(
     );
 
     for (const [peerName, peerVersion] of Object.entries(peerDeps)) {
-      if (
-        deps[peerName] ||
-        declaredPeerDeps.has(peerName) ||
-        optionalPeers.has(peerName) ||
-        LEGACY_PEERS_TO_SKIP.has(peerName)
-      ) {
+      if (deps[peerName] || declaredPeerDeps.has(peerName) || optionalPeers.has(peerName)) {
         continue;
       }
 
@@ -481,6 +481,9 @@ export function extractUpstreamDependencies(
   let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
+    if (UPSTREAM_DEPENDENCIES_TO_DROP.has(name)) {
+      continue;
+    }
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[name] = WORKSPACE.VERSION;
     } else if (name !== 'react' && name !== 'react-dom') {
@@ -647,8 +650,8 @@ export async function ensureElementPackageJson(
         `React implementation of ${elementName} element synced from pie-elements`,
       dependencies: expectedDeps,
       peerDependencies: {
-        react: REACT.VERSION,
-        'react-dom': REACT.VERSION,
+        react: REACT.ELEMENT_PEER_RANGE,
+        'react-dom': REACT.ELEMENT_PEER_RANGE,
       },
     };
   }
@@ -659,8 +662,8 @@ export async function ensureElementPackageJson(
   }
   pkg.peerDependencies = {
     ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
-    react: REACT.VERSION,
-    'react-dom': REACT.VERSION,
+    react: REACT.ELEMENT_PEER_RANGE,
+    'react-dom': REACT.ELEMENT_PEER_RANGE,
   };
 
   // Preserve pie metadata (if present upstream or locally)
@@ -957,6 +960,9 @@ export async function ensurePieLibPackageJson(
   let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
+    if (UPSTREAM_DEPENDENCIES_TO_DROP.has(name)) {
+      continue;
+    }
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[name] = WORKSPACE.VERSION;
     } else {
@@ -1044,8 +1050,8 @@ export async function ensurePieLibPackageJson(
   if (declaresReactRuntime) {
     pkg.peerDependencies = {
       ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
-      react: REACT.VERSION,
-      'react-dom': REACT.VERSION,
+      react: REACT.LIBRARY_PEER_RANGE,
+      'react-dom': REACT.LIBRARY_PEER_RANGE,
     };
   }
 

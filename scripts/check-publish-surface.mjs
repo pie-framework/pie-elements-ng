@@ -351,8 +351,8 @@ const RELATIVE_CSS_REFERENCE_PATTERN = /["'`](\.{1,2}\/[^"'`\s]+\.css)["'`]/g;
  * Browser ESM hosts load no element CSS, so a stylesheet no module loads never applies. Vite
  * library mode produces exactly that by default: it extracted MathQuill's CSS into
  * dist/browser/<name>.css, nothing loaded it, and every math field rendered unstyled.
- * tools/vite/browser-css-loader.ts makes each chunk load its own CSS; this is the tripwire
- * for a build lane that loses it.
+ * tools/vite/browser-css-loader.ts compiles each stylesheet into the chunks that import it;
+ * this is the tripwire for a build lane that loses it.
  */
 const collectUnloadedStylesheetViolations = (dir, outputDir, reachableJsFiles, loadedFrom) => {
   const referenced = new Set();
@@ -369,6 +369,59 @@ const collectUnloadedStylesheetViolations = (dir, outputDir, reachableJsFiles, l
         `${toPosix(path.relative(dir, cssFile))} is not loaded by ${loadedFrom}, and hosts load no element CSS`
     )
     .sort();
+};
+
+const FUNCTION_NODE_TYPES = new Set([
+  'ArrowFunctionExpression',
+  'FunctionDeclaration',
+  'FunctionExpression',
+]);
+
+const isTopLevelAwaitNode = (node) =>
+  node.type === 'AwaitExpression' ||
+  (node.type === 'ForOfStatement' && node.await === true) ||
+  (node.type === 'VariableDeclaration' && node.kind === 'await using');
+
+/** True when a module awaits outside every function, which makes it an async module. */
+export const hasTopLevelAwait = (source) => {
+  if (!source.includes('await')) return false;
+  const pending = [parseAst(source)];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (isTopLevelAwaitNode(node)) return true;
+    if (FUNCTION_NODE_TYPES.has(node.type)) continue;
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) if (child && typeof child === 'object') pending.push(child);
+      } else if (value && typeof value === 'object') {
+        pending.push(value);
+      }
+    }
+  }
+  return false;
+};
+
+/**
+ * Shipped browser modules must not await at their top level. A default Vite 6 build targets
+ * es2020 and fails on top-level await in any module it bundles, so one such chunk breaks the
+ * build of every host that imports the element. tools/vite/browser-css-loader.ts once emitted
+ * one in every chunk that imports CSS, to hold the chunk until its stylesheet applied.
+ */
+const collectTopLevelAwaitViolations = (dir, files) => {
+  const violations = [];
+  for (const filePath of [...files].sort()) {
+    const relPath = toPosix(path.relative(dir, filePath));
+    try {
+      if (hasTopLevelAwait(readFileSync(filePath, 'utf8'))) {
+        violations.push(`${relPath} uses top-level await, which default Vite 6 builds reject`);
+      }
+    } catch (error) {
+      violations.push(
+        `${relPath} could not be parsed to check for top-level await: ${error.message}`
+      );
+    }
+  }
+  return violations;
 };
 
 const collectBareImportSpecifiers = (source) => {
@@ -474,7 +527,8 @@ const collectBrowserEsmViolations = (dir, pkg) => {
       browserDir,
       reachableJsFiles,
       'any module reachable from the ./browser/* exports'
-    )
+    ),
+    ...collectTopLevelAwaitViolations(dir, reachableJsFiles)
   );
   if (maxBrowserJsBytesPerPackage > 0 && browserJsBytes > maxBrowserJsBytesPerPackage) {
     violations.push(
@@ -546,16 +600,20 @@ const collectSharedRuntimeDependencyViolations = (pkg) => {
 
 // module/print.js is loaded by the same kind of host: the @pie-framework/pie-print client
 // injects no CSS either. A missing module/print.js is reported by collectLegacyPrintViolations.
-const collectLegacyPrintStylesheetViolations = (dir, pkg) => {
+const collectLegacyPrintModuleViolations = (dir, pkg) => {
   if (!pkg.exports?.['./print'] || !existsSync(path.join(dir, 'module', 'print.js'))) {
     return [];
   }
-  return collectUnloadedStylesheetViolations(
-    dir,
-    path.join(dir, 'module'),
-    collectReachableBrowserJsFiles(dir, ['./module/print.js']),
-    'module/print.js'
-  );
+  const reachableJsFiles = collectReachableBrowserJsFiles(dir, ['./module/print.js']);
+  return [
+    ...collectUnloadedStylesheetViolations(
+      dir,
+      path.join(dir, 'module'),
+      reachableJsFiles,
+      'module/print.js'
+    ),
+    ...collectTopLevelAwaitViolations(dir, reachableJsFiles),
+  ];
 };
 
 const staticSpecifier = (node) => {
@@ -655,6 +713,15 @@ export const collectSvelteLeakViolations = ({ dir, pkg, files = [] }) => {
   return violations;
 };
 
+/**
+ * An element package exports its manifest, so a host reads the version it installed from the
+ * package itself instead of hand-coding one.
+ */
+const collectManifestExportViolations = (pkg) =>
+  pkg.pie && pkg.exports?.['./package.json'] !== './package.json'
+    ? ['exports["./package.json"] must be "./package.json" for element packages']
+    : [];
+
 export const collectManifestViolations = (dir, pkg) => {
   const violations = [];
   if (Array.isArray(pkg.files)) {
@@ -673,9 +740,10 @@ export const collectManifestViolations = (dir, pkg) => {
   }
 
   collectExportKeyViolations(pkg, violations);
+  violations.push(...collectManifestExportViolations(pkg));
   violations.push(...collectControllerContractViolations(dir, pkg));
   violations.push(...collectBrowserEsmViolations(dir, pkg));
-  violations.push(...collectLegacyPrintStylesheetViolations(dir, pkg));
+  violations.push(...collectLegacyPrintModuleViolations(dir, pkg));
   violations.push(...collectSharedRuntimeDependencyViolations(pkg));
 
   const targets = new Set();

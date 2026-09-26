@@ -27,4 +27,4 @@
 "@pie-element/select-text": patch
 ---
 
-Browser ESM and legacy print bundles load the stylesheets they import, MathQuill's among them, so math fields no longer render unstyled.
+Browser ESM and legacy print bundles install the stylesheets they import, MathQuill's among them, so math fields render styled in the player and in hosts that bundle the elements with Vite or webpack. MathQuill's font ships as a WOFF2 file beside the bundle.

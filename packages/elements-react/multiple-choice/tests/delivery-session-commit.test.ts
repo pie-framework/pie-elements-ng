@@ -31,9 +31,6 @@ function mount() {
     ],
   };
   element.session = {};
-  // Drain the setter-driven notification so the assertions below count only
-  // what a learner interaction produces.
-  vi.advanceTimersByTime(100);
   element.addEventListener('session-changed', (event: Event) => {
     events.push(event as CustomEvent);
   });
@@ -48,6 +45,29 @@ describe('multiple-choice session commit', () => {
   afterEach(() => {
     vi.useRealTimers();
     document.body.innerHTML = '';
+  });
+
+  it('dispatches nothing when the host sets the session', () => {
+    const { element, events } = mount();
+
+    element.session = { value: ['b'] };
+    vi.advanceTimersByTime(100);
+
+    expect(events).toHaveLength(0);
+  });
+
+  it('dispatches once per answer when the host writes the session back', () => {
+    const { element, events } = mount();
+    // A player stores the session each change reports and hands it back.
+    element.addEventListener('session-changed', () => {
+      element.session = { ...element.session };
+    });
+
+    element._onChange({ value: 'a', selected: true });
+    vi.advanceTimersByTime(100);
+
+    expect(events).toHaveLength(1);
+    expect(element.session.value).toEqual(['a']);
   });
 
   it('writes the selection to the session before the notification runs', () => {

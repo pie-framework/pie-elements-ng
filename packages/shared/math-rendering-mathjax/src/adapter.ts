@@ -65,7 +65,14 @@ declare global {
 
 const DEFAULT_MATHJAX_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js';
 
-let mathjaxLoading: Promise<void> | null = null;
+// Every element bundles its own copy of this module, so the load in flight is kept on the page
+// rather than in the module: a second MathJax startup on one page throws "State ASSISTIVEMML
+// already exists".
+const MATHJAX_LOADING: unique symbol = Symbol.for(
+  '@pie-element/shared-math-rendering-mathjax/loading'
+);
+
+type LoadingRegistry = { [MATHJAX_LOADING]?: Promise<void> };
 
 function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
   if (typeof window === 'undefined') {
@@ -76,11 +83,13 @@ function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
     return Promise.resolve();
   }
 
-  if (mathjaxLoading) {
-    return mathjaxLoading;
+  const registry = globalThis as LoadingRegistry;
+  const loading = registry[MATHJAX_LOADING];
+  if (loading) {
+    return loading;
   }
 
-  mathjaxLoading = new Promise((resolve, reject) => {
+  const mathjaxLoading = new Promise<void>((resolve, reject) => {
     const { useSingleDollar = false, accessibility = true, loadFonts = true, srcUrl } = options;
 
     const config: MathJaxConfig = {
@@ -137,6 +146,7 @@ function ensureMathjaxLoaded(options: MathjaxOptions): Promise<void> {
     };
     document.head.appendChild(script);
   });
+  registry[MATHJAX_LOADING] = mathjaxLoading;
 
   return mathjaxLoading;
 }

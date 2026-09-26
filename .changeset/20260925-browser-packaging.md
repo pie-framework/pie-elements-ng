@@ -1,0 +1,54 @@
+---
+"@pie-element/categorize": patch
+"@pie-element/charting": patch
+"@pie-element/complex-rubric": patch
+"@pie-element/drag-in-the-blank": patch
+"@pie-element/drawing-response": patch
+"@pie-element/ebsr": patch
+"@pie-element/explicit-constructed-response": patch
+"@pie-element/extended-text-entry": patch
+"@pie-element/fraction-model": patch
+"@pie-element/graphing": patch
+"@pie-element/graphing-solution-set": patch
+"@pie-element/hotspot": patch
+"@pie-element/image-cloze-association": patch
+"@pie-element/inline-dropdown": patch
+"@pie-element/likert": patch
+"@pie-element/match": patch
+"@pie-element/match-list": patch
+"@pie-element/math-inline": patch
+"@pie-element/math-templated": patch
+"@pie-element/matrix": patch
+"@pie-element/mc-populated-blank": patch
+"@pie-element/multi-trait-rubric": patch
+"@pie-element/multiple-choice": patch
+"@pie-element/number-line": patch
+"@pie-element/passage": patch
+"@pie-element/placement-ordering": patch
+"@pie-element/rubric": patch
+"@pie-element/select-text": patch
+"@pie-element/shared-controller-utils": patch
+"@pie-element/shared-math-rendering-mathjax": patch
+"@pie-element/shared-types": patch
+"@pie-element/simple-cloze": patch
+"@pie-element/venn-classification": patch
+"@pie-lib/charting": patch
+"@pie-lib/config-ui": patch
+"@pie-lib/correct-answer-toggle": patch
+"@pie-lib/drag": patch
+"@pie-lib/editable-html-tip-tap": patch
+"@pie-lib/graphing": patch
+"@pie-lib/graphing-solution-set": patch
+"@pie-lib/icons": patch
+"@pie-lib/mask-markup": patch
+"@pie-lib/math-input": patch
+"@pie-lib/math-toolbar": patch
+"@pie-lib/plot": patch
+"@pie-lib/render-ui": patch
+"@pie-lib/rubric": patch
+"@pie-lib/test-utils": patch
+"@pie-lib/text-select": patch
+"@pie-lib/tools": patch
+---
+
+Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
