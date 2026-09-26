@@ -34,7 +34,7 @@
     "@tiptap/pm": "3.31.3",
     "@tiptap/react": "3.31.3",
     "@tiptap/starter-kit": "3.31.3",
-    "change-case": "^3.0.2",
+    "change-case": "^5.4.4",
     "debug": "^4.1.1",
     "immutable": "^4.0.0-rc.12",
     "keycode": "^2.2.0",
