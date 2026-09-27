@@ -93,22 +93,10 @@ bun install
 
 **Problem:** Vite build throws errors about SSR or dependencies.
 
-**Solution:**
-1. Configure Vite for proper externals:
-   ```typescript
-   // vite.config.ts
-   export default {
-     build: {
-       rollupOptions: {
-         external: ['@pie-element/*']
-       }
-     }
-   }
-   ```
-2. For SSR, use dynamic imports:
-   ```typescript
-   const { default: MultipleChoice } = await import('@pie-element/multiple-choice/delivery');
-   ```
+**Solution:** For SSR, import the element in browser-only code:
+```typescript
+const { default: MultipleChoice } = await import('@pie-element/multiple-choice/delivery');
+```
 
 ### Circular Dependency Warnings
 
