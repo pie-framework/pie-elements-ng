@@ -10,9 +10,9 @@ This is the normative contract for publishable PIE element packages. It covers t
 
 Every element consumes a model, a session, and an environment object.
 
-- The model is authored item data. It must include a stable `id` and an `element` package name such as `@pie-element/multiple-choice`.
+- The model is authored item data. It must include a stable `id` and an `element` tag such as `multiple-choice`: the key under which the item config's `elements` map names the element package. Players match models to elements by that tag.
 - The session is learner response data. Its shape is element-specific. The player owns the session object it sets, and the element writes each change into that object, as the Delivery Contract below sets out.
-- The environment describes mode and role. Supported modes are `gather`, `view`, `evaluate`, and `configure`; supported roles are `student` and `instructor`.
+- The environment describes mode and role. Supported modes are `gather`, `view`, and `evaluate`; supported roles are `student` and `instructor`. The authoring view is a separate custom element, described under the Authoring Contract.
 
 Element-specific model and session fields are part of that element's public contract once published. Breaking shape changes require normal semver treatment.
 
@@ -57,7 +57,8 @@ Players set data via properties, not attributes:
 
 - `element.model = model`
 - `element.session = session`
-- `element.env = env`
+
+Elements declare no `env` property. The environment reaches an element through its controller: `model(model, session, env)` returns the view model the player sets as `element.model`.
 
 Delivery elements announce session changes as the Delivery Contract below sets out, and author elements announce model changes as the Authoring Contract sets out.
 
@@ -92,7 +93,7 @@ Layout, styling and the settings an element defines are the element's choice.
 
 ## NPM Packaging Contract
 
-Publishable packages expose generated artifacts only. Package entry points must resolve to `dist` files except for the root `controller.js` compatibility shim described below.
+Publishable packages expose generated artifacts only. Package entry points must resolve to `dist` files except for the root compatibility shims described below.
 
 ### Dist-Only Surface
 
@@ -153,6 +154,14 @@ Standard ESM consumers should prefer `exports["./author"]`. The configure alias
 exists so `pie-api-aws` can build `editor.js` for legacy `pie-author` consumers
 without learning the modern author subpath first.
 
+Packages that export `./author` also publish a root `author.js`, with the same
+contents as `configure.js`, and list it in `files`. Composite elements import
+another element's authoring view by `@pie-element/<name>/author`: complex-rubric
+imports `@pie-element/rubric/author` and ebsr imports
+`@pie-element/multiple-choice/author`. An alias-based builder resolves that
+request as a filesystem path, so without the shim the whole bundle fails to
+build. The shim has no `exports` entry.
+
 Print-capable packages carry the same root shim contract:
 
 - `exports["./print"]`: the generated print JS and type targets
@@ -197,9 +206,14 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
 - Bare imports are allowed only when listed in `allowedBareImports`.
 - Shared browser singleton versions are exact and declared in `pie.browserSharedDependencies`.
 - The browser ESM React contract is React 18, the version `pie.browserSharedDependencies`
-  names for the player's import map. A host that bundles the elements may provide React 18.2
-  or 19 instead, which element `peerDependencies` accept. Synced packages must not preserve
-  React 16/17 compatibility shims in browser-facing dependency policy.
+  names for the player's import map. A host that bundles the elements provides React 18.2 or a
+  later 18.x. Element `peerDependencies` accept React 19, but element `dependencies` also pin
+  React `^18.2.0` for legacy webpack builders, which install `dependencies` and never peers. Under
+  a React 19 root, npm therefore installs React 18 under each element package while the
+  `@pie-lib` libraries resolve the host's React 19, so an element and the libraries it renders
+  run on different copies of React. Players that load browser ESM through an import map are
+  unaffected. Synced packages must not preserve React 16/17 compatibility shims in
+  browser-facing dependency policy.
 - `dependencies` and `peerDependencies` are install metadata only; they are not browser runtime singleton contracts.
 - Browser JS output must stay within the policy size budget unless the policy is intentionally changed.
 - Hosts load no element CSS. The chunk that imports a stylesheet installs its rules before its
@@ -323,7 +337,7 @@ and instrumentation. The load does not fail.
 
 ### IIFE
 
-IIFE is a legacy runtime strategy but remains supported. Builders import package exports, including `@pie-element/<name>/controller`, `@pie-element/<name>/configure` and `@pie-element/<name>/print`, and may rely on the root `controller.js`, `configure.js` and `print.js` shims for filesystem alias compatibility.
+IIFE is a legacy runtime strategy but remains supported. Builders import package exports, including `@pie-element/<name>/controller`, `@pie-element/<name>/configure`, `@pie-element/<name>/author` and `@pie-element/<name>/print`, and may rely on the root `controller.js`, `configure.js`, `author.js` and `print.js` shims for filesystem alias compatibility.
 
 A builder that aliases `@pie-element` to a directory resolves those subpaths as
 literal paths, so the root shims are what the request lands on. A subpath a

@@ -22,12 +22,14 @@ Defines the interaction mode and user role for element rendering.
 
 ```typescript
 interface PieEnvironment {
-  mode: 'gather' | 'view' | 'evaluate' | 'configure';
+  mode: 'gather' | 'view' | 'evaluate';
   role: 'student' | 'instructor';
 
   // Optional configuration
-  lockChoiceOrder?: boolean;      // Prevent choice randomization
-  partialScoring?: boolean;       // Enable partial credit scoring
+  partialScoring?: boolean;       // false disables partial credit scoring
+  '@pie-element'?: {
+    lockChoiceOrder?: boolean;    // true keeps the authored choice order
+  };
 }
 ```
 
@@ -36,7 +38,8 @@ interface PieEnvironment {
 - **`gather`**: Interactive mode where students can answer questions
 - **`view`**: Read-only mode displaying previous answers
 - **`evaluate`**: Shows correctness, scoring, and feedback
-- **`configure`**: Rich editing interface for content creation (authoring mode)
+
+Authoring uses a separate custom element, the author view ([Authoring Contract](PIE_ELEMENT_CONTRACT.md#authoring-contract)).
 
 **Roles:**
 
@@ -80,7 +83,7 @@ interface AccessibilityCatalog {
 
 interface PieModel {
   id: string;                     // Unique identifier
-  element: string;                // Element type (e.g., "@pie-element/multiple-choice")
+  element: string;                // Element tag, the key in the item config's `elements` map (e.g., "multiple-choice")
   accessibilityCatalogs?: AccessibilityCatalog[];
 }
 ```
@@ -131,14 +134,14 @@ interface PieSession {
 Session structure varies by element type:
 
 ```typescript
-// Multiple Choice (single)
-{ value: 'a' }
+// Multiple Choice (single): still an array, with one value
+{ value: ['a'] }
 
 // Multiple Choice (multi)
 { value: ['a', 'c'] }
 
-// Text Entry
-{ value: 'student answer' }
+// Hotspot
+{ answers: [{ id: 'shape-1' }] }
 ```
 
 ### ViewModel
@@ -178,11 +181,12 @@ All PIE elements accept these props, which hosts set as element properties:
 
 ```typescript
 interface CommonElementProps {
-  model: ElementModel;            // Element configuration
+  model: ElementModel;            // Delivery: the controller's view model for the env; author: the authored model
   session: PieSession;            // Student response; the element writes each change into it
-  env: PieEnvironment;            // Interaction mode and role
 }
 ```
+
+Elements declare no `env` property: the environment reaches an element through the view model its controller returns.
 
 Elements report changes as events: a delivery element dispatches `session-changed` ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract)) and an author element dispatches `model.updated` ([Authoring Contract](PIE_ELEMENT_CONTRACT.md#authoring-contract)).
 
@@ -220,7 +224,6 @@ if (!customElements.get('pie-multiple-choice')) {
 function Item({ model, session, onSave }) {
   const ref = useRef(null);
 
-  // Setting `session` dispatches `session-changed`, so set it only when the object changes.
   useEffect(() => {
     ref.current.model = model;
     ref.current.session = session;
@@ -243,10 +246,9 @@ function Item({ model, session, onSave }) {
 ```javascript
 const element = document.querySelector('pie-multiple-choice');
 
-// Set properties
+// Set properties: `model` is the view model the controller returned for the environment
 element.model = {...};
 element.session = {...};
-element.env = {...};
 
 // Listen to events: the element has written the change into `element.session`.
 element.addEventListener('session-changed', (e) => {
@@ -266,7 +268,11 @@ interface PieController {
     question: PieModel,
     session: PieSession | null,
     env: PieEnvironment,
-    updateSession?: (session: PieSession) => void
+    updateSession?: (
+      id: string,
+      element: string,
+      properties: Partial<PieSession>
+    ) => Promise<void>
   ): Promise<ViewModel>;
 
   outcome(
@@ -310,6 +316,8 @@ const viewModel = await model(
 // - feedback: correctness indicators (in evaluate mode)
 // - etc.
 ```
+
+The optional fourth argument, `updateSession(id, element, properties)`, persists `properties` into the stored session and resolves when it is saved. A controller that shuffles choices calls it with `{ shuffledValues }` to keep the order it drew, so a host that implements it with another signature loses that order. `id` and `element` come from the session and can be `undefined`, for a session without them or for an element that shuffles each of its parts separately, so a host keys the write by the model it called `model()` for. `PieUpdateSession` in `@pie-element/shared-types` types it.
 
 **Use cases:**
 - Hide correct answers in gather mode
@@ -443,37 +451,35 @@ interface MultipleChoiceModel extends PieModel {
   prompt: string;                 // Question text (HTML)
   choices: Choice[];              // Answer choices
   choiceMode: 'radio' | 'checkbox'; // Single or multi-select
-  keyMode?: 'letters' | 'numbers' | 'none'; // Choice labels
+  choicePrefix?: 'letters' | 'numbers' | 'none'; // Choice labels
 
   // Feedback
-  feedback?: FeedbackConfig;
+  feedbackEnabled?: boolean;      // Show choice feedback in evaluate mode
   rationale?: string;             // Instructor explanation
 
   // Configuration
-  shuffle?: boolean;              // Randomize choice order
   partialScoring?: boolean;       // Enable partial credit
-  lockChoiceOrder?: boolean;      // Prevent randomization
+  lockChoiceOrder?: boolean;      // Default true; false lets the controller shuffle the choices once per session
 }
 
 interface Choice {
   label: string;                  // Choice text (HTML)
   value: string;                  // Unique identifier
-  correct: boolean;               // Is this a correct answer?
-  feedback?: string;              // Choice-specific feedback
+  correct?: boolean;              // Is this a correct answer?
+  feedback?: {                    // Shown in evaluate mode when feedbackEnabled is true
+    type: 'none' | 'default' | 'custom';
+    value?: string;               // Text for 'custom'
+  };
+  rationale?: string;             // Instructor explanation for this choice
 }
 ```
 
 #### Session
 
 ```typescript
-// Single select
+// Single and multi-select both store an array of choice values
 interface MultipleChoiceSession extends PieSession {
-  value: string;                  // Selected choice value
-}
-
-// Multi-select
-interface MultipleChoiceSession extends PieSession {
-  value: string[];                // Array of selected values
+  value: string[];
 }
 ```
 
@@ -482,7 +488,7 @@ interface MultipleChoiceSession extends PieSession {
 ```typescript
 const model: MultipleChoiceModel = {
   id: 'mc1',
-  element: '@pie-element/multiple-choice',
+  element: 'multiple-choice',
   prompt: '<p>What is 2 + 2?</p>',
   choices: [
     { label: '3', value: 'a', correct: false },
@@ -490,55 +496,8 @@ const model: MultipleChoiceModel = {
     { label: '5', value: 'c', correct: false }
   ],
   choiceMode: 'radio',
-  keyMode: 'letters'
+  choicePrefix: 'letters'
 };
-```
-
-### Slider
-
-#### Model
-
-```typescript
-interface SliderModel extends PieModel {
-  prompt: string;                 // Question text (HTML)
-  min: number;                    // Minimum value
-  max: number;                    // Maximum value
-  step: number;                   // Increment step
-  correctAnswer: number;          // Correct value
-  tolerance?: number;             // Acceptable range
-}
-```
-
-#### Session
-
-```typescript
-interface SliderSession extends PieSession {
-  value: number;                  // Current slider value
-}
-```
-
-### Text Entry
-
-#### Model
-
-```typescript
-interface TextEntryModel extends PieModel {
-  prompt: string;                 // Question text (HTML)
-  expectedLines?: number;         // Rows in textarea
-  maxLength?: number;             // Character limit
-  validation?: {
-    allowedCharacters?: string;   // Regex pattern
-    errorMessage?: string;        // Validation error text
-  };
-}
-```
-
-#### Session
-
-```typescript
-interface TextEntrySession extends PieSession {
-  value: string;                  // Student's text input
-}
 ```
 
 ### Hotspot
@@ -549,15 +508,19 @@ interface TextEntrySession extends PieSession {
 interface HotspotModel extends PieModel {
   prompt: string;                 // Question text (HTML)
   imageUrl: string;               // Background image
-  hotspots: Hotspot[];            // Clickable areas
+  dimensions: { width: number; height: number }; // Image size the shapes are drawn against
   multipleCorrect?: boolean;      // Allow multiple selections
+  partialScoring?: boolean;       // Enable partial credit
+  shapes: {
+    rectangles?: (Shape & { x: number; y: number; width: number; height: number })[];
+    polygons?: (Shape & { points: { x: number; y: number }[] })[];
+    circles?: (Shape & { x: number; y: number; radius: number })[];
+  };
 }
 
-interface Hotspot {
+interface Shape {
   id: string;
-  shape: 'circle' | 'rect' | 'polygon';
-  coords: number[];               // Shape coordinates
-  correct: boolean;
+  correct?: boolean;
 }
 ```
 
@@ -565,7 +528,7 @@ interface Hotspot {
 
 ```typescript
 interface HotspotSession extends PieSession {
-  value: string[];                // IDs of selected hotspots
+  answers: { id: string }[];      // Selected shapes
 }
 ```
 
@@ -606,15 +569,7 @@ import type {
 } from '@pie-element/shared-types';
 ```
 
-Or from element-specific packages:
-
-```typescript
-import type {
-  MultipleChoiceModel,
-  MultipleChoiceSession,
-  Choice
-} from '@pie-element/multiple-choice';
-```
+Element packages export no model or session types. The interfaces under [Element-Specific APIs](#element-specific-apis) describe the JSON shapes.
 
 ## Utility Functions
 
@@ -639,7 +594,8 @@ custom elements.
 ```typescript
 import { assignProps } from '@pie-element/shared-utils';
 
-assignProps(element, { model, session, env });
+// The view model from the controller's model(), and the session the player owns
+assignProps(element, { model: viewModel, session });
 ```
 
 `@pie-element/shared-utils` also exports `showFeedback`, `showRationale`,
@@ -667,12 +623,11 @@ const usePartial = partialScoring.enabled(model, env);
 Always use TypeScript and import types:
 
 ```typescript
-import type { PieEnvironment, PieSession } from '@pie-element/shared-types';
-import type { MultipleChoiceModel } from '@pie-element/multiple-choice';
+import type { PieEnvironment, PieModel, PieSession } from '@pie-element/shared-types';
 
 const env: PieEnvironment = { mode: 'gather', role: 'student' };
-const model: MultipleChoiceModel = {...};
-const session: PieSession = { value: null };
+const model: PieModel = { id: 'mc1', element: 'multiple-choice' /* ... */ };
+const session: PieSession = { id: 'mc1', value: [] };
 ```
 
 ### Controller Usage
@@ -709,4 +664,4 @@ element.addEventListener('session-changed', () => {
 
 ---
 
-**Last Updated**: 2025-01-08
+**Last Updated**: 2026-09-27

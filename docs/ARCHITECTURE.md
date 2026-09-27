@@ -4,12 +4,10 @@
 
 This is a modern implementation of the PIE (Platform Independent Elements) specification, built with TypeScript, ESM, and contemporary tooling. The project currently syncs React-based elements from the upstream [pie-elements](https://github.com/PieLabs/pie-elements) repository while providing modern ESM packaging, Vite builds, and improved developer experience.
 
-**Current Status**: Early development (v0.1.0)
+**Current Status**:
 
-- 28 React elements synced from upstream
-- Core infrastructure and build tooling established
-- Element and lib packages are publish-enabled (versioned/released via Changesets + GitHub Actions)
-- Future plans include native Svelte 5 implementations and public npm releases
+- 27 React elements synced from upstream and 3 Svelte 5 elements built in this repository
+- Element and lib packages publish to npm through Changesets and GitHub Actions: `next` prereleases from `develop`, stable releases from `master`
 
 ## Core Philosophy
 
@@ -50,7 +48,7 @@ This project differs fundamentally from the legacy pie-elements in eight key way
 - **Controllers** are pure TypeScript business logic (completely framework-independent)
 - **UI implementations** can use any framework (React, Svelte, Vue, Angular) as long as they produce web components
 - **Element Player** loads elements via custom element registry, regardless of underlying framework
-- **Current State**: All 28 elements use React; architecture supports future multi-framework implementations
+- **Current State**: 27 elements use React and 3 use Svelte 5
 
 This architectural flexibility will allow choosing the right framework for each use case (e.g., Svelte for smaller bundles, React for ecosystem compatibility).
 
@@ -96,9 +94,9 @@ This was enabled by the PIE team's work on upstream library updates (React 18, M
 
 **Item-Level Players** (pie-players repository):
 
-- Interactive players (esm-player, fixed-player, etc.) - Multi-element assessments
+- Interactive players (`@pie-players/pie-item-player`, `@pie-players/pie-section-player`, `@pie-players/pie-assessment-player`) - Multi-element assessments
 - `<pie-print>` - Print views for production
-- **Package**: `@pie-player/print`
+- **Package**: `@pie-players/pie-print-player`
 - **Use for**: Production applications, complete assessment items
 
 **Timed Media Section Context**:
@@ -329,9 +327,9 @@ This project maintains compatibility with the existing PIE ecosystem by syncing 
 ### Source Repositories
 
 - **[pie-elements](https://github.com/PieLabs/pie-elements)** → `packages/elements-react/`
-  - 28 React element implementations synced from upstream
+  - 27 React element implementations synced from upstream
   - Controllers (business logic)
-  - UI components (delivery, authoring, print modes)
+  - UI components (delivery, authoring and print views)
 
 - **[pie-lib](https://github.com/PieLabs/pie-lib)** → `packages/lib-react/`
   - Shared UI libraries (config-ui, render-ui, etc.)
@@ -411,7 +409,7 @@ The architecture consists of three main layers:
 **Key organizational decisions**:
 
 - **@pie-lib integration**: The `@pie-lib/*` packages (formerly a separate repository) are now in `packages/lib-react/` for better version management and coordination
-- **Versioning**: Changesets-managed coordinated versioning and publishing for `@pie-element/*` and `@pie-lib/*` packages
+- **Versioning**: Changesets-managed independent versioning and publishing for `@pie-element/*` and `@pie-lib/*` packages
 - **Workspaces**: Bun workspaces with `"workspace:*"` references ensure consistency across the monorepo
 
 ### Element Package Anatomy
@@ -455,8 +453,9 @@ export async function model(
   question: MultipleChoiceModel,
   session: SessionData | null,
   env: PieEnvironment,
+  updateSession?: PieUpdateSession,
 ): Promise<ViewModel> {
-  // Transform based on mode (gather/view/evaluate/authoring)
+  // Transform based on mode (gather/view/evaluate)
   // Apply role-based permissions (student/instructor)
   // Return view model for rendering
 }
@@ -476,7 +475,7 @@ export async function outcome(
 
 #### 2. Student Component (Interaction)
 
-**Location**: `src/delivery/index.tsx` (React) or `src/delivery/{Element}.svelte` (Svelte)
+**Location**: `src/delivery/index.ts` (React) or `src/delivery/{Element}.svelte` (Svelte)
 
 **Responsibility**: Render question and handle user interaction
 
@@ -486,21 +485,19 @@ export async function outcome(
 - `view` - Read-only, show question without interaction
 - `evaluate` - Show score, feedback, correct answers
 
+The component reads the mode from the view model the controller returns, which carries `mode` and `disabled`; elements declare no `env` property ([Custom Element Runtime](PIE_ELEMENT_CONTRACT.md#custom-element-runtime)).
+
 ```svelte
 <script lang="ts">
-  let { model, session = $bindable(), env } = $props<Props>();
-
-  const isDisabled = $derived(
-    env.mode === 'view' || env.mode === 'evaluate'
-  );
+  let { model, session, onSessionChange } = $props();
 </script>
 
 <div class="pie-multiple-choice">
   <Prompt prompt={model.prompt} />
 
-  {#if env.mode === 'gather'}
-    <!-- Interactive choices -->
-  {:else if env.mode === 'evaluate'}
+  {#if model.mode === 'gather'}
+    <!-- Interactive choices; each change calls onSessionChange -->
+  {:else if model.mode === 'evaluate'}
     <!-- Show correctness and feedback -->
   {:else}
     <!-- View mode: static display -->
@@ -510,7 +507,7 @@ export async function outcome(
 
 #### 3. Authoring Component (Configuration)
 
-**Location**: `src/authoring/index.ts` (React) or `src/authoring/{Element}Config.svelte` (Svelte)
+**Location**: `src/author/index.ts` (React) or `src/author/Author.svelte` (Svelte)
 
 **Responsibility**: Author/configure question settings
 
@@ -521,19 +518,23 @@ export async function outcome(
 - Configuration options (scoring, feedback, etc.)
 - Preview of changes
 
+The author element takes `model` and `configuration` properties and dispatches a `ModelUpdatedEvent` with the whole model on each edit ([Authoring Contract](PIE_ELEMENT_CONTRACT.md#authoring-contract)).
+
 ```svelte
 <script lang="ts">
-  let { model = $bindable() } = $props<Props>();
+  import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
+  import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
+
+  let { model, configuration } = $props();
 
   function updatePrompt(html: string) {
-    model = { ...model, prompt: html };
+    const next = { ...model, prompt: html };
+    $host().model = next;
+    $host().dispatchEvent(new ModelUpdatedEvent(next));
   }
 </script>
 
-<RichTextEditor
-  value={model.prompt}
-  onChange={updatePrompt}
-/>
+<EditableHtml markup={model.prompt || ''} onChange={updatePrompt} />
 ```
 
 ## PIE Controller Interface
@@ -547,12 +548,14 @@ export interface PieController {
    * @param question - Element configuration
    * @param session - User's current answer/state
    * @param env - Rendering environment (mode, role)
+   * @param updateSession - Persists controller-owned session fields, such as a drawn choice order
    * @returns View model for component rendering
    */
   model(
     question: PieModel,
     session: SessionData | null,
     env: PieEnvironment,
+    updateSession?: PieUpdateSession,
   ): Promise<ViewModel>;
 
   /**
@@ -574,7 +577,7 @@ export interface PieController {
 
 ```typescript
 export interface PieEnvironment {
-  mode: "gather" | "view" | "evaluate" | "authoring" | "print";
+  mode: "gather" | "view" | "evaluate";
   role: "student" | "instructor";
 }
 ```
@@ -584,8 +587,8 @@ export interface PieEnvironment {
 - `gather` - Student answering question
 - `view` - Read-only display (no interaction)
 - `evaluate` - Show score, feedback, correct answers
-- `authoring` - Authoring/configuration interface
-- `print` - Static rendering for paper/PDF
+
+Authoring and print are separate views, each its own custom element: the author view under `<tag>-config` and the print view from the element's print export.
 
 **Roles**:
 
@@ -640,7 +643,7 @@ interface Session {
 
 **Model** represents the question configuration (authored content).
 
-**Immutable**: Models should not change during student interaction. Changes only happen in authoring mode.
+**Immutable**: Models should not change during student interaction. Changes only happen in the author view.
 
 ### Reactivity with Svelte 5
 
@@ -649,13 +652,13 @@ Svelte 5 runes provide fine-grained reactivity:
 ```svelte
 <script lang="ts">
   // Props (from parent)
-  let { model, session = $bindable(), env } = $props<Props>();
+  let { model, session, onSessionChange } = $props();
 
   // Local state
   let localState = $state(0);
 
   // Derived/computed values
-  const isDisabled = $derived(env.mode !== 'gather');
+  const isEvaluateMode = $derived(model?.mode === 'evaluate');
 
   // Side effects
   $effect(() => {
@@ -674,7 +677,7 @@ Svelte 5 runes provide fine-grained reactivity:
 
 ![Data Flow: Scoring & Validation](img/data-flow-scoring-1-1769798123533.jpg)
 
-### Authoring Mode (Configuration)
+### Authoring (Configuration)
 
 ![Data Flow: Configuration](img/data-flow-configuration-1-1769798064332.jpg)
 
@@ -916,7 +919,7 @@ export { model, outcome } from "./controller.js";
 // dist/index.iife.js
 (function () {
   // Self-contained bundle with all dependencies (React, etc.)
-  // Auto-registers custom element: <multiple-choice-pie>
+  // Auto-registers custom element: <multiple-choice-element>
   // Size: ~1.2MB / 400KB gzipped
 })();
 ```
@@ -1003,10 +1006,9 @@ Note: `'unsafe-inline'` for styles is required for Svelte scoped styles.
 **Current Strategy**: Publishing is CI-driven via GitHub Actions and Changesets:
 
 1. Developer creates changeset: `bun run changeset`
-2. PR merged to `master` (stable) or `develop` (prerelease)
-3. GitHub Action creates "Version Packages" PR
-4. Maintainer merges Version PR
-5. Packages automatically published to npm
+2. PR merged to `develop` (prerelease) or `master` (stable)
+3. On `develop`, the same Release run versions the packages and publishes `-next.N` prereleases, synthesizing a patch changeset for any package with unreleased changes and no changeset ([Develop Auto-Release](PUBLISHING.md#develop-auto-release))
+4. On `master`, the GitHub Action creates a "Version Packages" PR, and merging it publishes to npm
 
 **Dist-tag routing**:
 
@@ -1071,7 +1073,7 @@ Packages can be loaded from CDN:
 
 ```html
 <script type="module">
-  import { MultipleChoice } from "https://esm.sh/@pie-element/multiple-choice";
+  import MultipleChoice from "https://esm.sh/@pie-element/multiple-choice";
 </script>
 ```
 

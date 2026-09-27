@@ -90,14 +90,22 @@ declared ESM, browser ESM, IIFE, and type artifacts from its own package
 directory. While React elements are still being migrated from `../pie-elements`,
 temporary upstream sync scripts generate the package scripts and Vite configs for
 those synced packages. They are a migration bridge, not a permanent architectural
-layer. A full browser-plus-IIFE package runs:
+layer. A package with every build lane, such as multiple-choice, runs:
 
 ```bash
 vite build
 vite build --config ../../../tools/vite/element-browser.config.ts
+vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts
+vite build --config ../../../tools/vite/element-legacy-print.config.ts
 vite build --config vite.config.iife.ts
 tsc --emitDeclarationOnly
 ```
+
+The editor-runtime lane writes the variant under `dist/browser/editor-runtime`
+([Shared Editor Runtime](PIE_ELEMENT_CONTRACT.md#shared-editor-runtime)), and the
+legacy print lane writes `module/print.js` for packages with a print view.
+`composeElementBuildScript` in `tools/cli/src/lib/upstream/sync-constants.ts`
+composes each synced package's script from the lanes it has.
 
 The main Vite build emits Node/builder ESM. Generated element `vite.config.ts`
 files use multi-entry library mode with `preserveModules: true`, so source
@@ -248,10 +256,14 @@ build script against shared configs in `tools/vite/`:
 ```bash
 vite build --config ../../../tools/vite/svelte-element-esm.config.ts
 vite build --config ../../../tools/vite/svelte-element-browser.config.ts
+vite build --config ../../../tools/vite/svelte-element-browser-editor-runtime.config.ts
 vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts
 vite build --config ../../../tools/vite/svelte-element-iife.config.ts
 tsc --emitDeclarationOnly
 ```
+
+simple-cloze and venn-classification bundle the editor engine and run the
+editor-runtime step; mc-populated-blank skips it.
 
 `svelte-element-esm.config.ts` empties `dist/` and builds each npm ESM lane
 whose entry exists (`src/index.ts`, `src/{delivery,controller,author,print}/index.ts`,
@@ -433,9 +445,10 @@ exercise representative ESM, IIFE, and preloaded flows.
   package code. Browser ESM is built and published under `dist/browser`.
 - Do not treat `dependencies` or `peerDependencies` as the browser singleton
   contract. Use `pie.browserSharedDependencies` and the browser ESM policy.
-- Do not remove `controller.js` or `configure.js` from packages that declare the
-  corresponding `pie.*` metadata. The subpath exports are the modern API, but
-  the root shims preserve legacy alias-based builder compatibility.
+- Do not remove the root shims `controller.js`, `configure.js`, `author.js` and
+  `print.js` from packages that publish the matching subpath exports. The subpath
+  exports are the modern API; the root shims preserve legacy alias-based builder
+  compatibility.
 
 ## Related Documents
 

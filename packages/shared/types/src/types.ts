@@ -195,7 +195,7 @@ export interface AccessibilityCatalog {
 // Base PIE model (all elements extend this)
 export interface PieModel {
   id: string;
-  element: string; // e.g., "@pie-element/multiple-choice"
+  element: string; // Element tag, the key in the item config's `elements` map, e.g. "multiple-choice"
   accessibilityCatalogs?: AccessibilityCatalog[];
 }
 

@@ -859,13 +859,12 @@ pie-elements-ng uses a **hybrid approach** during transition:
 1. **Elements are authored as ESM** (source code is ESM-first)
 2. **Published as ESM to NPM** (native modules)
 3. **Can generate IIFE bundles if needed** (for backwards compatibility)
-4. **Math rendering uses MathJax v4** (2.7MB, same as upstream, but CDN-loaded for ESM)
+4. **Math rendering loads MathJax 4.1.3 at runtime** ([MATH-RENDERING.md](./MATH-RENDERING.md)); upstream bundles MathJax 3
 
 This allows:
 
 - New deployments to use ESM (modern, efficient, CDN-cached MathJax)
 - Legacy deployments to use IIFE (if required)
-- Full accessibility support (WCAG AAA via Speech Rule Engine)
 - Gradual migration without breaking changes
 
 ### Real-World Impact
@@ -918,12 +917,11 @@ Total: 3.3MB
 First load: 2.9MB (2.7MB MathJax v4 from CDN + 200KB element)
 Second element: +200KB (MathJax cached by browser)
 Third element: +180KB (MathJax cached by browser)
-Total: 3.3MB (same size, but native browser caching + full accessibility)
+Total: 3.3MB (same size, with native browser caching)
 ```
 
 **Note:** Bundle sizes are comparable to IIFE, but ESM provides:
 
-- **Full accessibility**: WCAG AAA compliance via Speech Rule Engine
 - **Native MathML support**: 100% fidelity, no conversion loss
 - **No bundler server infrastructure** (~$1000s/mo savings)
 - **Faster developer iteration** (minutes → seconds)
@@ -1214,7 +1212,6 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
 - Wrapper re-exports from MathJax v4 (full feature parity)
 - When elements are bundled as IIFE, wrapper is still external
 - Browser only loads one copy (CDN-cached MathJax for ESM, DLL bundle for IIFE)
-- Full accessibility support maintained
 
 ---
 
@@ -1239,9 +1236,8 @@ export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/share
 
 - The **wrapper approach is validated** - upstream also externalizes math-rendering
 - Elements don't bundle it either way (IIFE external or ESM import)
-- The 2.7MB cost is **paid once** regardless of approach (MathJax v4 in both cases)
+- The MathJax cost is **paid once** regardless of approach (MathJax 3 in the IIFE DLL, MathJax 4 loaded at runtime for ESM)
 - **ESM loads MathJax from CDN** - cached globally across all PIE deployments
-- **Full accessibility maintained** - WCAG AAA compliance via Speech Rule Engine
 
 The key difference: IIFE uses manual DLL tooling, ESM uses native browser module caching + CDN. Both avoid duplication, but ESM is simpler and provides better global caching (jsdelivr CDN vs per-deployment CDN).
 
