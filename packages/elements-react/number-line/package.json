@@ -47,6 +47,7 @@
       "default": "./dist/delivery/index.js"
     },
     "./browser/delivery": {
+      "types": "./dist/delivery/index.d.ts",
       "default": "./dist/browser/delivery/index.js"
     },
     "./author": {
@@ -54,6 +55,7 @@
       "default": "./dist/author/index.js"
     },
     "./browser/author": {
+      "types": "./dist/author/index.d.ts",
       "default": "./dist/browser/author/index.js"
     },
     "./configure": {
@@ -69,6 +71,7 @@
       "default": "./dist/controller/index.js"
     },
     "./browser/controller": {
+      "types": "./dist/controller/index.d.ts",
       "default": "./dist/browser/controller/index.js"
     },
     "./runtime-support": {

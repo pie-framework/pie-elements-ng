@@ -31,6 +31,7 @@ import {
   transformReactInteropComponentImports,
   transformClassnamesToClsx,
   transformJsCombinatoricsToV2,
+  transformCommonJsNamedImports,
   transformConfigUiMathjsToLocalFraction,
   transformReactInputAutosizeToLocal,
   transformPackageJsonBrowserEsmDependencies,
@@ -60,7 +61,7 @@ export interface TransformOptions {
  * This ensures consistent transformation across all sync strategies:
  * 1. lodash/lodash-es → @pie-element/shared-lodash (vendored ESM helpers)
  * 2. @pie-framework event packages → internal packages
- * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
+ * 3. @pie-lib/controller-utils → @pie-element/shared-controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
  * 5. @mui/material/Menu → InlineMenu from @pie-lib/render-ui
  * 6. Self-referential imports → relative imports
@@ -75,6 +76,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
   transformed = transformLodashToVendoredLodash(transformed);
   transformed = transformClassnamesToClsx(transformed);
   transformed = transformJsCombinatoricsToV2(transformed);
+  transformed = transformCommonJsNamedImports(transformed);
   transformed = transformKnownDeepImportsToFullySpecified(transformed);
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
@@ -125,7 +127,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
  * Ensures consistent dependency transformations across all packages:
  * 1. lodash/lodash-es → @pie-element/shared-lodash
  * 2. @pie-framework event packages → internal packages
- * 3. @pie-lib/controller-utils → @pie-framework/controller-utils
+ * 3. @pie-lib/controller-utils → @pie-element/shared-controller-utils
  * 4. @pie-lib shared packages → @pie-element/shared-*
  * 5. Preserve upstream @pie-framework/mathquill dependency versions from synced package.json
  */

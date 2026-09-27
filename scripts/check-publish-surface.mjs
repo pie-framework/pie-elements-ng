@@ -502,6 +502,14 @@ const collectBrowserEsmViolations = (dir, pkg, context) => {
       continue;
     }
 
+    // The browser build compiles the standard view's entry, so it shares that view's declarations.
+    const standardKey = `./${key.slice('./browser/'.length)}`;
+    const standardTypes = pkg.exports?.[standardKey]?.types;
+    const browserTypes = typeof value === 'string' ? undefined : value?.types;
+    if (browserTypes !== standardTypes) {
+      violations.push(`exports["${key}"].types must match exports["${standardKey}"].types`);
+    }
+
     const targetPath = path.join(dir, target.slice(2));
     if (!existsSync(targetPath)) {
       violations.push(`${key} target is missing: ${target}`);

@@ -53,14 +53,28 @@ Standard ESM exports point at generated `dist` files:
 }
 ```
 
-Browser ESM exports are added when browser output is enabled:
+Browser ESM exports are added when browser output is enabled. The browser build
+compiles the same entry sources, so each one takes the declarations of its
+standard view:
 
 ```json
 {
-  "./browser/delivery": { "default": "./dist/browser/delivery/index.js" },
-  "./browser/author": { "default": "./dist/browser/author/index.js" },
-  "./browser/print": { "default": "./dist/browser/print/index.js" },
-  "./browser/controller": { "default": "./dist/browser/controller/index.js" }
+  "./browser/delivery": {
+    "types": "./dist/delivery/index.d.ts",
+    "default": "./dist/browser/delivery/index.js"
+  },
+  "./browser/author": {
+    "types": "./dist/author/index.d.ts",
+    "default": "./dist/browser/author/index.js"
+  },
+  "./browser/print": {
+    "types": "./dist/print/index.d.ts",
+    "default": "./dist/browser/print/index.js"
+  },
+  "./browser/controller": {
+    "types": "./dist/controller/index.d.ts",
+    "default": "./dist/browser/controller/index.js"
+  }
 }
 ```
 

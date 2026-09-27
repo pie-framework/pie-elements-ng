@@ -9,7 +9,8 @@
  */
 
 import debug from 'debug';
-import { camelizeKeys } from 'humps';
+import humps from 'humps';
+const { camelizeKeys } = humps;
 import { partialScoring } from '@pie-element/shared-controller-utils';
 import { cloneDeep, isEmpty, shuffle } from '@pie-element/shared-lodash';
 

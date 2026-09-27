@@ -624,6 +624,72 @@ export function transformJsCombinatoricsToV2(content: string): string {
 }
 
 /**
+ * CommonJS packages whose exports Node's ESM loader cannot detect, mapped to the binding the
+ * rewrite imports them as. A named import from one of them fails to link when a host imports
+ * the built controller in Node; a default import is `module.exports` in Node and in bundlers.
+ */
+const COMMONJS_DEFAULT_IMPORTS: Record<string, string> = {
+  humps: 'humps',
+};
+
+/**
+ * Rewrite named imports from COMMONJS_DEFAULT_IMPORTS packages to a default import plus a
+ * destructure, so `import { camelizeKeys } from 'humps'` becomes
+ * `import humps from 'humps'; const { camelizeKeys } = humps;`.
+ */
+export function transformCommonJsNamedImports(content: string): string {
+  if (!Object.keys(COMMONJS_DEFAULT_IMPORTS).some((name) => content.includes(name))) {
+    return content;
+  }
+
+  const sourceFile = ts.createSourceFile(
+    'source.tsx',
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+  const edits: SourceEdit[] = [];
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
+      continue;
+    }
+    const specifier = statement.moduleSpecifier.text;
+    if (!Object.hasOwn(COMMONJS_DEFAULT_IMPORTS, specifier)) {
+      continue;
+    }
+    const clause = statement.importClause;
+    const bindings = clause?.namedBindings;
+    if (
+      !clause ||
+      clause.isTypeOnly ||
+      !bindings ||
+      !ts.isNamedImports(bindings) ||
+      bindings.elements.length === 0 ||
+      bindings.elements.some((element) => element.isTypeOnly)
+    ) {
+      continue;
+    }
+
+    const moduleBinding = clause.name?.text ?? COMMONJS_DEFAULT_IMPORTS[specifier];
+    const properties = bindings.elements.map((element) =>
+      element.propertyName
+        ? `${element.propertyName.text}: ${element.name.text}`
+        : element.name.text
+    );
+    const quoted = quoteLike(specifier, statement.moduleSpecifier.getText(sourceFile));
+    edits.push({
+      start: statement.getStart(sourceFile),
+      end: statement.getEnd(),
+      text: `import ${moduleBinding} from ${quoted};\nconst { ${properties.join(', ')} } = ${moduleBinding};`,
+    });
+  }
+
+  return applySourceEdits(content, edits);
+}
+
+/**
  * Replace react-input-autosize with the local ESM autosize input component.
  *
  * The upstream dependency is CommonJS-era and only used by graph label inputs.
