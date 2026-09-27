@@ -132,9 +132,12 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
       tex: { macros: { ...LEGACY_MACROS } },
       options: {
         enableMenu: accessibility,
-        // The menu settings decide MathJax 4's accessibility output. These match the legacy
-        // renderer: hidden MathML for screen readers, math outside the tab order, and no
-        // semantic enrichment, so no speech web worker starts.
+        // The menu settings decide MathJax 4's accessibility output. These reproduce the legacy
+        // renderer's: hidden MathML for screen readers, math outside the tab order, and no
+        // generated speech. The legacy renderer configures SRE speech, but it treats MathJax's
+        // first enrichment retry as a failure and turns enrichment off for the page. With
+        // enrichment off MathJax starts no speech web worker, which a CSP can block; a blocked
+        // worker or speech-rule fetch stalls typesetting for the rest of the page.
         menuOptions: {
           settings: { assistiveMml: accessibility, enrich: false, inTabOrder: false },
         },

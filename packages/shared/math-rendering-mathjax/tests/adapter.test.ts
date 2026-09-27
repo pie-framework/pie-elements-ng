@@ -71,7 +71,7 @@ afterEach(() => {
 });
 
 describe('createMathjaxRenderer', () => {
-  it('loads the pinned MathJax build configured like the legacy renderer', async () => {
+  it('loads the pinned MathJax build with the legacy macros and hidden MathML only', async () => {
     const scripts = interceptScripts();
     const target = elementWith('\\(x^2 + 1\\)');
 
