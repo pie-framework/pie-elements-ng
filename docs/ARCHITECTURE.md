@@ -677,7 +677,7 @@ Svelte 5 runes provide fine-grained reactivity:
 
 ![Data Flow: Scoring & Validation](img/data-flow-scoring-1-1769798123533.jpg)
 
-### Authoring Mode (Configuration)
+### Authoring (Configuration)
 
 ![Data Flow: Configuration](img/data-flow-configuration-1-1769798064332.jpg)
 

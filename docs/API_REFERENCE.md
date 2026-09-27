@@ -594,7 +594,8 @@ custom elements.
 ```typescript
 import { assignProps } from '@pie-element/shared-utils';
 
-assignProps(element, { model, session, env });
+// The view model from the controller's model(), and the session the player owns
+assignProps(element, { model: viewModel, session });
 ```
 
 `@pie-element/shared-utils` also exports `showFeedback`, `showRationale`,

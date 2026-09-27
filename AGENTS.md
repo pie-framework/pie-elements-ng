@@ -262,11 +262,14 @@ These checks ensure:
 
 ### Entry Points per Element
 
-Each element exports three entry points:
+Each element package exports these entry points:
 
-- `element.ts` - Custom element wrapper (web component)
-- `controller.ts` - Server/client-side logic (PIE controller)
-- `author.ts` - Configuration UI (authoring mode)
+- `.` and `./delivery` - the delivery custom element
+- `./author`, with `./configure` as an alias - the author view custom element
+- `./controller` - the PIE controller, for server and client
+- `./print` - the print view, where the element has one
+- `./browser/*` - self-contained browser ESM builds of the same entries
+- `./runtime-support` - which views the package supports under browser ESM, where it declares them
 
 ### PIE Controller Pattern
 
