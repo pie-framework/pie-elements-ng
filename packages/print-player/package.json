@@ -1,6 +1,7 @@
 {
   "name": "@pie-element/print-player",
   "version": "1.0.2-next.0",
+  "private": true,
   "description": "Print player for PIE elements - dynamically loads and renders print-friendly versions of PIE elements",
   "type": "module",
   "main": "./dist/print-player.js",
@@ -41,9 +42,6 @@
     "directory": "packages/print-player"
   },
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
   "homepage": "https://github.com/pie-framework/pie-elements-ng#readme",
   "bugs": {
     "url": "https://github.com/pie-framework/pie-elements-ng/issues"
