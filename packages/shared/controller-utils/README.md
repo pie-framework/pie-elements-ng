@@ -1,4 +1,4 @@
-# @pie-framework/controller-utils
+# @pie-element/shared-controller-utils
 
 Controller utility functions for PIE elements.
 
@@ -9,7 +9,7 @@ This package is part of the PIE workspace and should be installed via workspace 
 ```json
 {
   "dependencies": {
-    "@pie-framework/controller-utils": "workspace:*"
+    "@pie-element/shared-controller-utils": "workspace:*"
   }
 }
 ```
@@ -17,7 +17,7 @@ This package is part of the PIE workspace and should be installed via workspace 
 ## Usage
 
 ```typescript
-import { /* utility functions */ } from '@pie-framework/controller-utils';
+import { getShuffledChoices, lockChoices, partialScoring } from '@pie-element/shared-controller-utils';
 ```
 
 ## Development

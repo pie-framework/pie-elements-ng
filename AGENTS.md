@@ -175,7 +175,7 @@ Only add a package-specific exception when the user explicitly requests a tempor
 - **Accessibility**: @axe-core/playwright for automated checks
 - **Linting**: Biome 2.3+ (replaces ESLint/Prettier)
 - **Rich Text**: TipTap 3.14 with Math extension
-- **Math Rendering**: KaTeX 0.16, MathLive 0.108, Speech Rule Engine 5.0
+- **Math Rendering**: MathJax 4.1.3, loaded at runtime by `@pie-element/shared-math-rendering-mathjax`; MathQuill for math input
 
 ## Monorepo Structure
 
@@ -321,6 +321,8 @@ bun run check          # Svelte component validation
   - `export * from './dist/controller/index.js';`
 - Ensure that shim is published by including `"controller.js"` in `package.json` `files`.
 - Keep `exports["./controller"]` and `exports["./controller.js"]` pointing at `./dist/controller/index.js` for standard ESM consumers; the root shim exists only for builder compatibility.
+- Packages that export `./configure`, `./author` or `./print` publish the matching root shim (`configure.js`, `author.js`, `print.js`) the same way: it re-exports the default and named exports of that subpath's `./dist/...` target and is listed in `files`. Composite elements depend on `author.js`: complex-rubric imports `@pie-element/rubric/author` and ebsr imports `@pie-element/multiple-choice/author`.
+- `bun run check:publish-surface` enforces all four shims.
 
 ### Framework Agnostic
 
@@ -331,10 +333,9 @@ bun run check          # Svelte component validation
 
 ### Math Support
 
-- **KaTeX**: Static math rendering
-- **MathLive**: Interactive math input
-- **Speech Rule Engine**: Accessibility for math content
-- **TipTap Math extension**: Rich text with embedded math
+- **MathJax 4**: Math rendering with hidden MathML for screen readers ([MATH-RENDERING.md](docs/MATH-RENDERING.md))
+- **MathQuill**: Interactive math input (`@pie-lib/math-input`)
+- **TipTap Math extension**: Rich text with embedded math (`@pie-lib/editable-html-tip-tap`)
 
 ### Accessibility First
 

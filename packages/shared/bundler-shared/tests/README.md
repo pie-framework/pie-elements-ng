@@ -20,7 +20,6 @@ This directory contains unit and integration tests for the PIE element bundler.
   - ✅ Bundle creation for multiple elements
   - ✅ Caching behavior
   - ✅ Deterministic hash generation
-  - ✅ Version resolution for @pie-lib packages
   - ✅ IIFE bundle format validation
   - ✅ Error handling
   - ✅ Performance benchmarks
@@ -29,16 +28,16 @@ This directory contains unit and integration tests for the PIE element bundler.
 
 ```bash
 # Run all tests
-bun test
+bun run test
 
 # Run specific test file
-bun test dependency-hash.test.ts
+bun run test -- dependency-hash.test.ts
 
 # Run in watch mode
-bun test --watch
+bun run test:watch
 
 # Run with coverage
-bun test --coverage
+bun run test:coverage
 ```
 
 ## Test Performance
@@ -74,8 +73,8 @@ These directories are cleaned up automatically after tests complete.
 - Once updated element packages are published to NPM, the integration tests will work
 
 **Status:**
-- ✅ **Unit tests** (`dependency-hash.test.ts`) - 7/7 passing
-- ⚠️ **Integration tests** (`bundler.test.ts`) - 19 tests skipped with `describe.skip()`
+- ✅ **Unit tests** run in `bun run test`
+- ⚠️ **Integration tests** (`bundler.test.ts`) are skipped with `describe.skip()`
 - ⏳ **Waiting for:** Modernized elements to be published to NPM with fixed dependencies
 
 **Alternative Testing:**
@@ -91,7 +90,7 @@ bun cli dev:test-bundler --verbose
 bun cli dev:test-bundler --keep-workspace
 ```
 
-See [../TESTING.md](../TESTING.md) for complete documentation on workspace testing.
+See [TESTING_WITH_WORKSPACE.md](./TESTING_WITH_WORKSPACE.md) for complete documentation on workspace testing.
 
 ## What Gets Tested
 
@@ -109,20 +108,17 @@ See [../TESTING.md](../TESTING.md) for complete documentation on workspace testi
    - Bundling multiple elements together
    - Order-independent hashing
 
-4. **Version Resolution**
-   - Different @pie-lib versions per element
-
-5. **Error Handling**
+4. **Error Handling**
    - Invalid package names
    - Invalid versions
    - Network failures
 
-6. **Bundle Types**
+5. **Bundle Types**
    - Player bundle (Element export)
    - Client-player bundle
    - Editor bundle (Configure export)
 
-7. **Performance**
+6. **Performance**
    - Build time < 2 minutes
    - Cache retrieval < 100ms
 
@@ -138,7 +134,7 @@ Example GitHub Actions:
 
 ```yaml
 - name: Run bundler tests
-  run: bun test
+  run: bun run test
   timeout-minutes: 15
   env:
     NODE_ENV: test

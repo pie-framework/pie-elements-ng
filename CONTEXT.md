@@ -148,8 +148,8 @@ _Avoid_: Export path, submodule
 The `package.json` field that tells the `pie-api-aws` builder which **Controller** entry to use.
 _Avoid_: Pie config, controller pointer
 
-**Controller shim**:
-A top-level `controller.js` file in the package root required for `pie-api-aws` filesystem-alias resolution.
+**Root shim**:
+A top-level `controller.js`, `configure.js`, `author.js` or `print.js` file in the package root that re-exports a `dist` entry, required for `pie-api-aws` filesystem-alias resolution.
 _Avoid_: Root export shim as a general ESM export
 
 **`pie-api-aws` builder**:
@@ -237,8 +237,8 @@ _Avoid_: Vendored packages
 - "item" is used loosely for both the **Element** and the **Item**. Use **Item** for the top-level content artifact; use **Element** for the interaction package. Never use "item" unqualified.
 - "model" sometimes means the authored **Model** and sometimes the **ViewModel**. Reserve **Model** for the authored config and **ViewModel** for the controller output.
 - "session" vs "response": in the element layer, **Session** is canonical. Avoid "response" as a substitute because it is ambiguous with HTTP responses and QTI response concepts.
-- "mode" appears in both **Environment** `mode` and an **Element**'s separate `configure` mode. Be explicit about which mode you mean.
-- `session-changed` vs `pie.session_changed`: the modern event name is `session-changed`; `pie.session_changed` is a legacy alias retained for backward compatibility.
+- "mode" means the **Environment** `mode`: `gather`, `view` or `evaluate`. Authoring is a separate custom element, the author view; do not call it a mode.
+- `session-changed` vs `pie.session_changed`: `session-changed` is the event. Nothing dispatches or listens for `pie.session_changed`.
 - **Tool** vs **Accommodation**: both support learners, but a **Tool** is available to everyone while an **Accommodation** is scoped to a learner via **PNP**.
 - "bundle" may mean **ESM bundle**, **IIFE bundle**, or **Shared library bundle**. Always qualify which bundle type you mean.
 - "controller" has a package-resolution meaning in addition to the domain meaning. Qualify when the context is build pipeline resolution rather than runtime controller behavior.

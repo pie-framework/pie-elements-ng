@@ -32,6 +32,14 @@ Release workflow: `.github/workflows/release.yml`
 
 If branch and channel do not match, the workflow fails before publishing.
 
+## Develop Auto-Release
+
+A merge into `develop` versions and publishes `-next.N` prereleases in the same Release run, with no version PR. `master` keeps the version-PR flow: `changesets/action` raises a version PR, and merging it publishes.
+
+Release intent is per package. `scripts/release-synthesize-changesets.mjs` selects every package whose shipping files changed after its own last version bump and that no pending changeset names, and writes a patch changeset for them, summarised with the head commit's subject. Everything in a package except tests, specs, snapshots and Vitest or Playwright config counts as shipping, READMEs included. A hand-written changeset keeps its bump type and summary. Private packages and packages in the Changesets `ignore` list are never selected.
+
+The run then calls `bun run version`, which moves past `-next.N` numbers already taken on npm, commits the bump to `develop` and publishes under `next`. Afterwards `scripts/release-report-dropped.mjs` compares what the run set out to release with what is still unreleased: a package in both fails the run, and packages that became unreleased while it ran are listed without failing it, since their own merge triggers a release.
+
 ## npm Authentication and Trusted Publishers
 
 Migrating this repository to npm trusted publishing (OIDC) is tracked in PIE-834 and is
@@ -173,17 +181,21 @@ For each selected package, any local workspace dependency from `dependencies` or
 - be included in the same selected publish set, or
 - already exist on npm at the exact local version that will replace the `workspace:*` range.
 
+An element that declares `pie.browserEditorRuntime` also depends on `@pie-element/shared-editor-runtime` at the version it names, under the same rule.
+
 This prevents publishing an element whose npm install later fails in the PIE builder because a workspace dependency was never published. If the preflight fails, add the missing package to `--packages` or publish that dependency first.
 
 All publishable packages use a dist-only public API. Package `exports`, `main`, `module`, `types`, CDN fields, and packed source-bearing files must resolve to generated `dist` artifacts only. Raw source (`src`, root `.ts`/`.tsx`, `.svelte`, `.svelte.ts`, and `development` conditions that point at source) is not a supported package API.
 
-Controller-bearing element packages have one compatibility exception: they must publish a root `controller.js` shim containing `export * from './dist/controller/index.js';`. The manifest must set `pie.controller` to `@pie-element/<name>/controller`, expose both `exports["./controller"]` and `exports["./controller.js"]` at `./dist/controller/index.js`, and include `controller.js` in `files`. Standard ESM consumers use the subpath export; the root shim is for legacy alias-based builders such as `pie-api-aws`.
+Controller-bearing element packages must publish a root `controller.js` shim containing `export * from './dist/controller/index.js';`. The manifest must set `pie.controller` to `@pie-element/<name>/controller`, expose both `exports["./controller"]` and `exports["./controller.js"]` at `./dist/controller/index.js`, and include `controller.js` in `files`. Standard ESM consumers use the subpath export; the root shim is for legacy alias-based builders such as `pie-api-aws`.
+
+Packages that export `./configure`, `./author` or `./print` publish the matching root shim (`configure.js`, `author.js`, `print.js`) on the same terms: it re-exports the subpath's `./dist/...` target and is listed in `files`. `print.js` also has an `exports["./print.js"]` entry matching `./print`. `check:publish-surface` enforces all four; see [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#controller-and-configure-packaging).
 
 Browser ESM for players is a separate static-file surface. Packages that can produce browser ESM expose `exports["./browser/delivery"]`, `exports["./browser/author"]`, `exports["./browser/print"]`, and `exports["./browser/controller"]` at `./dist/browser/<view>/index.js`. These files use the hybrid policy in `tools/vite/browser-esm-policy.json`: React and React DOM are external shared imports pinned by `pie-players`, while UI/runtime leaf dependencies stay bundled. Element packages must not rely on jsDelivr `+esm` or other CDN package transforms for their own package entry points.
 
 The same policy file drives the browser build and publish checks. `check:publish-surface` rejects unsupported bare imports, missing or drifted exact `pie.browserSharedDependencies`, packages whose `dist/browser/**/*.js` total exceeds the browser JS budget, stylesheets in `dist/browser` or `module/` that no reachable module loads (hosts load no element CSS; see [`PACKAGING_ARCHITECTURE.md`](PACKAGING_ARCHITECTURE.md#browser-esm-stylesheets)), and top-level await in the modules those directories ship. For an element that declares `pie.browserEditorRuntime` it applies the same rules to `dist/browser/editor-runtime`, where the specifiers of `@pie-element/shared-editor-runtime` are also allowed, and requires the declared runtime version to be exact and equal to the runtime's workspace version; see [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#shared-editor-runtime). Packages without browser ESM exports must publish `./runtime-support` metadata that marks ESM unsupported, so players and demos cannot silently request static browser ESM for packages that do not provide it. When adding a new shared external, update the policy and `pie-players` import-map generation together; otherwise new dependencies should remain bundled by default. `dependencies` and `peerDependencies` are install metadata only; they are not the browser runtime singleton contract.
 
-Print-capable packages (those with `exports["./print"]`) have a second compatibility exception alongside `controller.js`: a root `module/print.js` (plus `module/print.js.map`), included in `files`. This is unrelated to `./browser/print` — it exists only so the legacy `@pie-framework/pie-print` client loader (bare `import()`, no import map) can load `pie-elements-ng` print bundles at the CDN path it already requests. See [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#legacy-compatible-print-packaging) and [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md).
+Print-capable packages (those with `exports["./print"]`) also publish a root `module/print.js` and its sourcemap `module/print.js.map`, plus `module/assets/` when the stylesheets `module/print.js` installs reference fonts or images, all included in `files`. This is unrelated to `./browser/print` — it exists only so the legacy `@pie-framework/pie-print` client loader (bare `import()`, no import map) can load `pie-elements-ng` print bundles at the CDN path it already requests. See [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md#legacy-compatible-print-packaging) and [`PRINT_SUPPORT.md`](PRINT_SUPPORT.md).
 
 Debuggability comes from generated sourcemaps, not from importable source files. TypeScript builds must emit sourcemaps with inline source content, and package validation rejects `.js.map` files that require unpacked source files to be present in the npm tarball.
 

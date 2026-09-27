@@ -18,7 +18,7 @@ import { Bundler } from '@pie-element/element-bundler';
 ## Features
 
 - ✅ **Webpack 5 based** - Uses proven bundling technology from pie-api-aws
-- ✅ **Version resolution** - Handles different @pie-lib versions per element
+- ✅ **Resolution modes** - Bundles published packages from npm, or linked workspace packages from their sources
 - ✅ **TypeScript support** - Works with .ts/.tsx files via esbuild-loader
 - ✅ **Framework agnostic** - Use in SvelteKit, Express, Lambda, CLI, etc.
 - ✅ **Simple API** - Just call `bundler.build(request)` and get URLs back
@@ -129,9 +129,18 @@ Build an IIFE bundle from the specified dependencies.
   options?: {
     requestedBundles?: Array<'player' | 'client-player' | 'editor'>;
     includeControllers?: boolean; // emit /controllers/<dep>_at_<version>/controller.js artifacts
+    resolutionMode?: 'prod-faithful' | 'workspace-fast'; // default 'prod-faithful'
+    workspaceRoot?: string; // workspace-fast: the monorepo root to link
   }
 }
 ```
+
+### Resolution modes
+
+- `prod-faithful`, the default, installs each dependency from the npm registry and bundles it as published.
+- `workspace-fast` links the packages of the workspace at `options.workspaceRoot` (or `PIE_BUNDLER_WORKSPACE_ROOT`) in place of a registry install, and bundles them from their sources: each `dist/` entry point a package's `exports` declares is aliased to its `src/` counterpart.
+
+`findWorkspacePackages(workspaceRoot)` lists the packages a `workspace-fast` build links, and `workspaceDependencyClosure(packages, names)` returns the named packages plus every workspace package they reach through any dependency section.
 
 ### Build with standalone controller artifacts
 
@@ -193,7 +202,7 @@ Get bundle URLs for a hash.
 3. **Package Installation** - Downloads packages from NPM using pacote
 4. **Workspace Setup** - Creates Bun workspace with all dependencies
 5. **Entry Generation** - Generates player.js, client-player.js, editor.js entries
-6. **Webpack Build** - Bundles with version resolution for @pie-lib packages
+6. **Webpack Build** - Bundles the entries with webpack
 7. **(Optional) Standalone Controllers** - When `options.includeControllers=true`, emits controller artifacts compatible with `pie-api-aws` controller layout
 8. **Output** - Writes IIFE bundles to output directory
 
@@ -225,13 +234,13 @@ This is compatible with [pie-player-components](https://github.com/pie-framework
 bun install
 
 # Run tests
-bun test
+bun run test
 
 # Run tests in watch mode
-bun test:watch
+bun run test:watch
 
 # Run tests with coverage
-bun test:coverage
+bun run test:coverage
 ```
 
 ### Running Tests
@@ -241,7 +250,6 @@ The bundler includes comprehensive integration tests that verify:
 - ✅ Bundle creation for single and multiple elements
 - ✅ Caching behavior (instant retrieval of cached bundles)
 - ✅ Deterministic hash generation
-- ✅ Version resolution for different @pie-lib versions
 - ✅ IIFE bundle format validation
 - ✅ Error handling for invalid packages/versions
 - ✅ Performance benchmarks
@@ -252,7 +260,7 @@ Run tests:
 
 ```bash
 cd packages/shared/bundler-shared
-bun test
+bun run test
 ```
 
 ## License

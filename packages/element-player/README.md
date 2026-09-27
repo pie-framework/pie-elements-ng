@@ -1,30 +1,6 @@
 # PIE Element Player
 
-Self-contained web components for rendering PIE elements, following the same architecture as `@pie-framework/pie-players`.
-
----
-
-## ⚠️ IMPORTANT: NOT FOR PUBLISHING
-
-**This package is currently marked as `private` and should NOT be published to npm.**
-
-### Build Issue
-
-The package has a dependency resolution issue that prevents it from building as a standalone library:
-
-- [element-loader.ts](src/lib/element-loader.ts) imports `$lib/element-imports` for local development mode
-- This import only exists in the element-demo app, not in this package
-- The import is marked as external in the build config as a workaround
-- For production use, this architecture needs to be refactored
-
-**Before publishing this package**, the following must be resolved:
-
-1. Refactor the element-loader to not depend on app-specific imports
-2. Either remove local development mode from the library OR provide a proper abstraction
-3. Ensure the build completes successfully without external dependencies on non-existent modules
-4. Remove the `"private": true` field from package.json
-
-**Issue tracked in**: Build fails with "Rollup failed to resolve import '$lib/element-imports'"
+Self-contained web components for rendering PIE elements, following the same architecture as the `@pie-players/*` players in [pie-players](https://github.com/pie-framework/pie-players).
 
 ---
 
@@ -143,7 +119,7 @@ The player dispatches each event from `<pie-element-player>`, bubbling and compo
 | `controller-load` | a load completes, except a `preloaded` one that finds its tag defined (below) | `status`, `source`, `packageName`, `strategy`, `view`, `message` |
 | `controller-changed` | IIFE delivery: the bundle's controller loads | the controller |
 
-`session-changed` also fires with no learner action. Once the element has a model, the player sets `session` on it, and sets it again whenever the host assigns a different session. An element that reports that assignment after its setter returns, as multiple-choice does, has the report forwarded.
+`session-changed` also fires with no learner action. Once the element has a model, the player sets `session` on it, and sets it again whenever the host assigns a different session. A report the element dispatches while that setter runs is dropped; one it dispatches after the setter returns is forwarded.
 
 An abort error is a load error whose message contains `aborted`, whatever the strategy. The player then emits `bundle-retry-status` with state `cancelled`, `build-state` with stage `cancelled` and `load-cancelled`, in place of `player-error`.
 
