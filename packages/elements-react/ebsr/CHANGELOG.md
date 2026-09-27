@@ -1,5 +1,17 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.22
+
+### Patch Changes
+
+- 1ecdcf5: The instructor role no longer locks the choice order, as in pie-elements: an instructor sees the order stored in the session, and a session with none gets a new shuffle, saved as for a student. inline-dropdown still shows an instructor the authored order in view and evaluate mode while choice rationales are enabled. A host that wants the authored order sets `env['@pie-element'].lockChoiceOrder`. (PIE-714)
+- 24caee6: The shuffled choice order is saved through `updateSession`, so the next render shows the same order. These elements shuffle each part separately and never saved the result, so every render shuffled again.
+- Updated dependencies [1ecdcf5]
+- Updated dependencies [24caee6]
+- Updated dependencies [24caee6]
+  - @pie-element/shared-controller-utils@0.1.1-next.5
+  - @pie-element/multiple-choice@13.4.0-next.17
+
 ## 14.2.2-next.21
 
 ### Patch Changes

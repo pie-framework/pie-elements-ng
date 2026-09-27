@@ -1,5 +1,12 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.19
+
+### Patch Changes
+
+- 59115a7: A stored choice order shows only the choices it lists, as in the other elements. A choice added to the item after the order was saved is left out, where it was appended.
+- 1ecdcf5: The instructor role no longer locks the choice order, as in pie-elements: an instructor sees the order stored in the session, and a session with none gets a new shuffle, saved as for a student. inline-dropdown still shows an instructor the authored order in view and evaluate mode while choice rationales are enabled. A host that wants the authored order sets `env['@pie-element'].lockChoiceOrder`. (PIE-714)
+
 ## 0.3.0-next.18
 
 ### Patch Changes

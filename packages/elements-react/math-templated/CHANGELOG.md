@@ -1,5 +1,14 @@
 # @pie-element/math-templated
 
+## 7.1.1-next.33
+
+### Patch Changes
+
+- Updated dependencies [1ecdcf5]
+- Updated dependencies [24caee6]
+- Updated dependencies [24caee6]
+  - @pie-element/shared-controller-utils@0.1.1-next.5
+
 ## 7.1.1-next.32
 
 ### Patch Changes

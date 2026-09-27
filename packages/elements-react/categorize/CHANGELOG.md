@@ -1,5 +1,16 @@
 # @pie-element/categorize
 
+## 13.2.0-next.21
+
+### Patch Changes
+
+- 1ecdcf5: The instructor role no longer locks the choice order, as in pie-elements: an instructor sees the order stored in the session, and a session with none gets a new shuffle, saved as for a student. inline-dropdown still shows an instructor the authored order in view and evaluate mode while choice rationales are enabled. A host that wants the authored order sets `env['@pie-element'].lockChoiceOrder`. (PIE-714)
+- 24caee6: A session without an `id` or `element` keeps its shuffled choice order across renders. The order is saved through `updateSession`, which receives both as `undefined`, as in pie-elements.
+- Updated dependencies [1ecdcf5]
+- Updated dependencies [24caee6]
+- Updated dependencies [24caee6]
+  - @pie-element/shared-controller-utils@0.1.1-next.5
+
 ## 13.2.0-next.20
 
 ### Patch Changes

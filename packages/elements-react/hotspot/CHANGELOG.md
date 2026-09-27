@@ -1,5 +1,14 @@
 # @pie-element/hotspot
 
+## 11.2.0-next.21
+
+### Patch Changes
+
+- Updated dependencies [1ecdcf5]
+- Updated dependencies [24caee6]
+- Updated dependencies [24caee6]
+  - @pie-element/shared-controller-utils@0.1.1-next.5
+
 ## 11.2.0-next.20
 
 ### Patch Changes

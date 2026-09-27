@@ -1,5 +1,14 @@
 # @pie-element/number-line
 
+## 13.1.2-next.20
+
+### Patch Changes
+
+- Updated dependencies [1ecdcf5]
+- Updated dependencies [24caee6]
+- Updated dependencies [24caee6]
+  - @pie-element/shared-controller-utils@0.1.1-next.5
+
 ## 13.1.2-next.19
 
 ### Patch Changes
