@@ -157,7 +157,7 @@ describe('createMathjaxRenderer', () => {
     expect(typesetPromise.mock.calls).toEqual([[[first]], [[second]]]);
   });
 
-  it('loads no MathJax for content without math', async () => {
+  it('starts the load on the first render and does not wait on it for content without math', async () => {
     const scripts = interceptScripts();
     const renderer = createMathjaxRenderer();
 
@@ -172,8 +172,27 @@ describe('createMathjaxRenderer', () => {
       )
     );
 
-    expect(scripts).toHaveLength(0);
-    expect(page.MathJax).toBeUndefined();
+    expect(scripts).toHaveLength(1);
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    const later = elementWith('\\(x\\)');
+    await renderer(later);
+
+    expect(scripts).toHaveLength(1);
+    expect(typesetPromise.mock.calls).toEqual([[[later]]]);
+  });
+
+  it('leaves a failed load unobserved by renders without math', async () => {
+    const scripts = interceptScripts();
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+
+    await createMathjaxRenderer()(elementWith('<p>No math</p>'));
+    scripts[0].onerror?.(new Event('error'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    process.off('unhandledRejection', unhandled);
+    expect(unhandled).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -184,14 +203,16 @@ describe('createMathjaxRenderer', () => {
     ['an environment', '\\begin{matrix}1\\end{matrix}'],
     ['MathML', '<math><mi>x</mi></math>'],
     ['a data-latex span', '<span data-latex="">x^3</span>'],
-  ])('loads MathJax for %s', async (_label, html) => {
-    const scripts = interceptScripts();
+  ])('waits on the load and typesets %s', async (_label, html) => {
+    interceptScripts();
+    const target = elementWith(html);
 
-    const rendering = createMathjaxRenderer()(elementWith(html));
-
-    expect(scripts).toHaveLength(1);
-    runMathjaxScript().finishStartup();
+    const rendering = createMathjaxRenderer()(target);
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
     await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
   });
 
   it('wraps data-latex content in inline delimiters as the legacy renderer does', async () => {
@@ -343,8 +364,12 @@ describe('renderMath', () => {
     const { renderMath: render } = await import('../src/render-math.js');
 
     await render(elementWith('A pen costs $5 and a book costs $10.'));
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
 
-    expect(scripts).toHaveLength(0);
+    expect(scripts).toHaveLength(1);
+    expect(page.MathJax.config.tex.inlineMath).toBeUndefined();
+    expect(typesetPromise).not.toHaveBeenCalled();
     expect(console.warn).not.toHaveBeenCalled();
   });
 
