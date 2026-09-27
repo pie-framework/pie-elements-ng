@@ -31,6 +31,7 @@ import {
   transformReactInteropComponentImports,
   transformClassnamesToClsx,
   transformJsCombinatoricsToV2,
+  transformCommonJsNamedImports,
   transformConfigUiMathjsToLocalFraction,
   transformReactInputAutosizeToLocal,
   transformPackageJsonBrowserEsmDependencies,
@@ -75,6 +76,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
   transformed = transformLodashToVendoredLodash(transformed);
   transformed = transformClassnamesToClsx(transformed);
   transformed = transformJsCombinatoricsToV2(transformed);
+  transformed = transformCommonJsNamedImports(transformed);
   transformed = transformKnownDeepImportsToFullySpecified(transformed);
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
