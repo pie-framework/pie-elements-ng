@@ -601,9 +601,11 @@ describe('ensureElementPackageJson iife build script generation', () => {
       default: './dist/controller/index.js',
     });
     expect(pkgJson.exports['./browser/delivery']).toEqual({
+      types: './dist/delivery/index.d.ts',
       default: './dist/browser/delivery/index.js',
     });
     expect(pkgJson.exports['./browser/controller']).toEqual({
+      types: './dist/controller/index.d.ts',
       default: './dist/browser/controller/index.js',
     });
     expect(pkgJson.exports['./package.json']).toBe('./package.json');

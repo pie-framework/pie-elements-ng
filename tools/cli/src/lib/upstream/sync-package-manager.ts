@@ -153,6 +153,7 @@ export function generateExportsObject(
     };
     if (includeBrowserExports) {
       exports['./browser/delivery'] = {
+        types: './dist/delivery/index.d.ts',
         default: './dist/browser/delivery/index.js',
       };
     }
@@ -165,6 +166,7 @@ export function generateExportsObject(
     };
     if (includeBrowserExports) {
       exports['./browser/author'] = {
+        types: './dist/author/index.d.ts',
         default: './dist/browser/author/index.js',
       };
     }
@@ -186,6 +188,7 @@ export function generateExportsObject(
     };
     if (includeBrowserExports) {
       exports['./browser/controller'] = {
+        types: './dist/controller/index.d.ts',
         default: './dist/browser/controller/index.js',
       };
     }
@@ -202,6 +205,7 @@ export function generateExportsObject(
     };
     if (includeBrowserExports) {
       exports['./browser/print'] = {
+        types: './dist/print/index.d.ts',
         default: './dist/browser/print/index.js',
       };
     }

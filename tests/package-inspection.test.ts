@@ -261,6 +261,44 @@ describe('package inspection quality-gate helpers', () => {
     );
   });
 
+  it('requires each ./browser/* export to declare the types of its standard view', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'typed');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'export default class TypedElement extends HTMLElement {}\n',
+      'utf8'
+    );
+    const violationsFor = (browserDelivery: Record<string, string>) =>
+      collectPublishSurfaceViolations({
+        dir: packageDir,
+        relativeDir: 'packages/elements-react/typed',
+        pkg: {
+          name: '@pie-element/typed',
+          version: '1.0.0',
+          files: ['dist'],
+          exports: {
+            './delivery': {
+              types: './dist/delivery/index.d.ts',
+              default: './dist/delivery/index.js',
+            },
+            './browser/delivery': browserDelivery,
+          },
+        },
+        packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+      });
+    const mismatch = 'exports["./browser/delivery"].types must match exports["./delivery"].types';
+
+    expect(violationsFor({ default: './dist/browser/delivery/index.js' })).toContain(mismatch);
+    expect(
+      violationsFor({
+        types: './dist/delivery/index.d.ts',
+        default: './dist/browser/delivery/index.js',
+      })
+    ).not.toContain(mismatch);
+  });
+
   it('measures the browser size budget over the reachable graph, not stale chunks', async () => {
     const root = await makeWorkspaceFixture();
     const packageDir = join(root, 'packages', 'elements-react', 'stale-chunks');
