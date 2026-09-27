@@ -131,23 +131,15 @@ const getStoredShuffle = (session: McpbSession): string[] =>
       ? session.shuffledValues
       : [];
 
+/** The stored order, as `getShuffledChoices` applies it: a choice it does not list is left out. */
 const applyShuffledValues = (
   choices: McpbChoice[],
   shuffledValues: string[],
   choiceKey: keyof McpbChoice
-) => {
-  const orderedChoices = shuffledValues
+) =>
+  shuffledValues
     .map((value) => choices.find((choice) => choice?.[choiceKey] === value))
     .filter((c): c is McpbChoice => !!c);
-
-  if (orderedChoices.length === choices.length) {
-    return orderedChoices;
-  }
-
-  const orderedValues = new Set(orderedChoices.map((choice) => choice[choiceKey]));
-  const leftovers = choices.filter((choice) => !orderedValues.has(choice?.[choiceKey]));
-  return [...orderedChoices, ...leftovers];
-};
 
 type UpdateSessionFn = (
   id: string,

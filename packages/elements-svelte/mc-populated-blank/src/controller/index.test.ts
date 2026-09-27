@@ -28,7 +28,7 @@
  *   M3. lockChoiceOrder=true wins over shuffle=true → original order locked
  *   M4. lockChoiceOrder=false, stored shuffle in session.data.shuffledValues → restored
  *   M5. lockChoiceOrder=false, stored shuffle in session.shuffledValues (legacy) → restored
- *   M6. lockChoiceOrder=false, stored shuffle has unknown ids → extras appended at end
+ *   M6. lockChoiceOrder=false, stored shuffle has unknown ids → only the choices it lists
  *   M7. lockChoiceOrder=false, no stored shuffle → shuffled; updateSession called with new order
  *   M8. lockChoiceOrder=false, no stored shuffle, no updateSession → shuffled silently (no throw)
  *   M8a. shuffle=true with lockChoiceOrder unset → shuffled, as the older spelling
@@ -242,14 +242,10 @@ describe('model — choice ordering', () => {
     expect(result.choices.map((c: any) => c.id)).toEqual(['b', 'c', 'a']);
   });
 
-  it('M6: lockChoiceOrder=false, stored shuffle has unknown id → known ids first, extras appended', async () => {
+  it('M6: lockChoiceOrder=false, stored shuffle has unknown id → only the choices it lists', async () => {
     const session = { data: { shuffledValues: ['c', 'a', 'unknown'] } };
     const result = (await model(UNLOCKED, session, GATHER_ENV)) as any;
-    const ids = result.choices.map((c: any) => c.id);
-    expect(ids[0]).toBe('c');
-    expect(ids[1]).toBe('a');
-    expect(ids[2]).toBe('b'); // leftover appended
-    expect(ids).not.toContain('unknown');
+    expect(result.choices.map((c: any) => c.id)).toEqual(['c', 'a']);
   });
 
   it('M7: lockChoiceOrder=false, no stored shuffle → shuffled; updateSession called with new order', async () => {
