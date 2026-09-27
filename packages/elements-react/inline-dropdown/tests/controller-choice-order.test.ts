@@ -68,6 +68,22 @@ describe('inline-dropdown model: choice order', () => {
     });
   });
 
+  it('gives an instructor the order the student saw', async () => {
+    const stored = { 0: ['c', 'a', 'b'], 1: ['f', 'd', 'e'] };
+    const session = { id: '1', element: 'inline-dropdown', shuffledValues: stored };
+    const updateSession = vi.fn(() => Promise.resolve());
+
+    const result = await model(
+      { ...QUESTION, choiceRationaleEnabled: false },
+      session,
+      { mode: 'view', role: 'instructor' },
+      updateSession
+    );
+
+    expect(order(result)).toEqual(stored);
+    expect(updateSession).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['lockChoiceOrder', { ...QUESTION, lockChoiceOrder: true }, GATHER],
     [

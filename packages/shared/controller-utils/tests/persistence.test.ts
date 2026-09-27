@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getShuffledChoices } from '../src/persistence.js';
+import { getShuffledChoices, lockChoices } from '../src/persistence.js';
 
 const CHOICES = [{ value: 'a' }, { value: 'b' }, { value: 'c' }];
 
@@ -126,5 +126,46 @@ describe('getShuffledChoices', () => {
     const result = await getShuffledChoices(CHOICES, { id: '1', element: 'pie-element' });
 
     expect(values(result)).toEqual(SHUFFLED);
+  });
+});
+
+describe('lockChoices', () => {
+  const env = (lockChoiceOrder?: boolean, role: 'student' | 'instructor' = 'student') => ({
+    '@pie-element': { lockChoiceOrder },
+    role,
+  });
+
+  // PIE-714: the role plays no part, so an instructor sees the order the student saw.
+  it.each([
+    { modelLock: true, envLock: true, role: 'student', expected: true },
+    { modelLock: true, envLock: false, role: 'student', expected: true },
+    { modelLock: false, envLock: true, role: 'student', expected: true },
+    { modelLock: false, envLock: false, role: 'student', expected: false },
+    { modelLock: undefined, envLock: true, role: 'student', expected: true },
+    { modelLock: undefined, envLock: false, role: 'student', expected: false },
+    { modelLock: undefined, envLock: undefined, role: 'student', expected: false },
+    { modelLock: true, envLock: false, role: 'instructor', expected: true },
+    { modelLock: false, envLock: true, role: 'instructor', expected: true },
+    { modelLock: false, envLock: false, role: 'instructor', expected: false },
+    { modelLock: undefined, envLock: undefined, role: 'instructor', expected: false },
+  ] as const)(
+    'model lock $modelLock, env lock $envLock, $role: locked is $expected',
+    ({ modelLock, envLock, role, expected }) => {
+      expect(lockChoices({ lockChoiceOrder: modelLock }, undefined, env(envLock, role))).toBe(
+        expected
+      );
+    }
+  );
+
+  it('follows the model when there is no env', () => {
+    expect(lockChoices({ lockChoiceOrder: true }, undefined, undefined)).toBe(true);
+    expect(lockChoices({ lockChoiceOrder: false }, undefined, undefined)).toBe(false);
+  });
+
+  it('ignores the session', () => {
+    const session = { shuffledValues: ['a', 'b'] };
+
+    expect(lockChoices({ lockChoiceOrder: false }, session, env(false, 'instructor'))).toBe(false);
+    expect(lockChoices({ lockChoiceOrder: true }, session, env(false, 'instructor'))).toBe(true);
   });
 });

@@ -133,8 +133,10 @@ export async function getShuffledChoices<T extends Choice>(
  * Logic:
  * 1. If model.lockChoiceOrder is true, lock order
  * 2. If env['@pie-element'].lockChoiceOrder is true, lock order
- * 3. If role is 'instructor', lock order (instructors see ordinal order)
- * 4. Otherwise (student role), allow shuffling
+ * 3. Otherwise, allow shuffling
+ *
+ * The role plays no part (PIE-714): an instructor reviewing a session sees the order its
+ * student saw.
  *
  * @param model - Model configuration
  * @param session - Current session (unused currently but kept for API compatibility)
@@ -144,24 +146,15 @@ export async function getShuffledChoices<T extends Choice>(
 export function lockChoices(
   model: Model,
   _session: Session | undefined,
-  env: Environment
+  env: Environment | undefined
 ): boolean {
   if (model.lockChoiceOrder) {
     return true;
   }
 
-  if (env['@pie-element']?.lockChoiceOrder) {
+  if (env?.['@pie-element']?.lockChoiceOrder) {
     return true;
   }
 
-  const role = env.role ?? 'student';
-
-  if (role === 'instructor') {
-    // Instructors always see ordinal order
-    // In the future, they may be able to toggle between ordinal and shuffled
-    return true;
-  }
-
-  // Students get shuffled order (unless locked above)
   return false;
 }

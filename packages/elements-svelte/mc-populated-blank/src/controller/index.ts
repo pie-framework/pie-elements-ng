@@ -100,11 +100,9 @@ export const normalize = (question: McpbQuestion = {}) => {
 
 export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
 
-const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) => {
-  if (question?.lockChoiceOrder) return true;
-  if (env?.['@pie-element']?.lockChoiceOrder) return true;
-  return env?.role === 'instructor';
-};
+/** The role plays no part (PIE-714): an instructor sees the order the student saw. */
+const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) =>
+  !!question?.lockChoiceOrder || !!env?.['@pie-element']?.lockChoiceOrder;
 
 function shuffleArray<T>(items: T[]): T[] {
   const out = [...items];

@@ -57,6 +57,22 @@ describe('match-list model: choice order', () => {
     expect(updateSession).toHaveBeenCalledWith('1', 'match-list', { shuffledValues: SHUFFLED });
   });
 
+  it('gives an instructor the order the student saw', async () => {
+    const stored = { prompts: [2, 0, 1], answers: [5, 3, 4] };
+    const session = { id: '1', element: 'match-list', shuffledValues: stored };
+    const updateSession = vi.fn(() => Promise.resolve());
+
+    const result = await model(
+      QUESTION,
+      session,
+      { mode: 'view', role: 'instructor' },
+      updateSession
+    );
+
+    expect(order(result)).toEqual(stored);
+    expect(updateSession).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['lockChoiceOrder', { ...QUESTION, lockChoiceOrder: true }, GATHER],
     [

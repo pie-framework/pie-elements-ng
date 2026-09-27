@@ -55,6 +55,22 @@ describe('ebsr model: choice order', () => {
     expect(updateSession).toHaveBeenCalledWith('1', 'ebsr', { shuffledValues: SHUFFLED });
   });
 
+  it('gives an instructor the order the student saw', async () => {
+    const stored = { partA: ['c', 'a', 'b'], partB: ['f', 'd', 'e'] };
+    const session = { id: '1', element: 'ebsr', shuffledValues: stored };
+    const updateSession = vi.fn(() => Promise.resolve());
+
+    const result = await model(
+      QUESTION,
+      session,
+      { mode: 'view', role: 'instructor' },
+      updateSession
+    );
+
+    expect(order(result)).toEqual(stored);
+    expect(updateSession).not.toHaveBeenCalled();
+  });
+
   it("keeps a part's authored order under its lockChoiceOrder", async () => {
     const session = { id: '1', element: 'ebsr' };
     const updateSession = playerUpdateSession(session);

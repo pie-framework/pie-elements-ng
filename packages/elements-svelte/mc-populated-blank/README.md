@@ -61,7 +61,7 @@ Notes:
 - **`audioButtonSkin`** / **`audioButtonSkinsByLocale`** (optional): override listen-button skin URLs
 - **`language`** (optional): the language of the learner-facing strings (`en_US`, `es_ES`, …), which come from `@pie-lib/translator` as in the React elements; `locale` stands in when it is unset
 - **`choiceGroupLabel`** (optional): accessibility label used when no visible prompt is present
-- **`lockChoiceOrder`** (optional): `false` shuffles the choices for a student, as in multiple-choice; `shuffle: true` is the older spelling and counts only when `lockChoiceOrder` is unset
+- **`lockChoiceOrder`** (optional): `false` shuffles the choices, as in multiple-choice, and an instructor sees the order the student saw; `shuffle: true` is the older spelling and counts only when `lockChoiceOrder` is unset
 - **`teacherInstructions`** and **`teacherInstructionsEnabled`** (optional): shown to instructors in view and evaluate mode, and in an instructor's printout; unset `teacherInstructionsEnabled` shows them
 - **`printAnswerKey`** (optional): `false` leaves the answer key out of an instructor's printout; a student's printout never has it
 
