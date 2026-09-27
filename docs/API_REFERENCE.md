@@ -606,7 +606,7 @@ assignProps(element, { model: viewModel, session });
 ```typescript
 import { getShuffledChoices, lockChoices, partialScoring } from '@pie-element/shared-controller-utils';
 
-// Should choice order stay ordinal? Honours model.lockChoiceOrder, env, and role
+// Should choice order stay ordinal? Honours model.lockChoiceOrder and env['@pie-element'].lockChoiceOrder
 if (!lockChoices(model, session, env)) {
   // Shuffle once and persist the order in the session, so it is stable across renders
   model.choices = await getShuffledChoices(model.choices, session, updateSession, 'value');

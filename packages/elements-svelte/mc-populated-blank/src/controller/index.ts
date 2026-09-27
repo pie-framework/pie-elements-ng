@@ -100,11 +100,9 @@ export const normalize = (question: McpbQuestion = {}) => {
 
 export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
 
-const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) => {
-  if (question?.lockChoiceOrder) return true;
-  if (env?.['@pie-element']?.lockChoiceOrder) return true;
-  return env?.role === 'instructor';
-};
+/** The role plays no part (PIE-714): an instructor sees the order the student saw. */
+const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) =>
+  !!question?.lockChoiceOrder || !!env?.['@pie-element']?.lockChoiceOrder;
 
 function shuffleArray<T>(items: T[]): T[] {
   const out = [...items];
@@ -133,23 +131,15 @@ const getStoredShuffle = (session: McpbSession): string[] =>
       ? session.shuffledValues
       : [];
 
+/** The stored order, as `getShuffledChoices` applies it: a choice it does not list is left out. */
 const applyShuffledValues = (
   choices: McpbChoice[],
   shuffledValues: string[],
   choiceKey: keyof McpbChoice
-) => {
-  const orderedChoices = shuffledValues
+) =>
+  shuffledValues
     .map((value) => choices.find((choice) => choice?.[choiceKey] === value))
     .filter((c): c is McpbChoice => !!c);
-
-  if (orderedChoices.length === choices.length) {
-    return orderedChoices;
-  }
-
-  const orderedValues = new Set(orderedChoices.map((choice) => choice[choiceKey]));
-  const leftovers = choices.filter((choice) => !orderedValues.has(choice?.[choiceKey]));
-  return [...orderedChoices, ...leftovers];
-};
 
 type UpdateSessionFn = (
   id: string,
