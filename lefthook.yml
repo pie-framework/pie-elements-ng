@@ -1,3 +1,8 @@
+# Fail the commit or push when the hook finds no lefthook. The default prints "Can't find lefthook
+# in PATH" and exits 0, which lets it through with no gate run. `bun install` restores lefthook;
+# `--no-verify` or `LEFTHOOK=0` skips the hooks for one command.
+assert_lefthook_installed: true
+
 pre-commit:
   parallel: true
   commands:
