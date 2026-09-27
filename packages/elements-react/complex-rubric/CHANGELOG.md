@@ -1,5 +1,21 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.20
+
+### Patch Changes
+
+- 6ed08c4: Where no player renderer is installed on the page, as under `strategy="esm"`, elements load MathJax 4.1.3 (`tex-mml-chtml.js` on jsDelivr unless `srcUrl` overrides it) once per page, only for content that holds math, and typeset just the element they render once MathJax has started; host page text is no longer typeset, and a MathJax the page loads itself is used as the page configured it. As under IIFE, single `$…$` stays text unless the page sets `window['@pie-lib/math-rendering@2'] = { opts: { useSingleDollar: true } }`, `\abs` is defined, and math carries hidden MathML for screen readers with no tab stops and no generated speech. No speech worker starts, so no `worker-src blob:` CSP entry is needed.
+- f64aeac: The `./browser/*` exports declare `types`, pointing at the declarations of the matching `./delivery`, `./author`, `./controller` and `./print` entries.
+- Updated dependencies [6ed08c4]
+- Updated dependencies [f64aeac]
+- Updated dependencies
+  - @pie-element/multi-trait-rubric@8.1.2-next.19
+  - @pie-element/rubric@8.1.2-next.19
+  - @pie-element/shared-player-events@0.1.1-next.2
+  - @pie-lib/render-ui@6.2.0-next.47
+  - @pie-lib/config-ui@14.0.0-next.41
+  - @pie-lib/rubric@3.0.0-next.41
+
 ## 7.1.2-next.19
 
 ### Patch Changes

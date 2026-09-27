@@ -1,5 +1,13 @@
 # @pie-element/shared-theming-mui
 
+## 0.1.1-next.6
+
+### Patch Changes
+
+- Updated dependencies [e3aa4f8]
+  - @pie-element/shared-types@0.2.0-next.2
+  - @pie-element/shared-theming@0.2.0-next.6
+
 ## 0.1.1-next.5
 
 ### Patch Changes

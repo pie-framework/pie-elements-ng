@@ -1,5 +1,11 @@
 # @pie-element/shared-player-events
 
+## 0.1.1-next.2
+
+### Patch Changes
+
+- Merge pull request #205 from pie-framework/fix/mathjax-esm-adapter
+
 ## 0.1.1-next.1
 
 ### Patch Changes

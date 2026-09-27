@@ -1,5 +1,11 @@
 # @pie-lib/math-input
 
+## 9.0.0-next.12
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.47
+
 ## 9.0.0-next.11
 
 ### Patch Changes

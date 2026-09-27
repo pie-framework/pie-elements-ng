@@ -1,5 +1,11 @@
 # @pie-element/cli
 
+## 0.1.2-next.8
+
+### Patch Changes
+
+- Merge pull request #205 from pie-framework/fix/mathjax-esm-adapter
+
 ## 0.1.2-next.7
 
 ### Patch Changes

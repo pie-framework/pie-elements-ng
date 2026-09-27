@@ -1,5 +1,11 @@
 # @pie-element/shared-types
 
+## 0.2.0-next.2
+
+### Minor Changes
+
+- e3aa4f8: Breaking: remove `ModelSetEvent`, `SessionChangedEvent`, `ModelUpdatedEvent` and `isPieEvent`, which dispatched `pie.*` events that no player listens for. Import the event classes from `@pie-element/shared-player-events` and `@pie-element/shared-configure-events` instead.
+
 ## 0.2.0-next.1
 
 ### Patch Changes
