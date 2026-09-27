@@ -1,5 +1,11 @@
 # @pie-element/element-bundler
 
+## 0.1.2-next.4
+
+### Patch Changes
+
+- Merge pull request #207 from pie-framework/chore/retire-superseded-packages
+
 ## 0.1.2-next.3
 
 ### Patch Changes

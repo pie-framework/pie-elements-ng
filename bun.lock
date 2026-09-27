@@ -38,7 +38,7 @@
     },
     "apps/element-a11y-demo": {
       "name": "@pie-element/element-a11y-demo",
-      "version": "0.1.2-next.12",
+      "version": "0.1.2-next.13",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -70,7 +70,7 @@
     },
     "apps/element-demo": {
       "name": "@pie-element/element-demo",
-      "version": "0.1.2-next.12",
+      "version": "0.1.2-next.13",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -110,7 +110,7 @@
     },
     "apps/learnosity-parity-demo": {
       "name": "@pie-element/learnosity-parity-demo",
-      "version": "0.1.2-next.12",
+      "version": "0.1.2-next.13",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -1922,7 +1922,7 @@
     },
     "packages/shared/bundler-shared": {
       "name": "@pie-element/element-bundler",
-      "version": "0.1.2-next.3",
+      "version": "0.1.2-next.4",
       "dependencies": {
         "css-loader": "^7.1.2",
         "esbuild-loader": "^4.3.0",
@@ -1944,7 +1944,7 @@
     },
     "packages/shared/bundler-shared-compat": {
       "name": "@pie-element/bundler-shared",
-      "version": "0.1.2-next.3",
+      "version": "0.1.2-next.4",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
       },
@@ -2115,7 +2115,7 @@
     },
     "tools/cli": {
       "name": "@pie-element/cli",
-      "version": "0.1.2-next.8",
+      "version": "0.1.2-next.9",
       "bin": {
         "pie-cli": "./bin/run.js",
       },

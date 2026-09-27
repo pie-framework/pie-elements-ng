@@ -1,5 +1,12 @@
 # @pie-element/cli
 
+## 0.1.2-next.9
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.4
+
 ## 0.1.2-next.8
 
 ### Patch Changes
