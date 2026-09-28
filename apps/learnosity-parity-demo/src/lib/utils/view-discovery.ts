@@ -146,15 +146,3 @@ function getViewDescription(viewId: string): string | undefined {
 
   return descriptions[viewId];
 }
-
-/**
- * Check if an element has a specific view
- *
- * @param elementName - Element name
- * @param viewId - View to check for (e.g., 'author', 'print')
- * @returns Whether the view exists
- */
-export async function hasView(elementName: string, viewId: string): Promise<boolean> {
-  const views = await discoverElementViews(elementName);
-  return views.some((v) => v.id === viewId);
-}

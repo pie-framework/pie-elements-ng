@@ -73,11 +73,6 @@ Where `itemConfig` includes:
 
 **Location:** `packages/print-player` in the `pie-players` repository.
 
-> Note: this repo also contains a `packages/print-player` (`@pie-element/print-player`).
-> It is **superseded** — its resolver loads `dist/print/index.js` (the bundler
-> artifact, which is not browser-loadable) and it does not inject a React import
-> map. Use `@pie-players/pie-print-player` for production print.
-
 ## Print Element Architecture
 
 **Current Coverage**: Print support is available for 12 out of 30 elements. Print components are being added incrementally as elements are developed.

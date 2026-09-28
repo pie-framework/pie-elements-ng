@@ -10,76 +10,7 @@
  * - This ensures we load DIST files (fully built) instead of source files
  */
 
-import {
-  getElementModule,
-  getControllerModule,
-  getAuthorModule,
-  getPrintModule,
-  hasElementModule,
-} from '$lib/element-imports';
-
-/**
- * Load and register a PIE element
- */
-export async function loadElement(
-  packagePath: string,
-  tagName: string,
-  cdnUrl: string = '',
-  debug: boolean = false,
-  optional: boolean = false
-): Promise<void> {
-  // Check if already registered
-  if (customElements.get(tagName)) {
-    if (debug) console.log(`[demo-element-loader] Element ${tagName} already registered`);
-    return;
-  }
-
-  if (debug) console.log(`[demo-element-loader] Loading element ${packagePath}`);
-
-  try {
-    let module: any;
-
-    // Extract element name from package path
-    const elementName = packagePath.replace(/^@pie-element\//, '');
-
-    // Check if we have a static import for this element
-    const hasStaticImport = hasElementModule(elementName);
-
-    if (hasStaticImport && (!cdnUrl || cdnUrl === '')) {
-      // Use static import from element-imports.ts
-      const importer = getElementModule(elementName);
-      if (!importer) {
-        throw new Error(`No static import found for element ${elementName}`);
-      }
-      module = await importer();
-    } else {
-      // Fall back to dynamic import for CDN or missing static imports
-      const modulePath = cdnUrl ? `${cdnUrl}/${packagePath}` : packagePath;
-      module = await import(/* @vite-ignore */ modulePath);
-    }
-
-    const ElementClass = module.default || module.Element;
-
-    if (!ElementClass) {
-      throw new Error(`No default or Element export found for ${packagePath}`);
-    }
-
-    if (typeof ElementClass !== 'function') {
-      throw new Error(`Export from ${packagePath} is not a constructor function`);
-    }
-
-    customElements.define(tagName, ElementClass);
-    if (debug) console.log(`[demo-element-loader] ✓ Registered custom element: ${tagName}`);
-  } catch (error) {
-    if (!optional) {
-      console.error(`[demo-element-loader] Failed to load element ${packagePath}:`, error);
-      throw error;
-    }
-    if (debug) {
-      console.log(`[demo-element-loader] Optional element ${packagePath} not available`);
-    }
-  }
-}
+import { getControllerModule, getAuthorModule, getPrintModule } from '$lib/element-imports';
 
 /**
  * Load a PIE controller

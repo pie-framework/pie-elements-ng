@@ -34,6 +34,7 @@ coverage/
 .playwright/
 test-results/
 playwright-report/
+playwright-a11y-report/
 tests/e2e/.generated/
 
 # Environment
