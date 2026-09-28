@@ -205,10 +205,6 @@
         "vite": "^8.0.1",
         "vitest": "^4.1.11",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/charting": {
       "name": "@pie-element/charting",
@@ -239,10 +235,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/complex-rubric": {
       "name": "@pie-element/complex-rubric",
@@ -271,10 +263,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/drag-in-the-blank": {
@@ -308,10 +296,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/drawing-response": {
       "name": "@pie-element/drawing-response",
@@ -344,10 +328,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/ebsr": {
       "name": "@pie-element/ebsr",
@@ -373,10 +353,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/explicit-constructed-response": {
@@ -411,10 +387,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/extended-text-entry": {
       "name": "@pie-element/extended-text-entry",
@@ -445,10 +417,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/fraction-model": {
       "name": "@pie-element/fraction-model",
@@ -477,10 +445,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/graphing": {
@@ -514,10 +478,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/graphing-solution-set": {
       "name": "@pie-element/graphing-solution-set",
@@ -547,10 +507,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/hotspot": {
@@ -582,10 +538,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/image-cloze-association": {
@@ -623,10 +575,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/inline-dropdown": {
       "name": "@pie-element/inline-dropdown",
@@ -657,10 +605,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/likert": {
       "name": "@pie-element/likert",
@@ -689,10 +633,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/match": {
@@ -727,10 +667,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/match-list": {
       "name": "@pie-element/match-list",
@@ -760,10 +696,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/math-inline": {
@@ -799,10 +731,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/math-templated": {
       "name": "@pie-element/math-templated",
@@ -837,10 +765,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/matrix": {
       "name": "@pie-element/matrix",
@@ -869,10 +793,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/multi-trait-rubric": {
@@ -903,10 +823,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/multiple-choice": {
@@ -939,10 +855,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/number-line": {
@@ -981,10 +893,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/passage": {
       "name": "@pie-element/passage",
@@ -1011,10 +919,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/placement-ordering": {
@@ -1055,10 +959,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
-      },
     },
     "packages/elements-react/rubric": {
       "name": "@pie-element/rubric",
@@ -1084,10 +984,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-react/select-text": {
@@ -1119,10 +1015,6 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
-      },
-      "peerDependencies": {
-        "react": "^18.2.0 || ^19.0.0",
-        "react-dom": "^18.2.0 || ^19.0.0",
       },
     },
     "packages/elements-svelte/mc-populated-blank": {

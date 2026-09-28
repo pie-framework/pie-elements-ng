@@ -461,10 +461,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
 
     const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
     expect(pkgJson.version).toBe('13.1.2-next.0');
-    expect(pkgJson.peerDependencies).toEqual({
-      react: '^18.2.0 || ^19.0.0',
-      'react-dom': '^18.2.0 || ^19.0.0',
-    });
+    expect(pkgJson).not.toHaveProperty('peerDependencies');
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
@@ -485,7 +482,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies).not.toHaveProperty('react-dom');
   });
 
-  it('pins shared React runtime deps as installable dependencies, not peers alone', async () => {
+  it('declares shared React runtime deps as dependencies and drops React peers', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
 
@@ -500,6 +497,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
           peerDependencies: {
             react: '^16.8.0 || ^17.0.0',
             'react-dom': '^16.8.0 || ^17.0.0',
+            'some-host-service': '^2.0.0',
           },
         },
         null,
@@ -524,12 +522,9 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies.react).toBe('^18.2.0');
     expect(pkgJson.dependencies['react-dom']).toBe('^18.2.0');
 
-    // The peer declaration is still the compatibility contract for ESM hosts
-    // that provide React themselves via an import map.
-    expect(pkgJson.peerDependencies).toEqual({
-      react: '^18.2.0 || ^19.0.0',
-      'react-dom': '^18.2.0 || ^19.0.0',
-    });
+    // A React peer would let pnpm and yarn bind the element to the host's React.
+    // Other local peers survive the sync.
+    expect(pkgJson.peerDependencies).toEqual({ 'some-host-service': '^2.0.0' });
   });
 
   it('removes development export conditions and emits the controller package contract', async () => {

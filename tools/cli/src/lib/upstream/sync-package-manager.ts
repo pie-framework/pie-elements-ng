@@ -76,6 +76,18 @@ function readBrowserEsmPolicy(rootDir: string): BrowserEsmPolicy {
 }
 
 /**
+ * The `dependencies` entries an element declares for the browser ESM shared runtime (React and
+ * React DOM): a caret range on each `sharedDependencyVersions` version in
+ * tools/vite/browser-esm-policy.json.
+ */
+export function elementSharedRuntimeDependencies(rootDir: string): Record<string, string> {
+  const versions = readBrowserEsmPolicy(rootDir).sharedDependencyVersions ?? {};
+  return Object.fromEntries(
+    Object.entries(versions).map(([name, version]) => [name, `^${version}`])
+  );
+}
+
+/**
  * Detect available entry points in an element package
  */
 export function detectEntryPoints(elementDir: string): EntryPointMap {
@@ -589,6 +601,7 @@ export async function ensureElementPackageJson(
 
   // Extract and normalize upstream dependencies
   const expectedDeps = extractUpstreamDependencies(upstreamPkg);
+  // React is skipped as a transitive peer: the browser ESM policy supplies it below.
   const declaredPeerDeps = new Set([
     ...Object.keys((pkg?.peerDependencies as Record<string, string> | undefined) ?? {}),
     'react',
@@ -654,10 +667,6 @@ export async function ensureElementPackageJson(
         (upstreamPkg?.description as string | undefined) ??
         `React implementation of ${elementName} element synced from pie-elements`,
       dependencies: expectedDeps,
-      peerDependencies: {
-        react: REACT.ELEMENT_PEER_RANGE,
-        'react-dom': REACT.ELEMENT_PEER_RANGE,
-      },
     };
   }
 
@@ -665,11 +674,16 @@ export async function ensureElementPackageJson(
   if (Object.keys(expectedDeps).length > 0) {
     pkg.dependencies = expectedDeps;
   }
-  pkg.peerDependencies = {
-    ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
-    react: REACT.ELEMENT_PEER_RANGE,
-    'react-dom': REACT.ELEMENT_PEER_RANGE,
-  };
+  // No React peer: a peer lets pnpm and yarn bind the element to the host's React, while the
+  // element is built and tested against the React 18 its own dependency installs.
+  const otherPeerDeps = { ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}) };
+  delete otherPeerDeps.react;
+  delete otherPeerDeps['react-dom'];
+  if (Object.keys(otherPeerDeps).length > 0) {
+    pkg.peerDependencies = otherPeerDeps;
+  } else {
+    delete pkg.peerDependencies;
+  }
 
   // Preserve pie metadata (if present upstream or locally)
   const pieMetadata = ((upstreamPkg as PackageJson | null | undefined)?.pie ??
@@ -687,37 +701,34 @@ export async function ensureElementPackageJson(
   // Apply all standard transformations
   pkg = applyPackageJsonTransforms(pkg);
 
-  // React must also be a real dependency, not only a peer. Legacy webpack
-  // bundlers (builder.pie-api.com) install `dependencies` and never install
-  // peers, so peer-only React leaves node_modules/react absent in the build
-  // snapshot and every @mui / @emotion / @dnd-kit peer fails with
-  // "Module not found: Can't resolve 'react'".
+  // React is a real dependency, and the element's only React declaration. Legacy webpack
+  // bundlers (builder.pie-api.com) install `dependencies` and never install peers, so
+  // without it node_modules/react is absent in the build snapshot and every
+  // @mui / @emotion / @dnd-kit peer fails with "Module not found: Can't resolve 'react'".
+  // A host that bundles the ./browser/* entries resolves React from the element package,
+  // so this dependency is also the React the element runs on there.
   //
   // This must run AFTER applyPackageJsonTransforms: transformPackageJsonBrowserEsmDependencies
   // unconditionally deletes react/react-dom from dependencies to drop whatever
   // arbitrary range upstream declared. We re-add them here as the final word,
   // pinned to the policy version.
   //
-  // Install metadata only. The browser runtime singleton contract stays governed
-  // by pie.browserSharedDependencies plus the player import map, and isExternal()
-  // in sync-externals.ts keeps React external in every bundle regardless of what
-  // is declared here, so bundle output is unaffected.
+  // The import-map path is governed by pie.browserSharedDependencies instead, and
+  // isExternal() in sync-externals.ts keeps React external in every bundle regardless
+  // of what is declared here, so the element's own build output is unaffected.
   //
   // Versions come from tools/vite/browser-esm-policy.json - the same source as
   // pie.browserSharedDependencies below.
   //
   // Declared as a caret range, NOT an exact pin. An exact pin resolves to its own
   // copy alongside the root's `^`-resolved one, and two React instances break
-  // hooks at runtime ("Invalid hook call", useRef of null). The installed version
-  // only has to resolve for the legacy webpack path, so a range is sufficient.
-  const sharedRuntimeDeps = readBrowserEsmPolicy(config.pieElementsNg).sharedDependencyVersions;
-  if (sharedRuntimeDeps && Object.keys(sharedRuntimeDeps).length > 0) {
-    const rangedRuntimeDeps = Object.fromEntries(
-      Object.entries(sharedRuntimeDeps).map(([name, version]) => [name, `^${version}`])
-    );
+  // hooks at runtime ("Invalid hook call", useRef of null). Any React 18 from the policy
+  // version up serves both the legacy webpack path and a bundling host.
+  const sharedRuntimeDeps = elementSharedRuntimeDependencies(config.pieElementsNg);
+  if (Object.keys(sharedRuntimeDeps).length > 0) {
     pkg.dependencies = {
       ...((pkg.dependencies as Record<string, string> | undefined) ?? {}),
-      ...rangedRuntimeDeps,
+      ...sharedRuntimeDeps,
     };
   }
 
