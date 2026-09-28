@@ -1,8 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { createMathjaxRenderer } from '../src/adapter.js';
 import { mmlToLatex, renderMath, wrapMath } from '../src/render-math.js';
+import { MATHJAX_CONFLICT_EVENT, UNSUPPORTED_PAGE_DOCS_URL } from '../src/unsupported-page.js';
 
 const MATHJAX_LOADING = Symbol.for('@pie-element/shared-math-rendering-mathjax/loading');
+const UNSUPPORTED_PAGE = Symbol.for('@pie-element/shared-math-rendering-mathjax/unsupported-page');
 const PINNED_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js';
 const SINGLE_DOLLAR_WARNING =
   '[math-rendering] using $ is not advisable, please use $$..$$ or \\(...\\)';
@@ -23,21 +25,34 @@ function interceptScripts(): HTMLScriptElement[] {
 /**
  * Does what the MathJax script does once its components load: the configuration on
  * window.MathJax becomes MathJax.config and startup.ready runs. defaultReady defines the
- * typesetting methods; the startup promise resolves when `finishStartup` is called.
+ * typesetting methods and creates the document; the startup promise resolves when
+ * `finishStartup` is called.
  */
-function runMathjaxScript(typesetPromise = vi.fn<TypesetPromise>(async () => {})) {
+function runMathjaxScript(
+  typesetPromise = vi.fn<TypesetPromise>(async () => {}),
+  { version = '4.1.3', chtmlStyles = null as HTMLStyleElement | null } = {}
+) {
   const config = page.MathJax ?? {};
   let finishStartup!: () => void;
   const promise = new Promise<void>((resolve) => {
     finishStartup = resolve;
   });
+  const CHTML = { STYLESHEETID: 'MJX-CHTML-styles' };
+  const mathDocument = {
+    math: [] as { typesetRoot: Element }[],
+    outputJax: { chtmlStyles },
+    addRenderAction: vi.fn(),
+  };
   const mathJax: any = {
-    version: '4.1.3',
+    version,
     config,
+    _: { output: { chtml_ts: { CHTML } } },
     startup: {
       promise,
       defaultReady: vi.fn(() => {
+        mathJax.stylesheetIdAtStartup = CHTML.STYLESHEETID;
         mathJax.typesetPromise = typesetPromise;
+        mathJax.startup.document = mathDocument;
       }),
     },
   };
@@ -47,7 +62,27 @@ function runMathjaxScript(typesetPromise = vi.fn<TypesetPromise>(async () => {})
   } else {
     mathJax.startup.defaultReady();
   }
-  return { mathJax, typesetPromise, finishStartup };
+  return { mathJax, typesetPromise, finishStartup, CHTML, mathDocument };
+}
+
+/** Output as MathJax 4 produces it: every node records its TeX source. */
+const TYPESET_OUTPUT =
+  '<mjx-container data-latex="x^2"><mjx-math data-latex="x^2">' +
+  '<mjx-msup data-latex="x^2" data-latex-item="x^2"><mjx-mi data-latex="x">x</mjx-mi></mjx-msup>' +
+  '</mjx-math><mjx-assistive-mml><math data-latex="x^2"><msup data-latex="x^2"><mi>x</mi></msup>' +
+  '</math></mjx-assistive-mml></mjx-container>';
+
+const typesetAs = (html: string) =>
+  vi.fn<TypesetPromise>(async (elements = []) => {
+    for (const element of elements) element.innerHTML = html;
+  });
+
+function conflictEvents() {
+  const events: CustomEvent[] = [];
+  const listener = (event: Event) => events.push(event as CustomEvent);
+  window.addEventListener(MATHJAX_CONFLICT_EVENT, listener);
+  onTestFinished(() => window.removeEventListener(MATHJAX_CONFLICT_EVENT, listener));
+  return events;
 }
 
 function elementWith(html: string): HTMLElement {
@@ -59,6 +94,7 @@ function elementWith(html: string): HTMLElement {
 
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
 afterEach(() => {
@@ -68,6 +104,8 @@ afterEach(() => {
   delete page['@pie-lib/math-rendering'];
   delete page['@pie-lib/math-rendering@2'];
   delete (globalThis as any)[MATHJAX_LOADING];
+  delete (globalThis as any)[UNSUPPORTED_PAGE];
+  for (const style of document.head.querySelectorAll('style')) style.remove();
 });
 
 describe('createMathjaxRenderer', () => {
@@ -347,6 +385,145 @@ describe('createMathjaxRenderer', () => {
     expect(console.warn).toHaveBeenCalledTimes(1);
   });
 
+  it('gives the MathJax 4 it loads its own stylesheet id before startup', async () => {
+    interceptScripts();
+    const earlySheet = document.createElement('style');
+    earlySheet.id = 'MJX-CHTML-styles';
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+    const { mathJax, CHTML, finishStartup } = runMathjaxScript(undefined, {
+      chtmlStyles: earlySheet,
+    });
+    finishStartup();
+    await rendering;
+
+    expect(mathJax.stylesheetIdAtStartup).toBe('PIE-MJX-CHTML-styles');
+    expect(CHTML.STYLESHEETID).toBe('PIE-MJX-CHTML-styles');
+    expect(earlySheet.id).toBe('PIE-MJX-CHTML-styles');
+  });
+
+  it('leaves the stylesheet id of a srcUrl build that is not MathJax 4', async () => {
+    interceptScripts();
+
+    const rendering = createMathjaxRenderer({ srcUrl: 'https://example.test/tex-chtml.js' })(
+      elementWith('\\(x\\)')
+    );
+    const { CHTML, mathDocument, finishStartup } = runMathjaxScript(undefined, {
+      version: '3.2.2',
+    });
+    finishStartup();
+    await rendering;
+
+    expect(CHTML.STYLESHEETID).toBe('MJX-CHTML-styles');
+    expect(mathDocument.addRenderAction).not.toHaveBeenCalled();
+  });
+
+  it('leaves the stylesheet id of a MathJax 4 the page loaded', async () => {
+    interceptScripts();
+    const CHTML = { STYLESHEETID: 'MJX-CHTML-styles' };
+    page.MathJax = {
+      version: '4.1.3',
+      _: { output: { chtml_ts: { CHTML } } },
+      startup: { promise: Promise.resolve() },
+      typesetPromise: typesetAs(TYPESET_OUTPUT),
+    };
+    const target = elementWith('\\(x^2\\)');
+
+    await createMathjaxRenderer()(target);
+
+    expect(CHTML.STYLESHEETID).toBe('MJX-CHTML-styles');
+    expect(target.querySelectorAll('[data-latex], [data-latex-item]')).toHaveLength(0);
+  });
+
+  it('strips data-latex from its output and keeps it on authored spans', async () => {
+    interceptScripts();
+    const target = elementWith('\\(x^2\\)');
+
+    const rendering = createMathjaxRenderer()(target);
+    const { finishStartup } = runMathjaxScript(
+      typesetAs(`<span data-latex="" data-math-handled="true">${TYPESET_OUTPUT}</span>`)
+    );
+    finishStartup();
+    await rendering;
+
+    expect(
+      target.querySelectorAll('mjx-container [data-latex], mjx-container [data-latex-item]')
+    ).toHaveLength(0);
+    expect(target.querySelector('mjx-container')?.hasAttribute('data-latex')).toBe(false);
+    expect(target.querySelector('span')?.hasAttribute('data-latex')).toBe(true);
+    expect(target.querySelector('mjx-mi')?.textContent).toBe('x');
+  });
+
+  it('strips data-latex from the output of MathJax rerenders', async () => {
+    interceptScripts();
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+    const { mathDocument, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(mathDocument.addRenderAction).toHaveBeenCalledTimes(1);
+    const [id, priority, renderDoc, renderMathItem] = mathDocument.addRenderAction.mock.calls[0];
+    expect(id).toBe('pie-strip-latex');
+    // After MathJax inserts its output, at STATE.INSERTED.
+    expect(priority).toBeGreaterThan(200);
+
+    const rerendered = elementWith(TYPESET_OUTPUT).firstElementChild as Element;
+    mathDocument.math.push({ typesetRoot: rerendered });
+    expect(renderDoc(mathDocument)).toBe(false);
+    expect(rerendered.outerHTML).not.toContain('data-latex');
+
+    const toggled = elementWith(TYPESET_OUTPUT).firstElementChild as Element;
+    expect(renderMathItem({ typesetRoot: toggled }, mathDocument)).toBe(false);
+    expect(toggled.outerHTML).not.toContain('data-latex');
+  });
+
+  it('reports a MathJax 3 on window once per page', async () => {
+    interceptScripts();
+    const events = conflictEvents();
+    page.MathJax = {
+      version: '3.2.2',
+      startup: { promise: Promise.resolve() },
+      typesetPromise: vi.fn<TypesetPromise>(async () => {}),
+    };
+    vi.resetModules();
+    const { createMathjaxRenderer: fromOtherBundle } = await import('../src/adapter.js');
+
+    await createMathjaxRenderer()(elementWith('\\(x\\)'));
+    await fromOtherBundle()(elementWith('\\(y\\)'));
+
+    expect(console.error).toHaveBeenCalledTimes(1);
+    const [message] = vi.mocked(console.error).mock.calls[0];
+    expect(message).toContain('mathjax-3-global');
+    expect(message).toContain('MathJax 3.2.2');
+    expect(message).toContain(UNSUPPORTED_PAGE_DOCS_URL);
+    expect(events.map((event) => event.detail)).toEqual([
+      { condition: 'mathjax-3-global', message, docsUrl: UNSUPPORTED_PAGE_DOCS_URL },
+    ]);
+  });
+
+  it("reports another MathJax's output stylesheet in the head", async () => {
+    interceptScripts();
+    const events = conflictEvents();
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+    runMathjaxScript().finishStartup();
+    await rendering;
+
+    const ownMenuStyles = document.createElement('style');
+    ownMenuStyles.id = 'MJX-Menu-styles';
+    document.head.prepend(ownMenuStyles);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(console.error).not.toHaveBeenCalled();
+
+    const foreign = document.createElement('style');
+    foreign.id = 'MJX-CHTML-styles';
+    document.head.prepend(foreign);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(console.error).mock.calls[0][0]).toContain('foreign-output-stylesheet');
+    expect(events.map((event) => event.detail.condition)).toEqual(['foreign-output-stylesheet']);
+  });
+
   it('rejects when the MathJax script fails to load', async () => {
     const scripts = interceptScripts();
 
@@ -410,6 +587,28 @@ describe('renderMath', () => {
     expect(playerRenderMath).toHaveBeenCalledWith(target);
     expect(scripts).toHaveLength(0);
     expect(target.querySelector('[data-player-rendered]')).not.toBeNull();
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it("reports delegation to the legacy renderer's MathJax 3, one error per page", async () => {
+    const events = conflictEvents();
+    // The legacy renderer sets window.MathJax.version when it loads.
+    page.MathJax = { version: '3.2.2', _: {}, config: {} };
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn() };
+    interceptScripts();
+
+    await createMathjaxRenderer()(elementWith('\\(x\\)'));
+    await renderMath(elementWith('\\(y\\)'));
+    await renderMath(elementWith('\\(z\\)'));
+
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(events.map((event) => event.detail.condition)).toEqual([
+      'mathjax-3-global',
+      'legacy-renderer-delegation',
+    ]);
+    expect(events[1].detail.message).toContain(
+      "window['@pie-lib/math-rendering'] renders this element's math with MathJax 3.2.2"
+    );
   });
 
   it('delegates string rendering to the player math renderer and returns rendered HTML', async () => {

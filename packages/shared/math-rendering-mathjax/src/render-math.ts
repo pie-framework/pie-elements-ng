@@ -6,6 +6,7 @@
  */
 
 import { createMathjaxRenderer } from './adapter.js';
+import { mathjax3Version, reportUnsupportedPage } from './unsupported-page.js';
 
 const PLAYER_MATH_RENDERING_KEY = '@pie-lib/math-rendering';
 
@@ -44,6 +45,16 @@ function getPlayerMathRenderer(): PlayerMathRenderingApi | null {
   return typeof renderer?.renderMath === 'function' ? renderer : null;
 }
 
+// The legacy renderer sets `window.MathJax.version` to its bundled MathJax 3 when it loads.
+function reportLegacyDelegation(): void {
+  const version = mathjax3Version();
+  if (!version) return;
+  reportUnsupportedPage(
+    'legacy-renderer-delegation',
+    `window['${PLAYER_MATH_RENDERING_KEY}'] renders this element's math with MathJax ${version}`
+  );
+}
+
 /**
  * Render math in a DOM element or HTML string using MathJax
  */
@@ -62,6 +73,7 @@ export const renderMath = async (el?: Element | string): Promise<string | undefi
 
   const playerRenderer = getPlayerMathRenderer();
   if (playerRenderer) {
+    reportLegacyDelegation();
     await playerRenderer.renderMath?.(target);
   } else {
     await getRenderer()(target);

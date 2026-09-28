@@ -1,6 +1,23 @@
 import type { MathjaxOptions } from './types.js';
+import { mathjax3Version, reportUnsupportedPage } from './unsupported-page.js';
 
 type MathJaxMacro = string | [string, number];
+
+interface MathItem {
+  typesetRoot?: Element | null;
+}
+
+/** The parts of MathJax's `startup.document` this adapter uses. */
+interface MathDocument {
+  math?: Iterable<MathItem>;
+  outputJax?: { chtmlStyles?: Element | null };
+  addRenderAction?: (
+    id: string,
+    priority: number,
+    renderDoc: (document: MathDocument) => boolean,
+    renderMath: (math: MathItem, document: MathDocument) => boolean
+  ) => void;
+}
 
 /**
  * `window.MathJax` in each state this adapter meets: a configuration object before a MathJax
@@ -15,6 +32,7 @@ interface MathJaxGlobal {
     ready?: () => void;
     defaultReady?: () => void;
     promise?: Promise<unknown>;
+    document?: MathDocument;
   };
   tex?: {
     inlineMath?: [string, string][];
@@ -27,6 +45,8 @@ interface MathJaxGlobal {
   };
   chtml?: { fontURL?: string };
   typesetPromise?: (elements?: Element[]) => Promise<void>;
+  /** The component build's module tree. */
+  _?: { output?: { chtml_ts?: { CHTML?: { STYLESHEETID?: string } } } };
 }
 
 /** TeX and MathML input, as the legacy renderer reads. `srcUrl` overrides it. */
@@ -68,6 +88,42 @@ const MATHJAX_LOADING: unique symbol = Symbol.for(
 );
 
 type LoadingRegistry = { [MATHJAX_LOADING]?: Promise<void> };
+
+/**
+ * MathJax 3 and 4 both replace any `<style id="MJX-CHTML-styles">` in `<head>` with their own, so
+ * whichever engine renders second deletes the other's styles. The MathJax this adapter loads uses
+ * its own id instead.
+ */
+const OWN_STYLESHEET_ID = 'PIE-MJX-CHTML-styles';
+const SHARED_STYLESHEET_ID = 'MJX-CHTML-styles';
+
+/** Output stylesheets of another MathJax. MathJax 4's menu and explorer sheets are not among them. */
+const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, 'MJX-SVG-styles'];
+
+/** After MathJax's own `update` action, at STATE.INSERTED (200). */
+const STRIP_LATEX_PRIORITY = 201;
+
+/**
+ * MathJax 4 records each node's TeX source in `data-latex` and `data-latex-item`, and carries them
+ * into its output. The legacy MathJax 3 renderer rewrites the text of every `[data-latex]` element
+ * on the page as TeX source, so they are removed from the output. Removing them in a TeX filter
+ * breaks MathJax 4's own parsing.
+ */
+function stripLatexAttributes(root: Element): void {
+  const containers = [
+    ...(root.matches('mjx-container') ? [root] : []),
+    ...root.querySelectorAll('mjx-container'),
+  ];
+  for (const container of containers) {
+    for (const node of [
+      container,
+      ...container.querySelectorAll('[data-latex],[data-latex-item]'),
+    ]) {
+      node.removeAttribute('data-latex');
+      node.removeAttribute('data-latex-item');
+    }
+  }
+}
 
 function pageMathJax(): MathJaxGlobal | undefined {
   return (window as { MathJax?: MathJaxGlobal }).MathJax;
@@ -124,8 +180,13 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         // Typeset only the elements the renderer is given, never the host page.
         typeset: false,
         ready: () => {
-          const startup = pageMathJax()?.startup;
+          const mathJax = pageMathJax();
+          const startup = mathJax?.startup;
+          // `srcUrl` may name another MathJax; only a 4.x build is known to take these changes.
+          const isolate = Boolean(mathJax?.version?.startsWith('4.'));
+          if (isolate) useOwnStylesheetId(mathJax);
           startup?.defaultReady?.();
+          if (isolate) isolateOutput(startup?.document);
           Promise.resolve(startup?.promise).then(() => resolve(), reject);
         },
       },
@@ -165,6 +226,77 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
     script.onerror = () => reject(new Error('Failed to load MathJax'));
     document.head.appendChild(script);
   });
+}
+
+function useOwnStylesheetId(mathJax: MathJaxGlobal | undefined): void {
+  const chtml = mathJax?._?.output?.chtml_ts?.CHTML;
+  if (chtml) chtml.STYLESHEETID = OWN_STYLESHEET_ID;
+}
+
+/**
+ * Keeps the output of the MathJax this adapter loaded out of reach of another MathJax: strips
+ * `data-latex` from every render, rerenders from the menu and explorer included, renames a
+ * stylesheet inserted before the id changed, and reports another MathJax's output stylesheet.
+ */
+function isolateOutput(mathDocument: MathDocument | undefined): void {
+  if (!mathDocument) return;
+
+  const stripped = new WeakSet<Element>();
+  const strip = (math: MathItem) => {
+    const root = math.typesetRoot;
+    if (!root || stripped.has(root)) return;
+    stripLatexAttributes(root);
+    stripped.add(root);
+  };
+  mathDocument.addRenderAction?.(
+    'pie-strip-latex',
+    STRIP_LATEX_PRIORITY,
+    (doc) => {
+      for (const math of doc.math ?? []) strip(math);
+      return false;
+    },
+    (math) => {
+      const root = math.typesetRoot;
+      if (root) stripLatexAttributes(root);
+      return false;
+    }
+  );
+
+  const sheet = mathDocument.outputJax?.chtmlStyles;
+  if (sheet?.id === SHARED_STYLESHEET_ID) sheet.id = OWN_STYLESHEET_ID;
+
+  watchForForeignStylesheets();
+}
+
+function isForeignStylesheet(node: Node): boolean {
+  return node instanceof HTMLStyleElement && FOREIGN_OUTPUT_STYLESHEETS.includes(node.id);
+}
+
+function reportForeignStylesheet(sheet: HTMLStyleElement): void {
+  reportUnsupportedPage(
+    'foreign-output-stylesheet',
+    `another MathJax added <style id="${sheet.id}"> to <head>`
+  );
+}
+
+function watchForForeignStylesheets(): void {
+  const head = document.head;
+  const existing = [...head.children].find(isForeignStylesheet);
+  if (existing) {
+    reportForeignStylesheet(existing as HTMLStyleElement);
+    return;
+  }
+  const observer = new MutationObserver((records) => {
+    for (const record of records) {
+      const added = [...record.addedNodes].find(isForeignStylesheet);
+      if (added) {
+        reportForeignStylesheet(added as HTMLStyleElement);
+        observer.disconnect();
+        return;
+      }
+    }
+  });
+  observer.observe(head, { childList: true });
 }
 
 /** Resolves once the MathJax the page configured itself has started. */
@@ -237,6 +369,9 @@ export function createMathjaxRenderer(
   return async (element: HTMLElement) => {
     if (typeof window === 'undefined') return;
 
+    const mathjax3 = mathjax3Version();
+    if (mathjax3)
+      reportUnsupportedPage('mathjax-3-global', `window.MathJax is MathJax ${mathjax3}`);
     wrapLatexElements(element);
     // Whether any content on the page holds math is unknown up front, so the first render starts
     // the load and later math is typeset without waiting on the download.
@@ -254,6 +389,8 @@ export function createMathjaxRenderer(
     if (typeof mathJax?.typesetPromise !== 'function') return;
 
     await mathJax.typesetPromise([element]);
+    // Also covers a MathJax 4 the page loaded itself, which has no render action from this adapter.
+    stripLatexAttributes(element);
   };
 }
 
