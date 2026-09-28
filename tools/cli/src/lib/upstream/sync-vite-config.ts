@@ -1,21 +1,9 @@
 /**
  * Vite configuration generation for sync operations
  */
-import { collectEntryPoints, detectEntryFile } from './sync-entry-discovery.js';
+import { detectEntryFile } from './sync-entry-discovery.js';
 import { createExternalFunction } from './sync-externals.js';
 import { getPieLibVitePreset } from './sync-presets.js';
-
-/**
- * Detect entry points for an element package
- */
-export function detectElementEntryPoints(elementDir: string): Record<string, string> {
-  return collectEntryPoints(elementDir, [
-    ['index', 'src/index'],
-    ['controller/index', 'src/controller/index'],
-    ['configure/index', 'src/configure/index'],
-    ['delivery/index', 'src/delivery/index'],
-  ]);
-}
 
 /**
  * Generate Vite config content for an element package

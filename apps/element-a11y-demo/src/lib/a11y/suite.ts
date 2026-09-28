@@ -14,8 +14,6 @@ import type {
 
 export { A11Y_SCAN_MODES };
 export type {
-  A11yAutomatedCheck,
-  A11yConcern,
   A11yScanMode,
   A11yScanRole,
   A11yScenarioDefinition,

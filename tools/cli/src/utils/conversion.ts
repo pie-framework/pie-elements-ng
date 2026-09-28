@@ -124,30 +124,3 @@ export function convertJsxToTsx(jsxCode: string, metadata: ConversionMetadata): 
 `;
   return { code: tsNoCheck + header + tsxCode, hasDefaultObjectExport };
 }
-
-/**
- * Fix imports from default export files
- * Some files export default objects but are imported with named imports
- */
-export function fixImports(content: string, hasDefaultObjectExport: boolean): string {
-  if (!hasDefaultObjectExport) {
-    return content;
-  }
-
-  // Convert: import { something } from './file'
-  // To: import * as file from './file'
-  // This is needed when the imported file has export default {}
-  return content.replace(
-    /import\s+{\s*([^}]+)\s*}\s+from\s+(['"]\.\/[^'"]+['"])/g,
-    (_match, _imports, path) => {
-      // Extract filename from path
-      const filename =
-        path
-          .replace(/['"]/g, '')
-          .split('/')
-          .pop()
-          ?.replace(/\.\w+$/, '') || 'module';
-      return `import * as ${filename} from ${path}`;
-    }
-  );
-}

@@ -268,86 +268,6 @@ const ${importName} = {
   return code.replace(configureImportRegex, inlinedDefaults);
 }
 
-/**
- * Determine if a file should have .tsx extension based on content
- */
-export function shouldUseTsxExtension(content: string, originalPath: string): boolean {
-  // If original file was .jsx, use .tsx
-  if (originalPath.endsWith('.jsx')) {
-    return true;
-  }
-
-  // If content contains JSX, use .tsx
-  if (containsJsx(content)) {
-    return true;
-  }
-
-  // Otherwise use .ts
-  return false;
-}
-
-/**
- * Convert CommonJS module.exports to ES module exports
- *
- * Handles patterns like:
- * module.exports = { foo: ..., bar: ... }
- *
- * Converts to:
- * export const foo = ...;
- * export const bar = ...;
- */
-export function convertModuleExportsToEsm(content: string): string {
-  // Match: module.exports = { key: value, key2: value2, ... };
-  const moduleExportsPattern = /module\.exports\s*=\s*\{([\s\S]*?)\};?/;
-  const match = content.match(moduleExportsPattern);
-
-  if (!match) {
-    return content;
-  }
-
-  const [fullMatch, objectContent] = match;
-
-  // Parse the object content into key-value pairs
-  // Match patterns like: key: value, (with value possibly spanning multiple lines)
-  const exports: string[] = [];
-  const lines = objectContent.split('\n');
-
-  let currentKey: string | null = null;
-  let currentValue: string[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed === '{' || trimmed === '}') continue;
-
-    // Check if this line starts a new key
-    const keyMatch = trimmed.match(/^(\w+):\s*(.*)/);
-    if (keyMatch) {
-      // Save previous export if any
-      if (currentKey) {
-        const value = currentValue.join('\n').replace(/,\s*$/, ''); // Remove trailing comma
-        exports.push(`export const ${currentKey} =\n${value};`);
-      }
-
-      // Start new export
-      currentKey = keyMatch[1];
-      currentValue = [keyMatch[2]];
-    } else {
-      // Continuation of current value
-      currentValue.push(line);
-    }
-  }
-
-  // Save last export
-  if (currentKey) {
-    const value = currentValue.join('\n').replace(/,\s*$/, '');
-    exports.push(`export const ${currentKey} =\n${value};`);
-  }
-
-  // Replace the module.exports block with ES module exports
-  const esmExports = exports.join('\n\n');
-  return content.replace(fullMatch, esmExports);
-}
-
 const VENDORED_LODASH_PACKAGE = '@pie-element/shared-lodash';
 
 function lodashMemberFromPath(path: string): string {
@@ -536,8 +456,6 @@ function lodashExportSpecifierBinding(member: string, specifier: ts.ExportSpecif
 function formatLodashBinding(imported: string, local: string): string {
   return imported === local ? imported : `${imported} as ${local}`;
 }
-
-export const transformLodashToLodashEs = transformLodashToVendoredLodash;
 
 /**
  * Transform classnames imports to clsx.
@@ -818,14 +736,6 @@ export function transformConfigUiMathjsToLocalFraction(
   }
 
   return transformed;
-}
-
-/**
- * Compatibility wrapper retained for older callers. Lodash imports now target
- * the vendored shared package rather than lodash-es deep modules.
- */
-export function transformLodashEsDeepImportsToFullySpecified(content: string): string {
-  return transformLodashToVendoredLodash(content);
 }
 
 /**
