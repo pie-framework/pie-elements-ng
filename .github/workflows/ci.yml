@@ -80,6 +80,9 @@ jobs:
       # Tests include package output validation, so build workspace outputs first.
       - run: bun run build
       - run: bun run test
+      # Touch-input unit suites live in packages the root vitest run excludes
+      # (it has no JSX transform), so they need their own package config.
+      - run: bun run test:touch
       - uses: codecov/codecov-action@v7
         if: always()
         with:

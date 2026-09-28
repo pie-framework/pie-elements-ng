@@ -10,6 +10,14 @@ export default defineConfig({
   // field resolves those dependencies to their ESM build instead.
   resolve: { mainFields: ['module', 'browser', 'main'] },
   plugins: [react()],
+  // The root vitest run excludes `packages/lib-react/**` because it has no JSX
+  // transform, so plot's component tests need this config to run at all. The
+  // root `test:touch` script is what reaches them from CI.
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    include: ['test/**/*.test.{ts,tsx}'],
+  },
   build: {
     lib: {
       entry: {

@@ -31,6 +31,7 @@
     "build": "turbo run build",
     "test": "vitest run",
     "test:unit": "vitest run",
+    "test:touch": "turbo run test --filter=@pie-lib/plot",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",

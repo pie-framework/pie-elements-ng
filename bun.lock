@@ -1680,9 +1680,11 @@
         "redux": "^5.0.1",
       },
       "devDependencies": {
+        "@pie-lib/test-utils": "workspace:*",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.1.1",
+        "happy-dom": "^20.0.11",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
       },

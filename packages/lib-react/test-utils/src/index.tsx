@@ -135,6 +135,24 @@ export {
 } from './keyboard.js';
 
 /**
+ * Touch helpers for testing touch-device interactions
+ * Dispatch real DOM touch events, so the native (non-React) listeners drag
+ * libraries register for touch are exercised the way an iPad exercises them.
+ * See ./touch.ts for why `fireEvent.touchStart` is not enough.
+ */
+export {
+  dispatchTouchEvent,
+  touchDrag,
+  touchEnd,
+  touchMove,
+  touchStart,
+  touchTap,
+  type TouchDragOptions,
+  type TouchEventOptions,
+  type TouchPointInit,
+} from './touch.js';
+
+/**
  * Web component testing utilities
  * For testing light DOM custom elements (no Shadow DOM)
  */
