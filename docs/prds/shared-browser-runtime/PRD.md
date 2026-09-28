@@ -1,6 +1,6 @@
 # Shared browser runtime
 
-Status: **Proposal** · Impl. path: Cross-cutting
+Status: **Accepted** · Impl. path: Cross-cutting
 
 ## Context
 
@@ -10,18 +10,21 @@ Every element's `dist/browser/*` entry is its own Rolldown build that externaliz
 
 Reliability and robustness take priority over efficiency. Byte savings are the motivation, and no saving is taken at the cost of a new way to break: a page that mixes element releases may cost bytes, and must still work.
 
+No host loads elements through browser ESM in production: the players default to IIFE, and no host selects `esm` or registers `./browser/*` modules. The runtime therefore replaces the current `./browser/*` build outright, with no compatibility lane.
+
 ## Goals
 
 - A page with several React elements loads one copy of the React-bound UI stack, the editor engine and the shared React-free libraries per runtime version on the page.
 - Elements from different releases on one page each run against the runtime version they were built with, on the npm preloaded path and on the esm strategy.
 - The host's React, import map and bundler aliases can never reach an element or the runtime.
-- The switch is deliberate and reversible: `./browser/*`, `./delivery`, `module/print.js` and the IIFE builds keep their current bytes and behaviour until a host or `pie-players` opts in, and afterwards.
-- Every failure the runtime adds is prevented by a build or publish gate, or detected at load and answered by the self-contained `./browser/*` lane.
+- IIFE, `./delivery` and `module/print.js` keep their current bytes and behaviour. Several production systems load IIFE; nothing in this design reaches it.
+- Every failure the runtime adds is prevented by a build or publish gate, or detected at load and reported through the player's existing element-load error.
 
 ## Non-goals
 
-- **Changing IIFE, `module/print.js` or `./delivery`.** IIFE stays as-is; `module/print.js` stays self-contained because its loader injects no import map ([legacy-print PRD](../legacy-print-compatibility/PRD.md)); `./delivery` stays the Node/builder lane.
+- **Changing IIFE, `module/print.js` or `./delivery`.** IIFE stays as-is and its artifacts stay byte-identical; `module/print.js` stays self-contained because its loader injects no import map ([legacy-print PRD](../legacy-print-compatibility/PRD.md)); `./delivery` stays the Node/builder lane.
 - **Sharing Svelte.** Each Svelte element keeps bundling its own Svelte; the runtime contains no Svelte, and Svelte elements take only React-free modules from it, the editor engine among them.
+- **A compatibility lane.** The current self-contained `./browser/*` build is replaced, and no fallback to it exists, because no production host loads it.
 - **One runtime per page.** The editor runtime serves every element from the highest caret-compatible version on the page. This design pins exact versions and lets versions coexist, because a shared UI stack changes on every `@pie-lib` release and a forced upgrade under an older element is a break.
 - **Host-provided modules.** Nothing in the runtime is resolved against the host; the runtime has no `dependencies`, no `peerDependencies` and no bare imports.
 
@@ -31,38 +34,38 @@ Reliability and robustness take priority over efficiency. Byte savings are the m
 
 `@pie-element/shared-browser-runtime` (`packages/shared/browser-runtime`) is browser ESM only, built like the editor runtime: one module per specifier it provides, modules importing each other by relative path, shared code in common chunks, everything bundled, React included. `pie.browserModules` maps each provided specifier to a view name, and the module for a view is `dist/browser/<view>.js`.
 
-Admission is by package, with one invariant: a package in the runtime is never also bundled in an element's runtime-lane output, so no React context, style cache or registry exists twice within one runtime version.
+Admission is by package, with one invariant: a package in the runtime is never also bundled in an element's browser output, so no React context, style cache or registry exists twice within one runtime version.
 
 - **React, React DOM, `react-dom/client`, the JSX runtimes.** In, at the exact version `sharedDependencyVersions` names (18.2.0 today). The runtime's React is private to it, so its version moves independently of every host.
 - **The React-bound stack.** In: MUI (`@mui/*`), Emotion, react-transition-group, dnd-kit, `@tiptap/react`, and every `@pie-lib/*` package. Each of them holds a React context or a style cache that a `@pie-lib` component and the element that renders it must read from one copy; a split copy renders with a default theme or a second cache.
 - **The editor engine.** Folded in, because `@tiptap/react` lives in the runtime and must link against the same `@tiptap/core` and ProseMirror modules; a separate package would add a second version axis whose agreement nothing checks at load time. `@pie-element/shared-editor-runtime` stays published unchanged until the editor-runtime variant is removed ([Rollout](#rollout)).
 - **MathQuill (through `@pie-lib/math-input`) and i18next (through `@pie-lib/translator`).** In, subject to [Shared state](#shared-state): `@pie-lib/editable-html-tip-tap` depends on `math-input`, and `config-ui` on `editable-html-tip-tap`, so keeping MathQuill out keeps most of the stack out.
+- **Self-contained elements.** math-inline and math-templated take only React, React DOM and the JSX runtimes from the runtime and bundle everything else, as every element's `./browser/*` build does today. Both register a MathQuill `answerBlock` embed with different markup, the embed name is stored in content (`\embed{answerBlock}[r1]`), and MathQuill's embed registry is module state, so a shared MathQuill would let one element's registration replace the other's. Bundling their whole stack keeps each registry private without touching their source, and so without touching their IIFE builds. The list is `selfContainedElements` in the browser ESM policy; leaving it requires resolving the conflict in source first.
 - **React-free libraries reached by two or more elements** (`@pie-element/shared-*`, and third-party leaves such as `debug` and `clsx`). In.
 - **Out.** Svelte; packages only one element reaches, which stay bundled in that element and import React from the runtime; element code.
 
-A barrel specifier such as `@mui/material` pulls the whole package into any page that imports it. Barrel imports of admitted third-party packages are rejected by the lane build, and the 16 source sites that use `@mui/material` or `@mui/icons-material` barrels move to deep imports first. `@pie-lib/*` barrels stay; what they add to single-element pages is part of the step-2 measurement, and render-ui already measures about 60 KB in each of the six measured elements.
+A barrel specifier such as `@mui/material` pulls the whole package into any page that imports it. Barrel imports of admitted third-party packages are rejected by the element browser build, and the 16 source sites that use `@mui/material` or `@mui/icons-material` barrels move to deep imports first. `@pie-lib/*` barrels stay; what they add to single-element pages is part of the step-2 measurement, and render-ui already measures about 60 KB in each of the six measured elements.
 
 Each view exports the full surface of its specifier. A CJS package (React, React DOM, prop-types) gets a generated ESM facade whose named exports are the ones the package defines at build time.
 
 ### Specifier scheme
 
-An element's runtime-lane output imports the runtime only through `@pie-element/shared-browser-runtime/<version>/<view>.js`, for example `@pie-element/shared-browser-runtime/1.2.0/mui-material-button.js`. The runtime's `exports` has exactly `"./<version>/*": "./dist/browser/*"` and `./package.json`, rewritten by the version script.
+An element's browser output imports the runtime only through `@pie-element/shared-browser-runtime/<version>/<view>.js`, for example `@pie-element/shared-browser-runtime/1.2.0/mui-material-button.js`. The runtime's `exports` has exactly `"./<version>/*": "./dist/browser/*"` and `./package.json`, rewritten by the version script.
 
 - **Npm path.** The host bundler resolves the specifier through Node resolution from the element's location, which reaches the runtime copy the element's exact `dependencies` pin installed, nested or hoisted. A copy at any other version defines no `./<version>/*` subpath, so a wrong copy (a host override, a resolution bug) fails the host build instead of binding silently.
 - **Esm path.** One import-map entry per runtime version maps the prefix `@pie-element/shared-browser-runtime/<version>/` to `<cdn>/@pie-element/shared-browser-runtime@<version>/dist/browser/`. The key is unique per version, so it never collides with another version's entry under the first-rule-wins resolution of multiple import maps, and no scopes are needed.
-- **Host isolation.** No lane or runtime module imports `react` or any other bare specifier outside this namespace, so the host's `react` import-map entry, bundler aliases and `node_modules/react` are unreachable.
+- **Host isolation.** No element browser module or runtime module imports `react` or any other bare specifier outside this namespace, so the host's `react` import-map entry, bundler aliases and `node_modules/react` are unreachable.
 
-### Element lane
+### Element browser entries
 
-Each element whose `./browser/*` build reaches an admitted package adds a lane built from the same entries, `tools/vite/element-browser-runtime.config.ts` (and a Svelte sibling), writing `dist/browser/runtime/<view>/index.js`:
+Every element's `./browser/*` entries are rebuilt against the runtime by `tools/vite/element-browser-esm.config.ts` (and its Svelte sibling), writing `dist/browser/<view>/index.js` as today. The export names stay; the editor-runtime variant (`dist/browser/editor-runtime`) is folded into the same build and removed.
 
-- `exports["./browser-runtime/<view>"]` for each `./browser/*` view, with the same types.
 - `dependencies["@pie-element/shared-browser-runtime"]` at the exact version (`workspace:*` in the repo), so npm installs it with the element.
-- `pie.browserRuntime: { name, version, views }` with `views.<view> = "runtime/<view>"`, the esm adapter's declaration, in the shape of `pie.browserEditorRuntime`.
-- A build-time constant marks the lane, and private child tags (EBSR's multiple-choice parts, complex-rubric's) carry it next to the version suffix, so a page that loads one element version through both lanes defines disjoint private tags.
-- Each lane entry imports the runtime's `identity.js` and throws a named error when the runtime digest differs from the one the element was built against.
+- `pie.browserRuntime: { name, version }`, the esm adapter's declaration, replacing `pie.browserEditorRuntime` and `pie.browserSharedDependencies`.
+- Each entry imports the runtime's `identity.js` and throws a named error when the runtime digest differs from the one the element was built against.
+- React stays in `dependencies`: legacy IIFE builders install `dependencies` and never peers.
 
-The lane fails when an admitted package's module is bundled, as the editor-runtime lane does for engine modules, naming the specifier to add to `pie.browserModules`. `pie-cli` sync composes the lane into each synced package's build script and writes `pie.browserRuntime`, as it does for the editor runtime.
+The build fails when an admitted package's module is bundled into an element that is not self-contained, naming the specifier to add to `pie.browserModules`, and when a self-contained element imports anything from the runtime beyond React. It also fails when any element outside `selfContainedElements` calls MathQuill's `registerEmbed`. `pie-cli` sync composes the build into each synced package's build script and writes `pie.browserRuntime`.
 
 ### Versioning and coexistence
 
@@ -79,12 +82,12 @@ Within one runtime version, module-level state that each element held privately 
 
 | State | Scope today | In the runtime |
 | --- | --- | --- |
-| MathQuill embed registry | per element bundle | Shared, and **conflicting**: math-inline and math-templated both register `answerBlock` with different markup, so the element that registers second replaces the other's answer-block markup. Blocker; see [Open questions](#open-questions). `registerEmbed` also refuses a second, different factory for a name and reports it. |
+| MathQuill embed registry | per element bundle | Shared, with one registration: `math-input`'s `newLine`. math-inline and math-templated, the two elements that register `answerBlock`, are self-contained and keep private registries; the build gate rejects an embed registration from any other element. |
 | i18next default instance (`@pie-lib/translator`) | per element bundle | Shared. It is initialized once with static resources, every `t` call passes `lng`, and no package calls `changeLanguage`. |
 | Emotion default cache (key `css`) | per element bundle | Shared per version. The key and insertion point stay as they are, so class names and style order match today's single-element pages. |
 | MathJax | page (`window.MathJax`, a `Symbol.for` load guard) | Unchanged: one load per page across runtime versions. |
 | Element stylesheets (`data-pie-css` hash) | page | Unchanged: installed once per hash, guarded for a missing `document`. |
-| `customElements` | page | The runtime defines no element. The player owns public tags; private tags are version- and lane-scoped. |
+| `customElements` | page | The runtime defines no element. The player owns public tags; private tags are version-scoped. |
 | Authoring counters (`editable-html` response areas, graphing's last action) | per element bundle | Shared per version; the response-area counter is keyed by element type, and the graphing middleware already serves every instance of one element. |
 
 A new admitted package enters this table before it enters the runtime.
@@ -93,14 +96,14 @@ A new admitted package enters this table before it enters the runtime.
 
 | Failure | Prevention | Detection and response |
 | --- | --- | --- |
-| Runtime version missing or unpublished | Publish preflight treats `pie.browserRuntime` as a runtime workspace dependency, so the runtime publishes first or in the same set; `check-version-availability` covers the name | Npm: install fails with the missing version. Esm: the runtime's `package.json` fails to load, and the player loads the element's `./browser/*` and reports it |
-| Registry holds different content at the pinned version (the PIE-1041 class) | Publish gate compares an already-published runtime version's tarball with the workspace build | `identity.js` digest check throws at evaluation; the esm player falls back |
-| Mismatched runtime surface | Full-surface views; the publish check that every name a lane imports is exported by the pinned runtime's view | Link error on import; the esm player falls back |
+| Runtime version missing or unpublished | Publish preflight treats `pie.browserRuntime` as a runtime workspace dependency, so the runtime publishes first or in the same set; `check-version-availability` covers the name | Npm: install fails with the missing version. Esm: the runtime's `package.json` fails to load, and the player reports the element-load error |
+| Registry holds different content at the pinned version (the PIE-1041 class) | Publish gate compares an already-published runtime version's tarball with the workspace build | `identity.js` digest check throws at evaluation, and the player reports the element-load error |
+| Mismatched runtime surface | Full-surface views; the publish check that every name an element imports is exported by the pinned runtime's view | Link error on import, reported as the element-load error |
 | Wrong runtime copy on the npm path | Versioned subpath exists only in the matching copy | Host build fails naming the subpath |
-| CDN partial outage | Outside PIE's control | A failed fetch fails the element's module graph before any module in it evaluates, so no runtime is half-initialized; the browser caches the failed URL, so the player falls back to the other lane's URLs and never retries the same one |
+| CDN partial outage | Outside PIE's control | A failed fetch fails the element's module graph before any module in it evaluates, so no runtime is half-initialized; the player reports the element-load error, as it does for any element module today |
 | CSS and Emotion injection order | Emotion key and insertion point unchanged; stylesheet installs keep their hash guard | Co-residence screenshots against single-element renders |
-| SSR, `window` access | Runtime and lane modules touch no DOM at module scope and use no top-level await | Gate imports every runtime and lane module under Node without DOM globals |
-| Duplicate registration | No `customElements.define` reachable in the runtime; lane entries register no public tag; lane-scoped private tags | Existing auto-registration check extended to the lane |
+| SSR, `window` access | Runtime and element browser modules touch no DOM at module scope and use no top-level await | Gate imports every runtime and element browser module under Node without DOM globals |
+| Duplicate registration | No `customElements.define` reachable in the runtime; element entries register no public tag; version-scoped private tags | Existing auto-registration check covers the runtime |
 | Multiple React roots | One React per runtime version with one root per element, the supported case; no React element or context crosses a package | Co-residence test mounts, unmounts and remounts elements on one runtime and on two |
 
 ### Build and publish gates
@@ -108,43 +111,40 @@ A new admitted package enters this table before it enters the runtime.
 In `check:publish-surface`, `verify:element-contracts` and ng CI:
 
 - The runtime has no `dependencies`, `peerDependencies` or bare imports; every `pie.browserModules` view exists; `exports` has exactly the current version's pattern and `./package.json`; `pie.digest` matches a fresh build.
-- The lane imports nothing bare outside the pinned version's namespace, and every imported name is exported by the pinned view; no admitted package is bundled; the declared version is exact and equal in `pie.browserRuntime`, `dependencies` and the workspace runtime.
+- Element browser entries import nothing bare outside the pinned version's namespace, and every imported name is exported by the pinned view; no admitted package is bundled outside `selfContainedElements`; self-contained elements import only React from the runtime; only self-contained elements register MathQuill embeds; the declared version is exact and equal in `pie.browserRuntime`, `dependencies` and the workspace runtime.
 - A runtime version already on npm has the workspace build's content.
-- The stylesheet, top-level-await, size and auto-registration rules apply to the lane and the runtime; the runtime gets its own size budget.
-- Adding the lane leaves every existing artifact byte-identical: `dist/browser/*` outside `runtime/`, `dist/browser/editor-runtime`, `./delivery`, `module/print.js` and the IIFE builds are compared with a build without the lane.
+- The stylesheet, top-level-await, size and auto-registration rules apply to the element entries and the runtime; the runtime gets its own size budget. Size is reported per release and blocks nothing beyond the existing budgets.
+- The change leaves the IIFE builds, `./delivery` and `module/print.js` byte-identical, compared with a build from the commit before it.
 - Co-residence test: every React element's delivery and author views rendered together in one document on one runtime, and pairs on two runtime versions, compared with each rendered alone (DOM and screenshots).
 - The IIFE suite ([`run-iife-suite.mjs`](../../../scripts/run-iife-suite.mjs)) stays green.
+- math-inline and math-templated render their answer blocks with their own markup when loaded together on one page, in delivery and author views.
 
 ### Consumer test matrix
 
-Required green before the switch, against packed tarballs:
+Required green before the first release, against packed tarballs:
 
-- **Npm preloaded path.** npm, pnpm (default and `hoist: false`) and Yarn (node-modules and PnP) × host without React, React 18 and React 19 × Vite (build and dev server) and webpack 5 × item player and section player, registering `/browser-runtime/*` modules with `registerPreloadedElements`.
+- **Npm preloaded path.** npm, pnpm (default and `hoist: false`) and Yarn (node-modules and PnP) × host without React, React 18 and React 19 × Vite (build and dev server) and webpack 5 × item player and section player, registering `./browser/*` modules with `registerPreloadedElements`.
 - **Esm strategy.** Chromium, Firefox (including the es-module-shims path after a rejected import map) and WebKit × host without React, and with its own import map mapping `react` to 18 and to 19 × `moduleResolution` `url` and `import-map`, through `local-esm-cdn` and a jsDelivr-shaped fixture server.
-- **Mixed versions.** Two elements pinned to two runtime versions on one page, on both paths; one element version loaded through both lanes on one page; the runtime lane beside `./browser/*` elements.
-- **Unchanged paths.** IIFE, `./browser/*` and `module/print.js` consumers pass as before with the lane published.
+- **Mixed versions.** Two elements pinned to two runtime versions on one page, on both paths; math-inline and math-templated beside runtime elements.
+- **Unchanged paths.** IIFE and `module/print.js` consumers pass as before.
 
 ng owns the npm path and the tarball fixtures, including a runtime built at two versions; `pie-players` owns the esm path.
 
 ### pie-players changes
 
-- **Esm adapter** ([`esm-adapter.ts`](https://github.com/pie-framework/pie-players/blob/develop/packages/players-shared/src/loaders/esm-adapter.ts)). A `sharedRuntime` loader option, off by default and exposed through the item, section and print players' loader options. When on, a package that declares `pie.browserRuntime` loads `pie.browserRuntime.views[view]` in both resolution modes, and the load adds the runtime version's prefix entry to the map it injects. The lane supersedes a package's editor-runtime variant. A package falls back to `./browser/*`, reported through the existing `pie-esm-shared-dependency-conflict` event with a reason, when the runtime's `package.json` or a lane module fails to load, when the identity check throws, or when the page already maps the prefix elsewhere. Elements on the lane need no React entry in the map.
-- **CDN providers.** A method for the runtime's base URL; esm.sh must serve runtime files untransformed to support the lane.
-- **`local-esm-cdn`** ([`handler.ts`](https://github.com/pie-framework/pie-players/blob/develop/apps/local-esm-cdn/src/core/handler.ts)). Serves the runtime from the ng workspace and leaves specifiers under `@pie-element/shared-browser-runtime/` bare, as it leaves the editor runtime's.
-- **Preloaded registration docs** ([`loading-strategies.md`](https://github.com/pie-framework/pie-players/blob/develop/docs/item-player/loading-strategies.md)). The recipe gains `/browser-runtime/*` imports as the opt-in; under the lane, the one-release rule becomes a byte cost.
-- **Tests and pad.** The element-loader contract tests, esm e2e specs and the ng esm smoke script cover the lane; the consumer dependency pad gains the new loader option.
+- **Esm adapter** ([`esm-adapter.ts`](https://github.com/pie-framework/pie-players/blob/develop/packages/players-shared/src/loaders/esm-adapter.ts)). A package that declares `pie.browserRuntime` loads `./browser/<view>` and the load adds the runtime version's prefix entry to the map it injects. The React entries and the editor-runtime resolution leave the map. There is no loader option and no fallback path.
+- **CDN providers.** A method for the runtime's base URL; esm.sh must serve runtime files untransformed.
+- **`local-esm-cdn`** ([`handler.ts`](https://github.com/pie-framework/pie-players/blob/develop/apps/local-esm-cdn/src/core/handler.ts)). Serves the runtime from the ng workspace and leaves specifiers under `@pie-element/shared-browser-runtime/` bare.
+- **Preloaded registration docs** ([`loading-strategies.md`](https://github.com/pie-framework/pie-players/blob/develop/docs/item-player/loading-strategies.md)). The recipe keeps its `./browser/*` imports; the one-release rule becomes a byte cost.
+- **Tests and pad.** The element-loader contract tests, esm e2e specs and the ng esm smoke script cover the runtime; the consumer dependency pad records the changed import map.
 
 ### Rollout
 
-Each step ships alone and leaves every existing path unchanged.
-
-1. **Prerequisites in ng.** Resolve the `answerBlock` conflict; move the 16 MUI barrel imports to deep imports; the React peer removal lands.
-2. **Runtime and lane in ng**, with the gates, the digest and the version script. Register the new name with ng's trusted publisher before the first publish. Published; nothing consumes it.
-3. **Npm matrix in ng CI.**
-4. **Opt-in in `pie-players`**, off by default, with the esm matrix and the docs describing the opt-in.
-5. **Soak.** Demos and the reference app run with the lane on for two releases, with fallback reports at zero.
-6. **Switch.** `pie-players` turns `sharedRuntime` on by default for esm, and the preloaded docs recommend `/browser-runtime/*`. Reverting is the option or the import path; `./browser/*` stays published as the fallback lane.
-7. **Removal.** The editor-runtime variant and `@pie-element/shared-editor-runtime` go once the switch has shipped and a consumer audit over the host checkouts, with a positive control, finds no load of `dist/browser/editor-runtime` outside `pie-players`; the package is deprecated on npm. `./browser/*` goes only under the conditions the open question below settles, as a major for each element.
+1. **Prerequisites in ng.** Move the 16 MUI barrel imports to deep imports; the React peer removal lands.
+2. **Runtime and rebuilt entries in ng**, with the gates, the digest, the version script and `selfContainedElements`. Register the new name with ng's trusted publisher before the first publish. The npm matrix runs in ng CI.
+3. **Esm adapter in `pie-players`**, with the esm matrix, released together with the first ng release that carries the runtime.
+4. **Soak.** Both ship on `next`; the demos and the reference app run them for two releases before promotion to `latest`.
+5. **Removal.** `@pie-element/shared-editor-runtime` is deprecated on npm once the esm adapter no longer resolves it.
 
 ### Savings and costs
 
@@ -152,12 +152,12 @@ Six elements (drag-in-the-blank, explicit-constructed-response, extended-text-en
 
 Costs:
 
-- **Build lane.** One more Vite build for each element that reaches an admitted package, up to all 30 elements, plus the runtime build.
+- **Build.** One runtime build; element browser builds keep their count.
 - **Install size.** Every element install, legacy IIFE builders included, also installs the runtime tarball.
-- **Coupling.** On the lane, the elements of one release share one version of every admitted package, and an `@pie-lib` change reaches the lane only through a runtime release.
-- **Release cadence.** Every runtime release republishes every element on the lane.
-- **Two lanes.** `./browser/*` and the lane are both maintained until the removal criteria hold.
-- **Production React.** The runtime ships React's production build, so hosts' development builds get no React development warnings from elements on the lane.
+- **Coupling.** The elements of one release share one version of every admitted package, and an `@pie-lib` change reaches browser ESM only through a runtime release.
+- **Release cadence.** Every runtime release republishes every element that pins it.
+- **Self-contained elements.** Pages with math-inline or math-templated still carry their own stack.
+- **Production React.** The runtime ships React's production build, so hosts' development builds get no React development warnings from elements.
 
 ## Worked example
 
@@ -174,12 +174,12 @@ Both elements render. After the next release republishes both, the page carries 
 
 ## Accessibility
 
-Unchanged: the lane renders the same DOM as `./browser/*`, which the co-residence test compares.
+Unchanged: the rebuilt entries render the same DOM as today's `./browser/*`, which the co-residence test compares against single-element renders from the previous release.
 
-## Open questions
+## Decisions
 
-- [ ] `answerBlock`: unify math-inline's and math-templated's answer-block markup in `@pie-lib/math-input` (a visible change for one element in every lane), or keep MathQuill and every library that reaches it out of the runtime (most of the React-bound stack, and most of the saving)?
-- [ ] `./browser/*` removal: keep it permanently as the esm fallback lane, or remove it once fallback reports stay at zero over a set window and the consumer audit is clean, giving up the fallback?
-- [ ] Single-element growth: should a size threshold block a runtime release, and at what percentage, or is growth reported only?
-- [ ] React inside the runtime: stay at 18.2.0, or move the runtime to React 19 now that no host binds it, and when?
-- [ ] Soak evidence for the switch: are two releases of demos and the reference app enough, or does the switch wait for production instrumentation from an opted-in host?
+- **`answerBlock`.** math-inline and math-templated are self-contained; resolving the conflict in source would change their IIFE builds.
+- **`./browser/*`.** Replaced by the runtime build, with no fallback lane, because no production host loads browser ESM.
+- **Single-element growth.** Reported, never blocking.
+- **React.** The runtime carries the React version the elements use today, 18.2.0. A React upgrade is owned by the wider team and outside this design; with React sealed in the runtime, it changes no host contract.
+- **Soak.** Two releases of the demos and the reference app on `next`; no production instrumentation.
