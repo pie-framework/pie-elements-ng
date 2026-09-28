@@ -22,14 +22,6 @@ export function getCurrentCommit(cwd: string): string {
   }
 }
 
-export function getCurrentCommitShort(cwd: string): string {
-  try {
-    return git('rev-parse --short HEAD', cwd).trim();
-  } catch (error) {
-    throw new Error(`Failed to get short commit: ${error}`);
-  }
-}
-
 export function getCommitsSince(since: string, cwd: string): string[] {
   try {
     const output = git(`log ${since}..HEAD --oneline`, cwd).trim();

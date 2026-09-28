@@ -189,7 +189,7 @@ Transforms are applied in different strategies based on the source:
 let sourceContent = await readFile(srcPath, 'utf-8');
 
 // Apply transforms in order
-sourceContent = transformLodashToLodashEs(sourceContent);
+sourceContent = transformLodashToVendoredLodash(sourceContent);
 sourceContent = transformPieFrameworkEventImports(sourceContent);
 sourceContent = inlineEditableHtmlConstants(sourceContent);
 sourceContent = reexportTokenTypes(sourceContent, filePath);
@@ -206,7 +206,7 @@ sourceContent = transformSsrRequireToEsmImport(sourceContent);  // ← Legacy re
 let sourceContent = await readFile(srcPath, 'utf-8');
 
 // Apply transforms in order
-sourceContent = transformLodashToLodashEs(sourceContent);
+sourceContent = transformLodashToVendoredLodash(sourceContent);
 sourceContent = transformPieFrameworkEventImports(sourceContent);
 sourceContent = inlineConfigureDefaults(sourceContent);
 
@@ -220,7 +220,7 @@ sourceContent = inlineConfigureDefaults(sourceContent);
 let sourceContent = await readFile(srcPath, 'utf-8');
 
 // Apply transforms
-sourceContent = transformLodashToLodashEs(sourceContent);
+sourceContent = transformLodashToVendoredLodash(sourceContent);
 sourceContent = transformPieFrameworkEventImports(sourceContent);
 
 // Convert to TypeScript and write
