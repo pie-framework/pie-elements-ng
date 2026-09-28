@@ -1,5 +1,17 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.26
+
+### Patch Changes
+
+- 54541e0: Keep MathJax 4 output intact on pages that also run MathJax 3: typeset output carries no `data-latex` attributes, and the MathJax the adapter loads writes its styles to `<style id="PIE-MJX-CHTML-styles">`. Such pages remain unsupported; the adapter logs one `console.error` naming the conflict and dispatches `pie-mathjax-version-conflict` on `window` for each condition it detects (exported as `MATHJAX_CONFLICT_EVENT`).
+- Updated dependencies [54541e0]
+  - @pie-element/multi-trait-rubric@8.1.2-next.25
+  - @pie-element/rubric@8.1.2-next.25
+  - @pie-lib/render-ui@6.2.0-next.49
+  - @pie-lib/config-ui@14.0.0-next.45
+  - @pie-lib/rubric@3.0.0-next.45
+
 ## 7.1.2-next.25
 
 ### Patch Changes

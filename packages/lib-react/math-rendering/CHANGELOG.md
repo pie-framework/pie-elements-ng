@@ -1,5 +1,12 @@
 # @pie-lib/math-rendering
 
+## 6.0.0-next.9
+
+### Patch Changes
+
+- Updated dependencies [54541e0]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.5
+
 ## 6.0.0-next.8
 
 ### Patch Changes

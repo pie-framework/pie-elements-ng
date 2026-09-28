@@ -1,5 +1,12 @@
 # @pie-element/element-demo
 
+## 0.1.2-next.17
+
+### Patch Changes
+
+- Updated dependencies [54541e0]
+  - @pie-element/element-player@0.1.2-next.10
+
 ## 0.1.2-next.16
 
 ### Patch Changes

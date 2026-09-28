@@ -1,5 +1,11 @@
 # @pie-lib/correct-answer-toggle
 
+## 5.0.0-next.52
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.49
+
 ## 5.0.0-next.51
 
 ### Patch Changes

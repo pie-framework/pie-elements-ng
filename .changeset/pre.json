@@ -191,6 +191,7 @@
     "20260928-declaration-imports-resolve",
     "20260928-element-react-dependency-only",
     "20260928-element-theme-daisyui-types",
+    "20260928-mathjax-coexistence-hardening",
     "20260928-pie-1110-tiptap-menus-pinned",
     "20260928-react-element-iife-shims",
     "20260928-remove-unused-code",

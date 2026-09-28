@@ -1,5 +1,13 @@
 # @pie-element/element-player
 
+## 0.1.2-next.10
+
+### Patch Changes
+
+- 54541e0: Keep MathJax 4 output intact on pages that also run MathJax 3: typeset output carries no `data-latex` attributes, and the MathJax the adapter loads writes its styles to `<style id="PIE-MJX-CHTML-styles">`. Such pages remain unsupported; the adapter logs one `console.error` naming the conflict and dispatches `pie-mathjax-version-conflict` on `window` for each condition it detects (exported as `MATHJAX_CONFLICT_EVENT`).
+- Updated dependencies [54541e0]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.5
+
 ## 0.1.2-next.9
 
 ### Patch Changes

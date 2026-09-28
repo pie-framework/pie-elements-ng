@@ -1,5 +1,15 @@
 # @pie-lib/graphing
 
+## 5.0.0-next.50
+
+### Patch Changes
+
+- @pie-lib/drag@4.1.0-next.50
+- @pie-lib/editable-html-tip-tap@3.0.0-next.45
+- @pie-lib/render-ui@6.2.0-next.49
+- @pie-lib/config-ui@14.0.0-next.45
+- @pie-lib/plot@5.0.0-next.46
+
 ## 5.0.0-next.49
 
 ### Patch Changes
