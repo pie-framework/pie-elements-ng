@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync, readFileSync } from 'node:fs';
+import { isBuiltin } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseAst } from 'vite';
@@ -1119,6 +1120,58 @@ export const collectSvelteLeakViolations = ({ dir, pkg, files = [] }) => {
   return violations;
 };
 
+const DECLARATION_FILE = /\.d\.[cm]?ts$/;
+// `from '...'` and `import('...')`. A side-effect `import '...'` is left out: TypeScript does not
+// resolve those.
+const DECLARATION_SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*)['"]([^'"]+)['"]/g;
+const EXTENSIONED_RELATIVE_SPECIFIER = /\.(?:[cm]?jsx?|json)$/;
+
+const packageNameOf = (specifier) =>
+  specifier
+    .split('/')
+    .slice(0, specifier.startsWith('@') ? 2 : 1)
+    .join('/');
+
+/**
+ * Shipped declarations must resolve for a client that installed the package and nothing else,
+ * under moduleResolution bundler and node16 alike: every bare import names a declared
+ * dependency, and every relative import carries its extension. A dev-only dependency or an
+ * extensionless path passes the build and fails only in the client's type check.
+ */
+export const collectDeclarationImportViolations = ({ dir, pkg, files = [] }) => {
+  const declared = new Set(
+    ['dependencies', 'peerDependencies', 'optionalDependencies'].flatMap((bucket) =>
+      Object.keys(pkg[bucket] || {})
+    )
+  );
+  const violations = [];
+  for (const file of [...files].sort()) {
+    const filePath = path.join(dir, file);
+    if (!DECLARATION_FILE.test(file) || !existsSync(filePath)) continue;
+    const source = readFileSync(filePath, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    const specifiers = new Set([...source.matchAll(DECLARATION_SPECIFIER)].map((m) => m[1]));
+    for (const specifier of [...specifiers].sort()) {
+      if (specifier.startsWith('.')) {
+        if (!EXTENSIONED_RELATIVE_SPECIFIER.test(specifier)) {
+          violations.push(
+            `${file} imports "${specifier}", which does not resolve under moduleResolution node16 (add the .js extension)`
+          );
+        }
+        continue;
+      }
+      if (isBuiltin(specifier)) continue;
+      const name = packageNameOf(specifier);
+      if (name === pkg.name || declared.has(name)) continue;
+      violations.push(
+        `${file} imports "${specifier}", which is not a dependency, peer or optional dependency`
+      );
+    }
+  }
+  return violations;
+};
+
 /**
  * An element package exports its manifest, so a host reads the version it installed from the
  * package itself instead of hand-coding one.
@@ -1206,6 +1259,24 @@ const collectLegacyPrintViolations = (packedFiles, pkg) => {
   ];
 };
 
+/**
+ * Every file a manifest entry point names must be in the tarball. A build that
+ * emits declarations under a different root (dist/src/index.d.ts for
+ * dist/index.d.ts) passes every other check and still ships types that do not
+ * resolve.
+ */
+const collectMissingTargetViolations = (packedFiles, pkg) => {
+  const targets = new Set();
+  for (const field of ['main', 'module', 'types', 'typings', 'unpkg', 'jsdelivr']) {
+    collectTargets(pkg?.[field], targets);
+  }
+  collectTargets(pkg?.exports, targets);
+  return [...targets]
+    .filter((target) => !target.includes('*') && !packedFiles.has(target))
+    .sort()
+    .map((target) => `entry point target is not packed: ./${target}`);
+};
+
 export const collectPackViolations = (snapshot) => {
   const { packedFiles, pkg, packError } = snapshot;
   if (packedFiles == null && pkg == null) {
@@ -1223,7 +1294,11 @@ export const collectPackViolations = (snapshot) => {
     .filter((filePath) => isRawSourceFile(filePath) || !isAllowedPackedFile(filePath, pkg))
     .map((filePath) => `packed file is outside dist/metadata/assets: ${filePath}`)
     .sort();
-  return [...unexpected, ...collectLegacyPrintViolations(packedFiles, pkg)];
+  return [
+    ...unexpected,
+    ...collectMissingTargetViolations(packedFiles, pkg),
+    ...collectLegacyPrintViolations(packedFiles, pkg),
+  ];
 };
 
 export const collectPublishSurfaceViolations = (
@@ -1233,6 +1308,11 @@ export const collectPublishSurfaceViolations = (
   const violations = [
     ...collectManifestViolations(snapshot.dir, snapshot.pkg, context),
     ...collectSvelteLeakViolations({
+      dir: snapshot.dir,
+      pkg: snapshot.pkg,
+      files: snapshot.packedFiles,
+    }),
+    ...collectDeclarationImportViolations({
       dir: snapshot.dir,
       pkg: snapshot.pkg,
       files: snapshot.packedFiles,

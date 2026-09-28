@@ -17,7 +17,11 @@ import { containsJsx } from './sync-imports.js';
 import { createReactComponentTransformPipeline } from './sync-transforms.js';
 import { ensureElementPackageJson } from './sync-package-manager.js';
 import { isSubdirectoryCompatible } from './sync-compatibility.js';
-import { EXCLUDED_UPSTREAM_ELEMENTS } from './sync-constants.js';
+import {
+  EXCLUDED_UPSTREAM_ELEMENTS,
+  IIFE_DEBUG_SHIM_SOURCE,
+  IIFE_PROP_TYPES_SHIM_SOURCE,
+} from './sync-constants.js';
 import { collectEntryPoints } from './sync-entry-discovery.js';
 import { syncSourceTree } from './sync-source-tree.js';
 import { seedContractForElement } from '../docs/contracts.js';
@@ -1034,10 +1038,10 @@ export default defineConfig({
       },
       load(id) {
         if (id === '\\0iife-debug-shim') {
-          return 'export default function debug() { return () => {}; }';
+          return ${JSON.stringify(IIFE_DEBUG_SHIM_SOURCE)};
         }
         if (id === '\\0iife-prop-types-shim') {
-          return "const fn = () => null; const types = new Proxy(fn, { get: () => fn }); export default types;";
+          return ${JSON.stringify(IIFE_PROP_TYPES_SHIM_SOURCE)};
         }
       },
     },

@@ -14,7 +14,7 @@ i18next.init({
 });
 
 
-interface Translator extends i18n {
+interface Translator extends Omit<i18n, 't'> {
   t: (key: string, options: TOptions) => string;
 }
 

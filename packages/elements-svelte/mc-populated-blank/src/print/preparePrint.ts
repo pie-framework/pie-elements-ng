@@ -1,5 +1,5 @@
-import { createCorrectResponseSession, model as toViewModel } from '../controller';
-import type { McpbQuestion, McpbRole, McpbSession } from '../shared/types';
+import { createCorrectResponseSession, model as toViewModel } from '../controller/index.js';
+import type { McpbQuestion, McpbRole, McpbSession } from '../shared/types.js';
 
 export interface PrintView {
   model: Record<string, unknown>;

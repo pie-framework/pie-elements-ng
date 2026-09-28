@@ -1,4 +1,4 @@
-import type { LayoutLimits } from './layoutLimits';
+import type { LayoutLimits } from './layoutLimits.js';
 
 export type McpbChoiceMode = 'text' | 'image';
 export type McpbInteractionMode = 'populate_blank' | 'audio_mc_only';

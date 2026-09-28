@@ -1,4 +1,4 @@
-import controllerDefaults, { BLANK_TOKEN } from '../controller/defaults';
+import controllerDefaults, { BLANK_TOKEN } from '../controller/defaults.js';
 
 /** The model a new item starts from: a valid question an author edits in place. */
 export default {

@@ -77,12 +77,14 @@
     "build": "vite build --config ../../../tools/vite/svelte-element-esm.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-browser-editor-runtime.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config ../../../tools/vite/svelte-element-iife.config.ts && tsc --emitDeclarationOnly",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
+  "dependencies": {
+    "@pie-lib/delivery-events-svelte": "workspace:*"
+  },
   "devDependencies": {
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@pie-element/shared-test-utils": "workspace:*",
     "@pie-lib/config-ui-svelte": "workspace:*",
-    "@pie-lib/delivery-events-svelte": "workspace:*",
     "@pie-lib/editable-html-tiptap-svelte": "workspace:*",
     "@pie-lib/translator": "workspace:*",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
