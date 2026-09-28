@@ -222,8 +222,9 @@ function ensureMathjax(options: MathjaxOptions): Promise<void> {
 /**
  * Create a MathJax renderer function.
  *
- * MathJax loads once per page, the first time an element holds math, from `srcUrl` or MathJax
- * 4.1.3 on jsDelivr. A MathJax the page already has, or is loading, is used instead.
+ * MathJax loads once per page, on the first render, from `srcUrl` or MathJax 4.1.3 on jsDelivr.
+ * A MathJax the page already has, or is loading, is used instead. A render waits on the load only
+ * when its element holds math.
  *
  * @param options - Renderer options
  * @returns Renderer function that typesets math in an element
@@ -237,9 +238,16 @@ export function createMathjaxRenderer(
     if (typeof window === 'undefined') return;
 
     wrapLatexElements(element);
-    if (!containsMath(element, useSingleDollar)) return;
+    // Whether any content on the page holds math is unknown up front, so the first render starts
+    // the load and later math is typeset without waiting on the download.
+    const loading = ensureMathjax(options);
+    if (!containsMath(element, useSingleDollar)) {
+      // A failed load rejects the renders that hold math.
+      loading.catch(() => {});
+      return;
+    }
 
-    await ensureMathjax(options);
+    await loading;
     const mathJax = pageMathJax();
     // A copy of the adapter from an earlier release may have resolved before startup finished.
     await mathJax?.startup?.promise;

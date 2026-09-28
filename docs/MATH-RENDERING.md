@@ -4,7 +4,7 @@
 
 ## Overview
 
-Elements typeset math with MathJax 4 through `@pie-element/shared-math-rendering-mathjax`. The adapter loads MathJax 4.1.3 at runtime, once per page and only for content that holds math, using the `tex-mml-chtml.js` build: TeX and MathML input, CommonHTML output. Its delimiters, macros and typesetting scope match the legacy `@pie-lib/math-rendering` renderer.
+Elements typeset math with MathJax 4 through `@pie-element/shared-math-rendering-mathjax`. The adapter loads MathJax 4.1.3 at runtime, once per page on the first render, using the `tex-mml-chtml.js` build: TeX and MathML input, CommonHTML output. Its delimiters, macros and typesetting scope match the legacy `@pie-lib/math-rendering` renderer.
 
 ## Packages
 
@@ -17,12 +17,12 @@ The sync rewrites `@pie-lib/math-rendering` imports in synced elements to `@pie-
 
 `renderMath(element)` hands the element to the renderer at `window['@pie-lib/math-rendering']` when the page installs one with a `renderMath` function. Otherwise the adapter typesets the element itself.
 
-- `@pie-players/pie-item-player` installs the legacy renderer under the `iife` and `preloaded` strategies and none under `esm`, so ESM elements typeset through the adapter. A host installs its own renderer with `setMathRenderer` from `@pie-players/pie-players-shared/pie`.
+- `@pie-players/pie-item-player` installs the legacy renderer under the `iife` strategy only, so ESM elements, loaded by the player under `esm` or registered by the host under `preloaded`, typeset through the adapter. A generated `@pie-players/pie-preloaded-player` build installs the legacy renderer in its own entry. A host installs its own renderer with `setMathRenderer` from `@pie-players/pie-players-shared/pie`.
 - `@pie-element/element-player` installs a renderer it creates with `createMathjaxRenderer`.
 
 ## Loading
 
-- MathJax loads from `https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js` the first time an element holds math. Content with no TeX delimiter and no `<math>` element never loads it.
+- MathJax loads from `https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js` on the first render, whatever the element holds, so later math does not wait on the download. A render waits on the load only when its element holds a TeX delimiter or a `<math>` element.
 - Element browser and IIFE builds each bundle their own copy of the adapter. The copies share one load per page, because a second MathJax startup on one page throws.
 - `startup.typeset` is `false`: MathJax typesets only the elements the renderer is given, never the host page's own text.
 - A MathJax the page already has is used as the page configured it, and the adapter loads no copy of its own. A configuration object at `window.MathJax`, for a page that loads MathJax itself, is awaited through its `startup.ready`; a MathJax 3 or 4 build is used once its startup completes. The legacy macros and delimiters then apply only where the page's configuration defines them.
