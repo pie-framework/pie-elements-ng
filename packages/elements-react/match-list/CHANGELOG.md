@@ -1,5 +1,12 @@
 # @pie-element/match-list
 
+## 7.1.2-next.23
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.49
+
 ## 7.1.2-next.22
 
 ### Patch Changes

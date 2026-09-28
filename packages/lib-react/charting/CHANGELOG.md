@@ -1,5 +1,13 @@
 # @pie-lib/charting
 
+## 8.0.0-next.47
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+  - @pie-lib/config-ui@14.0.0-next.43
+  - @pie-lib/plot@5.0.0-next.44
+
 ## 8.0.0-next.46
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pie-element/element-player
 
+## 0.1.2-next.9
+
+### Patch Changes
+
+- f6d5dd4: `@pie-element/element-player` no longer exports the `Tab` type, and its unused panel components are removed. Upstream sync no longer re-emits source files that no entry of their package reaches.
+
 ## 0.1.2-next.8
 
 ### Patch Changes

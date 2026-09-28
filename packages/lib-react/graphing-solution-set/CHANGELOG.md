@@ -1,5 +1,16 @@
 # @pie-lib/graphing-solution-set
 
+## 5.0.0-next.47
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.49
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+  - @pie-lib/config-ui@14.0.0-next.43
+  - @pie-lib/plot@5.0.0-next.44
+
 ## 5.0.0-next.46
 
 ### Patch Changes

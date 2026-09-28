@@ -1,5 +1,15 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.0.0-next.43
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.49
+  - @pie-lib/math-input@9.0.0-next.14
+  - @pie-lib/math-toolbar@4.0.0-next.49
+
 ## 3.0.0-next.42
 
 ### Patch Changes

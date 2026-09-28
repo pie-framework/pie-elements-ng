@@ -1,5 +1,15 @@
 # @pie-element/placement-ordering
 
+## 14.1.2-next.25
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.49
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+  - @pie-lib/config-ui@14.0.0-next.43
+
 ## 14.1.2-next.24
 
 ### Patch Changes

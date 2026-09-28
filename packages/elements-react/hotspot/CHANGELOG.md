@@ -1,5 +1,13 @@
 # @pie-element/hotspot
 
+## 11.2.0-next.24
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+  - @pie-lib/config-ui@14.0.0-next.43
+
 ## 11.2.0-next.23
 
 ### Patch Changes

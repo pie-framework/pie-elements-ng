@@ -1,5 +1,11 @@
 # @pie-lib/math-input
 
+## 9.0.0-next.14
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+
 ## 9.0.0-next.13
 
 ### Patch Changes

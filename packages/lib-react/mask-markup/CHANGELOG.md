@@ -1,5 +1,14 @@
 # @pie-lib/mask-markup
 
+## 4.0.0-next.45
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.49
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+
 ## 4.0.0-next.44
 
 ### Patch Changes

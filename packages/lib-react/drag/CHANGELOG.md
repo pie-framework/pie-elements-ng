@@ -1,5 +1,11 @@
 # @pie-lib/drag
 
+## 4.1.0-next.49
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+
 ## 4.1.0-next.48
 
 ### Patch Changes

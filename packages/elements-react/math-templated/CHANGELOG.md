@@ -1,5 +1,16 @@
 # @pie-element/math-templated
 
+## 7.1.1-next.36
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+  - @pie-lib/mask-markup@4.0.0-next.45
+  - @pie-lib/math-input@9.0.0-next.14
+  - @pie-lib/config-ui@14.0.0-next.43
+  - @pie-lib/math-toolbar@4.0.0-next.49
+
 ## 7.1.1-next.35
 
 ### Patch Changes

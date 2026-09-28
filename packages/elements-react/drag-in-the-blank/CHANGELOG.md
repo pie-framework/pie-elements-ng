@@ -1,5 +1,15 @@
 # @pie-element/drag-in-the-blank
 
+## 10.2.0-next.24
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.49
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+  - @pie-lib/mask-markup@4.0.0-next.45
+  - @pie-lib/config-ui@14.0.0-next.43
+
 ## 10.2.0-next.23
 
 ### Patch Changes

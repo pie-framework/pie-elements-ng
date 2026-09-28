@@ -1,5 +1,14 @@
 # @pie-element/number-line
 
+## 13.1.2-next.23
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+  - @pie-lib/config-ui@14.0.0-next.43
+
 ## 13.1.2-next.22
 
 ### Patch Changes

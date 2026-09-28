@@ -1,5 +1,15 @@
 # @pie-element/graphing
 
+## 10.1.2-next.25
+
+### Patch Changes
+
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+  - @pie-lib/graphing@5.0.0-next.48
+  - @pie-lib/config-ui@14.0.0-next.43
+
 ## 10.1.2-next.24
 
 ### Patch Changes
