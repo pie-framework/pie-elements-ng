@@ -1,5 +1,12 @@
 # @pie-lib/charting
 
+## 8.0.0-next.48
+
+### Patch Changes
+
+- @pie-lib/config-ui@14.0.0-next.44
+- @pie-lib/plot@5.0.0-next.45
+
 ## 8.0.0-next.47
 
 ### Patch Changes

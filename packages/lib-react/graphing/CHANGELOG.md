@@ -1,5 +1,14 @@
 # @pie-lib/graphing
 
+## 5.0.0-next.49
+
+### Patch Changes
+
+- Updated dependencies [60ec99e]
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.44
+  - @pie-lib/config-ui@14.0.0-next.44
+  - @pie-lib/plot@5.0.0-next.45
+
 ## 5.0.0-next.48
 
 ### Patch Changes

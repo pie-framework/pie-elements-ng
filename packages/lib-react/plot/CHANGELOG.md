@@ -1,5 +1,12 @@
 # @pie-lib/plot
 
+## 5.0.0-next.45
+
+### Patch Changes
+
+- Updated dependencies [60ec99e]
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.44
+
 ## 5.0.0-next.44
 
 ### Patch Changes

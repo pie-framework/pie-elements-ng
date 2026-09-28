@@ -1,5 +1,12 @@
 # @pie-element/rubric
 
+## 8.1.2-next.24
+
+### Patch Changes
+
+- @pie-lib/config-ui@14.0.0-next.44
+- @pie-lib/rubric@3.0.0-next.44
+
 ## 8.1.2-next.23
 
 ### Patch Changes
