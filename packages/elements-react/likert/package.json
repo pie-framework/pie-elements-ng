@@ -14,7 +14,7 @@
     "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
-    "react-test-renderer": "18.2.0",
+    "react-test-renderer": "19.3.0",
     "@pie-element/shared-configure-events": "workspace:*",
     "@pie-element/shared-lodash": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
