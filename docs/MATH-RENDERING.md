@@ -1,6 +1,6 @@
 # Math Rendering in pie-elements-ng
 
-**Last Updated:** 2026-09-27
+**Last Updated:** 2026-09-28
 
 ## Overview
 
@@ -26,6 +26,7 @@ The sync rewrites `@pie-lib/math-rendering` imports in synced elements to `@pie-
 - Element browser and IIFE builds each bundle their own copy of the adapter. The copies share one load per page, because a second MathJax startup on one page throws.
 - `startup.typeset` is `false`: MathJax typesets only the elements the renderer is given, never the host page's own text.
 - A MathJax the page already has is used as the page configured it, and the adapter loads no copy of its own. A configuration object at `window.MathJax`, for a page that loads MathJax itself, is awaited through its `startup.ready`; a MathJax 3 or 4 build is used once its startup completes. The legacy macros and delimiters then apply only where the page's configuration defines them.
+- A page runs one MathJax major version. MathJax 3 on the same page, from a host or from IIFE element bundles, is unsupported: the adapter still attempts to render and guarantees nothing. See [One MathJax version per page](https://github.com/pie-framework/pie-players/blob/develop/docs/item-player/loading-strategies.md#one-mathjax-version-per-page) for the failures observed.
 - A MathJax global without `typesetPromise`, such as MathJax 2, leaves math untypeset and logs `[mathjax-renderer] MathJax on this page has no typesetPromise; math stays untypeset.`
 - The first renderer to start MathJax on a page configures it, and every later renderer shares that instance.
 
