@@ -1,5 +1,11 @@
 # @pie-element/math-inline
 
+## 12.1.1-next.36
+
+### Patch Changes
+
+- 269257a: Elements declare React and React DOM as dependencies only. The React peer they also declared let pnpm and yarn bind an element to the host's React; each element now runs on the React 18 it installs.
+
 ## 12.1.1-next.35
 
 ### Patch Changes

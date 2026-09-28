@@ -1,5 +1,14 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.24
+
+### Patch Changes
+
+- 269257a: Elements declare React and React DOM as dependencies only. The React peer they also declared let pnpm and yarn bind an element to the host's React; each element now runs on the React 18 it installs.
+- Updated dependencies [269257a]
+  - @pie-element/multi-trait-rubric@8.1.2-next.23
+  - @pie-element/rubric@8.1.2-next.23
+
 ## 7.1.2-next.23
 
 ### Patch Changes

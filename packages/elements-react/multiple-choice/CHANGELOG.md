@@ -1,5 +1,11 @@
 # @pie-element/multiple-choice
 
+## 13.4.0-next.21
+
+### Patch Changes
+
+- 269257a: Elements declare React and React DOM as dependencies only. The React peer they also declared let pnpm and yarn bind an element to the host's React; each element now runs on the React 18 it installs.
+
 ## 13.4.0-next.20
 
 ### Patch Changes

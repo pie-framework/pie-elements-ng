@@ -1,5 +1,11 @@
 # @pie-element/matrix
 
+## 4.1.2-next.23
+
+### Patch Changes
+
+- 269257a: Elements declare React and React DOM as dependencies only. The React peer they also declared let pnpm and yarn bind an element to the host's React; each element now runs on the React 18 it installs.
+
 ## 4.1.2-next.22
 
 ### Patch Changes

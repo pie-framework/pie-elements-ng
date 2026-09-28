@@ -191,6 +191,7 @@
     "20260927184911-pie-element-cli-pie-element-shared-playe",
     "20260927191758-pie-element-element-bundler",
     "20260928-declaration-imports-resolve",
+    "20260928-element-react-dependency-only",
     "20260928-element-theme-daisyui-types",
     "20260928-react-element-iife-shims",
     "20260928-remove-unused-code",
