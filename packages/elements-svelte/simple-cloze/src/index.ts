@@ -1,1 +1,1 @@
-export { default } from './delivery/index';
+export { default } from './delivery/index.js';

@@ -1,4 +1,4 @@
-import { type LayoutLimits, DEFAULT_LAYOUT_LIMITS } from '../shared/layoutLimits';
+import { type LayoutLimits, DEFAULT_LAYOUT_LIMITS } from '../shared/layoutLimits.js';
 export type { LayoutLimits };
 export { DEFAULT_LAYOUT_LIMITS };
 

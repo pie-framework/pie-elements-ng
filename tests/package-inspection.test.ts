@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  collectDeclarationImportViolations,
   collectPublishSurfaceViolations,
   collectSvelteLeakViolations,
 } from '../scripts/check-publish-surface.mjs';
@@ -152,6 +153,41 @@ describe('package inspection quality-gate helpers', () => {
     expect(violations).not.toContain(
       'non-browser-ESM element packages must expose exports["./runtime-support"] marking esm unsupported'
     );
+  });
+
+  it('flags declaration imports a client install cannot resolve', async () => {
+    const dir = join(tmpdir(), `pie-declaration-imports-${process.pid}-${Date.now()}`);
+    await mkdir(join(dir, 'dist'), { recursive: true });
+    await writeFile(
+      join(dir, 'dist', 'index.d.ts'),
+      [
+        "import './styles.css';",
+        "import type { Shell } from '@pie-lib/dev-only';",
+        "import type { Model } from '@pie-lib/declared/types';",
+        "export { helper } from './helper';",
+        "export { other } from './other.js';",
+        "export type { Readable } from 'node:stream';",
+        "/** Comments are not imports: from '@pie-lib/in-a-comment' */",
+        "export declare const Element: typeof import('@pie-element/example').default;",
+        'export type { Shell, Model };',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const violations = collectDeclarationImportViolations({
+      dir,
+      pkg: {
+        name: '@pie-element/example',
+        dependencies: { '@pie-lib/declared': '1.0.0' },
+        devDependencies: { '@pie-lib/dev-only': '1.0.0' },
+      },
+      files: ['dist/index.d.ts'],
+    });
+
+    expect(violations).toEqual([
+      'dist/index.d.ts imports "./helper", which does not resolve under moduleResolution node16 (add the .js extension)',
+      'dist/index.d.ts imports "@pie-lib/dev-only", which is not a dependency, peer or optional dependency',
+    ]);
   });
 
   it('flags entry point targets that are not in the tarball', () => {

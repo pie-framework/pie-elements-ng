@@ -1,12 +1,12 @@
-import authorDefaults from '../author/defaults';
-import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults';
+import authorDefaults from '../author/defaults.js';
+import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults.js';
 import type {
   McpbChoice,
   McpbQuestion,
   McpbSession,
   McpbEnv,
   McpbCorrectness,
-} from '../shared/types';
+} from '../shared/types.js';
 
 const isEmptyObject = (value: unknown): boolean =>
   !!value &&
