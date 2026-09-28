@@ -1,5 +1,15 @@
 # @pie-lib/mask-markup
 
+## 4.0.0-next.44
+
+### Patch Changes
+
+- Updated dependencies [80e386a]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.4
+  - @pie-lib/drag@4.1.0-next.48
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.42
+  - @pie-lib/render-ui@6.2.0-next.48
+
 ## 4.0.0-next.43
 
 ### Patch Changes

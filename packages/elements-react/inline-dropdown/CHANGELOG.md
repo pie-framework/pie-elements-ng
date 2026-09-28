@@ -1,5 +1,18 @@
 # @pie-element/inline-dropdown
 
+## 10.1.2-next.22
+
+### Patch Changes
+
+- 80e386a: MathJax starts loading on the first render whatever the element holds, so math that appears later does not wait on the download. Renders without math return without waiting on it.
+- Updated dependencies [80e386a]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.4
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.42
+  - @pie-lib/mask-markup@4.0.0-next.44
+  - @pie-lib/render-ui@6.2.0-next.48
+  - @pie-lib/config-ui@14.0.0-next.42
+  - @pie-lib/correct-answer-toggle@5.0.0-next.50
+
 ## 10.1.2-next.21
 
 ### Patch Changes

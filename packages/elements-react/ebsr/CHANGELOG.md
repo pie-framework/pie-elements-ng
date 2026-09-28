@@ -1,5 +1,14 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.23
+
+### Patch Changes
+
+- 80e386a: MathJax starts loading on the first render whatever the element holds, so math that appears later does not wait on the download. Renders without math return without waiting on it.
+- Updated dependencies [80e386a]
+  - @pie-element/multiple-choice@13.4.0-next.18
+  - @pie-lib/config-ui@14.0.0-next.42
+
 ## 14.2.2-next.22
 
 ### Patch Changes

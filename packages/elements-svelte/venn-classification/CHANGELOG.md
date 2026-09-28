@@ -1,5 +1,11 @@
 # @pie-element/venn-classification
 
+## 0.1.1-next.13
+
+### Patch Changes
+
+- 80e386a: MathJax starts loading on the first render whatever the element holds, so math that appears later does not wait on the download. Renders without math return without waiting on it.
+
 ## 0.1.1-next.12
 
 ### Patch Changes

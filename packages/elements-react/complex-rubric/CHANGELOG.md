@@ -1,5 +1,17 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.21
+
+### Patch Changes
+
+- 80e386a: MathJax starts loading on the first render whatever the element holds, so math that appears later does not wait on the download. Renders without math return without waiting on it.
+- Updated dependencies [80e386a]
+  - @pie-element/multi-trait-rubric@8.1.2-next.20
+  - @pie-element/rubric@8.1.2-next.20
+  - @pie-lib/render-ui@6.2.0-next.48
+  - @pie-lib/config-ui@14.0.0-next.42
+  - @pie-lib/rubric@3.0.0-next.42
+
 ## 7.1.2-next.20
 
 ### Patch Changes

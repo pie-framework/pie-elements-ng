@@ -1,5 +1,12 @@
 # @pie-element/element-demo
 
+## 0.1.2-next.14
+
+### Patch Changes
+
+- Updated dependencies [80e386a]
+  - @pie-element/element-player@0.1.2-next.7
+
 ## 0.1.2-next.13
 
 ### Patch Changes

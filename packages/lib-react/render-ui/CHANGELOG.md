@@ -1,5 +1,12 @@
 # @pie-lib/render-ui
 
+## 6.2.0-next.48
+
+### Patch Changes
+
+- Updated dependencies [80e386a]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.4
+
 ## 6.2.0-next.47
 
 ### Patch Changes

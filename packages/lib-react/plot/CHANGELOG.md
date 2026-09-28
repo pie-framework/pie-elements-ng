@@ -1,5 +1,12 @@
 # @pie-lib/plot
 
+## 5.0.0-next.43
+
+### Patch Changes
+
+- @pie-lib/editable-html-tip-tap@3.0.0-next.42
+- @pie-lib/render-ui@6.2.0-next.48
+
 ## 5.0.0-next.42
 
 ### Patch Changes
