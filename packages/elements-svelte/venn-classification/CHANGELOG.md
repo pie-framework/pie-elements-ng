@@ -1,5 +1,11 @@
 # @pie-element/venn-classification
 
+## 0.1.1-next.16
+
+### Patch Changes
+
+- Merge pull request #210 from pie-framework/dependabot/github_actions/actions/cache-6
+
 ## 0.1.1-next.15
 
 ### Patch Changes

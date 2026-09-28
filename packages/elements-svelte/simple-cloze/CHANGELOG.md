@@ -1,5 +1,11 @@
 # @pie-element/simple-cloze
 
+## 0.1.4-next.17
+
+### Patch Changes
+
+- Merge pull request #210 from pie-framework/dependabot/github_actions/actions/cache-6
+
 ## 0.1.4-next.16
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @pie-element/element-player
 
+## 0.1.2-next.11
+
+### Patch Changes
+
+- Merge pull request #210 from pie-framework/dependabot/github_actions/actions/cache-6
+
 ## 0.1.2-next.10
 
 ### Patch Changes

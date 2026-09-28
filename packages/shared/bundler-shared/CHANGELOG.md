@@ -1,5 +1,11 @@
 # @pie-element/element-bundler
 
+## 0.1.2-next.5
+
+### Patch Changes
+
+- Merge pull request #210 from pie-framework/dependabot/github_actions/actions/cache-6
+
 ## 0.1.2-next.4
 
 ### Patch Changes
