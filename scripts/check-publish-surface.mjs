@@ -957,43 +957,54 @@ const findEditorRuntime = (snapshots, root) => {
 };
 
 /**
- * Shared runtime dependencies (React, React DOM) must be installable, not only
- * declared as peers.
+ * An element declares each shared runtime dependency (React, React DOM) in `dependencies`,
+ * and never as a peer.
  *
- * Legacy webpack bundlers such as builder.pie-api.com install `dependencies` and
- * do not install peers. A peer-only React declaration therefore leaves
- * node_modules/react absent in the build snapshot, and every @mui / @emotion /
- * @dnd-kit peer fails with "Module not found: Can't resolve 'react'". That
- * shipped once: @pie-lib/translator was the only package in the graph declaring
- * React as a real dependency, so every element free-rode on it, and republishing
- * translator with a correct peer-only declaration broke every React element at
- * once.
+ * The dependency is what installs React at all under legacy webpack bundlers such as
+ * builder.pie-api.com, which install `dependencies` and never peers: without it
+ * node_modules/react is absent in the build snapshot, and every @mui / @emotion / @dnd-kit
+ * peer fails with "Module not found: Can't resolve 'react'". That shipped once:
+ * @pie-lib/translator was the only package in the graph declaring React as a real
+ * dependency, so every element free-rode on it, and republishing translator with a
+ * peer-only declaration broke every React element at once.
+ *
+ * A peer lets pnpm and yarn bind the element to the host's React, so a React 19 host runs
+ * the element's React 18 build on React 19.
  *
  * Scope: element packages only, identified by pie.controller. Library packages
- * (@pie-lib/*, @pie-element/shared-*) are correct to declare React peer-only -
- * the element that consumes them owns the installable pin. Svelte elements
- * declare no React peer and are exempt automatically.
+ * (@pie-lib/*, @pie-element/shared-*) are correct to declare React peer-only - the element
+ * that consumes them owns the installable pin. Svelte elements declare no React and are
+ * exempt automatically.
  */
-const collectSharedRuntimeDependencyViolations = (pkg) => {
+export const collectSharedRuntimeDependencyViolations = (pkg) => {
   const violations = [];
   if (!pkg.pie?.controller) return violations;
 
   const dependencies = pkg.dependencies || {};
   const peerDependencies = pkg.peerDependencies || {};
+  const browserSharedDependencies = pkg.pie.browserSharedDependencies || {};
 
   for (const [dependencyName, expectedVersion] of Object.entries(
     expectedBrowserSharedDependencies
   )) {
-    if (!peerDependencies[dependencyName]) continue;
+    const declared =
+      dependencyName in dependencies ||
+      dependencyName in peerDependencies ||
+      dependencyName in browserSharedDependencies;
+    if (!declared) continue;
+    if (dependencyName in peerDependencies) {
+      violations.push(
+        `peerDependencies.${dependencyName} is not allowed: a peer binds the element to the host's ${dependencyName}; declare it in dependencies only`
+      );
+    }
     const actualVersion = dependencies[dependencyName];
     // A caret range, not an exact pin. An exact pin resolves to its own copy
     // alongside the root's `^`-resolved one, and two React instances break hooks
-    // ("Invalid hook call", useRef of null). React is external in every ng bundle,
-    // so the installed version only has to resolve for the legacy webpack path.
+    // ("Invalid hook call", useRef of null).
     const requiredRange = `^${expectedVersion}`;
     if (actualVersion === undefined) {
       violations.push(
-        `dependencies.${dependencyName} is missing: peerDependencies.${dependencyName} alone is not installable by webpack bundlers; use "${requiredRange}"`
+        `dependencies.${dependencyName} is missing: elements install their own ${dependencyName}, and webpack bundlers install no peers; use "${requiredRange}"`
       );
     } else if (actualVersion !== requiredRange) {
       violations.push(

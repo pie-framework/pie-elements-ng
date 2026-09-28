@@ -48,10 +48,9 @@ export const BUILD_TOOLS = {
   VITE_REACT_PLUGIN: '^6.0.1',
 } as const;
 
-// React versions. Element packages also depend on React from ^18.2.0, the browser ESM policy
-// version, so their peer range starts there.
+// React versions. Library packages take React as a peer from the element that renders them;
+// element packages depend on React at the browser ESM policy version and declare no React peer.
 export const REACT = {
-  ELEMENT_PEER_RANGE: '^18.2.0 || ^19.0.0',
   LIBRARY_PEER_RANGE: '^18.0.0 || ^19.0.0',
   TYPES_VERSION: '^18.2.0',
 } as const;

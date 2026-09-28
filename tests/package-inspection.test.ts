@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   collectDeclarationImportViolations,
   collectPublishSurfaceViolations,
+  collectSharedRuntimeDependencyViolations,
   collectSvelteLeakViolations,
 } from '../scripts/check-publish-surface.mjs';
 import { createPackageSnapshots } from '../scripts/lib/package-inspection.mjs';
@@ -690,5 +691,39 @@ describe('package inspection quality-gate helpers', () => {
         pkg: { name: '@pie-element/element-bundler', peerDependencies: { svelte } },
       })
     ).toEqual(['peerDependencies.svelte is not allowed']);
+  });
+
+  it('requires element React in dependencies and rejects React peers', () => {
+    const pie = {
+      controller: '@pie-element/sample/controller',
+      browserSharedDependencies: { react: '18.2.0', 'react-dom': '18.2.0' },
+    };
+    const react = { react: '^18.2.0', 'react-dom': '^18.2.0' };
+
+    expect(collectSharedRuntimeDependencyViolations({ pie, dependencies: react })).toEqual([]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        pie,
+        dependencies: react,
+        peerDependencies: { react: '^18.2.0 || ^19.0.0' },
+      })
+    ).toEqual([
+      "peerDependencies.react is not allowed: a peer binds the element to the host's react; declare it in dependencies only",
+    ]);
+    expect(
+      collectSharedRuntimeDependencyViolations({ pie, dependencies: { react: '18.2.0' } })
+    ).toEqual([
+      'dependencies.react must be "^18.2.0" (matching pie.browserSharedDependencies 18.2.0), got "18.2.0"; an exact pin duplicates React and breaks hooks',
+      'dependencies.react-dom is missing: elements install their own react-dom, and webpack bundlers install no peers; use "^18.2.0"',
+    ]);
+    // Libraries keep React peer-only; Svelte elements declare no React.
+    expect(
+      collectSharedRuntimeDependencyViolations({ peerDependencies: { react: '^18.0.0' } })
+    ).toEqual([]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        pie: { controller: '@pie-element/svelte/controller' },
+      })
+    ).toEqual([]);
   });
 });

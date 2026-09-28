@@ -131,18 +131,20 @@ and restore anything it flags.
 | --- | --- |
 | `version` | Preserved (local value wins) |
 | `dependencies` | **Replaced wholesale** from upstream - local bumps lost |
-| `peerDependencies` | Merged (local entries kept) |
+| `peerDependencies` | Merged (local entries kept); element `react` / `react-dom` peers removed |
 | `exports`, `main`, `types`, `files`, `scripts.build` | Regenerated - hand edits lost |
 | `pie.*` | Regenerated from entry points + `tools/vite/browser-esm-policy.json`; `pie.browserEditorRuntime` from the dependency closure + `packages/shared/editor-runtime/package.json` |
 
 **Invariants that must hold after a sync** (all are enforced, so run the gates):
 
 - Every `packages/elements-react/*` package declares `react` and `react-dom` in
-  `dependencies` pinned to `sharedDependencyVersions` in
-  `tools/vite/browser-esm-policy.json`, not as peers alone. Legacy webpack bundlers
-  (`builder.pie-api.com`) install `dependencies` and never peers, so peer-only React
-  leaves `node_modules/react` absent and every `@mui` / `@emotion` / `@dnd-kit` peer fails
-  with `Module not found: Can't resolve 'react'`. Enforced by `check:publish-surface`.
+  `dependencies` at a caret range on `sharedDependencyVersions` in
+  `tools/vite/browser-esm-policy.json`, and never in `peerDependencies`. A React peer lets
+  pnpm and yarn bind the element to the host's React, so a React 19 host would run the
+  element's React 18 build on React 19. Legacy webpack bundlers (`builder.pie-api.com`)
+  install `dependencies` and never peers, so without the dependency `node_modules/react` is
+  absent and every `@mui` / `@emotion` / `@dnd-kit` peer fails with
+  `Module not found: Can't resolve 'react'`. Enforced by `check:publish-surface`.
 - Library packages (`@pie-lib/*`, `@pie-element/shared-*`) keep React peer-only. The
   consuming element owns the installable pin.
 
