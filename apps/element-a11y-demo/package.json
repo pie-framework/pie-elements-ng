@@ -28,7 +28,7 @@
     "@pie-element/multiple-choice": "workspace:*",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@sveltejs/adapter-static": "^3.0.10",
-    "@sveltejs/kit": "^2.55.0",
+    "@sveltejs/kit": "^2.70.3",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tailwindcss/vite": "^4.2.2",
     "@vitejs/plugin-react": "^6.1.1",
