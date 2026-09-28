@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.20
+
+### Patch Changes
+
+- 8bd4fe2: Shipped type declarations resolve for a client that installs only the package: `@pie-lib/delivery-events-svelte`, which the delivery types reference, is now a dependency, and relative declaration imports carry their `.js` extension for `moduleResolution: node16`.
+
 ## 0.3.0-next.19
 
 ### Patch Changes

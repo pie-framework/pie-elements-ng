@@ -1,5 +1,12 @@
 # @pie-lib/graphing
 
+## 5.0.0-next.47
+
+### Patch Changes
+
+- Updated dependencies [619ea67]
+  - @pie-lib/translator@5.0.0-next.6
+
 ## 5.0.0-next.46
 
 ### Patch Changes

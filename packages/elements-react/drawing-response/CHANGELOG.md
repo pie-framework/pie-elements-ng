@@ -1,5 +1,13 @@
 # @pie-element/drawing-response
 
+## 12.1.2-next.22
+
+### Patch Changes
+
+- 76a2592: Fix `dist/index.iife.js`, which threw on load (`Cannot read properties of null (reading 'isRequired')`) and never defined its global or element. The `prop-types` and `debug` stand-ins in the IIFE build now match the real packages' production behaviour.
+- Updated dependencies [619ea67]
+  - @pie-lib/translator@5.0.0-next.6
+
 ## 12.1.2-next.21
 
 ### Patch Changes

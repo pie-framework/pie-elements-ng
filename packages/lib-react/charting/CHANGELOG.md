@@ -1,5 +1,12 @@
 # @pie-lib/charting
 
+## 8.0.0-next.46
+
+### Patch Changes
+
+- Updated dependencies [619ea67]
+  - @pie-lib/translator@5.0.0-next.6
+
 ## 8.0.0-next.45
 
 ### Patch Changes

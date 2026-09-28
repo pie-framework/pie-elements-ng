@@ -1,5 +1,11 @@
 # @pie-element/simple-cloze
 
+## 0.1.4-next.15
+
+### Patch Changes
+
+- 8bd4fe2: Shipped type declarations resolve for a client that installs only the package: `@pie-lib/delivery-events-svelte`, which the delivery types reference, is now a dependency, and relative declaration imports carry their `.js` extension for `moduleResolution: node16`.
+
 ## 0.1.4-next.14
 
 ### Patch Changes

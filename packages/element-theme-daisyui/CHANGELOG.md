@@ -1,5 +1,11 @@
 # @pie-element/element-theme-daisyui
 
+## 0.1.1-next.7
+
+### Patch Changes
+
+- bc8a5ad: Ship `dist/index.d.ts`. Declarations were emitted under `dist/src/`, so the package's `types` entry did not resolve.
+
 ## 0.1.1-next.6
 
 ### Patch Changes

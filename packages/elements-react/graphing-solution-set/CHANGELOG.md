@@ -1,5 +1,13 @@
 # @pie-element/graphing-solution-set
 
+## 6.1.2-next.23
+
+### Patch Changes
+
+- 76a2592: Fix `dist/index.iife.js`, which threw on load (`Cannot read properties of null (reading 'isRequired')`) and never defined its global or element. The `prop-types` and `debug` stand-ins in the IIFE build now match the real packages' production behaviour.
+  - @pie-lib/correct-answer-toggle@5.0.0-next.51
+  - @pie-lib/graphing-solution-set@5.0.0-next.46
+
 ## 6.1.2-next.22
 
 ### Patch Changes

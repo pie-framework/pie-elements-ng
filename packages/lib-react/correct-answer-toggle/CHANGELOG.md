@@ -1,5 +1,12 @@
 # @pie-lib/correct-answer-toggle
 
+## 5.0.0-next.51
+
+### Patch Changes
+
+- Updated dependencies [619ea67]
+  - @pie-lib/translator@5.0.0-next.6
+
 ## 5.0.0-next.50
 
 ### Patch Changes

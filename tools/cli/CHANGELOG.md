@@ -1,5 +1,11 @@
 # @pie-element/cli
 
+## 0.1.2-next.10
+
+### Patch Changes
+
+- Merge pull request #209 from pie-framework/fix/final-publish-ng
+
 ## 0.1.2-next.9
 
 ### Patch Changes

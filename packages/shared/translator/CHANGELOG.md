@@ -1,5 +1,11 @@
 # @pie-lib/translator
 
+## 5.0.0-next.6
+
+### Patch Changes
+
+- 619ea67: The shipped `Translator` type no longer fails to extend i18next's `i18n` when a client type-checks with `skipLibCheck` off.
+
 ## 5.0.0-next.5
 
 ### Patch Changes
