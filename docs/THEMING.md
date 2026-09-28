@@ -11,7 +11,6 @@ PIE elements are themed with CSS custom properties. Keep it simple:
 - `@pie-element/shared-theming`: core theme objects and CSS-variable helpers.
 - `@pie-element/element-theme`: generic custom-element wrapper (`pie-element-theme`).
 - `@pie-element/element-theme-daisyui`: DaisyUI wrapper/utilities (`pie-element-theme-daisyui`), no React hooks.
-- `@pie-element/shared-theming-mui`: MUI adapter and React provider/hooks.
 
 ## Core Usage
 

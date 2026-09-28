@@ -1769,27 +1769,6 @@
         "vite": "^8.1.5",
       },
     },
-    "packages/lib-svelte/math-input-svelte": {
-      "name": "@pie-lib/math-input-svelte",
-      "version": "0.1.1-next.4",
-      "dependencies": {
-        "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-      },
-      "devDependencies": {
-        "@sveltejs/vite-plugin-svelte": "^7.3.0",
-        "svelte": "^5.57.0",
-        "typescript": "^5.9.3",
-        "vite": "^8.1.5",
-      },
-    },
-    "packages/lib-svelte/styling": {
-      "name": "@pie-lib/styling-svelte",
-      "version": "0.1.3-next.1",
-      "devDependencies": {
-        "typescript": "^5.9.3",
-        "vite": "^8.1.5",
-      },
-    },
     "packages/shared/bundler-shared": {
       "name": "@pie-element/element-bundler",
       "version": "0.1.2-next.4",
@@ -1921,26 +1900,6 @@
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
         "vitest": "^4.1.11",
-      },
-    },
-    "packages/shared/theming-mui": {
-      "name": "@pie-element/shared-theming-mui",
-      "version": "0.1.1-next.6",
-      "dependencies": {
-        "@pie-element/shared-theming": "workspace:*",
-        "@pie-element/shared-types": "workspace:*",
-      },
-      "devDependencies": {
-        "@mui/material": "^7.3.4",
-        "@types/react": "^18.3.0",
-        "react": "^18.3.0",
-        "typescript": "^5.9.3",
-        "vite": "^8.1.5",
-        "vitest": "^4.1.11",
-      },
-      "peerDependencies": {
-        "@mui/material": "^7.0.0",
-        "react": "^18.0.0",
       },
     },
     "packages/shared/translator": {
@@ -2428,8 +2387,6 @@
 
     "@pie-element/shared-theming": ["@pie-element/shared-theming@workspace:packages/shared/theming"],
 
-    "@pie-element/shared-theming-mui": ["@pie-element/shared-theming-mui@workspace:packages/shared/theming-mui"],
-
     "@pie-element/shared-types": ["@pie-element/shared-types@workspace:packages/shared/types"],
 
     "@pie-element/shared-utils": ["@pie-element/shared-utils@workspace:packages/shared/utils"],
@@ -2476,8 +2433,6 @@
 
     "@pie-lib/math-input": ["@pie-lib/math-input@workspace:packages/lib-react/math-input"],
 
-    "@pie-lib/math-input-svelte": ["@pie-lib/math-input-svelte@workspace:packages/lib-svelte/math-input-svelte"],
-
     "@pie-lib/math-rendering": ["@pie-lib/math-rendering@workspace:packages/lib-react/math-rendering"],
 
     "@pie-lib/math-toolbar": ["@pie-lib/math-toolbar@workspace:packages/lib-react/math-toolbar"],
@@ -2489,8 +2444,6 @@
     "@pie-lib/rubric": ["@pie-lib/rubric@workspace:packages/lib-react/rubric"],
 
     "@pie-lib/style-utils": ["@pie-lib/style-utils@workspace:packages/lib-react/style-utils"],
-
-    "@pie-lib/styling-svelte": ["@pie-lib/styling-svelte@workspace:packages/lib-svelte/styling"],
 
     "@pie-lib/test-utils": ["@pie-lib/test-utils@workspace:packages/lib-react/test-utils"],
 

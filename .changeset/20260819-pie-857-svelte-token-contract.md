@@ -1,5 +1,4 @@
 ---
-"@pie-lib/styling-svelte": patch
 "@pie-element/mc-populated-blank": patch
 "@pie-element/venn-classification": patch
 ---
@@ -18,7 +17,3 @@ Focus outlines no longer hardcode a blue. `mc-populated-blank` read
 `#2563eb` in four places; both now chain through `--pie-focus-outline`,
 `--pie-button-focus-outline`, and `--pie-focus-checked-border`, so the outline
 follows the active color scheme.
-
-`@pie-lib/styling-svelte` drops `correctAnswerTokens`, `CorrectAnswerTokens`,
-and `correctAnswerTokensToCssVars`, which defined the retired family and had no
-importers.
