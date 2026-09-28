@@ -41,6 +41,31 @@ export const EXCLUDED_UPSTREAM_ELEMENTS = ['boilerplate-item-type'] as const;
 // translator lives in packages/shared: its strings serve the Svelte elements too.
 export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = ['math-rendering', 'translator'] as const;
 
+// Upstream source files that sync does not re-emit. Each was reachable from no entry of its
+// package and was deleted here; the values are the files' `@synced-from` paths.
+export const RETIRED_UPSTREAM_SOURCE_FILES: ReadonlySet<string> = new Set([
+  'pie-elements/packages/graphing/src/utils.js',
+  'pie-elements/packages/image-cloze-association/src/constants.js',
+  'pie-elements/packages/likert/src/session-updater.js',
+  'pie-elements/packages/match/configure/src/common.jsx',
+  'pie-elements/packages/matrix/src/session-updater.js',
+  'pie-elements/packages/number-line/src/number-line/point-chooser/styles.js',
+  'pie-elements/packages/placement-ordering/configure/src/help.jsx',
+  'pie-lib/packages/charting/src/tool-menu.jsx',
+  'pie-lib/packages/drag/src/drag-type.js',
+  'pie-lib/packages/drag/src/preview-component.jsx',
+  'pie-lib/packages/editable-html-tip-tap/src/components/media/MediaWrapper.jsx',
+  'pie-lib/packages/editable-html-tip-tap/src/styles/editorContainerStyles.js',
+  'pie-lib/packages/editable-html-tip-tap/src/theme.js',
+  'pie-lib/packages/graphing-solution-set/src/toggle-bar.jsx',
+  'pie-lib/packages/graphing-solution-set/src/tools/polygon/line.jsx',
+  'pie-lib/packages/graphing-solution-set/src/tools/shared/line/line-path.jsx',
+  'pie-lib/packages/graphing-solution-set/src/tools/shared/line/with-root-edge.jsx',
+  'pie-lib/packages/mask-markup/src/components/correct-input.jsx',
+  'pie-lib/packages/mask-markup/src/components/input.jsx',
+  'pie-lib/packages/math-input/src/math-input.jsx',
+]);
+
 // Build tool versions
 export const BUILD_TOOLS = {
   VITE: '^8.0.1',
@@ -54,20 +79,6 @@ export const REACT = {
   ELEMENT_PEER_RANGE: '^18.2.0 || ^19.0.0',
   LIBRARY_PEER_RANGE: '^18.0.0 || ^19.0.0',
   TYPES_VERSION: '^18.2.0',
-} as const;
-
-// Directory patterns to skip
-export const SKIP_PATTERNS = {
-  TEST_DIRS: ['__tests__', '__mocks__'],
-  FILE_EXTENSIONS: ['.js', '.jsx', '.ts', '.tsx'],
-} as const;
-
-// File types
-export const FILE_TYPES = {
-  JS: '.js',
-  JSX: '.jsx',
-  TS: '.ts',
-  TSX: '.tsx',
 } as const;
 
 // Package.json defaults
