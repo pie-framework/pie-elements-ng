@@ -1291,7 +1291,8 @@ describe('ensurePieLibPackageJson', () => {
       import userEvent from '@testing-library/user-event';
       import CharacterCount from '@tiptap/extension-character-count';
       import ListItem from '@tiptap/extension-list-item';
-      export { userEvent, CharacterCount, ListItem };
+      import { useEditor } from '@tiptap/react';
+      export { userEvent, CharacterCount, ListItem, useEditor };
       `,
       'utf-8'
     );
@@ -1304,6 +1305,7 @@ describe('ensurePieLibPackageJson', () => {
             '@testing-library/user-event': '^14.5.2',
             '@tiptap/extension-character-count': '3.0.9',
             '@tiptap/extension-list-item': '3.0.9',
+            '@tiptap/react': '3.0.9',
           },
         },
         null,
@@ -1316,8 +1318,8 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
-    // The peer fallbacks still get added by name — @tiptap/extensions and
-    // @tiptap/extension-list are absent from the upstream manifest above. Their versions come
+    // The peer fallbacks still get added by name — @tiptap/extensions, @tiptap/extension-list
+    // and the two menus are absent from the upstream manifest above. Their versions come
     // out at 3.31.3 rather than upstream's 3.0.9 because applyPieLibDependencyVersionPins has
     // the last word on every @tiptap/* version; tiptap peers are exact, so a sync that let
     // these differ would resolve a second @tiptap/core. See PIE-1042.
@@ -1328,6 +1330,10 @@ describe('ensurePieLibPackageJson', () => {
       '@tiptap/extensions': '3.31.3',
       '@tiptap/extension-list-item': '3.31.3',
       '@tiptap/extension-list': '3.31.3',
+      '@tiptap/react': '3.31.3',
+      '@tiptap/extension-bubble-menu': '3.31.3',
+      '@tiptap/extension-floating-menu': '3.31.3',
+      '@floating-ui/dom': '^1.7.6',
     });
   });
 

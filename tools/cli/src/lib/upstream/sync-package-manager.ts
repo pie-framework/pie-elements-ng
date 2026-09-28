@@ -477,6 +477,19 @@ function addKnownPeerFallbacks(deps: Record<string, string>): void {
     deps['@tiptap/extension-list'] = tiptapVersion;
   }
 
+  // @tiptap/react takes both menus as caret optional dependencies, yet they peer on
+  // @tiptap/core exactly: undeclared, a consumer install picks up the newest menus against an
+  // older core. Declaring them lets the version pins hold them to the rest of the set.
+  if (deps['@tiptap/react']) {
+    for (const menu of ['@tiptap/extension-bubble-menu', '@tiptap/extension-floating-menu']) {
+      if (!deps[menu]) deps[menu] = deps['@tiptap/react'];
+    }
+  }
+
+  if (deps['@tiptap/extension-floating-menu'] && !deps['@floating-ui/dom']) {
+    deps['@floating-ui/dom'] = '^1.7.6';
+  }
+
   if (deps['@testing-library/user-event'] && !deps['@testing-library/dom']) {
     deps['@testing-library/dom'] = '^10.4.1';
   }
