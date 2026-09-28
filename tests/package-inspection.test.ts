@@ -154,6 +154,26 @@ describe('package inspection quality-gate helpers', () => {
     );
   });
 
+  it('flags entry point targets that are not in the tarball', () => {
+    const violations = collectPublishSurfaceViolations({
+      dir: join(process.cwd(), 'packages', 'example-theme'),
+      relativeDir: 'packages/example-theme',
+      pkg: {
+        name: '@pie-element/example-theme',
+        version: '1.0.0',
+        files: ['dist'],
+        types: './dist/index.d.ts',
+        exports: {
+          '.': { types: './dist/index.d.ts', default: './dist/index.js' },
+          './parts/*': './dist/parts/*.js',
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/index.js', 'dist/src/index.d.ts']),
+    });
+
+    expect(violations).toEqual(['entry point target is not packed: ./dist/index.d.ts']);
+  });
+
   it('requires element packages to export their package.json', () => {
     const violationsFor = (pkg: Record<string, unknown>) =>
       collectPublishSurfaceViolations({
