@@ -530,13 +530,18 @@ jobs:
         id: changesets
         uses: changesets/action@v2
         with:
-          publish: bun run release:publish:checked
-          createGithubReleases: false
-          version: bun run version
-          title: 'chore(release): version packages [skip-heavy-ci]'
-          commit: 'chore(release): version packages'
+          # v2 renamed every input this step passes and no longer reads the token from the
+          # GITHUB_TOKEN environment variable; it must arrive through the github-token input.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          publish-script: bun run release:publish:checked
+          create-github-releases: false
+          version-script: bun run version
+          pr-title: 'chore(release): version packages [skip-heavy-ci]'
+          commit-message: 'chore(release): version packages'
+          # v2 pushes through the GitHub API by default, which re-attributes the version commit
+          # to the token's owner. Keep the Git CLI push v1 used, as the auto-release step does.
+          push-with-git-cli: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # These must come from the resolved auth mode, NOT straight from secrets.NPM_TOKEN.
           # Reading the secret directly here would hand changesets a token even on an OIDC
           # run, defeating the whole auth-mode resolution above: npm would attempt token auth
@@ -690,7 +695,7 @@ jobs:
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Notify Slack on Release PR Created/Updated
-        if: steps.changesets.outputs.hasChangesets == 'true' && steps.published.outputs.published != 'true' && steps.gate.outputs.auto_release != 'true'
+        if: steps.changesets.outputs.has-changesets == 'true' && steps.published.outputs.published != 'true' && steps.gate.outputs.auto_release != 'true'
         continue-on-error: true
         uses: slackapi/slack-github-action@v1.27.0
         with:
@@ -722,7 +727,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Release PR:*\n${{ steps.changesets.outputs.pullRequestUrl || 'Created/updated by changesets action' }}"
+                      "text": "*Release PR:*\n${{ steps.changesets.outputs.pr-number && format('<{0}/{1}/pull/{2}|#{2}>', github.server_url, github.repository, steps.changesets.outputs.pr-number) || 'Created/updated by changesets action' }}"
                     }
                   ]
                 }
