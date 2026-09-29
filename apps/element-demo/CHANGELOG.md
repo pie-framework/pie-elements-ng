@@ -1,5 +1,11 @@
 # @pie-element/element-demo
 
+## 0.1.2-next.20
+
+### Patch Changes
+
+- @pie-element/element-theme-daisyui@0.1.1-next.9
+
 ## 0.1.2-next.19
 
 ### Patch Changes

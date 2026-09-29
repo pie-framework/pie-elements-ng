@@ -1,5 +1,11 @@
 # @pie-element/select-text
 
+## 13.1.2-next.31
+
+### Patch Changes
+
+- @pie-element/shared-controller-utils@0.1.1-next.7
+
 ## 13.1.2-next.30
 
 ### Patch Changes

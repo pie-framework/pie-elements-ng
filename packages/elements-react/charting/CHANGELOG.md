@@ -1,5 +1,11 @@
 # @pie-element/charting
 
+## 12.1.2-next.31
+
+### Patch Changes
+
+- @pie-element/shared-controller-utils@0.1.1-next.7
+
 ## 12.1.2-next.30
 
 ### Patch Changes

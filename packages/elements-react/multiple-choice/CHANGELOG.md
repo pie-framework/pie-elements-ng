@@ -1,5 +1,11 @@
 # @pie-element/multiple-choice
 
+## 13.4.0-next.26
+
+### Patch Changes
+
+- @pie-element/shared-controller-utils@0.1.1-next.7
+
 ## 13.4.0-next.25
 
 ### Patch Changes

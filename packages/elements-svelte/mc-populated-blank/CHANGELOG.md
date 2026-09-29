@@ -1,5 +1,13 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.23
+
+### Patch Changes
+
+- Updated dependencies [4ffda53]
+  - @pie-element/shared-types@0.2.0-next.4
+  - @pie-element/shared-controller-utils@0.1.1-next.7
+
 ## 0.3.0-next.22
 
 ### Minor Changes
