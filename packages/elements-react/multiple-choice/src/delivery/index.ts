@@ -456,6 +456,7 @@ export default class MultipleChoice extends HTMLElement {
       this._audio = null;
     }
 
+    this._rerender.cancel();
     if (this._root) {
       this._root.unmount();
       this._root = null;
