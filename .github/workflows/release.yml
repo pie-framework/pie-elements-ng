@@ -640,7 +640,7 @@ jobs:
       - name: Notify Slack on Successful Publish
         if: steps.published.outputs.published == 'true'
         continue-on-error: true
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v4.0.0
         with:
           payload: |
             {
@@ -700,7 +700,7 @@ jobs:
       - name: Notify Slack on Release PR Created/Updated
         if: steps.changesets.outputs.has-changesets == 'true' && steps.published.outputs.published != 'true' && steps.gate.outputs.auto_release != 'true'
         continue-on-error: true
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v4.0.0
         with:
           payload: |
             {
@@ -771,7 +771,7 @@ jobs:
       - name: Notify Slack on Release Failure
         if: failure()
         continue-on-error: true
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v4.0.0
         with:
           payload: |
             {
