@@ -27,7 +27,9 @@ test.describe('editable-html math toolbar', () => {
     await prompt.click();
   });
 
-  test('inserting math opens the toolbar and focuses the math input without errors', async ({ page }) => {
+  test('inserting math opens the toolbar and focuses the math input without errors', async ({
+    page,
+  }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
 
@@ -51,16 +53,22 @@ test.describe('editable-html math toolbar', () => {
     await expect(page.locator('[data-toolbar-for]')).toHaveCount(0);
   });
 
-  test('a mousedown outside without a click (scrollbar drag) keeps the toolbar open', async ({ page }) => {
+  test('a mousedown outside without a click (scrollbar drag) keeps the toolbar open', async ({
+    page,
+  }) => {
     await insertMathButton(page).click();
     await expect(page.locator('[data-toolbar-for]')).toBeVisible();
 
-    await page.evaluate(() => document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })));
+    await page.evaluate(() =>
+      document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    );
 
     await expect(page.locator('[data-toolbar-for]')).toBeVisible();
   });
 
-  test('clicking an existing math node reopens the toolbar with focus in the math input', async ({ page }) => {
+  test('clicking an existing math node reopens the toolbar with focus in the math input', async ({
+    page,
+  }) => {
     await insertMathButton(page).click();
     await expect(page.locator('[data-toolbar-for]')).toBeVisible();
 
