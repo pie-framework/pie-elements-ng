@@ -1020,6 +1020,8 @@
       "name": "@pie-element/mc-populated-blank",
       "version": "0.3.0-next.21",
       "dependencies": {
+        "@pie-element/shared-controller-utils": "workspace:*",
+        "@pie-element/shared-types": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
       "devDependencies": {

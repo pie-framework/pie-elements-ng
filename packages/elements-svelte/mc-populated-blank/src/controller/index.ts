@@ -1,3 +1,5 @@
+import { getShuffledChoices, lockChoices } from '@pie-element/shared-controller-utils';
+import type { PieUpdateSession } from '@pie-element/shared-types';
 import authorDefaults from '../author/defaults.js';
 import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults.js';
 import type {
@@ -100,19 +102,6 @@ export const normalize = (question: McpbQuestion = {}) => {
 
 export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
 
-/** The role plays no part (PIE-714): an instructor sees the order the student saw. */
-const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) =>
-  !!question?.lockChoiceOrder || !!env?.['@pie-element']?.lockChoiceOrder;
-
-function shuffleArray<T>(items: T[]): T[] {
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
-
 /**
  * The fields delivery renders. An imported choice can carry more, such as a
  * correctness flag or feedback, which must not reach a learner's browser.
@@ -124,67 +113,24 @@ const toDeliveryChoice = ({ id, labelHtml, imageUrl, imageAlt }: McpbChoice): Mc
   ...(imageAlt !== undefined ? { imageAlt } : {}),
 });
 
-const getStoredShuffle = (session: McpbSession): string[] =>
-  Array.isArray(session?.data?.shuffledValues)
-    ? session.data.shuffledValues
-    : Array.isArray(session?.shuffledValues)
-      ? session.shuffledValues
-      : [];
-
-/** The stored order, as `getShuffledChoices` applies it: a choice it does not list is left out. */
-const applyShuffledValues = (
-  choices: McpbChoice[],
-  shuffledValues: string[],
-  choiceKey: keyof McpbChoice
-) =>
-  shuffledValues
-    .map((value) => choices.find((choice) => choice?.[choiceKey] === value))
-    .filter((c): c is McpbChoice => !!c);
-
-type UpdateSessionFn = (
-  id: string,
-  element: string,
-  data: { shuffledValues: string[] }
-) => Promise<void>;
-
-const getOrderedChoices = async (
-  question: McpbQuestion,
-  session: McpbSession,
-  env: McpbEnv,
-  updateSession?: UpdateSessionFn
-) => {
-  const choices = Array.isArray(question?.choices) ? [...question.choices] : [];
-  if (!choices.length || shouldLockChoices(question, env || {})) {
-    return choices;
-  }
-
-  const shuffledValues = getStoredShuffle(session);
-  if (shuffledValues.length) {
-    return applyShuffledValues(choices, shuffledValues, 'id');
-  }
-
-  const shuffledChoices = shuffleArray(choices);
-
-  if (updateSession && typeof updateSession === 'function' && session?.id && session?.element) {
-    const shuffledIds = shuffledChoices.map((choice) => choice?.id).filter(Boolean);
-    if (shuffledIds.length) {
-      await updateSession(session.id, session.element, { shuffledValues: shuffledIds });
-    }
-  }
-
-  return shuffledChoices;
-};
-
 export const model = async (
   question: McpbQuestion,
   session: McpbSession | null,
   env: McpbEnv | null,
-  updateSession?: UpdateSessionFn
+  updateSession?: PieUpdateSession
 ) => {
   const safeSession: McpbSession = session || {};
   const safeEnv: McpbEnv = env || {};
   const normalizedQuestion = normalize(question);
-  const choices = (await getOrderedChoices(normalizedQuestion, safeSession, safeEnv, updateSession))
+  let orderedChoices = Array.isArray(normalizedQuestion.choices)
+    ? [...normalizedQuestion.choices]
+    : [];
+  if (orderedChoices.length && !lockChoices(normalizedQuestion, safeSession, safeEnv)) {
+    orderedChoices =
+      (await getShuffledChoices(orderedChoices, safeSession, updateSession, 'id')) ??
+      orderedChoices;
+  }
+  const choices = orderedChoices
     .filter((c): c is McpbChoice => !!c && typeof c === 'object')
     .map(toDeliveryChoice);
 
