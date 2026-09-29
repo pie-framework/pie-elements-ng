@@ -429,8 +429,9 @@ That command orchestrates the contract-relevant checks:
 - `scripts/check-sourcemap-sources.mjs` checks source maps carry inline source
   content so debugging does not depend on raw source being packed.
 
-Before release, also use the smoke matrix in `.compatibility/report.json` to
-exercise representative ESM, IIFE, and preloaded flows.
+Before release, also run the browser smoke matrix
+(`apps/element-demo/test/e2e/smoke-matrix.spec.ts`; `bun run test:iife:e2e` for
+ESM and IIFE together). Preloaded flows are covered in `pie-players`.
 
 ## Common Pitfalls
 

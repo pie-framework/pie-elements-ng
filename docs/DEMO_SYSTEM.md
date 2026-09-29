@@ -2,141 +2,38 @@
 
 ## Overview
 
-The demo system uses a single shared app and picks the element to load at runtime.
-
-- **`dev:demo`**: runs `apps/element-demo` and loads an element via `VITE_*` env vars.
+`apps/element-demo` is one SvelteKit app that demos every element in the workspace. The URL picks the element and view.
 
 ## Quick Start
 
 ```bash
-# Default demo (shared app)
-bun run dev:demo categorize
-
+bun run dev:demo            # CLI wrapper: port 5222, flags --port, --build, --open
+bun run dev:element-demo    # plain `vite dev` in apps/element-demo, port from PORT or 5222
 ```
+
+Open <http://localhost:5222> and choose an element, or go straight to `/<element>/deliver`, `/<element>/author`, `/<element>/print`, `/<element>/docs` or `/<element>/source`. `?player=iife` switches a view from the ESM player to the IIFE player; the bundler modes are in [DEV_BUNDLER.md](../apps/element-demo/DEV_BUNDLER.md).
 
 ## How It Works
 
-`apps/element-demo` reads:
-
-- `VITE_ELEMENT_NAME`
-- `VITE_ELEMENT_PATH`
-- `VITE_ELEMENT_TYPE`
-
-The CLI commands set these env vars and start a single Vite dev server.
-The app loads the element from the workspace using the resolver plugin.
+- `scripts/generate-element-imports.ts` runs before every dev start and build. It writes `src/lib/element-imports.js`, which registers each element's delivery, author, controller and print modules by package specifier.
+- `src/lib/elements/registry.ts` lists the elements and which views each one has.
+- `src/vite-plugin-workspace-resolver.ts` aliases each workspace package's `exports` to the matching `src/` file, so the ESM views pick up element source edits without a package build.
 
 ## Per-Element Demo Data
 
-Each element supplies demo data under:
-
-```text
-packages/elements-{react|svelte}/{element}/docs/demo/
-├── config.mjs
-└── session.mjs
-```
-
-The shared app reads those files to populate the model and session.
+The app reads each element's demos from `apps/element-demo/src/lib/samples/<element>.json`. For the React elements, `bun tools/generate-demo-metadata.mjs` converts `packages/elements-react/<element>/docs/demo/config.mjs` into that file and rewrites `registry.ts`; the Svelte elements' sample files and registry entries are maintained by hand. [demo-configuration-guide.md](demo-configuration-guide.md) covers the `config.mjs` format.
 
 ## Known Issues & Solutions
 
-### Infinite Loop / HMR Reconnection Issue
+### Infinite HMR Reconnection Loop
 
-**Problem:** The demo app was experiencing an infinite loop with continuous Vite HMR reconnections (`[vite] connecting/connected` repeating endlessly), causing thousands of network requests.
+**Symptom:** `[vite] connecting/connected` repeats endlessly and the page issues thousands of requests.
 
-**Root Cause:** The combination of these Vite config settings created the loop:
+**Cause:** `resolve.conditions: ['development', ...]` in `vite.config.ts`. Vite resolved workspace packages through their `development` conditions and watched those files, and each HMR update re-ran the element layout's load function, which created new objects and triggered the next update.
 
-```js
-// ❌ PROBLEMATIC CONFIGURATION
-resolve: {
-  conditions: ['development', 'import', 'default'],
-},
-optimizeDeps: {
-  exclude: ['@pie-element/*', '@pie-lib/*'],
-}
-```
+**Rule:** never add a `development` resolve condition to the demo. Source loading goes through `vite-plugin-workspace-resolver.ts` aliases. Package manifests stay dist-only, so `upstream:sync` must not add `development` export conditions that point at `src/` ([PUBLISHING.md](PUBLISHING.md)).
 
-This configuration:
-
-1. Resolved workspace packages to their **source files** (via 'development' condition)
-2. Did not pre-bundle them (via exclude)
-3. Made Vite watch all source files for changes
-4. Any HMR update triggered the player layout's load function, creating new objects
-5. This caused another HMR cycle, creating an infinite loop
-
-**Solution:** Remove both problematic settings from `vite.config.ts`:
-
-```js
-// ✅ WORKING CONFIGURATION
-export default defineConfig({
-  plugins: [tailwindcss({ optimize: false }), sveltekit()],
-
-  // Don't use 'development' condition - causes infinite HMR loops
-  // resolve: { conditions: ['development', ...] },
-
-  server: {
-    port: Number(process.env.PORT ?? 5222),
-    fs: { allow: [workspaceRoot] },
-  },
-
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react/jsx-runtime'],
-    // Don't exclude workspace packages - use built versions instead
-    // exclude: ['@pie-element/*', '@pie-lib/*'],
-  },
-});
-```
-
-**Additional Fixes Applied:**
-
-1. **Disabled preload on hover** in `app.html`:
-
-   ```html
-   <body data-sveltekit-preload-data="off">
-   ```
-
-2. **Cached math renderer** in `player/+layout.ts` to prevent creating new objects:
-
-   ```ts
-   let cachedMathRenderer: any = null;
-   if (!cachedMathRenderer) {
-     cachedMathRenderer = createKatexRenderer();
-   }
-   ```
-
-3. **Used `onMount` instead of `$effect`** in `player/+layout.svelte` for one-time initialization:
-
-   ```ts
-   onMount(() => {
-     if (data) {
-       initializeDemo({...});
-     }
-   });
-   ```
-
-4. **Converted reactive statements to `$derived`** for Svelte 5 runes mode:
-
-   ```ts
-   // Old: $: activeTab = ...
-   // New:
-   const activeTab = $derived($page.url.pathname.split("/")[2] || "deliver");
-   ```
-
-**Trade-off:** Without the 'development' condition, Vite uses the **built/dist** versions of workspace packages instead of watching source files directly. This means:
-
-- ✅ Demo app loads successfully without infinite loops
-- ✅ Element packages (`@pie-element/multiple-choice`, etc.) load from their `dist/` folders
-- ⚠️ Changes to element source code require rebuilding the package before they appear in the demo
-- ⚠️ No HMR for workspace package changes during development
-
-**Workflow:** When developing an element, you need to:
-
-1. Make changes to element source code
-2. Run `bun run build` in the element package
-3. Refresh the demo to see changes
-
-**Advanced source development:** package manifests stay dist-only for publishing, so `upstream:sync` must not add `development` export conditions that point at `src/`. Local source loading belongs in demo-only resolver tooling such as `vite-plugin-workspace-resolver.ts`, where it cannot leak into npm package surfaces.
-
-**Recommendation:** Use the default dist-based approach for stability. Only route a specific package to source through demo resolver configuration when actively developing it, and keep published `exports` pointed at `dist/`.
+The app also keeps `data-sveltekit-preload-data="off"` in `app.html`, and `routes/[element]/+layout.svelte` initializes the demo once in `onMount` rather than in an `$effect`.
 
 ---
 

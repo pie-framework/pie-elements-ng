@@ -205,7 +205,7 @@ The shared publish command used by CI and local targeted publishes runs the aggr
 
 This runs publish-surface, controller, runtime-support export, and sourcemap checks. It rejects source-path exports, `src` in packed tarballs, raw Svelte/TypeScript package surfaces, missing browser ESM contract metadata, missing runtime-support metadata for non-browser-ESM packages, missing sourcemap source content, and stale generated maps.
 
-Before publishing ESM-capable packages, also run the browser smoke matrix from `.compatibility/report.json`: ESM, IIFE, and preloaded loading for representative packages, including `multiple-choice`, an authoring view, a print/fallback path, a passage plus interaction item, and one intentionally non-ESM-ready package.
+Before publishing ESM-capable packages, also run the browser smoke matrix, `apps/element-demo/test/e2e/smoke-matrix.spec.ts`. It loads every registered element's deliver, author and print views and fails on critical console errors; `bun run test:iife:e2e` runs it against both the ESM and IIFE players. Preloaded loading is covered in `pie-players`. `.compatibility/report.json` records which elements are browser-ESM ready and holds no test cases.
 
 ## Dist-Tag Backfill Runbook
 

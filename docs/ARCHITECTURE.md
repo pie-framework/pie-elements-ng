@@ -848,11 +848,11 @@ The `predev` script automatically regenerates all required files before starting
 **URL Format:**
 
 ```text
-http://localhost:5173/[element-name]
+http://localhost:5222/[element-name]
 
 Examples:
-http://localhost:5173/multiple-choice
-http://localhost:5173/hotspot
+http://localhost:5222/multiple-choice
+http://localhost:5222/hotspot
 ```
 
 ## Build Process
@@ -1069,13 +1069,12 @@ need.
 
 ### CDN Distribution
 
-Packages can be loaded from CDN:
-
-```html
-<script type="module">
-  import MultipleChoice from "https://esm.sh/@pie-element/multiple-choice";
-</script>
-```
+Players load the static browser ESM files straight from a CDN, for example
+`https://cdn.jsdelivr.net/npm/@pie-element/multiple-choice@<version>/dist/browser/delivery/index.js`.
+Those files import React and React DOM as bare specifiers, so the page supplies an
+import map; `pie-players` generates it from the shared dependencies in
+`tools/vite/browser-esm-policy.json`. CDN package transforms such as esm.sh or
+jsDelivr `+esm` are not a supported entry point ([PUBLISHING.md](PUBLISHING.md)).
 
 ## Extension Points
 

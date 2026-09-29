@@ -309,12 +309,12 @@ player.resolve = (tagName, pkg) => {
 
 1. **Start the demo server:**
    ```bash
-   bun cli dev:demo multiple-choice
+   bun cli dev:demo
    ```
 
 2. **Navigate to print route:**
    ```
-   http://localhost:5173/multiple-choice/print
+   http://localhost:5222/multiple-choice/print
    ```
 
 3. **Toggle between student/instructor roles**
