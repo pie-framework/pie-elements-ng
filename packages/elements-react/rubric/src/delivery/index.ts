@@ -92,6 +92,7 @@ export default class RubricRender extends HTMLElement {
     this._disconnectMathObserver();
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

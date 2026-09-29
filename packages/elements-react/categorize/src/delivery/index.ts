@@ -357,6 +357,9 @@ export default class Categorize extends HTMLElement {
     });
 
     observer.observe(this, { childList: true, subtree: true });
+
+    // Disconnecting unmounts the React root, so a reinserted element renders again.
+    this.render();
   }
 
   disconnectedCallback() {
@@ -372,6 +375,7 @@ export default class Categorize extends HTMLElement {
 
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 
