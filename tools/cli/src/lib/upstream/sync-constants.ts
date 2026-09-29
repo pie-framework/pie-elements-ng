@@ -39,7 +39,13 @@ export const EXCLUDED_UPSTREAM_ELEMENTS = ['boilerplate-item-type'] as const;
 // Upstream @pie-lib packages intentionally excluded from sync.
 // math-rendering stays local (wrapper re-exports shared MathJax adapter).
 // translator lives in packages/shared: its strings serve the Svelte elements too.
-export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = ['math-rendering', 'translator'] as const;
+// controller-utils lives in packages/shared as shared-controller-utils, which the sync rewrites
+// every `@pie-lib/controller-utils` import to.
+export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = [
+  'controller-utils',
+  'math-rendering',
+  'translator',
+] as const;
 
 // Upstream source files that sync does not re-emit. Each was reachable from no entry of its
 // package and was deleted here; the values are the files' `@synced-from` paths.

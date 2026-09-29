@@ -28,7 +28,6 @@
 "@pie-lib/categorize": patch
 "@pie-lib/charting": patch
 "@pie-lib/config-ui": patch
-"@pie-lib/controller-utils": patch
 "@pie-lib/correct-answer-toggle": patch
 "@pie-lib/drag": patch
 "@pie-lib/editable-html-tip-tap": patch

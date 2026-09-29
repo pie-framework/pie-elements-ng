@@ -37,4 +37,8 @@ describe('upstream pie-lib sync', () => {
   it('leaves the locally owned translator alone', () => {
     expect(EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES).toContain('translator');
   });
+
+  it('leaves controller-utils to shared-controller-utils', () => {
+    expect(EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES).toContain('controller-utils');
+  });
 });

@@ -1167,21 +1167,6 @@
         "react-dom": "^18.0.0 || ^19.0.0",
       },
     },
-    "packages/lib-react/controller-utils": {
-      "name": "@pie-lib/controller-utils",
-      "version": "3.0.0-next.4",
-      "dependencies": {
-        "@pie-element/shared-lodash": "workspace:*",
-        "debug": "^4.1.1",
-      },
-      "devDependencies": {
-        "@types/react": "^18.2.0",
-        "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^6.1.1",
-        "typescript": "^5.9.3",
-        "vite": "^8.0.1",
-      },
-    },
     "packages/lib-react/correct-answer-toggle": {
       "name": "@pie-lib/correct-answer-toggle",
       "version": "5.0.0-next.52",
@@ -2398,8 +2383,6 @@
     "@pie-lib/config-ui": ["@pie-lib/config-ui@workspace:packages/lib-react/config-ui"],
 
     "@pie-lib/config-ui-svelte": ["@pie-lib/config-ui-svelte@workspace:packages/lib-svelte/config-ui-svelte"],
-
-    "@pie-lib/controller-utils": ["@pie-lib/controller-utils@workspace:packages/lib-react/controller-utils"],
 
     "@pie-lib/correct-answer-toggle": ["@pie-lib/correct-answer-toggle@workspace:packages/lib-react/correct-answer-toggle"],
 
