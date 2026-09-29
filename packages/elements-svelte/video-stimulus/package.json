@@ -24,6 +24,7 @@
       "default": "./dist/delivery/index.js"
     },
     "./browser/delivery": {
+      "types": "./dist/delivery/index.d.ts",
       "default": "./dist/browser/delivery/index.js"
     },
     "./controller": {
@@ -35,6 +36,7 @@
       "default": "./dist/controller/index.js"
     },
     "./browser/controller": {
+      "types": "./dist/controller/index.d.ts",
       "default": "./dist/browser/controller/index.js"
     },
     "./author": {
@@ -42,6 +44,7 @@
       "default": "./dist/author/index.js"
     },
     "./browser/author": {
+      "types": "./dist/author/index.d.ts",
       "default": "./dist/browser/author/index.js"
     },
     "./configure": {
@@ -51,34 +54,34 @@
     "./runtime-support": {
       "types": "./dist/runtime-support.d.ts",
       "default": "./dist/runtime-support.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
+    "author.js",
     "configure.js",
     "controller.js",
     "dist"
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && vite build --config vite.delivery.config.ts && vite build --config vite.controller.config.ts && vite build --config vite.author.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config vite.runtime-support.config.ts && vite build --config vite.config.iife.ts && tsc --emitDeclarationOnly",
-    "dev": "vite",
-    "demo": "vite --mode demo",
-    "test": "vitest run --config vitest.config.ts",
+    "build": "vite build --config ../../../tools/vite/svelte-element-esm.config.ts && vite build --config ../../../tools/vite/svelte-element-browser.config.ts && vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts && vite build --config ../../../tools/vite/svelte-element-iife.config.ts && tsc --emitDeclarationOnly",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@pie-element/shared-types": "workspace:*",
     "@pie-lib/delivery-events-svelte": "workspace:*",
-    "@pie-lib/media-svelte": "workspace:*",
     "@pie-players/pie-assessment-toolkit": "^0.3.68"
   },
   "devDependencies": {
     "@pie-element/shared-configure-events": "workspace:*",
-    "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "svelte": "^5.56.8",
+    "@pie-element/shared-test-utils": "workspace:*",
+    "@pie-lib/media-svelte": "workspace:*",
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "svelte": "^5.57.1",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "publishConfig": {
     "access": "public"

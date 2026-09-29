@@ -37,5 +37,4 @@ class VideoStimulusElement extends GeneratedElement {
   }
 }
 
-export { VideoStimulusComponent };
 export default VideoStimulusElement;

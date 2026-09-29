@@ -1,13 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { flushSync, mount, tick, unmount } from 'svelte';
+import { flushSync, mount, unmount } from 'svelte';
+import { assertAuthorModelUpdate } from '@pie-element/shared-test-utils';
 import { localizeAuthorFinding } from '../src/author/i18n.js';
-import VideoStimulusAuthorElement, { AuthorComponent } from '../src/author/index.js';
+import AuthorComponent from '../src/author/Author.svelte';
+import VideoStimulusAuthorElement from '../src/author/index.js';
 import { CONTROLLER_MESSAGES } from '../src/controller/messages.js';
 import type { VideoStimulusModel } from '../src/types.js';
 
 type Mounted = ReturnType<typeof mount>;
 
-const AUTHOR_TAG = 'test-video-stimulus-author';
+const AUTHOR_TAG = 'video-stimulus-config--version-0-0-0-author-test';
+if (!customElements.get(AUTHOR_TAG)) {
+  customElements.define(AUTHOR_TAG, VideoStimulusAuthorElement);
+}
 
 function authorModel(): VideoStimulusModel {
   return {
@@ -203,34 +208,26 @@ describe('video-stimulus author', () => {
     );
   });
 
-  it('hands edits to the host, which announces one bubbling model.updated', async () => {
-    if (!customElements.get(AUTHOR_TAG)) {
-      customElements.define(AUTHOR_TAG, VideoStimulusAuthorElement);
-    }
-    const element = document.createElement(AUTHOR_TAG) as InstanceType<
-      typeof VideoStimulusAuthorElement
-    >;
-    const onChange = vi.fn();
-    const updates: VideoStimulusModel[] = [];
-    const listener = (event: Event) =>
-      updates.push((event as CustomEvent<{ update: VideoStimulusModel }>).detail.update);
-    document.addEventListener('model.updated', listener);
-    element.model = authorModel();
-    element.onChange = onChange;
-    document.body.appendChild(element);
-    // A Svelte custom element mounts its component a microtask after connecting.
-    await tick();
-    flushSync();
+  it('meets the authoring contract as a custom element', async () => {
+    const { event, cleanup } = await assertAuthorModelUpdate({
+      tag: AUTHOR_TAG,
+      model: { ...authorModel(), id: 'author-item' } as unknown as Record<string, unknown>,
+      settle: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        flushSync();
+      },
+      edit: (element) => {
+        const source = element.querySelector(
+          'input[id$="-media-sources-0-src"]'
+        ) as HTMLInputElement;
+        source.value = 'javascript:alert(1)';
+        source.dispatchEvent(new Event('change', { bubbles: true }));
+        flushSync();
+      },
+    });
+    cleanup();
 
-    const source = element.querySelector('input[id$="-media-sources-0-src"]') as HTMLInputElement;
-    source.value = 'javascript:alert(1)';
-    source.dispatchEvent(new Event('change', { bubbles: true }));
-    flushSync();
-    document.removeEventListener('model.updated', listener);
-
-    expect(updates).toHaveLength(1);
-    expect(updates[0].media.sources[0].src).toBe('javascript:alert(1)');
-    expect(onChange).toHaveBeenCalledExactlyOnceWith(updates[0]);
-    expect(element.model).toBe(updates[0]);
+    const update = event.detail.update as VideoStimulusModel;
+    expect(update.media.sources[0].src).toBe('javascript:alert(1)');
   });
 });

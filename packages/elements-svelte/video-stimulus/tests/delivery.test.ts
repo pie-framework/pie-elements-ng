@@ -1,7 +1,8 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
 import { model as buildViewModel } from '../src/controller/index.js';
-import VideoStimulusElement, { VideoStimulusComponent } from '../src/delivery/index.js';
+import VideoStimulusComponent from '../src/delivery/VideoStimulus.svelte';
+import VideoStimulusElement from '../src/delivery/index.js';
 import type { VideoStimulusModel, VideoStimulusViewModel } from '../src/types.js';
 
 const TAG = 'test-video-stimulus-delivery';

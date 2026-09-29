@@ -1,4 +1,5 @@
-
+// @vitest-environment jsdom
+// DOMPurify under happy-dom drops allowed block elements such as <p>.
 import { afterEach, describe, expect, it } from 'vitest';
 import { flushSync, mount, unmount } from 'svelte';
 import TranscriptDefault, { Transcript } from '../src/index.js';

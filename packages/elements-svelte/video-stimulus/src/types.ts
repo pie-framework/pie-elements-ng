@@ -1,10 +1,10 @@
 import type {
   MediaAssetRef,
   MediaSource,
+  MediaUiText,
   TextTrackRef,
   TranscriptRef,
 } from '@pie-element/shared-types';
-import type { MediaUiText } from '@pie-lib/media-svelte';
 
 export type AudioContentDeclaration = 'unknown' | 'none' | 'meaningful';
 export type CaptionSupportDeclaration = 'unknown' | 'notRequired' | 'track' | 'open' | 'missing';

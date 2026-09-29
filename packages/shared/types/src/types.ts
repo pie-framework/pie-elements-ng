@@ -66,6 +66,13 @@ export interface TranscriptRef {
   lang?: string;
 }
 
+/** Learner-facing strings for the transcript controls of a media element. */
+export interface MediaUiText {
+  showTranscript: string;
+  hideTranscript: string;
+  viewTranscript: string;
+}
+
 /**
  * A time slice within a media asset, so one recording can serve several
  * content nodes. Mirrors QTI 3's Media Fragments URI usage.

@@ -3,13 +3,14 @@
     shadow: 'none',
     props: {
       model: { type: 'Object' },
+      configuration: { type: 'Object' },
     },
   }}
 />
 
 <script lang="ts">
 import type { MediaSource, TextTrackRef, TranscriptRef } from '@pie-element/shared-types';
-import { resolveDeliveryHost } from '@pie-lib/delivery-events-svelte';
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import {
   createDefaultModel,
   model as buildViewModel,
@@ -35,17 +36,14 @@ import {
   type AuthorMessageKey,
 } from './i18n.js';
 
-type AuthorHost = HTMLElement & { onModelChange(model: VideoStimulusModel): void };
-
-const isAuthorHost = (node: unknown): boolean =>
-  typeof (node as Partial<AuthorHost> | null)?.onModelChange === 'function';
-
 let {
   model: suppliedModel,
   onChange,
   locale = 'en',
 }: {
   model?: VideoStimulusModel;
+  /** Declared for the Authoring Contract; this view has no settings for it to customize yet. */
+  configuration?: Record<string, unknown>;
   onChange?: (model: VideoStimulusModel) => void;
   locale?: string;
 } = $props();
@@ -57,7 +55,6 @@ const warningsHeadingId = `${authorInstanceId}-warnings-heading`;
 const previewHeadingId = `${authorInstanceId}-preview-heading`;
 let workingModel = $state<VideoStimulusModel>(createDefaultModel());
 let lastSuppliedModel: VideoStimulusModel | undefined;
-let authorRoot: HTMLDivElement | undefined;
 let errors = $state<VideoStimulusValidationErrors>({});
 let warnings = $state<AccessibilityFinding[]>([]);
 let editorPercent = $state(48);
@@ -129,14 +126,21 @@ function runReview(strict: boolean): void {
   errors = strict ? validate(workingModel) : validateDraft(workingModel);
 }
 
-/** The wrapper owns the model and announces the edit; `onChange` serves a component mounted without one. */
+/**
+ * As a custom element, assigns the edit through the host, which a remount after a detach starts
+ * from, and announces it as a bubbling `model.updated`; mounted as a component, hands it to
+ * `onChange`. Marking it as the supplied model keeps the host assignment from resetting the review.
+ */
 function emit(nextModel: VideoStimulusModel): void {
   workingModel = nextModel;
-  const host = resolveDeliveryHost(authorRoot, {
-    hostPredicate: isAuthorHost,
-  }) as AuthorHost | null;
-  if (host) host.onModelChange(nextModel);
-  else onChange?.(nextModel);
+  const host = $host<HTMLElement & { model: unknown }>();
+  if (host) {
+    lastSuppliedModel = nextModel;
+    host.model = nextModel;
+    host.dispatchEvent(new ModelUpdatedEvent(nextModel));
+  } else {
+    onChange?.(nextModel);
+  }
   runReview(false);
 }
 
@@ -280,7 +284,7 @@ function handleSplitterKeydown(event: KeyboardEvent): void {
 }
 </script>
 
-<div class="video-stimulus-author" lang={authorLocale} bind:this={authorRoot}>
+<div class="video-stimulus-author" lang={authorLocale}>
   <header class="author-header">
     <div>
       <h1>{t('heading')}</h1>

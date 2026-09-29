@@ -1,4 +1,5 @@
-
+// @vitest-environment jsdom
+// DOMPurify under happy-dom drops allowed block elements such as <p>.
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_MEDIA_UI_TEXT,
