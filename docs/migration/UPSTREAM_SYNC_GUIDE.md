@@ -916,7 +916,7 @@ Use this checklist for each element:
 
 - [ ] Create the `delivery/` component
 - [ ] Create the `author/` component
-- [ ] Reuse synced controller
+- [ ] Create the `controller/`
 - [ ] Add proper TypeScript types
 - [ ] Implement accessibility features
 - [ ] Test Svelte UI

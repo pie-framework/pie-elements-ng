@@ -132,8 +132,8 @@ A player removed from the document mid-load emits nothing more from that load, a
 Use the existing demo commands to test elements:
 
 ```bash
-# Start demo server for Svelte elements
-bun cli dev:demo hotspot
+# Start the element demo, then open http://localhost:5222/hotspot/deliver
+bun cli dev:demo
 ```
 
 **Prerequisites:**
@@ -154,5 +154,5 @@ bun run build
 
 # Run element demo
 cd ../..
-bun cli dev:demo hotspot
+bun cli dev:demo
 ```

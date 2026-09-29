@@ -9,7 +9,7 @@ Use [`CONTEXT.md`](CONTEXT.md) as the canonical domain-language glossary. When n
 **Critical Requirements**:
 
 - **WCAG 2.2 Level AA compliance**: Mandatory for all interaction components
-- **Bun runtime**: Node.js is supported but Bun 1.1.42+ is primary
+- **Bun runtime**: Node.js is supported but Bun 1.3.11+ is primary
 - **Svelte 5 with runes**: Modern reactive patterns required
 - **Feature parity**: Must match all 21 QTI 2.2 interaction types from original pie-elements
 - **Strict TypeScript**: No `any` allowed (enforced by Biome)
@@ -170,47 +170,35 @@ Only add a package-specific exception when the user explicitly requests a tempor
 
 ## Technology Stack
 
-- **Runtime**: Bun 1.1.42+ (Node.js 20.0+ also supported)
-- **UI Framework**: Svelte 5 (primary), React 18 (secondary), Web Components (planned)
-- **Build**: Vite 6+ with Turbo for monorepo orchestration
-- **Testing**: Vitest 4.x (unit/component) + Playwright 1.56+ (E2E)
+Exact versions live in `package.json`; the majors are:
+
+- **Runtime**: Bun 1.3.11+ (Node.js 20+ also supported)
+- **UI Framework**: Svelte 5 for elements written here, React 18 for the elements synced from pie-elements; every element ships as a custom element
+- **Build**: Vite 8 with Turbo 2 for monorepo orchestration
+- **Testing**: Vitest 4 (unit/component) + Playwright (E2E)
 - **Accessibility**: @axe-core/playwright for automated checks
-- **Linting**: Biome 2.3+ (replaces ESLint/Prettier)
-- **Rich Text**: TipTap 3.14 with Math extension
+- **Linting**: Biome 2 (replaces ESLint/Prettier)
+- **Rich Text**: TipTap 3 with a math extension
 - **Math Rendering**: MathJax 4.1.3, loaded at runtime by `@pie-element/shared-math-rendering-mathjax`; MathQuill for math input
 
 ## Monorepo Structure
 
 ```text
-pie-element/
+pie-elements-ng/
 ├── packages/
-│   ├── core/                      # Core PIE interfaces & types
-│   ├── cli/                       # oclif-based CLI tools
-│   ├── shared/
-│   │   ├── types/                # Shared TypeScript types
-│   │   ├── utils/                # Shared utilities
-│   │   └── test-utils/           # Test harnesses & fixtures
-│   ├── elements-svelte/          # Svelte elements (4 implemented)
-│   │   ├── multiple-choice/
-│   │   ├── slider/
-│   │   ├── upload/
-│   │   └── media/
-│   ├── elements-react/           # React elements (20+ implemented)
-│   │   ├── multiple-choice/
-│   │   ├── hotspot/
-│   │   ├── match/
-│   │   ├── graphing/
-│   │   └── [16 more...]
-│   ├── elements-wc/              # Web Components (planned)
-│   ├── lib-svelte/               # Svelte shared libraries
-│   │   ├── a11y/                # Accessibility utilities
-│   │   ├── config-ui/           # Configuration UI components
-│   │   ├── math/                # Math rendering
-│   │   └── ui/                  # General UI components
-│   └── lib-react/                # React shared libraries (25+ packages)
-└── apps/
-    ├── element-demo/            # Shared element demo
-    └── esm-player-test/         # ESM player testing
+│   ├── elements-react/           # 27 React elements synced from pie-elements, now owned here
+│   ├── elements-svelte/          # Svelte elements written here: mc-populated-blank, simple-cloze, venn-classification
+│   ├── lib-react/                # @pie-lib/* React libraries synced from pie-lib
+│   ├── lib-svelte/               # Svelte libraries: config-ui, delivery-events, editable-html-tiptap
+│   ├── shared/                   # @pie-element/shared-* (types, controller-utils, math-rendering-mathjax,
+│   │                             #   editor-runtime, theming, ...), element-bundler, @pie-lib/translator
+│   ├── element-player/           # @pie-element/element-player
+│   ├── element-theme/            # @pie-element/element-theme
+│   └── element-theme-daisyui/    # @pie-element/element-theme-daisyui
+├── apps/                         # Demo and test apps, see apps/README.md
+└── tools/
+    ├── cli/                      # oclif CLI: upstream sync, dev:demo, docs, verification
+    └── vite/                     # Shared Vite configs and browser-esm-policy.json
 ```
 
 ## Code Quality Standards
@@ -312,7 +300,7 @@ bun run check          # Svelte component validation
 ### Web Components and Reactivity
 
 - Treat custom elements as imperative APIs: set properties, not attributes.
-- Element packages must not self-register custom elements (no `customElements.define(...)` in element runtime entries such as `index.iife.ts`).
+- Element package modules must not register the element's own tag: no `customElements.define(...)` for it in `index.ts` or the `delivery`, `author` and `print` entries. The exception is the standalone per-element IIFE script. The React elements' sync-generated `src/index.iife.ts` registers the tag behind a `customElements.get` guard, because a page that loads `dist/index.iife.js` with a `<script>` tag has no player to do it. The Svelte `index.iife.ts` entries export the class only.
 - Custom element registration is the responsibility of PIE item/element players, which own lifecycle and registry coordination.
 - In Svelte custom-element components (`<svelte:options customElement={...}>`), never include `tag: '...'`. Svelte will auto-define that tag at module evaluation time, which conflicts with player-controlled registration and causes `CustomElementRegistry` duplicate-name errors.
 - Do not assume attribute updates are reactive for object data.

@@ -30,14 +30,14 @@ bun run cli upstream:sync --help
 
 #### `dev:demo`
 
-Start a demo server for an element using `apps/element-demo`.
+Start `apps/element-demo`, which serves every element; the URL picks the element (`/<element>/deliver`).
 
 ```bash
-# Start demo for an element
-bun run cli dev:demo hotspot
+# Start the demo on port 5222
+bun run cli dev:demo
 
-# Custom port, skip builds, and don't auto-open browser
-bun run cli dev:demo multiple-choice --port 5180 --skip-build --no-open
+# Custom port, build all elements first, and don't auto-open browser
+bun run cli dev:demo --port 5180 --build --no-open
 ```
 
 ### Upstream Synchronization
