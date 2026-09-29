@@ -280,25 +280,6 @@ If an element is blocked from ESM compatibility:
 
 ## Advanced Features
 
-### Always-Include Pie-Lib Packages
-
-Some @pie-lib packages (like `controller-utils`) are imported directly in controller code but not declared in element package.json files. To ensure these are always synced, they're defined in the `ALWAYS_INCLUDE_PIE_LIB` constant in [analyze-esm.ts](./analyze-esm.ts):
-
-```typescript
-// PIE lib packages that should always be included if compatible
-// These are packages that may be imported directly in code (e.g., controllers)
-// but not declared in package.json dependencies
-const ALWAYS_INCLUDE_PIE_LIB = [
-  "controller-utils", // Used in controller code via direct imports
-];
-```
-
-**When to add a package here:**
-
-- Package is imported in controller/component code
-- Package is NOT in element package.json dependencies
-- Package should be available for all elements that need it
-
 ### Element-Specific Build Configuration
 
 Some elements require special vite configuration (e.g., bundling specific dependencies instead of externalizing them). This is handled automatically by [sync-react-strategy.ts](./sync-react-strategy.ts).

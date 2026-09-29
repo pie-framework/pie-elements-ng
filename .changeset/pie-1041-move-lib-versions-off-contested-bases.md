@@ -2,7 +2,6 @@
 '@pie-lib/categorize': major
 '@pie-lib/charting': major
 '@pie-lib/config-ui': major
-'@pie-lib/controller-utils': major
 '@pie-lib/correct-answer-toggle': major
 '@pie-lib/editable-html-tip-tap': major
 '@pie-lib/graphing': major
