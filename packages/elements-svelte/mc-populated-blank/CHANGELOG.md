@@ -1,5 +1,12 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.25
+
+### Patch Changes
+
+- bde7249: The show-correct-answer toggle and teacher instructions render above the stem on the grid layouts, together with the prompt in one `pie-header` block; before, they fell below the answer choices.
+- bde7249: A prompt now renders above the stem on the grid layouts: `inline_sentence` with the Listen button, `token_sequence` and `stimulus_image_blank`. Before, it fell below the answer choices. An `iat-align-center` block is centred. A prompt that holds no text or media renders nothing, and the choices keep their own label.
+
 ## 0.3.0-next.24
 
 ### Patch Changes
