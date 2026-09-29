@@ -922,6 +922,45 @@
       }
     },
     {
+      "id": "variant-sel-r1-g-inline-sentence",
+      "title": "sel_r1-g_plusggg on inline_sentence (Cambium SEL shape)",
+      "description": "Shaped like the Cambium SEL passage items on star (CAI 62306): an inline_sentence template whose stem is wrapped in a bare <span>. The text is invented.",
+      "tags": ["mc-populated-blank", "sel_r1-g_plusggg", "inline_sentence"],
+      "model": {
+        "id": "27",
+        "element": "mc-populated-blank",
+        "prompt": "<div><p class=\"iat-align-center\"><strong>The Dog</strong></p><p>The brown dog ran to the park. I gave it a stick. The dog sat down.</p></div>",
+        "template": "<span>Pick a word that describes the dog.</span> {{blank}}",
+        "choiceMode": "text",
+        "choices": [
+          {
+            "id": "choice-A",
+            "labelHtml": "<div><p><span class=\"iat-text-large\">brown</span></p></div>"
+          },
+          {
+            "id": "choice-B",
+            "labelHtml": "<div><p><span class=\"iat-text-large\">ran</span></p></div>"
+          },
+          {
+            "id": "choice-C",
+            "labelHtml": "<div><p><span class=\"iat-text-large\">gave</span></p></div>"
+          }
+        ],
+        "correctChoiceId": "choice-A",
+        "hasAudio": false,
+        "interactionMode": "populate_blank",
+        "layoutProfile": "inline_sentence",
+        "customType": "sel_r1-g_plusggg",
+        "choiceLayout": "horizontal",
+        "locale": "en_US"
+      },
+      "session": {
+        "id": "27",
+        "element": "mc-populated-blank",
+        "choiceId": ""
+      }
+    },
+    {
       "id": "variant-sel-r1-plusggg-graphic",
       "title": "sel_r1-_plusggg \u2014 graphic choices English (097f87c5)",
       "description": "Graphic choice variant from item 097f87c5-c474-4dda-97b2-46b30d598a54.",

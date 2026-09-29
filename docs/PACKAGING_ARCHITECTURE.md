@@ -53,14 +53,28 @@ Standard ESM exports point at generated `dist` files:
 }
 ```
 
-Browser ESM exports are added when browser output is enabled:
+Browser ESM exports are added when browser output is enabled. The browser build
+compiles the same entry sources, so each one takes the declarations of its
+standard view:
 
 ```json
 {
-  "./browser/delivery": { "default": "./dist/browser/delivery/index.js" },
-  "./browser/author": { "default": "./dist/browser/author/index.js" },
-  "./browser/print": { "default": "./dist/browser/print/index.js" },
-  "./browser/controller": { "default": "./dist/browser/controller/index.js" }
+  "./browser/delivery": {
+    "types": "./dist/delivery/index.d.ts",
+    "default": "./dist/browser/delivery/index.js"
+  },
+  "./browser/author": {
+    "types": "./dist/author/index.d.ts",
+    "default": "./dist/browser/author/index.js"
+  },
+  "./browser/print": {
+    "types": "./dist/print/index.d.ts",
+    "default": "./dist/browser/print/index.js"
+  },
+  "./browser/controller": {
+    "types": "./dist/controller/index.d.ts",
+    "default": "./dist/browser/controller/index.js"
+  }
 }
 ```
 
@@ -76,14 +90,22 @@ declared ESM, browser ESM, IIFE, and type artifacts from its own package
 directory. While React elements are still being migrated from `../pie-elements`,
 temporary upstream sync scripts generate the package scripts and Vite configs for
 those synced packages. They are a migration bridge, not a permanent architectural
-layer. A full browser-plus-IIFE package runs:
+layer. A package with every build lane, such as multiple-choice, runs:
 
 ```bash
 vite build
 vite build --config ../../../tools/vite/element-browser.config.ts
+vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts
+vite build --config ../../../tools/vite/element-legacy-print.config.ts
 vite build --config vite.config.iife.ts
 tsc --emitDeclarationOnly
 ```
+
+The editor-runtime lane writes the variant under `dist/browser/editor-runtime`
+([Shared Editor Runtime](PIE_ELEMENT_CONTRACT.md#shared-editor-runtime)), and the
+legacy print lane writes `module/print.js` for packages with a print view.
+`composeElementBuildScript` in `tools/cli/src/lib/upstream/sync-constants.ts`
+composes each synced package's script from the lanes it has.
 
 The main Vite build emits Node/builder ESM. Generated element `vite.config.ts`
 files use multi-entry library mode with `preserveModules: true`, so source
@@ -99,6 +121,14 @@ the element package directory. It discovers existing `src/delivery`,
 as build-time constants so browser artifacts can derive deterministic,
 version-scoped private child custom element tags.
 
+An element whose browser build bundles the editor engine then runs
+`tools/vite/element-browser-editor-runtime.config.ts`
+(`svelte-element-browser-editor-runtime.config.ts` for Svelte elements). It rebuilds the same
+entries into `dist/browser/editor-runtime` with the specifiers of
+`@pie-element/shared-editor-runtime` external, and fails when an engine module is still bundled:
+the runtime's `pie.browserModules` then lacks the specifier that reaches it. It runs after the
+standard browser build, which empties `dist/browser`.
+
 Browser ESM keeps the same registration boundary as the runtime contract:
 players own authored top-level PIE tag registration, while an element package
 owns the package-private child custom elements it renders internally. This is
@@ -107,6 +137,40 @@ the browser artifact instead of being discovered by `pie-players` at runtime.
 Whether or not EBSR's "two multiple-choice children" design is the ideal
 architecture, it is the behavior that existing IIFE bundles have shipped for a
 long time, so browser ESM must support it for compatibility.
+
+### Browser ESM Stylesheets
+
+Library mode extracts every stylesheet the bundled code imports into a `.css` file and
+references it nowhere, and browser ESM hosts, `pie-players` and the legacy
+`@pie-framework/pie-print` client alike, load no element CSS. MathQuill's stylesheet shipped
+that way, and math-inline rendered `$$$` and a bare textarea.
+
+`tools/vite/browser-css-loader.ts`, which the React and Svelte browser and legacy print configs
+all use, compiles each extracted stylesheet into the chunks that import it and deletes the
+`.css` file. Such a chunk starts by appending the rules to `<head>` in a `<style>` element, so
+they apply before the chunk's own code runs and an element's first render is styled, as under
+IIFE, where style-loader does the same.
+
+The rules travel as a string because a host bundler breaks both alternatives: it copies a
+stylesheet reached through `new URL(..., import.meta.url)` verbatim, so the `url()` references
+inside it dangle, and holding a chunk until a `<link>` loads takes top-level await, which
+default Vite 6 builds reject. `check:publish-surface` rejects top-level await in any shipped
+browser module.
+
+Assets the rules reference ship as files in `assets/` beside the chunks, each named by a
+literal `new URL("./assets/…", import.meta.url)`, which Vite, webpack and the browser resolve
+alike. Library mode inlines every asset as a data URI whatever its size; the plugin applies the
+app-build limit instead, keeping data URIs of 4 KiB or less inline and writing larger ones out.
+A `@font-face` rule with a WOFF2 source keeps only its `local()` and WOFF2 sources, because every
+browser that runs these modules reads WOFF2. MathQuill's Symbola font ships as one 148 KB file
+this way, where the extracted stylesheet embedded it in five formats and weighed 2.6 MB.
+
+Each `<style>` carries a hash of its stylesheet as `data-pie-css`, and a chunk skips a
+stylesheet the document already has, so the MathQuill stylesheet that most elements ship
+installs once however many of them a page loads.
+
+The bundler-facing `dist/` builds and the IIFE builds keep their CSS imports for the consuming
+bundler, and are untouched.
 
 ### Browser ESM CommonJS Interop
 
@@ -186,9 +250,30 @@ migration-generated React configs resolve `@pie-element/shared-*` and
 `@pie-lib/*` imports to workspace source and set webpack/Rollup externalization
 to false, producing a self-contained `dist/index.iife.js` for that package.
 
-Svelte elements use hand-maintained per-view Vite configs but follow the same
-public packaging rule: exported package surfaces point at generated files, not
-raw source.
+Svelte elements carry no Vite configs of their own; every one runs the same
+build script against shared configs in `tools/vite/`:
+
+```bash
+vite build --config ../../../tools/vite/svelte-element-esm.config.ts
+vite build --config ../../../tools/vite/svelte-element-browser.config.ts
+vite build --config ../../../tools/vite/svelte-element-browser-editor-runtime.config.ts
+vite build --config ../../../tools/vite/svelte-element-legacy-print.config.ts
+vite build --config ../../../tools/vite/svelte-element-iife.config.ts
+tsc --emitDeclarationOnly
+```
+
+simple-cloze and venn-classification bundle the editor engine and run the
+editor-runtime step; mc-populated-blank skips it.
+
+`svelte-element-esm.config.ts` empties `dist/` and builds each npm ESM lane
+whose entry exists (`src/index.ts`, `src/{delivery,controller,author,print}/index.ts`,
+`src/runtime-support.ts`) as a separate self-contained file, compiling Svelte
+only in the component lanes. `dist/index.js` imports `./delivery/index.js`
+instead of bundling it again, so the root and `/delivery` exports are one
+element class. `svelte-element-iife.config.ts` names the IIFE global after the
+package: `@pie-element/simple-cloze` becomes `SimpleClozeElement`. Exported
+package surfaces point at generated files, not raw source, as for React
+elements.
 
 ## Controller And Configure Packaging
 
@@ -242,6 +327,7 @@ Dependency handling is different for each runtime surface:
 | --- | --- | --- |
 | Node/builder ESM | Host package manager and host bundler | Generated Vite configs externalize common runtime libraries and workspace packages |
 | Browser player ESM | Static `dist/browser` files plus player import map | Only `allowedBareImports` are external; currently React, JSX runtimes, React DOM, and React DOM client |
+| Browser player ESM, editor-runtime variant | Static `dist/browser/editor-runtime` files plus the runtime's modules in the player import map | `allowedBareImports` and the specifiers in `@pie-element/shared-editor-runtime`'s `pie.browserModules` are external |
 | Per-element IIFE | The element's IIFE build output | Everything is bundled into that element's IIFE |
 | Multi-element IIFE bundler | Temporary install workspace created by `@pie-element/element-bundler` | `@pie-lib/pie-toolbox` and `@pie-lib/math-rendering` are externalized shared PIE libs |
 | Demo dev server | Workspace files and optimized dependencies | Additional ProseMirror aliases pin editor packages to one physical Bun store copy |
@@ -327,9 +413,13 @@ bun run verify:element-contracts
 That command orchestrates the contract-relevant checks:
 
 - `scripts/check-publish-surface.mjs` verifies dist-only exports, rejects
-  forbidden export conditions such as `development` and `svelte`, checks browser
-  ESM policy, verifies packed tarball contents, and enforces runtime-support
-  metadata for non-browser-ESM elements.
+  forbidden export conditions such as `development` and `svelte`, rejects a
+  `svelte` dependency or a runtime `svelte` import in any publishable package,
+  checks browser ESM policy, rejects stylesheets in `dist/browser` or `module/`
+  that no reachable module loads and top-level await in any module those
+  directories ship, verifies packed tarball contents, and enforces
+  runtime-support metadata for non-browser-ESM elements. `tests/svelte-leak.test.ts`
+  runs its Svelte rules over the built workspace on every pull request.
 - `tools/cli/src/commands/verify/controllers.ts` checks `pie.controller`,
   `./controller`, `./controller.js`, the root `controller.js` shim,
   `pie.configure`, `./configure`, the root `configure.js` shim, and built
@@ -339,23 +429,27 @@ That command orchestrates the contract-relevant checks:
 - `scripts/check-sourcemap-sources.mjs` checks source maps carry inline source
   content so debugging does not depend on raw source being packed.
 
-Before release, also use the smoke matrix in `.compatibility/report.json` to
-exercise representative ESM, IIFE, and preloaded flows.
+Before release, also run the browser smoke matrix
+(`apps/element-demo/test/e2e/smoke-matrix.spec.ts`; `bun run test:iife:e2e` for
+ESM and IIFE together). Preloaded flows are covered in `pie-players`.
 
 ## Common Pitfalls
 
 - Do not add `development` or `svelte` export conditions to package manifests.
   Local source loading belongs in demo resolver tooling, not published package
   exports.
+- Do not externalize `svelte` from an element build or declare it as a
+  dependency or peer. Clients install no Svelte; element builds inline its runtime.
 - Do not expose `src`, `.ts`, `.tsx`, `.svelte`, or `.svelte.ts` files as public
   package entry points.
 - Do not rely on jsDelivr `+esm` or other CDN package transforms for element
   package code. Browser ESM is built and published under `dist/browser`.
 - Do not treat `dependencies` or `peerDependencies` as the browser singleton
   contract. Use `pie.browserSharedDependencies` and the browser ESM policy.
-- Do not remove `controller.js` or `configure.js` from packages that declare the
-  corresponding `pie.*` metadata. The subpath exports are the modern API, but
-  the root shims preserve legacy alias-based builder compatibility.
+- Do not remove the root shims `controller.js`, `configure.js`, `author.js` and
+  `print.js` from packages that publish the matching subpath exports. The subpath
+  exports are the modern API; the root shims preserve legacy alias-based builder
+  compatibility.
 
 ## Related Documents
 

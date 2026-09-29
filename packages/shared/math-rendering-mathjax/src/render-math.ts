@@ -9,6 +9,9 @@ import { createMathjaxRenderer } from './adapter.js';
 
 const PLAYER_MATH_RENDERING_KEY = '@pie-lib/math-rendering';
 
+// The legacy renderer reads its page options from this global, single-dollar delimiters included.
+const LEGACY_OPTIONS_KEY = '@pie-lib/math-rendering@2';
+
 type PlayerMathRenderingApi = {
   renderMath?: (element: HTMLElement) => void | Promise<void>;
   wrapMath?: (latex: string) => string;
@@ -19,9 +22,16 @@ type PlayerMathRenderingApi = {
 // Singleton renderer instance
 let renderer: ReturnType<typeof createMathjaxRenderer> | null = null;
 
+function pageUsesSingleDollar(): boolean {
+  const legacyOptions = (window as any)[LEGACY_OPTIONS_KEY] as
+    | { opts?: { useSingleDollar?: unknown } }
+    | undefined;
+  return Boolean(legacyOptions?.opts?.useSingleDollar);
+}
+
 function getRenderer() {
   if (!renderer) {
-    renderer = createMathjaxRenderer({ accessibility: true, useSingleDollar: true });
+    renderer = createMathjaxRenderer({ useSingleDollar: pageUsesSingleDollar() });
   }
   return renderer;
 }
@@ -50,6 +60,7 @@ export const renderMath = async (el?: Element | string): Promise<string | undefi
     target = (el || document.body) as HTMLElement;
   }
 
+  // Delegating adds no MathJax to the page; the adapter reports MathJax 4 meeting MathJax 3.
   const playerRenderer = getPlayerMathRenderer();
   if (playerRenderer) {
     await playerRenderer.renderMath?.(target);

@@ -48,7 +48,7 @@ For normal development, the workflow is intentionally small:
 ```bash
 bun install
 bun run build
-bun run dev:demo multiple-choice
+bun run dev:demo
 bun run test
 bun run lint
 ```
@@ -100,7 +100,7 @@ PIE Elements NG is an active modernization project. The current baseline include
 | --- | --- |
 | Install dependencies | `bun install` |
 | Build packages | `bun run build` |
-| Open an element demo | `bun run dev:demo <element-name>` |
+| Open an element demo | `bun run dev:demo`, then `http://localhost:5222/<element-name>` |
 | Run unit tests | `bun run test` |
 | Run lint checks | `bun run lint` |
 | Check upstream sync status | `bun run upstream:status` |

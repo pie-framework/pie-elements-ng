@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -8,6 +7,11 @@ import {
   collectElementViteEntryPoints,
   ReactComponentsStrategy,
 } from '../src/lib/upstream/sync-react-strategy.js';
+import {
+  IIFE_DEBUG_SHIM_SOURCE,
+  IIFE_PROP_TYPES_SHIM_SOURCE,
+} from '../src/lib/upstream/sync-constants.js';
+import { commitFixtureRepo } from './helpers/git-fixture.js';
 
 const createLogger = () =>
   ({
@@ -19,16 +23,6 @@ const createLogger = () =>
     section: () => {},
     success: () => {},
   }) as any;
-
-async function commitPieElementsFixture(pieElementsDir: string): Promise<void> {
-  execFileSync('git', ['init'], { cwd: pieElementsDir, stdio: 'ignore' });
-  execFileSync('git', ['add', '.'], { cwd: pieElementsDir, stdio: 'ignore' });
-  execFileSync(
-    'git',
-    ['-c', 'user.name=Test User', '-c', 'user.email=test@example.com', 'commit', '-m', 'init'],
-    { cwd: pieElementsDir, stdio: 'ignore' }
-  );
-}
 
 describe('collectElementViteEntryPoints', () => {
   it('includes runtime-support when the generated source exists', async () => {
@@ -93,7 +87,7 @@ describe('ReactComponentsStrategy source tree sync', () => {
       ),
       'utf-8'
     );
-    await commitPieElementsFixture(pieElementsDir);
+    commitFixtureRepo(pieElementsDir);
 
     const strategy = new ReactComponentsStrategy();
     const result = await strategy.execute({
@@ -221,7 +215,7 @@ export default Main;
       JSON.stringify({ name: '@pie-element/ebsr', version: '1.2.3' }, null, 2),
       'utf-8'
     );
-    await commitPieElementsFixture(pieElementsDir);
+    commitFixtureRepo(pieElementsDir);
 
     const strategy = new ReactComponentsStrategy();
     await strategy.execute({
@@ -266,6 +260,8 @@ export default Main;
     expect(authorMain).not.toContain('<ebsr-multiple-choice-configure');
     expect(viteConfig).toContain('__PIE_PACKAGE_VERSION__');
     expect(iifeConfig).toContain('__PIE_PACKAGE_VERSION__');
+    expect(iifeConfig).toContain(JSON.stringify(IIFE_DEBUG_SHIM_SOURCE));
+    expect(iifeConfig).toContain(JSON.stringify(IIFE_PROP_TYPES_SHIM_SOURCE));
   });
 
   it('regenerates complex-rubric version-scoped private child element wiring after upstream sync', async () => {
@@ -361,7 +357,7 @@ export default Main;
       JSON.stringify({ name: '@pie-element/complex-rubric', version: '1.2.3' }, null, 2),
       'utf-8'
     );
-    await commitPieElementsFixture(pieElementsDir);
+    commitFixtureRepo(pieElementsDir);
 
     const strategy = new ReactComponentsStrategy();
     await strategy.execute({

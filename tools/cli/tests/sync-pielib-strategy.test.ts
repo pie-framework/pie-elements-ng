@@ -1,10 +1,10 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PieLibStrategy } from '../src/lib/upstream/sync-pielib-strategy.js';
+import { commitFixtureRepo } from './helpers/git-fixture.js';
 
 const createLogger = () =>
   ({
@@ -16,16 +16,6 @@ const createLogger = () =>
     section: () => {},
     success: () => {},
   }) as any;
-
-async function commitPieLibFixture(pieLibDir: string): Promise<void> {
-  execFileSync('git', ['init'], { cwd: pieLibDir, stdio: 'ignore' });
-  execFileSync('git', ['add', '.'], { cwd: pieLibDir, stdio: 'ignore' });
-  execFileSync(
-    'git',
-    ['-c', 'user.name=Test User', '-c', 'user.email=test@example.com', 'commit', '-m', 'init'],
-    { cwd: pieLibDir, stdio: 'ignore' }
-  );
-}
 
 describe('PieLibStrategy autosize input generation', () => {
   it('generates the local autosize component when syncing graph label sources', async () => {
@@ -54,7 +44,7 @@ describe('PieLibStrategy autosize input generation', () => {
       ),
       'utf-8'
     );
-    await commitPieLibFixture(pieLibDir);
+    commitFixtureRepo(pieLibDir);
 
     const strategy = new PieLibStrategy();
     const result = await strategy.execute({
@@ -112,7 +102,7 @@ describe('PieLibStrategy autosize input generation', () => {
       ),
       'utf-8'
     );
-    await commitPieLibFixture(pieLibDir);
+    commitFixtureRepo(pieLibDir);
 
     const strategy = new PieLibStrategy();
     const result = await strategy.execute({
@@ -193,7 +183,7 @@ describe('PieLibStrategy source tree sync', () => {
       ),
       'utf-8'
     );
-    await commitPieLibFixture(pieLibDir);
+    commitFixtureRepo(pieLibDir);
 
     const strategy = new PieLibStrategy();
     const result = await strategy.execute({

@@ -11,7 +11,8 @@
 // functions also used in controller/src/utils.js
 // camelize keys is needed to convert the keys from snake_case to camelCase
 // this is also done in the controller
-import { camelizeKeys } from 'humps';
+import humps from 'humps';
+const { camelizeKeys } = humps;
 
 const getAllCorrectAnswers = (answers, responses) =>
   (answers || []).map((answer) => ({

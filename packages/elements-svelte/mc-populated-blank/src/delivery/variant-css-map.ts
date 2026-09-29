@@ -100,25 +100,58 @@ const SEL_R1_VARIANT_IDS = new Set([
   'sel-r1-s3',
 ]);
 
-const injectStyleOnce = (id: string, variantName: string, cssText: string): void => {
-  const existing = document.getElementById(id) as HTMLStyleElement | null;
-  if (existing) {
-    if (existing.textContent !== cssText) existing.textContent = cssText;
-    return;
+const ROOT_SELECTOR = /\.mc-populated-blank-root(?![\w-])/g;
+
+/** FNV-1a over the text, in base 36. */
+const hashText = (text: string): string => {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
   }
+  return (hash >>> 0).toString(36);
+};
+
+/**
+ * Names this build's variant sheets. The sheets are global, so each selector is
+ * narrowed to roots carrying the same key: two versions of the element on one
+ * page then style only their own roots, and share a sheet only when the CSS is
+ * identical.
+ */
+export const VARIANT_CSS_KEY = hashText(
+  [selR1BaseCss, ...Object.values(VARIANT_BY_CUSTOM_TYPE).map((c) => c.cssText)].join('\n')
+);
+
+/** `:where()` adds no specificity, so the variant sheets cascade exactly as written. */
+export const keyVariantCss = (cssText: string): string =>
+  cssText.replace(
+    ROOT_SELECTOR,
+    `.mc-populated-blank-root:where([data-mpb-css="${VARIANT_CSS_KEY}"])`
+  );
+
+const injectStyleOnce = (target: Document | ShadowRoot, variantName: string, cssText: string) => {
+  const id = `mc-populated-blank-css-${variantName}-${VARIANT_CSS_KEY}`;
+  if (target.getElementById(id)) return;
   const style = document.createElement('style');
   style.id = id;
   style.setAttribute('data-mpb-variant', variantName);
-  style.textContent = cssText;
-  document.head.appendChild(style);
+  style.textContent = keyVariantCss(cssText);
+  (target instanceof ShadowRoot ? target : target.head).appendChild(style);
 };
 
-export const ensureVariantCssInjected = (config?: VariantCssConfig): void => {
+/**
+ * Adds the item's variant sheet where `root` renders: the document head, or the
+ * shadow root of a host that placed the element inside one, which document
+ * styles do not reach.
+ */
+export const ensureVariantCssInjected = (config: VariantCssConfig | undefined, root: Element) => {
   if (!config?.cssText || typeof document === 'undefined') {
     return;
   }
+  const rootNode = root.getRootNode();
+  const target = rootNode instanceof ShadowRoot ? rootNode : document;
   if (SEL_R1_VARIANT_IDS.has(config.variantId)) {
-    injectStyleOnce('mc-populated-blank-css-sel-r1-base', 'sel-r1-base', selR1BaseCss);
+    injectStyleOnce(target, 'sel-r1-base', selR1BaseCss);
   }
-  injectStyleOnce(`mc-populated-blank-css-${config.variantId}`, config.variantId, config.cssText);
+  injectStyleOnce(target, config.variantId, config.cssText);
 };

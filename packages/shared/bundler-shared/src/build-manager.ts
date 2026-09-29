@@ -1,26 +1,33 @@
 /**
- * In-process build manager with single-flight by hash.
- * Same-hash requests join one active build; different hashes run in parallel.
+ * In-process build manager. Requests with the same key join one active build; builds that share a
+ * directory run one after another, since each installs into it and rewrites its metadata; builds
+ * in different directories run in parallel.
  */
 
 export class BuildManager<T> {
-  private readonly activeByHash = new Map<string, Promise<T>>();
+  private readonly activeByKey = new Map<string, Promise<T>>();
+  private readonly lastByDirectory = new Map<string, Promise<T>>();
 
-  async run(hash: string, runner: () => Promise<T>): Promise<T> {
-    const existing = this.activeByHash.get(hash);
+  async run(key: string, runner: () => Promise<T>, directory: string = key): Promise<T> {
+    const existing = this.activeByKey.get(key);
     if (existing) {
       return existing;
     }
 
-    const task = runner().finally(() => {
-      this.activeByHash.delete(hash);
+    const previous = this.lastByDirectory.get(directory);
+    const task: Promise<T> = (previous ? previous.then(runner, runner) : runner()).finally(() => {
+      this.activeByKey.delete(key);
+      if (this.lastByDirectory.get(directory) === task) {
+        this.lastByDirectory.delete(directory);
+      }
     });
 
-    this.activeByHash.set(hash, task);
+    this.activeByKey.set(key, task);
+    this.lastByDirectory.set(directory, task);
     return task;
   }
 
-  hasActive(hash: string): boolean {
-    return this.activeByHash.has(hash);
+  hasActive(key: string): boolean {
+    return this.activeByKey.has(key);
   }
 }

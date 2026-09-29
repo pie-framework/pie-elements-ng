@@ -1,10 +1,10 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /**
- * The Svelte element packages may only read `--pie-*` names that the
+ * The Svelte element and library packages may only read `--pie-*` names that the
  * `pie-players` token registry owns. A name invented here is invisible to that
  * registry's gate, so no color scheme overrides it and no contrast rule covers
  * it — the failure mode PIE-857 closed by retiring the `--pie-correct-answer-*`
@@ -18,15 +18,19 @@ import { describe, expect, it } from 'vitest';
  * a registry entry over there first, not an entry here.
  */
 const REGISTERED_CANONICAL_TOKENS = new Set([
+  '--pie-background',
   '--pie-background-dark',
+  '--pie-black',
   '--pie-border-light',
   '--pie-button-focus-outline',
   '--pie-correct-icon',
   '--pie-correct-secondary',
   '--pie-correct-tertiary',
+  '--pie-disabled',
   '--pie-focus-checked-border',
   '--pie-incorrect-icon',
   '--pie-incorrect-secondary',
+  '--pie-primary',
   '--pie-secondary-background',
   '--pie-tertiary',
   '--pie-tertiary-light',
@@ -41,9 +45,20 @@ const REGISTERED_CANONICAL_TOKENS = new Set([
  */
 const REGISTERED_PLANNED_TOKENS = new Set(['--pie-focus-outline']);
 
-const SVELTE_ELEMENT_PACKAGES = ['mc-populated-blank', 'simple-cloze', 'venn-classification'];
 const SOURCE_EXTENSIONS = new Set(['.css', '.svelte', '.ts']);
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+// Paths under `packages/`. Every Svelte library is scanned: an element paints with
+// whatever its libraries render.
+const SVELTE_SOURCE_PACKAGES = [
+  'elements-svelte/mc-populated-blank',
+  'elements-svelte/simple-cloze',
+  'elements-svelte/video-stimulus',
+  'elements-svelte/venn-classification',
+  ...readdirSync(join(repoRoot, 'packages/lib-svelte'))
+    .filter((entry) => existsSync(join(repoRoot, 'packages/lib-svelte', entry, 'src')))
+    .map((entry) => `lib-svelte/${entry}`),
+];
 
 /**
  * The React packages reach `--pie-*` through the `color.*()` accessors in
@@ -160,7 +175,7 @@ function sourceFiles(dir: string): string[] {
 
 function pieTokensIn(pkg: string): Map<string, string[]> {
   const byToken = new Map<string, string[]>();
-  for (const file of sourceFiles(join(repoRoot, 'packages/elements-svelte', pkg, 'src'))) {
+  for (const file of sourceFiles(join(repoRoot, 'packages', pkg, 'src'))) {
     const contents = readFileSync(file, 'utf8');
     for (const [name] of contents.matchAll(/--pie-[a-z0-9-]+/g)) {
       const seenIn = byToken.get(name) ?? [];
@@ -171,7 +186,7 @@ function pieTokensIn(pkg: string): Map<string, string[]> {
   return byToken;
 }
 
-describe.each(SVELTE_ELEMENT_PACKAGES)('%s --pie-* token contract', (pkg) => {
+describe.each(SVELTE_SOURCE_PACKAGES)('%s --pie-* token contract', (pkg) => {
   const tokens = pieTokensIn(pkg);
 
   it('reads only registered --pie-* tokens', () => {
@@ -186,7 +201,7 @@ describe.each(SVELTE_ELEMENT_PACKAGES)('%s --pie-* token contract', (pkg) => {
 
   it('declares no --pie-* token of its own', () => {
     const declared: string[] = [];
-    for (const file of sourceFiles(join(repoRoot, 'packages/elements-svelte', pkg, 'src'))) {
+    for (const file of sourceFiles(join(repoRoot, 'packages', pkg, 'src'))) {
       const contents = readFileSync(file, 'utf8');
       // A declaration assigns the name; a read wraps it in var().
       for (const [, name] of contents.matchAll(/(?<!var\()(--pie-[a-z0-9-]+)\s*:/g)) {

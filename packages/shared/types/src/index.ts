@@ -1,9 +1,8 @@
 /**
  * PIE Shared Types
  *
- * Framework-agnostic TypeScript types and events for PIE elements.
+ * Framework-agnostic TypeScript types for PIE elements.
  */
 
-export * from './events.js';
 export * from './docs-contract.js';
 export * from './types.js';

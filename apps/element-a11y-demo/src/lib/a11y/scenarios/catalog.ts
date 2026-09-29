@@ -33,6 +33,7 @@ import placementOrderingSamples from '../../samples/placement-ordering.json' wit
 import rubricSamples from '../../samples/rubric.json' with { type: 'json' };
 import selectTextSamples from '../../samples/select-text.json' with { type: 'json' };
 import simpleClozeSamples from '../../samples/simple-cloze.json' with { type: 'json' };
+import videoStimulusSamples from '../../samples/video-stimulus.json' with { type: 'json' };
 import vennClassificationSamples from '../../samples/venn-classification.json' with {
   type: 'json',
 };
@@ -814,6 +815,23 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
     concerns: ['status-feedback', 'input-assistance', 'semantics'],
     automatedChecks: feedbackChecks,
+  }),
+  defineScenario({
+    element: 'video-stimulus',
+    id: 'captioned-video-transcript-alternatives',
+    title: 'Captioned video exposes a transcript and media alternatives',
+    purpose:
+      'Checks a native video stimulus for a labelled media region, an English captions track, transcript access, and keyboard-reachable controls.',
+    sample: videoStimulusSamples,
+    wcagCriteria: ['1.2.2', '1.2.3', '1.3.1', '2.1.1', '3.1.2', '4.1.2'],
+    concerns: ['media-alternatives', 'keyboard-focus', 'semantics', 'reading-structure'],
+    automatedChecks: mediaChecks,
+    manualReviewNotes: [
+      'Confirm captions are synchronized, accurate, identify speakers, and include meaningful sounds.',
+      'Confirm all instructionally important visual actions are described in the main or integrated audio.',
+      'Confirm the transcript remains understandable and available when video playback fails.',
+      'Native media-control keyboard behavior and caption presentation require browser and assistive-technology review.',
+    ],
   }),
   defineScenario({
     element: 'venn-classification',

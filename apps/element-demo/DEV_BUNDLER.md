@@ -22,10 +22,13 @@ bun run dev:demo
 Notes:
 
 - IIFE bundling is local-only.
+- The demo loads the bundler from its build, so build it before using IIFE mode, and rebuild it
+  and restart the demo after changing it: `bunx turbo run build --filter=@pie-element/element-bundler`.
 - The dev server uses a per-run temp workspace and cache.
 - Restarting `dev:demo` starts with a fresh local bundler cache/output.
 - Optional env var `DEMO_BUNDLER_RESOLUTION_MODE` controls dependency resolution:
-  - `workspace-fast` (default): resolves `@pie-*` from local workspace
+  - `workspace-fast` (default): bundles `@pie-*` from local workspace sources, so no element or
+    library needs building first
   - `prod-faithful`: resolves from package versions like production
 
 ## Switching IIFE bundle backends
@@ -55,7 +58,7 @@ Defaults:
 Optional overrides:
 
 ```bash
-PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_ENDPOINT=http://localhost:5339/api/bundle bun run dev:element-demo
+PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_ENDPOINT=http://localhost:<port>/api/bundle bun run dev:element-demo
 PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE=hosted \
   PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_HOST=https://proxy.dev.pie-api.com/bundles/ \
   bun run dev:element-demo
@@ -88,7 +91,7 @@ The local bundler endpoint supports async build tracking while keeping the same 
 Start (async):
 
 ```bash
-curl -X POST http://localhost:5339/api/bundle \
+curl -X POST http://localhost:5222/api/bundle \
   -H "Content-Type: application/json" \
   -d '{
     "dependencies":[{"name":"@pie-element/categorize","version":"latest"}],
@@ -106,13 +109,13 @@ Response includes:
 Poll latest status:
 
 ```bash
-curl "http://localhost:5339/api/bundle?buildId=<buildId>"
+curl "http://localhost:5222/api/bundle?buildId=<buildId>"
 ```
 
 Stream progress (SSE):
 
 ```bash
-curl -N "http://localhost:5339/api/bundle/events?buildId=<buildId>"
+curl -N "http://localhost:5222/api/bundle/events?buildId=<buildId>"
 ```
 
 ## Dependency version policy
@@ -132,8 +135,8 @@ Low-risk packages can generally track latest unless a concrete regression is obs
 
 Source maps policy:
 
-- Local bundler now builds with webpack `devtool: false` (no `.map` output).
-- This is intentional to reduce build time and artifact size when source maps are not used operationally.
+- The local bundler emits source maps (webpack `devtool: 'source-map'`) by default.
+- `DEMO_BUNDLER_SOURCEMAPS=0` turns them off for faster builds and smaller bundles.
 
 ## Modernization backlog
 

@@ -354,7 +354,16 @@ export const MathNodeView = (props) => {
   }, [editor, showToolbar]);
 
   useEffect(() => {
+    // The toolbar can open from the very click that is still bubbling to `document`
+    // (e.g. the toolbar's math button inserting a node). Ignore any event that
+    // started before this listener was registered, or it closes the toolbar at once.
+    const listenerAddedAt = performance.now();
+
     const handleClickOutside = (event) => {
+      if (event?.timeStamp < listenerAddedAt) {
+        return;
+      }
+
       const target = event?.target;
 
       // MUI's `Select` renders its dropdown options in a portal attached to `document.body`.

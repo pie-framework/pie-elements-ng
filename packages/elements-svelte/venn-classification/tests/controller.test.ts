@@ -42,6 +42,18 @@ describe('createDefaultModel', () => {
     expect(m.scoringPolicy).toBe('partialPerTile');
     expect(m.regionLabels).toEqual({});
   });
+
+  it('carries no `id` or `element`, which the item config and the player supply', () => {
+    // A player registers a versioned tag and stamps it as `element`; a default
+    // `element` would name a tag nothing registered.
+    const m = createDefaultModel({});
+    expect(m).not.toHaveProperty('id');
+    expect(m).not.toHaveProperty('element');
+    expect(createDefaultModel({ id: '7', element: 'x--version-1-0-0' })).toMatchObject({
+      id: '7',
+      element: 'x--version-1-0-0',
+    });
+  });
 });
 
 describe('validate', () => {
@@ -183,36 +195,94 @@ describe('outcome', () => {
   };
 
   it('returns score 1 for an all-correct session under partial scoring', async () => {
-    expect(await outcome(m, correct, { mode: 'evaluate' })).toEqual({ score: 1 });
+    expect(await outcome(m, correct, { mode: 'evaluate' })).toMatchObject({
+      score: 1,
+      empty: false,
+    });
   });
 
   it('returns proportional score for partial credit', async () => {
-    expect(await outcome(m, partial, { mode: 'evaluate' })).toEqual({ score: 3 / 4 });
+    expect(await outcome(m, partial, { mode: 'evaluate' })).toMatchObject({
+      score: 0.75,
+      empty: false,
+    });
   });
 
   it('returns 0 for all-wrong', async () => {
-    expect(await outcome(m, wrong, { mode: 'evaluate' })).toEqual({ score: 0 });
+    expect(await outcome(m, wrong, { mode: 'evaluate' })).toMatchObject({
+      score: 0,
+      empty: false,
+    });
+  });
+
+  it('rounds partial credit to two decimals, as multiple-choice and categorize do', async () => {
+    const three = twoSetModel({
+      tiles: [
+        { id: 'a', label: 'a', correctRegion: [0] },
+        { id: 'b', label: 'b', correctRegion: [1] },
+        { id: 'c', label: 'c', correctRegion: [] },
+      ],
+    });
+    const oneOfThree = { placements: { a: [0], b: [0], c: [0] } };
+    const twoOfThree = { placements: { a: [0], b: [1], c: [0] } };
+    expect((await outcome(three, oneOfThree, { mode: 'evaluate' })).score).toBe(0.33);
+    expect((await outcome(three, twoOfThree, { mode: 'evaluate' })).score).toBe(0.67);
   });
 
   it('allOrNothing returns 0 unless fully correct', async () => {
     const mm = twoSetModel({ scoringPolicy: 'allOrNothing' });
-    expect(await outcome(mm, partial, { mode: 'evaluate' })).toEqual({ score: 0 });
-    expect(await outcome(mm, correct, { mode: 'evaluate' })).toEqual({ score: 1 });
+    expect((await outcome(mm, partial, { mode: 'evaluate' })).score).toBe(0);
+    expect((await outcome(mm, correct, { mode: 'evaluate' })).score).toBe(1);
+  });
+
+  it('scores all-or-nothing when the player passes env.partialScoring = false', async () => {
+    // pie-players forwards `env.partialScoring` into outcome(); `false` forces
+    // dichotomous scoring over the item's partialPerTile policy.
+    const env = { mode: 'evaluate', partialScoring: false };
+    expect((await outcome(m, partial, env)).score).toBe(0);
+    expect((await outcome(m, correct, env)).score).toBe(1);
+    expect((await outcome(m, partial, { mode: 'evaluate', partialScoring: true })).score).toBe(
+      0.75
+    );
   });
 
   it('empty session resolves to { score: 0, empty: true }', async () => {
-    expect(await outcome(m, {} as any, { mode: 'evaluate' })).toEqual({ score: 0, empty: true });
-    expect(await outcome(m, { placements: {} }, { mode: 'evaluate' })).toEqual({
+    expect(await outcome(m, {} as any, { mode: 'evaluate' })).toMatchObject({
+      score: 0,
+      empty: true,
+    });
+    expect(await outcome(m, { placements: {} }, { mode: 'evaluate' })).toMatchObject({
+      score: 0,
+      empty: true,
+    });
+    expect(
+      await outcome(m, { placements: { t1: null, t2: null, t3: null, t4: null } }, {})
+    ).toMatchObject({ score: 0, empty: true });
+    expect(await outcome(m, undefined, { mode: 'evaluate' })).toMatchObject({
       score: 0,
       empty: true,
     });
   });
 
-  it('non-evaluate mode returns undefined score/completed', async () => {
-    expect(await outcome(m, correct, { mode: 'gather' })).toEqual({
-      score: undefined,
-      completed: undefined,
+  it('scores outside evaluate mode, as multiple-choice does', async () => {
+    expect(await outcome(m, partial, { mode: 'gather' })).toMatchObject({
+      score: 0.75,
+      empty: false,
     });
+    expect((await outcome(m, correct, {})).score).toBe(1);
+  });
+
+  it('returns a traceLog explaining the score', async () => {
+    const result = await outcome(m, partial, { mode: 'evaluate' });
+    expect(result.traceLog).toEqual([
+      'Student placed 4 of 4 tile(s); 3 in the correct region.',
+      'Score calculated using partial scoring.',
+      'Final score: 0.75.',
+    ]);
+    const forced = await outcome(m, partial, { mode: 'evaluate', partialScoring: false });
+    expect(forced.traceLog).toContain('Score calculated using all-or-nothing scoring.');
+    const empty = await outcome(m, {}, { mode: 'evaluate' });
+    expect(empty.traceLog).toEqual(['Student did not place any tiles. Score is 0.']);
   });
 });
 
@@ -246,9 +316,27 @@ describe('createCorrectResponseSession', () => {
     expect(s?.completed).toBe(true);
     expect(s?.placements).toEqual({ t1: [0], t2: [1], t3: [0, 1], t4: [] });
   });
+  it('leaves `element` to the player, which stamps the tag it registered', async () => {
+    // A player builds the entry as `{ id, element: model.element, ...session }`,
+    // so an `element` here would replace its versioned tag.
+    const s = await createCorrectResponseSession(twoSetModel(), {
+      role: 'instructor',
+      mode: 'gather',
+    });
+    expect(s).not.toHaveProperty('element');
+  });
 });
 
 describe('model (view-model builder)', () => {
+  it('passes the language through for the translated strings', async () => {
+    const vm = await buildViewModel(
+      twoSetModel({ language: 'es_ES' }),
+      { placements: {} },
+      { mode: 'gather' }
+    );
+    expect(vm.language).toBe('es_ES');
+  });
+
   it('strips correctRegion from tiles in gather mode', async () => {
     const vm = await buildViewModel(twoSetModel(), { placements: {} }, { mode: 'gather' });
     expect(vm.tiles.every((t) => !('correctRegion' in t))).toBe(true);
@@ -295,5 +383,28 @@ describe('buildPreviewSession', () => {
     const s = buildPreviewSession(m);
     expect(s.placements).toEqual({ t1: [0], t2: [1], t3: [0, 1], t4: [] });
     expect(s.completed).toBe(true);
+    expect(s).not.toHaveProperty('element');
+  });
+});
+
+describe('model teacher instructions', () => {
+  const question = twoSetModel({ teacherInstructions: '<p>Read aloud.</p>' });
+  const instructor = { mode: 'view', role: 'instructor' };
+
+  it('sends them to an instructor when the flag is unset, as multiple-choice does', async () => {
+    const { teacherInstructionsEnabled: _flag, ...unset } = question;
+    expect((await buildViewModel(unset as VennModel, {}, instructor)).teacherInstructions).toBe(
+      '<p>Read aloud.</p>'
+    );
+  });
+
+  it('withholds them when turned off, and from a student', async () => {
+    expect(
+      (await buildViewModel({ ...question, teacherInstructionsEnabled: false }, {}, instructor))
+        .teacherInstructions
+    ).toBeNull();
+    expect(
+      (await buildViewModel(question, {}, { mode: 'view', role: 'student' })).teacherInstructions
+    ).toBeNull();
   });
 });

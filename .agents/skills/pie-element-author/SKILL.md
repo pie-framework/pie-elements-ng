@@ -79,9 +79,8 @@ Pattern:
 // In the delivery component, on tile placement / choice selection / etc.
 function handleInteraction(update: SessionUpdate) {
   const next = applyUpdate(session, update);
-  next.completed = isComplete(next, model);  // computed in the same update
-  session = next;
-  dispatch('session-changed', { session });
+  next.completed = isComplete(model, next);  // computed in the same update
+  onSessionChange?.(next);
 }
 ```
 
@@ -100,30 +99,40 @@ Use Svelte 5 runes throughout. Key rules:
 
 ## `session-changed` Event Dispatch
 
-Every session mutation must dispatch a `session-changed` event so the player and host can react. Use the shared helper from `@pie-lib/delivery-events-svelte` (or the equivalent in `packages/lib-svelte/`):
+Every session mutation must reach the player: the response written into the session object the player handed the element, then `session-changed` dispatched from the element. `defineDeliveryElement` from `@pie-lib/delivery-events-svelte` builds the element in `src/delivery/index.ts` and owns both. The component declares an `onSessionChange` callback prop and calls it with each update:
 
-```typescript
-import { dispatchSessionChanged } from '@pie-lib/delivery-events-svelte';
+```svelte
+<svelte:options
+  customElement={{
+    shadow: 'none',
+    props: { model: { type: 'Object' }, session: { type: 'Object' }, onSessionChange: {} },
+  }}
+/>
 
-function handleInteraction(update) {
-  session = { ...session, ...update, completed: isComplete(...) };
-  dispatchSessionChanged(hostElement, session);
+<script lang="ts">
+let { model, session, onSessionChange } = $props();
+
+function handleInput(value: string) {
+  onSessionChange?.({ ...session, value });
 }
+</script>
 ```
-
-If the lib helper is not available, dispatch manually:
 
 ```typescript
-hostElement.dispatchEvent(
-  new CustomEvent('session-changed', {
-    detail: { session },
-    bubbles: true,
-    composed: true,
-  })
-);
+// src/delivery/index.ts
+import { defineDeliveryElement } from '@pie-lib/delivery-events-svelte';
+import MyElementComponent from './MyElement.svelte';
+
+export default defineDeliveryElement<MyModel, MySession>(MyElementComponent, {
+  isComplete: (model, session) => typeof session?.value === 'string' && session.value.trim() !== '',
+});
 ```
 
-Never skip dispatching — the player will not know the session changed.
+The element writes each update into the player's session object (`writeSessionInPlace`), hands the component a fresh reference, and dispatches `session-changed` synchronously with `detail: { complete, component }`: `complete` from `isComplete`, `component` the tag the player registered the element under. The event carries no session; the player reads the response off `element.session`. `model-set` follows a microtask after the model is set, so it reports a restored session's completeness.
+
+`simple-cloze` is the smallest complete example. `mc-populated-blank` subclasses the returned class for element state: it assigns its audio callback props in its constructor, through the component's accessors, and overrides `isComplete()` to wait for the audio. The session's `id` and `element` are the player's, so the component never writes either. A plain `mount()` of the component takes `onSessionChange` as an ordinary prop, which is how component tests observe updates. An element that must defer its dispatch uses `createSessionNotifier` from `@pie-element/shared-player-events` instead.
+
+Never change the session except through `onSessionChange` — the player will not see the response.
 
 ## Testing Requirements
 
@@ -146,6 +155,7 @@ Tests must cover all 10 dimensions from `AGENTS.md`. At minimum:
 - [ ] Renders in `view` mode (read-only, no interaction).
 - [ ] Renders in `evaluate` mode (shows correctness).
 - [ ] Dispatches `session-changed` on interaction.
+- [ ] Listed in the shared contract test, `packages/lib-svelte/delivery-events/tests/delivery-session-contract.test.ts`.
 - [ ] `session.completed` is true after the last required interaction.
 - [ ] Passes axe-core with zero violations in each mode.
 

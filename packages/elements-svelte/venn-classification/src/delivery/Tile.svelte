@@ -6,14 +6,18 @@ let {
   label,
   imageUrl,
   imageAlt,
+  name,
+  language,
   correctness = 'neutral',
   held = false,
   invisible = false,
   ghost = false,
   disabled = false,
   focused = false,
+  fit = false,
   onpointerdown,
   onkeydown,
+  onkeyup,
   onfocus,
   onclick,
 }: {
@@ -21,6 +25,10 @@ let {
   label: string;
   imageUrl?: string;
   imageAlt?: string;
+  /** Accessible name override; the delivery diagram adds the tile's region and verdict. */
+  name?: string;
+  /** The model's `language`, for the fallback name of a tile with no label. */
+  language?: string;
   correctness?: 'correct' | 'incorrect' | 'unanswered' | 'neutral';
   held?: boolean;
   /** Origin tile during pointer drag: reserved in layout but visually hidden so the ghost shows instead. */
@@ -29,13 +37,21 @@ let {
   ghost?: boolean;
   disabled?: boolean;
   focused?: boolean;
+  /**
+   * Fill the parent's box: a placed tile takes its grid cell's size, clamping
+   * the label to two lines (one under an image).
+   */
+  fit?: boolean;
   onpointerdown?: (e: PointerEvent) => void;
   onkeydown?: (e: KeyboardEvent) => void;
+  onkeyup?: (e: KeyboardEvent) => void;
   onfocus?: (e: FocusEvent) => void;
   onclick?: (e: MouseEvent) => void;
 } = $props();
 
-const accessibleName = $derived(tileAccessibleName({ label, imageUrl, imageAlt }));
+const accessibleName = $derived(
+  name ?? tileAccessibleName({ label, imageUrl, imageAlt }, language)
+);
 const hasImage = $derived(!!(imageUrl ?? '').trim());
 const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
 </script>
@@ -47,6 +63,7 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
   class:focused
   class:invisible
   class:ghost
+  class:fit
   class:correct={correctness === 'correct'}
   class:incorrect={correctness === 'incorrect'}
   data-tile-id={id}
@@ -57,6 +74,7 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
   tabindex={ghost || disabled ? -1 : 0}
   {onpointerdown}
   {onkeydown}
+  {onkeyup}
   {onfocus}
   {onclick}
 >
@@ -75,11 +93,11 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
     {/if}
   </span>
   {#if correctness === 'correct'}
-    <span class="badge badge-correct" aria-hidden="true">
+    <span class="venn-badge venn-badge-correct" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
     </span>
   {:else if correctness === 'incorrect'}
-    <span class="badge badge-incorrect" aria-hidden="true">
+    <span class="venn-badge venn-badge-incorrect" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" /></svg>
     </span>
   {/if}
@@ -169,7 +187,31 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
     font-size: 12px;
     font-weight: 600;
   }
-  .badge {
+  .venn-tile.fit {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 6px 10px;
+  }
+  .fit .tile-body {
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  .fit .tile-label {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+  .fit .tile-label-below {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+  .venn-badge {
     position: absolute;
     top: -8px;
     right: -8px;
@@ -181,10 +223,10 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
     justify-content: center;
     color: #ffffff;
   }
-  .badge-correct {
+  .venn-badge-correct {
     background: #0ea449;
   }
-  .badge-incorrect {
+  .venn-badge-incorrect {
     background: #bf0d00;
   }
   @media (prefers-reduced-motion: reduce) {

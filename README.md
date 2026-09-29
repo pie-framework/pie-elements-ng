@@ -17,7 +17,7 @@ The PIE team's work on upstream library modernization (React 18, MUI 7, Tiptap e
 5. **Modern standard tooling** - Vite + Bun + Turbo vs bespoke pie-cli + pie-shared-lib-builder
 6. **Consolidated demo system** - Single unified SvelteKit app for all elements vs per-element tool-generated demos
 7. **Integrated monorepo** - @pie-lib pulled in vs separate repository
-8. **Workspace-wide versioning** - Synchronized releases across all packages vs independent per-package versions
+8. **Independent package versioning** - Each package versions on its own through Changesets, with release labels when several ship together
 9. **GitHub Actions CI/CD** - Modern GitHub-native workflows vs CircleCI
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed explanations of each difference.
@@ -119,6 +119,8 @@ export * from './dist/author/index.js';
 
 This keeps compatibility with alias-based resolvers while preserving standard ESM `exports["./controller"]` and `exports["./author"]` for normal consumers.
 
+Packages that export `./author` or `./print` also ship root `author.js` and `print.js` shims for the same resolvers. [Controller And Configure Packaging](docs/PIE_ELEMENT_CONTRACT.md#controller-and-configure-packaging) lists every shim, and `bun run check:publish-surface` enforces them.
+
 ### Browser ESM Package Contract
 
 The canonical JavaScript and npm packaging contract is
@@ -181,11 +183,14 @@ bun run changeset:plan -- --packages @pie-element/mc-populated-blank,@pie-elemen
 Then run the normal Changesets flow:
 
 ```bash
-# 1) Commit and merge PR with the generated .changeset file
-# 2) Let CI create/merge the version PR
-# 3) CI publishes via the same command used manually:
+# 1) Commit and merge the PR with the generated .changeset file
+# 2) On develop, the same Release run versions and publishes -next.N prereleases.
+#    On master, CI raises a version PR, and merging it publishes.
+# 3) CI publishes through the same contract checks as a manual publish:
 bun run release:publish
 ```
+
+See [Develop Auto-Release](docs/PUBLISHING.md#develop-auto-release).
 
 ### Maintainer Commands
 
@@ -214,10 +219,10 @@ For most production app flows, prefer the standard upstream player stacks in `..
 For production rendering of complete assessment items:
 
 ```html
-<pie-print config={{ item: {...}, options: { mode: 'student' } }}></pie-print>
+<pie-print config={{ item: {...}, options: { role: 'student' } }}></pie-print>
 ```
 
-- **Package:** `@pie-player/print` (in pie-players repository)
+- **Package:** `@pie-players/pie-print-player` (in pie-players repository)
 - **Use for:** Production apps, multi-element items, markup-driven rendering
 - **Location:** `../pie-players/packages/print-player`
 

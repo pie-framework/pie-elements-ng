@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { browserCssLoaderPlugin } from './browser-css-loader.ts';
 
 const packageDir = process.cwd();
 
@@ -35,7 +36,7 @@ const packageJson = JSON.parse(readFileSync(resolve(packageDir, 'package.json'),
 
 export default defineConfig({
   root: packageDir,
-  plugins: [react()],
+  plugins: [react(), browserCssLoaderPlugin()],
   define: {
     __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
     __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),

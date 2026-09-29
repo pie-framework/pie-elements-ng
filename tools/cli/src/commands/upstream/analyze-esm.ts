@@ -59,13 +59,6 @@ const ESM_BLOCKERS = [
   { pattern: /^enzyme/, reason: 'Enzyme is not ESM compatible' },
 ];
 
-// PIE lib packages that should always be included if compatible
-// These are packages that may be imported directly in code (e.g., controllers)
-// but not declared in package.json dependencies
-const ALWAYS_INCLUDE_PIE_LIB = [
-  'controller-utils', // Used in controller code via direct imports
-];
-
 export default class AnalyzeEsm extends Command {
   static override description = 'Analyze PIE elements for ESM compatibility';
 
@@ -406,42 +399,7 @@ export default class AnalyzeEsm extends Command {
       }
     }
 
-    // Add always-include pie-lib packages if they're compatible
-    for (const pieLibPkg of ALWAYS_INCLUDE_PIE_LIB) {
-      // Skip if already in the report
-      if (pieLibUsage.has(pieLibPkg)) {
-        continue;
-      }
-
-      // Check if this package exists and is compatible
-      let check = pieLibCache.get(pieLibPkg);
-      if (!check) {
-        check = await this.checkPieLibCompatibility(
-          pieLibPkg,
-          pieLibPath,
-          verbose,
-          includeDevDeps,
-          pieLibCache
-        );
-        pieLibCache.set(pieLibPkg, check);
-      }
-
-      if (check.compatible) {
-        report.pieLibPackages.push(pieLibPkg);
-        report.pieLibDetails[pieLibPkg] = {
-          compatible: true,
-          usedBy: ['(always included)'], // Mark as always included
-          blockers: [],
-        };
-        if (verbose) {
-          this.logger.info(`  ✅ ${pieLibPkg}: always included (compatible)`);
-        }
-      } else if (verbose) {
-        this.logger.info(`  ⏭️  ${pieLibPkg}: skipped (not compatible)`);
-      }
-    }
-
-    report.summary.totalPieLibPackages = pieLibUsage.size + ALWAYS_INCLUDE_PIE_LIB.length;
+    report.summary.totalPieLibPackages = pieLibUsage.size;
     report.summary.compatiblePieLibPackages = report.pieLibPackages.length;
 
     // Identify student-UI-only elements (blocked overall but student UI is compatible)

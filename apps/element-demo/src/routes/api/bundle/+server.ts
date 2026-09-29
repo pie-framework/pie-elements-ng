@@ -130,7 +130,6 @@ export const POST: RequestHandler = async ({ request }) => {
             requestedBundles: effectiveRequestedBundles,
             resolutionMode,
             sourceMaps: enableSourceMaps,
-            extraFiles: [join('packages', 'shared', 'bundler-shared', 'src', 'index.ts')],
           })
         : undefined;
 

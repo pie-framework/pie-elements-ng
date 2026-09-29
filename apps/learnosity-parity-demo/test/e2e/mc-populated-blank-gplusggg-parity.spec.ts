@@ -17,11 +17,11 @@
  * | role="group"       | div.{prefix}-distractors         | div[role="radiogroup"] (stronger)   |
  * | aria-label (group) | "Choose the best answer…"        | legendText or choiceGroupAriaLabel  |
  * | aria-label (blank) | span#{prefix}-cloze-blank        | span[role="status"] aria-label      |
- * |                    |   value: "blank"                 |   value: uiText.selectedAnswerInSentence ("blank") |
+ * |                    |   value: "blank"                 |   value: mcPopulatedBlank.blankLabel ("blank") |
  * | alt (silent img)   | img.{prefix}-silent              | img.pie-listen-icon (silent)        |
- * |                    |   value: "Repeat instructions"   |   value: uiText.listenSilentAlt     |
+ * |                    |   value: "Repeat instructions"   |   value: mcPopulatedBlank.listenSilentAlt |
  * | alt (playing img)  | img.{prefix}-playing             | img.pie-listen-icon (playing)       |
- * |                    |   value: "Instructions are playing" | value: uiText.listenPlayingAlt   |
+ * |                    |   value: "Instructions are playing" | value: mcPopulatedBlank.listenPlayingAlt |
  * | aria-hidden        | input[type=radio] when masked    | out of scope (masking not in PIE)   |
  * ───────────────────────────────────────────────────────────────────────────────────────
  *

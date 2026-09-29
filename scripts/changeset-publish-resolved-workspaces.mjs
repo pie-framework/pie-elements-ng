@@ -2,10 +2,10 @@ import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { globSync } from 'glob';
+import { runtimeWorkspaceDependencies } from './lib/runtime-workspace-dependencies.mjs';
 
 const repoRoot = process.cwd();
 const depSections = ['dependencies', 'peerDependencies', 'optionalDependencies', 'devDependencies'];
-const runtimeDepSections = ['dependencies', 'optionalDependencies'];
 const publishAttempts = Number(process.env.RELEASE_PUBLISH_ATTEMPTS || 2);
 const releaseChannel = String(process.env.RELEASE_CHANNEL || 'auto')
   .trim()
@@ -362,27 +362,7 @@ const isSvelteElementPackage = (packageName) => {
 
 const getRuntimeWorkspaceDependencies = (packageName) => {
   const pkg = readWorkspacePackage(packageName);
-  if (!pkg) return [];
-
-  const dependencies = [];
-  for (const section of runtimeDepSections) {
-    const deps = pkg[section];
-    if (!deps) continue;
-
-    for (const [dependencyName, range] of Object.entries(deps)) {
-      if (localPackages.has(dependencyName)) {
-        dependencies.push({
-          packageName,
-          dependencyName,
-          version: localPackages.get(dependencyName),
-          section,
-          range,
-        });
-      }
-    }
-  }
-
-  return dependencies;
+  return pkg ? runtimeWorkspaceDependencies(pkg, localPackages) : [];
 };
 
 const collectPackageJsonTargets = (value, out) => {

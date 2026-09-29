@@ -9,7 +9,7 @@ Use [`CONTEXT.md`](CONTEXT.md) as the canonical domain-language glossary. When n
 **Critical Requirements**:
 
 - **WCAG 2.2 Level AA compliance**: Mandatory for all interaction components
-- **Bun runtime**: Node.js is supported but Bun 1.1.42+ is primary
+- **Bun runtime**: Node.js is supported but Bun 1.3.11+ is primary
 - **Svelte 5 with runes**: Modern reactive patterns required
 - **Feature parity**: Must match all 21 QTI 2.2 interaction types from original pie-elements
 - **Strict TypeScript**: No `any` allowed (enforced by Biome)
@@ -131,18 +131,20 @@ and restore anything it flags.
 | --- | --- |
 | `version` | Preserved (local value wins) |
 | `dependencies` | **Replaced wholesale** from upstream - local bumps lost |
-| `peerDependencies` | Merged (local entries kept) |
+| `peerDependencies` | Merged (local entries kept); element `react` / `react-dom` peers removed |
 | `exports`, `main`, `types`, `files`, `scripts.build` | Regenerated - hand edits lost |
-| `pie.*` | Regenerated from entry points + `tools/vite/browser-esm-policy.json` |
+| `pie.*` | Regenerated from entry points + `tools/vite/browser-esm-policy.json`; `pie.browserEditorRuntime` from the dependency closure + `packages/shared/editor-runtime/package.json` |
 
 **Invariants that must hold after a sync** (all are enforced, so run the gates):
 
 - Every `packages/elements-react/*` package declares `react` and `react-dom` in
-  `dependencies` pinned to `sharedDependencyVersions` in
-  `tools/vite/browser-esm-policy.json`, not as peers alone. Legacy webpack bundlers
-  (`builder.pie-api.com`) install `dependencies` and never peers, so peer-only React
-  leaves `node_modules/react` absent and every `@mui` / `@emotion` / `@dnd-kit` peer fails
-  with `Module not found: Can't resolve 'react'`. Enforced by `check:publish-surface`.
+  `dependencies` at a caret range on `sharedDependencyVersions` in
+  `tools/vite/browser-esm-policy.json`, and never in `peerDependencies`. A React peer lets
+  pnpm and yarn bind the element to the host's React, so a React 19 host would run the
+  element's React 18 build on React 19. Legacy webpack bundlers (`builder.pie-api.com`)
+  install `dependencies` and never peers, so without the dependency `node_modules/react` is
+  absent and every `@mui` / `@emotion` / `@dnd-kit` peer fails with
+  `Module not found: Can't resolve 'react'`. Enforced by `check:publish-surface`.
 - Library packages (`@pie-lib/*`, `@pie-element/shared-*`) keep React peer-only. The
   consuming element owns the installable pin.
 
@@ -168,47 +170,35 @@ Only add a package-specific exception when the user explicitly requests a tempor
 
 ## Technology Stack
 
-- **Runtime**: Bun 1.1.42+ (Node.js 20.0+ also supported)
-- **UI Framework**: Svelte 5 (primary), React 18 (secondary), Web Components (planned)
-- **Build**: Vite 6+ with Turbo for monorepo orchestration
-- **Testing**: Vitest 4.x (unit/component) + Playwright 1.56+ (E2E)
+Exact versions live in `package.json`; the majors are:
+
+- **Runtime**: Bun 1.3.11+ (Node.js 20+ also supported)
+- **UI Framework**: Svelte 5 for elements written here, React 18 for the elements synced from pie-elements; every element ships as a custom element
+- **Build**: Vite 8 with Turbo 2 for monorepo orchestration
+- **Testing**: Vitest 4 (unit/component) + Playwright (E2E)
 - **Accessibility**: @axe-core/playwright for automated checks
-- **Linting**: Biome 2.3+ (replaces ESLint/Prettier)
-- **Rich Text**: TipTap 3.14 with Math extension
-- **Math Rendering**: KaTeX 0.16, MathLive 0.108, Speech Rule Engine 5.0
+- **Linting**: Biome 2 (replaces ESLint/Prettier)
+- **Rich Text**: TipTap 3 with a math extension
+- **Math Rendering**: MathJax 4.1.3, loaded at runtime by `@pie-element/shared-math-rendering-mathjax`; MathQuill for math input
 
 ## Monorepo Structure
 
 ```text
-pie-element/
+pie-elements-ng/
 ├── packages/
-│   ├── core/                      # Core PIE interfaces & types
-│   ├── cli/                       # oclif-based CLI tools
-│   ├── shared/
-│   │   ├── types/                # Shared TypeScript types
-│   │   ├── utils/                # Shared utilities
-│   │   └── test-utils/           # Test harnesses & fixtures
-│   ├── elements-svelte/          # Svelte elements (4 implemented)
-│   │   ├── multiple-choice/
-│   │   ├── slider/
-│   │   ├── upload/
-│   │   └── media/
-│   ├── elements-react/           # React elements (20+ implemented)
-│   │   ├── multiple-choice/
-│   │   ├── hotspot/
-│   │   ├── match/
-│   │   ├── graphing/
-│   │   └── [16 more...]
-│   ├── elements-wc/              # Web Components (planned)
-│   ├── lib-svelte/               # Svelte shared libraries
-│   │   ├── a11y/                # Accessibility utilities
-│   │   ├── config-ui/           # Configuration UI components
-│   │   ├── math/                # Math rendering
-│   │   └── ui/                  # General UI components
-│   └── lib-react/                # React shared libraries (25+ packages)
-└── apps/
-    ├── element-demo/            # Shared element demo
-    └── esm-player-test/         # ESM player testing
+│   ├── elements-react/           # 27 React elements synced from pie-elements, now owned here
+│   ├── elements-svelte/          # Svelte elements written here: mc-populated-blank, simple-cloze, venn-classification
+│   ├── lib-react/                # @pie-lib/* React libraries synced from pie-lib
+│   ├── lib-svelte/               # Svelte libraries: config-ui, delivery-events, editable-html-tiptap
+│   ├── shared/                   # @pie-element/shared-* (types, controller-utils, math-rendering-mathjax,
+│   │                             #   editor-runtime, theming, ...), element-bundler, @pie-lib/translator
+│   ├── element-player/           # @pie-element/element-player
+│   ├── element-theme/            # @pie-element/element-theme
+│   └── element-theme-daisyui/    # @pie-element/element-theme-daisyui
+├── apps/                         # Demo and test apps, see apps/README.md
+└── tools/
+    ├── cli/                      # oclif CLI: upstream sync, dev:demo, docs, verification
+    └── vite/                     # Shared Vite configs and browser-esm-policy.json
 ```
 
 ## Code Quality Standards
@@ -262,11 +252,14 @@ These checks ensure:
 
 ### Entry Points per Element
 
-Each element exports three entry points:
+Each element package exports these entry points:
 
-- `element.ts` - Custom element wrapper (web component)
-- `controller.ts` - Server/client-side logic (PIE controller)
-- `author.ts` - Configuration UI (authoring mode)
+- `.` and `./delivery` - the delivery custom element
+- `./author`, with `./configure` as an alias - the author view custom element
+- `./controller` - the PIE controller, for server and client
+- `./print` - the print view, where the element has one
+- `./browser/*` - self-contained browser ESM builds of the same entries
+- `./runtime-support` - which views the package supports under browser ESM, where it declares them
 
 ### PIE Controller Pattern
 
@@ -307,7 +300,7 @@ bun run check          # Svelte component validation
 ### Web Components and Reactivity
 
 - Treat custom elements as imperative APIs: set properties, not attributes.
-- Element packages must not self-register custom elements (no `customElements.define(...)` in element runtime entries such as `index.iife.ts`).
+- Element package modules must not register the element's own tag: no `customElements.define(...)` for it in `index.ts` or the `delivery`, `author` and `print` entries. The exception is the standalone per-element IIFE script. The React elements' sync-generated `src/index.iife.ts` registers the tag behind a `customElements.get` guard, because a page that loads `dist/index.iife.js` with a `<script>` tag has no player to do it. The Svelte `index.iife.ts` entries export the class only.
 - Custom element registration is the responsibility of PIE item/element players, which own lifecycle and registry coordination.
 - In Svelte custom-element components (`<svelte:options customElement={...}>`), never include `tag: '...'`. Svelte will auto-define that tag at module evaluation time, which conflicts with player-controlled registration and causes `CustomElementRegistry` duplicate-name errors.
 - Do not assume attribute updates are reactive for object data.
@@ -321,6 +314,8 @@ bun run check          # Svelte component validation
   - `export * from './dist/controller/index.js';`
 - Ensure that shim is published by including `"controller.js"` in `package.json` `files`.
 - Keep `exports["./controller"]` and `exports["./controller.js"]` pointing at `./dist/controller/index.js` for standard ESM consumers; the root shim exists only for builder compatibility.
+- Packages that export `./configure`, `./author` or `./print` publish the matching root shim (`configure.js`, `author.js`, `print.js`) the same way: it re-exports the default and named exports of that subpath's `./dist/...` target and is listed in `files`. Composite elements depend on `author.js`: complex-rubric imports `@pie-element/rubric/author` and ebsr imports `@pie-element/multiple-choice/author`.
+- `bun run check:publish-surface` enforces all four shims.
 
 ### Framework Agnostic
 
@@ -331,10 +326,9 @@ bun run check          # Svelte component validation
 
 ### Math Support
 
-- **KaTeX**: Static math rendering
-- **MathLive**: Interactive math input
-- **Speech Rule Engine**: Accessibility for math content
-- **TipTap Math extension**: Rich text with embedded math
+- **MathJax 4**: Math rendering with hidden MathML for screen readers ([MATH-RENDERING.md](docs/MATH-RENDERING.md))
+- **MathQuill**: Interactive math input (`@pie-lib/math-input`)
+- **TipTap Math extension**: Rich text with embedded math (`@pie-lib/editable-html-tip-tap`)
 
 ### Accessibility First
 
@@ -380,17 +374,32 @@ oclif-based CLI for:
 - **CI/CD**: GitHub Actions (ci.yml, e2e.yml, release.yml)
 - **Automated releases**: Via GitHub Actions
 - **`develop` auto-releases `-next.N`**: A merge into `develop` versions and publishes in the
-  same Release run, with no version PR. Packages whose shipping files changed in the push get a
+  same Release run, with no version PR. Every package holding unreleased shipping code gets a
   `patch` changeset synthesized by `scripts/release-synthesize-changesets.mjs`, then CI runs
   `changeset version`, commits the bump directly to `develop`, and publishes under the `next`
   dist-tag. `master` keeps the version-PR flow.
-- **A hand-written changeset still wins**: synthesis skips any package a pending changeset in the
-  same push already names, so an authored bump type and summary survive. Write one whenever the
-  change deserves a real changelog entry or a `minor`/`major` bump — the synthesized summary is
-  only the merge commit subject.
+- **Taken prerelease numbers are skipped**: pie-elements and pie-lib publish the same names
+  into the same `-next.N` series, so `bun run version` moves a bump that lands on a number npm
+  already holds to the lowest free number above it (`scripts/skip-taken-prereleases.mjs`). A
+  taken stable version still fails `scripts/check-version-availability.mjs`, which runs last.
+- **Release intent is per package, not per push**: a package counts as unreleased when its own
+  shipping files changed after its own `version` last moved. That is what makes the pipeline
+  self-healing — a Release run that fails or is cancelled loses nothing, because the next run
+  measures the same question and picks its packages up. Do not reintroduce a push range or a
+  single repo-wide "last release commit" baseline: the auto-release push rebases onto the branch
+  tip when a merge lands mid-run, which leaves the bump commit sitting above code it never
+  released, and both of those baselines then drop that code silently (PIE-1073).
+- **A hand-written changeset still wins**: synthesis skips any package a pending changeset
+  already names, so an authored bump type and summary survive. Write one whenever the change
+  deserves a real changelog entry or a `minor`/`major` bump — the synthesized summary is only the
+  head commit subject.
 - **Non-shipping paths do not release**: changes confined to tests, specs, snapshots and
   package-local vitest/playwright config synthesize nothing. Private packages and
   `.changeset/config.json`'s `ignore` list are never selected.
+- **A dropped release is never silent**: after an auto-release run, `scripts/release-report-dropped.mjs`
+  re-measures what the run set out to release and fails an otherwise-green run that left any of it
+  unpublished. Packages that became outstanding mid-run are listed, not failed — their own Release
+  run releases them.
 - **Default bump policy**: Always use `patch` by default for releases/versioning.
 - Use `minor` or `major` only when the user explicitly requests it.
 - **Selective publish only**: Publish only selected packages and changeset-propagated dependents, never all unpublished packages.

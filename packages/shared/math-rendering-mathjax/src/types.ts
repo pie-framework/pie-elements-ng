@@ -3,13 +3,14 @@
  */
 export interface MathjaxOptions {
   /**
-   * Use single dollar signs as delimiters
+   * Treat `$...$` as inline math. The renderer behind `renderMath` enables it when the page sets
+   * the legacy opt-in, `window['@pie-lib/math-rendering@2'] = { opts: { useSingleDollar: true } }`.
    * @default false
    */
   useSingleDollar?: boolean;
 
   /**
-   * Enable accessibility features (speech, aria-labels)
+   * Add hidden MathML for screen readers and the MathJax context menu
    * @default true
    */
   accessibility?: boolean;
@@ -21,7 +22,7 @@ export interface MathjaxOptions {
   loadFonts?: boolean;
 
   /**
-   * Override the MathJax script URL.
+   * Override the MathJax script URL. Defaults to MathJax 4.1.3 `tex-mml-chtml.js` on jsDelivr.
    */
   srcUrl?: string;
 }

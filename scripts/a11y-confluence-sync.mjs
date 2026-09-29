@@ -44,7 +44,7 @@ const groupDefinitions = {
   'group-1c': {
     summary: 'Math editor and math-inline work, including shared math input surfaces.',
     elements: ['math-inline', 'math-templated'],
-    sharedSurfaces: ['@pie-lib/math-input', '@pie-lib/math-toolbar', '@pie-lib/math-input-svelte'],
+    sharedSurfaces: ['@pie-lib/math-input', '@pie-lib/math-toolbar'],
   },
   'group-1d': {
     summary: 'Constructed response and extended text entry editor work.',

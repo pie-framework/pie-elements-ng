@@ -43,7 +43,8 @@ export async function model(question, session, env) {
 
 export function outcome(model, session) {
   return new Promise((resolve) => {
-    if (!session || isEmpty(session)) {
+    // A player sends an untouched item's session as `{ id, element }`, without `value`.
+    if (!session || isEmpty(session) || !session.value) {
       return resolve({ score: 0, empty: true });
     }
 

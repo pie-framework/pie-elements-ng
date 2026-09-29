@@ -14,6 +14,7 @@ import { readFile, stat as fsStat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readdir } from '../../lib/upstream/sync-filesystem.js';
 import { getAllDeps } from '../../lib/upstream/sync-package-json.js';
+import { findWorkspacePieLibPackages } from '../../lib/upstream/workspace-pie-lib.js';
 import { ControllersStrategy } from '../../lib/upstream/sync-controllers-strategy.js';
 import { ReactComponentsStrategy } from '../../lib/upstream/sync-react-strategy.js';
 import { PieLibStrategy } from '../../lib/upstream/sync-pielib-strategy.js';
@@ -181,7 +182,6 @@ export default class Sync extends Command {
     }
 
     // Merge with ESM-compatible pie-lib packages from compatibility report
-    // (This ensures packages like controller-utils that are imported in controllers but not declared in package.json get synced)
     // BUT: Only merge ALL packages when doing a full sync (no specific elements specified)
     // When syncing specific elements, only sync the required deps (don't merge all 23 compat packages)
     if (compatibilityReport?.pieLibPackages && compatibilityReport.pieLibPackages.length > 0) {
@@ -787,8 +787,7 @@ export default class Sync extends Command {
     // Internal workspace packages should stay workspace-linked.
     if (dep.startsWith('@pie-lib/')) {
       const libName = dep.replace('@pie-lib/', '');
-      const localPath = join(config.pieElementsNg, 'packages/lib-react', libName, 'package.json');
-      if (existsSync(localPath)) {
+      if (findWorkspacePieLibPackages(config.pieElementsNg).has(libName)) {
         return 'workspace:*';
       }
     }
@@ -926,17 +925,8 @@ export default class Sync extends Command {
     const elementsReactDir = join(config.pieElementsNg, 'packages/elements-react');
     const sharedDir = join(config.pieElementsNg, 'packages/shared');
 
-    const availableLibPackages = new Set<string>();
+    const availableLibPackages = new Set(findWorkspacePieLibPackages(config.pieElementsNg).keys());
     const availableElementPackages = new Set<string>();
-
-    if (existsSync(libReactDir)) {
-      const libPackages = await readdir(libReactDir);
-      for (const pkg of libPackages) {
-        if (existsSync(join(libReactDir, pkg, 'package.json'))) {
-          availableLibPackages.add(pkg);
-        }
-      }
-    }
 
     if (existsSync(elementsReactDir)) {
       const elementPackages = await readdir(elementsReactDir);
@@ -959,7 +949,7 @@ export default class Sync extends Command {
       }
     }
 
-    this.logger.info(`   Found ${availableLibPackages.size} lib-react packages`);
+    this.logger.info(`   Found ${availableLibPackages.size} @pie-lib packages`);
     this.logger.info(
       `   Found ${availableElementPackages.size} elements-react packages (including shared)\n`
     );
@@ -968,8 +958,12 @@ export default class Sync extends Command {
     const packagesToCheck: string[] = [];
 
     // Add lib-react packages
-    for (const pkg of availableLibPackages) {
-      packagesToCheck.push(join(libReactDir, pkg));
+    if (existsSync(libReactDir)) {
+      for (const pkg of await readdir(libReactDir)) {
+        if (existsSync(join(libReactDir, pkg, 'package.json'))) {
+          packagesToCheck.push(join(libReactDir, pkg));
+        }
+      }
     }
 
     // Add elements-react packages (non-shared)

@@ -1,5 +1,137 @@
 # @pie-lib/math-toolbar
 
+## 4.0.0-next.52
+
+### Patch Changes
+
+- Merge pull request #235 from pie-framework/fix/PIE-1115-math-toolbar-focus
+
+## 4.0.0-next.51
+
+### Major Changes
+
+- Move the `@pie-lib` packages onto version bases the legacy pie-lib lineage does not publish into, so a bump can no longer land on a version number npm already holds (PIE-1041).
+  
+  Both repos publish these names and both increment the same `<base>-next.N` series, with legacy's counter far ahead of this repo's. When a bump lands on a number legacy already published, npm refuses the overwrite, the package is never published from here, and every element that pins it silently resolves the legacy build instead — which is how `next.9` shipped elements linked against June 2026 lib code, failed 25 of 172 bundle combinations, and left the inline-dropdown, keyboard-placement, selected-choice, drag-placeholder and graphing-palette fixes out of the bundles despite them being on develop.
+  
+  A major takes each package to a base legacy has never used, which removes both the collision on publish and the caret eviction that follows it: legacy packages stop entering the dependency graph, so their `^` ranges — which exclude this repo's prereleases and resolve to legacy stables — stop being consulted at all. This is a version-coordination change only; no runtime behaviour changes.
+
+### Patch Changes
+
+- Publish ng ESM builds for PIE lib packages
+- React element colours drawn from MUI's grey palette now follow the active colour scheme.
+  
+  `theme.palette.grey[N]` does not track `--pie-*`, so every one of these borders, fills
+  and glyphs held a single hex under all ten schemes. Measured against each scheme's own
+  `--pie-background`, the worst case per site ran between 1.01:1 and 1.72:1 — the
+  answer-choice separator in `multiple-choice` that George reported was the visible end of
+  it, not an isolated defect. Each site now reads the token matching its role, and the
+  worst case across every scheme is at least 3.17:1.
+  
+  Strokes, dividers and connectors take `--pie-border`; the heavier card outlines in
+  `math-inline` and `math-templated` take `--pie-border-dark`. Fills take
+  `--pie-background-dark`, and selected or pressed fills `--pie-dropdown-background`. Text
+  and interactive icons take `--pie-text` — no neutral token clears 4.5:1 in every scheme,
+  so the `likert` column header that measured 1.88:1 on plain white gains contrast rather
+  than keeping its tint. De-emphasised glyphs take `--pie-border-gray`, disabled
+  affordances `--pie-disabled`.
+  
+  Four surfaces move with their strokes, because a scheme's border colour on a permanently
+  white card is worse than the grey it replaced: under white-on-black `--pie-border` is
+  `#ffffff`. The two `extended-text-entry` annotation popovers, the `inline-dropdown` menu
+  item and the `config-ui` settings panel now paint `--pie-white`, which inverts with the
+  scheme as `palette.common.white` never did.
+  
+  `@pie-lib/render-ui` gains `color.buttonFocusOutline()` for `--pie-button-focus-outline`,
+  used by the two editor toolbar focus rings that were drawing themselves in `grey[700]` —
+  1.28:1 on yellow-on-navy.
+  
+  Visible change in the default light theme: strokes that were `#e0e0e0` or `#bdbdbd` are
+  now `--pie-border`, which resolves to `#8f8f8f`. That is deliberate; the previous values
+  were below the 3:1 non-text minimum before any scheme was applied.
+- Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Vendor the lodash helper surface through `@pie-element/shared-lodash` so browser ESM output no longer depends on runtime lodash or lodash-es resolution.
+  
+  Replace `@pie-lib/config-ui`'s tiny `mathjs` fraction-to-number usage with a generated local helper, while keeping `mathjs@^15.2.0` for packages such as `@pie-element/number-line` that use the broader math surface.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @pie-lib/math-input@9.0.0-next.16
+  - @pie-lib/render-ui@6.2.0-next.50
+  - @pie-element/shared-lodash@0.1.1-next.3
+
+## 4.0.0-next.50
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.49
+- @pie-lib/math-input@9.0.0-next.15
+
+## 4.0.0-next.49
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/math-input@9.0.0-next.14
+
+## 4.0.0-next.48
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.48
+- @pie-lib/math-input@9.0.0-next.13
+
+## 4.0.0-next.47
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.47
+- @pie-lib/math-input@9.0.0-next.12
+
+## 4.0.0-next.46
+
+### Patch Changes
+
+- 7abcbd2: Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Updated dependencies [7abcbd2]
+  - @pie-lib/math-input@9.0.0-next.11
+  - @pie-lib/render-ui@6.2.0-next.46
+
+## 4.0.0-next.45
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.45
+- @pie-lib/math-input@9.0.0-next.10
+
+## 4.0.0-next.44
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/math-input@9.0.0-next.9
+  - @pie-lib/render-ui@6.2.0-next.44
+
+## 4.0.0-next.43
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/math-input@9.0.0-next.8
+  - @pie-lib/render-ui@6.2.0-next.43
+
 ## 4.0.0-next.42
 
 ### Patch Changes

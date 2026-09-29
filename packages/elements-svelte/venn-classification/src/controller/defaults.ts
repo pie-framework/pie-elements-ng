@@ -1,14 +1,15 @@
 import type { VennModel } from '../types.js';
 
+// No `id` or `element`: the item config supplies `id`, and the player registers
+// the element under a versioned tag it stamps as `element`.
 const model: VennModel = {
-  id: '1',
-  element: 'venn-classification',
   prompt: '<p>Sort each tile into the correct region of the Venn diagram.</p>',
   promptEnabled: true,
   circles: [{ label: 'Set A' }, { label: 'Set B' }],
   tiles: [],
   regionLabels: {},
   scoringPolicy: 'partialPerTile',
+  teacherInstructionsEnabled: true,
 };
 
 export default {
@@ -22,5 +23,10 @@ export default {
       label: 'Scoring policy',
       settings: true,
     },
+    teacherInstructions: {
+      label: 'Teacher Instructions',
+      settings: true,
+    },
+    settingsPanelDisabled: false,
   },
 };

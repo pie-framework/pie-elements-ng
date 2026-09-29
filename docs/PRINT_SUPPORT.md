@@ -73,14 +73,9 @@ Where `itemConfig` includes:
 
 **Location:** `packages/print-player` in the `pie-players` repository.
 
-> Note: this repo also contains a `packages/print-player` (`@pie-element/print-player`).
-> It is **superseded** — its resolver loads `dist/print/index.js` (the bundler
-> artifact, which is not browser-loadable) and it does not inject a React import
-> map. Use `@pie-players/pie-print-player` for production print.
-
 ## Print Element Architecture
 
-**Current Coverage**: Print support is available for 10 out of 28 elements. Print components are being added incrementally as elements are developed.
+**Current Coverage**: Print support is available for 12 out of 30 elements. Print components are being added incrementally as elements are developed.
 
 Each element package can include a print export:
 
@@ -138,13 +133,14 @@ export default class MultipleChoicePrint extends HTMLElement {
 ## How the Print Bundle Is Built
 
 Print is bundled by **Vite**, per element package, from the single
-`src/print/index.tsx` entry. Three artifacts are produced:
+`src/print/index.tsx` entry. Up to four artifacts are produced:
 
 | Artifact | Built by | Purpose |
 | --- | --- | --- |
 | `dist/print/index.js` | the package's `vite.config.ts` | Node / bundler ESM. Keeps **bare imports** (`@pie-element/*`, `@pie-lib/*`, …). Loads in a browser **only when the host resolves them** — via a full import map or a bundler. Not self-contained. |
 | `dist/browser/print/index.js` | `tools/vite/element-browser.config.ts` | Browser ESM. **This is what the item-level `@pie-players/pie-print-player` loads.** Self-contained except for React (only `react` / `react-dom` stay external, resolved via an import map the player injects). |
-| `module/print.js` | `tools/vite/element-legacy-print.config.ts` (React) / `tools/vite/svelte-element-legacy-print.config.ts` (Svelte) | Browser ESM. **This is what the legacy `@pie-framework/pie-print` client loader requests** (`https://cdn.jsdelivr.net/npm/<pkg>/module/print.js`, loaded with a bare `import(url)` and **no import map at all**). Fully self-contained — React included, zero bare specifiers. See [`docs/prds/legacy-print-compatibility/PRD.md`](./prds/legacy-print-compatibility/PRD.md). |
+| `dist/browser/editor-runtime/print/index.js` | `tools/vite/element-browser-editor-runtime.config.ts` (React) / `tools/vite/svelte-element-browser-editor-runtime.config.ts` (Svelte) | Browser ESM, the editor-runtime variant of `dist/browser/print/index.js`, with the `@pie-element/shared-editor-runtime` specifiers external. Players load it from the path in `pie.browserEditorRuntime.views.print`. Built by the 11 print elements that bundle the editor engine; mc-populated-blank has none. See [Shared Editor Runtime](./PIE_ELEMENT_CONTRACT.md#shared-editor-runtime). |
+| `module/print.js` | `tools/vite/element-legacy-print.config.ts` (React) / `tools/vite/svelte-element-legacy-print.config.ts` (Svelte) | Browser ESM. **This is what the legacy `@pie-framework/pie-print` client loader requests** (`https://cdn.jsdelivr.net/npm/<pkg>/module/print.js`, loaded with a bare `import(url)` and **no import map at all**). Fully self-contained — React included, zero bare specifiers. It installs its stylesheets itself; fonts and images they reference ship in `module/assets/`. See [`docs/prds/legacy-print-compatibility/PRD.md`](./prds/legacy-print-compatibility/PRD.md). |
 
 Only packages that already have `src/print/index.ts(x)` produce the `module/print.js` artifact; the build config is a no-op (exit 0, nothing emitted) for every other package, so the same build invocation runs safely across all packages without per-package special-casing.
 
@@ -313,12 +309,12 @@ player.resolve = (tagName, pkg) => {
 
 1. **Start the demo server:**
    ```bash
-   bun cli dev:demo multiple-choice
+   bun cli dev:demo
    ```
 
 2. **Navigate to print route:**
    ```
-   http://localhost:5173/multiple-choice/print
+   http://localhost:5222/multiple-choice/print
    ```
 
 3. **Toggle between student/instructor roles**
@@ -411,8 +407,8 @@ or element-level player.
 ## Further Reading
 
 - [Element-Level Print Player README](../packages/element-player/README_PRINT_PLAYER.md)
-- Item-Level Print Player README: `packages/print-player/README.md` in the `pie-players` repository
-- Item-Level Print Player Usage Examples: `packages/print-player/USAGE_EXAMPLE.md` in the `pie-players` repository
+- [Item-Level Print Player README](https://github.com/pie-framework/pie-players/blob/develop/packages/print-player/README.md) in the `pie-players` repository
+- [Item-Level Print Player Usage Examples](https://github.com/pie-framework/pie-players/blob/develop/packages/print-player/USAGE_EXAMPLE.md) in the `pie-players` repository
 - [PieElementPlayer Source](../packages/element-player/src/players/PieElementPlayer.svelte)
 
 ## Summary

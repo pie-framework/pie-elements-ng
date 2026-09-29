@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - uses: oven-sh/setup-bun@v2
@@ -31,7 +31,7 @@ jobs:
         env:
           PUBLIC_ELEMENT_DEMO_STATIC: "true"
           PUBLIC_ELEMENT_DEMO_IIFE_BUNDLE_MODE: hosted
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: apps/element-demo/build
 

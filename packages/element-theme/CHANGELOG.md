@@ -1,5 +1,33 @@
 # @pie-element/element-theme
 
+## 0.1.1-next.8
+
+### Patch Changes
+
+- @pie-element/shared-theming@0.2.0-next.8
+
+## 0.1.1-next.7
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @pie-element/shared-theming@0.2.0-next.7
+
+## 0.1.1-next.6
+
+### Patch Changes
+
+- @pie-element/shared-theming@0.2.0-next.6
+
+## 0.1.1-next.5
+
+### Patch Changes
+
+- @pie-element/shared-theming@0.2.0-next.5
+
 ## 0.1.1-next.4
 
 ### Patch Changes

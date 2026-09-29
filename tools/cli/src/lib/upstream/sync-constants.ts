@@ -9,6 +9,21 @@ export const DEFAULT_PATHS = {
   PIE_ELEMENTS_NG: '.',
 } as const;
 
+/**
+ * Module source substituted for `debug` in per-element IIFE builds. Carries the
+ * module-level `debug.log` and the instance methods element code calls.
+ */
+export const IIFE_DEBUG_SHIM_SOURCE =
+  "const noop = () => {}; function debug() { const log = function () {}; log.enabled = false; log.log = noop; log.extend = () => log; log.destroy = noop; return log; } debug.log = noop; debug.enable = noop; debug.disable = () => ''; debug.enabled = () => false; export default debug;";
+
+/**
+ * Module source substituted for `prop-types` in per-element IIFE builds. It mirrors
+ * prop-types' production shims: every validator is callable and carries `isRequired`,
+ * so `PropTypes.oneOf([...]).isRequired` evaluates at module load.
+ */
+export const IIFE_PROP_TYPES_SHIM_SOURCE =
+  'const shim = function () { return null; }; shim.isRequired = shim; const getShim = () => shim; export const array = shim, bigint = shim, bool = shim, func = shim, number = shim, object = shim, string = shim, symbol = shim, any = shim, element = shim, elementType = shim, node = shim; export const arrayOf = getShim, instanceOf = getShim, objectOf = getShim, oneOf = getShim, oneOfType = getShim, shape = getShim, exact = getShim; export const checkPropTypes = () => {}; export const resetWarningCache = () => {}; const types = { array, bigint, bool, func, number, object, string, symbol, any, element, elementType, node, arrayOf, instanceOf, objectOf, oneOf, oneOfType, shape, exact, checkPropTypes, resetWarningCache }; types.PropTypes = types; export { types as PropTypes }; export default types;';
+
 // Workspace dependency patterns
 export const WORKSPACE = {
   VERSION: 'workspace:*',
@@ -23,7 +38,39 @@ export const EXCLUDED_UPSTREAM_ELEMENTS = ['boilerplate-item-type'] as const;
 
 // Upstream @pie-lib packages intentionally excluded from sync.
 // math-rendering stays local (wrapper re-exports shared MathJax adapter).
-export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = ['math-rendering'] as const;
+// translator lives in packages/shared: its strings serve the Svelte elements too.
+// controller-utils lives in packages/shared as shared-controller-utils, which the sync rewrites
+// every `@pie-lib/controller-utils` import to.
+export const EXCLUDED_UPSTREAM_PIE_LIB_PACKAGES = [
+  'controller-utils',
+  'math-rendering',
+  'translator',
+] as const;
+
+// Upstream source files that sync does not re-emit. Each was reachable from no entry of its
+// package and was deleted here; the values are the files' `@synced-from` paths.
+export const RETIRED_UPSTREAM_SOURCE_FILES: ReadonlySet<string> = new Set([
+  'pie-elements/packages/graphing/src/utils.js',
+  'pie-elements/packages/image-cloze-association/src/constants.js',
+  'pie-elements/packages/likert/src/session-updater.js',
+  'pie-elements/packages/match/configure/src/common.jsx',
+  'pie-elements/packages/matrix/src/session-updater.js',
+  'pie-elements/packages/number-line/src/number-line/point-chooser/styles.js',
+  'pie-elements/packages/placement-ordering/configure/src/help.jsx',
+  'pie-lib/packages/charting/src/tool-menu.jsx',
+  'pie-lib/packages/drag/src/drag-type.js',
+  'pie-lib/packages/drag/src/preview-component.jsx',
+  'pie-lib/packages/editable-html-tip-tap/src/components/media/MediaWrapper.jsx',
+  'pie-lib/packages/editable-html-tip-tap/src/styles/editorContainerStyles.js',
+  'pie-lib/packages/editable-html-tip-tap/src/theme.js',
+  'pie-lib/packages/graphing-solution-set/src/toggle-bar.jsx',
+  'pie-lib/packages/graphing-solution-set/src/tools/polygon/line.jsx',
+  'pie-lib/packages/graphing-solution-set/src/tools/shared/line/line-path.jsx',
+  'pie-lib/packages/graphing-solution-set/src/tools/shared/line/with-root-edge.jsx',
+  'pie-lib/packages/mask-markup/src/components/correct-input.jsx',
+  'pie-lib/packages/mask-markup/src/components/input.jsx',
+  'pie-lib/packages/math-input/src/math-input.jsx',
+]);
 
 // Build tool versions
 export const BUILD_TOOLS = {
@@ -32,24 +79,11 @@ export const BUILD_TOOLS = {
   VITE_REACT_PLUGIN: '^6.0.1',
 } as const;
 
-// React versions
+// React versions. Library packages take React as a peer from the element that renders them;
+// element packages depend on React at the browser ESM policy version and declare no React peer.
 export const REACT = {
-  VERSION: '^18.0.0',
+  LIBRARY_PEER_RANGE: '^18.0.0 || ^19.0.0',
   TYPES_VERSION: '^18.2.0',
-} as const;
-
-// Directory patterns to skip
-export const SKIP_PATTERNS = {
-  TEST_DIRS: ['__tests__', '__mocks__'],
-  FILE_EXTENSIONS: ['.js', '.jsx', '.ts', '.tsx'],
-} as const;
-
-// File types
-export const FILE_TYPES = {
-  JS: '.js',
-  JSX: '.jsx',
-  TS: '.ts',
-  TSX: '.tsx',
 } as const;
 
 // Package.json defaults
@@ -61,12 +95,19 @@ export const PACKAGE_DEFAULTS = {
 
 // Build scripts
 export const ELEMENT_BROWSER_VITE_CONFIG = '../../../tools/vite/element-browser.config.ts';
+export const ELEMENT_BROWSER_EDITOR_RUNTIME_VITE_CONFIG =
+  '../../../tools/vite/element-browser-editor-runtime.config.ts';
 export const ELEMENT_LEGACY_PRINT_VITE_CONFIG =
   '../../../tools/vite/element-legacy-print.config.ts';
 
 export type ElementBuildLanes = {
   /** dist/browser/** - the browser ESM surface consumed by pie-players. */
   browser?: boolean;
+  /**
+   * dist/browser/editor-runtime/** - the browser build with the editor engine imported from
+   * @pie-element/shared-editor-runtime, declared in pie.browserEditorRuntime. Needs `browser`.
+   */
+  editorRuntime?: boolean;
   /**
    * module/print.js - a self-contained print bundle (React inlined, zero
    * externals) for the unmodified @pie-framework/pie-print client loader, which
@@ -93,6 +134,9 @@ export function composeElementBuildScript(lanes: ElementBuildLanes = {}): string
   const steps = ['bun x vite build'];
   if (lanes.browser) {
     steps.push(`bun x vite build --config ${ELEMENT_BROWSER_VITE_CONFIG}`);
+    if (lanes.editorRuntime) {
+      steps.push(`bun x vite build --config ${ELEMENT_BROWSER_EDITOR_RUNTIME_VITE_CONFIG}`);
+    }
   }
   if (lanes.legacyPrint) {
     steps.push(`bun x vite build --config ${ELEMENT_LEGACY_PRINT_VITE_CONFIG}`);

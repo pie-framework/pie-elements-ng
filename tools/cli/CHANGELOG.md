@@ -1,5 +1,125 @@
 # @pie-element/cli
 
+## 0.1.2-next.14
+
+### Patch Changes
+
+- Read upstream commits from the repository passed in, even when run from a git hook.
+- Depend on `i18next` alone: the package no longer declares React, `prop-types`, `debug` or `@pie-element/shared-lodash`, none of which it imports. Add English and Spanish strings for the Svelte elements mc-populated-blank, simple-cloze and venn-classification, and stop logging i18next's configuration to the console. Upstream sync leaves the package alone, since this repo now owns it.
+- `upstream:sync` now forces every `@tiptap/*` dependency of a synced `@pie-lib` package to one exact version instead of taking the upstream manifest's. tiptap pins its own peers exactly from 3.24.0 on, so the mixed set upstream declares resolves a second `@tiptap/core` and breaks ProseMirror on duplicate schema and plugin identity (PIE-1042)
+- The placement-ordering controller scores responses of two or more tiles, where it threw for every one (PIE-1098). Its scorer called js-combinatorics 0.5's `combination(seed, size)` against the 2.x dependency, which counts combinations instead; the upstream sync now rewrites that call to 2.x's `Combination` class.
+  
+  `uniq` from `@pie-element/shared-lodash` returns `[]` for a value without a length, as lodash does, where it threw on a non-iterable.
+- Add `@pie-element/shared-editor-runtime`, one browser ESM build of the tiptap editor engine, and an editor-runtime variant of each browser view of the elements that bundle the engine, declared in `pie.browserEditorRuntime`, which `pie-cli` sync now writes. `./browser/*` and the IIFE builds are unchanged.
+- Merge pull request #198 from pie-framework/fix/browser-packaging
+- Merge pull request #205 from pie-framework/fix/mathjax-esm-adapter
+- Declare `@tiptap/extension-bubble-menu` and `@tiptap/extension-floating-menu` at exactly 3.31.3. `@tiptap/react` takes both by caret, so a consumer install would otherwise move them past `@tiptap/core` once Tiptap publishes a newer release. `upstream:sync` now adds them wherever `@tiptap/react` is declared (PIE-1110).
+- `@pie-element/element-player` no longer exports the `Tab` type, and its unused panel components are removed. Upstream sync no longer re-emits source files that no entry of their package reaches.
+- Merge pull request #209 from pie-framework/fix/final-publish-ng
+- Merge pull request #233 from pie-framework/fix/changesets-version-private-packages
+- Publish a root `print.js` shim from print-bearing elements, and resolve bundler entry
+  subpaths from what a package declares.
+  
+  An alias-based IIFE builder resolves `@pie-element/<element>/print` as a filesystem path
+  and never reads the exports map, so print needs the same root shim `controller.js` and
+  `configure.js` already provide. Without it the subpath resolved only from TypeScript
+  sources, so print worked in a workspace build and failed every build against published
+  tarballs — taking the whole bundle with it rather than just the print view.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.6
+
+## 0.1.2-next.13
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.5
+
+## 0.1.2-next.12
+
+### Patch Changes
+
+- 60ec99e: Declare `@tiptap/extension-bubble-menu` and `@tiptap/extension-floating-menu` at exactly 3.31.3. `@tiptap/react` takes both by caret, so a consumer install would otherwise move them past `@tiptap/core` once Tiptap publishes a newer release. `upstream:sync` now adds them wherever `@tiptap/react` is declared (PIE-1110).
+
+## 0.1.2-next.11
+
+### Patch Changes
+
+- f6d5dd4: `@pie-element/element-player` no longer exports the `Tab` type, and its unused panel components are removed. Upstream sync no longer re-emits source files that no entry of their package reaches.
+
+## 0.1.2-next.10
+
+### Patch Changes
+
+- Merge pull request #209 from pie-framework/fix/final-publish-ng
+
+## 0.1.2-next.9
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.4
+
+## 0.1.2-next.8
+
+### Patch Changes
+
+- Merge pull request #205 from pie-framework/fix/mathjax-esm-adapter
+
+## 0.1.2-next.7
+
+### Patch Changes
+
+- c4e2ba3: Add `@pie-element/shared-editor-runtime`, one browser ESM build of the tiptap editor engine, and an editor-runtime variant of each browser view of the elements that bundle the engine, declared in `pie.browserEditorRuntime`, which `pie-cli` sync now writes. `./browser/*` and the IIFE builds are unchanged.
+
+## 0.1.2-next.6
+
+### Patch Changes
+
+- Merge pull request #198 from pie-framework/fix/browser-packaging
+- Updated dependencies [06c1926]
+  - @pie-element/element-bundler@0.1.2-next.3
+
+## 0.1.2-next.5
+
+### Patch Changes
+
+- d242e4c: The placement-ordering controller scores responses of two or more tiles, where it threw for every one (PIE-1098). Its scorer called js-combinatorics 0.5's `combination(seed, size)` against the 2.x dependency, which counts combinations instead; the upstream sync now rewrites that call to 2.x's `Combination` class.
+
+  `uniq` from `@pie-element/shared-lodash` returns `[]` for a value without a length, as lodash does, where it threw on a non-iterable.
+
+## 0.1.2-next.4
+
+### Patch Changes
+
+- Updated dependencies [ec4e868]
+- Updated dependencies [0b4b1a9]
+- Updated dependencies [0611171]
+- Updated dependencies [67e7141]
+  - @pie-element/element-bundler@0.1.2-next.2
+
+## 0.1.2-next.3
+
+### Patch Changes
+
+- 2bb02ad: Depend on `i18next` alone: the package no longer declares React, `prop-types`, `debug` or `@pie-element/shared-lodash`, none of which it imports. Add English and Spanish strings for the Svelte elements mc-populated-blank, simple-cloze and venn-classification, and stop logging i18next's configuration to the console. Upstream sync leaves the package alone, since this repo now owns it.
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.1
+
+## 0.1.2-next.2
+
+### Patch Changes
+
+- fbc32d5: Read upstream commits from the repository passed in, even when run from a git hook.
+
 ## 0.1.2-next.1
 
 ### Patch Changes

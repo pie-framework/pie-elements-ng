@@ -8,33 +8,33 @@
     {
       "view": "author",
       "pie": {
-        "file": "src/controller/defaults.ts",
+        "file": "src/author/defaults.ts",
         "path": "model"
       },
       "config": {
-        "file": "src/controller/defaults.ts",
+        "file": "src/author/defaults.ts",
         "path": "configuration"
       }
     },
     {
       "view": "delivery",
       "pie": {
-        "file": "src/controller/defaults.ts",
+        "file": "src/author/defaults.ts",
         "path": "model"
       },
       "config": {
-        "file": "src/controller/defaults.ts",
+        "file": "src/author/defaults.ts",
         "path": "configuration"
       }
     },
     {
       "view": "print",
       "pie": {
-        "file": "src/controller/defaults.ts",
+        "file": "src/author/defaults.ts",
         "path": "model"
       },
       "config": {
-        "file": "src/controller/defaults.ts",
+        "file": "src/author/defaults.ts",
         "path": "configuration"
       }
     }

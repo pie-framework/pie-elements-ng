@@ -2,75 +2,118 @@
   customElement={{
     shadow: 'none',
     props: {
-      model: { type: 'Object' }
+      model: { type: 'Object' },
+      configuration: { type: 'Object' }
     }
   }}
 />
 
 <script lang="ts">
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
+import {
+  ConfigLayout,
+  SettingsPanel,
+  hasSettings,
+  mergeConfiguration,
+  toggle,
+} from '@pie-lib/config-ui-svelte';
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
-import { createEventDispatcher } from 'svelte';
+import { createDefaultModel } from '../controller/index';
+import defaults from '../controller/defaults';
 
-const dispatch = createEventDispatcher();
+let { model, configuration }: { model?: any; configuration?: Record<string, unknown> } = $props();
 
-let { model = $bindable(), onChange }: { model?: any; onChange?: (model: any) => void } = $props();
+const answerInputId = `simple-cloze-correct-answer-${Math.random().toString(36).slice(2, 10)}`;
 
-function emitModelUpdate(nextModel: any) {
-  // Match the expected contract used by AuthorView:
-  // detail contains { update, reset }
-  dispatch('model.updated', { update: nextModel, reset: false });
-}
+/** The model with the controller's defaults filled in, which delivery renders too. */
+const m = $derived(createDefaultModel(model || undefined));
+const config = $derived(mergeConfiguration(defaults.configuration, configuration));
 
-function handlePromptChange(html: string) {
-  if (onChange && model) {
-    onChange({ ...model, prompt: html });
-  }
-  if (model) {
-    emitModelUpdate({ ...model, prompt: html });
-  }
+/**
+ * Keeps the edit as the element's model, so the next edit builds on it,
+ * assigning it through the host: a remount after a detach starts from the
+ * host's property. Announces it as a bubbling `model.updated` for the player
+ * listening at its root. The update spreads the whole model, so fields this
+ * form does not edit survive.
+ */
+function emitModelUpdate(patch: Record<string, unknown>) {
+  const nextModel = { ...m, ...patch };
+  $host<HTMLElement & { model: unknown }>().model = nextModel;
+  $host().dispatchEvent(new ModelUpdatedEvent(nextModel));
 }
 
 function handleAnswerChange(e: Event) {
-  const target = e.target as HTMLInputElement;
-  if (onChange && model) {
-    onChange({ ...model, correctAnswer: target.value });
-  }
-  if (model) {
-    emitModelUpdate({ ...model, correctAnswer: target.value });
-  }
+  emitModelUpdate({ correctAnswer: (e.target as HTMLInputElement).value });
 }
 </script>
 
 <div class="simple-cloze-author">
-  <div class="input-container">
-    <span class="input-label">Prompt</span>
-    <EditableHtml
-      markup={model?.prompt || ""}
-      onChange={handlePromptChange}
-      placeholder="Enter your question here..."
-    />
-  </div>
+  <ConfigLayout hideSettings={config.settingsPanelDisabled === true || !hasSettings(config)}>
+    {#snippet settings()}
+      <SettingsPanel
+        model={m}
+        configuration={config}
+        groups={{
+          Settings: {
+            promptEnabled: config.prompt?.settings && toggle(config.prompt.label),
+          },
+          Properties: {
+            teacherInstructionsEnabled:
+              config.teacherInstructions?.settings && toggle(config.teacherInstructions.label),
+          },
+        }}
+        onChangeModel={(next) => emitModelUpdate(next)}
+      />
+    {/snippet}
 
-  <div class="mb-6">
-    <label for="simple-cloze-correct-answer" class="block text-sm text-gray-600 mb-2">
-      Correct Answer
-    </label>
-    <input
-      id="simple-cloze-correct-answer"
-      type="text"
-      class="input input-bordered w-full"
-      placeholder="Enter the correct answer"
-      value={model?.correctAnswer || ""}
-      oninput={handleAnswerChange}
-    />
-  </div>
+    <div class="design-fields">
+      {#if m.teacherInstructionsEnabled}
+        <div class="input-container">
+          <span class="input-label">{config.teacherInstructions?.label}</span>
+          <EditableHtml
+            markup={m.teacherInstructions || ''}
+            onChange={(html) => emitModelUpdate({ teacherInstructions: html })}
+            ariaLabel={config.teacherInstructions?.label}
+          />
+        </div>
+      {/if}
+
+      {#if m.promptEnabled}
+        <div class="input-container">
+          <span class="input-label">{config.prompt?.label}</span>
+          <EditableHtml
+            markup={m.prompt || ''}
+            onChange={(html) => emitModelUpdate({ prompt: html })}
+            placeholder="Enter your question here..."
+            ariaLabel={config.prompt?.label}
+          />
+        </div>
+      {/if}
+
+      <div class="answer-container">
+        <label for={answerInputId} class="answer-label">
+          Correct Answer
+        </label>
+        <input
+          id={answerInputId}
+          type="text"
+          class="answer-input"
+          placeholder="Enter the correct answer"
+          value={m.correctAnswer || ''}
+          oninput={handleAnswerChange}
+        />
+      </div>
+    </div>
+  </ConfigLayout>
 </div>
 
 <style>
   .simple-cloze-author {
-    max-width: 56rem;
-    margin: 0 auto;
     padding: 24px;
+  }
+
+  .design-fields {
+    max-width: 56rem;
   }
 
   .input-container {
@@ -90,6 +133,27 @@ function handleAnswerChange(e: Event) {
     pointer-events: none;
   }
 
+  .answer-container {
+    margin-bottom: 24px;
+  }
+
+  .answer-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+    color: var(--pie-text, rgba(0, 0, 0, 0.6));
+  }
+
+  .answer-input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 2.5rem;
+    padding: 0 12px;
+    border: 1px solid var(--pie-border-light, #ccc);
+    border-radius: 4px;
+    font: inherit;
+  }
+
   :global(.simple-cloze-author .editor-container) {
     border-color: var(--pie-border-light, #ccc);
     border-radius: 4px;
@@ -99,4 +163,3 @@ function handleAnswerChange(e: Event) {
     min-height: 140px;
   }
 </style>
-

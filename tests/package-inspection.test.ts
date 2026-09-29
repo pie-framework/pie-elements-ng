@@ -2,7 +2,12 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { collectPublishSurfaceViolations } from '../scripts/check-publish-surface.mjs';
+import {
+  collectDeclarationImportViolations,
+  collectPublishSurfaceViolations,
+  collectSharedRuntimeDependencyViolations,
+  collectSvelteLeakViolations,
+} from '../scripts/check-publish-surface.mjs';
 import { createPackageSnapshots } from '../scripts/lib/package-inspection.mjs';
 import { runElementContractVerification } from '../scripts/verify-element-contracts.mjs';
 
@@ -151,6 +156,83 @@ describe('package inspection quality-gate helpers', () => {
     );
   });
 
+  it('flags declaration imports a client install cannot resolve', async () => {
+    const dir = join(tmpdir(), `pie-declaration-imports-${process.pid}-${Date.now()}`);
+    await mkdir(join(dir, 'dist'), { recursive: true });
+    await writeFile(
+      join(dir, 'dist', 'index.d.ts'),
+      [
+        "import './styles.css';",
+        "import type { Shell } from '@pie-lib/dev-only';",
+        "import type { Model } from '@pie-lib/declared/types';",
+        "export { helper } from './helper';",
+        "export { other } from './other.js';",
+        "export type { Readable } from 'node:stream';",
+        "/** Comments are not imports: from '@pie-lib/in-a-comment' */",
+        "export declare const Element: typeof import('@pie-element/example').default;",
+        'export type { Shell, Model };',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const violations = collectDeclarationImportViolations({
+      dir,
+      pkg: {
+        name: '@pie-element/example',
+        dependencies: { '@pie-lib/declared': '1.0.0' },
+        devDependencies: { '@pie-lib/dev-only': '1.0.0' },
+      },
+      files: ['dist/index.d.ts'],
+    });
+
+    expect(violations).toEqual([
+      'dist/index.d.ts imports "./helper", which does not resolve under moduleResolution node16 (add the .js extension)',
+      'dist/index.d.ts imports "@pie-lib/dev-only", which is not a dependency, peer or optional dependency',
+    ]);
+  });
+
+  it('flags entry point targets that are not in the tarball', () => {
+    const violations = collectPublishSurfaceViolations({
+      dir: join(process.cwd(), 'packages', 'example-theme'),
+      relativeDir: 'packages/example-theme',
+      pkg: {
+        name: '@pie-element/example-theme',
+        version: '1.0.0',
+        files: ['dist'],
+        types: './dist/index.d.ts',
+        exports: {
+          '.': { types: './dist/index.d.ts', default: './dist/index.js' },
+          './parts/*': './dist/parts/*.js',
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/index.js', 'dist/src/index.d.ts']),
+    });
+
+    expect(violations).toEqual(['entry point target is not packed: ./dist/index.d.ts']);
+  });
+
+  it('requires element packages to export their package.json', () => {
+    const violationsFor = (pkg: Record<string, unknown>) =>
+      collectPublishSurfaceViolations({
+        dir: join(process.cwd(), 'packages', 'elements-react', 'example'),
+        relativeDir: 'packages/elements-react/example',
+        pkg: { version: '1.0.0', files: ['dist'], ...pkg },
+        packedFiles: new Set(['package.json', 'dist/index.js']),
+      });
+    const exports = { '.': { default: './dist/index.js' } };
+    const missing = 'exports["./package.json"] must be "./package.json" for element packages';
+
+    expect(violationsFor({ name: '@pie-element/example', pie: {}, exports })).toContain(missing);
+    expect(
+      violationsFor({
+        name: '@pie-element/example',
+        pie: {},
+        exports: { ...exports, './package.json': './package.json' },
+      })
+    ).not.toContain(missing);
+    expect(violationsFor({ name: '@pie-lib/example', exports })).not.toContain(missing);
+  });
+
   it('requires browser shared dependency metadata only for browser outputs that import it', async () => {
     const root = await makeWorkspaceFixture();
     const svelteDir = join(root, 'packages', 'elements-svelte', 'simple-cloze');
@@ -236,6 +318,44 @@ describe('package inspection quality-gate helpers', () => {
     );
   });
 
+  it('requires each ./browser/* export to declare the types of its standard view', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'typed');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'export default class TypedElement extends HTMLElement {}\n',
+      'utf8'
+    );
+    const violationsFor = (browserDelivery: Record<string, string>) =>
+      collectPublishSurfaceViolations({
+        dir: packageDir,
+        relativeDir: 'packages/elements-react/typed',
+        pkg: {
+          name: '@pie-element/typed',
+          version: '1.0.0',
+          files: ['dist'],
+          exports: {
+            './delivery': {
+              types: './dist/delivery/index.d.ts',
+              default: './dist/delivery/index.js',
+            },
+            './browser/delivery': browserDelivery,
+          },
+        },
+        packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+      });
+    const mismatch = 'exports["./browser/delivery"].types must match exports["./delivery"].types';
+
+    expect(violationsFor({ default: './dist/browser/delivery/index.js' })).toContain(mismatch);
+    expect(
+      violationsFor({
+        types: './dist/delivery/index.d.ts',
+        default: './dist/browser/delivery/index.js',
+      })
+    ).not.toContain(mismatch);
+  });
+
   it('measures the browser size budget over the reachable graph, not stale chunks', async () => {
     const root = await makeWorkspaceFixture();
     const packageDir = join(root, 'packages', 'elements-react', 'stale-chunks');
@@ -317,6 +437,130 @@ describe('package inspection quality-gate helpers', () => {
     expect(violations.some((violation) => violation.includes('exceeds policy budget'))).toBe(true);
   });
 
+  it('rejects browser stylesheets that no reachable module loads', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'styled');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'import "../shared-AAAAAAAA.js";\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'shared-AAAAAAAA.js'),
+      'export const shared = new URL("./shared.css", import.meta.url);\n',
+      'utf8'
+    );
+    await writeFile(join(packageDir, 'dist', 'browser', 'shared.css'), '.a{}\n', 'utf8');
+    await writeFile(join(packageDir, 'dist', 'browser', 'extracted.css'), '.b{}\n', 'utf8');
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/styled',
+      pkg: {
+        name: '@pie-element/styled',
+        version: '1.0.0',
+        files: ['dist'],
+        exports: {
+          './browser/delivery': {
+            default: './dist/browser/delivery/index.js',
+          },
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
+    });
+
+    const stylesheetViolations = violations.filter((violation) => violation.includes('.css'));
+    expect(stylesheetViolations).toEqual([
+      'dist/browser/extracted.css is not loaded by any module reachable from the ./browser/* exports, and hosts load no element CSS',
+    ]);
+  });
+
+  it('rejects legacy print stylesheets that module/print.js does not load', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'printable');
+    await mkdir(join(packageDir, 'module'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'module', 'print.js'),
+      'const href = new URL("./index.css", import.meta.url);\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(join(packageDir, 'module', 'index.css'), '.a{}\n', 'utf8');
+    await writeFile(join(packageDir, 'module', 'print.css'), '.b{}\n', 'utf8');
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/printable',
+      pkg: {
+        name: '@pie-element/printable',
+        version: '1.0.0',
+        files: ['dist', 'module', 'print.js'],
+        exports: {
+          './print': { default: './dist/print/index.js' },
+          './print.js': { default: './dist/print/index.js' },
+        },
+      },
+      packedFiles: new Set([
+        'package.json',
+        'module/print.js',
+        'module/index.css',
+        'module/print.css',
+      ]),
+    });
+
+    const stylesheetViolations = violations.filter((violation) => violation.includes('.css'));
+    expect(stylesheetViolations).toEqual([
+      'module/print.css is not loaded by module/print.js, and hosts load no element CSS',
+    ]);
+  });
+
+  it('rejects top-level await in shipped browser modules', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-react', 'awaiting');
+    await mkdir(join(packageDir, 'dist', 'browser', 'delivery'), { recursive: true });
+    await mkdir(join(packageDir, 'module'), { recursive: true });
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'delivery', 'index.js'),
+      'import "../held-AAAAAAAA.js";\nimport "../async-AAAAAAAA.js";\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'held-AAAAAAAA.js'),
+      'await Promise.resolve();\nexport const held = 1;\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'browser', 'async-AAAAAAAA.js'),
+      'export const load = async () => { await Promise.resolve(); };\nexport async function* each(items) { for await (const item of items) yield item; }\n',
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'module', 'print.js'),
+      'for await (const part of []) {}\nexport default class extends HTMLElement {}\n',
+      'utf8'
+    );
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-react/awaiting',
+      pkg: {
+        name: '@pie-element/awaiting',
+        version: '1.0.0',
+        files: ['dist', 'module'],
+        exports: {
+          './browser/delivery': { default: './dist/browser/delivery/index.js' },
+          './print': { default: './dist/print/index.js' },
+        },
+      },
+      packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js', 'module/print.js']),
+    });
+
+    expect(violations.filter((violation) => violation.includes('top-level await'))).toEqual([
+      'dist/browser/held-AAAAAAAA.js uses top-level await, which default Vite 6 builds reject',
+      'module/print.js uses top-level await, which default Vite 6 builds reject',
+    ]);
+  });
+
   it('rejects browser ESM packages that register their public element tag', async () => {
     const root = await makeWorkspaceFixture();
     const packageDir = join(root, 'packages', 'elements-react', 'public-registering');
@@ -346,5 +590,140 @@ describe('package inspection quality-gate helpers', () => {
     expect(violations).toContain(
       'dist/browser/delivery/index.js must not auto-register the public element tag'
     );
+  });
+
+  it('rejects packed files that load svelte at runtime, not the comments of an inlined Svelte', async () => {
+    const root = await makeWorkspaceFixture();
+    const packageDir = join(root, 'packages', 'elements-svelte', 'leaky');
+    await mkdir(join(packageDir, 'dist', 'delivery'), { recursive: true });
+    // An element build that inlines Svelte also inlines Svelte's JSDoc.
+    await writeFile(
+      join(packageDir, 'dist', 'index.js'),
+      [
+        '//#region node_modules/svelte/src/internal/client/reactivity/batch.js',
+        "/** @import { Fork } from 'svelte' */",
+        "/**\n * import { createSubscriber } from 'svelte/reactivity';\n */",
+        "export const framework = 'svelte';",
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'delivery', 'index.js'),
+      "import { mount } from 'svelte';\nexport * from 'svelte/store';\nexport default mount;\n",
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'lazy.js'),
+      "export const load = () => import('svelte/reactivity');\n",
+      'utf8'
+    );
+    await writeFile(
+      join(packageDir, 'dist', 'legacy.cjs'),
+      "module.exports = require('svelte/internal');\n",
+      'utf8'
+    );
+
+    const violations = collectPublishSurfaceViolations({
+      dir: packageDir,
+      relativeDir: 'packages/elements-svelte/leaky',
+      pkg: {
+        name: '@pie-element/leaky',
+        version: '1.0.0',
+        files: ['dist'],
+        exports: { '.': { default: './dist/index.js' } },
+      },
+      packedFiles: new Set([
+        'package.json',
+        'dist/index.js',
+        'dist/delivery/index.js',
+        'dist/lazy.js',
+        'dist/legacy.cjs',
+      ]),
+    });
+
+    expect(violations).toEqual([
+      'dist/delivery/index.js imports "svelte" at runtime; the build must inline Svelte',
+      'dist/delivery/index.js imports "svelte/store" at runtime; the build must inline Svelte',
+      'dist/lazy.js imports "svelte/reactivity" at runtime; the build must inline Svelte',
+      'dist/legacy.cjs imports "svelte/internal" at runtime; the build must inline Svelte',
+    ]);
+  });
+
+  it('rejects svelte in every dependency bucket except element-bundler dependencies', async () => {
+    const root = await makeWorkspaceFixture();
+    const bundlerDir = join(root, 'packages', 'bundler');
+    await mkdir(join(bundlerDir, 'dist'), { recursive: true });
+    await writeFile(
+      join(bundlerDir, 'dist', 'index.js'),
+      "import { compile } from 'svelte/compiler';\nexport { compile };\n",
+      'utf8'
+    );
+    const svelte = '^5.57.0';
+
+    expect(
+      collectSvelteLeakViolations({
+        dir: root,
+        pkg: {
+          name: '@pie-element/leaky',
+          dependencies: { svelte },
+          optionalDependencies: { svelte },
+          peerDependencies: { svelte },
+          peerDependenciesMeta: { svelte: { optional: true } },
+        },
+      })
+    ).toEqual([
+      'dependencies.svelte is not allowed',
+      'optionalDependencies.svelte is not allowed',
+      'peerDependencies.svelte is not allowed',
+      'peerDependenciesMeta.svelte is not allowed',
+    ]);
+    expect(
+      collectSvelteLeakViolations({
+        dir: bundlerDir,
+        pkg: { name: '@pie-element/element-bundler', dependencies: { svelte } },
+        files: ['dist/index.js'],
+      })
+    ).toEqual([]);
+    expect(
+      collectSvelteLeakViolations({
+        dir: bundlerDir,
+        pkg: { name: '@pie-element/element-bundler', peerDependencies: { svelte } },
+      })
+    ).toEqual(['peerDependencies.svelte is not allowed']);
+  });
+
+  it('requires element React in dependencies and rejects React peers', () => {
+    const pie = {
+      controller: '@pie-element/sample/controller',
+      browserSharedDependencies: { react: '18.2.0', 'react-dom': '18.2.0' },
+    };
+    const react = { react: '^18.2.0', 'react-dom': '^18.2.0' };
+
+    expect(collectSharedRuntimeDependencyViolations({ pie, dependencies: react })).toEqual([]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        pie,
+        dependencies: react,
+        peerDependencies: { react: '^18.2.0 || ^19.0.0' },
+      })
+    ).toEqual([
+      "peerDependencies.react is not allowed: a peer binds the element to the host's react; declare it in dependencies only",
+    ]);
+    expect(
+      collectSharedRuntimeDependencyViolations({ pie, dependencies: { react: '18.2.0' } })
+    ).toEqual([
+      'dependencies.react must be "^18.2.0" (matching pie.browserSharedDependencies 18.2.0), got "18.2.0"; an exact pin duplicates React and breaks hooks',
+      'dependencies.react-dom is missing: elements install their own react-dom, and webpack bundlers install no peers; use "^18.2.0"',
+    ]);
+    // Libraries keep React peer-only; Svelte elements declare no React.
+    expect(
+      collectSharedRuntimeDependencyViolations({ peerDependencies: { react: '^18.0.0' } })
+    ).toEqual([]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        pie: { controller: '@pie-element/svelte/controller' },
+      })
+    ).toEqual([]);
   });
 });

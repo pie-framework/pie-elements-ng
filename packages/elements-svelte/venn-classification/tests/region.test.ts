@@ -77,6 +77,11 @@ describe('composeRegionLabel', () => {
       'None of A, B, C'
     );
   });
+  it('keeps circle labels as written, unescaped', () => {
+    expect(composeRegionLabel([{ label: 'Cats & Dogs' }, { label: '<Birds>' }], [0])).toBe(
+      'Cats & Dogs only'
+    );
+  });
 });
 
 describe('getRegionLabel', () => {

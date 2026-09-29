@@ -3,12 +3,12 @@ import { Logger } from '../../utils/logger.js';
 import { existsSync } from 'node:fs';
 import { readdir, readFile, writeFile, stat as fsStat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { elementSharedRuntimeDependencies } from '../../lib/upstream/sync-package-manager.js';
 
 const ELEMENTS_REACT_DIR = 'packages/elements-react';
 
 interface ElementDeps {
   deps: Set<string>;
-  peerDeps: Set<string>;
 }
 
 export default class CreateReactElements extends Command {
@@ -55,18 +55,14 @@ export default class CreateReactElements extends Command {
       }
 
       // Scan for dependencies
-      const { deps, peerDeps } = await this.scanElement(elementDir);
+      const { deps } = await this.scanElement(elementDir);
 
       // Add controller package as a dependency
       const controllerPkg = `@pie-element/${element}-controller`;
       deps.add(controllerPkg);
 
       // Generate package.json
-      const packageContent = this.generatePackageJson(
-        element,
-        Array.from(deps),
-        Array.from(peerDeps)
-      );
+      const packageContent = this.generatePackageJson(element, Array.from(deps));
 
       // Write package.json
       await writeFile(packageJsonPath, packageContent, 'utf-8');
@@ -83,9 +79,7 @@ export default class CreateReactElements extends Command {
         await writeFile(tsconfigPath, this.generateTsConfig(), 'utf-8');
       }
 
-      this.logger.success(
-        `  ✅ ${element}: Created package.json (${deps.size} deps, ${peerDeps.size} peer deps)`
-      );
+      this.logger.success(`  ✅ ${element}: Created package.json (${deps.size} deps)`);
       created++;
     }
 
@@ -95,10 +89,9 @@ export default class CreateReactElements extends Command {
   private async scanElement(elementDir: string): Promise<ElementDeps> {
     const srcDir = join(elementDir, 'src');
     const deps = new Set<string>();
-    const peerDeps = new Set<string>();
 
     if (!existsSync(srcDir)) {
-      return { deps, peerDeps };
+      return { deps };
     }
 
     // Recursively scan all .ts and .tsx files
@@ -114,20 +107,18 @@ export default class CreateReactElements extends Command {
           const content = await readFile(itemPath, 'utf-8');
           const fileDeps = this.extractDeps(content);
 
-          for (const dep of fileDeps.deps) deps.add(dep);
-          for (const dep of fileDeps.peerDeps) peerDeps.add(dep);
+          for (const dep of fileDeps) deps.add(dep);
         }
       }
     };
 
     await scanDir(srcDir);
 
-    return { deps, peerDeps };
+    return { deps };
   }
 
-  private extractDeps(content: string): { deps: string[]; peerDeps: string[] } {
+  private extractDeps(content: string): string[] {
     const deps = new Set<string>();
-    const peerDeps = new Set<string>();
 
     // Match import statements
     const importRegex = /^import .* from ['"]([^'"]+)['"]/gm;
@@ -138,16 +129,6 @@ export default class CreateReactElements extends Command {
 
       // Skip relative imports
       if (dep.startsWith('.')) continue;
-
-      // React is a peer dependency
-      if (dep === 'react' || dep.startsWith('react/')) {
-        peerDeps.add('react');
-        continue;
-      }
-      if (dep === 'react-dom' || dep.startsWith('react-dom/')) {
-        peerDeps.add('react-dom');
-        continue;
-      }
 
       // Add @pie-lib packages
       if (dep.startsWith('@pie-lib/')) {
@@ -170,15 +151,13 @@ export default class CreateReactElements extends Command {
       }
     }
 
-    return {
-      deps: Array.from(deps).sort(),
-      peerDeps: Array.from(peerDeps).sort(),
-    };
+    return Array.from(deps).sort();
   }
 
-  private generatePackageJson(name: string, deps: string[], peerDeps: string[]): string {
+  private generatePackageJson(name: string, deps: string[]): string {
     const dependencies: Record<string, string> = {};
-    const peerDependencies: Record<string, string> = {};
+    // React and React DOM are dependencies at the browser ESM policy version, never peers.
+    const sharedRuntimeDeps = elementSharedRuntimeDependencies(process.cwd());
 
     // Add dependencies (use * for external deps, they're in root package.json)
     for (const dep of deps) {
@@ -186,13 +165,8 @@ export default class CreateReactElements extends Command {
       if (dep.startsWith('@pie-element/')) {
         dependencies[dep] = 'workspace:*';
       } else {
-        dependencies[dep] = '*';
+        dependencies[dep] = sharedRuntimeDeps[dep] ?? '*';
       }
-    }
-
-    // Add peer dependencies
-    for (const dep of peerDeps) {
-      peerDependencies[dep] = '^18.0.0';
     }
 
     const pkg = {
@@ -229,7 +203,6 @@ export default class CreateReactElements extends Command {
         'lint:fix': 'biome check --write .',
       },
       dependencies: Object.keys(dependencies).length > 0 ? dependencies : undefined,
-      peerDependencies: Object.keys(peerDependencies).length > 0 ? peerDependencies : undefined,
       devDependencies: {
         '@types/react': '^18.2.0',
         '@types/react-dom': '^18.2.0',

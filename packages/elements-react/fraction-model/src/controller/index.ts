@@ -59,6 +59,9 @@ const getOutComeScore = (question, env, answers = {}) => {
   return correctness === 'correct' ? 1 : 0;
 };
 
+// A player sends an untouched item's session as `{ id, element }`, without `answers`.
+const isUnanswered = (session) => !session || isEmpty(session) || !session.answers;
+
 /*
  * Function to check outcome of the session
  * @param {model} model contains the model object
@@ -68,7 +71,7 @@ const getOutComeScore = (question, env, answers = {}) => {
  */
 export const outcome = (model, session, env) =>
   new Promise((resolve) => {
-    if (!session || isEmpty(session)) {
+    if (isUnanswered(session)) {
       resolve({ score: 0, empty: true });
     } else {
       if (env.mode !== 'evaluate') {
@@ -133,7 +136,7 @@ export const model = (question, session, env) => {
     session = session || {};
     const model = createDefaultModel(question);
     let correctness, score;
-    if ((!session || isEmpty(session)) && env.mode === 'evaluate') {
+    if (isUnanswered(session) && env.mode === 'evaluate') {
       correctness = 'unanswered';
       score = '0%';
     } else {

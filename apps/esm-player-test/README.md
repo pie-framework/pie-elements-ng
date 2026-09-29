@@ -49,7 +49,7 @@ bun install
 bun run dev
 ```
 
-The app will open at [http://localhost:5173](http://localhost:5173)
+The app will open at [http://localhost:5300](http://localhost:5300)
 
 ### Building for Production
 
@@ -105,22 +105,22 @@ Output will be in `dist/` directory, ready for static hosting.
 
 **Test latest published versions:**
 ```
-http://localhost:5173/
+http://localhost:5300/
 ```
 
 **Test specific player version:**
 ```
-http://localhost:5173/?player=1.2.3
+http://localhost:5300/?player=1.2.3
 ```
 
 **Test with local player build:**
 ```
-http://localhost:5173/?player=local
+http://localhost:5300/?player=local
 ```
 
 **Test specific item with element version:**
 ```
-http://localhost:5173/?item=multi-element-math&elements={"multiple-choice":"1.0.0","number-line":"local"}
+http://localhost:5300/?item=multi-element-math&elements={"multiple-choice":"1.0.0","number-line":"local"}
 ```
 
 ## Adding Sample Items

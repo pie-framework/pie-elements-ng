@@ -227,7 +227,8 @@ test.describe('Venn Classification (Svelte 5) - smoke', () => {
     // rect. Look for an element inside the diagram SVG whose fill is driven
     // by our highlight colour and that targets the overlap via clip-path.
     const overlapHighlight = page.locator(
-      '.venn-root .venn-diagram svg circle[clip-path="url(#venn-clip-left)"]'
+      // Ids are per instance (`venn-<random>-clip-left`), so match the suffix.
+      '.venn-root .venn-diagram svg circle[clip-path$="-clip-left)"]'
     );
     await expect(overlapHighlight).toHaveCount(1);
 

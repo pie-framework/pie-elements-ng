@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
   deliveryContainer,
+  evaluateSignal,
   getSessionState,
   openDeliverRoute,
   selectDemo,
@@ -48,12 +49,7 @@ test.describe('Phase 3: Text interactions and hardening', () => {
 
     await switchToEvaluate(page);
     await expect(root).toBeVisible();
-    const evaluateSignal = root
-      .locator('input[readonly], textarea[readonly], [contenteditable="false"]')
-      .or(page.locator('[data-testid="scoring-panel"], [data-testid="score-value"]'))
-      .or(root.getByText(/show correct answer|hide correct answer/i))
-      .first();
-    await expect(evaluateSignal).toBeVisible({ timeout: 15_000 });
+    await expect(evaluateSignal(root)).toBeVisible({ timeout: 15_000 });
   });
 
   test('explicit-constructed-response: fill response area and evaluate renders signals', async ({
@@ -77,15 +73,10 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     expect(JSON.stringify(after ?? {})).toContain('ecr-');
 
     await switchToEvaluate(page);
-    const evaluateSignal = page
-      .locator(
-        '[data-testid="score-value"], [data-testid="scoring-panel"], [data-testid="show-correct-answer"], button:has-text("Show correct answer"), button:has-text("Hide correct answer")'
-      )
-      .first();
-    await expect(evaluateSignal).toBeVisible({ timeout: 15_000 });
+    await expect(evaluateSignal(root)).toBeVisible({ timeout: 15_000 });
   });
 
-  test('multiple-choice: checkbox demo accepts selection and evaluate scoring', async ({
+  test('multiple-choice: checkbox demo accepts selection and evaluate marks it correct', async ({
     page,
   }) => {
     await openDeliverRoute(page, 'multiple-choice');
@@ -118,10 +109,9 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     expect(selectedCount).toBeGreaterThanOrEqual(2);
     expect(selectedCount >= 2 || checkedCount >= 2).toBeTruthy();
 
+    // Both selections are correct answers, so evaluate marks each with a correct tick.
     await switchToEvaluate(page);
-    const scoreValue = page.locator('[data-testid="score-value"]').first();
-    await expect(scoreValue).toBeVisible();
-    await expect(scoreValue).toContainText(/\S/);
+    await expect(root.locator('.correct-fill')).toHaveCount(2);
   });
 
   test('multiple-choice: view mode prevents response change', async ({ page }) => {
@@ -175,8 +165,8 @@ test.describe('Phase 3: Text interactions and hardening', () => {
     await switchMode(page, 'evaluate');
 
     const signal = root
-      .locator('.correctness-icon, .incorrect, button:has-text("Show correct answer")')
-      .or(page.locator('[data-testid="scoring-panel"], [data-testid="score-value"]'))
+      .locator('.correctness-icon, .incorrect')
+      .or(root.getByText(/show correct answer/i))
       .first();
     await expect(signal).toBeVisible();
   });
