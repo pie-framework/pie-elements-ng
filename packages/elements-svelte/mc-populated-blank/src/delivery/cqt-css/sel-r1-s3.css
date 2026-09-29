@@ -50,6 +50,15 @@
   align-items: end;
 }
 
+/* The component's header row, restated because these areas replace its own. */
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank.has-header {
+  grid-template-areas:
+    "header header header"
+    "transcript transcript transcript"
+    "sentence template audio"
+    "choices choices choices";
+}
+
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-template-line {
   grid-area: template;
   justify-self: center;
