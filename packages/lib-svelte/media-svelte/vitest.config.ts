@@ -7,6 +7,8 @@ export default defineConfig({
     conditions: ['browser'],
   },
   test: {
-    environment: 'happy-dom',
+    // DOMPurify under happy-dom drops allowed block elements such as <p>, so the sanitizer tests
+    // need a real HTML parser.
+    environment: 'jsdom',
   },
 });
