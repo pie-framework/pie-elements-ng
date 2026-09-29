@@ -1,5 +1,86 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.0.0-next.46
+
+### Major Changes
+
+- Move the `@pie-lib` packages onto version bases the legacy pie-lib lineage does not publish into, so a bump can no longer land on a version number npm already holds (PIE-1041).
+  
+  Both repos publish these names and both increment the same `<base>-next.N` series, with legacy's counter far ahead of this repo's. When a bump lands on a number legacy already published, npm refuses the overwrite, the package is never published from here, and every element that pins it silently resolves the legacy build instead — which is how `next.9` shipped elements linked against June 2026 lib code, failed 25 of 172 bundle combinations, and left the inline-dropdown, keyboard-placement, selected-choice, drag-placeholder and graphing-palette fixes out of the bundles despite them being on develop.
+  
+  A major takes each package to a base legacy has never used, which removes both the collision on publish and the caret eviction that follows it: legacy packages stop entering the dependency graph, so their `^` ranges — which exclude this repo's prereleases and resolve to legacy stables — stop being consulted at all. This is a version-coordination change only; no runtime behaviour changes.
+
+### Patch Changes
+
+- Publish ng ESM builds for PIE lib packages
+- React element colours drawn from MUI's grey palette now follow the active colour scheme.
+  
+  `theme.palette.grey[N]` does not track `--pie-*`, so every one of these borders, fills
+  and glyphs held a single hex under all ten schemes. Measured against each scheme's own
+  `--pie-background`, the worst case per site ran between 1.01:1 and 1.72:1 — the
+  answer-choice separator in `multiple-choice` that George reported was the visible end of
+  it, not an isolated defect. Each site now reads the token matching its role, and the
+  worst case across every scheme is at least 3.17:1.
+  
+  Strokes, dividers and connectors take `--pie-border`; the heavier card outlines in
+  `math-inline` and `math-templated` take `--pie-border-dark`. Fills take
+  `--pie-background-dark`, and selected or pressed fills `--pie-dropdown-background`. Text
+  and interactive icons take `--pie-text` — no neutral token clears 4.5:1 in every scheme,
+  so the `likert` column header that measured 1.88:1 on plain white gains contrast rather
+  than keeping its tint. De-emphasised glyphs take `--pie-border-gray`, disabled
+  affordances `--pie-disabled`.
+  
+  Four surfaces move with their strokes, because a scheme's border colour on a permanently
+  white card is worse than the grey it replaced: under white-on-black `--pie-border` is
+  `#ffffff`. The two `extended-text-entry` annotation popovers, the `inline-dropdown` menu
+  item and the `config-ui` settings panel now paint `--pie-white`, which inverts with the
+  scheme as `palette.common.white` never did.
+  
+  `@pie-lib/render-ui` gains `color.buttonFocusOutline()` for `--pie-button-focus-outline`,
+  used by the two editor toolbar focus rings that were drawing themselves in `grey[700]` —
+  1.28:1 on yellow-on-navy.
+  
+  Visible change in the default light theme: strokes that were `#e0e0e0` or `#bdbdbd` are
+  now `--pie-border`, which resolves to `#8f8f8f`. That is deliberate; the previous values
+  were below the 3:1 non-text minimum before any scheme was applied.
+- Sync upstream drag fixes, visx v4, tiptap and number-line math changes
+- Upload pasted images instead of inlining them as base64. The tiptap paste handler read the clipboard file into a data URL and inserted it as the node's `src` without ever calling `imageSupport.add`, so a pasted image was persisted inline - inflating the item by roughly a third of the file size and failing to save with a 413 for large images - while the toolbar button stored a short uploaded URL. Paste now inserts the data URL only as a preview and hands the file to the host through `insertImageRequested` with `isPasted` and `getChosenFile`, the same contract the toolbar path uses, so the stored markup carries the uploaded URL. `InsertImageHandler` also resolves its target node by `nodeKey` rather than by the position captured when the upload started, because nothing stops the author from typing while a pasted image uploads and a stale position wrote the uploaded URL onto the wrong node (PIE-1017)
+- Pin every @tiptap/\* dependency to exactly 3.31.3, so installing more than one PIE element resolves a single @tiptap/core instead of three. tiptap pins its own peers exactly from 3.24.0 on, so a mixed set cannot be satisfied and the duplicate core breaks ProseMirror on schema and plugin identity. Also dedupes prosemirror-model and prosemirror-view, which tiptap was warning about ("wrapping and splitting nodes will fail"). element-player drops its 8 @tiptap/\* dependencies plus lowlight and highlight.js: they were only reachable from an orphaned JsonEditor/ModelInspector pair that nothing imported, so none of them ever reached its bundle (PIE-1042)
+- Keep the toolbar background under buttons that overflow the editor (PIE-1057)
+- Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Declare `@tiptap/extension-bubble-menu` and `@tiptap/extension-floating-menu` at exactly 3.31.3. `@tiptap/react` takes both by caret, so a consumer install would otherwise move them past `@tiptap/core` once Tiptap publishes a newer release. `upstream:sync` now adds them wherever `@tiptap/react` is declared (PIE-1110).
+- Merge pull request #219 from pie-framework/chore/remove-unused-code
+- 41deafb: Drop the unused `change-case` runtime dependency.
+- Vendor the lodash helper surface through `@pie-element/shared-lodash` so browser ESM output no longer depends on runtime lodash or lodash-es resolution.
+  
+  Replace `@pie-lib/config-ui`'s tiny `mathjs` fraction-to-number usage with a generated local helper, while keeping `mathjs@^15.2.0` for packages such as `@pie-element/number-line` that use the broader math surface.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [b6ef8b1]
+- Updated dependencies
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.51
+  - @pie-lib/math-input@9.0.0-next.16
+  - @pie-lib/math-toolbar@4.0.0-next.51
+  - @pie-lib/render-ui@6.2.0-next.50
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.6
+  - @pie-element/shared-lodash@0.1.1-next.3
+
 ## 3.0.0-next.45
 
 ### Patch Changes

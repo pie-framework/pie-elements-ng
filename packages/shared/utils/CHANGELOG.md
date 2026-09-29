@@ -1,5 +1,16 @@
 # @pie-element/shared-utils
 
+## 0.1.1-next.5
+
+### Patch Changes
+
+- Fix: republish to replace workspace:* with resolved versions in published manifests
+- Republish shared packages with resolved workspace:* dependencies (fixes broken 0.1.0 manifests on npm)
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @pie-element/shared-types@0.2.0-next.3
+
 ## 0.1.1-next.4
 
 ### Patch Changes

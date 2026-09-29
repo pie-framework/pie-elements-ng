@@ -1,5 +1,21 @@
 # @pie-element/element-theme-daisyui
 
+## 0.1.1-next.8
+
+### Patch Changes
+
+- Ship `dist/index.d.ts`. Declarations were emitted under `dist/src/`, so the package's `types` entry did not resolve.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @pie-element/shared-theming@0.2.0-next.7
+  - @pie-element/shared-types@0.2.0-next.3
+  - @pie-element/element-theme@0.1.1-next.7
+
 ## 0.1.1-next.7
 
 ### Patch Changes

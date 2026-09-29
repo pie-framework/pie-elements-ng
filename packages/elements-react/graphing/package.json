@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/graphing",
-  "version": "10.1.2-next.28",
+  "version": "10.1.2-next.29",
   "description": "",
   "repository": {
     "type": "git",
@@ -103,7 +103,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.1-next.0",
+      "version": "0.1.1-next.1",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",
