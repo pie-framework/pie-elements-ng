@@ -590,25 +590,19 @@ describe('renderMath', () => {
     expect(console.error).not.toHaveBeenCalled();
   });
 
-  it("reports delegation to the legacy renderer's MathJax 3, one error per page", async () => {
+  it("reports nothing when it delegates to the legacy renderer's MathJax 3", async () => {
     const events = conflictEvents();
     // The legacy renderer sets window.MathJax.version when it loads.
     page.MathJax = { version: '3.2.2', _: {}, config: {} };
-    page['@pie-lib/math-rendering'] = { renderMath: vi.fn() };
-    interceptScripts();
+    const playerRenderMath = vi.fn();
+    page['@pie-lib/math-rendering'] = { renderMath: playerRenderMath };
 
-    await createMathjaxRenderer()(elementWith('\\(x\\)'));
     await renderMath(elementWith('\\(y\\)'));
     await renderMath(elementWith('\\(z\\)'));
 
-    expect(console.error).toHaveBeenCalledTimes(1);
-    expect(events.map((event) => event.detail.condition)).toEqual([
-      'mathjax-3-global',
-      'legacy-renderer-delegation',
-    ]);
-    expect(events[1].detail.message).toContain(
-      "window['@pie-lib/math-rendering'] renders this element's math with MathJax 3.2.2"
-    );
+    expect(playerRenderMath).toHaveBeenCalledTimes(2);
+    expect(console.error).not.toHaveBeenCalled();
+    expect(events).toEqual([]);
   });
 
   it('delegates string rendering to the player math renderer and returns rendered HTML', async () => {
