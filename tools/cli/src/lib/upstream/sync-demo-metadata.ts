@@ -1,11 +1,11 @@
 /**
  * Generate demo metadata for SvelteKit demo app
  *
- * This module generates:
- * 1. Element registry (lib/elements/registry.ts)
- * 2. Sample configs converted to JSON from each element
- * 3. Sample sessions converted to JSON from each element
+ * Scans packages/elements-react and packages/elements-svelte and rewrites the element registry
+ * (lib/elements/registry.ts). Each element's demos live in lib/samples/<element>.json, which the
+ * demo app reads; an element's docs/demo/config.mjs seeds that file only when it does not exist.
  */
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +13,9 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '../../../../..');
 const DEMO_APP_PATH = join(REPO_ROOT, 'apps/element-demo');
-const ELEMENTS_REACT_PATH = join(REPO_ROOT, 'packages/elements-react');
+const REGISTRY_PATH = join(DEMO_APP_PATH, 'src/lib/elements/registry.ts');
+const SAMPLES_PATH = join(DEMO_APP_PATH, 'src/lib/samples');
+const ELEMENT_ROOTS = ['packages/elements-react', 'packages/elements-svelte'];
 
 export interface ElementMetadata {
   name: string;
@@ -27,73 +29,133 @@ export interface ElementMetadata {
 }
 
 /**
- * Scan elements-react directory for all elements
+ * Read the current registry entries, whose hand-set title and hasSession survive regeneration
  */
-async function scanReactElements(): Promise<ElementMetadata[]> {
-  const { readdirSync, existsSync: fsExistsSync, statSync } = await import('node:fs');
+function readExistingRegistry(): Map<string, ElementMetadata> {
+  if (!existsSync(REGISTRY_PATH)) return new Map();
 
-  if (!fsExistsSync(ELEMENTS_REACT_PATH)) {
-    console.log('[demo-metadata] elements-react directory not found, skipping');
-    return [];
+  const content = readFileSync(REGISTRY_PATH, 'utf-8');
+  const match = content.match(/export const ELEMENT_REGISTRY[^=]*=\s*(\[[\s\S]*?\]);/);
+  if (!match) throw new Error(`Could not find ELEMENT_REGISTRY in ${REGISTRY_PATH}`);
+
+  const entries: ElementMetadata[] = JSON.parse(match[1]);
+  return new Map(entries.map((entry) => [entry.name, entry]));
+}
+
+/**
+ * Convert old format (models array) to new format (demos array)
+ */
+function toDemosFormat(configData: any): any {
+  if (!configData?.models || configData?.demos) return configData;
+
+  return {
+    demos: configData.models.map((model: any, index: number) => ({
+      id: index === 0 ? 'default' : `demo-${index + 1}`,
+      title: index === 0 ? 'Default Demo' : `Demo ${index + 1}`,
+      description: 'Default configuration',
+      tags: [],
+      model: model,
+      session: { value: [] },
+    })),
+  };
+}
+
+/**
+ * Load an element's samples JSON, seeding it from docs/demo/config.mjs when it does not exist
+ */
+async function loadSamples(name: string, elementPath: string): Promise<any | undefined> {
+  const samplesPath = join(SAMPLES_PATH, `${name}.json`);
+  const configPath = join(elementPath, 'docs/demo/config.mjs');
+  const existing = existsSync(samplesPath)
+    ? JSON.parse(readFileSync(samplesPath, 'utf-8'))
+    : undefined;
+
+  if (!existsSync(configPath)) return existing;
+
+  let configData: any;
+  try {
+    configData = toDemosFormat((await import(`file://${configPath}`)).default);
+  } catch (e) {
+    console.warn(`[demo-metadata] Failed to convert config for ${name}:`, e);
+    return existing;
   }
 
+  if (existing) {
+    if (JSON.stringify(configData) !== JSON.stringify(existing)) {
+      console.warn(
+        `[demo-metadata] ${name}: docs/demo/config.mjs differs from samples/${name}.json; ` +
+          'kept the samples file (delete it to regenerate from config.mjs)'
+      );
+    }
+    return existing;
+  }
+
+  await mkdir(SAMPLES_PATH, { recursive: true });
+  await writeFile(samplesPath, JSON.stringify(configData, null, 2) + '\n', 'utf-8');
+  console.log(`[demo-metadata] Seeded samples/${name}.json from docs/demo/config.mjs`);
+  return configData;
+}
+
+/**
+ * Scan the element package directories for all elements
+ */
+async function scanElements(existing: Map<string, ElementMetadata>): Promise<ElementMetadata[]> {
   const elements: ElementMetadata[] = [];
-  const dirs = readdirSync(ELEMENTS_REACT_PATH);
 
-  for (const dir of dirs) {
-    const elementPath = join(ELEMENTS_REACT_PATH, dir);
-    const stat = statSync(elementPath);
+  for (const root of ELEMENT_ROOTS) {
+    const rootPath = join(REPO_ROOT, root);
+    if (!existsSync(rootPath)) continue;
 
-    if (!stat.isDirectory()) continue;
+    for (const dir of readdirSync(rootPath, { withFileTypes: true })) {
+      if (!dir.isDirectory()) continue;
 
-    // Check for required structure
-    const srcPath = join(elementPath, 'src');
-    const deliveryPath = join(srcPath, 'delivery');
-    if (!fsExistsSync(deliveryPath)) continue;
+      // Check for required structure
+      const elementPath = join(rootPath, dir.name);
+      const srcPath = join(elementPath, 'src');
+      if (!existsSync(join(srcPath, 'delivery'))) continue;
 
-    // Check for author and print
-    const hasAuthor = fsExistsSync(join(srcPath, 'author'));
-    const hasPrint = fsExistsSync(join(srcPath, 'print'));
+      const pkg = JSON.parse(readFileSync(join(elementPath, 'package.json'), 'utf-8'));
+      const samples = await loadSamples(dir.name, elementPath);
+      const previous = existing.get(dir.name);
 
-    // Check for demo files
-    const docsPath = join(elementPath, 'docs/demo');
-    const hasConfig = fsExistsSync(join(docsPath, 'config.mjs'));
-    const hasSession = fsExistsSync(join(docsPath, 'session.mjs'));
+      if (!previous) {
+        console.log(
+          `[demo-metadata] Added ${dir.name}; check its title and hasSession in registry.ts`
+        );
+      }
 
-    // Generate title from name (e.g., "multiple-choice" -> "Multiple Choice")
-    const title = dir
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-
-    elements.push({
-      name: dir,
-      title,
-      packageName: `@pie-element/${dir}`,
-      hasAuthor,
-      hasPrint,
-      hasConfig,
-      hasSession,
-      demoCount: 0, // Will be updated in copySampleConfigs
-    });
+      elements.push({
+        name: dir.name,
+        // Generate title from name (e.g., "multiple-choice" -> "Multiple Choice")
+        title:
+          previous?.title ??
+          dir.name
+            .split('-')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' '),
+        packageName: pkg.name,
+        hasAuthor: existsSync(join(srcPath, 'author')),
+        hasPrint: existsSync(join(srcPath, 'print')),
+        hasConfig: samples !== undefined,
+        hasSession: previous?.hasSession ?? true,
+        demoCount: Array.isArray(samples?.demos) ? samples.demos.length : 0,
+      });
+    }
   }
 
-  return elements;
+  return elements.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
  * Generate registry.ts file
  */
 async function generateRegistry(elements: ElementMetadata[]): Promise<void> {
-  const registryPath = join(DEMO_APP_PATH, 'src/lib/elements/registry.ts');
-
   const content = `/**
  * Element Registry
  *
- * AUTO-GENERATED by upstream:sync command.
- * DO NOT EDIT MANUALLY - changes will be overwritten.
- *
- * Generated: ${new Date().toISOString()}
+ * Generated by \`bun tools/generate-demo-metadata.mjs\` from packages/elements-react and
+ * packages/elements-svelte. Edit \`title\` and \`hasSession\` here; regeneration keeps them and
+ * overwrites the other fields.
  */
 
 export interface ElementMetadata {
@@ -113,69 +175,14 @@ export function getElement(name: string): ElementMetadata | undefined {
   return ELEMENT_REGISTRY.find((el) => el.name === name);
 }
 
-export function getAllElements(): ElementMetadata[] {
+export function getAllElements(): readonly ElementMetadata[] {
   return ELEMENT_REGISTRY;
 }
 `;
 
-  await mkdir(dirname(registryPath), { recursive: true });
-  await writeFile(registryPath, content, 'utf-8');
+  await mkdir(dirname(REGISTRY_PATH), { recursive: true });
+  await writeFile(REGISTRY_PATH, content, 'utf-8');
   console.log(`[demo-metadata] Generated registry with ${elements.length} elements`);
-}
-
-/**
- * Convert and copy sample configs for an element as JSON
- */
-async function copySampleConfigs(elements: ElementMetadata[]): Promise<void> {
-  for (const element of elements) {
-    const sourcePath = join(ELEMENTS_REACT_PATH, element.name, 'docs/demo');
-    const targetDir = join(DEMO_APP_PATH, 'src/lib/samples');
-    await mkdir(targetDir, { recursive: true });
-
-    // Convert config.mjs to JSON
-    if (element.hasConfig) {
-      const sourceConfig = join(sourcePath, 'config.mjs');
-      const targetConfig = join(targetDir, `${element.name}.json`);
-      try {
-        // Dynamic import the .mjs file
-        const configModule = await import(`file://${sourceConfig}`);
-        let configData = configModule.default;
-
-        // Convert old format (models array) to new format (demos array)
-        if (configData?.models && !configData?.demos) {
-          console.log(`[demo-metadata] Converting ${element.name} from old format to new format`);
-          configData = {
-            demos: configData.models.map((model: any, index: number) => ({
-              id: index === 0 ? 'default' : `demo-${index + 1}`,
-              title: index === 0 ? 'Default Demo' : `Demo ${index + 1}`,
-              description: 'Default configuration',
-              tags: [],
-              model: model,
-              session: { value: [] },
-            })),
-          };
-        }
-
-        // Count demos (now all in 'demos' format)
-        if (configData?.demos && Array.isArray(configData.demos)) {
-          element.demoCount = configData.demos.length;
-        } else {
-          element.demoCount = 0;
-        }
-
-        // Write as JSON
-        await writeFile(targetConfig, JSON.stringify(configData, null, 2) + '\n', 'utf-8');
-      } catch (e) {
-        console.warn(`[demo-metadata] Failed to convert config for ${element.name}:`, e);
-      }
-    }
-
-    // Note: session.mjs files are no longer copied as separate files.
-    // Sessions are now embedded within each demo object in the config.
-    // Old format session files are automatically converted during config import above.
-  }
-
-  console.log(`[demo-metadata] Converted sample configs to JSON for ${elements.length} elements`);
 }
 
 /**
@@ -184,16 +191,16 @@ async function copySampleConfigs(elements: ElementMetadata[]): Promise<void> {
 export async function generateDemoMetadata(): Promise<void> {
   console.log('[demo-metadata] Scanning elements...');
 
-  const reactElements = await scanReactElements();
-  const allElements = [...reactElements].sort((a, b) => a.name.localeCompare(b.name));
+  const existing = readExistingRegistry();
+  const elements = await scanElements(existing);
 
-  console.log(`[demo-metadata] Found ${reactElements.length} React elements`);
+  for (const name of existing.keys()) {
+    if (!elements.some((element) => element.name === name)) {
+      console.log(`[demo-metadata] Removed ${name}; no element package found`);
+    }
+  }
 
-  // Copy sample configs first so demoCount gets populated
-  await copySampleConfigs(allElements);
-
-  // Then generate registry with updated demoCount values
-  await generateRegistry(allElements);
+  await generateRegistry(elements);
 
   console.log('[demo-metadata] ✓ Demo metadata generation complete');
 }
