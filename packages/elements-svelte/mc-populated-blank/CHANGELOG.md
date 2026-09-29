@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.24
+
+### Patch Changes
+
+- ff302e2: Bundle the default audio play button SVGs instead of loading them from an external CDN
+
 ## 0.3.0-next.23
 
 ### Patch Changes
