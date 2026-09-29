@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title description">
+  <title id="title">Lab safety demonstration poster</title>
+  <desc id="description">A simple illustration of safety goggles above a heat-safe work surface.</desc>
+  <rect width="1280" height="720" fill="#eef4f8" />
+  <rect x="96" y="88" width="1088" height="544" rx="32" fill="#ffffff" stroke="#2f5d73" stroke-width="12" />
+  <path d="M390 278h170l44 82H452zM720 278h170l-62 82H676z" fill="#cce8f5" stroke="#173f52" stroke-width="18" stroke-linejoin="round" />
+  <path d="M560 316h116" fill="none" stroke="#173f52" stroke-width="18" stroke-linecap="round" />
+  <path d="M358 278h-54M922 278h54" fill="none" stroke="#173f52" stroke-width="18" stroke-linecap="round" />
+  <rect x="364" y="432" width="552" height="28" rx="14" fill="#d36b32" />
+  <text x="640" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#173f52">Lab safety demonstration</text>
+  <text x="640" y="592" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#2f5d73">Captions and transcript provided</text>
+</svg>

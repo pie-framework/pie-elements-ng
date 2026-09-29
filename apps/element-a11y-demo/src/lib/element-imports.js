@@ -221,6 +221,11 @@ registerController('mc-populated-blank', () => import('@pie-element/mc-populated
 registerAuthor('mc-populated-blank', () => import('@pie-element/mc-populated-blank/author'));
 registerPrint('mc-populated-blank', () => import('@pie-element/mc-populated-blank/print'));
 
+// Register element: video-stimulus
+registerElement('video-stimulus', () => import('@pie-element/video-stimulus/delivery'));
+registerController('video-stimulus', () => import('@pie-element/video-stimulus/controller'));
+registerAuthor('video-stimulus', () => import('@pie-element/video-stimulus/author'));
+
 // Register element: venn-classification
 registerElement('venn-classification', () => import('@pie-element/venn-classification/delivery'));
 registerController('venn-classification', () => import('@pie-element/venn-classification/controller'));

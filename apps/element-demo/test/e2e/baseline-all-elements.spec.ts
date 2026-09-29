@@ -73,6 +73,7 @@ const NON_ACTIONABLE_DELIVERY_ELEMENTS = new Set([
   'rubric',
   'complex-rubric',
   'multi-trait-rubric',
+  'video-stimulus',
 ]);
 const NON_ACTIONABLE_AUTHOR_ELEMENTS = new Set(['rubric', 'complex-rubric']);
 const ELEMENT_FILTER = process.env.E2E_BASELINE_ELEMENT?.trim();

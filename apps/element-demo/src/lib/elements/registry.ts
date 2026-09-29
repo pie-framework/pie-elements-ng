@@ -317,6 +317,16 @@ export const ELEMENT_REGISTRY: readonly ElementMetadata[] = [
     "hasConfig": true,
     "hasSession": true,
     "demoCount": 3
+  },
+  {
+    "name": "video-stimulus",
+    "title": "Video Stimulus",
+    "packageName": "@pie-element/video-stimulus",
+    "hasAuthor": true,
+    "hasPrint": false,
+    "hasConfig": true,
+    "hasSession": false,
+    "demoCount": 1
   }
 ];
 
