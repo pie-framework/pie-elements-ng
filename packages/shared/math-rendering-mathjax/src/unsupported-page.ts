@@ -17,9 +17,7 @@ export type MathjaxConflictCondition =
   /** `window.MathJax` is a MathJax 3 build. */
   | 'mathjax-3-global'
   /** Another MathJax output stylesheet was added to `<head>` beside this adapter's. */
-  | 'foreign-output-stylesheet'
-  /** `window['@pie-lib/math-rendering']` routes ESM element math to MathJax 3. */
-  | 'legacy-renderer-delegation';
+  | 'foreign-output-stylesheet';
 
 export interface MathjaxConflictDetail {
   condition: MathjaxConflictCondition;
