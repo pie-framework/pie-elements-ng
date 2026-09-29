@@ -1,17 +1,25 @@
+import {
+  LISTEN_PLAYING_DEFAULT_URL,
+  LISTEN_PLAYING_ES_URL,
+  LISTEN_SILENT_DEFAULT_URL,
+  LISTEN_SILENT_ES_URL,
+} from './assets/audioButtonSkinAssets';
+
 export type AudioButtonSkin = { silentUrl: string; playingUrl: string };
 
+/**
+ * Built-in fallback skins, bundled with this package (no external CDN dependency).
+ * Callers can override per-item via `audioButtonSkin` / `audioButtonSkinsByLocale`
+ * on the model — see computeFeatureAudioSkin below.
+ */
 export const DEFAULT_AUDIO_BUTTON_SKINS: Record<string, AudioButtonSkin> = {
   default: {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/0c9f2aa3-3cd5-4de7-93ef-541c24ca35da.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/231dfdc2-c113-4be5-91fb-e75a0ca5994b.svg',
+    silentUrl: LISTEN_SILENT_DEFAULT_URL,
+    playingUrl: LISTEN_PLAYING_DEFAULT_URL,
   },
   es: {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/27a9d5b5-d873-4bd5-b9ba-22748782d8ba.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/120f216d-96b7-4560-94b8-1d90710216b7.svg',
+    silentUrl: LISTEN_SILENT_ES_URL,
+    playingUrl: LISTEN_PLAYING_ES_URL,
   },
 };
 
