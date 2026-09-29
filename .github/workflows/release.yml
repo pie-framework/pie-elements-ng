@@ -553,6 +553,9 @@ jobs:
           RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
           RELEASE_PACKAGES: ${{ github.event_name == 'workflow_dispatch' && inputs.release_packages || '' }}
           RELEASE_PUBLISHED_MANIFEST: ${{ runner.temp }}/published.json
+          # The Git CLI commit and push would otherwise run lefthook's pre-commit and pre-push
+          # gates (a full test and build) again on the version commit this run already built.
+          LEFTHOOK: 0
 
       # Publishing runs through release:publish:checked, so changesets/action never performs the
       # publish and its `published`/`publishedPackages` outputs stay empty on every successful
