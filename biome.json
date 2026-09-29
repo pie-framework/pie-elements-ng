@@ -31,7 +31,8 @@
       "!apps/*/src/lib/element-imports.js",
       "!apps/*/src/lib/element-imports.d.ts",
       "!apps/esm-player-test/index.html",
-      "!packages/elements-svelte/simple-cloze/test.html"
+      "!packages/elements-svelte/simple-cloze/test.html",
+      "!packages/elements-svelte/mc-populated-blank/src/delivery/assets/*.svg"
     ]
   },
   "formatter": {
