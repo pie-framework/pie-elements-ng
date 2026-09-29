@@ -10,7 +10,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@mui/icons-material": "^7.3.4",
-    "@mui/material": "^7.3.4",
+    "@mui/material": "^9.4.0",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "konva": "8.3.0",
