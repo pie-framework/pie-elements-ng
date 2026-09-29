@@ -21,7 +21,7 @@ Open <http://localhost:5222> and choose an element, or go straight to `/<element
 
 ## Per-Element Demo Data
 
-The app reads each element's demos from `apps/element-demo/src/lib/samples/<element>.json`. For the React elements, `bun tools/generate-demo-metadata.mjs` converts `packages/elements-react/<element>/docs/demo/config.mjs` into that file and rewrites `registry.ts`; the Svelte elements' sample files and registry entries are maintained by hand. [demo-configuration-guide.md](demo-configuration-guide.md) covers the `config.mjs` format.
+The app reads each element's demos from `apps/element-demo/src/lib/samples/<element>.json`, which is edited directly. `bun tools/generate-demo-metadata.mjs` rewrites `registry.ts` from `packages/elements-react` and `packages/elements-svelte`, keeping each entry's hand-set `title` and `hasSession`, and seeds a missing samples file from the element's `docs/demo/config.mjs`. [demo-configuration-guide.md](demo-configuration-guide.md) covers the demo format.
 
 ## Known Issues & Solutions
 
