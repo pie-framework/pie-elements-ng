@@ -1,5 +1,13 @@
 # @pie-element/number-line
 
+## 13.1.2-next.28
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.47
+  - @pie-lib/config-ui@14.0.0-next.47
+
 ## 13.1.2-next.27
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.28
+
+### Patch Changes
+
+- @pie-element/multi-trait-rubric@8.1.2-next.27
+  - @pie-lib/config-ui@14.0.0-next.47
+  - @pie-lib/rubric@3.0.0-next.47
+  - @pie-element/rubric@8.1.2-next.27
+
 ## 7.1.2-next.27
 
 ### Patch Changes

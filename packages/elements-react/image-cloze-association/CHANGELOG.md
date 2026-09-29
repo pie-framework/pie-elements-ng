@@ -1,5 +1,13 @@
 # @pie-element/image-cloze-association
 
+## 10.2.0-next.29
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.47
+  - @pie-lib/config-ui@14.0.0-next.47
+
 ## 10.2.0-next.28
 
 ### Minor Changes

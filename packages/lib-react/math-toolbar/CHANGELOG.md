@@ -1,5 +1,11 @@
 # @pie-lib/math-toolbar
 
+## 4.0.0-next.52
+
+### Patch Changes
+
+- Merge pull request #235 from pie-framework/fix/PIE-1115-math-toolbar-focus
+
 ## 4.0.0-next.51
 
 ### Major Changes

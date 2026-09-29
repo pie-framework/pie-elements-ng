@@ -1,5 +1,13 @@
 # @pie-element/categorize
 
+## 13.2.0-next.29
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.47
+  - @pie-lib/config-ui@14.0.0-next.47
+
 ## 13.2.0-next.28
 
 ### Minor Changes

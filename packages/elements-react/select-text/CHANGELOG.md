@@ -1,5 +1,13 @@
 # @pie-element/select-text
 
+## 13.1.2-next.30
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.47
+  - @pie-lib/config-ui@14.0.0-next.47
+
 ## 13.1.2-next.29
 
 ### Patch Changes

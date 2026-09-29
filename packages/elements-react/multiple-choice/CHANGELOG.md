@@ -1,5 +1,13 @@
 # @pie-element/multiple-choice
 
+## 13.4.0-next.25
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.47
+  - @pie-lib/config-ui@14.0.0-next.47
+
 ## 13.4.0-next.24
 
 ### Minor Changes

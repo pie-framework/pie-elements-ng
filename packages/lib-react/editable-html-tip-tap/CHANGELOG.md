@@ -1,5 +1,13 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.0.0-next.47
+
+### Patch Changes
+
+- Merge pull request #235 from pie-framework/fix/PIE-1115-math-toolbar-focus
+- Updated dependencies
+  - @pie-lib/math-toolbar@4.0.0-next.52
+
 ## 3.0.0-next.46
 
 ### Major Changes
