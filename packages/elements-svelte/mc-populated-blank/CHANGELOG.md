@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.26
+
+### Patch Changes
+
+- 7180cd3: The bundled audio button icons are optimized, bringing the delivery bundle back from 119 KB to about 73 KB gzipped.
+
 ## 0.3.0-next.25
 
 ### Patch Changes
