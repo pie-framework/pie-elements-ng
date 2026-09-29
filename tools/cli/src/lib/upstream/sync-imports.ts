@@ -268,86 +268,6 @@ const ${importName} = {
   return code.replace(configureImportRegex, inlinedDefaults);
 }
 
-/**
- * Determine if a file should have .tsx extension based on content
- */
-export function shouldUseTsxExtension(content: string, originalPath: string): boolean {
-  // If original file was .jsx, use .tsx
-  if (originalPath.endsWith('.jsx')) {
-    return true;
-  }
-
-  // If content contains JSX, use .tsx
-  if (containsJsx(content)) {
-    return true;
-  }
-
-  // Otherwise use .ts
-  return false;
-}
-
-/**
- * Convert CommonJS module.exports to ES module exports
- *
- * Handles patterns like:
- * module.exports = { foo: ..., bar: ... }
- *
- * Converts to:
- * export const foo = ...;
- * export const bar = ...;
- */
-export function convertModuleExportsToEsm(content: string): string {
-  // Match: module.exports = { key: value, key2: value2, ... };
-  const moduleExportsPattern = /module\.exports\s*=\s*\{([\s\S]*?)\};?/;
-  const match = content.match(moduleExportsPattern);
-
-  if (!match) {
-    return content;
-  }
-
-  const [fullMatch, objectContent] = match;
-
-  // Parse the object content into key-value pairs
-  // Match patterns like: key: value, (with value possibly spanning multiple lines)
-  const exports: string[] = [];
-  const lines = objectContent.split('\n');
-
-  let currentKey: string | null = null;
-  let currentValue: string[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed === '{' || trimmed === '}') continue;
-
-    // Check if this line starts a new key
-    const keyMatch = trimmed.match(/^(\w+):\s*(.*)/);
-    if (keyMatch) {
-      // Save previous export if any
-      if (currentKey) {
-        const value = currentValue.join('\n').replace(/,\s*$/, ''); // Remove trailing comma
-        exports.push(`export const ${currentKey} =\n${value};`);
-      }
-
-      // Start new export
-      currentKey = keyMatch[1];
-      currentValue = [keyMatch[2]];
-    } else {
-      // Continuation of current value
-      currentValue.push(line);
-    }
-  }
-
-  // Save last export
-  if (currentKey) {
-    const value = currentValue.join('\n').replace(/,\s*$/, '');
-    exports.push(`export const ${currentKey} =\n${value};`);
-  }
-
-  // Replace the module.exports block with ES module exports
-  const esmExports = exports.join('\n\n');
-  return content.replace(fullMatch, esmExports);
-}
-
 const VENDORED_LODASH_PACKAGE = '@pie-element/shared-lodash';
 
 function lodashMemberFromPath(path: string): string {
@@ -537,8 +457,6 @@ function formatLodashBinding(imported: string, local: string): string {
   return imported === local ? imported : `${imported} as ${local}`;
 }
 
-export const transformLodashToLodashEs = transformLodashToVendoredLodash;
-
 /**
  * Transform classnames imports to clsx.
  *
@@ -549,6 +467,144 @@ export function transformClassnamesToClsx(content: string): string {
   return rewriteModuleSpecifiers(content, (specifier) =>
     specifier === 'classnames' ? 'clsx' : undefined
   );
+}
+
+/**
+ * Rewrite js-combinatorics 0.5 `combination(seed, size)` calls to the 2.x `Combination` class.
+ *
+ * Upstream depends on 0.5, a UMD script with no ESM entrypoint; synced packages depend on 2.x,
+ * where `combination(n, k)` counts combinations as a BigInt and throws when given an array.
+ * `new Combination(seed, size)` enumerates the same pairs in the same order.
+ */
+export function transformJsCombinatoricsToV2(content: string): string {
+  if (!content.includes('js-combinatorics')) {
+    return content;
+  }
+
+  const sourceFile = ts.createSourceFile(
+    'source.tsx',
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+  const edits: SourceEdit[] = [];
+  const callees = new Map<string, string>();
+
+  for (const statement of sourceFile.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteral(statement.moduleSpecifier) ||
+      statement.moduleSpecifier.text !== 'js-combinatorics'
+    ) {
+      continue;
+    }
+    const bindings = statement.importClause?.namedBindings;
+    if (!bindings || !ts.isNamedImports(bindings)) {
+      continue;
+    }
+    for (const element of bindings.elements) {
+      if ((element.propertyName ?? element.name).text !== 'combination') {
+        continue;
+      }
+      const local = element.name.text;
+      const aliased = local !== 'combination';
+      callees.set(local, aliased ? local : 'Combination');
+      edits.push({
+        start: element.getStart(sourceFile),
+        end: element.getEnd(),
+        text: aliased ? `Combination as ${local}` : 'Combination',
+      });
+    }
+  }
+
+  if (callees.size === 0) {
+    return content;
+  }
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      callees.has(node.expression.text)
+    ) {
+      edits.push({
+        start: node.expression.getStart(sourceFile),
+        end: node.expression.getEnd(),
+        text: `new ${callees.get(node.expression.text)}`,
+      });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+
+  return applySourceEdits(content, edits);
+}
+
+/**
+ * CommonJS packages whose exports Node's ESM loader cannot detect, mapped to the binding the
+ * rewrite imports them as. A named import from one of them fails to link when a host imports
+ * the built controller in Node; a default import is `module.exports` in Node and in bundlers.
+ */
+const COMMONJS_DEFAULT_IMPORTS: Record<string, string> = {
+  humps: 'humps',
+};
+
+/**
+ * Rewrite named imports from COMMONJS_DEFAULT_IMPORTS packages to a default import plus a
+ * destructure, so `import { camelizeKeys } from 'humps'` becomes
+ * `import humps from 'humps'; const { camelizeKeys } = humps;`.
+ */
+export function transformCommonJsNamedImports(content: string): string {
+  if (!Object.keys(COMMONJS_DEFAULT_IMPORTS).some((name) => content.includes(name))) {
+    return content;
+  }
+
+  const sourceFile = ts.createSourceFile(
+    'source.tsx',
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+  const edits: SourceEdit[] = [];
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) {
+      continue;
+    }
+    const specifier = statement.moduleSpecifier.text;
+    if (!Object.hasOwn(COMMONJS_DEFAULT_IMPORTS, specifier)) {
+      continue;
+    }
+    const clause = statement.importClause;
+    const bindings = clause?.namedBindings;
+    if (
+      !clause ||
+      clause.isTypeOnly ||
+      !bindings ||
+      !ts.isNamedImports(bindings) ||
+      bindings.elements.length === 0 ||
+      bindings.elements.some((element) => element.isTypeOnly)
+    ) {
+      continue;
+    }
+
+    const moduleBinding = clause.name?.text ?? COMMONJS_DEFAULT_IMPORTS[specifier];
+    const properties = bindings.elements.map((element) =>
+      element.propertyName
+        ? `${element.propertyName.text}: ${element.name.text}`
+        : element.name.text
+    );
+    const quoted = quoteLike(specifier, statement.moduleSpecifier.getText(sourceFile));
+    edits.push({
+      start: statement.getStart(sourceFile),
+      end: statement.getEnd(),
+      text: `import ${moduleBinding} from ${quoted};\nconst { ${properties.join(', ')} } = ${moduleBinding};`,
+    });
+  }
+
+  return applySourceEdits(content, edits);
 }
 
 /**
@@ -680,14 +736,6 @@ export function transformConfigUiMathjsToLocalFraction(
   }
 
   return transformed;
-}
-
-/**
- * Compatibility wrapper retained for older callers. Lodash imports now target
- * the vendored shared package rather than lodash-es deep modules.
- */
-export function transformLodashEsDeepImportsToFullySpecified(content: string): string {
-  return transformLodashToVendoredLodash(content);
 }
 
 /**

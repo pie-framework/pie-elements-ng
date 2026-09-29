@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 import { existsSync, readFileSync } from 'node:fs';
+import { isBuiltin } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { parseAst } from 'vite';
 import {
   collectJsFiles as collectPackageJsFiles,
   createPackageSnapshots,
@@ -15,6 +17,21 @@ const POLICY_PATH = path.join(ROOT, 'scripts', 'publish-policy.json');
 const BROWSER_ESM_POLICY_PATH = path.join(ROOT, 'tools', 'vite', 'browser-esm-policy.json');
 const MAX_DETAILS_PER_PACKAGE = 20;
 const FORBIDDEN_EXPORT_CONDITIONS = new Set(['development', 'svelte']);
+// element-bundler compiles elements, so svelte is its own runtime dependency and reaches its
+// clients transitively by design.
+const SVELTE_DEPENDENCY_OWNERS = new Set(['@pie-element/element-bundler']);
+const SHIPPED_JS_FILE = /\.[cm]?js$/;
+const REQUIRE_CALLEES = new Set(['require', '__require']);
+const EDITOR_RUNTIME_PACKAGE = '@pie-element/shared-editor-runtime';
+const EDITOR_RUNTIME_DIR = path.join('packages', 'shared', 'editor-runtime');
+// An element's editor-runtime variant lives in dist/browser/<directory>/<view>/index.js.
+const EDITOR_RUNTIME_VARIANT_DIRECTORY = 'editor-runtime';
+// tiptap and ProseMirror sources, which the editor runtime provides. @tiptap/react stays inside
+// the element with the rest of its React code.
+const EDITOR_ENGINE_SOURCE =
+  /(?:^|[\\/])node_modules[\\/](?:@tiptap[\\/](?!react[\\/])[^\\/]+|prosemirror-[^\\/]+)[\\/]/;
+const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+const RUNTIME_VIEW_NAME = /^[a-z0-9][a-z0-9-]*$/;
 
 const policy = existsSync(POLICY_PATH) ? readJson(POLICY_PATH) : {};
 const browserEsmPolicy = readJson(BROWSER_ESM_POLICY_PATH);
@@ -97,6 +114,9 @@ const isAllowedPackedFile = (filePath, pkg) => {
     return true;
   }
   if (filePath === 'configure.js' && pkg.pie?.configure?.endsWith('/configure')) {
+    return true;
+  }
+  if (filePath === 'author.js' && pkg.exports?.['./author']) {
     return true;
   }
   if (filePath === 'print.js' && pkg.exports?.['./print']) {
@@ -187,6 +207,37 @@ const collectControllerContractViolations = (dir, pkg) => {
         const configureShim = readFileSync(configureShimPath, 'utf8');
         if (configureShim !== expectedConfigureShim) {
           violations.push(`root configure.js shim must re-export ${configureTarget}`);
+        }
+      }
+    }
+  }
+
+  // `./author` needs the shim for the same reason `./configure` does, and is the subpath one
+  // element uses to reach another's authoring view: complex-rubric imports
+  // `@pie-element/rubric/author` and ebsr imports `@pie-element/multiple-choice/author`. The
+  // IIFE bundlers alias `@pie-element/<element>` to a directory, so those requests resolve as
+  // a literal path and never consult the exports map. Without the shim the import is
+  // unresolvable and the whole bundle fails - not just the authoring view - which is why a
+  // combination pairing a composite element with an element it imports could not be built.
+  // `./configure` points at the same dist target, so the shim contents are identical.
+  const authorExport = pkg.exports?.['./author'];
+  if (authorExport) {
+    if (!files.includes('author.js')) {
+      violations.push('files[] must include author.js for packages declaring ./author');
+    }
+
+    const authorTarget = authorExport?.default;
+    if (typeof authorTarget !== 'string' || !authorTarget.startsWith('./dist/')) {
+      violations.push('exports["./author"].default must point at ./dist/...');
+    } else {
+      const authorShimPath = path.join(dir, 'author.js');
+      const expectedAuthorShim = `export { default } from '${authorTarget}';\nexport * from '${authorTarget}';\n`;
+      if (!existsSync(authorShimPath)) {
+        violations.push('root author.js compatibility shim is missing');
+      } else {
+        const authorShim = readFileSync(authorShimPath, 'utf8');
+        if (authorShim !== expectedAuthorShim) {
+          violations.push(`root author.js shim must re-export ${authorTarget}`);
         }
       }
     }
@@ -302,6 +353,94 @@ const collectReachableBrowserJsFiles = (dir, browserExportTargets) => {
   return reachable;
 };
 
+const RELATIVE_CSS_REFERENCE_PATTERN = /["'`](\.{1,2}\/[^"'`\s]+\.css)["'`]/g;
+
+/**
+ * Every stylesheet in a browser-loaded output directory must be referenced by a module
+ * reachable from that directory's entries.
+ *
+ * Browser ESM hosts load no element CSS, so a stylesheet no module loads never applies. Vite
+ * library mode produces exactly that by default: it extracted MathQuill's CSS into
+ * dist/browser/<name>.css, nothing loaded it, and every math field rendered unstyled.
+ * tools/vite/browser-css-loader.ts compiles each stylesheet into the chunks that import it;
+ * this is the tripwire for a build lane that loses it.
+ */
+const collectUnloadedStylesheetViolations = (
+  dir,
+  outputDir,
+  reachableJsFiles,
+  loadedFrom,
+  isExcluded = () => false
+) => {
+  const referenced = new Set();
+  for (const filePath of reachableJsFiles) {
+    const source = readFileSync(filePath, 'utf8');
+    for (const match of source.matchAll(RELATIVE_CSS_REFERENCE_PATTERN)) {
+      referenced.add(path.resolve(path.dirname(filePath), match[1]));
+    }
+  }
+  return collectPackageJsFiles(outputDir, { extensions: ['.css'] })
+    .filter((cssFile) => !referenced.has(cssFile) && !isExcluded(cssFile))
+    .map(
+      (cssFile) =>
+        `${toPosix(path.relative(dir, cssFile))} is not loaded by ${loadedFrom}, and hosts load no element CSS`
+    )
+    .sort();
+};
+
+const FUNCTION_NODE_TYPES = new Set([
+  'ArrowFunctionExpression',
+  'FunctionDeclaration',
+  'FunctionExpression',
+]);
+
+const isTopLevelAwaitNode = (node) =>
+  node.type === 'AwaitExpression' ||
+  (node.type === 'ForOfStatement' && node.await === true) ||
+  (node.type === 'VariableDeclaration' && node.kind === 'await using');
+
+/** True when a module awaits outside every function, which makes it an async module. */
+export const hasTopLevelAwait = (source) => {
+  if (!source.includes('await')) return false;
+  const pending = [parseAst(source)];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (isTopLevelAwaitNode(node)) return true;
+    if (FUNCTION_NODE_TYPES.has(node.type)) continue;
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) if (child && typeof child === 'object') pending.push(child);
+      } else if (value && typeof value === 'object') {
+        pending.push(value);
+      }
+    }
+  }
+  return false;
+};
+
+/**
+ * Shipped browser modules must not await at their top level. A default Vite 6 build targets
+ * es2020 and fails on top-level await in any module it bundles, so one such chunk breaks the
+ * build of every host that imports the element. tools/vite/browser-css-loader.ts once emitted
+ * one in every chunk that imports CSS, to hold the chunk until its stylesheet applied.
+ */
+const collectTopLevelAwaitViolations = (dir, files) => {
+  const violations = [];
+  for (const filePath of [...files].sort()) {
+    const relPath = toPosix(path.relative(dir, filePath));
+    try {
+      if (hasTopLevelAwait(readFileSync(filePath, 'utf8'))) {
+        violations.push(`${relPath} uses top-level await, which default Vite 6 builds reject`);
+      }
+    } catch (error) {
+      violations.push(
+        `${relPath} could not be parsed to check for top-level await: ${error.message}`
+      );
+    }
+  }
+  return violations;
+};
+
 const collectBareImportSpecifiers = (source) => {
   const specifiers = [];
   for (const line of source.split(/\r?\n/)) {
@@ -343,12 +482,14 @@ const hasPublicElementAutoRegistration = (source, pkg) => {
   return new RegExp(`customElements\\.define\\(\\s*['"]${publicTag}['"]`).test(source);
 };
 
-const collectBrowserEsmViolations = (dir, pkg) => {
+const collectBrowserEsmViolations = (dir, pkg, context) => {
   const browserExports = Object.entries(pkg.exports ?? {}).filter(([key]) =>
     key.startsWith('./browser/')
   );
   if (browserExports.length === 0) {
-    return [];
+    return pkg.pie?.browserEditorRuntime === undefined
+      ? []
+      : ['pie.browserEditorRuntime is declared, but the package has no ./browser/* exports'];
   }
 
   const violations = [];
@@ -362,6 +503,14 @@ const collectBrowserEsmViolations = (dir, pkg) => {
       continue;
     }
 
+    // The browser build compiles the standard view's entry, so it shares that view's declarations.
+    const standardKey = `./${key.slice('./browser/'.length)}`;
+    const standardTypes = pkg.exports?.[standardKey]?.types;
+    const browserTypes = typeof value === 'string' ? undefined : value?.types;
+    if (browserTypes !== standardTypes) {
+      violations.push(`exports["${key}"].types must match exports["${standardKey}"].types`);
+    }
+
     const targetPath = path.join(dir, target.slice(2));
     if (!existsSync(targetPath)) {
       violations.push(`${key} target is missing: ${target}`);
@@ -371,9 +520,13 @@ const collectBrowserEsmViolations = (dir, pkg) => {
   }
 
   const browserDir = path.join(dir, 'dist/browser');
+  const declaresVariant = pkg.pie?.browserEditorRuntime !== undefined;
+  const variantDir = path.join(browserDir, EDITOR_RUNTIME_VARIANT_DIRECTORY);
+  const inVariant = (filePath) =>
+    declaresVariant && filePath.startsWith(`${variantDir}${path.sep}`);
   let browserJsBytes = 0;
   const requiredBrowserSharedDependencies = new Set();
-  const jsFiles = collectPackageJsFiles(browserDir);
+  const jsFiles = collectPackageJsFiles(browserDir).filter((filePath) => !inVariant(filePath));
   const reachableJsFiles = collectReachableBrowserJsFiles(dir, browserExportTargets);
   for (const filePath of jsFiles) {
     // Budget only counts the payload reachable from the declared browser exports.
@@ -399,6 +552,16 @@ const collectBrowserEsmViolations = (dir, pkg) => {
       violations.push(`${relPath} must not auto-register the public element tag`);
     }
   }
+  violations.push(
+    ...collectUnloadedStylesheetViolations(
+      dir,
+      browserDir,
+      reachableJsFiles,
+      'any module reachable from the ./browser/* exports',
+      inVariant
+    ),
+    ...collectTopLevelAwaitViolations(dir, reachableJsFiles)
+  );
   if (maxBrowserJsBytesPerPackage > 0 && browserJsBytes > maxBrowserJsBytesPerPackage) {
     violations.push(
       `dist/browser reachable JS size ${browserJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
@@ -415,47 +578,433 @@ const collectBrowserEsmViolations = (dir, pkg) => {
     }
   }
 
+  const engine = findBundledEditorEngine(reachableJsFiles);
+  if (engine && !declaresVariant) {
+    violations.push(
+      `${toPosix(path.relative(dir, engine.filePath))} bundles the editor engine (${engine.packageName}), so the package must build the editor-runtime variant and declare it in pie.browserEditorRuntime`
+    );
+  }
+  if (!engine && declaresVariant) {
+    violations.push(
+      'pie.browserEditorRuntime is declared, but no module reachable from the ./browser/* exports bundles the editor engine'
+    );
+  }
+  violations.push(...collectEditorRuntimeVariantViolations(dir, pkg, browserExports, context));
+
+  return violations;
+};
+
+const packageNameOfSource = (source) => {
+  const segments = source
+    .split(/(?:^|[\\/])node_modules[\\/]/)
+    .pop()
+    .split(/[\\/]/);
+  return segments[0].startsWith('@') ? `${segments[0]}/${segments[1]}` : segments[0];
+};
+
+/** The first file among `jsFiles` whose sourcemap lists a tiptap or ProseMirror source. */
+const findBundledEditorEngine = (jsFiles) => {
+  for (const filePath of [...jsFiles].sort()) {
+    const mapPath = `${filePath}.map`;
+    if (!existsSync(mapPath)) continue;
+    let sources;
+    try {
+      sources = readJson(mapPath).sources ?? [];
+    } catch {
+      continue;
+    }
+    const source = sources.find((candidate) => EDITOR_ENGINE_SOURCE.test(candidate));
+    if (source) return { filePath, packageName: packageNameOfSource(source) };
+  }
+  return null;
+};
+
+const nameOf = (node) => (node.type === 'Identifier' ? node.name : String(node.value));
+
+/**
+ * Every module a file loads: its specifier, whether it is loaded by import or by require(), and
+ * the names the file takes from it by name.
+ */
+const collectModuleImports = (source) => {
+  const imports = [];
+  const pending = [parseAst(source)];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (node.type === 'ImportDeclaration') {
+      imports.push({
+        specifier: node.source.value,
+        kind: 'import',
+        names: node.specifiers.flatMap((specifier) => {
+          if (specifier.type === 'ImportSpecifier') return [nameOf(specifier.imported)];
+          if (specifier.type === 'ImportDefaultSpecifier') return ['default'];
+          return [];
+        }),
+      });
+    } else if (node.type === 'ExportNamedDeclaration' && node.source) {
+      imports.push({
+        specifier: node.source.value,
+        kind: 'import',
+        names: node.specifiers.map((specifier) => nameOf(specifier.local)),
+      });
+    } else if (node.type === 'ExportAllDeclaration') {
+      imports.push({ specifier: node.source.value, kind: 'import', names: [] });
+    } else if (node.type === 'ImportExpression') {
+      const specifier = staticSpecifier(node.source);
+      if (specifier) imports.push({ specifier, kind: 'import', names: [] });
+    } else if (
+      node.type === 'CallExpression' &&
+      node.callee.type === 'Identifier' &&
+      REQUIRE_CALLEES.has(node.callee.name)
+    ) {
+      const specifier = staticSpecifier(node.arguments[0]);
+      if (specifier) imports.push({ specifier, kind: 'require', names: [] });
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) if (child && typeof child === 'object') pending.push(child);
+      } else if (value && typeof value === 'object') {
+        pending.push(value);
+      }
+    }
+  }
+  return imports;
+};
+
+/** The names a built module exports, following its relative `export *` re-exports. */
+const collectModuleExportNames = (filePath, seen = new Set()) => {
+  if (!existsSync(filePath)) return null;
+  const names = new Set();
+  if (seen.has(filePath)) return names;
+  seen.add(filePath);
+  for (const node of parseAst(readFileSync(filePath, 'utf8')).body) {
+    if (node.type === 'ExportDefaultDeclaration') {
+      names.add('default');
+    } else if (node.type === 'ExportNamedDeclaration') {
+      for (const specifier of node.specifiers) names.add(nameOf(specifier.exported));
+      if (node.declaration?.id) names.add(node.declaration.id.name);
+      for (const declarator of node.declaration?.declarations ?? []) {
+        if (declarator.id.type === 'Identifier') names.add(declarator.id.name);
+      }
+    } else if (node.type === 'ExportAllDeclaration') {
+      if (node.exported) {
+        names.add(nameOf(node.exported));
+      } else if (node.source.value.startsWith('.')) {
+        const target = path.resolve(path.dirname(filePath), node.source.value);
+        for (const name of collectModuleExportNames(target, seen) ?? []) {
+          if (name !== 'default') names.add(name);
+        }
+      }
+    }
+  }
+  return names;
+};
+
+const sumFileBytes = (files) =>
+  [...files].reduce((total, filePath) => total + readFileSync(filePath).byteLength, 0);
+
+/**
+ * The editor-runtime variant (dist/browser/editor-runtime) is the element's browser build with
+ * the editor engine left to @pie-element/shared-editor-runtime. pie.browserEditorRuntime names the
+ * runtime and the exact version the variant links against, and maps each ./browser/* view to its
+ * variant. The variant may import what ./browser/* imports plus the runtime's specifiers, and
+ * every name it imports from a specifier must be one that version's view for it exports, so the
+ * variant links against the runtime in any browser.
+ */
+const collectEditorRuntimeVariantViolations = (dir, pkg, browserExports, context) => {
+  const declared = pkg.pie?.browserEditorRuntime;
+  if (declared === undefined) return [];
+  if (!declared || typeof declared !== 'object' || Array.isArray(declared)) {
+    return ['pie.browserEditorRuntime must be an object with name, version and views'];
+  }
+
+  const violations = [];
+  const runtime = context?.editorRuntime ?? null;
+  const fields = Object.keys(declared).sort().join(', ');
+  if (fields !== 'name, version, views') {
+    violations.push(
+      `pie.browserEditorRuntime must have exactly name, version and views, found ${fields || 'none'}`
+    );
+  }
+  if (declared.name !== EDITOR_RUNTIME_PACKAGE) {
+    violations.push(`pie.browserEditorRuntime.name must be "${EDITOR_RUNTIME_PACKAGE}"`);
+  }
+  if (typeof declared.version !== 'string' || !EXACT_VERSION.test(declared.version)) {
+    violations.push('pie.browserEditorRuntime.version must be an exact version');
+  } else if (!runtime) {
+    violations.push(`${EDITOR_RUNTIME_PACKAGE} is not in this workspace`);
+  } else if (declared.version !== runtime.pkg.version) {
+    violations.push(
+      `pie.browserEditorRuntime.version must be "${runtime.pkg.version}", the ${EDITOR_RUNTIME_PACKAGE} version the variant is built against (run node scripts/sync-editor-runtime-version.mjs)`
+    );
+  }
+
+  const runtimeModules = runtime?.pkg.pie?.browserModules ?? {};
+  for (const dependencyName of Object.keys(pkg.pie?.browserSharedDependencies ?? {})) {
+    if (
+      dependencyName === EDITOR_RUNTIME_PACKAGE ||
+      Object.hasOwn(runtimeModules, dependencyName)
+    ) {
+      violations.push(
+        `pie.browserSharedDependencies.${dependencyName} is not allowed: the editor runtime is declared in pie.browserEditorRuntime`
+      );
+    }
+  }
+
+  const standardViews = browserExports.map(([key]) => key.slice('./browser/'.length)).sort();
+  const views =
+    declared.views && typeof declared.views === 'object' && !Array.isArray(declared.views)
+      ? declared.views
+      : {};
+  const declaredViews = Object.keys(views).sort();
+  if (declaredViews.join(', ') !== standardViews.join(', ')) {
+    violations.push(
+      `pie.browserEditorRuntime.views must map every ./browser/* view (${standardViews.join(', ')}), found ${declaredViews.join(', ') || 'none'}`
+    );
+  }
+  const variantEntries = [];
+  for (const view of declaredViews) {
+    const expected = `${EDITOR_RUNTIME_VARIANT_DIRECTORY}/${view}`;
+    if (views[view] !== expected) {
+      violations.push(`pie.browserEditorRuntime.views.${view} must be "${expected}"`);
+      continue;
+    }
+    const entry = `./dist/browser/${expected}/index.js`;
+    if (!existsSync(path.join(dir, entry.slice(2)))) {
+      violations.push(`pie.browserEditorRuntime.views.${view} target is missing: ${entry}`);
+      continue;
+    }
+    variantEntries.push(entry);
+  }
+
+  const variantDir = path.join(dir, 'dist/browser', EDITOR_RUNTIME_VARIANT_DIRECTORY);
+  const variantFiles = collectPackageJsFiles(variantDir).sort();
+  const runtimeExportNames = new Map();
+  const runtimeExportsOf = (view) => {
+    if (!runtimeExportNames.has(view)) {
+      runtimeExportNames.set(
+        view,
+        collectModuleExportNames(path.join(runtime.dir, 'dist/browser', view, 'index.js'))
+      );
+    }
+    return runtimeExportNames.get(view);
+  };
+  for (const filePath of variantFiles) {
+    const relPath = toPosix(path.relative(dir, filePath));
+    const source = readFileSync(filePath, 'utf8');
+    let imports;
+    try {
+      imports = collectModuleImports(source);
+    } catch (error) {
+      violations.push(`${relPath} could not be parsed to check its imports: ${error.message}`);
+      continue;
+    }
+    for (const { specifier, kind, names } of imports) {
+      if (specifier.startsWith('.')) continue;
+      if (!Object.hasOwn(runtimeModules, specifier)) {
+        if (!allowedBrowserBareImports.has(specifier)) {
+          violations.push(`${relPath} contains unsupported bare browser import "${specifier}"`);
+        }
+        continue;
+      }
+      if (kind === 'require') {
+        violations.push(
+          `${relPath} loads "${specifier}" with require(), which a browser cannot run`
+        );
+        continue;
+      }
+      const view = runtimeModules[specifier];
+      const exported = runtimeExportsOf(view);
+      if (!exported) {
+        violations.push(
+          `${relPath} imports "${specifier}", but ${EDITOR_RUNTIME_PACKAGE} has no dist/browser/${view}/index.js`
+        );
+        continue;
+      }
+      for (const name of names) {
+        if (!exported.has(name)) {
+          violations.push(
+            `${relPath} imports ${name} from "${specifier}", which ${EDITOR_RUNTIME_PACKAGE} dist/browser/${view}/index.js does not export`
+          );
+        }
+      }
+    }
+    if (hasPublicElementAutoRegistration(source, pkg)) {
+      violations.push(`${relPath} must not auto-register the public element tag`);
+    }
+  }
+
+  const engine = findBundledEditorEngine(variantFiles);
+  if (engine) {
+    violations.push(
+      `${toPosix(path.relative(dir, engine.filePath))} bundles the editor engine (${engine.packageName}), which the editor-runtime variant imports from ${EDITOR_RUNTIME_PACKAGE}`
+    );
+  }
+
+  const reachableVariantFiles = collectReachableBrowserJsFiles(dir, variantEntries);
+  violations.push(
+    ...collectUnloadedStylesheetViolations(
+      dir,
+      variantDir,
+      reachableVariantFiles,
+      'any module reachable from the pie.browserEditorRuntime views'
+    ),
+    ...collectTopLevelAwaitViolations(dir, reachableVariantFiles)
+  );
+  const variantJsBytes = sumFileBytes(reachableVariantFiles);
+  if (maxBrowserJsBytesPerPackage > 0 && variantJsBytes > maxBrowserJsBytesPerPackage) {
+    violations.push(
+      `dist/browser/${EDITOR_RUNTIME_VARIANT_DIRECTORY} reachable JS size ${variantJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
+    );
+  }
+
   return violations;
 };
 
 /**
- * Shared runtime dependencies (React, React DOM) must be installable, not only
- * declared as peers.
+ * @pie-element/shared-editor-runtime is one browser module per editor specifier the element
+ * builds import, at dist/browser/<pie.browserModules[specifier]>/index.js. It imports nothing
+ * bare, React included, so a page without React loads it, and it installs nothing.
+ */
+const collectEditorRuntimePackageViolations = (dir, pkg) => {
+  if (pkg.name !== EDITOR_RUNTIME_PACKAGE) return [];
+  const violations = [];
+  for (const bucket of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
+    if (Object.keys(pkg[bucket] ?? {}).length > 0) {
+      violations.push(`${bucket} must be empty: the editor runtime bundles everything it runs`);
+    }
+  }
+
+  const modules = pkg.pie?.browserModules;
+  if (!modules || typeof modules !== 'object' || Array.isArray(modules)) {
+    return [...violations, 'pie.browserModules must map each editor specifier to its browser view'];
+  }
+  const entries = [];
+  const specifierByView = new Map();
+  for (const [specifier, view] of Object.entries(modules)) {
+    if (specifier.startsWith('.') || specifier.startsWith('/')) {
+      violations.push(`pie.browserModules key "${specifier}" must be a bare specifier`);
+    }
+    if (typeof view !== 'string' || !RUNTIME_VIEW_NAME.test(view)) {
+      violations.push(`pie.browserModules["${specifier}"] must be a view name like "tiptap-core"`);
+      continue;
+    }
+    if (specifierByView.has(view)) {
+      violations.push(
+        `pie.browserModules["${specifier}"] reuses the view of "${specifierByView.get(view)}"`
+      );
+      continue;
+    }
+    specifierByView.set(view, specifier);
+    const entry = `./dist/browser/${view}/index.js`;
+    if (!existsSync(path.join(dir, entry.slice(2)))) {
+      violations.push(`pie.browserModules["${specifier}"] target is missing: ${entry}`);
+      continue;
+    }
+    entries.push(entry);
+  }
+  if (specifierByView.size === 0) {
+    violations.push('pie.browserModules must map each editor specifier to its browser view');
+  }
+
+  const browserDir = path.join(dir, 'dist/browser');
+  for (const filePath of collectPackageJsFiles(browserDir).sort()) {
+    const relPath = toPosix(path.relative(dir, filePath));
+    let imports;
+    try {
+      imports = collectModuleImports(readFileSync(filePath, 'utf8'));
+    } catch (error) {
+      violations.push(`${relPath} could not be parsed to check its imports: ${error.message}`);
+      continue;
+    }
+    for (const specifier of new Set(imports.map((entry) => entry.specifier))) {
+      if (!specifier.startsWith('./') && !specifier.startsWith('../')) {
+        violations.push(
+          `${relPath} imports "${specifier}"; the editor runtime imports nothing bare`
+        );
+      }
+    }
+  }
+
+  const reachableFiles = collectReachableBrowserJsFiles(dir, entries);
+  violations.push(
+    ...collectUnloadedStylesheetViolations(
+      dir,
+      browserDir,
+      reachableFiles,
+      'any module reachable from the pie.browserModules views'
+    ),
+    ...collectTopLevelAwaitViolations(dir, reachableFiles)
+  );
+  const runtimeJsBytes = sumFileBytes(reachableFiles);
+  if (maxBrowserJsBytesPerPackage > 0 && runtimeJsBytes > maxBrowserJsBytesPerPackage) {
+    violations.push(
+      `dist/browser reachable JS size ${runtimeJsBytes} bytes exceeds policy budget ${maxBrowserJsBytesPerPackage} bytes`
+    );
+  }
+  return violations;
+};
+
+/** The editor runtime a workspace root holds: its directory and manifest, or null. */
+const readEditorRuntime = (root) => {
+  const dir = path.join(root, EDITOR_RUNTIME_DIR);
+  const manifestPath = path.join(dir, 'package.json');
+  return existsSync(manifestPath) ? { dir, pkg: readJson(manifestPath) } : null;
+};
+
+const findEditorRuntime = (snapshots, root) => {
+  const snapshot = snapshots.find((candidate) => candidate.pkg?.name === EDITOR_RUNTIME_PACKAGE);
+  return snapshot ? { dir: snapshot.dir, pkg: snapshot.pkg } : readEditorRuntime(root);
+};
+
+/**
+ * An element declares each shared runtime dependency (React, React DOM) in `dependencies`,
+ * and never as a peer.
  *
- * Legacy webpack bundlers such as builder.pie-api.com install `dependencies` and
- * do not install peers. A peer-only React declaration therefore leaves
- * node_modules/react absent in the build snapshot, and every @mui / @emotion /
- * @dnd-kit peer fails with "Module not found: Can't resolve 'react'". That
- * shipped once: @pie-lib/translator was the only package in the graph declaring
- * React as a real dependency, so every element free-rode on it, and republishing
- * translator with a correct peer-only declaration broke every React element at
- * once.
+ * The dependency is what installs React at all under legacy webpack bundlers such as
+ * builder.pie-api.com, which install `dependencies` and never peers: without it
+ * node_modules/react is absent in the build snapshot, and every @mui / @emotion / @dnd-kit
+ * peer fails with "Module not found: Can't resolve 'react'". That shipped once:
+ * @pie-lib/translator was the only package in the graph declaring React as a real
+ * dependency, so every element free-rode on it, and republishing translator with a
+ * peer-only declaration broke every React element at once.
+ *
+ * A peer lets pnpm and yarn bind the element to the host's React, so a React 19 host runs
+ * the element's React 18 build on React 19.
  *
  * Scope: element packages only, identified by pie.controller. Library packages
- * (@pie-lib/*, @pie-element/shared-*) are correct to declare React peer-only -
- * the element that consumes them owns the installable pin. Svelte elements
- * declare no React peer and are exempt automatically.
+ * (@pie-lib/*, @pie-element/shared-*) are correct to declare React peer-only - the element
+ * that consumes them owns the installable pin. Svelte elements declare no React and are
+ * exempt automatically.
  */
-const collectSharedRuntimeDependencyViolations = (pkg) => {
+export const collectSharedRuntimeDependencyViolations = (pkg) => {
   const violations = [];
   if (!pkg.pie?.controller) return violations;
 
   const dependencies = pkg.dependencies || {};
   const peerDependencies = pkg.peerDependencies || {};
+  const browserSharedDependencies = pkg.pie.browserSharedDependencies || {};
 
   for (const [dependencyName, expectedVersion] of Object.entries(
     expectedBrowserSharedDependencies
   )) {
-    if (!peerDependencies[dependencyName]) continue;
+    const declared =
+      dependencyName in dependencies ||
+      dependencyName in peerDependencies ||
+      dependencyName in browserSharedDependencies;
+    if (!declared) continue;
+    if (dependencyName in peerDependencies) {
+      violations.push(
+        `peerDependencies.${dependencyName} is not allowed: a peer binds the element to the host's ${dependencyName}; declare it in dependencies only`
+      );
+    }
     const actualVersion = dependencies[dependencyName];
     // A caret range, not an exact pin. An exact pin resolves to its own copy
     // alongside the root's `^`-resolved one, and two React instances break hooks
-    // ("Invalid hook call", useRef of null). React is external in every ng bundle,
-    // so the installed version only has to resolve for the legacy webpack path.
+    // ("Invalid hook call", useRef of null).
     const requiredRange = `^${expectedVersion}`;
     if (actualVersion === undefined) {
       violations.push(
-        `dependencies.${dependencyName} is missing: peerDependencies.${dependencyName} alone is not installable by webpack bundlers; use "${requiredRange}"`
+        `dependencies.${dependencyName} is missing: elements install their own ${dependencyName}, and webpack bundlers install no peers; use "${requiredRange}"`
       );
     } else if (actualVersion !== requiredRange) {
       violations.push(
@@ -467,7 +1016,187 @@ const collectSharedRuntimeDependencyViolations = (pkg) => {
   return violations;
 };
 
-export const collectManifestViolations = (dir, pkg) => {
+// module/print.js is loaded by the same kind of host: the @pie-framework/pie-print client
+// injects no CSS either. A missing module/print.js is reported by collectLegacyPrintViolations.
+const collectLegacyPrintModuleViolations = (dir, pkg) => {
+  if (!pkg.exports?.['./print'] || !existsSync(path.join(dir, 'module', 'print.js'))) {
+    return [];
+  }
+  const reachableJsFiles = collectReachableBrowserJsFiles(dir, ['./module/print.js']);
+  return [
+    ...collectUnloadedStylesheetViolations(
+      dir,
+      path.join(dir, 'module'),
+      reachableJsFiles,
+      'module/print.js'
+    ),
+    ...collectTopLevelAwaitViolations(dir, reachableJsFiles),
+  ];
+};
+
+const staticSpecifier = (node) => {
+  if (node?.type === 'Literal' && typeof node.value === 'string') return node.value;
+  if (node?.type === 'TemplateLiteral' && node.expressions.length === 0) {
+    return node.quasis[0].value.cooked;
+  }
+  return null;
+};
+
+const moduleSpecifierOf = (node) => {
+  switch (node.type) {
+    case 'ImportDeclaration':
+    case 'ExportAllDeclaration':
+    case 'ExportNamedDeclaration':
+      return node.source?.value ?? null;
+    case 'ImportExpression':
+      return staticSpecifier(node.source);
+    case 'CallExpression':
+      return node.callee.type === 'Identifier' && REQUIRE_CALLEES.has(node.callee.name)
+        ? staticSpecifier(node.arguments[0])
+        : null;
+    default:
+      return null;
+  }
+};
+
+/**
+ * Every module a file loads at runtime: static imports and re-exports, and import() or
+ * require() of a literal specifier. Parsed rather than pattern-matched: a bundle that inlines
+ * Svelte also inlines Svelte's JSDoc, and `@import { Fork } from 'svelte'` reads as an import
+ * to a regex.
+ */
+const collectRuntimeSpecifiers = (source) => {
+  const specifiers = new Set();
+  const pending = [parseAst(source)];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    const specifier = moduleSpecifierOf(node);
+    if (specifier) specifiers.add(specifier);
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) if (child && typeof child === 'object') pending.push(child);
+      } else if (value && typeof value === 'object') {
+        pending.push(value);
+      }
+    }
+  }
+  return specifiers;
+};
+
+const isSvelteSpecifier = (specifier) => specifier === 'svelte' || specifier.startsWith('svelte/');
+
+/**
+ * Svelte is an implementation detail. A client installs a PIE package and nothing else, so no
+ * manifest asks it for svelte and no shipped file imports svelte: element builds inline the
+ * Svelte runtime.
+ *
+ * `files` are the package-relative paths that ship, npm's packed file list at release.
+ */
+export const collectSvelteLeakViolations = ({ dir, pkg, files = [] }) => {
+  const violations = [];
+  const ownsSvelte = SVELTE_DEPENDENCY_OWNERS.has(pkg.name);
+
+  if (pkg.svelte) {
+    violations.push('package-level svelte field is not allowed');
+  }
+  for (const dependencyBucket of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
+    if (dependencyBucket === 'dependencies' && ownsSvelte) continue;
+    if (pkg[dependencyBucket]?.svelte) {
+      violations.push(`${dependencyBucket}.svelte is not allowed`);
+    }
+  }
+  if (pkg.peerDependenciesMeta?.svelte) {
+    violations.push('peerDependenciesMeta.svelte is not allowed');
+  }
+  if (ownsSvelte) return violations;
+
+  for (const file of [...files].sort()) {
+    const filePath = path.join(dir, file);
+    if (!SHIPPED_JS_FILE.test(file) || !existsSync(filePath)) continue;
+    const source = readFileSync(filePath, 'utf8');
+    if (!source.includes('svelte')) continue;
+    let specifiers;
+    try {
+      specifiers = collectRuntimeSpecifiers(source);
+    } catch (error) {
+      violations.push(`${file} could not be parsed to check its imports: ${error.message}`);
+      continue;
+    }
+    for (const specifier of [...specifiers].sort()) {
+      if (isSvelteSpecifier(specifier)) {
+        violations.push(`${file} imports "${specifier}" at runtime; the build must inline Svelte`);
+      }
+    }
+  }
+  return violations;
+};
+
+const DECLARATION_FILE = /\.d\.[cm]?ts$/;
+// `from '...'` and `import('...')`. A side-effect `import '...'` is left out: TypeScript does not
+// resolve those.
+const DECLARATION_SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*)['"]([^'"]+)['"]/g;
+const EXTENSIONED_RELATIVE_SPECIFIER = /\.(?:[cm]?jsx?|json)$/;
+
+const packageNameOf = (specifier) =>
+  specifier
+    .split('/')
+    .slice(0, specifier.startsWith('@') ? 2 : 1)
+    .join('/');
+
+/**
+ * Shipped declarations must resolve for a client that installed the package and nothing else,
+ * under moduleResolution bundler and node16 alike: every bare import names a declared
+ * dependency, and every relative import carries its extension. A dev-only dependency or an
+ * extensionless path passes the build and fails only in the client's type check.
+ */
+export const collectDeclarationImportViolations = ({ dir, pkg, files = [] }) => {
+  const declared = new Set(
+    ['dependencies', 'peerDependencies', 'optionalDependencies'].flatMap((bucket) =>
+      Object.keys(pkg[bucket] || {})
+    )
+  );
+  const violations = [];
+  for (const file of [...files].sort()) {
+    const filePath = path.join(dir, file);
+    if (!DECLARATION_FILE.test(file) || !existsSync(filePath)) continue;
+    const source = readFileSync(filePath, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    const specifiers = new Set([...source.matchAll(DECLARATION_SPECIFIER)].map((m) => m[1]));
+    for (const specifier of [...specifiers].sort()) {
+      if (specifier.startsWith('.')) {
+        if (!EXTENSIONED_RELATIVE_SPECIFIER.test(specifier)) {
+          violations.push(
+            `${file} imports "${specifier}", which does not resolve under moduleResolution node16 (add the .js extension)`
+          );
+        }
+        continue;
+      }
+      if (isBuiltin(specifier)) continue;
+      const name = packageNameOf(specifier);
+      if (name === pkg.name || declared.has(name)) continue;
+      violations.push(
+        `${file} imports "${specifier}", which is not a dependency, peer or optional dependency`
+      );
+    }
+  }
+  return violations;
+};
+
+/**
+ * An element package exports its manifest, so a host reads the version it installed from the
+ * package itself instead of hand-coding one.
+ */
+const collectManifestExportViolations = (pkg) =>
+  pkg.pie && pkg.exports?.['./package.json'] !== './package.json'
+    ? ['exports["./package.json"] must be "./package.json" for element packages']
+    : [];
+
+export const collectManifestViolations = (
+  dir,
+  pkg,
+  context = { editorRuntime: readEditorRuntime(ROOT) }
+) => {
   const violations = [];
   if (Array.isArray(pkg.files)) {
     for (const entry of pkg.files) {
@@ -484,21 +1213,12 @@ export const collectManifestViolations = (dir, pkg) => {
     }
   }
 
-  if (pkg.svelte) {
-    violations.push('package-level svelte field is not allowed');
-  }
-  for (const dependencyBucket of ['optionalDependencies', 'peerDependencies']) {
-    if (pkg[dependencyBucket]?.svelte) {
-      violations.push(`${dependencyBucket}.svelte is not allowed`);
-    }
-  }
-  if (pkg.peerDependenciesMeta?.svelte) {
-    violations.push('peerDependenciesMeta.svelte is not allowed');
-  }
-
   collectExportKeyViolations(pkg, violations);
+  violations.push(...collectManifestExportViolations(pkg));
   violations.push(...collectControllerContractViolations(dir, pkg));
-  violations.push(...collectBrowserEsmViolations(dir, pkg));
+  violations.push(...collectBrowserEsmViolations(dir, pkg, context));
+  violations.push(...collectEditorRuntimePackageViolations(dir, pkg));
+  violations.push(...collectLegacyPrintModuleViolations(dir, pkg));
   violations.push(...collectSharedRuntimeDependencyViolations(pkg));
 
   const targets = new Set();
@@ -550,6 +1270,24 @@ const collectLegacyPrintViolations = (packedFiles, pkg) => {
   ];
 };
 
+/**
+ * Every file a manifest entry point names must be in the tarball. A build that
+ * emits declarations under a different root (dist/src/index.d.ts for
+ * dist/index.d.ts) passes every other check and still ships types that do not
+ * resolve.
+ */
+const collectMissingTargetViolations = (packedFiles, pkg) => {
+  const targets = new Set();
+  for (const field of ['main', 'module', 'types', 'typings', 'unpkg', 'jsdelivr']) {
+    collectTargets(pkg?.[field], targets);
+  }
+  collectTargets(pkg?.exports, targets);
+  return [...targets]
+    .filter((target) => !target.includes('*') && !packedFiles.has(target))
+    .sort()
+    .map((target) => `entry point target is not packed: ./${target}`);
+};
+
 export const collectPackViolations = (snapshot) => {
   const { packedFiles, pkg, packError } = snapshot;
   if (packedFiles == null && pkg == null) {
@@ -567,11 +1305,30 @@ export const collectPackViolations = (snapshot) => {
     .filter((filePath) => isRawSourceFile(filePath) || !isAllowedPackedFile(filePath, pkg))
     .map((filePath) => `packed file is outside dist/metadata/assets: ${filePath}`)
     .sort();
-  return [...unexpected, ...collectLegacyPrintViolations(packedFiles, pkg)];
+  return [
+    ...unexpected,
+    ...collectMissingTargetViolations(packedFiles, pkg),
+    ...collectLegacyPrintViolations(packedFiles, pkg),
+  ];
 };
 
-export const collectPublishSurfaceViolations = (snapshot) => {
-  const violations = collectManifestViolations(snapshot.dir, snapshot.pkg);
+export const collectPublishSurfaceViolations = (
+  snapshot,
+  context = { editorRuntime: readEditorRuntime(ROOT) }
+) => {
+  const violations = [
+    ...collectManifestViolations(snapshot.dir, snapshot.pkg, context),
+    ...collectSvelteLeakViolations({
+      dir: snapshot.dir,
+      pkg: snapshot.pkg,
+      files: snapshot.packedFiles,
+    }),
+    ...collectDeclarationImportViolations({
+      dir: snapshot.dir,
+      pkg: snapshot.pkg,
+      files: snapshot.packedFiles,
+    }),
+  ];
   try {
     violations.push(...collectPackViolations(snapshot));
   } catch (error) {
@@ -587,8 +1344,9 @@ export const collectPublishSurfaceFailures = ({
   snapshots = createPackageSnapshots({ root, includePackedFiles: true }),
 } = {}) => {
   const failures = [];
+  const context = { editorRuntime: findEditorRuntime(snapshots, root) };
   for (const snapshot of snapshots) {
-    const violations = collectPublishSurfaceViolations(snapshot);
+    const violations = collectPublishSurfaceViolations(snapshot, context);
     if (violations.length > 0) {
       failures.push({
         name: snapshot.pkg.name || path.basename(snapshot.dir),

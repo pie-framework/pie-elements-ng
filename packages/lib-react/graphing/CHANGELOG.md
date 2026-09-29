@@ -1,5 +1,191 @@
 # @pie-lib/graphing
 
+## 5.0.0-next.51
+
+### Major Changes
+
+- Move the `@pie-lib` packages onto version bases the legacy pie-lib lineage does not publish into, so a bump can no longer land on a version number npm already holds (PIE-1041).
+  
+  Both repos publish these names and both increment the same `<base>-next.N` series, with legacy's counter far ahead of this repo's. When a bump lands on a number legacy already published, npm refuses the overwrite, the package is never published from here, and every element that pins it silently resolves the legacy build instead — which is how `next.9` shipped elements linked against June 2026 lib code, failed 25 of 172 bundle combinations, and left the inline-dropdown, keyboard-placement, selected-choice, drag-placeholder and graphing-palette fixes out of the bundles despite them being on develop.
+  
+  A major takes each package to a base legacy has never used, which removes both the collision on publish and the caret eviction that follows it: legacy packages stop entering the dependency graph, so their `^` ranges — which exclude this repo's prereleases and resolve to legacy stables — stop being consulted at all. This is a version-coordination change only; no runtime behaviour changes.
+
+### Patch Changes
+
+- Give a new graphing label a caret, not just the focus (PIE-681)
+- Sync upstream drag fixes, visx v4, tiptap and number-line math changes
+- Resolve ESM-first and externalize the @hello-pangea/dnd and react-redux chain so built bundles no longer emit a require('react') shim that throws in the browser
+- Lock the graphing background and disabled mark colors to the palette default instead of letting them follow the host color scheme, so a background mark's stroke, arrowheads and endpoints keep a predictable contrast against the plane. The graph controls and accordion now use the dark background token with a primary-light border. The plot plane itself is still transparent, so this makes the mark color predictable and reviewable rather than WCAG 1.4.11 compliant (PIE-877, PIE-994)
+- Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Vendor the lodash helper surface through `@pie-element/shared-lodash` so browser ESM output no longer depends on runtime lodash or lodash-es resolution.
+  
+  Replace `@pie-lib/config-ui`'s tiny `mathjs` fraction-to-number usage with a generated local helper, while keeping `mathjs@^15.2.0` for packages such as `@pie-element/number-line` that use the broader math surface.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies [41deafb]
+- Updated dependencies
+- Updated dependencies
+  - @pie-lib/config-ui@14.0.0-next.46
+  - @pie-lib/drag@4.1.0-next.51
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.46
+  - @pie-lib/render-ui@6.2.0-next.50
+  - @pie-lib/translator@5.0.0-next.7
+  - @pie-element/shared-lodash@0.1.1-next.3
+  - @pie-lib/graphing-utils@4.0.0-next.6
+  - @pie-lib/plot@5.0.0-next.47
+
+## 5.0.0-next.50
+
+### Patch Changes
+
+- @pie-lib/drag@4.1.0-next.50
+- @pie-lib/editable-html-tip-tap@3.0.0-next.45
+- @pie-lib/render-ui@6.2.0-next.49
+- @pie-lib/config-ui@14.0.0-next.45
+- @pie-lib/plot@5.0.0-next.46
+
+## 5.0.0-next.49
+
+### Patch Changes
+
+- Updated dependencies [60ec99e]
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.44
+  - @pie-lib/config-ui@14.0.0-next.44
+  - @pie-lib/plot@5.0.0-next.45
+
+## 5.0.0-next.48
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/drag@4.1.0-next.49
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.43
+  - @pie-lib/config-ui@14.0.0-next.43
+  - @pie-lib/plot@5.0.0-next.44
+
+## 5.0.0-next.47
+
+### Patch Changes
+
+- Updated dependencies [619ea67]
+  - @pie-lib/translator@5.0.0-next.6
+
+## 5.0.0-next.46
+
+### Patch Changes
+
+- @pie-lib/drag@4.1.0-next.48
+- @pie-lib/editable-html-tip-tap@3.0.0-next.42
+- @pie-lib/render-ui@6.2.0-next.48
+- @pie-lib/config-ui@14.0.0-next.42
+- @pie-lib/plot@5.0.0-next.43
+
+## 5.0.0-next.45
+
+### Patch Changes
+
+- @pie-lib/drag@4.1.0-next.47
+- @pie-lib/editable-html-tip-tap@3.0.0-next.41
+- @pie-lib/render-ui@6.2.0-next.47
+- @pie-lib/config-ui@14.0.0-next.41
+- @pie-lib/plot@5.0.0-next.42
+
+## 5.0.0-next.44
+
+### Patch Changes
+
+- 7abcbd2: Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Updated dependencies [7abcbd2]
+  - @pie-lib/config-ui@14.0.0-next.40
+  - @pie-lib/drag@4.1.0-next.46
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.40
+  - @pie-lib/plot@5.0.0-next.41
+  - @pie-lib/render-ui@6.2.0-next.46
+
+## 5.0.0-next.43
+
+### Patch Changes
+
+- @pie-lib/drag@4.1.0-next.45
+- @pie-lib/editable-html-tip-tap@3.0.0-next.39
+- @pie-lib/render-ui@6.2.0-next.45
+- @pie-lib/config-ui@14.0.0-next.39
+- @pie-lib/plot@5.0.0-next.40
+
+## 5.0.0-next.42
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/config-ui@14.0.0-next.38
+  - @pie-lib/drag@4.1.0-next.44
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.38
+  - @pie-lib/graphing-utils@4.0.0-next.5
+  - @pie-lib/plot@5.0.0-next.39
+  - @pie-lib/render-ui@6.2.0-next.44
+
+## 5.0.0-next.41
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/config-ui@14.0.0-next.37
+  - @pie-lib/drag@4.1.0-next.43
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.37
+  - @pie-lib/graphing-utils@4.0.0-next.4
+  - @pie-lib/plot@5.0.0-next.38
+  - @pie-lib/render-ui@6.2.0-next.43
+
+## 5.0.0-next.40
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/plot@5.0.0-next.37
+
+## 5.0.0-next.39
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
+## 5.0.0-next.38
+
+### Patch Changes
+
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+
 ## 5.0.0-next.37
 
 ### Patch Changes

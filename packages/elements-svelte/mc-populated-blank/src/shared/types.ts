@@ -1,4 +1,4 @@
-import type { LayoutLimits } from './layoutLimits';
+import type { LayoutLimits } from './layoutLimits.js';
 
 export type McpbChoiceMode = 'text' | 'image';
 export type McpbInteractionMode = 'populate_blank' | 'audio_mc_only';
@@ -63,7 +63,7 @@ export interface McpbQuestion {
   teacherInstructions?: string;
   /** `false` hides `teacherInstructions`; unset shows them, as in multiple-choice. */
   teacherInstructionsEnabled?: boolean;
-  /** `false` leaves the answer key out of print. */
+  /** `false` leaves the answer key out of an instructor's printout; a student's never has it. */
   printAnswerKey?: boolean;
   customType?: string;
 }
@@ -74,6 +74,7 @@ export interface McpbSession {
   choiceId?: string;
   audioStartTime?: number;
   audioEndTime?: number;
+  waitTime?: number;
   shuffledValues?: string[];
   data?: { shuffledValues?: string[] };
 }

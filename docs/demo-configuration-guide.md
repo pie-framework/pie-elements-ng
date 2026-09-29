@@ -2,11 +2,11 @@
 
 ## Overview
 
-All PIE element demos are maintained locally in this project and are **not synced from upstream**. Each element should have a `docs/demo/config.mjs` file with multiple demo scenarios that showcase different features and use cases.
+All PIE element demos are maintained locally in this project and are **not synced from upstream**. The demo app reads an element's demo scenarios from `apps/element-demo/src/lib/samples/<element>.json`. A new element's `docs/demo/config.mjs` seeds that file; from then on, edit the JSON.
 
 ## Demo Config Structure
 
-Each demo config exports a `demos` array with multiple demo objects:
+Each demo config exports a `demos` array with multiple demo objects, and the samples JSON holds the same object:
 
 ```javascript
 export default {
@@ -33,9 +33,9 @@ export default {
 
 ## Creating Demo Configs for New Elements
 
-When adding a new element or updating an existing one, create a demo config with 3-5 demos:
+When adding a new element, create a demo config with 3-5 demos:
 
-1. **Location**: `packages/elements-react/<element-name>/docs/demo/config.mjs`
+1. **Location**: `packages/elements-{react,svelte}/<element-name>/docs/demo/config.mjs`
 
 2. **Number of demos**: Aim for 3-5 demos per element that showcase:
    - Basic usage
@@ -52,6 +52,11 @@ When adding a new element or updating an existing one, create a demo config with
    ```bash
    bun tools/generate-demo-metadata.mjs
    ```
+   This seeds `apps/element-demo/src/lib/samples/<element>.json` from the config and adds the element to `apps/element-demo/src/lib/elements/registry.ts`. Check the new entry's `title` and `hasSession` there; regeneration keeps both. Set `hasSession: false` for an element without a learner session, which makes the e2e smoke tests skip its delivery interaction check.
+
+## Editing Existing Demos
+
+Edit `apps/element-demo/src/lib/samples/<element>.json`, then run `bun tools/generate-demo-metadata.mjs` to refresh the registry's `demoCount`. The generator never overwrites an existing samples file and warns when it differs from `docs/demo/config.mjs`; to regenerate the JSON from `config.mjs`, delete the JSON first.
 
 ## Examples
 
@@ -171,12 +176,12 @@ When adding demos with mathematical content, consider including both LaTeX and M
 
 When adding a new element to the project:
 
-- [ ] Create `packages/elements-react/<element>/docs/demo/config.mjs`
+- [ ] Create `packages/elements-{react,svelte}/<element>/docs/demo/config.mjs`
 - [ ] Add 3-5 demos showcasing different features
 - [ ] Include math examples if the element supports math content
 - [ ] Use descriptive IDs, titles, and descriptions
 - [ ] Add relevant tags
-- [ ] Run `bun tools/generate-demo-metadata.mjs`
+- [ ] Run `bun tools/generate-demo-metadata.mjs` and check the new registry entry's `title` and `hasSession`
 - [ ] Test in demo app at `http://localhost:5222/<element>/deliver`
 - [ ] Verify all demos switch correctly in the dropdown
 - [ ] Test evaluate mode if applicable

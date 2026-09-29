@@ -82,10 +82,10 @@ bun install
 2. Check import paths are correct:
    ```typescript
    // ✅ Correct
-   import { MultipleChoice } from '@pie-element/multiple-choice';
+   import MultipleChoice from '@pie-element/multiple-choice/delivery';
 
    // ❌ Wrong
-   import { MultipleChoice } from '@pie-element/multiple-choice/src';
+   import MultipleChoice from '@pie-element/multiple-choice/src';
    ```
 3. Verify package is in dependencies (not devDependencies)
 
@@ -93,22 +93,10 @@ bun install
 
 **Problem:** Vite build throws errors about SSR or dependencies.
 
-**Solution:**
-1. Configure Vite for proper externals:
-   ```typescript
-   // vite.config.ts
-   export default {
-     build: {
-       rollupOptions: {
-         external: ['@pie-element/*']
-       }
-     }
-   }
-   ```
-2. For SSR, use dynamic imports:
-   ```typescript
-   const MultipleChoice = await import('@pie-element/multiple-choice');
-   ```
+**Solution:** For SSR, import the element in browser-only code:
+```typescript
+const { default: MultipleChoice } = await import('@pie-element/multiple-choice/delivery');
+```
 
 ### Circular Dependency Warnings
 
@@ -139,54 +127,36 @@ bun install
 **Problem:** SSR fails with "document is not defined" or "window is not defined"
 
 **Solution:**
-1. **SvelteKit**: Use `$effect` for client-only code:
-   ```svelte
-   <script>
-     import { MultipleChoice } from '@pie-element/multiple-choice';
 
-     let mounted = $state(false);
+Element views need a browser DOM. Import and define the element in browser-only code, then set `model` and `session` as properties on it:
 
-     $effect(() => {
-       mounted = true;
-     });
-   </script>
+```typescript
+const { default: MultipleChoice } = await import('@pie-element/multiple-choice/delivery');
+if (!customElements.get('pie-multiple-choice')) {
+  customElements.define('pie-multiple-choice', MultipleChoice);
+}
 
-   {#if mounted}
-     <MultipleChoice {model} {session} {env} />
-   {/if}
-   ```
+const element = document.querySelector('pie-multiple-choice');
+element.model = model; // the view model the controller returned
+element.session = session;
+```
 
-2. **Next.js**: Use dynamic import with ssr: false:
-   ```typescript
-   const MultipleChoice = dynamic(
-     () => import('@pie-element/multiple-choice'),
-     { ssr: false }
-   );
-   ```
-
-3. **Nuxt**: Use client-only component:
-   ```vue
-   <ClientOnly>
-     <MultipleChoice :model="model" />
-   </ClientOnly>
-   ```
+Browser-only code is `onMount` in SvelteKit, `useEffect` in a Next.js client component and `onMounted` or `<ClientOnly>` in Nuxt.
 
 ### Custom Element Not Defined
 
 **Problem:** "Uncaught DOMException: Failed to execute 'define' on 'CustomElementRegistry'"
 
 **Solution:**
-1. Ensure you're importing the element before using:
+1. Importing a package does not register its element. Define each tag once, and guard against a second registration:
    ```javascript
-   import '@pie-element/multiple-choice'; // Must come first
-   ```
-2. Check for duplicate registrations:
-   ```javascript
+   import MultipleChoice from '@pie-element/multiple-choice/delivery';
+
    if (!customElements.get('pie-multiple-choice')) {
-     customElements.define('pie-multiple-choice', MultipleChoiceElement);
+     customElements.define('pie-multiple-choice', MultipleChoice);
    }
    ```
-3. Avoid hot module replacement issues in dev:
+2. Avoid hot module replacement issues in dev:
    ```javascript
    if (import.meta.hot) {
      import.meta.hot.accept(() => {
@@ -197,33 +167,36 @@ bun install
 
 ### Event Listeners Not Firing
 
-**Problem:** `session-change` events aren't received.
+**Problem:** `session-changed` events aren't received, or carry no session.
 
 **Solution:**
 1. Check event name spelling:
    ```javascript
    // ✅ Correct
-   element.addEventListener('session-change', handler);
+   element.addEventListener('session-changed', handler);
 
    // ❌ Wrong
+   element.addEventListener('session-change', handler);
    element.addEventListener('sessionChange', handler);
    ```
 2. Ensure element is mounted:
    ```javascript
    window.addEventListener('DOMContentLoaded', () => {
      const element = document.querySelector('pie-multiple-choice');
-     element.addEventListener('session-change', handler);
+     element.addEventListener('session-changed', handler);
    });
    ```
-3. Check event bubbles up:
+3. Read the response off the session object you set. The event bubbles, and its `detail` is `{ complete, component }` with no session ([Delivery Contract](PIE_ELEMENT_CONTRACT.md#delivery-contract)):
    ```javascript
-   // Listen on parent
-   document.addEventListener('session-change', (e) => {
-     if (e.target.tagName === 'PIE-MULTIPLE-CHOICE') {
-       console.log('Session changed:', e.detail);
+   element.session = session;
+
+   document.addEventListener('session-changed', (e) => {
+     if (e.detail.component === 'pie-multiple-choice') {
+       console.log('Session changed:', session, 'complete:', e.detail.complete);
      }
    });
    ```
+   Inside `<pie-element-player>`, the element's event stops at the element and the document hears the player's copy: the same detail plus `session`, with `target` the player.
 
 ### Props Not Updating
 
@@ -240,8 +213,8 @@ bun install
    ```
 2. Check prop is reactive in framework:
    ```svelte
-   <!-- Svelte -->
-   <MultipleChoice {model} /> <!-- Reactive -->
+   <!-- Svelte sets `model` as a property on a defined custom element -->
+   <pie-multiple-choice {model}></pie-multiple-choice>
    ```
 3. Force re-render if needed:
    ```javascript
@@ -330,14 +303,7 @@ bun install
 **Problem:** "Warning: Invalid prop X supplied to Component"
 
 **Solution:**
-1. Use correct casing:
-   ```tsx
-   {/* ✅ Correct */}
-   <MultipleChoice onSessionChange={handler} />
-
-   {/* ❌ Wrong */}
-   <MultipleChoice onSessionchange={handler} />
-   ```
+1. Elements are custom elements with no callback props. React 18 passes JSX props to them as attributes, so set `model` and `session` through a ref and listen for `session-changed`, as in [React Components](API_REFERENCE.md#react-components).
 2. Check prop types match:
    ```tsx
    // Ensure session is object, not null initially
@@ -354,7 +320,6 @@ bun install
    <pie-multiple-choice
      :model="model"
      :session="session"
-     :env="env"
    />
    ```
 2. Make data reactive:
@@ -382,9 +347,13 @@ bun install
      schemas: [CUSTOM_ELEMENTS_SCHEMA]
    })
    ```
-2. Import before use:
+2. Import and define the element before use:
    ```typescript
-   import '@pie-element/multiple-choice';
+   import MultipleChoice from '@pie-element/multiple-choice/delivery';
+
+   if (!customElements.get('pie-multiple-choice')) {
+     customElements.define('pie-multiple-choice', MultipleChoice);
+   }
    ```
 
 ## Performance Issues
@@ -398,7 +367,10 @@ bun install
    ```typescript
    // Load only when needed
    const loadElement = async () => {
-     await import('@pie-element/multiple-choice');
+     const { default: MultipleChoice } = await import('@pie-element/multiple-choice/delivery');
+     if (!customElements.get('pie-multiple-choice')) {
+       customElements.define('pie-multiple-choice', MultipleChoice);
+     }
    };
    ```
 2. Preload critical elements:
@@ -416,7 +388,7 @@ bun install
    ```javascript
    // Svelte: automatic cleanup
    onDestroy(() => {
-     element.removeEventListener('session-change', handler);
+     element.removeEventListener('session-changed', handler);
    });
    ```
 2. Destroy rich text editors:
@@ -538,8 +510,9 @@ bun install
 Enable debug logging:
 
 ```javascript
-localStorage.setItem('pie:debug', 'true');
-// Reload page to see debug logs
+// Elements log through the debug package, which reads its namespaces from localStorage
+localStorage.setItem('debug', '*');
+// Reload, then show the Verbose level in the DevTools console
 ```
 
 ### Browser DevTools
@@ -571,8 +544,7 @@ When reporting issues, include:
 
 ### Community Resources
 
-- **GitHub Issues**: [Report bugs](https://github.com/your-org/pie-element/issues)
-- **Discussions**: [Ask questions](https://github.com/your-org/pie-element/discussions)
+- **GitHub Issues**: [Report bugs](https://github.com/pie-framework/pie-elements-ng/issues)
 - **Documentation**: [Read full docs](../README.md)
 
 ## See Also
@@ -583,4 +555,4 @@ When reporting issues, include:
 
 ---
 
-**Last Updated**: 2025-01-08
+**Last Updated**: 2026-09-27

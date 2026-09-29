@@ -71,10 +71,10 @@ The PRD targets **`pie-venn-circle` / `pie-venn-circle-{n}` hooks** and host-the
 
 **Authoring surface**:
 
-- Prompt editor (shared rich-text component).
+- Prompt and teacher-instructions editors (shared rich-text component), each shown while its `promptEnabled` / `teacherInstructionsEnabled` flag is on.
 - **Two circles** (fixed in v1 UI): label input per circle (no 3-set toggle in the shipped author).
 - Tile list editor: add / edit / remove / reorder tiles; optional image URL + alt; per-tile correct-region picker — a compact grid whose cells match the **four** 2-set regions, each labelled with the auto-composed region name.
-- Scoring policy selector.
+- Settings panel, after React's `ConfigLayout`: the prompt and teacher-instructions toggles and the scoring-policy selector, each offered when its `configuration` entry sets `settings: true` and labelled by the entry's `label`. `configuration.settingsPanelDisabled` hides the panel. It sits beside the editor once the author is 1135px wide, and below it otherwise.
 - Optional region-label overrides: any composed region name can be overridden inline; the computed default is shown next to each input while unset so authors aren't surprised by what delivery will render.
 - **Live preview panel** embedding read-only delivery (`view` mode, `disabled`) with a session that places each tile in its **authored correct region** (`buildPreviewSession`), updating as edits happen. The editor / preview areas use a **resizable split** (default ~50/50). Full theme parity in the iframe preview is not guaranteed until delivery CSS consumes `--pie-*` tokens consistently.
 

@@ -1,12 +1,14 @@
-import authorDefaults from '../author/defaults';
-import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults';
+import { getShuffledChoices, lockChoices } from '@pie-element/shared-controller-utils';
+import type { PieUpdateSession } from '@pie-element/shared-types';
+import authorDefaults from '../author/defaults.js';
+import defaults, { BLANK_TOKEN, DEFAULT_LAYOUT_LIMITS } from './defaults.js';
 import type {
   McpbChoice,
   McpbQuestion,
   McpbSession,
   McpbEnv,
   McpbCorrectness,
-} from '../shared/types';
+} from '../shared/types.js';
 
 const isEmptyObject = (value: unknown): boolean =>
   !!value &&
@@ -100,21 +102,6 @@ export const normalize = (question: McpbQuestion = {}) => {
 
 export const normalizeSession = (s: McpbSession): McpbSession => ({ ...s });
 
-const shouldLockChoices = (question: McpbQuestion, env: McpbEnv) => {
-  if (question?.lockChoiceOrder) return true;
-  if (env?.['@pie-element']?.lockChoiceOrder) return true;
-  return env?.role === 'instructor';
-};
-
-function shuffleArray<T>(items: T[]): T[] {
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
-
 /**
  * The fields delivery renders. An imported choice can carry more, such as a
  * correctness flag or feedback, which must not reach a learner's browser.
@@ -126,75 +113,24 @@ const toDeliveryChoice = ({ id, labelHtml, imageUrl, imageAlt }: McpbChoice): Mc
   ...(imageAlt !== undefined ? { imageAlt } : {}),
 });
 
-const getStoredShuffle = (session: McpbSession): string[] =>
-  Array.isArray(session?.data?.shuffledValues)
-    ? session.data.shuffledValues
-    : Array.isArray(session?.shuffledValues)
-      ? session.shuffledValues
-      : [];
-
-const applyShuffledValues = (
-  choices: McpbChoice[],
-  shuffledValues: string[],
-  choiceKey: keyof McpbChoice
-) => {
-  const orderedChoices = shuffledValues
-    .map((value) => choices.find((choice) => choice?.[choiceKey] === value))
-    .filter((c): c is McpbChoice => !!c);
-
-  if (orderedChoices.length === choices.length) {
-    return orderedChoices;
-  }
-
-  const orderedValues = new Set(orderedChoices.map((choice) => choice[choiceKey]));
-  const leftovers = choices.filter((choice) => !orderedValues.has(choice?.[choiceKey]));
-  return [...orderedChoices, ...leftovers];
-};
-
-type UpdateSessionFn = (
-  id: string,
-  element: string,
-  data: { shuffledValues: string[] }
-) => Promise<void>;
-
-const getOrderedChoices = async (
-  question: McpbQuestion,
-  session: McpbSession,
-  env: McpbEnv,
-  updateSession?: UpdateSessionFn
-) => {
-  const choices = Array.isArray(question?.choices) ? [...question.choices] : [];
-  if (!choices.length || shouldLockChoices(question, env || {})) {
-    return choices;
-  }
-
-  const shuffledValues = getStoredShuffle(session);
-  if (shuffledValues.length) {
-    return applyShuffledValues(choices, shuffledValues, 'id');
-  }
-
-  const shuffledChoices = shuffleArray(choices);
-
-  if (updateSession && typeof updateSession === 'function' && session?.id && session?.element) {
-    const shuffledIds = shuffledChoices.map((choice) => choice?.id).filter(Boolean);
-    if (shuffledIds.length) {
-      await updateSession(session.id, session.element, { shuffledValues: shuffledIds });
-    }
-  }
-
-  return shuffledChoices;
-};
-
 export const model = async (
   question: McpbQuestion,
   session: McpbSession | null,
   env: McpbEnv | null,
-  updateSession?: UpdateSessionFn
+  updateSession?: PieUpdateSession
 ) => {
   const safeSession: McpbSession = session || {};
   const safeEnv: McpbEnv = env || {};
   const normalizedQuestion = normalize(question);
-  const choices = (await getOrderedChoices(normalizedQuestion, safeSession, safeEnv, updateSession))
+  let orderedChoices = Array.isArray(normalizedQuestion.choices)
+    ? [...normalizedQuestion.choices]
+    : [];
+  if (orderedChoices.length && !lockChoices(normalizedQuestion, safeSession, safeEnv)) {
+    orderedChoices =
+      (await getShuffledChoices(orderedChoices, safeSession, updateSession, 'id')) ??
+      orderedChoices;
+  }
+  const choices = orderedChoices
     .filter((c): c is McpbChoice => !!c && typeof c === 'object')
     .map(toDeliveryChoice);
 
@@ -394,7 +330,6 @@ export const validate = (question: McpbQuestion = {}, config: ValidateConfig = {
       'audioBlankTemplateMarginTopRem',
       'audioBlankTemplateMarginBottomRem',
       'audioInstructionsMaxWidthPx',
-      'narrowHorizontalChoiceMaxWidthPx',
       'stimulusGridColumnGapRem',
       'stimulusGridRowGapRem',
       'stimulusSentenceMarginTopRem',

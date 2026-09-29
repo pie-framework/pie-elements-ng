@@ -21,12 +21,23 @@ let {
   placeholder = 'Enter text here...',
   showToolbar = true,
   disabled = false,
+  ariaLabel,
 }: EditableHtmlProps = $props();
 
 let editorElement: HTMLElement;
 let editor = $state<Editor | null>(null);
-let isFocused = $state(false);
+let hasFocus = $state(false);
 let showAlignMenu = $state(false);
+
+// TipTap adds `role="textbox"` only when it builds the view: `setOptions`, which `setEditable`
+// also calls, re-applies `editorProps` as given, so the role is repeated here.
+function editorAttributes(): Record<string, string> {
+  return {
+    role: 'textbox',
+    'aria-multiline': 'true',
+    ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
+  };
+}
 
 // Editor state for button active/disabled states
 let editorState = $state({
@@ -130,6 +141,7 @@ onMount(() => {
     content: markup || '',
     editable: !disabled,
     autofocus: false,
+    editorProps: { attributes: editorAttributes() },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       if (onChange) {
@@ -141,12 +153,7 @@ onMount(() => {
       updateEditorState();
     },
     onFocus: () => {
-      isFocused = true;
       updateEditorState();
-    },
-    onBlur: () => {
-      isFocused = false;
-      showAlignMenu = false;
     },
   });
 
@@ -174,6 +181,26 @@ $effect(() => {
     editor.setEditable(editable, false);
   }
 });
+
+$effect(() => {
+  const attributes = editorAttributes();
+  if (editor && editor.view.dom.getAttribute('aria-label') !== (attributes['aria-label'] ?? null)) {
+    editor.setOptions({ editorProps: { attributes } });
+  }
+});
+
+// The toolbar shows while focus is anywhere in the component, so Tab can move from the text into
+// it. Hidden, it is `inert`, which takes its buttons out of the tab order.
+function handleFocusIn() {
+  hasFocus = true;
+}
+
+function handleFocusOut(e: FocusEvent & { currentTarget: HTMLElement }) {
+  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+    hasFocus = false;
+    showAlignMenu = false;
+  }
+}
 
 // Toolbar button handlers
 function toggleBold() {
@@ -285,7 +312,11 @@ function handleDoneClick() {
 }
 </script>
 
-<div class="pie-editable-html editor-container editable-html">
+<div
+  class="pie-editable-html editor-container editable-html"
+  onfocusin={handleFocusIn}
+  onfocusout={handleFocusOut}
+>
   <!-- Editor Content -->
   <div class="editor-holder" class:disabled={disabled}>
     <div class="editor-children">
@@ -299,7 +330,8 @@ function handleDoneClick() {
       role="toolbar"
       tabindex="-1"
       class="toolbar"
-      class:focused={isFocused}
+      class:focused={hasFocus}
+      inert={!hasFocus}
       onmousedown={handleMouseDown}
     >
       <div class="toolbar-content">

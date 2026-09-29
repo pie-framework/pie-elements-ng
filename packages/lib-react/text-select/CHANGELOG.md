@@ -1,5 +1,118 @@
 # @pie-lib/text-select
 
+## 4.0.0-next.53
+
+### Major Changes
+
+- Move the `@pie-lib` packages onto version bases the legacy pie-lib lineage does not publish into, so a bump can no longer land on a version number npm already holds (PIE-1041).
+  
+  Both repos publish these names and both increment the same `<base>-next.N` series, with legacy's counter far ahead of this repo's. When a bump lands on a number legacy already published, npm refuses the overwrite, the package is never published from here, and every element that pins it silently resolves the legacy build instead — which is how `next.9` shipped elements linked against June 2026 lib code, failed 25 of 172 bundle combinations, and left the inline-dropdown, keyboard-placement, selected-choice, drag-placeholder and graphing-palette fixes out of the bundles despite them being on develop.
+  
+  A major takes each package to a base legacy has never used, which removes both the collision on publish and the caret eviction that follows it: legacy packages stop entering the dependency graph, so their `^` ranges — which exclude this repo's prereleases and resolve to legacy stables — stop being consulted at all. This is a version-coordination change only; no runtime behaviour changes.
+
+### Patch Changes
+
+- Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Vendor the lodash helper surface through `@pie-element/shared-lodash` so browser ESM output no longer depends on runtime lodash or lodash-es resolution.
+  
+  Replace `@pie-lib/config-ui`'s tiny `mathjs` fraction-to-number usage with a generated local helper, while keeping `mathjs@^15.2.0` for packages such as `@pie-element/number-line` that use the broader math surface.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @pie-lib/render-ui@6.2.0-next.50
+  - @pie-lib/translator@5.0.0-next.7
+  - @pie-element/shared-lodash@0.1.1-next.3
+  - @pie-lib/style-utils@3.0.0-next.2
+
+## 4.0.0-next.52
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.49
+
+## 4.0.0-next.51
+
+### Patch Changes
+
+- Updated dependencies [619ea67]
+  - @pie-lib/translator@5.0.0-next.6
+
+## 4.0.0-next.50
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.48
+
+## 4.0.0-next.49
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.47
+
+## 4.0.0-next.48
+
+### Patch Changes
+
+- 7abcbd2: Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- Updated dependencies [7abcbd2]
+  - @pie-lib/render-ui@6.2.0-next.46
+
+## 4.0.0-next.47
+
+### Patch Changes
+
+- @pie-lib/render-ui@6.2.0-next.45
+
+## 4.0.0-next.46
+
+### Patch Changes
+
+- Updated dependencies [d242e4c]
+  - @pie-element/shared-lodash@0.1.1-next.2
+  - @pie-lib/render-ui@6.2.0-next.44
+
+## 4.0.0-next.45
+
+### Patch Changes
+
+- Merge pull request #131 from pie-framework/dependabot/bun/vitejs/plugin-react-6.1.1
+- Updated dependencies
+  - @pie-lib/render-ui@6.2.0-next.43
+  - @pie-lib/style-utils@3.0.0-next.1
+
+## 4.0.0-next.44
+
+### Patch Changes
+
+- Updated dependencies [dad31dc]
+  - @pie-lib/translator@5.0.0-next.5
+
+## 4.0.0-next.43
+
+### Patch Changes
+
+- Updated dependencies [0f1b96e]
+- Updated dependencies [b2d3248]
+- Updated dependencies [a0ee0d5]
+- Updated dependencies [2bb02ad]
+  - @pie-lib/translator@5.0.0-next.4
+
 ## 4.0.0-next.42
 
 ### Patch Changes

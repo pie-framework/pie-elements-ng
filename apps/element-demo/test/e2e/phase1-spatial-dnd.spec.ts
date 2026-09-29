@@ -1,13 +1,13 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import {
   clickCanvas,
-  clickSvgCenter,
-  dragAnyCandidateToTarget,
+  clickNumberLineTick,
   dragBetween,
   deliveryContainer,
   interactOnce,
   openDeliverRoute,
   switchToEvaluate,
+  mountedElementSelector,
 } from './test-helpers';
 
 type SpatialCase = {
@@ -32,127 +32,30 @@ const CASES: SpatialCase[] = [
   { element: 'fraction-model', expectsSessionMutation: true },
 ];
 
-async function interactCategorize(page: Page, root: Locator) {
-  const elementHost = root.locator('categorize-element, pie-categorize').first();
-  if (await elementHost.isVisible().catch(() => false)) {
-    const sources = elementHost.locator(
-      '[role="button"][aria-roledescription="draggable"], [aria-roledescription="draggable"], [role="button"]'
-    );
-    const boardTargets = elementHost.locator(
-      '[id="0"], [id="1"], [id="2"], [id="3"], div[style*="touch-action: none"]'
-    );
-    const sourceCount = await sources.count();
-    const boardTargetCount = await boardTargets.count();
-    if (sourceCount > 0 && boardTargetCount > 0) {
-      const maxSources = Math.min(sourceCount, 6);
-      const maxTargets = Math.min(boardTargetCount, 6);
-      for (let sourceIndex = 0; sourceIndex < maxSources; sourceIndex += 1) {
-        for (let targetIndex = 0; targetIndex < maxTargets; targetIndex += 1) {
-          const source = sources.nth(sourceIndex);
-          const target = boardTargets.nth(targetIndex);
-          if (
-            !(await source.isVisible().catch(() => false)) ||
-            !(await target.isVisible().catch(() => false))
-          ) {
-            continue;
-          }
-          try {
-            const fromBox = await source.boundingBox();
-            const toBox = await target.boundingBox();
-            if (!fromBox || !toBox) {
-              continue;
-            }
-            await page.mouse.move(fromBox.x + fromBox.width / 2, fromBox.y + fromBox.height / 2);
-            await page.mouse.down();
-            await page.mouse.move(toBox.x + toBox.width / 2, toBox.y + toBox.height / 2, {
-              steps: 12,
-            });
-            await page.mouse.up();
-            await page.waitForTimeout(220);
-            return;
-          } catch {
-            // Keep trying different source/target pairs.
-          }
-        }
-      }
-    }
-  }
+const CHOICE_DROP_ELEMENTS = new Set([
+  'categorize',
+  'drag-in-the-blank',
+  'match-list',
+  'image-cloze-association',
+]);
 
-  const draggedByGeometry = await root.evaluate((node) => {
-    const sourceCandidates = Array.from(
-      node.querySelectorAll<HTMLElement>(
-        '#choices-board [role="button"], #choices-board [class*="MuiCard-root"], #choices-board div'
-      )
-    ).filter((el) => {
-      const rect = el.getBoundingClientRect();
-      return rect.width > 20 && rect.height > 20;
-    });
-    const source = sourceCandidates[0];
-    if (!source) {
-      return null;
-    }
-
-    const dropTargets = Array.from(
-      node.querySelectorAll<HTMLElement>(
-        'div[style*="touch-action: none"], [id*="drop"], [class*="drop"], [class*="target"]'
-      )
-    ).filter((el) => {
-      if (el.id === 'choices-board') {
-        return false;
-      }
-      const rect = el.getBoundingClientRect();
-      return rect.width > 20 && rect.height > 20 && !el.closest('#choices-board');
-    });
-    const target = dropTargets[0];
-    if (!target) {
-      return null;
-    }
-
-    const from = source.getBoundingClientRect();
-    const to = target.getBoundingClientRect();
-    return {
-      from: { x: from.left + from.width / 2, y: from.top + from.height / 2 },
-      to: { x: to.left + to.width / 2, y: to.top + to.height / 2 },
-    };
-  });
-
-  if (draggedByGeometry) {
-    await page.mouse.move(draggedByGeometry.from.x, draggedByGeometry.from.y);
-    await page.mouse.down();
-    await page.mouse.move(draggedByGeometry.to.x, draggedByGeometry.to.y, { steps: 12 });
-    await page.mouse.up();
-    await page.waitForTimeout(250);
-    return;
-  }
-
-  const draggedBySelectors = await dragAnyCandidateToTarget(page, root, {
-    sourceSelectors: [
-      '#choices-board [role="button"]',
-      '[draggable="true"]',
-      '[data-draggable="true"]',
-      '[class*="choice"]',
-      '[class*="token"]',
-      'button',
-    ],
-    targetSelectors: [
-      'div[style*="touch-action: none"]',
-      '[id*="drop"]',
-      '[class*="drop"]',
-      '[class*="target"]',
-      '[class*="container"]',
-    ],
-    retries: 2,
-  });
-
-  if (draggedBySelectors) {
-    return;
-  }
-
-  await interactOnce(page, root);
+/**
+ * Drag the first choice onto the first drop zone. A choice is an enabled dnd-kit draggable (match-list
+ * renders its empty response areas as disabled draggables); a drop zone is a click-to-place
+ * `role="button"` without the draggable roledescription.
+ */
+async function dragFirstChoiceToFirstDropZone(page: Page, root: Locator) {
+  const choice = root.locator('[aria-roledescription="draggable"][aria-disabled="false"]').first();
+  const dropZone = root.locator('[role="button"]:not([aria-roledescription])').first();
+  await dragBetween(page, choice, dropZone);
+  // dnd-kit swallows document clicks until a 50ms timer it sets on drop has fired, so an earlier
+  // click on the Scorer link bypasses the router and reloads the page, losing the session. A page
+  // timer of the same length set after the drop fires after that one.
+  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 50)));
 }
 
 async function interactHotspot(page: Page, root: Locator): Promise<boolean> {
-  const host = root.locator('hotspot-element, pie-hotspot').first();
+  const host = root.locator(mountedElementSelector()).first();
   const canvas = host.locator('canvas').first();
   if (
     !(await host.isVisible().catch(() => false)) ||
@@ -286,7 +189,9 @@ async function waitForHostSessionMutation(
   await page.waitForFunction(
     (signature) => {
       const host = document.querySelector('pie-element-player') as any;
-      return JSON.stringify(host?.session ?? {}) !== signature;
+      const next = JSON.stringify(host?.session ?? {});
+      // A page reload briefly leaves the host session empty; that is no response.
+      return next !== signature && next !== '{}';
     },
     beforeSignature,
     { timeout: timeoutMs }
@@ -304,9 +209,55 @@ async function interactPlacementOrdering(page: Page, root: Locator) {
   await interactOnce(page, root);
 }
 
+/** Click the plotting grid at a fraction of its size; (0, 0) is the grid's top-left corner. */
+async function clickGridFraction(page: Page, graphRoot: Locator, fx: number, fy: number) {
+  const grid = graphRoot.locator('svg g.visx-grid').first();
+  await grid.waitFor({ state: 'visible', timeout: 10_000 });
+  const box = await grid.boundingBox();
+  if (!box) {
+    throw new Error('Graph grid has no bounding box');
+  }
+  await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
+  await page.waitForTimeout(150);
+}
+
+async function interactGraphing(page: Page, element: string, root: Locator) {
+  const graphRoot = root.locator(mountedElementSelector()).first();
+  if (element === 'graphing') {
+    // The tool buttons sit inside a dnd-kit wrapper marked aria-disabled, hence force.
+    await graphRoot.locator('button[value="point"]').click({ force: true });
+    // (1, 1) on the demo's -5..5 grid.
+    await clickGridFraction(page, graphRoot, 0.6, 0.4);
+    return;
+  }
+  // Line A is preselected; a line reaches the session only once both ends are placed.
+  // (0, 2) -> (-3, -2) on the demo's -10..10 grid, the correct answer's Line A.
+  await expect(graphRoot.locator('input[type="radio"][value="lineA"]')).toBeChecked();
+  await clickGridFraction(page, graphRoot, 0.5, 0.4);
+  await clickGridFraction(page, graphRoot, 0.35, 0.6);
+}
+
+async function interactCharting(page: Page, root: Locator) {
+  // Only interactive bars render a drag handle ellipse; the demo has one (Student C).
+  const handle = root.locator('svg ellipse').first();
+  await handle.waitFor({ state: 'visible', timeout: 10_000 });
+  const box = await handle.boundingBox();
+  if (!box) {
+    throw new Error('Bar drag handle has no bounding box');
+  }
+  // The handle is clipped to its top half, so press just above its centre.
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height * 0.45;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y - 48, { steps: 12 });
+  await page.mouse.up();
+  await page.waitForTimeout(200);
+}
+
 async function runSpatialInteraction(page: Page, element: string, root: Locator) {
-  if (element === 'categorize') {
-    await interactCategorize(page, root);
+  if (CHOICE_DROP_ELEMENTS.has(element)) {
+    await dragFirstChoiceToFirstDropZone(page, root);
     return;
   }
 
@@ -315,93 +266,20 @@ async function runSpatialInteraction(page: Page, element: string, root: Locator)
     return;
   }
 
-  if (
-    element === 'drag-in-the-blank' ||
-    element === 'match-list' ||
-    element === 'image-cloze-association'
-  ) {
-    const scopedHost =
-      element === 'drag-in-the-blank'
-        ? root.locator('drag-in-the-blank-element, pie-drag-in-the-blank').first()
-        : element === 'match-list'
-          ? root.locator('match-list-element, pie-match-list').first()
-          : root.locator('image-cloze-association-element, pie-image-cloze-association').first();
-
-    if (await scopedHost.isVisible().catch(() => false)) {
-      const draggables = scopedHost.locator(
-        '[role="button"][aria-roledescription="draggable"], [aria-roledescription="draggable"]'
-      );
-      const droppables = scopedHost.locator(
-        '[aria-roledescription="droppable"], [id*="drop"], [class*="drop"], [class*="blank"], [class*="target"]'
-      );
-      const dragCount = await draggables.count();
-      const dropCount = await droppables.count();
-      if (dragCount > 0 && dropCount > 0) {
-        const maxSources = Math.min(dragCount, 5);
-        const maxTargets = Math.min(dropCount, 5);
-        for (let sourceIndex = 0; sourceIndex < maxSources; sourceIndex += 1) {
-          for (let targetIndex = 0; targetIndex < maxTargets; targetIndex += 1) {
-            const source = draggables.nth(sourceIndex);
-            const target = droppables.nth(targetIndex);
-            if (
-              !(await source.isVisible().catch(() => false)) ||
-              !(await target.isVisible().catch(() => false))
-            ) {
-              continue;
-            }
-            try {
-              const fromBox = await source.boundingBox();
-              const toBox = await target.boundingBox();
-              if (!fromBox || !toBox) {
-                continue;
-              }
-              await page.mouse.move(fromBox.x + fromBox.width / 2, fromBox.y + fromBox.height / 2);
-              await page.mouse.down();
-              await page.mouse.move(toBox.x + toBox.width / 2, toBox.y + toBox.height / 2, {
-                steps: 10,
-              });
-              await page.mouse.up();
-              await page.waitForTimeout(220);
-              return;
-            } catch {
-              // Continue trying candidate pairs.
-            }
-          }
-        }
-      }
-    }
-
-    const dragged = await dragAnyCandidateToTarget(page, root, {
-      sourceSelectors: [
-        '[role="button"][aria-roledescription="draggable"]',
-        '[aria-roledescription="draggable"]',
-        '[draggable="true"]',
-        '[data-draggable="true"]',
-        '[id*="choice"]',
-        '[class*="choice"]',
-        '[class*="token"]',
-        '[class*="option"]',
-        'button',
-      ],
-      targetSelectors: [
-        '[aria-roledescription="droppable"]',
-        '[id*="drop"]',
-        '[class*="drop"]',
-        '[class*="target"]',
-        '[class*="blank"]',
-        '[class*="container"]',
-      ],
-      retries: 2,
-    });
-    if (!dragged) {
-      await interactOnce(page, root);
-    }
-    return;
-  }
-
   if (element === 'drawing-response') {
-    await clickCanvas(root, { x: 50, y: 50 });
-    await clickCanvas(root, { x: 120, y: 80 });
+    // Select is the default tool and ignores mousedown; pick a drawing tool, then drag on the stage.
+    await root.getByRole('button', { name: 'Free Draw' }).click();
+    const stage = root.locator('canvas').first();
+    await stage.waitFor({ state: 'visible' });
+    const box = await stage.boundingBox();
+    if (!box) {
+      throw new Error('drawing-response: stage canvas has no bounding box');
+    }
+    await page.mouse.move(box.x + 60, box.y + 60);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 120, box.y + 90, { steps: 8 });
+    await page.mouse.move(box.x + 180, box.y + 140, { steps: 8 });
+    await page.mouse.up();
     return;
   }
 
@@ -423,52 +301,24 @@ async function runSpatialInteraction(page: Page, element: string, root: Locator)
   }
 
   if (element === 'fraction-model') {
-    if (
-      await root
-        .locator('canvas')
-        .first()
-        .isVisible()
-        .catch(() => false)
-    ) {
-      await clickCanvas(root, { x: 60, y: 60 });
-      return;
-    }
-    await clickSvgCenter(root, page).catch(async () => {
-      const segment = root.locator('button, [role="button"], svg path, svg rect').first();
-      if (await segment.isVisible().catch(() => false)) {
-        await segment.click({ force: true });
-      }
-    });
+    // Each part of a bar model is a recharts rectangle; the last one shades the whole bar (2/2),
+    // an incorrect answer, so evaluate shows the correct-answer toggle.
+    await root.locator('.recharts-bar-rectangle rect').last().click();
     return;
   }
 
   if (element === 'graphing' || element === 'graphing-solution-set') {
-    const graphRoot = root
-      .locator('pie-graphing, graphing-element, graphing-solution-set-element')
-      .first();
-    const toolbarButton = graphRoot
-      .locator(
-        'button.MuiButtonBase-root, button[aria-label*="tool" i], button[aria-label*="line" i]'
-      )
-      .first();
-    if (await toolbarButton.isVisible().catch(() => false)) {
-      await toolbarButton.click({ force: true });
-    }
-    const svg = graphRoot.locator('svg').first();
-    if (await svg.isVisible().catch(() => false)) {
-      const box = await svg.boundingBox();
-      if (box) {
-        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-      }
-    }
+    await interactGraphing(page, element, root);
     return;
   }
 
-  if (element === 'charting' || element === 'number-line') {
-    await clickSvgCenter(root, page).catch(async () => {
-      await interactOnce(page, root);
-    });
-    await page.keyboard.press('Escape').catch(() => {});
+  if (element === 'charting') {
+    await interactCharting(page, root);
+    return;
+  }
+
+  if (element === 'number-line') {
+    await clickNumberLineTick(page, root);
     return;
   }
 
@@ -485,6 +335,7 @@ test.describe('Phase 1: Spatial and DnD element interactions', () => {
       const root = deliveryContainer(page);
       await expect(root).toBeVisible();
 
+      let gatherSession: string | undefined;
       if (item.expectsSessionMutation) {
         const before = await getHostSessionSignature(page);
         const beforeSnapshot = ((await root.innerText().catch(() => '')) || '').trim();
@@ -502,8 +353,9 @@ test.describe('Phase 1: Spatial and DnD element interactions', () => {
           });
           afterSnapshot = ((await root.innerText().catch(() => '')) || '').trim();
         }
-        const finalSessionChanged = after !== before;
+        const finalSessionChanged = after !== before && after !== '{}';
         expect(finalSessionChanged).toBeTruthy();
+        gatherSession = after;
       } else {
         await runSpatialInteraction(page, item.element, root);
       }
@@ -520,25 +372,16 @@ test.describe('Phase 1: Spatial and DnD element interactions', () => {
 
       await switchToEvaluate(page);
       await expect(root).toBeVisible();
-
-      const evaluateSignal = page
-        .locator(
-          '[data-testid="show-correct-answer"], [data-testid="scoring-panel"], [data-testid="score-value"], button:has-text("Show correct answer"), button:has-text("Hide correct answer")'
-        )
-        .or(root.getByText(/show correct answer|hide correct answer/i))
-        .first();
-
-      if (item.element === 'categorize') {
-        expect(await root.isVisible()).toBeTruthy();
-        return;
+      if (CHOICE_DROP_ELEMENTS.has(item.element)) {
+        await expect.poll(() => getHostSessionSignature(page)).toBe(gatherSession);
       }
-      if (item.element === 'number-line') {
-        await switchToEvaluate(page);
-        const inEvaluateMode = await page.evaluate(() => {
-          const url = new URL(window.location.href);
-          return url.searchParams.get('mode') === 'evaluate';
-        });
-        expect(inEvaluateMode).toBeTruthy();
+
+      const evaluateSignal = root.getByText(/show correct answer|hide correct answer/i).first();
+
+      if (item.element === 'drawing-response') {
+        // Not auto-scored: evaluate renders the drawing with the toolbar locked and no correct-answer toggle.
+        await expect(root.getByRole('button', { name: 'Free Draw' })).toBeDisabled();
+        await expect(root.getByRole('button', { name: 'Undo' })).toBeDisabled();
         return;
       }
 

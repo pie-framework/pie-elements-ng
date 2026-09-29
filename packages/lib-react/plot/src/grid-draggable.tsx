@@ -322,8 +322,21 @@ export const gridDraggable = (opts) => (Comp) => {
       const { disabled, onClick, ...rest } = this.props;
       const grid = this.grid();
 
-      // prevent the text select icon from rendering.
-      const onMouseDown = (e) => e.nativeEvent.preventDefault();
+      // Prevent the text-select icon from rendering. DraggableCore invokes this same
+      // `onMouseDown` prop for BOTH a real mousedown (a React SyntheticEvent, wrapping
+      // the native event under `.nativeEvent`) and a touchstart (added via a plain
+      // native addEventListener, so `e` IS the native event directly, with no
+      // `.nativeEvent` wrapper) - see react-draggable's DraggableCore.handleDragStart,
+      // which calls `this.props.onMouseDown(e)` from both its onMouseDown and
+      // onTouchStart handlers. Reaching for `e.nativeEvent.preventDefault()`
+      // unconditionally threw on every touchstart (`e.nativeEvent` is undefined),
+      // which aborted handleDragStart before it could attach DraggableCore's own
+      // move/end listeners - the drag silently never started on touch devices
+      // (PIE-1074). Falling back to `e` itself when `.nativeEvent` is absent handles
+      // both cases, and calling preventDefault() on the touchstart is itself required
+      // for the browser to keep routing the gesture to us instead of hijacking it as a
+      // page scroll after the first uncancelled touchmove.
+      const onMouseDown = (e) => (e.nativeEvent || e).preventDefault();
 
       /**
        * TODO: This shouldnt be necessary, we should be able to use the r-d classnames.

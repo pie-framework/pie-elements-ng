@@ -55,10 +55,11 @@ import { exceedsMaxSelections } from './utils.js';
 const log = debug('pie-ui:multiple-choice');
 
 export const isComplete = (session, model, audioComplete, elementContext) => {
-  const { autoplayAudioEnabled, completeAudioEnabled } = model || {};
+  const { completeAudioEnabled } = model || {};
 
-  // check audio completion if audio settings are enabled and audio actually exists
-  if (autoplayAudioEnabled && completeAudioEnabled && !audioComplete) {
+  // check audio completion if the setting is enabled and audio actually exists,
+  // whether the audio is started by autoplay or by the student
+  if (completeAudioEnabled && !audioComplete) {
     if (elementContext) {
       const audio = elementContext.querySelector('audio');
       const isInsidePrompt = audio && audio.closest('.preview-prompt');
@@ -286,8 +287,6 @@ export default class MultipleChoice extends HTMLElement {
   set session(s) {
     this._session = s;
     this._rerender();
-    //TODO: remove this session-changed should only be emit on user change
-    this._dispatchResponseChanged();
   }
 
   _onChange(data) {
@@ -340,7 +339,10 @@ export default class MultipleChoice extends HTMLElement {
           const isInsidePrompt = audio && audio.closest('.preview-prompt');
 
           if (!this._model) return;
-          if (!this._model.autoplayAudioEnabled) return;
+
+          const { autoplayAudioEnabled, completeAudioEnabled } = this._model;
+
+          if (!autoplayAudioEnabled && !completeAudioEnabled) return;
           if (audio && !isInsidePrompt) return;
           if (!audio) return;
 
@@ -355,17 +357,19 @@ export default class MultipleChoice extends HTMLElement {
             document.removeEventListener('click', enableAudio);
           };
 
-          // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
-          // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
-          setTimeout(() => {
-            if (audio.paused && !this.querySelector('#play-audio-info')) {
-              // add info message as a toast to enable audio playback
-              container.appendChild(info);
-              document.addEventListener('click', enableAudio);
-            } else {
-              document.removeEventListener('click', enableAudio);
-            }
-          }, 500);
+          if (autoplayAudioEnabled) {
+            // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
+            // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
+            setTimeout(() => {
+              if (audio.paused && !this.querySelector('#play-audio-info')) {
+                // add info message as a toast to enable audio playback
+                container.appendChild(info);
+                document.addEventListener('click', enableAudio);
+              } else {
+                document.removeEventListener('click', enableAudio);
+              }
+            }, 500);
+          }
 
           // we need to listen for the playing event to remove the toast in case the audio plays because of re-rendering
           const handlePlaying = () => {
@@ -452,6 +456,7 @@ export default class MultipleChoice extends HTMLElement {
       this._audio = null;
     }
 
+    this._rerender.cancel();
     if (this._root) {
       this._root.unmount();
       this._root = null;

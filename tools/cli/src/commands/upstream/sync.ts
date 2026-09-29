@@ -182,7 +182,6 @@ export default class Sync extends Command {
     }
 
     // Merge with ESM-compatible pie-lib packages from compatibility report
-    // (This ensures packages like controller-utils that are imported in controllers but not declared in package.json get synced)
     // BUT: Only merge ALL packages when doing a full sync (no specific elements specified)
     // When syncing specific elements, only sync the required deps (don't merge all 23 compat packages)
     if (compatibilityReport?.pieLibPackages && compatibilityReport.pieLibPackages.length > 0) {

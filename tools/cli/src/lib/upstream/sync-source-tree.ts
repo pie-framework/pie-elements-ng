@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, stat as fsStat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { convertJsToTs, convertJsxToTsx } from '../../utils/conversion.js';
+import { RETIRED_UPSTREAM_SOURCE_FILES } from './sync-constants.js';
 import { containsJsx, fixImportsInFile } from './sync-imports.js';
 import { readdir } from './sync-filesystem.js';
 
@@ -70,7 +71,10 @@ export async function syncSourceTree(options: SyncSourceTreeOptions): Promise<Sy
       upstreamSourcePath: `${options.sourcePathPrefix}/${relativeFilePath}`,
     };
 
-    if (options.skipFile?.(item, context)) {
+    if (
+      RETIRED_UPSTREAM_SOURCE_FILES.has(context.upstreamSourcePath) ||
+      options.skipFile?.(item, context)
+    ) {
       continue;
     }
 

@@ -26,32 +26,23 @@ const BASE_MODEL = {
   mode: 'gather',
 };
 
-type DeliveryHost = HTMLDivElement & {
-  session?: unknown;
-  onSessionChange?: (session: unknown) => void;
-};
+const mounts: Array<{ target: HTMLElement; component: ReturnType<typeof mount> }> = [];
 
-const mounts: Array<{ host: HTMLElement; component: ReturnType<typeof mount> }> = [];
-
-function mountWithHost(session: Record<string, unknown> = { id: '1', element: PLAYER_TAG }) {
-  // Stands in for the delivery custom element: `forwardSessionChange` walks up
-  // from the clicked input to the nearest node exposing `onSessionChange`.
-  const host = document.createElement('div') as DeliveryHost;
+function mountWithSession(session: Record<string, unknown> = { id: '1', element: PLAYER_TAG }) {
   const target = document.createElement('div');
-  host.appendChild(target);
-  document.body.appendChild(host);
+  document.body.appendChild(target);
 
+  // Stands in for the delivery custom element, which sets this prop.
   const emitted: unknown[] = [];
-  host.session = session;
-  host.onSessionChange = (updated: unknown) => emitted.push(updated);
+  const onSessionChange = (updated: unknown) => emitted.push(updated);
 
   const component = mount(McPopulatedBlank as any, {
     target,
-    props: { model: { ...BASE_MODEL }, session },
+    props: { model: { ...BASE_MODEL }, session, onSessionChange },
   });
-  mounts.push({ host, component });
+  mounts.push({ target, component });
   flushSync();
-  return { host, target, emitted };
+  return { target, emitted };
 }
 
 function selectChoice(target: HTMLElement, index: number) {
@@ -64,15 +55,15 @@ function selectChoice(target: HTMLElement, index: number) {
 }
 
 afterEach(() => {
-  for (const { host, component } of mounts.splice(0)) {
+  for (const { target, component } of mounts.splice(0)) {
     unmount(component);
-    host.remove();
+    target.remove();
   }
 });
 
 describe('mc-populated-blank delivery session', () => {
   it("reports the selected choice id on the player's `id` and `element`", () => {
-    const { target, emitted } = mountWithHost();
+    const { target, emitted } = mountWithSession();
 
     selectChoice(target, 1);
 
@@ -80,18 +71,18 @@ describe('mc-populated-blank delivery session', () => {
   });
 
   it('adds no `id` or `element` the player did not set', () => {
-    const { target, emitted } = mountWithHost({});
+    const { target, emitted } = mountWithSession({});
 
     selectChoice(target, 1);
 
     expect(emitted).toEqual([{ choiceId: 'b' }]);
   });
 
-  it('hands the host a fresh object so the component re-renders', () => {
+  it('reports a fresh object so the component re-renders', () => {
     // The wrapper writes the update into the player's session; the component
     // reads `props.session` through `$derived`, which needs a new reference.
     const session = { id: '1', element: PLAYER_TAG };
-    const { target, emitted } = mountWithHost(session);
+    const { target, emitted } = mountWithSession(session);
 
     selectChoice(target, 1);
 
@@ -99,7 +90,7 @@ describe('mc-populated-blank delivery session', () => {
   });
 
   it('renders a restored `choiceId` into the blank', () => {
-    const { target } = mountWithHost({ id: '1', element: PLAYER_TAG, choiceId: 'b' });
+    const { target } = mountWithSession({ id: '1', element: PLAYER_TAG, choiceId: 'b' });
 
     const checked = target.querySelector('input[type="radio"]:checked') as HTMLInputElement | null;
     expect(checked?.value).toBe('b');

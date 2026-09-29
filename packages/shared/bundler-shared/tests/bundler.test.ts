@@ -234,7 +234,6 @@ describe.skip('Bundler Integration Tests (DISABLED - NPM packages have broken de
       expect(existsSync(join(bundleDir, 'player.js'))).toBe(true);
 
       // The bundle should work even if elements use different @pie-lib versions
-      // This is handled by the NormalModuleReplacementPlugin in webpack config
     }, 180000);
   });
 

@@ -93,6 +93,3 @@ handed the element rather than a replacement reference — `writeSessionInPlace`
 ## Notes
 
 - Events bubble and are composed by default.
-- The legacy `pie.*` events (`pie.model_set`, `pie.session_changed`,
-  `pie.model_updated`, declared in `@pie-element/shared-types`) are
-  compatibility-only and not the primary runtime interop contract.

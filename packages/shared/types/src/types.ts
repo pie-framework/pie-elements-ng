@@ -217,7 +217,7 @@ export interface AccessibilityCatalog {
 // Base PIE model (all elements extend this)
 export interface PieModel {
   id: string;
-  element: string; // e.g., "@pie-element/multiple-choice"
+  element: string; // Element tag, the key in the item config's `elements` map, e.g. "multiple-choice"
   accessibilityCatalogs?: AccessibilityCatalog[];
 }
 
@@ -299,13 +299,24 @@ export interface PrintOptions {
   mode?: PieEnvironment['mode'];
 }
 
+/**
+ * Persists `properties` into the stored session `id` of element `element`. A player passes it to
+ * `model()`, which calls `updateSession(session.id, session.element, { shuffledValues })` to keep
+ * the choice order it drew.
+ */
+export type PieUpdateSession = (
+  id: string,
+  element: string,
+  properties: Partial<PieSession>
+) => Promise<void>;
+
 // Controller interface
 export interface PieController {
   model(
     question: PieModel,
     session: PieSession | null,
     env: PieEnvironment,
-    updateSession?: (session: PieSession) => void
+    updateSession?: PieUpdateSession
   ): Promise<ViewModel>;
 
   outcome(model: PieModel, session: PieSession, env: PieEnvironment): Promise<OutcomeResult>;

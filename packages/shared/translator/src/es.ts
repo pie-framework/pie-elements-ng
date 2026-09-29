@@ -86,7 +86,6 @@ export default {
       listenPlayingAlt: 'Escuchar. Estas son las instrucciones.',
       printAudio: 'Audio:',
       printTranscript: 'Transcripción:',
-      printKey: '(clave)',
     },
     multipleChoice: {
       minSelections: 'Seleccione al menos {{minSelections}}.',

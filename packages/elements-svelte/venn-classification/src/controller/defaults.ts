@@ -23,5 +23,10 @@ export default {
       label: 'Scoring policy',
       settings: true,
     },
+    teacherInstructions: {
+      label: 'Teacher Instructions',
+      settings: true,
+    },
+    settingsPanelDisabled: false,
   },
 };

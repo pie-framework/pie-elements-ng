@@ -31,7 +31,7 @@ describe('Bundler progress events', () => {
       join(bundleDir, 'build-metadata.json'),
       JSON.stringify(
         {
-          schemaVersion: 3,
+          schemaVersion: 4,
           createdAt: new Date().toISOString(),
           builtBundles: ['player'],
         },
@@ -68,7 +68,7 @@ describe('Bundler progress events', () => {
       join(bundleDir, 'build-metadata.json'),
       JSON.stringify(
         {
-          schemaVersion: 3,
+          schemaVersion: 4,
           createdAt: new Date().toISOString(),
           builtBundles: ['player'],
         },

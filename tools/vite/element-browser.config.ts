@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, esmExternalRequirePlugin } from 'vite';
 import { browserCjsRequireInteropPlugin } from './browser-cjs-require-interop.ts';
+import { browserCssLoaderPlugin } from './browser-css-loader.ts';
 
 const packageDir = process.cwd();
 const packageJson = JSON.parse(readFileSync(resolve(packageDir, 'package.json'), 'utf-8')) as {
@@ -47,6 +48,7 @@ export default defineConfig({
       external: allowedBareImportSpecifiers,
     }),
     react(),
+    browserCssLoaderPlugin(),
   ],
   define: {
     __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),

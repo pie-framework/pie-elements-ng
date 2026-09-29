@@ -5,6 +5,11 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tools/vite/**",
+        "$TURBO_ROOT$/packages/shared/editor-runtime/package.json"
+      ],
       "outputs": ["dist/**", "esm/**", "build/**", "module/**"],
       "env": ["NODE_ENV"]
     },

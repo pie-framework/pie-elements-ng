@@ -4,4 +4,6 @@ export type EditableHtmlProps = {
   placeholder?: string;
   showToolbar?: boolean;
   disabled?: boolean;
+  /** Accessible name of the text box, for a host whose visible label is not tied to it. */
+  ariaLabel?: string;
 };

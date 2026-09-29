@@ -1,7 +1,7 @@
 /**
- * The editor reports the author's edits and nothing else, leaves URLs as text, and keeps its
- * stylesheet inside its own instances: the consuming elements render without a shadow root, so
- * that stylesheet lands in the host page's <head>.
+ * The editor reports the author's edits and nothing else, leaves URLs as text, keeps its hidden
+ * toolbar out of the tab order, and keeps its stylesheet inside its own instances: the consuming
+ * elements render without a shadow root, so that stylesheet lands in the host page's <head>.
  */
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -18,6 +18,7 @@ type Props = {
   onChange?: (html: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  ariaLabel?: string;
 };
 
 // A string, not a URL object: happy-dom replaces the global `URL`, which `readFileSync` rejects.
@@ -143,6 +144,71 @@ describe('EditableHtml placeholder', () => {
     const { target } = mountEditor({ markup: '<p>Hello</p>', placeholder: 'Enter text' });
 
     expect(target.querySelector('.ProseMirror [data-placeholder]')).toBeNull();
+  });
+});
+
+describe('EditableHtml toolbar focus', () => {
+  function toolbarOf(target: HTMLElement) {
+    return target.querySelector('[role="toolbar"]') as HTMLElement;
+  }
+
+  it('keeps the hidden toolbar out of the tab order', () => {
+    const { target } = mountEditor({ markup: '<p>Hello</p>' });
+    const toolbar = toolbarOf(target);
+
+    expect(toolbar.classList.contains('focused')).toBe(false);
+    expect(toolbar.inert).toBe(true);
+  });
+
+  it('stays open while focus moves from the text to its buttons, and closes when it leaves', () => {
+    const { target, editor } = mountEditor({ markup: '<p>Hello</p>' });
+    const toolbar = toolbarOf(target);
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+
+    editor.view.dom.focus();
+    flushSync();
+    expect(toolbar.classList.contains('focused')).toBe(true);
+    expect(toolbar.inert).toBe(false);
+
+    (target.querySelector('button[title="Bold"]') as HTMLButtonElement).focus();
+    flushSync();
+    expect(toolbar.classList.contains('focused')).toBe(true);
+    expect(toolbar.inert).toBe(false);
+
+    outside.focus();
+    flushSync();
+    expect(toolbar.classList.contains('focused')).toBe(false);
+    expect(toolbar.inert).toBe(true);
+  });
+});
+
+describe('EditableHtml accessible name', () => {
+  it('names the text box from ariaLabel', () => {
+    const { editor } = mountEditor({ markup: '<p>Hello</p>', ariaLabel: 'Prompt' });
+
+    expect(editor.view.dom.getAttribute('role')).toBe('textbox');
+    expect(editor.view.dom.getAttribute('aria-multiline')).toBe('true');
+    expect(editor.view.dom.getAttribute('aria-label')).toBe('Prompt');
+  });
+
+  it('follows the host, and keeps the name and role when disabled toggles', () => {
+    const onChange = vi.fn();
+    const { editor, props } = mountEditor({
+      markup: '<p>Hello</p>',
+      ariaLabel: 'Prompt',
+      onChange,
+    });
+
+    props.ariaLabel = 'Question';
+    flushSync();
+    expect(editor.view.dom.getAttribute('aria-label')).toBe('Question');
+
+    props.disabled = true;
+    flushSync();
+    expect(editor.view.dom.getAttribute('aria-label')).toBe('Question');
+    expect(editor.view.dom.getAttribute('role')).toBe('textbox');
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
 

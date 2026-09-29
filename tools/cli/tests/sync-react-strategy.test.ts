@@ -7,6 +7,10 @@ import {
   collectElementViteEntryPoints,
   ReactComponentsStrategy,
 } from '../src/lib/upstream/sync-react-strategy.js';
+import {
+  IIFE_DEBUG_SHIM_SOURCE,
+  IIFE_PROP_TYPES_SHIM_SOURCE,
+} from '../src/lib/upstream/sync-constants.js';
 import { commitFixtureRepo } from './helpers/git-fixture.js';
 
 const createLogger = () =>
@@ -256,6 +260,8 @@ export default Main;
     expect(authorMain).not.toContain('<ebsr-multiple-choice-configure');
     expect(viteConfig).toContain('__PIE_PACKAGE_VERSION__');
     expect(iifeConfig).toContain('__PIE_PACKAGE_VERSION__');
+    expect(iifeConfig).toContain(JSON.stringify(IIFE_DEBUG_SHIM_SOURCE));
+    expect(iifeConfig).toContain(JSON.stringify(IIFE_PROP_TYPES_SHIM_SOURCE));
   });
 
   it('regenerates complex-rubric version-scoped private child element wiring after upstream sync', async () => {

@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/editable-html-tip-tap",
-  "version": "3.0.0-next.36",
+  "version": "3.0.0-next.46",
   "description": "",
   "repository": {
     "type": "git",
@@ -34,7 +34,6 @@
     "@tiptap/pm": "3.31.3",
     "@tiptap/react": "3.31.3",
     "@tiptap/starter-kit": "3.31.3",
-    "change-case": "^3.0.2",
     "debug": "^4.1.1",
     "immutable": "^4.0.0-rc.12",
     "keycode": "^2.2.0",
@@ -50,6 +49,9 @@
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
     "@tiptap/extensions": "3.31.3",
     "@tiptap/extension-list": "3.31.3",
+    "@tiptap/extension-bubble-menu": "3.31.3",
+    "@tiptap/extension-floating-menu": "3.31.3",
+    "@floating-ui/dom": "^1.7.6",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },
@@ -74,12 +76,12 @@
   "devDependencies": {
     "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   }
 }

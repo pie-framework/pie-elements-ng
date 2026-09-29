@@ -10,5 +10,10 @@ export default {
       label: 'Prompt',
       settings: true,
     },
+    teacherInstructions: {
+      label: 'Teacher Instructions',
+      settings: true,
+    },
+    settingsPanelDisabled: false,
   },
 };
