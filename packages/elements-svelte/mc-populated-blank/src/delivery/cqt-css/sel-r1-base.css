@@ -124,6 +124,13 @@
   align-self: flex-end;
 }
 
+/* r1.scss's .rli-r1-cloze and question.css's .rli-s3-cloze have no inline padding, so the
+   150px content-element spans the blank. ClozeMarker.svelte's 0.5rem would narrow an
+   answer image to 134px or 144px. */
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line .pie-blank-slot {
+  padding-inline: 0;
+}
+
 /* r1.scss: .rli-r1-cloze { height:160px; padding-bottom:4px; border-bottom:6px solid }
    — the blank in the token layouts is LSY's cloze box, top-aligned with the stem
    tokens (align-self overrides the flex-end above). A fixed height rather than a

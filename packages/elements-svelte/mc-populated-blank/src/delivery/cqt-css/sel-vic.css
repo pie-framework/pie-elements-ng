@@ -76,10 +76,12 @@
 /* vic.scss: .rli-vic-cloze { margin-left: 6px; margin-right: 6px } gives the
    cloze breathing room from adjacent text or punctuation. The shared blank slot
    has no inline margin, so set it here so the cloze→trailing-punctuation gap
-   matches LSY. See CONTOOL-2572. */
+   matches LSY. See CONTOOL-2572. The cloze has no inline padding either, where
+   ClozeMarker.svelte gives the blank 0.5rem. */
 .mc-populated-blank-root.variant-sel-vic .pie-template-line .pie-blank-slot {
   margin-left: 6px;
   margin-right: 6px;
+  padding-inline: 0;
 }
 
 /* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 }
@@ -102,6 +104,24 @@
 .mc-populated-blank-root.variant-sel-vic .pie-choice-label {
   text-align: left;
   justify-content: flex-start;
+}
+
+/* vic.scss: .rli-vic-distractor { align-items:center; margin-right:10px } and
+   .rli-vic-distractor > input { margin:20px }. The radio sits 20px from the row edge and
+   from its label, centred on the label, and its margins set the row pitch: the rows and
+   the radio and label have no gap between them. */
+.mc-populated-blank-root.variant-sel-vic .pie-choices.choices-vertical {
+  --mpb-choice-group-gap: 0;
+}
+
+.mc-populated-blank-root.variant-sel-vic .pie-choice:not(.pie-choice-horizontal) {
+  --mpb-choice-row-gap: 0;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.mc-populated-blank-root.variant-sel-vic .pie-choice-radio-inline {
+  margin: 20px;
 }
 
 /* vic.scss: .rli-vic-selected { background-color: #fcfcd3 } on the full row. */

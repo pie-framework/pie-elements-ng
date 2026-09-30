@@ -33,9 +33,8 @@ async function openS3Route(page: Parameters<typeof test>[0]['page']) {
 // 1. Stimulus image, blank slot, and audio button are on the same row
 //    sel_r1-s3_plusggg/main.scss: three-column grid —
 //      "sentence template audio" / "choices choices choices"
-//    In the reference all three sit at approximately the same vertical position.
-//    In the as-built the stimulus image stacks above the blank slot, pushing
-//    the blank slot to a lower Y than the stimulus.
+//    In the reference all three share the first grid row; a stacked layout puts
+//    the blank slot below the stimulus.
 // ---------------------------------------------------------------------------
 test('s3: stimulus image, blank slot, and audio button are on the same row', async ({ page }) => {
   await openS3Route(page);
@@ -55,11 +54,12 @@ test('s3: stimulus image, blank slot, and audio button are on the same row', asy
   expect(templateBox).not.toBeNull();
   expect(audioBox).not.toBeNull();
 
-  // When stacked: templateBox.y is well below sentenceBox.y (>80px difference).
-  // When in the same row: all three share approximately the same top Y (within 60px —
-  // the blank slot may be bottom-aligned within the row per the reference layout).
-  const sentenceTemplateDiff = Math.abs(templateBox?.y - sentenceBox?.y);
-  expect(sentenceTemplateDiff).toBeLessThan(60);
+  // question.css bottom-anchors the cloze in the row (.rli-s3-cloze-container
+  // { justify-content:end }), so its top sits below the stimulus's top by however much
+  // taller the stimulus is: 78px in Learnosity for this item's 225px image. Sharing the
+  // row means the two overlap vertically; stacked, the blank starts below the stimulus.
+  expect(templateBox?.y).toBeLessThan(sentenceBox?.y + sentenceBox?.height);
+  expect(sentenceBox?.y).toBeLessThan(templateBox?.y + templateBox?.height);
 
   // Stimulus must be to the left of the blank slot.
   expect(sentenceBox?.x).toBeLessThan(templateBox?.x);

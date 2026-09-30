@@ -27,6 +27,14 @@
   text-align: start;
 }
 
+/* vic.scss: .rli-vic-cloze { margin-left:6px; margin-right:6px }, with no inline
+   padding, where ClozeMarker.svelte gives the blank 0.5rem. See CONTOOL-2572. */
+.mc-populated-blank-root.variant-sr-vic .pie-template-line .pie-blank-slot {
+  margin-left: 6px;
+  margin-right: 6px;
+  padding-inline: 0;
+}
+
 /* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 }
    The red holds AA only on LSY's white page (5.1:1), so the answer carries that
    surface: on a dark host it is 3.08:1. light-dark() would miss pie-players'
@@ -53,6 +61,24 @@
 .mc-populated-blank-root.variant-sr-vic .pie-choice-label {
   text-align: left;
   justify-content: flex-start;
+}
+
+/* vic.scss: .rli-vic-distractor { align-items:center; margin-right:10px } and
+   .rli-vic-distractor > input { margin:20px }. The radio sits 20px from the row edge and
+   from its label, centred on the label, and its margins set the row pitch: the rows and
+   the radio and label have no gap between them. */
+.mc-populated-blank-root.variant-sr-vic .pie-choices.choices-vertical {
+  --mpb-choice-group-gap: 0;
+}
+
+.mc-populated-blank-root.variant-sr-vic .pie-choice:not(.pie-choice-horizontal) {
+  --mpb-choice-row-gap: 0;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.mc-populated-blank-root.variant-sr-vic .pie-choice-radio-inline {
+  margin: 20px;
 }
 
 /* vic.scss: .rli-vic-distractor:hover { background-color: #F2F2F2 } applied to
