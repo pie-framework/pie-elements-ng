@@ -1,5 +1,11 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.28
+
+### Patch Changes
+
+- Merge pull request #247 from pie-framework/docs/mc-populated-blank-r1-token-wireframes
+
 ## 0.3.0-next.27
 
 ### Patch Changes
