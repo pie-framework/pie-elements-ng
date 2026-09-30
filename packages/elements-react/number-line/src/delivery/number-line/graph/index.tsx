@@ -228,7 +228,9 @@ export class NumberLineGraph extends React.Component {
       return (
         <DndContext>
           <div style={{ display: 'inline-block' }}>
-            <svg width={width} height={fraction ? height + 20 : height}>
+            {/* touch-action must be on the outer svg: Chrome ignores it on inner svg elements (g, circle),
+                and without it the browser claims a touch on the drag handles as a pan and cancels dnd-kit's drag */}
+            <svg width={width} height={fraction ? height + 20 : height} style={{ touchAction: 'none' }}>
               {false && <Debug domain={domain} ticks={ticks} />}
               <BaseLine y={lineY} width={width} />
               {arrows.left && <Arrow y={lineY} />}
