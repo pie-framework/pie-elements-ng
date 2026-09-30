@@ -61,7 +61,7 @@ export const defaults = {
   BUTTON_FOCUS_OUTLINE: '#3B82F6',
   // this is used for select text tokens
   BLUE_GREY100: '#F3F5F7',
-  BLUE_GREY300: '#C0C3CF',
+  BLUE_GREY300: '#81848F',
   BLUE_GREY600: '#7E8494',
   BLUE_GREY900: '#152452',
   // this is used for charting
