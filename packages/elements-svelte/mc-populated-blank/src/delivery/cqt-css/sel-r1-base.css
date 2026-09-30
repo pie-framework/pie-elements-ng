@@ -17,14 +17,6 @@
   font-size: 14px;
 }
 
-/* r1.scss: .rli-r1-audio-transcript { font-family:Roboto; font-size:16px } */
-.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-audio-transcript {
-  font-family: Roboto, Arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-}
-
 /* r1.scss: .rli-r1-content-element { font-size: 1.9em } wraps all stem tokens.
    Makes inline font-size spans in the template multiply on top of this base. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line {

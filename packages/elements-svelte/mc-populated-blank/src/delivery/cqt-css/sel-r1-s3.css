@@ -40,7 +40,6 @@
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank {
   grid-template-columns: minmax(220px, auto) auto auto;
   grid-template-areas:
-    "transcript transcript transcript"
     "sentence template audio"
     "choices choices choices";
   justify-content: center;
@@ -54,7 +53,6 @@
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank.has-header {
   grid-template-areas:
     "header header header"
-    "transcript transcript transcript"
     "sentence template audio"
     "choices choices choices";
 }
