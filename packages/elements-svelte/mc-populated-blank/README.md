@@ -125,7 +125,7 @@ Delivery now exposes stable `pie-*` classes so hosts can theme this element with
 
 - Root/container: `pie-element`, `pie-element-mc-populated-blank`, `pie-delivery-root`
 - Header, holding teacher instructions, the prompt and the show-correct-answer toggle ahead of the stem: `pie-header`
-- Prompt/audio/template: `pie-prompt`, `pie-audio-container`, `pie-audio-player`, `pie-audio-transcript`, `pie-template-line`, `pie-sentence-line`
+- Prompt/audio/template: `pie-prompt`, `pie-audio-container`, `pie-audio-player`, `pie-template-line`, `pie-sentence-line`
 - Blank display: `pie-blank-slot`, `pie-blank-slot-standalone`, `pie-blank-value`, `pie-blank-image`
 - Choice group: `pie-choices-fieldset`, `pie-choices-legend`, `pie-choices`
 - Choice rows/items: `pie-choice`, `pie-choice-horizontal`, `pie-choice-selected`, `pie-choice-label`, `pie-choice-image`
