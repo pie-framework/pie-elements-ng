@@ -46,6 +46,36 @@ Notes:
 - `correctChoiceId` should always map from Learnosity `valid_response.name` to canonical `distractor_n`.
 - Layout defaults are tuned from original CQT visual baselines, but they are not fixed: override through `model.layoutLimits` when host/theme requirements differ.
 
+## Layouts
+
+`layoutProfile` selects the arrangement and lands on the root as `layout-<layoutProfile>`; the variant sheet for `customType` tunes sizes on top of it (see [Bundled CQT variant CSS](#bundled-cqt-variant-css)). `choiceLayout` sets the choice direction; unset, choices are horizontal when the template is only `{{blank}}` or `interactionMode` is `audio_mc_only`, and vertical otherwise. `audio_blank_only`, `stimulus_image_blank` and `token_sequence` replace the native audio controls with the listen button; `useFeatureButtonAudio` overrides that either way.
+
+| `layoutProfile` | Arrangement | `customType` in the samples |
+| --- | --- | --- |
+| unset | block flow in DOM order | — |
+| `inline_sentence` | block flow; a two-column grid when `hasAudio` | `sr-vic`, `sel_vic` |
+| `audio_blank_only` | centred block flow around a large blank | `sel_r1-_plusggg`, `sel_r1-_gplusggg` |
+| `token_sequence` | grid: listen row, then a row of token boxes | `sel_r1-g_plusggg`, `sel_r1-gg_plusggg`, `sel_r1-_ggplusggg` |
+| `stimulus_image_blank` | grid: stimulus, blank and listen button in one row | `sel_r1-s3_plusggg` |
+
+The figures are wireframes: colour marks a region, a dashed region renders only when its content is present, and a labelled size is what renders without a `layoutLimits` override.
+
+![Default block flow: header, audio, sentence, template and choices stacked in DOM order](docs/layouts/layout-default-flow.png)
+
+![inline_sentence with audio: the template and the listen button share a grid row above the choices](docs/layouts/layout-inline-sentence-audio.png)
+
+![audio_blank_only: listen button at the end of its row, a centred 10rem blank, then a centred row of choice tiles](docs/layouts/layout-audio-blank-only.png)
+
+![token_sequence: listen button on its own row, a centred row of 150px token boxes including the blank, then choice tiles](docs/layouts/layout-token-sequence.png)
+
+![stimulus_image_blank with the sel_r1-s3 sheet: stimulus, blank and listen button in one row above centred choice tiles](docs/layouts/layout-stimulus-image-blank.png)
+
+![audio_mc_only: header, audio and horizontal choices, with no template line](docs/layouts/layout-audio-mc-only.png)
+
+![Choice rows: the inline row used by vertical choices and the tile used by horizontal choices, with their evaluate states](docs/layouts/choice-rows.png)
+
+![Below 760px: the listen button moves to the start and the choice tiles stack in a column](docs/layouts/layout-narrow.png)
+
 ## Authoring model
 
 - **`prompt`** (optional) and **`promptEnabled`**
