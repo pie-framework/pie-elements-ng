@@ -1,7 +1,9 @@
 /**
  * PIE-793: in text-only sel_r1-g_plusggg blanks the placed answer sits on its
- * underline and level with the stem token, as in Learnosity. sel-r1-base.css
- * reserves a 156px box for an image answer, which the image variant keeps.
+ * underline beside the stem token. As in Learnosity (PIE-1128), the answer's
+ * 150px content box is centred in the 160px cloze with an 8px bottom margin,
+ * which lifts it 4px above the stem token, and the blank keeps one 160px box
+ * whether empty or filled.
  */
 
 import { type Page, expect, test } from '@playwright/test';
@@ -54,18 +56,18 @@ for (const demoId of ['variant-sel-r1-g-stem', 'variant-sel-r1-g-stem-es']) {
   test(`${demoId}: the placed answer sits on its underline`, async ({ page }) => {
     await openWithFirstChoicePlaced(page, demoId);
     const { answerBottom, underlineTop } = await measure(page);
-    // ~18px with the fix; ~79px when the 156px image box applies.
+    // ~26px; ~79px when the answer sits at the top of a 156px box.
     expect(underlineTop - answerBottom).toBeLessThan(30);
   });
 
-  test(`${demoId}: the placed answer is level with the stem token`, async ({ page }) => {
+  test(`${demoId}: the placed answer sits 4px above the stem token`, async ({ page }) => {
     await openWithFirstChoicePlaced(page, demoId);
     const { answerBottom, stemBottom } = await measure(page);
-    expect(Math.abs(answerBottom - stemBottom)).toBeLessThan(2);
+    expect(stemBottom - answerBottom).toBeCloseTo(4, 0);
   });
 }
 
-test('variant-sel-r1-g-stem-graphic: the image blank keeps its 156px box, empty and filled', async ({
+test('variant-sel-r1-g-stem-graphic: the image blank keeps its 160px box, empty and filled', async ({
   page,
 }) => {
   await openDemo(page, 'variant-sel-r1-g-stem-graphic');
@@ -73,7 +75,7 @@ test('variant-sel-r1-g-stem-graphic: the image blank keeps its 156px box, empty 
     deliveryContainer(page)
       .locator('.pie-blank-slot')
       .evaluate((el) => el.getBoundingClientRect().height);
-  expect(await slotHeight()).toBe(156);
+  expect(await slotHeight()).toBe(160);
   await placeFirstChoice(page);
-  expect(await slotHeight()).toBe(156);
+  expect(await slotHeight()).toBe(160);
 });

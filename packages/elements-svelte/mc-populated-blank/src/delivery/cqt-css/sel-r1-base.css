@@ -53,12 +53,14 @@
 }
 
 /* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px; min-height:150px;
-   line-height:89px; margin-right:2px; margin-left:2px } — wraps every stem token
-   (blank slot and adjacent inline spans) in LSY, giving each a 150px box with a
-   2px per-side margin. Applies to the token layouts, the same set that gets the
-   feature button and the wide underline, so trailing tokens in audio_blank_only
-   (gplusggg) match the blank's height the way LSY does. Stems on other layouts are
-   prose, which the box would stack a word or two per line. */
+   line-height:89px; margin-right:2px; margin-left:2px } — wraps every stem token in
+   LSY, giving each a 150px box with a 2px per-side margin. Applies to the token
+   layouts, the same set that gets the feature button and the wide underline, so
+   trailing tokens in audio_blank_only (gplusggg) match the blank's height the way
+   LSY does. Stems on other layouts are prose, which the box would stack a word or
+   two per line. Spans inside the blank are the answer's own markup, not stem tokens.
+   The margin outranks token_sequence's span + span gap, so tokens sit LSY's 4px
+   apart (CONTOOL-2569). */
 .mc-populated-blank-root:where(
     [class*="variant-sel-r1-"]:is(
       .layout-audio_blank_only,
@@ -67,13 +69,44 @@
     )
   )
   .pie-template-line
-  span:not([class]) {
+  span:not([class]):not(.pie-blank-slot *) {
   min-width: 150px;
   max-width: 150px;
   min-height: 150px;
   line-height: 89px;
   margin-left: 2px;
   margin-right: 2px;
+}
+
+/* r1.scss: the content-element's wrapping flex line packs to the bottom of its box
+   (align-content:flex-end), so a token's 89px line sits on the box's bottom edge
+   whatever its font size; .rli-r1-stem { align-items:start } top-aligns the row.
+   Every item in it has a fixed height (150px tokens and images, the 160px cloze),
+   so the underline lands 4px under the tokens' bottom edge. */
+.mc-populated-blank-root:where(
+    [class*="variant-sel-r1-"]:is(.layout-audio_blank_only, .layout-token_sequence)
+  )
+  .pie-template-line
+  span:not([class]):not(.pie-blank-slot *) {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  align-content: flex-end;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.mc-populated-blank-root:where(
+    [class*="variant-sel-r1-"]:is(.layout-audio_blank_only, .layout-token_sequence)
+  )
+  .pie-template-line,
+.mc-populated-blank-root:where(
+    [class*="variant-sel-r1-"]:is(.layout-audio_blank_only, .layout-token_sequence)
+  )
+  .pie-template-line
+  p {
+  align-items: flex-start;
 }
 
 /* .pie-template-line's align-items:baseline (above) computes a shared baseline
@@ -91,39 +124,38 @@
   align-self: flex-end;
 }
 
-/* In token_sequence layouts the blank itself is also a content-element box (no
-   surrounding .rli-r1-cloze container at 160px). audio_blank_only / stimulus_image_blank
-   keep their own 160px min-height set on the blank slot in McPopulatedBlank.svelte to
-   mirror LSY's .rli-r1-cloze height. The 2px per-side margin matches LSY's
-   .rli-r1-content-element pattern.
-   .pie-blank-slot is box-sizing:border-box (McPopulatedBlank.svelte sets it for
-   the whole element) with a permanent 6px border-bottom (the underline) —
-   min-height:150px therefore only leaves 144px for content,
-   so an empty blank (content ~0px, clamped to the 150px floor) and a blank
-   showing a 150px choice image (150 + 6 border = 156px, exceeding the floor)
-   render at two different total heights. Since .pie-blank-slot is bottom-anchored
-   in its row (align-self:flex-end above), that 6px height difference shows up as
-   a visible shift of the blank/image every time a choice is selected or cleared.
-   min-height:156px keeps the total box height constant regardless of content, so
-   the 150px is fully available to the image/text and the border no longer
-   competes with it. See CONTOOL-3159. */
+/* r1.scss: .rli-r1-cloze { height:160px; padding-bottom:4px; border-bottom:6px solid }
+   — the blank in the token layouts is LSY's cloze box, top-aligned with the stem
+   tokens (align-self overrides the flex-end above). A fixed height rather than a
+   min-height keeps the empty and the filled blank at one geometry: the 150px image
+   or content box below fits its 150px content area exactly, and the underline
+   never moves on selection (CONTOOL-3159). .pie-blank-slot is border-box, as LSY's
+   cloze is. McPopulatedBlank.svelte gives audio_blank_only the padding and the
+   6px underline; token_sequence takes both here. The 2px per-side margin matches
+   LSY's .rli-r1-content-element rhythm (CONTOOL-2569). */
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]):is(
+    .layout-audio_blank_only,
+    .layout-token_sequence
+  )
+  .pie-template-line
+  .pie-blank-slot {
+  align-self: flex-start;
+  height: 160px;
+  padding-bottom: 4px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-token_sequence
   .pie-template-line
   .pie-blank-slot {
   min-width: 150px;
   max-width: 150px;
-  min-height: 156px;
   line-height: 89px;
-  margin-left: 2px;
-  margin-right: 2px;
 }
 
-/* audio_blank_only / stimulus_image_blank keep the 160px wide blank slot, but
-   still need the 2px per-side margin so the gap to the trailing token mirrors
-   LSY's .rli-r1-content-element rhythm. See CONTOOL-2569. */
-.mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-audio_blank_only
-  .pie-template-line
-  .pie-blank-slot,
+/* stimulus_image_blank keeps the 160px min-height blank slot McPopulatedBlank.svelte
+   sets, with the same 2px per-side margin. See CONTOOL-2569. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-stimulus_image_blank
   .pie-template-line
   .pie-blank-slot {
@@ -131,29 +163,40 @@
   margin-right: 2px;
 }
 
-/* The `.pie-template-line span:not([class])` rule above has no depth limit, so it
-   also matches the unclassed answer <span> ClozeMarker.svelte renders inside
-   .pie-blank-value once a choice is selected (e.g. author font-size overrides like
-   <span style="font-size:3em">). For token_sequence that coincides with the blank
-   slot's own 150px/89px box above, so outer and inner agree. audio_blank_only /
-   stimulus_image_blank instead keep .pie-blank-slot at LSY's separate, taller
-   .rli-r1-cloze box (160px) — forcing the answer span into the stem token's
-   150px/89px box there is wrong: a plain (non-flex) span whose min-height exceeds
-   its line-height renders that line top-anchored, pinning the answer text to the
-   top of the blank with the rest of the box empty beneath it, instead of centered
-   on the underline the way LSY renders it. See CONTOOL-3159. */
-.mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-audio_blank_only
-  .pie-blank-value
-  span:not([class]),
+/* cloze.js: the cloze holds an .rli-r1-content-element around the answer's markup,
+   so the answer's line packs to the bottom of a 150px box the way a stem token's
+   does. The box's 8px bottom margin, centred in the cloze's 150px content area,
+   lifts it 4px, as it does in LSY. */
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]):is(
+  .layout-audio_blank_only,
+  .layout-token_sequence
+) .pie-blank-value {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  align-content: flex-end;
+  justify-content: center;
+  min-height: 150px;
+  line-height: 89px;
+  margin-bottom: 8px;
+}
+
+/* An imageUrl answer is .pie-blank-image directly in the blank, with no
+   .pie-blank-value around it; the same margin puts it where a labelHtml image sits. */
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]):is(
+  .layout-audio_blank_only,
+  .layout-token_sequence
+) .pie-blank-image {
+  margin-bottom: 8px;
+}
+
+/* Classless answer spans in the s3 blank keep line-height:normal, which outranks
+   sel-r1-s3.css's 1.1. See CONTOOL-3159. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]).layout-stimulus_image_blank
   .pie-blank-value
   span:not([class]) {
-  min-width: 0;
-  max-width: none;
-  min-height: 0;
   line-height: normal;
-  margin-left: 0;
-  margin-right: 0;
 }
 
 /* r1.scss: .rli-r1-content-element { font-size:1.9em; line-height:89px } on distractors */
