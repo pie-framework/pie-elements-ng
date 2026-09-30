@@ -749,9 +749,10 @@ $effect(() => {
     margin-top: var(--mpb-inline-choices-margin-top, 0.25rem);
   }
 
-  /* Match Learnosity responsive behavior for CQT audio-blank layouts:
-     at smaller widths, audio control shifts left and answer tiles stack. */
-  @media (max-width: 760px) {
+  /* The CQT sheets (r1.scss, vic.scss, sel_r1-s3_plusggg) lay these layouts out in one
+     column below 850px: the listen button sits at the left above the stem, and the
+     answer tiles stack at the left edge. */
+  @media not all and (min-width: 850px) {
     .layout-audio_blank_only :global(.pie-audio-container),
     .layout-stimulus_image_blank :global(.pie-audio-container),
     .layout-token_sequence :global(.pie-audio-container),
@@ -763,6 +764,10 @@ $effect(() => {
       justify-self: start;
     }
 
+    .layout-audio_blank_only fieldset {
+      justify-content: flex-start;
+    }
+
     .layout-audio_blank_only .pie-choices,
     .layout-token_sequence .pie-choices,
     .layout-stimulus_image_blank .pie-choices,
@@ -770,6 +775,49 @@ $effect(() => {
       flex-direction: column;
       align-items: flex-start;
       justify-content: flex-start;
+      /* The vw cap fits a row of tiles across the viewport; stacked tiles keep their width. */
+      --mpb-choice-width-vw: 100vw;
+    }
+
+    .layout-stimulus_image_blank {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'audio'
+        'sentence'
+        'template'
+        'choices';
+    }
+
+    .layout-stimulus_image_blank.has-header {
+      grid-template-areas:
+        'header'
+        'audio'
+        'sentence'
+        'template'
+        'choices';
+    }
+
+    .layout-inline_sentence.has-inline-audio {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'audio'
+        'template'
+        'choices';
+    }
+
+    .layout-inline_sentence.has-inline-audio.has-header {
+      grid-template-areas:
+        'header'
+        'audio'
+        'template'
+        'choices';
+    }
+
+    .layout-stimulus_image_blank .template-line,
+    .layout-token_sequence .template-line,
+    .layout-inline_sentence.has-inline-audio .template-line {
+      justify-self: start;
+      text-align: start;
     }
   }
 </style>

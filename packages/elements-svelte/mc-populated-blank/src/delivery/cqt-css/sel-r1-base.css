@@ -216,3 +216,29 @@
   width: 150px;
   height: 150px;
 }
+
+/* r1.scss: .rli-r1-stem and .rli-r1-distractors are flex-direction:column and become
+   rows only in its @media (min-width:850px), so below it every stem token, the cloze
+   and each distractor stack at the left edge (.rli-r1-stem { align-items:start }).
+   Each token's 8px bottom margin spaces the stack. */
+@media not all and (min-width: 850px) {
+  .mc-populated-blank-root:where(
+      [class*="variant-sel-r1-"]:is(.layout-audio_blank_only, .layout-token_sequence)
+    )
+    .pie-template-line,
+  .mc-populated-blank-root:where(
+      [class*="variant-sel-r1-"]:is(.layout-audio_blank_only, .layout-token_sequence)
+    )
+    .pie-template-line
+    p {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-choices.choices-horizontal {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    --mpb-choice-width-vw: 100vw;
+  }
+}

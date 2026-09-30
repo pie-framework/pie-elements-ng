@@ -111,3 +111,48 @@
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal .pie-choice-radio {
   transform: scale(0.85);
 }
+
+/* question.css: below 850px .rli-s3-container is a one-column grid in DOM order
+   (listen button, sentence, cloze, distractors), each at the left edge. The cloze
+   container stretches, so the underline spans the column, with the 150px
+   content-element at its start (.rli-s3-cloze { justify-content:flex-start }). */
+@media not all and (min-width: 850px) {
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "transcript"
+      "audio"
+      "sentence"
+      "template"
+      "choices";
+    align-items: start;
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank.has-header {
+    grid-template-areas:
+      "header"
+      "transcript"
+      "audio"
+      "sentence"
+      "template"
+      "choices";
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-sentence-line,
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-choices-fieldset {
+    justify-self: start;
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-template-line {
+    justify-self: stretch;
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-slot {
+    flex-grow: 1;
+    justify-content: flex-start;
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-value {
+    width: 150px;
+  }
+}

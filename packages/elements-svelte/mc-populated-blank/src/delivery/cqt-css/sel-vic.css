@@ -64,6 +64,15 @@
   }
 }
 
+/* sel_vic/main.scss: .sel-vic .rli-vic-stimulus { min-height:128px }. From 850px up the
+   listen button beside the sentence gives the row that height; below it the button
+   moves above, and the sentence keeps the 128px on its own. */
+@media not all and (min-width: 850px) {
+  .mc-populated-blank-root.variant-sel-vic.layout-inline_sentence .pie-template-line.template-line {
+    min-height: 128px;
+  }
+}
+
 /* vic.scss: .rli-vic-cloze { margin-left: 6px; margin-right: 6px } gives the
    cloze breathing room from adjacent text or punctuation. The shared blank slot
    has no inline margin, so set it here so the cloze→trailing-punctuation gap
