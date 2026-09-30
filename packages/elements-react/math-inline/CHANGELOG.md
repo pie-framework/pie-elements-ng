@@ -1,5 +1,18 @@
 # @pie-element/math-inline
 
+## 12.1.1-next.42
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [c96fae3]
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.48
+  - @pie-lib/render-ui@6.2.0-next.51
+  - @pie-lib/config-ui@14.0.0-next.48
+  - @pie-lib/correct-answer-toggle@5.0.0-next.54
+  - @pie-lib/math-input@9.0.0-next.17
+  - @pie-lib/math-toolbar@4.0.0-next.53
+
 ## 12.1.1-next.41
 
 ### Patch Changes

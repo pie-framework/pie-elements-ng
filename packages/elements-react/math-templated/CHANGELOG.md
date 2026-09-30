@@ -1,5 +1,20 @@
 # @pie-element/math-templated
 
+## 7.1.1-next.44
+
+### Patch Changes
+
+- chore(release): version packages (next)
+- Updated dependencies
+- Updated dependencies [c96fae3]
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.48
+  - @pie-lib/render-ui@6.2.0-next.51
+  - @pie-lib/config-ui@14.0.0-next.48
+  - @pie-lib/mask-markup@4.0.0-next.50
+  - @pie-lib/correct-answer-toggle@5.0.0-next.54
+  - @pie-lib/math-input@9.0.0-next.17
+  - @pie-lib/math-toolbar@4.0.0-next.53
+
 ## 7.1.1-next.43
 
 ### Patch Changes

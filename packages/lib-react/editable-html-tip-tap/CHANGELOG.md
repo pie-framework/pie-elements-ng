@@ -1,5 +1,16 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.0.0-next.48
+
+### Patch Changes
+
+- chore(release): version packages (next)
+- Updated dependencies [c96fae3]
+  - @pie-lib/render-ui@6.2.0-next.51
+  - @pie-lib/drag@4.1.0-next.52
+  - @pie-lib/math-input@9.0.0-next.17
+  - @pie-lib/math-toolbar@4.0.0-next.53
+
 ## 3.0.0-next.47
 
 ### Patch Changes

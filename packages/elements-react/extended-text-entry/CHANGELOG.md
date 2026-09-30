@@ -1,5 +1,15 @@
 # @pie-element/extended-text-entry
 
+## 15.1.2-next.29
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [c96fae3]
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.48
+  - @pie-lib/render-ui@6.2.0-next.51
+  - @pie-lib/config-ui@14.0.0-next.48
+
 ## 15.1.2-next.28
 
 ### Patch Changes

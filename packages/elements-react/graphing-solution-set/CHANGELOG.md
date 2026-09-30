@@ -1,5 +1,17 @@
 # @pie-element/graphing-solution-set
 
+## 6.1.2-next.30
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [c96fae3]
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.48
+  - @pie-lib/render-ui@6.2.0-next.51
+  - @pie-lib/config-ui@14.0.0-next.48
+  - @pie-lib/graphing-solution-set@5.0.0-next.52
+  - @pie-lib/correct-answer-toggle@5.0.0-next.54
+
 ## 6.1.2-next.29
 
 ### Patch Changes
