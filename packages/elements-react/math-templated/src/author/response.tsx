@@ -89,8 +89,8 @@ const ResponseBox: any = styled('div')(() => ({
   display: 'inline',
   minWidth: '50px',
   padding: '8px',
-  // #C0C3CF is `--pie-blue-grey-300`'s default, but that token is a fill and measures
-  // 1.00:1 against some schemes' backgrounds; the slot outline needs the stroke token.
+  // `--pie-blue-grey-300` is the select-text hover fill, picked for the ink on it, and
+  // measures 1.35:1 against some schemes' backgrounds; the slot outline needs the stroke token.
   border: `1px solid ${color.border()}`,
 }));
 

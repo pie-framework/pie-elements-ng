@@ -18,8 +18,8 @@ import { color } from '@pie-lib/render-ui';
 const StyledSpanContainer: any = styled('span')(() => ({
   display: 'inline-flex',
   /*
-   * #C0C3CF is `--pie-blue-grey-300`'s default value, but that token is a fill: it
-   * measures 1.00:1 against black-on-rose's own background. The box outline is what
+   * `--pie-blue-grey-300` is the select-text hover fill, picked for the ink on it: it
+   * measures 1.35:1 against purple-on-light-green's own background. The box outline is what
    * marks the response slot in running text, so it takes the stroke token instead.
    */
   border: `1px solid ${color.border()}`,

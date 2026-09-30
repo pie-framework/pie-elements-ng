@@ -39,9 +39,11 @@ const StyledToken: any = styled('span')(({ theme }) => ({
     backgroundColor: color.blueGrey100(),
   },
   [`@media (min-width: ${theme.breakpoints.values.md}px)`]: {
+    // The hover fill is chosen against the page's own ink, not black: black on it
+    // drops to 3.44:1 in light-gray-on-dark-gray and 3.77:1 in white-on-black.
     '&.selectableToken:hover': {
       backgroundColor: color.blueGrey300(),
-      color: theme.palette.common.black,
+      color: color.text(),
       '& > *': {
         backgroundColor: color.blueGrey300(),
       },
@@ -49,7 +51,7 @@ const StyledToken: any = styled('span')(({ theme }) => ({
   },
   '&.selectedToken': {
     backgroundColor: color.blueGrey100(),
-    color: theme.palette.common.black,
+    color: color.text(),
     lineHeight: `${parseFloat(theme.spacing(1)) * LINE_HEIGHT_MULTIPLIER}px`,
     border: `solid 2px ${color.blueGrey900()}`,
     borderRadius: '4px',
@@ -76,7 +78,7 @@ const StyledToken: any = styled('span')(({ theme }) => ({
 const StyledCommonTokenStyle: any = styled('span')(({ theme }) => ({
   position: 'relative',
   borderRadius: '4px',
-  color: theme.palette.common.black,
+  color: color.text(),
   lineHeight: `${parseFloat(theme.spacing(1)) * CORRECTNESS_LINE_HEIGHT_MULTIPLIER + CORRECTNESS_PADDING}px`,
   padding: `${CORRECTNESS_PADDING}px`,
 }));

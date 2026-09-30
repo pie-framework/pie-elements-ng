@@ -82,8 +82,7 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
 
   // Blue-grey palette
   'blue-grey-100': '#F3F5F7',
-  'blue-grey-300': '#C0C3CF',
-  'blue-grey-600': '#7E8494',
+  'blue-grey-300': '#9094A0',
   'blue-grey-900': '#152452',
 
   // Absolute colors
@@ -174,7 +173,7 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
 
   // Blue-grey palette
   'blue-grey-100': '#37474F',
-  'blue-grey-300': '#546E7A',
+  'blue-grey-300': '#526B77', // select-text hover fill: keeps base-content at 4.57:1; 2.90:1 on base-100, as text on it (13.2:1) is under the 13.5:1 both need
   'blue-grey-600': '#78909C',
   'blue-grey-900': '#ECEFF1',
 
