@@ -1,5 +1,13 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.27
+
+### Patch Changes
+
+- 869af7f: The CQT variants' blank has no inline padding, as in Learnosity, so a placed answer image fills its 150px box again. The sel_vic and sr_vic distractor radios sit 20px from the row edge and their label, centred on it, at Learnosity's row spacing.
+- c79d359: Below 850px the audio-blank, token, stimulus-image and inline-sentence-with-audio layouts stack in one column at the left edge, as the Learnosity CQT templates do: the listen button above the stem, then the stem, blank and answer tiles. Stacked tiles keep their pixel width, and the sel_r1 token stems and the sel_vic sentence follow Learnosity's narrow layout. This breakpoint was 760px.
+- c8e7701: The sel_r1 token layouts bottom-align stem tokens and the placed answer in their 150px boxes beside a 160px blank, as Learnosity does, so the text sits just above the underline and the blank keeps one height empty and filled. The sel_vic sentence starts at the content's left edge, inset 20px from 850px up.
+
 ## 0.3.0-next.26
 
 ### Patch Changes
