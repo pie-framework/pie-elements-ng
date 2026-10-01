@@ -736,6 +736,52 @@ describe('renderMath', () => {
     expect(rendered).toBe('<span data-player-rendered="">x squared plus 1</span>');
   });
 
+  it("renders with its own MathJax when the page's renderer is this renderMath", async () => {
+    page['@pie-lib/math-rendering'] = { renderMath, wrapMath, mmlToLatex };
+    const scripts = interceptScripts();
+    const target = elementWith('\\(x\\)');
+
+    const rendering = renderMath(target);
+    await vi.waitFor(() => expect(scripts).toHaveLength(1));
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
+    expect(wrapMath('x^2')).toBe('x^2');
+    expect(mmlToLatex('<math></math>')).toBe('<math></math>');
+  });
+
+  it("renders through another copy of the adapter installed as the page's renderer", async () => {
+    vi.resetModules();
+    const { renderMath: otherCopy } = await import('../src/render-math.js');
+    page['@pie-lib/math-rendering'] = { renderMath: otherCopy };
+    const scripts = interceptScripts();
+    const target = elementWith('\\(x\\)');
+
+    const rendering = renderMath(target);
+    await vi.waitFor(() => expect(scripts).toHaveLength(1));
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
+  });
+
+  it("renders with its own MathJax when the print player's renderer is this renderMath", async () => {
+    page.renderMath = renderMath;
+    const scripts = interceptScripts();
+    const target = printedElementWith('\\(x\\)', { mathRenderingModuleUrlImported: true });
+
+    const rendering = renderMath(target);
+    await vi.waitFor(() => expect(scripts).toHaveLength(1));
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
+  });
+
   it('delegates safe helper methods to the player math renderer when available', () => {
     const playerWrapMath = vi.fn((latex: string) => `wrapped:${latex}`);
     const playerMmlToLatex = vi.fn((mathml: string) => `latex:${mathml}`);
