@@ -3,14 +3,8 @@ import react from '@vitejs/plugin-react';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { findWorkspaceRoot, workspaceResolver } from './src/vite-plugin-workspace-resolver';
-import { createReadStream, existsSync } from 'node:fs';
-import { stat } from 'node:fs/promises';
-import { join } from 'node:path';
 
 const workspaceRoot = findWorkspaceRoot(process.cwd());
-const bundlerInstanceDir =
-  process.env.DEMO_BUNDLER_INSTANCE_DIR || join(process.cwd(), '.cache', 'demo-bundler');
-const bundlerOutputDir = join(bundlerInstanceDir, 'bundles');
 
 /**
  * Vite config for element demo app.
@@ -51,51 +45,6 @@ export default defineConfig({
         /\/lib-react\/.*\.(jsx|tsx)(?:\?.*)?$/,
       ],
     }),
-    {
-      name: 'serve-demo-iife-bundles',
-      apply: 'serve',
-      configureServer(server) {
-        if (!bundlerOutputDir) {
-          return;
-        }
-
-        server.middlewares.use(async (req, res, next) => {
-          const requestUrl = req.url ? req.url.split('?')[0] : '';
-          if (!requestUrl.startsWith('/bundles/')) {
-            next();
-            return;
-          }
-
-          if (!existsSync(bundlerOutputDir)) {
-            next();
-            return;
-          }
-
-          const relativePath = requestUrl.replace('/bundles/', '');
-          const targetPath = join(bundlerOutputDir, relativePath);
-          const normalizedRoot = `${bundlerOutputDir}/`;
-          if (!targetPath.startsWith(normalizedRoot)) {
-            res.statusCode = 400;
-            res.end('Invalid bundle path');
-            return;
-          }
-
-          try {
-            const fileStat = await stat(targetPath);
-            if (!fileStat.isFile()) {
-              next();
-              return;
-            }
-          } catch {
-            next();
-            return;
-          }
-
-          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-          createReadStream(targetPath).pipe(res);
-        });
-      },
-    },
     sveltekit(),
   ],
 
@@ -139,7 +88,7 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT ?? 5223),
     fs: {
-      allow: [workspaceRoot, bundlerInstanceDir].filter(Boolean),
+      allow: [workspaceRoot],
     },
   },
 

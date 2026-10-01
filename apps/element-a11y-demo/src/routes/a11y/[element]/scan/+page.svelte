@@ -35,7 +35,7 @@ const coverageLabel = $derived(
         </a>
         <h1 class="text-xl font-bold mt-1">{data.element.title}</h1>
         <p class="text-sm text-base-content/70">
-          {data.activeDemo.title} · {data.mode} · {data.role} · {data.player}
+          {data.activeDemo.title} · {data.mode} · {data.role}
         </p>
         <div class="mt-3 max-w-3xl rounded-lg bg-base-200 border border-base-300 p-3 text-sm">
           <div class="flex items-start gap-2">
@@ -117,7 +117,7 @@ const coverageLabel = $derived(
       <div class="flex flex-col gap-3 min-w-72">
         <a
           class="btn btn-sm btn-outline"
-          href="/{data.element.name}/deliver?demo={encodeURIComponent(humanDemoId)}&mode={data.mode}&role={data.role}&player={data.player}"
+          href="/{data.element.name}/deliver?demo={encodeURIComponent(humanDemoId)}&mode={data.mode}&role={data.role}"
           data-sveltekit-reload
           target="_blank"
           rel="noreferrer"
@@ -145,6 +145,5 @@ const coverageLabel = $derived(
     session={data.activeDemo.session ?? {}}
     mode={data.mode}
     role={data.role}
-    player={data.player}
   />
 </div>
