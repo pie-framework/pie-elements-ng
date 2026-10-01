@@ -3,10 +3,10 @@
  * Simplified from pie-api-aws/packages/bundler/src/webpack/player.ts
  */
 
-import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type webpack from 'webpack';
+import webpack from 'webpack';
 import { EsbuildPlugin } from 'esbuild-loader';
 import { resolveSourceAliases } from './source-aliases.js';
 
@@ -43,6 +43,8 @@ interface WebpackConfigOptions {
   workspaceDir: string;
   elements: string[];
   sourceMaps?: boolean;
+  /** See `missingOptionalPeerPlugin`. */
+  ignoreMissingOptionalPeers?: boolean;
 }
 
 interface ControllerWebpackConfigOptions {
@@ -51,6 +53,79 @@ interface ControllerWebpackConfigOptions {
   outputPath: string;
   workspaceDir: string;
   sourceMaps?: boolean;
+  /** See `missingOptionalPeerPlugin`. */
+  ignoreMissingOptionalPeers?: boolean;
+}
+
+// The package a bare specifier names, `@scope/name` or `name`, without its subpath.
+const BARE_SPECIFIER_PACKAGE = /^(@[^/]+\/[^/]+|[^./@][^/]*)/;
+
+interface PackageManifest {
+  name?: string;
+  peerDependencies?: Record<string, string>;
+  peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+}
+
+/**
+ * Leaves a bare import of an optional peer dependency that is not installed unresolved: the import
+ * fails where it runs, as webpack already compiles a missing import inside `try`, and the build
+ * does not. Webpack resolves every module a barrel with `sideEffects` re-exports, used or not, so a
+ * workspace source importing one reaches imports that a published build tree-shakes away.
+ */
+function missingOptionalPeerPlugin(moduleSearchPaths: string[]): webpack.IgnorePlugin {
+  const owners = new Map<string, PackageManifest | null>();
+  const reported = new Set<string>();
+
+  // The nearest package.json with a name, past a nameless one such as a build's `{"type": ...}`.
+  const owningManifest = (dir: string): PackageManifest | null => {
+    if (owners.has(dir)) {
+      return owners.get(dir) ?? null;
+    }
+    let manifest: PackageManifest | null = null;
+    try {
+      manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
+    } catch {
+      // No readable package.json in this directory.
+    }
+    const parent = dirname(dir);
+    const owner = manifest?.name ? manifest : parent === dir ? null : owningManifest(parent);
+    owners.set(dir, owner);
+    return owner;
+  };
+
+  const isInstalled = (name: string, context: string): boolean => {
+    for (let dir = context; ; dir = dirname(dir)) {
+      if (existsSync(join(dir, 'node_modules', name))) {
+        return true;
+      }
+      if (dirname(dir) === dir) {
+        break;
+      }
+    }
+    return moduleSearchPaths.some((path) => isAbsolute(path) && existsSync(join(path, name)));
+  };
+
+  return new webpack.IgnorePlugin({
+    checkResource(resource, context) {
+      const name = BARE_SPECIFIER_PACKAGE.exec(resource)?.[1];
+      const owner = name ? owningManifest(context) : null;
+      if (
+        !name ||
+        !owner?.peerDependencies?.[name] ||
+        !owner.peerDependenciesMeta?.[name]?.optional ||
+        isInstalled(name, context)
+      ) {
+        return false;
+      }
+      if (!reported.has(name)) {
+        reported.add(name);
+        console.log(
+          `[webpack-config] Leaving ${name} unresolved: an optional peer of ${owner.name} that is not installed`
+        );
+      }
+      return true;
+    },
+  });
 }
 
 // Svelte 5 rune modules (`x.svelte.ts`, `x.svelte.js`), matched as svelte-loader matches them.
@@ -226,6 +301,8 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
       modules: moduleSearchPaths,
     },
 
+    plugins: opts.ignoreMissingOptionalPeers ? [missingOptionalPeerPlugin(moduleSearchPaths)] : [],
+
     output: {
       filename: '[name].js',
       library: 'pie',
@@ -268,6 +345,7 @@ export function createControllerWebpackConfig(
       },
       modules: moduleSearchPaths,
     },
+    plugins: opts.ignoreMissingOptionalPeers ? [missingOptionalPeerPlugin(moduleSearchPaths)] : [],
     output: {
       filename: '[name].js',
       libraryTarget: 'commonjs2',

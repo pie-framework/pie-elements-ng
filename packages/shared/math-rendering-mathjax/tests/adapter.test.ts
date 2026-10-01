@@ -789,7 +789,7 @@ describe('renderMath', () => {
     await rendering;
 
     expect(typesetPromise.mock.calls).toEqual([[[target]]]);
-    expect(wrapMath('x^2')).toBe('x^2');
+    expect(wrapMath('x^2')).toBe('\\(x^2\\)');
     expect(mmlToLatex('<math></math>')).toBe('<math></math>');
   });
 

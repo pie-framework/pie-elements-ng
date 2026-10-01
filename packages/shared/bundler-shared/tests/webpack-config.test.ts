@@ -224,3 +224,115 @@ describe('host-provided @pie-lib packages', () => {
     });
   }, 60_000);
 });
+
+describe('optional peer dependencies', () => {
+  // A barrel that reaches an import of an optional peer that is not installed, as
+  // `@pie-players/pie-assessment-toolkit` reaches its calculators, beside one that is installed.
+  function makePeerWorkspace(entry: string): string {
+    const workspaceDir = makeWorkspace();
+    symlinkSync(
+      realpathSync(join(bundlerNodeModules, 'esbuild-loader')),
+      join(workspaceDir, 'node_modules', 'esbuild-loader'),
+      'dir'
+    );
+    const toolkitDir = join(workspaceDir, 'node_modules', 'toolkit');
+    write(
+      toolkitDir,
+      'package.json',
+      JSON.stringify({
+        name: 'toolkit',
+        main: './dist/index.js',
+        sideEffects: true,
+        peerDependencies: { calculator: '1.0.0', installed: '1.0.0', required: '1.0.0' },
+        peerDependenciesMeta: { calculator: { optional: true }, installed: { optional: true } },
+      })
+    );
+    write(toolkitDir, 'dist/package.json', JSON.stringify({ type: 'module' }));
+    write(
+      toolkitDir,
+      'dist/index.js',
+      [
+        "export { name } from 'installed';",
+        "export const loadCalculator = () => import('calculator');",
+        '',
+      ].join('\n')
+    );
+    write(
+      toolkitDir,
+      'dist/required.js',
+      "export const loadRequired = () => import('required');\n"
+    );
+    write(
+      workspaceDir,
+      'node_modules/installed/package.json',
+      JSON.stringify({ name: 'installed', main: 'index.js' })
+    );
+    write(workspaceDir, 'node_modules/installed/index.js', "export const name = 'installed';\n");
+    write(workspaceDir, 'entry.js', entry);
+    return workspaceDir;
+  }
+
+  const LOAD_CALCULATOR = [
+    "import { loadCalculator, name } from 'toolkit';",
+    'export const result = { name, calculator: loadCalculator().catch((error) => error.code) };',
+    '',
+  ].join('\n');
+
+  const configs = {
+    element: (workspaceDir: string, ignoreMissingOptionalPeers?: boolean) =>
+      createWebpackConfig({
+        context: workspaceDir,
+        entry: { player: './entry.js' },
+        outputPath: join(workspaceDir, 'out'),
+        workspaceDir,
+        elements: [],
+        ignoreMissingOptionalPeers,
+      }),
+    controller: (workspaceDir: string, ignoreMissingOptionalPeers?: boolean) =>
+      createControllerWebpackConfig({
+        context: workspaceDir,
+        entry: { controller: './entry.js' },
+        outputPath: join(workspaceDir, 'out'),
+        workspaceDir,
+        ignoreMissingOptionalPeers,
+      }),
+  };
+
+  const errorsOf = (stats: webpack.Stats) =>
+    (stats.toJson({ errors: true }).errors ?? []).map((error) => error.message);
+
+  it.each(Object.entries(configs))(
+    'fail the %s build when missing, unless it ignores them',
+    async (_name, createConfig) => {
+      const workspaceDir = makePeerWorkspace(LOAD_CALCULATOR);
+
+      expect(errorsOf(await runWebpack(createConfig(workspaceDir)))).toEqual([
+        expect.stringContaining("Can't resolve 'calculator'"),
+      ]);
+      expect(errorsOf(await runWebpack(createConfig(workspaceDir, true)))).toEqual([]);
+    },
+    60_000
+  );
+
+  it('fail where they are imported when ignored, and bundle when installed', async () => {
+    const workspaceDir = makePeerWorkspace(LOAD_CALCULATOR);
+
+    expect(errorsOf(await runWebpack(configs.element(workspaceDir, true)))).toEqual([]);
+
+    const window: Record<string, unknown> = {};
+    runInNewContext(readFileSync(join(workspaceDir, 'out', 'player.js'), 'utf8'), { window });
+    const { result } = window.pie as { result: { name: string; calculator: Promise<unknown> } };
+    expect(result.name).toBe('installed');
+    await expect(result.calculator).resolves.toBe('MODULE_NOT_FOUND');
+  }, 60_000);
+
+  it('are the only missing peers ignored', async () => {
+    const workspaceDir = makePeerWorkspace(
+      "export { loadRequired } from 'toolkit/dist/required.js';\n"
+    );
+
+    expect(errorsOf(await runWebpack(configs.element(workspaceDir, true)))).toEqual([
+      expect.stringContaining("Can't resolve 'required'"),
+    ]);
+  }, 60_000);
+});

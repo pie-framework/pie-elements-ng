@@ -151,8 +151,9 @@ const extractSessionFromEventDetail = (detail: unknown) => {
   return detailObj;
 };
 
-// Apply session update callback for controller
-const applySessionUpdate = (
+// The session an `updateSession` call makes of `baseSession`, or null when it changes nothing.
+const patchSession = (
+  baseSession: Record<string, unknown>,
   patchOrSessionId: Record<string, unknown> | string | null | undefined,
   maybeElementOrPatch?: Record<string, unknown> | string | null,
   maybePatch?: Record<string, unknown> | null
@@ -171,31 +172,39 @@ const applySessionUpdate = (
           ? maybeElementOrPatch
           : null;
   if (!patch || typeof patch !== 'object') {
-    return Promise.resolve(get(session));
+    return null;
   }
 
-  const baseSession = normalizeSession(cloneValue(get(session)));
-  const hasChanges = Object.entries(patch).some(
-    ([key, value]) => (baseSession as Record<string, unknown>)[key] !== value
-  );
+  const hasChanges = Object.entries(patch).some(([key, value]) => baseSession[key] !== value);
   if (!hasChanges) {
-    return Promise.resolve(get(session));
+    return null;
   }
 
   const patchWithCompatData = hasControllerSessionContext
     ? {
         ...patch,
         data: {
-          ...(((baseSession as Record<string, unknown>).data as Record<string, unknown>) ?? {}),
+          ...((baseSession.data as Record<string, unknown>) ?? {}),
           ...patch,
         },
       }
     : patch;
 
-  const nextSession = cloneValue({
-    ...(baseSession as Record<string, unknown>),
-    ...patchWithCompatData,
-  });
+  return cloneValue({ ...baseSession, ...patchWithCompatData });
+};
+
+// Apply session update callback for controller
+const applySessionUpdate = (
+  patchOrSessionId: Record<string, unknown> | string | null | undefined,
+  maybeElementOrPatch?: Record<string, unknown> | string | null,
+  maybePatch?: Record<string, unknown> | null
+) => {
+  const baseSession = normalizeSession(cloneValue(get(session)));
+  const nextSession = patchSession(baseSession, patchOrSessionId, maybeElementOrPatch, maybePatch);
+  if (!nextSession) {
+    return Promise.resolve(get(session));
+  }
+
   const currentMode = get(mode);
   if (
     !shouldCommitSession({
@@ -255,12 +264,18 @@ const buildModel = async (
     // (e.g., graphing-solution-set uses {answer: []})
     // IMPORTANT: Create a copy so we can detect if controller modifies it
     const sessionForController = JSON.parse(JSON.stringify(currentSession || {}));
+    // A save through the callback also lands on the session `model()` was given, as a player's
+    // does, so the commit below keeps it, a choice shuffle for one.
+    const updateControllerSession = (...args: Parameters<typeof applySessionUpdate>) => {
+      Object.assign(sessionForController, patchSession(sessionForController, ...args));
+      return applySessionUpdate(...args);
+    };
 
     const nextModel = await modelFn(
       currentModel,
       sessionForController,
       { mode: currentMode, role: currentRole, partialScoring: currentPartialScoring },
-      applySessionUpdate
+      updateControllerSession
     );
 
     if (requestId === modelRequestId) {
