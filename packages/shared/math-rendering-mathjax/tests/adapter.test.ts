@@ -92,6 +92,19 @@ function elementWith(html: string): HTMLElement {
   return element;
 }
 
+/** An element printed by a `<pie-print>`; the legacy print player sets the import flag. */
+function printedElementWith(
+  html: string,
+  player: { mathRenderingModuleUrlImported?: boolean } = {}
+): HTMLElement {
+  const printPlayer = Object.assign(document.createElement('pie-print'), player);
+  const element = document.createElement('div');
+  element.innerHTML = html;
+  printPlayer.append(element);
+  document.body.append(printPlayer);
+  return element;
+}
+
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -103,6 +116,7 @@ afterEach(() => {
   delete page.MathJax;
   delete page['@pie-lib/math-rendering'];
   delete page['@pie-lib/math-rendering@2'];
+  delete page.renderMath;
   delete (globalThis as any)[MATHJAX_LOADING];
   delete (globalThis as any)[UNSUPPORTED_PAGE];
   for (const style of document.head.querySelectorAll('style')) style.remove();
@@ -603,6 +617,108 @@ describe('renderMath', () => {
     expect(playerRenderMath).toHaveBeenCalledTimes(2);
     expect(console.error).not.toHaveBeenCalled();
     expect(events).toEqual([]);
+  });
+
+  it("delegates to the legacy print player's renderer inside <pie-print>", async () => {
+    const events = conflictEvents();
+    page.MathJax = { version: '3.2.2', _: {}, config: {} };
+    const printRenderMath = vi.fn();
+    page.renderMath = printRenderMath;
+    const scripts = interceptScripts();
+    const target = printedElementWith('\\(x\\) <span data-latex="">x^3</span>', {
+      mathRenderingModuleUrlImported: true,
+    });
+
+    await renderMath(target);
+
+    expect(printRenderMath).toHaveBeenCalledWith(target);
+    expect(target.querySelector('[data-math-handled]')).toBeNull();
+    expect(scripts).toHaveLength(0);
+    expect(console.error).not.toHaveBeenCalled();
+    expect(events).toEqual([]);
+  });
+
+  it('finds the print player across a shadow root', async () => {
+    const printPlayer = document.createElement('pie-print');
+    const host = document.createElement('div');
+    printPlayer.append(host);
+    document.body.append(printPlayer);
+    const target = document.createElement('div');
+    target.innerHTML = '\\(x\\)';
+    host.attachShadow({ mode: 'open' }).append(target);
+    const printRenderMath = vi.fn();
+    page.renderMath = printRenderMath;
+
+    await renderMath(target);
+
+    expect(printRenderMath).toHaveBeenCalledWith(target);
+  });
+
+  it("waits for the legacy print player's renderer while the player imports it", async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const scripts = interceptScripts();
+    const target = printedElementWith('\\(x\\)', { mathRenderingModuleUrlImported: true });
+
+    const rendering = renderMath(target);
+    await vi.advanceTimersByTimeAsync(200);
+    const printRenderMath = vi.fn();
+    page.renderMath = printRenderMath;
+    await vi.advanceTimersByTimeAsync(50);
+    await rendering;
+
+    expect(printRenderMath).toHaveBeenCalledWith(target);
+    expect(scripts).toHaveLength(0);
+  });
+
+  it("renders with its own MathJax when the print player's renderer does not arrive", async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const scripts = interceptScripts();
+    const target = printedElementWith('\\(x\\)', { mathRenderingModuleUrlImported: true });
+
+    const rendering = renderMath(target);
+    await vi.advanceTimersByTimeAsync(9_900);
+    expect(scripts).toHaveLength(0);
+    await vi.advanceTimersByTimeAsync(200);
+    expect(scripts).toHaveLength(1);
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
+  });
+
+  it('renders with its own MathJax at once in a <pie-print> that imports no renderer', async () => {
+    const scripts = interceptScripts();
+    const target = printedElementWith('\\(x\\)');
+
+    const rendering = renderMath(target);
+    await vi.waitFor(() => expect(scripts).toHaveLength(1));
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
+  });
+
+  it('ignores window.renderMath outside <pie-print>', async () => {
+    const scripts = interceptScripts();
+    const printRenderMath = vi.fn();
+    page.renderMath = printRenderMath;
+    const target = elementWith('\\(x\\)');
+
+    const rendering = renderMath(target);
+    await vi.waitFor(() => expect(scripts).toHaveLength(1));
+    const { finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(printRenderMath).not.toHaveBeenCalled();
   });
 
   it('delegates string rendering to the player math renderer and returns rendered HTML', async () => {
