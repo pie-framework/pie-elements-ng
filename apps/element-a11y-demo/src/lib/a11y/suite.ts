@@ -1,4 +1,4 @@
-import { ELEMENT_REGISTRY, getElement, type ElementMetadata } from '$lib/elements/registry';
+import { ELEMENT_REGISTRY, getElement, type ElementMetadata } from '../elements/registry';
 import {
   getA11yScenario,
   getA11yScenariosForElement,
@@ -136,7 +136,7 @@ export function describeA11yDemoCoverage(demo: A11yDemoConfig): A11yDemoCoverage
 
 export async function loadElementDemos(elementName: string): Promise<A11yDemoConfig[]> {
   try {
-    const configModule = (await import(`$lib/samples/${elementName}.json`)) as SampleModule;
+    const configModule = (await import(`../samples/${elementName}.json`)) as SampleModule;
     const loadedDemos = configModule.default?.demos;
     if (Array.isArray(loadedDemos) && loadedDemos.length > 0) {
       return loadedDemos;
@@ -197,7 +197,12 @@ export async function loadA11yElementScanData(
 
   const demos = await loadElementDemos(elementName);
   const scenarios = getA11yScenariosForElement(elementName);
-  const activeScenario = getA11yScenario(elementName, requestedScenarioId ?? null);
+  // A requested demo is scanned unless a scenario is also requested. The first scenario is the
+  // default only when the request names neither.
+  const activeScenario =
+    requestedScenarioId || !requestedDemoId
+      ? getA11yScenario(elementName, requestedScenarioId)
+      : undefined;
   const activeDemo = activeScenario
     ? scenarioToDemo(activeScenario)
     : (demos.find((demo) => demo.id === requestedDemoId) ?? demos[0]);
