@@ -32,6 +32,7 @@ export const PRESET_IDS = {
   correctAnswerToggleStyleNormalization: 'patch.correct-answer-toggle.style-key-normalization',
   plotToolPropTypesCompatibility: 'patch.plot.tool-proptypes-compatibility',
   editableHtmlMathjaxIgnore: 'patch.editable-html-tip-tap.mathjax-ignore-editor-root',
+  editableHtmlMathNodeUnwrap: 'patch.editable-html-tip-tap.math-node-unwrap-delimiters',
   mathRenderingWrapperMode: 'mode.math-rendering.wrapper',
   preserveRenderUiInlineMenu: 'preserve.render-ui.inline-menu',
   depsGraphingDndKit: 'deps.graphing.dnd-kit-core',
@@ -122,6 +123,24 @@ export function getPostSyncTextPatches(projectRoot: string): PostSyncTextPatch[]
             "  // editor's text, and ProseMirror reads MathJax's output back into the document.\n" +
             "  class: 'mathjax_ignore',\n" +
             '  // Without these the browser spellchecks',
+        },
+      ],
+    },
+    {
+      id: PRESET_IDS.editableHtmlMathNodeUnwrap,
+      label: '@pie-lib/editable-html-tip-tap math node parses bare TeX',
+      file: join(projectRoot, 'packages/lib-react/editable-html-tip-tap/src/extensions/math.tsx'),
+      replacements: [
+        {
+          from: "import { wrapMath } from '@pie-element/shared-math-rendering-mathjax';",
+          to: "import { unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';",
+        },
+        {
+          from: "          latex: el.getAttribute('data-raw') || el.textContent,\n",
+          to:
+            '          // A span saved without `data-raw`, or with delimiters in it, holds delimited TeX, which\n' +
+            '          // `renderHTML` would wrap a second time.\n' +
+            "          latex: unWrapMath(el.getAttribute('data-raw') || el.textContent).unwrapped,\n",
         },
       ],
     },

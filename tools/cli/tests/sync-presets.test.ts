@@ -77,6 +77,25 @@ describe('sync preset registry', () => {
     expect(committed).not.toContain(from);
   });
 
+  it('reproduces the committed tip-tap math node parse rule from the upstream source, once', () => {
+    const patch = getPostSyncTextPatches(process.cwd()).find(
+      (p) => p.id === PRESET_IDS.editableHtmlMathNodeUnwrap
+    );
+    if (!patch) throw new Error(`no post-sync patch ${PRESET_IDS.editableHtmlMathNodeUnwrap}`);
+    const committed = readFileSync(patch.file, 'utf-8');
+
+    // Upstream reads `data-raw` or the text as it is, so sync restores each `from`.
+    const synced = patch.replacements.reduce(
+      (content, { from, to }) => content.replace(to, from),
+      committed
+    );
+    for (const { from } of patch.replacements) expect(synced).toContain(from);
+    expect(
+      patch.replacements.reduce((content, { from, to }) => content.replace(from, to), synced)
+    ).toBe(committed);
+    for (const { from } of patch.replacements) expect(committed).not.toContain(from);
+  });
+
   it('generates the local autosize input component for graph labeling packages', () => {
     expect(shouldGenerateAutosizeInputComponent('charting')).toBe(true);
     expect(shouldGenerateAutosizeInputComponent('graphing')).toBe(true);
