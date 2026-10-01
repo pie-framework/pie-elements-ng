@@ -1,5 +1,13 @@
 # @pie-lib/drag
 
+## 4.1.0-next.53
+
+### Patch Changes
+
+- Updated dependencies [3bad6b6]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.7
+  - @pie-lib/render-ui@6.2.0-next.52
+
 ## 4.1.0-next.52
 
 ### Patch Changes

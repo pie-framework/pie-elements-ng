@@ -1,5 +1,18 @@
 # @pie-element/placement-ordering
 
+## 14.1.2-next.33
+
+### Patch Changes
+
+- 3bad6b6: Print modules rendered by the `@pie-framework/pie-print` print player typeset their math through that player's renderer, waiting up to 10 seconds while the player imports it. Math previously stayed untypeset there, because the element's MathJax 4 does not start on a page that already holds the player's MathJax 3.
+- Updated dependencies [3bad6b6]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.7
+  - @pie-lib/drag@4.1.0-next.53
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.49
+  - @pie-lib/render-ui@6.2.0-next.52
+  - @pie-lib/config-ui@14.0.0-next.49
+  - @pie-lib/correct-answer-toggle@5.0.0-next.55
+
 ## 14.1.2-next.32
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @pie-lib/config-ui
 
+## 14.0.0-next.49
+
+### Patch Changes
+
+- @pie-lib/editable-html-tip-tap@3.0.0-next.49
+  - @pie-lib/render-ui@6.2.0-next.52
+
 ## 14.0.0-next.48
 
 ### Patch Changes
