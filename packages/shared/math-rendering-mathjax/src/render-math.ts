@@ -52,7 +52,10 @@ function getPlayerMathRenderer(): PlayerMathRenderingApi | null {
 
   const renderer = (window as any)[PLAYER_MATH_RENDERING_KEY] as PlayerMathRenderingApi | undefined;
 
-  return typeof renderer?.renderMath === 'function' ? renderer : null;
+  // This module's own renderMath, installed as the page's renderer, would delegate to itself.
+  return typeof renderer?.renderMath === 'function' && renderer.renderMath !== renderMath
+    ? renderer
+    : null;
 }
 
 /** The `<pie-print>` an element renders in, across shadow roots. */
@@ -110,7 +113,7 @@ export const renderMath = async (el?: Element | string): Promise<string | undefi
   const printRenderMath = playerRenderer || isString ? null : await legacyPrintRenderMath(target);
   if (playerRenderer) {
     await playerRenderer.renderMath?.(target);
-  } else if (printRenderMath) {
+  } else if (printRenderMath && printRenderMath !== renderMath) {
     await printRenderMath(target);
   } else {
     await getRenderer()(target);
