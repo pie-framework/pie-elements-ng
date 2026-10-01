@@ -307,6 +307,47 @@ describe('createMathjaxRenderer', () => {
     expect(target.querySelectorAll('[data-math-handled]')).toHaveLength(0);
   });
 
+  it('leaves the data-latex content MathJax skips for its ignore class', async () => {
+    interceptScripts();
+    const target = elementWith(
+      [
+        '<div class="mathjax_ignore"><span data-latex="">a</span>',
+        '<div class="mathjax_process"><span data-latex="">b</span></div></div>',
+        '<span class="mathjax_ignore" data-latex="">c</span>',
+        '<span class="mathjax_ignore mathjax_process" data-latex="">d</span>',
+      ].join('')
+    );
+
+    const rendering = createMathjaxRenderer()(target);
+    runMathjaxScript().finishStartup();
+    await rendering;
+
+    expect([...target.querySelectorAll('[data-latex]')].map((span) => span.textContent)).toEqual([
+      'a',
+      '\\(b\\)',
+      'c',
+      '\\(d\\)',
+    ]);
+  });
+
+  it('decides from the classes from the rendered element down, as MathJax does', async () => {
+    interceptScripts();
+    // A node view inside an editor typesets itself, and MathJax ignores classes above its root.
+    const editor = elementWith('<div><span data-latex="">x</span></div>');
+    editor.className = 'mathjax_ignore';
+    const nodeView = editor.firstElementChild as HTMLElement;
+    const ignoredRoot = elementWith('<span data-latex="">y</span>');
+    ignoredRoot.className = 'mathjax_ignore';
+
+    const render = createMathjaxRenderer();
+    const rendering = Promise.all([render(nodeView), render(ignoredRoot)]);
+    runMathjaxScript().finishStartup();
+    await rendering;
+
+    expect(nodeView.textContent).toBe('\\(x\\)');
+    expect(ignoredRoot.textContent).toBe('y');
+  });
+
   it('enables single-dollar delimiters when asked, with the legacy warning', async () => {
     const scripts = interceptScripts();
 

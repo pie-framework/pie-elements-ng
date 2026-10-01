@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   applyPieLibDependencyVersionPins,
@@ -58,6 +59,22 @@ describe('sync preset registry', () => {
     expect(patches.map((p) => p.id)).toContain(PRESET_IDS.previewPromptPropTypesShape);
     expect(patches.map((p) => p.id)).toContain(PRESET_IDS.correctAnswerToggleStyleNormalization);
     expect(patches.every((p) => p.file.startsWith(root))).toBe(true);
+  });
+
+  it('reproduces the committed tip-tap editor attributes from the upstream source, once', () => {
+    const patch = getPostSyncTextPatches(process.cwd()).find(
+      (p) => p.id === PRESET_IDS.editableHtmlMathjaxIgnore
+    );
+    if (!patch) throw new Error(`no post-sync patch ${PRESET_IDS.editableHtmlMathjaxIgnore}`);
+    const committed = readFileSync(patch.file, 'utf-8');
+    const [{ from, to }] = patch.replacements;
+
+    // Upstream has no class attribute, so sync restores `from` and the patch has to put it back.
+    const synced = committed.replace(to, from);
+    expect(synced).not.toBe(committed);
+    expect(synced.replace(from, to)).toBe(committed);
+    // Patches run on every sync, so a patched file must not match again.
+    expect(committed).not.toContain(from);
   });
 
   it('generates the local autosize input component for graph labeling packages', () => {

@@ -119,6 +119,9 @@ const editorAttributes = (spellCheckEnabled) => ({
   // PIE-owned hook for external consumers - see PIE-1016. Query [data-pie-editor], or
   // [data-pie-editor][contenteditable="true"] to skip read-only renders.
   'data-pie-editor': 'true',
+  // MathJax's default ignore class. A typeset pass over an ancestor would otherwise typeset the
+  // editor's text, and ProseMirror reads MathJax's output back into the document.
+  class: 'mathjax_ignore',
   // Without these the browser spellchecks the editor regardless of the spellCheck prop.
   spellcheck: spellCheckEnabled ? 'true' : 'false',
   autocorrect: spellCheckEnabled ? 'on' : 'off',

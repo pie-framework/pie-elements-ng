@@ -141,14 +141,29 @@ function unwrapLegacyDelimiters(content: string): string {
   return latex;
 }
 
+/** MathJax's default `ignoreHtmlClass` and `processHtmlClass`, which this adapter keeps. */
+const IGNORE_CLASS = 'mathjax_ignore';
+const PROCESS_CLASS = 'mathjax_process';
+
+/**
+ * Whether typesetting `root` skips `element`. As in MathJax's own traversal, the nearest of the
+ * two classes on `element` or an ancestor up to `root` decides, and the process class wins.
+ */
+function isIgnored(element: Element, root: Element): boolean {
+  const scope = element.closest(`.${IGNORE_CLASS}, .${PROCESS_CLASS}`);
+  return scope !== null && root.contains(scope) && !scope.classList.contains(PROCESS_CLASS);
+}
+
 /**
  * Rewrites the LaTeX of each `[data-latex]` element as inline math and marks it handled, as the
  * legacy renderer does, so authored math spans typeset whatever delimiters they were saved with.
- * MathJax 4 sets `data-latex` on the nodes of its own output too; those are left alone.
+ * MathJax 4 sets `data-latex` on the nodes of its own output too; those are left alone, as are
+ * elements MathJax will not typeset.
  */
 function wrapLatexElements(root: Element): void {
   for (const element of root.querySelectorAll<HTMLElement>('[data-latex]')) {
     if (element.dataset.mathHandled || element.closest('mjx-container')) continue;
+    if (isIgnored(element, root)) continue;
     const latex = element.textContent;
     if (!latex) continue;
     element.textContent = `\\(${unwrapLegacyDelimiters(latex)}\\)`.replace(

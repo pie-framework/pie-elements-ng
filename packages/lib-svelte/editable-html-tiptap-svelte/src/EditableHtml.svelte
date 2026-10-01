@@ -35,6 +35,9 @@ function editorAttributes(): Record<string, string> {
   return {
     role: 'textbox',
     'aria-multiline': 'true',
+    // MathJax's default ignore class. A typeset pass over an ancestor would otherwise typeset the
+    // editor's text, and ProseMirror reads MathJax's output back into the document.
+    class: 'mathjax_ignore',
     ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
   };
 }
