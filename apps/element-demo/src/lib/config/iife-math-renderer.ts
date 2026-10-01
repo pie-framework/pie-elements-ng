@@ -15,6 +15,8 @@ export function installIifeMathRenderer(): Promise<void> {
 
   installing ??= import('@pie-lib/math-rendering-module/module/index.js').then(
     ({ _dll_pie_lib__math_rendering }) => {
+      // A renderer installed while the module loaded stays authoritative.
+      if (page[GLOBAL_KEY]) return;
       page[GLOBAL_KEY] = _dll_pie_lib__math_rendering;
       page[GLOBAL_DLL_KEY] = _dll_pie_lib__math_rendering;
     }
