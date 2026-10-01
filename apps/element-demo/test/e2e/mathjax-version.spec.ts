@@ -8,9 +8,15 @@ type PageMath = {
   legacyRendererLoaded: boolean;
   globalIsLegacyRenderer: boolean;
   conflicts: string[];
+  mathjaxRequests: string[];
 };
 
 async function openTypesetDelivery(page: Page, player: 'esm' | 'iife'): Promise<PageMath> {
+  // The legacy MathJax 3 is bundled; the MathJax 4 adapter loads the `mathjax` package from a CDN.
+  const mathjaxRequests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/mathjax@')) mathjaxRequests.push(request.url());
+  });
   await page.addInitScript(() => {
     const conflicts: string[] = [];
     (window as any).__mathjaxConflicts = conflicts;
@@ -30,7 +36,7 @@ async function openTypesetDelivery(page: Page, player: 'esm' | 'iife'): Promise<
     })
     .toBe(false);
 
-  return page.evaluate(() => {
+  const pageState = await page.evaluate(() => {
     const win = window as any;
     const legacy = win._dll_pie_lib__math_rendering;
     return {
@@ -40,6 +46,7 @@ async function openTypesetDelivery(page: Page, player: 'esm' | 'iife'): Promise<
       conflicts: win.__mathjaxConflicts,
     };
   });
+  return { ...pageState, mathjaxRequests };
 }
 
 test.describe('MathJax version per player type', () => {
@@ -49,6 +56,7 @@ test.describe('MathJax version per player type', () => {
 
     expect(math.version).toMatch(/^3\./);
     expect(math.globalIsLegacyRenderer).toBe(true);
+    expect(math.mathjaxRequests).toEqual([]);
     await expect(page.locator('head style#MJX-CHTML-styles')).toHaveCount(1);
     await expect(page.locator('head style#PIE-MJX-CHTML-styles')).toHaveCount(0);
     expect(math.conflicts).toEqual([]);
@@ -60,6 +68,7 @@ test.describe('MathJax version per player type', () => {
 
     expect(math.version).toMatch(/^4\./);
     expect(math.legacyRendererLoaded).toBe(false);
+    expect(math.mathjaxRequests).toContainEqual(expect.stringContaining('/mathjax@4.'));
     await expect(page.locator('head style#PIE-MJX-CHTML-styles')).toHaveCount(1);
     await expect(page.locator('head style#MJX-CHTML-styles')).toHaveCount(0);
     expect(math.conflicts).toEqual([]);
