@@ -17,8 +17,9 @@
 // version master will release.
 //
 // Usage:
-//   node scripts/release-version-snapshot.mjs --stash-dir <dir> [--tag next] [--selection-out <file>]
-//   node scripts/release-version-snapshot.mjs --dry-run      # print the selection, change nothing
+//   node scripts/release-version-snapshot.mjs --dry-run --selection-out <file>   # select only
+//   node scripts/release-version-snapshot.mjs --selection-in <file> --stash-dir <dir>
+//   node scripts/release-version-snapshot.mjs --stash-dir <dir> [--tag next]     # both at once
 
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
@@ -45,6 +46,7 @@ function parseArgs(argv) {
     if (arg === '--tag') args.tag = argv[++i];
     else if (arg === '--stash-dir') args.stashDir = argv[++i];
     else if (arg === '--selection-out') args.selectionOut = argv[++i];
+    else if (arg === '--selection-in') args.selectionIn = argv[++i];
     else if (arg === '--summary') args.summary = argv[++i];
     else if (arg === '--dry-run') args.dryRun = true;
   }
@@ -67,6 +69,33 @@ function disableChangelog(rootDir) {
   writeFileSync(configPath, `${JSON.stringify({ ...config, changelog: false }, null, 2)}\n`);
 }
 
+async function selectPackages(rootDir, tag) {
+  const packages = collectPublishablePackages(rootDir);
+  const publishedGitHeads = await fetchPublishedGitHeads(packages, tag);
+  // `HEAD`, not `GITHUB_SHA`: the release workflow fast-forwards the checkout to the branch tip
+  // before this runs, and the tree is the thing being released.
+  const changedFiles = collectUnreleasedFiles({
+    rootDir,
+    head: 'HEAD',
+    packages,
+    publishedGitHeads,
+  });
+  // No pending-changeset exclusion: a pending changeset is release intent for master, and says
+  // nothing about whether `next` already carries the package.
+  return planSynthesizedChangeset({ rootDir, changedFiles, packages });
+}
+
+// The selection an earlier `--dry-run --selection-out` wrote. The release workflow selects once and
+// versions from that file, so a registry error in one of two lookups cannot make the version step
+// disagree with the intent the dropped-release report checks.
+function readSelection(path) {
+  const selection = JSON.parse(readFileSync(path, 'utf8'));
+  if (!Array.isArray(selection) || selection.some((name) => typeof name !== 'string')) {
+    throw new Error(`${path} is not a JSON array of package names`);
+  }
+  return selection;
+}
+
 function headSubject(rootDir) {
   const result = spawnSync('git', ['log', '-1', '--format=%s', 'HEAD'], {
     cwd: rootDir,
@@ -82,19 +111,9 @@ async function main() {
     throw new Error('--stash-dir is required unless --dry-run is given');
   }
 
-  const packages = collectPublishablePackages(rootDir);
-  const publishedGitHeads = await fetchPublishedGitHeads(packages, args.tag);
-  // `HEAD`, not `GITHUB_SHA`: the release workflow fast-forwards the checkout to the branch tip
-  // before this runs, and the tree is the thing being released.
-  const changedFiles = collectUnreleasedFiles({
-    rootDir,
-    head: 'HEAD',
-    packages,
-    publishedGitHeads,
-  });
-  // No pending-changeset exclusion: a pending changeset is release intent for master, and says
-  // nothing about whether `next` already carries the package.
-  const selected = planSynthesizedChangeset({ rootDir, changedFiles, packages });
+  const selected = args.selectionIn
+    ? readSelection(args.selectionIn)
+    : await selectPackages(rootDir, args.tag);
 
   // Written whether or not anything was selected: the workflow's end-of-run check compares it
   // with what was published, and an empty selection is a meaningful answer there.

@@ -1,0 +1,121 @@
+# Records each PR merged into develop as `.changeset/pr-<n>.md` and commits that one file to
+# develop, so the next stable release lists every PR without anyone writing a changeset (PIE-1121).
+# A changeset the PR brought itself wins for the packages it names.
+#
+# Its own workflow, with no concurrency group, so every merge gets its own run. In the Release
+# workflow it would share that workflow's concurrency group, where a newer push cancels the run
+# still waiting behind a long build. The snapshot recovers on the next run; this entry would not,
+# because each run records only the PR its own push merged. Concurrent runs are safe: each adds a
+# different file, and the push below rebases onto whatever landed meanwhile.
+#
+# After the merge rather than on the PR: a commit pushed to a PR branch with GITHUB_TOKEN does not
+# trigger CI, so the PR's required checks would never report on it. A push to develop with
+# GITHUB_TOKEN likewise triggers no workflow, so this cannot start a Release run or itself.
+#
+# No `paths` filter: the script decides what counts as a package change, and a run whose merge
+# changed none records nothing.
+name: Record PR changeset
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  record:
+    name: Record PR changeset
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      # The branch tip, not the merge commit: a recorded file is pushed in a later commit, so only
+      # the tip shows whether this PR was already recorded (a re-run) or its file edited by hand.
+      # The merge's own range is still diffed by SHA below; fetch-depth 0 keeps both reachable.
+      - name: Checkout develop
+        uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find the merged PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          pr="$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+            --jq '[.[] | select(.merged_at != null and .base.ref == "develop")][0] // empty | {number, title, head: .head.ref}')"
+          if [ -z "$pr" ]; then
+            echo "No merged PR into develop is associated with ${{ github.sha }}; nothing to record."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          head="$(jq -r '.head' <<< "$pr")"
+          title="$(jq -r '.title' <<< "$pr")"
+          # The back-merge PR carries master's release commit, not new work.
+          if [ "$head" = "master" ] || [[ "$title" == "chore(release)"* ]]; then
+            echo "PR from ${head} (${title}) is release bookkeeping; nothing to record."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "number=$(jq -r '.number' <<< "$pr")" >> "$GITHUB_OUTPUT"
+          {
+            echo "title<<PR_TITLE_EOF"
+            echo "$title"
+            echo "PR_TITLE_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        if: steps.pr.outputs.found == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Setup Bun
+        if: steps.pr.outputs.found == 'true'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+
+      - name: Install dependencies
+        if: steps.pr.outputs.found == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Record and push the changeset
+        if: steps.pr.outputs.found == 'true'
+        env:
+          BASE: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          NUMBER: ${{ steps.pr.outputs.number }}
+          TITLE: ${{ steps.pr.outputs.title }}
+          # The commit would otherwise run lefthook's pre-commit gate (a full test and build).
+          LEFTHOOK: 0
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          node scripts/release-record-pr-changeset.mjs \
+            --base "$BASE" --head "$HEAD_SHA" --number "$NUMBER" --title "$TITLE" > "$RUNNER_TEMP/record.out"
+          cat "$RUNNER_TEMP/record.out"
+          if ! grep -q '^recorded=true$' "$RUNNER_TEMP/record.out"; then
+            exit 0
+          fi
+
+          git add ".changeset/pr-${NUMBER}.md"
+          git commit -m "chore(changeset): record #${NUMBER}"
+
+          # Merges can land while this runs. The commit adds one new file, so it always rebases.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:develop; then
+              exit 0
+            fi
+            echo "::warning::Push to develop was rejected on attempt ${attempt}; rebasing onto the new tip."
+            git fetch --force origin "+refs/heads/develop:refs/remotes/origin/develop"
+            git rebase refs/remotes/origin/develop
+          done
+          echo "Could not push .changeset/pr-${NUMBER}.md to develop; add it by hand so the stable changelog lists #${NUMBER}." >&2
+          exit 1
