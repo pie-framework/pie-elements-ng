@@ -2,7 +2,7 @@
 
 Svelte 5 PIE element where the learner picks a **multiple-choice** option and that choice **fills a blank** in a sentence/template.
 
-This element is the PIE counterpart for Star Learnosity CQT "populated blank" interactions. The CQT family had several published `custom_type` flavors, but they are all variants of the same base interaction:
+This element is the PIE counterpart for Star CQT "populated blank" interactions. The CQT family had several published `custom_type` flavors, but they are all variants of the same base interaction:
 
 - one selected choice
 - one correctness key
@@ -11,7 +11,7 @@ This element is the PIE counterpart for Star Learnosity CQT "populated blank" in
 
 ## What the original CQT flavors mean
 
-The historical Learnosity CQT names mostly describe layout/stimulus differences, not different scoring logic:
+The historical CQT names mostly describe layout/stimulus differences, not different scoring logic:
 
 - `sel_vic`: sentence-style vocabulary in context, with audio/transcript support
 - `sr-vic`: sentence-style vocabulary in context, typically no audio button
@@ -26,9 +26,9 @@ The shared behavior across these flavors is now represented by one element with 
 
 ## Flavor to model mapping (quick defaults)
 
-Use this as a practical starting point when mapping Learnosity CQT payloads into `mc-populated-blank` models.
+Use this as a practical starting point when mapping CQT payloads into `mc-populated-blank` models.
 
-| Learnosity `custom_type` | Typical layout meaning | Suggested `interactionMode` | Suggested `choiceMode` | Template hint |
+| CQT `custom_type` | Typical layout meaning | Suggested `interactionMode` | Suggested `choiceMode` | Template hint |
 | --- | --- | --- | --- | --- |
 | `sel_vic` | sentence cloze with audio/transcript | `populate_blank` | `text` | `<p>{before} {{blank}} {after}</p>` |
 | `sr-vic` | sentence cloze without listen button | `populate_blank` | `text` | `<p>{before} {{blank}} {after}</p>` |
@@ -43,7 +43,7 @@ Notes:
 
 - `choiceMode` should be `image` only when distractors are image choices; otherwise use `text`.
 - Current model contract is single-blank for `populate_blank`; dual-cloze source shapes are normalized to one `{{blank}}`.
-- `correctChoiceId` should always map from Learnosity `valid_response.name` to canonical `distractor_n`.
+- `correctChoiceId` should always map from the CQT's `valid_response.name` to canonical `distractor_n`.
 - Layout defaults are tuned from original CQT visual baselines, but they are not fixed: override through `model.layoutLimits` when host/theme requirements differ.
 
 ## Layouts
@@ -147,7 +147,7 @@ The figures are wireframes: colour marks a region, a dashed region renders only 
 - **Audio error behavior:** no TTS fallback is used; when `hasAudio=true` and no playable `audioUrl` is provided, delivery shows an explicit error message.
 - **Prompt-off accessibility:** when `prompt` is empty, delivery uses `choiceGroupLabel` (or fallback UI text) as the radiogroup accessible name.
 - **Print parity:** print renders the delivery component as a player shows the printout's `role` in `view` mode, with the choices in authored order; an instructor's key is the correct-response session, filling the blank and checking the key's choice. Teacher instructions print expanded, and audio prints as its URL and transcript in place of a player.
-- **Delivery renders no transcript:** it is an accessibility-catalog alternate, so on `pie-section-player` the assessment toolkit resolves the `transcript` card against the learner's personal needs profile and renders it in a labelled region above this element (PIE-902) — the same path signing takes. `model.audioTranscript` stays on the model for the print view, which has no toolkit, and as the source the Learnosity import writes the card from. A host that wants a transcript delivers the toolkit; there is no element-specific CSS class to apply.
+- **Delivery renders no transcript:** it is an accessibility-catalog alternate, so on `pie-section-player` the assessment toolkit resolves the `transcript` card against the learner's personal needs profile and renders it in a labelled region above this element (PIE-902) — the same path signing takes. `model.audioTranscript` stays on the model for the print view, which has no toolkit, and as the source the pie-api-aws import writes the card from. A host that wants a transcript delivers the toolkit; there is no element-specific CSS class to apply.
 
 ## Theming hooks (`pie-*` classes)
 
@@ -164,7 +164,7 @@ Delivery now exposes stable `pie-*` classes so hosts can theme this element with
 
 ## Bundled CQT variant CSS
 
-To avoid runtime dependency on cross-origin Learnosity stylesheet loading, this element bundles variant-specific CSS in delivery:
+This element bundles variant-specific CSS in delivery, so it loads no stylesheet at runtime:
 
 - Variant CSS files: `src/delivery/cqt-css/*.css`
 - Variant mapping: `src/delivery/variant-css-map.ts`
@@ -174,15 +174,12 @@ Every selector in a variant CSS file starts at `.mc-populated-blank-root` (`vari
 
 ### Maintenance workflow
 
-1. Fetch the latest Learnosity `question.css` for each supported CQT variant.
-2. Update the matching file under `src/delivery/cqt-css/`.
-3. Keep the source URL comment at the top of each CSS file current.
-4. If a new `custom_type` is introduced, add it in `src/delivery/variant-css-map.ts` with:
+1. Edit the variant's file under `src/delivery/cqt-css/`.
+2. If a new `custom_type` is introduced, add it in `src/delivery/variant-css-map.ts` with:
    - `variantId`
    - `variantClass`
-   - `sourceUrl`
    - imported `cssText`
-5. Run `bun run build` in this package and validate the demo variants.
+3. Run `bun run build` in this package and validate the demo variants.
 
 ## Builds
 

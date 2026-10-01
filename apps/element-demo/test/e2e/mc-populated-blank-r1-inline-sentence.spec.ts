@@ -1,5 +1,5 @@
 /**
- * sel-r1-base.css gives each unclassed stem span Learnosity's 150px token box.
+ * sel-r1-base.css gives each unclassed stem span the CQT's 150px token box.
  * An inline_sentence stem is prose, as in the Cambium SEL passage items, and the
  * box stacked it a word or two per line; token_sequence stems keep the box.
  */

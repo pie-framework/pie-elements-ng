@@ -72,7 +72,7 @@ one is invisible to that registry's gate, so no color scheme overrides it and no
 contrast rule covers it. It renders its hardcoded fallback in every scheme.
 
 Elements read canonical tokens and declare none. Where an element needs a local
-hook — sizing, a Learnosity variant override, a per-instance handoff — it uses
+hook — sizing, a CQT variant override, a per-instance handoff — it uses
 its own prefix (`--mpb-*` for `mc-populated-blank`), which is element-private and
 outside the host contract. A per-component `--pie-*` hook is possible but is a
 `component-public` registry entry owned by the defining package, so it needs a

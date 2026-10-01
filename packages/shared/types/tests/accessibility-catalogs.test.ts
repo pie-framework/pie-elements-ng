@@ -57,7 +57,7 @@ describe('isSignLanguageCard', () => {
   });
 
   it('accepts a signing card that states its language only on the card', () => {
-    // The shape the Learnosity importer writes. A guard that required
+    // The shape the pie-api-aws importer writes. A guard that required
     // `payload.signLang` would reject every imported card, so this pins that it
     // does not.
     const imported = {

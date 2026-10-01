@@ -1,4 +1,3 @@
-/* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-s3_plusggg/0.0.1/question.css */
 /* Shared r1 base styles (font, template-line flex, choice-label) are in sel-r1-base.css */
 .mc-populated-blank-root.variant-sel-r1-s3 {
   max-width: 860px;
@@ -19,7 +18,7 @@
 
 /* sel_r1-s3_plusggg/question.css does not set font-weight on distractors or
    cloze content-element, so they inherit 400 from the host root. The earlier
-   font-weight:500 override caused PIE to render visibly heavier than LSY for
+   font-weight:500 override caused PIE to render visibly heavier than the CQT for
    the same author content. See CONTOOL-2571. */
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label,
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label :is(span, p, div) {
@@ -68,7 +67,7 @@
    underline. Centering leaves it floating well above both the underline and the
    sentence image's own (bottom-anchored) baseline. The blank's own box height
    (160px, from McPopulatedBlank.svelte's shared audio_blank_only/stimulus_image_blank
-   rule) is left as-is — it already matches the Learnosity reference (~161px)
+   rule) is left as-is — it already matches the CQT reference (~161px)
    closely; only the internal alignment was wrong. See CONTOOL-3159. */
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-slot {
   align-items: flex-end;

@@ -40,9 +40,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
-          "learnosityItemReference": "000eb0e6-92a0-43cd-bb1f-89ddb52da2e5",
-          "learnosityQuestionReference": "49d6bda1-4614-447d-8c2e-d4a317e13540"
+          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1"
         }
       },
       "session": {
@@ -95,9 +93,7 @@
         "autoplayAudioEnabled": false,
         "completeAudioEnabled": false,
         "source": {
-          "csvQuestionTypeTag": "sr-vicv0.0.1",
-          "learnosityItemReference": "00293f60-334f-48d0-b145-f7cb9f02a0fe",
-          "learnosityQuestionReference": "a546c0a3-3d68-4d5c-994f-262e788f486c"
+          "csvQuestionTypeTag": "sr-vicv0.0.1"
         }
       },
       "session": {
@@ -146,9 +142,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_vicv0.0.1",
-          "learnosityItemReference": "04973d1a-0557-4963-937d-7ac76ee3baeb",
-          "learnosityQuestionReference": "11e9862e-cab1-415e-87a3-0f32fedcedfc"
+          "csvQuestionTypeTag": "sel_vicv0.0.1"
         }
       },
       "session": {
@@ -197,9 +191,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
-          "learnosityItemReference": "11b4d9be-a79e-48c3-9e58-84f5be3dbb0f",
-          "learnosityQuestionReference": "3fe2da9a-3ba3-41af-9d97-e373cde716d7"
+          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1"
         }
       },
       "session": {
@@ -248,9 +240,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
-          "learnosityItemReference": "0060b039-2605-47a6-8305-96e0463fcfd0",
-          "learnosityQuestionReference": "b78bf2ff-8d6e-4a6f-a0c9-9e188020b50e"
+          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1"
         }
       },
       "session": {
@@ -299,9 +289,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
-          "learnosityItemReference": "0d42ee84-b291-4336-b689-6912199fa81f",
-          "learnosityQuestionReference": "a32aa886-0153-46a5-a31c-fdab5fd5165a"
+          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1"
         }
       },
       "session": {
@@ -350,9 +338,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
-          "learnosityItemReference": "0291a767-2334-4742-a899-e4178e85fc02",
-          "learnosityQuestionReference": "a469c1cf-fc1c-4cef-ae9f-04cc3f0cfc49"
+          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1"
         }
       },
       "session": {
@@ -401,9 +387,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
-          "learnosityItemReference": "003dcbf8-ff38-4930-84ee-26ca8be834b9",
-          "learnosityQuestionReference": "480b51c4-e8dd-4fed-8ddc-2e0667947326"
+          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1"
         }
       },
       "session": {
@@ -502,9 +486,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
-          "learnosityItemReference": "ea363a8b-26a1-44fb-bc8b-85f42758d952",
-          "learnosityQuestionReference": "c54e2120-d76a-44c8-b1d1-8abe324806fc"
+          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1"
         }
       },
       "session": {
@@ -553,9 +535,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
-          "learnosityItemReference": "8e2e031c-5594-4081-811b-ddfcbecd5667",
-          "learnosityQuestionReference": "a9fa9f63-cfd4-49b9-88f0-c788e5eb53a9"
+          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1"
         }
       },
       "session": {
@@ -604,9 +584,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
-          "learnosityItemReference": "25bdc860-bd49-438d-a597-78561422037b",
-          "learnosityQuestionReference": "7d69dfdd-f3a1-497f-94ed-b44d90f1b93b"
+          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1"
         }
       },
       "session": {
@@ -655,9 +633,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
-          "learnosityItemReference": "74a235ac-ba03-462d-9e78-077603f7f51e",
-          "learnosityQuestionReference": "7276b29c-e841-4d09-bd85-a5194678a069"
+          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1"
         }
       },
       "session": {
@@ -706,9 +682,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
-          "learnosityItemReference": "23e2b004-9b64-41cb-b620-c108146d5a27",
-          "learnosityQuestionReference": "c1416a25-3c90-49bf-ab88-f1a8673e9407"
+          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1"
         }
       },
       "session": {
@@ -757,9 +731,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
-          "learnosityItemReference": "5f9fcfe0-5870-4e1b-a436-49dceb43759d",
-          "learnosityQuestionReference": "20f5137c-8e62-4ae4-906e-36f6262e661b"
+          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1"
         }
       },
       "session": {
@@ -808,9 +780,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_vicv0.0.1",
-          "learnosityItemReference": "9264f1c0-a6c9-4920-bb9c-7590be3c172a",
-          "learnosityQuestionReference": "c78bdd84-5de8-4249-b13e-baf906cfa195"
+          "csvQuestionTypeTag": "sel_vicv0.0.1"
         }
       },
       "session": {
@@ -859,9 +829,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1",
-          "learnosityItemReference": "bc827dec-cb5e-4f09-b7f0-e227c2912c2f",
-          "learnosityQuestionReference": "5b5091c4-a2b7-4892-b209-99b33793c2c6"
+          "csvQuestionTypeTag": "sel_r1-gg_plusgggv0.0.1"
         }
       },
       "session": {
@@ -910,9 +878,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1",
-          "learnosityItemReference": "e6dc4fe3-076d-4d39-963a-f5742987801a",
-          "learnosityQuestionReference": "f2c1c343-3aac-4232-a7cd-f18fc02e8f43"
+          "csvQuestionTypeTag": "sel_r1-g_plusgggv0.0.1"
         }
       },
       "session": {
@@ -961,9 +927,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
-          "learnosityItemReference": "097f87c5-c474-4dda-97b2-46b30d598a54",
-          "learnosityQuestionReference": "fa344899-b3e9-4c94-a024-3612d550a6a9"
+          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1"
         }
       },
       "session": {
@@ -1012,9 +976,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1",
-          "learnosityItemReference": "a0c05ca1-127d-49eb-bb05-8ea7b5c1834f",
-          "learnosityQuestionReference": "2aa288ad-a928-4d90-bbc6-f7ee98a51f59"
+          "csvQuestionTypeTag": "sel_r1-_gplusgggv0.0.1"
         }
       },
       "session": {
@@ -1063,9 +1025,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
-          "learnosityItemReference": "2e53a942-8ceb-46d4-bf56-ddd7b376f504",
-          "learnosityQuestionReference": "d102f1f4-4311-4e99-9d05-e2047b2803d7"
+          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1"
         }
       },
       "session": {
@@ -1114,9 +1074,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1",
-          "learnosityItemReference": "c3b6c877-444d-4d27-9f1a-3cbc8af38b7a",
-          "learnosityQuestionReference": "9b938e63-88ae-4f04-860b-66df1a61331a"
+          "csvQuestionTypeTag": "sel_r1-s3_plusgggv0.0.1"
         }
       },
       "session": {
@@ -1165,9 +1123,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1",
-          "learnosityItemReference": "a83f1d87-f3e5-4c0e-8eb4-408275336c0b",
-          "learnosityQuestionReference": "3b30d112-f0a8-4bef-9958-bebdfabce992"
+          "csvQuestionTypeTag": "sel_r1-_plusgggv0.0.1"
         }
       },
       "session": {
@@ -1216,9 +1172,7 @@
         "autoplayAudioEnabled": true,
         "completeAudioEnabled": true,
         "source": {
-          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1",
-          "learnosityItemReference": "00cd1143-ceda-4f81-8f1f-6c9555d043e4",
-          "learnosityQuestionReference": "98b7bb39-7a82-4221-9291-144833be351d"
+          "csvQuestionTypeTag": "sel_r1-_ggplusgggv0.0.1"
         }
       },
       "session": {

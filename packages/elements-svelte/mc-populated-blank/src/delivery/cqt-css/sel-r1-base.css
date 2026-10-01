@@ -3,15 +3,14 @@
    Every selector starts at .mc-populated-blank-root carrying any r1 variant class,
    so it cannot match outside this element. :where() keeps the attribute match out
    of the specificity, so each per-variant file still overrides a base rule with
-   the selector shapes it already uses.
-   Source: web-ItemBankViewer/learnosity/templates/Renaissance/r1.scss */
+   the selector shapes it already uses. Comments cite the CQT template's r1.scss. */
 
 /* r1.scss: Starial font throughout.
-   font-size 14px mirrors the Learnosity host root (.lrn_widget) which sets the
+   font-size 14px mirrors the CQT host root, which sets the
    base for all em-scaled rules in r1.scss (e.g. .rli-r1-content-element { 1.9em })
    and any em-based author content (e.g. <span style="font-size:1.8em">). Without
    this base PIE inherits the 16px browser default and renders ~14% larger than
-   the LSY reference. See CONTOOL-2567. */
+   the CQT reference. See CONTOOL-2567. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]) {
   font-family: Starial, Arial, sans-serif;
   font-size: 14px;
@@ -27,9 +26,9 @@
    r1.scss: .rli-r1-content-element { margin-right:2px; margin-left:2px } — 4px total gap.
    Apply the per-element margin to both classless tokens and the blank slot
    (which is the cloze equivalent) so the gap stacks with whitespace text-nodes
-   between flex items the same way LSY does. Earlier this used column-gap:4px,
+   between flex items the same way the CQT does. Earlier this used column-gap:4px,
    but flex column-gap accumulates with the cloze margin and the implicit
-   whitespace, producing a wider gap than LSY shows. See CONTOOL-2569. */
+   whitespace, producing a wider gap than the CQT shows. See CONTOOL-2569. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line {
   display: flex;
   flex-direction: row;
@@ -46,13 +45,13 @@
 
 /* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px; min-height:150px;
    line-height:89px; margin-right:2px; margin-left:2px } — wraps every stem token in
-   LSY, giving each a 150px box with a 2px per-side margin. Applies to the token
+   the CQT, giving each a 150px box with a 2px per-side margin. Applies to the token
    layouts, the same set that gets the feature button and the wide underline, so
    trailing tokens in audio_blank_only (gplusggg) match the blank's height the way
-   LSY does. Stems on other layouts are prose, which the box would stack a word or
+   the CQT does. Stems on other layouts are prose, which the box would stack a word or
    two per line. Spans inside the blank are the answer's own markup, not stem tokens.
-   The margin outranks token_sequence's span + span gap, so tokens sit LSY's 4px
-   apart (CONTOOL-2569). */
+   The margin outranks token_sequence's span + span gap, so tokens sit 4px apart,
+   as in the CQT (CONTOOL-2569). */
 .mc-populated-blank-root:where(
     [class*="variant-sel-r1-"]:is(
       .layout-audio_blank_only,
@@ -124,14 +123,14 @@
 }
 
 /* r1.scss: .rli-r1-cloze { height:160px; padding-bottom:4px; border-bottom:6px solid }
-   — the blank in the token layouts is LSY's cloze box, top-aligned with the stem
+   — the blank in the token layouts is the CQT's cloze box, top-aligned with the stem
    tokens (align-self overrides the flex-end above). A fixed height rather than a
    min-height keeps the empty and the filled blank at one geometry: the 150px image
    or content box below fits its 150px content area exactly, and the underline
-   never moves on selection (CONTOOL-3159). .pie-blank-slot is border-box, as LSY's
+   never moves on selection (CONTOOL-3159). .pie-blank-slot is border-box, as the CQT's
    cloze is. McPopulatedBlank.svelte gives audio_blank_only the padding and the
    6px underline; token_sequence takes both here. The 2px per-side margin matches
-   LSY's .rli-r1-content-element rhythm (CONTOOL-2569). */
+   the CQT's .rli-r1-content-element rhythm (CONTOOL-2569). */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]):is(
     .layout-audio_blank_only,
     .layout-token_sequence
@@ -165,7 +164,7 @@
 /* cloze.js: the cloze holds an .rli-r1-content-element around the answer's markup,
    so the answer's line packs to the bottom of a 150px box the way a stem token's
    does. The box's 8px bottom margin, centred in the cloze's 150px content area,
-   lifts it 4px, as it does in LSY. */
+   lifts it 4px, as it does in the CQT. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]):is(
   .layout-audio_blank_only,
   .layout-token_sequence
@@ -206,9 +205,9 @@
 
 /* r1.scss: .rli-r1-content-element { min-width:150px; max-width:150px;
    min-height:150px } wraps every image (stem token + distractor) and forces
-   the content box to 150×150. LSY's host also rewrites <img width/height>
+   the content box to 150×150. The CQT host also rewrites <img width/height>
    to 150 server-side. PIE keeps the authored attributes (typically 108×108),
-   so without an explicit override images render ~28% smaller than LSY.
+   so without an explicit override images render ~28% smaller than in the CQT.
    See CONTOOL-2570. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line img,
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-choice-label img {

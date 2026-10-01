@@ -106,7 +106,6 @@ describe('variant CSS', () => {
   const config = (variantId: string, file: string): VariantCssConfig => ({
     variantId,
     variantClass: `variant-${variantId}`,
-    sourceUrl: '',
     cssText: sheet(file),
   });
   const keyed = `.mc-populated-blank-root:where([data-mpb-css="${VARIANT_CSS_KEY}"])`;
