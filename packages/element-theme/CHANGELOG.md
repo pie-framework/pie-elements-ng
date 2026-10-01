@@ -1,5 +1,11 @@
 # @pie-element/element-theme
 
+## 0.1.1-next.10
+
+### Patch Changes
+
+- @pie-element/shared-theming@0.2.0-next.10
+
 ## 0.1.1-next.9
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.0-next.29
+
+### Patch Changes
+
+- 3e49e88: The variant stylesheets drop their source comments, and the README drops the stylesheet refresh steps that relied on them.
+- Updated dependencies [3e49e88]
+  - @pie-element/shared-types@0.2.0-next.5
+  - @pie-element/shared-controller-utils@0.1.1-next.8
+
 ## 0.3.0-next.28
 
 ### Patch Changes

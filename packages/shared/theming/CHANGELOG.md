@@ -1,5 +1,12 @@
 # @pie-element/shared-theming
 
+## 0.2.0-next.10
+
+### Patch Changes
+
+- Updated dependencies [3e49e88]
+  - @pie-element/shared-types@0.2.0-next.5
+
 ## 0.2.0-next.9
 
 ### Patch Changes

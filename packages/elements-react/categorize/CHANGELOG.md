@@ -1,5 +1,11 @@
 # @pie-element/categorize
 
+## 13.2.0-next.34
+
+### Patch Changes
+
+- @pie-element/shared-controller-utils@0.1.1-next.8
+
 ## 13.2.0-next.33
 
 ### Patch Changes

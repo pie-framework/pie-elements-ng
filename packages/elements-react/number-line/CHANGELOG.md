@@ -1,5 +1,11 @@
 # @pie-element/number-line
 
+## 13.1.2-next.34
+
+### Patch Changes
+
+- @pie-element/shared-controller-utils@0.1.1-next.8
+
 ## 13.1.2-next.33
 
 ### Patch Changes

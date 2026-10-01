@@ -1,5 +1,11 @@
 # @pie-element/shared-types
 
+## 0.2.0-next.5
+
+### Patch Changes
+
+- 3e49e88: The sign-language card doc comments name the pie-api-aws importer.
+
 ## 0.2.0-next.4
 
 ### Patch Changes

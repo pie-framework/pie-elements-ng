@@ -1,5 +1,11 @@
 # @pie-element/drag-in-the-blank
 
+## 10.2.0-next.34
+
+### Patch Changes
+
+- @pie-element/shared-controller-utils@0.1.1-next.8
+
 ## 10.2.0-next.33
 
 ### Patch Changes
