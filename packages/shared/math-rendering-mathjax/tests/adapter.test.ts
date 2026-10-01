@@ -778,7 +778,9 @@ describe('renderMath', () => {
   });
 
   it('delegates safe helper methods to the player math renderer when available', () => {
-    const playerWrapMath = vi.fn((latex: string) => `wrapped:${latex}`);
+    const playerWrapMath = vi.fn(
+      (latex: string, wrapType?: string | null) => `${wrapType}:${latex}`
+    );
     const playerMmlToLatex = vi.fn((mathml: string) => `latex:${mathml}`);
     page['@pie-lib/math-rendering'] = {
       renderMath: vi.fn(),
@@ -786,9 +788,38 @@ describe('renderMath', () => {
       mmlToLatex: playerMmlToLatex,
     };
 
-    expect(wrapMath('x^2')).toBe('wrapped:x^2');
+    expect(wrapMath('x^2', 'dollar')).toBe('dollar:x^2');
     expect(mmlToLatex('<math></math>')).toBe('latex:<math></math>');
-    expect(playerWrapMath).toHaveBeenCalledWith('x^2');
+    expect(playerWrapMath).toHaveBeenCalledWith('x^2', 'dollar');
     expect(playerMmlToLatex).toHaveBeenCalledWith('<math></math>');
+  });
+});
+
+describe('wrapMath', () => {
+  it('wraps LaTeX as the legacy renderer does when the page renderer has no wrapMath', () => {
+    // The player installs a renderer with renderMath alone.
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn() };
+
+    expect(wrapMath('x^2')).toBe('\\(x^2\\)');
+    expect(wrapMath('x^2', null)).toBe('\\(x^2\\)');
+    expect(wrapMath('x^2', 'round_brackets')).toBe('\\(x^2\\)');
+    expect(wrapMath('x^2', 'square_brackets')).toBe('\\(x^2\\)');
+    expect(wrapMath('x^2', 'dollar')).toBe('$x^2$');
+    expect(wrapMath('x^2', 'double_dollar')).toBe('$x^2$');
+  });
+
+  it('wraps LaTeX on a page without a math renderer', () => {
+    expect(wrapMath('\\frac{1}{2}')).toBe('\\(\\frac{1}{2}\\)');
+  });
+
+  it('keeps one pair of delimiters on LaTeX that already has them', () => {
+    expect(wrapMath('\\(x^2\\)')).toBe('\\(x^2\\)');
+    expect(wrapMath('\\[x^2\\]')).toBe('\\(x^2\\)');
+    expect(wrapMath('$$x^2$$')).toBe('\\(x^2\\)');
+    expect(wrapMath('$x^2$', 'dollar')).toBe('$x^2$');
+  });
+
+  it('keeps \\displaystyle, which only rendering drops', () => {
+    expect(wrapMath('\\displaystyle\\sum_{i=1}^n i')).toBe('\\(\\displaystyle\\sum_{i=1}^n i\\)');
   });
 });

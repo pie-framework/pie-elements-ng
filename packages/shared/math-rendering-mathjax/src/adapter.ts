@@ -129,16 +129,21 @@ function pageMathJax(): MathJaxGlobal | undefined {
   return (window as { MathJax?: MathJaxGlobal }).MathJax;
 }
 
-function unwrapLegacyDelimiters(content: string): string {
-  const latex = content.includes('\\displaystyle')
-    ? content.replace('\\displaystyle', '').trim()
-    : content;
+/** `latex` without the pair of legacy delimiters around all of it, if it has one. */
+export function stripLegacyDelimiters(latex: string): string {
   for (const [open, close] of LEGACY_DELIMITERS) {
     if (latex.startsWith(open) && latex.endsWith(close)) {
       return latex.substring(open.length, latex.length - close.length);
     }
   }
   return latex;
+}
+
+function unwrapLegacyDelimiters(content: string): string {
+  const latex = content.includes('\\displaystyle')
+    ? content.replace('\\displaystyle', '').trim()
+    : content;
+  return stripLegacyDelimiters(latex);
 }
 
 /** MathJax's default `ignoreHtmlClass` and `processHtmlClass`, which this adapter keeps. */
