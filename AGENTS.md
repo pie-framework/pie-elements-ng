@@ -373,33 +373,44 @@ oclif-based CLI for:
 - **Changesets**: Version management
 - **CI/CD**: GitHub Actions (ci.yml, e2e.yml, release.yml)
 - **Automated releases**: Via GitHub Actions
-- **`develop` auto-releases `-next.N`**: A merge into `develop` versions and publishes in the
-  same Release run, with no version PR. Every package holding unreleased shipping code gets a
-  `patch` changeset synthesized by `scripts/release-synthesize-changesets.mjs`, then CI runs
-  `changeset version`, commits the bump directly to `develop`, and publishes under the `next`
-  dist-tag. `master` keeps the version-PR flow.
-- **Taken prerelease numbers are skipped**: pie-elements and pie-lib publish the same names
-  into the same `-next.N` series, so `bun run version` moves a bump that lands on a number npm
-  already holds to the lowest free number above it (`scripts/skip-taken-prereleases.mjs`). A
-  taken stable version still fails `scripts/check-version-availability.mjs`, which runs last.
-- **Release intent is per package, not per push**: a package counts as unreleased when its own
-  shipping files changed after its own `version` last moved. That is what makes the pipeline
-  self-healing — a Release run that fails or is cancelled loses nothing, because the next run
-  measures the same question and picks its packages up. Do not reintroduce a push range or a
-  single repo-wide "last release commit" baseline: the auto-release push rebases onto the branch
-  tip when a merge lands mid-run, which leaves the bump commit sitting above code it never
-  released, and both of those baselines then drop that code silently (PIE-1073).
-- **A hand-written changeset still wins**: synthesis skips any package a pending changeset
-  already names, so an authored bump type and summary survive. Write one whenever the change
-  deserves a real changelog entry or a `minor`/`major` bump — the synthesized summary is only the
-  head commit subject.
+- **Two channels, versions only on `master`** (PIE-1121): `develop` publishes `next` snapshots
+  and commits no versions; `master` publishes `latest` through a "Version Packages" PR. Never
+  put prerelease versions or `.changeset/pre.json` back on `develop`: a `develop` -> `master`
+  merge would carry them to `master`, whose stable publish rejects them.
+- **`develop` publishes `<version>-next.<datetime>` snapshots**: every merge versions the packages
+  it changed with `changeset version --snapshot next` in the runner only, publishes them under the
+  `next` dist-tag, and discards the tree (`scripts/release-version-snapshot.mjs`). The base version
+  takes the largest bump the pending changesets give a package, so `next` previews the coming
+  stable release. The script moves the pending changesets aside first, so the snapshot versions
+  only the selected packages and their dependents.
+- **Snapshot selection is per package, measured from npm**: a package is selected when its shipping
+  files changed after the commit its current `next` version was built from (npm's `gitHead`), or
+  after its last `version` bump in git when that is newer or no snapshot exists. That is what
+  makes the pipeline self-healing — a run that fails or is cancelled leaves npm pointing at the
+  older commit, so the next run picks the packages up. Do not reintroduce a push-range or
+  repo-wide "last release commit" baseline: both drop work silently (PIE-1073).
+- **Every merged PR gets a changeset**: after a merge into `develop`, CI writes
+  `.changeset/pr-<n>.md` (the changed packages at `patch`, the PR title, and a `pr:` line that
+  `@changesets/changelog-github` turns into the PR link and author) and commits it to `develop`
+  (`scripts/release-record-pr-changeset.mjs`). These accumulate until the next stable release.
+- **A hand-written changeset still wins**: a changeset added in the PR keeps its bump type and
+  summary, and the recorded one leaves its packages out. Write one whenever the change deserves
+  more than its PR title or a `minor`/`major` bump.
+- **`master` releases through a version PR, then back-merges**: a `develop` -> `master` merge
+  makes `changesets/action` open the "Version Packages" PR; merging it publishes `latest`. CI then
+  opens a `master` -> `develop` back-merge PR with the release commit. Merge it before the next
+  `develop` -> `master` merge, or consumed changesets come back and are applied twice.
+- **`bun run version` needs `GITHUB_TOKEN`**: `@changesets/changelog-github` calls the GitHub API
+  while writing changelogs. Locally, run it as `GITHUB_TOKEN=$(gh auth token) bun run version`.
+- **Taken versions fail the release**: a stable version npm already holds fails
+  `scripts/check-version-availability.mjs`, which `bun run version` runs last. The legacy
+  pie-elements and pie-lib repos published many of the same names on the same lines.
 - **Non-shipping paths do not release**: changes confined to tests, specs, snapshots and
-  package-local vitest/playwright config synthesize nothing. Private packages and
-  `.changeset/config.json`'s `ignore` list are never selected.
-- **A dropped release is never silent**: after an auto-release run, `scripts/release-report-dropped.mjs`
-  re-measures what the run set out to release and fails an otherwise-green run that left any of it
-  unpublished. Packages that became outstanding mid-run are listed, not failed — their own Release
-  run releases them.
+  package-local vitest/playwright config select nothing and record no changeset. Private
+  packages and `.changeset/config.json`'s `ignore` list are never selected.
+- **A dropped release is never silent**: after a `develop` run, `scripts/release-report-dropped.mjs`
+  compares what the run selected with what the publish script reported as published, and fails an
+  otherwise-green run that left any of it unpublished.
 - **Default bump policy**: Always use `patch` by default for releases/versioning.
 - Use `minor` or `major` only when the user explicitly requests it.
 - **Selective publish only**: Publish only selected packages and changeset-propagated dependents, never all unpublished packages.

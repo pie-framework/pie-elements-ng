@@ -184,13 +184,14 @@ Then run the normal Changesets flow:
 
 ```bash
 # 1) Commit and merge the PR with the generated .changeset file
-# 2) On develop, the same Release run versions and publishes -next.N prereleases.
-#    On master, CI raises a version PR, and merging it publishes.
+# 2) On develop, the Release run publishes the changed packages as next snapshots
+#    and commits nothing but the PR's changeset.
+#    On master, CI raises a version PR, and merging it publishes latest.
 # 3) CI publishes through the same contract checks as a manual publish:
 bun run release:publish
 ```
 
-See [Develop Auto-Release](docs/PUBLISHING.md#develop-auto-release).
+See [Release Flow](docs/PUBLISHING.md#release-flow).
 
 ### Maintainer Commands
 

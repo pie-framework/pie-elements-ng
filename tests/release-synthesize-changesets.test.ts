@@ -6,8 +6,10 @@ import { describe, expect, it } from 'vitest';
 import {
   collectPublishablePackages,
   collectUnreleasedFiles,
+  fetchPublishedGitHeads,
   planSynthesizedChangeset,
   renderChangeset,
+  resolveSnapshotBumps,
 } from '../scripts/release-synthesize-changesets.mjs';
 
 type Manifest = { name: string; version?: string; private?: boolean };
@@ -114,6 +116,68 @@ describe('changeset synthesis', () => {
     expect(renderChangeset(['@pie-element/a', '@pie-element/b'], 'A summary')).toBe(
       '---\n  "@pie-element/a": patch\n  "@pie-element/b": patch\n---\n\nA summary\n'
     );
+  });
+
+  it('renders a bump per package', () => {
+    const bumps = new Map([['@pie-element/a', 'major']]);
+    expect(renderChangeset(['@pie-element/a', '@pie-element/b'], 'A summary', bumps)).toBe(
+      '---\n  "@pie-element/a": major\n  "@pie-element/b": patch\n---\n\nA summary\n'
+    );
+  });
+});
+
+describe('snapshot bumps', () => {
+  it('takes the largest pending bump for each selected package, and patch otherwise', async () => {
+    const rootDir = await makeRepoFixture(ELEMENTS);
+    await mkdir(join(rootDir, '.changeset', 'pre'), { recursive: true });
+    await writeFile(
+      join(rootDir, '.changeset', 'major.md'),
+      '---\n"@pie-element/multiple-choice": major\n"@pie-element/unselected": major\n---\n\nv14\n',
+      'utf8'
+    );
+    await writeFile(
+      join(rootDir, '.changeset', 'pre', 'minor.md'),
+      '---\n"@pie-element/multiple-choice": minor\n---\n\nFeature\n',
+      'utf8'
+    );
+
+    const bumps = resolveSnapshotBumps({
+      rootDir,
+      pendingChangesets: ['major', 'pre/minor'],
+      selected: ['@pie-element/mc-populated-blank', '@pie-element/multiple-choice'],
+    });
+
+    expect([...bumps]).toEqual([
+      ['@pie-element/mc-populated-blank', 'patch'],
+      ['@pie-element/multiple-choice', 'major'],
+    ]);
+  });
+});
+
+describe('published gitHead lookup', () => {
+  const PACKAGES = [
+    { name: '@pie-element/a', dir: 'packages/a' },
+    { name: '@pie-element/b', dir: 'packages/b' },
+    { name: '@pie-element/c', dir: 'packages/c' },
+  ];
+
+  it('reads gitHead from the dist-tag, and reads a missing tag or a registry error as none', async () => {
+    const requested: string[] = [];
+    const fetchImpl = async (url: string) => {
+      requested.push(url);
+      if (url.includes('%2Fa/')) return new Response(JSON.stringify({ gitHead: 'abc123' }));
+      if (url.includes('%2Fb/')) return new Response('Not found', { status: 404 });
+      return new Response('Bad gateway', { status: 502 });
+    };
+
+    const gitHeads = await fetchPublishedGitHeads(PACKAGES, 'next', { fetchImpl });
+
+    expect(Object.fromEntries(gitHeads)).toEqual({
+      '@pie-element/a': 'abc123',
+      '@pie-element/b': null,
+      '@pie-element/c': null,
+    });
+    expect(requested).toContain('https://registry.npmjs.org/@pie-element%2Fa/next');
   });
 });
 
@@ -293,5 +357,90 @@ describe('unreleased-file collection', () => {
     commit(rootDir, 'test: add coverage');
 
     expect(unreleased(rootDir)).toEqual([]);
+  });
+
+  // Snapshots commit no version, so the last bump in git is the last stable release. Measured
+  // from there, every package touched since would republish on every merge.
+  describe('measured from the published snapshot', () => {
+    const unreleasedSince = (rootDir: string, gitHeads: Record<string, string | null>) =>
+      planSynthesizedChangeset({
+        rootDir,
+        changedFiles: collectUnreleasedFiles({
+          rootDir,
+          head: 'HEAD',
+          packages: collectPublishablePackages(rootDir),
+          publishedGitHeads: new Map(Object.entries(gitHeads)),
+        }),
+      });
+
+    it('selects only what changed after the commit the snapshot was built from', async () => {
+      const rootDir = await makeGitFixture();
+      commit(rootDir, 'initial');
+
+      await write(rootDir, `${MC}/src/index.ts`, 'export const a = 1;\n');
+      await write(rootDir, `${CHOICE}/src/index.ts`, 'export const b = 1;\n');
+      const snapshotted = commit(rootDir, 'feat: a and b');
+
+      await write(rootDir, `${CHOICE}/src/index.ts`, 'export const b = 2;\n');
+      commit(rootDir, 'fix(choice): b');
+
+      expect(
+        unreleasedSince(rootDir, {
+          '@pie-element/mc-populated-blank': snapshotted,
+          '@pie-element/multiple-choice': snapshotted,
+        })
+      ).toEqual(['@pie-element/multiple-choice']);
+    });
+
+    it('falls back to the last version bump without a snapshot, or with one git does not know', async () => {
+      const rootDir = await makeGitFixture();
+      commit(rootDir, 'initial');
+
+      await write(rootDir, `${MC}/src/index.ts`, 'export const a = 1;\n');
+      await write(rootDir, `${CHOICE}/src/index.ts`, 'export const b = 1;\n');
+      commit(rootDir, 'feat: a and b');
+
+      expect(
+        unreleasedSince(rootDir, {
+          '@pie-element/mc-populated-blank': null,
+          '@pie-element/multiple-choice': 'f'.repeat(40),
+        })
+      ).toEqual(['@pie-element/mc-populated-blank', '@pie-element/multiple-choice']);
+    });
+
+    // A stable release that lands after the snapshot is the later release point: what the
+    // snapshot shipped before it is in the stable version.
+    it('prefers a version bump newer than the snapshot', async () => {
+      const rootDir = await makeGitFixture();
+      commit(rootDir, 'initial');
+
+      await write(rootDir, `${MC}/src/index.ts`, 'export const a = 1;\n');
+      const snapshotted = commit(rootDir, 'feat(mc): a');
+      await bumpVersion(rootDir, MC, '@pie-element/mc-populated-blank', '14.0.0');
+      commit(rootDir, 'chore(release): version packages');
+
+      expect(unreleasedSince(rootDir, { '@pie-element/mc-populated-blank': snapshotted })).toEqual(
+        []
+      );
+    });
+
+    // The develop tip a snapshot was built from need not be on the history being measured, for
+    // example after a force-push. Selecting from the bump republishes rather than skips.
+    it('ignores a snapshot built from a commit off this history', async () => {
+      const rootDir = await makeGitFixture();
+      commit(rootDir, 'initial');
+
+      run(rootDir, ['checkout', '-q', '-b', 'elsewhere']);
+      await write(rootDir, `${MC}/src/index.ts`, 'export const a = 1;\n');
+      const offHistory = commit(rootDir, 'feat(mc): somewhere else');
+      run(rootDir, ['checkout', '-q', 'develop']);
+
+      await write(rootDir, `${MC}/src/index.ts`, 'export const a = 2;\n');
+      commit(rootDir, 'feat(mc): on develop');
+
+      expect(unreleasedSince(rootDir, { '@pie-element/mc-populated-blank': offHistory })).toEqual([
+        '@pie-element/mc-populated-blank',
+      ]);
+    });
   });
 });

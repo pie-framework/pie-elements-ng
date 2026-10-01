@@ -3,24 +3,47 @@ import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const CHANGESET_DIR = '.changeset';
+// Changesets 3 archives the changesets a prerelease consumed under `.changeset/pre/`.
+const PRE_ARCHIVE_DIR = 'pre';
 
-async function readConsumedPrereleaseChangesets(rootDir) {
-  const preJsonPath = join(rootDir, CHANGESET_DIR, 'pre.json');
-  let content;
+async function readPreState(rootDir) {
   try {
-    content = await readFile(preJsonPath, 'utf8');
+    return JSON.parse(await readFile(join(rootDir, CHANGESET_DIR, 'pre.json'), 'utf8'));
   } catch (error) {
-    if (error?.code === 'ENOENT') {
-      return new Set();
-    }
+    if (error?.code === 'ENOENT') return null;
     throw error;
   }
+}
 
-  const preState = JSON.parse(content);
+function consumedPrereleaseChangesets(preState) {
   if (preState?.mode !== 'pre' || !Array.isArray(preState.changesets)) {
     return new Set();
   }
   return new Set(preState.changesets.filter((name) => typeof name === 'string'));
+}
+
+const markdownChangesets = (entries) =>
+  entries
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .filter((name) => name.endsWith('.md') && name !== 'README.md')
+    .map((name) => basename(name, '.md'));
+
+// Changesets reads `.changeset/pre/` on every run and skips it only while prerelease mode is on.
+// Outside that mode the archive is pending like any other changeset: the next stable
+// `changeset version` consumes it, which is what assembles a stable changelog from everything the
+// prereleases shipped.
+async function readArchivedChangesets(rootDir, preState) {
+  if (preState?.mode === 'pre') return [];
+  try {
+    const entries = await readdir(join(rootDir, CHANGESET_DIR, PRE_ARCHIVE_DIR), {
+      withFileTypes: true,
+    });
+    return markdownChangesets(entries).map((name) => `${PRE_ARCHIVE_DIR}/${name}`);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return [];
+    throw error;
+  }
 }
 
 export async function detectPendingChangesets(rootDir = process.cwd()) {
@@ -35,14 +58,12 @@ export async function detectPendingChangesets(rootDir = process.cwd()) {
     throw error;
   }
 
-  const consumed = await readConsumedPrereleaseChangesets(rootDir);
-  const pendingChangesets = entries
-    .filter((entry) => entry.isFile())
-    .map((entry) => entry.name)
-    .filter((name) => name.endsWith('.md') && name !== 'README.md')
-    .map((name) => basename(name, '.md'))
-    .filter((name) => !consumed.has(name))
-    .sort();
+  const preState = await readPreState(rootDir);
+  const consumed = consumedPrereleaseChangesets(preState);
+  const pendingChangesets = [
+    ...markdownChangesets(entries).filter((name) => !consumed.has(name)),
+    ...(await readArchivedChangesets(rootDir, preState)),
+  ].sort();
 
   return {
     hasChangesets: pendingChangesets.length > 0,

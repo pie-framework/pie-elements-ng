@@ -32,13 +32,46 @@ Release workflow: `.github/workflows/release.yml`
 
 If branch and channel do not match, the workflow fails before publishing.
 
-## Develop Auto-Release
+## Release Flow
 
-A merge into `develop` versions and publishes `-next.N` prereleases in the same Release run, with no version PR. `master` keeps the version-PR flow: `changesets/action` raises a version PR, and merging it publishes.
+Version numbers and changelogs are written only on `master`. `develop` publishes snapshots and never commits a version, so merging `develop` into `master` brings code and changesets, and no prerelease versions.
 
-Release intent is per package. `scripts/release-synthesize-changesets.mjs` selects every package whose shipping files changed after its own last version bump and that no pending changeset names, and writes a patch changeset for them, summarised with the head commit's subject. Everything in a package except tests, specs, snapshots and Vitest or Playwright config counts as shipping, READMEs included. A hand-written changeset keeps its bump type and summary. Private packages and packages in the Changesets `ignore` list are never selected.
+```text
+PR merged into develop ──► next snapshot published     (nothing committed but the PR's changeset)
+                      └──► .changeset/pr-<n>.md committed to develop
+develop merged into master ──► "Version Packages" PR
+Version Packages PR merged ──► latest published ──► master -> develop back-merge PR
+```
 
-The run then calls `bun run version`, which moves past `-next.N` numbers already taken on npm, commits the bump to `develop` and publishes under `next`. Afterwards `scripts/release-report-dropped.mjs` compares what the run set out to release with what is still unreleased: a package in both fails the run, and packages that became unreleased while it ran are listed without failing it, since their own merge triggers a release.
+### `next` from `develop`
+
+Each merge into `develop` publishes the packages it changed as `<version>-next.<datetime>` under the `next` dist-tag (`scripts/release-version-snapshot.mjs`):
+
+1. **Select.** A package is selected when its shipping files changed after the commit its current `next` version was built from, which npm records as `gitHead`. With no snapshot on npm, or when the last `version` bump in git is newer (a stable release), that bump is the baseline instead. Everything in a package except tests, specs, snapshots and Vitest or Playwright config counts as shipping, READMEs included. Private packages and packages in the Changesets `ignore` list are never selected.
+2. **Version.** The pending changesets are moved aside, a changeset naming the selected packages is written, and `changeset version --snapshot next` runs. Each package takes the largest bump its pending changesets give it, otherwise `patch`, so `next` previews the next stable version: a pending `major` gives `14.0.0-next.<datetime>`.
+3. **Publish and discard.** The publish script publishes the bumped packages and their dependents. The versioned tree is thrown away with the runner.
+
+Because selection is measured from npm rather than from one push, a run that fails or is cancelled loses nothing: npm still points at the older commit, and the next run selects the same packages. Afterwards `scripts/release-report-dropped.mjs` fails an otherwise-green run that selected a package and did not publish it.
+
+### Changelog entries
+
+After each merge into `develop`, `scripts/release-record-pr-changeset.mjs` writes `.changeset/pr-<n>.md` and CI commits it to `develop`. It names the packages the PR changed, at `patch`, with the PR title as the summary and a `pr: <n>` line. `@changesets/changelog-github` turns that line into the PR link and author in the changelog.
+
+A changeset the PR adds itself wins: its packages are left out of the recorded one, so its bump type and wording are kept. Write one when a change needs more than its PR title, or a `minor`/`major` bump. The back-merge PR records nothing.
+
+The recorded changeset is written after the merge, not on the PR. A commit pushed to a PR branch with `GITHUB_TOKEN` does not trigger CI, so required checks would never report on it.
+
+### `latest` from `master`
+
+A `develop` -> `master` merge carries the accumulated changesets. `changesets/action` turns them into a "Version Packages" PR with the stable versions and changelogs; merging it publishes under `latest`. `bun run version` fails if a stable version is already on npm (`scripts/check-version-availability.mjs`), which matters here because the legacy `pie-elements` and `pie-lib` repositories published many of the same names.
+
+After the publish, CI opens a `master` -> `develop` back-merge PR with the release commit: the bumped manifests, the changelogs, and the deletion of the consumed changesets. Merge it before the next `develop` -> `master` merge. Without it that merge conflicts on those files and brings the consumed changesets back.
+
+`changeset version` needs a `GITHUB_TOKEN` for `@changesets/changelog-github`. To preview a release locally: `GITHUB_TOKEN=$(gh auth token) bun run version`, then discard the result.
+
+### Leaving prerelease mode
+
+Until PIE-1121, `develop` ran Changesets prerelease mode (`.changeset/pre.json`) and committed `-next.N` versions. That mode is gone. Its consumed changesets are still archived under `.changeset/pre/`, and Changesets counts them as pending again now that `pre.json` is gone, so the first stable release builds its changelogs from everything the prereleases shipped. Do not delete the archive before that release.
 
 ## npm Authentication and Trusted Publishers
 
@@ -107,10 +140,7 @@ bun run changeset      # select the package(s), bump type, write a summary
 bun run version        # consumes changesets, bumps package.json + CHANGELOG.md, skips -next.N numbers npm holds
 ```
 
-**Gotcha — pre-release mode / stray changesets**: check `.changeset/pre.json`. If it exists (mode `"pre"`), the branch is currently cutting `next` prereleases — this is normally the case on `develop`. Also check `.changeset/*.md` for changesets targeting packages you don't intend to touch. Running `bun run version` in this state will:
-
-- suffix your version with the active prerelease tag (e.g. `0.2.13-next.4`) instead of a clean stable bump, and
-- consume **every** pending changeset, bumping unrelated packages too.
+**Gotcha — pending changesets**: `develop` and `master` carry every changeset recorded since the last stable release (`.changeset/*.md`, plus the `.changeset/pre/` archive until the first stable release). Running `bun run version` will consume **every** pending changeset, bumping unrelated packages too. It also needs `GITHUB_TOKEN` for the changelog generator.
 
 To cut a clean, isolated release for just your target package in that situation, bypass the changeset version step entirely:
 

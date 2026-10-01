@@ -1,5 +1,7 @@
 // Derives changesets from the packages that have unreleased code, so a merge into develop
-// publishes `-next.N` without an author having written a changeset by hand.
+// publishes a `next` snapshot without an author having written a changeset by hand. The develop
+// release runs it through release-version-snapshot.mjs; run directly, it prints or writes the
+// changeset for the packages measured from their last version bump.
 //
 // Only the packages whose own shipping files changed are named. Dependents are left to
 // changesets itself, which propagates through `updateInternalDependencies: "patch"`.
@@ -75,18 +77,40 @@ export function collectPublishablePackages(rootDir) {
   return packages.sort((a, b) => b.dir.length - a.dir.length);
 }
 
-function packagesCoveredByPendingChangesets(rootDir, pendingChangesets) {
-  const covered = new Set();
-  for (const name of pendingChangesets) {
-    const content = safeRead(join(rootDir, CHANGESET_DIR, `${name}.md`));
-    if (!content) continue;
-    const frontmatter = content.split('---')[1] ?? '';
-    for (const line of frontmatter.split('\n')) {
-      const match = line.match(/^\s*['"]?(@[^'"\s:]+\/[^'"\s:]+|[^'"\s:]+)['"]?\s*:/);
-      if (match) covered.add(match[1]);
-    }
+// The `"package": bump` entries of one changeset's frontmatter.
+export function parseChangesetReleases(content) {
+  const releases = [];
+  const frontmatter = content.split('---')[1] ?? '';
+  for (const line of frontmatter.split('\n')) {
+    const match = line.match(/^\s*['"]?(@[^'"\s:]+\/[^'"\s:]+|[^'"\s:]+)['"]?\s*:\s*(\w+)?/);
+    if (match) releases.push({ name: match[1], bump: match[2] });
   }
-  return covered;
+  return releases;
+}
+
+function readPendingReleases(rootDir, pendingChangesets) {
+  return pendingChangesets.flatMap((name) => {
+    const content = safeRead(join(rootDir, CHANGESET_DIR, `${name}.md`));
+    return content ? parseChangesetReleases(content) : [];
+  });
+}
+
+function packagesCoveredByPendingChangesets(rootDir, pendingChangesets) {
+  return new Set(readPendingReleases(rootDir, pendingChangesets).map((release) => release.name));
+}
+
+const BUMP_RANK = { patch: 1, minor: 2, major: 3 };
+
+// A snapshot previews the stable release the pending changesets will cut, so each selected
+// package takes the largest bump any pending changeset gives it. A pending `major` is what makes
+// `next` read `14.0.0-next.<datetime>` ahead of a 14.0.0 release, rather than a patch on 13.x.
+export function resolveSnapshotBumps({ rootDir, pendingChangesets, selected }) {
+  const bumps = new Map(selected.map((name) => [name, DEFAULT_BUMP]));
+  for (const { name, bump } of readPendingReleases(rootDir, pendingChangesets)) {
+    if (!bumps.has(name) || !BUMP_RANK[bump]) continue;
+    if (BUMP_RANK[bump] > BUMP_RANK[bumps.get(name)]) bumps.set(name, bump);
+  }
+  return bumps;
 }
 
 function safeRead(path) {
@@ -140,8 +164,10 @@ export function planSynthesizedChangeset({
   return [...selected].sort();
 }
 
+// `bump` is one bump for every package, or a Map from package name to its own bump.
 export function renderChangeset(packageNames, summary, bump = DEFAULT_BUMP) {
-  const entries = packageNames.map((name) => `  "${name}": ${bump}`).join('\n');
+  const bumpOf = (name) => (bump instanceof Map ? (bump.get(name) ?? DEFAULT_BUMP) : bump);
+  const entries = packageNames.map((name) => `  "${name}": ${bumpOf(name)}`).join('\n');
   return `---\n${entries}\n---\n\n${summary}\n`;
 }
 
@@ -211,16 +237,76 @@ function changedFilesSince(rootDir, base, head, dir) {
   return toLines(git(rootDir, ['diff', '--name-only', base, head, '--', dir]));
 }
 
+const isAncestor = (rootDir, ancestor, descendant) =>
+  spawnSync('git', ['merge-base', '--is-ancestor', ancestor, descendant], { cwd: rootDir })
+    .status === 0;
+
+// Where this package was last released from. Without `publishedGitHead` that is its last
+// version bump in git.
+//
+// Snapshot prereleases commit no version, so on develop the last bump stays at the last stable
+// release and every package touched since would read as unreleased on every merge. The commit a
+// published snapshot was built from — npm records it as `gitHead` — is the later release point,
+// and is used whenever it is one: on `head`'s history and not older than the last bump. Anything
+// else (no snapshot published, a commit this clone does not have, a snapshot that predates the
+// last stable release) falls back to the bump, which can only select more, never drop work.
+export function resolveReleaseBase({ rootDir, head, manifestPath, publishedGitHead }) {
+  const bump = lastVersionBumpCommit(rootDir, head, manifestPath);
+  if (!publishedGitHead || !isAncestor(rootDir, publishedGitHead, head)) return bump;
+  if (bump && !isAncestor(rootDir, bump, publishedGitHead)) return bump;
+  return publishedGitHead;
+}
+
 // The union of every package's own unreleased paths. Safe to flatten: `planSynthesizedChangeset`
 // attributes a path to the deepest package that owns it, which is the package whose range
 // produced it, so one package's range can never select another.
-export function collectUnreleasedFiles({ rootDir, head, packages }) {
+//
+// `publishedGitHeads` maps a package name to the `gitHead` of its published snapshot; see
+// `resolveReleaseBase`.
+export function collectUnreleasedFiles({ rootDir, head, packages, publishedGitHeads }) {
   const files = [];
   for (const pkg of packages) {
-    const base = lastVersionBumpCommit(rootDir, head, `${pkg.dir}/package.json`);
+    const base = resolveReleaseBase({
+      rootDir,
+      head,
+      manifestPath: `${pkg.dir}/package.json`,
+      publishedGitHead: publishedGitHeads?.get(pkg.name),
+    });
     files.push(...changedFilesSince(rootDir, base, head, pkg.dir));
   }
   return files;
+}
+
+const REGISTRY = 'https://registry.npmjs.org';
+
+// The `gitHead` of each package's version under `distTag`, or null when there is none to read.
+// A registry error is a null too, not a failure: null falls back to the last version bump, which
+// republishes a package rather than skipping it.
+export async function fetchPublishedGitHeads(packages, distTag, { fetchImpl = fetch } = {}) {
+  const gitHeads = new Map();
+  const queue = [...packages];
+  const worker = async () => {
+    for (let pkg = queue.shift(); pkg; pkg = queue.shift()) {
+      const url = `${REGISTRY}/${pkg.name.replace('/', '%2F')}/${encodeURIComponent(distTag)}`;
+      try {
+        const response = await fetchImpl(url);
+        if (response.status === 404) {
+          gitHeads.set(pkg.name, null);
+          continue;
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const manifest = await response.json();
+        gitHeads.set(pkg.name, typeof manifest?.gitHead === 'string' ? manifest.gitHead : null);
+      } catch (error) {
+        console.error(
+          `[release] Could not read ${pkg.name}@${distTag} from npm (${error.message}); measuring it from its last version bump.`
+        );
+        gitHeads.set(pkg.name, null);
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: 8 }, worker));
+  return gitHeads;
 }
 
 function gitSubject(rootDir, ref) {
