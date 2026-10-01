@@ -10,8 +10,7 @@ export const load: PageLoad = async ({ params, url }) => {
     params.element,
     url.searchParams.get('scenario'),
     url.searchParams.get('demo'),
-    url.searchParams.get('mode'),
-    url.searchParams.get('player')
+    url.searchParams.get('mode')
   );
 
   if (!scanData) {

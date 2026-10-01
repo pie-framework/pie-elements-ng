@@ -1,4 +1,4 @@
-import { ELEMENT_REGISTRY, getElement, type ElementMetadata } from '$lib/elements/registry';
+import { ELEMENT_REGISTRY, getElement, type ElementMetadata } from '../elements/registry';
 import {
   getA11yScenario,
   getA11yScenariosForElement,
@@ -54,7 +54,6 @@ export interface A11yElementScanData {
   coverage: A11yDemoCoverage;
   mode: A11yScanMode;
   role: A11yScanRole;
-  player: 'esm' | 'iife';
   scanSource: 'scenario' | 'inventory';
 }
 
@@ -137,7 +136,7 @@ export function describeA11yDemoCoverage(demo: A11yDemoConfig): A11yDemoCoverage
 
 export async function loadElementDemos(elementName: string): Promise<A11yDemoConfig[]> {
   try {
-    const configModule = (await import(`$lib/samples/${elementName}.json`)) as SampleModule;
+    const configModule = (await import(`../samples/${elementName}.json`)) as SampleModule;
     const loadedDemos = configModule.default?.demos;
     if (Array.isArray(loadedDemos) && loadedDemos.length > 0) {
       return loadedDemos;
@@ -189,8 +188,7 @@ export async function loadA11yElementScanData(
   elementName: string,
   requestedScenarioId: string | null,
   requestedDemoId: string | null,
-  requestedMode: string | null,
-  requestedPlayer: string | null
+  requestedMode: string | null
 ): Promise<A11yElementScanData | null> {
   const element = getElement(elementName);
   if (!element) {
@@ -199,7 +197,12 @@ export async function loadA11yElementScanData(
 
   const demos = await loadElementDemos(elementName);
   const scenarios = getA11yScenariosForElement(elementName);
-  const activeScenario = getA11yScenario(elementName, requestedScenarioId ?? null);
+  // A requested demo is scanned unless a scenario is also requested. The first scenario is the
+  // default only when the request names neither.
+  const activeScenario =
+    requestedScenarioId || !requestedDemoId
+      ? getA11yScenario(elementName, requestedScenarioId)
+      : undefined;
   const activeDemo = activeScenario
     ? scenarioToDemo(activeScenario)
     : (demos.find((demo) => demo.id === requestedDemoId) ?? demos[0]);
@@ -216,7 +219,6 @@ export async function loadA11yElementScanData(
       : describeA11yDemoCoverage(activeDemo),
     mode,
     role: activeScenario?.role ?? roleForA11yMode(mode),
-    player: requestedPlayer === 'iife' ? 'iife' : 'esm',
     scanSource: activeScenario ? 'scenario' : 'inventory',
   };
 }

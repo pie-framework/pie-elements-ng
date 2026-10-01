@@ -14,7 +14,7 @@ import { Node } from '@tiptap/core';
 import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-state';
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
-import { wrapMath } from '@pie-element/shared-math-rendering-mathjax';
+import { unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
 import { setToolbarOpened } from '../utils/toolbar.js';
 
 const ensureTextAfterMathPluginKey = new PluginKey('ensureTextAfterMath');
@@ -149,7 +149,9 @@ export const MathNode = Node.create({
       {
         tag: 'span[data-latex]',
         getAttrs: (el) => ({
-          latex: el.getAttribute('data-raw') || el.textContent,
+          // A span saved without `data-raw`, or with delimiters in it, holds delimited TeX, which
+          // `renderHTML` would wrap a second time.
+          latex: unWrapMath(el.getAttribute('data-raw') || el.textContent).unwrapped,
         }),
       },
       {

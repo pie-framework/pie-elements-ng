@@ -1,6 +1,6 @@
 # Math Rendering in pie-elements-ng
 
-**Last Updated:** 2026-09-28
+**Last Updated:** 2026-10-01
 
 ## Overview
 
@@ -15,7 +15,7 @@ The sync rewrites `@pie-lib/math-rendering` imports in synced elements to `@pie-
 
 ## Renderer Resolution
 
-`renderMath(element)` hands the element to the renderer at `window['@pie-lib/math-rendering']` when the page installs one with a `renderMath` function. Otherwise the adapter typesets the element itself.
+`renderMath(element)` hands the element to the renderer at `window['@pie-lib/math-rendering']` when the page installs one with a `renderMath` function other than the adapter's own, which would call itself. Otherwise the adapter typesets the element itself.
 
 - `@pie-players/pie-item-player` installs the legacy renderer under the `iife` strategy only, so ESM elements, loaded by the player under `esm` or registered by the host under `preloaded`, typeset through the adapter. A generated `@pie-players/pie-preloaded-player` build installs the legacy renderer in its own entry. A host installs its own renderer with `setMathRenderer` from `@pie-players/pie-players-shared/pie`.
 - `@pie-element/element-player` uses a renderer the page installed before the player mounted. Otherwise it installs a renderer it creates with `createMathjaxRenderer`, which later players reuse. The player reads the global on every render, so its next render uses a renderer the host installs later.

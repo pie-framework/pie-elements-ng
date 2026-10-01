@@ -15,7 +15,6 @@ let {
   session = {},
   mode = 'gather',
   role = 'student',
-  player = 'esm',
 }: {
   elementName: string;
   packageName: string;
@@ -24,7 +23,6 @@ let {
   session?: unknown;
   mode?: A11yScanMode;
   role?: A11yScanRole;
-  player?: 'esm' | 'iife';
 } = $props();
 
 let controller = $state<PieController | null>(null);
@@ -157,7 +155,7 @@ function handleSessionChanged(event: CustomEvent) {
         aria-label="{elementName} accessibility scan subject"
       >
         <pie-element-player
-          strategy={player}
+          strategy="esm"
           runtime-support-check="on"
           view="delivery"
           element-name={elementName}

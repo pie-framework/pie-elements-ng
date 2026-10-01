@@ -307,6 +307,47 @@ describe('createMathjaxRenderer', () => {
     expect(target.querySelectorAll('[data-math-handled]')).toHaveLength(0);
   });
 
+  it('leaves the data-latex content MathJax skips for its ignore class', async () => {
+    interceptScripts();
+    const target = elementWith(
+      [
+        '<div class="mathjax_ignore"><span data-latex="">a</span>',
+        '<div class="mathjax_process"><span data-latex="">b</span></div></div>',
+        '<span class="mathjax_ignore" data-latex="">c</span>',
+        '<span class="mathjax_ignore mathjax_process" data-latex="">d</span>',
+      ].join('')
+    );
+
+    const rendering = createMathjaxRenderer()(target);
+    runMathjaxScript().finishStartup();
+    await rendering;
+
+    expect([...target.querySelectorAll('[data-latex]')].map((span) => span.textContent)).toEqual([
+      'a',
+      '\\(b\\)',
+      'c',
+      '\\(d\\)',
+    ]);
+  });
+
+  it('decides from the classes from the rendered element down, as MathJax does', async () => {
+    interceptScripts();
+    // A node view inside an editor typesets itself, and MathJax ignores classes above its root.
+    const editor = elementWith('<div><span data-latex="">x</span></div>');
+    editor.className = 'mathjax_ignore';
+    const nodeView = editor.firstElementChild as HTMLElement;
+    const ignoredRoot = elementWith('<span data-latex="">y</span>');
+    ignoredRoot.className = 'mathjax_ignore';
+
+    const render = createMathjaxRenderer();
+    const rendering = Promise.all([render(nodeView), render(ignoredRoot)]);
+    runMathjaxScript().finishStartup();
+    await rendering;
+
+    expect(nodeView.textContent).toBe('\\(x\\)');
+    expect(ignoredRoot.textContent).toBe('y');
+  });
+
   it('enables single-dollar delimiters when asked, with the legacy warning', async () => {
     const scripts = interceptScripts();
 
@@ -736,8 +777,56 @@ describe('renderMath', () => {
     expect(rendered).toBe('<span data-player-rendered="">x squared plus 1</span>');
   });
 
+  it("renders with its own MathJax when the page's renderer is this renderMath", async () => {
+    page['@pie-lib/math-rendering'] = { renderMath, wrapMath, mmlToLatex };
+    const scripts = interceptScripts();
+    const target = elementWith('\\(x\\)');
+
+    const rendering = renderMath(target);
+    await vi.waitFor(() => expect(scripts).toHaveLength(1));
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
+    expect(wrapMath('x^2')).toBe('x^2');
+    expect(mmlToLatex('<math></math>')).toBe('<math></math>');
+  });
+
+  it("renders through another copy of the adapter installed as the page's renderer", async () => {
+    vi.resetModules();
+    const { renderMath: otherCopy } = await import('../src/render-math.js');
+    page['@pie-lib/math-rendering'] = { renderMath: otherCopy };
+    const scripts = interceptScripts();
+    const target = elementWith('\\(x\\)');
+
+    const rendering = renderMath(target);
+    await vi.waitFor(() => expect(scripts).toHaveLength(1));
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
+  });
+
+  it("renders with its own MathJax when the print player's renderer is this renderMath", async () => {
+    page.renderMath = renderMath;
+    const scripts = interceptScripts();
+    const target = printedElementWith('\\(x\\)', { mathRenderingModuleUrlImported: true });
+
+    const rendering = renderMath(target);
+    await vi.waitFor(() => expect(scripts).toHaveLength(1));
+    const { typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(typesetPromise.mock.calls).toEqual([[[target]]]);
+  });
+
   it('delegates safe helper methods to the player math renderer when available', () => {
-    const playerWrapMath = vi.fn((latex: string) => `wrapped:${latex}`);
+    const playerWrapMath = vi.fn(
+      (latex: string, wrapType?: string | null) => `${wrapType}:${latex}`
+    );
     const playerMmlToLatex = vi.fn((mathml: string) => `latex:${mathml}`);
     page['@pie-lib/math-rendering'] = {
       renderMath: vi.fn(),
@@ -745,9 +834,38 @@ describe('renderMath', () => {
       mmlToLatex: playerMmlToLatex,
     };
 
-    expect(wrapMath('x^2')).toBe('wrapped:x^2');
+    expect(wrapMath('x^2', 'dollar')).toBe('dollar:x^2');
     expect(mmlToLatex('<math></math>')).toBe('latex:<math></math>');
-    expect(playerWrapMath).toHaveBeenCalledWith('x^2');
+    expect(playerWrapMath).toHaveBeenCalledWith('x^2', 'dollar');
     expect(playerMmlToLatex).toHaveBeenCalledWith('<math></math>');
+  });
+});
+
+describe('wrapMath', () => {
+  it('wraps LaTeX as the legacy renderer does when the page renderer has no wrapMath', () => {
+    // The player installs a renderer with renderMath alone.
+    page['@pie-lib/math-rendering'] = { renderMath: vi.fn() };
+
+    expect(wrapMath('x^2')).toBe('\\(x^2\\)');
+    expect(wrapMath('x^2', null)).toBe('\\(x^2\\)');
+    expect(wrapMath('x^2', 'round_brackets')).toBe('\\(x^2\\)');
+    expect(wrapMath('x^2', 'square_brackets')).toBe('\\(x^2\\)');
+    expect(wrapMath('x^2', 'dollar')).toBe('$x^2$');
+    expect(wrapMath('x^2', 'double_dollar')).toBe('$x^2$');
+  });
+
+  it('wraps LaTeX on a page without a math renderer', () => {
+    expect(wrapMath('\\frac{1}{2}')).toBe('\\(\\frac{1}{2}\\)');
+  });
+
+  it('keeps one pair of delimiters on LaTeX that already has them', () => {
+    expect(wrapMath('\\(x^2\\)')).toBe('\\(x^2\\)');
+    expect(wrapMath('\\[x^2\\]')).toBe('\\(x^2\\)');
+    expect(wrapMath('$$x^2$$')).toBe('\\(x^2\\)');
+    expect(wrapMath('$x^2$', 'dollar')).toBe('$x^2$');
+  });
+
+  it('keeps \\displaystyle, which only rendering drops', () => {
+    expect(wrapMath('\\displaystyle\\sum_{i=1}^n i')).toBe('\\(\\displaystyle\\sum_{i=1}^n i\\)');
   });
 });
