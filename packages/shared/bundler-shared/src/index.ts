@@ -180,6 +180,9 @@ export class Bundler {
         requestedBundles.map((bundle) => [bundle, `./${bundle}.js`])
       ) as Record<string, string>;
 
+      // Only workspace sources reach optional peers that a published build tree-shakes away, so a
+      // registry install still fails where the production bundler would.
+      const ignoreMissingOptionalPeers = request.options?.resolutionMode === 'workspace-fast';
       const webpackConfig = createWebpackConfig({
         context: entryDir,
         entry,
@@ -187,6 +190,7 @@ export class Bundler {
         workspaceDir,
         elements,
         sourceMaps,
+        ignoreMissingOptionalPeers,
       });
 
       // 4. Run webpack
@@ -212,7 +216,8 @@ export class Bundler {
         controllerUrls = await this.buildStandaloneControllers(
           request.dependencies,
           workspaceDir,
-          sourceMaps
+          sourceMaps,
+          ignoreMissingOptionalPeers
         );
         this.writeControllerManifest(
           join(outputPath, 'controller-manifest.json'),
@@ -266,7 +271,8 @@ export class Bundler {
   private async buildStandaloneControllers(
     dependencies: BuildDependency[],
     workspaceDir: string,
-    sourceMaps: boolean
+    sourceMaps: boolean,
+    ignoreMissingOptionalPeers: boolean
   ): Promise<Record<string, string>> {
     const controllers: Record<string, string> = {};
 
@@ -296,6 +302,7 @@ export class Bundler {
         outputPath,
         workspaceDir,
         sourceMaps,
+        ignoreMissingOptionalPeers,
       });
       const stats = await this.runWebpack(config);
       const statsJson = stats.toJson();
