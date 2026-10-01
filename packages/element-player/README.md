@@ -83,7 +83,6 @@ For elements with import maps:
 
 - Loads elements via dynamic ESM imports: `import('@pie-element/hotspot')`
 - Handles session state and user interactions
-- Manages math rendering internally (MathJax)
 - Emits `session-changed` events
 - Works with both React and Svelte elements
 
@@ -92,15 +91,17 @@ For elements with import maps:
 - Loads print exports: `import('@pie-element/hotspot/print')`
 - Stateless (no session management)
 - Optimized for print layouts
-- Manages math rendering internally (MathJax)
 - Role-based rendering (student/instructor)
 
 **All views:**
 
 - Use import maps for module resolution
 - Self-contained (no external setup needed)
-- Handle math rendering automatically
 - Support for both React and Svelte elements
+
+### Math rendering
+
+The player typesets math through `window['@pie-lib/math-rendering'].renderMath`, read on every render. A renderer the host installs there before the player mounts, such as the legacy MathJax 3 one, is used and no MathJax 4 loads. Without one, the player installs a MathJax 4 renderer from `@pie-element/shared-math-rendering-mathjax`, which elements and later players on the page share.
 
 ### Events
 

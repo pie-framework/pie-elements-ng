@@ -86,6 +86,10 @@ Comprehensive test suite for the `math-algebra-quadratic` demo (multiple-choice 
 9. **Author Changes** - Editing in author tab and seeing changes in other views
 10. **Complete Workflow** - End-to-end scenario combining multiple operations
 
+### [mathjax-version.spec.ts](./mathjax-version.spec.ts)
+
+The MathJax each player type runs, on the `math-algebra-quadratic` delivery view. `player=iife` pages typeset with the legacy MathJax 3 renderer and load no MathJax 4; `player=esm` pages typeset with MathJax 4 and load no MathJax 3. Neither dispatches `pie-mathjax-version-conflict`.
+
 ### [phase1-spatial-dnd.spec.ts](./phase1-spatial-dnd.spec.ts)
 
 Dedicated interaction coverage for high-risk spatial and drag/drop elements:
