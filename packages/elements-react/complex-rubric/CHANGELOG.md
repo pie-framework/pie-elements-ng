@@ -1,5 +1,17 @@
 # @pie-element/complex-rubric
 
+## 7.1.2-next.31
+
+### Patch Changes
+
+- cd1f4f9: When a page installs the adapter's own `renderMath` as its math renderer, at `window['@pie-lib/math-rendering']` or, for elements inside `<pie-print>`, at `window.renderMath`, the adapter now typesets with its own MathJax. It previously called itself without end, which overflowed the stack or hung the page.
+- Updated dependencies [cd1f4f9]
+  - @pie-element/multi-trait-rubric@8.1.2-next.30
+  - @pie-element/rubric@8.1.2-next.30
+  - @pie-lib/render-ui@6.2.0-next.53
+  - @pie-lib/config-ui@14.0.0-next.50
+  - @pie-lib/rubric@3.0.0-next.50
+
 ## 7.1.2-next.30
 
 ### Patch Changes

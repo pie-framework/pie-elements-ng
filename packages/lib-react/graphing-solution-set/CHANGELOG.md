@@ -1,5 +1,16 @@
 # @pie-lib/graphing-solution-set
 
+## 5.0.0-next.54
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.50
+  - @pie-lib/drag@4.1.0-next.54
+  - @pie-lib/render-ui@6.2.0-next.53
+  - @pie-lib/config-ui@14.0.0-next.50
+  - @pie-lib/plot@5.0.0-next.51
+
 ## 5.0.0-next.53
 
 ### Patch Changes

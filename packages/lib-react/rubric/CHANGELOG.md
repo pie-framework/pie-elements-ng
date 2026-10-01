@@ -1,5 +1,14 @@
 # @pie-lib/rubric
 
+## 3.0.0-next.50
+
+### Patch Changes
+
+- Updated dependencies
+  - @pie-lib/editable-html-tip-tap@3.0.0-next.50
+  - @pie-lib/render-ui@6.2.0-next.53
+  - @pie-lib/config-ui@14.0.0-next.50
+
 ## 3.0.0-next.49
 
 ### Patch Changes

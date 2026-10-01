@@ -1,5 +1,17 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.0.0-next.50
+
+### Patch Changes
+
+- Merge pull request #255 from pie-framework/fix/demo-e2e-dib-shuffle-optional-peers
+- Updated dependencies [cd1f4f9]
+  - @pie-element/shared-math-rendering-mathjax@0.1.1-next.8
+  - @pie-lib/drag@4.1.0-next.54
+  - @pie-lib/render-ui@6.2.0-next.53
+  - @pie-lib/math-input@9.0.0-next.19
+  - @pie-lib/math-toolbar@4.0.0-next.55
+
 ## 3.0.0-next.49
 
 ### Patch Changes

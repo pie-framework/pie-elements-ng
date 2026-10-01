@@ -1,5 +1,13 @@
 # @pie-element/cli
 
+## 0.1.2-next.15
+
+### Patch Changes
+
+- Merge pull request #255 from pie-framework/fix/demo-e2e-dib-shuffle-optional-peers
+- Updated dependencies
+  - @pie-element/element-bundler@0.1.2-next.7
+
 ## 0.1.2-next.14
 
 ### Patch Changes

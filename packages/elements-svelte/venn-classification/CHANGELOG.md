@@ -1,5 +1,11 @@
 # @pie-element/venn-classification
 
+## 0.1.1-next.19
+
+### Patch Changes
+
+- cd1f4f9: When a page installs the adapter's own `renderMath` as its math renderer, at `window['@pie-lib/math-rendering']` or, for elements inside `<pie-print>`, at `window.renderMath`, the adapter now typesets with its own MathJax. It previously called itself without end, which overflowed the stack or hung the page.
+
 ## 0.1.1-next.18
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @pie-element/ebsr
 
+## 14.2.2-next.34
+
+### Patch Changes
+
+- cd1f4f9: When a page installs the adapter's own `renderMath` as its math renderer, at `window['@pie-lib/math-rendering']` or, for elements inside `<pie-print>`, at `window.renderMath`, the adapter now typesets with its own MathJax. It previously called itself without end, which overflowed the stack or hung the page.
+- Updated dependencies [cd1f4f9]
+  - @pie-element/multiple-choice@13.4.0-next.29
+  - @pie-lib/config-ui@14.0.0-next.50
+
 ## 14.2.2-next.33
 
 ### Patch Changes
