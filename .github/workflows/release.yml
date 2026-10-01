@@ -39,6 +39,8 @@ on:
     paths:
       - ".changeset/**"
       - "packages/**"
+      # tools/cli is published too (@pie-element/cli).
+      - "tools/**"
       - "package.json"
       - "bun.lock"
       - "turbo.json"

@@ -7,6 +7,7 @@ import {
   collectPublishablePackages,
   collectUnreleasedFiles,
   fetchPublishedGitHeads,
+  isOwnSnapshotVersion,
   planSynthesizedChangeset,
   renderChangeset,
   resolveSnapshotBumps,
@@ -161,23 +162,111 @@ describe('published gitHead lookup', () => {
     { name: '@pie-element/c', dir: 'packages/c' },
   ];
 
-  it('reads gitHead from the dist-tag, and reads a missing tag or a registry error as none', async () => {
+  const OWN = '14.0.0-next.20261001070500';
+  const OWN_OLDER = '13.4.0-next.20260930120000';
+
+  // A fake registry: `tags` answers `<pkg>/next`, `versions` the abbreviated packument and
+  // `<pkg>/<version>`.
+  const registry = (
+    tags: Record<string, { version: string; gitHead?: string } | number>,
+    versions: Record<string, Record<string, string>> = {}
+  ) => {
     const requested: string[] = [];
     const fetchImpl = async (url: string) => {
       requested.push(url);
-      if (url.includes('%2Fa/')) return new Response(JSON.stringify({ gitHead: 'abc123' }));
-      if (url.includes('%2Fb/')) return new Response('Not found', { status: 404 });
-      return new Response('Bad gateway', { status: 502 });
+      const [, encoded, rest] = /registry\.npmjs\.org\/([^/]+)(?:\/(.+))?$/.exec(url) ?? [];
+      const name = decodeURIComponent(encoded ?? '');
+      if (rest === 'next') {
+        const tag = tags[name];
+        if (typeof tag === 'number') return new Response('error', { status: tag });
+        return tag ? new Response(JSON.stringify(tag)) : new Response('', { status: 404 });
+      }
+      const known = versions[name] ?? {};
+      if (!rest) {
+        return new Response(
+          JSON.stringify({ versions: Object.fromEntries(Object.keys(known).map((v) => [v, {}])) })
+        );
+      }
+      const version = decodeURIComponent(rest);
+      return version in known
+        ? new Response(JSON.stringify({ version, gitHead: known[version] }))
+        : new Response('', { status: 404 });
     };
+    return { fetchImpl, requested };
+  };
 
-    const gitHeads = await fetchPublishedGitHeads(PACKAGES, 'next', { fetchImpl });
+  it('recognises only this repo’s datetime snapshots as its own', () => {
+    expect(isOwnSnapshotVersion(OWN, 'next')).toBe(true);
+    expect(isOwnSnapshotVersion('13.4.0-next.28', 'next')).toBe(false);
+    expect(isOwnSnapshotVersion('13.4.5-next.0', 'next')).toBe(false);
+  });
+
+  it('takes the tag when it points at this repo’s snapshot, in one request', async () => {
+    const { fetchImpl, requested } = registry({
+      '@pie-element/a': { version: OWN, gitHead: 'own123' },
+    });
+
+    const gitHeads = await fetchPublishedGitHeads([PACKAGES[0]], 'next', { fetchImpl });
+
+    expect(gitHeads.get('@pie-element/a')).toBe('own123');
+    expect(requested).toEqual(['https://registry.npmjs.org/@pie-element%2Fa/next']);
+  });
+
+  // Legacy pie-elements publishes the same names and can move `next`. Its gitHead is a commit
+  // this repo does not have, which would republish the package on every merge.
+  it('finds this repo’s newest snapshot when someone else moved the tag', async () => {
+    const { fetchImpl } = registry(
+      { '@pie-element/a': { version: '13.4.5-next.0', gitHead: 'legacy999' } },
+      {
+        '@pie-element/a': {
+          [OWN_OLDER]: 'older111',
+          [OWN]: 'own123',
+          '13.4.5-next.0': 'legacy999',
+        },
+      }
+    );
+
+    const gitHeads = await fetchPublishedGitHeads([PACKAGES[0]], 'next', { fetchImpl });
+
+    expect(gitHeads.get('@pie-element/a')).toBe('own123');
+  });
+
+  // Before the first snapshot, `next` is this repo's last `-next.N`, whose gitHead is on develop.
+  it('falls back to the tag’s gitHead when no snapshot has been published yet', async () => {
+    const { fetchImpl } = registry(
+      { '@pie-element/a': { version: '13.4.0-next.28', gitHead: '4fb24d97' } },
+      { '@pie-element/a': { '13.4.0-next.28': '4fb24d97' } }
+    );
+
+    const gitHeads = await fetchPublishedGitHeads([PACKAGES[0]], 'next', { fetchImpl });
+
+    expect(gitHeads.get('@pie-element/a')).toBe('4fb24d97');
+  });
+
+  // The packument runs to megabytes; a tag on this repo's own history needs no search.
+  it('skips the search when the tag’s gitHead is a commit this repo has', async () => {
+    const { fetchImpl, requested } = registry({
+      '@pie-element/a': { version: '13.4.0-next.28', gitHead: '4fb24d97' },
+    });
+
+    const gitHeads = await fetchPublishedGitHeads([PACKAGES[0]], 'next', {
+      fetchImpl,
+      isKnownCommit: (sha: string) => sha === '4fb24d97',
+    });
+
+    expect(gitHeads.get('@pie-element/a')).toBe('4fb24d97');
+    expect(requested).toEqual(['https://registry.npmjs.org/@pie-element%2Fa/next']);
+  });
+
+  it('reads a missing tag or a registry error as no gitHead', async () => {
+    const { fetchImpl } = registry({ '@pie-element/c': 502 });
+
+    const gitHeads = await fetchPublishedGitHeads(PACKAGES.slice(1), 'next', { fetchImpl });
 
     expect(Object.fromEntries(gitHeads)).toEqual({
-      '@pie-element/a': 'abc123',
       '@pie-element/b': null,
       '@pie-element/c': null,
     });
-    expect(requested).toContain('https://registry.npmjs.org/@pie-element%2Fa/next');
   });
 });
 

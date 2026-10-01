@@ -9,38 +9,26 @@
 //
 // A changeset the PR added itself wins: the packages it names are left out, so its bump type and
 // wording reach the changelog unchanged. Nothing is written when every changed package is covered
-// that way, when no publishable package changed, or when this PR's file already exists (a re-run).
+// that way, when no publishable package changed, or when this PR's file already exists (a re-run;
+// the workflow runs this on develop's tip, so a file recorded earlier is there to see).
 //
 // Usage:
 //   node scripts/release-record-pr-changeset.mjs --base <sha> --head <sha> \
 //     --number <n> --title "<pr title>" [--dry-run]
 
-import { spawnSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   collectPublishablePackages,
+  git,
   parseChangesetReleases,
   planSynthesizedChangeset,
   renderChangeset,
+  toLines,
 } from './release-synthesize-changesets.mjs';
 
 const CHANGESET_DIR = '.changeset';
-
-function git(rootDir, args) {
-  const result = spawnSync('git', args, { cwd: rootDir, encoding: 'utf8' });
-  if (result.status !== 0) {
-    throw new Error(`git ${args.join(' ')} failed: ${result.stderr || result.stdout}`);
-  }
-  return result.stdout;
-}
-
-const toLines = (stdout) =>
-  stdout
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
 
 const isAuthoredChangeset = (path) =>
   /^\.changeset\/[^/]+\.md$/.test(path) && path !== `${CHANGESET_DIR}/README.md`;
@@ -96,7 +84,9 @@ function main() {
     git(rootDir, [
       'diff',
       '--name-only',
-      '--diff-filter=AM',
+      // Added only. A PR that edits an existing changeset, say to fix a typo, did not write that
+      // entry: counting it would leave the PR's own changes to those packages unrecorded.
+      '--diff-filter=A',
       args.base,
       args.head,
       '--',

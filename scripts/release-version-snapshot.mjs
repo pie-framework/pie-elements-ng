@@ -31,6 +31,8 @@ import {
   collectPublishablePackages,
   collectUnreleasedFiles,
   fetchPublishedGitHeads,
+  gitSubject,
+  isAncestor,
   planSynthesizedChangeset,
   renderChangeset,
   resolveSnapshotBumps,
@@ -71,7 +73,9 @@ function disableChangelog(rootDir) {
 
 async function selectPackages(rootDir, tag) {
   const packages = collectPublishablePackages(rootDir);
-  const publishedGitHeads = await fetchPublishedGitHeads(packages, tag);
+  const publishedGitHeads = await fetchPublishedGitHeads(packages, tag, {
+    isKnownCommit: (sha) => isAncestor(rootDir, sha, 'HEAD'),
+  });
   // `HEAD`, not `GITHUB_SHA`: the release workflow fast-forwards the checkout to the branch tip
   // before this runs, and the tree is the thing being released.
   const changedFiles = collectUnreleasedFiles({
@@ -94,14 +98,6 @@ function readSelection(path) {
     throw new Error(`${path} is not a JSON array of package names`);
   }
   return selection;
-}
-
-function headSubject(rootDir) {
-  const result = spawnSync('git', ['log', '-1', '--format=%s', 'HEAD'], {
-    cwd: rootDir,
-    encoding: 'utf8',
-  });
-  return result.status === 0 ? result.stdout.trim() : '';
 }
 
 async function main() {
@@ -141,7 +137,8 @@ async function main() {
   }
 
   stashPendingChangesets(rootDir, pendingChangesets, args.stashDir);
-  const summary = args.summary?.trim() || headSubject(rootDir) || `Snapshot release (${args.tag})`;
+  const summary =
+    args.summary?.trim() || gitSubject(rootDir, 'HEAD') || `Snapshot release (${args.tag})`;
   writeFileSync(
     join(rootDir, CHANGESET_DIR, changesetFileName(selected)),
     renderChangeset(selected, summary, bumps),

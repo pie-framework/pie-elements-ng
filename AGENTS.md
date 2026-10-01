@@ -384,8 +384,10 @@ oclif-based CLI for:
   stable release. The script moves the pending changesets aside first, so the snapshot versions
   only the selected packages and their dependents.
 - **Snapshot selection is per package, measured from npm**: a package is selected when its shipping
-  files changed after the commit its current `next` version was built from (npm's `gitHead`), or
-  after its last `version` bump in git when that is newer or no snapshot exists. That is what
+  files changed after the commit its latest snapshot was built from (npm's `gitHead`), or after its
+  last `version` bump in git when that is newer or no snapshot exists. The latest snapshot is this
+  repo's newest `-next.<14-digit datetime>` version, not whatever the `next` tag points at: the
+  legacy repos can move that tag. Drop that search once they no longer publish to `next`. That is what
   makes the pipeline self-healing — a run that fails or is cancelled leaves npm pointing at the
   older commit, so the next run picks the packages up. Do not reintroduce a push-range or
   repo-wide "last release commit" baseline: both drop work silently (PIE-1073).

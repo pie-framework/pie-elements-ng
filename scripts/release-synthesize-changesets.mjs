@@ -1,33 +1,24 @@
-// Derives changesets from the packages that have unreleased code, so a merge into develop
-// publishes a `next` snapshot without an author having written a changeset by hand. The develop
-// release runs it through release-version-snapshot.mjs; run directly, it prints or writes the
-// changeset for the packages measured from their last version bump.
+// The package selection and changeset helpers shared by the release scripts: which publishable
+// packages hold unreleased shipping code, and the changeset that names them. It has no CLI of
+// its own. release-version-snapshot.mjs uses it for develop's `next` snapshots (preview with
+// `--dry-run`), release-record-pr-changeset.mjs for each merged PR's changeset.
 //
 // Only the packages whose own shipping files changed are named. Dependents are left to
 // changesets itself, which propagates through `updateInternalDependencies: "patch"`.
 //
-// Packages already covered by a pending (unconsumed) changeset are skipped, so a hand-written
-// changeset keeps its bump type and its summary.
-//
-// "Unreleased" is per package, and is measured against that package's own last version bump
-// rather than against the range of one push (PIE-1073). A push range scopes the release intent
-// to a single workflow run: when that run is cancelled or fails, the synthesized changeset dies
-// with the runner and no later run reconsiders the range, so the packages are never released and
-// nothing records that they should have been. Asking "did this package's shipping files change
-// after its version last moved?" instead makes every run consider everything outstanding, which
-// is what lets a lost run heal on the next merge.
-//
-// Per package rather than repo-wide because the auto-release push rebases onto the branch tip
-// when a merge lands mid-run, which leaves the version-bump commit sitting on top of code it did
-// not release. A single repo-wide "last release commit" baseline would read that commit as
-// covering the work beneath it and drop it silently — the exact failure this replaces.
+// "Unreleased" is per package, and is measured from that package's own release point rather than
+// from the range of one push (PIE-1073). A push range scopes the release intent to a single
+// workflow run: when that run is cancelled or fails, nothing later reconsiders the range, so the
+// packages are never released and nothing records that they should have been. Asking "did this
+// package's shipping files change after it was last released?" makes every run consider
+// everything outstanding, which is what lets a lost run heal on the next merge. The release point
+// is the commit the package's published snapshot was built from, or its last version bump in git
+// (see `resolveReleaseBase`).
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { globSync } from 'glob';
-import { detectPendingChangesets } from './release-detect-intent.mjs';
 
 const CHANGESET_DIR = '.changeset';
 const DEFAULT_BUMP = 'patch';
@@ -171,7 +162,7 @@ export function renderChangeset(packageNames, summary, bump = DEFAULT_BUMP) {
   return `---\n${entries}\n---\n\n${summary}\n`;
 }
 
-function git(rootDir, args) {
+export function git(rootDir, args) {
   const result = spawnSync('git', args, { cwd: rootDir, encoding: 'utf8' });
   if (result.status !== 0) {
     throw new Error(`git ${args.join(' ')} failed: ${result.stderr || result.stdout}`);
@@ -186,7 +177,7 @@ function gitOrNull(rootDir, args) {
   return result.status === 0 ? result.stdout : null;
 }
 
-const toLines = (stdout) =>
+export const toLines = (stdout) =>
   stdout
     .split('\n')
     .map((line) => line.trim())
@@ -237,7 +228,7 @@ function changedFilesSince(rootDir, base, head, dir) {
   return toLines(git(rootDir, ['diff', '--name-only', base, head, '--', dir]));
 }
 
-const isAncestor = (rootDir, ancestor, descendant) =>
+export const isAncestor = (rootDir, ancestor, descendant) =>
   spawnSync('git', ['merge-base', '--is-ancestor', ancestor, descendant], { cwd: rootDir })
     .status === 0;
 
@@ -279,24 +270,74 @@ export function collectUnreleasedFiles({ rootDir, head, packages, publishedGitHe
 
 const REGISTRY = 'https://registry.npmjs.org';
 
-// The `gitHead` of each package's version under `distTag`, or null when there is none to read.
-// A registry error is a null too, not a failure: null falls back to the last version bump, which
-// republishes a package rather than skipping it.
-export async function fetchPublishedGitHeads(packages, distTag, { fetchImpl = fetch } = {}) {
+const registryUrl = (name, ...rest) =>
+  [`${REGISTRY}/${name.replace('/', '%2F')}`, ...rest.map(encodeURIComponent)].join('/');
+
+// A snapshot this repo published: `changeset version --snapshot` with the `{tag}.{datetime}`
+// template in .changeset/config.json, so a 14-digit UTC datetime closes the version. Neither the
+// old `-next.N` prereleases nor lerna canaries end that way.
+export const isOwnSnapshotVersion = (version, distTag) =>
+  new RegExp(`-${distTag}\\.\\d{14}$`).test(version);
+
+async function fetchJson(fetchImpl, url, init) {
+  const response = await fetchImpl(url, init);
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+// The newest snapshot this repo published for `name`, read from the abbreviated packument (no
+// gitHead there, hence the second request). The datetime suffix orders snapshots on any base.
+async function newestOwnSnapshot(fetchImpl, name, distTag) {
+  const packument = await fetchJson(fetchImpl, registryUrl(name), {
+    headers: { accept: 'application/vnd.npm.install-v1+json' },
+  });
+  const snapshots = Object.keys(packument?.versions ?? {})
+    .filter((version) => isOwnSnapshotVersion(version, distTag))
+    .sort((a, b) => a.slice(-14).localeCompare(b.slice(-14)));
+  const newest = snapshots.at(-1);
+  return newest ? fetchJson(fetchImpl, registryUrl(name, newest)) : null;
+}
+
+// The `gitHead` of the latest snapshot this repo published for each package, or null when there
+// is none to read. A registry error is a null too, not a failure: null falls back to the last
+// version bump, which republishes a package rather than skipping it.
+//
+// The `distTag` pointer is read first because it is one small request, and it is the answer
+// whenever it points at one of this repo's snapshots. It is not trusted beyond that: the legacy
+// pie-elements and pie-lib pipelines publish the same names and can move the same `next` tag, and
+// a legacy `gitHead` is a commit this repo does not have, which would republish the package on
+// every merge until this repo published it again. So when the tag points elsewhere, the packument
+// is searched for this repo's newest snapshot. Once the legacy repos no longer publish to `next`,
+// the tag alone is enough and the search can go.
+//
+// `isKnownCommit` skips the search for a tag whose `gitHead` this repo has: that is this repo's
+// own old `-next.N` line, before a package's first snapshot, and the packument (megabytes for the
+// long-lived elements) would only confirm it. Without it, the tag's `gitHead` is still returned
+// when no snapshot exists, and `resolveReleaseBase` uses it only if it is on the measured history.
+export async function fetchPublishedGitHeads(
+  packages,
+  distTag,
+  { fetchImpl = fetch, isKnownCommit = () => false } = {}
+) {
   const gitHeads = new Map();
   const queue = [...packages];
+  const gitHeadOf = (manifest) => (typeof manifest?.gitHead === 'string' ? manifest.gitHead : null);
   const worker = async () => {
     for (let pkg = queue.shift(); pkg; pkg = queue.shift()) {
-      const url = `${REGISTRY}/${pkg.name.replace('/', '%2F')}/${encodeURIComponent(distTag)}`;
       try {
-        const response = await fetchImpl(url);
-        if (response.status === 404) {
-          gitHeads.set(pkg.name, null);
+        const tagged = await fetchJson(fetchImpl, registryUrl(pkg.name, distTag));
+        const taggedHead = gitHeadOf(tagged);
+        if (
+          !tagged ||
+          isOwnSnapshotVersion(tagged.version ?? '', distTag) ||
+          (taggedHead && isKnownCommit(taggedHead))
+        ) {
+          gitHeads.set(pkg.name, taggedHead);
           continue;
         }
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const manifest = await response.json();
-        gitHeads.set(pkg.name, typeof manifest?.gitHead === 'string' ? manifest.gitHead : null);
+        const own = await newestOwnSnapshot(fetchImpl, pkg.name, distTag);
+        gitHeads.set(pkg.name, gitHeadOf(own ?? tagged));
       } catch (error) {
         console.error(
           `[release] Could not read ${pkg.name}@${distTag} from npm (${error.message}); measuring it from its last version bump.`
@@ -309,96 +350,10 @@ export async function fetchPublishedGitHeads(packages, distTag, { fetchImpl = fe
   return gitHeads;
 }
 
-function gitSubject(rootDir, ref) {
+export function gitSubject(rootDir, ref) {
   const result = spawnSync('git', ['log', '-1', '--format=%s', ref], {
     cwd: rootDir,
     encoding: 'utf8',
   });
   return result.status === 0 ? result.stdout.trim() : '';
-}
-
-function parseArgs(argv) {
-  const args = { dryRun: false, bump: DEFAULT_BUMP };
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === '--dry-run') args.dryRun = true;
-    else if (arg === '--head') args.head = argv[++i];
-    else if (arg === '--summary') args.summary = argv[++i];
-    else if (arg === '--bump') args.bump = argv[++i];
-    else if (arg === '--selection-out') args.selectionOut = argv[++i];
-    else if (arg === '--ignore-pending') args.ignorePending = true;
-  }
-  return args;
-}
-
-async function main() {
-  const rootDir = process.cwd();
-  const args = parseArgs(process.argv.slice(2));
-  // `HEAD`, not `GITHUB_SHA`: the release workflow fast-forwards the checkout to the branch tip
-  // when a merge landed before the run started, which leaves `GITHUB_SHA` behind the tree being
-  // released. The tree is the thing to measure.
-  const head = args.head || 'HEAD';
-
-  const packages = collectPublishablePackages(rootDir);
-  const changedFiles = collectUnreleasedFiles({ rootDir, head, packages });
-
-  // `--ignore-pending` answers "which packages hold unreleased code", with no regard for who
-  // would release them. The workflow's end-of-run check needs that question, because the
-  // changeset directory it would otherwise read belongs to the runner's tree, not to `head`: a
-  // run that died before `changeset version` leaves its own synthesized changeset sitting there
-  // as pending, which would then mask the packages it dropped as somebody else's problem.
-  const { pendingChangesets } = args.ignorePending
-    ? { pendingChangesets: [] }
-    : await detectPendingChangesets(rootDir);
-
-  const selected = planSynthesizedChangeset({
-    rootDir,
-    changedFiles,
-    pendingChangesets,
-    packages,
-  });
-
-  // Written whether or not anything was selected: the release workflow compares this run's
-  // selection against the one still outstanding when the run ends, and an empty selection is a
-  // meaningful answer there.
-  if (args.selectionOut) {
-    writeFileSync(args.selectionOut, `${JSON.stringify(selected, null, 2)}\n`, 'utf8');
-  }
-
-  if (selected.length === 0) {
-    console.log('synthesized=false');
-    console.log('synthesized_packages=');
-    console.error(
-      pendingChangesets.length > 0
-        ? '[release] No changeset synthesized; pending changesets already cover every package with unreleased code.'
-        : '[release] No changeset synthesized; no publishable package has unreleased shipping files.'
-    );
-    return;
-  }
-
-  const summary =
-    args.summary?.trim() || gitSubject(rootDir, head) || 'Automated prerelease from develop';
-  const fileName = changesetFileName(selected);
-  const body = renderChangeset(selected, summary, args.bump);
-
-  console.error(`[release] Synthesizing ${CHANGESET_DIR}/${fileName} (${args.bump}):`);
-  for (const name of selected) console.error(`  - ${name}`);
-
-  if (!args.dryRun) {
-    if (!existsSync(join(rootDir, CHANGESET_DIR))) {
-      throw new Error(`${CHANGESET_DIR} does not exist in ${rootDir}`);
-    }
-    writeFileSync(join(rootDir, CHANGESET_DIR, fileName), body, 'utf8');
-  }
-
-  console.log('synthesized=true');
-  console.log(`synthesized_packages=${selected.join(',')}`);
-  console.log(`changeset_file=${CHANGESET_DIR}/${fileName}`);
-}
-
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  main().catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
 }

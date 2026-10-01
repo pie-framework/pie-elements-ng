@@ -27,22 +27,9 @@ describe('dropped-release report', () => {
     });
 
     expect(report.dropped).toEqual(['@pie-element/a']);
-    expect(report.lines.join('\n')).toContain('still unreleased on develop');
+    expect(report.lines.join('\n')).toContain('were not published from develop');
+    expect(report.lines.join('\n')).toContain('the next merge into the branch selects them again');
     expect(report.lines.join('\n')).toContain('- @pie-element/a');
-  });
-
-  // A merge landing mid-run is the normal case this must not cry wolf about: it triggers its own
-  // Release run.
-  it('separates work that arrived during the run from work the run dropped', () => {
-    const report = planDroppedReport({
-      intent: ['@pie-element/a'],
-      remaining: ['@pie-element/c', '@pie-element/b'],
-      branch: 'develop',
-    });
-
-    expect(report.dropped).toEqual([]);
-    expect(report.arrivedDuringRun).toEqual(['@pie-element/b', '@pie-element/c']);
-    expect(report.lines[0]).toContain('released by their own run: @pie-element/b, @pie-element/c');
   });
 
   it('says so rather than guessing when no intent was recorded', () => {
@@ -54,10 +41,9 @@ describe('dropped-release report', () => {
     ]);
   });
 
-  // The gap the self-healing selection cannot close. The bump is on the branch, so every later
-  // run reads these as released, but a run that died during publish may never have sent them to
-  // npm. Reporting them as released is the one answer that must not appear here.
-  it('does not call a failed run released just because the bump landed', () => {
+  // Nothing remaining means the publish manifest lists every selected package, so a red run
+  // failed after publishing. Saying "released" would read as if the run were fine.
+  it('says a failed run published everything it selected, and leaves it red', () => {
     const report = planDroppedReport({
       intent: ['@pie-element/a', '@pie-element/b'],
       remaining: [],
@@ -65,13 +51,23 @@ describe('dropped-release report', () => {
       jobStatus: 'failure',
     });
 
-    const text = report.lines.join('\n');
-    expect(text).not.toContain('are released.');
-    expect(text).toContain('will not be picked up again');
-    expect(text).toContain('- @pie-element/a');
-    expect(text).toContain('- @pie-element/b');
-    expect(text).toContain('force_publish=true');
-    // Already red for the underlying reason; this step only adds the list.
+    expect(report.lines).toEqual([
+      'All 2 package(s) this run selected were published; the run failed in a later step.',
+    ]);
+    // Already red for the underlying reason; this step only adds the line.
+    expect(report.failing).toBe(false);
+  });
+
+  it('lists what a failed run did not publish, without failing it again', () => {
+    const report = planDroppedReport({
+      intent: ['@pie-element/a', '@pie-element/b'],
+      remaining: ['@pie-element/b'],
+      branch: 'develop',
+      jobStatus: 'failure',
+    });
+
+    expect(report.dropped).toEqual(['@pie-element/b']);
+    expect(report.lines.join('\n')).toContain('- @pie-element/b');
     expect(report.failing).toBe(false);
   });
 

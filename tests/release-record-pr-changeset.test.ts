@@ -131,6 +131,30 @@ describe('recording a merged PR', () => {
     expect(existsSync(join(rootDir, '.changeset', 'pr-241.md'))).toBe(false);
   });
 
+  // Editing a changeset, say to fix a typo, is not writing one: the PR's own change still needs
+  // its entry.
+  it('still records packages named by a changeset the PR only edited', async () => {
+    const rootDir = await makeRepo();
+    await write(
+      rootDir,
+      '.changeset/pr-200.md',
+      '---\n"@pie-element/mc-populated-blank": patch\n---\n\nTpyo\n\npr: 200\n'
+    );
+    const base = commit(rootDir, 'initial');
+    await write(
+      rootDir,
+      '.changeset/pr-200.md',
+      '---\n"@pie-element/mc-populated-blank": patch\n---\n\nTypo\n\npr: 200\n'
+    );
+    await write(rootDir, `${MC}/src/index.ts`, 'export const a = 1;\n');
+    const head = commit(rootDir, 'fix(mc): a, and a typo');
+
+    expect(record(rootDir, base, head, '250', 'fix(mc): a')).toContain('recorded=true');
+    expect(readFileSync(join(rootDir, '.changeset', 'pr-250.md'), 'utf8')).toContain(
+      '"@pie-element/mc-populated-blank": patch'
+    );
+  });
+
   it('leaves an existing pr-<n>.md alone, so a re-run records nothing twice', async () => {
     const rootDir = await makeRepo();
     const base = commit(rootDir, 'initial');
