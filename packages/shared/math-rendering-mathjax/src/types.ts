@@ -34,7 +34,7 @@ export type MathRenderer = (element: HTMLElement) => void | Promise<void>;
 
 export interface MathRenderingAPI {
   renderMath: MathRenderer;
-  wrapMath?: (latex: string) => string;
+  wrapMath?: (latex: string, wrapType?: string | null) => string;
   unWrapMath?: (wrapped: string) => string;
   mmlToLatex?: (mathml: string) => string;
 }

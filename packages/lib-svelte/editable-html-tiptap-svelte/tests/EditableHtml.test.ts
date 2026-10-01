@@ -212,6 +212,20 @@ describe('EditableHtml accessible name', () => {
   });
 });
 
+describe('EditableHtml math', () => {
+  it('keeps the class MathJax skips when the host updates the editor', () => {
+    const { editor, props } = mountEditor({ markup: '<p>\\(x^2\\)</p>', ariaLabel: 'Prompt' });
+    expect(editor.view.dom.classList).toContain('mathjax_ignore');
+
+    props.ariaLabel = 'Question';
+    flushSync();
+    props.disabled = true;
+    flushSync();
+    expect(editor.view.dom.classList).toContain('mathjax_ignore');
+    expect(editor.view.dom.classList).toContain('ProseMirror');
+  });
+});
+
 describe('EditableHtml links', () => {
   it('leaves a typed URL as text', () => {
     const { editor } = mountEditor({ markup: '' });

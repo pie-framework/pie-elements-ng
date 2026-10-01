@@ -215,6 +215,33 @@ export async function updateModelInSource(page: Page, model: any) {
 }
 
 /**
+ * Types `text` at the end of an author-view rich-text field, blurs it and waits for the player to
+ * report a model whose `modelKey` includes the text. The caret is placed explicitly: a click alone
+ * puts it wherever it lands, possibly inside a math node's TeX.
+ */
+export async function editAuthorField(page: Page, field: Locator, modelKey: string, text: string) {
+  await page.evaluate(() => {
+    document.querySelector('pie-element-player')?.addEventListener('model-changed', (event) => {
+      (window as any).__committedModel = (event as CustomEvent).detail;
+    });
+  });
+  await field.click();
+  await field.evaluate((node) => {
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    range.collapse(false);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+  });
+  await page.keyboard.type(text);
+  await field.blur();
+  await page.waitForFunction(
+    ({ key, typed }) => String((window as any).__committedModel?.[key] ?? '').includes(typed),
+    { key: modelKey, typed: text.trim() }
+  );
+}
+
+/**
  * Check if the apply button is visible (indicates unsaved changes)
  */
 export async function hasUnsavedChanges(page: Page): Promise<boolean> {

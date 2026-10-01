@@ -5,7 +5,7 @@
  * MathJax handles LaTeX and MathML natively, so most functions are simple.
  */
 
-import { createMathjaxRenderer } from './adapter.js';
+import { createMathjaxRenderer, stripLegacyDelimiters } from './adapter.js';
 
 const PLAYER_MATH_RENDERING_KEY = '@pie-lib/math-rendering';
 
@@ -23,7 +23,7 @@ type RenderMathFn = (element: HTMLElement) => void | Promise<void>;
 
 type PlayerMathRenderingApi = {
   renderMath?: RenderMathFn;
-  wrapMath?: (latex: string) => string;
+  wrapMath?: (latex: string, wrapType?: string | null) => string;
   unWrapMath?: (latex: string) => unknown;
   mmlToLatex?: (mathml: string) => string;
 };
@@ -120,10 +120,20 @@ export const renderMath = async (el?: Element | string): Promise<string | undefi
 };
 
 /**
- * Wrap LaTeX - MathJax handles delimiters, so just pass through
+ * Wraps LaTeX in inline delimiters, through the page renderer's `wrapMath` when it has one. The
+ * fallback wraps as `@pie-lib/math-rendering` does, `$…$` for its `dollar` and `double_dollar`
+ * wrap types and `\(…\)` for any other, so a math node saves the same markup whichever renderer
+ * the authoring page installed. LaTeX that already has delimiters keeps one pair, where the legacy
+ * function adds a second: a math span saved without `data-raw` reaches the editor with its
+ * delimiters.
  */
-export const wrapMath = (latex: string): string =>
-  getPlayerMathRenderer()?.wrapMath?.(latex) ?? latex;
+export const wrapMath = (latex: string, wrapType?: string | null): string => {
+  const pageWrapped = getPlayerMathRenderer()?.wrapMath?.(latex, wrapType);
+  if (pageWrapped != null) return pageWrapped;
+  const [open, close] =
+    wrapType === 'dollar' || wrapType === 'double_dollar' ? ['$', '$'] : ['\\(', '\\)'];
+  return `${open}${stripLegacyDelimiters(latex)}${close}`;
+};
 
 /**
  * Unwrap LaTeX delimiters - minimal implementation for editable-html-tip-tap
