@@ -76,10 +76,7 @@ const enforce = process.env.A11Y_ENFORCE === '1';
 const runScenarioSuite = process.env.A11Y_SUITE !== 'inventory';
 
 function buildRoute(elementName: string, scenarioId: string): string {
-  const params = new URLSearchParams({
-    scenario: scenarioId,
-    player: 'esm',
-  });
+  const params = new URLSearchParams({ scenario: scenarioId });
   return `/a11y/${elementName}/scan?${params.toString()}`;
 }
 

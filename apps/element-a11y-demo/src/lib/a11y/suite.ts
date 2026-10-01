@@ -54,7 +54,6 @@ export interface A11yElementScanData {
   coverage: A11yDemoCoverage;
   mode: A11yScanMode;
   role: A11yScanRole;
-  player: 'esm' | 'iife';
   scanSource: 'scenario' | 'inventory';
 }
 
@@ -189,8 +188,7 @@ export async function loadA11yElementScanData(
   elementName: string,
   requestedScenarioId: string | null,
   requestedDemoId: string | null,
-  requestedMode: string | null,
-  requestedPlayer: string | null
+  requestedMode: string | null
 ): Promise<A11yElementScanData | null> {
   const element = getElement(elementName);
   if (!element) {
@@ -216,7 +214,6 @@ export async function loadA11yElementScanData(
       : describeA11yDemoCoverage(activeDemo),
     mode,
     role: activeScenario?.role ?? roleForA11yMode(mode),
-    player: requestedPlayer === 'iife' ? 'iife' : 'esm',
     scanSource: activeScenario ? 'scenario' : 'inventory',
   };
 }
