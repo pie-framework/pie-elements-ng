@@ -609,11 +609,13 @@ $effect(() => {
 });
 
 onMount(() => {
-  mathRenderer = createMathjaxRenderer();
-  if (typeof window !== 'undefined') {
+  // A renderer the host installed first, such as a MathJax 3 one, is used as is and no MathJax 4 loads.
+  const hostRenderer = (window as any)['@pie-lib/math-rendering']?.renderMath;
+  if (typeof hostRenderer === 'function') {
+    mathRenderer = (element) => hostRenderer(element);
+  } else {
+    mathRenderer = createMathjaxRenderer();
     (window as any)['@pie-lib/math-rendering'] = { renderMath: mathRenderer };
-  }
-  if (mathRenderer && typeof window !== 'undefined') {
     void mathRenderer(document.createElement('div'));
   }
 
