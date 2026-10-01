@@ -103,7 +103,7 @@ export interface SignLanguageCardPayload {
    * only key on the generic field — and the player falls back to it when this is
    * absent. Author it only where the two differ: a card tagged with the item's
    * content language (`language: 'en-US'`, `signLang: 'ase'`) so resolution
-   * reaches it by the default-language rung. The Learnosity importer emits
+   * reaches it by the default-language rung. The pie-api-aws importer emits
    * `language` alone.
    */
   signLang?: string;
@@ -202,7 +202,7 @@ export interface SignLanguageCatalogCard extends CatalogCard {
  * absent — belongs to the consuming player, per the sign-language PRD.
  *
  * Deliberately says nothing about `signLang`. It once required a non-empty one,
- * which would have rejected every card the Learnosity importer produces: the
+ * which would have rejected every card the pie-api-aws importer produces: the
  * adaptation language lives on the card's `language`, and a payload that omits
  * `signLang` is the normal shape rather than a malformed one.
  */

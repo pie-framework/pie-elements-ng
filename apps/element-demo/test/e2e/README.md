@@ -9,7 +9,6 @@ element demo app. Broader local suites remain opt-in:
 
 - `bun run test:e2e`: public `apps/element-demo` e2e suite.
 - `bun run test:e2e:all`: every workspace with a `test:e2e` script.
-- `bun run test:learnosity-parity`: optional `apps/learnosity-parity-demo` parity harness.
 - `bun run test:iife:*`: optional IIFE bundle and browser suites.
 
 ## ESM Coverage Status

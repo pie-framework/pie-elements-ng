@@ -9,7 +9,7 @@
  * every element that carries audio.
  *
  * `model.audioTranscript` therefore stays on the model — the print view has no
- * toolkit and renders it, and the Learnosity import writes the card from it — but
+ * toolkit and renders it, and the pie-api-aws import writes the card from it — but
  * nothing in delivery reads it.
  */
 import { describe, it, expect, afterEach } from 'vitest';

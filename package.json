@@ -20,7 +20,6 @@
     "tools/cli",
     "apps/element-demo",
     "apps/element-a11y-demo",
-    "apps/learnosity-parity-demo",
     "apps/esm-player-test"
   ],
   "scripts": {
@@ -101,12 +100,7 @@
     "verify:dependency-integrity": "bun run cli verify:dependency-integrity",
     "evals": "turbo run test:evals",
     "evals:ui": "turbo run test:evals:ui",
-    "evals:headed": "turbo run test:evals:headed",
-    "dev:learnosity-parity": "bun run --cwd apps/learnosity-parity-demo dev",
-    "test:learnosity-parity": "bun run --cwd apps/learnosity-parity-demo test:e2e",
-    "test:learnosity-parity:ui": "bun run --cwd apps/learnosity-parity-demo test:e2e:ui",
-    "test:learnosity-parity:headed": "bun run --cwd apps/learnosity-parity-demo test:e2e:headed",
-    "learnosity:capture-baselines": "bun run --cwd apps/learnosity-parity-demo capture:baselines"
+    "evals:headed": "turbo run test:evals:headed"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

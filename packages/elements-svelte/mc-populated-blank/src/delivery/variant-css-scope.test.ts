@@ -70,7 +70,7 @@ describe('bundled CQT variant CSS', () => {
     expect(unanchored).toEqual([]);
   });
 
-  // The sheets reproduce Learnosity's light-only look, so a colour they pin meets
+  // The sheets reproduce the CQT's light-only look, so a colour they pin meets
   // whatever the host paints on the other side unless the same rule pins that
   // too: near-white text on #fcfcd3, or #cc3333 on a dark page.
   it.each(SHEETS)('%s pins background and text colour together', (name) => {

@@ -41,7 +41,7 @@ async function makeRepoFixture(manifests: Record<string, Manifest>): Promise<str
 const ELEMENTS = {
   'packages/elements-svelte/mc-populated-blank': { name: '@pie-element/mc-populated-blank' },
   'packages/elements-react/multiple-choice': { name: '@pie-element/multiple-choice' },
-  'apps/learnosity-parity-demo': { name: '@pie-element/learnosity-parity-demo', private: true },
+  'apps/element-demo': { name: '@pie-element/element-demo', private: true },
 };
 
 describe('changeset synthesis', () => {
@@ -66,7 +66,7 @@ describe('changeset synthesis', () => {
       planSynthesizedChangeset({
         rootDir,
         changedFiles: [
-          'apps/learnosity-parity-demo/src/lib/samples/mc-populated-blank.json',
+          'apps/element-demo/src/lib/samples/mc-populated-blank.json',
           'docs/prds/some-prd.md',
           'turbo.json',
         ],

@@ -1,5 +1,3 @@
-/* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sr-vic/0.0.1/question.css */
-/* Reference layout: web-ItemBankViewer/learnosity/templates/Renaissance/vic.scss */
 .mc-populated-blank-root.variant-sr-vic {
   font-family: Starial, Arial, sans-serif;
 }
@@ -18,7 +16,7 @@
   margin: 0;
 }
 
-/* LSY .rli-vic-answer has no text-align rule and inherits start; PIE's
+/* The CQT's .rli-vic-answer has no text-align rule and inherits start; PIE's
    inline_sentence layout sets text-align:center on .template-line via a
    Svelte-scoped selector with specificity (0,4,0), so we need to match or
    exceed that. Pin sr-vic back to start so wrapped lines stay left-aligned.
@@ -36,7 +34,7 @@
 }
 
 /* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 }
-   The red holds AA only on LSY's white page (5.1:1), so the answer carries that
+   The red holds AA only on the CQT's white page (5.1:1), so the answer carries that
    surface: on a dark host it is 3.08:1. light-dark() would miss pie-players'
    colour schemes, which declare no color-scheme. */
 .mc-populated-blank-root.variant-sr-vic .pie-blank-value {

@@ -6,10 +6,9 @@ Demo and test apps for the elements in this workspace. Run the commands from the
 | --- | --- | --- | --- |
 | `element-demo/` | `bun run dev:demo` or `bun run dev:element-demo` | 5222 | Deliver, author, print, docs and source views for every element |
 | `element-a11y-demo/` | `bun run dev:a11y` | 5223 | Accessibility scenario demos |
-| `learnosity-parity-demo/` | `bun run dev:learnosity-parity` | 5224 | PIE elements side by side with live Learnosity rendering |
 | `esm-player-test/` | `bun run --cwd apps/esm-player-test dev` | 5300 | Published ESM elements in the ESM player |
 
-`dev:element-demo`, `dev:a11y` and `dev:learnosity-parity` read a port override from `PORT`; `esm-player-test` fixes its port in `vite.config.js`.
+`dev:element-demo` and `dev:a11y` read a port override from `PORT`; `esm-player-test` fixes its port in `vite.config.js`.
 
 ## Element Demo
 
