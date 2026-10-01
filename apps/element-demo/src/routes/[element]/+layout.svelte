@@ -17,9 +17,21 @@ import {
 import DemoSelector from '$lib/components/DemoSelector.svelte';
 import IifeBuildPanel from '$lib/components/IifeBuildPanel.svelte';
 import { isIifePlayerAvailable, parsePlayerType } from '$lib/config/player-runtime';
+import { installIifeMathRenderer } from '$lib/config/iife-math-renderer';
 import type { LayoutData } from './$types';
 
 let { data, children }: { data: LayoutData; children: any } = $props();
+
+// IIFE pages render math with MathJax 3, so the player must find that renderer when it mounts.
+let iifeMathReady = $state(false);
+$effect(() => {
+  if (currentPlayerType !== 'iife' || iifeMathReady) return;
+  installIifeMathRenderer()
+    .catch((error) => console.error('[element-demo] Failed to install MathJax 3:', error))
+    .finally(() => {
+      iifeMathReady = true;
+    });
+});
 
 // Initialize stores on mount - simple, no reactivity complexity
 onMount(() => {
@@ -472,6 +484,8 @@ let showAudioTranscript = $state(false);
 
   <!-- Page Content -->
   <div class="flex-1 overflow-hidden bg-base-200" class:rli-with-audio-transcript={isMcPopulatedBlank && showAudioTranscript}>
-    {@render children()}
+    {#if currentPlayerType !== 'iife' || iifeMathReady}
+      {@render children()}
+    {/if}
   </div>
 </div>
