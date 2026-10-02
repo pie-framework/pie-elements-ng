@@ -9,6 +9,8 @@ import {
   fetchPublishedGitHeads,
   isOwnSnapshotVersion,
   planSynthesizedChangeset,
+  raiseToPendingBumps,
+  readPendingBumps,
   renderChangeset,
   resolveSnapshotBumps,
 } from '../scripts/release-synthesize-changesets.mjs';
@@ -152,6 +154,63 @@ describe('snapshot bumps', () => {
       ['@pie-element/mc-populated-blank', 'patch'],
       ['@pie-element/multiple-choice', 'major'],
     ]);
+  });
+
+  it('reads the largest pending bump for every package named', async () => {
+    const rootDir = await makeRepoFixture(ELEMENTS);
+    await writeFile(
+      join(rootDir, '.changeset', 'a.md'),
+      '---\n"@pie-element/x": patch\n"@pie-element/y": minor\n---\n\nA\n',
+      'utf8'
+    );
+    await writeFile(
+      join(rootDir, '.changeset', 'b.md'),
+      '---\n"@pie-element/x": major\n---\n\nB\n'
+    );
+
+    expect(Object.fromEntries(readPendingBumps(rootDir, ['a', 'b']))).toEqual({
+      '@pie-element/x': 'major',
+      '@pie-element/y': 'minor',
+    });
+  });
+
+  // render-ui changes, so multiple-choice is released as its dependent at changesets' `patch`.
+  // Its pending major makes the stable release 14.0.0, and that is what `next` should preview.
+  it('raises a dependent changesets releases to its pending bump', () => {
+    const raised = raiseToPendingBumps({
+      releases: [
+        { name: '@pie-lib/render-ui', type: 'major' },
+        { name: '@pie-element/multiple-choice', type: 'patch' },
+        { name: '@pie-element/mc-populated-blank', type: 'patch' },
+      ],
+      pendingBumps: new Map([
+        ['@pie-lib/render-ui', 'major'],
+        ['@pie-element/multiple-choice', 'major'],
+      ]),
+      bumps: new Map([['@pie-lib/render-ui', 'major']]),
+    });
+
+    expect(Object.fromEntries(raised ?? [])).toEqual({
+      '@pie-lib/render-ui': 'major',
+      '@pie-element/multiple-choice': 'major',
+    });
+  });
+
+  it('reports nothing to raise once the plan matches the pending bumps', () => {
+    expect(
+      raiseToPendingBumps({
+        releases: [
+          { name: '@pie-lib/render-ui', type: 'major' },
+          { name: '@pie-element/multiple-choice', type: 'major' },
+          { name: '@pie-element/mc-populated-blank', type: 'patch' },
+        ],
+        pendingBumps: new Map([['@pie-element/multiple-choice', 'major']]),
+        bumps: new Map([
+          ['@pie-lib/render-ui', 'major'],
+          ['@pie-element/multiple-choice', 'major'],
+        ]),
+      })
+    ).toBeNull();
   });
 });
 
@@ -305,9 +364,9 @@ describe('unreleased-file collection', () => {
     await writeFile(target, content, 'utf8');
   };
 
-  const commit = (rootDir: string, message: string) => {
+  const commit = (rootDir: string, message: string, extra: string[] = []) => {
     run(rootDir, ['add', '-A']);
-    run(rootDir, ['commit', '-q', '-m', message]);
+    run(rootDir, ['commit', '-q', '-m', message, ...extra]);
     return run(rootDir, ['rev-parse', 'HEAD']);
   };
 
@@ -497,9 +556,26 @@ describe('unreleased-file collection', () => {
       ).toEqual(['@pie-element/mc-populated-blank', '@pie-element/multiple-choice']);
     });
 
-    // A stable release that lands after the snapshot is the later release point: what the
-    // snapshot shipped before it is in the stable version.
-    it('prefers a version bump newer than the snapshot', async () => {
+    // A version edited by hand, such as render-ui's base raised past legacy's 7.x, is a bump in
+    // git but not a release. Reading it as one would skip the package, and its unreleased code.
+    it('does not read a version edited after the snapshot as a release', async () => {
+      const rootDir = await makeGitFixture();
+      commit(rootDir, 'initial');
+      const snapshotted = commit(rootDir, 'snapshot published from here', ['--allow-empty']);
+
+      await write(rootDir, `${MC}/src/index.ts`, 'export const a = 1;\n');
+      commit(rootDir, 'fix(mc): unreleased');
+      await bumpVersion(rootDir, MC, '@pie-element/mc-populated-blank', '8.0.0-next.0');
+      commit(rootDir, 'chore(release): raise the base past a taken major');
+
+      expect(unreleasedSince(rootDir, { '@pie-element/mc-populated-blank': snapshotted })).toEqual([
+        '@pie-element/mc-populated-blank',
+      ]);
+    });
+
+    // After a stable release the back-merged bump is newer than the snapshot. The package is
+    // selected once more, which moves `next` back above `latest`.
+    it('selects a package again after a stable release lands above its snapshot', async () => {
       const rootDir = await makeGitFixture();
       commit(rootDir, 'initial');
 
@@ -508,9 +584,9 @@ describe('unreleased-file collection', () => {
       await bumpVersion(rootDir, MC, '@pie-element/mc-populated-blank', '14.0.0');
       commit(rootDir, 'chore(release): version packages');
 
-      expect(unreleasedSince(rootDir, { '@pie-element/mc-populated-blank': snapshotted })).toEqual(
-        []
-      );
+      expect(unreleasedSince(rootDir, { '@pie-element/mc-populated-blank': snapshotted })).toEqual([
+        '@pie-element/mc-populated-blank',
+      ]);
     });
 
     // The develop tip a snapshot was built from need not be on the history being measured, for

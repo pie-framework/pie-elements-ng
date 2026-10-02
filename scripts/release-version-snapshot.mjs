@@ -13,13 +13,14 @@
 //
 // The pending changesets belong to the next stable release, not to this snapshot: they are moved
 // out of `.changeset/` before `changeset version --snapshot`, which would otherwise version every
-// package they name. They still decide each selected package's bump, so `next` previews the
-// version master will release.
+// package they name. They still decide the bump of every package the snapshot versions, selected
+// or pulled in as a dependent, so `next` previews the version master will release.
 //
 // Usage:
 //   node scripts/release-version-snapshot.mjs --dry-run --selection-out <file>   # select only
 //   node scripts/release-version-snapshot.mjs --selection-in <file> --stash-dir <dir>
 //   node scripts/release-version-snapshot.mjs --stash-dir <dir> [--tag next]     # both at once
+//   node scripts/release-version-snapshot.mjs --all ...   # every publishable package, once
 
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
@@ -34,6 +35,8 @@ import {
   gitSubject,
   isAncestor,
   planSynthesizedChangeset,
+  raiseToPendingBumps,
+  readPendingBumps,
   renderChangeset,
   resolveSnapshotBumps,
 } from './release-synthesize-changesets.mjs';
@@ -51,6 +54,7 @@ function parseArgs(argv) {
     else if (arg === '--selection-in') args.selectionIn = argv[++i];
     else if (arg === '--summary') args.summary = argv[++i];
     else if (arg === '--dry-run') args.dryRun = true;
+    else if (arg === '--all') args.all = true;
   }
   return args;
 }
@@ -71,8 +75,26 @@ function disableChangelog(rootDir) {
   writeFileSync(configPath, `${JSON.stringify({ ...config, changelog: false }, null, 2)}\n`);
 }
 
-async function selectPackages(rootDir, tag) {
+// The releases changesets would make from the changesets now in `.changeset/`, dependents
+// included. Its stdout is changesets' banner, which must stay off this script's stdout.
+function releasePlan(rootDir, scratchDir) {
+  mkdirSync(scratchDir, { recursive: true });
+  const output = join(scratchDir, 'release-plan.json');
+  const status = spawnSync('bunx', ['changeset', 'status', `--output=${output}`], {
+    cwd: rootDir,
+    stdio: ['ignore', process.stderr, process.stderr],
+  });
+  if (status.status !== 0) {
+    throw new Error(`changeset status exited with ${status.status}`);
+  }
+  return JSON.parse(readFileSync(output, 'utf8')).releases ?? [];
+}
+
+async function selectPackages(rootDir, tag, all) {
   const packages = collectPublishablePackages(rootDir);
+  // A one-off full snapshot, for testing the complete set the next stable release would put on
+  // `latest` before it does.
+  if (all) return packages.map((pkg) => pkg.name).sort();
   const publishedGitHeads = await fetchPublishedGitHeads(packages, tag, {
     isKnownCommit: (sha) => isAncestor(rootDir, sha, 'HEAD'),
   });
@@ -109,7 +131,7 @@ async function main() {
 
   const selected = args.selectionIn
     ? readSelection(args.selectionIn)
-    : await selectPackages(rootDir, args.tag);
+    : await selectPackages(rootDir, args.tag, args.all);
 
   // Written whether or not anything was selected: the workflow's end-of-run check compares it
   // with what was published, and an empty selection is a meaningful answer there.
@@ -136,14 +158,40 @@ async function main() {
     return;
   }
 
+  // Read before the stash moves the files away.
+  const pendingBumps = readPendingBumps(rootDir, pendingChangesets);
   stashPendingChangesets(rootDir, pendingChangesets, args.stashDir);
   const summary =
     args.summary?.trim() || gitSubject(rootDir, 'HEAD') || `Snapshot release (${args.tag})`;
-  writeFileSync(
-    join(rootDir, CHANGESET_DIR, changesetFileName(selected)),
-    renderChangeset(selected, summary, bumps),
-    'utf8'
-  );
+  const changesetPath = join(rootDir, CHANGESET_DIR, changesetFileName(selected));
+  const writeSnapshotChangeset = (packageBumps) =>
+    writeFileSync(
+      changesetPath,
+      renderChangeset([...packageBumps.keys()].sort(), summary, packageBumps),
+      'utf8'
+    );
+
+  // Dependents changesets adds to the release take its own bump for them, not their pending one.
+  // Name each such dependent at its pending bump, and repeat while that changes the plan: a raised
+  // package can pull in dependents of its own. Bumps only grow, so this settles quickly.
+  let packageBumps = bumps;
+  writeSnapshotChangeset(packageBumps);
+  for (let round = 0; round < 10; round += 1) {
+    const raised = raiseToPendingBumps({
+      releases: releasePlan(rootDir, args.stashDir),
+      pendingBumps,
+      bumps: packageBumps,
+    });
+    if (!raised) break;
+    const added = [...raised].filter(([name, bump]) => packageBumps.get(name) !== bump);
+    console.error(
+      `[release] Previewing pending bumps for ${added.length} dependent(s): ${added
+        .map(([name, bump]) => `${name} (${bump})`)
+        .join(', ')}`
+    );
+    packageBumps = raised;
+    writeSnapshotChangeset(packageBumps);
+  }
   disableChangelog(rootDir);
 
   // Stdout carries only this script's `key=value` lines, which the release workflow appends to
