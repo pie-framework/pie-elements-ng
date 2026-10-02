@@ -20,6 +20,7 @@ import SubScript from '@tiptap/extension-subscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import { PlainTextPaste } from '../plain-text-paste.js';
 import { normalizeInitialMarkup } from '../utils/helper.js';
 
 import ExtendedTable from '../extensions/extended-table.js';
@@ -214,6 +215,7 @@ export const EditableHtml = (props) => {
       alignments: ['left', 'right', 'center', 'justify'],
     }),
     TextStyleKit,
+    PlainTextPaste,
     CharacterCount.configure({
       limit: props.charactersLimit || 1000000,
     }),

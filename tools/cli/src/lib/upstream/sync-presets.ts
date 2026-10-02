@@ -33,8 +33,10 @@ export const PRESET_IDS = {
   plotToolPropTypesCompatibility: 'patch.plot.tool-proptypes-compatibility',
   editableHtmlMathjaxIgnore: 'patch.editable-html-tip-tap.mathjax-ignore-editor-root',
   editableHtmlMathNodeUnwrap: 'patch.editable-html-tip-tap.math-node-unwrap-delimiters',
+  editableHtmlPlainTextPaste: 'patch.editable-html-tip-tap.plain-text-paste',
   mathRenderingWrapperMode: 'mode.math-rendering.wrapper',
   preserveRenderUiInlineMenu: 'preserve.render-ui.inline-menu',
+  preserveEditableHtmlPlainTextPaste: 'preserve.editable-html-tip-tap.plain-text-paste',
   depsGraphingDndKit: 'deps.graphing.dnd-kit-core',
   depsChartingD3Peers: 'deps.charting.d3-peers',
   depsMathRenderingOverride: 'deps.math-rendering.shared-adapter-only',
@@ -144,6 +146,30 @@ export function getPostSyncTextPatches(projectRoot: string): PostSyncTextPatch[]
         },
       ],
     },
+    {
+      id: PRESET_IDS.editableHtmlPlainTextPaste,
+      label: '@pie-lib/editable-html-tip-tap pastes external rich text as plain text',
+      file: join(
+        projectRoot,
+        'packages/lib-react/editable-html-tip-tap/src/components/EditableHtml.tsx'
+      ),
+      // Each `from` spans the two lines the insertion splits, so a patched file no longer matches.
+      // The import is anchored short of the next line's specifier, which gains `.js` only after
+      // these patches run. `preserve.editable-html-tip-tap.plain-text-paste` keeps the imported file.
+      replacements: [
+        {
+          from: "import Placeholder from '@tiptap/extension-placeholder';\nimport { normalizeInitialMarkup }",
+          to:
+            "import Placeholder from '@tiptap/extension-placeholder';\n" +
+            "import { PlainTextPaste } from '../plain-text-paste.js';\n" +
+            'import { normalizeInitialMarkup }',
+        },
+        {
+          from: '    TextStyleKit,\n    CharacterCount.configure({',
+          to: '    TextStyleKit,\n    PlainTextPaste,\n    CharacterCount.configure({',
+        },
+      ],
+    },
   ];
 }
 
@@ -157,6 +183,9 @@ export function getPieLibSyncMode(pkgName: string): PieLibSyncMode {
 export function getPieLibSourcePreserveList(pkgName: string): string[] {
   if (pkgName === 'render-ui') {
     return ['inline-menu.tsx'];
+  }
+  if (pkgName === 'editable-html-tip-tap') {
+    return ['plain-text-paste.ts'];
   }
   return [];
 }
