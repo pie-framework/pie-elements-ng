@@ -1,5 +1,14 @@
 # @pie-element/element-demo
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`d22cfb1`](https://github.com/pie-framework/pie-elements-ng/commit/d22cfb1980fb6ddf444e62e4a67d7e10cfe14e60), [`ec4e868`](https://github.com/pie-framework/pie-elements-ng/commit/ec4e8687ea62c2ddd01ed46c7dcf7824f8b2f279), [`0b4b1a9`](https://github.com/pie-framework/pie-elements-ng/commit/0b4b1a99b570e806908e00fd4b0dcfe3fb1107be), [`0611171`](https://github.com/pie-framework/pie-elements-ng/commit/0611171b7de5361b3c73a47e2a3093e707095659), [`67e7141`](https://github.com/pie-framework/pie-elements-ng/commit/67e71412d9e75d401660f30dece72b7e3bac3e55), [`6e32ff5`](https://github.com/pie-framework/pie-elements-ng/commit/6e32ff5b66b242a515881f0dc45420dd0bb555ab), [`37bbe22`](https://github.com/pie-framework/pie-elements-ng/commit/37bbe22c2d85bec3c425456cc9ce56d95dc21cf6), [`82406bf`](https://github.com/pie-framework/pie-elements-ng/commit/82406bf47738f81d020706b639f5f22748bcd5d0), [`06c1926`](https://github.com/pie-framework/pie-elements-ng/commit/06c19262622bd79d217c593b0c5f3cb2c92c98d6), [`6ed08c4`](https://github.com/pie-framework/pie-elements-ng/commit/6ed08c43bbfd26b6bcc34f50e0e6760ec02fe704), [`80e386a`](https://github.com/pie-framework/pie-elements-ng/commit/80e386ac213e0ed6e19168fa12d9e9e08e64c0b6), [`f690873`](https://github.com/pie-framework/pie-elements-ng/commit/f69087385125a2cd5fd72f701b0748e7a3d16efc), [`8bd4fe2`](https://github.com/pie-framework/pie-elements-ng/commit/8bd4fe251a62a4a1b7a33b45b22e4fab6d3fb1b1), [`bc8a5ad`](https://github.com/pie-framework/pie-elements-ng/commit/bc8a5ad9b89cc8065baefddf4f66806a64a9df45), [`54541e0`](https://github.com/pie-framework/pie-elements-ng/commit/54541e041f18eeb625b517d95387e05102ce3e02), [`f6d5dd4`](https://github.com/pie-framework/pie-elements-ng/commit/f6d5dd451fb30978c02e949d522ac2f6184e7e3b), [`ce67393`](https://github.com/pie-framework/pie-elements-ng/commit/ce67393e5fefd8736fca96e7c92a36a129b068f3), [`b6ef8b1`](https://github.com/pie-framework/pie-elements-ng/commit/b6ef8b1c432787df49293b9271b4bace5cd60d50), [`3bad6b6`](https://github.com/pie-framework/pie-elements-ng/commit/3bad6b6d27789a9c7d165d465f4846ce6d97d651), [`cd1f4f9`](https://github.com/pie-framework/pie-elements-ng/commit/cd1f4f9c26d72be0a486ab17d8d56ba529056755), [`83c260d`](https://github.com/pie-framework/pie-elements-ng/commit/83c260df429821faaf3ea6a0de218985998b3094), [`b56d58f`](https://github.com/pie-framework/pie-elements-ng/commit/b56d58f349da84602d6c8f60339bd83f56e574cc), [`8d69fb5`](https://github.com/pie-framework/pie-elements-ng/commit/8d69fb58ff9b482b46d74a9165ac4a4da700b8c9)]:
+  - @pie-element/element-player@0.1.2
+  - @pie-element/element-bundler@0.1.2
+  - @pie-element/element-theme-daisyui@0.1.1
+
 ## 0.1.2-next.25
 
 ### Patch Changes

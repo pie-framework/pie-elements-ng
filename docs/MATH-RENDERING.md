@@ -65,6 +65,8 @@ Elements import `@pie-element/shared-math-rendering-mathjax` directly.
 
 Each typeset expression carries hidden MathML (`mjx-assistive-mml`) for screen readers, and the MathJax context menu. The speech-rule-engine output is off: no semantic enrichment, no generated speech and no speech web worker, so no `worker-src blob:` CSP entry is needed. Math stays out of the tab order, so it offers no Tab or arrow-key exploration.
 
+A student's menu choices are saved in localStorage under `PIE-MathJax-Menu-Settings`, a key MathJax 3 does not share, and apply on later loads. Hidden MathML is exempt: the renderer's configuration sets it on every load.
+
 ## Usage
 
 ### Element Developers

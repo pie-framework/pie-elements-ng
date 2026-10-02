@@ -13,6 +13,7 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { Placeholder } from '@tiptap/extensions';
+import { PlainTextPaste } from './plain-text-paste.js';
 import type { EditableHtmlProps } from './types.js';
 
 let {
@@ -119,6 +120,7 @@ onMount(() => {
         },
       }),
       TextStyle,
+      PlainTextPaste,
       CharacterCount.configure({
         limit: 1000000,
       }),

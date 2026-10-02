@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/media-svelte",
-  "version": "0.1.1-next.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Shared accessible media UI helpers and transcript component for Svelte PIE elements",
   "repository": {

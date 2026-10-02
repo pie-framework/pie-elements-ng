@@ -269,6 +269,44 @@ describe('EditableHtml links', () => {
   });
 });
 
+describe('EditableHtml paste', () => {
+  function paste(editor: Editor, flavours: Record<string, string>) {
+    const clipboardData = {
+      types: Object.keys(flavours),
+      items: Object.keys(flavours).map((type) => ({ kind: 'string', type })),
+      getData: (type: string) => flavours[type] ?? '',
+    };
+    const event = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'clipboardData', { value: clipboardData });
+    editor.view.dom.dispatchEvent(event);
+  }
+
+  it('pastes Word content as plain text, one paragraph per line', () => {
+    const { editor } = mountEditor({ markup: '' });
+
+    paste(editor, {
+      'text/html':
+        `<p class=MsoNormal style='text-align:center'><span style='font-family:"Calibri",sans-serif;` +
+        `font-weight:bold'>Read the passage.</span></p><p class=MsoNormal><span>Second line</span></p>`,
+      'text/plain': 'Read the passage.\r\nSecond line',
+      'text/rtf': '{\\rtf1 }',
+    });
+
+    expect(editor.getHTML()).toBe('<p>Read the passage.</p><p>Second line</p>');
+  });
+
+  it('keeps the formatting of content copied from a PIE editor', () => {
+    const { editor } = mountEditor({ markup: '' });
+
+    paste(editor, {
+      'text/html': '<p data-pm-slice="1 1 []">Copied <strong>bold</strong></p>',
+      'text/plain': 'Copied bold',
+    });
+
+    expect(editor.getHTML()).toBe('<p>Copied <strong>bold</strong></p>');
+  });
+});
+
 describe('EditableHtml styles', () => {
   function compiledCss(cssHash?: string) {
     const { css } = compile(readFileSync(SOURCE_PATH, 'utf8'), {
