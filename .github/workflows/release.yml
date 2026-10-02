@@ -102,6 +102,12 @@ on:
         type: boolean
         default: false
 
+# One run per branch at a time. GitHub keeps one more waiting and cancels it when a newer push
+# queues. On develop that is harmless: selection is measured from npm, so the newer run picks up
+# the cancelled one's packages. On master it is not: if the Version Packages merge's run is the
+# one cancelled, its stable versions are committed but unpublished, and only that run detects
+# them (from its push's before..after range). Recover by re-running the cancelled run itself,
+# which keeps its original push event.
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
@@ -391,6 +397,25 @@ jobs:
           echo "Nothing to publish and no version PR to raise from this push. Skipping release."
           exit 0
 
+      # Versions the selected packages and their dependents as `<version>-next.<datetime>` in
+      # this runner's tree and nothing else: no commit, no push. The pending changesets are moved
+      # to the runner's temp dir first, because they belong to the next stable release, and every
+      # other package is pinned to its current `next` release so dependents reference code that
+      # is on npm.
+      #
+      # Before the build, not after: builds read the manifest version (`__PIE_PACKAGE_VERSION__`
+      # names ebsr's and complex-rubric's private element tags), so building first would bake
+      # develop's frozen version into every snapshot and give all of them the same tags. Nothing
+      # is committed or pushed, so versioning before the credential check costs nothing if the
+      # run stops there.
+      - name: Version next snapshot (develop)
+        id: snapshot_version
+        if: steps.gate.outputs.snapshot_release == 'true'
+        run: |
+          node scripts/release-version-snapshot.mjs \
+            --selection-in "${{ runner.temp }}/release-intent.json" \
+            --stash-dir "${{ runner.temp }}/pending-changesets" >> "$GITHUB_OUTPUT"
+
       - name: Build packages (publish runs only)
         if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         run: bun run build
@@ -497,22 +522,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ env.PUBLISH_NODE_AUTH_TOKEN }}
         run: node scripts/check-npm-auth.mjs
 
-      # Versions the selected packages as `<version>-next.<datetime>` in this runner's tree and
-      # nothing else: no commit, no push. The pending changesets are moved to the runner's temp
-      # dir first, because they belong to the next stable release. Runs only after build, test
-      # and the npm credential check. The tree it versions is the one that was built, because
-      # nothing is pushed, so a merge landing mid-run cannot put the bump on top of other code.
-      - name: Version next snapshot (develop)
-        id: snapshot_version
-        if: steps.gate.outputs.snapshot_release == 'true'
-        run: |
-          node scripts/release-version-snapshot.mjs \
-            --selection-in "${{ runner.temp }}/release-intent.json" \
-            --stash-dir "${{ runner.temp }}/pending-changesets" >> "$GITHUB_OUTPUT"
-
-      # The publish script publishes every package whose manifest version differs from HEAD's,
-      # which in this tree is exactly the snapshot set. npm records HEAD as each version's
-      # `gitHead`, which is what the next run measures from.
+      # Publishes exactly the packages the version step versioned, by name. Selecting them by
+      # "manifest differs from HEAD" would also publish the packages it only pinned. npm records
+      # HEAD as each version's `gitHead`, which is what the next run measures from.
       - name: Publish next snapshot (develop)
         id: snapshot_publish
         if: steps.gate.outputs.snapshot_release == 'true'
@@ -522,6 +534,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ env.PUBLISH_NODE_AUTH_TOKEN }}
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
           RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
+          RELEASE_PACKAGES: ${{ steps.snapshot_version.outputs.snapshot_packages }}
           RELEASE_PUBLISHED_MANIFEST: ${{ runner.temp }}/published.json
 
       - name: Run Changesets release

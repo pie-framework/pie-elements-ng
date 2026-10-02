@@ -382,8 +382,11 @@ oclif-based CLI for:
   `next` dist-tag, and discards the tree (`scripts/release-version-snapshot.mjs`). The base version
   takes the largest bump the pending changesets give a package, dependents included, so `next`
   previews the coming stable release. The script moves the pending changesets aside first, so the
-  snapshot versions only the selected packages and their dependents. A manual Release run on
-  `develop` with `snapshot_all` puts every package on `next` at once.
+  snapshot versions only the selected packages and their dependents. Every other package is
+  pinned, in the runner only, to its own latest `next` release, because `workspace:*` publishes as
+  the working-tree version and develop's committed versions are frozen. Versioning runs before
+  the build, which embeds the manifest version. A manual Release run on `develop` with
+  `snapshot_all` puts every package on `next` at once.
 - **Snapshot selection is per package, measured from npm**: a package is selected when its shipping
   files changed after the commit its latest snapshot was built from (npm's `gitHead`), or after its
   last `version` bump in git when no snapshot exists. A bump newer than the snapshot is not a
