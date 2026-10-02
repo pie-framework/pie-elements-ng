@@ -96,12 +96,42 @@ const BUMP_RANK = { patch: 1, minor: 2, major: 3 };
 // package takes the largest bump any pending changeset gives it. A pending `major` is what makes
 // `next` read `14.0.0-next.<datetime>` ahead of a 14.0.0 release, rather than a patch on 13.x.
 export function resolveSnapshotBumps({ rootDir, pendingChangesets, selected }) {
-  const bumps = new Map(selected.map((name) => [name, DEFAULT_BUMP]));
+  const pending = readPendingBumps(rootDir, pendingChangesets);
+  return new Map(
+    selected.map((name) => [name, maxBump(DEFAULT_BUMP, pending.get(name) ?? DEFAULT_BUMP)])
+  );
+}
+
+const maxBump = (a, b) => ((BUMP_RANK[b] ?? 0) > (BUMP_RANK[a] ?? 0) ? b : a);
+
+// The largest bump the pending changesets give each package they name.
+export function readPendingBumps(rootDir, pendingChangesets) {
+  const bumps = new Map();
   for (const { name, bump } of readPendingReleases(rootDir, pendingChangesets)) {
-    if (!bumps.has(name) || !BUMP_RANK[bump]) continue;
-    if (BUMP_RANK[bump] > BUMP_RANK[bumps.get(name)]) bumps.set(name, bump);
+    if (!BUMP_RANK[bump]) continue;
+    bumps.set(name, maxBump(bumps.get(name) ?? bump, bump));
   }
   return bumps;
+}
+
+// Changesets releases a selected package's dependents too, at the bump its dependency rules give
+// them (`patch` here), not at their pending bump: multiple-choice would snapshot as 13.4.0-next.*
+// beside a pending major that makes its stable release 14.0.0. Given changesets' release plan
+// (`changeset status --output`), this returns `bumps` with every planned package raised to its
+// pending bump where that is larger, so the dependents preview their stable version too. Null when
+// nothing needs raising, which is when the plan already matches.
+export function raiseToPendingBumps({ releases, pendingBumps, bumps }) {
+  const raised = new Map(bumps);
+  let changed = false;
+  for (const { name, type } of releases) {
+    if (!BUMP_RANK[type]) continue;
+    const wanted = maxBump(type, pendingBumps.get(name) ?? type);
+    if (wanted !== type && wanted !== raised.get(name)) {
+      raised.set(name, maxBump(raised.get(name) ?? wanted, wanted));
+      changed = true;
+    }
+  }
+  return changed ? raised : null;
 }
 
 function safeRead(path) {
@@ -237,15 +267,18 @@ export const isAncestor = (rootDir, ancestor, descendant) =>
 //
 // Snapshot prereleases commit no version, so on develop the last bump stays at the last stable
 // release and every package touched since would read as unreleased on every merge. The commit a
-// published snapshot was built from — npm records it as `gitHead` — is the later release point,
-// and is used whenever it is one: on `head`'s history and not older than the last bump. Anything
-// else (no snapshot published, a commit this clone does not have, a snapshot that predates the
-// last stable release) falls back to the bump, which can only select more, never drop work.
+// published snapshot was built from — npm records it as `gitHead` — is the release point instead,
+// whenever it is on `head`'s history. Otherwise (no snapshot published, or a commit this clone
+// does not have) the bump is used, which can only select more, never drop work.
+//
+// A bump newer than the snapshot does not override it. A version edited by hand on develop, such
+// as a base raised past a version another lineage holds, is a bump too, and reading it as a
+// release would skip the package and any unreleased code beneath it. After a stable release the
+// snapshot does predate the back-merged bump, so the released packages are selected once more and
+// `next` moves above `latest` again (`14.0.1-next.*` beside 14.0.0), which is where it belongs.
 export function resolveReleaseBase({ rootDir, head, manifestPath, publishedGitHead }) {
-  const bump = lastVersionBumpCommit(rootDir, head, manifestPath);
-  if (!publishedGitHead || !isAncestor(rootDir, publishedGitHead, head)) return bump;
-  if (bump && !isAncestor(rootDir, bump, publishedGitHead)) return bump;
-  return publishedGitHead;
+  if (publishedGitHead && isAncestor(rootDir, publishedGitHead, head)) return publishedGitHead;
+  return lastVersionBumpCommit(rootDir, head, manifestPath);
 }
 
 // The union of every package's own unreleased paths. Safe to flatten: `planSynthesizedChangeset`

@@ -380,12 +380,14 @@ oclif-based CLI for:
 - **`develop` publishes `<version>-next.<datetime>` snapshots**: every merge versions the packages
   it changed with `changeset version --snapshot next` in the runner only, publishes them under the
   `next` dist-tag, and discards the tree (`scripts/release-version-snapshot.mjs`). The base version
-  takes the largest bump the pending changesets give a package, so `next` previews the coming
-  stable release. The script moves the pending changesets aside first, so the snapshot versions
-  only the selected packages and their dependents.
+  takes the largest bump the pending changesets give a package, dependents included, so `next`
+  previews the coming stable release. The script moves the pending changesets aside first, so the
+  snapshot versions only the selected packages and their dependents. A manual Release run on
+  `develop` with `snapshot_all` puts every package on `next` at once.
 - **Snapshot selection is per package, measured from npm**: a package is selected when its shipping
   files changed after the commit its latest snapshot was built from (npm's `gitHead`), or after its
-  last `version` bump in git when that is newer or no snapshot exists. The latest snapshot is this
+  last `version` bump in git when no snapshot exists. A bump newer than the snapshot is not a
+  release point: a hand-edited version would otherwise hide unreleased code. The latest snapshot is this
   repo's newest `-next.<14-digit datetime>` version, not whatever the `next` tag points at: the
   legacy repos can move that tag. Drop that search once they no longer publish to `next`. That is what
   makes the pipeline self-healing — a run that fails or is cancelled leaves npm pointing at the

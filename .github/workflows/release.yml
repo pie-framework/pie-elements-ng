@@ -41,6 +41,8 @@ on:
       - "packages/**"
       # tools/cli is published too (@pie-element/cli).
       - "tools/**"
+      # The release scripts this workflow runs, so a fix to one takes effect on its own merge.
+      - "scripts/**"
       - "package.json"
       - "bun.lock"
       - "turbo.json"
@@ -94,6 +96,11 @@ on:
         required: false
         type: string
         default: ""
+      snapshot_all:
+        description: "develop only: publish every package as a next snapshot, not just the changed ones (to test a whole release on next)"
+        required: false
+        type: boolean
+        default: false
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -231,8 +238,12 @@ jobs:
         id: snapshot_select
         if: github.ref_name == 'develop' && (github.event_name == 'push' || inputs.release_intent == 'publish')
         shell: bash
+        env:
+          SNAPSHOT_ALL: ${{ github.event_name == 'workflow_dispatch' && inputs.snapshot_all || false }}
         run: |
-          node scripts/release-version-snapshot.mjs --dry-run \
+          all=()
+          if [ "$SNAPSHOT_ALL" = "true" ]; then all=(--all); fi
+          node scripts/release-version-snapshot.mjs --dry-run "${all[@]}" \
             --selection-out "${{ runner.temp }}/release-intent.json" >> "$GITHUB_OUTPUT"
 
       # One gate for every publish-only step below, so the conditions cannot drift apart.

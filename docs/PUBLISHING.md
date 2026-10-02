@@ -47,11 +47,17 @@ Version Packages PR merged ──► latest published ──► master -> develo
 
 Each merge into `develop` publishes the packages it changed as `<version>-next.<datetime>` under the `next` dist-tag (`scripts/release-version-snapshot.mjs`):
 
-1. **Select.** A package is selected when its shipping files changed after the commit its latest snapshot was built from, which npm records as `gitHead`. With no snapshot on npm, or when the last `version` bump in git is newer (a stable release), that bump is the baseline instead.
+1. **Select.** A package is selected when its shipping files changed after the commit its latest snapshot was built from, which npm records as `gitHead`. With no snapshot on npm, the package's last `version` bump in git is the baseline instead. A bump newer than the snapshot doesn't count as a release: a version edited by hand on `develop` would otherwise hide the package's unreleased code. After a stable release that means the released packages publish to `next` once more, which puts `next` back above `latest`.
 
    The snapshot is found through the `next` tag when the tag points at one of this repo's snapshots (`-next.<14-digit datetime>`). The legacy `pie-elements` and `pie-lib` pipelines publish the same names and can move that tag, so when it points elsewhere, the package's versions are searched for this repo's newest snapshot instead. Once the legacy repos no longer publish to `next`, that search can be removed and the tag trusted alone (`fetchPublishedGitHeads` in `scripts/release-synthesize-changesets.mjs`). Everything in a package except tests, specs, snapshots and Vitest or Playwright config counts as shipping, READMEs included. Private packages and packages in the Changesets `ignore` list are never selected.
-2. **Version.** The pending changesets are moved aside, a changeset naming the selected packages is written, and `changeset version --snapshot next` runs. Each package takes the largest bump its pending changesets give it, otherwise `patch`, so `next` previews the next stable version: a pending `major` gives `14.0.0-next.<datetime>`.
+2. **Version.** The pending changesets are moved aside, a changeset naming the selected packages is written, and `changeset version --snapshot next` runs. Each package takes the largest bump its pending changesets give it, otherwise `patch`, so `next` previews the next stable version: a pending `major` gives `14.0.0-next.<datetime>`. That applies to the dependents Changesets adds as well (read from `changeset status --output`), so multiple-choice previews `14.0.0-next.*` even when only a library it uses changed.
 3. **Publish and discard.** The publish script publishes the bumped packages and their dependents. The versioned tree is thrown away with the runner.
+
+To put every package on `next` at once, for example to test the full set a stable release would put on `latest`, run the Release workflow manually on `develop` with `snapshot_all`:
+
+```bash
+gh workflow run release.yml --ref develop -f release_intent=publish -f snapshot_all=true
+```
 
 Because selection is measured from npm rather than from one push, a run that fails or is cancelled loses nothing: npm still points at the older commit, and the next run selects the same packages. Afterwards `scripts/release-report-dropped.mjs` fails an otherwise-green run that selected a package and did not publish it.
 
