@@ -5,11 +5,13 @@ type MathJaxMacro = string | [string, number];
 
 interface MathItem {
   typesetRoot?: Element | null;
+  state?: () => number;
+  clear?: () => void;
 }
 
 /** The parts of MathJax's `startup.document` this adapter uses. */
 interface MathDocument {
-  math?: Iterable<MathItem>;
+  math?: Iterable<MathItem> & { remove?: (...items: MathItem[]) => unknown };
   outputJax?: { chtmlStyles?: Element | null };
   addRenderAction?: (
     id: string,
@@ -45,6 +47,7 @@ interface MathJaxGlobal {
   };
   chtml?: { fontURL?: string };
   typesetPromise?: (elements?: Element[]) => Promise<void>;
+  typesetClear?: (elements?: Element[]) => void;
   /** The component build's module tree. */
   _?: { output?: { chtml_ts?: { CHTML?: { STYLESHEETID?: string } } } };
 }
@@ -100,8 +103,11 @@ const SHARED_STYLESHEET_ID = 'MJX-CHTML-styles';
 /** Output stylesheets of another MathJax. MathJax 4's menu and explorer sheets are not among them. */
 const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, 'MJX-SVG-styles'];
 
-/** After MathJax's own `update` action, at STATE.INSERTED (200). */
-const STRIP_LATEX_PRIORITY = 201;
+/** MathJax's STATE.INSERTED: the item's output is in the document. */
+const STATE_INSERTED = 200;
+
+/** After MathJax's own `update` action, at STATE.INSERTED. */
+const STRIP_LATEX_PRIORITY = STATE_INSERTED + 1;
 
 /**
  * MathJax 4 records each node's TeX source in `data-latex` and `data-latex-item`, and carries them
@@ -319,6 +325,24 @@ function watchForForeignStylesheets(): void {
   observer.observe(head, { childList: true });
 }
 
+/**
+ * Removes from MathJax's list the math whose output has left the page. MathJax keeps every item it
+ * typesets until it is cleared, and a menu setting change rerenders them all. Math still on the
+ * page stays listed, so menu changes keep reaching it. Output MathJax has not inserted yet, in a
+ * typeset or rerender waiting on a font file, is detached too, so only inserted items qualify.
+ * Each is cleared and removed as MathJax's own `clearMathItemsWithin` does.
+ */
+function clearRemovedMath(mathDocument: MathDocument | undefined): void {
+  const list = mathDocument?.math;
+  if (!list?.remove) return;
+  const removed = [...list].filter(
+    (item) => (item.state?.() ?? 0) >= STATE_INSERTED && item.typesetRoot?.isConnected === false
+  );
+  if (removed.length === 0) return;
+  for (const item of [...removed].reverse()) item.clear?.();
+  list.remove(...removed);
+}
+
 /** Resolves once the MathJax the page configured itself has started. */
 function awaitPageMathjax(config: MathJaxGlobal): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -408,7 +432,16 @@ export function createMathjaxRenderer(
     await mathJax?.startup?.promise;
     if (typeof mathJax?.typesetPromise !== 'function') return;
 
-    await mathJax.typesetPromise([element]);
+    clearRemovedMath(mathJax.startup?.document);
+    try {
+      await mathJax.typesetPromise([element]);
+    } catch (error) {
+      // MathJax keeps the math that failed listed and typesets it again with every later element.
+      // MathJax 4.1.3 then fails it again when the failure was a font file, rejecting the typeset
+      // of unrelated math (fixed upstream in mathjax/MathJax-src#1545).
+      mathJax.typesetClear?.([element]);
+      throw error;
+    }
     // Also covers a MathJax 4 the page loaded itself, which has no render action from this adapter.
     stripLatexAttributes(element);
   };

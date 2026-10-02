@@ -11,6 +11,30 @@ const SINGLE_DOLLAR_WARNING =
 
 type TypesetPromise = (elements?: Element[]) => Promise<void>;
 
+/** MathJax's STATE values for an item typeset but not yet inserted, and one inserted. */
+const TYPESET = 150;
+const INSERTED = 200;
+
+interface MockMathItem {
+  typesetRoot: Element | null;
+  state?: () => number;
+  clear?: () => void;
+}
+
+function mathItem(typesetRoot: Element | null, state: number) {
+  return { typesetRoot, state: () => state, clear: vi.fn() };
+}
+
+/** MathJax's MathList: the document's items, in order, with `remove`. */
+function mathList() {
+  const list = Object.assign([] as MockMathItem[], {
+    remove: (...items: MockMathItem[]) => {
+      for (const item of items) list.splice(list.indexOf(item), 1);
+    },
+  });
+  return list;
+}
+
 const page = window as any;
 
 function interceptScripts(): HTMLScriptElement[] {
@@ -39,7 +63,7 @@ function runMathjaxScript(
   });
   const CHTML = { STYLESHEETID: 'MJX-CHTML-styles' };
   const mathDocument = {
-    math: [] as { typesetRoot: Element }[],
+    math: mathList(),
     outputJax: { chtmlStyles },
     addRenderAction: vi.fn(),
   };
@@ -52,6 +76,7 @@ function runMathjaxScript(
       defaultReady: vi.fn(() => {
         mathJax.stylesheetIdAtStartup = CHTML.STYLESHEETID;
         mathJax.typesetPromise = typesetPromise;
+        mathJax.typesetClear = vi.fn();
         mathJax.startup.document = mathDocument;
       }),
     },
@@ -530,6 +555,50 @@ describe('createMathjaxRenderer', () => {
     const toggled = elementWith(TYPESET_OUTPUT).firstElementChild as Element;
     expect(renderMathItem({ typesetRoot: toggled }, mathDocument)).toBe(false);
     expect(toggled.outerHTML).not.toContain('data-latex');
+  });
+
+  it('removes the math whose output has left the page before each typeset', async () => {
+    interceptScripts();
+    const render = createMathjaxRenderer();
+    const first = render(elementWith('\\(x\\)'));
+    const { mathJax, mathDocument, typesetPromise, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await first;
+
+    const removed = mathItem(document.createElement('mjx-container'), INSERTED);
+    const onPage = mathItem(elementWith(TYPESET_OUTPUT).firstElementChild, INSERTED);
+    // Output MathJax made in a typeset or rerender still waiting on a font file.
+    const pending = mathItem(document.createElement('mjx-container'), TYPESET);
+    const failed = mathItem(null, TYPESET - 1);
+    mathDocument.math.push(removed, onPage, pending, failed);
+    const listed: MockMathItem[][] = [];
+    typesetPromise.mockImplementation(async () => {
+      listed.push([...mathDocument.math]);
+    });
+
+    await render(elementWith('\\(y\\)'));
+
+    expect(listed).toEqual([[onPage, pending, failed]]);
+    expect(removed.clear).toHaveBeenCalledTimes(1);
+    for (const item of [onPage, pending, failed]) expect(item.clear).not.toHaveBeenCalled();
+    expect(mathJax.typesetClear).not.toHaveBeenCalled();
+  });
+
+  it('clears the math of an element whose typeset fails and rejects the render', async () => {
+    interceptScripts();
+    const failure = new Error("dynamic file 'double-struck' failed to load");
+    const target = elementWith('\\(\\mathbb{R}\\)');
+
+    const rendering = createMathjaxRenderer()(target);
+    const { mathJax, finishStartup } = runMathjaxScript(
+      vi.fn<TypesetPromise>(async () => {
+        throw failure;
+      })
+    );
+    finishStartup();
+
+    await expect(rendering).rejects.toBe(failure);
+    expect(mathJax.typesetClear.mock.calls).toEqual([[[target]]]);
   });
 
   it('reports a MathJax 3 on window once per page', async () => {
