@@ -75,6 +75,7 @@ export class RawBar extends React.Component {
     index: PropTypes.number.isRequired,
     graphProps: types.GraphPropsType.isRequired,
     interactive: PropTypes.bool,
+    disabled: PropTypes.bool,
     correctness: PropTypes.shape({
       value: PropTypes.string,
       label: PropTypes.string,
@@ -142,8 +143,19 @@ export class RawBar extends React.Component {
   };
 
   render() {
-    const { graphProps, value, label, xBand, index, interactive, correctness, barColor, defineChart, correctData } =
-      this.props;
+    const {
+      graphProps,
+      value,
+      label,
+      xBand,
+      index,
+      interactive,
+      disabled,
+      correctness,
+      barColor,
+      defineChart,
+      correctData,
+    } = this.props;
     const { scale, range } = graphProps;
     const { dragValue, isHovered } = this.state;
 
@@ -201,6 +213,7 @@ export class RawBar extends React.Component {
           y={v}
           defineChart={defineChart}
           interactive={interactive}
+          disabled={disabled}
           width={barWidth}
           onDrag={(v) => this.dragValue(value, v)}
           onDragStop={this.dragStop}
@@ -228,7 +241,7 @@ export class Bars extends React.Component {
   };
 
   render() {
-    const { data, graphProps, xBand, onChangeCategory, defineChart, histogram, correctData } = this.props;
+    const { data, graphProps, xBand, onChangeCategory, defineChart, histogram, correctData, disabled } = this.props;
 
     return (
       <Group>
@@ -237,6 +250,7 @@ export class Bars extends React.Component {
             value={d.value}
             interactive={defineChart || d.interactive}
             defineChart={defineChart}
+            disabled={disabled}
             label={d.label}
             xBand={xBand}
             index={index}

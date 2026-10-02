@@ -78,6 +78,7 @@ export class Chart extends React.Component {
     categoryDefaultLabel: PropTypes.string,
     categoryDefaults: PropTypes.object,
     defineChart: PropTypes.bool,
+    disabled: PropTypes.bool,
     theme: PropTypes.object,
     chartingOptions: PropTypes.object,
     changeInteractiveEnabled: PropTypes.bool,
@@ -240,6 +241,7 @@ export class Chart extends React.Component {
       language,
       labelsCharactersLimit,
       correctData,
+      disabled,
     } = this.props;
     let { chartType } = this.props;
 
@@ -348,6 +350,7 @@ export class Chart extends React.Component {
                 onChange={this.changeData}
                 onChangeCategory={this.changeCategory}
                 correctData={correctData}
+                disabled={disabled}
               />
             )}
           </g>

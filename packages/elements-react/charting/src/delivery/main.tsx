@@ -172,6 +172,7 @@ export class Main extends React.Component {
             addCategoryEnabled={false}
             categoryDefaultLabel={studentNewCategoryDefaultLabel}
             language={language}
+            disabled={model.disabled}
             labelsPlaceholders={{}}
           />
         ) : (
@@ -194,6 +195,7 @@ export class Main extends React.Component {
             addCategoryEnabled={addCategoryEnabled}
             categoryDefaultLabel={studentNewCategoryDefaultLabel}
             language={language}
+            disabled={model.disabled}
             labelsPlaceholders={{}}
             correctData={showToggle ? correctData : undefined}
           />

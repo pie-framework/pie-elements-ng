@@ -34,6 +34,7 @@ export class RawPlot extends React.Component {
     graphProps: types.GraphPropsType.isRequired,
     CustomBarElement: PropTypes.func,
     interactive: PropTypes.bool,
+    disabled: PropTypes.bool,
     correctness: PropTypes.shape({
       value: PropTypes.string,
       label: PropTypes.string,
@@ -112,6 +113,7 @@ export class RawPlot extends React.Component {
       index,
       CustomBarElement,
       interactive,
+      disabled,
       correctness,
       defineChart,
       correctData,
@@ -265,6 +267,7 @@ export class RawPlot extends React.Component {
             x={barX}
             y={v}
             interactive={interactive}
+            disabled={disabled}
             width={barWidth}
             onDrag={(v) => this.dragValue(value, v)}
             onDragStop={this.dragStop}
@@ -340,7 +343,16 @@ export class Plot extends React.Component {
   };
 
   render() {
-    const { data, graphProps, xBand, CustomBarElement, onChangeCategory, defineChart, correctData } = this.props;
+    const {
+      data,
+      graphProps,
+      xBand,
+      CustomBarElement,
+      onChangeCategory,
+      defineChart,
+      correctData,
+      disabled,
+    } = this.props;
 
     return (
       <Group>
@@ -350,6 +362,7 @@ export class Plot extends React.Component {
             label={d.label}
             interactive={defineChart || d.interactive}
             defineChart={defineChart}
+            disabled={disabled}
             xBand={xBand}
             index={index}
             key={`bar-${d.label}-${d.value}-${index}`}
