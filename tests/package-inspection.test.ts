@@ -716,13 +716,42 @@ describe('package inspection quality-gate helpers', () => {
       'dependencies.react must be "^18.2.0" (matching pie.browserSharedDependencies 18.2.0), got "18.2.0"; an exact pin duplicates React and breaks hooks',
       'dependencies.react-dom is missing: elements install their own react-dom, and webpack bundlers install no peers; use "^18.2.0"',
     ]);
-    // Libraries keep React peer-only; Svelte elements declare no React.
-    expect(
-      collectSharedRuntimeDependencyViolations({ peerDependencies: { react: '^18.0.0' } })
-    ).toEqual([]);
+    // Svelte elements declare no React.
     expect(
       collectSharedRuntimeDependencyViolations({
         pie: { controller: '@pie-element/svelte/controller' },
+      })
+    ).toEqual([]);
+  });
+
+  it('keeps library React peer-only', () => {
+    const peerDependencies = { react: '^18.0.0 || ^19.0.0', 'react-dom': '^18.0.0 || ^19.0.0' };
+
+    expect(
+      collectSharedRuntimeDependencyViolations({ name: '@pie-lib/render-ui', peerDependencies })
+    ).toEqual([]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        name: '@pie-lib/render-ui',
+        dependencies: { react: '^18.2.0' },
+        peerDependencies,
+      })
+    ).toEqual([
+      'dependencies.react is not allowed in a library: the consuming element owns the installable react; declare it in peerDependencies only',
+    ]);
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        name: '@pie-element/shared-utils',
+        optionalDependencies: { 'react-dom': '^18.2.0' },
+      })
+    ).toEqual([
+      'optionalDependencies.react-dom is not allowed in a library: the consuming element owns the installable react-dom; declare it in peerDependencies only',
+    ]);
+    // Build tooling outside the library scopes may install React.
+    expect(
+      collectSharedRuntimeDependencyViolations({
+        name: '@pie-element/element-bundler',
+        dependencies: { react: '^18.2.0' },
       })
     ).toEqual([]);
   });

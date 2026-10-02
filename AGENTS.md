@@ -91,8 +91,7 @@ See [`docs/prds/README.md`](docs/prds/README.md) for the full conventions and [`
   absent and every `@mui` / `@emotion` / `@dnd-kit` peer fails with
   `Module not found: Can't resolve 'react'`. Enforced by `check:publish-surface`.
 - Library packages (`@pie-lib/*`, `@pie-element/shared-*`) keep React peer-only. The
-  consuming element owns the installable pin. No gate checks this; the publish-surface check
-  skips packages without `pie.controller`.
+  consuming element owns the installable pin. Enforced by `check:publish-surface`.
 
 After changing these packages, re-verify behavior in `apps/element-demo` and run:
 
