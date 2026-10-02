@@ -1,7 +1,7 @@
 {
   "name": "@pie-lib/math-input",
   "version": "9.0.0-next.19",
-  "description": "React implementation of @pie-lib/math-input synced from pie-lib",
+  "description": "React implementation of @pie-lib/math-input",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
