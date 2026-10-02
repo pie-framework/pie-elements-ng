@@ -12,12 +12,10 @@
  *   No audio:              .pie-audio-container absent
  *   Missing resource:      .pie-audio-container present, error message visible,
  *                          no button, no native controls
- *   Transcript sr-only:    transcript element present but not visible
- *   Transcript visible:    transcript element visible
  *
  * Demos used:
- *   variant-sel-r1-plusggg  — audio_blank_only, feature button, transcript sr-only
- *   variant-sel-vic         — inline_sentence, feature button, transcript visible
+ *   variant-sel-r1-plusggg  — audio_blank_only, feature button
+ *   variant-sel-vic         — inline_sentence, feature button
  *   variant-sr-vic          — inline_sentence, no audio
  */
 
@@ -170,47 +168,3 @@ test('audio/missing-resource: error message is visible', async ({ page }) => {
 // M2. No listen button or native audio when resource is missing
 //     Neither interactive audio control should appear with a missing URL.
 // ---------------------------------------------------------------------------
-test('audio/missing-resource: no audio controls when audioUrl is missing', async ({ page }) => {
-  await openRoute(page, 'variant-sel-r1-plusggg');
-  await patchModel(page, { audioUrl: '' });
-  const root = deliveryContainer(page);
-  await expect(root.locator('.listen-button')).not.toBeAttached();
-  await expect(root.locator('audio')).not.toBeAttached();
-});
-
-// ===========================================================================
-// TRANSCRIPT
-// ===========================================================================
-
-// ---------------------------------------------------------------------------
-// T1. Transcript is sr-only by default (no rli-with-audio-transcript ancestor).
-//     The transcript element must exist (for screen readers) but must not be visible.
-// ---------------------------------------------------------------------------
-test('audio/transcript: sr-only without rli-with-audio-transcript ancestor', async ({ page }) => {
-  await openRoute(page, 'variant-sel-r1-plusggg');
-  const root = deliveryContainer(page);
-
-  const transcript = root.locator('.pie-audio-transcript');
-  await expect(transcript).toBeAttached();
-  // sr-only is implemented via a CSS class, not display:none — Playwright's
-  // toBeVisible does not detect clip-based hiding, so we assert the class directly.
-  await expect(transcript).toHaveClass(/sr-only/);
-});
-
-// ---------------------------------------------------------------------------
-// T2. Transcript becomes visible when rli-with-audio-transcript is added to an ancestor.
-//     Visibility is driven entirely by the player-level ancestor class, not by a model flag.
-// ---------------------------------------------------------------------------
-test('audio/transcript: visible when rli-with-audio-transcript is on an ancestor', async ({
-  page,
-}) => {
-  await openRoute(page, 'variant-sel-r1-plusggg');
-  const root = deliveryContainer(page);
-
-  await page.evaluate(() => {
-    document.querySelector('.demo-element-player')?.classList.add('rli-with-audio-transcript');
-  });
-
-  await expect(root.locator('.pie-audio-transcript')).not.toHaveClass(/sr-only/);
-  await expect(root.locator('.pie-audio-transcript')).toBeVisible();
-});

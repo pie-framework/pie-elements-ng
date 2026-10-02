@@ -79,7 +79,7 @@ const QuestionText: any = styled(RowItem)(({ theme }) => ({
 const Separator: any = styled('hr')(({ theme }) => ({
   marginTop: theme.spacing(2),
   border: 0,
-  borderTop: `2px solid ${theme.palette.grey['A100']}`,
+  borderTop: `2px solid ${color.border()}`,
   width: '100%',
 }));
 

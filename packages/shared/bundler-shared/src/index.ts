@@ -42,7 +42,7 @@ interface BuildMetadata {
 }
 
 // Bump when bundle output compatibility changes so stale cached assets are rebuilt.
-const BUILD_OUTPUT_SCHEMA_VERSION = 3;
+const BUILD_OUTPUT_SCHEMA_VERSION = 4;
 
 export class Bundler {
   private outputDir: string;
@@ -87,9 +87,10 @@ export class Bundler {
     emit('queued');
     console.log(`[bundler] Building bundle ${hash} with ${request.dependencies.length} dependencies`);
 
-    return this.buildManager.run(buildKey, async () =>
-      this.runBuild(request, hash, requestedBundles, includeControllers, sourceMaps, startTime, emit)
-    );
+    const runner = () =>
+      this.runBuild(request, hash, requestedBundles, includeControllers, sourceMaps, startTime, emit);
+    // Every build of `hash` installs into and writes to the same directories, so they queue.
+    return this.buildManager.run(buildKey, runner, hash);
   }
 
   private async runBuild(
@@ -179,6 +180,9 @@ export class Bundler {
         requestedBundles.map((bundle) => [bundle, `./${bundle}.js`])
       ) as Record<string, string>;
 
+      // Only workspace sources reach optional peers that a published build tree-shakes away, so a
+      // registry install still fails where the production bundler would.
+      const ignoreMissingOptionalPeers = request.options?.resolutionMode === 'workspace-fast';
       const webpackConfig = createWebpackConfig({
         context: entryDir,
         entry,
@@ -186,6 +190,7 @@ export class Bundler {
         workspaceDir,
         elements,
         sourceMaps,
+        ignoreMissingOptionalPeers,
       });
 
       // 4. Run webpack
@@ -211,7 +216,8 @@ export class Bundler {
         controllerUrls = await this.buildStandaloneControllers(
           request.dependencies,
           workspaceDir,
-          sourceMaps
+          sourceMaps,
+          ignoreMissingOptionalPeers
         );
         this.writeControllerManifest(
           join(outputPath, 'controller-manifest.json'),
@@ -265,7 +271,8 @@ export class Bundler {
   private async buildStandaloneControllers(
     dependencies: BuildDependency[],
     workspaceDir: string,
-    sourceMaps: boolean
+    sourceMaps: boolean,
+    ignoreMissingOptionalPeers: boolean
   ): Promise<Record<string, string>> {
     const controllers: Record<string, string> = {};
 
@@ -295,6 +302,7 @@ export class Bundler {
         outputPath,
         workspaceDir,
         sourceMaps,
+        ignoreMissingOptionalPeers,
       });
       const stats = await this.runWebpack(config);
       const statsJson = stats.toJson();
@@ -421,6 +429,8 @@ export { mkDependencyHash } from './dependency-hash.js';
 export { mkBundleCacheKey } from './dependency-hash.js';
 export { generateEntries } from './entry-generator.js';
 export { createWebpackConfig, createControllerWebpackConfig } from './webpack-config.js';
+export { findWorkspacePackages, workspaceDependencyClosure } from './workspace-packages.js';
+export type { WorkspacePackage } from './workspace-packages.js';
 
 // Export types
 export type {

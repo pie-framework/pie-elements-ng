@@ -42,7 +42,27 @@ class RectComponent extends React.Component {
     this.state = {
       hovered: false,
     };
+    this.groupRef = React.createRef();
   }
+
+  componentDidMount() {
+    if (this.props.focused) {
+      this.moveGroupToTop();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    // `focused` (keyboard focus) can turn on the hovered style without going through handleMouseEnter
+    if (!prevProps.focused && this.props.focused) {
+      this.moveGroupToTop();
+    }
+  }
+
+  moveGroupToTop: any = () => {
+    if (this.groupRef.current) {
+      this.groupRef.current.moveToTop();
+    }
+  };
 
   handleClick: any = (e) => {
     const { onClick, id, selected, disabled } = this.props;
@@ -60,6 +80,7 @@ class RectComponent extends React.Component {
       document.body.style.cursor = 'pointer';
     }
     this.setState({ hovered: true });
+    this.moveGroupToTop();
   };
 
   handleMouseLeave: any = () => {
@@ -83,6 +104,7 @@ class RectComponent extends React.Component {
       isEvaluateMode,
       outlineColor,
       selected,
+      focused,
       width,
       x,
       y,
@@ -92,6 +114,7 @@ class RectComponent extends React.Component {
       markAsCorrect,
       showCorrectEnabled,
     } = this.props;
+    const { hovered } = this.state;
 
     const outlineColorParsed = isEvaluateMode
       ? this.getEvaluateOutlineColor(isCorrect, markAsCorrect, outlineColor)
@@ -134,22 +157,16 @@ class RectComponent extends React.Component {
       }
     }
 
-    const { hovered } = this.state;
-    const useHoveredStyle = hovered && hoverOutlineColor;
+    const useHoveredStyle = (hovered || focused) && hoverOutlineColor;
 
     return (
-      <Group scaleX={scale} scaleY={scale}>
-        {useHoveredStyle && (
-          <Rect
-            x={x}
-            y={y}
-            width={width}
-            height={height}
-            stroke={selected ? 'transparent' : hoverOutlineColor}
-            strokeWidth={strokeWidth}
-            listening={false}
-          />
-        )}
+      <Group
+        ref={this.groupRef}
+        scaleX={scale}
+        scaleY={scale}
+        onMouseLeave={this.handleMouseLeave}
+        onMouseEnter={this.handleMouseEnter}
+      >
         <Rect
           x={x}
           y={y}
@@ -161,10 +178,19 @@ class RectComponent extends React.Component {
           draggable={false}
           stroke={useHoveredStyle && !selected ? 'transparent' : outlineColorParsed}
           strokeWidth={useHoveredStyle && !selected ? 0 : outlineWidth}
-          onMouseLeave={this.handleMouseLeave}
-          onMouseEnter={this.handleMouseEnter}
           cursor="pointer"
         />
+        {useHoveredStyle && (
+          <Rect
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            stroke={hoverOutlineColor}
+            strokeWidth={strokeWidth}
+            listening={false}
+          />
+        )}
         {isEvaluateMode && iconSrc ? <ImageComponent src={iconSrc} x={iconX} y={iconY} tooltip={evaluateText} /> : null}
       </Group>
     );
@@ -179,6 +205,7 @@ RectComponent.propTypes = {
   isEvaluateMode: PropTypes.bool.isRequired,
   hoverOutlineColor: PropTypes.string,
   disabled: PropTypes.bool.isRequired,
+  focused: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
   outlineColor: PropTypes.string.isRequired,
   selected: PropTypes.bool.isRequired,
@@ -196,6 +223,7 @@ RectComponent.propTypes = {
 RectComponent.defaultProps = {
   isCorrect: false,
   evaluateText: null,
+  focused: false,
   strokeWidth: 5,
   scale: 1,
 };

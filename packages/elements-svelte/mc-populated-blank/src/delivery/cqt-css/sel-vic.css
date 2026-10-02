@@ -1,26 +1,11 @@
-/* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_vic/0.0.1/question.css */
-/* Reference layout: web-ItemBankViewer/learnosity/templates/Renaissance/sel_vic/scss/main.scss + vic.scss */
 .mc-populated-blank-root.variant-sel-vic {
   font-family: Starial, Arial, sans-serif;
-  /* LSY chain: .lrn_widget (14px host) → .sel-vic { 1.5em } = 21px.
-     PIE collapses both LSY layers into this single variant-root selector, so
+  /* CQT chain: 14px host → .sel-vic { 1.5em } = 21px.
+     PIE collapses both CQT layers into this single variant-root selector, so
      the resolved value is set directly. See CONTOOL-2567. */
   font-size: 21px;
   max-width: 800px;
   margin-inline: auto;
-  --mpb-inline-grid-column-gap: 1rem;
-  --mpb-inline-grid-row-gap: 0.5rem;
-  --mpb-inline-template-margin-top: 0.2rem;
-  --mpb-inline-choices-margin-top: 0.2rem;
-  --pie-correct-answer-choice-hover-bg: #e2e2e2;
-  --pie-correct-answer-choice-selected-bg: #fcfcd3;
-}
-
-.mc-populated-blank-root.variant-sel-vic .pie-audio-transcript {
-  font-family: Roboto, Arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
 }
 
 .mc-populated-blank-root.variant-sel-vic .pie-template-line,
@@ -48,29 +33,55 @@
   margin: 0;
 }
 
-/* LSY .rli-vic-answer has no text-align rule and inherits start; PIE's
+/* The CQT's .rli-vic-answer has no text-align rule and inherits start; PIE's
    inline_sentence layout sets text-align:center on .template-line via a
    Svelte-scoped selector with specificity (0,4,0), so we need to match or
    exceed that. Pin sel-vic back to start so wrapped lines stay left-aligned.
-   See CONTOOL-2573. */
+   See CONTOOL-2573.
+   vic.scss: .rli-vic-stimulus { align-items:flex-start } also starts the
+   sentence at the content's left edge, where the same layout centres it in its
+   grid column (justify-self:center). */
 .mc-populated-blank-root.variant-sel-vic.layout-inline_sentence .pie-template-line.template-line {
   text-align: start;
+  justify-self: start;
+}
+
+/* vic.scss: @media (min-width:850px) { .rli-vic-stimulus { margin-left:20px;
+   margin-right:20px } } — the sentence sits 20px in from the distractors. */
+@media (min-width: 850px) {
+  .mc-populated-blank-root.variant-sel-vic.layout-inline_sentence .pie-template-line.template-line {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+}
+
+/* sel_vic/main.scss: .sel-vic .rli-vic-stimulus { min-height:128px }. From 850px up the
+   listen button beside the sentence gives the row that height; below it the button
+   moves above, and the sentence keeps the 128px on its own. */
+@media not all and (min-width: 850px) {
+  .mc-populated-blank-root.variant-sel-vic.layout-inline_sentence .pie-template-line.template-line {
+    min-height: 128px;
+  }
 }
 
 /* vic.scss: .rli-vic-cloze { margin-left: 6px; margin-right: 6px } gives the
-   cloze breathing room from adjacent text or punctuation. The PIE markup uses
-   Tailwind-style mx-1 in the class list, but mc-populated-blank does not
-   compile Tailwind, so that class is a no-op. Set the inline margin
-   explicitly so the cloze→trailing-punctuation gap matches LSY. See
-   CONTOOL-2572. */
+   cloze breathing room from adjacent text or punctuation. The shared blank slot
+   has no inline margin, so set it here so the cloze→trailing-punctuation gap
+   matches the CQT. See CONTOOL-2572. The cloze has no inline padding either, where
+   ClozeMarker.svelte gives the blank 0.5rem. */
 .mc-populated-blank-root.variant-sel-vic .pie-template-line .pie-blank-slot {
   margin-left: 6px;
   margin-right: 6px;
+  padding-inline: 0;
 }
 
-/* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 } */
+/* vic.scss: .rli-vic-cloze > .rli-vic-content-element { color: #cc3333 }
+   The red holds AA only on the CQT's white page (5.1:1), so the answer carries that
+   surface: on a dark host it is 3.08:1. light-dark() would miss pie-players'
+   colour schemes, which declare no color-scheme. */
 .mc-populated-blank-root.variant-sel-vic .pie-blank-value {
   color: #cc3333;
+  background-color: #fff;
 }
 
 /* sel_vic/main.scss: .sel-vic { max-width: 800px } — the fieldset/choices must
@@ -86,24 +97,46 @@
   justify-content: flex-start;
 }
 
+/* vic.scss: .rli-vic-distractor { align-items:center; margin-right:10px } and
+   .rli-vic-distractor > input { margin:20px }. The radio sits 20px from the row edge and
+   from its label, centred on the label, and its margins set the row pitch: the rows and
+   the radio and label have no gap between them. */
+.mc-populated-blank-root.variant-sel-vic .pie-choices.choices-vertical {
+  --mpb-choice-group-gap: 0;
+}
+
+.mc-populated-blank-root.variant-sel-vic .pie-choice:not(.pie-choice-horizontal) {
+  --mpb-choice-row-gap: 0;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.mc-populated-blank-root.variant-sel-vic .pie-choice-radio-inline {
+  margin: 20px;
+}
+
 /* vic.scss: .rli-vic-selected { background-color: #fcfcd3 } on the full row. */
 .mc-populated-blank-root.variant-sel-vic .pie-choice.is-selected {
   background-color: #fcfcd3;
+  color: #000;
   border-radius: 6px;
 }
 
 .mc-populated-blank-root.variant-sel-vic .pie-choice.is-selected .pie-choice-label-wrap {
   background-color: transparent;
+  color: inherit;
 }
 
 /* Selected state must win over hover. */
 .mc-populated-blank-root.variant-sel-vic .pie-choice:not(.pie-choice-horizontal).is-selected:hover {
   background-color: #fcfcd3;
+  color: #000;
 }
 
 /* vic.scss: .rli-vic-distractor:hover { background-color: #F2F2F2 } on the full row. */
 .mc-populated-blank-root.variant-sel-vic .pie-choice:not(.pie-choice-horizontal):hover {
   background-color: #f2f2f2;
+  color: #000;
   border-radius: 6px;
 }
 
@@ -111,12 +144,5 @@
   .pie-choice:not(.pie-choice-horizontal):hover
   .pie-choice-label-wrap {
   background-color: transparent;
-}
-
-@media (min-width: 620px) {
-  .mc-populated-blank-root.variant-sel-vic .pie-audio-transcript {
-    min-width: 620px;
-    max-width: 800px;
-    transform: translateX(-55px);
-  }
+  color: inherit;
 }

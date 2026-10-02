@@ -21,7 +21,7 @@
  *
  * Usage:
  *   node scripts/check-provenance.mjs                        # every publishable package
- *   node scripts/check-provenance.mjs @pie-element/core ...  # only these
+ *   node scripts/check-provenance.mjs @pie-element/shared-types ...  # only these
  *   node scripts/check-provenance.mjs --strict               # also fail on not-published
  *   node scripts/check-provenance.mjs --published-json <f>   # check exactly what CI published
  *
@@ -32,9 +32,9 @@
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { fetchRegistryEntries } from './lib/registry-entries.mjs';
 
 const ROOT = process.cwd();
-const REGISTRY = 'https://registry.npmjs.org';
 
 const argv = process.argv.slice(2);
 const strict = argv.includes('--strict');
@@ -141,22 +141,19 @@ const noProvenance = [];
 const notPublished = [];
 const width = Math.max(...targets.map((t) => `${t.name}@${t.version}`.length)) + 2;
 
+// Every target of a --published-json run was just published, so a missing one is registry lag.
+const entries = await fetchRegistryEntries(targets, {
+  retryMs: publishedJsonPath ? 10 * 60_000 : 0,
+});
+
 for (const { name, version } of targets) {
   const label = `${name}@${version}`.padEnd(width);
-  let doc;
-  try {
-    const res = await fetch(`${REGISTRY}/${name.replace('/', '%2F')}`);
-    doc = await res.json();
-  } catch (error) {
-    notPublished.push([`${name}@${version}`, `registry fetch failed: ${error.message}`]);
-    console.log(`  ${label} FETCH FAILED`);
-    continue;
-  }
-
-  const entry = doc?.versions?.[version];
+  const { entry, reason } = entries.get(`${name}@${version}`);
   if (!entry) {
-    notPublished.push([`${name}@${version}`, 'not on the registry at this version']);
-    console.log(`  ${label} not published`);
+    notPublished.push([`${name}@${version}`, reason]);
+    console.log(
+      `  ${label} ${reason.startsWith('registry fetch failed') ? 'FETCH FAILED' : 'not published'}`
+    );
     continue;
   }
 

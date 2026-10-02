@@ -19,6 +19,11 @@ const StyledContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
   display: 'flex',
   width: 'fit-content',
+  // without this, a 'fit-content' box with default (visible) overflow hugs its
+  // content's full natural width instead of clamping to the space actually available,
+  // which then makes image-container's own overflow-x:auto never see a width smaller
+  // than the image - the scrollbar never appears when the image doesn't fit
+  maxWidth: '100%',
   '&.default': {
     border: `1px solid ${color.disabled()}`,
   },

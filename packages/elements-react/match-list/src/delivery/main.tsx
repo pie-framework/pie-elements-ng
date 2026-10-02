@@ -11,8 +11,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { swap } from '@pie-lib/drag';
-import { DndContext, DragOverlay } from '@dnd-kit/core';
+import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode, rectIntersection } from '@dnd-kit/core';
 import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
+import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { color, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
@@ -48,7 +49,37 @@ import { styled } from '@mui/material/styles';
 import { findKey, isUndefined, uniqueId } from '@pie-element/shared-lodash';
 import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
-import { Answer } from './answer.js';
+import { Answer, buildDragId } from './answer.js';
+
+// A click that lands right after a real drag gesture ends (pointer drag-and-drop, or
+// the browser's own synthetic click for a keyboard Space/Enter) must be ignored by the
+// new click-to-select/click-to-place handlers below, or it would immediately reopen or
+// re-trigger a selection for a drag that just completed.
+const CLICK_AFTER_DRAG_GUARD_MS = 250;
+
+const sensors = [
+  // Without an activationConstraint, dnd-kit's PointerSensor calls its internal
+  // handleStart() synchronously on pointerdown, before any movement — meaning a plain
+  // click is itself "activated" as a drag. Once activated, dnd-kit adds a capture-phase
+  // document click listener that calls stopPropagation() (to suppress the native
+  // "ghost click" a real drag leaves behind), which also swallows the click for a
+  // gesture with zero movement, before it ever reaches our own onClick handlers below.
+  // Requiring 8px of movement (matching @pie-lib/drag's DragProvider convention used
+  // elsewhere in this codebase) defers activation until an actual drag gesture is
+  // underway, so a plain click passes through untouched.
+  { sensor: PointerSensor, options: { activationConstraint: { distance: 8 } } },
+  {
+    sensor: KeyboardSensor,
+    options: {
+      coordinateGetter: closestDroppableKeyboardCoordinates,
+      keyboardCodes: {
+        start: [KeyboardCode.Space, KeyboardCode.Enter],
+        cancel: [KeyboardCode.Esc],
+        end: [KeyboardCode.Space, KeyboardCode.Enter],
+      },
+    },
+  },
+];
 
 const MainContainer: any = styled('div')({
   display: 'flex',
@@ -56,6 +87,20 @@ const MainContainer: any = styled('div')({
   justifyContent: 'center',
   color: color.text(),
   backgroundColor: color.background(),
+});
+
+const InteractiveRegion: any = styled('div')({
+  width: '100%',
+  overflowX: 'auto',
+  overflowY: 'hidden',
+});
+
+// A block child of a scroll port is sized to the scroll port, so it has to opt out explicitly for
+// the content to be able to overflow. min-content keeps the rows and the pool the same width.
+const InteractiveRegionContent: any = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  minWidth: 'min-content',
 });
 
 export class Main extends React.Component {
@@ -73,7 +118,9 @@ export class Main extends React.Component {
     this.state = {
       showCorrectAnswer: false,
       draggingElement: null,
+      selectedAnswer: null,
     };
+    this.lastDragEndAt = 0;
   }
 
   onRemoveAnswer(id) {
@@ -99,21 +146,19 @@ export class Main extends React.Component {
       this.setState({
         draggingElement: { ...active.data.current, rect },
       });
+      this.selectAnswer(active.data.current);
     }
   };
 
-  onPlaceAnswer: any = (event) => {
+  onDragCancel: any = () => {
     this.setState({ draggingElement: null });
-    const { active, over } = event;
+    this.cancelSelection();
+    this.lastDragEndAt = Date.now();
+  };
 
-    if (!active) {
-      return;
-    }
-
-    const activeData = active.data.current;
-    const overData = over?.data.current;
-
-    if (!activeData) {
+  // Pure placement logic
+  placeAnswer: any = (activeData, overData) => {
+    if (!activeData || !overData) {
       return;
     }
 
@@ -122,25 +167,25 @@ export class Main extends React.Component {
       config: { duplicates },
     } = model;
 
-      if (isUndefined(session.value)) {
-        session.value = {};
-      }
+    if (isUndefined(session.value)) {
+      session.value = {};
+    }
 
-      // dropping a placed answer back to the choices pool = remove it
-      if (overData.type === 'choices-pool' && activeData.promptId !== undefined) {
-        session.value[activeData.promptId] = undefined;
-        onSessionChange(session);
-        return;
-      }
+    // dropping a placed answer back to the choices pool = remove it
+    if (overData.type === 'choices-pool' && activeData.promptId !== undefined) {
+      session.value[activeData.promptId] = undefined;
+      onSessionChange(session);
+      return;
+    }
 
     const answerId = activeData.id;
     const sourcePromptId = activeData.promptId;
 
     // Handle dropping onto a drop zone
-    if (overData && overData.type === 'drop-zone' && overData.promptId != null) {
+    if (overData.type === 'drop-zone' && overData.promptId != null) {
       const targetPromptId = overData.promptId;
 
-      if (activeData.type === 'choice' && overData.type === 'drop-zone' && targetPromptId !== undefined) {
+      if (activeData.type === 'choice' && targetPromptId !== undefined) {
         // check if this choice is already placed somewhere
         const existingPlacement = findKey(session.value, (val) => val === answerId);
 
@@ -159,12 +204,20 @@ export class Main extends React.Component {
           const targetHasItem = session.value[targetPromptId] != null;
 
           if (targetHasItem && !duplicates) {
-            // swap items between placeholders
+            // Without duplicates each choice is placed at most once, so trading the two
+            // answers is the only way to fill the target without dropping the answer it
+            // already holds.
             const temp = session.value[targetPromptId];
             session.value[targetPromptId] = answerId;
             session.value[sourcePromptId] = temp;
-          } else if (!targetHasItem) {
-            // move item to empty placeholder
+          } else {
+            // Empty target, or duplicates allowed: the moved answer takes the target and
+            // the source area is vacated. Any answer displaced from the target is simply
+            // available in the pool again — which with duplicates enabled always lists
+            // every choice anyway — matching how the choice -> occupied target path above
+            // already behaves. Leaving this case unhandled (as it was) made moving a
+            // placed answer onto an occupied area a silent no-op whenever duplicates
+            // were enabled.
             session.value[targetPromptId] = answerId;
             delete session.value[sourcePromptId];
           }
@@ -173,6 +226,142 @@ export class Main extends React.Component {
 
       onSessionChange(session);
     }
+  };
+
+  onPlaceAnswer: any = (event) => {
+    this.setState({ draggingElement: null });
+    const { active, over } = event;
+
+    if (!active) {
+      return;
+    }
+
+    const activeData = active.data.current;
+    const overData = over?.data.current;
+
+    if (!activeData) {
+      return;
+    }
+
+    const destinationDragId = this.getDestinationDragId(activeData, overData);
+
+    this.placeAnswer(activeData, overData);
+    this.cancelSelection();
+    this.lastDragEndAt = Date.now();
+    this.focusTile(destinationDragId);
+  };
+
+  // dnd-kit's KeyboardSensor keeps/restores native DOM focus on the originally
+  // picked-up node throughout and after a drag. After a target-to-target move that
+  // node is the SOURCE response area, which then re-renders holding whatever the
+  // destination displaced (or nothing) — so native focus (and its browser :focus
+  // outline) reads as "the source area is still selected" even though the custom
+  // selection border above is correctly cleared. Move focus to wherever the item
+  // actually landed instead: the standard accessible pattern for keyboard drag-and-drop.
+  getDestinationDragId: any = (activeData, overData) => {
+    if (!activeData || !overData) {
+      return null;
+    }
+
+    // Mirrors the two branches placeAnswer actually commits below — the destination
+    // tile's identity is determined by overData alone, independent of duplicates/
+    // swap details.
+    if (overData.type === 'choices-pool' && activeData.promptId !== undefined) {
+      return buildDragId({ type: 'choice', id: activeData.id });
+    }
+
+    if (overData.type === 'drop-zone' && overData.promptId != null) {
+      return buildDragId({ type: 'target', promptId: overData.promptId });
+    }
+
+    return null;
+  };
+
+  // The destination tile only appears in the DOM after this component (and the host's
+  // session-driven re-render) commits, so wait a couple of animation frames — long
+  // enough for React's DOM commit and the browser's next paint — before querying for it.
+  focusTile: any = (dragId) => {
+    if (!dragId) {
+      return;
+    }
+
+    const selector = `[data-tile-id="${this.instanceId}:${dragId}"]`;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const node = document.querySelector(selector);
+
+        node?.focus();
+      });
+    });
+  };
+
+  isSameAnswer = (a, b) => !!a && !!b && a.type === b.type && a.id === b.id && a.promptId === b.promptId;
+
+  // Unconditionally selects (used by the drag-start mirror, and internally when
+  // switching from one choice to another).
+  selectAnswer: any = (data) => {
+    this.setState({ selectedAnswer: data });
+  };
+
+  // Click-to-select semantics: selecting the currently-selected answer again clears
+  // the selection instead of re-selecting it.
+  toggleAnswerSelection: any = (data) => {
+    this.setState((state) => ({
+      selectedAnswer: this.isSameAnswer(state.selectedAnswer, data) ? null : data,
+    }));
+  };
+
+  cancelSelection: any = () => {
+    this.setState({ selectedAnswer: null });
+  };
+
+  // If a real dnd-kit drag (started via keyboard Space/Enter) is still live when a
+  // click completes the placement below, it needs to be cleanly ended — otherwise
+  // dnd-kit would still think a drag is in progress (still listening for Tab/arrow/
+  // Space/Escape, still showing the drag overlay) for a placement the click already
+  // performed. Escape is already configured as this sensor's cancel key, and
+  // dispatching it as a real DOM KeyboardEvent is how dnd-kit's own document-level
+  // listener is reached from outside its sensor. onDragCancel is intentionally not
+  // wired to redo any placement — it only resets local UI state — so this is safe to
+  // call unconditionally, including when no drag is actually live (dnd-kit simply has
+  // no listener attached in that case, and the dispatch is a no-op).
+  endAnyLiveKeyboardDrag: any = () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+  };
+
+  placeSelectedAnswer: any = (overData) => {
+    const { selectedAnswer } = this.state;
+
+    if (!selectedAnswer) {
+      return;
+    }
+
+    const destinationDragId = this.getDestinationDragId(selectedAnswer, overData);
+
+    this.placeAnswer(selectedAnswer, overData);
+    this.cancelSelection();
+    this.endAnyLiveKeyboardDrag();
+    this.lastDragEndAt = Date.now();
+    this.focusTile(destinationDragId);
+  };
+
+  isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;
+
+  onChoiceClick: any = (data) => {
+    if (this.isClickSoonAfterDragEnd()) {
+      return;
+    }
+
+    this.toggleAnswerSelection(data);
+  };
+
+  onPlacementClick: any = (overData) => {
+    if (this.isClickSoonAfterDragEnd()) {
+      return;
+    }
+
+    this.placeSelectedAnswer(overData);
   };
 
   toggleShowCorrect: any = () => {
@@ -205,11 +394,86 @@ export class Main extends React.Component {
     const { config, mode } = model;
     const { prompt, language } = config;
 
+    // Helpers for accessible announcements
+    const getChoiceLabel = (answerId) => {
+      const answer = config.answers.find((a) => String(a.id) === String(answerId));
+
+      if (answer?.title) {
+        // Strip HTML tags for screen reader
+        const text = answer.title.replace(/<[^>]*>/g, '').trim();
+        return text || `Answer ${answerId}`;
+      }
+
+      return `Answer ${answerId}`;
+    };
+
+    // Read the dragged choice off the tile's own drag data rather than parsing it back
+    // out of the drag id: a drag id identifies the tile (a response area, for a placed
+    // answer — see buildDragId in ./answer), not the choice the tile holds.
+    const getDraggedLabel = (active) => getChoiceLabel(active?.data?.current?.id);
+
+    const getDropTargetLabel = (over) => {
+      const overData = over?.data?.current;
+
+      if (overData?.type === 'choices-pool' || over?.id === 'choices-pool') {
+        return { label: 'Choices list', choiceId: null };
+      }
+
+      // Prefer the droppable's own data; fall back to the id for a droppable registered
+      // without any (the id shape is "drop-{promptId}").
+      const promptId = overData?.promptId != null ? overData.promptId : String(over?.id).replace(/^drop-/, '');
+      const promptItem = config.prompts.find((p) => String(p.id) === String(promptId));
+      const label = promptItem?.title
+        ? `Response area for ${promptItem.title.replace(/<[^>]*>/g, '').trim()}`
+        : `Response area ${promptId}`;
+      const choiceId = session.value?.[promptId];
+
+      return { label, choiceId: choiceId != null ? choiceId : null };
+    };
+
+    const announcements = {
+      onDragStart({ active }) {
+        return `Picked up ${getDraggedLabel(active)}. Use Tab to move between response areas, then press Space or Enter to drop.`;
+      },
+
+      onDragOver({ active, over }) {
+        if (!over) {
+          return `${getDraggedLabel(active)} is not over a response area.`;
+        }
+
+        const target = getDropTargetLabel(over);
+        const content = target.choiceId ? `Currently contains ${getChoiceLabel(target.choiceId)}.` : 'Currently empty.';
+
+        return `Over ${target.label}. ${content}`;
+      },
+
+      onDragEnd({ active, over }) {
+        if (!over) {
+          return `${getDraggedLabel(active)} was returned to its original position.`;
+        }
+
+        return `Dropped ${getDraggedLabel(active)} in ${getDropTargetLabel(over).label}.`;
+      },
+
+      onDragCancel({ active }) {
+        return `Cancelled. ${getDraggedLabel(active)} was returned to its original position.`;
+      },
+    };
+
     return (
       <DndContext
+        sensors={sensors}
+        collisionDetection={rectIntersection}
         onDragStart={this.onDragStart}
         onDragEnd={this.onPlaceAnswer}
+        onDragCancel={this.onDragCancel}
         modifiers={[restrictToFirstScrollableAncestor]}
+        accessibility={{
+          screenReaderInstructions: {
+            draggable:
+              'Press Space or Enter to pick up this answer choice. Once picked up, use Tab or Shift+Tab to cycle through response areas, or use arrow keys to move it freely. Press Space or Enter to drop, or Escape to cancel. You can also click an answer choice to select it, then click a response area to place it there.',
+          },
+        }}
       >
         <MainContainer>
           <PreviewPrompt className="prompt" prompt={prompt} />
@@ -221,22 +485,32 @@ export class Main extends React.Component {
             language={language}
           />
 
-          <AnswerArea
-            instanceId={this.instanceId}
-            model={model}
-            session={session}
-            onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
-            disabled={mode !== 'gather'}
-            showCorrect={showCorrectAnswer}
-          />
+          <InteractiveRegion>
+            <InteractiveRegionContent>
+              <AnswerArea
+                instanceId={this.instanceId}
+                model={model}
+                session={session}
+                onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
+                disabled={mode !== 'gather'}
+                showCorrect={showCorrectAnswer}
+                selectedAnswer={this.state.selectedAnswer}
+                onChoiceClick={this.onChoiceClick}
+                onPlacementClick={this.onPlacementClick}
+              />
 
-          <ChoicesList
-            instanceId={this.instanceId}
-            model={model}
-            session={session}
-            disabled={mode !== 'gather'}
-            onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
-          />
+              <ChoicesList
+                instanceId={this.instanceId}
+                model={model}
+                session={session}
+                disabled={mode !== 'gather'}
+                onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
+                selectedAnswer={this.state.selectedAnswer}
+                onChoiceClick={this.onChoiceClick}
+                onPlacementClick={this.onPlacementClick}
+              />
+            </InteractiveRegionContent>
+          </InteractiveRegion>
 
           {model.correctness && model.feedback && !showCorrectAnswer && (
             <Feedback correctness={model.correctness.correctness} feedback={model.feedback} />

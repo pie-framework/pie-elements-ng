@@ -1,4 +1,6 @@
 <script lang="ts">
+import { t } from './i18n';
+
 interface DisplayChoice {
   imageUrl?: string;
   imageAlt?: string;
@@ -13,6 +15,7 @@ let {
   blankWidth,
   blankBorderWidth,
   ariaLabel,
+  language,
 }: {
   choiceMode?: 'text' | 'image';
   displayChoice?: DisplayChoice;
@@ -21,11 +24,12 @@ let {
   blankWidth: string;
   blankBorderWidth: string;
   ariaLabel: string;
+  language?: string;
 } = $props();
 </script>
 
 <span
-  class={`inline-flex items-center min-h-[1.5em] px-2 mx-1 border-b-2 border-gray-500 align-baseline cloze-marker pie-blank-slot ${isStandalone ? 'cloze-marker-standalone pie-blank-slot-standalone' : ''}`}
+  class={`cloze-marker pie-blank-slot ${isStandalone ? 'cloze-marker-standalone pie-blank-slot-standalone' : ''}`}
   style={`width:${blankWidth};border-bottom-width:${blankBorderWidth};`}
   role="status"
   aria-live="polite"
@@ -35,33 +39,44 @@ let {
   {#if choiceMode === 'image' && displayChoice?.imageUrl}
     <img
       src={displayChoice.imageUrl}
-      alt={displayChoice.imageAlt || 'Selected answer image'}
-      class="w-auto object-contain pie-blank-image"
-      style="max-height:var(--mpb-selected-image-max-height, 4rem);"
+      alt={displayChoice.imageAlt || t('selectedAnswerImage', language)}
+      class="cloze-marker-image pie-blank-image"
+      style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
     />
   {:else if displayChoiceLabelHtml}
     <span class="cloze-marker-value pie-blank-value">{@html displayChoiceLabelHtml}</span>
   {:else}
-    <span class="cloze-marker-empty" aria-hidden="true">&nbsp;</span>
+    <span class="cloze-marker-empty">
+      <span aria-hidden="true">&nbsp;</span>
+      <span class="sr-only">{t('emptyBlank', language)}</span>
+    </span>
   {/if}
 </span>
 
 <style>
+  /* The underline width comes from the inline style (layoutLimits); the colour
+     follows the text. */
   .cloze-marker {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     vertical-align: baseline;
+    padding-inline: 0.5rem;
+    border-bottom: 2px solid currentColor;
   }
 
   .cloze-marker:focus-within {
-    outline: 2px solid var(--pie-focus, #2563eb);
+    outline: 2px solid var(--mpb-focus-ring, #1565c0);
     outline-offset: 2px;
   }
 
   .cloze-marker-standalone {
     width: var(--mpb-blank-standalone-width, 7rem);
+  }
+
+  .cloze-marker-image {
+    object-fit: contain;
   }
 
   .cloze-marker-empty {
@@ -79,5 +94,25 @@ let {
 
   .cloze-marker-value :global(p) {
     margin: 0;
+  }
+
+  /* Same 150x150 content-element constraint as ChoiceRow.svelte's .choice-html
+     img — the selected choice's raw labelHtml can carry an embedded <img> here
+     too, regardless of customType. See CONTOOL-3159. */
+  .cloze-marker-value :global(img) {
+    width: 150px;
+    height: 150px;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>

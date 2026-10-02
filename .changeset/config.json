@@ -1,11 +1,13 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
-  "changelog": "@changesets/cli/changelog",
+  "changelog": ["@changesets/changelog-github", { "repo": "pie-framework/pie-elements-ng" }],
   "commit": false,
   "fixed": [],
   "linked": [],
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
-  "ignore": ["esm-player-test"]
+  "ignore": ["esm-player-test"],
+  "privatePackages": { "version": true, "tag": false },
+  "snapshot": { "useCalculatedVersion": true, "prereleaseTemplate": "{tag}.{datetime}" }
 }

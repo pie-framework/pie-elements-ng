@@ -74,6 +74,49 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(buildScript).toBe(SCRIPTS.BUILD_WITH_IIFE);
   });
 
+  it('includes the legacy print lane when the package has a print entry point', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+    await mkdir(join(elementDir, 'src', 'print'), { recursive: true });
+    await writeFile(
+      join(elementDir, 'src', 'print', 'index.ts'),
+      'export default class PrintElement {}\n',
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    // module/print.js is what the current @pie-framework/pie-print loader fetches.
+    // It comes from a separate build lane, so losing this step from the generated
+    // script silently breaks print for every published element (PIE-839).
+    const buildScript = await readBuildScript(elementDir);
+    expect(buildScript).toContain('tools/vite/element-legacy-print.config.ts');
+  });
+
+  it('omits the legacy print lane when the package has no print entry point', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await createElementBase(elementDir);
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const buildScript = await readBuildScript(elementDir);
+    expect(buildScript).not.toContain('element-legacy-print.config.ts');
+  });
+
   it('uses standard build script when no IIFE files exist', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
@@ -207,7 +250,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies).not.toHaveProperty('react');
   });
 
-  it('does not promote legacy Emotion peers into element package dependencies', async () => {
+  it('drops the upstream @emotion/style and @pie-lib/test-utils dependencies and their peers', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
     const upstreamElementDir = join(
@@ -247,6 +290,7 @@ describe('ensureElementPackageJson iife build script generation', () => {
           name: '@pie-element/test-element',
           dependencies: {
             '@emotion/style': '^0.8.0',
+            '@pie-lib/test-utils': '2.0.2',
           },
         },
         null,
@@ -263,10 +307,9 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.dependencies).toMatchObject({
-      '@emotion/style': '^0.8.0',
-    });
+    expect(pkgJson.dependencies).not.toHaveProperty('@emotion/style');
     expect(pkgJson.dependencies).not.toHaveProperty('@emotion/core');
+    expect(pkgJson.dependencies).not.toHaveProperty('@pie-lib/test-utils');
   });
 
   it('declares third-party packages detected from transformed element source imports', async () => {
@@ -418,15 +461,12 @@ describe('ensureElementPackageJson iife build script generation', () => {
 
     const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
     expect(pkgJson.version).toBe('13.1.2-next.0');
-    expect(pkgJson.peerDependencies).toEqual({
-      react: '^18.0.0',
-      'react-dom': '^18.0.0',
-    });
+    expect(pkgJson).not.toHaveProperty('peerDependencies');
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
-      mathjs: '^15.2.0',
-      'react-draggable': '^4.6.0',
+      mathjs: '^13.2.3',
+      'react-draggable': '^3.3.0',
       'react-is': '^18.3.1',
       'react-redux': '^9.3.0',
       recharts: '^3.8.1',
@@ -435,8 +475,56 @@ describe('ensureElementPackageJson iife build script generation', () => {
     expect(pkgJson.dependencies).not.toHaveProperty('classnames');
     expect(pkgJson.dependencies).not.toHaveProperty('lodash');
     expect(pkgJson.dependencies).not.toHaveProperty('lodash-es');
+    // Upstream's own React ranges are dropped. React is re-added as an
+    // installable pin only when tools/vite/browser-esm-policy.json supplies the
+    // shared version, which this fixture deliberately omits - see the next test.
     expect(pkgJson.dependencies).not.toHaveProperty('react');
     expect(pkgJson.dependencies).not.toHaveProperty('react-dom');
+  });
+
+  it('declares shared React runtime deps as dependencies and drops React peers', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+
+    await writeBrowserEsmPolicy(rootDir);
+    await createElementBase(elementDir);
+    await writeFile(
+      join(elementDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-element/test-element',
+          version: '13.1.2-next.0',
+          peerDependencies: {
+            react: '^16.8.0 || ^17.0.0',
+            'react-dom': '^16.8.0 || ^17.0.0',
+            'some-host-service': '^2.0.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    const changed = await ensureElementPackageJson(
+      'test-element',
+      elementDir,
+      createConfig(rootDir)
+    );
+    expect(changed).toBe(true);
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+
+    // Legacy webpack bundlers install `dependencies` and never peers, so a
+    // peer-only declaration leaves node_modules/react absent and every
+    // @mui / @emotion / @dnd-kit peer fails to resolve. A caret range, not an exact
+    // pin: an exact pin installs a second React copy and breaks hooks.
+    expect(pkgJson.dependencies.react).toBe('^18.2.0');
+    expect(pkgJson.dependencies['react-dom']).toBe('^18.2.0');
+
+    // A React peer would let pnpm and yarn bind the element to the host's React.
+    // Other local peers survive the sync.
+    expect(pkgJson.peerDependencies).toEqual({ 'some-host-service': '^2.0.0' });
   });
 
   it('removes development export conditions and emits the controller package contract', async () => {
@@ -508,11 +596,14 @@ describe('ensureElementPackageJson iife build script generation', () => {
       default: './dist/controller/index.js',
     });
     expect(pkgJson.exports['./browser/delivery']).toEqual({
+      types: './dist/delivery/index.d.ts',
       default: './dist/browser/delivery/index.js',
     });
     expect(pkgJson.exports['./browser/controller']).toEqual({
+      types: './dist/controller/index.d.ts',
       default: './dist/browser/controller/index.js',
     });
+    expect(pkgJson.exports['./package.json']).toBe('./package.json');
     expect(pkgJson.files).toContain('dist');
     expect(pkgJson.files).toContain('controller.js');
     expect(pkgJson.files).not.toContain('src');
@@ -696,6 +787,108 @@ describe('ensureElementPackageJson iife build script generation', () => {
   });
 });
 
+describe('ensureElementPackageJson editor runtime variant', () => {
+  const writeEditorWorkspace = async (rootDir: string) => {
+    await writeBrowserEsmPolicy(rootDir);
+    await mkdir(join(rootDir, 'packages', 'shared', 'editor-runtime'), { recursive: true });
+    await writeFile(
+      join(rootDir, 'packages', 'shared', 'editor-runtime', 'package.json'),
+      JSON.stringify({ name: '@pie-element/shared-editor-runtime', version: '0.1.3' }),
+      'utf-8'
+    );
+    await mkdir(join(rootDir, 'packages', 'lib-react', 'editable-html-tip-tap'), {
+      recursive: true,
+    });
+    await writeFile(
+      join(rootDir, 'packages', 'lib-react', 'editable-html-tip-tap', 'package.json'),
+      JSON.stringify({
+        name: '@pie-lib/editable-html-tip-tap',
+        dependencies: { '@tiptap/core': '3.31.3', '@tiptap/react': '3.31.3' },
+      }),
+      'utf-8'
+    );
+    await mkdir(join(rootDir, 'packages', 'lib-react', 'render-ui'), { recursive: true });
+    await writeFile(
+      join(rootDir, 'packages', 'lib-react', 'render-ui', 'package.json'),
+      JSON.stringify({ name: '@pie-lib/render-ui', dependencies: { '@tiptap/react': '3.31.3' } }),
+      'utf-8'
+    );
+  };
+
+  const writeViews = async (elementDir: string, deliveryImport: string) => {
+    await createElementBase(elementDir);
+    for (const view of ['delivery', 'author', 'controller']) {
+      await mkdir(join(elementDir, 'src', view), { recursive: true });
+      await writeFile(
+        join(elementDir, 'src', view, 'index.ts'),
+        view === 'delivery'
+          ? `import '${deliveryImport}';\nexport default class DeliveryElement {}\n`
+          : 'export default class View {}\n',
+        'utf-8'
+      );
+    }
+  };
+
+  it('declares the variant and adds its build step when a dependency reaches the editor engine', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+    await writeEditorWorkspace(rootDir);
+    await writeViews(elementDir, '@pie-lib/editable-html-tip-tap');
+
+    await ensureElementPackageJson('test-element', elementDir, createConfig(rootDir), {
+      includeBrowserExports: true,
+    });
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.pie.browserEditorRuntime).toEqual({
+      name: '@pie-element/shared-editor-runtime',
+      version: '0.1.3',
+      views: {
+        delivery: 'editor-runtime/delivery',
+        author: 'editor-runtime/author',
+        controller: 'editor-runtime/controller',
+      },
+    });
+    const steps = pkgJson.scripts.build.split(' && ');
+    const browserStep = steps.indexOf(
+      'bun x vite build --config ../../../tools/vite/element-browser.config.ts'
+    );
+    expect(browserStep).toBeGreaterThan(-1);
+    expect(steps[browserStep + 1]).toBe(
+      'bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts'
+    );
+  });
+
+  it('removes a stale declaration when only @tiptap/react is reached', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const elementDir = join(rootDir, 'packages', 'elements-react', 'test-element');
+    await writeEditorWorkspace(rootDir);
+    await writeViews(elementDir, '@pie-lib/render-ui');
+    await writeFile(
+      join(elementDir, 'package.json'),
+      JSON.stringify({
+        name: '@pie-element/test-element',
+        pie: {
+          browserEditorRuntime: {
+            name: '@pie-element/shared-editor-runtime',
+            version: '0.1.0',
+            views: { delivery: 'editor-runtime/delivery' },
+          },
+        },
+      }),
+      'utf-8'
+    );
+
+    await ensureElementPackageJson('test-element', elementDir, createConfig(rootDir), {
+      includeBrowserExports: true,
+    });
+
+    const pkgJson = JSON.parse(await readFile(join(elementDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.pie.browserEditorRuntime).toBeUndefined();
+    expect(pkgJson.scripts.build).not.toContain('element-browser-editor-runtime.config.ts');
+  });
+});
+
 describe('ensurePieLibPackageJson', () => {
   it('preserves local pie-lib package versions during sync', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
@@ -737,7 +930,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(pkgJson.version).toBe('4.2.0-next.3');
   });
 
-  it('moves pie-lib React runtime metadata to React 18 peer dependencies', async () => {
+  it('moves pie-lib React runtime metadata to React 18 or 19 peer dependencies', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
     const libDir = join(rootDir, 'packages', 'lib-react', 'test-utils');
     const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'test-utils');
@@ -794,9 +987,40 @@ describe('ensurePieLibPackageJson', () => {
     expect(pkgJson.dependencies).not.toHaveProperty('react');
     expect(pkgJson.dependencies).not.toHaveProperty('react-dom');
     expect(pkgJson.peerDependencies).toEqual({
-      react: '^18.0.0',
-      'react-dom': '^18.0.0',
+      react: '^18.0.0 || ^19.0.0',
+      'react-dom': '^18.0.0 || ^19.0.0',
     });
+  });
+
+  it('drops the upstream @pie-lib/test-utils dependency from pie-lib packages', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'render-ui');
+    const upstreamLibDir = join(rootDir, 'upstream', 'pie-lib', 'packages', 'render-ui');
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(join(libDir, 'src', 'index.ts'), 'export {};\n', 'utf-8');
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/render-ui',
+          version: '1.0.0',
+          dependencies: {
+            '@pie-lib/icons': '^3.0.0',
+            '@pie-lib/test-utils': '^2.0.2',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    await ensurePieLibPackageJson('render-ui', libDir, createConfig(rootDir));
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    expect(pkgJson.dependencies).toEqual({ '@pie-lib/icons': 'workspace:*' });
   });
 
   it('applies the browser ESM dependency policy to pie-lib package dependencies', async () => {
@@ -840,8 +1064,8 @@ describe('ensurePieLibPackageJson', () => {
     expect(pkgJson.dependencies).toMatchObject({
       '@pie-element/shared-lodash': 'workspace:*',
       clsx: '^2.1.1',
-      mathjs: '^15.2.0',
-      'react-draggable': '^4.6.0',
+      mathjs: '^13.2.3',
+      'react-draggable': '^3.3.0',
       'react-redux': '^9.3.0',
       redux: '^5.0.1',
     });
@@ -918,7 +1142,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.dependencies.mathjs).toBe('^15.2.0');
+    expect(pkgJson.dependencies.mathjs).toBe('^13.2.3');
   });
 
   it('keeps mathjs pinned for pie-lib packages without a generated math helper', async () => {
@@ -949,7 +1173,7 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
-    expect(pkgJson.dependencies.mathjs).toBe('^15.2.0');
+    expect(pkgJson.dependencies.mathjs).toBe('^13.2.3');
   });
 
   it('does not remove react-input-autosize from pie-lib packages without the generated local component', async () => {
@@ -1067,7 +1291,8 @@ describe('ensurePieLibPackageJson', () => {
       import userEvent from '@testing-library/user-event';
       import CharacterCount from '@tiptap/extension-character-count';
       import ListItem from '@tiptap/extension-list-item';
-      export { userEvent, CharacterCount, ListItem };
+      import { useEditor } from '@tiptap/react';
+      export { userEvent, CharacterCount, ListItem, useEditor };
       `,
       'utf-8'
     );
@@ -1080,6 +1305,7 @@ describe('ensurePieLibPackageJson', () => {
             '@testing-library/user-event': '^14.5.2',
             '@tiptap/extension-character-count': '3.0.9',
             '@tiptap/extension-list-item': '3.0.9',
+            '@tiptap/react': '3.0.9',
           },
         },
         null,
@@ -1092,13 +1318,77 @@ describe('ensurePieLibPackageJson', () => {
     expect(changed).toBe(true);
 
     const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    // The peer fallbacks still get added by name — @tiptap/extensions, @tiptap/extension-list
+    // and the two menus are absent from the upstream manifest above. Their versions come
+    // out at 3.31.3 rather than upstream's 3.0.9 because applyPieLibDependencyVersionPins has
+    // the last word on every @tiptap/* version; tiptap peers are exact, so a sync that let
+    // these differ would resolve a second @tiptap/core. See PIE-1042.
     expect(pkgJson.dependencies).toMatchObject({
       '@testing-library/user-event': '^14.5.2',
       '@testing-library/dom': '^10.4.1',
-      '@tiptap/extension-character-count': '3.0.9',
-      '@tiptap/extensions': '^3.20.0',
-      '@tiptap/extension-list-item': '3.0.9',
-      '@tiptap/extension-list': '3.0.9',
+      '@tiptap/extension-character-count': '3.31.3',
+      '@tiptap/extensions': '3.31.3',
+      '@tiptap/extension-list-item': '3.31.3',
+      '@tiptap/extension-list': '3.31.3',
+      '@tiptap/react': '3.31.3',
+      '@tiptap/extension-bubble-menu': '3.31.3',
+      '@tiptap/extension-floating-menu': '3.31.3',
+      '@floating-ui/dom': '^1.7.6',
     });
+  });
+
+  it('pins @tiptap/* even when the upstream manifest declares older versions', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'pie-cli-sync-test-'));
+    const libDir = join(rootDir, 'packages', 'lib-react', 'editable-html-tip-tap');
+    const upstreamLibDir = join(
+      rootDir,
+      'upstream',
+      'pie-lib',
+      'packages',
+      'editable-html-tip-tap'
+    );
+
+    await mkdir(join(libDir, 'src'), { recursive: true });
+    await mkdir(upstreamLibDir, { recursive: true });
+    await writeFile(
+      join(libDir, 'src', 'index.ts'),
+      `
+      import { Editor } from '@tiptap/core';
+      export { Editor };
+      `,
+      'utf-8'
+    );
+    // What upstream pie-lib actually declares, and will keep declaring: it is no longer
+    // maintained, so the alignment has to survive on this side of the sync.
+    await writeFile(
+      join(upstreamLibDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: '@pie-lib/editable-html-tip-tap',
+          dependencies: {
+            '@tiptap/core': '3.20.0',
+            '@tiptap/starter-kit': '3.20.0',
+            '@tiptap/extension-table-row': '3.30.1',
+            '@tiptap/pm': '3.30.2',
+            lowlight: '^3.3.0',
+          },
+        },
+        null,
+        2
+      ),
+      'utf-8'
+    );
+
+    await ensurePieLibPackageJson('editable-html-tip-tap', libDir, createConfig(rootDir));
+
+    const pkgJson = JSON.parse(await readFile(join(libDir, 'package.json'), 'utf-8'));
+    const tiptapVersions = new Set(
+      Object.entries(pkgJson.dependencies as Record<string, string>)
+        .filter(([name]) => name.startsWith('@tiptap/'))
+        .map(([, version]) => version)
+    );
+    expect([...tiptapVersions]).toEqual(['3.31.3']);
+    // Non-tiptap dependencies keep whatever upstream said.
+    expect(pkgJson.dependencies.lowlight).toBe('^3.3.0');
   });
 });

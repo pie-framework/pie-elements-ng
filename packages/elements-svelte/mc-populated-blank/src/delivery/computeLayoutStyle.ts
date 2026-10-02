@@ -1,4 +1,4 @@
-import { type LayoutLimits, DEFAULT_LAYOUT_LIMITS } from '../shared/layoutLimits';
+import { type LayoutLimits, DEFAULT_LAYOUT_LIMITS } from '../shared/layoutLimits.js';
 export type { LayoutLimits };
 export { DEFAULT_LAYOUT_LIMITS };
 
@@ -20,14 +20,13 @@ export const CSS_VAR_SPEC: Record<
   horizontalChoiceTileMinHeightRem: { varName: '--mpb-choice-tile-min-height', unit: 'rem' },
   horizontalChoiceContentMinHeightRem: { varName: '--mpb-choice-content-min-height', unit: 'rem' },
   choiceImageMaxHeightRem: { varName: '--mpb-choice-image-max-height', unit: 'rem' },
-  selectedImageMaxHeightRem: { varName: '--mpb-selected-image-max-height', unit: 'rem' },
+  choiceImageMaxWidthRem: { varName: '--mpb-choice-image-max-width', unit: 'rem' },
   choiceGroupGapRem: { varName: '--mpb-choice-group-gap', unit: 'rem' },
   choiceRowGapRem: { varName: '--mpb-choice-row-gap', unit: 'rem' },
   horizontalChoiceRadioTopMarginRem: {
     varName: '--mpb-horizontal-choice-radio-top-margin',
     unit: 'rem',
   },
-  narrowHorizontalChoiceMaxWidthPx: { varName: '--mpb-narrow-choice-max-width', unit: 'px' },
   toggleButtonGapRem: { varName: '--mpb-toggle-button-gap', unit: 'rem' },
   listenButtonSizePx: { varName: '--mpb-listen-button-size', unit: 'px' },
   audioBlankTemplateMarginTopRem: { varName: '--mpb-audio-blank-template-margin-top', unit: 'rem' },
@@ -84,9 +83,8 @@ export function computeLayoutStyle(params: {
   isBlankOnlyTemplate: boolean;
   configuredLimits: unknown;
   customProfilePresets: unknown;
-  correctAnswerStyleVars: string;
 }): LayoutStyleResult {
-  const { layoutProfile, isBlankOnlyTemplate, correctAnswerStyleVars } = params;
+  const { layoutProfile, isBlankOnlyTemplate } = params;
 
   const configured =
     params.configuredLimits && typeof params.configuredLimits === 'object'
@@ -122,7 +120,7 @@ export function computeLayoutStyle(params: {
   const cssVars = (Object.keys(CSS_VAR_SPEC) as (keyof typeof CSS_VAR_SPEC)[]).map(
     (key) => `${CSS_VAR_SPEC[key].varName}:${l[key]}${CSS_VAR_SPEC[key].unit}`
   );
-  const rootStyle = [...cssVars, correctAnswerStyleVars].join(';');
+  const rootStyle = cssVars.join(';');
 
   return { rootStyle, blankWidth, blankBorderWidth, legendMaxChars: l.legendMaxChars };
 }

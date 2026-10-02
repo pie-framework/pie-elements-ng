@@ -117,11 +117,7 @@ function loadDemos(elementName: string): DemoSummary[] {
 }
 
 function buildRoute(elementName: string, demoId: string, mode: ScanMode): string {
-  const params = new URLSearchParams({
-    demo: demoId,
-    mode,
-    player: 'esm',
-  });
+  const params = new URLSearchParams({ demo: demoId, mode });
   return `/a11y/${elementName}/scan?${params.toString()}`;
 }
 

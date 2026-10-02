@@ -3,13 +3,14 @@
     shadow: 'none',
     props: {
       model: { type: 'Object' },
+      configuration: { type: 'Object' },
     },
   }}
 />
 
 <script lang="ts">
-// Keep the same prop shape expected by the wrapper.
-let { model = $bindable(), onChange }: { model?: any; onChange?: (model: any) => void } = $props();
+// A player sets `model` and `configuration`, both declared above; the placeholder renders nothing from them yet.
+let { model = $bindable() }: { model?: any } = $props();
 </script>
 
 <div class="mc-populated-blank-author-placeholder" role="status" aria-live="polite">

@@ -15,10 +15,16 @@ import { isEmpty, isUndefined, reduce } from '@pie-element/shared-lodash';
 
 import Arrow from './arrow.js';
 import DragAndDropAnswer from './answer.js';
+import { color } from '@pie-lib/render-ui';
+
+// matches the min width of the answer entries (see AnswerContainer in ./answer), so the two columns
+// give the row an intrinsic min width that the horizontal scroll container can overflow.
+const MIN_COLUMN_WIDTH = 200;
 
 const ArrowEntry: any = styled('div')({
   alignItems: 'normal',
   display: 'flex',
+  flexShrink: 0,
   height: 40,
   margin: '10px 20px',
 });
@@ -33,12 +39,13 @@ const ItemList: any = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const PromptEntry: any = styled('div')(({ theme }) => ({
-  border: `1px solid ${theme.palette.grey[400]}`,
+const PromptEntry: any = styled('div')(() => ({
+  border: `1px solid ${color.border()}`,
   boxSizing: 'border-box',
   flex: 1,
   margin: '10px 0',
   minHeight: 40,
+  minWidth: MIN_COLUMN_WIDTH,
   overflow: 'hidden',
   padding: 10,
   textAlign: 'center',
@@ -63,6 +70,9 @@ export class AnswerArea extends React.Component {
     instanceId: PropTypes.string.isRequired,
     model: PropTypes.object.isRequired,
     prompt: PropTypes.string,
+    selectedAnswer: PropTypes.object,
+    onChoiceClick: PropTypes.func,
+    onPlacementClick: PropTypes.func,
   };
 
   getAnswerFromSession: any = (promptId) => {
@@ -133,7 +143,7 @@ export class AnswerArea extends React.Component {
   };
 
   render() {
-    const { disabled, instanceId, onRemoveAnswer } = this.props;
+    const { disabled, instanceId, onRemoveAnswer, selectedAnswer, onChoiceClick, onPlacementClick } = this.props;
     const rows = this.buildRows();
     const correctnessMap = this.getCorrectOrIncorrectMap();
 
@@ -141,7 +151,10 @@ export class AnswerArea extends React.Component {
       <ItemList>
         {rows.map(({ sessionAnswer, title, id }, index) => {
           return (
-            <Row key={index}>
+            // Keyed by prompt id, not row index: each row owns a dnd-kit draggable/droppable
+            // registration derived from its promptId, so React must not reuse one row's
+            // instance for a different prompt.
+            <Row key={id}>
               <PromptEntry dangerouslySetInnerHTML={{ __html: title }} />
 
               <ArrowEntry>
@@ -150,7 +163,6 @@ export class AnswerArea extends React.Component {
               </ArrowEntry>
 
               <DragAndDropAnswer
-                key={index}
                 className="answer"
                 index={index}
                 promptId={id}
@@ -162,6 +174,9 @@ export class AnswerArea extends React.Component {
                 title={sessionAnswer.title}
                 type={'target'}
                 onRemoveChoice={() => onRemoveAnswer(id)}
+                selectedAnswer={selectedAnswer}
+                onSelectClick={onChoiceClick}
+                onPlacementClick={onPlacementClick}
               />
             </Row>
           );

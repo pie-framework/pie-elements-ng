@@ -20,16 +20,28 @@ const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
   '&:not(.MathJax) > table:not([role="presentation"])': {
     borderCollapse: 'collapse',
   },
-  // Apply vertical striping when first column is a header (th) and NOT mixed with td
+  /*
+   * The editor writes border="1", and the UA answers it with `border-style: outset`
+   * on the table and `inset` on the cells -- which browsers paint as synthesized 3D
+   * shades rather than the colour the border resolves to, so the grid comes out grey
+   * on every scheme (1.19:1 on black-on-violet). `solid` is what removes the
+   * shading; without it, setting the colour has no effect.
+   */
+  '&:not(.MathJax) table[border]:not([role="presentation"]), &:not(.MathJax) table[border]:not([role="presentation"]) td, &:not(.MathJax) table[border]:not([role="presentation"]) th':
+    {
+      borderStyle: 'solid',
+      borderColor: color.tableGrid(),
+    },
+  // Apply vertical striping when first column is a header (th) and NOT mixed with td.
+  // Ink stays at 5.44:1 or better on tableStripe in every scheme, so the cell inherits
+  // its text colour rather than pinning the `color: black` this used to carry.
   '&:not(.MathJax) > table:not([role="presentation"]):has(tbody tr > th:first-child):not(:has(tbody tr > td:first-child)) tbody td:nth-child(even)':
     {
-      backgroundColor: '#f6f8fa',
-      color: theme.palette.common.black,
+      backgroundColor: color.tableStripe(),
     },
   // Apply horizontal striping for tables where first element is a data cell (td)
   '&:not(.MathJax) > table:not([role="presentation"]):has(tbody tr > td:first-child) tbody tr:nth-child(even) td': {
-    backgroundColor: '#f6f8fa',
-    color: theme.palette.common.black,
+    backgroundColor: color.tableStripe(),
   },
   // align table content to left as per STAR requirement PD-3687
   '&:not(.MathJax) table:not([role="presentation"]) td, &:not(.MathJax) table:not([role="presentation"]) th': {
@@ -70,6 +82,10 @@ const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
 const NEWLINE_BLOCK_REGEX = /\\embed\{newLine\}\[\]/g;
 const NEWLINE_LATEX = '\\newline ';
 
+// stable hook for 'is this node inside a prompt' checks - a class rather than an id,
+// so it stays valid when a page renders more than one prompt
+const PROMPT_CLASS = 'preview-prompt';
+
 export class PreviewPrompt extends Component {
   static propTypes = {
     prompt: PropTypes.string,
@@ -88,8 +104,10 @@ export class PreviewPrompt extends Component {
     onClick: () => {},
   };
 
+  promptRef = React.createRef();
+
   parsedText: any = (text) => {
-    const { customAudioButton } = this.props;
+    const { autoplayAudioEnabled, customAudioButton } = this.props;
     const div = document.createElement('div');
     div.innerHTML = text;
 
@@ -116,7 +134,10 @@ export class PreviewPrompt extends Component {
           display: 'block',
           width: '128px',
           height: '128px',
-          backgroundImage: `url(${customAudioButton.pauseImage})`,
+          // pauseImage is the playing state. Only autoplay starts in it - with
+          // autoplay off the audio is paused, so the button has to show
+          // playImage or it advertises a state the audio is not in.
+          backgroundImage: `url(${autoplayAudioEnabled ? customAudioButton.pauseImage : customAudioButton.playImage})`,
           backgroundSize: 'cover',
           borderRadius: '50%',
           border: '1px solid #326295',
@@ -143,6 +164,12 @@ export class PreviewPrompt extends Component {
           }
         })
         .catch((error) => {
+          // Autoplay blocked (Safari/Firefox until the page has been
+          // interacted with). The audio is paused, so drop the button back to
+          // the idle image - clicking it is now the only way to start.
+          if (playButton && customAudioButton) {
+            playButton.style.backgroundImage = `url(${customAudioButton.playImage})`;
+          }
           console.error('Error playing audio', error);
         });
     }
@@ -152,7 +179,6 @@ export class PreviewPrompt extends Component {
     const handlePlayClick = () => {
       // if already playing, don't play again
       if (!audio.paused) return;
-      if (playButton.style.backgroundImage.includes(customAudioButton.pauseImage)) return;
 
       audio.play();
     };
@@ -223,59 +249,61 @@ export class PreviewPrompt extends Component {
   }
 
   renderMathContent() {
-    const container = document.getElementById('preview-prompt');
+    const container = this.promptRef.current;
     if (container && typeof renderMath === 'function') {
       renderMath(container);
     }
   }
 
   alignImages() {
-    const previewPrompts = document.querySelectorAll('#preview-prompt');
+    const previewPrompt = this.promptRef.current;
 
-    previewPrompts.forEach((previewPrompt) => {
-      const images = previewPrompt.getElementsByTagName('img');
+    if (!previewPrompt) {
+      return;
+    }
 
-      if (images && images.length) {
-        for (let image of images) {
-          if (image.attributes && image.attributes.alignment && image.attributes.alignment.value) {
-            const alignment = image.attributes.alignment.value;
-            const justifyContent =
-              alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start';
+    const images = previewPrompt.getElementsByTagName('img');
 
-            const parentNode = image.parentElement;
+    if (images && images.length) {
+      for (let image of images) {
+        if (image.attributes && image.attributes.alignment && image.attributes.alignment.value) {
+          const alignment = image.attributes.alignment.value;
+          const justifyContent =
+            alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start';
 
-            if (
-              parentNode.tagName === 'DIV' &&
-              parentNode.style.display === 'flex' &&
-              parentNode.style.width === '100%'
-            ) {
-              parentNode.style.justifyContent = justifyContent;
-            } else {
-              const div = document.createElement('div');
-              div.style.display = 'flex';
-              div.style.width = '100%';
-              div.style.justifyContent = justifyContent;
+          const parentNode = image.parentElement;
 
-              const copyImage = image.cloneNode(true);
-              div.appendChild(copyImage);
-              parentNode.replaceChild(div, image);
-            }
+          if (
+            parentNode.tagName === 'DIV' &&
+            parentNode.style.display === 'flex' &&
+            parentNode.style.width === '100%'
+          ) {
+            parentNode.style.justifyContent = justifyContent;
+          } else {
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.width = '100%';
+            div.style.justifyContent = justifyContent;
+
+            const copyImage = image.cloneNode(true);
+            div.appendChild(copyImage);
+            parentNode.replaceChild(div, image);
           }
         }
       }
-    });
+    }
   }
 
   render() {
     const { prompt, tagName, className, onClick, defaultClassName } = this.props;
     // legend tag was added once with accessibility tasks, we need extra style to make it work with images alignment
     const legendClass = tagName === 'legend' ? 'legend' : '';
-    const customClasses = `${className || ''} ${defaultClassName || ''} ${legendClass}`.trim();
+    const customClasses = `${className || ''} ${defaultClassName || ''} ${legendClass} ${PROMPT_CLASS}`.trim();
 
     return (
       <StyledPromptContainer
         as={tagName || 'div'}
-        id={'preview-prompt'}
+        ref={this.promptRef}
         onClick={onClick}
         className={customClasses}
         tagName={tagName}

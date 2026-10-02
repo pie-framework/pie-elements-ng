@@ -48,7 +48,7 @@
 />
 
 <script lang="ts">
-import { createEventDispatcher, onMount } from 'svelte';
+import { onMount, untrack } from 'svelte';
 import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
 import type { MathRenderer } from '../lib/math-rendering-types';
 import { loadUnifiedPlayer } from '../lib/unified-player-loader';
@@ -103,7 +103,18 @@ let {
   session = $bindable(),
 }: Props = $props();
 
-const dispatch = createEventDispatcher();
+/**
+ * Dispatches from the host, bubbling and composed, as React elements and
+ * `<pie-item-player>` do; `createEventDispatcher` reaches only listeners on
+ * the element. Untracked, because the load effect emits synchronously and a
+ * listener's reads would become its dependencies.
+ */
+function emit(type: string, detail?: unknown) {
+  untrack(() => {
+    $host().dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
+  });
+}
+
 let container: HTMLElement;
 let elementMount: HTMLElement;
 let elementInstance = $state<HTMLElement | null>(null);
@@ -113,6 +124,12 @@ let error = $state<string | null>(null);
 let iifeRetryStatus = $state<IifeBundleRetryStatus | null>(null);
 let requestId = 0;
 let activeLoadAbortController: AbortController | null = null;
+
+const MATH_RENDERING_KEY = '@pie-lib/math-rendering';
+
+function pageMathRendering(): { renderMath?: MathRenderer } | undefined {
+  return (window as any)[MATH_RENDERING_KEY];
+}
 
 let mathRenderer: MathRenderer | null = null;
 let mathObserver: MutationObserver | null = null;
@@ -132,7 +149,7 @@ let lastAppliedModelSignature = '';
 let lastAppliedSessionSignature = '';
 
 const iifeBuildWarning = $derived.by(() => {
-  if (!iifeRetryStatus || iifeRetryStatus.state !== 'retrying') return null;
+  if (iifeRetryStatus?.state !== 'retrying') return null;
   const elapsedSeconds = Math.max(1, Math.ceil(iifeRetryStatus.elapsedMs / 1000));
   const timeoutSeconds = Math.max(1, Math.ceil(iifeRetryStatus.timeoutMs / 1000));
   return `Bundle is still building. Retrying attempt ${iifeRetryStatus.attempt} (${elapsedSeconds}s of ${timeoutSeconds}s).`;
@@ -250,7 +267,9 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
   detachInstanceHandlers();
   if (viewMode === 'delivery') {
     sessionHandler = (event: Event) => {
-      if (suppressSessionEvents || isForwardingSessionEvent) {
+      // Before its model the element holds no session from the player, so a session it reports
+      // is its own default and must not replace the host's.
+      if (suppressSessionEvents || isForwardingSessionEvent || !lastAppliedModelSignature) {
         event.stopPropagation();
         return;
       }
@@ -293,7 +312,7 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
       session = cloneValue(nextSession);
       lastAppliedSessionSignature = createValueSignature(nextSession);
       try {
-        dispatch('session-changed', forwardedDetail);
+        emit('session-changed', forwardedDetail);
       } finally {
         setTimeout(() => {
           isForwardingSessionEvent = false;
@@ -319,7 +338,7 @@ function attachInstanceHandlers(viewMode: ElementPlayerView) {
       ) {
         nextModel = { ...currentModel, ...detail.update };
       }
-      dispatch('model-changed', nextModel);
+      emit('model-changed', nextModel);
     };
     elementInstance.addEventListener('model.updated', modelHandler, true);
   }
@@ -345,6 +364,11 @@ function applySession(nextSession: any) {
     return;
   }
   if (nextSession === null || nextSession === undefined) {
+    return;
+  }
+  // Elements may read the model in their session setter, so the session waits for one.
+  // Under IIFE the host computes the model from the bundle's controller, after the element exists.
+  if (!lastAppliedModelSignature) {
     return;
   }
   const nextSignature = createValueSignature(nextSession ?? {});
@@ -378,7 +402,7 @@ async function ensureLoaded() {
   const currentRequestId = ++requestId;
   if (activeLoadAbortController) {
     activeLoadAbortController.abort();
-    dispatch('build-state', {
+    emit('build-state', {
       loading: false,
       error: null,
       stage: 'cancelled',
@@ -393,7 +417,7 @@ async function ensureLoaded() {
         reason: 'superseded by new load request',
       },
     });
-    dispatch('load-cancelled', {
+    emit('load-cancelled', {
       reason: 'superseded by new load request',
       strategy: resolvedStrategy,
       view: resolvedView,
@@ -423,7 +447,7 @@ async function ensureLoaded() {
           return;
         }
         iifeRetryStatus = status;
-        dispatch('bundle-retry-status', status);
+        emit('bundle-retry-status', status);
         const loadingState = status.state === 'retrying';
         const detail = {
           loading: loadingState,
@@ -433,7 +457,7 @@ async function ensureLoaded() {
           view: resolvedView,
           retry: status,
         };
-        dispatch('build-state', detail);
+        emit('build-state', detail);
       },
       preloadedFallbackStrategy,
       rebuildVersion,
@@ -444,13 +468,13 @@ async function ensureLoaded() {
     }
 
     if (loaded.bundleMeta) {
-      dispatch('bundle-meta', loaded.bundleMeta);
+      emit('bundle-meta', loaded.bundleMeta);
     }
     if (loaded.controllerDiagnostic) {
-      dispatch('controller-load', loaded.controllerDiagnostic);
+      emit('controller-load', loaded.controllerDiagnostic);
     }
     if (loaded.controller && loaded.view === 'delivery' && loaded.strategy === 'iife') {
-      dispatch('controller-changed', loaded.controller);
+      emit('controller-changed', loaded.controller);
     }
 
     if (!elementInstance || currentTagName !== loaded.tagName) {
@@ -476,12 +500,12 @@ async function ensureLoaded() {
       elementMount.replaceChildren(elementInstance);
     }
 
-    dispatch('build-state', {
+    emit('build-state', {
       loading: false,
       error: null,
       stage: 'completed',
     });
-    dispatch('load-complete', {
+    emit('load-complete', {
       strategy: loaded.strategy,
       view: loaded.view,
       tagName: loaded.tagName,
@@ -511,8 +535,8 @@ async function ensureLoaded() {
       error = null;
       loading = false;
       iifeRetryStatus = retry;
-      dispatch('bundle-retry-status', retry);
-      dispatch('build-state', {
+      emit('bundle-retry-status', retry);
+      emit('build-state', {
         loading: false,
         error: null,
         stage: 'cancelled',
@@ -520,7 +544,7 @@ async function ensureLoaded() {
         view: resolvedView,
         retry,
       });
-      dispatch('load-cancelled', {
+      emit('load-cancelled', {
         reason: retry.reason || 'load cancelled',
         strategy: resolvedStrategy,
         view: resolvedView,
@@ -537,7 +561,7 @@ async function ensureLoaded() {
       existingRetry && (existingRetry.state === 'timeout' || existingRetry.state === 'completed')
         ? existingRetry
         : undefined;
-    dispatch('build-state', {
+    emit('build-state', {
       loading: false,
       error,
       stage: 'error',
@@ -545,7 +569,7 @@ async function ensureLoaded() {
       view: resolvedView,
       retry: terminalRetry,
     });
-    dispatch('player-error', {
+    emit('player-error', {
       error,
       strategy: resolvedStrategy,
       view: resolvedView,
@@ -591,13 +615,17 @@ $effect(() => {
 });
 
 onMount(() => {
-  mathRenderer = createMathjaxRenderer();
-  if (typeof window !== 'undefined') {
-    (window as any)['@pie-lib/math-rendering'] = { renderMath: mathRenderer };
+  // A renderer the host installed first, such as a MathJax 3 one, is used and no MathJax 4 loads.
+  // Otherwise the MathJax 4 renderer goes on the global, where elements and later players find it.
+  if (typeof pageMathRendering()?.renderMath !== 'function') {
+    const renderMath = createMathjaxRenderer();
+    (window as any)[MATH_RENDERING_KEY] = { renderMath };
+    void renderMath(document.createElement('div'));
   }
-  if (mathRenderer && typeof window !== 'undefined') {
-    void mathRenderer(document.createElement('div'));
-  }
+  // Read on every render, so a renderer the host swaps in later is used, and called as a method.
+  mathRenderer = async (element) => {
+    await pageMathRendering()?.renderMath?.(element);
+  };
 
   if (container) {
     mathObserver = new MutationObserver(() => {
@@ -624,6 +652,9 @@ onMount(() => {
     if (elementMount) {
       elementMount.replaceChildren();
     }
+    // Retire the pending load: the host outlives this instance, and a re-attach mounts a new one
+    // that must be the only one emitting from it.
+    requestId++;
     activeLoadAbortController?.abort();
     activeLoadAbortController = null;
     detachInstanceHandlers();

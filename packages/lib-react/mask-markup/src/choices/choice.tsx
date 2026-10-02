@@ -20,16 +20,16 @@ export const DRAG_TYPE = 'MaskBlank';
 
 const StyledChoice: any = styled('span')(({ theme, disabled }) => ({
   border: `solid 0px ${theme.palette.primary.main}`,
-  borderRadius: theme.spacing(2),
   margin: theme.spacing(0.5),
   transform: 'translate(0, 0)',
   display: 'inline-flex',
   ...(disabled && {}),
 }));
 
-const StyledChip: any = styled(Chip)(() => ({
+const StyledChip: any = styled(Chip)(({selected}) => ({
   backgroundColor: color.white(),
-  border: `1px solid ${color.text()}`,
+  border: selected ? `solid 2px ${color.buttonFocusOutline()}` : `1px solid ${color.text()}`,
+  opacity: selected ? 0.7 : 1,
   color: color.text(),
   alignItems: 'center',
   display: 'inline-flex',
@@ -60,9 +60,12 @@ const StyledChipLabel: any = styled('span')(() => ({
   '& mjx-frac': {
     fontSize: '120% !important',
   },
+  '& mjx-mn:has(~ mjx-mfrac), mjx-mfrac ~ mjx-mn': {
+    fontSize: '120% !important',
+  },
 }));
 
-export default function Choice({ choice, disabled, instanceId }) {
+export default function Choice({ choice, disabled, instanceId, selectedItem, onSelectClick }) {
   const rootRef = useRef(null);
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -75,24 +78,36 @@ export default function Choice({ choice, disabled, instanceId }) {
     renderMath(rootRef.current);
   }, [choice.value]);
 
+  const isSelected = !!selectedItem && selectedItem.fromChoice === true && selectedItem.choice.id === choice.id;
+
+  const handleClick = (e) => {
+    if (disabled) return;
+
+    e.stopPropagation();
+    onSelectClick?.({ choice, instanceId, fromChoice: true, type: DRAG_TYPE });
+  };
+
   return (
     <StyledChoice
       ref={setNodeRef}
       style={
         isDragging
           ? {
-               width: rootRef.current?.offsetWidth || 90, // min-width of chip is 90px, so if we don't have the width, we can use 90px as a fallback
-               height: rootRef.current?.offsetHeight || 32, // min-height of chip is 32px, so if we don't have the height, we can use 32px as a fallback
+              width: rootRef.current?.offsetWidth || 90, // min-width of chip is 90px, so if we don't have the width, we can use 90px as a fallback
+              height: rootRef.current?.offsetHeight || 32, // min-height of chip is 32px, so if we don't have the height, we can use 32px as a fallback
             }
           : {}
       }
       disabled={disabled}
+      selected={isSelected}
+      onClick={handleClick}
       {...listeners}
       {...attributes}
     >
       <StyledChip
         clickable={false}
         disabled={disabled}
+        selected={isSelected}
         ref={rootRef}
         label={<StyledChipLabel dangerouslySetInnerHTML={{ __html: choice.value }} />}
       />
@@ -104,4 +119,6 @@ Choice.propTypes = {
   choice: PropTypes.object.isRequired,
   disabled: PropTypes.bool,
   instanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectedItem: PropTypes.object,
+  onSelectClick: PropTypes.func,
 };

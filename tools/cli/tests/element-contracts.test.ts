@@ -12,6 +12,7 @@ describe('PIE element contract documentation and verifier', () => {
     expect(contract).toContain('## Runtime Strategy Contract');
     expect(contract).toContain('pie.browserSharedDependencies');
     expect(contract).toContain('controller.js');
+    expect(contract).toContain('print.js');
     expect(contract).toContain('preloaded');
   });
 

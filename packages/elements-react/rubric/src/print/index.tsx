@@ -74,11 +74,16 @@ export default class RubricPrint extends HTMLElement {
     this._rerender();
   }
 
-  connectedCallback() {}
+  connectedCallback() {
+    // Disconnecting unmounts the React root, so a reinserted element renders again.
+    this._rerender();
+  }
 
   disconnectedCallback() {
+    this._rerender.cancel();
     if (this._root) {
       this._root.unmount();
+      this._root = null;
     }
   }
 }

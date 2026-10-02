@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-player-events",
-  "version": "0.1.0",
+  "version": "0.1.1-next.3",
   "description": "PIE Player Events (ESM) - internalized from @pie-framework/pie-player-events",
   "type": "module",
   "main": "./dist/index.js",
@@ -25,7 +25,7 @@
     "@types/bun": "latest",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "publishConfig": {
     "access": "public"

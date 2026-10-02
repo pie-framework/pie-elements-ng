@@ -15,7 +15,6 @@ let {
   session = {},
   mode = 'gather',
   role = 'student',
-  player = 'esm',
 }: {
   elementName: string;
   packageName: string;
@@ -24,7 +23,6 @@ let {
   session?: unknown;
   mode?: A11yScanMode;
   role?: A11yScanRole;
-  player?: 'esm' | 'iife';
 } = $props();
 
 let controller = $state<PieController | null>(null);
@@ -52,15 +50,19 @@ function normalizeSession(nextSession: unknown): Record<string, unknown> {
     : {};
 }
 
-function applySessionUpdate(patch: Record<string, unknown> | null | undefined) {
-  if (!patch || typeof patch !== 'object') {
-    return Promise.resolve(elementSession);
-  }
-  elementSession = {
-    ...normalizeSession(elementSession),
-    ...patch,
+/**
+ * The `updateSession` a controller calls during `model()`. It writes onto the session the view
+ * model is built from, as a player's does, and leaves component state alone: reading
+ * `elementSession` here would make the build effect depend on the state the build writes, and
+ * the effect would re-run without end.
+ */
+function sessionWriter(target: Record<string, unknown>) {
+  return (_id: string, _element: string, properties: Record<string, unknown>) => {
+    if (properties && typeof properties === 'object') {
+      Object.assign(target, properties);
+    }
+    return Promise.resolve();
   };
-  return Promise.resolve(elementSession);
 }
 
 async function buildViewModel(requestId: number) {
@@ -77,7 +79,7 @@ async function buildViewModel(requestId: number) {
       cloneValue(model),
       sessionForController,
       { mode, role, partialScoring: true },
-      applySessionUpdate
+      sessionWriter(sessionForController)
     );
 
     if (requestId !== buildRequestId) {
@@ -153,7 +155,7 @@ function handleSessionChanged(event: CustomEvent) {
         aria-label="{elementName} accessibility scan subject"
       >
         <pie-element-player
-          strategy={player}
+          strategy="esm"
           runtime-support-check="on"
           view="delivery"
           element-name={elementName}

@@ -1,17 +1,25 @@
+import {
+  LISTEN_PLAYING_DEFAULT_URL,
+  LISTEN_PLAYING_ES_URL,
+  LISTEN_SILENT_DEFAULT_URL,
+  LISTEN_SILENT_ES_URL,
+} from './assets/audioButtonSkinAssets';
+
 export type AudioButtonSkin = { silentUrl: string; playingUrl: string };
 
+/**
+ * Built-in fallback skins, bundled with this package (no external CDN dependency).
+ * Callers can override per-item via `audioButtonSkin` / `audioButtonSkinsByLocale`
+ * on the model — see computeFeatureAudioSkin below.
+ */
 export const DEFAULT_AUDIO_BUTTON_SKINS: Record<string, AudioButtonSkin> = {
   default: {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/0c9f2aa3-3cd5-4de7-93ef-541c24ca35da.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/231dfdc2-c113-4be5-91fb-e75a0ca5994b.svg',
+    silentUrl: LISTEN_SILENT_DEFAULT_URL,
+    playingUrl: LISTEN_PLAYING_DEFAULT_URL,
   },
   es: {
-    silentUrl:
-      'https://assets.learnosity.com/organisations/844/27a9d5b5-d873-4bd5-b9ba-22748782d8ba.svg',
-    playingUrl:
-      'https://assets.learnosity.com/organisations/844/120f216d-96b7-4560-94b8-1d90710216b7.svg',
+    silentUrl: LISTEN_SILENT_ES_URL,
+    playingUrl: LISTEN_PLAYING_ES_URL,
   },
 };
 
@@ -46,38 +54,36 @@ export function computeFeatureAudioSkin(params: {
 
 /**
  * Returns the choice id that the ClozeMarker and selected-state highlight should display.
- * When the correct answer is revealed (alwaysShowCorrect or evaluate+showCorrectAnswer),
- * it shows the correct choice rather than the student's selection.
+ * While the correct answer is revealed in evaluate mode it is the correct choice.
+ * A player that shows the key outside evaluate hands over the correct-response
+ * session from `createCorrectResponseSession`, which is displayed as the selection.
  */
 export function computeDisplayChoiceId(params: {
   selectedId: string;
   isEvaluateMode: boolean;
   showCorrectAnswer: boolean;
-  alwaysShowCorrect: boolean;
   correctChoiceId: string;
 }): string {
-  const { selectedId, isEvaluateMode, showCorrectAnswer, alwaysShowCorrect, correctChoiceId } =
-    params;
-  if (alwaysShowCorrect && correctChoiceId) return correctChoiceId;
+  const { selectedId, isEvaluateMode, showCorrectAnswer, correctChoiceId } = params;
   if (isEvaluateMode && showCorrectAnswer && correctChoiceId) return correctChoiceId;
   return selectedId;
 }
 
 /**
- * Returns the screen-reader-only result announcement text shown after evaluate mode scoring.
- * Empty string means nothing is announced.
+ * Returns the result the screen-reader-only announcement reports after evaluate
+ * mode scoring. Empty string means nothing is announced.
  */
-export function computeResultText(params: {
+export function computeResultStatus(params: {
   isEvaluateMode: boolean;
   showCorrectAnswer: boolean;
   isCorrect: boolean;
   isIncorrect: boolean;
   selectedId: string;
-}): string {
+}): 'correct' | 'incorrect' | '' {
   const { isEvaluateMode, showCorrectAnswer, isCorrect, isIncorrect, selectedId } = params;
   if (!isEvaluateMode || showCorrectAnswer) return '';
-  if (isCorrect) return 'Correct answer selected';
-  if (isIncorrect && selectedId) return 'Incorrect answer selected';
+  if (isCorrect) return 'correct';
+  if (isIncorrect && selectedId) return 'incorrect';
   return '';
 }
 

@@ -4,6 +4,8 @@
  * Functions for managing shuffled choice order and session persistence.
  */
 
+import type { PieUpdateSession } from '@pie-element/shared-types';
+
 interface Session {
   id?: string;
   element?: string;
@@ -27,12 +29,6 @@ interface Environment {
   };
   role?: 'student' | 'instructor';
 }
-
-type UpdateSessionFunction = (
-  sessionId: string,
-  element: string,
-  data: { shuffledValues: string[] }
-) => Promise<void>;
 
 /**
  * Remove null and undefined values from an array.
@@ -72,10 +68,11 @@ function isEmpty(value: any): boolean {
  * This function:
  * 1. Checks if shuffled values already exist in the session
  * 2. If they exist, returns choices in that order
- * 3. If they don't exist, shuffles the choices and optionally saves to session
+ * 3. If they don't exist, shuffles the choices and saves the order through `updateSession`
  *
  * @param choices - Array of choice objects to shuffle
- * @param session - Current session object that may contain previous shuffle order
+ * @param session - Current session object that may contain previous shuffle order. An element
+ *   that shuffles each of its parts passes a stand-in built for that part, with no id or element.
  * @param updateSession - Optional function to persist the shuffle order
  * @param choiceKey - Property name to use as the unique identifier (e.g., 'value', 'id')
  * @returns Promise resolving to shuffled choices array
@@ -83,7 +80,7 @@ function isEmpty(value: any): boolean {
 export async function getShuffledChoices<T extends Choice>(
   choices: T[],
   session: Session | undefined,
-  updateSession?: UpdateSessionFunction,
+  updateSession?: PieUpdateSession,
   choiceKey: string = 'value'
 ): Promise<T[] | undefined> {
   const currentShuffled = compact(session?.data?.shuffledValues ?? session?.shuffledValues ?? []);
@@ -110,8 +107,10 @@ export async function getShuffledChoices<T extends Choice>(
           `shuffledValues is an empty array - refusing to call updateSession. ` +
             `shuffledChoices: ${JSON.stringify(shuffledChoices)}, key: ${choiceKey}`
         );
-      } else if (session.id && session.element) {
-        await updateSession(session.id, session.element, { shuffledValues });
+      } else {
+        // A stand-in session has no id or element to pass. Its element's own updater ignores
+        // both, and so does pie-players' updateSession, which keys the write by its model.
+        await updateSession(session.id as string, session.element as string, { shuffledValues });
       }
     } catch (e) {
       console.warn('Unable to save shuffled order for choices');
@@ -134,8 +133,10 @@ export async function getShuffledChoices<T extends Choice>(
  * Logic:
  * 1. If model.lockChoiceOrder is true, lock order
  * 2. If env['@pie-element'].lockChoiceOrder is true, lock order
- * 3. If role is 'instructor', lock order (instructors see ordinal order)
- * 4. Otherwise (student role), allow shuffling
+ * 3. Otherwise, allow shuffling
+ *
+ * The role plays no part (PIE-714): an instructor reviewing a session sees the order its
+ * student saw.
  *
  * @param model - Model configuration
  * @param session - Current session (unused currently but kept for API compatibility)
@@ -145,24 +146,15 @@ export async function getShuffledChoices<T extends Choice>(
 export function lockChoices(
   model: Model,
   _session: Session | undefined,
-  env: Environment
+  env: Environment | undefined
 ): boolean {
   if (model.lockChoiceOrder) {
     return true;
   }
 
-  if (env['@pie-element']?.lockChoiceOrder) {
+  if (env?.['@pie-element']?.lockChoiceOrder) {
     return true;
   }
 
-  const role = env.role ?? 'student';
-
-  if (role === 'instructor') {
-    // Instructors always see ordinal order
-    // In the future, they may be able to toggle between ordinal and shuffled
-    return true;
-  }
-
-  // Students get shuffled order (unless locked above)
   return false;
 }

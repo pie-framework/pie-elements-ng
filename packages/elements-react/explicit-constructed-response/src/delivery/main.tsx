@@ -10,7 +10,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { isEmpty, isEqual, debounce } from '@pie-element/shared-lodash';
+import { isEmpty } from '@pie-element/shared-lodash';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { ConstructedResponse } from '@pie-lib/mask-markup';
 import { color, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
@@ -109,14 +109,8 @@ export class Main extends React.Component {
     showCorrectAnswer: this.props.alwaysShowCorrect || false,
   };
 
-  // if for all responses max length is 1, call onChange for each keystroke
-  getChangeSession = (maxLengthPerChoice) =>
-    maxLengthPerChoice && maxLengthPerChoice.every((val, _i, arr) => val === arr[0] && val === 1)
-      ? this.props.onChange
-      : debounce(this.props.onChange, 200, { maxWait: 200 });
-
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const { maxLengthPerChoice, language } = this.props;
+    const { language } = this.props;
     let { note } = this.props;
 
     if (isEmpty(nextProps.feedback)) {
@@ -125,10 +119,6 @@ export class Main extends React.Component {
 
     if (nextProps.alwaysShowCorrect) {
       this.setState({ showCorrectAnswer: true });
-    }
-
-    if (maxLengthPerChoice && !isEqual(maxLengthPerChoice, nextProps.maxLengthPerChoice)) {
-      this.changeSession = this.getChangeSession(nextProps.maxLengthPerChoice);
     }
 
     // check if the note is the default one for prev language and change to the default one for new language
@@ -148,10 +138,11 @@ export class Main extends React.Component {
     this.setState({ showCorrectAnswer: !this.state.showCorrectAnswer });
   };
 
-  changeSession = this.getChangeSession(this.props.maxLengthPerChoice);
-
+  // Coalescing lives on the custom element's `session-changed` dispatch, which
+  // also owns the per-model delay `maxLengthPerChoice` selects. Holding the
+  // value here instead left `.session` stale until the timer fired.
   onChange: any = (value) => {
-    this.changeSession(value);
+    this.props.onChange(value);
   };
 
   render() {

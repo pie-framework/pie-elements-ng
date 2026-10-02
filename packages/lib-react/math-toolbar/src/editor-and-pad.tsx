@@ -274,7 +274,17 @@ export class EditorAndPad extends React.Component {
   componentDidMount() {
     if (this.input && this.props.autoFocus) {
       // adding a timeout to wait for other stuff related to focus to be finished
-      setTimeout(() => this.input.focus(), 0);
+      // the toolbar can unmount before the timeout fires, so re-check the ref and clear on unmount
+      this.focusTimeout = setTimeout(() => {
+        this.focusTimeout = undefined;
+        this.input?.focus();
+      }, 0);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.focusTimeout) {
+      clearTimeout(this.focusTimeout);
     }
   }
 

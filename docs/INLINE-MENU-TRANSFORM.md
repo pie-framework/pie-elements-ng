@@ -58,7 +58,7 @@ export function applySourceTransforms(content: string, options: TransformOptions
   let transformed = content;
 
   // Core transforms (always applied)
-  transformed = transformLodashToLodashEs(transformed);
+  transformed = transformLodashToVendoredLodash(transformed);
   transformed = transformPieFrameworkEventImports(transformed);
   transformed = transformControllerUtilsImports(transformed);
   transformed = transformSharedPackageImports(transformed);

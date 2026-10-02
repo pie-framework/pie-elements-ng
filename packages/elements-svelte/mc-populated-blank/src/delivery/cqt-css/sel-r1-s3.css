@@ -1,4 +1,3 @@
-/* Source baseline: https://global-pr-ibvcustomfiles.renaissance-go.com/learnosity/sel_r1-s3_plusggg/0.0.1/question.css */
 /* Shared r1 base styles (font, template-line flex, choice-label) are in sel-r1-base.css */
 .mc-populated-blank-root.variant-sel-r1-s3 {
   max-width: 860px;
@@ -19,7 +18,7 @@
 
 /* sel_r1-s3_plusggg/question.css does not set font-weight on distractors or
    cloze content-element, so they inherit 400 from the host root. The earlier
-   font-weight:500 override caused PIE to render visibly heavier than LSY for
+   font-weight:500 override caused PIE to render visibly heavier than the CQT for
    the same author content. See CONTOOL-2571. */
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label,
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-label :is(span, p, div) {
@@ -35,21 +34,43 @@
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal .pie-choice-tile {
   border-radius: 6px;
-  background: #f1f1f1;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank {
   grid-template-columns: minmax(220px, auto) auto auto;
   grid-template-areas:
-    "transcript transcript transcript"
     "sentence template audio"
     "choices choices choices";
   justify-content: center;
+  /* question.css: .rli-s3-cloze-container { justify-content:end } bottom-anchors
+     the cloze against the shared sentence/audio row instead of top-aligning it —
+     matches every item sitting on the same visual baseline. See CONTOOL-3159. */
+  align-items: end;
+}
+
+/* The component's header row, restated because these areas replace its own. */
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank.has-header {
+  grid-template-areas:
+    "header header header"
+    "sentence template audio"
+    "choices choices choices";
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-template-line {
   grid-area: template;
   justify-self: center;
+}
+
+/* ClozeMarker.svelte's shared .cloze-marker rule vertically *centers* its content
+   (align-items:center). question.css's .rli-s3-cloze-container uses
+   justify-content:end instead, bottom-anchoring the answer text against the
+   underline. Centering leaves it floating well above both the underline and the
+   sentence image's own (bottom-anchored) baseline. The blank's own box height
+   (160px, from McPopulatedBlank.svelte's shared audio_blank_only/stimulus_image_blank
+   rule) is left as-is — it already matches the CQT reference (~161px)
+   closely; only the internal alignment was wrong. See CONTOOL-3159. */
+.mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-slot {
+  align-items: flex-end;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-sentence-line {
@@ -73,6 +94,7 @@
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal:hover .pie-choice-tile {
   background: #e2e2e2;
+  color: #000;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal.is-selected .pie-choice-tile,
@@ -80,8 +102,54 @@
   .pie-choice-horizontal.is-selected:hover
   .pie-choice-tile {
   background: #fcfcd3;
+  color: #000;
 }
 
 .mc-populated-blank-root.variant-sel-r1-s3 .pie-choice-horizontal .pie-choice-radio {
   transform: scale(0.85);
+}
+
+/* question.css: below 850px .rli-s3-container is a one-column grid in DOM order
+   (listen button, sentence, cloze, distractors), each at the left edge. The cloze
+   container stretches, so the underline spans the column, with the 150px
+   content-element at its start (.rli-s3-cloze { justify-content:flex-start }). */
+@media not all and (min-width: 850px) {
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "transcript"
+      "audio"
+      "sentence"
+      "template"
+      "choices";
+    align-items: start;
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank.has-header {
+    grid-template-areas:
+      "header"
+      "transcript"
+      "audio"
+      "sentence"
+      "template"
+      "choices";
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-sentence-line,
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-choices-fieldset {
+    justify-self: start;
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-template-line {
+    justify-self: stretch;
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-slot {
+    flex-grow: 1;
+    justify-content: flex-start;
+  }
+
+  .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-value {
+    width: 150px;
+  }
 }

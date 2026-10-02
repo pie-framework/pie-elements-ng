@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { computeLayoutStyle, DEFAULT_LAYOUT_LIMITS } from './computeLayoutStyle';
 
-const NO_CORRECT_ANSWER_VARS = '';
 const base = {
   configuredLimits: {},
   customProfilePresets: {},
-  correctAnswerStyleVars: NO_CORRECT_ANSWER_VARS,
 };
 
 // ---------------------------------------------------------------------------
@@ -53,19 +51,18 @@ describe('blankWidth', () => {
 // blankBorderWidth
 // ---------------------------------------------------------------------------
 describe('blankBorderWidth', () => {
-  it.each([
-    'audio_blank_only',
-    'stimulus_image_blank',
-    'token_sequence',
-  ])('%s → blankUnderlineWideWidthPx (profile preset overrides to 6)', (profile) => {
-    const { blankBorderWidth } = computeLayoutStyle({
-      ...base,
-      layoutProfile: profile,
-      isBlankOnlyTemplate: false,
-    });
-    // All three wide-underline profiles have preset blankUnderlineWideWidthPx: 6
-    expect(blankBorderWidth).toBe('6px');
-  });
+  it.each(['audio_blank_only', 'stimulus_image_blank', 'token_sequence'])(
+    '%s → blankUnderlineWideWidthPx (profile preset overrides to 6)',
+    (profile) => {
+      const { blankBorderWidth } = computeLayoutStyle({
+        ...base,
+        layoutProfile: profile,
+        isBlankOnlyTemplate: false,
+      });
+      // All three wide-underline profiles have preset blankUnderlineWideWidthPx: 6
+      expect(blankBorderWidth).toBe('6px');
+    }
+  );
 
   it('other profile → blankUnderlineWidthPx (default 2)', () => {
     const { blankBorderWidth } = computeLayoutStyle({
@@ -156,13 +153,12 @@ describe('rootStyle structure', () => {
     expect(rootStyle).toContain('--mpb-inline-grid-column-gap:');
   });
 
-  it('appends correctAnswerStyleVars at the end', () => {
+  it('emits only --mpb-* layout vars, never a --pie-* token', () => {
     const { rootStyle } = computeLayoutStyle({
       ...base,
       layoutProfile: '',
       isBlankOnlyTemplate: false,
-      correctAnswerStyleVars: '--pie-foo:bar',
     });
-    expect(rootStyle).toMatch(/--pie-foo:bar$/);
+    expect(rootStyle).not.toMatch(/--pie-/);
   });
 });

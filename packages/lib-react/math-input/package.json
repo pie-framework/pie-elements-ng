@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-input",
-  "version": "8.1.1",
+  "version": "9.0.0-next.19",
   "description": "React implementation of @pie-lib/math-input synced from pie-lib",
   "repository": {
     "type": "git",
@@ -37,14 +37,14 @@
     "test": "bun x vitest run"
   },
   "devDependencies": {
-    "vite": "^8.1.5",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   }
 }

@@ -1,10 +1,296 @@
 # @pie-element/mc-populated-blank
 
-## 0.2.13
+## 0.3.0-next.29
 
 ### Patch Changes
 
-- Contool 2567 deploy updates from content review
+- 3e49e88: The variant stylesheets drop their source comments, and the README drops the stylesheet refresh steps that relied on them.
+- Updated dependencies [3e49e88]
+  - @pie-element/shared-types@0.2.0-next.5
+  - @pie-element/shared-controller-utils@0.1.1-next.8
+
+## 0.3.0-next.28
+
+### Patch Changes
+
+- Merge pull request #247 from pie-framework/docs/mc-populated-blank-r1-token-wireframes
+
+## 0.3.0-next.27
+
+### Patch Changes
+
+- 869af7f: The CQT variants' blank has no inline padding, as in Learnosity, so a placed answer image fills its 150px box again. The sel_vic and sr_vic distractor radios sit 20px from the row edge and their label, centred on it, at Learnosity's row spacing.
+- c79d359: Below 850px the audio-blank, token, stimulus-image and inline-sentence-with-audio layouts stack in one column at the left edge, as the Learnosity CQT templates do: the listen button above the stem, then the stem, blank and answer tiles. Stacked tiles keep their pixel width, and the sel_r1 token stems and the sel_vic sentence follow Learnosity's narrow layout. This breakpoint was 760px.
+- c8e7701: The sel_r1 token layouts bottom-align stem tokens and the placed answer in their 150px boxes beside a 160px blank, as Learnosity does, so the text sits just above the underline and the blank keeps one height empty and filled. The sel_vic sentence starts at the content's left edge, inset 20px from 850px up.
+
+## 0.3.0-next.26
+
+### Patch Changes
+
+- 7180cd3: The bundled audio button icons are optimized, bringing the delivery bundle back from 119 KB to about 73 KB gzipped.
+
+## 0.3.0-next.25
+
+### Patch Changes
+
+- bde7249: The show-correct-answer toggle and teacher instructions render above the stem on the grid layouts, together with the prompt in one `pie-header` block; before, they fell below the answer choices.
+- bde7249: A prompt now renders above the stem on the grid layouts: `inline_sentence` with the Listen button, `token_sequence` and `stimulus_image_blank`. Before, it fell below the answer choices. An `iat-align-center` block is centred. A prompt that holds no text or media renders nothing, and the choices keep their own label.
+
+## 0.3.0-next.24
+
+### Patch Changes
+
+- ff302e2: Bundle the default audio play button SVGs instead of loading them from an external CDN
+
+## 0.3.0-next.23
+
+### Patch Changes
+
+- Updated dependencies [4ffda53]
+  - @pie-element/shared-types@0.2.0-next.4
+  - @pie-element/shared-controller-utils@0.1.1-next.7
+
+## 0.3.0-next.22
+
+### Minor Changes
+
+- stop rendering the audio transcript in delivery; the toolkit renders it PIE-855
+- Announce the blank's state and the options available in it to screen readers, so a blank's current value and its choices are reachable without sight (PIE-784)
+- `completeAudioEnabled` now works on its own. With prompt audio present, the item only reports `complete: true` once the audio has played to the end, whether autoplay, the audio button or the native controls started it. Previously the setting only took effect when `autoplayAudioEnabled` was also on.
+  
+  Behaviour change for hosts that set `completeAudioEnabled` without `autoplayAudioEnabled`: those items no longer report complete right after a response; they wait for the prompt audio to finish. The "click to enable audio" overlay still only appears with autoplay on.
+
+### Patch Changes
+
+- define and enforce packaging contracts PIE-626
+- Prepare all PIE element packages for the next prerelease patch wave
+- Trigger the next prerelease patch for all PIE element packages.
+- Trigger another prerelease patch for all PIE element packages.
+- Fix: bring the Svelte elements' `--pie-*` reads back inside the pie-players theming contract (PIE-857)
+  
+  The `--pie-correct-answer-*` family was invented by these packages, so the
+  `pie-players` token registry could not see it and no color scheme overrode it.
+  The 13 names are retired; `mc-populated-blank` now reads the canonical tokens
+  they indirected through (`--pie-correct-secondary`, `--pie-incorrect-icon`,
+  `--pie-tertiary-light`, and so on) with the canonical defaults as fallbacks.
+  Resolved colors are unchanged under a themed host.
+  
+  Focus outlines no longer hardcode a blue. `mc-populated-blank` read
+  `--pie-focus`, which nothing defines, and `venn-classification` used a literal
+  `#2563eb` in four places; both now chain through `--pie-focus-outline`,
+  `--pie-button-focus-outline`, and `--pie-focus-checked-border`, so the outline
+  follows the active color scheme.
+- Bottom-anchor a selected answer against the blank's underline and keep the blank out of the stem's shared baseline row, so choosing an option no longer shifts sibling stem tokens in the r1 CQT layouts, and size distractor images embedded as raw markup in labelHtml at 150x150 (CONTOOL-3159)
+- The Svelte delivery elements write each session update into the object the player handed them, through the new `writeSessionInPlace` in `@pie-lib/delivery-events-svelte` (PIE-1058).
+  
+  A player reads the learner's response back off that object, so replacing the reference left the player's entry at its load-time value and the forwarded container normalized to `session: null` with `intent: "metadata-only"`. All three elements-svelte packages shared the defect, and `mc-populated-blank`'s audio handlers dropped `audioStartTime`/`audioEndTime` the same way.
+  
+  The elements-svelte packages do not adopt `createSessionNotifier`: they dispatch synchronously, so installing `commitPendingSession()` would tell a player they had committed when nothing was pending.
+- Lays itself out without the host's Tailwind, keeps its variant CSS to its own roots (per build, and inside a host's shadow root), and prints the answer key and teacher instructions for instructors only, with image choices printed as images. Instructors see teacher instructions in delivery, an item without a language is no longer marked as English, `lockChoiceOrder: false` shuffles the choices as in multiple-choice (`shuffle: true` still counts when `lockChoiceOrder` is unset), and `validate` honours its `config` and reports errors in multiple-choice's shape (`answerChoices`, `choices` by id, `correctResponse`). `alwaysShowCorrect` is gone: players show the key through `createCorrectResponseSession`. (PIE-1075)
+- Leave the session's `id` and `element` to the player, so a versioned tag survives a response (PIE-1075). Audio timing now survives the learner's next pick and `waitTime` is recorded, and a reset session clears the selection. An item missing its prompt, template or choices no longer shows demo content.
+- Take learner-facing strings from `@pie-lib/translator` in the item's `language`, as the React elements do. mc-populated-blank no longer reads `uiText`, and uses `locale` when `language` is unset.
+- `defineDeliveryElement` builds a Svelte delivery element from its component and an `isComplete` rule, and hands the component `onSessionChange` as a prop. `resolveDeliveryHost`, `forwardSessionChange` and `DeliveryHostElement` are removed. The three Svelte elements are built on it: `element.session` returns the player's session object after an update, and mc-populated-blank's `model-set` now reports a restored response as complete.
+- The `narrowHorizontalChoiceMaxWidthPx` layout limit is removed: it has had no effect since the choice tiles moved into their own component.
+- Print renders the delivery component as a player shows the printout's role in `view` mode, so it takes the variant layout and inline-sentence spacing; an instructor's key fills the blank and checks the key's choice, in place of the `(key)` label, which is removed from the translator.
+- Hovered, selected and scored choices set their text colour along with their background, and the vic variants' red blank answer carries its white surface, so a CQT variant's fixed colours keep AA contrast under a dark colour scheme.
+- An r1 item on the `inline_sentence` layout keeps its stem on one line: the 150px Learnosity token box now applies only to the r1 token layouts.
+- A text answer in a sel_r1-g_plusggg blank sits on its underline, level with the stem word, as in Learnosity; image answers keep the 156px box.
+- The package root re-exports `./delivery/index.js` instead of bundling a second copy of it, so `@pie-element/<name>` and `@pie-element/<name>/delivery` export the same element class. `dist/index.js.map` is no longer published.
+- Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+- A stored choice order shows only the choices it lists, as in the other elements. A choice added to the item after the order was saved is left out, where it was appended.
+- The instructor role no longer locks the choice order, as in pie-elements: an instructor sees the order stored in the session, and a session with none gets a new shuffle, saved as for a student. inline-dropdown still shows an instructor the authored order in view and evaluate mode while choice rationales are enabled. A host that wants the authored order sets `env['@pie-element'].lockChoiceOrder`. (PIE-714)
+- The `./browser/*` exports declare `types`, pointing at the declarations of the matching `./delivery`, `./author`, `./controller` and `./print` entries.
+- Shipped type declarations resolve for a client that installs only the package: `@pie-lib/delivery-events-svelte`, which the delivery types reference, is now a dependency, and relative declaration imports carry their `.js` extension for `moduleResolution: node16`.
+- Merge pull request #210 from pie-framework/dependabot/github_actions/actions/cache-6
+- 5eaa1f7: Order choices with `lockChoices` and `getShuffledChoices` from `@pie-element/shared-controller-utils`, as the other elements do. A new shuffle is now saved for a session without an `id` or `element` too.
+- Republish with no `devDependencies` in the manifest, so the production bundler can install
+  this element.
+  
+  `pie-api-aws` extracts each element tarball as a yarn workspace member, and yarn installs
+  workspace members' devDependencies. This element's manifest pinned
+  `@pie-lib/delivery-events-svelte@0.1.0`, a workspace package that is versioned but never
+  published, so the install failed before webpack ran and no bundle containing this element
+  could be built.
+- Publish a root `print.js` shim from print-bearing elements, and resolve bundler entry
+  subpaths from what a package declares.
+  
+  An alias-based IIFE builder resolves `@pie-element/<element>/print` as a filesystem path
+  and never reads the exports map, so print needs the same root shim `controller.js` and
+  `configure.js` already provide. Without it the subpath resolved only from TypeScript
+  sources, so print worked in a workspace build and failed every build against published
+  tarballs — taking the whole bundle with it rather than just the print view.
+- Author elements dispatch each edit as a bubbling `model.updated` from the element itself and keep the edit as the element's `model` across a detach and re-attach. venn-classification fills missing fields from its controller defaults, and mc-populated-blank's placeholder author view declares `model` and `configuration` and reports browser-ESM authoring unsupported.
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+- Updated dependencies
+  - @pie-element/shared-controller-utils@0.1.1-next.6
+  - @pie-element/shared-types@0.2.0-next.3
+  - @pie-lib/delivery-events-svelte@0.2.0-next.5
+
+## 0.3.0-next.21
+
+### Patch Changes
+
+- Merge pull request #210 from pie-framework/dependabot/github_actions/actions/cache-6
+
+## 0.3.0-next.20
+
+### Patch Changes
+
+- 8bd4fe2: Shipped type declarations resolve for a client that installs only the package: `@pie-lib/delivery-events-svelte`, which the delivery types reference, is now a dependency, and relative declaration imports carry their `.js` extension for `moduleResolution: node16`.
+
+## 0.3.0-next.19
+
+### Patch Changes
+
+- 59115a7: A stored choice order shows only the choices it lists, as in the other elements. A choice added to the item after the order was saved is left out, where it was appended.
+- 1ecdcf5: The instructor role no longer locks the choice order, as in pie-elements: an instructor sees the order stored in the session, and a session with none gets a new shuffle, saved as for a student. inline-dropdown still shows an instructor the authored order in view and evaluate mode while choice rationales are enabled. A host that wants the authored order sets `env['@pie-element'].lockChoiceOrder`. (PIE-714)
+
+## 0.3.0-next.18
+
+### Patch Changes
+
+- f64aeac: The `./browser/*` exports declare `types`, pointing at the declarations of the matching `./delivery`, `./author`, `./controller` and `./print` entries.
+
+## 0.3.0-next.17
+
+### Patch Changes
+
+- 7abcbd2: Element packages export `./package.json` and accept React 18.2 or 19 as peers, and the React libraries they use accept React 19. `@emotion/style` and `@pie-lib/test-utils` are gone from runtime dependencies. Multiple choice dispatches `session-changed` when the student answers and no longer when its session is set, and EBSR's session holds a part's answer as soon as the part records it. MathJax initializes once per page, and `PieUpdateSession` types the `updateSession(id, element, properties)` call controllers make.
+
+## 0.3.0-next.16
+
+### Minor Changes
+
+- 7077034: `completeAudioEnabled` now works on its own. With prompt audio present, the item only reports `complete: true` once the audio has played to the end, whether autoplay, the audio button or the native controls started it. Previously the setting only took effect when `autoplayAudioEnabled` was also on.
+
+  Behaviour change for hosts that set `completeAudioEnabled` without `autoplayAudioEnabled`: those items no longer report complete right after a response; they wait for the prompt audio to finish. The "click to enable audio" overlay still only appears with autoplay on.
+
+## 0.3.0-next.15
+
+### Patch Changes
+
+- 76a901f: Author elements dispatch each edit as a bubbling `model.updated` from the element itself and keep the edit as the element's `model` across a detach and re-attach. venn-classification fills missing fields from its controller defaults, and mc-populated-blank's placeholder author view declares `model` and `configuration` and reports browser-ESM authoring unsupported.
+
+## 0.3.0-next.14
+
+### Patch Changes
+
+- 0f34f86: An r1 item on the `inline_sentence` layout keeps its stem on one line: the 150px Learnosity token box now applies only to the r1 token layouts.
+
+## 0.3.0-next.13
+
+### Patch Changes
+
+- 7ed1380: The `narrowHorizontalChoiceMaxWidthPx` layout limit is removed: it has had no effect since the choice tiles moved into their own component.
+- 2a4317f: Hovered, selected and scored choices set their text colour along with their background, and the vic variants' red blank answer carries its white surface, so a CQT variant's fixed colours keep AA contrast under a dark colour scheme.
+
+## 0.3.0-next.12
+
+### Patch Changes
+
+- 80b5869: A text answer in a sel_r1-g_plusggg blank sits on its underline, level with the stem word, as in Learnosity; image answers keep the 156px box.
+
+## 0.3.0-next.11
+
+### Patch Changes
+
+- 53bed4b: `defineDeliveryElement` builds a Svelte delivery element from its component and an `isComplete` rule, and hands the component `onSessionChange` as a prop. `resolveDeliveryHost`, `forwardSessionChange` and `DeliveryHostElement` are removed. The three Svelte elements are built on it: `element.session` returns the player's session object after an update, and mc-populated-blank's `model-set` now reports a restored response as complete.
+- dad31dc: Print renders the delivery component as a player shows the printout's role in `view` mode, so it takes the variant layout and inline-sentence spacing; an instructor's key fills the blank and checks the key's choice, in place of the `(key)` label, which is removed from the translator.
+- 34065a2: The package root re-exports `./delivery/index.js` instead of bundling a second copy of it, so `@pie-element/<name>` and `@pie-element/<name>/delivery` export the same element class. `dist/index.js.map` is no longer published.
+
+## 0.3.0-next.10
+
+### Patch Changes
+
+- 0f1b96e: Lays itself out without the host's Tailwind, keeps its variant CSS to its own roots (per build, and inside a host's shadow root), and prints the answer key and teacher instructions for instructors only, with image choices printed as images. Instructors see teacher instructions in delivery, an item without a language is no longer marked as English, `lockChoiceOrder: false` shuffles the choices as in multiple-choice (`shuffle: true` still counts when `lockChoiceOrder` is unset), and `validate` honours its `config` and reports errors in multiple-choice's shape (`answerChoices`, `choices` by id, `correctResponse`). `alwaysShowCorrect` is gone: players show the key through `createCorrectResponseSession`. (PIE-1075)
+- 5afe90a: Leave the session's `id` and `element` to the player, so a versioned tag survives a response (PIE-1075). Audio timing now survives the learner's next pick and `waitTime` is recorded, and a reset session clears the selection. An item missing its prompt, template or choices no longer shows demo content.
+- 2bb02ad: Take learner-facing strings from `@pie-lib/translator` in the item's `language`, as the React elements do. mc-populated-blank no longer reads `uiText`, and uses `locale` when `language` is unset.
+
+## 0.3.0-next.9
+
+### Patch Changes
+
+- ea07637: The Svelte delivery elements write each session update into the object the player handed them, through the new `writeSessionInPlace` in `@pie-lib/delivery-events-svelte` (PIE-1058).
+
+  A player reads the learner's response back off that object, so replacing the reference left the player's entry at its load-time value and the forwarded container normalized to `session: null` with `intent: "metadata-only"`. All three elements-svelte packages shared the defect, and `mc-populated-blank`'s audio handlers dropped `audioStartTime`/`audioEndTime` the same way.
+
+  The elements-svelte packages do not adopt `createSessionNotifier`: they dispatch synchronously, so installing `commitPendingSession()` would tell a player they had committed when nothing was pending.
+
+## 0.3.0-next.8
+
+### Patch Changes
+
+- b59ecfe: Republish with no `devDependencies` in the manifest, so the production bundler can install
+  this element.
+
+  `pie-api-aws` extracts each element tarball as a yarn workspace member, and yarn installs
+  workspace members' devDependencies. This element's manifest pinned
+  `@pie-lib/delivery-events-svelte@0.1.0`, a workspace package that is versioned but never
+  published, so the install failed before webpack ran and no bundle containing this element
+  could be built.
+
+## 0.3.0-next.7
+
+### Patch Changes
+
+- 8d69fb5: Publish a root `print.js` shim from print-bearing elements, and resolve bundler entry
+  subpaths from what a package declares.
+
+  An alias-based IIFE builder resolves `@pie-element/<element>/print` as a filesystem path
+  and never reads the exports map, so print needs the same root shim `controller.js` and
+  `configure.js` already provide. Without it the subpath resolved only from TypeScript
+  sources, so print worked in a workspace build and failed every build against published
+  tarballs — taking the whole bundle with it rather than just the print view.
+
+## 0.3.0-next.6
+
+### Patch Changes
+
+- 9eaefde: Bottom-anchor a selected answer against the blank's underline and keep the blank out of the stem's shared baseline row, so choosing an option no longer shifts sibling stem tokens in the r1 CQT layouts, and size distractor images embedded as raw markup in labelHtml at 150x150 (CONTOOL-3159)
+
+## 0.3.0-next.5
+
+### Minor Changes
+
+- 7cae8f9: Announce the blank's state and the options available in it to screen readers, so a blank's current value and its choices are reachable without sight (PIE-784)
+
+## 0.3.0-next.4
+
+### Minor Changes
+
+- 392bfcf: stop rendering the audio transcript in delivery; the toolkit renders it PIE-855
+
+### Patch Changes
+
+- 7634975: Fix: bring the Svelte elements' `--pie-*` reads back inside the pie-players theming contract (PIE-857)
+
+  The `--pie-correct-answer-*` family was invented by these packages, so the
+  `pie-players` token registry could not see it and no color scheme overrode it.
+  The 13 names are retired; `mc-populated-blank` now reads the canonical tokens
+  they indirected through (`--pie-correct-secondary`, `--pie-incorrect-icon`,
+  `--pie-tertiary-light`, and so on) with the canonical defaults as fallbacks.
+  Resolved colors are unchanged under a themed host.
+
+  Focus outlines no longer hardcode a blue. `mc-populated-blank` read
+  `--pie-focus`, which nothing defines, and `venn-classification` used a literal
+  `#2563eb` in four places; both now chain through `--pie-focus-outline`,
+  `--pie-button-focus-outline`, and `--pie-focus-checked-border`, so the outline
+  follows the active color scheme.
+
+  `@pie-lib/styling-svelte` drops `correctAnswerTokens`, `CorrectAnswerTokens`,
+  and `correctAnswerTokensToCssVars`, which defined the retired family and had no
+  importers.
 
 ## 0.2.13-next.3
 

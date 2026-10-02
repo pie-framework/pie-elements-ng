@@ -20,6 +20,9 @@ import { GripIcon } from '../../icons/RespArea.js';
 
 const StyledContent: any = styled('span')(({ theme }) => ({
   border: `solid 0px ${theme.palette.primary.main}`,
+  '& mjx-mn:has(~ mjx-mfrac), mjx-mfrac ~ mjx-mn': {
+    fontSize: '120% !important',
+  },
   '& mjx-frac': {
     fontSize: '120% !important',
   },

@@ -6,6 +6,7 @@ export const PIE_COLOR_DEFAULTS = {
   TEXT: 'black',
   DISABLED: 'grey',
   DISABLED_SECONDARY: '#ABABAB',
+  DISABLED_TEXT: '#545454',
   CORRECT: '#4CAF50',
   CORRECT_SECONDARY: '#E8F5E9',
   CORRECT_TERTIARY: '#0EA449',
@@ -27,6 +28,7 @@ export const PIE_COLOR_DEFAULTS = {
   BACKGROUND_DARK: '#ECEDF1',
   DROPDOWN_BACKGROUND: '#E0E1E6',
   SECONDARY_BACKGROUND: 'rgba(241,241,241,1)',
+  SURFACE: '#E0E1E6',
   BORDER: '#9A9A9A',
   BORDER_LIGHT: '#D1D1D1',
   BORDER_DARK: '#646464',
@@ -39,7 +41,7 @@ export const PIE_COLOR_DEFAULTS = {
   FOCUS_UNCHECKED: '#E0E0E0',
   FOCUS_UNCHECKED_BORDER: '#757575',
   BLUE_GREY100: '#F3F5F7',
-  BLUE_GREY300: '#C0C3CF',
+  BLUE_GREY300: '#81848F',
   BLUE_GREY600: '#7E8494',
   BLUE_GREY900: '#152452',
   FADED_PRIMARY: '#DCDAFB',
@@ -102,6 +104,11 @@ export const DEFAULT_CSS_MAPPINGS = [
     variableName: '--pie-dropdown-background',
     themeKey: 'dropdown-background' as const,
     fallback: PIE_COLOR_DEFAULTS.DROPDOWN_BACKGROUND,
+  },
+  {
+    variableName: '--pie-surface',
+    themeKey: 'surface' as const,
+    fallback: PIE_COLOR_DEFAULTS.SURFACE,
   },
 
   // Primary colors
@@ -216,6 +223,11 @@ export const DEFAULT_CSS_MAPPINGS = [
     variableName: '--pie-disabled-secondary',
     themeKey: 'disabled-secondary' as const,
     fallback: PIE_COLOR_DEFAULTS.DISABLED_SECONDARY,
+  },
+  {
+    variableName: '--pie-disabled-text',
+    themeKey: 'disabled-text' as const,
+    fallback: PIE_COLOR_DEFAULTS.DISABLED_TEXT,
   },
 
   // Border colors

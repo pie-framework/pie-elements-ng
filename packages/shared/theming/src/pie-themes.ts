@@ -60,11 +60,13 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   // Disabled states
   disabled: '#9E9E9E',
   'disabled-secondary': '#E0E0E0',
+  'disabled-text': '#545454', // dimmed, but 7.4:1 on base-100 so it stays readable
 
   // Backgrounds
   'background-dark': '#F5F5F5',
   'secondary-background': '#FAFAFA',
   'dropdown-background': '#ffffff',
+  surface: '#E0E1E6',
 
   // Borders
   border: '#BDBDBD',
@@ -80,8 +82,7 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
 
   // Blue-grey palette
   'blue-grey-100': '#F3F5F7',
-  'blue-grey-300': '#C0C3CF',
-  'blue-grey-600': '#7E8494',
+  'blue-grey-300': '#9094A0',
   'blue-grey-900': '#152452',
 
   // Absolute colors
@@ -150,11 +151,13 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
   // Disabled states
   disabled: '#757575',
   'disabled-secondary': '#424242',
+  'disabled-text': '#A0AEC0', // dimmed, but 7.2:1 on base-100 so it stays readable
 
   // Backgrounds
   'background-dark': '#0f1419', // Very dark background
   'secondary-background': '#2d3748', // Medium dark background
   'dropdown-background': '#2d3748',
+  surface: '#2d3748',
 
   // Borders
   border: '#616161',
@@ -170,7 +173,7 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
 
   // Blue-grey palette
   'blue-grey-100': '#37474F',
-  'blue-grey-300': '#546E7A',
+  'blue-grey-300': '#526B77', // select-text hover fill: keeps base-content at 4.57:1; 2.90:1 on base-100, as text on it (13.2:1) is under the 13.5:1 both need
   'blue-grey-600': '#78909C',
   'blue-grey-900': '#ECEFF1',
 

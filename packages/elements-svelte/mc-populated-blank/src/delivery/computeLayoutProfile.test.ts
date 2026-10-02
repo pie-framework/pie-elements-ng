@@ -161,3 +161,31 @@ describe('computeLayoutProfile — useFeatureButtonAudio', () => {
     expect(r.useFeatureButtonAudio).toBe(true);
   });
 });
+
+describe('computeLayoutProfile — hasVisiblePrompt', () => {
+  const visible = (prompt?: string) => computeLayoutProfile({ prompt }).hasVisiblePrompt;
+
+  it('is false for a missing or empty prompt', () => {
+    expect(visible()).toBe(false);
+    expect(visible('')).toBe(false);
+  });
+
+  it('is false for an imported wrapper that holds no text or media', () => {
+    expect(
+      visible(
+        '<div class="iat-html-container iat-stacking-boundary"><div class="hvr-script-audio"></div></div>'
+      )
+    ).toBe(false);
+    expect(visible('<div><p>&nbsp;</p><p> &#160; </p></div>')).toBe(false);
+  });
+
+  it('is true for a prompt with text', () => {
+    expect(
+      visible('<div><p class="iat-align-center"><strong>A Beautiful Day</strong></p></div>')
+    ).toBe(true);
+  });
+
+  it('is true for a prompt that is only an image', () => {
+    expect(visible('<p class="iat-align-center"><img src="a.svg" alt=""></p>')).toBe(true);
+  });
+});

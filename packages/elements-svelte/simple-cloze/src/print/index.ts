@@ -1,18 +1,7 @@
 import PrintComponent from './Print.svelte';
 
-const SvelteElementClass = (PrintComponent as any).element;
-
-class SimpleClozePrint extends SvelteElementClass {
-  private _model: any = null;
-
-  set model(m: any) {
-    this._model = m;
-    super.model = m;
-  }
-
-  get model() {
-    return this._model;
-  }
-}
-
-export default SimpleClozePrint;
+/**
+ * Print players set `el.options = config.options` and then `el.model = m`;
+ * `options.role` decides whether the answer key is printed.
+ */
+export default (PrintComponent as any).element;

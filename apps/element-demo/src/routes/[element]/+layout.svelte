@@ -17,9 +17,27 @@ import {
 import DemoSelector from '$lib/components/DemoSelector.svelte';
 import IifeBuildPanel from '$lib/components/IifeBuildPanel.svelte';
 import { isIifePlayerAvailable, parsePlayerType } from '$lib/config/player-runtime';
+import { installIifeMathRenderer } from '$lib/config/iife-math-renderer';
 import type { LayoutData } from './$types';
 
 let { data, children }: { data: LayoutData; children: any } = $props();
+
+// IIFE pages render math with MathJax 3, so the player must find that renderer when it mounts.
+// A failed import shows an error: the player would otherwise install MathJax 4 unnoticed.
+let iifeMathReady = $state(false);
+let iifeMathError = $state<string | null>(null);
+$effect(() => {
+  if (currentPlayerType !== 'iife' || iifeMathReady) return;
+  installIifeMathRenderer().then(
+    () => {
+      iifeMathReady = true;
+    },
+    (error) => {
+      console.error('[element-demo] Failed to install MathJax 3:', error);
+      iifeMathError = error instanceof Error ? error.message : String(error);
+    }
+  );
+});
 
 // Initialize stores on mount - simple, no reactivity complexity
 onMount(() => {
@@ -457,7 +475,6 @@ let showAudioTranscript = $state(false);
       {@const isActive = activeTab === tab.id}
       <a
         href={tab.path}
-        data-sveltekit-reload
         role="tab"
         class="tab"
         class:tab-active={isActive}
@@ -473,6 +490,16 @@ let showAudioTranscript = $state(false);
 
   <!-- Page Content -->
   <div class="flex-1 overflow-hidden bg-base-200" class:rli-with-audio-transcript={isMcPopulatedBlank && showAudioTranscript}>
-    {@render children()}
+    {#if iifeMathError}
+      <div class="alert alert-error m-4" role="alert">
+        <div>
+          <h3 class="font-bold">MathJax 3 failed to load for the IIFE player</h3>
+          <p>{iifeMathError}</p>
+          <p>Reload the page to try again.</p>
+        </div>
+      </div>
+    {:else if currentPlayerType !== 'iife' || iifeMathReady}
+      {@render children()}
+    {/if}
   </div>
 </div>

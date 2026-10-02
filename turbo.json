@@ -1,11 +1,16 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "https://v2-10-12.turborepo.dev/schema.json",
   "ui": "tui",
-  "concurrency": "76",
+  "concurrency": "78",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "esm/**", "build/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tools/vite/**",
+        "$TURBO_ROOT$/packages/shared/editor-runtime/package.json"
+      ],
+      "outputs": ["dist/**", "esm/**", "build/**", "module/**"],
       "env": ["NODE_ENV"]
     },
     "@pie-element/element-demo#build": {

@@ -22,6 +22,9 @@ export default class Choices extends React.Component {
     value: PropTypes.object,
     choicePosition: PropTypes.string.isRequired,
     instanceId: PropTypes.string, // Added for drag isolation
+    selectedItem: PropTypes.object,
+    onSelectClick: PropTypes.func,
+    onPlacementClick: PropTypes.func,
   };
 
   getStyleForWrapper: any = () => {
@@ -50,8 +53,22 @@ export default class Choices extends React.Component {
     }
   };
 
+  handlePoolClick: any = () => {
+    const { disabled, selectedItem, onPlacementClick } = this.props;
+
+    if (disabled) return;
+
+    if (selectedItem) {
+      // `undefined` targetId means "the choice board" — drag-in-the-blank.jsx's
+      // commitPlacement routes it to removing the item from wherever it currently is.
+      onPlacementClick?.(undefined);
+    }
+
+    // Pool background clicked with nothing selected: nothing to place.
+  };
+
   render() {
-    const { disabled, duplicates, choices, value, instanceId } = this.props;
+    const { disabled, duplicates, choices, value, instanceId, selectedItem, onSelectClick } = this.props;
     const filteredChoices = choices.filter((c) => {
       if (duplicates === true) {
         return true;
@@ -62,10 +79,17 @@ export default class Choices extends React.Component {
     const elementStyle = { ...this.getStyleForWrapper(), minWidth: '100px' };
 
     return (
-      <div style={elementStyle}>
+      <div style={elementStyle} onClick={this.handlePoolClick}>
         <DragDroppablePlaceholder disabled={disabled} instanceId={instanceId}>
           {filteredChoices.map((c, index) => (
-            <Choice key={`${c.value}-${index}`} disabled={disabled} choice={c} instanceId={instanceId} />
+            <Choice
+              key={`${c.value}-${index}`}
+              disabled={disabled}
+              choice={c}
+              instanceId={instanceId}
+              selectedItem={selectedItem}
+              onSelectClick={onSelectClick}
+            />
           ))}
         </DragDroppablePlaceholder>
       </div>

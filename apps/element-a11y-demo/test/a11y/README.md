@@ -61,17 +61,17 @@ Each finding includes:
 Open `/a11y` in the demo app to browse the curated scenario suite. Individual scan routes look like:
 
 ```text
-/a11y/<element>/scan?scenario=<scenario-id>&player=esm
+/a11y/<element>/scan?scenario=<scenario-id>
 ```
 
 Open `/a11y/inventory` to browse the broad demo baseline. Inventory scan routes remain:
 
 ```text
-/a11y/<element>/scan?demo=<demo-id>&mode=gather&player=esm
-/a11y/<element>/scan?demo=<demo-id>&mode=evaluate&player=esm
+/a11y/<element>/scan?demo=<demo-id>&mode=gather
+/a11y/<element>/scan?demo=<demo-id>&mode=evaluate
 ```
 
-These routes intentionally avoid the normal demo chrome so Axe scans focus on the mounted assessment element.
+These routes intentionally avoid the normal demo chrome so Axe scans focus on the mounted assessment element. Scans load elements through the ESM player.
 
 In local dev mode, `/a11y` includes a “Run full a11y suite” control. Individual scan
 pages include controls to run just that scenario or all scenarios for the element. These

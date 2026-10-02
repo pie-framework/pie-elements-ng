@@ -9,7 +9,7 @@
  */
 
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
-import { InputContainer as InputContainerImport } from '@pie-lib/render-ui';
+import { InputContainer as InputContainerImport, color } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -62,9 +62,11 @@ const StyledInputContainer: any = styled(InputContainer)(() => ({
   paddingBottom: 0,
 }));
 
+// A fill is meant to sit close to the page, so `--pie-background-dark` rather
+// than a stroke token; MUI's grey[300] held #e0e0e0 under every scheme.
 const StyledCustomHolder: any = styled('div')(({ theme }) => ({
   marginTop: '0px',
-  background: theme.palette.grey[300],
+  background: color.backgroundDark(),
   padding: 0,
   marginBottom: theme.spacing(2),
   borderRadius: '4px',
@@ -72,7 +74,7 @@ const StyledCustomHolder: any = styled('div')(({ theme }) => ({
 
 const StyledDefaultHolder: any = styled('div')(({ theme }) => ({
   marginTop: '0px',
-  background: theme.palette.grey[300],
+  background: color.backgroundDark(),
   padding: theme.spacing(2),
   marginBottom: theme.spacing(2),
   borderRadius: '4px',

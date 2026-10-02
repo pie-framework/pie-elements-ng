@@ -14,7 +14,8 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import { difference, isEqual, uniqueId } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
-import { closestCenter } from '@dnd-kit/core';
+import { rectIntersection } from '@dnd-kit/core';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
 
 import { Collapsible as CollapsibleImport, color, Feedback as FeedbackImport, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
@@ -56,6 +57,60 @@ import { DragProvider } from '@pie-lib/drag';
 import { HorizontalTiler, VerticalTiler } from './tiler.js';
 import { buildState, reducer } from './ordering.js';
 import { haveSameValuesButDifferentOrder } from './utils.js';
+import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
+
+// A click that lands right after a real drag gesture ends must be ignored by the
+// click-to-select/click-to-place handlers below, or it would immediately reopen or
+// re-trigger a selection for a drag that just completed.
+const CLICK_AFTER_DRAG_GUARD_MS = 250;
+
+// Used by onDragEnd below to tell "dropped back on the exact slot the drag started
+// from" apart from "dropped somewhere with no valid target at all" — both leave
+// dnd-kit's own `over` null (tile.tsx disables a droppable for the whole duration of
+// its own drag, and dnd-kit excludes disabled droppables from collision detection
+// entirely, so the origin slot can never become `over` again — see
+// `enabledDroppableContainers` in dnd-kit's own DndContext), but only the first should
+// be a no-op rather than a removal.
+//
+// dnd-kit gives no id for "whatever the item is currently over" once that candidate is
+// disabled, so there's no droppable id to compare against directly. What IS available
+// is `active.rect.current.initial` — and because the draggable and its paired
+// droppable are the same DOM node (see tile.tsx), that rect IS the origin slot's own
+// bounds; nothing else could ever measure there. So checking whether the item's
+// current center still falls inside its own initial rect is exactly equivalent to
+// asking "does the slot here still hold the same choice id it was picked up from" —
+// just resolved geometrically, since that's the only id that rect could ever belong to.
+const isOverOwnOriginSlot = (initialRect, translatedRect) => {
+  if (!initialRect || !translatedRect) return false;
+
+  const centerX = translatedRect.left + translatedRect.width / 2;
+  const centerY = translatedRect.top + translatedRect.height / 2;
+
+  return (
+    centerX >= initialRect.left &&
+    centerX <= initialRect.right &&
+    centerY >= initialRect.top &&
+    centerY <= initialRect.bottom
+  );
+};
+
+const getKeyboardDragOptions = (includeTargets) =>
+  includeTargets
+    ? {
+        keyboardCoordinateGetter: closestDroppableKeyboardCoordinates,
+        keyboardCodes: {
+          start: ['Space', 'Enter'],
+          cancel: ['Escape'],
+          end: ['Space', 'Enter'],
+        },
+        accessibility: {
+          screenReaderInstructions: {
+            draggable:
+              'Press Space or Enter to pick up this answer choice. Once picked up, use Tab or Shift+Tab to cycle through response areas, or use arrow keys to move it freely. Press Space or Enter to drop, or Escape to cancel.',
+          },
+        },
+      }
+    : {};
 
 const { translator } = Translator;
 
@@ -68,6 +123,26 @@ const PlacementOrderingContainer: any = styled('div')({
   flexDirection: 'column',
   alignItems: 'center',
   boxSizing: 'border-box',
+});
+
+// The interactive region - the choices and answers columns for a vertical item, or the choices and
+// answers rows for a horizontal one - scrolls horizontally when it does not fit the available width.
+const InteractiveRegion: any = styled('div')({
+  // the ancestors centre their children, which shrink-wraps this box to its content. without a
+  // definite width it grows with the tiler and the overflow escapes outwards instead of scrolling.
+  alignSelf: 'stretch',
+  maxWidth: '100%',
+  overflowX: 'auto',
+  // tiles are dragged by transform, which counts towards scrollable overflow, so leaving this axis
+  // scrollable would pop a vertical scrollbar mid-drag
+  overflowY: 'hidden',
+});
+
+// keeps the tiler at its natural width, and centred while it still fits
+const InteractiveRegionContent: any = styled('div')({
+  display: 'flex',
+  justifyContent: 'center',
+  minWidth: 'min-content',
 });
 
 const StyledPrompt: any = styled('div')(({ theme }) => ({
@@ -123,7 +198,9 @@ export class PlacementOrdering extends React.Component {
 
     this.state = {
       showingCorrect: false,
+      selectedChoice: null,
     };
+    this.lastDragEndAt = 0;
 
     const { model } = props || {};
     const { env } = model || {};
@@ -301,24 +378,163 @@ export class PlacementOrdering extends React.Component {
     const { over, active } = event;
     const ordering = this.createOrdering();
 
+    // A real drag (pointer or keyboard) just ended — whatever mirrored selection it
+    // set on start is now resolved, and any click landing immediately after this must
+    // not be misread as a fresh selection/placement
+    this.cancelSelection();
+    this.lastDragEndAt = Date.now();
+
     if (over && active) {
       const draggedItem = active.data.current;
       const droppedOnItem = over.data.current;
 
       if (draggedItem && droppedOnItem && droppedOnItem.type === 'target') {
         this.onDropChoice(droppedOnItem, draggedItem, ordering);
+        this.focusTile(this.getDestinationSlotId(droppedOnItem));
         return;
       }
 
       if (draggedItem && droppedOnItem) {
         this.onDropChoice(droppedOnItem, draggedItem, ordering);
+        this.focusTile(this.getDestinationSlotId(droppedOnItem));
       }
     } else if (!over && active) {
       const draggedItem = active.data.current;
-      if (draggedItem && draggedItem.type === 'target') {
+      const returnedToOwnSlot = isOverOwnOriginSlot(active.rect?.current?.initial, active.rect?.current?.translated);
+
+      if (draggedItem && draggedItem.type === 'target' && !returnedToOwnSlot) {
         this.onRemoveChoice(draggedItem, ordering);
+        // Removed straight back to the pool (dragged off with no valid drop target) —
+        // the destination is the choice's own vacated slot, identified by its id.
+        this.focusTile(this.getDestinationSlotId({ type: 'choice', id: draggedItem.id }));
       }
     }
+  };
+
+  onDragStart: any = (event) => {
+    const { active } = event;
+
+    if (active?.data?.current) {
+      // A real drag (pointer or keyboard) is itself a selection — mirror it into the
+      // same selectedChoice state that click-to-select uses, so the two interaction
+      // models can be freely intermixed
+      this.selectChoice(active.data.current);
+    }
+  };
+
+  onDragCancel: any = () => {
+    this.cancelSelection();
+    this.lastDragEndAt = Date.now();
+  };
+
+  isSameChoice = (a, b) => !!a && !!b && a.type === b.type && a.id === b.id && a.index === b.index;
+
+  selectChoice: any = (data) => {
+    this.setState({ selectedChoice: data });
+  };
+
+  // Click-to-select semantics: selecting the currently-selected choice again clears
+  // the selection instead of re-selecting it.
+  toggleChoiceSelection: any = (data) => {
+    this.setState((state) => ({
+      selectedChoice: this.isSameChoice(state.selectedChoice, data) ? null : data,
+    }));
+  };
+
+  cancelSelection: any = () => {
+    this.setState({ selectedChoice: null });
+  };
+
+  // If a real dnd-kit drag (started via keyboard Space/Enter) is still live when a
+  // click completes the placement below, it needs to be cleanly ended — otherwise
+  // dnd-kit would still think a drag is in progress. Escape is already configured as
+  // this sensor's cancel key (see getKeyboardDragOptions), and dispatching it as a real
+  // DOM KeyboardEvent is how dnd-kit's own document-level listener is reached from
+  // outside its sensor. onDragCancel only resets local UI state, not the session, so
+  // this is safe to call unconditionally, including when no drag is actually live
+  // (dnd-kit simply has no listener attached in that case, and the dispatch is a
+  // no-op).
+  endAnyLiveKeyboardDrag: any = () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true, cancelable: true }));
+  };
+
+  placeSelectedChoice: any = (targetTileData) => {
+    const { selectedChoice } = this.state;
+
+    if (!selectedChoice) {
+      return;
+    }
+
+    const ordering = this.createOrdering();
+    const destinationSlotId = this.getDestinationSlotId(targetTileData);
+
+    this.onDropChoice(targetTileData, selectedChoice, ordering);
+    this.cancelSelection();
+    this.endAnyLiveKeyboardDrag();
+    this.lastDragEndAt = Date.now();
+    this.focusTile(destinationSlotId);
+  };
+
+  // dnd-kit's KeyboardSensor keeps/restores native DOM focus on the originally
+  // picked-up tile throughout and after a drag. After a target-to-target move (or a
+  // move back to the pool) that tile is the SOURCE, which then re-renders holding
+  // whatever the destination displaced (or nothing) — so native focus (and its browser
+  // :focus outline) reads as "the source is still selected" even though the custom
+  // selection border is correctly cleared. Move focus to wherever the item actually
+  // landed instead: the standard accessible pattern for keyboard drag-and-drop.
+  getDestinationSlotId: any = (destinationTile) => {
+    if (!destinationTile) {
+      return null;
+    }
+
+    // Mirrors tile.tsx's own slotId derivation — see the comment there for why `index`
+    // (target) / `id` (choice) are the content-independent identities to key off of.
+    if (destinationTile.type === 'target') {
+      return `target-${destinationTile.index}`;
+    }
+
+    if (destinationTile.type === 'choice') {
+      return `choice-${destinationTile.id}`;
+    }
+
+    return null;
+  };
+
+  // The destination tile only appears in the DOM (re-tagged with its new slotId) after
+  // this component's re-render commits, so wait a couple of animation frames — long
+  // enough for React's DOM commit and the browser's next paint — before querying for it.
+  focusTile: any = (slotId) => {
+    if (!slotId) {
+      return;
+    }
+
+    const selector = `[data-tile-id="${this.instanceId}:${slotId}"]`;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const node = document.querySelector(selector);
+
+        node?.focus();
+      });
+    });
+  };
+
+  isClickSoonAfterDragEnd = () => Date.now() - this.lastDragEndAt < CLICK_AFTER_DRAG_GUARD_MS;
+
+  onChoiceClick: any = (data) => {
+    if (this.isClickSoonAfterDragEnd()) {
+      return;
+    }
+
+    this.toggleChoiceSelection(data);
+  };
+
+  onPlacementClick: any = (targetTileData) => {
+    if (this.isClickSoonAfterDragEnd()) {
+      return;
+    }
+
+    this.placeSelectedChoice(targetTileData);
   };
 
   render() {
@@ -362,10 +578,26 @@ export class PlacementOrdering extends React.Component {
       flexDirection: 'column',
       alignItems: 'center',
       boxSizing: 'border-box',
+      width: '100%',
     };
 
+    const clickPlacementProps = includeTargets
+      ? {
+          selectedChoice: this.state.selectedChoice,
+          onChoiceClick: this.onChoiceClick,
+          onPlacementClick: this.onPlacementClick,
+        }
+      : {};
+
     return (
-      <DragProvider onDragStart={() => { }} onDragEnd={this.onDragEnd} collisionDetection={closestCenter}>
+      <DragProvider
+        onDragStart={this.onDragStart}
+        onDragEnd={this.onDragEnd}
+        onDragCancel={this.onDragCancel}
+        collisionDetection={rectIntersection}
+        modifiers={[restrictToParentElement]}
+        {...getKeyboardDragOptions(includeTargets)}
+      >
         <PlacementOrderingContainer>
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>
             {showTeacherInstructions && (
@@ -388,18 +620,23 @@ export class PlacementOrdering extends React.Component {
               language={language}
             />
 
-            <OrderingTiler
-              instanceId={this.instanceId}
-              choiceLabel={config.choiceLabel}
-              targetLabel={config.targetLabel}
-              ordering={ordering}
-              tiler={Tiler}
-              disabled={disabled}
-              addGuide={config.showOrdering}
-              tileSize={config.tileSize}
-              includeTargets={includeTargets}
-              choiceLabelEnabled={model.config && model.config.choiceLabelEnabled}
-            />
+            <InteractiveRegion>
+              <InteractiveRegionContent>
+                <OrderingTiler
+                  instanceId={this.instanceId}
+                  choiceLabel={config.choiceLabel}
+                  targetLabel={config.targetLabel}
+                  ordering={ordering}
+                  tiler={Tiler}
+                  disabled={disabled}
+                  addGuide={config.showOrdering}
+                  tileSize={config.tileSize}
+                  includeTargets={includeTargets}
+                  choiceLabelEnabled={model.config && model.config.choiceLabelEnabled}
+                  {...clickPlacementProps}
+                />
+              </InteractiveRegionContent>
+            </InteractiveRegion>
 
             {displayNote && <StyledNote dangerouslySetInnerHTML={{ __html: note }} />}
 

@@ -262,6 +262,13 @@ export const gridDraggable = (opts) => (Comp) => {
       return opts.fromDelta(this.props, delta);
     };
 
+    /**
+     * Must not return false. react-draggable v4 treats a false return as "keep dragging"
+     * and bails out of handleDragStop before it detaches the document mousemove/mouseup
+     * listeners, so the handle would keep following the pointer after release - and every
+     * previously dragged handle would move along with the next one. (v3 ignored the
+     * return value and always detached, which is why returning false used to look inert.)
+     */
     onStop: any = (e, dd) => {
       log('[onStop] dd:', dd);
       const { onDragStop, onClick, disabled } = this.props;
@@ -300,12 +307,11 @@ export const gridDraggable = (opts) => (Comp) => {
           }
         }
 
-        return false;
+        this.setState({ startX: null, startY: null });
+        return;
       }
 
       this.setState({ startX: null, startY: null });
-      // return false to prevent state updates in the underlying draggable - a move will have triggered an update already.
-      return false;
     };
 
     render() {
@@ -316,8 +322,21 @@ export const gridDraggable = (opts) => (Comp) => {
       const { disabled, onClick, ...rest } = this.props;
       const grid = this.grid();
 
-      // prevent the text select icon from rendering.
-      const onMouseDown = (e) => e.nativeEvent.preventDefault();
+      // Prevent the text-select icon from rendering. DraggableCore invokes this same
+      // `onMouseDown` prop for BOTH a real mousedown (a React SyntheticEvent, wrapping
+      // the native event under `.nativeEvent`) and a touchstart (added via a plain
+      // native addEventListener, so `e` IS the native event directly, with no
+      // `.nativeEvent` wrapper) - see react-draggable's DraggableCore.handleDragStart,
+      // which calls `this.props.onMouseDown(e)` from both its onMouseDown and
+      // onTouchStart handlers. Reaching for `e.nativeEvent.preventDefault()`
+      // unconditionally threw on every touchstart (`e.nativeEvent` is undefined),
+      // which aborted handleDragStart before it could attach DraggableCore's own
+      // move/end listeners - the drag silently never started on touch devices
+      // (PIE-1074). Falling back to `e` itself when `.nativeEvent` is absent handles
+      // both cases, and calling preventDefault() on the touchstart is itself required
+      // for the browser to keep routing the gesture to us instead of hijacking it as a
+      // page scroll after the first uncancelled touchmove.
+      const onMouseDown = (e) => (e.nativeEvent || e).preventDefault();
 
       /**
        * TODO: This shouldnt be necessary, we should be able to use the r-d classnames.

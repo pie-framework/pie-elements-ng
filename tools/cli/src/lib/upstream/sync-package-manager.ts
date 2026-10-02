@@ -10,10 +10,19 @@ import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { loadPackageJson, type PackageJson } from '../../utils/package-json.js';
 import type { SyncConfig } from './sync-strategy.js';
+import { browserEditorRuntimeDeclaration, reachesEditorEngine } from './editor-runtime.js';
 import { existsAny } from './sync-filesystem.js';
 import { applyPackageJsonTransforms } from './sync-transforms.js';
-import { BUILD_TOOLS, REACT, PACKAGE_DEFAULTS, SCRIPTS, WORKSPACE } from './sync-constants.js';
 import {
+  BUILD_TOOLS,
+  PACKAGE_DEFAULTS,
+  REACT,
+  SCRIPTS,
+  WORKSPACE,
+  composeElementBuildScript,
+} from './sync-constants.js';
+import {
+  applyPieLibDependencyVersionPins,
   getPieLibDependencyAugmentations,
   getPieLibDependencyOverride,
   shouldGenerateConfigUiFractionHelper,
@@ -64,6 +73,18 @@ function readBrowserEsmPolicy(rootDir: string): BrowserEsmPolicy {
   } catch {
     return {};
   }
+}
+
+/**
+ * The `dependencies` entries an element declares for the browser ESM shared runtime (React and
+ * React DOM): a caret range on each `sharedDependencyVersions` version in
+ * tools/vite/browser-esm-policy.json.
+ */
+export function elementSharedRuntimeDependencies(rootDir: string): Record<string, string> {
+  const versions = readBrowserEsmPolicy(rootDir).sharedDependencyVersions ?? {};
+  return Object.fromEntries(
+    Object.entries(versions).map(([name, version]) => [name, `^${version}`])
+  );
 }
 
 /**
@@ -144,6 +165,7 @@ export function generateExportsObject(
     };
     if (includeBrowserExports) {
       exports['./browser/delivery'] = {
+        types: './dist/delivery/index.d.ts',
         default: './dist/browser/delivery/index.js',
       };
     }
@@ -156,6 +178,7 @@ export function generateExportsObject(
     };
     if (includeBrowserExports) {
       exports['./browser/author'] = {
+        types: './dist/author/index.d.ts',
         default: './dist/browser/author/index.js',
       };
     }
@@ -177,6 +200,7 @@ export function generateExportsObject(
     };
     if (includeBrowserExports) {
       exports['./browser/controller'] = {
+        types: './dist/controller/index.d.ts',
         default: './dist/browser/controller/index.js',
       };
     }
@@ -187,8 +211,13 @@ export function generateExportsObject(
       types: './dist/print/index.d.ts',
       default: './dist/print/index.js',
     };
+    exports['./print.js'] = {
+      types: './dist/print/index.d.ts',
+      default: './dist/print/index.js',
+    };
     if (includeBrowserExports) {
       exports['./browser/print'] = {
+        types: './dist/print/index.d.ts',
         default: './dist/browser/print/index.js',
       };
     }
@@ -207,6 +236,8 @@ export function generateExportsObject(
       default: './dist/runtime-support.js',
     };
   }
+
+  exports['./package.json'] = './package.json';
 
   return exports;
 }
@@ -326,7 +357,10 @@ function normalizePackageImport(specifier: string): string | null {
   return specifier.split('/')[0] || null;
 }
 
-const LEGACY_PEERS_TO_SKIP = new Set(['@emotion/core']);
+// Upstream manifests declare these as runtime dependencies, and no synced module imports them:
+// @emotion/style is a deprecated 0.8 package, and @pie-lib/test-utils is a test helper whose
+// testing-library dependencies would install into every host.
+const UPSTREAM_DEPENDENCIES_TO_DROP = new Set(['@emotion/style', '@pie-lib/test-utils']);
 
 async function findInstalledPackageJson(
   packageName: string,
@@ -386,12 +420,7 @@ async function addTransitivePeerDependencies(
     );
 
     for (const [peerName, peerVersion] of Object.entries(peerDeps)) {
-      if (
-        deps[peerName] ||
-        declaredPeerDeps.has(peerName) ||
-        optionalPeers.has(peerName) ||
-        LEGACY_PEERS_TO_SKIP.has(peerName)
-      ) {
+      if (deps[peerName] || declaredPeerDeps.has(peerName) || optionalPeers.has(peerName)) {
         continue;
       }
 
@@ -448,6 +477,19 @@ function addKnownPeerFallbacks(deps: Record<string, string>): void {
     deps['@tiptap/extension-list'] = tiptapVersion;
   }
 
+  // @tiptap/react takes both menus as caret optional dependencies, yet they peer on
+  // @tiptap/core exactly: undeclared, a consumer install picks up the newest menus against an
+  // older core. Declaring them lets the version pins hold them to the rest of the set.
+  if (deps['@tiptap/react']) {
+    for (const menu of ['@tiptap/extension-bubble-menu', '@tiptap/extension-floating-menu']) {
+      if (!deps[menu]) deps[menu] = deps['@tiptap/react'];
+    }
+  }
+
+  if (deps['@tiptap/extension-floating-menu'] && !deps['@floating-ui/dom']) {
+    deps['@floating-ui/dom'] = '^1.7.6';
+  }
+
   if (deps['@testing-library/user-event'] && !deps['@testing-library/dom']) {
     deps['@testing-library/dom'] = '^10.4.1';
   }
@@ -469,6 +511,9 @@ export function extractUpstreamDependencies(
   let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
+    if (UPSTREAM_DEPENDENCIES_TO_DROP.has(name)) {
+      continue;
+    }
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[name] = WORKSPACE.VERSION;
     } else if (name !== 'react' && name !== 'react-dom') {
@@ -569,6 +614,7 @@ export async function ensureElementPackageJson(
 
   // Extract and normalize upstream dependencies
   const expectedDeps = extractUpstreamDependencies(upstreamPkg);
+  // React is skipped as a transitive peer: the browser ESM policy supplies it below.
   const declaredPeerDeps = new Set([
     ...Object.keys((pkg?.peerDependencies as Record<string, string> | undefined) ?? {}),
     'react',
@@ -634,10 +680,6 @@ export async function ensureElementPackageJson(
         (upstreamPkg?.description as string | undefined) ??
         `React implementation of ${elementName} element synced from pie-elements`,
       dependencies: expectedDeps,
-      peerDependencies: {
-        react: REACT.VERSION,
-        'react-dom': REACT.VERSION,
-      },
     };
   }
 
@@ -645,11 +687,16 @@ export async function ensureElementPackageJson(
   if (Object.keys(expectedDeps).length > 0) {
     pkg.dependencies = expectedDeps;
   }
-  pkg.peerDependencies = {
-    ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
-    react: REACT.VERSION,
-    'react-dom': REACT.VERSION,
-  };
+  // No React peer: a peer lets pnpm and yarn bind the element to the host's React, while the
+  // element is built and tested against the React 18 its own dependency installs.
+  const otherPeerDeps = { ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}) };
+  delete otherPeerDeps.react;
+  delete otherPeerDeps['react-dom'];
+  if (Object.keys(otherPeerDeps).length > 0) {
+    pkg.peerDependencies = otherPeerDeps;
+  } else {
+    delete pkg.peerDependencies;
+  }
 
   // Preserve pie metadata (if present upstream or locally)
   const pieMetadata = ((upstreamPkg as PackageJson | null | undefined)?.pie ??
@@ -660,11 +707,43 @@ export async function ensureElementPackageJson(
         controller?: string;
         configure?: string;
         browserSharedDependencies?: Record<string, string>;
+        browserEditorRuntime?: unknown;
       }
     | undefined;
 
   // Apply all standard transformations
   pkg = applyPackageJsonTransforms(pkg);
+
+  // React is a real dependency, and the element's only React declaration. Legacy webpack
+  // bundlers (builder.pie-api.com) install `dependencies` and never install peers, so
+  // without it node_modules/react is absent in the build snapshot and every
+  // @mui / @emotion / @dnd-kit peer fails with "Module not found: Can't resolve 'react'".
+  // A host that bundles the ./browser/* entries resolves React from the element package,
+  // so this dependency is also the React the element runs on there.
+  //
+  // This must run AFTER applyPackageJsonTransforms: transformPackageJsonBrowserEsmDependencies
+  // unconditionally deletes react/react-dom from dependencies to drop whatever
+  // arbitrary range upstream declared. We re-add them here as the final word,
+  // pinned to the policy version.
+  //
+  // The import-map path is governed by pie.browserSharedDependencies instead, and
+  // isExternal() in sync-externals.ts keeps React external in every bundle regardless
+  // of what is declared here, so the element's own build output is unaffected.
+  //
+  // Versions come from tools/vite/browser-esm-policy.json - the same source as
+  // pie.browserSharedDependencies below.
+  //
+  // Declared as a caret range, NOT an exact pin. An exact pin resolves to its own
+  // copy alongside the root's `^`-resolved one, and two React instances break
+  // hooks at runtime ("Invalid hook call", useRef of null). Any React 18 from the policy
+  // version up serves both the legacy webpack path and a bundling host.
+  const sharedRuntimeDeps = elementSharedRuntimeDependencies(config.pieElementsNg);
+  if (Object.keys(sharedRuntimeDeps).length > 0) {
+    pkg.dependencies = {
+      ...((pkg.dependencies as Record<string, string> | undefined) ?? {}),
+      ...sharedRuntimeDeps,
+    };
+  }
 
   // Detect available entry points
   const entryPoints = detectEntryPoints(elementDir);
@@ -698,6 +777,31 @@ export async function ensureElementPackageJson(
     }
   } else {
     delete nextPieMetadata.browserSharedDependencies;
+  }
+  // An element whose browser build bundles the editor engine also builds the editor-runtime
+  // variant, which imports the engine from @pie-element/shared-editor-runtime.
+  const browserEditorRuntime =
+    includeBrowserExports &&
+    reachesEditorEngine(
+      config.pieElementsNg,
+      (pkg.dependencies as Record<string, string> | undefined) ?? {}
+    )
+      ? browserEditorRuntimeDeclaration(
+          config.pieElementsNg,
+          new Set(
+            [
+              entryPoints.hasDelivery && 'delivery',
+              entryPoints.hasAuthor && 'author',
+              entryPoints.hasPrint && 'print',
+              entryPoints.hasController && 'controller',
+            ].filter((view): view is string => typeof view === 'string')
+          )
+        )
+      : null;
+  if (browserEditorRuntime) {
+    nextPieMetadata.browserEditorRuntime = browserEditorRuntime;
+  } else {
+    delete nextPieMetadata.browserEditorRuntime;
   }
 
   if (Object.keys(nextPieMetadata).length > 0) {
@@ -770,6 +874,11 @@ export async function ensureElementPackageJson(
   } else {
     normalizedFiles.delete('configure.js');
   }
+  if (entryPoints.hasPrint) {
+    normalizedFiles.add('print.js');
+  } else {
+    normalizedFiles.delete('print.js');
+  }
   pkg.files = Array.from(normalizedFiles).sort();
 
   // Set sideEffects
@@ -790,11 +899,14 @@ export async function ensureElementPackageJson(
     existsSync(join(elementDir, 'src/index.iife.ts')) ||
     existsSync(join(elementDir, 'vite.config.iife.ts'));
 
-  if (hasBrowserBuild) {
-    scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE_AND_BROWSER : SCRIPTS.BUILD_WITH_BROWSER;
-  } else {
-    scripts.build = hasIifeEntry ? SCRIPTS.BUILD_WITH_IIFE : SCRIPTS.BUILD;
-  }
+  // A print entry point means this package also needs the legacy print lane, so
+  // module/print.js is emitted for the current @pie-framework/pie-print loader.
+  scripts.build = composeElementBuildScript({
+    browser: hasBrowserBuild,
+    editorRuntime: browserEditorRuntime !== null,
+    legacyPrint: entryPoints.hasPrint,
+    iife: hasIifeEntry,
+  });
   scripts.dev = SCRIPTS.DEV;
   scripts.demo = SCRIPTS.DEMO;
   scripts.test = SCRIPTS.TEST;
@@ -819,6 +931,20 @@ export async function ensureElementPackageJson(
   const shouldWriteConfigureShim =
     configureShimContent !== null && currentConfigureShim !== configureShimContent;
   const shouldRemoveConfigureShim = configureShimContent === null && hasConfigureShim;
+  // The IIFE bundlers alias `@pie-element/<element>` to a directory, so a `/print`
+  // request resolves as a literal path and never consults `exports`. The root shim is
+  // what makes that request land on the built print entry, the same way controller.js
+  // and configure.js do for their views.
+  const printShimPath = join(elementDir, 'print.js');
+  const printShimContent = entryPoints.hasPrint
+    ? "export { default } from './dist/print/index.js';\nexport * from './dist/print/index.js';\n"
+    : null;
+  const hasPrintShim = existsSync(printShimPath);
+  const currentPrintShim = hasPrintShim
+    ? await readFile(printShimPath, 'utf-8').catch(() => null)
+    : null;
+  const shouldWritePrintShim = printShimContent !== null && currentPrintShim !== printShimContent;
+  const shouldRemovePrintShim = printShimContent === null && hasPrintShim;
 
   // Check if content changed
   const nextContent = `${JSON.stringify(pkg, null, 2)}\n`;
@@ -832,7 +958,9 @@ export async function ensureElementPackageJson(
     !shouldWriteControllerShim &&
     !shouldRemoveControllerShim &&
     !shouldWriteConfigureShim &&
-    !shouldRemoveConfigureShim
+    !shouldRemoveConfigureShim &&
+    !shouldWritePrintShim &&
+    !shouldRemovePrintShim
   ) {
     return false;
   }
@@ -850,6 +978,11 @@ export async function ensureElementPackageJson(
     await writeFile(configureShimPath, configureShimContent, 'utf-8');
   } else if (shouldRemoveConfigureShim) {
     await unlink(configureShimPath).catch(() => {});
+  }
+  if (shouldWritePrintShim && printShimContent !== null) {
+    await writeFile(printShimPath, printShimContent, 'utf-8');
+  } else if (shouldRemovePrintShim) {
+    await unlink(printShimPath).catch(() => {});
   }
   return true;
 }
@@ -883,6 +1016,9 @@ export async function ensurePieLibPackageJson(
   let expectedDeps: Record<string, string> = {};
 
   for (const [name, version] of Object.entries(upstreamDeps)) {
+    if (UPSTREAM_DEPENDENCIES_TO_DROP.has(name)) {
+      continue;
+    }
     if (name.startsWith(WORKSPACE.PIE_LIB_PREFIX)) {
       expectedDeps[name] = WORKSPACE.VERSION;
     } else {
@@ -940,6 +1076,10 @@ export async function ensurePieLibPackageJson(
         shouldGenerateConfigUiFractionHelper(pkgName) && !importedPackages.has('mathjs'),
     }).dependencies as Record<string, string> | undefined) ?? {};
 
+  // Last word on versions, so it beats both the upstream manifest and the installed-version
+  // inference above. Without it a sync walks @tiptap/* back to upstream's 3.20.0.
+  expectedDeps = applyPieLibDependencyVersionPins(expectedDeps);
+
   // Create minimal package.json if missing
   if (!pkg) {
     pkg = {
@@ -966,8 +1106,8 @@ export async function ensurePieLibPackageJson(
   if (declaresReactRuntime) {
     pkg.peerDependencies = {
       ...((pkg.peerDependencies as Record<string, string> | undefined) ?? {}),
-      react: REACT.VERSION,
-      'react-dom': REACT.VERSION,
+      react: REACT.LIBRARY_PEER_RANGE,
+      'react-dom': REACT.LIBRARY_PEER_RANGE,
     };
   }
 

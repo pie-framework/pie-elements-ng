@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  applyPieLibDependencyVersionPins,
   getPieLibDependencyAugmentations,
   getPieLibDependencyOverride,
   getPieLibSourcePreserveList,
@@ -59,6 +61,41 @@ describe('sync preset registry', () => {
     expect(patches.every((p) => p.file.startsWith(root))).toBe(true);
   });
 
+  it('reproduces the committed tip-tap editor attributes from the upstream source, once', () => {
+    const patch = getPostSyncTextPatches(process.cwd()).find(
+      (p) => p.id === PRESET_IDS.editableHtmlMathjaxIgnore
+    );
+    if (!patch) throw new Error(`no post-sync patch ${PRESET_IDS.editableHtmlMathjaxIgnore}`);
+    const committed = readFileSync(patch.file, 'utf-8');
+    const [{ from, to }] = patch.replacements;
+
+    // Upstream has no class attribute, so sync restores `from` and the patch has to put it back.
+    const synced = committed.replace(to, from);
+    expect(synced).not.toBe(committed);
+    expect(synced.replace(from, to)).toBe(committed);
+    // Patches run on every sync, so a patched file must not match again.
+    expect(committed).not.toContain(from);
+  });
+
+  it('reproduces the committed tip-tap math node parse rule from the upstream source, once', () => {
+    const patch = getPostSyncTextPatches(process.cwd()).find(
+      (p) => p.id === PRESET_IDS.editableHtmlMathNodeUnwrap
+    );
+    if (!patch) throw new Error(`no post-sync patch ${PRESET_IDS.editableHtmlMathNodeUnwrap}`);
+    const committed = readFileSync(patch.file, 'utf-8');
+
+    // Upstream reads `data-raw` or the text as it is, so sync restores each `from`.
+    const synced = patch.replacements.reduce(
+      (content, { from, to }) => content.replace(to, from),
+      committed
+    );
+    for (const { from } of patch.replacements) expect(synced).toContain(from);
+    expect(
+      patch.replacements.reduce((content, { from, to }) => content.replace(from, to), synced)
+    ).toBe(committed);
+    for (const { from } of patch.replacements) expect(committed).not.toContain(from);
+  });
+
   it('generates the local autosize input component for graph labeling packages', () => {
     expect(shouldGenerateAutosizeInputComponent('charting')).toBe(true);
     expect(shouldGenerateAutosizeInputComponent('graphing')).toBe(true);
@@ -77,5 +114,44 @@ describe('sync preset registry', () => {
     expect(plotPatch.id).toBe(PRESET_IDS.plotToolPropTypesCompatibility);
     expect(plotPatch.requiredMarker).toBe('ToolPropTypeFields');
     expect(plotPatch.append).toContain('ToolPropType');
+  });
+
+  describe('dependency version pins', () => {
+    it('forces every @tiptap/* dependency onto one exact version', () => {
+      expect(
+        applyPieLibDependencyVersionPins({
+          '@tiptap/core': '3.20.0',
+          '@tiptap/starter-kit': '3.20.0',
+          '@tiptap/extension-table-row': '3.30.1',
+          '@tiptap/extensions': '^3.31.3',
+        })
+      ).toEqual({
+        '@tiptap/core': '3.31.3',
+        '@tiptap/starter-kit': '3.31.3',
+        '@tiptap/extension-table-row': '3.31.3',
+        '@tiptap/extensions': '3.31.3',
+      });
+    });
+
+    it('pins a @tiptap/* package the pin list never named', () => {
+      // Matching is by prefix, so a newly imported extension is pinned rather than arriving
+      // as a caret range off whatever happened to be installed.
+      expect(applyPieLibDependencyVersionPins({ '@tiptap/extension-youtube': '^3.28.0' })).toEqual({
+        '@tiptap/extension-youtube': '3.31.3',
+      });
+    });
+
+    it('leaves unrelated dependencies untouched', () => {
+      const deps = {
+        react: '^18.2.0',
+        '@pie-lib/render-ui': 'workspace:*',
+        lowlight: '^3.3.0',
+      };
+      expect(applyPieLibDependencyVersionPins(deps)).toEqual(deps);
+    });
+
+    it('does not add a dependency the package does not declare', () => {
+      expect(applyPieLibDependencyVersionPins({})).toEqual({});
+    });
   });
 });

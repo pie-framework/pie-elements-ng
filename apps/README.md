@@ -1,115 +1,23 @@
 # PIE Elements NG - Applications
 
-This directory contains user-facing applications for demonstrating PIE assessment elements.
+Demo and test apps for the elements in this workspace. Run the commands from the repository root.
 
-## Directory Structure
+| App | Start | Port | Purpose |
+| --- | --- | --- | --- |
+| `element-demo/` | `bun run dev:demo` or `bun run dev:element-demo` | 5222 | Deliver, author, print, docs and source views for every element |
+| `element-a11y-demo/` | `bun run dev:a11y` | 5223 | Accessibility scenario demos |
+| `esm-player-test/` | `bun run --cwd apps/esm-player-test dev` | 5300 | Published ESM elements in the ESM player |
 
-```text
-apps/
-├── element-demo/       # Shared single-element demo app (port 5222)
-└── esm-player-test/    # ESM player test application
-```
+`dev:element-demo` and `dev:a11y` read a port override from `PORT`; `esm-player-test` fixes its port in `vite.config.js`.
 
-## Quick Start
+## Element Demo
 
-### Single Element Demo (Recommended)
+`bun run dev:demo` runs the CLI wrapper, which regenerates the element import map and starts Vite. `--port` changes the port, `--build` builds all elements first, and `--open` opens the browser. The element and view come from the URL, for example <http://localhost:5222/multiple-choice/deliver>. React and Svelte elements both load.
 
-Run any element's demo using the shared demo app:
+The ESM views resolve workspace packages to their `src/` files, so element edits show up without a package build. `?player=iife` switches to the IIFE player, which goes through the local bundler ([DEV_BUNDLER.md](element-demo/DEV_BUNDLER.md)). How the app finds elements and their demo data is in [DEMO_SYSTEM.md](../docs/DEMO_SYSTEM.md).
 
-```bash
-# From repository root
-bun run dev:demo multiple-choice
-bun run dev:demo categorize
-bun run dev:demo hotspot
-```
+## Tests
 
-Visit <http://localhost:5222>
-
-**Features:**
-
-- Single shared demo app (NOT copied per-element)
-- Looks and behaves exactly like per-element demos
-- Works with ANY element in the workspace
-- Dynamic element loading via environment variables
-- HMR (Hot Module Reload) for instant updates
-- DaisyUI theming with light/dark mode toggle
-- Delivery, Author, and Print tabs (when available)
-
-**Note:**
-
-- Currently works for **React elements** (`packages/elements-react/`)
-- The element **and all its dependencies** must be built first:
-
-```bash
-# Build element with all dependencies (recommended)
-bun run build --filter=@pie-element/<element-name>...
-
-# Or build everything
-bun run build
-```
-
-### Demo Index (all demos)
-
-View all available demos in one app:
-
-```bash
-# From repository root
-bun run demos
-```
-
-Visit <http://localhost:5181>
-
-## Element Demo Architecture
-
-### How It Works
-
-The `apps/element-demo` app is a SvelteKit application that dynamically loads any PIE element at runtime:
-
-1. **CLI Command**: `bun run dev:demo <element-name>`
-2. **Environment Variables**: CLI passes element info to Vite:
-   - `VITE_ELEMENT_NAME` - e.g., "multiple-choice"
-   - `VITE_ELEMENT_PATH` - e.g., "packages/elements-react/multiple-choice"
-   - `VITE_ELEMENT_TYPE` - e.g., "react" or "svelte"
-3. **Dynamic Loading**: [+page.ts](element-demo/src/routes/+page.ts) uses dynamic imports with `@vite-ignore`
-4. **Generic Config**: [vite.config.ts](element-demo/vite.config.ts) has shared package aliases (NOT element-specific)
-5. **Module Resolution**: Vite resolves element packages through workspace
-
-### Benefits
-
-- **No Duplication**: Single 30MB app instead of 26 × 30MB = 780MB
-- **Exact Match**: Looks identical to per-element demos
-- **Easy Maintenance**: Update once, applies to all elements
-- **HMR Support**: Source aliases for instant updates
-- **Future-Proof**: Works with elements-react and future elements-svelte
-
-### Per-Element Demos (Legacy)
-
-Per-element demos under `packages/elements-react/<element>/demo/` will be removed after verifying the shared demo works. The upstream sync script will stop generating them.
-
-## Architecture Decision
-
-This directory contains the shared element demo app and test tooling.
-
-## Running the Demo
-
-```bash
-bun run dev:demo <element>
-```
-
-## ESM Player Tests
-
-See `apps/esm-player-test/TESTING.md`.
-
-### Per-package Demos
-
-Each element package has a `demo` script that uses Vite's dev server:
-
-```bash
-cd packages/elements-react/multiple-choice
-bun run build  # Build the package first
-bun run demo   # Start demo server
-```
-
-Then open <http://localhost:5174>
-
-This is equivalent to running `bun react-demo --element multiple-choice` from the project root.
+- `bun run test:e2e` runs the element-demo Playwright suite, including `smoke-matrix.spec.ts`, which loads every element's deliver, author and print views. `bun run test:iife:e2e` runs the matrix against both the ESM and IIFE players.
+- `bun run --cwd apps/element-a11y-demo test:a11y` runs the accessibility scenarios.
+- `apps/esm-player-test/README.md` describes that app. Its player loader points at `pie-esm-player`, which is in neither pie-players nor npm, so it does not load a player today.

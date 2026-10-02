@@ -8,9 +8,38 @@ Status: **Proposal** · Impl. path: Cross-cutting · Tracks Jira [PIE-150](https
 
 Assessment items render inside different hosts at different positions in the host's page outline — sometimes under an `<h1>` page title, sometimes inside a card with its own `<h2>`, sometimes deep inside a section. The same authored content (a passage with sub-sections, a multiple-choice item, an EBSR with labelled parts) must express its heading structure at whatever level fits the host's outline, so that assistive technology can navigate a coherent document.
 
-Today PIE elements hardcode their heading tags (the TipTap-based rich-text editor emits literal `<h3>` from a single Heading button; the passage element wraps its title in `<h2>`; EBSR and multiple-choice emit screen-reader-only `<h2>` / `<h3>` landmarks). Authors cannot express *relative* heading importance, and hosts cannot align emitted levels to their own outline. The result is mis-ordered heading outlines for screen-reader users and no supported path for hosts to integrate PIE content into their own structural hierarchy.
+PIE has begun moving away from hardcoded headings, but the support is partial and does not yet share one framework contract. The TipTap editor now stores its single Heading control as `<p data-heading="heading1">`; `@pie-lib/render-ui` exports a transform that promotes those markers at render time; and passage, multiple-choice, and EBSR consume a host-supplied base level. Other rich-HTML render paths, Svelte elements, print, and the authoring preview have not adopted the same mechanism in this repo.
 
-This PRD defines the end-state contract that lets a host supply the base heading level for its outline, lets authors mark headings inside rich content at relative levels, and lets the framework emit correct semantic tags at render time — without changing output for any host that does not opt in.
+This PRD defines the intended end-state contract: a host supplies the base heading level for its outline, authors mark headings inside rich content at relative levels, and the framework emits correct semantic tags at render time — without changing output for a host that does not opt in. Because the implemented API differs from the proposed API below, this remains a Proposal until that contract is reconciled.
+
+## Implementation snapshot
+
+Verified in this repo:
+
+- `@pie-lib/editable-html-tip-tap` registers `HeadingParagraph`; the existing Heading toolbar button writes and preserves `<p data-heading="heading1">` instead of a literal heading.
+- `@pie-lib/render-ui` exports `transformDataHeadings(html, baseLevel)`, which promotes `data-heading="headingN"` nodes to clamped native headings and preserves their other attributes.
+- React passage renders its title at the supplied base and transforms passage body markers starting at `base + 1`.
+- React multiple-choice renders its screen-reader framing heading at the supplied base, transforms prompt markers starting at `base + 1`, and offsets EBSR part content by another level.
+- React EBSR renders one screen-reader framing heading at the supplied base, renders part labels at `base + 1`, and suppresses duplicate multiple-choice framing headings in its parts.
+- Passage, multiple-choice, and EBSR observe heading-related attributes on their nearest `pie-player` or `pie-item-player` and rerender when those attributes change.
+
+Not yet present or not verified in this repo:
+
+- no Svelte `RichText` wrapper or Svelte `transformDataHeadings` implementation;
+- no broad adoption across the remaining React rich-HTML render paths;
+- no three-level authoring picker, heading keyboard shortcuts, paste normalization, or preview base-level toggle;
+- no shared delivery/print/authoring transform path, CI enforcement, or per-element coverage suite;
+- no focused tests for `transformDataHeadings` or the host-to-element heading behavior were found.
+
+### Contract conflicts to resolve
+
+The shipped slice does **not** implement the proposed player contract below:
+
+- Current elements read top-level `baseHeadingLevel` / `base-heading-level`; the proposal uses `accessibility.baseHeadingLevel` with attribute sugar and inheritance across item, section, and element players.
+- Current multiple-choice and EBSR use `includeSrHeading` / `include-sr-heading`, defaulting to `true`; the proposal uses `accessibility.showFramingHeading`, defaulting to false. These are not simple renames: one controls whether an existing screen-reader heading is included, while the proposal describes opt-in promotion of a framing wrapper.
+- Current elements discover only the nearest `pie-player` or `pie-item-player`; section/element-player propagation and nearest-ancestor inheritance are not implemented here.
+- Current `transformDataHeadings` defaults `baseLevel` to 2, always parses through `DOMParser`, and transforms any element carrying `data-heading`; the proposed utility makes an absent base a no-op, specifies a fast path, and describes `<p data-heading>` as its input contract.
+- Current passage and multiple-choice apply element-specific offsets before invoking the transform. The final contract must confirm these offsets and framing semantics before wider rollout.
 
 ## Goals
 
@@ -31,6 +60,8 @@ This PRD defines the end-state contract that lets a host supply the base heading
 - **No persistence of the authoring preview's base-level toggle.** The author preview lets an editor cycle through levels to verify the structure; the setting is a UI affordance, not a model field.
 
 ## Proposed surface
+
+This section is the **target contract**, not a description of the currently shipped API. The conflicts in the implementation snapshot must be resolved before this proposal can become Accepted or before the mechanism is rolled out to more elements.
 
 ### Architecture at a glance
 
@@ -103,4 +134,8 @@ WCAG 2.2 AA baseline applies (see [`docs/ACCESSIBILITY.md`](../../ACCESSIBILITY.
 
 ## Open questions
 
-*(none at this time)*
+- [ ] Do players standardize on the proposed `accessibility` object, preserve the implemented top-level `baseHeadingLevel`, or support a documented compatibility bridge during migration?
+- [ ] Is framing controlled by opt-in `showFramingHeading`, opt-out `includeSrHeading`, or separate controls for semantic level and visibility? The current implementation and proposed defaults differ behaviorally.
+- [ ] Should `transformDataHeadings` retain its current broad `[data-heading]` behavior and default base of 2, or adopt the proposed `<p data-heading>` input contract and absent-base no-op?
+- [ ] Are the implemented passage, multiple-choice, and EBSR offsets the canonical hierarchy for all modes and print, including the EBSR part-label level?
+- [ ] Which remaining React and Svelte rich-HTML fields are in the first rollout, and what tests are required before claiming delivery/print/authoring parity?

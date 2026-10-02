@@ -40,7 +40,7 @@ const PointStyle: any = styled('g')(() => ({
   },
   '&[disabled]': {
     '& circle, & polygon': {
-      fill: color.disabledSecondary(),
+      fill: color.defaults.DISABLED_SECONDARY,
     },
   },
 }));

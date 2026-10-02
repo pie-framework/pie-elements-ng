@@ -77,6 +77,17 @@ describe('ClozeMarker — content modes', () => {
     expect(target.querySelector('img')).toBeNull();
   });
 
+  it('announces "(blank)" to screen readers when no choice is set', () => {
+    const target = mountSlot({ ...BASE });
+    const empty = target.querySelector('.cloze-marker-empty') as HTMLElement;
+    expect(empty.querySelector('.sr-only')?.textContent).toBe('(blank)');
+  });
+
+  it('does not render the "(blank)" sr-only text once a choice is set', () => {
+    const target = mountSlot({ ...BASE, displayChoiceLabelHtml: '<p>Look</p>' });
+    expect(target.querySelector('.cloze-marker-empty')).toBeNull();
+  });
+
   it('renders text value when displayChoiceLabelHtml is set', () => {
     const target = mountSlot({ ...BASE, displayChoiceLabelHtml: '<p>Look</p>' });
     expect(target.querySelector('.pie-blank-value')).not.toBeNull();

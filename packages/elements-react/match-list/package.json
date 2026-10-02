@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/match-list",
-  "version": "7.1.2",
+  "version": "7.1.2-next.31",
   "description": "",
   "repository": {
     "type": "git",
@@ -11,7 +11,6 @@
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/modifiers": "9.0.0",
     "@emotion/react": "^11.14.0",
-    "@emotion/style": "^0.8.0",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-lib/correct-answer-toggle": "workspace:*",
@@ -23,11 +22,9 @@
     "@pie-element/shared-feedback": "workspace:*",
     "@pie-element/shared-controller-utils": "workspace:*",
     "@pie-element/shared-player-events": "workspace:*",
-    "@pie-element/shared-math-rendering-mathjax": "workspace:*"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "@pie-element/shared-math-rendering-mathjax": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "exports": {
     ".": {
@@ -39,6 +36,7 @@
       "default": "./dist/delivery/index.js"
     },
     "./browser/delivery": {
+      "types": "./dist/delivery/index.d.ts",
       "default": "./dist/browser/delivery/index.js"
     },
     "./controller": {
@@ -50,12 +48,14 @@
       "default": "./dist/controller/index.js"
     },
     "./browser/controller": {
+      "types": "./dist/controller/index.d.ts",
       "default": "./dist/browser/controller/index.js"
     },
     "./runtime-support": {
       "types": "./dist/runtime-support.d.ts",
       "default": "./dist/runtime-support.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -66,9 +66,9 @@
   ],
   "sideEffects": false,
   "devDependencies": {
-    "vite": "^8.1.5",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },

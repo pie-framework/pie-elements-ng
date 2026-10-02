@@ -20,6 +20,7 @@ import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
 import { max } from '@pie-element/shared-lodash';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
+import { color } from '@pie-lib/render-ui';
 import { stripHtmlTags, getAdjustedLength, decodeHTML } from './markupUtils.js';
 
 const DesignContainer: any = styled('div')(({ theme }) => ({
@@ -46,9 +47,10 @@ const StyledEditableHtml: any = styled(EditableHtml)(({ theme, hasError }) => ({
   }),
 }));
 
-const StyledDeleteButton: any = styled(IconButton)(({ theme }) => ({
+const StyledDeleteButton: any = styled(IconButton)(() => ({
   '& svg': {
-    fill: theme.palette.grey[600],
+    // A delete control: it has to be found before it can be avoided.
+    fill: color.text(),
   },
 }));
 

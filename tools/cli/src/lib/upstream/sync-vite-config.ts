@@ -1,21 +1,9 @@
 /**
  * Vite configuration generation for sync operations
  */
-import { collectEntryPoints, detectEntryFile } from './sync-entry-discovery.js';
+import { detectEntryFile } from './sync-entry-discovery.js';
 import { createExternalFunction } from './sync-externals.js';
 import { getPieLibVitePreset } from './sync-presets.js';
-
-/**
- * Detect entry points for an element package
- */
-export function detectElementEntryPoints(elementDir: string): Record<string, string> {
-  return collectEntryPoints(elementDir, [
-    ['index', 'src/index'],
-    ['controller/index', 'src/controller/index'],
-    ['configure/index', 'src/configure/index'],
-    ['delivery/index', 'src/delivery/index'],
-  ]);
-}
 
 /**
  * Generate Vite config content for an element package
@@ -105,6 +93,12 @@ export function generatePieLibViteConfig(packageName?: string, packageDir?: stri
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // ESM-first resolution. A dependency with no exports map (@visx/* v3,
+  // @hello-pangea/dnd) otherwise falls back to its CommonJS main entry, and
+  // bundling CommonJS while React is external makes rolldown emit a
+  // require("react") shim that throws in the browser. Preferring the module
+  // field resolves those dependencies to their ESM build instead.
+  resolve: { mainFields: ['module', 'browser', 'main'] },
   build: {
     lib: {
       entry: {
@@ -138,6 +132,12 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // ESM-first resolution. A dependency with no exports map (@visx/* v3,
+  // @hello-pangea/dnd) otherwise falls back to its CommonJS main entry, and
+  // bundling CommonJS while React is external makes rolldown emit a
+  // require("react") shim that throws in the browser. Preferring the module
+  // field resolves those dependencies to their ESM build instead.
+  resolve: { mainFields: ['module', 'browser', 'main'] },
   plugins: [react()],
   build: {
     lib: {
@@ -165,6 +165,12 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // ESM-first resolution. A dependency with no exports map (@visx/* v3,
+  // @hello-pangea/dnd) otherwise falls back to its CommonJS main entry, and
+  // bundling CommonJS while React is external makes rolldown emit a
+  // require("react") shim that throws in the browser. Preferring the module
+  // field resolves those dependencies to their ESM build instead.
+  resolve: { mainFields: ['module', 'browser', 'main'] },
   plugins: [react()],
   build: {
     lib: {
@@ -212,6 +218,12 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // ESM-first resolution. A dependency with no exports map (@visx/* v3,
+  // @hello-pangea/dnd) otherwise falls back to its CommonJS main entry, and
+  // bundling CommonJS while React is external makes rolldown emit a
+  // require("react") shim that throws in the browser. Preferring the module
+  // field resolves those dependencies to their ESM build instead.
+  resolve: { mainFields: ['module', 'browser', 'main'] },
   plugins: [react()],
   build: {
     lib: {

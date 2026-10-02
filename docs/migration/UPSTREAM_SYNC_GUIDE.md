@@ -789,50 +789,19 @@ bun test
 
 #### 4. Implement Svelte UI (Optional)
 
-**Svelte is written from scratch, not synced. Note the new directory structure with delivery/ and author/ subdirectories:**
+Svelte elements are written from scratch in `packages/elements-svelte/<name>/`, with the same `delivery/`, `author/`, `controller/` and `print/` folders; `packages/elements-svelte/simple-cloze` is the smallest complete one. The delivery component takes `model`, the view model the controller returns with `mode` and `disabled` on it, plus `session` and an `onSessionChange` callback. `defineDeliveryElement` from `@pie-lib/delivery-events-svelte` turns it into the custom element, which writes each change into the player's session and dispatches `session-changed` ([Delivery Contract](../PIE_ELEMENT_CONTRACT.md#delivery-contract)). The author component takes `model` and `configuration` and dispatches `ModelUpdatedEvent` ([Authoring Contract](../PIE_ELEMENT_CONTRACT.md#authoring-contract)).
 
-```svelte
-<!-- packages/elements-svelte/multiple-choice/src/delivery/index.svelte -->
-<script lang="ts">
-  import type { MultipleChoiceModel, SessionData } from '../types';
-  import type { PieEnvironment } from '@pie-element/core';
+```typescript
+// packages/elements-svelte/simple-cloze/src/delivery/index.ts
+import SimpleClozeComponent from './SimpleCloze.svelte';
+import { defineDeliveryElement } from '@pie-lib/delivery-events-svelte';
 
-  interface Props {
-    model: MultipleChoiceModel;
-    session?: SessionData;
-    env: PieEnvironment;
-  }
+const SimpleClozeElement = defineDeliveryElement(SimpleClozeComponent, {
+  isComplete: (_model, session) =>
+    typeof session?.value === 'string' && session.value.trim().length > 0,
+});
 
-  let { model, session = $bindable({ value: null }), env }: Props = $props();
-
-  // Use same controller as React (symlink or shared)
-  import { model as controllerModel } from '../../../elements-react/multiple-choice/src/controller';
-
-  let viewModel = $derived.by(async () => {
-    return await controllerModel(model, session, env);
-  });
-
-  function handleChoiceSelect(value: string) {
-    session = { value };
-  }
-</script>
-
-<div class="multiple-choice">
-  <div class="prompt" bind:innerHTML={model.prompt}></div>
-
-  {#each viewModel.choices as choice}
-    <label>
-      <input
-        type={model.choiceMode === 'radio' ? 'radio' : 'checkbox'}
-        value={choice.value}
-        checked={session?.value === choice.value}
-        on:change={() => handleChoiceSelect(choice.value)}
-        disabled={viewModel.disabled}
-      />
-      <span bind:innerHTML={choice.label}></span>
-    </label>
-  {/each}
-</div>
+export default SimpleClozeElement;
 ```
 
 #### 5. Write Evaluations
@@ -900,30 +869,21 @@ bun add @pie-element/multiple-choice
 
 ## Usage
 
-### React
+The package exports a custom element. The host sets `model` and `session` as properties; the element writes each change into `session` and dispatches `session-changed`, as the [Delivery Contract](https://github.com/pie-framework/pie-elements-ng/blob/develop/docs/PIE_ELEMENT_CONTRACT.md#delivery-contract) sets out.
 
-\`\`\`tsx
-import { MultipleChoice } from '@pie-element/multiple-choice';
+\`\`\`js
+import MultipleChoice from '@pie-element/multiple-choice/delivery';
 
-<MultipleChoice
-  model={model}
-  session={session}
-  env={env}
-  onSessionChange={setSession}
-/>
+customElements.define('pie-multiple-choice', MultipleChoice);
+
+const element = document.createElement('pie-multiple-choice');
+element.model = model;
+element.session = session;
+element.addEventListener('session-changed', (e) => save(session, e.detail.complete));
+document.body.append(element);
 \`\`\`
 
-### Svelte
-
-\`\`\`svelte
-<script>
-  import { MultipleChoice } from '@pie-element/multiple-choice';
-
-  let session = $state({ value: null });
-</script>
-
-<MultipleChoice {model} bind:session {env} />
-\`\`\`
+The [API reference](https://github.com/pie-framework/pie-elements-ng/blob/develop/docs/API_REFERENCE.md#component-props) shows React and Svelte hosts.
 ```
 
 #### 7. Update Tracking
@@ -949,14 +909,14 @@ Use this checklist for each element:
 - [ ] Sync React package: `bun run cli upstream:sync --element=X`
 - [ ] Review synced code for correctness
 - [ ] Verify dependencies match upstream
-- [ ] Test React UI in all modes (student, authoring, view, evaluate)
+- [ ] Test React UI in every mode (gather, view, evaluate) and the author view
 - [ ] Build successfully: `bun run build`
 
 #### Svelte Implementation (Optional)
 
-- [ ] Create `student/` mode component
-- [ ] Create `authoring/` mode component
-- [ ] Reuse synced controller
+- [ ] Create the `delivery/` component
+- [ ] Create the `author/` component
+- [ ] Create the `controller/`
 - [ ] Add proper TypeScript types
 - [ ] Implement accessibility features
 - [ ] Test Svelte UI
@@ -964,7 +924,7 @@ Use this checklist for each element:
 #### Testing
 
 - [ ] Write evaluation specs (10 dimensions)
-- [ ] Test all modes (gather, view, evaluate, authoring)
+- [ ] Test every mode (gather, view, evaluate) and the author view
 - [ ] Test accessibility (WCAG 2.2 Level AA)
 - [ ] Test keyboard navigation
 - [ ] Test screen readers

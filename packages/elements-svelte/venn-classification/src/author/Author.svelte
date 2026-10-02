@@ -2,53 +2,65 @@
   customElement={{
     shadow: 'none',
     props: {
-      model: { type: 'Object' }
+      model: { type: 'Object' },
+      configuration: { type: 'Object' }
     }
   }}
 />
 
 <script lang="ts">
+import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
+import {
+  ConfigLayout,
+  SettingsPanel,
+  hasSettings,
+  mergeConfiguration,
+  radio,
+  toggle,
+} from '@pie-lib/config-ui-svelte';
 import { EditableHtml } from '@pie-lib/editable-html-tiptap-svelte';
-import { createEventDispatcher } from 'svelte';
 import RegionPicker from './RegionPicker.svelte';
 import VennClassification from '../delivery/VennClassification.svelte';
-import { buildPreviewSession } from '../controller/index.js';
+import { buildPreviewSession, createDefaultModel } from '../controller/index.js';
+import defaults from '../controller/defaults.js';
 import {
   enumerateRegions,
   regionKey,
   composeRegionLabel,
+  getRegionLabel,
   normalizeRegion,
 } from '../controller/region.js';
-import type { Region, ScoringPolicy, VennModel, VennTile } from '../types.js';
+import type { Region, VennModel, VennTile } from '../types.js';
 import { stripHtml } from '../delivery/tile-accessible-name.js';
 
-const dispatch = createEventDispatcher();
+let { model, configuration }: { model?: VennModel; configuration?: Record<string, unknown> } =
+  $props();
 
-let {
-  model = $bindable(),
-  onChange,
-}: { model?: VennModel; onChange?: (model: VennModel) => void } = $props();
+const config = $derived(mergeConfiguration(defaults.configuration, configuration));
 
+const SCORING_POLICY_CHOICES = [
+  { label: 'Partial credit per tile', value: 'partialPerTile' },
+  { label: 'All or nothing', value: 'allOrNothing' },
+];
+
+/**
+ * Keeps the edit as the element's model, so the next edit builds on it,
+ * assigning it through the host: a remount after a detach starts from the
+ * host's property. Announces it as a bubbling `model.updated` for the player
+ * listening at its root.
+ */
 function emit(next: VennModel) {
-  if (onChange) onChange(next);
-  dispatch('model.updated', { update: next, reset: false });
+  $host<HTMLElement & { model: unknown }>().model = next;
+  $host().dispatchEvent(new ModelUpdatedEvent(next));
 }
 
+/**
+ * The model with the controller's defaults filled in. Every other field, `id`
+ * and `element` included, passes through untouched: the player owns those two,
+ * and an edit must not drop what the form does not show.
+ */
 function safeModel(): VennModel {
-  const m = (model || {}) as VennModel;
-  return {
-    id: m.id ?? '1',
-    element: m.element ?? 'venn-classification',
-    prompt: m.prompt ?? '',
-    promptEnabled: m.promptEnabled !== false,
-    circles:
-      Array.isArray(m.circles) && m.circles.length > 0
-        ? m.circles
-        : [{ label: 'Set A' }, { label: 'Set B' }],
-    tiles: Array.isArray(m.tiles) ? m.tiles : [],
-    regionLabels: m.regionLabels ?? {},
-    scoringPolicy: m.scoringPolicy ?? 'partialPerTile',
-  };
+  return createDefaultModel(model || undefined);
 }
 
 function update(patch: Partial<VennModel>) {
@@ -57,10 +69,6 @@ function update(patch: Partial<VennModel>) {
 
 function onPromptChange(html: string) {
   update({ prompt: html });
-}
-
-function setPromptEnabled(enabled: boolean) {
-  update({ promptEnabled: enabled });
 }
 
 function setCircleLabel(idx: number, label: string) {
@@ -141,10 +149,6 @@ function setTileRegion(idx: number, region: Region) {
   update({ tiles: next });
 }
 
-function setScoringPolicy(policy: ScoringPolicy) {
-  update({ scoringPolicy: policy });
-}
-
 function setRegionLabelOverride(key: string, label: string) {
   const base = safeModel();
   const next = { ...(base.regionLabels || {}) };
@@ -159,10 +163,23 @@ function setRegionLabelOverride(key: string, label: string) {
 const m = $derived(safeModel());
 const regions = $derived(enumerateRegions(m.circles?.length || 0));
 
-const previewSession = $derived(buildPreviewSession(m));
+/**
+ * Each tile id once. Delivery keys tiles by id, and an id being typed can
+ * repeat another's for a keystroke: `validate` reports that, and the preview
+ * leaves the repeat out until it is resolved.
+ */
+const previewTiles = $derived.by(() => {
+  const seen = new Set<string>();
+  return m.tiles.filter((tile) => {
+    if (seen.has(tile.id)) return false;
+    seen.add(tile.id);
+    return true;
+  });
+});
+const previewSession = $derived(buildPreviewSession({ ...m, tiles: previewTiles }));
 const previewModel = $derived({
   circles: m.circles,
-  tiles: m.tiles,
+  tiles: previewTiles,
   regionLabels: m.regionLabels ?? {},
   prompt: m.promptEnabled === false ? null : (m.prompt ?? null),
   disabled: true,
@@ -250,25 +267,49 @@ function onSplitKeyDown(e: KeyboardEvent) {
 </script>
 
 <div class="venn-author">
+  <ConfigLayout hideSettings={config.settingsPanelDisabled === true || !hasSettings(config)}>
+  {#snippet settings()}
+    <SettingsPanel
+      model={m}
+      configuration={config}
+      groups={{
+        Settings: {
+          promptEnabled: config.prompt?.settings && toggle(config.prompt.label),
+        },
+        Properties: {
+          teacherInstructionsEnabled:
+            config.teacherInstructions?.settings && toggle(config.teacherInstructions.label),
+          scoringPolicy:
+            config.scoringPolicy?.settings && radio(config.scoringPolicy.label, SCORING_POLICY_CHOICES),
+        },
+      }}
+      onChangeModel={(next) => update(next)}
+    />
+  {/snippet}
   <div class="author-shell" bind:this={authorShellEl} bind:clientWidth={shellWidth}>
   <div class="editor-column" style:width={editorColumnWidth}>
-    <div class="field-group">
-      <label class="field-header">
-        <input
-          type="checkbox"
-          checked={m.promptEnabled !== false}
-          onchange={(e) => setPromptEnabled((e.currentTarget as HTMLInputElement).checked)}
+    {#if m.teacherInstructionsEnabled !== false}
+      <div class="field-group">
+        <div class="field-header">{config.teacherInstructions?.label}</div>
+        <EditableHtml
+          markup={m.teacherInstructions || ''}
+          onChange={(html) => update({ teacherInstructions: html })}
+          ariaLabel={config.teacherInstructions?.label}
         />
-        <span>Prompt</span>
-      </label>
-      {#if m.promptEnabled !== false}
+      </div>
+    {/if}
+
+    {#if m.promptEnabled !== false}
+      <div class="field-group">
+        <div class="field-header">{config.prompt?.label}</div>
         <EditableHtml
           markup={m.prompt || ''}
           onChange={onPromptChange}
           placeholder="Enter a prompt for the Venn classification question..."
+          ariaLabel={config.prompt?.label}
         />
-      {/if}
-    </div>
+      </div>
+    {/if}
 
     <div class="field-group">
       <div class="field-header">Circles</div>
@@ -299,7 +340,9 @@ function onSplitKeyDown(e: KeyboardEvent) {
         </div>
       {/if}
       <ul class="tile-list">
-        {#each m.tiles as tile, idx (tile.id)}
+        <!-- Unkeyed: the key would be the id this row edits, so typing in it
+             would remount the row, and two tiles sharing an id would throw. -->
+        {#each m.tiles as tile, idx}
           <li class="tile-row">
             <div class="tile-row-header">
               <div class="tile-inputs">
@@ -362,30 +405,6 @@ function onSplitKeyDown(e: KeyboardEvent) {
           </li>
         {/each}
       </ul>
-    </div>
-
-    <div class="field-group">
-      <div class="field-header">Scoring policy</div>
-      <label class="radio-row">
-        <input
-          type="radio"
-          name="scoring"
-          value="partialPerTile"
-          checked={m.scoringPolicy !== 'allOrNothing'}
-          onchange={() => setScoringPolicy('partialPerTile')}
-        />
-        <span>Partial credit per tile</span>
-      </label>
-      <label class="radio-row">
-        <input
-          type="radio"
-          name="scoring"
-          value="allOrNothing"
-          checked={m.scoringPolicy === 'allOrNothing'}
-          onchange={() => setScoringPolicy('allOrNothing')}
-        />
-        <span>All or nothing</span>
-      </label>
     </div>
 
     <details class="field-group">
@@ -452,13 +471,14 @@ function onSplitKeyDown(e: KeyboardEvent) {
               {stripHtml(tile.label) || (tile.imageAlt ?? '').trim() || tile.id}
             </span>
             <span class="preview-arrow">→</span>
-            <span class="preview-region">{composeRegionLabel(m.circles, tile.correctRegion)}</span>
+            <span class="preview-region">{getRegionLabel(m, tile.correctRegion)}</span>
           </li>
         {/each}
       </ol>
     {/if}
   </div>
   </div>
+  </ConfigLayout>
 </div>
 
 <style>
@@ -467,6 +487,10 @@ function onSplitKeyDown(e: KeyboardEvent) {
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     color: #0f172a;
     box-sizing: border-box;
+    --vc-focus-ring: var(
+      --pie-focus-outline,
+      var(--pie-button-focus-outline, var(--pie-focus-checked-border, #1565c0))
+    );
   }
   .author-shell {
     display: flex;
@@ -504,7 +528,7 @@ function onSplitKeyDown(e: KeyboardEvent) {
     background: #cbd5e1;
   }
   .split-gutter:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--vc-focus-ring, #1565c0);
     outline-offset: 2px;
   }
   @media (max-width: 900px) {
@@ -541,9 +565,6 @@ function onSplitKeyDown(e: KeyboardEvent) {
     font-size: 14px;
     margin-bottom: 12px;
     color: #0f172a;
-  }
-  .field-header input[type='checkbox'] {
-    margin-right: 8px;
   }
   .field-header-row {
     gap: 8px;
@@ -585,13 +606,6 @@ function onSplitKeyDown(e: KeyboardEvent) {
   }
   .circle-count-note {
     margin: 0 0 4px 0;
-  }
-  .radio-row {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    margin-top: 6px;
   }
   .circle-label-row {
     display: grid;

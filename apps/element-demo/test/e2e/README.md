@@ -9,7 +9,6 @@ element demo app. Broader local suites remain opt-in:
 
 - `bun run test:e2e`: public `apps/element-demo` e2e suite.
 - `bun run test:e2e:all`: every workspace with a `test:e2e` script.
-- `bun run test:learnosity-parity`: optional `apps/learnosity-parity-demo` parity harness.
 - `bun run test:iife:*`: optional IIFE bundle and browser suites.
 
 ## ESM Coverage Status
@@ -85,6 +84,10 @@ Comprehensive test suite for the `math-algebra-quadratic` demo (multiple-choice 
 8. **Source Changes** - Editing JSON in source tab and seeing changes in delivery
 9. **Author Changes** - Editing in author tab and seeing changes in other views
 10. **Complete Workflow** - End-to-end scenario combining multiple operations
+
+### [mathjax-version.spec.ts](./mathjax-version.spec.ts)
+
+The MathJax each player type runs, on the `math-algebra-quadratic` delivery view. `player=iife` pages typeset with the legacy MathJax 3 renderer and load no MathJax 4; `player=esm` pages typeset with MathJax 4 and load no MathJax 3. Neither dispatches `pie-mathjax-version-conflict`.
 
 ### [phase1-spatial-dnd.spec.ts](./phase1-spatial-dnd.spec.ts)
 
@@ -162,20 +165,25 @@ Reusable utility functions for tests:
 
 - `waitForMathRendering()` - Wait for MathJax LaTeX rendering to complete
 - `selectDemo()` - Select a demo from the dropdown
-- `switchMode()` - Switch between gather/view/evaluate modes via URL query params
-- `switchRole()` - Switch between student/instructor roles via URL query params
-- `getSessionState()` - Get current session state from panel
+- `switchMode()` - Switch between gather/view/evaluate modes through the SvelteKit router
+- `switchRole()` - Switch between student/instructor roles with the Student|Scorer toolbar toggle
+- `switchToEvaluate()` - Switch to instructor and evaluate; the Scorer toggle sets both
+- `getSessionState()` - Get the session from `pie-element-player`
+- `evaluateSignal()` - The element's evaluate state: correct-answer toggle, correctness marker or locked controls
 - `selectMultipleChoiceOption()` - Click a multiple choice option
-- `getScore()` - Get score from scoring panel
+- `clickNumberLineTick()` - Plot a point on the number line at a tick
 - `switchTab()` - Switch between deliver/author/print/source tabs
 - `getModelFromSource()` - Get model JSON from source editor
 - `updateModelInSource()` - Edit model in source editor and apply
-- `waitForElementReady()` - Wait for custom element to load
+- `waitForElementReady()` - Wait for the player to mount the element and its tag to be defined
+- `mountedElement()` / `mountedElementSelector()` - The element the player mounted for a view; ESM and IIFE register the delivery element under different tags, so specs locate it through the player
 - `getMultipleChoiceOptions()` - Get all available options
 - `getSelectedValue()` - Get currently selected option
 
-Mode/role/player/demo are canonicalized through URL params in e2e flows. Prefer param-driven
-navigation over toolbar/control clicks whenever route params can represent the same state.
+Mode/role/player/demo are canonicalized through URL params. The demo keeps the session in memory,
+so mode and role changes go through client-side navigation; `page.goto` reloads the document and
+clears the session. The delivery page shows no session or score panel: specs read the session from
+`pie-element-player` and the evaluate state from the element itself.
 
 ## Running Tests
 
@@ -236,14 +244,16 @@ bunx playwright test -g "Demo selection works correctly"
 
 Test configuration is in [playwright.config.ts](../../playwright.config.ts):
 
-- **Base URL**: `http://localhost:5174`
+- **Base URL**: `http://localhost:5222`, or `PLAYWRIGHT_BASE_URL`
 - **Browsers**: Chromium (headless)
 - **Timeout**: 30 seconds per test
 - **Workers**: 1 (serial execution for state management tests)
-- **Web Server**: Auto-starts dev server before tests
+- **Web Server**: Starts `bun run dev` unless a server already answers at the base URL, which is
+  then reused whatever checkout it serves; with `PORT=<free port>` and a matching
+  `PLAYWRIGHT_BASE_URL` a run gets its own server
 - **Screenshots**: Only on failure
-- **Videos**: Retained on failure
-- **Reports**: HTML report in `test-results/playwright/`
+- **Videos**: Off
+- **Reports**: HTML report in `playwright-report/`
 
 ## Test Data
 
@@ -267,14 +277,8 @@ The following `data-testid` attributes are used in components:
 | DemoSelector | `demo-selector-button` | Open demo dropdown |
 | DemoSelector | `demo-selector-dropdown` | Demo list container |
 | DemoSelector | `data-demo-id="{id}"` | Individual demo buttons |
-| ModeSelector | `mode-gather` | Gather mode button |
-| ModeSelector | `mode-view` | View mode button |
-| ModeSelector | `mode-evaluate` | Evaluate mode button |
-| DeliveryPlayerLayout | `role-student` | Student role button |
-| DeliveryPlayerLayout | `role-instructor` | Instructor role button |
-| SessionPanel | `session-panel-content` | Session state JSON |
-| ScoringPanel | `scoring-panel` | Scoring panel container |
-| ScoringPanel | `score-value` | Score display |
+| Element route toolbar | `role-student` | Student toggle (role=student, mode=gather) |
+| Element route toolbar | `role-instructor` | Scorer toggle (role=instructor, mode=evaluate) |
 | ModelInspector | `source-editor` | JSON editor |
 | ModelInspector | `apply-changes` | Apply button |
 | Tabs | `tab-deliver` | Deliver tab button |
@@ -286,7 +290,7 @@ The following `data-testid` attributes are used in components:
 
 ### Tests are failing with "Element not found"
 
-1. Check that the dev server is running on port 5174
+1. Check that the dev server answering at the base URL serves this checkout
 2. Verify the demo ID exists in the element's config.mjs
 3. Ensure custom elements are registered (wait for `customElements.get()`)
 4. Add waits for math rendering if LaTeX content is involved
@@ -367,7 +371,7 @@ import { selectDemo, waitForElementReady } from './test-helpers';
 test.describe('My New Feature', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/multiple-choice/deliver');
-    await waitForElementReady(page, 'pie-multiple-choice');
+    await waitForElementReady(page);
   });
 
   test('should do something', async ({ page }) => {

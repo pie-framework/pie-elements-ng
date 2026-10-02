@@ -31,6 +31,8 @@ export const PRESET_IDS = {
   previewPromptPropTypesShape: 'patch.render-ui.preview-prompt-proptypes-shape',
   correctAnswerToggleStyleNormalization: 'patch.correct-answer-toggle.style-key-normalization',
   plotToolPropTypesCompatibility: 'patch.plot.tool-proptypes-compatibility',
+  editableHtmlMathjaxIgnore: 'patch.editable-html-tip-tap.mathjax-ignore-editor-root',
+  editableHtmlMathNodeUnwrap: 'patch.editable-html-tip-tap.math-node-unwrap-delimiters',
   mathRenderingWrapperMode: 'mode.math-rendering.wrapper',
   preserveRenderUiInlineMenu: 'preserve.render-ui.inline-menu',
   depsGraphingDndKit: 'deps.graphing.dnd-kit-core',
@@ -103,6 +105,43 @@ export function getPostSyncTextPatches(projectRoot: string): PostSyncTextPatch[]
         { from: "  '-moz-user-select': 'none',", to: "  MozUserSelect: 'none'," },
         { from: "  '-ms-user-select': 'none',", to: "  msUserSelect: 'none'," },
         { from: "  'user-select': 'none',", to: "  userSelect: 'none'," },
+      ],
+    },
+    {
+      id: PRESET_IDS.editableHtmlMathjaxIgnore,
+      label: '@pie-lib/editable-html-tip-tap editor root excluded from MathJax',
+      file: join(
+        projectRoot,
+        'packages/lib-react/editable-html-tip-tap/src/components/EditableHtml.tsx'
+      ),
+      replacements: [
+        {
+          from: "  'data-pie-editor': 'true',\n  // Without these the browser spellchecks",
+          to:
+            "  'data-pie-editor': 'true',\n" +
+            "  // MathJax's default ignore class. A typeset pass over an ancestor would otherwise typeset the\n" +
+            "  // editor's text, and ProseMirror reads MathJax's output back into the document.\n" +
+            "  class: 'mathjax_ignore',\n" +
+            '  // Without these the browser spellchecks',
+        },
+      ],
+    },
+    {
+      id: PRESET_IDS.editableHtmlMathNodeUnwrap,
+      label: '@pie-lib/editable-html-tip-tap math node parses bare TeX',
+      file: join(projectRoot, 'packages/lib-react/editable-html-tip-tap/src/extensions/math.tsx'),
+      replacements: [
+        {
+          from: "import { wrapMath } from '@pie-element/shared-math-rendering-mathjax';",
+          to: "import { unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';",
+        },
+        {
+          from: "          latex: el.getAttribute('data-raw') || el.textContent,\n",
+          to:
+            '          // A span saved without `data-raw`, or with delimiters in it, holds delimited TeX, which\n' +
+            '          // `renderHTML` would wrap a second time.\n' +
+            "          latex: unWrapMath(el.getAttribute('data-raw') || el.textContent).unwrapped,\n",
+        },
       ],
     },
   ];
@@ -189,6 +228,38 @@ export function getPieLibDependencyOverride(pkgName: string): Record<string, str
     };
   }
   return null;
+}
+
+/**
+ * Exact versions forced onto a synced package's dependencies, whatever upstream declares.
+ *
+ * tiptap pins its own peers exactly from 3.24.0 on — `@tiptap/core@3.31.3` peers on
+ * `@tiptap/pm: "3.31.3"`, not a range — so every `@tiptap/*` package in one install tree has
+ * to be the same exact version. Mix them and a second `@tiptap/core` resolves, which breaks
+ * ProseMirror on duplicate schema and plugin identity.
+ *
+ * Upstream pie-lib still declares 3.20.0 and is no longer maintained, so the version lives
+ * here instead of being fixed there. This matters because `ensurePieLibPackageJson` rebuilds
+ * `dependencies` from the upstream manifest on every sync: without this pin, one
+ * `upstream:sync` walks the whole set back to 3.20.0 and silently undoes the alignment.
+ *
+ * Matched by prefix rather than by name so a newly imported `@tiptap/*` package is pinned as
+ * well, instead of arriving as a caret range off whatever happens to be installed. Keep in
+ * step with the root `package.json` `overrides`.
+ */
+const PIE_LIB_DEPENDENCY_VERSION_PINS: ReadonlyArray<{ prefix: string; version: string }> = [
+  { prefix: '@tiptap/', version: '3.31.3' },
+];
+
+export function applyPieLibDependencyVersionPins(
+  deps: Record<string, string>
+): Record<string, string> {
+  const pinned: Record<string, string> = {};
+  for (const [depName, version] of Object.entries(deps)) {
+    const pin = PIE_LIB_DEPENDENCY_VERSION_PINS.find(({ prefix }) => depName.startsWith(prefix));
+    pinned[depName] = pin ? pin.version : version;
+  }
+  return pinned;
 }
 
 export const PIE_LIB_COMPATIBILITY_APPEND_PATCHES: Record<

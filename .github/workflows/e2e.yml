@@ -12,22 +12,20 @@ jobs:
     timeout-minutes: 25
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.13
       - run: bun install --frozen-lockfile
-      - run: bun x svelte-kit sync
-        working-directory: apps/element-demo
       - run: bun run --cwd apps/element-demo generate-imports
       # Build workspace outputs before app build so package exports resolve in CI.
       - run: bun run build
       - run: bunx playwright install --with-deps
       - run: bun run --cwd apps/element-demo test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report

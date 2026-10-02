@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.12/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -17,11 +17,11 @@
       "!**/coverage",
       "!**/.svelte-kit",
       "!**/.changeset",
+      "!.claude",
       "!**/test-results",
       "!**/playwright-a11y-report",
       "!**/playwright-report",
       "!**/packages/apps/examples",
-      "!**/packages/lib-svelte/config-ui",
       "!**/packages/elements-svelte/multiple-choice/src/configure",
       "!packages/elements-react",
       "!packages/lib-react",
@@ -30,7 +30,7 @@
       "!apps/*/src/lib/element-imports.js",
       "!apps/*/src/lib/element-imports.d.ts",
       "!apps/esm-player-test/index.html",
-      "!packages/elements-svelte/simple-cloze/test.html"
+      "!packages/elements-svelte/mc-populated-blank/src/delivery/assets/*.svg"
     ]
   },
   "formatter": {
@@ -44,7 +44,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "correctness": {
         "noUnusedVariables": "off",
         "noUnusedImports": "off"

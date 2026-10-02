@@ -532,8 +532,9 @@ export function uniqueId(prefix = ''): string {
   return `${prefix}${uniqueIdCounter}`;
 }
 
-export function uniq<T>(array: T[] | null | undefined): T[] {
-  return Array.from(new Set(array ?? []));
+export function uniq<T>(array: ArrayLike<T> | null | undefined): T[] {
+  // lodash returns [] for anything without a length rather than throwing on a non-iterable.
+  return array != null && array.length ? Array.from(new Set(Array.from(array))) : [];
 }
 
 export function uniqWith<T>(array: T[] | null | undefined, comparator: (a: T, b: T) => boolean): T[] {

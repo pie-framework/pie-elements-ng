@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/graphing",
-  "version": "4.0.5",
+  "version": "5.0.0-next.55",
   "description": "Graphing components",
   "repository": {
     "type": "git",
@@ -20,20 +20,20 @@
     "@pie-lib/plot": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "@pie-lib/translator": "workspace:*",
-    "@visx/axis": "^3.0.0",
-    "@visx/clip-path": "^3.0.0",
-    "@visx/curve": "^3.0.0",
-    "@visx/event": "^3.0.0",
-    "@visx/grid": "^3.0.0",
-    "@visx/group": "^3.0.0",
-    "@visx/point": "^3.0.0",
-    "@visx/shape": "^3.0.0",
+    "@visx/axis": "^4.0.0",
+    "@visx/clip-path": "^4.0.0",
+    "@visx/curve": "^4.0.0",
+    "@visx/event": "^4.0.0",
+    "@visx/grid": "^4.0.0",
+    "@visx/group": "^4.0.0",
+    "@visx/point": "^4.0.0",
+    "@visx/shape": "^4.0.0",
     "d3-scale": "^4.0.2",
     "d3-selection": "^3.0.0",
     "debug": "^4.1.1",
     "invariant": "^2.2.4",
     "prop-types": "^15.7.2",
-    "react-draggable": "^4.6.0",
+    "react-draggable": "^4.7.1",
     "react-redux": "^9.3.0",
     "redux": "^5.0.1",
     "redux-undo": "^1.1.0",
@@ -63,14 +63,14 @@
     "test": "bun x vitest run"
   },
   "devDependencies": {
-    "vite": "^8.1.5",
+    "vite": "^8.0.1",
     "typescript": "^5.9.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   }
 }

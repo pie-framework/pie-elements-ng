@@ -3,12 +3,12 @@
  * Simplified from pie-api-aws/packages/bundler/src/webpack/player.ts
  */
 
-import { existsSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import webpack from 'webpack';
 import { EsbuildPlugin } from 'esbuild-loader';
-import { getLibPackagePathMap } from './dependency-resolver.js';
+import { resolveSourceAliases } from './source-aliases.js';
 
 const BUNDLE_LIB_PACKAGES = ['@pie-lib/pie-toolbox', '@pie-lib/math-rendering'];
 const SHIM_DIR = resolveShimDir();
@@ -43,6 +43,8 @@ interface WebpackConfigOptions {
   workspaceDir: string;
   elements: string[];
   sourceMaps?: boolean;
+  /** See `missingOptionalPeerPlugin`. */
+  ignoreMissingOptionalPeers?: boolean;
 }
 
 interface ControllerWebpackConfigOptions {
@@ -51,80 +53,120 @@ interface ControllerWebpackConfigOptions {
   outputPath: string;
   workspaceDir: string;
   sourceMaps?: boolean;
+  /** See `missingOptionalPeerPlugin`. */
+  ignoreMissingOptionalPeers?: boolean;
 }
 
-function resolvePieElementSourceAliases(
-  workspaceDir: string,
-  elements: string[]
-): Record<string, string> {
-  const aliases: Record<string, string> = {};
-  for (const element of elements) {
-    const packageRoot = join(workspaceDir, 'node_modules', '@pie-element', element);
-    const mainSource = join(packageRoot, 'src', 'index.ts');
-    if (!existsSync(mainSource)) {
-      continue;
+// The package a bare specifier names, `@scope/name` or `name`, without its subpath.
+const BARE_SPECIFIER_PACKAGE = /^(@[^/]+\/[^/]+|[^./@][^/]*)/;
+
+interface PackageManifest {
+  name?: string;
+  peerDependencies?: Record<string, string>;
+  peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+}
+
+/**
+ * Leaves a bare import of an optional peer dependency that is not installed unresolved: the import
+ * fails where it runs, as webpack already compiles a missing import inside `try`, and the build
+ * does not. Webpack resolves every module a barrel with `sideEffects` re-exports, used or not, so a
+ * workspace source importing one reaches imports that a published build tree-shakes away.
+ */
+function missingOptionalPeerPlugin(moduleSearchPaths: string[]): webpack.IgnorePlugin {
+  const owners = new Map<string, PackageManifest | null>();
+  const reported = new Set<string>();
+
+  // The nearest package.json with a name, past a nameless one such as a build's `{"type": ...}`.
+  const owningManifest = (dir: string): PackageManifest | null => {
+    if (owners.has(dir)) {
+      return owners.get(dir) ?? null;
     }
+    let manifest: PackageManifest | null = null;
+    try {
+      manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
+    } catch {
+      // No readable package.json in this directory.
+    }
+    const parent = dirname(dir);
+    const owner = manifest?.name ? manifest : parent === dir ? null : owningManifest(parent);
+    owners.set(dir, owner);
+    return owner;
+  };
 
-    aliases[`@pie-element/${element}$`] = mainSource;
-
-    const subpathMap: Record<string, string> = {
-      controller: join(packageRoot, 'src', 'controller', 'index.ts'),
-      author: join(packageRoot, 'src', 'author', 'index.ts'),
-      print: join(packageRoot, 'src', 'print', 'index.ts'),
-      configure: join(packageRoot, 'src', 'configure', 'index.ts'),
-      delivery: join(packageRoot, 'src', 'delivery', 'index.ts'),
-    };
-
-    for (const [subpath, sourcePath] of Object.entries(subpathMap)) {
-      if (existsSync(sourcePath)) {
-        aliases[`@pie-element/${element}/${subpath}$`] = sourcePath;
+  const isInstalled = (name: string, context: string): boolean => {
+    for (let dir = context; ; dir = dirname(dir)) {
+      if (existsSync(join(dir, 'node_modules', name))) {
+        return true;
+      }
+      if (dirname(dir) === dir) {
+        break;
       }
     }
-  }
-  return aliases;
+    return moduleSearchPaths.some((path) => isAbsolute(path) && existsSync(join(path, name)));
+  };
+
+  return new webpack.IgnorePlugin({
+    checkResource(resource, context) {
+      const name = BARE_SPECIFIER_PACKAGE.exec(resource)?.[1];
+      const owner = name ? owningManifest(context) : null;
+      if (
+        !name ||
+        !owner?.peerDependencies?.[name] ||
+        !owner.peerDependenciesMeta?.[name]?.optional ||
+        isInstalled(name, context)
+      ) {
+        return false;
+      }
+      if (!reported.has(name)) {
+        reported.add(name);
+        console.log(
+          `[webpack-config] Leaving ${name} unresolved: an optional peer of ${owner.name} that is not installed`
+        );
+      }
+      return true;
+    },
+  });
 }
 
-function resolvePieLibSourceAliases(workspaceDir: string): Record<string, string> {
-  const aliases: Record<string, string> = {};
-  const pieLibRoot = join(workspaceDir, 'node_modules', '@pie-lib');
+// Svelte 5 rune modules (`x.svelte.ts`, `x.svelte.js`), matched as svelte-loader matches them.
+const SVELTE_MODULE = /\.svelte(\.[^./\\]+)*\.(js|ts)$/;
 
-  if (!existsSync(pieLibRoot)) {
-    return aliases;
-  }
-
-  for (const entry of readdirSync(pieLibRoot, { withFileTypes: true })) {
-    if (!entry.isDirectory() && !entry.isSymbolicLink()) {
-      continue;
-    }
-
-    const packageName = entry.name;
-    const packageRoot = join(pieLibRoot, packageName);
-    const sourceRoot = join(packageRoot, 'src');
-    const sourcePath = join(sourceRoot, 'index.ts');
-    if (!existsSync(sourcePath)) {
-      continue;
-    }
-
-    aliases[`@pie-lib/${packageName}$`] = sourcePath;
-    // Also route subpath imports through source to avoid dist CJS wrappers in IIFE output.
-    aliases[`@pie-lib/${packageName}`] = sourceRoot;
-  }
-
-  return aliases;
-}
+const svelteLoader: webpack.RuleSetUseItem = {
+  loader: 'svelte-loader',
+  // The compile options every Svelte element builds with (tools/vite/svelte-element-*):
+  // `defineDeliveryElement` extends the class `customElement` generates.
+  options: {
+    compilerOptions: { customElement: true },
+    emitCss: false,
+  },
+};
 
 const moduleRules: webpack.RuleSetRule[] = [
   {
     test: /\.svelte$/,
-    use: [
+    use: [svelteLoader],
+  },
+  {
+    test: SVELTE_MODULE,
+    oneOf: [
       {
-        loader: 'svelte-loader',
+        test: /\.ts$/,
+        // Loaders run last to first: esbuild strips the types, then Svelte compiles the runes. The
+        // strip targets esnext because runes such as `$state` must stay in class field position.
+        use: [
+          svelteLoader,
+          { loader: 'esbuild-loader', options: { loader: 'ts', target: 'esnext' } },
+        ],
       },
+      { use: [svelteLoader] },
     ],
   },
   {
     test: /\.(ts|tsx)$/,
     exclude: (filePath: string) => {
+      if (SVELTE_MODULE.test(filePath)) {
+        return true;
+      }
       if (!filePath.includes('/node_modules/')) {
         return false;
       }
@@ -152,6 +194,9 @@ const moduleRules: webpack.RuleSetRule[] = [
   {
     test: /\.(js|jsx)$/,
     exclude: (filePath: string) => {
+      if (SVELTE_MODULE.test(filePath)) {
+        return true;
+      }
       if (!filePath.includes('/node_modules/')) {
         return false;
       }
@@ -190,9 +235,7 @@ const moduleRules: webpack.RuleSetRule[] = [
 ];
 
 export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configuration {
-  const libPackagePathMap = getLibPackagePathMap(opts.workspaceDir, opts.elements);
-  const pieElementSourceAliases = resolvePieElementSourceAliases(opts.workspaceDir, opts.elements);
-  const pieLibSourceAliases = resolvePieLibSourceAliases(opts.workspaceDir);
+  const sourceAliases = resolveSourceAliases(join(opts.workspaceDir, 'node_modules'));
   const moduleSearchPaths = [
     join(opts.workspaceDir, 'node_modules'),
     ...opts.elements.flatMap((element) => [
@@ -205,12 +248,6 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
   ];
 
   console.log('[webpack-config] Creating config for elements:', opts.elements);
-  if (pieLibSourceAliases['@pie-lib/charting$']) {
-    console.log('[webpack-config] charting source alias', {
-      exact: pieLibSourceAliases['@pie-lib/charting$'],
-      prefix: pieLibSourceAliases['@pie-lib/charting'],
-    });
-  }
 
   return {
     target: 'web',
@@ -240,16 +277,16 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
     },
 
     resolve: {
+      // Aliases apply in order and the first match decides, so the exact source aliases
+      // precede the scope alias, which would otherwise route every element to its dist.
       alias: {
+        ...sourceAliases,
         '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
-        ...pieElementSourceAliases,
-        ...pieLibSourceAliases,
         // Some linked workspace packages emit jsxDEV calls.
         // In production bundles React's jsx-dev-runtime can end up without a callable jsxDEV.
         // Route both import forms to a tiny shim backed by react/jsx-runtime.
         'react/jsx-dev-runtime$': join(SHIM_DIR, 'react-jsx-dev-runtime.js'),
         'react/jsx-dev-runtime.js$': join(SHIM_DIR, 'react-jsx-dev-runtime.js'),
-        ...libPackagePathMap,
       },
       // Prefer workspace package development exports in demo builds.
       // This keeps IIFE behavior aligned with the Vite dev player and avoids stale dist-only mismatches.
@@ -264,42 +301,7 @@ export function createWebpackConfig(opts: WebpackConfigOptions): webpack.Configu
       modules: moduleSearchPaths,
     },
 
-    plugins: [
-      // Version resolution plugin - handles different @pie-lib versions per element
-      new webpack.NormalModuleReplacementPlugin(
-        new RegExp(BUNDLE_LIB_PACKAGES.map((p) => `(${p})`).join('|')),
-        (resource) => {
-          const element = opts.elements.find((el) => resource.context.includes(el));
-          const libPackage = BUNDLE_LIB_PACKAGES.find((p) => resource.request.includes(p));
-
-          if (!libPackage) return;
-
-          let replacement = `${libPackage}-root`;
-
-          if (element) {
-            const isConfigure = resource.context.includes('configure');
-            const isController = resource.context.includes('controller');
-            const isAuthor = resource.context.includes('author');
-
-            if (isConfigure && libPackagePathMap[`${libPackage}-${element}-configure`]) {
-              replacement = `${libPackage}-${element}-configure`;
-            } else if (isController && libPackagePathMap[`${libPackage}-${element}-controller`]) {
-              replacement = `${libPackage}-${element}-controller`;
-            } else if (isAuthor && libPackagePathMap[`${libPackage}-${element}-author`]) {
-              replacement = `${libPackage}-${element}-author`;
-            } else if (libPackagePathMap[`${libPackage}-${element}`]) {
-              replacement = `${libPackage}-${element}`;
-            }
-          }
-
-          console.log(
-            `[webpack-config] Replacing ${libPackage} with ${replacement} in ${resource.context}`
-          );
-
-          resource.request = resource.request.replace(libPackage, replacement);
-        }
-      ),
-    ],
+    plugins: opts.ignoreMissingOptionalPeers ? [missingOptionalPeerPlugin(moduleSearchPaths)] : [],
 
     output: {
       filename: '[name].js',
@@ -330,6 +332,7 @@ export function createControllerWebpackConfig(
     },
     resolve: {
       alias: {
+        ...resolveSourceAliases(join(opts.workspaceDir, 'node_modules')),
         '@pie-element': join(opts.workspaceDir, 'node_modules', '@pie-element'),
       },
       conditionNames: ['development', '...'],
@@ -342,6 +345,7 @@ export function createControllerWebpackConfig(
       },
       modules: moduleSearchPaths,
     },
+    plugins: opts.ignoreMissingOptionalPeers ? [missingOptionalPeerPlugin(moduleSearchPaths)] : [],
     output: {
       filename: '[name].js',
       libraryTarget: 'commonjs2',

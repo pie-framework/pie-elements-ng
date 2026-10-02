@@ -106,6 +106,28 @@ const cssVariables = {
                0px 3.618px 9.949px 0px rgba(0, 0, 0, .04)`,
 };
 
+// Attributes PIE puts on the editor's contenteditable element.
+//
+// ProseMirror rebuilds the element's attribute set from editorProps.attributes on every view
+// update and removes anything no longer listed, and Tiptap merges its own role="textbox" only in
+// createView - not into editor.options, which is what setOptions re-pushes. So every attribute we
+// want to survive has to be listed here. See PIE-1015.
+const editorAttributes = (spellCheckEnabled) => ({
+  // Tiptap's own attribute, re-declared so it survives setOptions. setEditable alone re-pushes
+  // editorProps on every mount, which is what removed it in 2.1.17.
+  role: 'textbox',
+  // PIE-owned hook for external consumers - see PIE-1016. Query [data-pie-editor], or
+  // [data-pie-editor][contenteditable="true"] to skip read-only renders.
+  'data-pie-editor': 'true',
+  // MathJax's default ignore class. A typeset pass over an ancestor would otherwise typeset the
+  // editor's text, and ProseMirror reads MathJax's output back into the document.
+  class: 'mathjax_ignore',
+  // Without these the browser spellchecks the editor regardless of the spellCheck prop.
+  spellcheck: spellCheckEnabled ? 'true' : 'false',
+  autocorrect: spellCheckEnabled ? 'on' : 'off',
+  autocapitalize: spellCheckEnabled ? 'on' : 'off',
+});
+
 export const EditableHtml = (props) => {
   const { showParagraphs, separateParagraphs } = props.pluginProps || {};
   const [pendingImages, setPendingImages] = useState([]);
@@ -200,6 +222,13 @@ export const EditableHtml = (props) => {
         node: 'paragraph',
         notAfter: ['paragraph', 'div'],
       },
+      // StarterKit bundles the link extension, which turns anything that looks like a URL into
+      // a hyperlink as it is typed or pasted. See PIE-980 - we don't want that in any editor.
+      // The mark itself stays registered so links already in the markup keep round-tripping.
+      link: {
+        autolink: false,
+        linkOnPaste: false,
+      },
     }),
     ExtendedListItem,
     DivNode,
@@ -253,7 +282,7 @@ export const EditableHtml = (props) => {
               let cb;
 
               if (scheduled && result) {
-                // finish editing only on success
+              // finish editing only on success
                 cb = props.onChange;
               }
 
@@ -305,11 +334,17 @@ export const EditableHtml = (props) => {
     }),
   ];
 
+  // Callers that don't pass spellCheck keep the browser default (on), as they did with the
+  // slate-based editor. Players that have to default to off - extended-text-entry, see
+  // PIE-978 - resolve that in their controller and pass an explicit false.
+  const spellCheckEnabled = props.spellCheck !== false;
+
   const editor = useEditor(
     {
       extensions,
       immediatelyRender: false,
       editorProps: {
+        attributes: editorAttributes(spellCheckEnabled),
         handleKeyDown(view, event) {
           if (props.onKeyDown) {
             return props.onKeyDown(event);
@@ -352,6 +387,26 @@ export const EditableHtml = (props) => {
   useEffect(() => {
     editor?.setEditable(!props.disabled);
   }, [props.disabled, editor]);
+
+  // useEditor only re-applies options on its own when it is called with an empty dependency
+  // array, and this call site depends on charactersLimit, so a spellCheck change on a mounted
+  // editor has to be pushed in. The rest of editorProps stays as the editor already has it, and
+  // the attributes are merged rather than replaced so an attribute contributed by Tiptap or an
+  // extension can't be dropped the way role="textbox" was - see PIE-1015.
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+
+    const currentEditorProps = editor.options?.editorProps;
+    const attributes = { ...currentEditorProps?.attributes, ...editorAttributes(spellCheckEnabled) };
+
+    if (currentEditorProps?.attributes?.spellcheck === attributes.spellcheck) {
+      return;
+    }
+
+    editor.setOptions({ editorProps: { ...currentEditorProps, attributes } });
+  }, [spellCheckEnabled, editor]);
 
   useEffect(() => {
     if (!editor) {
@@ -434,10 +489,12 @@ const StyledEditorContent: any = styled(EditorContent, {
     },
 
     // Out of flow so the caret stays at the start of the block; in-flow ::before pushes the caret after the hint text.
-    '& p.is-editor-empty, & div.is-editor-empty': {
+    // :only-child ensures the placeholder is hidden whenever the editor has other content (images, upload nodes, etc.)
+    // and covers the type+backspace edge case where Tiptap only adds is-empty (not is-editor-empty).
+    '& p[data-placeholder].is-empty:only-child, & div[data-placeholder].is-empty:only-child': {
       position: 'relative',
     },
-    '& p.is-editor-empty::before, & div.is-editor-empty::before': {
+    '& p[data-placeholder].is-empty:only-child::before, & div[data-placeholder].is-empty:only-child::before': {
       content: 'attr(data-placeholder)',
       position: 'absolute',
       left: 0,

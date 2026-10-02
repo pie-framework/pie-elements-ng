@@ -13,7 +13,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { debounce } from '@pie-element/shared-lodash';
 import debug from 'debug';
-import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
+import {
+  ModelSetEvent,
+  SessionChangedEvent,
+  createSessionNotifier,
+  flushSessionNotifiers,
+} from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
 
@@ -45,17 +50,19 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
+import { exceedsMaxSelections } from './utils.js';
 
 const log = debug('pie-ui:multiple-choice');
 
 export const isComplete = (session, model, audioComplete, elementContext) => {
-  const { autoplayAudioEnabled, completeAudioEnabled } = model || {};
+  const { completeAudioEnabled } = model || {};
 
-  // check audio completion if audio settings are enabled and audio actually exists
-  if (autoplayAudioEnabled && completeAudioEnabled && !audioComplete) {
+  // check audio completion if the setting is enabled and audio actually exists,
+  // whether the audio is started by autoplay or by the student
+  if (completeAudioEnabled && !audioComplete) {
     if (elementContext) {
       const audio = elementContext.querySelector('audio');
-      const isInsidePrompt = audio && audio.closest('#preview-prompt');
+      const isInsidePrompt = audio && audio.closest('.preview-prompt');
 
       // only require audio completion if audio exists and is inside the prompt
       if (audio && isInsidePrompt) {
@@ -75,7 +82,7 @@ export const isComplete = (session, model, audioComplete, elementContext) => {
     return !!selections;
   }
 
-  if (selections < minSelections || selections > maxSelections) {
+  if (selections < minSelections || exceedsMaxSelections(selections, maxSelections)) {
     return false;
   }
 
@@ -177,7 +184,9 @@ export default class MultipleChoice extends HTMLElement {
       { leading: false, trailing: true },
     );
 
-    this._dispatchResponseChanged = debounce(() => {
+    // `_onChange` already wrote the session; only this dispatch is deferred to
+    // the next tick, and `disconnectedCallback` flushes it.
+    this._sessionNotifier = createSessionNotifier(this, () => {
       this.dispatchEvent(
         new SessionChangedEvent(
           this.tagName.toLowerCase(),
@@ -185,6 +194,7 @@ export default class MultipleChoice extends HTMLElement {
         ),
       );
     });
+    this._dispatchResponseChanged = () => this._sessionNotifier.notify();
 
     this._dispatchModelSet = debounce(
       () => {
@@ -277,8 +287,6 @@ export default class MultipleChoice extends HTMLElement {
   set session(s) {
     this._session = s;
     this._rerender();
-    //TODO: remove this session-changed should only be emit on user change
-    this._dispatchResponseChanged();
   }
 
   _onChange(data) {
@@ -328,10 +336,13 @@ export default class MultipleChoice extends HTMLElement {
           if (this._audioInitialized) return;
 
           const audio = this.querySelector('audio');
-          const isInsidePrompt = audio && audio.closest('#preview-prompt');
+          const isInsidePrompt = audio && audio.closest('.preview-prompt');
 
           if (!this._model) return;
-          if (!this._model.autoplayAudioEnabled) return;
+
+          const { autoplayAudioEnabled, completeAudioEnabled } = this._model;
+
+          if (!autoplayAudioEnabled && !completeAudioEnabled) return;
           if (audio && !isInsidePrompt) return;
           if (!audio) return;
 
@@ -346,17 +357,19 @@ export default class MultipleChoice extends HTMLElement {
             document.removeEventListener('click', enableAudio);
           };
 
-          // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
-          // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
-          setTimeout(() => {
-            if (audio.paused && !this.querySelector('#play-audio-info')) {
-              // add info message as a toast to enable audio playback
-              container.appendChild(info);
-              document.addEventListener('click', enableAudio);
-            } else {
-              document.removeEventListener('click', enableAudio);
-            }
-          }, 500);
+          if (autoplayAudioEnabled) {
+            // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
+            // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
+            setTimeout(() => {
+              if (audio.paused && !this.querySelector('#play-audio-info')) {
+                // add info message as a toast to enable audio playback
+                container.appendChild(info);
+                document.addEventListener('click', enableAudio);
+              } else {
+                document.removeEventListener('click', enableAudio);
+              }
+            }, 500);
+          }
 
           // we need to listen for the playing event to remove the toast in case the audio plays because of re-rendering
           const handlePlaying = () => {
@@ -426,6 +439,8 @@ export default class MultipleChoice extends HTMLElement {
   }
 
   disconnectedCallback() {
+    flushSessionNotifiers(this);
+
     this._disconnectMathObserver();
     this._disconnectPlayerObserver();
     if (this._keyboardEventsEnabled) {
@@ -441,6 +456,7 @@ export default class MultipleChoice extends HTMLElement {
       this._audio = null;
     }
 
+    this._rerender.cancel();
     if (this._root) {
       this._root.unmount();
       this._root = null;
@@ -477,9 +493,10 @@ export default class MultipleChoice extends HTMLElement {
     const currentValue = this._session.value || [];
     const choiceId = this._model.choices[choiceIndex].value;
 
+    const alreadySelected = currentValue.includes(choiceId);
     const newValue = {
       value: choiceId,
-      selected: !currentValue.includes(choiceId),
+      selected: this._model.choiceMode === 'radio' ? true : !alreadySelected,
       selector: 'Keyboard',
     };
 

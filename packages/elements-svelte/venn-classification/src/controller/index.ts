@@ -34,12 +34,6 @@ export type {
  */
 export const SUPPORTED_CIRCLE_COUNTS = new Set<number>([2]);
 
-const isEmptyObject = (value: unknown): boolean =>
-  !!value &&
-  typeof value === 'object' &&
-  !Array.isArray(value) &&
-  Object.keys(value as Record<string, unknown>).length === 0;
-
 function tilePlainLabel(label: unknown): string {
   return String(label ?? '')
     .replace(/<[^>]+>/g, ' ')
@@ -145,35 +139,53 @@ export function getCorrectnessMap(
   return out;
 }
 
+export interface VennOutcome {
+  score: number;
+  empty: boolean;
+  traceLog: string[];
+}
+
+export interface OutcomeEnv {
+  mode?: string;
+  /** A player's `false` forces all-or-nothing whatever `scoringPolicy` says. */
+  partialScoring?: boolean;
+}
+
+/**
+ * The scoring policy in force: the model's `scoringPolicy`, overridden to
+ * all-or-nothing by `env.partialScoring === false` - the rule the React
+ * elements apply through `partialScoring.enabled(model, env)`.
+ */
+export function effectiveScoringPolicy(
+  model: Pick<VennModel, 'scoringPolicy'>,
+  env?: OutcomeEnv | null
+): ScoringPolicy {
+  if (model.scoringPolicy === 'allOrNothing' || env?.partialScoring === false) {
+    return 'allOrNothing';
+  }
+  return 'partialPerTile';
+}
+
+const EMPTY_OUTCOME: VennOutcome = {
+  score: 0,
+  empty: true,
+  traceLog: ['Student did not place any tiles. Score is 0.'],
+};
+
+/**
+ * Score a session. Scores in every mode, as multiple-choice does: a player
+ * calls this with the env it scores under, not only `evaluate`.
+ */
 export function outcome(
   question: VennModel | null | undefined,
   session: VennSession | null | undefined,
-  env: { mode?: string } = {}
-): Promise<{ score?: number; empty?: boolean; completed?: boolean }> {
+  env: OutcomeEnv | null = {}
+): Promise<VennOutcome> {
   return new Promise((resolve) => {
-    if (
-      !session ||
-      isEmptyObject(session) ||
-      !session.placements ||
-      Object.keys(session.placements).length === 0
-    ) {
-      resolve({ score: 0, empty: true });
-      return;
-    }
-
-    if (env.mode !== 'evaluate') {
-      resolve({ score: undefined, completed: undefined });
-      return;
-    }
-
     const model = createDefaultModel((question as VennModel) || undefined);
-    const tiles = model.tiles || [];
-    if (tiles.length === 0) {
-      resolve({ score: 0, empty: true });
-      return;
-    }
+    const tiles = model.tiles;
+    const placements = session?.placements ?? {};
 
-    const placements = session.placements || {};
     let correct = 0;
     let answered = 0;
     for (const tile of tiles) {
@@ -184,18 +196,27 @@ export function outcome(
     }
 
     if (answered === 0) {
-      resolve({ score: 0, empty: true });
+      resolve({ ...EMPTY_OUTCOME, traceLog: [...EMPTY_OUTCOME.traceLog] });
       return;
     }
 
-    const policy: ScoringPolicy =
-      model.scoringPolicy === 'allOrNothing' ? 'allOrNothing' : 'partialPerTile';
-    if (policy === 'allOrNothing') {
-      resolve({ score: correct === tiles.length ? 1 : 0 });
-      return;
-    }
+    const policy = effectiveScoringPolicy(model, env);
+    const score =
+      policy === 'allOrNothing'
+        ? correct === tiles.length
+          ? 1
+          : 0
+        : Number.parseFloat((correct / tiles.length).toFixed(2));
 
-    resolve({ score: correct / tiles.length });
+    resolve({
+      score,
+      empty: false,
+      traceLog: [
+        `Student placed ${answered} of ${tiles.length} tile(s); ${correct} in the correct region.`,
+        `Score calculated using ${policy === 'allOrNothing' ? 'all-or-nothing' : 'partial'} scoring.`,
+        `Final score: ${score}.`,
+      ],
+    });
   });
 }
 
@@ -232,6 +253,7 @@ export function model(
       }),
       regionLabels: { ...(normalizedQuestion.regionLabels || {}) },
       scoringPolicy: normalizedQuestion.scoringPolicy ?? 'partialPerTile',
+      language: normalizedQuestion.language,
       disabled: safeEnv.mode !== 'gather',
       mode: safeEnv.mode,
       env: safeEnv,
@@ -248,12 +270,8 @@ export function model(
 
     const isInstructor = safeEnv.role === 'instructor';
     if (isInstructor && (safeEnv.mode === 'view' || safeEnv.mode === 'evaluate')) {
-      const anyQ = normalizedQuestion as unknown as {
-        teacherInstructionsEnabled?: boolean;
-        teacherInstructions?: string;
-      };
-      out.teacherInstructions = anyQ.teacherInstructionsEnabled
-        ? (anyQ.teacherInstructions ?? null)
+      out.teacherInstructions = normalizedQuestion.teacherInstructionsEnabled
+        ? (normalizedQuestion.teacherInstructions ?? null)
         : null;
     } else {
       out.teacherInstructions = null;
@@ -277,9 +295,9 @@ export function createCorrectResponseSession(
     for (const tile of model.tiles) {
       placements[tile.id] = normalizeRegion(tile.correctRegion);
     }
+    // The player sets `id` and `element` on the entry from the item config.
     resolve({
       id: '1',
-      element: 'venn-classification',
       placements,
       completed: true,
     });
@@ -394,7 +412,6 @@ export function buildPreviewSession(model: VennModel | null | undefined): VennSe
   }
   return {
     id: 'preview',
-    element: 'venn-classification',
     placements,
     completed: true,
   };

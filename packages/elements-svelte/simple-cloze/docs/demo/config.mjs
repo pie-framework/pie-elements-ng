@@ -14,7 +14,7 @@ export default {
       session: {
         id: '1',
         element: 'simple-cloze',
-        response: '',
+        value: '',
       },
     },
   ],

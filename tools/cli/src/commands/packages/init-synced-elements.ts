@@ -3,6 +3,7 @@ import { Logger } from '../../utils/logger.js';
 import { existsSync } from 'node:fs';
 import { readdir, readFile, writeFile, stat as fsStat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { elementSharedRuntimeDependencies } from '../../lib/upstream/sync-package-manager.js';
 
 const ELEMENTS_REACT_DIR = 'packages/elements-react';
 const PIE_ELEMENTS_DIR = '../pie-elements/packages';
@@ -19,7 +20,6 @@ interface PackageTemplate {
   files: string[];
   scripts: Record<string, string>;
   dependencies: Record<string, string>;
-  peerDependencies: Record<string, string>;
   devDependencies: Record<string, string>;
   keywords: string[];
   license: string;
@@ -195,11 +195,8 @@ export default class InitSyncedElements extends Command {
         lint: 'biome check .',
         'lint:fix': 'biome check --write .',
       },
-      dependencies: deps,
-      peerDependencies: {
-        react: '^18.0.0',
-        'react-dom': '^18.0.0',
-      },
+      // React and React DOM are dependencies at the browser ESM policy version, never peers.
+      dependencies: { ...deps, ...elementSharedRuntimeDependencies(process.cwd()) },
       devDependencies: {
         '@types/react': '^18.2.0',
         '@types/react-dom': '^18.2.0',

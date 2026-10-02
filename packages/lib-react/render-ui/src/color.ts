@@ -14,6 +14,7 @@ export const defaults = {
   TEXT: 'black',
   DISABLED: 'grey',
   DISABLED_SECONDARY: '#ABABAB',
+  DISABLED_TEXT: '#545454', // for text that is disabled but still has to be read - a non-editable label
   CORRECT: green[500],
   CORRECT_SECONDARY: green[50],
   CORRECT_TERTIARY: '#0EA449',
@@ -33,13 +34,21 @@ export const defaults = {
   TERTIARY_LIGHT: '#D0E2F0',
   BACKGROUND: 'rgba(255,255,255,0)',
   BACKGROUND_DARK: '#ECEDF1',
-  DROPDOWN_BACKGROUND: '#E0E1E6', // this is used for inline-dropdown
+  // hover/selected fill - inline-dropdown menu items, its authoring toolbar, graphing's
+  // selected tools. Not the dropdown menu's own background: the menu paper reads BACKGROUND.
+  DROPDOWN_BACKGROUND: '#E0E1E6',
   // this is only used for multi-trait-rubric, we might want to use BACKGROUND_DARK instead
   SECONDARY_BACKGROUND: 'rgba(241,241,241,1)',
+  // raised surface for cards, answer pools, and menus;
+  SURFACE: '#E0E1E6',
   BORDER: '#9A9A9A',
   BORDER_LIGHT: '#D1D1D1',
   BORDER_DARK: '#646464',
   BORDER_GRAY: '#7E8494',
+  // these are used for authored tables
+  TABLE_GRID: 'black',
+  TABLE_GRID_LIGHT: '#dfe2e5',
+  TABLE_STRIPE: '#f6f8fa',
   BLACK: '#000000',
   WHITE: '#ffffff',
   TRANSPARENT: 'transparent',
@@ -48,9 +57,11 @@ export const defaults = {
   FOCUS_CHECKED_BORDER: '#1565C0',
   FOCUS_UNCHECKED: '#E0E0E0',
   FOCUS_UNCHECKED_BORDER: '#757575',
+  // the keyboard focus ring on a button or toolbar control
+  BUTTON_FOCUS_OUTLINE: '#3B82F6',
   // this is used for select text tokens
   BLUE_GREY100: '#F3F5F7',
-  BLUE_GREY300: '#C0C3CF',
+  BLUE_GREY300: '#81848F',
   BLUE_GREY600: '#7E8494',
   BLUE_GREY900: '#152452',
   // this is used for charting
@@ -83,6 +94,7 @@ const pv = v('pie');
 export const text = () => pv('text', defaults.TEXT);
 export const disabled = () => pv('disabled', defaults.DISABLED);
 export const disabledSecondary = () => pv('disabled-secondary', defaults.DISABLED_SECONDARY);
+export const disabledText = () => pv('disabled-text', 'text', defaults.DISABLED_TEXT);
 export const correct = () => pv('correct', defaults.CORRECT);
 export const correctSecondary = () => pv('correct-secondary', defaults.CORRECT_SECONDARY);
 export const correctTertiary = () => pv('correct-tertiary', defaults.CORRECT_TERTIARY);
@@ -108,6 +120,7 @@ export const background = () => pv('background', defaults.BACKGROUND);
 export const backgroundDark = () => pv('background-dark', defaults.BACKGROUND_DARK);
 export const secondaryBackground = () => pv('secondary-background', defaults.SECONDARY_BACKGROUND);
 export const dropdownBackground = () => pv('dropdown-background', defaults.DROPDOWN_BACKGROUND);
+export const surface = () => pv('surface', defaults.SURFACE);
 
 export const tertiary = () => pv('tertiary', defaults.TERTIARY);
 export const tertiaryLight = () => pv('tertiary-light', defaults.TERTIARY_LIGHT);
@@ -117,6 +130,10 @@ export const borderLight = () => pv('border-light', defaults.BORDER_LIGHT);
 export const borderDark = () => pv('border-dark', defaults.BORDER_DARK);
 export const borderGray = () => pv('border-gray', defaults.BORDER_GRAY);
 
+export const tableGrid = () => pv('table-grid', 'text', defaults.TABLE_GRID);
+export const tableGridLight = () => pv('table-grid-light', 'border-light', defaults.TABLE_GRID_LIGHT);
+export const tableStripe = () => pv('table-stripe', 'background-dark', defaults.TABLE_STRIPE);
+
 export const black = () => pv('black', defaults.BLACK);
 export const white = () => pv('white', defaults.WHITE);
 export const transparent = () => defaults.TRANSPARENT;
@@ -125,6 +142,7 @@ export const focusChecked = () => pv('focus-checked', defaults.FOCUS_CHECKED);
 export const focusCheckedBorder = () => pv('focus-checked-border', defaults.FOCUS_CHECKED_BORDER);
 export const focusUnchecked = () => pv('focus-unchecked', defaults.FOCUS_UNCHECKED);
 export const focusUncheckedBorder = () => pv('focus-unchecked-border', defaults.FOCUS_UNCHECKED_BORDER);
+export const buttonFocusOutline = () => pv('button-focus-outline', defaults.BUTTON_FOCUS_OUTLINE);
 
 export const blueGrey100 = () => pv('blue-grey-100', defaults.BLUE_GREY100);
 export const blueGrey300 = () => pv('blue-grey-300', defaults.BLUE_GREY300);
@@ -135,7 +153,8 @@ export const keypadButton = () => pv('keypad-button', defaults.KEYPAD_BUTTON);
 export const keypadButtonOperator = () => pv('keypad-button-operator', defaults.KEYPAD_BUTTON_OPERATOR);
 export const keypadEmptyPlaceholder = () => pv('keypad-empty-placeholder', defaults.KEYPAD_EMPTY_PLACEHOLDER);
 export const keypadButtonHover = () => pv('keypad-button-hover', defaults.KEYPAD_BUTTON_HOVER);
-export const keypadButtonOperatorHover = () => pv('keypad-button-operator-hover', defaults.KEYPAD_BUTTON_OPERATOR_HOVER);
+export const keypadButtonOperatorHover = () =>
+  pv('keypad-button-operator-hover', defaults.KEYPAD_BUTTON_OPERATOR_HOVER);
 export const keyBoardFocusIndicator = () => pv('keyboard-focus-indicator', defaults.KEY_BOARD_FOCUS_INDICATOR);
 export const buttonBorder = () => pv('button-border', defaults.BUTTON_BORDER);
 export const buttonHoverBg = () => pv('button-hover-bg', defaults.BUTTON_HOVER_BG);

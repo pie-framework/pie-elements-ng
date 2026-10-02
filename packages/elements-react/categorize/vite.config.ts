@@ -20,6 +20,11 @@ export default defineConfig(({ mode, command }) => {
   // Build mode: build the library
   return {
   plugins: [react()],
+  test: {
+    environment: 'happy-dom',
+    setupFiles: [resolve(__dirname, 'vitest.setup.ts')],
+    globals: true,
+  },
   define: {
     __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
     __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),
@@ -54,6 +59,9 @@ export default defineConfig(({ mode, command }) => {
           id === '@mdi/react' || /^@mdi\/react\//.test(id) ||
           id === '@mdi/js' || /^@mdi\/js\//.test(id) ||
           id === 'recharts' || /^recharts\//.test(id) ||
+          /^@hello-pangea\//.test(id) ||
+          /^react-redux($|\/)/.test(id) ||
+          /^use-sync-external-store($|\/)/.test(id) ||
           ['prop-types','debug','i18next','humps','mathjs','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
         );
       },

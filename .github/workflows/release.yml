@@ -1,9 +1,17 @@
-# Creates versioning PRs (changesets) and publishes to npm from CI.
+# Publishes to npm from CI: `next` snapshots from develop, `latest` from master (PIE-1121).
 #
-# Publishing currently authenticates with the NPM_TOKEN secret: while that secret exists the
-# `auto` mode below resolves to token auth. The OIDC machinery here is complete and exercised
-# (npm floor, .npmrc scrub, provenance check), but the cutover is BLOCKED and the secret must
-# not be deleted yet.
+#   develop  Every merge publishes the packages it changed as `<version>-next.<datetime>` and
+#            commits no version, so develop never holds prerelease versions. The merged PR's
+#            changelog entry is recorded as `.changeset/pr-<n>.md` and committed to develop.
+#   master   A develop -> master merge carries those changesets; changesets/action turns them
+#            into a "Version Packages" PR, and merging that PR publishes `latest`. The release
+#            commit then returns to develop through an automated back-merge PR.
+#
+# Publishing currently authenticates with the NPM_TOKEN secret: `auto` mode below resolves to
+# token auth when that secret is present, and FAILS THE RUN when it is absent rather than
+# falling through to OIDC. The OIDC machinery here is complete and exercised (npm floor,
+# .npmrc scrub, provenance check), but the cutover is BLOCKED and the secret must not be
+# deleted yet. Opting into OIDC requires an explicit manual run with publish_auth=oidc.
 #
 # Why: npm permits exactly one trusted publisher per package, and most of the names this repo
 # publishes are also published by pie-framework/pie-elements and pie-framework/pie-lib, which
@@ -31,6 +39,10 @@ on:
     paths:
       - ".changeset/**"
       - "packages/**"
+      # tools/cli is published too (@pie-element/cli).
+      - "tools/**"
+      # The release scripts this workflow runs, so a fix to one takes effect on its own merge.
+      - "scripts/**"
       - "package.json"
       - "bun.lock"
       - "turbo.json"
@@ -84,7 +96,18 @@ on:
         required: false
         type: string
         default: ""
+      snapshot_all:
+        description: "develop only: publish every package as a next snapshot, not just the changed ones (to test a whole release on next)"
+        required: false
+        type: boolean
+        default: false
 
+# One run per branch at a time. GitHub keeps one more waiting and cancels it when a newer push
+# queues. On develop that is harmless: selection is measured from npm, so the newer run picks up
+# the cancelled one's packages. On master it is not: if the Version Packages merge's run is the
+# one cancelled, its stable versions are committed but unpublished, and only that run detects
+# them (from its push's before..after range). Recover by re-running the cancelled run itself,
+# which keeps its original push event.
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
@@ -102,13 +125,13 @@ jobs:
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           registry-url: 'https://registry.npmjs.org'
@@ -138,7 +161,7 @@ jobs:
           bun-version: 1.3.13
 
       - name: Cache Bun downloads
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.bun/install/cache
@@ -151,6 +174,29 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      # When merges land close together, the run for an earlier one starts after develop has
+      # already moved on, so this checkout is behind the branch. A snapshot built from it would
+      # record that older commit as its `gitHead`, and the next run would select the same
+      # packages again. Release runs on develop are serialized by the concurrency group above, so
+      # at this point the remote tip is the whole truth about the branch — release that instead.
+      #
+      # develop only. master keeps the version-PR flow, where the run must publish exactly the
+      # merged version commit and nothing that landed after it.
+      - name: Fast-forward to the branch tip (develop)
+        if: github.event_name == 'push' && github.ref_name == 'develop'
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git fetch --force origin "+refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+          tip="$(git rev-parse "refs/remotes/origin/${BRANCH}")"
+          if [ "${tip}" != "${{ github.sha }}" ]; then
+            echo "::notice::${BRANCH} advanced from ${{ github.sha }} to ${tip} before this run started; releasing the tip."
+          fi
+          git reset --hard "${tip}"
+          git --no-pager log -1 --format='Releasing %h %s' HEAD
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -160,8 +206,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # In prerelease mode, consumed changesets remain on disk and are tracked
-          # in .changeset/pre.json. Only count pending changesets as release intent.
+          # Pending changesets, including the `.changeset/pre/` archive left by the old
+          # prerelease mode, which the first stable release consumes.
           node scripts/release-detect-intent.mjs >> "$GITHUB_OUTPUT"
 
           # Did this push include actual package version bumps (i.e. merged release PR)?
@@ -185,6 +231,64 @@ jobs:
 
           echo "has_version_bumps=${has_version_bumps}" >> "$GITHUB_OUTPUT"
 
+      # Which packages a develop merge publishes to `next`: every package whose shipping files
+      # changed since the commit its current `next` version was built from. Measured against npm
+      # rather than this push's range, so a run that was cancelled or failed does not take its
+      # packages down with it: npm still points at the older commit, and the next run selects
+      # them again. See scripts/release-version-snapshot.mjs. `release-intent.json` records what
+      # this run set out to release, which the last step checks against what it published.
+      #
+      # Selection only; nothing is versioned until build, test and the npm credential check pass.
+      # A manual publish run on develop goes through here too: re-running it is the recovery.
+      - name: Select packages for the next snapshot (develop)
+        id: snapshot_select
+        if: github.ref_name == 'develop' && (github.event_name == 'push' || inputs.release_intent == 'publish')
+        shell: bash
+        env:
+          SNAPSHOT_ALL: ${{ github.event_name == 'workflow_dispatch' && inputs.snapshot_all || false }}
+        run: |
+          all=()
+          if [ "$SNAPSHOT_ALL" = "true" ]; then all=(--all); fi
+          node scripts/release-version-snapshot.mjs --dry-run "${all[@]}" \
+            --selection-out "${{ runner.temp }}/release-intent.json" >> "$GITHUB_OUTPUT"
+
+      # One gate for every publish-only step below, so the conditions cannot drift apart.
+      #   snapshot_release: develop publishes `next` snapshots in this run.
+      #   publish_run:      this run publishes to npm at all.
+      #
+      # On develop only the snapshot path publishes. A merged back-merge PR brings master's
+      # version bumps to develop, and those are already on npm as `latest`.
+      #
+      # ENABLE_CICD_NPM_PUBLISH is part of snapshot_release because the snapshot steps gate on it
+      # alone: without it here, turning publishing off would skip build and test but still publish.
+      - name: Resolve release gate
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          snapshot_release=false
+          if [ "${{ steps.snapshot_select.outputs.snapshot }}" = "true" ] \
+            && [ "${ENABLE_CICD_NPM_PUBLISH:-false}" = "true" ]; then
+            snapshot_release=true
+          elif [ "${{ steps.snapshot_select.outputs.snapshot }}" = "true" ]; then
+            echo "::notice::Snapshot selected but ENABLE_CICD_NPM_PUBLISH is not 'true'; not publishing."
+          fi
+
+          publish_run=false
+          if [ "${{ github.ref_name }}" = "develop" ]; then
+            publish_run="$snapshot_release"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.release_intent }}" = "publish" ]; then
+              publish_run=true
+            fi
+          elif [ "${{ steps.detect.outputs.has_version_bumps }}" = "true" ]; then
+            publish_run=true
+          fi
+
+          echo "snapshot_release=${snapshot_release}" >> "$GITHUB_OUTPUT"
+          echo "publish_run=${publish_run}" >> "$GITHUB_OUTPUT"
+          echo "Release gate: snapshot_release=${snapshot_release} publish_run=${publish_run}"
+
       - name: Validate manual release intent prerequisites
         if: github.event_name == 'workflow_dispatch'
         shell: bash
@@ -194,6 +298,19 @@ jobs:
           has_changesets="${{ steps.detect.outputs.has_changesets }}"
           has_version_bumps="${{ steps.detect.outputs.has_version_bumps }}"
           force_publish="${{ inputs.force_publish }}"
+
+          if [ "${{ github.ref_name }}" = "develop" ]; then
+            # develop has no version PR and publishes only snapshots, which select themselves.
+            if [ "$intent" != "publish" ]; then
+              echo "develop has no version PR; run with release_intent=publish to publish a next snapshot."
+              exit 1
+            fi
+            if [ "${ENABLE_CICD_NPM_PUBLISH:-false}" != "true" ]; then
+              echo "Automated npm publish from GitHub Actions is disabled (ENABLE_CICD_NPM_PUBLISH != true)."
+              exit 1
+            fi
+            exit 0
+          fi
 
           if [ "$intent" = "version-pr" ] && [ "$has_changesets" != "true" ]; then
             echo "Manual intent 'version-pr' requires at least one .changeset/*.md file in this commit."
@@ -213,7 +330,7 @@ jobs:
           fi
 
       - name: Resolve release channel
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         id: release_channel
         shell: bash
         run: |
@@ -256,7 +373,7 @@ jobs:
           echo "Resolved release channel: ${channel}"
 
       - name: Enforce branch to channel policy
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -274,22 +391,41 @@ jobs:
 
           echo "Branch/channel policy validated: ${ref_name} -> ${channel}"
 
-      - name: Stop early (no changesets / no version bumps)
-        if: github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_changesets != 'true' && steps.detect.outputs.has_version_bumps != 'true'
+      - name: Stop early (nothing to release)
+        if: github.event_name != 'workflow_dispatch' && steps.gate.outputs.publish_run != 'true' && (github.ref_name == 'develop' || steps.detect.outputs.has_changesets != 'true')
         run: |
-          echo "No .changeset files and no package version/changelog updates in this push. Skipping release."
+          echo "Nothing to publish and no version PR to raise from this push. Skipping release."
           exit 0
 
+      # Versions the selected packages and their dependents as `<version>-next.<datetime>` in
+      # this runner's tree and nothing else: no commit, no push. The pending changesets are moved
+      # to the runner's temp dir first, because they belong to the next stable release, and every
+      # other package is pinned to its current `next` release so dependents reference code that
+      # is on npm.
+      #
+      # Before the build, not after: builds read the manifest version (`__PIE_PACKAGE_VERSION__`
+      # names ebsr's and complex-rubric's private element tags), so building first would bake
+      # develop's frozen version into every snapshot and give all of them the same tags. Nothing
+      # is committed or pushed, so versioning before the credential check costs nothing if the
+      # run stops there.
+      - name: Version next snapshot (develop)
+        id: snapshot_version
+        if: steps.gate.outputs.snapshot_release == 'true'
+        run: |
+          node scripts/release-version-snapshot.mjs \
+            --selection-in "${{ runner.temp }}/release-intent.json" \
+            --stash-dir "${{ runner.temp }}/pending-changesets" >> "$GITHUB_OUTPUT"
+
       - name: Build packages (publish runs only)
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         run: bun run build
 
       - name: Run tests (publish runs only)
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         run: bun run test
 
       - name: Resolve npm publish auth mode
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.gate.outputs.publish_run == 'true'
         id: npm_auth
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -316,10 +452,27 @@ jobs:
           elif [ "${publish_auth_input}" = "oidc" ]; then
             echo "mode=oidc" >> "$GITHUB_OUTPUT"
           else
+            # `auto` resolves to token, or fails — it deliberately never falls through to OIDC.
+            # A missing token is overwhelmingly more likely to mean the secret expired or was
+            # removed than that the cutover happened, and OIDC cannot publish most of these
+            # names anyway (see the header). Choosing OIDC here would let changesets bump and
+            # commit versions and then fail every shared-package publish with ENEEDAUTH,
+            # leaving versions in git that were never released. Fail before the bump instead.
             if [ -n "${NPM_TOKEN:-}" ]; then
               echo "mode=token" >> "$GITHUB_OUTPUT"
             else
-              echo "mode=oidc" >> "$GITHUB_OUTPUT"
+              echo "No NPM_TOKEN secret is available, so this release cannot authenticate to npm." >&2
+              echo "" >&2
+              echo "Not defaulting to OIDC on purpose: npm permits exactly one trusted publisher" >&2
+              echo "per package, and most names this repo publishes are still published by" >&2
+              echo "pie-framework/pie-elements and pie-framework/pie-lib. An OIDC run would fail" >&2
+              echo "those publishes after versions had already been bumped and committed." >&2
+              echo "" >&2
+              echo "Fix one of:" >&2
+              echo "  - Restore the NPM_TOKEN secret (the expected state today), or" >&2
+              echo "  - Once 'bun run trusted-publishers -- --verify' reports CONFIGURED for every" >&2
+              echo "    package, re-run this workflow manually with publish_auth=oidc to opt in." >&2
+              exit 1
             fi
           fi
 
@@ -363,24 +516,44 @@ jobs:
       # already committed the bumped versions, leaving a version in git that was never
       # published. OIDC has no credential to check, hence the token-mode gate.
       - name: Verify npm publish credentials (token mode, publish runs only)
-        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.npm_auth.outputs.mode == 'token' && ((github.event_name == 'workflow_dispatch' && inputs.release_intent == 'publish') || (github.event_name != 'workflow_dispatch' && steps.detect.outputs.has_version_bumps == 'true'))
+        if: env.ENABLE_CICD_NPM_PUBLISH == 'true' && steps.npm_auth.outputs.mode == 'token' && steps.gate.outputs.publish_run == 'true'
         env:
           NPM_TOKEN: ${{ env.PUBLISH_NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ env.PUBLISH_NODE_AUTH_TOKEN }}
         run: node scripts/check-npm-auth.mjs
 
-      - name: Run Changesets release
-        if: github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_changesets == 'true' || steps.detect.outputs.has_version_bumps == 'true'
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: bun run release:publish:checked
-          createGithubReleases: false
-          version: bun run version
-          title: 'chore(release): version packages [skip-heavy-ci]'
-          commit: 'chore(release): version packages'
+      # Publishes exactly the packages the version step versioned, by name. Selecting them by
+      # "manifest differs from HEAD" would also publish the packages it only pinned. npm records
+      # HEAD as each version's `gitHead`, which is what the next run measures from.
+      - name: Publish next snapshot (develop)
+        id: snapshot_publish
+        if: steps.gate.outputs.snapshot_release == 'true'
+        run: bun run release:publish:checked
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ env.PUBLISH_NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ env.PUBLISH_NODE_AUTH_TOKEN }}
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+          RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
+          RELEASE_PACKAGES: ${{ steps.snapshot_version.outputs.snapshot_packages }}
+          RELEASE_PUBLISHED_MANIFEST: ${{ runner.temp }}/published.json
+
+      - name: Run Changesets release
+        if: github.ref_name != 'develop' && (github.event_name == 'workflow_dispatch' || steps.detect.outputs.has_changesets == 'true' || steps.detect.outputs.has_version_bumps == 'true')
+        id: changesets
+        uses: changesets/action@v2
+        with:
+          # v2 renamed every input this step passes and no longer reads the token from the
+          # GITHUB_TOKEN environment variable; it must arrive through the github-token input.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          publish-script: bun run release:publish:checked
+          create-github-releases: false
+          version-script: bun run version
+          pr-title: 'chore(release): version packages [skip-heavy-ci]'
+          commit-message: 'chore(release): version packages'
+          # v2 pushes through the GitHub API by default, which re-attributes the version commit
+          # to the token's owner. Keep the Git CLI push v1 used.
+          push-with-git-cli: true
+        env:
           # These must come from the resolved auth mode, NOT straight from secrets.NPM_TOKEN.
           # Reading the secret directly here would hand changesets a token even on an OIDC
           # run, defeating the whole auth-mode resolution above: npm would attempt token auth
@@ -388,46 +561,148 @@ jobs:
           # deliberately empty.
           NPM_TOKEN: ${{ env.PUBLISH_NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ env.PUBLISH_NODE_AUTH_TOKEN }}
+          # @changesets/changelog-github looks up each changeset's PR and author while
+          # `changeset version` writes the changelogs.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
           RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
           RELEASE_PACKAGES: ${{ github.event_name == 'workflow_dispatch' && inputs.release_packages || '' }}
+          RELEASE_PUBLISHED_MANIFEST: ${{ runner.temp }}/published.json
+          # The Git CLI commit and push would otherwise run lefthook's pre-commit and pre-push
+          # gates (a full test and build) again on the version commit this run already built.
+          LEFTHOOK: 0
+
+      # Publishing runs through release:publish:checked, so changesets/action never performs the
+      # publish and its `published`/`publishedPackages` outputs stay empty on every successful
+      # release. Gating on them silently skipped provenance verification, the GitHub release and
+      # the Slack notification for every publish this repo has ever made. The publish script now
+      # writes RELEASE_PUBLISHED_MANIFEST instead, and this step turns it into the outputs the
+      # steps below gate on.
+      # Runs whenever the publish step ran at all, a failure included: a partial publish is
+      # exactly when knowing which packages already reached npm decides the recovery.
+      - name: Read published manifest
+        id: published
+        if: always() && (steps.changesets.conclusion != 'skipped' || steps.snapshot_publish.conclusion != 'skipped')
+        shell: bash
+        env:
+          MANIFEST: ${{ runner.temp }}/published.json
+        run: |
+          set -euo pipefail
+
+          if [ ! -f "$MANIFEST" ]; then
+            # The action took its version-PR branch, so the publish script never ran.
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            echo "No published manifest at ${MANIFEST}; this run did not publish."
+            exit 0
+          fi
+
+          count="$(node -e 'const m=require(process.argv[1]); if(!Array.isArray(m)) throw new Error("manifest is not a JSON array"); console.log(m.length)' "$MANIFEST")"
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
+
+          if [ "${count}" = "0" ]; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "Publish script ran and published nothing."
+            exit 0
+          fi
+
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          # `names` is capped: a full release can run to 70+ packages, past Slack's per-field
+          # text limit, which would reject the whole payload.
+          node -e '
+            const m = require(process.argv[1]);
+            const labels = m.map((p) => `${p.name}@${p.version}`);
+            const shown = labels.slice(0, 10);
+            const rest = labels.length - shown.length;
+            console.log(`first_name=${m[0].name}`);
+            console.log(`first_version=${m[0].version}`);
+            console.log(`names=${shown.join(", ")}${rest > 0 ? `, and ${rest} more` : ""}`);
+          ' "$MANIFEST" >> "$GITHUB_OUTPUT"
+
+          echo "Published ${count} package(s):"
+          node -e 'for (const p of require(process.argv[1])) console.log(`  - ${p.name}@${p.version}`)' "$MANIFEST"
 
       # Attestations are the only external signal that a release actually went out via the
       # trusted publisher: the registry does not expose trusted-publisher configuration, so a
       # package silently falling back to token auth is otherwise invisible. Checks exactly the
-      # set changesets reported, since versioning here is independent. Advisory on token runs,
-      # where no provenance is expected.
+      # set the publish script reported, since versioning here is independent. Advisory on token
+      # runs, where no provenance is expected.
       - name: Verify provenance attestations
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         continue-on-error: ${{ steps.npm_auth.outputs.mode != 'oidc' }}
         shell: bash
-        env:
-          PUBLISHED_PACKAGES_JSON: ${{ steps.changesets.outputs.publishedPackages }}
-        run: |
-          set -euo pipefail
-          printf '%s' "$PUBLISHED_PACKAGES_JSON" > "$RUNNER_TEMP/published.json"
-          bun ./scripts/check-provenance.mjs --published-json "$RUNNER_TEMP/published.json"
+        run: bun ./scripts/check-provenance.mjs --published-json "${{ runner.temp }}/published.json"
 
+      # Named after the first published package, since versioning here is independent and there
+      # is no single repo-wide version to tag. Marked prerelease off the stable channel.
       - name: Create GitHub Release
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # changesets/action outputs `publishedPackages` as a JSON string; parse it before indexing.
-          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          release_name: Release v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          tag_name: ${{ steps.published.outputs.first_name }}@${{ steps.published.outputs.first_version }}
+          release_name: ${{ steps.published.outputs.first_name }}@${{ steps.published.outputs.first_version }}
           body: |
-            ## Changes
+            ## Published
 
-            ${{ steps.changesets.outputs.publishedPackages }}
+            ${{ steps.published.outputs.names }}
 
             See CHANGELOG.md files in each package for detailed changes.
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.release_channel.outputs.channel != 'stable' }}
+
+      # The release commit exists only on master: the Version Packages PR bumps the manifests,
+      # assembles the changelogs and deletes the changesets it consumed. Without it on develop,
+      # the next develop -> master merge conflicts on every one of those files and brings the
+      # consumed changesets back to be applied twice; and develop's snapshots keep counting from
+      # the old versions. Same mechanism as pie-players.
+      #
+      # A PR rather than a push: a back-merge can conflict on CHANGELOG.md, and resolving that is
+      # a human's job. continue-on-error so a release that published is not reported as failed
+      # over its bookkeeping; !cancelled() so an earlier advisory failure does not skip it.
+      - name: Open master -> develop back-merge PR
+        if: ${{ !cancelled() && github.ref_name == 'master' && steps.published.outputs.published == 'true' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASED: ${{ steps.published.outputs.names }}
+        run: |
+          set -euo pipefail
+          git fetch --quiet origin develop master
+
+          existing="$(gh pr list --base develop --head master --state open --json number --jq '.[].number' | head -1)"
+          if [ -n "$existing" ]; then
+            echo "PR #${existing} already back-merges master into develop; it carries this release too."
+            exit 0
+          fi
+
+          if [ "$(git rev-list --count origin/develop..origin/master)" = "0" ]; then
+            echo "develop already contains master; nothing to back-merge."
+            exit 0
+          fi
+
+          body_file="$(mktemp)"
+          cat > "$body_file" <<EOF
+          Returns the stable release commit to \`develop\`: bumped manifests, assembled
+          \`CHANGELOG.md\` files, and the deletion of the changesets this release consumed.
+
+          Released: ${RELEASED}
+
+          Opened automatically after the publish succeeded. Merge it before the next
+          \`develop\` -> \`master\` merge, which otherwise conflicts on those files and re-applies
+          the consumed changesets. \`develop\` writes no versions or changelogs of its own, so this
+          normally merges cleanly; on a conflict in a manifest or \`CHANGELOG.md\`, take master's side.
+          EOF
+
+          gh pr create \
+            --base develop \
+            --head master \
+            --title "chore(release): back-merge master into develop" \
+            --body-file "$body_file"
 
       - name: Notify Slack on Successful Publish
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.published.outputs.published == 'true'
         continue-on-error: true
         uses: slackapi/slack-github-action@v1.27.0
         with:
@@ -451,11 +726,11 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version:*\nv${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}"
+                      "text": "*Published:*\n${{ steps.published.outputs.count }} package(s)"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Package:*\n${{ fromJson(steps.changesets.outputs.publishedPackages)[0].name }}"
+                      "text": "*Packages:*\n${{ steps.published.outputs.names }}"
                     },
                     {
                       "type": "mrkdwn",
@@ -487,7 +762,7 @@ jobs:
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Notify Slack on Release PR Created/Updated
-        if: steps.changesets.outputs.hasChangesets == 'true' && steps.changesets.outputs.published != 'true'
+        if: steps.changesets.outputs.has-changesets == 'true' && steps.published.outputs.published != 'true'
         continue-on-error: true
         uses: slackapi/slack-github-action@v1.27.0
         with:
@@ -519,7 +794,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Release PR:*\n${{ steps.changesets.outputs.pullRequestUrl || 'Created/updated by changesets action' }}"
+                      "text": "*Release PR:*\n${{ steps.changesets.outputs.pr-number && format('<{0}/{1}/pull/{2}|#{2}>', github.server_url, github.repository, steps.changesets.outputs.pr-number) || 'Created/updated by changesets action' }}"
                     }
                   ]
                 }
@@ -528,6 +803,41 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_PR_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      # A merged change must never reach `next` unpublished and unflagged. Everything this run
+      # selected and the publish script did not report as published was dropped, and is named
+      # here rather than left to be noticed months later. Read from the publish manifest rather
+      # than re-asking npm, whose replicas can lag a fresh publish. The next run selects a dropped
+      # package again on its own, since npm still points at its older commit.
+      #
+      # Only fails a run that would otherwise be green, which is the silent case. A run that has
+      # already failed is red for the underlying reason; this step's job there is the list.
+      - name: Report dropped releases (develop)
+        if: always() && steps.gate.outputs.snapshot_release == 'true'
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+          JOB_STATUS: ${{ job.status }}
+          INTENT: ${{ runner.temp }}/release-intent.json
+          PUBLISHED: ${{ runner.temp }}/published.json
+          REMAINING: ${{ runner.temp }}/release-remaining.json
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("fs");
+            const [intentPath, publishedPath, remainingPath] = process.argv.slice(1);
+            const intent = JSON.parse(fs.readFileSync(intentPath, "utf8"));
+            const published = fs.existsSync(publishedPath)
+              ? new Set(JSON.parse(fs.readFileSync(publishedPath, "utf8")).map((p) => p.name))
+              : new Set();
+            const remaining = intent.filter((name) => !published.has(name));
+            fs.writeFileSync(remainingPath, JSON.stringify(remaining, null, 2) + "\n");
+          ' "${INTENT}" "${PUBLISHED}" "${REMAINING}"
+          node scripts/release-report-dropped.mjs \
+            --intent "${INTENT}" \
+            --remaining "${REMAINING}" \
+            --branch "${BRANCH}" \
+            --job-status "${JOB_STATUS}"
 
       - name: Notify Slack on Release Failure
         if: failure()

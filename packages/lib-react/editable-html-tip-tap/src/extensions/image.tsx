@@ -13,7 +13,8 @@ import { ReactNodeViewRenderer } from '@tiptap/react';
 import { Plugin } from '@tiptap/pm/state';
 import React from 'react';
 import ImageComponent from './image-component.js';
-import { node } from 'prop-types';
+import InsertImageHandler from '../components/image/InsertImageHandler.js';
+import { findImageNodeByKey, newImageNodeKey } from '../components/image/findImageNode.js';
 
 export const ImageUploadNode = Node.create({
   name: 'imageUploadNode',
@@ -60,8 +61,8 @@ export const ImageUploadNode = Node.create({
         ({ commands }) => {
           return commands.insertContent({
             type: this.name,
-              // adding a unique nodeKey attribute to help identify this node instance later due to issues with multiple images
-              attrs: { nodeKey: `img-${Date.now()}-${Math.random().toString(36).slice(2)}` },
+            // adding a unique nodeKey attribute to help identify this node instance later due to issues with multiple images
+            attrs: { nodeKey: newImageNodeKey() },
           });
         },
     };
@@ -69,6 +70,7 @@ export const ImageUploadNode = Node.create({
 
   addProseMirrorPlugins() {
     const editor = this.editor;
+    const options = this.options;
 
     return [
       new Plugin({
@@ -88,7 +90,9 @@ export const ImageUploadNode = Node.create({
               return false;
             }
 
-            // Example 1: insert as base64 immediately
+            const insertImageRequested = options?.imageHandling?.insertImageRequested;
+            const nodeKey = newImageNodeKey();
+
             const reader = new FileReader();
 
             reader.onload = () => {
@@ -102,9 +106,41 @@ export const ImageUploadNode = Node.create({
                 type: 'imageUploadNode',
                 attrs: {
                   src,
-                  loaded: true,
-                  nodeKey: `img-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                  loaded: !insertImageRequested,
+                  nodeKey,
                 },
+              });
+
+              // No upload host - the data URL is the only src available.
+              if (!insertImageRequested) {
+                return;
+              }
+
+              const nodeInfo = findImageNodeByKey(editor, nodeKey);
+
+              if (!nodeInfo) {
+                return;
+              }
+
+              // Same path as the toolbar button, so the markup stores the uploaded URL, not base64.
+              insertImageRequested(editor, nodeInfo, (onFinish) => {
+                let handler;
+
+                const finish = (result) => {
+                  // Upload failed - show the data URL rather than leave the node behind a progress bar.
+                  if (!result) {
+                    handler?.updateNode({ loaded: true });
+                  }
+
+                  onFinish(result);
+                };
+
+                handler = new InsertImageHandler(editor, nodeInfo, finish, true);
+
+                // Sets getChosenFile(), which is how a host spots a pasted file and skips the picker.
+                handler.fileChosen(file);
+
+                return handler;
               });
             };
 

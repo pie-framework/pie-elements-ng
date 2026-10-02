@@ -10,10 +10,26 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ModelSetEvent, SessionChangedEvent } from '@pie-element/shared-player-events';
+import {
+  ModelSetEvent,
+  SessionChangedEvent,
+  createSessionNotifier,
+  flushSessionNotifiers,
+} from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 import Main from './main.js';
+
+const SESSION_NOTIFY_DELAY_MS = 200;
+
+// Every blank capped at one character means each keystroke is a whole response,
+// so there is nothing to coalesce and the dispatch goes out on the next tick.
+function notifyDelayForModel(model) {
+  const lengths = model && model.maxLengthPerChoice;
+  const singleCharacterBlanks =
+    Array.isArray(lengths) && lengths.length > 0 && lengths.every((length) => length === 1);
+  return singleCharacterBlanks ? 0 : SESSION_NOTIFY_DELAY_MS;
+}
 
 export default class InlineDropdown extends HTMLElement {
   constructor() {
@@ -21,6 +37,19 @@ export default class InlineDropdown extends HTMLElement {
     this._model = null;
     this._session = null;
     this._root = null;
+
+    // The session is written synchronously on commit; the dispatch and the
+    // re-render are what get coalesced, which keeps the render cadence the
+    // value-path debounce used to set while leaving `.session` readable at any
+    // point. `disconnectedCallback` flushes what is still pending.
+    this._sessionNotifier = createSessionNotifier(
+      this,
+      () => {
+        this.dispatchChangedEvent();
+        this._render();
+      },
+      { delayMs: () => notifyDelayForModel(this._model), maxWaitMs: SESSION_NOTIFY_DELAY_MS },
+    );
   }
 
   setLangAttribute() {
@@ -88,8 +117,7 @@ export default class InlineDropdown extends HTMLElement {
 
   changeSession: any = (value) => {
     this.session.value = value;
-    this.dispatchChangedEvent();
-    this._render();
+    this._sessionNotifier.notify();
   };
 
   connectedCallback() {
@@ -100,6 +128,8 @@ export default class InlineDropdown extends HTMLElement {
   }
 
   disconnectedCallback() {
+    flushSessionNotifiers(this);
+
     if (this._root) {
       this._root.unmount();
       this._root = null;

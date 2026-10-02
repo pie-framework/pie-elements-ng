@@ -1,0 +1,48 @@
+{
+  "demos": [
+    {
+      "id": "accessible-lab-safety",
+      "title": "Accessible lab safety video",
+      "description": "Video stimulus with a poster, English captions, a plain-text transcript, and resolved accessibility declarations.",
+      "tags": ["video", "stimulus", "captions", "transcript", "accessibility"],
+      "model": {
+        "id": "video-stimulus-1",
+        "element": "video-stimulus",
+        "media": {
+          "version": 1,
+          "id": "lab-safety-demonstration",
+          "kind": "video",
+          "sources": [
+            {
+              "src": "/video-stimulus/sample.webm",
+              "type": "video/webm"
+            }
+          ],
+          "poster": "/video-stimulus/poster.svg",
+          "tracks": [
+            {
+              "src": "/video-stimulus/captions-en.vtt",
+              "kind": "captions",
+              "lang": "en",
+              "label": "English",
+              "default": true
+            }
+          ],
+          "transcript": {
+            "plainText": "Step one. Put on safety goggles before handling laboratory materials. Step two. Use heat-resistant gloves when touching a heated container. Step three. Place the container on a heat-safe surface, away from paper.",
+            "lang": "en"
+          },
+          "label": "Lab safety demonstration",
+          "description": "Watch how the student prepares to handle a heated container safely.",
+          "lang": "en"
+        },
+        "language": "en",
+        "accessibilityProfile": {
+          "audioContent": "meaningful",
+          "captionSupport": "track",
+          "visualSupport": "described"
+        }
+      }
+    }
+  ]
+}

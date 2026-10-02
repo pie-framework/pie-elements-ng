@@ -55,6 +55,9 @@ export default defineConfig(({ mode, command }) => {
           id === '@mdi/react' || /^@mdi\/react\//.test(id) ||
           id === '@mdi/js' || /^@mdi\/js\//.test(id) ||
           id === 'recharts' || /^recharts\//.test(id) ||
+          /^@hello-pangea\//.test(id) ||
+          /^react-redux($|\/)/.test(id) ||
+          /^use-sync-external-store($|\/)/.test(id) ||
           ['prop-types','debug','i18next','humps','mathjs','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
         );
       },
