@@ -11,7 +11,7 @@ const hasImageFile = (data: DataTransfer) =>
  * as HTML, a paste from Word keeps its alignment, its `<span>` wrappers and, wherever it styles
  * text with CSS alone, its bold and italics (PIE-1145).
  *
- * Mirrors `packages/lib-react/editable-html-tip-tap/src/extensions/plain-text-paste.ts`.
+ * Mirrors `packages/lib-react/editable-html-tip-tap/src/plain-text-paste.ts`.
  */
 export const PlainTextPaste = Extension.create({
   name: 'plainTextPaste',

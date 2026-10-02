@@ -1,0 +1,7 @@
+---
+"@pie-lib/editable-html-tip-tap": patch
+"@pie-element/simple-cloze": patch
+"@pie-element/venn-classification": patch
+---
+
+Rich text pasted from outside a PIE editor, such as from Word or Google Docs, arrives as plain text, as it did in the Slate editor: its fonts, colours, alignment, bold, italics, lists and tables are dropped. Content copied from a PIE editor keeps its formatting, math and response areas (PIE-1145).

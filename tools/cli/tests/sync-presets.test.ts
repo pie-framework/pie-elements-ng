@@ -22,6 +22,7 @@ describe('sync preset registry', () => {
 
   it('resolves preserve entries for local-only files', () => {
     expect(getPieLibSourcePreserveList('render-ui')).toEqual(['inline-menu.tsx']);
+    expect(getPieLibSourcePreserveList('editable-html-tip-tap')).toEqual(['plain-text-paste.ts']);
     expect(getPieLibSourcePreserveList('graphing')).toEqual([]);
   });
 
@@ -90,6 +91,25 @@ describe('sync preset registry', () => {
       committed
     );
     for (const { from } of patch.replacements) expect(synced).toContain(from);
+    expect(
+      patch.replacements.reduce((content, { from, to }) => content.replace(from, to), synced)
+    ).toBe(committed);
+    for (const { from } of patch.replacements) expect(committed).not.toContain(from);
+  });
+
+  it('reproduces the committed tip-tap plain-text paste registration from the upstream source, once', () => {
+    const patch = getPostSyncTextPatches(process.cwd()).find(
+      (p) => p.id === PRESET_IDS.editableHtmlPlainTextPaste
+    );
+    if (!patch) throw new Error(`no post-sync patch ${PRESET_IDS.editableHtmlPlainTextPaste}`);
+    const committed = readFileSync(patch.file, 'utf-8');
+
+    // Upstream has no plain-text paste extension, so sync restores each `from`.
+    const synced = patch.replacements.reduce(
+      (content, { from, to }) => content.replace(to, from),
+      committed
+    );
+    expect(synced).not.toContain('PlainTextPaste');
     expect(
       patch.replacements.reduce((content, { from, to }) => content.replace(from, to), synced)
     ).toBe(committed);

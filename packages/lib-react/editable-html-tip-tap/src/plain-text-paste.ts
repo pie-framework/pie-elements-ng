@@ -9,7 +9,9 @@ const hasImageFile = (data: DataTransfer) =>
  * as HTML, a paste from Word keeps its fonts, sizes, colours, alignment and class names through
  * TextStyleKit, TextAlign and CSSMark (PIE-1145).
  *
- * Mirrored in `packages/lib-svelte/editable-html-tiptap-svelte/src/plain-text-paste.ts`.
+ * Mirrored in `packages/lib-svelte/editable-html-tiptap-svelte/src/plain-text-paste.ts`. Upstream
+ * pie-lib has no such file, so upstream sync preserves this one and re-registers it in
+ * `EditableHtml.tsx` (`preserve.editable-html-tip-tap.plain-text-paste`).
  */
 export const PlainTextPaste = Extension.create({
   name: 'plainTextPaste',

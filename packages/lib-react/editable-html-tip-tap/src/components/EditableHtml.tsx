@@ -20,6 +20,7 @@ import SubScript from '@tiptap/extension-subscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import { PlainTextPaste } from '../plain-text-paste.js';
 import { normalizeInitialMarkup } from '../utils/helper.js';
 
 import ExtendedTable from '../extensions/extended-table.js';
@@ -38,7 +39,6 @@ import {
 import { MathNode } from '../extensions/math.js';
 import { ImageUploadNode } from '../extensions/image.js';
 import { Media } from '../extensions/media.js';
-import { PlainTextPaste } from '../extensions/plain-text-paste.js';
 import { CSSMark } from '../extensions/css.js';
 import { ExtendedListItem } from '../extensions/extended-list-item.js';
 import { HeadingParagraph } from '../extensions/heading-paragraph.js';
