@@ -8,6 +8,7 @@ import {
   collectUnreleasedFiles,
   fetchPublishedGitHeads,
   isOwnSnapshotVersion,
+  planDependencyPins,
   planSynthesizedChangeset,
   raiseToPendingBumps,
   readPendingBumps,
@@ -211,6 +212,51 @@ describe('snapshot bumps', () => {
         ]),
       })
     ).toBeNull();
+  });
+});
+
+// The publish script turns `workspace:*` into the working-tree version. Develop's committed
+// versions no longer move, so without pins a snapshot would depend on frozen or never-published
+// versions of the packages it does not version.
+describe('dependency pins', () => {
+  const PACKAGES = [
+    { name: '@pie-lib/render-ui', version: '8.0.0-next.0' },
+    { name: '@pie-lib/config-ui', version: '14.0.0-next.50' },
+    { name: '@pie-element/multiple-choice', version: '14.0.0-next.20261002085341' },
+    { name: '@pie-element/brand-new', version: '0.1.0' },
+    { name: '@pie-element/hotspot', version: '11.2.0-next.34' },
+  ];
+
+  it('pins each package outside the snapshot to its own latest next release', () => {
+    const pins = planDependencyPins({
+      packages: PACKAGES,
+      bumped: new Set(['@pie-element/multiple-choice']),
+      releases: new Map([
+        ['@pie-lib/render-ui', { version: '8.0.0-next.20261002090000', gitHead: 'a', own: true }],
+        ['@pie-lib/config-ui', { version: '14.0.0-next.20261002090000', gitHead: 'b', own: true }],
+        ['@pie-element/multiple-choice', { version: '13.4.0-next.30', gitHead: 'c', own: true }],
+        ['@pie-element/brand-new', null],
+        // The tag points at a legacy build and this repo has no snapshot of hotspot yet.
+        ['@pie-element/hotspot', { version: '11.3.5-next.0', gitHead: 'legacy', own: false }],
+      ]),
+    });
+
+    expect(Object.fromEntries(pins)).toEqual({
+      '@pie-lib/render-ui': '8.0.0-next.20261002090000',
+      '@pie-lib/config-ui': '14.0.0-next.20261002090000',
+    });
+  });
+
+  it('leaves a package alone when its committed version is what next holds', () => {
+    const pins = planDependencyPins({
+      packages: [{ name: '@pie-lib/config-ui', version: '14.0.0-next.50' }],
+      bumped: new Set(),
+      releases: new Map([
+        ['@pie-lib/config-ui', { version: '14.0.0-next.50', gitHead: 'b', own: true }],
+      ]),
+    });
+
+    expect(pins.size).toBe(0);
   });
 });
 

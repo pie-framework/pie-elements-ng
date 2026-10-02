@@ -348,39 +348,79 @@ async function newestOwnSnapshot(fetchImpl, name, distTag) {
 // own old `-next.N` line, before a package's first snapshot, and the packument (megabytes for the
 // long-lived elements) would only confirm it. Without it, the tag's `gitHead` is still returned
 // when no snapshot exists, and `resolveReleaseBase` uses it only if it is on the measured history.
-export async function fetchPublishedGitHeads(
+export async function fetchPublishedGitHeads(packages, distTag, options) {
+  const published = await fetchPublishedReleases(packages, distTag, options);
+  return new Map([...published].map(([name, release]) => [name, release?.gitHead ?? null]));
+}
+
+// Per package, the release `fetchPublishedGitHeads` measures from: `{ version, gitHead, own }`,
+// or null when there is none to read. `own` is false only when the tag points at another
+// lineage's build and this repo has published no snapshot of the package, so its `gitHead` is
+// returned only for `resolveReleaseBase` to discard, and its `version` must never be depended on.
+export async function fetchPublishedReleases(
   packages,
   distTag,
   { fetchImpl = fetch, isKnownCommit = () => false } = {}
 ) {
-  const gitHeads = new Map();
+  const releases = new Map();
   const queue = [...packages];
-  const gitHeadOf = (manifest) => (typeof manifest?.gitHead === 'string' ? manifest.gitHead : null);
+  const releaseOf = (manifest, own) =>
+    manifest
+      ? {
+          version: manifest.version ?? null,
+          gitHead: typeof manifest.gitHead === 'string' ? manifest.gitHead : null,
+          own,
+        }
+      : null;
   const worker = async () => {
     for (let pkg = queue.shift(); pkg; pkg = queue.shift()) {
       try {
         const tagged = await fetchJson(fetchImpl, registryUrl(pkg.name, distTag));
-        const taggedHead = gitHeadOf(tagged);
+        const taggedHead = typeof tagged?.gitHead === 'string' ? tagged.gitHead : null;
         if (
           !tagged ||
           isOwnSnapshotVersion(tagged.version ?? '', distTag) ||
           (taggedHead && isKnownCommit(taggedHead))
         ) {
-          gitHeads.set(pkg.name, taggedHead);
+          releases.set(pkg.name, releaseOf(tagged, true));
           continue;
         }
         const own = await newestOwnSnapshot(fetchImpl, pkg.name, distTag);
-        gitHeads.set(pkg.name, gitHeadOf(own ?? tagged));
+        releases.set(pkg.name, own ? releaseOf(own, true) : releaseOf(tagged, false));
       } catch (error) {
         console.error(
           `[release] Could not read ${pkg.name}@${distTag} from npm (${error.message}); measuring it from its last version bump.`
         );
-        gitHeads.set(pkg.name, null);
+        releases.set(pkg.name, null);
       }
     }
   };
   await Promise.all(Array.from({ length: 8 }, worker));
-  return gitHeads;
+  return releases;
+}
+
+// The version each package outside the snapshot should be depended on at: its own latest `next`
+// release, where that differs from the version committed on develop.
+//
+// The publish script resolves `workspace:*` to the version in the working tree. Snapshots commit
+// no version, so develop's committed versions stay where the last stable release or the old
+// `-next.N` line left them: a snapshot of multiple-choice would depend on `config-ui@14.0.0-next.50`
+// although `next` holds newer config-ui code, or on render-ui's hand-set `8.0.0-next.0`, which is
+// never published. Pinning each package the snapshot does not version to the `next` release it
+// was last published as keeps dependents on the code that package actually has: it is unselected
+// precisely because nothing changed since that release.
+//
+// A package with no own release on `next` keeps its committed version; the publish script then
+// fails loudly if that version was never published, rather than shipping a dangling dependency.
+export function planDependencyPins({ packages, bumped, releases }) {
+  const pins = new Map();
+  for (const { name, version } of packages) {
+    if (bumped.has(name)) continue;
+    const release = releases.get(name);
+    if (!release?.own || !release.version || release.version === version) continue;
+    pins.set(name, release.version);
+  }
+  return pins;
 }
 
 export function gitSubject(rootDir, ref) {

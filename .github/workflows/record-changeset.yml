@@ -54,8 +54,9 @@ jobs:
           fi
           head="$(jq -r '.head' <<< "$pr")"
           title="$(jq -r '.title' <<< "$pr")"
-          # The back-merge PR carries master's release commit, not new work.
-          if [ "$head" = "master" ] || [[ "$title" == "chore(release)"* ]]; then
+          # The back-merge PR carries master's release commit, not new work. Matched by branch
+          # only: a PR titled chore(release) can still change shipping code.
+          if [ "$head" = "master" ]; then
             echo "PR from ${head} (${title}) is release bookkeeping; nothing to record."
             echo "found=false" >> "$GITHUB_OUTPUT"
             exit 0

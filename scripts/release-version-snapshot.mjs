@@ -24,16 +24,19 @@
 
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { detectPendingChangesets } from './release-detect-intent.mjs';
 import {
   changesetFileName,
   collectPublishablePackages,
   collectUnreleasedFiles,
   fetchPublishedGitHeads,
+  fetchPublishedReleases,
   gitSubject,
   isAncestor,
+  planDependencyPins,
   planSynthesizedChangeset,
   raiseToPendingBumps,
   readPendingBumps,
@@ -75,19 +78,34 @@ function disableChangelog(rootDir) {
   writeFileSync(configPath, `${JSON.stringify({ ...config, changelog: false }, null, 2)}\n`);
 }
 
+// Changesets' own planning modules, loaded from where @changesets/cli resolves them, so the plan
+// is assembled by exactly the code `changeset version` runs.
+async function loadChangesetsPlanner() {
+  const cliRequire = createRequire(
+    createRequire(import.meta.url).resolve('@changesets/cli/package.json')
+  );
+  const load = (name) => import(pathToFileURL(cliRequire.resolve(name)).href);
+  const [{ assembleReleasePlan }, { readChangesets }, { readConfig }, { readPreState }, manypkg] =
+    await Promise.all([
+      load('@changesets/assemble-release-plan'),
+      load('@changesets/read'),
+      load('@changesets/config'),
+      load('@changesets/pre'),
+      load('@manypkg/get-packages'),
+    ]);
+  return { assembleReleasePlan, readChangesets, readConfig, readPreState, ...manypkg };
+}
+
 // The releases changesets would make from the changesets now in `.changeset/`, dependents
-// included. Its stdout is changesets' banner, which must stay off this script's stdout.
-function releasePlan(rootDir, scratchDir) {
-  mkdirSync(scratchDir, { recursive: true });
-  const output = join(scratchDir, 'release-plan.json');
-  const status = spawnSync('bunx', ['changeset', 'status', `--output=${output}`], {
-    cwd: rootDir,
-    stdio: ['ignore', process.stderr, process.stderr],
-  });
-  if (status.status !== 0) {
-    throw new Error(`changeset status exited with ${status.status}`);
-  }
-  return JSON.parse(readFileSync(output, 'utf8')).releases ?? [];
+// included: what `changeset status --output` reports, without its check against the base
+// branch, which needs a local `master` the release checkout of develop does not have.
+async function releasePlan(rootDir, planner) {
+  const packages = await planner.getPackages(rootDir);
+  const { config, errors } = await planner.readConfig(packages.rootDir, packages);
+  if (errors?.length) throw new Error(`.changeset/config.json is invalid: ${errors.join('; ')}`);
+  const preState = await planner.readPreState(packages.rootDir);
+  const changesets = await planner.readChangesets(packages.rootDir);
+  return planner.assembleReleasePlan(changesets, packages, config, preState).releases;
 }
 
 async function selectPackages(rootDir, tag, all) {
@@ -174,11 +192,12 @@ async function main() {
   // Dependents changesets adds to the release take its own bump for them, not their pending one.
   // Name each such dependent at its pending bump, and repeat while that changes the plan: a raised
   // package can pull in dependents of its own. Bumps only grow, so this settles quickly.
+  const planner = await loadChangesetsPlanner();
   let packageBumps = bumps;
   writeSnapshotChangeset(packageBumps);
   for (let round = 0; round < 10; round += 1) {
     const raised = raiseToPendingBumps({
-      releases: releasePlan(rootDir, args.stashDir),
+      releases: await releasePlan(rootDir, planner),
       pendingBumps,
       bumps: packageBumps,
     });
@@ -205,13 +224,55 @@ async function main() {
     throw new Error(`changeset version --snapshot ${args.tag} exited with ${version.status}`);
   }
 
+  // Everything changesets versioned: the selection plus its dependents. The workflow publishes
+  // exactly this list, because the pins below change other manifests too.
+  const packages = collectPublishablePackages(rootDir).map((pkg) => ({
+    ...pkg,
+    version: readManifest(rootDir, pkg.dir).version,
+  }));
+  const bumped = new Set(
+    packages.filter((pkg) => pkg.version !== committedVersion(rootDir, pkg.dir)).map((p) => p.name)
+  );
+
+  const releases = await fetchPublishedReleases(packages, args.tag, {
+    isKnownCommit: (sha) => isAncestor(rootDir, sha, 'HEAD'),
+  });
+  const pins = planDependencyPins({ packages, bumped, releases });
+  for (const pkg of packages) {
+    if (!pins.has(pkg.name)) continue;
+    const manifest = readManifest(rootDir, pkg.dir);
+    writeFileSync(
+      join(rootDir, pkg.dir, 'package.json'),
+      `${JSON.stringify({ ...manifest, version: pins.get(pkg.name) }, null, 2)}\n`
+    );
+  }
+  if (pins.size > 0) {
+    console.error(
+      `[release] Dependencies outside the snapshot pinned to their ${args.tag} release: ${[...pins]
+        .map(([name, version]) => `${name}@${version}`)
+        .join(', ')}`
+    );
+  }
+
+  // After the pins, so elements declare the editor runtime version that is actually published.
   const { runtime, updated } = syncEditorRuntimeVersion({ root: rootDir });
   if (updated.length > 0) {
     console.error(`[release] ${updated.length} package(s) now declare ${runtime}.`);
   }
 
   console.log('snapshot=true');
-  console.log(`snapshot_packages=${selected.join(',')}`);
+  console.log(`snapshot_packages=${[...bumped].sort().join(',')}`);
+}
+
+const readManifest = (rootDir, dir) =>
+  JSON.parse(readFileSync(join(rootDir, dir, 'package.json'), 'utf8'));
+
+function committedVersion(rootDir, dir) {
+  const result = spawnSync('git', ['show', `HEAD:${dir}/package.json`], {
+    cwd: rootDir,
+    encoding: 'utf8',
+  });
+  return result.status === 0 ? JSON.parse(result.stdout).version : undefined;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
