@@ -281,6 +281,22 @@ bun run check          # Svelte component validation
 - Focus management and keyboard navigation
 - Screen reader support verified
 
+### Host Accessibility Settings
+
+Elements, and the modules they run such as the MathJax adapter, follow pie-players
+[ADR 0003](https://github.com/pie-framework/pie-players/blob/develop/docs/adr/0003-elements-read-accessibility-settings-from-a-host-neutral-context.md):
+
+- No element imports `@pie-players/pie-assessment-toolkit`. The toolkit is one host among
+  several; an element that needs host settings requests them.
+- Accessibility settings that change rendering come from the `Symbol.for("pie.accessibility")`
+  context, requested through the `context-request` protocol with `subscribe: true`. Settings that
+  change the model arrive through `env`.
+- An unanswered request means the host provides no accessibility context: use the element's
+  defaults and never wait for a provider.
+- Map a fixed support id to a fixed behaviour, and ignore ids you do not recognize. The mapping
+  from a profile to ids belongs to the host, because items pin element versions and a rule inside
+  an element is frozen into each of them.
+
 ### Accessibility Scenario Suite
 
 When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-demo/test/a11y/**`, `apps/element-a11y-demo/src/lib/samples/**`, or `docs/a11y/**`:
