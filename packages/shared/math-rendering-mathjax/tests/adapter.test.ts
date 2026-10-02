@@ -54,7 +54,7 @@ function interceptScripts(): HTMLScriptElement[] {
  */
 function runMathjaxScript(
   typesetPromise = vi.fn<TypesetPromise>(async () => {}),
-  { version = '4.1.3', chtmlStyles = null as HTMLStyleElement | null } = {}
+  { version = '4.1.3', chtmlStyles = null as HTMLStyleElement | null, svg = false } = {}
 ) {
   const config = page.MathJax ?? {};
   let finishStartup!: () => void;
@@ -62,6 +62,7 @@ function runMathjaxScript(
     finishStartup = resolve;
   });
   const CHTML = { STYLESHEETID: 'MJX-CHTML-styles' };
+  const SVG = { STYLESHEETID: 'MJX-SVG-styles' };
   const Menu = { MENU_STORAGE: 'MathJax-Menu-Settings' };
   const mathDocument = {
     math: mathList(),
@@ -71,11 +72,15 @@ function runMathjaxScript(
   const mathJax: any = {
     version,
     config,
-    _: { output: { chtml_ts: { CHTML } }, ui: { menu: { Menu: { Menu } } } },
+    _: {
+      output: { chtml_ts: { CHTML }, ...(svg && { svg_ts: { SVG } }) },
+      ui: { menu: { Menu: { Menu } } },
+    },
     startup: {
       promise,
       defaultReady: vi.fn(() => {
         mathJax.stylesheetIdAtStartup = CHTML.STYLESHEETID;
+        mathJax.svgStylesheetIdAtStartup = SVG.STYLESHEETID;
         // The menu, created with the document, reads the settings stored under its key.
         mathJax.menuSettingsAtStartup = localStorage.getItem(Menu.MENU_STORAGE);
         mathJax.typesetPromise = typesetPromise;
@@ -90,7 +95,7 @@ function runMathjaxScript(
   } else {
     mathJax.startup.defaultReady();
   }
-  return { mathJax, typesetPromise, finishStartup, CHTML, Menu, mathDocument };
+  return { mathJax, typesetPromise, finishStartup, CHTML, SVG, Menu, mathDocument };
 }
 
 /** Output as MathJax 4 produces it: every node records its TeX source. */
@@ -531,6 +536,51 @@ describe('createMathjaxRenderer', () => {
     expect(target.querySelectorAll('[data-latex], [data-latex-item]')).toHaveLength(0);
   });
 
+  it('gives SVG output the MathJax 4 it loads later its own stylesheet id', async () => {
+    interceptScripts();
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+    const { mathJax, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+    const SVG = { STYLESHEETID: 'MJX-SVG-styles' };
+    mathJax._.output.svg_ts = { SVG };
+
+    expect(mathJax.config.loader['output/svg'].ready('output/svg')).toBe('output/svg');
+    expect(SVG.STYLESHEETID).toBe('PIE-MJX-SVG-styles');
+  });
+
+  it("gives a MathJax 4 SVG build's output its own stylesheet id before startup", async () => {
+    interceptScripts();
+
+    const rendering = createMathjaxRenderer({ srcUrl: 'https://example.test/tex-svg.js' })(
+      elementWith('\\(x\\)')
+    );
+    const { mathJax, SVG, finishStartup } = runMathjaxScript(undefined, { svg: true });
+    finishStartup();
+    await rendering;
+
+    expect(mathJax.svgStylesheetIdAtStartup).toBe('PIE-MJX-SVG-styles');
+    expect(SVG.STYLESHEETID).toBe('PIE-MJX-SVG-styles');
+  });
+
+  it('leaves the SVG stylesheet id of a srcUrl build that is not MathJax 4', async () => {
+    interceptScripts();
+
+    const rendering = createMathjaxRenderer({ srcUrl: 'https://example.test/tex-svg.js' })(
+      elementWith('\\(x\\)')
+    );
+    const { mathJax, SVG, finishStartup } = runMathjaxScript(undefined, {
+      version: '3.2.2',
+      svg: true,
+    });
+    finishStartup();
+    await rendering;
+    mathJax.config.loader['output/svg'].ready('output/svg');
+
+    expect(SVG.STYLESHEETID).toBe('MJX-SVG-styles');
+  });
+
   it('gives the MathJax 4 it loads its own menu settings key before startup', async () => {
     interceptScripts();
     localStorage.setItem('MathJax-Menu-Settings', '{"assistiveMml":false}');
@@ -687,28 +737,31 @@ describe('createMathjaxRenderer', () => {
     ]);
   });
 
-  it("reports another MathJax's output stylesheet in the head", async () => {
-    interceptScripts();
-    const events = conflictEvents();
-    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
-    runMathjaxScript().finishStartup();
-    await rendering;
+  it.each(['MJX-CHTML-styles', 'MJX-SVG-styles'])(
+    "reports another MathJax's output stylesheet %s in the head",
+    async (id) => {
+      interceptScripts();
+      const events = conflictEvents();
+      const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+      runMathjaxScript().finishStartup();
+      await rendering;
 
-    const ownMenuStyles = document.createElement('style');
-    ownMenuStyles.id = 'MJX-Menu-styles';
-    document.head.prepend(ownMenuStyles);
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(console.error).not.toHaveBeenCalled();
+      const ownMenuStyles = document.createElement('style');
+      ownMenuStyles.id = 'MJX-Menu-styles';
+      document.head.prepend(ownMenuStyles);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(console.error).not.toHaveBeenCalled();
 
-    const foreign = document.createElement('style');
-    foreign.id = 'MJX-CHTML-styles';
-    document.head.prepend(foreign);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+      const foreign = document.createElement('style');
+      foreign.id = id;
+      document.head.prepend(foreign);
+      await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(console.error).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(console.error).mock.calls[0][0]).toContain('foreign-output-stylesheet');
-    expect(events.map((event) => event.detail.condition)).toEqual(['foreign-output-stylesheet']);
-  });
+      expect(console.error).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(console.error).mock.calls[0][0]).toContain('foreign-output-stylesheet');
+      expect(events.map((event) => event.detail.condition)).toEqual(['foreign-output-stylesheet']);
+    }
+  );
 
   it('rejects when the MathJax script fails to load', async () => {
     const scripts = interceptScripts();

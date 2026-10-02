@@ -28,7 +28,11 @@ interface MathDocument {
  */
 interface MathJaxGlobal {
   version?: string;
-  loader?: { load?: string[]; failed?: (error: Error) => void };
+  loader?: {
+    load?: string[];
+    failed?: (error: Error) => void;
+    'output/svg'?: { ready?: (name: string) => string };
+  };
   startup?: {
     typeset?: boolean;
     ready?: () => void;
@@ -51,7 +55,10 @@ interface MathJaxGlobal {
   typesetClear?: (elements?: Element[]) => void;
   /** The component build's module tree. */
   _?: {
-    output?: { chtml_ts?: { CHTML?: { STYLESHEETID?: string } } };
+    output?: {
+      chtml_ts?: { CHTML?: { STYLESHEETID?: string } };
+      svg_ts?: { SVG?: { STYLESHEETID?: string } };
+    };
     ui?: { menu?: { Menu?: { Menu?: { MENU_STORAGE?: string } } } };
   };
 }
@@ -98,11 +105,13 @@ type LoadingRegistry = { [MATHJAX_LOADING]?: Promise<void> };
 
 /**
  * MathJax 3 and 4 both replace any `<style id="MJX-CHTML-styles">` in `<head>` with their own, so
- * whichever engine renders second deletes the other's styles. The MathJax this adapter loads uses
- * its own id instead.
+ * whichever engine renders second deletes the other's styles; the same holds for SVG output's
+ * `MJX-SVG-styles`. The MathJax this adapter loads uses its own ids instead.
  */
 const OWN_STYLESHEET_ID = 'PIE-MJX-CHTML-styles';
 const SHARED_STYLESHEET_ID = 'MJX-CHTML-styles';
+const OWN_SVG_STYLESHEET_ID = 'PIE-MJX-SVG-styles';
+const SHARED_SVG_STYLESHEET_ID = 'MJX-SVG-styles';
 
 /**
  * MathJax 3 and 4 both save a student's menu settings under `MathJax-Menu-Settings` in
@@ -113,7 +122,7 @@ const SHARED_STYLESHEET_ID = 'MJX-CHTML-styles';
 const OWN_MENU_STORAGE = 'PIE-MathJax-Menu-Settings';
 
 /** Output stylesheets of another MathJax. MathJax 4's menu and explorer sheets are not among them. */
-const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, 'MJX-SVG-styles'];
+const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, SHARED_SVG_STYLESHEET_ID];
 
 /** MathJax's STATE.INSERTED: the item's output is in the document. */
 const STATE_INSERTED = 200;
@@ -213,6 +222,14 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
       loader: {
         load: accessibility ? ['a11y/assistive-mml'] : [],
         failed: (error) => reject(error),
+        // The menu loads SVG output when a student picks it as the renderer.
+        'output/svg': {
+          ready: (name) => {
+            const mathJax = pageMathJax();
+            if (isMathjax4(mathJax)) useOwnStylesheetIds(mathJax);
+            return name;
+          },
+        },
       },
       startup: {
         // Typeset only the elements the renderer is given, never the host page.
@@ -220,10 +237,9 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         ready: () => {
           const mathJax = pageMathJax();
           const startup = mathJax?.startup;
-          // `srcUrl` may name another MathJax; only a 4.x build is known to take these changes.
-          const isolate = Boolean(mathJax?.version?.startsWith('4.'));
+          const isolate = isMathjax4(mathJax);
           if (isolate) {
-            useOwnStylesheetId(mathJax);
+            useOwnStylesheetIds(mathJax);
             useOwnMenuStorage(mathJax);
           }
           startup?.defaultReady?.();
@@ -272,9 +288,18 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
   });
 }
 
-function useOwnStylesheetId(mathJax: MathJaxGlobal | undefined): void {
-  const chtml = mathJax?._?.output?.chtml_ts?.CHTML;
+/** `srcUrl` may name another MathJax; only a 4.x build is known to take the isolating changes. */
+function isMathjax4(mathJax: MathJaxGlobal | undefined): boolean {
+  return Boolean(mathJax?.version?.startsWith('4.'));
+}
+
+/** Gives each output the MathJax build holds its own stylesheet id. */
+function useOwnStylesheetIds(mathJax: MathJaxGlobal | undefined): void {
+  const output = mathJax?._?.output;
+  const chtml = output?.chtml_ts?.CHTML;
   if (chtml) chtml.STYLESHEETID = OWN_STYLESHEET_ID;
+  const svg = output?.svg_ts?.SVG;
+  if (svg) svg.STYLESHEETID = OWN_SVG_STYLESHEET_ID;
 }
 
 /**
