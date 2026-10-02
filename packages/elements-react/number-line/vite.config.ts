@@ -63,8 +63,9 @@ export default defineConfig(({ mode, command }) => {
           // gives both one typed-function module, and each mathjs build creates its default
           // instance on typed-function's shared singleton, so the second build's parser throws
           // `There is already a conversion from "string" to "Node"` and the whole bundle fails
-          // to load. A bundled copy brings its own typed-function. Do not add it back here.
-          ['prop-types','debug','i18next','humps','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
+          // to load. A bundled copy brings its own typed-function. Do not add it back here, nor
+          // decimal.js, which only mathjs imports and which this package does not declare.
+          ['prop-types','debug','i18next','humps','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize'].includes(id)
         );
       },
       output: {
