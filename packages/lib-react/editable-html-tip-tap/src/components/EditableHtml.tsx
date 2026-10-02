@@ -38,6 +38,7 @@ import {
 import { MathNode } from '../extensions/math.js';
 import { ImageUploadNode } from '../extensions/image.js';
 import { Media } from '../extensions/media.js';
+import { PlainTextPaste } from '../extensions/plain-text-paste.js';
 import { CSSMark } from '../extensions/css.js';
 import { ExtendedListItem } from '../extensions/extended-list-item.js';
 import { HeadingParagraph } from '../extensions/heading-paragraph.js';
@@ -214,6 +215,7 @@ export const EditableHtml = (props) => {
       alignments: ['left', 'right', 'center', 'justify'],
     }),
     TextStyleKit,
+    PlainTextPaste,
     CharacterCount.configure({
       limit: props.charactersLimit || 1000000,
     }),
