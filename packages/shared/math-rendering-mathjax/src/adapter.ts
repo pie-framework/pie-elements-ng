@@ -44,12 +44,16 @@ interface MathJaxGlobal {
   options?: {
     enableMenu?: boolean;
     menuOptions?: { settings?: Record<string, boolean> };
+    a11y?: { inTabOrder?: boolean };
   };
   chtml?: { fontURL?: string };
   typesetPromise?: (elements?: Element[]) => Promise<void>;
   typesetClear?: (elements?: Element[]) => void;
   /** The component build's module tree. */
-  _?: { output?: { chtml_ts?: { CHTML?: { STYLESHEETID?: string } } } };
+  _?: {
+    output?: { chtml_ts?: { CHTML?: { STYLESHEETID?: string } } };
+    ui?: { menu?: { Menu?: { Menu?: { MENU_STORAGE?: string } } } };
+  };
 }
 
 /** TeX and MathML input, as the legacy renderer reads. `srcUrl` overrides it. */
@@ -99,6 +103,14 @@ type LoadingRegistry = { [MATHJAX_LOADING]?: Promise<void> };
  */
 const OWN_STYLESHEET_ID = 'PIE-MJX-CHTML-styles';
 const SHARED_STYLESHEET_ID = 'MJX-CHTML-styles';
+
+/**
+ * MathJax 3 and 4 both save a student's menu settings under `MathJax-Menu-Settings` in
+ * localStorage, and read them back on the next load, so settings MathJax 3 saved change MathJax 4's
+ * output: a stored SVG renderer switches it to SVG, a stored `assistiveMml: false` removes its
+ * hidden MathML. The MathJax this adapter loads uses its own key instead.
+ */
+const OWN_MENU_STORAGE = 'PIE-MathJax-Menu-Settings';
 
 /** Output stylesheets of another MathJax. MathJax 4's menu and explorer sheets are not among them. */
 const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, 'MJX-SVG-styles'];
@@ -210,7 +222,10 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
           const startup = mathJax?.startup;
           // `srcUrl` may name another MathJax; only a 4.x build is known to take these changes.
           const isolate = Boolean(mathJax?.version?.startsWith('4.'));
-          if (isolate) useOwnStylesheetId(mathJax);
+          if (isolate) {
+            useOwnStylesheetId(mathJax);
+            useOwnMenuStorage(mathJax);
+          }
           startup?.defaultReady?.();
           if (isolate) isolateOutput(startup?.document);
           Promise.resolve(startup?.promise).then(() => resolve(), reject);
@@ -228,6 +243,9 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         menuOptions: {
           settings: { assistiveMml: accessibility, enrich: false, inTabOrder: false },
         },
+        // The explorer, which attaches once a student turns on speech or braille, takes its tab
+        // order from here; the menu setting does not reach it.
+        a11y: { inTabOrder: false },
       },
     };
 
@@ -257,6 +275,29 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
 function useOwnStylesheetId(mathJax: MathJaxGlobal | undefined): void {
   const chtml = mathJax?._?.output?.chtml_ts?.CHTML;
   if (chtml) chtml.STYLESHEETID = OWN_STYLESHEET_ID;
+}
+
+/**
+ * Stores the menu settings of the MathJax this adapter loaded under their own key, and drops a
+ * stored `assistiveMml` so the configuration decides hidden MathML on every load.
+ */
+function useOwnMenuStorage(mathJax: MathJaxGlobal | undefined): void {
+  const menu = mathJax?._?.ui?.menu?.Menu?.Menu;
+  if (!menu) return;
+  menu.MENU_STORAGE = OWN_MENU_STORAGE;
+  try {
+    const stored = localStorage.getItem(OWN_MENU_STORAGE);
+    if (!stored) return;
+    const { assistiveMml, ...settings } = JSON.parse(stored);
+    if (assistiveMml === undefined) return;
+    if (Object.keys(settings).length) {
+      localStorage.setItem(OWN_MENU_STORAGE, JSON.stringify(settings));
+    } else {
+      localStorage.removeItem(OWN_MENU_STORAGE);
+    }
+  } catch {
+    // Storage is unavailable or holds something unreadable; MathJax handles either itself.
+  }
 }
 
 /**
