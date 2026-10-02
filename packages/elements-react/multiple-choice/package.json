@@ -1,7 +1,7 @@
 {
   "name": "@pie-element/multiple-choice",
   "version": "14.0.0",
-  "description": "React implementation of multiple-choice element synced from pie-elements",
+  "description": "React implementation of multiple-choice element",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",

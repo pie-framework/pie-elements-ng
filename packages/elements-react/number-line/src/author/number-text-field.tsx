@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/configure/src/number-text-field.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { NumberTextField as NTF } from '@pie-lib/config-ui';

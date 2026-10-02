@@ -11,8 +11,6 @@
  * - Transparent modal root (doesn't block UI)
  * - No scroll locking (disableScrollLock)
  * - Menu itself remains interactive
- *
- * This file is NOT synced from upstream - it's specific to pie-elements-ng.
  */
 
 import React from 'react';

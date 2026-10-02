@@ -76,66 +76,11 @@ There is no `Shipped` status — once Accepted, tests own behaviour and release 
 
 See [`docs/prds/README.md`](docs/prds/README.md) for the full conventions and [`docs/prds/venn-classification/PRD.md`](docs/prds/venn-classification/PRD.md) for the canonical example PRD that anchors the expected length and tone.
 
-## Upstream Sync (Maintainers Only)
+## Legacy Repositories
 
-**For maintainers syncing from upstream:**
+`pie-elements` and `pie-lib` are legacy. This repo is the source of truth for `packages/elements-react/*` and `packages/lib-react/*`: fixes are made and published here, and no tooling copies code in from the legacy repos. A fix that exists only in a legacy repo is ported by hand.
 
-- **pie-elements**: Must be checked out at `../pie-elements` (sibling directory)
-- **pie-lib**: Must be checked out at `../pie-lib` (sibling directory)
-
-CLI upstream commands (`upstream:update`, `upstream:check`, `upstream:sync`, etc.) depend on finding `pie-elements` and `pie-lib` as siblings. These commands copy files from `../pie-elements` to `packages/elements-react` and from `../pie-lib` to `packages/lib-react`.
-
-**For regular developers:**
-
-The synced packages (`packages/elements-react/*` and `packages/lib-react/*`) are committed to git. You don't need to check out pie-elements or pie-lib - just `git pull` to get the latest synced packages.
-
-**Edit policy for synced packages (transition in progress):**
-
-This repo is migrating away from syncing. **This repo is now the source of truth** for
-`packages/elements-react/*` and `packages/lib-react/*`: fixes are made and published from
-here. Editing those directories directly is expected, not an exception.
-
-Sync is retained only for occasional cases - picking up an upstream fix for a package that
-has not been reimplemented here yet. Treat every sync as a potentially destructive
-operation on work this repo owns.
-
-- Prefer fixing here. Only reach for `upstream:update` / `upstream:sync` when you
-  specifically want to pull upstream changes for a package this repo has not taken over.
-- If a fix belongs in the sync tooling (so it survives future syncs), put it in
-  `tools/cli/**` *and* apply it to the committed manifests. Tooling alone is not enough
-  while sync is optional; committed files alone are not enough while sync still runs.
-- Never sync with a dirty working tree. You cannot tell sync's output from your own edits
-  afterwards.
-
-**Required check after any sync:**
-
-```bash
-bun run upstream:verify-no-regressions    # compare working tree against HEAD
-bun run upstream:verify-no-regressions -- --ref=develop
-```
-
-A sync replaces each synced package's `dependencies` **wholesale** with upstream's ranges.
-Package `version` fields survive (`resolveSyncedVersion` prefers the local value), but any
-dependency range raised locally - by Dependabot or by hand - is silently reset to
-upstream's older range. This has already required manual repair once: commit `dba8c652`
-restored `@mdi/js` (`^7.4.47` -> `^3.6.95`), `@tiptap/pm` (`3.30.2` -> `3.20.0`),
-`@visx/curve` (`^4.0.0` -> `^3.0.0`) and others after a sync walked them backwards.
-
-`upstream:verify-no-regressions` fails on a downgraded dependency range, a downgraded
-package `version`, or a dependency that disappeared. Run it before committing sync output
-and restore anything it flags.
-
-**What a sync overwrites — review these by hand in the diff:**
-
-| Field | Behaviour on sync |
-| --- | --- |
-| `version` | Preserved (local value wins) |
-| `dependencies` | **Replaced wholesale** from upstream - local bumps lost |
-| `peerDependencies` | Merged (local entries kept); element `react` / `react-dom` peers removed |
-| `exports`, `main`, `types`, `files`, `scripts.build` | Regenerated - hand edits lost |
-| `pie.*` | Regenerated from entry points + `tools/vite/browser-esm-policy.json`; `pie.browserEditorRuntime` from the dependency closure + `packages/shared/editor-runtime/package.json` |
-
-**Invariants that must hold after a sync** (all are enforced, so run the gates):
+### React package invariants
 
 - Every `packages/elements-react/*` package declares `react` and `react-dom` in
   `dependencies` at a caret range on `sharedDependencyVersions` in
@@ -146,12 +91,11 @@ and restore anything it flags.
   absent and every `@mui` / `@emotion` / `@dnd-kit` peer fails with
   `Module not found: Can't resolve 'react'`. Enforced by `check:publish-surface`.
 - Library packages (`@pie-lib/*`, `@pie-element/shared-*`) keep React peer-only. The
-  consuming element owns the installable pin.
+  consuming element owns the installable pin. Enforced by `check:publish-surface`.
 
-Then re-verify behavior in `apps/element-demo` and run diagnostics on touched files:
+After changing these packages, re-verify behavior in `apps/element-demo` and run:
 
 ```bash
-bun run upstream:verify-no-regressions
 bun run verify:element-contracts
 bun run lint:all && bun run test
 ```
@@ -162,9 +106,9 @@ Shared infrastructure must stay generic. Do not introduce element-specific or pa
 
 - `packages/shared/bundler-shared/**`
 - `packages/element-player/**`
-- shared sync/runtime infrastructure used across elements
+- shared runtime infrastructure used across elements
 
-Prefer generic fixes that apply by pattern or capability: resolver rules, transforms, compatibility hooks, or guarded sync-tooling stabilizers. If a problem affects synced outputs, fix it in `tools/cli/**` or upstream sync tooling rather than adding one-off aliases for a single package.
+Prefer generic fixes that apply by pattern or capability: resolver rules, transforms, compatibility hooks. If a problem affects several elements, fix it in the shared infrastructure rather than adding one-off aliases for a single package.
 
 Only add a package-specific exception when the user explicitly requests a temporary workaround. Mark it temporary, explain exit criteria, and remove it once a generic fix exists.
 
@@ -173,7 +117,7 @@ Only add a package-specific exception when the user explicitly requests a tempor
 Exact versions live in `package.json`; the majors are:
 
 - **Runtime**: Bun 1.3.11+ (Node.js 20+ also supported)
-- **UI Framework**: Svelte 5 for elements written here, React 18 for the elements synced from pie-elements; every element ships as a custom element
+- **UI Framework**: Svelte 5 for elements written here, React 18 for the elements that began as pie-elements ports; every element ships as a custom element
 - **Build**: Vite 8 with Turbo 2 for monorepo orchestration
 - **Testing**: Vitest 4 (unit/component) + Playwright (E2E)
 - **Accessibility**: @axe-core/playwright for automated checks
@@ -186,9 +130,9 @@ Exact versions live in `package.json`; the majors are:
 ```text
 pie-elements-ng/
 ├── packages/
-│   ├── elements-react/           # 27 React elements synced from pie-elements, now owned here
+│   ├── elements-react/           # 27 React elements ported from pie-elements, owned here
 │   ├── elements-svelte/          # Svelte elements written here: mc-populated-blank, simple-cloze, venn-classification
-│   ├── lib-react/                # @pie-lib/* React libraries synced from pie-lib
+│   ├── lib-react/                # @pie-lib/* React libraries ported from pie-lib, owned here
 │   ├── lib-svelte/               # Svelte libraries: config-ui, delivery-events, editable-html-tiptap
 │   ├── shared/                   # @pie-element/shared-* (types, controller-utils, math-rendering-mathjax,
 │   │                             #   editor-runtime, theming, ...), element-bundler, @pie-lib/translator
@@ -197,7 +141,7 @@ pie-elements-ng/
 │   └── element-theme-daisyui/    # @pie-element/element-theme-daisyui
 ├── apps/                         # Demo and test apps, see apps/README.md
 └── tools/
-    ├── cli/                      # oclif CLI: upstream sync, dev:demo, docs, verification
+    ├── cli/                      # oclif CLI: dev:demo, docs, verification
     └── vite/                     # Shared Vite configs and browser-esm-policy.json
 ```
 
@@ -300,7 +244,7 @@ bun run check          # Svelte component validation
 ### Web Components and Reactivity
 
 - Treat custom elements as imperative APIs: set properties, not attributes.
-- Element package modules must not register the element's own tag: no `customElements.define(...)` for it in `index.ts` or the `delivery`, `author` and `print` entries. The exception is the standalone per-element IIFE script. The React elements' sync-generated `src/index.iife.ts` registers the tag behind a `customElements.get` guard, because a page that loads `dist/index.iife.js` with a `<script>` tag has no player to do it. The Svelte `index.iife.ts` entries export the class only.
+- Element package modules must not register the element's own tag: no `customElements.define(...)` for it in `index.ts` or the `delivery`, `author` and `print` entries. The exception is the standalone per-element IIFE script. The React elements' `src/index.iife.ts` registers the tag behind a `customElements.get` guard, because a page that loads `dist/index.iife.js` with a `<script>` tag has no player to do it. The Svelte `index.iife.ts` entries export the class only.
 - Custom element registration is the responsibility of PIE item/element players, which own lifecycle and registry coordination.
 - In Svelte custom-element components (`<svelte:options customElement={...}>`), never include `tag: '...'`. Svelte will auto-define that tag at module evaluation time, which conflicts with player-controlled registration and causes `CustomElementRegistry` duplicate-name errors.
 - Do not assume attribute updates are reactive for object data.
@@ -345,7 +289,7 @@ When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-
 - Prefer dedicated a11y scenarios in `apps/element-a11y-demo/src/lib/a11y/scenarios/catalog.ts` over broad demo inventory coverage.
 - Keep automated scope explicit: document Axe-covered checks, custom Playwright checks, manual-only concerns, and unclear gaps in `docs/a11y/`.
 - Add reusable checks in `apps/element-a11y-demo/test/a11y/axe-scenarios.spec.ts` only when the concern applies across multiple elements.
-- Fixes in `packages/elements-react/*` or `packages/lib-react/*` are made in this repo - see [Upstream Sync](#upstream-sync-maintainers-only) for the current edit policy and the required post-sync check.
+- Fixes in `packages/elements-react/*` or `packages/lib-react/*` are made in this repo; see [Legacy Repositories](#legacy-repositories).
 
 ### Rich Text Editing
 
@@ -364,8 +308,7 @@ When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-
 
 oclif-based CLI for:
 
-- `upstream:*` - Sync with upstream pie-elements
-- `packages:*` - Generate package configs
+- `packages:enable-publishing` - Clear `private` flags and Changesets ignore entries
 - `verify:*` - Verify builds
 
 ## Publishing & Versioning
@@ -424,7 +367,6 @@ oclif-based CLI for:
 - **Manual npm publish command**: For manual package publishing in this monorepo, always use `sh scripts/publish-with-env-token.sh --packages <pkg1,pkg2>` (single package example: `sh scripts/publish-with-env-token.sh --packages @pie-element/<name>`).
 - **No raw npm publish for manual releases**: Do not run `npm publish` directly for manual releases in this repo; use the publish script so package selection and token auth are handled consistently.
 - **Independent versions (current policy)**: Packages version independently (no workspace-wide lockstep assumption).
-- **Upstream sync versioning**: `upstream:update` must preserve/copy upstream package versions for synced `elements-react` and `lib-react` packages.
 
 ## Current Work Focus
 

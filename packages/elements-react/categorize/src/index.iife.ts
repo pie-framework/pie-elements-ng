@@ -1,8 +1,6 @@
 /**
  * IIFE entry point for categorize element
  * This file is only used for IIFE builds and includes auto-registration
- *
- * @sync-generated - Auto-generated during sync from pie-elements
  */
 
 import Element from './index.js';

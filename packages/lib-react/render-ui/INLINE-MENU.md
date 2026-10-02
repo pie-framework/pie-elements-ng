@@ -151,16 +151,3 @@ The issue occurs because MUI's `Menu` component uses a `Modal` wrapper that:
   {/* menu items */}
 </InlineMenu>
 ```
-
-## Upstream Sync
-
-**Note:** Since this is a pie-elements-ng specific component, it lives in a non-synced file (`inline-menu.tsx`) and is exported separately in `index.ts`. It won't be overwritten by upstream syncs from pie-lib.
-
-The export in `index.ts` includes a comment marking it as non-synced:
-
-```ts
-// Non-synced pie-elements-ng exports
-export { InlineMenu } from './inline-menu';
-```
-
-If you need to apply this fix to the upstream pie-lib repository, copy the `inline-menu.tsx` file there as well.

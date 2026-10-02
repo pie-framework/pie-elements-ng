@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/explicit-constructed-response/configure/src/markupUtils.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { escape } from '@pie-element/shared-lodash';
 

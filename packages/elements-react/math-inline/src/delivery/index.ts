@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/math-inline/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -18,7 +10,7 @@ import {
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
 
-// Inlined from configure/lib/defaults (configure/ not synced - ESM-incompatible)
+// Inlined from the legacy configure/lib/defaults, which is ESM-incompatible and was not ported
 const defaults = {
   configuration: {
     // Minimal configuration for student-facing UI

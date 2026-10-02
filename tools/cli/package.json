@@ -43,11 +43,8 @@
       "dev": {
         "description": "Development server and tools"
       },
-      "upstream": {
-        "description": "Manage synchronization with upstream pie-elements repository"
-      },
       "packages": {
-        "description": "Generate and manage package configurations"
+        "description": "Package publishing settings"
       },
       "docs": {
         "description": "Generate and verify framework-agnostic element documentation"

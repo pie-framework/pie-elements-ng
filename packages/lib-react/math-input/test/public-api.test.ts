@@ -10,7 +10,7 @@ vi.mock('@pie-framework/mathquill', () => ({
 }));
 
 describe('math-input public API', () => {
-  it('exports MathQuill embed helpers used by synced math elements', async () => {
+  it('exports MathQuill embed helpers used by math elements', async () => {
     const mathInput = await import('../src/index');
 
     expect(typeof mathInput.registerEmbed).toBe('function');

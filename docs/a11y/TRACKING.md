@@ -43,4 +43,4 @@ This directory tracks the WCAG 2.2 Level AA accessibility coverage for every PIE
 
 - Automated checks do not prove complete keyboard workflows or screen-reader usability; those are tracked as manual gaps in the per-element files.
 - Findings are currently non-blocking unless `A11Y_ENFORCE=1` is set.
-- If an issue requires changing a synced React element or shared React lib, fix it upstream before syncing into this repository.
+- If an issue requires changing a React element or shared React lib, fix it in this repository.
