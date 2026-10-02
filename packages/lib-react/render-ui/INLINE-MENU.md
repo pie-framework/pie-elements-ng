@@ -151,4 +151,3 @@ The issue occurs because MUI's `Menu` component uses a `Modal` wrapper that:
   {/* menu items */}
 </InlineMenu>
 ```
-

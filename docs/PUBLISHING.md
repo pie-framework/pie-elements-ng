@@ -6,9 +6,9 @@ The normative package contract is defined in
 [`PIE_ELEMENT_CONTRACT.md`](PIE_ELEMENT_CONTRACT.md). This page describes release
 process and the checks that enforce that contract.
 
-## Dist-Tag Policy (Upstream-Aligned)
+## Dist-Tag Policy
 
-`pie-elements-ng` follows the same channel intent as upstream `pie-elements`:
+`pie-elements-ng` follows the same channel intent as the legacy `pie-elements`:
 
 - `master` publishes stable releases to npm `latest`
 - `develop` publishes prerelease versions to npm `next`

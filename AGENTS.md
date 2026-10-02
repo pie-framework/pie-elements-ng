@@ -82,8 +82,6 @@ See [`docs/prds/README.md`](docs/prds/README.md) for the full conventions and [`
 
 ### React package invariants
 
-Enforced by `check:publish-surface`.
-
 - Every `packages/elements-react/*` package declares `react` and `react-dom` in
   `dependencies` at a caret range on `sharedDependencyVersions` in
   `tools/vite/browser-esm-policy.json`, and never in `peerDependencies`. A React peer lets
@@ -91,9 +89,10 @@ Enforced by `check:publish-surface`.
   element's React 18 build on React 19. Legacy webpack bundlers (`builder.pie-api.com`)
   install `dependencies` and never peers, so without the dependency `node_modules/react` is
   absent and every `@mui` / `@emotion` / `@dnd-kit` peer fails with
-  `Module not found: Can't resolve 'react'`.
+  `Module not found: Can't resolve 'react'`. Enforced by `check:publish-surface`.
 - Library packages (`@pie-lib/*`, `@pie-element/shared-*`) keep React peer-only. The
-  consuming element owns the installable pin.
+  consuming element owns the installable pin. No gate checks this; the publish-surface check
+  skips packages without `pie.controller`.
 
 After changing these packages, re-verify behavior in `apps/element-demo` and run:
 
@@ -246,7 +245,7 @@ bun run check          # Svelte component validation
 ### Web Components and Reactivity
 
 - Treat custom elements as imperative APIs: set properties, not attributes.
-- Element package modules must not register the element's own tag: no `customElements.define(...)` for it in `index.ts` or the `delivery`, `author` and `print` entries. The exception is the standalone per-element IIFE script. The React elements' sync-generated `src/index.iife.ts` registers the tag behind a `customElements.get` guard, because a page that loads `dist/index.iife.js` with a `<script>` tag has no player to do it. The Svelte `index.iife.ts` entries export the class only.
+- Element package modules must not register the element's own tag: no `customElements.define(...)` for it in `index.ts` or the `delivery`, `author` and `print` entries. The exception is the standalone per-element IIFE script. The React elements' `src/index.iife.ts` registers the tag behind a `customElements.get` guard, because a page that loads `dist/index.iife.js` with a `<script>` tag has no player to do it. The Svelte `index.iife.ts` entries export the class only.
 - Custom element registration is the responsibility of PIE item/element players, which own lifecycle and registry coordination.
 - In Svelte custom-element components (`<svelte:options customElement={...}>`), never include `tag: '...'`. Svelte will auto-define that tag at module evaluation time, which conflicts with player-controlled registration and causes `CustomElementRegistry` duplicate-name errors.
 - Do not assume attribute updates are reactive for object data.
@@ -310,7 +309,7 @@ When working under `apps/element-a11y-demo/src/lib/a11y/**`, `apps/element-a11y-
 
 oclif-based CLI for:
 
-- `packages:*` - Generate package configs
+- `packages:enable-publishing` - Clear `private` flags and Changesets ignore entries
 - `verify:*` - Verify builds
 
 ## Publishing & Versioning

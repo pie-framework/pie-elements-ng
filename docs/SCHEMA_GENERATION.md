@@ -32,7 +32,7 @@ Minimal shape:
 
 `file` is relative to the element package root. `path` is an optional dot-path inside the exported object.
 
-### Optional rich metadata (upstream-level richness)
+### Optional rich metadata
 
 Contracts can optionally include per-path metadata to enrich docs with descriptions, enums, required flags, and constraints.
 This is optional for new components; if omitted, generation still works from inferred defaults.
@@ -73,7 +73,7 @@ Generate docs manually:
 bun run cli docs:generate
 ```
 
-Create missing contract descriptors, or refresh existing ones from inferred defaults after a package or view changes:
+Create missing contract descriptors with `--seed-contracts`. `--refresh-contracts` rewrites existing descriptors' `views` from inferred defaults after a package or view changes, which drops any per-view `description` and `metadata`:
 
 ```bash
 bun run cli docs:generate --seed-contracts

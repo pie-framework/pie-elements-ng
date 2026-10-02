@@ -213,7 +213,7 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
   `./delivery` entries import the `@pie-lib` libraries, whose React peer resolves the host's React,
   so hosts do not bundle them: under a React 19 host an element and its libraries can run on
   different copies of React. The dependency also installs React for legacy webpack builders, which
-  install `dependencies` and never peers. Synced packages must not preserve React 16/17
+  install `dependencies` and never peers. React element packages must not preserve React 16/17
   compatibility shims in browser-facing dependency policy.
 - The import-map path takes its singleton versions from `pie.browserSharedDependencies`;
   `dependencies` and `peerDependencies` do not affect it.
@@ -229,7 +229,7 @@ Browser ESM entries use the shared policy in `tools/vite/browser-esm-policy.json
   [`PACKAGING_ARCHITECTURE.md`](PACKAGING_ARCHITECTURE.md#browser-esm-commonjs-interop);
   unsupported helper targets must fail the build.
 
-If a new dependency should become a shared browser singleton, update `tools/vite/browser-esm-policy.json`, package generation, publish checks, and `pie-players` import-map handling in the same change.
+If a new dependency should become a shared browser singleton, update `tools/vite/browser-esm-policy.json`, each browser-ESM package's `pie.browserSharedDependencies`, publish checks, and `pie-players` import-map handling in the same change.
 
 ### Shared Editor Runtime
 
@@ -369,4 +369,4 @@ The aggregate verifier runs the contract-relevant checks for:
 - runtime-support export coverage,
 - sourcemap source content.
 
-Release publishing and full lint checks must include this verifier so new elements and regenerated packages cannot silently drift from the contract.
+Release publishing and full lint checks must include this verifier so new and changed packages cannot silently drift from the contract.

@@ -10,7 +10,7 @@ import {
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
 
-// Inlined from configure/lib/defaults (configure/ not synced - ESM-incompatible)
+// Inlined from the legacy configure/lib/defaults, which is ESM-incompatible and was not ported
 const defaults = {
   configuration: {
     // Minimal configuration for student-facing UI

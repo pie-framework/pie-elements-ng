@@ -19,7 +19,7 @@
 
 - Web components: set data via element properties, not attributes.
 - For custom elements, prefer imperative property updates (element.model = ..., element.session = ...).
-- Element packages must not call `customElements.define(...)` in runtime entry points (including `index.iife.ts`); registration belongs to PIE item/element players.
+- Element packages must not call `customElements.define(...)` for their own tag in runtime entry points; registration belongs to PIE item/element players. The exception is the React elements' standalone `src/index.iife.ts`, which registers behind a `customElements.get` guard.
 - For Svelte custom elements (`<svelte:options customElement={...}>`), do **not** set `tag`; this auto-registers with `customElements.define(...)` and can cause duplicate registration errors. Export element classes only; players register tags.
 - When changing model/session, reassign a new object if needed to trigger reactivity.
 - Element player should rebuild the view model via controller.model(...) on mode or session changes.

@@ -194,7 +194,7 @@ describe('vendored lodash helpers', () => {
     vi.useRealTimers();
   });
 
-  it('honors debounce and throttle leading/trailing options used by synced sources', () => {
+  it('honors debounce and throttle leading/trailing options used by element sources', () => {
     vi.useFakeTimers();
     const debouncedFn = vi.fn();
     const throttledFn = vi.fn();

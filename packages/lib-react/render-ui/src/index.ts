@@ -35,5 +35,4 @@ export {
   EnableAudioAutoplayImage,
   transformDataHeadings,
 };
-// Non-synced pie-elements-ng exports
 export { InlineMenu } from './inline-menu.js';

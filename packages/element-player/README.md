@@ -17,7 +17,7 @@ Use the player as a **Node package dependency** in modern applications.
 
 Positioning note:
 
-- In normal production integrations, use the standard production player stacks from the upstream PIE projects (`../pie-elements` and `../pie-players`).
+- In normal production integrations, use the standard production player stacks from the `pie-elements` and `pie-players` projects.
 - Treat `@pie-element/element-player` as a flexible element-level host for development, testing, and composable/advanced embedding scenarios.
 
 Why this is preferred:

@@ -39,7 +39,7 @@ You do not need to memorize the repository layout to understand the project. Con
 - **Shared infrastructure**: event helpers, controller utilities, bundler compatibility, math rendering, feedback behavior, test helpers, and theme support.
 - **Core package**: framework-neutral PIE types, events, and common utilities.
 - **Apps and players**: internal demo and test applications plus element-level player surfaces for development, documentation, print preview, and advanced embedding.
-- **CLI and scripts**: commands for demos, package generation, docs generation, controller verification, dependency checks, and releases.
+- **CLI and scripts**: commands for demos, docs generation, controller verification, dependency checks, and releases.
 
 ## Developer Workflow
 

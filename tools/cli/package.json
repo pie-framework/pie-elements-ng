@@ -44,7 +44,7 @@
         "description": "Development server and tools"
       },
       "packages": {
-        "description": "Generate and manage package configurations"
+        "description": "Package publishing settings"
       },
       "docs": {
         "description": "Generate and verify framework-agnostic element documentation"

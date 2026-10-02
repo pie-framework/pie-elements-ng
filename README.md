@@ -2,7 +2,7 @@
 
 A modern, ESM-first implementation of the PIE (Platform Independent Elements) specification. This is a **new project** (not a refactor) that provides a clean foundation for future PIE development while maintaining backwards compatibility through the legacy pie-elements project.
 
-**Current Status**: Early development (v0.1.0) - 28 React-based elements ported from the legacy `pie-elements`, core infrastructure in place.
+**Current Status**: Early development (v0.1.0) - 27 React-based elements ported from the legacy `pie-elements`, core infrastructure in place.
 
 ## Why a New Project?
 
@@ -176,7 +176,7 @@ For development and testing of individual elements:
 - **Use for:** Element development, testing, documentation, and optional composable embedding
 - **Location:** `packages/element-player/src/players/PieElementPlayer.svelte`
 
-For most production app flows, prefer the standard upstream player stacks in `../pie-elements` and `../pie-players`.
+For most production app flows, prefer the standard player stacks from the `pie-elements` and `pie-players` projects.
 
 ### Item-Level Print Player (pie-players)
 
