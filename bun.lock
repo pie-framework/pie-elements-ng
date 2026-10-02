@@ -38,7 +38,7 @@
     },
     "apps/element-a11y-demo": {
       "name": "@pie-element/element-a11y-demo",
-      "version": "0.1.2-next.25",
+      "version": "0.1.2",
       "dependencies": {
         "@pie-element/element-player": "workspace:*",
         "@pie-element/element-theme-daisyui": "workspace:*",
@@ -62,7 +62,7 @@
     },
     "apps/element-demo": {
       "name": "@pie-element/element-demo",
-      "version": "0.1.2-next.25",
+      "version": "0.1.2",
       "dependencies": {
         "@pie-element/element-bundler": "workspace:*",
         "@pie-element/element-player": "workspace:*",
@@ -103,7 +103,7 @@
     },
     "packages/element-player": {
       "name": "@pie-element/element-player",
-      "version": "0.1.2-next.15",
+      "version": "0.1.2",
       "dependencies": {
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
       },
@@ -119,7 +119,7 @@
     },
     "packages/element-theme": {
       "name": "@pie-element/element-theme",
-      "version": "0.1.1-next.10",
+      "version": "0.1.1",
       "dependencies": {
         "@pie-element/shared-theming": "workspace:*",
       },
@@ -131,7 +131,7 @@
     },
     "packages/element-theme-daisyui": {
       "name": "@pie-element/element-theme-daisyui",
-      "version": "0.1.1-next.11",
+      "version": "0.1.1",
       "dependencies": {
         "@pie-element/element-theme": "workspace:*",
         "@pie-element/shared-theming": "workspace:*",
@@ -145,7 +145,7 @@
     },
     "packages/elements-react/categorize": {
       "name": "@pie-element/categorize",
-      "version": "13.2.0-next.34",
+      "version": "14.0.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -185,7 +185,7 @@
     },
     "packages/elements-react/charting": {
       "name": "@pie-element/charting",
-      "version": "12.1.2-next.35",
+      "version": "13.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -215,7 +215,7 @@
     },
     "packages/elements-react/complex-rubric": {
       "name": "@pie-element/complex-rubric",
-      "version": "7.1.2-next.31",
+      "version": "8.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -244,7 +244,7 @@
     },
     "packages/elements-react/drag-in-the-blank": {
       "name": "@pie-element/drag-in-the-blank",
-      "version": "10.2.0-next.34",
+      "version": "11.0.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -276,7 +276,7 @@
     },
     "packages/elements-react/drawing-response": {
       "name": "@pie-element/drawing-response",
-      "version": "12.1.2-next.31",
+      "version": "13.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mdi/js": "^7.4.47",
@@ -308,7 +308,7 @@
     },
     "packages/elements-react/ebsr": {
       "name": "@pie-element/ebsr",
-      "version": "14.2.2-next.35",
+      "version": "15.0.0",
       "dependencies": {
         "@mui/material": "^7.3.11",
         "@pie-element/multiple-choice": "workspace:*",
@@ -334,7 +334,7 @@
     },
     "packages/elements-react/explicit-constructed-response": {
       "name": "@pie-element/explicit-constructed-response",
-      "version": "11.1.2-next.35",
+      "version": "12.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -367,7 +367,7 @@
     },
     "packages/elements-react/extended-text-entry": {
       "name": "@pie-element/extended-text-entry",
-      "version": "15.1.2-next.31",
+      "version": "16.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -397,7 +397,7 @@
     },
     "packages/elements-react/fraction-model": {
       "name": "@pie-element/fraction-model",
-      "version": "6.1.2-next.31",
+      "version": "7.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -426,7 +426,7 @@
     },
     "packages/elements-react/graphing": {
       "name": "@pie-element/graphing",
-      "version": "10.1.2-next.35",
+      "version": "11.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -458,7 +458,7 @@
     },
     "packages/elements-react/graphing-solution-set": {
       "name": "@pie-element/graphing-solution-set",
-      "version": "6.1.2-next.32",
+      "version": "7.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -488,7 +488,7 @@
     },
     "packages/elements-react/hotspot": {
       "name": "@pie-element/hotspot",
-      "version": "11.2.0-next.34",
+      "version": "12.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -519,7 +519,7 @@
     },
     "packages/elements-react/image-cloze-association": {
       "name": "@pie-element/image-cloze-association",
-      "version": "10.2.0-next.34",
+      "version": "11.0.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -555,7 +555,7 @@
     },
     "packages/elements-react/inline-dropdown": {
       "name": "@pie-element/inline-dropdown",
-      "version": "10.1.2-next.34",
+      "version": "11.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -585,7 +585,7 @@
     },
     "packages/elements-react/likert": {
       "name": "@pie-element/likert",
-      "version": "4.1.2-next.30",
+      "version": "5.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -613,7 +613,7 @@
     },
     "packages/elements-react/match": {
       "name": "@pie-element/match",
-      "version": "12.1.2-next.34",
+      "version": "13.0.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -646,7 +646,7 @@
     },
     "packages/elements-react/match-list": {
       "name": "@pie-element/match-list",
-      "version": "7.1.2-next.31",
+      "version": "8.0.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -676,7 +676,7 @@
     },
     "packages/elements-react/math-inline": {
       "name": "@pie-element/math-inline",
-      "version": "12.1.1-next.44",
+      "version": "13.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -710,7 +710,7 @@
     },
     "packages/elements-react/math-templated": {
       "name": "@pie-element/math-templated",
-      "version": "7.1.1-next.47",
+      "version": "8.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -744,7 +744,7 @@
     },
     "packages/elements-react/matrix": {
       "name": "@pie-element/matrix",
-      "version": "4.1.2-next.30",
+      "version": "5.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -773,7 +773,7 @@
     },
     "packages/elements-react/multi-trait-rubric": {
       "name": "@pie-element/multi-trait-rubric",
-      "version": "8.1.2-next.30",
+      "version": "9.0.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -803,7 +803,7 @@
     },
     "packages/elements-react/multiple-choice": {
       "name": "@pie-element/multiple-choice",
-      "version": "13.4.0-next.30",
+      "version": "14.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -835,7 +835,7 @@
     },
     "packages/elements-react/number-line": {
       "name": "@pie-element/number-line",
-      "version": "13.1.2-next.34",
+      "version": "14.0.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@emotion/react": "^11.14.0",
@@ -872,7 +872,7 @@
     },
     "packages/elements-react/passage": {
       "name": "@pie-element/passage",
-      "version": "7.1.2-next.31",
+      "version": "8.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -899,7 +899,7 @@
     },
     "packages/elements-react/placement-ordering": {
       "name": "@pie-element/placement-ordering",
-      "version": "14.1.2-next.35",
+      "version": "15.0.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -938,7 +938,7 @@
     },
     "packages/elements-react/rubric": {
       "name": "@pie-element/rubric",
-      "version": "8.1.2-next.30",
+      "version": "9.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -964,7 +964,7 @@
     },
     "packages/elements-react/select-text": {
       "name": "@pie-element/select-text",
-      "version": "13.1.2-next.35",
+      "version": "14.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@mui/icons-material": "^7.3.4",
@@ -995,7 +995,7 @@
     },
     "packages/elements-svelte/mc-populated-blank": {
       "name": "@pie-element/mc-populated-blank",
-      "version": "0.3.0-next.29",
+      "version": "0.3.0",
       "dependencies": {
         "@pie-element/shared-controller-utils": "workspace:*",
         "@pie-element/shared-types": "workspace:*",
@@ -1013,7 +1013,7 @@
     },
     "packages/elements-svelte/simple-cloze": {
       "name": "@pie-element/simple-cloze",
-      "version": "0.1.4-next.20",
+      "version": "0.1.4",
       "dependencies": {
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
@@ -1035,7 +1035,7 @@
     },
     "packages/elements-svelte/venn-classification": {
       "name": "@pie-element/venn-classification",
-      "version": "0.1.1-next.19",
+      "version": "0.1.1",
       "dependencies": {
         "@pie-lib/delivery-events-svelte": "workspace:*",
       },
@@ -1058,7 +1058,7 @@
     },
     "packages/elements-svelte/video-stimulus": {
       "name": "@pie-element/video-stimulus",
-      "version": "0.1.1-next.1",
+      "version": "0.1.1",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
         "@pie-lib/delivery-events-svelte": "workspace:*",
@@ -1077,7 +1077,7 @@
     },
     "packages/lib-react/categorize": {
       "name": "@pie-lib/categorize",
-      "version": "3.0.0-next.6",
+      "version": "3.0.0",
       "dependencies": {
         "@pie-element/shared-lodash": "workspace:*",
         "debug": "^4.1.1",
@@ -1092,7 +1092,7 @@
     },
     "packages/lib-react/charting": {
       "name": "@pie-lib/charting",
-      "version": "8.0.0-next.54",
+      "version": "8.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1137,7 +1137,7 @@
     },
     "packages/lib-react/config-ui": {
       "name": "@pie-lib/config-ui",
-      "version": "14.0.0-next.50",
+      "version": "14.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1166,7 +1166,7 @@
     },
     "packages/lib-react/correct-answer-toggle": {
       "name": "@pie-lib/correct-answer-toggle",
-      "version": "5.0.0-next.56",
+      "version": "5.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1193,7 +1193,7 @@
     },
     "packages/lib-react/drag": {
       "name": "@pie-lib/drag",
-      "version": "4.1.0-next.54",
+      "version": "5.0.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "10.0.0",
@@ -1222,7 +1222,7 @@
     },
     "packages/lib-react/editable-html-tip-tap": {
       "name": "@pie-lib/editable-html-tip-tap",
-      "version": "3.0.0-next.50",
+      "version": "3.0.0",
       "dependencies": {
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/modifiers": "9.0.0",
@@ -1285,7 +1285,7 @@
     },
     "packages/lib-react/graphing": {
       "name": "@pie-lib/graphing",
-      "version": "5.0.0-next.55",
+      "version": "5.0.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "10.0.0",
@@ -1337,7 +1337,7 @@
     },
     "packages/lib-react/graphing-solution-set": {
       "name": "@pie-lib/graphing-solution-set",
-      "version": "5.0.0-next.54",
+      "version": "5.0.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "10.0.0",
@@ -1390,7 +1390,7 @@
     },
     "packages/lib-react/graphing-utils": {
       "name": "@pie-lib/graphing-utils",
-      "version": "4.0.0-next.6",
+      "version": "4.0.0",
       "dependencies": {
         "@mapbox/point-geometry": "^1.1.0",
         "@pie-element/shared-lodash": "workspace:*",
@@ -1406,7 +1406,7 @@
     },
     "packages/lib-react/icons": {
       "name": "@pie-lib/icons",
-      "version": "5.0.0-next.3",
+      "version": "5.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1428,7 +1428,7 @@
     },
     "packages/lib-react/mask-markup": {
       "name": "@pie-lib/mask-markup",
-      "version": "4.0.0-next.52",
+      "version": "4.0.0",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@emotion/react": "^11.14.0",
@@ -1459,7 +1459,7 @@
     },
     "packages/lib-react/math-input": {
       "name": "@pie-lib/math-input",
-      "version": "9.0.0-next.19",
+      "version": "9.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1485,7 +1485,7 @@
     },
     "packages/lib-react/math-rendering": {
       "name": "@pie-lib/math-rendering",
-      "version": "6.0.0-next.12",
+      "version": "6.0.0",
       "dependencies": {
         "@pie-element/shared-math-rendering-mathjax": "workspace:*",
       },
@@ -1499,7 +1499,7 @@
     },
     "packages/lib-react/math-toolbar": {
       "name": "@pie-lib/math-toolbar",
-      "version": "4.0.0-next.55",
+      "version": "4.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1525,7 +1525,7 @@
     },
     "packages/lib-react/plot": {
       "name": "@pie-lib/plot",
-      "version": "5.0.0-next.51",
+      "version": "5.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1559,7 +1559,7 @@
     },
     "packages/lib-react/render-ui": {
       "name": "@pie-lib/render-ui",
-      "version": "8.0.0-next.0",
+      "version": "8.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1586,7 +1586,7 @@
     },
     "packages/lib-react/rubric": {
       "name": "@pie-lib/rubric",
-      "version": "3.0.0-next.50",
+      "version": "3.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1614,7 +1614,7 @@
     },
     "packages/lib-react/style-utils": {
       "name": "@pie-lib/style-utils",
-      "version": "3.0.0-next.2",
+      "version": "3.0.0",
       "devDependencies": {
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
@@ -1625,7 +1625,7 @@
     },
     "packages/lib-react/test-utils": {
       "name": "@pie-lib/test-utils",
-      "version": "3.0.0-next.4",
+      "version": "3.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.11.0",
@@ -1650,7 +1650,7 @@
     },
     "packages/lib-react/text-select": {
       "name": "@pie-lib/text-select",
-      "version": "4.0.0-next.56",
+      "version": "4.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1679,7 +1679,7 @@
     },
     "packages/lib-react/tools": {
       "name": "@pie-lib/tools",
-      "version": "3.0.0-next.6",
+      "version": "3.0.0",
       "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
@@ -1718,7 +1718,7 @@
     },
     "packages/lib-svelte/delivery-events": {
       "name": "@pie-lib/delivery-events-svelte",
-      "version": "0.2.0-next.5",
+      "version": "0.2.0",
       "dependencies": {
         "@pie-element/shared-player-events": "workspace:*",
       },
@@ -1729,7 +1729,7 @@
     },
     "packages/lib-svelte/editable-html-tiptap-svelte": {
       "name": "@pie-lib/editable-html-tiptap-svelte",
-      "version": "0.1.3-next.2",
+      "version": "0.1.3",
       "dependencies": {
         "@tiptap/core": "3.31.3",
         "@tiptap/extension-character-count": "3.31.3",
@@ -1755,7 +1755,7 @@
     },
     "packages/lib-svelte/media-svelte": {
       "name": "@pie-lib/media-svelte",
-      "version": "0.1.1-next.0",
+      "version": "0.1.1",
       "devDependencies": {
         "@pie-element/shared-types": "workspace:*",
         "@sveltejs/vite-plugin-svelte": "^7.3.0",
@@ -1768,7 +1768,7 @@
     },
     "packages/shared/bundler-shared": {
       "name": "@pie-element/element-bundler",
-      "version": "0.1.2-next.7",
+      "version": "0.1.2",
       "dependencies": {
         "css-loader": "^7.1.2",
         "esbuild-loader": "^4.3.0",
@@ -1790,7 +1790,7 @@
     },
     "packages/shared/configure-events": {
       "name": "@pie-element/shared-configure-events",
-      "version": "0.1.1-next.1",
+      "version": "0.1.1",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.9.3",
@@ -1800,7 +1800,7 @@
     },
     "packages/shared/controller-utils": {
       "name": "@pie-element/shared-controller-utils",
-      "version": "0.1.1-next.8",
+      "version": "0.1.1",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
       },
@@ -1813,7 +1813,7 @@
     },
     "packages/shared/editor-runtime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.1-next.1",
+      "version": "0.1.1",
       "devDependencies": {
         "@tiptap/core": "3.31.3",
         "@tiptap/extension-character-count": "3.31.3",
@@ -1837,7 +1837,7 @@
     },
     "packages/shared/feedback": {
       "name": "@pie-element/shared-feedback",
-      "version": "0.1.1-next.1",
+      "version": "0.1.1",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.9.3",
@@ -1847,7 +1847,7 @@
     },
     "packages/shared/lodash": {
       "name": "@pie-element/shared-lodash",
-      "version": "0.1.1-next.3",
+      "version": "0.1.1",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.9.3",
@@ -1857,7 +1857,7 @@
     },
     "packages/shared/math-rendering-mathjax": {
       "name": "@pie-element/shared-math-rendering-mathjax",
-      "version": "0.1.1-next.8",
+      "version": "0.1.1",
       "devDependencies": {
         "@pie-lib/math-rendering-module": "6.0.0",
         "@playwright/test": "^1.63.0",
@@ -1869,7 +1869,7 @@
     },
     "packages/shared/player-events": {
       "name": "@pie-element/shared-player-events",
-      "version": "0.1.1-next.3",
+      "version": "0.1.1",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.9.3",
@@ -1879,7 +1879,7 @@
     },
     "packages/shared/test-utils": {
       "name": "@pie-element/shared-test-utils",
-      "version": "0.1.1-next.7",
+      "version": "0.1.1",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
         "@pie-element/shared-utils": "workspace:*",
@@ -1891,7 +1891,7 @@
     },
     "packages/shared/theming": {
       "name": "@pie-element/shared-theming",
-      "version": "0.2.0-next.10",
+      "version": "0.2.0",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
       },
@@ -1904,7 +1904,7 @@
     },
     "packages/shared/translator": {
       "name": "@pie-lib/translator",
-      "version": "5.0.0-next.7",
+      "version": "5.0.0",
       "dependencies": {
         "i18next": "^25.7.0",
       },
@@ -1915,7 +1915,7 @@
     },
     "packages/shared/types": {
       "name": "@pie-element/shared-types",
-      "version": "0.2.0-next.5",
+      "version": "0.2.0",
       "devDependencies": {
         "typescript": "^5.9.3",
         "vite": "^8.1.5",
@@ -1924,7 +1924,7 @@
     },
     "packages/shared/utils": {
       "name": "@pie-element/shared-utils",
-      "version": "0.1.1-next.7",
+      "version": "0.1.1",
       "dependencies": {
         "@pie-element/shared-types": "workspace:*",
       },
@@ -1937,7 +1937,7 @@
     },
     "tools/cli": {
       "name": "@pie-element/cli",
-      "version": "0.1.2-next.15",
+      "version": "0.1.2",
       "bin": {
         "pie-cli": "./bin/run.js",
       },
