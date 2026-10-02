@@ -28,7 +28,11 @@ interface MathDocument {
  */
 interface MathJaxGlobal {
   version?: string;
-  loader?: { load?: string[]; failed?: (error: Error) => void };
+  loader?: {
+    load?: string[];
+    failed?: (error: Error) => void;
+    'output/svg'?: { ready?: (name: string) => string };
+  };
   startup?: {
     typeset?: boolean;
     ready?: () => void;
@@ -44,12 +48,19 @@ interface MathJaxGlobal {
   options?: {
     enableMenu?: boolean;
     menuOptions?: { settings?: Record<string, boolean> };
+    a11y?: { inTabOrder?: boolean };
   };
   chtml?: { fontURL?: string };
   typesetPromise?: (elements?: Element[]) => Promise<void>;
   typesetClear?: (elements?: Element[]) => void;
   /** The component build's module tree. */
-  _?: { output?: { chtml_ts?: { CHTML?: { STYLESHEETID?: string } } } };
+  _?: {
+    output?: {
+      chtml_ts?: { CHTML?: { STYLESHEETID?: string } };
+      svg_ts?: { SVG?: { STYLESHEETID?: string } };
+    };
+    ui?: { menu?: { Menu?: { Menu?: { MENU_STORAGE?: string } } } };
+  };
 }
 
 /** TeX and MathML input, as the legacy renderer reads. `srcUrl` overrides it. */
@@ -94,14 +105,24 @@ type LoadingRegistry = { [MATHJAX_LOADING]?: Promise<void> };
 
 /**
  * MathJax 3 and 4 both replace any `<style id="MJX-CHTML-styles">` in `<head>` with their own, so
- * whichever engine renders second deletes the other's styles. The MathJax this adapter loads uses
- * its own id instead.
+ * whichever engine renders second deletes the other's styles; the same holds for SVG output's
+ * `MJX-SVG-styles`. The MathJax this adapter loads uses its own ids instead.
  */
 const OWN_STYLESHEET_ID = 'PIE-MJX-CHTML-styles';
 const SHARED_STYLESHEET_ID = 'MJX-CHTML-styles';
+const OWN_SVG_STYLESHEET_ID = 'PIE-MJX-SVG-styles';
+const SHARED_SVG_STYLESHEET_ID = 'MJX-SVG-styles';
+
+/**
+ * MathJax 3 and 4 both save a student's menu settings under `MathJax-Menu-Settings` in
+ * localStorage, and read them back on the next load, so settings MathJax 3 saved change MathJax 4's
+ * output: a stored SVG renderer switches it to SVG, a stored `assistiveMml: false` removes its
+ * hidden MathML. The MathJax this adapter loads uses its own key instead.
+ */
+const OWN_MENU_STORAGE = 'PIE-MathJax-Menu-Settings';
 
 /** Output stylesheets of another MathJax. MathJax 4's menu and explorer sheets are not among them. */
-const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, 'MJX-SVG-styles'];
+const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, SHARED_SVG_STYLESHEET_ID];
 
 /** MathJax's STATE.INSERTED: the item's output is in the document. */
 const STATE_INSERTED = 200;
@@ -201,6 +222,14 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
       loader: {
         load: accessibility ? ['a11y/assistive-mml'] : [],
         failed: (error) => reject(error),
+        // The menu loads SVG output when a student picks it as the renderer.
+        'output/svg': {
+          ready: (name) => {
+            const mathJax = pageMathJax();
+            if (isMathjax4(mathJax)) useOwnStylesheetIds(mathJax);
+            return name;
+          },
+        },
       },
       startup: {
         // Typeset only the elements the renderer is given, never the host page.
@@ -208,9 +237,11 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         ready: () => {
           const mathJax = pageMathJax();
           const startup = mathJax?.startup;
-          // `srcUrl` may name another MathJax; only a 4.x build is known to take these changes.
-          const isolate = Boolean(mathJax?.version?.startsWith('4.'));
-          if (isolate) useOwnStylesheetId(mathJax);
+          const isolate = isMathjax4(mathJax);
+          if (isolate) {
+            useOwnStylesheetIds(mathJax);
+            useOwnMenuStorage(mathJax);
+          }
           startup?.defaultReady?.();
           if (isolate) isolateOutput(startup?.document);
           Promise.resolve(startup?.promise).then(() => resolve(), reject);
@@ -228,6 +259,9 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         menuOptions: {
           settings: { assistiveMml: accessibility, enrich: false, inTabOrder: false },
         },
+        // The explorer, which attaches once a student turns on speech or braille, takes its tab
+        // order from here; the menu setting does not reach it.
+        a11y: { inTabOrder: false },
       },
     };
 
@@ -254,9 +288,41 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
   });
 }
 
-function useOwnStylesheetId(mathJax: MathJaxGlobal | undefined): void {
-  const chtml = mathJax?._?.output?.chtml_ts?.CHTML;
+/** `srcUrl` may name another MathJax; only a 4.x build is known to take the isolating changes. */
+function isMathjax4(mathJax: MathJaxGlobal | undefined): boolean {
+  return Boolean(mathJax?.version?.startsWith('4.'));
+}
+
+/** Gives each output the MathJax build holds its own stylesheet id. */
+function useOwnStylesheetIds(mathJax: MathJaxGlobal | undefined): void {
+  const output = mathJax?._?.output;
+  const chtml = output?.chtml_ts?.CHTML;
   if (chtml) chtml.STYLESHEETID = OWN_STYLESHEET_ID;
+  const svg = output?.svg_ts?.SVG;
+  if (svg) svg.STYLESHEETID = OWN_SVG_STYLESHEET_ID;
+}
+
+/**
+ * Stores the menu settings of the MathJax this adapter loaded under their own key, and drops a
+ * stored `assistiveMml` so the configuration decides hidden MathML on every load.
+ */
+function useOwnMenuStorage(mathJax: MathJaxGlobal | undefined): void {
+  const menu = mathJax?._?.ui?.menu?.Menu?.Menu;
+  if (!menu) return;
+  menu.MENU_STORAGE = OWN_MENU_STORAGE;
+  try {
+    const stored = localStorage.getItem(OWN_MENU_STORAGE);
+    if (!stored) return;
+    const { assistiveMml, ...settings } = JSON.parse(stored);
+    if (assistiveMml === undefined) return;
+    if (Object.keys(settings).length) {
+      localStorage.setItem(OWN_MENU_STORAGE, JSON.stringify(settings));
+    } else {
+      localStorage.removeItem(OWN_MENU_STORAGE);
+    }
+  } catch {
+    // Storage is unavailable or holds something unreadable; MathJax handles either itself.
+  }
 }
 
 /**
