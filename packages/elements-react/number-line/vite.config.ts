@@ -57,12 +57,24 @@ export default defineConfig(({ mode, command }) => {
           /^@hello-pangea\//.test(id) ||
           /^react-redux($|\/)/.test(id) ||
           /^use-sync-external-store($|\/)/.test(id) ||
-          ['prop-types','debug','i18next','humps','mathjs','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
+          // mathjs is bundled into this package, not external. Shared, it breaks any bundle that
+          // also holds @pie-framework/math-validation (math-inline, math-templated): that loads
+          // mathjs's CommonJS build while this package loads its ES build, the bundle service
+          // gives both one typed-function module, and each mathjs build creates its default
+          // instance on typed-function's shared singleton, so the second build's parser throws
+          // `There is already a conversion from "string" to "Node"` and the whole bundle fails
+          // to load. A bundled copy brings its own typed-function. Do not add it back here.
+          ['prop-types','debug','i18next','humps','react-jss','js-combinatorics','@mapbox/point-geometry','react-transition-group','nested-property','pluralize','decimal.js'].includes(id)
         );
       },
       output: {
         preserveModules: true,
         preserveModulesRoot: 'src',
+        // Bundled dependencies (mathjs and what it imports) would be emitted under
+        // `dist/node_modules/...`, and npm leaves every nested `node_modules` directory out of
+        // the published tarball: the imports would point at files that are not there.
+        entryFileNames: (chunk) =>
+          `${chunk.name.replace(/(^|\/)node_modules\//g, '$1vendor/').replace(/(^|\/)\.bun\//g, '$1')}.js`,
       },
     },
   },
