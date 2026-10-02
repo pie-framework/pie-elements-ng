@@ -2,11 +2,11 @@
 
 ## Overview
 
-This is a modern implementation of the PIE (Platform Independent Elements) specification, built with TypeScript, ESM, and contemporary tooling. The project currently syncs React-based elements from the upstream [pie-elements](https://github.com/PieLabs/pie-elements) repository while providing modern ESM packaging, Vite builds, and improved developer experience.
+This is a modern implementation of the PIE (Platform Independent Elements) specification, built with TypeScript, ESM, and contemporary tooling. The React-based elements were ported from the legacy [pie-elements](https://github.com/PieLabs/pie-elements) repository and are now owned here, with modern ESM packaging, Vite builds, and improved developer experience.
 
 **Current Status**:
 
-- 27 React elements synced from upstream and 3 Svelte 5 elements built in this repository
+- 27 React elements ported from the legacy `pie-elements` and 3 Svelte 5 elements built in this repository
 - Element and lib packages publish to npm through Changesets and GitHub Actions: `next` prereleases from `develop`, stable releases from `master`
 
 ## Core Philosophy
@@ -224,7 +224,7 @@ Each variant is simply a peer folder with its own implementation, loaded on-dema
 - **Turbo**: Proven monorepo orchestration
 - **TypeScript**: First-class throughout
 - **Biome**: Modern linting and formatting
-- **Project CLI** (`tools/cli`): Built with oclif, has natural access to workspace code, used for upstream sync operations (not build tooling)
+- **Project CLI** (`tools/cli`): Built with oclif, has natural access to workspace code, used for demos, docs generation and verification (not build tooling)
 
 **Developer experience benefits**:
 
@@ -282,8 +282,8 @@ one version number.
    depend on independently versioned element packages.
 2. **Selective publishing** - A fix to one element should not publish dozens of
    unchanged packages unless dependency propagation requires it.
-3. **Migration safety** - Synced packages can preserve upstream package versions
-   during the migration from `../pie-elements` and `../pie-lib`.
+3. **Migration safety** - Ported packages keep the names and version lines of
+   their legacy `pie-elements` and `pie-lib` counterparts.
 4. **Clear release blast radius** - Changesets records which packages changed
    and why, while avoiding a false impression that every package changed.
 
@@ -320,71 +320,16 @@ independent.
 - **Ecosystem**: Can use marketplace actions
 - **Modern**: Industry-standard CI/CD platform
 
-## Upstream Sync Strategy
+## Package Origins
 
-This project maintains compatibility with the existing PIE ecosystem by syncing element implementations from upstream repositories.
+The React element and library packages were ported from the legacy `pie-elements` and `pie-lib` repositories. This repository owns them; nothing syncs from the legacy repositories, and fixes are made here.
 
-### Source Repositories
+- `packages/elements-react/`: 27 React element implementations (controllers and the delivery, authoring and print views)
+- `packages/lib-react/`: shared UI libraries (config-ui, render-ui, etc.). Some are full replacements for legacy pie-lib packages.
 
-- **[pie-elements](https://github.com/PieLabs/pie-elements)** → `packages/elements-react/`
-  - 27 React element implementations synced from upstream
-  - Controllers (business logic)
-  - UI components (delivery, authoring and print views)
-
-- **[pie-lib](https://github.com/PieLabs/pie-lib)** → `packages/lib-react/`
-  - Shared UI libraries (config-ui, render-ui, etc.)
-  - In some cases, we have full replacements for legacy pie-lib packages
-
-### Why Sync?
-
-1. **Leverage existing work** - Reuse production-tested elements from upstream
-2. **Maintain compatibility** - Ensure consistency with existing PIE consumers
-3. **Modernize existing code** - Transform to ESM, TypeScript, and modern tooling
-4. **Stable baseline** - Synced React elements provide production-ready implementations
-
-### How Syncing Works
-
-The CLI tool (`tools/cli`) handles synchronization:
-
-```bash
-bun cli upstream:sync
-```
-
-**Process:**
-
-1. **Analyze** - Scan upstream packages for ESM compatibility
-2. **Copy** - Extract controller and UI code from upstream
-3. **Transform** - Convert to modern format:
-   - `.js` → `.ts` conversions
-   - `.jsx` → `.tsx` conversions
-   - Import rewrites (`lodash` → `lodash-es`, package path updates)
-   - Inline constants and utilities
-4. **Generate** - Create ESM-compatible configs:
-   - `package.json` with proper exports
-   - `vite.config.ts` for builds
-   - `tsconfig.json` for TypeScript
-5. **Commit** - Transformed source is committed to this repo
-
-**What Gets Committed:**
-
-- Transformed source files (`src/`) - ~1000 files
-- Generated configs (`package.json`, `vite.config.ts`)
-- Demo configs (`docs/demo/config.mjs`)
-
-**What's Gitignored:**
-
-- Build artifacts (`dist/`, `node_modules/`)
-- Generated demo metadata (has timestamps, machine-specific paths)
-
-See [upstream-sync-commit-guide.md](upstream-sync-commit-guide.md) for details.
-
-### Current State & Future
-
-**Upstream sync is complete** - the React elements and libraries we have today are the stable baseline. Any future element implementations (Svelte, Angular, Vue, etc.) will be developed **natively in this repository**, not synced from upstream.
+Elements for other frameworks (Svelte, Angular, Vue, etc.) are developed natively in this repository.
 
 **Framework Flexibility:**
-
-![Upstream Sync Strategy](img/upstream-sync-strategy-1-1769797885690.jpg)
 
 Multiple framework implementations can coexist. Consumers choose based on their needs.
 
@@ -826,7 +771,7 @@ These files are automatically generated and should NOT be committed:
 
 1. **`registry.ts`** - Element metadata (has timestamps)
    - Generated by scanning `packages/elements-react/`
-   - Created during `upstream:sync` and `predev` script
+   - Generated by `bun tools/generate-demo-metadata.mjs`
 
 2. **`element-imports.ts`** - Import map
    - Maps element names to absolute `/@fs/` paths for Vite

@@ -59,13 +59,6 @@ yarn-error.log*
 # Changesets
 # Track changeset markdown files (release metadata)
 
-# Upstream sync tracking (local only)
-.upstream-sync-history.json
-
-# ESM compatibility analysis (generated locally)
-esm-compatible-elements.json
-/.compatibility
-
 # Demo app - generated files
 apps/element-demo/src/lib/element-imports.js
 apps/element-demo/src/lib/element-imports.d.ts

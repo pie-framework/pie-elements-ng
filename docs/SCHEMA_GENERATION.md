@@ -73,10 +73,11 @@ Generate docs manually:
 bun run cli docs:generate
 ```
 
-Generate with contract seeding (useful after sync):
+Create missing contract descriptors, or refresh existing ones from inferred defaults after a package or view changes:
 
 ```bash
 bun run cli docs:generate --seed-contracts
+bun run cli docs:generate --refresh-contracts
 ```
 
 Verify contracts and docs drift:
@@ -98,10 +99,6 @@ Each generated element folder contains:
 Generated HTML is a build artifact. It is written into `apps/element-demo/static/element-docs/`
 by the element-demo `prebuild`/`predev` scripts so SvelteKit can serve it from
 `/element-docs/<element>/`, but the generated directory is not committed.
-
-## Upstream Sync Integration
-
-`upstream:update` and `upstream:sync` run through the React sync strategy, which refreshes docs contracts for synced React elements. This keeps descriptors aligned with package/view changes during sync.
 
 ## Build Integration
 

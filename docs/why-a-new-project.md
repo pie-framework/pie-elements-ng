@@ -26,7 +26,7 @@ PIE Elements NG covers the code and workflows needed to build, test, preview, an
 | Module format | CommonJS and bespoke bundling patterns were common. | Packages are ESM-first and built with standard modern tooling. |
 | Build tools | Custom scripts and specialized PIE build conventions. | Vite for package builds, Bun for package management, Turbo for workspace orchestration, Biome for formatting/linting. |
 | Demos | Per-element generated demo folders. | One shared demo app can load any supported element. |
-| Framework direction | Primarily React-oriented. | React-backed packages are maintained through sync, while new NG implementations can be built natively with Svelte or other web-component-friendly approaches. |
+| Framework direction | Primarily React-oriented. | React-backed packages are maintained in this repository, and new NG implementations can be built natively with Svelte or other web-component-friendly approaches. |
 | Package shape | Student, authoring, controller, and print concerns were not always peers. | Element packages use a more predictable shape: delivery, authoring, controller, and print are treated as peer surfaces. |
 
 ## Package Families
@@ -39,7 +39,7 @@ You do not need to memorize the repository layout to understand the project. Con
 - **Shared infrastructure**: event helpers, controller utilities, bundler compatibility, math rendering, feedback behavior, test helpers, and theme support.
 - **Core package**: framework-neutral PIE types, events, and common utilities.
 - **Apps and players**: internal demo and test applications plus element-level player surfaces for development, documentation, print preview, and advanced embedding.
-- **CLI and scripts**: commands for demos, upstream sync, package generation, docs generation, controller verification, dependency checks, and releases.
+- **CLI and scripts**: commands for demos, package generation, docs generation, controller verification, dependency checks, and releases.
 
 ## Developer Workflow
 
@@ -57,17 +57,15 @@ The shared demo command starts a single-element development surface where develo
 
 ## Maintainer Workflow
 
-React-backed elements and React shared libraries are synced from the legacy source of record. That means they should not be edited directly in this project for normal feature work. Maintainers bring those updates in through the project CLI, which analyzes upstream changes, rewrites package structure as needed, verifies compatibility, and commits the transformed result here.
+React-backed elements and React shared libraries originate in the legacy `pie-elements` and `pie-lib` projects. This repository is now their source of truth: changes are made here and nothing syncs from the legacy projects.
 
 ```bash
-bun run upstream:status
-bun run upstream:update
 bun run verify:runtime-support
 bun run cli verify:controllers
 bun run --cwd apps/element-demo build
 ```
 
-New NG-native elements, shared infrastructure, demo tooling, accessibility workflows, and release automation are developed directly in this project.
+Elements, shared infrastructure, demo tooling, accessibility workflows, and release automation are all developed directly in this project.
 
 ## Players and Print
 
@@ -92,7 +90,7 @@ The quality model includes unit tests, browser/e2e tests, accessibility checks, 
 
 ## Current Status
 
-PIE Elements NG is an active modernization project. The current baseline includes a broad set of React-backed PIE elements and shared libraries, new Svelte-native element work, a modern demo app, core package contracts, sync tooling, accessibility planning, and release automation. Existing production consumers can continue using legacy-compatible paths while new development moves toward the NG architecture.
+PIE Elements NG is an active modernization project. The current baseline includes a broad set of React-backed PIE elements and shared libraries, new Svelte-native element work, a modern demo app, core package contracts, accessibility planning, and release automation. Existing production consumers can continue using legacy-compatible paths while new development moves toward the NG architecture.
 
 ## Quick Reference
 
@@ -103,5 +101,4 @@ PIE Elements NG is an active modernization project. The current baseline include
 | Open an element demo | `bun run dev:demo`, then `http://localhost:5222/<element-name>` |
 | Run unit tests | `bun run test` |
 | Run lint checks | `bun run lint` |
-| Check upstream sync status | `bun run upstream:status` |
 | Create a package changeset | `bun run changeset:plan -- --packages <package> --type patch --summary "..."` |

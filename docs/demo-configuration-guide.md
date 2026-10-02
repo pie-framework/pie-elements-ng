@@ -2,7 +2,7 @@
 
 ## Overview
 
-All PIE element demos are maintained locally in this project and are **not synced from upstream**. The demo app reads an element's demo scenarios from `apps/element-demo/src/lib/samples/<element>.json`. A new element's `docs/demo/config.mjs` seeds that file; from then on, edit the JSON.
+All PIE element demos are maintained locally in this project. The demo app reads an element's demo scenarios from `apps/element-demo/src/lib/samples/<element>.json`. A new element's `docs/demo/config.mjs` seeds that file; from then on, edit the JSON.
 
 ## Demo Config Structure
 
@@ -119,17 +119,6 @@ export default {
   ]
 };
 ```
-
-## Upstream Sync Behavior
-
-The `upstream:update` command does **NOT** sync demo configs from upstream:
-
-- ✅ Syncs controller code
-- ✅ Syncs React components  
-- ✅ Syncs package.json dependencies
-- ❌ **Skips** `docs/demo/config.mjs` (maintained locally)
-
-This allows us to create rich, multi-demo configurations without being overwritten by upstream's single-demo configs.
 
 ## Adding Math Content
 

@@ -1,6 +1,6 @@
 # @pie-element/cli
 
-CLI tools for managing PIE Elements NG - synchronization, package generation, and verification.
+CLI tools for managing PIE Elements NG - demos, package management, docs generation, and verification.
 
 ## Installation
 
@@ -21,7 +21,7 @@ From the root of the monorepo:
 bun run cli --help
 
 # Show command help
-bun run cli upstream:sync --help
+bun run cli dev:demo --help
 ```
 
 ## Commands
@@ -40,87 +40,6 @@ bun run cli dev:demo
 bun run cli dev:demo --port 5180 --build --no-open
 ```
 
-### Upstream Synchronization
-
-#### `upstream:sync`
-
-Synchronize code from upstream pie-elements repository.
-
-```bash
-# Dry run to preview changes
-bun run cli upstream:sync --dry-run
-
-# Sync specific element
-bun run cli upstream:sync --element multiple-choice
-
-# Sync all compatible elements (controllers + React UI + demos)
-bun run cli upstream:sync
-
-# Verbose output
-bun run cli upstream:sync --verbose
-```
-
-#### `upstream:check`
-
-Check for changes in upstream repositories.
-
-```bash
-# Check all elements
-bun run cli upstream:check
-
-# Check specific element
-bun run cli upstream:check --element multiple-choice
-
-# Verbose output
-bun run cli upstream:check --verbose
-```
-
-#### `upstream:track`
-
-Track upstream repository changes.
-
-```bash
-# Show new commits since last check
-bun run cli upstream:track show
-
-# Record current upstream state
-bun run cli upstream:track record
-
-# Compare with specific commit
-bun run cli upstream:track compare <commit-sha>
-```
-
-#### `upstream:deps`
-
-Compare dependencies with upstream repositories.
-
-```bash
-bun run cli upstream:deps
-```
-
-#### `upstream:analyze-esm`
-
-Analyze ESM compatibility of elements and packages.
-
-```bash
-# Analyze and generate report
-bun run cli upstream:analyze-esm
-
-# Verbose output
-bun run cli upstream:analyze-esm --verbose
-
-# Custom output path
-bun run cli upstream:analyze-esm --output ./my-report.json
-```
-
-#### `upstream:update`
-
-Recommended wrapper that runs analyze + sync.
-
-```bash
-bun run cli upstream:update
-```
-
 ### Package Management
 
 #### `packages:enable-publishing`
@@ -133,42 +52,6 @@ bun run cli packages:enable-publishing --dry-run
 
 # Enable publishing
 bun run cli packages:enable-publishing
-```
-
-#### `packages:create-controllers`
-
-Generate package.json files for controller packages.
-
-```bash
-bun run cli packages:create-controllers
-```
-
-#### `packages:create-lib-react`
-
-Generate configuration files for @pie-lib React packages.
-
-```bash
-# Dry run
-bun run cli packages:create-lib-react --dry-run
-
-# Generate files
-bun run cli packages:create-lib-react
-```
-
-#### `packages:create-react-elements`
-
-Generate configuration files for React element packages.
-
-```bash
-bun run cli packages:create-react-elements
-```
-
-#### `packages:init-synced-elements`
-
-Initialize package scaffolding for synced elements.
-
-```bash
-bun run cli packages:init-synced-elements
 ```
 
 ### Documentation
@@ -242,7 +125,7 @@ bun run cli verify:dependency-integrity --fail-on-hoist
 bun run build
 
 # Run in development mode (with source maps)
-bun run dev upstream:sync --help
+bun run dev dev:demo --help
 
 # Lint
 bun run lint
@@ -254,24 +137,7 @@ The CLI is built with [oclif](https://oclif.io/), following the same architectur
 
 - **Commands**: Located in `src/commands/` organized by topic
 - **Utilities**: Shared utilities in `src/utils/`
-- **Topics**: Commands are grouped into topics (upstream, packages, docs, verify)
-
-## Migration from Scripts
-
-This CLI replaces the scripts in `./scripts` directory:
-
-| Old Script                                  | New CLI Command                              |
-| ------------------------------------------- | -------------------------------------------- |
-| `bun scripts/sync-upstream.ts`              | `bun run cli upstream:sync`                  |
-| `bun scripts/check-upstream.ts`             | `bun run cli upstream:check`                 |
-| `bun scripts/track-upstream.ts show`        | `bun run cli upstream:track show`            |
-| `bun scripts/check-deps.ts`                 | `bun run cli upstream:deps`                  |
-| `bun scripts/analyze-esm-compatibility.ts`  | `bun run cli upstream:analyze-esm`           |
-| `bun scripts/enable-react-publishing.ts`    | `bun run cli packages:enable-publishing`     |
-| `bun scripts/create-controller-packages.ts` | `bun run cli packages:create-controllers`    |
-| `bun scripts/create-lib-react-packages.ts`  | `bun run cli packages:create-lib-react`      |
-| `bun scripts/create-react-packages.ts`      | `bun run cli packages:create-react-elements` |
-| `bun scripts/verify-react-build.ts`         | `bun run cli verify:react-build`             |
+- **Topics**: Commands are grouped into topics (dev, packages, docs, verify)
 
 ## License
 

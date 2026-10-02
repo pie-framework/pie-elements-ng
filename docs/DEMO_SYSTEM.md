@@ -31,7 +31,7 @@ The app reads each element's demos from `apps/element-demo/src/lib/samples/<elem
 
 **Cause:** `resolve.conditions: ['development', ...]` in `vite.config.ts`. Vite resolved workspace packages through their `development` conditions and watched those files, and each HMR update re-ran the element layout's load function, which created new objects and triggered the next update.
 
-**Rule:** never add a `development` resolve condition to the demo. Source loading goes through `vite-plugin-workspace-resolver.ts` aliases. Package manifests stay dist-only, so `upstream:sync` must not add `development` export conditions that point at `src/` ([PUBLISHING.md](PUBLISHING.md)).
+**Rule:** never add a `development` resolve condition to the demo. Source loading goes through `vite-plugin-workspace-resolver.ts` aliases. Package manifests stay dist-only, so no package adds `development` export conditions that point at `src/` ([PUBLISHING.md](PUBLISHING.md)).
 
 The app also keeps `data-sveltekit-preload-data="off"` in `app.html`, and `routes/[element]/+layout.svelte` initializes the demo once in `onMount` rather than in an `$effect`.
 

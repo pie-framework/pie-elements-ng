@@ -28,10 +28,8 @@ provide their own import map for shared browser singletons.
 
 ## Export Surface
 
-Package exports are derived from the source entries that exist under an element
-package. During the migration from `../pie-elements`, the temporary upstream sync
-scripts write this metadata for synced React packages. The long-term contract is
-the package shape described here, not the sync scripts themselves.
+Package exports follow the source entries that exist under an element package,
+and each package's `package.json` declares them.
 
 Standard ESM exports point at generated `dist` files:
 
@@ -87,10 +85,8 @@ Those versions are checked against `tools/vite/browser-esm-policy.json`.
 
 The core build pipeline is package-local: each element package builds its
 declared ESM, browser ESM, IIFE, and type artifacts from its own package
-directory. While React elements are still being migrated from `../pie-elements`,
-temporary upstream sync scripts generate the package scripts and Vite configs for
-those synced packages. They are a migration bridge, not a permanent architectural
-layer. A package with every build lane, such as multiple-choice, runs:
+directory. Each React element carries its own package scripts and Vite configs. A
+package with every build lane, such as multiple-choice, runs:
 
 ```bash
 vite build
@@ -103,11 +99,10 @@ tsc --emitDeclarationOnly
 
 The editor-runtime lane writes the variant under `dist/browser/editor-runtime`
 ([Shared Editor Runtime](PIE_ELEMENT_CONTRACT.md#shared-editor-runtime)), and the
-legacy print lane writes `module/print.js` for packages with a print view.
-`composeElementBuildScript` in `tools/cli/src/lib/upstream/sync-constants.ts`
-composes each synced package's script from the lanes it has.
+legacy print lane writes `module/print.js` for packages with a print view. A
+package's `build` script lists the lanes it has.
 
-The main Vite build emits Node/builder ESM. Generated element `vite.config.ts`
+The main Vite build emits Node/builder ESM. Element `vite.config.ts`
 files use multi-entry library mode with `preserveModules: true`, so source
 entries such as `src/controller/index.ts` become stable dist entries such as
 `dist/controller/index.js`. These builds externalize React, React DOM,
@@ -177,7 +172,7 @@ bundler, and are untouched.
 Browser ESM builds are static browser files. They must not depend on a runtime
 `require` function, and they must not rely on CDN transforms such as jsDelivr
 `+esm` to rewrite package internals at load time. Most legacy CommonJS-era code
-is handled by upgrading or replacing dependencies during `upstream:sync`, but a
+is handled by upgrading or replacing dependencies, but a
 few browser-reachable packages still publish CJS-shaped internals even when
 consumed through an ESM entry.
 
@@ -243,10 +238,10 @@ runtime error. Add a new target only when all of the following are true:
 - The fallback behavior is small, deterministic, and safe for production browser
   ESM.
 - Focused tests cover the generated helper shape and the expected interop
-  behavior in `tools/cli/tests/sync-vite-config.test.ts`.
+  behavior in `tools/cli/tests/browser-esm-vite-config.test.ts`.
 
-Per-element IIFE builds use each package's `vite.config.iife.ts`. The current
-migration-generated React configs resolve `@pie-element/shared-*` and
+Per-element IIFE builds use each package's `vite.config.iife.ts`. The React
+configs resolve `@pie-element/shared-*` and
 `@pie-lib/*` imports to workspace source and set webpack/Rollup externalization
 to false, producing a self-contained `dist/index.iife.js` for that package.
 
@@ -292,10 +287,10 @@ filesystem-alias builders, each controller package also publishes a root
 export * from './dist/controller/index.js';
 ```
 
-The sync package manager writes that shim when a controller source entry exists,
-adds `controller.js` to `files`, sets `pie.controller` to
-`@pie-element/<name>/controller`, and exposes both `./controller` and
-`./controller.js` at the same `dist/controller/index.js` target.
+A package with a controller source entry carries that shim, lists `controller.js`
+in `files`, sets `pie.controller` to `@pie-element/<name>/controller`, and exposes
+both `./controller` and `./controller.js` at the same `dist/controller/index.js`
+target.
 
 Author-capable packages keep `./author` as the modern ESM entry. For legacy
 production builders, the package also exposes `./configure`, sets
@@ -340,9 +335,9 @@ map generation. Adding a new shared browser singleton requires updating this
 repository's policy and the player import-map generation together. Dependencies
 not in the policy should remain bundled by default.
 
-The React browser singleton contract is React 18. The upstream sync pipeline is
-therefore allowed to upgrade or replace React 16/17-era helper dependencies
-instead of preserving shim support for browser ESM consumers.
+The React browser singleton contract is React 18. React 16/17-era helper
+dependencies are therefore upgraded or replaced instead of preserving shim support
+for browser ESM consumers.
 
 ## Runtime Consumption
 
