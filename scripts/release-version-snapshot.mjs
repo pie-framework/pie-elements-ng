@@ -146,9 +146,12 @@ async function main() {
   );
   disableChangelog(rootDir);
 
+  // Stdout carries only this script's `key=value` lines, which the release workflow appends to
+  // $GITHUB_OUTPUT. Changesets' own output goes to stderr, so it still reaches the log; on stdout
+  // its banner (`🦋 changeset v3.0.3`) is an invalid output line and fails the step.
   const version = spawnSync('bunx', ['changeset', 'version', '--snapshot', args.tag], {
     cwd: rootDir,
-    stdio: 'inherit',
+    stdio: ['ignore', process.stderr, process.stderr],
   });
   if (version.status !== 0) {
     throw new Error(`changeset version --snapshot ${args.tag} exited with ${version.status}`);
