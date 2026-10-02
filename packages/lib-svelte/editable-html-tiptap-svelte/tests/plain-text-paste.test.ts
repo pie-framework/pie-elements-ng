@@ -1,7 +1,7 @@
 // Runs both copies of the extension: root vitest, which CI runs, excludes packages/lib-react, so
 // the React editor's copy has no other test that CI sees. Its registration in `EditableHtml.tsx`
 // is pinned by tools/cli/tests/sync-presets.test.ts.
-import { type AnyExtension, Editor, Extension } from '@tiptap/core';
+import { type AnyExtension, Editor, Extension, Node } from '@tiptap/core';
 import { Plugin } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
@@ -48,6 +48,29 @@ function drop(editor: Editor, pos: number, flavours: Record<string, string>) {
   });
   editor.view.dom.dispatchEvent(event);
 }
+
+// The React editor's MathNode, parse rule and all, without its node view and toolbar.
+const MathStub = Node.create({
+  name: 'math',
+  group: 'inline',
+  inline: true,
+  atom: true,
+  addAttributes: () => ({ latex: { default: '' } }),
+  parseHTML: () => [
+    { tag: 'span[data-latex]', getAttrs: (el) => ({ latex: el.getAttribute('data-raw') ?? '' }) },
+  ],
+  renderHTML: ({ node }) => ['span', { 'data-latex': '', 'data-raw': node.attrs.latex }],
+});
+
+// A rendered PIE prompt as a browser copies it: MathJax's output inside the saved math span.
+const RENDERED_MATH_HTML =
+  '<div style="font-family:Arial"><span style="color:red">Solve </span>' +
+  '<span data-latex="" data-raw="x^2+1"><mjx-container><mjx-math>𝑥2+1</mjx-math></mjx-container></span>' +
+  ' <b>now</b>.</div><p>Next line</p>';
+const RENDERED_MATH = {
+  'text/html': RENDERED_MATH_HTML,
+  'text/plain': 'Solve 𝑥2+1 now.\nNext line',
+};
 
 const WORD = { 'text/html': WORD_HTML, 'text/plain': WORD_TEXT, 'text/rtf': '{\\rtf1 }' };
 
@@ -208,6 +231,52 @@ describe.each([
     drop(editor, 5, WORD);
 
     expect(editor.getHTML()).toBe('<p><strong>boldbold</strong></p>');
+  });
+
+  it('keeps math copied from rendered PIE content and drops its formatting', () => {
+    const { editor } = createEditor('', [MathStub]);
+
+    paste(editor, RENDERED_MATH);
+
+    expect(editor.getHTML()).toBe(
+      '<p>Solve <span data-latex="" data-raw="x^2+1"></span> now.</p><p>Next line</p>'
+    );
+  });
+
+  it('keeps math from a rendered table, one line per row', () => {
+    const { editor } = createEditor('', [MathStub, TableKit]);
+
+    paste(editor, {
+      'text/html':
+        '<table><tr><td>Area</td><td><span data-latex="" data-raw="\\pi r^2"><mjx-container>' +
+        '</mjx-container></span></td></tr><tr><td>Side</td><td>4</td></tr></table>',
+      'text/plain': 'Area\t𝜋𝑟2\nSide\t4',
+    });
+
+    expect(editor.getHTML()).toBe(
+      '<p>Area\t<span data-latex="" data-raw="\\pi r^2"></span></p><p>Side\t4</p>'
+    );
+  });
+
+  it('keeps math from a rendered inline fragment in the line it lands in', () => {
+    const { editor } = createEditor('<p>Before</p>', [MathStub]);
+    editor.commands.setTextSelection(7);
+
+    paste(editor, {
+      'text/html':
+        ', solve <span data-latex="" data-raw="x"><mjx-container></mjx-container></span>',
+      'text/plain': ', solve 𝑥',
+    });
+
+    expect(editor.getHTML()).toBe('<p>Before, solve <span data-latex="" data-raw="x"></span></p>');
+  });
+
+  it('pastes rendered math as text in an editor without math', () => {
+    const { editor } = createEditor();
+
+    paste(editor, RENDERED_MATH);
+
+    expect(editor.getHTML()).toBe('<p>Solve 𝑥2+1 now.</p><p>Next line</p>');
   });
 
   it('leaves a plain-text paste as it was', () => {
