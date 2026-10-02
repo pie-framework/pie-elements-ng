@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/render-ui/src/color.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { green, indigo, orange, pink, red } from '@mui/material/colors';
 

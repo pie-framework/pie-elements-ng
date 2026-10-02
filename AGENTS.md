@@ -80,8 +80,6 @@ See [`docs/prds/README.md`](docs/prds/README.md) for the full conventions and [`
 
 `pie-elements` and `pie-lib` are legacy. This repo is the source of truth for `packages/elements-react/*` and `packages/lib-react/*`: fixes are made and published here, and no tooling copies code in from the legacy repos. A fix that exists only in a legacy repo is ported by hand.
 
-Source files in those packages that still carry an "automatically synced from pie-elements" header are ordinary source. Edit them directly.
-
 ### React package invariants
 
 Enforced by `check:publish-surface`.

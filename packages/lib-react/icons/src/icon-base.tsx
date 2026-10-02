@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/icons/src/icon-base.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { Circle, IconRoot, RoundFeedbackBox, Square, SquareFeedbackBox } from './icon-root.js';
 import PropTypes from 'prop-types';

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/src/number-line/feedback.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { Correct, Incorrect, NothingSubmitted, PartiallyCorrect, ShowRationale } from '@pie-lib/icons';
 import PropTypes from 'prop-types';

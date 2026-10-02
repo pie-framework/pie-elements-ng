@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/config-ui/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import AlertDialog from './alert-dialog.js';
 import FeedbackConfig, { buildDefaults as feedbackConfigDefaults, FeedbackSelector } from './feedback-config/index.js';

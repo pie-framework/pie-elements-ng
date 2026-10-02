@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/ebsr/src/print.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { cloneDeep, get } from '@pie-element/shared-lodash';
 import MultipleChoice from '@pie-element/multiple-choice';
