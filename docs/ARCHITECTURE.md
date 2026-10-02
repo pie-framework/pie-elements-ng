@@ -1005,10 +1005,10 @@ Note: `'unsafe-inline'` for styles is required for Svelte scoped styles.
 
 **Current Strategy**: Publishing is CI-driven via GitHub Actions and Changesets:
 
-1. Developer creates changeset: `bun run changeset`
-2. PR merged to `develop` (prerelease) or `master` (stable)
-3. On `develop`, the same Release run versions the packages and publishes `-next.N` prereleases, synthesizing a patch changeset for any package with unreleased changes and no changeset ([Develop Auto-Release](PUBLISHING.md#develop-auto-release))
-4. On `master`, the GitHub Action creates a "Version Packages" PR, and merging it publishes to npm
+1. PR merged to `develop`. CI records its changeset as `.changeset/pr-<n>.md`, unless the PR wrote its own (`bun run changeset`)
+2. On `develop`, the same Release run publishes the changed packages as `<version>-next.<datetime>` snapshots and commits no versions ([Release Flow](PUBLISHING.md#release-flow))
+3. `develop` merged to `master`: the GitHub Action creates a "Version Packages" PR, and merging it publishes to npm `latest`
+4. CI opens a `master` -> `develop` back-merge PR with the release commit
 
 **Dist-tag routing**:
 
