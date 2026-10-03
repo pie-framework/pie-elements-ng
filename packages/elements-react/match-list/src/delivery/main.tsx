@@ -38,7 +38,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
-import { findKey, isUndefined, uniqueId } from '@pie-element/shared-lodash';
+import { findKey, isUndefined } from '@pie-element/shared-lodash';
 import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
 import { Answer, buildDragId } from './answer.js';
@@ -106,9 +106,9 @@ export class Main extends React.Component {
   constructor(props) {
     super(props);
 
-    this.instanceId = uniqueId();
-    // Random rather than a counter: two versions of this element on one page each count from 1.
-    this.uid = uid.generateId();
+    // Random rather than a counter: two versions of this element on one page each count from 1, and
+    // tile focus and prompt label ids are looked up across the whole document.
+    this.instanceId = uid.generateId();
     this.state = {
       showCorrectAnswer: false,
       draggingElement: null,
@@ -483,7 +483,6 @@ export class Main extends React.Component {
             <InteractiveRegionContent>
               <AnswerArea
                 instanceId={this.instanceId}
-                uid={this.uid}
                 model={model}
                 session={session}
                 onRemoveAnswer={(id) => this.onRemoveAnswer(id)}

@@ -317,8 +317,9 @@ function DragAndDropAnswer(props) {
     const isNativeTabStop = !draggable && !disabled && hasSelection;
     // A filled area holds a dnd-kit draggable, and a button's children are presentational to
     // assistive technology, so the area is a button only while it is the tab stop and otherwise a
-    // group. Either way its prompt names it. An empty area's inner node is not draggable, so it
-    // takes none of dnd-kit's attributes: as a disabled button it would sit unnamed inside this one.
+    // group. Either way its prompt names it. The inner node takes dnd-kit's attributes only while it
+    // can be dragged: empty, it would be an unnamed disabled button inside this one, and disabled,
+    // it would announce pick-up instructions that do nothing.
 
     const handleResponseAreaKeyDown = (e) => {
       if (e.code === 'Space' || e.code === 'Enter') {
@@ -350,7 +351,7 @@ function DragAndDropAnswer(props) {
         <div
           ref={setDragRef}
           {...listeners}
-          {...(draggable ? attributes : {})}
+          {...(draggable && !disabled ? attributes : {})}
           data-tile-id={`${instanceId}:${dragId}`}
           style={{ transform: transformStyle, transition }}
         >

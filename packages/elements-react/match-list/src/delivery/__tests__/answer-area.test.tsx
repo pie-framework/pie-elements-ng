@@ -31,7 +31,6 @@ const renderAnswerArea = (extras?: any) =>
       <DndContext>
         <AnswerArea
           instanceId="1"
-          uid="42"
           model={model}
           session={session}
           showCorrect={false}
@@ -80,6 +79,15 @@ describe('AnswerArea response areas', () => {
     expect(onPlacementClick).toHaveBeenCalledWith({ type: 'drop-zone', promptId: 1, instanceId: '1' });
   });
 
+  it('leave a placed answer without drag semantics while disabled', () => {
+    renderAnswerArea({ disabled: true });
+
+    const filled = screen.getByRole('group', { name: 'Prompt two' });
+    expect(filled).toHaveTextContent('Answer four');
+    expect(within(filled).queryByRole('button')).not.toBeInTheDocument();
+    expect(filled.querySelector('[aria-roledescription]')).toBeNull();
+  });
+
   it('keep a placed answer selectable by click', () => {
     const onChoiceClick = vi.fn();
     renderAnswerArea({ onChoiceClick });
@@ -89,10 +97,10 @@ describe('AnswerArea response areas', () => {
     expect(onChoiceClick).toHaveBeenCalledWith(expect.objectContaining({ type: 'target', id: 4, promptId: 2 }));
   });
 
-  it('take label ids from the element uid, so two instances do not share them', () => {
+  it('take label ids from the instance id, so two instances do not share them', () => {
     const { container } = renderAnswerArea();
     const ids = [...container.querySelectorAll('[aria-labelledby]')].map((node) => node.getAttribute('aria-labelledby'));
 
-    expect(ids).toEqual(['match-list-42-prompt-label-1', 'match-list-42-prompt-label-2']);
+    expect(ids).toEqual(['match-list-1-prompt-label-1', 'match-list-1-prompt-label-2']);
   });
 });
