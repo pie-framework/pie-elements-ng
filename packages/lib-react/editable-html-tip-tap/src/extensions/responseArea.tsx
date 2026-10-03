@@ -9,11 +9,22 @@ import DragInTheBlank from '../components/respArea/DragInTheBlank/DragInTheBlank
 import InlineDropdown from '../components/respArea/InlineDropdown.js';
 import MathTemplated from '../components/respArea/MathTemplated.js';
 
-const lastIndexMap = {};
-
 const normalizeType = (type) => String(type || '').replace(/-/g, '_');
 
 const getAttrIndex = (node) => (node && node.attrs && node.attrs.index != null ? String(node.attrs.index) : null);
+
+// Highest numeric index among the doc's response areas of this type, 0 when it has none.
+const getMaxIndex = (doc, typeName) => {
+  let max = 0;
+  doc.descendants((node) => {
+    if (node.type && node.type.name === typeName) {
+      const n = parseInt(getAttrIndex(node), 10);
+      if (!Number.isNaN(n) && n > max) max = n;
+    }
+    return true;
+  });
+  return max;
+};
 
 const collectNodesOfType = (doc, typeName) => {
   const results = [];
@@ -70,6 +81,12 @@ export const ResponseAreaExtension = Extension.create({
     };
   },
 
+  // Per editor, by type: the highest index loaded or inserted, so an insert never reuses the
+  // index of an area deleted since. Module scope shared it across editors, which then collided.
+  addStorage() {
+    return { lastIndexMap: {} };
+  },
+
   addProseMirrorPlugins() {
     if (!this.options.type) {
       return [];
@@ -83,23 +100,8 @@ export const ResponseAreaExtension = Extension.create({
         key,
 
         view: (view) => {
-          // Lazy init lastIndexMap[typeName]
-          if (lastIndexMap[typeName] === undefined) {
-            lastIndexMap[typeName] = 0;
-
-            view.state.doc.descendants((node) => {
-              if (node.type && node.type.name === typeName) {
-                const idx = getAttrIndex(node);
-                if (idx != null) {
-                  const n = parseInt(idx, 10);
-                  if (!Number.isNaN(n) && n > lastIndexMap[typeName]) {
-                    lastIndexMap[typeName] = n;
-                  }
-                }
-              }
-              return true;
-            });
-          }
+          const { lastIndexMap } = this.storage;
+          lastIndexMap[typeName] = Math.max(lastIndexMap[typeName] ?? 0, getMaxIndex(view.state.doc, typeName));
 
           return {
             update: (view, prevState) => {
@@ -143,16 +145,9 @@ export const ResponseAreaExtension = Extension.create({
             return false;
           }
 
-          // --- Slate: indexing logic (kept identical) ---
-          if (lastIndexMap[typeName] === undefined) {
-            lastIndexMap[typeName] = 0;
-          }
-
-          const prevIndex = lastIndexMap[typeName];
-          const newIndex = prevIndex + 1;
-
-          // Slate increments map even if newIndex === 0
-          lastIndexMap[typeName] += 1;
+          // The doc's own maximum covers content set after the editor loaded.
+          const { lastIndexMap } = this.storage;
+          const newIndex = Math.max(lastIndexMap[typeName] ?? 0, getMaxIndex(state.doc, typeName)) + 1;
 
           const newInline = getDefaultNode({
             schema: state.schema,
@@ -211,6 +206,7 @@ export const ResponseAreaExtension = Extension.create({
           }
 
           if (dispatch) {
+            lastIndexMap[typeName] = newIndex;
             commands.focus();
             dispatch(tr);
           }
