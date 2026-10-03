@@ -172,6 +172,8 @@ This element bundles variant-specific CSS in delivery, so it loads no stylesheet
 
 Every selector in a variant CSS file starts at `.mc-populated-blank-root` (`variant-css-scope.test.ts` enforces it), so the styles cannot leak into other PIE elements. At injection each root selector is narrowed to roots whose `data-mpb-css` carries a hash of this build's sheets, so two versions of the element on one page style only their own instances. The sheets go into the document head, or into the shadow root the element renders in.
 
+The sheets leave the radio's size to `ChoiceRow.svelte`, which renders it at the 24×24 minimum target size; `variant-css-scope.test.ts` rejects a sheet that scales or resizes `pie-choice-radio`.
+
 ### Maintenance workflow
 
 1. Edit the variant's file under `src/delivery/cqt-css/`.

@@ -256,13 +256,19 @@ let {
   }
 
   /* Only the top margin is spaced; the browser's own radio side margins would
-     otherwise offset the control from its label (the demo app's preflight zeroed them). */
+     otherwise offset the control from its label (the demo app's preflight zeroed them).
+     24px is the WCAG 2.5.8 minimum target size; the native radio scales its circle to the box. */
   .choice-radio-bottom {
     margin: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem) 0 0;
     padding: var(--mpb-choice-radio-padding, 0px);
+    width: 24px;
+    height: 24px;
   }
 
   .choice-radio-inline {
     margin: var(--mpb-horizontal-choice-radio-top-margin, 0.5rem) 0 0;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
   }
 </style>
