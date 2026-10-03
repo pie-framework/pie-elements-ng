@@ -21,6 +21,9 @@ export default {
       shape: 'Hotspot {{index}} of {{total}}',
     },
     imageClozeAssociation: {
+      answerChoice: 'Answer choice {{index}} of {{total}}',
+      image_one: 'Image with {{count}} response area',
+      image_other: 'Image with {{count}} response areas',
       reachedLimit_one:
         'You’ve reached the limit of {{count}} response per area. To add another response, one must first be removed.',
       reachedLimit_other: 'Full',

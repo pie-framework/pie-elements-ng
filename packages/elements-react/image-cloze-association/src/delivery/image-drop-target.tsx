@@ -35,6 +35,7 @@ const ImageDropTarget = ({
   canDrag,
   containerStyle,
   draggingElement,
+  getChoiceLabel,
   onDragAnswerBegin,
   onDragAnswerEnd,
   showDashedBorder,
@@ -149,6 +150,7 @@ const ImageDropTarget = ({
               key={answer.id}
               data={answer}
               canDrag={canDrag}
+              getChoiceLabel={getChoiceLabel}
               onDragBegin={() => onDragAnswerBegin(answer)}
               onDragEnd={onDragAnswerEnd}
               answerChoiceTransparency={answerChoiceTransparency}
@@ -172,6 +174,7 @@ ImageDropTarget.propTypes = {
   canDrag: PropTypes.bool.isRequired,
   containerStyle: PropTypes.object.isRequired,
   draggingElement: PropTypes.object.isRequired,
+  getChoiceLabel: PropTypes.func,
   onDragAnswerBegin: PropTypes.func.isRequired,
   onDragAnswerEnd: PropTypes.func.isRequired,
   onDrop: PropTypes.func.isRequired,

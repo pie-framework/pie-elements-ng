@@ -21,6 +21,9 @@ export default {
       shape: 'Zona activa {{index}} de {{total}}',
     },
     imageClozeAssociation: {
+      answerChoice: 'Opción de respuesta {{index}} de {{total}}',
+      image_one: 'Imagen con {{count}} área de respuesta',
+      image_other: 'Imagen con {{count}} áreas de respuesta',
       reachedLimit_one:
         'Has alcanzado el límite de {{count}} respuesta por área. Para agregar otra respuesta, primero se debe eliminar una respuesta.',
       reachedLimit_other: 'Lleno',
