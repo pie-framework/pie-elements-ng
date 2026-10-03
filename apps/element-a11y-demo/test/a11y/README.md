@@ -56,6 +56,11 @@ Each finding includes:
   status-message presence when those checks apply.
 - Suggested Jira title for follow-up remediation work.
 
+`target-size` skips elements clipped to nothing, such as hotspot's keyboard focus proxies:
+they take no pointer input, so the size of what they stand for is a manual check.
+`math-alternative` evaluates each formula once, at its outermost MathJax or MathQuill node,
+and counts only text that assistive technology reads.
+
 ## A11y Mount
 
 Open `/a11y` in the demo app to browse the curated scenario suite. Individual scan routes look like:

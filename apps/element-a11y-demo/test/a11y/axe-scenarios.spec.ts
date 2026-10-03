@@ -417,7 +417,11 @@ async function checkKeyboardTabReach(page: Page): Promise<CheckResult> {
 
 async function checkMathAlternatives(page: Page): Promise<CheckResult> {
   const result = await page.locator('[data-testid="a11y-scan-subject"]').evaluate((subject) => {
-    const mathSelector = ['math', '.MathJax', '[data-latex]', '[data-math]'].join(',');
+    // `.mq-math-mode` is MathQuill's rendered math, static or editable, which the math input
+    // renders in place of MathJax.
+    const mathSelector = ['math', '.MathJax', '.mq-math-mode', '[data-latex]', '[data-math]'].join(
+      ','
+    );
 
     function isVisible(element: Element) {
       const rect = element.getBoundingClientRect();
@@ -441,14 +445,31 @@ async function checkMathAlternatives(page: Page): Promise<CheckResult> {
         .join(' ');
     }
 
-    const mathNodes = [...subject.querySelectorAll(mathSelector)].filter(isVisible);
+    // Text assistive technology reads: aria-hidden subtrees and zero-width characters, such as
+    // MathQuill's cursor, carry none.
+    function exposedText(element: Element) {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let text = '';
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.parentElement?.closest('[aria-hidden="true"]')) {
+          text += node.textContent ?? '';
+        }
+      }
+      return text.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+    }
+
+    // A formula is evaluated once, at its outermost node: MathJax's assistive `math` and the
+    // response slots nested in MathQuill static math belong to the formula around them.
+    const mathNodes = [...subject.querySelectorAll(mathSelector)]
+      .filter((element) => !element.parentElement?.closest(mathSelector))
+      .filter(isVisible);
     const missing = mathNodes
       .filter((element) => {
         const hasAccessibleName =
           !!element.getAttribute('aria-label')?.trim() ||
           !!textFromIdRefs(element.getAttribute('aria-labelledby'));
         const hasNativeAlternative = !!element.querySelector('annotation, annotation-xml, title');
-        const hasText = !!element.textContent?.trim();
+        const hasText = !!exposedText(element);
         return !hasAccessibleName && !hasNativeAlternative && !hasText;
       })
       .slice(0, 10)
@@ -576,8 +597,26 @@ async function checkTargetSize(page: Page): Promise<CheckResult> {
       );
     }
 
+    // A visually hidden element, clipped to nothing, shows no region that accepts a pointer, so
+    // it is no pointer target. Hotspot's keyboard focus proxies are such elements.
+    function isClippedAway(element: Element) {
+      const style = window.getComputedStyle(element);
+      const clip =
+        style.position === 'absolute' || style.position === 'fixed'
+          ? /^rect\((-?[\d.]+)px,? (-?[\d.]+)px,? (-?[\d.]+)px,? (-?[\d.]+)px\)$/.exec(style.clip)
+          : null;
+      if (clip) {
+        const [top, right, bottom, left] = clip.slice(1).map(Number);
+        if (right <= left || bottom <= top) {
+          return true;
+        }
+      }
+      return style.clipPath === 'inset(50%)';
+    }
+
     return [...subject.querySelectorAll(selector)]
       .filter(isVisible)
+      .filter((element) => !isClippedAway(element))
       .map((element) => {
         const rect = element.getBoundingClientRect();
         return {
