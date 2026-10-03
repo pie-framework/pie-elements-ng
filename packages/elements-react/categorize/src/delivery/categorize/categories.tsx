@@ -3,6 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
+import { uid } from '@pie-lib/drag';
 import { color } from '@pie-lib/render-ui';
 
 import GridContent from './grid-content.js';
@@ -23,6 +24,7 @@ export class Categories extends React.Component {
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
+    uid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   };
 
   static defaultProps = {
@@ -42,6 +44,7 @@ export class Categories extends React.Component {
       selectedItem,
       onSelectClick,
       onPlacementClick,
+      uid: instanceId,
     } = this.props;
     const { categoriesPerRow, minRowHeight } = model;
 
@@ -77,6 +80,8 @@ export class Categories extends React.Component {
           // for each inner array of categories, create a row with category titles
           // first cell of row has to be the row label
           cat.forEach((c, columnIndex) => {
+            const labelId = `categorize-${instanceId}-category-label-${rowIndex}-${columnIndex}`;
+
             items.push(
               <div style={{ display: 'flex' }}>
                 {columnIndex === 0 && hasNonEmptyString(rowLabels) ? (
@@ -90,11 +95,13 @@ export class Categories extends React.Component {
                 <StyledCategoryWrapper>
                   <StyledLabel
                     key={`category-label-${rowIndex}-${columnIndex}`}
+                    id={labelId}
                     dangerouslySetInnerHTML={{ __html: c.label }}
                   />
 
                   <Category
                     minRowHeight={minRowHeight}
+                    labelId={labelId}
                     onDropChoice={(h) => onDropChoice(c.id, h)}
                     onRemoveChoice={onRemoveChoice}
                     disabled={disabled}
@@ -144,4 +151,4 @@ const StyledCategoryWrapper: any = styled('div')({
   flexDirection: 'column',
 });
 
-export default Categories;
+export default uid.withUid(Categories);
