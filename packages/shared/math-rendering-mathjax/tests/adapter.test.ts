@@ -68,6 +68,7 @@ function runMathjaxScript(
     math: mathList(),
     outputJax: { chtmlStyles },
     addRenderAction: vi.fn(),
+    addStyles: vi.fn(),
   };
   const mathJax: any = {
     version,
@@ -189,6 +190,7 @@ describe('createMathjaxRenderer', () => {
         abs: ['\\left|#1\\right|', 1],
       },
     });
+    expect(config.output).toEqual({ displayOverflow: 'linebreak' });
     expect(config.options).toEqual({
       enableMenu: true,
       menuOptions: { settings: { assistiveMml: true, enrich: false, inTabOrder: false } },
@@ -337,6 +339,47 @@ describe('createMathjaxRenderer', () => {
       '\\(w\\)',
     ]);
     expect(target.querySelectorAll('[data-math-handled="true"]')).toHaveLength(5);
+  });
+
+  it('typesets authored MathML in display style as the legacy renderer does', async () => {
+    interceptScripts();
+    const target = elementWith(
+      [
+        '<math><mfrac><mn>5</mn><mn>6</mn></mfrac></math>',
+        '<math displaystyle="false"><mn>1</mn></math>',
+        '<mjx-container><mjx-assistive-mml><math><mi>x</mi></math></mjx-assistive-mml></mjx-container>',
+      ].join('')
+    );
+    let displayStyles: (string | null)[] = [];
+    const typesetPromise = vi.fn<TypesetPromise>(async () => {
+      displayStyles = [...target.querySelectorAll('math')].map((math) =>
+        math.getAttribute('displaystyle')
+      );
+    });
+
+    const rendering = createMathjaxRenderer()(target);
+    runMathjaxScript(typesetPromise).finishStartup();
+    await rendering;
+
+    expect(displayStyles).toEqual(['true', 'true', null]);
+  });
+
+  it('typesets prefixed MathML, elementary math included, as MathML', async () => {
+    interceptScripts();
+    const target = elementWith(
+      '<mml:math xmlns="http://www.w3.org/1998/Math/MathML"><mml:mlongdiv><mml:mn>4</mml:mn><mml:mn>21</mml:mn><mml:mn>84</mml:mn></mml:mlongdiv></mml:math>'
+    );
+    let typeset = '';
+    const typesetPromise = vi.fn<TypesetPromise>(async () => {
+      typeset = target.innerHTML;
+    });
+
+    const rendering = createMathjaxRenderer()(target);
+    runMathjaxScript(typesetPromise).finishStartup();
+    await rendering;
+
+    expect(typeset).toMatch(/^<math [^>]*displaystyle="true"[^>]*><mtable /);
+    expect(typeset).not.toContain('mml:');
   });
 
   it('leaves the data-latex nodes of typeset output alone on a later render', async () => {
@@ -503,6 +546,22 @@ describe('createMathjaxRenderer', () => {
     expect(earlySheet.id).toBe('PIE-MJX-CHTML-styles');
   });
 
+  it('scrolls displayed math that MathJax did not break to fit', async () => {
+    interceptScripts();
+
+    const rendering = createMathjaxRenderer()(elementWith('\\[x\\]'));
+    const { mathDocument, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(mathDocument.addStyles).toHaveBeenCalledWith({
+      'mjx-container[overflow="linebreak"][display]': {
+        overflow: 'auto clip',
+        'min-width': 'initial !important',
+      },
+    });
+  });
+
   it('leaves the stylesheet id of a srcUrl build that is not MathJax 4', async () => {
     interceptScripts();
 
@@ -517,6 +576,7 @@ describe('createMathjaxRenderer', () => {
 
     expect(CHTML.STYLESHEETID).toBe('MJX-CHTML-styles');
     expect(mathDocument.addRenderAction).not.toHaveBeenCalled();
+    expect(mathDocument.addStyles).not.toHaveBeenCalled();
   });
 
   it('leaves the stylesheet id of a MathJax 4 the page loaded', async () => {

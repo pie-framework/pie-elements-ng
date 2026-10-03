@@ -1,3 +1,5 @@
+import { rewriteElementaryMath } from './elementary-math.js';
+import { unprefixMathml } from './mathml.js';
 import type { MathjaxOptions } from './types.js';
 import { mathjax3Version, reportUnsupportedPage } from './unsupported-page.js';
 
@@ -13,6 +15,7 @@ interface MathItem {
 interface MathDocument {
   math?: Iterable<MathItem> & { remove?: (...items: MathItem[]) => unknown };
   outputJax?: { chtmlStyles?: Element | null };
+  addStyles?: (styles: Record<string, Record<string, string>>) => void;
   addRenderAction?: (
     id: string,
     priority: number,
@@ -50,6 +53,7 @@ interface MathJaxGlobal {
     menuOptions?: { settings?: Record<string, boolean> };
     a11y?: { inTabOrder?: boolean };
   };
+  output?: { displayOverflow?: string };
   chtml?: { fontURL?: string };
   typesetPromise?: (elements?: Element[]) => Promise<void>;
   typesetClear?: (elements?: Element[]) => void;
@@ -123,6 +127,19 @@ const OWN_MENU_STORAGE = 'PIE-MathJax-Menu-Settings';
 
 /** Output stylesheets of another MathJax. MathJax 4's menu and explorer sheets are not among them. */
 const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, SHARED_SVG_STYLESHEET_ID];
+
+/**
+ * MathJax breaks displayed math to the width its container has at typeset, and does not break it
+ * again: math typeset while hidden is not broken, and math the page later narrows, on zoom for one,
+ * is not broken to the new width. Displayed math that does not fit scrolls in its own container,
+ * under the rule MathJax's `displayOverflow: 'scroll'` applies to all of it.
+ */
+const LINEBREAK_FALLBACK_STYLES = {
+  'mjx-container[overflow="linebreak"][display]': {
+    overflow: 'auto clip',
+    'min-width': 'initial !important',
+  },
+};
 
 /** MathJax's STATE.INSERTED: the item's output is in the document. */
 const STATE_INSERTED = 200;
@@ -206,6 +223,16 @@ function wrapLatexElements(root: Element): void {
   }
 }
 
+/**
+ * Sets `displaystyle="true"` on each authored `<math>`, as the legacy renderer does, so MathML
+ * fractions, sums and limits keep display size in running text. MathJax's own output is left alone.
+ */
+function useDisplayStyle(root: Element): void {
+  for (const math of root.querySelectorAll('math')) {
+    if (!math.closest('mjx-container')) math.setAttribute('displaystyle', 'true');
+  }
+}
+
 function containsMath(root: Element, useSingleDollar: boolean): boolean {
   for (const math of root.querySelectorAll('math')) {
     if (!math.closest('mjx-assistive-mml')) return true;
@@ -243,11 +270,15 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
             useOwnMenuStorage(mathJax);
           }
           startup?.defaultReady?.();
-          if (isolate) isolateOutput(startup?.document);
+          if (isolate) {
+            isolateOutput(startup?.document);
+            startup?.document?.addStyles?.(LINEBREAK_FALLBACK_STYLES);
+          }
           Promise.resolve(startup?.promise).then(() => resolve(), reject);
         },
       },
       tex: { macros: { ...LEGACY_MACROS } },
+      output: { displayOverflow: 'linebreak' },
       options: {
         enableMenu: accessibility,
         // The menu settings decide MathJax 4's accessibility output. These reproduce the legacy
@@ -483,6 +514,9 @@ export function createMathjaxRenderer(
     if (mathjax3)
       reportUnsupportedPage('mathjax-3-global', `window.MathJax is MathJax ${mathjax3}`);
     wrapLatexElements(element);
+    unprefixMathml(element);
+    useDisplayStyle(element);
+    rewriteElementaryMath(element);
     // Whether any content on the page holds math is unknown up front, so the first render starts
     // the load and later math is typeset without waiting on the download.
     const loading = ensureMathjax(options);
