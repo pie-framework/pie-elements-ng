@@ -73,6 +73,12 @@ Open `/a11y/inventory` to browse the broad demo baseline. Inventory scan routes 
 
 These routes intentionally avoid the normal demo chrome so Axe scans focus on the mounted assessment element. Scans load elements through the ESM player.
 
+A scan starts once the element has rendered: after the player's `load-complete`, the route waits
+for text, a control or a media node in the mounted element, for its images to load, and for
+250 ms without DOM changes, and only then sets `data-a11y-ready`. An element that renders
+nothing within 15 s sets `data-a11y-render="not-rendered"`; the suite records that scenario as
+a harness error whose message starts with "Not rendered", and scans nothing.
+
 In local dev mode, `/a11y` includes a “Run full a11y suite” control. Individual scan
 pages include controls to run just that scenario or all scenarios for the element. These
 controls call dev-only SvelteKit endpoints that spawn the same Playwright commands used
