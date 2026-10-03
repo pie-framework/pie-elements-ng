@@ -22,7 +22,7 @@ The adapter has two builds with one API.
 
 Each element bundles the browser build, and with it a MathJax of its own, a deliberate trade: every element type on a page downloads the engine once per element release, and in exchange keeps its own options, MathJax version and failures. The [shared browser runtime](prds/shared-browser-runtime/PRD.md#decisions) leaves the adapter out for that reason.
 
-The browser build's engine loads as a chunk on the first render: about 1.3 MB minified, 320 kB gzipped, with the CHTML font data. The font's dynamic ranges, about 1 MB in all, load as chunks when math first uses them. Its output is the npm build's, with these differences:
+The browser build's engine is a chunk the adapter requests as its module loads and starts on the first render: about 1.3 MB minified, 320 kB gzipped, with the CHTML font data. The font's dynamic ranges, 40 chunks of about 1 MB in all, 150 kB gzipped, are requested with it, so math that first uses one mid-session waits on no download. Its output is the npm build's, with these differences:
 
 - SVG output and collapsible math are not bundled. Their menu items are disabled, and a stored menu setting that names either is overridden.
 - `\require` is unsupported. The packages `tex-mml-chtml.js` autoloads are bundled, mhchem with its font extension.
@@ -42,7 +42,7 @@ Both builds pin one MathJax version: `mathjax`, `@mathjax/src` and the font pack
 
 ## Loading
 
-- MathJax loads on the first render, whatever the element holds, so later math does not wait on the download: the npm build loads `https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js`, the browser build its engine chunk. A render waits on the load only when its element holds a TeX delimiter or a `<math>` element.
+- MathJax loads on the first render, whatever the element holds, so later math does not wait on the download: the npm build loads `https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js`; the browser build starts its engine chunk, requested as the adapter module loaded, so a player that imports elements ahead of rendering them, as the section player does for a whole section, has it before the first render. A render waits on the load only when its element holds a TeX delimiter or a `<math>` element.
 - Element IIFE bundles each bundle their own copy of the npm build. The copies share one load per page, because a second MathJax startup on one page throws. Each element browser build starts its own MathJax.
 - `startup.typeset` is `false`: MathJax typesets only the elements the renderer is given, never the host page's own text.
 - On the npm build, a MathJax the page already has is used as the page configured it, and the adapter loads no copy of its own. A configuration object at `window.MathJax`, for a page that loads MathJax itself, is awaited through its `startup.ready`; a MathJax 3 or 4 build is used once its startup completes. The legacy macros and delimiters then apply only where the page's configuration defines them.

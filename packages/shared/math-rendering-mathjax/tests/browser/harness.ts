@@ -6,7 +6,7 @@
  * bundles its own. The browser build is served under `/copy-<n>/` as well: each prefix is a
  * separate set of modules, as each element that bundles the adapter has its own.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,6 +38,13 @@ const CDN_PACKAGES: Record<string, string> = {
 export type Build = 'npm' | 'browser';
 
 const BROWSER_DIST = join(packageDir, 'dist', 'browser');
+
+/** The chunks of the browser build, which `/adapter.js` imports. */
+export function browserChunks(): string[] {
+  return readdirSync(BROWSER_DIST)
+    .filter((file) => file.endsWith('.js') && file !== 'index.js')
+    .sort();
+}
 
 /**
  * The legacy renderer's own MathJax 3 fonts and speech rules. They are refused: whether they load

@@ -13,11 +13,20 @@ export function engineMathJax(): MathJaxGlobal | undefined {
 }
 
 /**
+ * The engine chunk, requested as this module evaluates. Players import element modules before
+ * they render, the section player a whole section's at once, so the download is done before the
+ * first math. Nothing in the chunk touches the page until `loadMathJax` starts it.
+ */
+const engine = import('./bundled/mathjax.js');
+// A failed request rejects the renders that hold math.
+engine.catch(() => {});
+
+/**
  * Starts this copy's MathJax from `config`, the configuration the page engine installs as
- * `window.MathJax`. The engine is a separate chunk, loaded on the first render.
+ * `window.MathJax`.
  */
 export async function loadMathJax(config: MathJaxGlobal, _srcUrl: string): Promise<void> {
-  const { createMathJax } = await import('./bundled/mathjax.js');
+  const { createMathJax } = await engine;
   mathJax = createMathJax(config);
   const ready = config.startup?.ready ?? mathJax.startup?.defaultReady;
   ready?.();

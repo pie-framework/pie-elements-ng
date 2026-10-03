@@ -3,7 +3,7 @@
  * black-box, since that MathJax is reachable from the page only through its output and its menu.
  */
 import { type Browser, expect, type Page, test } from '@playwright/test';
-import { type Build, openPage, renderWithAdapter } from './harness';
+import { type Build, browserChunks, openPage, renderWithAdapter } from './harness';
 
 const OWN_KEY = 'PIE-MathJax-Menu-Settings';
 
@@ -297,6 +297,44 @@ test('reports the CHTML stylesheet of a MathJax 3 on the page, and only that', a
   expect(errors.filter((error) => error.startsWith('[math-rendering]'))).toEqual([
     expect.stringContaining('Unsupported page (foreign-output-stylesheet)'),
   ]);
+  expect(unserved).toEqual([]);
+});
+
+test('requests its engine and font ranges as it loads, and changes the page only once it renders', async ({
+  page,
+}) => {
+  const scripts: string[] = [];
+  page.on('request', (request) => {
+    const { pathname } = new URL(request.url());
+    if (pathname.endsWith('.js') && pathname !== '/adapter.js') scripts.push(pathname.slice(1));
+  });
+  const { unserved, errors } = await openPage(
+    page,
+    '<body><div id="m">\\(\\mathbb{R} + \\mathfrak{g} + \\mathcal{L} + \\textsf{A}\\)</div></body>',
+    'browser'
+  );
+  const globals = () => page.evaluate(() => Object.keys(window).sort());
+  const before = await globals();
+
+  await page.evaluate(() => import('/adapter.js'));
+  const chunks = browserChunks();
+  await expect.poll(() => [...scripts].sort()).toEqual(chunks);
+  // The adapter's own request, so this resolves once the engine has evaluated.
+  await page.evaluate(
+    (url) => import(url),
+    `/${chunks.find((file) => file.startsWith('mathjax-'))}`
+  );
+
+  expect(await globals()).toEqual(before);
+  expect(await pageMathJax(page)).toBeNull();
+  expect(await headStylesheetIds(page)).toEqual([]);
+  await expect(page.locator('#m mjx-container')).toHaveCount(0);
+
+  await renderWithAdapter(page, 'm');
+  await expect(page.locator('#m mjx-container')).toHaveAttribute('jax', 'CHTML');
+  // Math drawn from the font ranges requests no script of its own.
+  expect(scripts).toHaveLength(chunks.length);
+  expect(errors).toEqual([]);
   expect(unserved).toEqual([]);
 });
 

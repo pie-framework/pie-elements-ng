@@ -157,7 +157,7 @@ Costs:
 - **Coupling.** The elements of one release share one version of every admitted package, and an `@pie-lib` change reaches browser ESM only through a runtime release.
 - **Release cadence.** Every runtime release republishes every element that pins it.
 - **Self-contained elements.** Pages with math-inline or math-templated still carry their own stack.
-- **MathJax per element.** Each element type on a page loads its own MathJax engine on its first render, about 320 kB gzipped, once per element release.
+- **MathJax per element.** Each element type on a page loads its own MathJax engine and font ranges as its module loads, about 470 kB gzipped, once per element release.
 - **Production React.** The runtime ships React's production build, so hosts' development builds get no React development warnings from elements.
 
 ## Worked example

@@ -5,9 +5,10 @@
  * and replaces `components/global.js`, which the menu imports, with `./global.ts`.
  *
  * What `tex-mml-chtml.js` loads on demand is bundled: the TeX packages its autoload fetches, with
- * the font extension mhchem loads, the dynamic ranges of its font, which load as chunks of this
- * build, and the menu's accessibility extensions. Its font files and speech worker load from jsDelivr, as they do for the component
- * build. SVG output and collapsing math are not bundled, and their menu items are disabled.
+ * the font extension mhchem loads, the dynamic ranges of its font, chunks of this build requested
+ * as this module evaluates, and the menu's accessibility extensions. Its font files and speech
+ * worker load from jsDelivr, as they do for the component build. SVG output and collapsing math
+ * are not bundled, and their menu items are disabled.
  */
 import { AssistiveMmlHandler } from '@mathjax/src/js/a11y/assistive-mml.js';
 import * as assistiveMml from '@mathjax/src/js/a11y/assistive-mml.js';
@@ -120,6 +121,10 @@ function checkConfig(config: MathJaxGlobal): void {
     );
   }
 }
+
+// Every dynamic range is requested as this module evaluates, so a range math first uses later is
+// in hand. A range registers its data on this copy's font class, and changes nothing else.
+for (const load of Object.values(dynamicFonts)) load().catch(() => {});
 
 /** The name prefix the font's dynamic ranges are requested under. */
 const DYNAMIC_FONT_PREFIX = `${MathJaxNewcmFont.OPTIONS.dynamicPrefix}/`;
