@@ -4,6 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import debug from 'debug';
+import { labelFieldTextareas } from './field-label.js';
 import { MQ } from './mathquill-instance.js';
 
 const log = debug('math-input:mq:input');
@@ -23,6 +24,7 @@ export class Input extends React.Component {
     latex: PropTypes.string,
     onFocus: PropTypes.func,
     onBlur: PropTypes.func,
+    language: PropTypes.string,
   };
 
   componentDidMount() {
@@ -37,10 +39,12 @@ export class Input extends React.Component {
     });
 
     this.updateLatex();
+    labelFieldTextareas(this.input, this.props.language);
   }
 
   componentDidUpdate() {
     this.updateLatex();
+    labelFieldTextareas(this.input, this.props.language);
   }
 
   updateLatex() {
