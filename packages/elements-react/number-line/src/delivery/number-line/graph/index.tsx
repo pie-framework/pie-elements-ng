@@ -12,10 +12,11 @@ import BaseLine from './line.js';
 import Arrow from './arrow.js';
 import Ticks from './ticks.js';
 import { snapTo } from './tick-utils.js';
-import { describeNumberLine } from './description.js';
+import { describePlottedElements, labelNumberLine } from './description.js';
 import Stacks from './stacks.js';
 import { TransitionGroup } from 'react-transition-group';
 import PropTypes from 'prop-types';
+import { uniqueId } from '@pie-element/shared-lodash';
 import { Fade } from '../transitions/index.js';
 
 const getXScale = (min, max, width, padding) => {
@@ -70,6 +71,8 @@ export class NumberLineGraph extends React.Component {
     super(props);
     this.state = {};
   }
+
+  descriptionId: string = uniqueId('number-line-description-');
 
   xScaleFn() {
     const { domain, width } = this.props;
@@ -229,15 +232,12 @@ export class NumberLineGraph extends React.Component {
               height={fraction ? height + 20 : height}
               style={{ touchAction: 'none' }}
               role="img"
-              aria-label={describeNumberLine({
-                domain,
-                ticks,
-                width,
-                fraction,
-                elements: this.props.elements,
-                language,
-              })}
+              aria-label={labelNumberLine({ domain, ticks, width, fraction, language })}
+              aria-describedby={this.descriptionId}
             >
+              <desc id={this.descriptionId}>
+                {describePlottedElements(this.props.elements, { fraction, language })}
+              </desc>
               {false && <Debug domain={domain} ticks={ticks} />}
               <BaseLine y={lineY} width={width} />
               {arrows.left && <Arrow y={lineY} />}

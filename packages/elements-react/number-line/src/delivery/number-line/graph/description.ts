@@ -4,25 +4,25 @@ import { normalizeTicks } from './tick-utils.js';
 
 const { translator } = Translator;
 
-interface DescribedElement {
-  type: string;
-}
+type EndPoint = 'full' | 'empty';
 
-export interface NumberLineDescriptionInput {
-  domain: { min: number; max: number };
-  ticks: { minor: number; major: number };
-  width: number;
+export type PlottedElement =
+  | { type: 'point'; pointType: EndPoint; position: number }
+  | { type: 'line'; leftPoint: EndPoint; rightPoint: EndPoint; position: { left: number; right: number } }
+  | { type: 'ray'; direction: 'positive' | 'negative'; pointType: EndPoint; position: number };
+
+interface DescriptionContext {
   fraction?: boolean;
-  elements: readonly DescribedElement[];
   language?: string;
 }
 
-/** Element types in the order the description counts them, with the key that counts each. */
-const COUNTED_TYPES = [
-  ['point', 'numberLine.pointCount'],
-  ['line', 'numberLine.lineCount'],
-  ['ray', 'numberLine.rayCount'],
-] as const;
+export interface NumberLineLabelInput extends DescriptionContext {
+  domain: { min: number; max: number };
+  ticks: { minor: number; major: number };
+  width: number;
+}
+
+const optionsFor = (language?: string) => ({ lng: language, interpolation: { escapeValue: false } });
 
 /** Formats a value the way the tick labels show it: a fraction in fraction mode, else up to 3 decimals. */
 const formatValue = (value: number | math.Fraction, asFraction: boolean): string => {
@@ -36,39 +36,54 @@ const formatValue = (value: number | math.Fraction, asFraction: boolean): string
   return denominator === 1 ? String(numerator) : `${numerator}/${denominator}`;
 };
 
-/**
- * Describes the number line from its model: the range, the tick spacing as drawn (after the
- * width-based limits the ticks apply), and how many points, lines and rays are plotted.
- */
-export function describeNumberLine({
-  domain,
-  ticks,
-  width,
-  fraction = false,
-  elements,
-  language,
-}: NumberLineDescriptionInput): string {
-  const options = { lng: language, interpolation: { escapeValue: false } };
+/** Names the number line by its range and its tick spacing as drawn, after the width-based limits. */
+export function labelNumberLine({ domain, ticks, width, fraction = false, language }: NumberLineLabelInput): string {
   const { minor } = normalizeTicks(domain, width, ticks, { fraction });
 
-  const range = translator.t('numberLine.graphLabel', {
-    ...options,
+  return translator.t('numberLine.graphLabel', {
+    ...optionsFor(language),
     min: formatValue(domain.min, fraction),
     max: formatValue(domain.max, fraction),
     interval: formatValue(minor, fraction),
   });
+}
 
-  const counts = COUNTED_TYPES.map(([type, key]) => ({
-    key,
-    count: elements.filter((element) => element.type === type).length,
-  })).filter(({ count }) => count > 0);
+/** Describes each plotted element: its position, whether each endpoint is included, and a ray's direction. */
+export function describePlottedElements(
+  elements: readonly PlottedElement[],
+  { fraction = false, language }: DescriptionContext = {},
+): string {
+  const options = optionsFor(language);
+  const value = (v: number) => formatValue(v, fraction);
+  const end = (point: EndPoint) =>
+    translator.t(point === 'empty' ? 'numberLine.openEnd' : 'numberLine.closedEnd', options);
 
-  const plotted = counts.length
-    ? translator.t('numberLine.plotted', {
-        ...options,
-        items: counts.map(({ key, count }) => translator.t(key, { ...options, count })).join(', '),
-      })
-    : translator.t('numberLine.plottedNone', options);
+  const sentences = elements.map((element) => {
+    switch (element.type) {
+      case 'point':
+        return translator.t(element.pointType === 'empty' ? 'numberLine.pointOpen' : 'numberLine.pointClosed', {
+          ...options,
+          position: value(element.position),
+        });
+      case 'line':
+        return translator.t('numberLine.line', {
+          ...options,
+          left: value(element.position.left),
+          leftEnd: end(element.leftPoint),
+          right: value(element.position.right),
+          rightEnd: end(element.rightPoint),
+        });
+      case 'ray':
+        return translator.t(element.direction === 'negative' ? 'numberLine.rayLeft' : 'numberLine.rayRight', {
+          ...options,
+          position: value(element.position),
+          end: end(element.pointType),
+        });
+      default:
+        return '';
+    }
+  });
 
-  return `${range} ${plotted}`;
+  const described = sentences.filter(Boolean);
+  return described.length ? described.join(' ') : translator.t('numberLine.plottedNone', options);
 }
