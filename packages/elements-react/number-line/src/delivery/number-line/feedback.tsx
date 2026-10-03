@@ -25,17 +25,18 @@ let getIcon = (t) => {
   }
 };
 
+// Tinted status surfaces under the inherited page ink, the same pairs render-ui's Feedback uses.
 const FeedbackContainer: any = styled('div')(({ $type }) => ({
   marginTop: '10px',
-  backgroundColor: '#dddddd',
+  backgroundColor: color.backgroundDark(),
   padding: '10px',
   display: 'flex',
   alignItems: 'center',
   ...($type === 'correct' && {
-    backgroundColor: color.correct(),
+    backgroundColor: color.correctSecondary(),
   }),
   ...($type === 'incorrect' && {
-    backgroundColor: color.incorrect(),
+    backgroundColor: color.incorrectSecondary(),
   }),
   '& svg': {
     height: '30px',

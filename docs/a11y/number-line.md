@@ -13,3 +13,4 @@ Students inspect or manipulate points, rays, intervals, or values on a number li
 
 - Confirm plotted values, endpoint inclusion, and ray direction are exposed textually.
 - Confirm point/ray manipulation is possible without pointer input.
+- Confirm the evaluate feedback panel and the max-points warning keep text at 4.5:1 in light and dark; no scenario renders either.
