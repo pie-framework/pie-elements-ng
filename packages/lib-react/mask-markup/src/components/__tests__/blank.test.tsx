@@ -30,6 +30,13 @@ describe('Blank', () => {
     expect(screen.getByRole('button', { name: 'Blank 2' })).toHaveAttribute('tabindex', '0');
   });
 
+  it('lays out the named target as the chip box, so it is at least 24px tall', () => {
+    renderBlank();
+
+    // An inline span measures one text line (18px); an inline-flex box wraps its 32px chip.
+    expect(getComputedStyle(screen.getByRole('button', { name: 'Blank 2' })).display).toBe('inline-flex');
+  });
+
   it('names an empty blank in the item language', () => {
     renderBlank({ language: 'es_ES' });
 
