@@ -50,7 +50,7 @@ Elements import `@pie-element/shared-math-rendering-mathjax` directly.
 
 **Macros:** `\parallelogram`, `\overarc`, `\napprox`, `\longdiv`, and `\abs{x}` for an absolute value.
 
-**MathML:** `<math>` elements typeset as MathML input.
+**MathML:** `<math>` elements typeset as MathML input, at display size (`displaystyle="true"`) as the legacy renderer sets it. A prefixed root such as `<mml:math>` typesets too. Elementary math, `mstack` and `mlongdiv`, is rewritten as the `mtable` it describes before MathJax reads it: MathJax 4 reads it only through its `mml3` extension, which depends on XSLT.
 
 ```html
 <math>
@@ -60,6 +60,8 @@ Elements import `@pie-element/shared-math-rendering-mathjax` directly.
   </mfrac>
 </math>
 ```
+
+**Line breaking:** displayed math wider than its container breaks to the container's width at typeset. Math typeset while hidden, or narrowed later, scrolls inside its own container.
 
 ## Accessibility
 
