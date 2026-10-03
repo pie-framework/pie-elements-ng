@@ -49,7 +49,7 @@ async function dragFirstChoiceToFirstDropZone(page: Page, root: Locator) {
   const choice = root.locator('[aria-roledescription="draggable"][aria-disabled="false"]').first();
   const dropZone = root
     .locator(
-      '[role="button"]:not([aria-roledescription]), [role="group"][tabindex="0"], [role="group"][aria-labelledby]',
+      '[role="button"]:not([aria-roledescription]), [role="group"][tabindex="0"], [role="group"][aria-labelledby]'
     )
     .first();
   await dragBetween(page, choice, dropZone);
