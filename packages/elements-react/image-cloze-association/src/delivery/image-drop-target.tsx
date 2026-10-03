@@ -45,6 +45,7 @@ const ImageDropTarget = ({
   maxResponsePerZone,
   onDrop,
   index,
+  label,
   selectedResponse,
   onSelectClick,
   onPlacementClick,
@@ -128,6 +129,7 @@ const ImageDropTarget = ({
       className={containerClasses}
       style={updatedContainerStyle}
       role={isNativeTabStop ? 'button' : undefined}
+      aria-label={isNativeTabStop ? label : undefined}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleContainerClick}
       onKeyDown={isNativeTabStop ? handleContainerKeyDown : undefined}
@@ -177,6 +179,7 @@ ImageDropTarget.propTypes = {
   responseContainerPadding: PropTypes.string,
   imageDropTargetPadding: PropTypes.string,
   maxResponsePerZone: PropTypes.number,
+  label: PropTypes.string,
   selectedResponse: PropTypes.object,
   onSelectClick: PropTypes.func,
   onPlacementClick: PropTypes.func,

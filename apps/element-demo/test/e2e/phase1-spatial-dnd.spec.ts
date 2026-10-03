@@ -40,13 +40,15 @@ const CHOICE_DROP_ELEMENTS = new Set([
 ]);
 
 /**
- * Drag the first choice onto the first drop zone. A choice is an enabled dnd-kit draggable (match-list
- * renders its empty response areas as disabled draggables); a drop zone is a click-to-place
- * `role="button"` without the draggable roledescription.
+ * Drag the first choice onto the first drop zone. A choice is an enabled dnd-kit draggable; a drop
+ * zone is a click-to-place `role="button"` without the draggable roledescription, or a `role="group"`
+ * named by its label where the zone is not a tab stop (match-list's response areas).
  */
 async function dragFirstChoiceToFirstDropZone(page: Page, root: Locator) {
   const choice = root.locator('[aria-roledescription="draggable"][aria-disabled="false"]').first();
-  const dropZone = root.locator('[role="button"]:not([aria-roledescription])').first();
+  const dropZone = root
+    .locator('[role="button"]:not([aria-roledescription]), [role="group"][aria-labelledby]')
+    .first();
   await dragBetween(page, choice, dropZone);
   // dnd-kit swallows document clicks until a 50ms timer it sets on drop has fired, so an earlier
   // click on the Scorer link bypasses the router and reloads the page, losing the session. A page

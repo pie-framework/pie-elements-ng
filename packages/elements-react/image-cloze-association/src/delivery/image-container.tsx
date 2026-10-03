@@ -3,8 +3,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
+import Translator from '@pie-lib/translator';
 
 import ImageDropTarget from './image-drop-target.js';
+
+const { translator } = Translator;
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   margin: theme.spacing(2),
@@ -19,6 +22,7 @@ class ImageContainer extends Component {
       canDrag,
       draggingElement,
       image: { height, src, width } = {},
+      language,
       onAnswerSelect,
       onDragAnswerBegin,
       onDragAnswerEnd,
@@ -61,6 +65,11 @@ class ImageContainer extends Component {
               key={r.id + i}
               draggingElement={draggingElement}
               index={r.index}
+              label={translator.t('imageClozeAssociation.responseArea', {
+                lng: language,
+                index: i + 1,
+                total: responseContainers.length,
+              })}
               onDrop={(item) => onAnswerSelect(item, r.index)}
               onDragAnswerBegin={onDragAnswerBegin}
               onDragAnswerEnd={onDragAnswerEnd}
@@ -86,6 +95,7 @@ ImageContainer.propTypes = {
   canDrag: PropTypes.bool.isRequired,
   draggingElement: PropTypes.shape({}).isRequired,
   image: PropTypes.object.isRequired,
+  language: PropTypes.string,
   onAnswerSelect: PropTypes.func.isRequired,
   onDragAnswerBegin: PropTypes.func.isRequired,
   onDragAnswerEnd: PropTypes.func.isRequired,

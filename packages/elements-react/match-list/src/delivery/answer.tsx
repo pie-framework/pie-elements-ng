@@ -188,6 +188,7 @@ function DragAndDropAnswer(props) {
     id,
     instanceId,
     promptId,
+    labelId,
     draggable = true,
     disabled = false,
     type,
@@ -314,6 +315,10 @@ function DragAndDropAnswer(props) {
     // drag flow (Tab+Space/Enter on the choice, Tab-cycle to the occupied target,
     // Space/Enter to swap).
     const isNativeTabStop = !draggable && !disabled && hasSelection;
+    // A filled area holds a dnd-kit draggable, and a button's children are presentational to
+    // assistive technology, so the area is a button only while it is the tab stop and otherwise a
+    // group. Either way its prompt names it. An empty area's inner node is not draggable, so it
+    // takes none of dnd-kit's attributes: as a disabled button it would sit unnamed inside this one.
 
     const handleResponseAreaKeyDown = (e) => {
       if (e.code === 'Space' || e.code === 'Enter') {
@@ -325,7 +330,8 @@ function DragAndDropAnswer(props) {
     return (
       <div
         ref={setDropRef}
-        role="button"
+        role={isNativeTabStop ? 'button' : 'group'}
+        aria-labelledby={labelId}
         tabIndex={isNativeTabStop ? 0 : -1}
         onClick={handleResponseAreaClick}
         onKeyDown={isNativeTabStop ? handleResponseAreaKeyDown : undefined}
@@ -344,7 +350,7 @@ function DragAndDropAnswer(props) {
         <div
           ref={setDragRef}
           {...listeners}
-          {...attributes}
+          {...(draggable ? attributes : {})}
           data-tile-id={`${instanceId}:${dragId}`}
           style={{ transform: transformStyle, transition }}
         >
@@ -391,6 +397,7 @@ DragAndDropAnswer.propTypes = {
   id: PropTypes.any,
   instanceId: PropTypes.string,
   promptId: PropTypes.any,
+  labelId: PropTypes.string,
   title: PropTypes.string,
   draggable: PropTypes.bool,
   disabled: PropTypes.bool,

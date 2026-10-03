@@ -6,6 +6,9 @@ export default {
       maxChoicesPerCategoryRestriction:
         'To change this value to {{maxChoicesPerCategory}}, each category must have {{maxChoicesPerCategory}} or fewer answer choice[s].',
     },
+    dragInTheBlank: {
+      blank: 'Blank {{index}}',
+    },
     ebsr: {
       part: 'Part {{index}}',
     },
@@ -14,10 +17,14 @@ export default {
       addElementLimit_other: 'You can only add {{count}} elements',
       clearAll: 'Clear all',
     },
+    hotspot: {
+      shape: 'Hotspot {{index}} of {{total}}',
+    },
     imageClozeAssociation: {
       reachedLimit_one:
         'You’ve reached the limit of {{count}} response per area. To add another response, one must first be removed.',
       reachedLimit_other: 'Full',
+      responseArea: 'Response area {{index}} of {{total}}',
     },
     drawingResponse: {
       fillColor: 'Fill color',

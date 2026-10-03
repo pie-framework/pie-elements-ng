@@ -2,7 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { swap } from '@pie-lib/drag';
+import { swap, uid } from '@pie-lib/drag';
 import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode, rectIntersection } from '@dnd-kit/core';
 import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
@@ -107,6 +107,8 @@ export class Main extends React.Component {
     super(props);
 
     this.instanceId = uniqueId();
+    // Random rather than a counter: two versions of this element on one page each count from 1.
+    this.uid = uid.generateId();
     this.state = {
       showCorrectAnswer: false,
       draggingElement: null,
@@ -481,6 +483,7 @@ export class Main extends React.Component {
             <InteractiveRegionContent>
               <AnswerArea
                 instanceId={this.instanceId}
+                uid={this.uid}
                 model={model}
                 session={session}
                 onRemoveAnswer={(id) => this.onRemoveAnswer(id)}
