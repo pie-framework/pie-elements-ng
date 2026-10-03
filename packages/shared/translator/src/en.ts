@@ -13,6 +13,15 @@ export default {
       addElementLimit_one: 'You can only add {{count}} element',
       addElementLimit_other: 'You can only add {{count}} elements',
       clearAll: 'Clear all',
+      graphLabel: 'Number line from {{min}} to {{max}}, with a tick every {{interval}}.',
+      lineCount_one: '{{count}} line',
+      lineCount_other: '{{count}} lines',
+      plotted: 'Plotted: {{items}}.',
+      plottedNone: 'Nothing is plotted.',
+      pointCount_one: '{{count}} point',
+      pointCount_other: '{{count}} points',
+      rayCount_one: '{{count}} ray',
+      rayCount_other: '{{count}} rays',
     },
     imageClozeAssociation: {
       reachedLimit_one:

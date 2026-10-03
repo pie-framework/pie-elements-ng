@@ -13,6 +13,15 @@ export default {
       addElementLimit_one: 'Solo puedes agregar {{count}} elemento',
       addElementLimit_other: 'Solo puedes agregar {{count}} elementos',
       clearAll: 'Borrar todo',
+      graphLabel: 'Recta numérica de {{min}} a {{max}}, con una marca cada {{interval}}.',
+      lineCount_one: '{{count}} línea',
+      lineCount_other: '{{count}} líneas',
+      plotted: 'En la recta: {{items}}.',
+      plottedNone: 'No hay nada marcado en la recta.',
+      pointCount_one: '{{count}} punto',
+      pointCount_other: '{{count}} puntos',
+      rayCount_one: '{{count}} rayo',
+      rayCount_other: '{{count}} rayos',
     },
     imageClozeAssociation: {
       reachedLimit_one:

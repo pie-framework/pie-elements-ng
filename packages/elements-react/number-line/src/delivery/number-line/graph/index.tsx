@@ -12,6 +12,7 @@ import BaseLine from './line.js';
 import Arrow from './arrow.js';
 import Ticks from './ticks.js';
 import { snapTo } from './tick-utils.js';
+import { describeNumberLine } from './description.js';
 import Stacks from './stacks.js';
 import { TransitionGroup } from 'react-transition-group';
 import PropTypes from 'prop-types';
@@ -58,6 +59,7 @@ export class NumberLineGraph extends React.Component {
     disabled: PropTypes.bool,
     onDeselectElements: PropTypes.func,
     arrows: PropTypes.shape({ left: PropTypes.bool, right: PropTypes.bool }),
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -128,7 +130,7 @@ export class NumberLineGraph extends React.Component {
   }
 
   render() {
-    const { domain, width, ticks, height, onToggleElement, onMoveElement, disabled, fraction } = this.props;
+    const { domain, width, ticks, height, onToggleElement, onMoveElement, disabled, fraction, language } = this.props;
     let { arrows } = this.props;
 
     arrows = arrows || { left: true, right: true };
@@ -222,7 +224,20 @@ export class NumberLineGraph extends React.Component {
           <div style={{ display: 'inline-block' }}>
             {/* touch-action must be on the outer svg: Chrome ignores it on inner svg elements (g, circle),
                 and without it the browser claims a touch on the drag handles as a pan and cancels dnd-kit's drag */}
-            <svg width={width} height={fraction ? height + 20 : height} style={{ touchAction: 'none' }}>
+            <svg
+              width={width}
+              height={fraction ? height + 20 : height}
+              style={{ touchAction: 'none' }}
+              role="img"
+              aria-label={describeNumberLine({
+                domain,
+                ticks,
+                width,
+                fraction,
+                elements: this.props.elements,
+                language,
+              })}
+            >
               {false && <Debug domain={domain} ticks={ticks} />}
               <BaseLine y={lineY} width={width} />
               {arrows.left && <Arrow y={lineY} />}
