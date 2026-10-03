@@ -92,7 +92,7 @@ describe('DroppablePlaceholder', () => {
       const { container } = renderPlaceholder();
       const outer = container.firstChild as Element;
 
-      expect(outer.getAttribute('role')).toBe('button');
+      expect(outer.getAttribute('role')).toBe('group');
       expect(outer.getAttribute('tabindex')).toBe('0');
     });
 
@@ -100,8 +100,23 @@ describe('DroppablePlaceholder', () => {
       const { container } = renderPlaceholder({ disabled: true });
       const outer = container.firstChild as Element;
 
-      expect(outer.getAttribute('role')).toBeNull();
+      expect(outer.getAttribute('role')).toBe('group');
       expect(outer.getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('is a group named by its label, so the choices inside it stay exposed', () => {
+      render(
+        <ThemeProvider theme={theme}>
+          <div id="cat-1-label">Rational</div>
+          <DroppablePlaceholder id="cat-1" labelId="cat-1-label">
+            <div role="button">choice</div>
+          </DroppablePlaceholder>
+        </ThemeProvider>,
+      );
+
+      const group = screen.getByRole('group', { name: 'Rational' });
+      expect(group).toContainElement(screen.getByRole('button', { name: 'choice' }));
+      expect(screen.queryByRole('button', { name: /Rational/ })).not.toBeInTheDocument();
     });
 
     it('places the current selection into this target on click', () => {

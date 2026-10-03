@@ -20,6 +20,7 @@ export class Category extends React.Component {
     onDropChoice: PropTypes.func,
     onRemoveChoice: PropTypes.func,
     minRowHeight: PropTypes.string,
+    labelId: PropTypes.string,
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
@@ -37,6 +38,7 @@ export class Category extends React.Component {
       id,
       correct,
       minRowHeight,
+      labelId,
       selectedItem,
       onSelectClick,
       onPlacementClick,
@@ -46,6 +48,7 @@ export class Category extends React.Component {
       <StyledDiv className={className} id={id}>
         <PlaceHolder
           id={id}
+          labelId={labelId}
           onDropChoice={onDropChoice}
           disabled={disabled}
           correct={correct}

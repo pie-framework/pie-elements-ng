@@ -3,6 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
+import { uid } from '@pie-lib/drag';
 import Choice, { ChoiceType } from './choice.js';
 import DroppablePlaceholder from './droppable-placeholder.js';
 export { ChoiceType };
@@ -35,6 +36,7 @@ export class Choices extends React.Component {
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
+    uid: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   };
 
   static defaultProps = {
@@ -56,7 +58,10 @@ export class Choices extends React.Component {
       selectedItem,
       onSelectClick,
       onPlacementClick,
+      uid: instanceId,
     } = this.props;
+    const hasLabel = !!model.choicesLabel && model.choicesLabel !== '';
+    const labelId = hasLabel ? `categorize-${instanceId}-choices-label` : undefined;
 
     let style = {
       textAlign: 'center',
@@ -70,6 +75,7 @@ export class Choices extends React.Component {
       <Wrapper>
         <DroppablePlaceholder
           id="choices-board"
+          labelId={labelId}
           onDropChoice={onDropChoice}
           onRemoveChoice={onRemoveChoice}
           disabled={disabled}
@@ -79,9 +85,7 @@ export class Choices extends React.Component {
           selectedItem={selectedItem}
           onPlacementClick={onPlacementClick}
         >
-          {model.choicesLabel && model.choicesLabel !== '' && (
-            <LabelHolder dangerouslySetInnerHTML={{ __html: model.choicesLabel }} />
-          )}
+          {hasLabel && <LabelHolder id={labelId} dangerouslySetInnerHTML={{ __html: model.choicesLabel }} />}
           {choices.map((c, index) => {
             return c.empty ? (
               <div key={index} />
@@ -102,4 +106,4 @@ export class Choices extends React.Component {
   }
 }
 
-export default Choices;
+export default uid.withUid(Choices);
