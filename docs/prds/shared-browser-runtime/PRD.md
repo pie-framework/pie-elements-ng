@@ -41,8 +41,8 @@ Admission is by package, with one invariant: a package in the runtime is never a
 - **The editor engine.** Folded in, because `@tiptap/react` lives in the runtime and must link against the same `@tiptap/core` and ProseMirror modules; a separate package would add a second version axis whose agreement nothing checks at load time. `@pie-element/shared-editor-runtime` stays published unchanged until the editor-runtime variant is removed ([Rollout](#rollout)).
 - **MathQuill (through `@pie-lib/math-input`) and i18next (through `@pie-lib/translator`).** In, subject to [Shared state](#shared-state): `@pie-lib/editable-html-tip-tap` depends on `math-input`, and `config-ui` on `editable-html-tip-tap`, so keeping MathQuill out keeps most of the stack out.
 - **Self-contained elements.** math-inline and math-templated take only React, React DOM and the JSX runtimes from the runtime and bundle everything else, as every element's `./browser/*` build does today. Both register a MathQuill `answerBlock` embed with different markup, the embed name is stored in content (`\embed{answerBlock}[r1]`), and MathQuill's embed registry is module state, so a shared MathQuill would let one element's registration replace the other's. Bundling their whole stack keeps each registry private without touching their source, and so without touching their IIFE builds. The list is `selfContainedElements` in the browser ESM policy; leaving it requires resolving the conflict in source first.
-- **React-free libraries reached by two or more elements** (`@pie-element/shared-*`, and third-party leaves such as `debug` and `clsx`). In.
-- **Out.** Svelte; packages only one element reaches, which stay bundled in that element and import React from the runtime; element code.
+- **React-free libraries reached by two or more elements** (`@pie-element/shared-*` other than the MathJax adapter, and third-party leaves such as `debug` and `clsx`). In.
+- **Out.** Svelte; packages only one element reaches, which stay bundled in that element and import React from the runtime; element code; `@pie-element/shared-math-rendering-mathjax`, whose browser build is a MathJax instance each element keeps ([Decisions](#decisions)).
 
 A barrel specifier such as `@mui/material` pulls the whole package into any page that imports it. Barrel imports of admitted third-party packages are rejected by the element browser build, and the 16 source sites that use `@mui/material` or `@mui/icons-material` barrels move to deep imports first. `@pie-lib/*` barrels stay; what they add to single-element pages is part of the step-2 measurement, and render-ui already measures about 60 KB in each of the six measured elements.
 
@@ -58,7 +58,7 @@ An element's browser output imports the runtime only through `@pie-element/share
 
 ### Element browser entries
 
-Every element's `./browser/*` entries are rebuilt against the runtime by `tools/vite/element-browser-esm.config.ts` (and its Svelte sibling), writing `dist/browser/<view>/index.js` as today. The export names stay; the editor-runtime variant (`dist/browser/editor-runtime`) is folded into the same build and removed.
+Every element's `./browser/*` entries are rebuilt against the runtime by `tools/vite/element-browser-esm.config.ts` (and its Svelte sibling), writing `dist/browser/<view>/index.js` as today. They keep the `pie-browser-esm` export condition, which resolves the MathJax adapter to its bundled engine. The export names stay; the editor-runtime variant (`dist/browser/editor-runtime`) is folded into the same build and removed.
 
 - `dependencies["@pie-element/shared-browser-runtime"]` at the exact version (`workspace:*` in the repo), so npm installs it with the element.
 - `pie.browserRuntime: { name, version }`, the esm adapter's declaration, replacing `pie.browserEditorRuntime` and `pie.browserSharedDependencies`.
@@ -85,7 +85,7 @@ Within one runtime version, module-level state that each element held privately 
 | MathQuill embed registry | per element bundle | Shared, with one registration: `math-input`'s `newLine`. math-inline and math-templated, the two elements that register `answerBlock`, are self-contained and keep private registries; the build gate rejects an embed registration from any other element. |
 | i18next default instance (`@pie-lib/translator`) | per element bundle | Shared. It is initialized once with static resources, every `t` call passes `lng`, and no package calls `changeLanguage`. |
 | Emotion default cache (key `css`) | per element bundle | Shared per version. The key and insertion point stay as they are, so class names and style order match today's single-element pages. |
-| MathJax | page (`window.MathJax`, a `Symbol.for` load guard) | Unchanged: one load per page across runtime versions. |
+| MathJax | per element bundle: the adapter's browser build starts a module-private MathJax | Unchanged: the adapter stays out of the runtime. |
 | Element stylesheets (`data-pie-css` hash) | page | Unchanged: installed once per hash, guarded for a missing `document`. |
 | `customElements` | page | The runtime defines no element. The player owns public tags; private tags are version-scoped. |
 | Authoring counters (`editable-html` response areas, graphing's last action) | per element bundle | Shared per version; the response-area counter is keyed by element type, and the graphing middleware already serves every instance of one element. |
@@ -157,6 +157,7 @@ Costs:
 - **Coupling.** The elements of one release share one version of every admitted package, and an `@pie-lib` change reaches browser ESM only through a runtime release.
 - **Release cadence.** Every runtime release republishes every element that pins it.
 - **Self-contained elements.** Pages with math-inline or math-templated still carry their own stack.
+- **MathJax per element.** Each element type on a page loads its own MathJax engine on its first render, about 320 kB gzipped, once per element release.
 - **Production React.** The runtime ships React's production build, so hosts' development builds get no React development warnings from elements.
 
 ## Worked example
@@ -179,6 +180,7 @@ Unchanged: the rebuilt entries render the same DOM as today's `./browser/*`, whi
 ## Decisions
 
 - **`answerBlock`.** math-inline and math-templated are self-contained; resolving the conflict in source would change their IIFE builds.
+- **MathJax.** Each element keeps its own (2026-10-03). The adapter's browser build holds a MathJax instance as module state, so sharing the adapter shares the instance: the first element to render would set `useSingleDollar`, `accessibility` and `loadFonts` for every element, elements would render on a MathJax they were not tested with, and one failure would stop math in every element at once.
 - **`./browser/*`.** Replaced by the runtime build, with no fallback lane, because no production host loads browser ESM.
 - **Single-element growth.** Reported, never blocking.
 - **React.** The runtime carries the React version the elements use today, 18.2.0. A React upgrade is owned by the wider team and outside this design; with React sealed in the runtime, it changes no host contract.

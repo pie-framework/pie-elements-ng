@@ -14,7 +14,7 @@ export function engineMathJax(): MathJaxGlobal | undefined {
 
 /**
  * Starts this copy's MathJax from `config`, the configuration the page engine installs as
- * `window.MathJax`. The engine is a separate chunk, so a page without math never loads it.
+ * `window.MathJax`. The engine is a separate chunk, loaded on the first render.
  */
 export async function loadMathJax(config: MathJaxGlobal, _srcUrl: string): Promise<void> {
   const { createMathJax } = await import('./bundled/mathjax.js');
