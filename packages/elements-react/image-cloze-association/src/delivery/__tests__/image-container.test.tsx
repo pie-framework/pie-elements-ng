@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { DndContext } from '@dnd-kit/core';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
@@ -17,9 +17,8 @@ const responseContainers = [0, 1, 2].map((index) => ({
   height: '20%',
 }));
 
-const renderImageContainer = (extras?: any) =>
-  render(
-    <ThemeProvider theme={theme}>
+const tree = (extras?: any) => (
+  <ThemeProvider theme={theme}>
       <DndContext>
         <ImageContainer
           answers={[{ id: 'a1', value: 'Mercury', containerIndex: 1 }]}
@@ -33,8 +32,10 @@ const renderImageContainer = (extras?: any) =>
           {...extras}
         />
       </DndContext>
-    </ThemeProvider>,
-  );
+    </ThemeProvider>
+);
+
+const renderImageContainer = (extras?: any) => render(tree(extras));
 
 describe('ImageContainer drop targets', () => {
   it('name each empty target by its position', () => {
@@ -42,9 +43,13 @@ describe('ImageContainer drop targets', () => {
 
     expect(screen.getByRole('button', { name: 'Response area 1 of 3' })).toHaveAttribute('tabindex', '0');
     expect(screen.getByRole('button', { name: 'Response area 3 of 3' })).toHaveAttribute('tabindex', '0');
-    // The filled target leaves its tab stop to the answer it holds.
-    expect(screen.queryByRole('button', { name: 'Response area 2 of 3' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Mercury' })).toHaveAttribute('aria-roledescription', 'draggable');
+    // The filled target is a group that leaves its tab stop to the answer it holds.
+    const filled = screen.getByRole('group', { name: 'Response area 2 of 3' });
+    expect(filled).toHaveAttribute('tabindex', '-1');
+    expect(within(filled).getByRole('button', { name: 'Mercury' })).toHaveAttribute(
+      'aria-roledescription',
+      'draggable',
+    );
   });
 
   it('name the targets in the item language', () => {
@@ -66,9 +71,26 @@ describe('ImageContainer drop targets', () => {
     expect(onPlacementClick).toHaveBeenCalledWith(2);
   });
 
+  it('keep the name on a focused target once a keyboard placement fills it', () => {
+    const { rerender } = renderImageContainer({ selectedResponse: { id: 'a2', value: 'Venus' } });
+    screen.getByRole('button', { name: 'Response area 3 of 3' }).focus();
+
+    rerender(
+      tree({
+        answers: [
+          { id: 'a1', value: 'Mercury', containerIndex: 1 },
+          { id: 'a2', value: 'Venus', containerIndex: 2 },
+        ],
+      }),
+    );
+
+    expect(screen.getByRole('group', { name: 'Response area 3 of 3' })).toHaveFocus();
+  });
+
   it('drop the targets out of the tab order when dragging is off', () => {
     renderImageContainer({ canDrag: false });
 
     expect(screen.queryByRole('button', { name: /Response area/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('group', { name: /Response area/ })).toHaveLength(3);
   });
 });

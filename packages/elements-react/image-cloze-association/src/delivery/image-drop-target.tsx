@@ -112,6 +112,8 @@ const ImageDropTarget = ({
   // and adding a second stop for the same visual container would add an extra stop to
   // the existing Tab order (match-list's equivalent)
   const isNativeTabStop = answers.length === 0 && canDrag;
+  // A group when it is no tab stop, named in every state: a keyboard placement turns the focused
+  // button into a group, and focus stays on it.
 
   const handleContainerKeyDown = (e) => {
     if (e.code === 'Space' || e.code === 'Enter') {
@@ -128,8 +130,8 @@ const ImageDropTarget = ({
       }}
       className={containerClasses}
       style={updatedContainerStyle}
-      role={isNativeTabStop ? 'button' : undefined}
-      aria-label={isNativeTabStop ? label : undefined}
+      role={isNativeTabStop ? 'button' : 'group'}
+      aria-label={label}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleContainerClick}
       onKeyDown={isNativeTabStop ? handleContainerKeyDown : undefined}

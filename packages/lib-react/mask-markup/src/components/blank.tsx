@@ -441,8 +441,9 @@ function DragDropBlank({
   // stop for the same visual chip would add an extra stop to the existing Tab order —
   // the same double-tab-stop bug already found and fixed once in match-list/image-
   // cloze-association's equivalent code.
-  // As a tab stop the blank is an empty button, so it takes its name from its position: blank
-  // ids are the authored {{n}} placeholders, numbered from 0.
+  // A group when it is no tab stop, named by its position in every state: a keyboard placement turns
+  // the focused button into a group, and focus stays on it. Blank ids are the authored {{n}}
+  // placeholders, numbered from 0.
   const isNativeTabStop = !choice && !disabled;
   const isInnerDraggable = !!choice && !disabled;
 
@@ -459,8 +460,8 @@ function DragDropBlank({
   return (
     <StyledContent
       ref={setDropNodeRef}
-      role={isNativeTabStop ? 'button' : undefined}
-      aria-label={isNativeTabStop ? translator.t('dragInTheBlank.blank', { lng: language, index: Number(id) + 1 }) : undefined}
+      role={isNativeTabStop ? 'button' : 'group'}
+      aria-label={translator.t('dragInTheBlank.blank', { lng: language, index: Number(id) + 1 })}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleClick}
       onKeyDown={isNativeTabStop ? handleKeyDown : undefined}
