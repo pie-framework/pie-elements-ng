@@ -3,10 +3,20 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-// Konva draws on a canvas, which happy-dom lacks; the keyboard focusables render outside it.
+// Konva draws on a canvas, which happy-dom lacks; the keyboard focusables render outside it. The
+// layer stands in for Konva's with a bare canvas element.
 vi.mock('react-konva', () => ({
   Stage: ({ children }: any) => <div>{children}</div>,
-  Layer: ({ children }: any) => <div>{children}</div>,
+  Layer: React.forwardRef(({ children }: { children?: React.ReactNode }, ref) => {
+    const canvas = React.useRef<HTMLCanvasElement>(null);
+    React.useImperativeHandle(ref, () => ({ getNativeCanvasElement: () => canvas.current }));
+    return (
+      <div>
+        <canvas ref={canvas} />
+        {children}
+      </div>
+    );
+  }),
 }));
 vi.mock('../rectangle.js', () => ({ default: () => null }));
 vi.mock('../polygon.js', () => ({ default: () => null }));
@@ -70,5 +80,25 @@ describe('Container hotspot focusables', () => {
 
     expect(onSelectChoice).toHaveBeenCalledTimes(2);
     expect(onSelectChoice).toHaveBeenCalledWith({ id: '3', selected: true, selector: 'Keyboard' });
+  });
+});
+
+describe('Container image', () => {
+  it('describes the image by its number of hotspots', () => {
+    renderContainer();
+
+    expect(screen.getByRole('img', { name: 'Image with 3 hotspots' })).toHaveAttribute('src', 'plane.png');
+  });
+
+  it('describes the image in the item language', () => {
+    renderContainer({ language: 'es_ES', shapes: { rectangles: [shapes.rectangles[0]] } });
+
+    expect(screen.getByRole('img', { name: 'Imagen con 1 zona activa' })).toBeInTheDocument();
+  });
+
+  it('hides the canvas that redraws the shapes', () => {
+    const { container } = renderContainer();
+
+    expect(container.querySelector('canvas')).toHaveAttribute('aria-hidden', 'true');
   });
 });

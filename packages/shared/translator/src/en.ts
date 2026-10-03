@@ -18,6 +18,8 @@ export default {
       clearAll: 'Clear all',
     },
     hotspot: {
+      image_one: 'Image with {{count}} hotspot',
+      image_other: 'Image with {{count}} hotspots',
       shape: 'Hotspot {{index}} of {{total}}',
     },
     imageClozeAssociation: {
