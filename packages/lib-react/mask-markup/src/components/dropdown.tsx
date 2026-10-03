@@ -323,6 +323,8 @@ class Dropdown extends React.Component {
     const open = Boolean(anchorEl);
     const buttonId = `dropdown-button-${id}`;
     const menuId = `dropdown-menu-${id}`;
+    // The combobox controls the listbox itself; menuId names MUI's popover root around it.
+    const listboxId = `dropdown-listbox-${id}`;
     const valueDisplayId = `dropdown-value-${id}`;
 
     // Determine the class for disabled state, view mode and evaluate mode
@@ -374,9 +376,9 @@ class Dropdown extends React.Component {
             borderWidth: open ? '2px' : '1px',
             transition: 'border-width 0.2s ease-in-out',
           }}
-          aria-controls={open ? menuId : undefined}
+          aria-controls={open ? listboxId : undefined}
           aria-haspopup="listbox"
-          aria-expanded={open ? 'true' : undefined}
+          aria-expanded={open ? 'true' : 'false'}
           aria-activedescendant={this.state.highlightedOptionId}
           onClick={this.handleClick}
           className={disabledClass}
@@ -413,6 +415,7 @@ class Dropdown extends React.Component {
           slotProps={{
             paper: this.state.menuWidth ? { style: { minWidth: this.state.menuWidth, padding: '4px' } } : undefined,
             list: {
+              id: listboxId,
               'aria-labelledby': buttonId,
               role: 'listbox',
               disablePadding: true,
