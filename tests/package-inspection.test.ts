@@ -375,7 +375,7 @@ describe('package inspection quality-gate helpers', () => {
     // Orphan left behind by an earlier build, larger than the whole budget.
     await writeFile(
       join(packageDir, 'dist', 'browser', 'shared-BBBBBBBB.js'),
-      `export const stale = "${'x'.repeat(5 * 1024 * 1024)}";\n`,
+      `export const stale = "${'x'.repeat(7 * 1024 * 1024)}";\n`,
       'utf8'
     );
 
@@ -395,7 +395,7 @@ describe('package inspection quality-gate helpers', () => {
       packedFiles: new Set(['package.json', 'dist/browser/delivery/index.js']),
     });
 
-    // The 5 MiB stale chunk must not be charged against the 4 MiB budget: the
+    // The 7 MiB stale chunk must not be charged against the 6 MiB budget: the
     // tripwire exists to catch dependency drift in the real payload, and a
     // leftover chunk from an earlier build is not drift.
     expect(violations.some((violation) => violation.includes('exceeds policy budget'))).toBe(false);
@@ -414,7 +414,7 @@ describe('package inspection quality-gate helpers', () => {
     );
     await writeFile(
       join(packageDir, 'dist', 'browser', 'vendor-AAAAAAAA.js'),
-      `export const vendor = "${'x'.repeat(5 * 1024 * 1024)}";\n`,
+      `export const vendor = "${'x'.repeat(7 * 1024 * 1024)}";\n`,
       'utf8'
     );
 

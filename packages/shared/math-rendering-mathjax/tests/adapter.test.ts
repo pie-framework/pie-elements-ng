@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import packageJson from '../package.json';
 import { createMathjaxRenderer } from '../src/adapter.js';
 import { mmlToLatex, renderMath, wrapMath } from '../src/render-math.js';
 import { MATHJAX_CONFLICT_EVENT, UNSUPPORTED_PAGE_DOCS_URL } from '../src/unsupported-page.js';
@@ -166,6 +167,18 @@ afterEach(() => {
   delete (globalThis as any)[UNSUPPORTED_PAGE];
   for (const style of document.head.querySelectorAll('style')) style.remove();
   vi.unstubAllGlobals();
+});
+
+describe('MathJax version', () => {
+  it('is one version across the script the npm build loads and the engine the browser build bundles', () => {
+    const { devDependencies } = packageJson;
+    const version = devDependencies.mathjax;
+
+    expect(devDependencies['@mathjax/src']).toBe(version);
+    expect(devDependencies['@mathjax/mathjax-newcm-font']).toBe(version);
+    expect(devDependencies['@mathjax/mathjax-mhchem-font-extension']).toBe(version);
+    expect(PINNED_SRC).toContain(`/mathjax@${version}/`);
+  });
 });
 
 describe('createMathjaxRenderer', () => {
