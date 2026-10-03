@@ -319,6 +319,14 @@ async function checkInteractiveControlNames(page: Page): Promise<CheckResult> {
       );
     }
 
+    /**
+     * `aria-hidden` and `inert` take a control and its subtree out of the accessibility tree;
+     * MUI Select hides its native input this way.
+     */
+    function isExposed(element: Element) {
+      return !element.closest('[aria-hidden="true"], [inert]');
+    }
+
     function textFromIdRefs(ids: string | null) {
       if (!ids) {
         return '';
@@ -363,6 +371,7 @@ async function checkInteractiveControlNames(page: Page): Promise<CheckResult> {
     }
 
     return [...subject.querySelectorAll(interactiveSelector)]
+      .filter(isExposed)
       .filter(isVisible)
       .filter((element) => !controlName(element))
       .slice(0, 10)
