@@ -227,8 +227,7 @@ async function clickGridFraction(page: Page, graphRoot: Locator, fx: number, fy:
 async function interactGraphing(page: Page, element: string, root: Locator) {
   const graphRoot = root.locator(mountedElementSelector()).first();
   if (element === 'graphing') {
-    // The tool buttons sit inside a dnd-kit wrapper marked aria-disabled, hence force.
-    await graphRoot.locator('button[value="point"]').click({ force: true });
+    await graphRoot.locator('button[value="point"]').click();
     // (1, 1) on the demo's -5..5 grid.
     await clickGridFraction(page, graphRoot, 0.6, 0.4);
     return;
