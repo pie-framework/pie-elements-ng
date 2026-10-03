@@ -1,18 +1,26 @@
+import {
+  conflictingMathjax3Version,
+  engineMathJax,
+  FOREIGN_OUTPUT_STYLESHEETS,
+  loadingRegistry,
+  loadMathJax,
+  OWN_STYLESHEET_ID,
+} from './engine/page.js';
 import { rewriteElementaryMath } from './elementary-math.js';
 import { unprefixMathml } from './mathml.js';
 import type { MathjaxOptions } from './types.js';
-import { mathjax3Version, reportUnsupportedPage } from './unsupported-page.js';
+import { reportUnsupportedPage } from './unsupported-page.js';
 
-type MathJaxMacro = string | [string, number];
+export type MathJaxMacro = string | [string, number];
 
-interface MathItem {
+export interface MathItem {
   typesetRoot?: Element | null;
   state?: () => number;
   clear?: () => void;
 }
 
 /** The parts of MathJax's `startup.document` this adapter uses. */
-interface MathDocument {
+export interface MathDocument {
   math?: Iterable<MathItem> & { remove?: (...items: MathItem[]) => unknown };
   outputJax?: { chtmlStyles?: Element | null };
   addStyles?: (styles: Record<string, Record<string, string>>) => void;
@@ -29,7 +37,7 @@ interface MathDocument {
  * script runs, the MathJax global afterwards, or a global without the component startup
  * (MathJax 2, or the MathJax 3 that the legacy @pie-lib/math-rendering renderer bundles).
  */
-interface MathJaxGlobal {
+export interface MathJaxGlobal {
   version?: string;
   loader?: {
     load?: string[];
@@ -98,9 +106,8 @@ const LEGACY_DELIMITERS: [string, string][] = [
   ['\\(', '\\)'],
 ];
 
-// Every element bundles its own copy of this module, so the load in flight is kept on the page
-// rather than in the module: a second MathJax startup on one page throws "State ASSISTIVEMML
-// already exists".
+// Where the load in flight is kept is the engine's: on the page for the page's MathJax, in the
+// module for a bundled one.
 const MATHJAX_LOADING: unique symbol = Symbol.for(
   '@pie-element/shared-math-rendering-mathjax/loading'
 );
@@ -110,12 +117,11 @@ type LoadingRegistry = { [MATHJAX_LOADING]?: Promise<void> };
 /**
  * MathJax 3 and 4 both replace any `<style id="MJX-CHTML-styles">` in `<head>` with their own, so
  * whichever engine renders second deletes the other's styles; the same holds for SVG output's
- * `MJX-SVG-styles`. The MathJax this adapter loads uses its own ids instead.
+ * `MJX-SVG-styles`. The MathJax this adapter uses takes its own ids instead: the engine's for
+ * CHTML, and this one for the SVG output the page's MathJax loads from its menu.
  */
-const OWN_STYLESHEET_ID = 'PIE-MJX-CHTML-styles';
 const SHARED_STYLESHEET_ID = 'MJX-CHTML-styles';
 const OWN_SVG_STYLESHEET_ID = 'PIE-MJX-SVG-styles';
-const SHARED_SVG_STYLESHEET_ID = 'MJX-SVG-styles';
 
 /**
  * MathJax 3 and 4 both save a student's menu settings under `MathJax-Menu-Settings` in
@@ -124,9 +130,6 @@ const SHARED_SVG_STYLESHEET_ID = 'MJX-SVG-styles';
  * hidden MathML. The MathJax this adapter loads uses its own key instead.
  */
 const OWN_MENU_STORAGE = 'PIE-MathJax-Menu-Settings';
-
-/** Output stylesheets of another MathJax. MathJax 4's menu and explorer sheets are not among them. */
-const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, SHARED_SVG_STYLESHEET_ID];
 
 /**
  * MathJax breaks displayed math to the width its container has at typeset, and does not break it
@@ -167,10 +170,6 @@ function stripLatexAttributes(root: Element): void {
       node.removeAttribute('data-latex-item');
     }
   }
-}
-
-function pageMathJax(): MathJaxGlobal | undefined {
-  return (window as { MathJax?: MathJaxGlobal }).MathJax;
 }
 
 /** `latex` without the pair of legacy delimiters around all of it, if it has one. */
@@ -252,7 +251,7 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         // The menu loads SVG output when a student picks it as the renderer.
         'output/svg': {
           ready: (name) => {
-            const mathJax = pageMathJax();
+            const mathJax = engineMathJax();
             if (isMathjax4(mathJax)) useOwnStylesheetIds(mathJax);
             return name;
           },
@@ -262,7 +261,7 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         // Typeset only the elements the renderer is given, never the host page.
         typeset: false,
         ready: () => {
-          const mathJax = pageMathJax();
+          const mathJax = engineMathJax();
           const startup = mathJax?.startup;
           const isolate = isMathjax4(mathJax);
           if (isolate) {
@@ -309,13 +308,7 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
       config.chtml = { fontURL: '' };
     }
 
-    (window as { MathJax?: MathJaxGlobal }).MathJax = config;
-
-    const script = document.createElement('script');
-    script.src = srcUrl || DEFAULT_MATHJAX_SRC;
-    script.async = true;
-    script.onerror = () => reject(new Error('Failed to load MathJax'));
-    document.head.appendChild(script);
+    loadMathJax(config, srcUrl || DEFAULT_MATHJAX_SRC).catch(reject);
   });
 }
 
@@ -447,7 +440,7 @@ function awaitPageMathjax(config: MathJaxGlobal): Promise<void> {
     config.startup = startupConfig;
     const pageReady = startupConfig.ready;
     startupConfig.ready = () => {
-      const startup = pageMathJax()?.startup;
+      const startup = engineMathJax()?.startup;
       if (pageReady) {
         pageReady.call(startupConfig);
       } else {
@@ -459,7 +452,7 @@ function awaitPageMathjax(config: MathJaxGlobal): Promise<void> {
 }
 
 function whenMathjaxStarted(options: MathjaxOptions): Promise<void> {
-  const existing = pageMathJax();
+  const existing = engineMathJax();
   if (!existing) return injectMathjax(options);
   // A configuration object: the page loads MathJax itself.
   if (!existing.version) return awaitPageMathjax(existing);
@@ -474,7 +467,7 @@ function whenMathjaxStarted(options: MathjaxOptions): Promise<void> {
 
 function startMathjax(options: MathjaxOptions): Promise<void> {
   return whenMathjaxStarted(options).then(() => {
-    if (typeof pageMathJax()?.typesetPromise !== 'function') {
+    if (typeof engineMathJax()?.typesetPromise !== 'function') {
       console.warn(
         '[mathjax-renderer] MathJax on this page has no typesetPromise; math stays untypeset.'
       );
@@ -483,7 +476,7 @@ function startMathjax(options: MathjaxOptions): Promise<void> {
 }
 
 function ensureMathjax(options: MathjaxOptions): Promise<void> {
-  const registry = globalThis as LoadingRegistry;
+  const registry = loadingRegistry as LoadingRegistry;
   let loading = registry[MATHJAX_LOADING];
   if (!loading) {
     loading = startMathjax(options);
@@ -510,7 +503,7 @@ export function createMathjaxRenderer(
   return async (element: HTMLElement) => {
     if (typeof window === 'undefined') return;
 
-    const mathjax3 = mathjax3Version();
+    const mathjax3 = conflictingMathjax3Version();
     if (mathjax3)
       reportUnsupportedPage('mathjax-3-global', `window.MathJax is MathJax ${mathjax3}`);
     wrapLatexElements(element);
@@ -527,7 +520,7 @@ export function createMathjaxRenderer(
     }
 
     await loading;
-    const mathJax = pageMathJax();
+    const mathJax = engineMathJax();
     // A copy of the adapter from an earlier release may have resolved before startup finished.
     await mathJax?.startup?.promise;
     if (typeof mathJax?.typesetPromise !== 'function') return;

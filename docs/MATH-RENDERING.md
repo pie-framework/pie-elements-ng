@@ -1,10 +1,10 @@
 # Math Rendering in pie-elements-ng
 
-**Last Updated:** 2026-10-01
+**Last Updated:** 2026-10-02
 
 ## Overview
 
-Elements typeset math with MathJax 4 through `@pie-element/shared-math-rendering-mathjax`. The adapter loads MathJax 4.1.3 at runtime, once per page on the first render, using the `tex-mml-chtml.js` build: TeX and MathML input, CommonHTML output. Its delimiters, macros and typesetting scope match the legacy `@pie-lib/math-rendering` renderer.
+Elements typeset math with MathJax 4.1.3 through `@pie-element/shared-math-rendering-mathjax`: TeX and MathML input, CommonHTML output. Its delimiters, macros and typesetting scope match the legacy `@pie-lib/math-rendering` renderer. The npm build loads MathJax's `tex-mml-chtml.js` into the page; the browser build, which element browser builds use, bundles a MathJax of its own (see [Builds](#builds)).
 
 ## Packages
 
@@ -12,6 +12,23 @@ Elements typeset math with MathJax 4 through `@pie-element/shared-math-rendering
 2. **`@pie-lib/math-rendering`** (`packages/lib-react/math-rendering/`): a wrapper that re-exports the legacy API from the adapter for code that imports the legacy package name.
 
 Elements import `@pie-element/shared-math-rendering-mathjax` directly.
+
+## Builds
+
+The adapter has two builds with one API.
+
+- **npm build**, `dist/index.js`, the `default` export condition: loads `tex-mml-chtml.js` and runs on `window.MathJax`. Element npm entries resolve it, and with them the IIFE bundles built from those entries and hosts that bundle the elements themselves.
+- **Browser build**, `dist/browser/index.js`, the `pie-browser-esm` export condition: bundles MathJax, built from the `@mathjax/src` modules, as a module-private instance. Element browser builds (`./browser/*`) resolve it through that condition, which `tools/vite/element-browser.config.ts` and `tools/vite/svelte-element-browser.config.ts` set. It neither reads nor writes `window.MathJax`, so a host's MathJax of any version, and every other element's copy, runs beside it.
+
+The browser build's engine loads as a chunk on the first render: about 1.3 MB minified, 320 kB gzipped, with the CHTML font data. The font's dynamic ranges, about 1 MB in all, load as chunks when math first uses them. Its output is the npm build's, with these differences:
+
+- SVG output and collapsible math are not bundled. Their menu items are disabled, and a stored menu setting that names either is overridden.
+- `\require` is unsupported. The packages `tex-mml-chtml.js` autoloads are bundled, mhchem with its font extension.
+- The font files and the speech worker load from jsDelivr at pinned versions: `@mathjax/mathjax-newcm-font@4.1.3`, `@mathjax/mathjax-mhchem-font-extension@4.1.3` and `@mathjax/src@4.1.3/bundle/sre`.
+- `srcUrl` is ignored.
+- Each copy's CHTML stylesheet has its own id, `PIE-MJX-CHTML-styles-<n>`. Another MathJax's `MJX-CHTML-styles` stylesheet matches every CHTML container, this build's included, so the adapter reports it as `foreign-output-stylesheet`.
+
+Both builds pin one MathJax version: `mathjax`, `@mathjax/src` and the font packages are exact devDependencies at the same version, which a unit test checks.
 
 ## Renderer Resolution
 
@@ -23,13 +40,13 @@ Elements import `@pie-element/shared-math-rendering-mathjax` directly.
 
 ## Loading
 
-- MathJax loads from `https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js` on the first render, whatever the element holds, so later math does not wait on the download. A render waits on the load only when its element holds a TeX delimiter or a `<math>` element.
-- Element browser and IIFE builds each bundle their own copy of the adapter. The copies share one load per page, because a second MathJax startup on one page throws.
+- MathJax loads on the first render, whatever the element holds, so later math does not wait on the download: the npm build loads `https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js`, the browser build its engine chunk. A render waits on the load only when its element holds a TeX delimiter or a `<math>` element.
+- Element IIFE bundles each bundle their own copy of the npm build. The copies share one load per page, because a second MathJax startup on one page throws. Each element browser build starts its own MathJax.
 - `startup.typeset` is `false`: MathJax typesets only the elements the renderer is given, never the host page's own text.
-- A MathJax the page already has is used as the page configured it, and the adapter loads no copy of its own. A configuration object at `window.MathJax`, for a page that loads MathJax itself, is awaited through its `startup.ready`; a MathJax 3 or 4 build is used once its startup completes. The legacy macros and delimiters then apply only where the page's configuration defines them.
-- A page runs one MathJax major version. MathJax 3 on the same page, from a host or from IIFE element bundles, is unsupported: the adapter still attempts to render and guarantees nothing. See [One MathJax version per page](https://github.com/pie-framework/pie-players/blob/develop/docs/item-player/loading-strategies.md#one-mathjax-version-per-page) for the failures observed.
-- A MathJax global without `typesetPromise`, such as MathJax 2, leaves math untypeset and logs `[mathjax-renderer] MathJax on this page has no typesetPromise; math stays untypeset.`
-- The first renderer to start MathJax on a page configures it, and every later renderer shares that instance.
+- On the npm build, a MathJax the page already has is used as the page configured it, and the adapter loads no copy of its own. A configuration object at `window.MathJax`, for a page that loads MathJax itself, is awaited through its `startup.ready`; a MathJax 3 or 4 build is used once its startup completes. The legacy macros and delimiters then apply only where the page's configuration defines them.
+- On the npm build, a page runs one MathJax major version. MathJax 3 on the same page, from a host or from IIFE element bundles, is unsupported: the adapter still attempts to render and guarantees nothing. See [One MathJax version per page](https://github.com/pie-framework/pie-players/blob/develop/docs/item-player/loading-strategies.md#one-mathjax-version-per-page) for the failures observed.
+- On the npm build, a MathJax global without `typesetPromise`, such as MathJax 2, leaves math untypeset and logs `[mathjax-renderer] MathJax on this page has no typesetPromise; math stays untypeset.`
+- The first renderer to start MathJax on a page configures it, and every later renderer shares that instance. On the browser build this holds per copy.
 
 ## Content
 
@@ -102,7 +119,7 @@ Options, which apply only when this renderer is the one that loads MathJax:
 - `useSingleDollar` (default `false`): treat `$...$` as inline math.
 - `accessibility` (default `true`): add the hidden MathML and the context menu.
 - `loadFonts` (default `true`): load MathJax's fonts.
-- `srcUrl`: the MathJax script URL, by default MathJax 4.1.3 `tex-mml-chtml.js` on jsDelivr.
+- `srcUrl`: the MathJax script URL, by default MathJax 4.1.3 `tex-mml-chtml.js` on jsDelivr. The browser build ignores it.
 
 ## Authoring Tools
 
@@ -137,6 +154,9 @@ cd packages/lib-react/math-rendering && bun run build
 ```bash
 cd packages/shared/math-rendering-mathjax && bun run test
 
+# Both builds in Chromium; run after a build
+cd packages/shared/math-rendering-mathjax && bun run test:e2e
+
 # Demo app
 cd apps/element-demo
 bun run dev
@@ -148,6 +168,8 @@ bun run dev
 ### Code Locations
 
 - Adapter: `packages/shared/math-rendering-mathjax/`
+- npm build engine: `packages/shared/math-rendering-mathjax/src/engine/page.ts`
+- Browser build engine: `packages/shared/math-rendering-mathjax/src/engine/bundled.ts` and `src/engine/bundled/`, built by `vite.browser.config.ts`
 - Wrapper package: `packages/lib-react/math-rendering/`
 - Element player integration: `packages/element-player/src/players/PieElementPlayer.svelte`
 
@@ -167,3 +189,4 @@ bun run dev
 - **2026-02-01**: Switched to MathJax v4
 - **2026-02-09**: Simplified to MathJax-only (removed abstraction layer)
 - **2026-09-27**: Pinned MathJax 4.1.3 and matched the legacy renderer's delimiters, macros and typesetting scope
+- **2026-10-02**: Element browser builds bundle a module-private MathJax 4.1.3
