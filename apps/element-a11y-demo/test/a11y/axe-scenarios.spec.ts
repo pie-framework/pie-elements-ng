@@ -515,20 +515,52 @@ async function checkMediaAlternatives(page: Page): Promise<CheckResult> {
         .join(' ');
     }
 
-    function hasNameOrDecorativeRole(element: Element) {
-      if (
-        element.getAttribute('aria-hidden') === 'true' ||
-        element.getAttribute('role') === 'presentation' ||
-        element.getAttribute('role') === 'none'
-      ) {
-        return true;
-      }
-
+    /** An svg's `<title>` names it only as a direct child. */
+    function hasAccessibleName(element: Element) {
       return (
         !!element.getAttribute('aria-label')?.trim() ||
         !!textFromIdRefs(element.getAttribute('aria-labelledby')) ||
-        !!element.querySelector('title')?.textContent?.trim()
+        !!element.querySelector(':scope > title')?.textContent?.trim()
       );
+    }
+
+    function hasNameOrDecorativeRole(element: Element) {
+      return (
+        element.getAttribute('aria-hidden') === 'true' ||
+        element.getAttribute('role') === 'presentation' ||
+        element.getAttribute('role') === 'none' ||
+        hasAccessibleName(element)
+      );
+    }
+
+    const imageRoles = ['img', 'image', 'graphics-document', 'graphics-symbol'];
+
+    /**
+     * A nested svg needs no alternative of its own when an svg around it is hidden or named, or
+     * when it has no role and holds text: Chrome then exposes it as a generic container whose
+     * text is read, which is what @visx/text renders around every tick label. A nested svg with
+     * an image role still needs a name, unless an svg around it is hidden.
+     */
+    function isCoveredNestedSvg(graphic: Element) {
+      const ancestors: Element[] = [];
+      for (
+        let svg = graphic.parentElement?.closest('svg');
+        svg;
+        svg = svg.parentElement?.closest('svg')
+      ) {
+        ancestors.push(svg);
+      }
+      if (ancestors.length === 0) {
+        return false;
+      }
+      if (ancestors.some((svg) => svg.getAttribute('aria-hidden') === 'true')) {
+        return true;
+      }
+      const role = graphic.getAttribute('role');
+      if (role && imageRoles.includes(role)) {
+        return false;
+      }
+      return ancestors.some(hasAccessibleName) || (!role && !!graphic.textContent?.trim());
     }
 
     const missing: string[] = [];
@@ -540,7 +572,7 @@ async function checkMediaAlternatives(page: Page): Promise<CheckResult> {
     }
 
     for (const graphic of [...subject.querySelectorAll('svg, canvas')].filter(isVisible)) {
-      if (!hasNameOrDecorativeRole(graphic)) {
+      if (!hasNameOrDecorativeRole(graphic) && !isCoveredNestedSvg(graphic)) {
         missing.push(graphic.outerHTML.slice(0, 300));
       }
     }
@@ -553,18 +585,19 @@ async function checkMediaAlternatives(page: Page): Promise<CheckResult> {
 
     return {
       count: subject.querySelectorAll('img, svg, canvas, audio, video').length,
+      missingCount: missing.length,
       missing: missing.slice(0, 10),
     };
   });
 
   return {
     check: 'media-alternative',
-    status: details.count === 0 || details.missing.length > 0 ? 'failed' : 'passed',
+    status: details.count === 0 || details.missingCount > 0 ? 'failed' : 'passed',
     message:
       details.count === 0
         ? 'No media or graphic nodes were found for this media-alternative scenario'
-        : details.missing.length > 0
-          ? `${details.missing.length} visible media/graphic node(s) appear to lack an alternative or decorative marker`
+        : details.missingCount > 0
+          ? `${details.missingCount} visible media/graphic node(s) appear to lack an alternative or decorative marker`
           : 'Visible media and graphics expose alternatives or decorative markers',
     details: details.missing,
   };
