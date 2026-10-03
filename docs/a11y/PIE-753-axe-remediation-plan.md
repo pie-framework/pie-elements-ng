@@ -13,7 +13,7 @@ Work state lives in Jira: `project = PIE AND labels = axe-remediation ORDER BY s
 
 ## Tasks
 
-`Needs` names tasks whose PRs must be merged to `develop` first. `Gate` names a decision under [Decisions pending](#decisions-pending).
+`Needs` names tasks whose PRs must be merged to `develop` first. `Gate` names an open decision under [Decisions](#decisions).
 
 Parent epics: 753 = PIE-753; 638 Gryffindor; 794 Ravenclaw; 460 Hufflepuff; 459 Dumbledore's Army (spelled "Dubledore's" in Jira); 798 Ministry of Magic, whose "Match Table" is `match`. PIE-753 holds the suite and framework tasks, E1 (it spans 638 and 794), and the elements outside every initiative group: likert, rubric and multi-trait-rubric. An asterisk marks an element no epic names; 798 is the closest (Group 3). PIE-507 ("Groups 2 and 3 HOLD") is parked and not used.
 
@@ -28,24 +28,24 @@ Parent epics: 753 = PIE-753; 638 Gryffindor; 794 Ravenclaw; 460 Hufflepuff; 459 
 | F5 | [PIE-1153](https://illuminate.atlassian.net/browse/PIE-1153) | Math in controls: give a control that contains math an accessible name | 753 | D1 | F4, E12, E14; Gate: spoken-text source |
 | F6 | [PIE-1154](https://illuminate.atlassian.net/browse/PIE-1154) | `EditableHtml`: accept an accessible name; set it in explicit-constructed-response and extended-text-entry | 753 | P | E1 |
 | F7 | [PIE-1155](https://illuminate.atlassian.net/browse/PIE-1155) | charting and graphing `mark-label`: label the category and point inputs | 753 | G | — |
-| F8 | [PIE-1156](https://illuminate.atlassian.net/browse/PIE-1156) | `@pie-lib/plot` root: give the chart and graph `svg` a name and description | 753 | G | Gate: text source |
+| F8 | [PIE-1156](https://illuminate.atlassian.net/browse/PIE-1156) | `@pie-lib/plot` root: give the chart and graph `svg` a name and description | 753 | G | — |
 | E1 | [PIE-1157](https://illuminate.atlassian.net/browse/PIE-1157) | Named drop targets for match-list, image-cloze-association, hotspot and drag-in-the-blank ([#279](https://github.com/pie-framework/pie-elements-ng/pull/279)) | 753 | D2 | — |
 | E2 | [PIE-1158](https://illuminate.atlassian.net/browse/PIE-1158) | likert: name each radio from its adjacent choice label | 753 | P | — |
 | E3 | [PIE-1159](https://illuminate.atlassian.net/browse/PIE-1159) | match: tie each radio or checkbox to its headers; label the `tbody role="group"` | 798 | P | — |
 | E4 | [PIE-1160](https://illuminate.atlassian.net/browse/PIE-1160) | matrix: tie each radio to its row and column headers | 798* | P | — |
 | E5 | [PIE-1161](https://illuminate.atlassian.net/browse/PIE-1161) | graphing-solution-set: label the `tool-menu` line-selection radios | 798* | P | — |
-| E6 | [PIE-1162](https://illuminate.atlassian.net/browse/PIE-1162) | drawing-response: name the colour selects; text alternative for the canvas | 798* | P | Gate: text source |
+| E6 | [PIE-1162](https://illuminate.atlassian.net/browse/PIE-1162) | drawing-response: name the colour selects; text alternative for the canvas | 798* | P | — |
 | E7 | [PIE-1163](https://illuminate.atlassian.net/browse/PIE-1163) | inline-dropdown: keep `aria-expanded` on the closed combobox | 460 | P | E1 |
 | E8 | [PIE-1164](https://illuminate.atlassian.net/browse/PIE-1164) | math-templated: label the math input textarea in the shared math input (covers math-inline) | 459 | P | — |
 | E9 | [PIE-1165](https://illuminate.atlassian.net/browse/PIE-1165) | select-text: tab stops and key handling for tokens in `@pie-lib/text-select` | 798* | P | S2; Gate: PRD |
 | E10 | [PIE-1166](https://illuminate.atlassian.net/browse/PIE-1166) | multi-trait-rubric: make the "Show Rubric" toggle focusable | 753 | P | — |
-| E11 | [PIE-1167](https://illuminate.atlassian.net/browse/PIE-1167) | hotspot: text alternative for the `svg` or `canvas` | 638 | D2 | E1; Gate: text source |
-| E12 | [PIE-1168](https://illuminate.atlassian.net/browse/PIE-1168) | image-cloze-association: `alt` for the background image; 24×24 answer tiles | 794 | D2 | E1; Gate: text source |
+| E11 | [PIE-1167](https://illuminate.atlassian.net/browse/PIE-1167) | hotspot: text alternative for the `svg` or `canvas` | 638 | D2 | E1 |
+| E12 | [PIE-1168](https://illuminate.atlassian.net/browse/PIE-1168) | image-cloze-association: `alt` for the background image; 24×24 answer tiles | 794 | D2 | E1 |
 | E13 | [PIE-1169](https://illuminate.atlassian.net/browse/PIE-1169) | rubric: 24×24 rubric toggle (covers complex-rubric) | 753 | P | — |
 | E14 | [PIE-1170](https://illuminate.atlassian.net/browse/PIE-1170) | drag-in-the-blank: 24×24 choice chips | 794 | D2 | E1 |
 | E15 | [PIE-1171](https://illuminate.atlassian.net/browse/PIE-1171) | mc-populated-blank: 24×24 radios | 638 | P | — |
-| E16 | [PIE-1172](https://illuminate.atlassian.net/browse/PIE-1172) | number-line: text alternative for the `svg` | 798 | P | Gate: text source |
-| E17 | [PIE-1173](https://illuminate.atlassian.net/browse/PIE-1173) | fraction-model: text alternative; name the `svg role="application"` | 798* | P | Gate: text source |
+| E16 | [PIE-1172](https://illuminate.atlassian.net/browse/PIE-1172) | number-line: text alternative for the `svg` | 798 | P | — |
+| E17 | [PIE-1173](https://illuminate.atlassian.net/browse/PIE-1173) | fraction-model: text alternative; name the `svg role="application"` | 798* | P | — |
 | E18 | [PIE-1174](https://illuminate.atlassian.net/browse/PIE-1174) | graphing: no nested buttons in the toolbar; disabled draggables lose role and tab stop | 798 | G | F4 |
 
 Deferred, no ticket yet: **X1**, moving the hand-rolled drag code onto the F4 primitive: the match-list, image-cloze-association, drag-in-the-blank and categorize drop targets, and the draggables in placement-ordering `tile.tsx`, number-line, categorize `choice.tsx`, mask-markup `choice.tsx`, image-cloze-association `possible-response.tsx` and match-list `answer.tsx`. E1 and #278 already name the drop targets, so X1 is refactor-only. Decided on PIE-1152 after E18 shows the primitive working.
@@ -107,12 +107,12 @@ D2's worktree is `.claude/worktrees/drop-target-a11y`. [PIE-856](https://illumin
 - Starting a task in a reused worktree: `git fetch origin && git switch -c <branch> origin/develop`, `bun install --frozen-lockfile`, delete the untracked `dist/`, `module/`, `esm/` and `build/` directories, and rebuild. Turbo cache restores never delete stale outputs, which then fail `check:publish-surface`.
 - An open PR that conflicts with `develop` merges `develop` in.
 
-## Decisions pending
+## Decisions
 
-- **F3, announcement model.** George Schneiderman, on PIE-1146. Recommendation: each element keeps an empty status region mounted in gather mode, and the shared feedback component fills it on evaluate. A `role="status"` on a component that mounts with its text does not announce. Open: whether evaluate feedback is announced at all or focus moves to it, and what a screen reader (not only Chrome's accessibility tree) actually reports. The acceptance test needs a person running VoiceOver and NVDA; no tester is named.
-- **F5, spoken-text source.** The math accessibility review under ADR 0003 (2026-10-05), with George's answer. Recommendation: shared draggable and choice components name each control from its content, voicing the hidden MathML both MathJax versions emit. A MathJax speech mode applies page-wide and exists only on MathJax 4. Open: where the spoken text comes from, and whether it follows read-aloud's ClearSpeak rules.
-- **Text source for E6, E11, E12, E16, E17 and F8.** Text generated from the model through `@pie-lib/translator` needs no new config. An authored field is authoring-visible config and needs a PRD under AGENTS.md; image-cloze-association's `image` has no alt field, and hotspot hard-codes its alt. One decision covers all six; record it on PIE-753.
-- **E9, PRD.** Keyboard selection of tokens is a new interaction model; check it against the PRD bar in AGENTS.md. If it needs a PRD, implementation waits until the Proposal is accepted.
+- **F3, announcement model (open).** George Schneiderman, on PIE-1146. Recommendation: each element keeps an empty status region mounted in gather mode, and the shared feedback component fills it on evaluate. A `role="status"` on a component that mounts with its text does not announce. Open: whether evaluate feedback is announced at all or focus moves to it, and what a screen reader (not only Chrome's accessibility tree) actually reports. The screen-reader acceptance test is postponed: driving VoiceOver needs a system setting changed on the test machine, and NVDA needs Windows.
+- **F5, spoken-text source (open).** The math accessibility review under ADR 0003 (2026-10-05), with George's answer. Recommendation: shared draggable and choice components name each control from its content, voicing the hidden MathML both MathJax versions emit. A MathJax speech mode applies page-wide and exists only on MathJax 4. Open: where the spoken text comes from, and whether it follows read-aloud's ClearSpeak rules.
+- **Text source for E6, E11, E12, E16, E17 and F8 (decided 2026-10-03).** These tasks generate their text from the model through `@pie-lib/translator`, with no new config. An authored field is authoring-visible config that needs a PRD under AGENTS.md, and is postponed; image-cloze-association's `image` has no alt field, and hotspot hard-codes its alt.
+- **E9, PRD (open).** Keyboard selection of tokens is a new interaction model; check it against the PRD bar in AGENTS.md. If it needs a PRD, implementation waits until the Proposal is accepted.
 
 ## Resuming a session
 
