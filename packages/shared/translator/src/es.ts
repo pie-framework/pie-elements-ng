@@ -42,6 +42,7 @@ export default {
       add: 'Añadir',
       delete: 'Eliminar',
       newLabel: 'Nueva etiqueta',
+      categoryLabel: 'Etiqueta de la categoría {{index}}',
       reachedLimit_other: 'No puede haber más de {{count}} categorías.',
       keyLegend: {
         incorrectAnswer: 'Respuesta incorrecta del estudiante',
@@ -62,6 +63,8 @@ export default {
       sine: 'Seno',
       vector: 'Vector',
       label: 'Etiqueta',
+      markLabel: 'Etiqueta en ({{x}}, {{y}})',
+      correctMarkLabel: 'Etiqueta correcta en ({{x}}, {{y}})',
       redo: 'Rehacer',
       reset: 'Reiniciar',
     },

@@ -45,6 +45,7 @@ export class RawBaseCircle extends React.Component {
     labelModeEnabled: PropTypes.bool,
     changeMarkProps: PropTypes.func,
     limitLabeling: PropTypes.bool,
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -162,6 +163,7 @@ export class RawBaseCircle extends React.Component {
       graphProps,
       labelNode,
       labelModeEnabled,
+      language,
     } = this.props;
     const { editingLabel } = this.state;
 
@@ -182,6 +184,7 @@ export class RawBaseCircle extends React.Component {
             disabled={!labelModeEnabled}
             mark={from}
             graphProps={graphProps}
+            language={language}
             onBlur={this.stopEditingLabel}
             onChange={(label) => this.labelChange({ ...from, label }, 'from')}
           />,
@@ -197,6 +200,7 @@ export class RawBaseCircle extends React.Component {
             disabled={!labelModeEnabled}
             mark={to}
             graphProps={graphProps}
+            language={language}
             onBlur={this.stopEditingLabel}
             onChange={(label) => this.labelChange({ ...to, label }, 'to')}
           />,
@@ -212,6 +216,7 @@ export class RawBaseCircle extends React.Component {
             disabled={!labelModeEnabled}
             mark={middle}
             graphProps={graphProps}
+            language={language}
             onBlur={this.stopEditingLabel}
             onChange={(label) => this.labelChange({ ...middle, label }, 'middle')}
           />,

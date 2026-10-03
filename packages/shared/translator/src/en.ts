@@ -41,6 +41,7 @@ export default {
       add: 'Add',
       delete: 'Delete',
       newLabel: 'New label',
+      categoryLabel: 'Category {{index}} label',
       reachedLimit_other: "There can't be more than {{count}} categories.",
       keyLegend: {
         incorrectAnswer: 'Student incorrect answer',
@@ -61,6 +62,8 @@ export default {
       sine: 'Sine',
       vector: 'Vector',
       label: 'Label',
+      markLabel: 'Label at ({{x}}, {{y}})',
+      correctMarkLabel: 'Correct label at ({{x}}, {{y}})',
       redo: 'Redo',
       reset: 'Reset',
     },
