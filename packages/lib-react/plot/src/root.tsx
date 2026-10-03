@@ -143,6 +143,9 @@ const SidePixelIndicator: any = styled('div')({
   },
 });
 
+// ids for the svg descriptions, unique per mounted root
+let descriptionIds = 0;
+
 export class Root extends React.Component {
   constructor(props) {
     super(props);
@@ -150,6 +153,7 @@ export class Root extends React.Component {
       titleHeight: 0,
     };
     this.resizeObserver = null;
+    this.descriptionId = `plot-description-${++descriptionIds}`;
   }
 
   static propTypes = {
@@ -172,6 +176,8 @@ export class Root extends React.Component {
     titlePlaceholder: PropTypes.string,
     mathMlOptions: PropTypes.object,
     labelsCharactersLimit: PropTypes.number,
+    ariaLabel: PropTypes.string,
+    ariaDescription: PropTypes.string,
   };
 
   mouseMove: any = (g, event) => {
@@ -300,6 +306,8 @@ export class Root extends React.Component {
       rootRef,
       mathMlOptions = {},
       labelsCharactersLimit,
+      ariaLabel,
+      ariaDescription,
     } = this.props;
     const {
       size: { width = 500, height = 500 },
@@ -330,6 +338,13 @@ export class Root extends React.Component {
     const nbOfHorizontalLines = parseInt(actualHeight / 100);
     const sideGridlinesPadding = parseInt(actualHeight % 100);
     const { titleHeight } = this.state;
+
+    // a group, because an img would hide the interactive marks inside it
+    const svgProps = {
+      ...(ariaLabel && { role: 'group', 'aria-label': ariaLabel }),
+      ...(ariaDescription && { 'aria-describedby': this.descriptionId }),
+    };
+    const description = ariaDescription ? <desc id={this.descriptionId}>{ariaDescription}</desc> : null;
 
     return (
       <StyledRoot>
@@ -433,7 +448,8 @@ export class Root extends React.Component {
             />
           )}
           {defineChart ? (
-            <DefineChartSvg width={finalWidth} height={finalHeight}>
+            <DefineChartSvg width={finalWidth} height={finalHeight} {...svgProps}>
+              {description}
               <GraphBox
                 ref={(r) => {
                   this.g = r;
@@ -447,7 +463,8 @@ export class Root extends React.Component {
               </GraphBox>
             </DefineChartSvg>
           ) : (
-            <ChartSvg width={finalWidth} height={finalHeight}>
+            <ChartSvg width={finalWidth} height={finalHeight} {...svgProps}>
+              {description}
               <GraphBox
                 ref={(r) => {
                   this.g = r;

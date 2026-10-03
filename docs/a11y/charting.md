@@ -14,3 +14,4 @@ Students inspect or edit chart data in bar, line, and histogram forms. The eleme
 
 - Confirm chart values, trends, and bin meanings are available without relying on sight or color alone.
 - Confirm pointer-based chart editing has a complete keyboard alternative.
+- The chart is named by its title, or by its type when it has none, and described by its type, categories and value range ([PIE-1156](https://illuminate.atlassian.net/browse/PIE-1156)). A description of what the data shows needs authored text and is postponed.

@@ -234,6 +234,7 @@ export class GraphWithControls extends React.Component {
           tools={tools}
           removeIncompleteTool={removeIncompleteTool}
           limitLabeling={limitLabeling}
+          language={language}
         />
       </StyledGraphContainer>
     );
