@@ -86,4 +86,12 @@ describe('video-stimulus retry button', () => {
   it('shows the page through when no theme is applied, as it does today', () => {
     expect(retryButton({}).backgroundColor).toBe('transparent');
   });
+
+  it('keeps a border in the inherited text colour when no theme is applied', () => {
+    const retry = retryButton({});
+
+    expect(retry.borderTopStyle).toBe('solid');
+    expect(retry.borderTopWidth).toBe('1px');
+    expect(retry.borderTopColor).toBe('currentcolor');
+  });
 });

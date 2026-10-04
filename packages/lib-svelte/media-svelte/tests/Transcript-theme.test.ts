@@ -60,4 +60,20 @@ describe('Transcript toggle', () => {
   it('shows the page through when no theme is applied, as it does today', () => {
     expect(toggle({}).backgroundColor).toBe('transparent');
   });
+
+  it('draws its border in the theme text colour', () => {
+    const button = toggle(DARK);
+
+    expect(button.borderTopStyle).toBe('solid');
+    expect(button.borderTopWidth).toBe('1px');
+    expect(button.borderTopColor).toBe('#e2e8f0');
+  });
+
+  it('keeps a border in the inherited text colour when no theme is applied', () => {
+    const button = toggle({});
+
+    expect(button.borderTopStyle).toBe('solid');
+    expect(button.borderTopWidth).toBe('1px');
+    expect(button.borderTopColor).toBe('currentcolor');
+  });
 });
