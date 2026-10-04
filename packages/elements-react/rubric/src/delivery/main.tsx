@@ -82,9 +82,17 @@ const SampleTitleText: any = styled('h4')({
   paddingBottom: '6px',
 });
 
-const RubricToggle: any = styled('h2')(({ theme }) => ({
+// A native button handles Enter and Space without scrolling the page; the resets drop the
+// browser's button chrome and keep it full width.
+const RubricToggle: any = styled('button')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  width: '100%',
+  padding: 0,
+  border: 0,
+  background: 'transparent',
+  font: 'inherit',
+  textAlign: 'inherit',
   cursor: 'pointer',
   userSelect: 'none',
   fontSize: theme.typography.fontSize,
@@ -162,7 +170,7 @@ class Rubric extends React.Component {
       const { points, sampleAnswers } = value;
 
       const rubricList = (
-        <List component="nav">
+        <List>
           {points
             .slice(0)
             .reverse()
@@ -200,14 +208,11 @@ class Rubric extends React.Component {
           {!animationsDisabled ? (
             <React.Fragment>
               <RubricToggle
+                type="button"
                 id={`${this.idPrefix}-toggle`}
-                tabIndex={0}
-                role="button"
                 aria-expanded={this.state.rubricOpen}
+                aria-controls={`${this.idPrefix}-content`}
                 onClick={this.toggleRubric}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') this.toggleRubric();
-                }}
               >
                 {this.state.linkPrefix} Rubric
                 <ChevronStyle aria-hidden="true">
@@ -240,7 +245,11 @@ class Rubric extends React.Component {
                   )}
                 </ChevronStyle>
               </RubricToggle>
-              <Collapse in={this.state.rubricOpen} timeout={{ enter: 225, exit: 195 }}>
+              <Collapse
+                id={`${this.idPrefix}-content`}
+                in={this.state.rubricOpen}
+                timeout={{ enter: 225, exit: 195 }}
+              >
                 {rubricList}
               </Collapse>
             </React.Fragment>
