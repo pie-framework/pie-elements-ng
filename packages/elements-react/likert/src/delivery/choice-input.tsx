@@ -5,8 +5,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 
-import { color } from '@pie-lib/render-ui';
-import { uniqueId } from '@pie-element/shared-lodash';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import Radio from '@mui/material/Radio';
 import { LIKERT_ORIENTATION } from './likertEntities.js';
 
@@ -53,7 +52,7 @@ export class ChoiceInput extends React.Component {
   };
 
   // The visible label is a sibling of the radio, so the radio takes its name by reference.
-  labelId: string = uniqueId('likert-choice-label-');
+  labelId: string = createUniqueId('likert-choice-label');
 
   onToggleChoice: any = () => {
     this.props.onChange({

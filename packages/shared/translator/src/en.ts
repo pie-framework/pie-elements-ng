@@ -12,10 +12,15 @@ export default {
     ebsr: {
       part: 'Part {{index}}',
     },
+    editableHtml: {
+      responseAreaToolbar: 'Response area',
+      toolbar: 'Editing tools',
+    },
     explicitConstructedResponse: {
       response: 'Response {{index}} of {{total}}',
     },
     extendedTextEntry: {
+      comment: 'Comment',
       response: 'Your response',
     },
     fractionModel: {

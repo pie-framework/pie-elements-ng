@@ -15,7 +15,7 @@ const StyledNumberContainer: any = styled('div')(({ theme }) => ({
   width: '100%',
   fontSize: theme.typography.fontSize + 4,
   textAlign: 'center',
-  color: `rgba(${theme.palette.common.black}, 0.6)`,
+  color: 'inherit',
 }));
 
 const Holder = ({ type, index, isOver, disabled }) => (

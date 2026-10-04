@@ -3,7 +3,7 @@
 import React from 'react';
 import { scaleLinear } from 'd3-scale';
 import { select, pointer } from 'd3-selection';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import { DndContext } from '@dnd-kit/core';
 import Point from './elements/point.js';
 import Line from './elements/line.js';
@@ -16,7 +16,6 @@ import { describePlottedElements, labelNumberLine } from './description.js';
 import Stacks from './stacks.js';
 import { TransitionGroup } from 'react-transition-group';
 import PropTypes from 'prop-types';
-import { uniqueId } from '@pie-element/shared-lodash';
 import { Fade } from '../transitions/index.js';
 
 const getXScale = (min, max, width, padding) => {
@@ -72,7 +71,10 @@ export class NumberLineGraph extends React.Component {
     this.state = {};
   }
 
-  descriptionId: string = uniqueId('number-line-description-');
+  descriptionId: string = createUniqueId('number-line-description');
+  // dnd-kit numbers the drag instructions each point references from a counter that restarts
+  // in every element bundle, so two element versions on a page would share the id.
+  dragInstructionsId: string = createUniqueId('number-line-drag-instructions');
 
   xScaleFn() {
     const { domain, width } = this.props;
@@ -223,7 +225,7 @@ export class NumberLineGraph extends React.Component {
       });
 
       return (
-        <DndContext>
+        <DndContext id={this.dragInstructionsId}>
           <div style={{ display: 'inline-block' }}>
             {/* touch-action must be on the outer svg: Chrome ignores it on inner svg elements (g, circle),
                 and without it the browser claims a touch on the drag handles as a pan and cancels dnd-kit's drag */}

@@ -5,7 +5,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { trig, types } from '@pie-lib/plot';
 import { styled } from '@mui/material/styles';
-import { ArrowMarker, genUid } from '../shared/arrow-head.js';
+import { useUniqueId } from '@pie-lib/render-ui';
+import { ArrowMarker } from '../shared/arrow-head.js';
 import { getAdjustedGraphLimits, thinnerShapesNeeded } from '../../utils.js';
 
 const StyledLine: any = styled('line', {
@@ -29,7 +30,7 @@ const StyledArrowMarker: any = styled(ArrowMarker, {
 }));
 
 export const ArrowedLine = (props) => {
-  const markerId = genUid();
+  const markerId = useUniqueId('arrow');
   const { className, correctness, disabled, graphProps, fill = 'Solid', from, to, ...rest } = props;
   const { scale } = graphProps;
   const { domain, range } = getAdjustedGraphLimits(graphProps);
