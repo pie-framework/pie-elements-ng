@@ -7,6 +7,8 @@ import { styled } from '@mui/material/styles';
 // Open Icon
 const OpenIcon = ({ bgFill, fgFill }) => (
   <svg
+    aria-hidden="true"
+    focusable="false"
     preserveAspectRatio="xMinYMin meet"
     version="1.1"
     viewBox="-283 359 34 35"
@@ -30,6 +32,8 @@ OpenIcon.propTypes = {
 // Close Icon
 const CloseIcon = ({ bgFill, fgFill, borderFill }) => (
   <svg
+    aria-hidden="true"
+    focusable="false"
     preserveAspectRatio="xMinYMin meet"
     version="1.1"
     viewBox="-129.5 127 34 35"
@@ -76,7 +80,7 @@ const CorrectResponseContainer: any = styled('div')(({ size }) => ({
   height: size || '25px',
 }));
 
-// Main component
+// Main component. The icon repeats the toggle's visible label, so it is hidden from assistive technology.
 const CorrectResponse = ({ open, size }) => {
   // Colors can be customized or pulled from theme
   const openBg = '#bce2ff';
