@@ -156,6 +156,18 @@ export const getRotateAngle = (fontSize, height) => {
   return 0;
 };
 
+// How much lower than a horizontal label a `width` by `height` label reaches once rotated `angle`
+// degrees about the middle of its left edge, as the category labels are
+export const getRotatedLabelOverhang = (width, height, angle) => {
+  if (!angle) {
+    return 0;
+  }
+
+  const radians = (angle * Math.PI) / 180;
+
+  return Math.max(0, Math.ceil(width * Math.sin(radians) - (height / 2) * (1 - Math.cos(radians))));
+};
+
 export const getTopPadding = (barWidth) => {
   if (barWidth < 30) {
     return 50;
