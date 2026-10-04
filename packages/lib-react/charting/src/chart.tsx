@@ -6,7 +6,7 @@ import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import { cloneDeep } from '@pie-element/shared-lodash';
 
-import { createGraphProps, Root } from '@pie-lib/plot';
+import { createGraphProps, Root, utils as plotUtils } from '@pie-lib/plot';
 import { AlertDialog } from '@pie-lib/config-ui';
 import ChartGrid from './grid.js';
 import ChartAxes from './axes.js';
@@ -22,6 +22,30 @@ const log = debug('pie-lib:charts:chart');
 const StyledChartContainer: any = styled('div')(() => ({
   width: 'min-content',
 }));
+
+const textOf = (html) => (html ? plotUtils.extractTextFromHTML(html).trim() : '');
+
+// the chart svg's name and description, generated from the model: the title names the chart when
+// there is one, and the description gives its type, its categories and the range of its values
+export const chartAlternative = ({ title, chartType, categories, range, language }) => {
+  // category labels and titles are author text, which React escapes
+  const options = { lng: language, interpolation: { escapeValue: false } };
+  const type = translator.t(`charting.chartTypes.${chartType}`, options);
+  const valueLabel = textOf(range.label);
+  const values = valueLabel
+    ? translator.t('charting.labelledValueRange', { ...options, label: valueLabel, min: range.min, max: range.max })
+    : translator.t('charting.valueRange', { ...options, min: range.min, max: range.max });
+  const categoryList = translator.t('charting.categories', {
+    ...options,
+    count: categories.length,
+    categories: categories.map((c) => textOf(c.label)).join(', '),
+  });
+
+  return {
+    ariaLabel: textOf(title) || type,
+    ariaDescription: `${type}. ${categoryList} ${values}`,
+  };
+};
 
 export class Chart extends React.Component {
   constructor(props) {
@@ -241,10 +265,17 @@ export class Chart extends React.Component {
     const { width, height } = size || {};
     const labels = { left: range?.label || '', bottom: domain?.label || '' };
 
-    const { ChartComponent } = this.getChart();
+    const { type, ChartComponent } = this.getChart();
     const categories = this.getFilteredCategories();
 
     const correctValues = getDomainAndRangeByChartType(domain, range, chartType);
+    const { ariaLabel, ariaDescription } = chartAlternative({
+      title,
+      chartType: type,
+      categories,
+      range: { ...correctValues.range, label: range.label },
+      language,
+    });
 
     const { verticalLines, horizontalLines, leftAxis } = getGridLinesAndAxisByChartType(correctValues.range, chartType);
     const common = {
@@ -295,6 +326,8 @@ export class Chart extends React.Component {
           rootRef={(r) => (this.rootNode = r)}
           mathMlOptions={mathMlOptions}
           labelsCharactersLimit={labelsCharactersLimit}
+          ariaLabel={ariaLabel}
+          ariaDescription={ariaDescription}
           {...rootCommon}
         >
           <ChartGrid {...common} xBand={xBand} rowTickValues={horizontalLines} columnTickValues={verticalLines} />
@@ -314,6 +347,7 @@ export class Chart extends React.Component {
             top={top}
             error={error}
             showCorrectness={chartType === 'linePlot' || chartType === 'dotPlot'}
+            language={language}
           />
           {addCategoryEnabled ? (
             <foreignObject x={width} y={height - 16} width={width} height={height}>

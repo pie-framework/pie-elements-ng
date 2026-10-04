@@ -765,6 +765,7 @@ export class Main extends React.Component {
       env: { mode } = {},
       printMode,
       alwaysShowCorrect,
+      language,
     } = model || {};
 
     const emptyResponse = isEmpty(responses);
@@ -788,6 +789,7 @@ export class Main extends React.Component {
                   this.mqStatic = mqStatic || this.mqStatic;
                 }}
                 latex={statics[id]}
+                language={language}
                 onSubFieldChange={this.subFieldChanged}
                 getFieldName={this.getFieldName}
                 setInput={this.setInput}

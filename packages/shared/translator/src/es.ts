@@ -6,8 +6,17 @@ export default {
       maxChoicesPerCategoryRestriction:
         'Para cambiar este valor a {{maxChoicesPerCategory}}, cada categoría debe tener {{maxChoicesPerCategory}} o menos opciones de respuesta',
     },
+    dragInTheBlank: {
+      blank: 'Espacio en blanco {{index}}',
+    },
     ebsr: {
       part: 'Parte {{index}}',
+    },
+    explicitConstructedResponse: {
+      response: 'Respuesta {{index}} de {{total}}',
+    },
+    extendedTextEntry: {
+      response: 'Tu respuesta',
     },
     fractionModel: {
       modelLabel_one: 'Modelo {{index}} de {{total}}: {{selected}} de {{count}} parte seleccionada',
@@ -18,11 +27,29 @@ export default {
       addElementLimit_one: 'Solo puedes agregar {{count}} elemento',
       addElementLimit_other: 'Solo puedes agregar {{count}} elementos',
       clearAll: 'Borrar todo',
+      closedEnd: 'cerrado',
+      graphLabel: 'Recta numérica de {{min}} a {{max}}, con una marca cada {{interval}}',
+      line: 'Línea de {{left}} ({{leftEnd}}) a {{right}} ({{rightEnd}}).',
+      openEnd: 'abierto',
+      plottedNone: 'No hay nada marcado en la recta.',
+      pointClosed: 'Punto cerrado en {{position}}.',
+      pointOpen: 'Punto abierto en {{position}}.',
+      rayLeft: 'Rayo desde {{position}} ({{end}}) hacia la izquierda.',
+      rayRight: 'Rayo desde {{position}} ({{end}}) hacia la derecha.',
+    },
+    hotspot: {
+      image_one: 'Imagen con {{count}} zona activa',
+      image_other: 'Imagen con {{count}} zonas activas',
+      shape: 'Zona activa {{index}} de {{total}}',
     },
     imageClozeAssociation: {
+      answerChoice: 'Opción de respuesta {{index}} de {{total}}',
+      image_one: 'Imagen con {{count}} área de respuesta',
+      image_other: 'Imagen con {{count}} áreas de respuesta',
       reachedLimit_one:
         'Has alcanzado el límite de {{count}} respuesta por área. Para agregar otra respuesta, primero se debe eliminar una respuesta.',
       reachedLimit_other: 'Lleno',
+      responseArea: 'Área de respuesta {{index}} de {{total}}',
     },
     drawingResponse: {
       fillColor: 'Color de relleno',
@@ -40,6 +67,8 @@ export default {
       black: 'Negro',
       onDoubleClick:
         'Haz doble clic para revisar este texto. Presiona el botón de ingreso para enviar',
+      drawingArea: 'Área de dibujo',
+      drawingAreaOverImage: 'Área de dibujo sobre una imagen de fondo',
     },
     charting: {
       addCategory: 'Añadir categoría',
@@ -47,14 +76,34 @@ export default {
       add: 'Añadir',
       delete: 'Eliminar',
       newLabel: 'Nueva etiqueta',
+      categoryLabel: 'Etiqueta de la categoría {{index}}',
       reachedLimit_other: 'No puede haber más de {{count}} categorías.',
       keyLegend: {
         incorrectAnswer: 'Respuesta incorrecta del estudiante',
         correctAnswer: 'Respuesta correcta del estudiante',
         correctKeyAnswer: 'Clave de respuesta correcta',
       },
+      chartTypes: {
+        bar: 'Gráfico de barras',
+        histogram: 'Histograma',
+        lineDot: 'Gráfico de líneas con puntos',
+        lineCross: 'Gráfico de líneas con cruces',
+        dotPlot: 'Diagrama de puntos',
+        linePlot: 'Diagrama de líneas',
+      },
+      categories_zero: 'Sin categorías.',
+      categories_one: '{{count}} categoría: {{categories}}.',
+      categories_other: '{{count}} categorías: {{categories}}.',
+      valueRange: 'Valores de {{min}} a {{max}}.',
+      labelledValueRange: '{{label}} de {{min}} a {{max}}.',
     },
     graphing: {
+      graph: 'Gráfica de coordenadas',
+      axisRange: 'Eje {{axis}} de {{min}} a {{max}}.',
+      plotted_zero: 'Nada trazado.',
+      plotted_one: '{{count}} objeto trazado: {{marks}}.',
+      plotted_other: '{{count}} objetos trazados: {{marks}}.',
+      shadedRegion: 'Región sombreada',
       point: 'Punto',
       circle: 'Circulo',
       line: 'Línea',
@@ -67,12 +116,17 @@ export default {
       sine: 'Seno',
       vector: 'Vector',
       label: 'Etiqueta',
+      markLabel: 'Etiqueta en ({{x}}, {{y}})',
+      correctMarkLabel: 'Etiqueta correcta en ({{x}}, {{y}})',
       redo: 'Rehacer',
       reset: 'Reiniciar',
     },
     mathInline: {
       primaryCorrectWithAlternates:
         'Nota: La respuesta que se muestra arriba es la respuesta correcta principal especificada por el autor para esta pregunta, pero también se pueden reconocer otras respuestas como correctas.',
+    },
+    mathInput: {
+      enterAnswer: 'Escribe la respuesta',
     },
     mcPopulatedBlank: {
       answerChoices: 'Opciones de respuesta',

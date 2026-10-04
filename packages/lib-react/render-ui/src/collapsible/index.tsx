@@ -5,12 +5,25 @@ import { styled } from '@mui/material/styles';
 import Collapse from '@mui/material/Collapse';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import PropTypes from 'prop-types';
+import * as color from '../color.js';
 
-const Title: any = styled('span')(({ theme }) => ({
-  color: theme.palette.primary.light,
-  borderBottom: `1px dotted ${theme.palette.primary.light}`,
+// --pie-tertiary is the theming contract's link-text token, held to 4.5:1 against
+// --pie-background in every scheme; --pie-primary carries no text-contrast guarantee.
+const Toggle: any = styled('button')({
+  display: 'inline-block',
+  minHeight: '24px',
+  padding: 0,
+  border: 0,
+  background: 'transparent',
+  font: 'inherit',
+  textAlign: 'inherit',
+  color: color.tertiary(),
   cursor: 'pointer',
-}));
+});
+
+const Title: any = styled('span')({
+  borderBottom: '1px dotted currentColor',
+});
 
 const StyledCollapse: any = styled(Collapse)(({ theme }) => ({
   paddingTop: theme.spacing(2),
@@ -34,6 +47,10 @@ export class Collapsible extends React.Component {
     expanded: false,
   };
 
+  // Random rather than a counter or useId: each element bundles its own copy of this
+  // module and mounts its own React root, so neither is unique on a page.
+  panelId = `pie-collapsible-${Math.random().toString(36).slice(2, 10)}`;
+
   toggleExpanded: any = () => {
     this.setState((state) => ({ expanded: !state.expanded }));
   };
@@ -48,16 +65,21 @@ export class Collapsible extends React.Component {
 
   render() {
     const { labels, children, className } = this.props;
-    const title = this.state.expanded ? labels.visible || 'Hide' : labels.hidden || 'Show';
+    const { expanded } = this.state;
+    const title = expanded ? labels.visible || 'Hide' : labels.hidden || 'Show';
 
     return (
       <div className={className} ref={(r) => (this.root = r)}>
-        <div onClick={this.toggleExpanded}>
-          <Title>{title}</Title>
+        <div>
+          <Toggle type="button" aria-expanded={expanded} aria-controls={this.panelId} onClick={this.toggleExpanded}>
+            <Title>{title}</Title>
+          </Toggle>
         </div>
-        <StyledCollapse in={this.state.expanded} timeout={{ enter: 225, exit: 195 }} unmountOnExit>
-          {children}
-        </StyledCollapse>
+        <div id={this.panelId}>
+          <StyledCollapse in={expanded} timeout={{ enter: 225, exit: 195 }} unmountOnExit>
+            {children}
+          </StyledCollapse>
+        </div>
       </div>
     );
   }

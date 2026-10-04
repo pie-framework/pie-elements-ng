@@ -178,6 +178,7 @@ class HotspotComponent extends React.Component {
             session={session}
             dimensions={dimensions}
             imageUrl={imageUrl}
+            language={language}
             hotspotColor={hotspotColor}
             hoverOutlineColor={isGatherMode ? hoverOutlineColor : undefined}
             selectedHotspotColor={selectedHotspotColor}

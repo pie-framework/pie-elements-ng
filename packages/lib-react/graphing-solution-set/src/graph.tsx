@@ -3,7 +3,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { cloneDeep, isEqual } from '@pie-element/shared-lodash';
-import { createGraphProps, Root, types } from '@pie-lib/plot';
+import { createGraphProps, Root, types, utils as plotUtils } from '@pie-lib/plot';
+import Translator from '@pie-lib/translator';
 import debug from 'debug';
 
 import { Axes, AxisPropTypes } from './axis/index.js';
@@ -11,6 +12,8 @@ import Grid from './grid.js';
 import { LabelType } from './labels.js';
 import Bg from './bg.js';
 import { areArraysOfObjectsEqual, isDuplicatedMark } from './utils.js';
+
+const { translator } = Translator;
 
 const log = debug('pie-lib:graphing-solution-set:graph');
 
@@ -40,6 +43,7 @@ export const graphPropTypes = {
   showTitle: PropTypes.bool,
   title: PropTypes.string,
   tools: PropTypes.array,
+  language: PropTypes.string,
 };
 
 const getMaskSize = (size) => ({
@@ -48,6 +52,30 @@ const getMaskSize = (size) => ({
   width: size.width + 46,
   height: size.height + 46,
 });
+
+const textOf = (html) => (html ? plotUtils.extractTextFromHTML(html).trim() : '');
+
+// the graph svg's name and description, generated from the model as graphing's are; of the
+// polygons only the shaded solution regions count, the rest being regions a student can still pick
+const graphAlternative = ({ title, domain, range, marks, language }) => {
+  // titles and axis labels are author text, which React escapes
+  const options = { lng: language, interpolation: { escapeValue: false } };
+  const axis = ({ axisLabel, min, max }, fallback) =>
+    translator.t('graphing.axisRange', { ...options, axis: textOf(axisLabel) || fallback, min, max });
+  const plotted = marks.filter((m) => !m.building && (m.type !== 'polygon' || m.isSolution));
+  const plottedText = translator.t('graphing.plotted', {
+    ...options,
+    count: plotted.length,
+    marks: plotted
+      .map((m) => translator.t(m.type === 'polygon' ? 'graphing.shadedRegion' : `graphing.${m.type}`, options).trim())
+      .join(', '),
+  });
+
+  return {
+    ariaLabel: textOf(title) || translator.t('graphing.graph', options),
+    ariaDescription: `${axis(domain, 'x')} ${axis(range, 'y')} ${plottedText}`,
+  };
+};
 
 export const removeBuildingToolIfCurrentToolDiffers = ({ marks, currentTool }) => {
   const buildingMark = marks.filter((m) => m.building)[0];
@@ -224,13 +252,14 @@ export class Graph extends React.Component {
       mathMlOptions = {},
       gssLineData,
       disabled,
+      language,
     } = this.props;
     let { marks } = this.props;
 
     const graphProps = createGraphProps(domain, range, size, () => this.rootNode);
 
     const maskSize = getMaskSize(size);
-    let common = { graphProps, labelModeEnabled, gssLineData };
+    let common = { graphProps, labelModeEnabled, gssLineData, language };
 
     marks = removeBuildingToolIfCurrentToolDiffers({ marks: marks || [], currentTool });
     let solutionSet = marks.filter((mark) => mark.type === 'polygon');
@@ -253,6 +282,14 @@ export class Graph extends React.Component {
     newMarks.push(...marks.filter((mark) => mark.type === 'polygon'));
     newMarks.push(...marks.filter((mark) => mark.type === 'line'));
 
+    const { ariaLabel, ariaDescription } = graphAlternative({
+      title,
+      domain,
+      range,
+      marks: [...(backgroundMarks || []), ...newMarks],
+      language,
+    });
+
     return (
       <Root
         rootRef={(r) => (this.rootNode = r)}
@@ -268,6 +305,8 @@ export class Graph extends React.Component {
         onChangeTitle={onChangeTitle}
         onChangeLabels={onChangeLabels}
         mathMlOptions={mathMlOptions}
+        ariaLabel={ariaLabel}
+        ariaDescription={ariaDescription}
         {...common}
       >
         <g

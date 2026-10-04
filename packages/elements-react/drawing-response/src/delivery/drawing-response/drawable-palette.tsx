@@ -83,11 +83,19 @@ class Palette extends React.Component {
 
   render() {
     const { fillColor, outlineColor, fillList, outlineList, language } = this.props;
+    const fillLabel = translator.t('drawingResponse.fillColor', { lng: language });
+    const outlineLabel = translator.t('drawingResponse.outlineColor', { lng: language });
 
     return (
       <BaseContainer>
-        <StyledInputContainer label={translator.t('drawingResponse.fillColor', { lng: language })}>
-          <StyledSelect onChange={this.onChange('fill')} value={fillColor} variant='standard' MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}>
+        <StyledInputContainer label={fillLabel}>
+          <StyledSelect
+            onChange={this.onChange('fill')}
+            value={fillColor}
+            variant='standard'
+            inputProps={{ 'aria-label': fillLabel }}
+            MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}
+          >
             {fillList.map(({ value, label }) => (
               <StyledMenuItem
                 key={value}
@@ -101,8 +109,14 @@ class Palette extends React.Component {
           </StyledSelect>
         </StyledInputContainer>
 
-        <StyledInputContainer label={translator.t('drawingResponse.outlineColor', { lng: language })}>
-          <StyledSelect onChange={this.onChange('outline')} value={outlineColor} variant='standard' MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}>
+        <StyledInputContainer label={outlineLabel}>
+          <StyledSelect
+            onChange={this.onChange('outline')}
+            value={outlineColor}
+            variant='standard'
+            inputProps={{ 'aria-label': outlineLabel }}
+            MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}
+          >
             {outlineList.map(({ value, label }) => (
               <StyledMenuItem key={value} value={value} style={{ border: `2px solid ${value}` }}>
                 {label}

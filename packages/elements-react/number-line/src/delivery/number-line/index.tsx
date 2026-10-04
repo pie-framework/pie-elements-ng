@@ -363,6 +363,7 @@ export class NumberLine extends React.Component {
             onToggleElement={this.toggleElement.bind(this)}
             onDeselectElements={this.deselectElements.bind(this)}
             debug={false}
+            language={language}
           />
           {title && <GraphTitle dangerouslySetInnerHTML={{ __html: title }} />}
 
