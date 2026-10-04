@@ -2,6 +2,7 @@
 
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
+import { scopeAttribute } from './table-semantics.js';
 
 /**
  * Default table cells use ProseMirror `createAndFill()`, which prefers the first
@@ -18,4 +19,10 @@ export const ExtendedTableCell = TableCell.extend({
 
 export const ExtendedTableHeader = TableHeader.extend({
   content: TABLE_CELL_BLOCK_CONTENT,
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      scope: scopeAttribute,
+    };
+  },
 });
