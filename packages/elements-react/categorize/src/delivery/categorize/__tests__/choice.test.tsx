@@ -14,6 +14,8 @@ vi.mock('@pie-lib/render-ui', () => ({
     correct: () => '#00ff00',
     incorrect: () => '#ff0000',
     buttonFocusOutline: () => '#3B82F6',
+    v: () => (name: string, fallback: string) => `var(--pie-${name}, ${fallback})`,
+    defaults: { WHITE: '#ffffff' },
   },
 }));
 

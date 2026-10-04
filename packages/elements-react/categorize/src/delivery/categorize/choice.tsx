@@ -46,7 +46,8 @@ const StyledCard: any = styled(Card, {
 
 const StyledCardContent: any = styled(CardContent)(({ theme }) => ({
   color: color.text(),
-  backgroundColor: color.white(),
+  // --pie-white stays white under a dark theme; white keeps the card opaque when no theme is set.
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
   '&:last-child': {
     paddingBottom: theme.spacing(2),
   },

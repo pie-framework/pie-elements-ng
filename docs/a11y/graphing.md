@@ -13,6 +13,8 @@ Each toolbar tool is one button named by the tool. In the authoring correct-resp
 
 Each mark label input is named by the point it labels, "Label at (2, 3)", and in evaluate mode the correct label beside a wrong one is "Correct label at (2, 3)" ([PIE-1155](https://illuminate.atlassian.net/browse/PIE-1155)).
 
+The coordinates shown on hovering a point are read-only text ([PIE-1183](https://illuminate.atlassian.net/browse/PIE-1183)).
+
 ## Not Covered / Manual
 
 - Confirm graph construction can be completed without pointer input.

@@ -87,6 +87,7 @@ const MaskedInput = (props) => (node, data) => {
           index: ids.indexOf(dataset.id) + 1,
           total: ids.length,
         })}
+        language={props.language}
       />
     );
   }

@@ -34,9 +34,10 @@ export default class Matrix extends HTMLElement {
   }
 
   sessionChanged({ matrixKey, matrixValue }) {
-    const matrixRowKey = matrixKey.split('-')[0];
+    // keys are `row-column`: the separator keeps row 1 from matching rows 10 to 19
+    const matrixRowPrefix = `${matrixKey.split('-')[0]}-`;
     const sessionValueClone = Object.keys(this._session.value || {}).reduce((acc, key) => {
-      if (!key.startsWith(matrixRowKey)) {
+      if (!key.startsWith(matrixRowPrefix)) {
         acc[key] = this._session.value[key];
       }
       return acc;

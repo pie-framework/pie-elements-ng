@@ -9,11 +9,9 @@ Students compose longer free-text responses in an editor-like response area. Eva
 - `extended-text-editor-labels`: response area naming, keyboard entry path, editor controls, and target sizing.
 - `extended-text-evaluate-feedback`: evaluate-mode feedback and status-message semantics.
 
-The response editor is named by the visible prompt, or "Your response" in the item's language when there is no prompt text ([PIE-1154](https://illuminate.atlassian.net/browse/PIE-1154)).
+The response editor is named by the visible prompt, or "Your response" in the item's language when there is no prompt text ([PIE-1154](https://illuminate.atlassian.net/browse/PIE-1154)). In annotation mode the comment editor is named "Comment" in the item's language, the same string as its visible label.
 
-## Open Gaps
-
-- The editor toolbar is a `div` with `tabindex="1"` and no role or name (`MenuBar` in `@pie-lib/editable-html-tip-tap`), so it is an unnamed tab stop, and the positive tabindex puts it ahead of the page's tab order. The suite's `interactive-control-name` check reports it.
+The editor toolbar is a `role="toolbar"` named "Editing tools" in the item's language, with no tab stop of its own. It is `inert` while the editor lacks focus, so Tab skips its hidden buttons, and stays open while focus is anywhere in the editor ([PIE-1180](https://illuminate.atlassian.net/browse/PIE-1180)).
 
 ## Not Covered / Manual
 

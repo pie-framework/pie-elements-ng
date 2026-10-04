@@ -26,16 +26,17 @@ const StyledPopover: any = styled(Popover)({
 });
 
 /*
- * Surface and stroke move together. Tokenising the border alone would put a scheme's
- * border colour on a fixed white popover -- under white-on-black, `--pie-border` is
- * #ffffff, so the outline would vanish. `--pie-white` inverts with the scheme, which
- * is what `common.white` was standing in for.
+ * Surface, text and stroke move together. `--pie-background` and `--pie-text` follow both
+ * the colour schemes and the dark theme; `--pie-white` stays white under the dark theme,
+ * and the popover paper's own text stays near-black in every scheme. Without a theme the
+ * fallbacks are the white and the paper text the menu has always had.
  */
-const MainWrapper: any = styled('div')(() => ({
+const MainWrapper: any = styled('div')(({ theme }) => ({
   width: '300px',
   overflow: 'hidden',
   borderRadius: '4px',
-  backgroundColor: color.white(),
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.v('pie')('text', theme.palette.text.primary),
   border: `2px solid ${color.border()}`,
 }));
 
@@ -50,7 +51,8 @@ const ControlsWrapper: any = styled('div')(() => ({
   borderTop: `2px solid ${color.border()}`,
 }));
 
-const Button: any = styled('div')(({ variant }) => ({
+// The annotation fills stay light in every scheme, so their labels keep the paper's dark text.
+const Button: any = styled('div')(({ theme, variant }) => ({
   width: '22%',
   textAlign: 'center',
   padding: '4px',
@@ -67,12 +69,14 @@ const Button: any = styled('div')(({ variant }) => ({
   },
   ...(variant === 'positive' && {
     backgroundColor: 'rgb(153, 255, 153) !important',
+    color: theme.palette.text.primary,
     '&:hover': {
       filter: 'brightness(85%)',
     },
   }),
   ...(variant === 'negative' && {
     backgroundColor: 'rgb(255, 204, 238) !important',
+    color: theme.palette.text.primary,
     '&:hover': {
       filter: 'brightness(85%)',
     },
