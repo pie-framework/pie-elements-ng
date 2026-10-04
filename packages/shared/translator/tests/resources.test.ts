@@ -3,7 +3,14 @@ import en from '../src/en.js';
 import es from '../src/es.js';
 
 /** Namespaces whose Spanish is maintained here rather than synced from upstream. */
-const LOCALLY_OWNED = ['mcPopulatedBlank', 'simpleCloze', 'vennClassification'] as const;
+const LOCALLY_OWNED = [
+  'dragInTheBlank',
+  'hotspot',
+  'imageClozeAssociation',
+  'mcPopulatedBlank',
+  'simpleCloze',
+  'vennClassification',
+] as const;
 
 const placeholders = (text: string) =>
   [...text.matchAll(/{{\s*(\w+)\s*}}/g)].map((m) => m[1]).sort();

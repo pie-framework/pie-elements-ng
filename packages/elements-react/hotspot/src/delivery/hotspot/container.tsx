@@ -26,10 +26,13 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
 const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
 import { styled } from '@mui/material/styles';
+import Translator from '@pie-lib/translator';
 
 import Rectangle from './rectangle.js';
 import Polygon from './polygon.js';
 import Circle from './circle.js';
+
+const { translator } = Translator;
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -146,6 +149,7 @@ export class Container extends React.Component {
       selectedHotspotColor,
       imageUrl,
       isEvaluateMode,
+      language,
       outlineColor,
       onSelectChoice,
       shapes: { rectangles = [], polygons = [], circles = [] },
@@ -276,15 +280,18 @@ export class Container extends React.Component {
           </Layer>
         </StyledStage>
 
-        {sortedShapes.map((shape) => {
+        {sortedShapes.map((shape, index) => {
           const selected = this.isSelected(shape);
+          const name =
+            shape.ariaLabel?.trim() ||
+            translator.t('hotspot.shape', { lng: language, index: index + 1, total: sortedShapes.length });
 
           return (
             <HiddenFocusable
               key={`focus-${shape.id}`}
               tabIndex={disabled ? -1 : 0}
               role="button"
-              aria-label={shape.ariaLabel || ''}
+              aria-label={name}
               aria-pressed={selected}
               onFocus={() => this.handleShapeFocus(shape.id)}
               onBlur={this.handleShapeBlur}
@@ -304,6 +311,7 @@ Container.propTypes = {
   hoverOutlineColor: PropTypes.string,
   imageUrl: PropTypes.string.isRequired,
   isEvaluateMode: PropTypes.bool.isRequired,
+  language: PropTypes.string,
   onSelectChoice: PropTypes.func.isRequired,
   outlineColor: PropTypes.string.isRequired,
   selectedHotspotColor: PropTypes.string,
