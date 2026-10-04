@@ -26,6 +26,7 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
 const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
 import { styled } from '@mui/material/styles';
+import { uniqueId } from '@pie-element/shared-lodash';
 import Translator from '@pie-lib/translator';
 
 import Rectangle from './rectangle.js';
@@ -86,17 +87,22 @@ export class Container extends React.Component {
 
   correctness = (isCorrect, isChecked) => (isCorrect ? isChecked : !isChecked);
 
+  descriptionId: string = uniqueId('hotspot-evaluation-');
+
+  // The canvas tooltip and the shape button's description both carry this text.
   getEvaluateText: any = (isCorrect, selected) => {
+    const { language } = this.props;
+
     if (selected && isCorrect) {
-      return 'Correctly\nselected';
+      return translator.t('hotspot.correctlySelected', { lng: language });
     }
 
     if (selected && !isCorrect) {
-      return 'Should not have\nbeen selected';
+      return translator.t('hotspot.shouldNotHaveBeenSelected', { lng: language });
     }
 
     if (!selected && isCorrect) {
-      return 'Should have\nbeen selected';
+      return translator.t('hotspot.shouldHaveBeenSelected', { lng: language });
     }
 
     return null;
@@ -290,18 +296,27 @@ export class Container extends React.Component {
           const name =
             shape.ariaLabel?.trim() ||
             translator.t('hotspot.shape', { lng: language, index: index + 1, total: sortedShapes.length });
+          const evaluateText = isEvaluateMode ? this.getEvaluateText(shape.correct, selected) : null;
+          const descriptionId = `${this.descriptionId}-${index}`;
 
           return (
-            <HiddenFocusable
-              key={`focus-${shape.id}`}
-              tabIndex={disabled ? -1 : 0}
-              role="button"
-              aria-label={name}
-              aria-pressed={selected}
-              onFocus={() => this.handleShapeFocus(shape.id)}
-              onBlur={this.handleShapeBlur}
-              onKeyDown={(e) => this.handleShapeKeyDown(e, shape.id)}
-            />
+            <React.Fragment key={`focus-${shape.id}`}>
+              <HiddenFocusable
+                tabIndex={disabled ? -1 : 0}
+                role="button"
+                aria-label={name}
+                aria-pressed={selected}
+                aria-describedby={evaluateText ? descriptionId : undefined}
+                onFocus={() => this.handleShapeFocus(shape.id)}
+                onBlur={this.handleShapeBlur}
+                onKeyDown={(e) => this.handleShapeKeyDown(e, shape.id)}
+              />
+              {evaluateText && (
+                <span id={descriptionId} hidden>
+                  {evaluateText}
+                </span>
+              )}
+            </React.Fragment>
           );
         })}
       </BaseContainer>

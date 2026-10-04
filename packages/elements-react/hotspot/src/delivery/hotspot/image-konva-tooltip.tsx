@@ -28,6 +28,11 @@ const Tag = unwrapReactInteropSymbol(TagImport, 'Tag');
 const Text = unwrapReactInteropSymbol(TextImport, 'Text');
 const Image = unwrapReactInteropSymbol(ImageImport, 'Image');
 const Group = unwrapReactInteropSymbol(GroupImport, 'Group');
+
+const ICON_SIZE = 20;
+// Wraps the English evaluate text onto two lines, as its hard-coded line breaks used to.
+const TOOLTIP_WIDTH = 100;
+
 class ImageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -72,8 +77,8 @@ class ImageComponent extends React.Component {
     return (
       <Group>
         <Image
-          width={20}
-          height={20}
+          width={ICON_SIZE}
+          height={ICON_SIZE}
           x={x}
           y={y}
           image={image}
@@ -82,9 +87,9 @@ class ImageComponent extends React.Component {
         />
 
         {showTooltip && tooltip && (
-          <Label x={x - 30} y={y + 25}>
+          <Label x={x + ICON_SIZE / 2 - TOOLTIP_WIDTH / 2} y={y + 25}>
             <Tag fill="white" cornerRadius={5} opacity={0.9} />
-            <Text text={tooltip} padding={5} />
+            <Text text={tooltip} padding={5} width={TOOLTIP_WIDTH} align="center" />
           </Label>
         )}
       </Group>
