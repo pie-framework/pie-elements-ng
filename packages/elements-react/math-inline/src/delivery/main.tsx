@@ -166,13 +166,15 @@ export class Main extends React.Component {
   UNSAFE_componentWillMount() {
     if (typeof window !== 'undefined') {
       if (!registered) {
+        // The embed is registered once for every item on the page, so it marks each block by its
+        // response id rather than taking it as a DOM id, which a second item would repeat.
         registerEmbed('answerBlock', (data) => {
           const classNames = getBlockClassNames();
           return {
             htmlString: `<div class="${classNames.blockContainer}">
-                <div class="${classNames.blockResponse}" id="${data}Index">R</div>
+                <div class="${classNames.blockResponse}" data-answer-block-index="${data}">R</div>
                 <div class="${classNames.blockMath}">
-                  <span id="${data}"></span>
+                  <span data-answer-block="${data}"></span>
                 </div>
               </div>`,
             text: () => 'text',
@@ -192,8 +194,8 @@ export class Main extends React.Component {
 
     if (this.root && model.disabled && !showCorrect) {
       Object.keys(answers).forEach((answerId) => {
-        const el = this.root.querySelector(`#${answerId}`);
-        const indexEl = this.root.querySelector(`#${answerId}Index`);
+        const el = this.root.querySelector(`[data-answer-block="${answerId}"]`);
+        const indexEl = this.root.querySelector(`[data-answer-block-index="${answerId}"]`);
         // const correct = model.correctness && model.correctness.correct;
 
         if (el) {
@@ -635,7 +637,6 @@ export class Main extends React.Component {
       responseType,
       equationEditor,
       customKeys,
-      id,
       env: { mode, role } = {},
     } = config || {};
     const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote && note;
@@ -932,7 +933,6 @@ export class Main extends React.Component {
 
     return (
       <StyledUiLayout
-        id={id}
         extraCSSRules={extraCSSRules}
         ref={(r) => {
           // eslint-disable-next-line react/no-find-dom-node

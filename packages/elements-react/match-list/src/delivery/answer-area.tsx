@@ -149,7 +149,7 @@ export class AnswerArea extends React.Component {
     return (
       <ItemList>
         {rows.map(({ sessionAnswer, title, id }, index) => {
-          const labelId = `match-list-${instanceId}-prompt-label-${id}`;
+          const labelId = `${instanceId}-prompt-label-${id}`;
 
           return (
             // Keyed by prompt id, not row index: each row owns a dnd-kit draggable/droppable

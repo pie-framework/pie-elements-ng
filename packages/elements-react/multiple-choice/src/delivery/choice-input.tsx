@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
-import { Feedback as FeedbackImport, color, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { Feedback as FeedbackImport, color, createUniqueId, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -249,16 +249,12 @@ export class ChoiceInput extends React.Component {
   constructor(props) {
     super(props);
     this.onToggleChoice = this.onToggleChoice.bind(this);
-    this.choiceId = this.generateChoiceId();
+    this.choiceId = createUniqueId('choice');
     this.descId = `${this.choiceId}-desc`;
   }
 
   onToggleChoice(event) {
     this.props.onChange(event);
-  }
-
-  generateChoiceId() {
-    return 'choice-' + (Math.random() * 10000).toFixed();
   }
 
   handleKeyDown: any = (event) => {
