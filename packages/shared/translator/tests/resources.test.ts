@@ -17,6 +17,7 @@ const LOCALLY_OWNED = [
   'mathInput',
   'mcPopulatedBlank',
   'numberLine',
+  'selectText',
   'simpleCloze',
   'vennClassification',
 ] as const;

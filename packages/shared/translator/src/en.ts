@@ -163,6 +163,9 @@ export default {
       correctAnswerNotSelected: 'Correct Answer Not Selected',
       incorrectSelection: 'Incorrect Selection',
       key: 'Key',
+      textGroup: 'Selectable text',
+      textGroupWithLimit: 'Selectable text, select up to {{max}}',
+      tokenPosition: '{{index}} of {{total}}',
     },
     simpleCloze: {
       correctAnswerShown: 'Correct answer',

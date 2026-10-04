@@ -166,6 +166,9 @@ export default {
       correctAnswerNotSelected: 'Respuesta Correcta No Seleccionada',
       incorrectSelection: 'Selección Incorrecta',
       key: 'Clave',
+      textGroup: 'Texto seleccionable',
+      textGroupWithLimit: 'Texto seleccionable, selecciona hasta {{max}}',
+      tokenPosition: '{{index}} de {{total}}',
     },
     simpleCloze: {
       correctAnswerShown: 'Respuesta correcta',
