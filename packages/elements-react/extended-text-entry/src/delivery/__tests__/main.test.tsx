@@ -18,7 +18,47 @@ const renderMain = (model: Record<string, unknown>) =>
     />
   );
 
+function paste(target: Element, flavours: Record<string, string>) {
+  const clipboardData = {
+    types: Object.keys(flavours),
+    items: Object.keys(flavours).map((type) => ({ kind: 'string', type })),
+    files: [],
+    getData: (type: string) => flavours[type] ?? '',
+  };
+  const event = new Event('paste', { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'clipboardData', { value: clipboardData });
+  target.dispatchEvent(event);
+}
+
+const FORMATTED = {
+  'text/html': '<p><b>Bold</b> and <i>italic</i></p><ul><li>Listed</li></ul>',
+  'text/plain': 'Bold and italic\nListed',
+};
+
 describe('Main', () => {
+  it('keeps the formatting the response toolbar offers when a student pastes', async () => {
+    renderMain({ language: 'en_US' });
+    const response = await waitFor(() => screen.getByRole('textbox'));
+
+    paste(response, FORMATTED);
+
+    expect(response.querySelector('strong')).toHaveTextContent('Bold');
+    expect(response.querySelector('em')).toHaveTextContent('italic');
+    // The response toolbar offers no lists.
+    expect(response.querySelector('ul')).toBeNull();
+    expect(response).toHaveTextContent('Listed');
+  });
+
+  it('pastes plain text when the author turned paste formatting off', async () => {
+    renderMain({ language: 'en_US', pasteFormattingDisabled: true });
+    const response = await waitFor(() => screen.getByRole('textbox'));
+
+    paste(response, FORMATTED);
+
+    expect(response).toHaveTextContent('Bold and italic');
+    expect(response.querySelector('strong, em')).toBeNull();
+  });
+
   it('names the response by its prompt', async () => {
     renderMain({ prompt: '<p>Describe the water cycle.</p>', language: 'en_US' });
 

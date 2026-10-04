@@ -75,6 +75,7 @@ export class Main extends React.Component {
       dimensions = {},
       equationEditor = {},
       feedback = {},
+      playerPasteFormatting = {},
       playerSpellCheck = {},
       prompt = {},
       settingsPanelDisabled,
@@ -142,6 +143,7 @@ export class Main extends React.Component {
       annotationsEnabled: annotations.settings && toggle(annotations.label),
       spellCheckEnabled: spellCheck.settings && toggle(spellCheck.label),
       playerSpellCheckDisabled: playerSpellCheck.settings && toggle(playerSpellCheck.label),
+      playerPasteFormattingDisabled: playerPasteFormatting.settings && toggle(playerPasteFormatting.label),
     };
     const panelProperties = {
       teacherInstructionsEnabled: teacherInstructions.settings && toggle(teacherInstructions.label),
