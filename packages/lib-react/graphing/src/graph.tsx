@@ -3,7 +3,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { cloneDeep, isEqual } from '@pie-element/shared-lodash';
-import { createGraphProps, Root, types } from '@pie-lib/plot';
+import { createGraphProps, Root, types, utils as plotUtils } from '@pie-lib/plot';
+import Translator from '@pie-lib/translator';
 import debug from 'debug';
 
 import { Axes, AxisPropTypes } from './axis/index.js';
@@ -11,6 +12,8 @@ import Grid from './grid.js';
 import { LabelType } from './labels.js';
 import Bg from './bg.js';
 import { isDuplicatedMark } from './utils.js';
+
+const { translator } = Translator;
 
 const log = debug('pie-lib:graphing:graph');
 
@@ -50,6 +53,29 @@ const getMaskSize = (size) => ({
   width: size.width + 46,
   height: size.height + 46,
 });
+
+const textOf = (html) => (html ? plotUtils.extractTextFromHTML(html).trim() : '');
+
+// the graph svg's name and description, generated from the model: the title names the graph when
+// there is one, and the description gives the axis ranges and what is plotted, a mark still being
+// drawn left out
+export const graphAlternative = ({ title, domain, range, marks, language }) => {
+  // titles and axis labels are author text, which React escapes
+  const options = { lng: language, interpolation: { escapeValue: false } };
+  const axis = ({ axisLabel, min, max }, fallback) =>
+    translator.t('graphing.axisRange', { ...options, axis: textOf(axisLabel) || fallback, min, max });
+  const plotted = marks.filter((m) => !m.building);
+  const plottedText = translator.t('graphing.plotted', {
+    ...options,
+    count: plotted.length,
+    marks: plotted.map((m) => translator.t(`graphing.${m.type}`, options).trim()).join(', '),
+  });
+
+  return {
+    ariaLabel: textOf(title) || translator.t('graphing.graph', options),
+    ariaDescription: `${axis(domain, 'x')} ${axis(range, 'y')} ${plottedText}`,
+  };
+};
 
 export const removeBuildingToolIfCurrentToolDiffers = ({ marks, currentTool, onChangeMarks, removeIncompleteTool }) => {
   const buildingMark = marks.filter((m) => m.building)[0];
@@ -225,6 +251,14 @@ export class Graph extends React.Component {
       removeIncompleteTool,
     });
 
+    const { ariaLabel, ariaDescription } = graphAlternative({
+      title,
+      domain,
+      range,
+      marks: [...(backgroundMarks || []), ...marks],
+      language,
+    });
+
     return (
       <Root
         rootRef={(r) => (this.rootNode = r)}
@@ -240,6 +274,8 @@ export class Graph extends React.Component {
         onChangeTitle={onChangeTitle}
         onChangeLabels={onChangeLabels}
         mathMlOptions={mathMlOptions}
+        ariaLabel={ariaLabel}
+        ariaDescription={ariaDescription}
         {...common}
       >
         <g
