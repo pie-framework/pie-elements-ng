@@ -748,6 +748,7 @@
         "@vitejs/plugin-react": "^6.1.1",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+        "vitest": "^4.1.11",
       },
     },
     "packages/elements-react/math-templated": {
@@ -986,11 +987,16 @@
         "react-transition-group": "^4.4.5",
       },
       "devDependencies": {
+        "@testing-library/dom": "^10.4.2",
+        "@testing-library/jest-dom": "^7.0.1",
+        "@testing-library/react": "^16.3.2",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.1.1",
+        "happy-dom": "^20.14.5",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+        "vitest": "^4.1.11",
       },
     },
     "packages/elements-react/rubric": {
@@ -1501,11 +1507,16 @@
         "prop-types": "^15.6.2",
       },
       "devDependencies": {
+        "@testing-library/dom": "^10.4.2",
+        "@testing-library/jest-dom": "^7.0.1",
+        "@testing-library/react": "^16.3.2",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
         "@vitejs/plugin-react": "^6.1.1",
+        "happy-dom": "^20.14.5",
         "typescript": "^5.9.3",
         "vite": "^8.0.1",
+        "vitest": "^4.1.11",
       },
       "peerDependencies": {
         "react": "^18.0.0 || ^19.0.0",

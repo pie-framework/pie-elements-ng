@@ -4,6 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { cloneDeep, isEqual } from '@pie-element/shared-lodash';
 import { createGraphProps, Root, types, utils as plotUtils } from '@pie-lib/plot';
+import { createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import debug from 'debug';
 
@@ -112,7 +113,7 @@ export class Graph extends React.Component {
   state = {};
 
   generateMaskId() {
-    return 'graph-' + (Math.random() * 10000).toFixed();
+    return createUniqueId('graph');
   }
 
   componentDidMount = () => this.setState({ labelNode: this.labelNode });
@@ -321,7 +322,7 @@ export class Graph extends React.Component {
             <rect {...maskSize} fill="white" /> {/* TODO hardcoded color */}
           </mask>
 
-          <g id="marks" mask={`url('#${this.maskUid}')`}>
+          <g mask={`url('#${this.maskUid}')`}>
             {(backgroundMarks || []).map((m, index) => {
               const Component = this.getComponent(m);
               const markType = m.type;
