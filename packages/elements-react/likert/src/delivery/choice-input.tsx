@@ -43,6 +43,7 @@ export class ChoiceInput extends React.Component {
     disabled: PropTypes.bool.isRequired,
     label: PropTypes.string.isRequired,
     likertOrientation: PropTypes.string.isRequired,
+    name: PropTypes.string,
     onChange: PropTypes.func.isRequired,
     value: PropTypes.number.isRequired,
   };
@@ -62,7 +63,7 @@ export class ChoiceInput extends React.Component {
   };
 
   render() {
-    const { disabled, label, checked, likertOrientation } = this.props;
+    const { disabled, label, checked, likertOrientation, name } = this.props;
     const flexDirection = likertOrientation === LIKERT_ORIENTATION.vertical ? 'row' : 'column';
 
     return (
@@ -72,6 +73,7 @@ export class ChoiceInput extends React.Component {
           control={
             <RadioStyled
               checked={checked}
+              name={name}
               onChange={this.onToggleChoice}
               disabled={disabled}
               slotProps={{ input: { 'aria-labelledby': this.labelId } }}
