@@ -143,9 +143,6 @@ const SidePixelIndicator: any = styled('div')({
   },
 });
 
-// ids for the svg descriptions, unique per mounted root
-let descriptionIds = 0;
-
 export class Root extends React.Component {
   constructor(props) {
     super(props);
@@ -153,7 +150,8 @@ export class Root extends React.Component {
       titleHeight: 0,
     };
     this.resizeObserver = null;
-    this.descriptionId = `plot-description-${++descriptionIds}`;
+    // random, because charting, graphing and graphing-solution-set each bundle their own copy of this module
+    this.descriptionId = `plot-description-${Math.random().toString(36).slice(2, 10)}`;
   }
 
   static propTypes = {
