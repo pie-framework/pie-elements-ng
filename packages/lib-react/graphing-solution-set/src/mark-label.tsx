@@ -13,7 +13,7 @@ import { roundNumber } from './utils.js';
 const { translator } = Translator;
 
 const StyledAutosizeInput: any = styled(AutosizeInput, {
-  shouldForwardProp: (prop) => !['disabled', 'markDisabled'].includes(prop),
+  shouldForwardProp: (prop) => prop !== 'markDisabled',
 })(({ theme, disabled, markDisabled }) => ({
   '& input': {
     float: 'right',
