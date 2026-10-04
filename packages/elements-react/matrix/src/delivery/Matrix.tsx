@@ -49,6 +49,13 @@ const MatrixGridWrapper = styled.div`
   margin-top: 20px;
 `;
 
+// A subgrid keeps the row's cells in the matrix columns while the row is its own radio group.
+const MatrixRow = styled.div`
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+`;
+
 const TeacherInstructions: any = styled(Collapsible)`
   margin-bottom: 16px;
 `;
@@ -67,40 +74,8 @@ const Matrix = (props) => {
   const idPrefix = useUniqueId('matrix');
   const rowLabelId = (rowIndex) => `${idPrefix}-row-${rowIndex}`;
   const columnLabelId = (columnIndex) => `${idPrefix}-column-${columnIndex}`;
-  const gridMatrixItems = [];
-
-  for (let rowIndex = 0; rowIndex < rowLabels.length + 1; rowIndex++) {
-    for (let columnIndex = 0; columnIndex < columnLabels.length + 1; columnIndex++) {
-      let gridMatrixItem;
-      let labelId;
-
-      if (rowIndex === 0 && columnIndex === 0) {
-        gridMatrixItem = null;
-      } else if (rowIndex === 0) {
-        gridMatrixItem = columnLabels[columnIndex - 1];
-        labelId = columnLabelId(columnIndex - 1);
-      } else if (columnIndex === 0) {
-        gridMatrixItem = rowLabels[rowIndex - 1];
-        labelId = rowLabelId(rowIndex - 1);
-      } else {
-        const matrixKey = `${rowIndex - 1}-${columnIndex - 1}`;
-        const matrixValue = matrixValues[matrixKey];
-
-        gridMatrixItem = (
-          <ChoiceInput
-            matrixKey={matrixKey}
-            matrixValue={matrixValue || 0}
-            disabled={disabled}
-            labelledBy={`${rowLabelId(rowIndex - 1)} ${columnLabelId(columnIndex - 1)}`}
-            onChange={onSessionChange}
-            checked={session.value && Object.prototype.hasOwnProperty.call(session.value, matrixKey)}
-          />
-        );
-      }
-
-      gridMatrixItems.push({ gridMatrixItem, labelId });
-    }
-  }
+  // A row's radios share a name, so the browser gives the row one tab stop and arrow-key selection.
+  const rowGroupName = (rowIndex) => `${idPrefix}-row-${rowIndex}-choice`;
   const gridTemplateColumns = [...columnLabels, {}].map(() => 'min-content').join(' ');
 
   return (
@@ -120,13 +95,34 @@ const Matrix = (props) => {
       <PreviewPrompt className="prompt" prompt={prompt} />
 
       <MatrixGridWrapper gridTemplateColumns={gridTemplateColumns}>
-        {gridMatrixItems.map(({ gridMatrixItem, labelId }, gridMatrixIndex) => {
-          return (
-            <MatrixGridItem key={`${gridMatrixIndex}`} id={labelId}>
-              {gridMatrixItem}
-            </MatrixGridItem>
-          );
-        })}
+        <MatrixGridItem />
+        {columnLabels.map((columnLabel, columnIndex) => (
+          <MatrixGridItem key={`column-${columnIndex}`} id={columnLabelId(columnIndex)}>
+            {columnLabel}
+          </MatrixGridItem>
+        ))}
+        {rowLabels.map((rowLabel, rowIndex) => (
+          <MatrixRow key={`row-${rowIndex}`} role="radiogroup" aria-labelledby={rowLabelId(rowIndex)}>
+            <MatrixGridItem id={rowLabelId(rowIndex)}>{rowLabel}</MatrixGridItem>
+            {columnLabels.map((_, columnIndex) => {
+              const matrixKey = `${rowIndex}-${columnIndex}`;
+
+              return (
+                <MatrixGridItem key={matrixKey}>
+                  <ChoiceInput
+                    matrixKey={matrixKey}
+                    matrixValue={matrixValues[matrixKey] || 0}
+                    disabled={disabled}
+                    name={rowGroupName(rowIndex)}
+                    labelledBy={`${rowLabelId(rowIndex)} ${columnLabelId(columnIndex)}`}
+                    onChange={onSessionChange}
+                    checked={session.value && Object.prototype.hasOwnProperty.call(session.value, matrixKey)}
+                  />
+                </MatrixGridItem>
+              );
+            })}
+          </MatrixRow>
+        ))}
       </MatrixGridWrapper>
     </MatrixWrapper>
   );
