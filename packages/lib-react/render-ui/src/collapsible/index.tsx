@@ -6,6 +6,7 @@ import Collapse from '@mui/material/Collapse';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import PropTypes from 'prop-types';
 import * as color from '../color.js';
+import { createUniqueId } from '../unique-id.js';
 
 // --pie-tertiary is the theming contract's link-text token, held to 4.5:1 against
 // --pie-background in every scheme; --pie-primary carries no text-contrast guarantee.
@@ -47,9 +48,7 @@ export class Collapsible extends React.Component {
     expanded: false,
   };
 
-  // Random rather than a counter or useId: each element bundles its own copy of this
-  // module and mounts its own React root, so neither is unique on a page.
-  panelId = `pie-collapsible-${Math.random().toString(36).slice(2, 10)}`;
+  panelId = createUniqueId('pie-collapsible');
 
   toggleExpanded: any = () => {
     this.setState((state) => ({ expanded: !state.expanded }));
