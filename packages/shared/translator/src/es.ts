@@ -84,6 +84,9 @@ export default {
       primaryCorrectWithAlternates:
         'Nota: La respuesta que se muestra arriba es la respuesta correcta principal especificada por el autor para esta pregunta, pero también se pueden reconocer otras respuestas como correctas.',
     },
+    mathInput: {
+      enterAnswer: 'Escribe la respuesta',
+    },
     mcPopulatedBlank: {
       answerChoices: 'Opciones de respuesta',
       blankLabel: 'espacio en blanco',

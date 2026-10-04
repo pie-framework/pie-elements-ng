@@ -16,4 +16,11 @@ describe('math-input public API', () => {
     expect(typeof mathInput.registerEmbed).toBe('function');
     expect(typeof mathInput.applyStaticMath).toBe('function');
   });
+
+  it('takes the language that names the answer fields', async () => {
+    const { mq } = await import('../src/index');
+
+    expect(mq.Static.propTypes).toHaveProperty('language');
+    expect(mq.Input.propTypes).toHaveProperty('language');
+  });
 });

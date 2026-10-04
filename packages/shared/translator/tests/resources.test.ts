@@ -9,6 +9,7 @@ const LOCALLY_OWNED = [
   'graphing',
   'hotspot',
   'imageClozeAssociation',
+  'mathInput',
   'mcPopulatedBlank',
   'simpleCloze',
   'vennClassification',
