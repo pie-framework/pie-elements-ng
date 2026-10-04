@@ -38,4 +38,12 @@ describe('ConstructedResponse', () => {
 
     expect(await names()).toEqual(['Respuesta 1 de 3', 'Respuesta 2 de 3', 'Respuesta 3 de 3']);
   });
+
+  it('names each response toolbar in the item language', async () => {
+    renderResponses('<p>{{0}}, {{1}} y {{2}}</p>', 'es_ES');
+    await names();
+
+    const toolbars = [...document.querySelectorAll('[role="toolbar"]')];
+    expect(toolbars.map((bar) => bar.getAttribute('aria-label'))).toEqual(Array(3).fill('Herramientas de edición'));
+  });
 });

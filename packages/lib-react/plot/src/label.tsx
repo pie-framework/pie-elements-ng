@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
-import { Readable as ReadableImport } from '@pie-lib/render-ui';
+import { Readable as ReadableImport, color } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -54,7 +54,8 @@ const styles = {
   },
   editLabel: {
     position: 'absolute',
-    backgroundColor: 'white',
+    // The editor inside takes the theme's text; white keeps the box opaque when no theme is set.
+    backgroundColor: color.v('pie')('background', 'white'),
     borderRadius: 4,
     boxShadow: '0px 5px 8px rgba(0,0,0,0.15)',
     zIndex: 10,

@@ -12,7 +12,9 @@ import StaticHTMLSpan from './static-html-span.js';
 
 const BaseContainer: any = styled('div')(() => ({
   position: 'relative',
-  backgroundColor: color.white(),
+  // --pie-white stays white under a dark theme; white keeps the tile opaque when no theme is set.
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.text(),
   border: `1px solid ${color.borderDark()}`,
   display: 'flex',
   alignItems: 'center',
