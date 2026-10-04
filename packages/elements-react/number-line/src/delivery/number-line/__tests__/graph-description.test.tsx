@@ -30,7 +30,7 @@ describe('number line text alternative', () => {
       />,
     );
 
-    const graph = screen.getByRole('img', { name: 'Number line from 0 to 10, with a tick every 1' });
+    const graph = screen.getByRole('group', { name: 'Number line from 0 to 10, with a tick every 1' });
     expect(graph).toHaveAccessibleDescription(
       'Closed point at 2. Line from 1 (closed) to 4 (open). Ray from 7 (open) to the left.',
     );
@@ -39,7 +39,7 @@ describe('number line text alternative', () => {
   it('says when nothing is plotted', () => {
     render(<NumberLineGraph {...graphProps} elements={[]} />);
 
-    expect(screen.getByRole('img')).toHaveAccessibleDescription('Nothing is plotted.');
+    expect(screen.getByRole('group')).toHaveAccessibleDescription('Nothing is plotted.');
   });
 
   it('gives each graph its own description', () => {
@@ -50,7 +50,7 @@ describe('number line text alternative', () => {
       </>,
     );
 
-    const graphs = screen.getAllByRole('img');
+    const graphs = screen.getAllByRole('group');
     expect(new Set(graphs.map((graph) => graph.getAttribute('aria-describedby'))).size).toBe(2);
     expect(graphs[0]).toHaveAccessibleDescription('Nothing is plotted.');
     expect(graphs[1]).toHaveAccessibleDescription('Open point at 3.');

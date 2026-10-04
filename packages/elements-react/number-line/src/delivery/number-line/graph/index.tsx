@@ -231,7 +231,8 @@ export class NumberLineGraph extends React.Component {
               width={width}
               height={fraction ? height + 20 : height}
               style={{ touchAction: 'none' }}
-              role="img"
+              // a group, because an img would hide the draggable points inside it
+              role="group"
               aria-label={labelNumberLine({ domain, ticks, width, fraction, language })}
               aria-describedby={this.descriptionId}
             >
