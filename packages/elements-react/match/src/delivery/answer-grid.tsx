@@ -6,8 +6,7 @@ import Radio from '@mui/material/Radio';
 import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import { color } from '@pie-lib/render-ui';
-import { uniqueId } from '@pie-element/shared-lodash';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 
 const ControlsContainer: any = styled('div')(({ theme }) => ({
   marginLeft: 'auto',
@@ -61,7 +60,7 @@ export class AnswerGrid extends React.Component {
   };
 
   // Ids that tie each control to its row title and column header, and each row group to its title.
-  instanceId: string = uniqueId('match-grid-');
+  instanceId: string = createUniqueId('match-grid');
 
   onRowValueChange = (rowId, answerIndex) => (event) => {
     const { onAnswerChange, choiceMode, answers } = this.props;

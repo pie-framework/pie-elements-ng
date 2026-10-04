@@ -9,7 +9,9 @@ import { color } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 
 const StyledContainer: any = styled('div')(({ theme }) => ({
-  backgroundColor: color.defaults.WHITE,
+  // White keeps the legend opaque when no theme is set.
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.text(),
   padding: theme.spacing(2),
   width: '355px',
   boxShadow: 'inset 0px 1px 5px 0px #9297A6',

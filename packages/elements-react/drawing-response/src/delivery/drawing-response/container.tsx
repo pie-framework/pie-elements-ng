@@ -26,6 +26,8 @@ const Box: any = styled('div')(({ theme }) => ({
   backgroundColor: '#ECEDF1',
 }));
 
+// The canvas stays white in every scheme: students pick fill, outline and paint colours,
+// white and black among them, against it, and a scorer reviews the drawing on the same white.
 const DrawableHeight: any = styled('div')({
   minHeight: 350,
   backgroundColor: '#fff',

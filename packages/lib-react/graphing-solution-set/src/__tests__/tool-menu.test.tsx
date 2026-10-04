@@ -3,9 +3,16 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ToolMenu from '../tool-menu';
 
-const lineData = (numberOfLines: number) => ({
+// Two element versions on a page each bundle their own lodash, whose uniqueId counters both
+// start at 1; a constant reproduces that within this one module graph.
+vi.mock('@pie-element/shared-lodash', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@pie-element/shared-lodash')>()),
+  uniqueId: (prefix = '') => `${prefix}1`,
+}));
+
+const lineData = (numberOfLines: number, selectedTool = 'lineA') => ({
   numberOfLines,
-  selectedTool: 'lineA',
+  selectedTool,
   lineA: { lineType: 'Solid' },
   lineB: { lineType: 'Dashed' },
 });
@@ -33,5 +40,17 @@ describe('ToolMenu line selection', () => {
     expect(lineARadios[0].getAttribute('aria-labelledby')).not.toBe(
       lineARadios[1].getAttribute('aria-labelledby'),
     );
+    expect(lineARadios[0].getAttribute('name')).not.toBe(lineARadios[1].getAttribute('name'));
+  });
+
+  it('keeps its ids across re-renders', () => {
+    const ids = () => [...document.querySelectorAll('[id]')].map((el) => el.id);
+    const { rerender } = render(<ToolMenu gssLineData={lineData(2)} onChange={vi.fn()} />);
+    const before = ids();
+
+    rerender(<ToolMenu gssLineData={lineData(2, 'lineB')} onChange={vi.fn()} />);
+
+    expect(screen.getByRole('radio', { name: 'Line B' })).toBeChecked();
+    expect(ids()).toEqual(before);
   });
 });
