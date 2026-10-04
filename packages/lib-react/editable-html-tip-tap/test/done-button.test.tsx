@@ -18,7 +18,7 @@ const renderButton = (vars: CSSProperties) => {
 };
 
 describe('editor toolbar Done button', () => {
-  // One green clears 3:1 against the toolbar grey and its hover fill in every theme.
+  // One green clears 3:1 against the toolbar fill and its hover fill in every theme.
   it.each([
     ['the dark theme', DARK],
     ['no theme', {}],
