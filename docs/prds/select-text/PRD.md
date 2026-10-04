@@ -1,6 +1,6 @@
 # Select text: keyboard token selection
 
-Status: **Proposal** · Impl. path: Extend `select-text` · Tracks Jira [PIE-1165](https://illuminate.atlassian.net/browse/PIE-1165)
+Status: **Accepted** · Impl. path: Extend `select-text` · Tracks Jira [PIE-1165](https://illuminate.atlassian.net/browse/PIE-1165)
 
 ## Context
 
@@ -23,6 +23,9 @@ No earlier keyboard behaviour exists to restore, so this PRD defines one. The ch
 - **No `role="checkbox"`.** A checkbox toggles on Space only and reads as a form field. A toggle button (`role="button"` with `aria-pressed`) toggles on Space and Enter, as hotspot's shapes do.
 - **No native `<button>` tokens.** A button is inline-block, so a sentence token would stop wrapping with its line. Tokens stay inline `span`s carrying the role.
 - **No radio semantics when `maxSelections` is 1.** A radio group selects on arrow keys and cannot be cleared, while a click toggles and allows zero selections; the toggle button covers both.
+- **No line-aware or table-aware (2D) movement.** Up / Down repeat Right / Left in token order, which is DOM order. That matches reading order for flowing text; a table read by column is the accepted cost of one key model for words, sentences, paragraphs and tables.
+- **No jumps beyond Home and End.** A word-mode text can hold more than a hundred tokens, and it still gets no next-paragraph or next-selected-token key; the position description ("57 of 140") tells the student where they are.
+- **No announcement when the limit is reached.** The group name's "select up to 2" is the cue. Announcing "2 of 2 selected" waits for the status region planned for evaluate feedback ([PIE-1151](https://illuminate.atlassian.net/browse/PIE-1151)).
 - **No keyboard marking of tokens in `select-text-config`.** The authoring tokenizer reads a text selection on click; making it keyboard-operable is a separate authoring-surface change.
 - **No new Model or authoring fields.** The group name and position text come from `@pie-lib/translator` under `selectText`, with Spanish.
 
@@ -30,7 +33,7 @@ No earlier keyboard behaviour exists to restore, so this PRD defines one. The ch
 
 **Model / Session**: unchanged. A keyboard toggle writes `session.selectedTokens` as a click does and dispatches the same `session-changed` event.
 
-**Modes**: keyboard operation in `gather` only. In `view` and `evaluate`, and in print, tokens are not operable and the text has no tab stop; selected tokens still expose their pressed state, marked unavailable.
+**Modes**: keyboard operation in `gather` only. In `view` and `evaluate`, and in print, tokens are not operable and the text has no tab stop; selected tokens still expose their pressed state, marked unavailable, and stay reachable in screen-reader browse mode. In `evaluate` each correct, incorrect and missed token carries its marking as its description, from the Legend's translator keys (`correctAnswerSelected`, `incorrectSelection`, `correctAnswerNotSelected`) in the item language.
 
 **Key delivery interactions** (`gather`):
 
@@ -41,7 +44,7 @@ No earlier keyboard behaviour exists to restore, so this PRD defines one. The ch
 - **`maxSelections` > 1, limit reached**: unselected tokens stay in the arrow-key sequence as unavailable (`aria-disabled`), and Space / Enter does nothing on them. Today they turn into plain text at the limit; keeping them as tokens keeps positions stable and lets the student find them before deselecting another. They look as they do today.
 - **Pointer**: a click toggles as today and moves the tab stop to the clicked token, with no focus ring (`:focus-visible`).
 
-**Announcement per token**: name from the token's text, role toggle button, state pressed or not pressed, and position ("2 of 4") as a description, since `aria-posinset` is not allowed on a button. The text is a `role="group"` named "Selectable text", extended to "Selectable text, select up to 2" when `maxSelections` > 0.
+**Announcement per token**: name from the token's text, role toggle button, state pressed or not pressed, and in `gather` its position ("2 of 4") as a description, since `aria-posinset` is not allowed on a button; in `evaluate` the marking is the description. The text is a `role="group"` named "Selectable text", extended to "Selectable text, select up to 2" when `maxSelections` > 0.
 
 ## Worked example
 
@@ -58,9 +61,6 @@ The student tabs in and hears "The storm hit at dawn., toggle button, not presse
 - **Focus visibility**: a focus ring distinct from the selected style (fill and solid border) and from `highlightChoices`' dashed outline, at 3:1 against both the page and the selected fill. With `highlightChoices` off, the ring is the only cue that the focused text is a token.
 - **Target size**: tokens are inline text, which the inline exception of WCAG 2.5.8 covers; their size is unchanged.
 
-## Open questions
+## Status log
 
-- [ ] **Up / Down in multi-line text and tables.** Proposed: they repeat Right / Left in token order. Alternative: move to the token on the line above or below, or to the cell below when tokens sit in a table. Token order is DOM order, which matches reading order for flowing text and breaks down for a table read by column.
-- [ ] **Long texts.** Word mode over a long text can hold more than a hundred tokens. Are Home and End enough, or does the text need jumps (next paragraph, next selected token)? Does "57 of 140" help or add noise?
-- [ ] **Correctness in `evaluate`.** Correct, incorrect and missed tokens are marked by border and icon only, and the icons carry no text. Should each marked token expose its marking as a description from the existing Legend keys (`correctAnswerSelected`, `incorrectSelection`, `correctAnswerNotSelected`), and should `evaluate` keep one tab stop so a keyboard user can step through the marked tokens?
-- [ ] **Limit feedback.** At the limit a token reads as unavailable with no reason given. Is the group name's "select up to 2" enough, or should reaching the limit be announced ("2 of 2 selected") through the status region planned for evaluate feedback?
+- Proposal → Accepted.
