@@ -476,6 +476,18 @@ export class RawChartAxes extends React.Component {
     // always register: if mjx-container isn't there yet, the doc observer will
     // call _onDocMutation when MathJax finishes rendering any element on the page.
     registerMathCallback(this._onDocMutation);
+    this.observeHiddenLabelSize(el);
+  };
+
+  // AutosizeInput sizes the input after the label mounts, so the width read on mount is the unsized
+  // one; measure again whenever the label's size changes
+  observeHiddenLabelSize: any = (el) => {
+    if (el === this._sizedLabel || typeof ResizeObserver === 'undefined') return;
+
+    this._sizeObserver?.disconnect();
+    this._sizedLabel = el;
+    this._sizeObserver = new ResizeObserver(() => this.measureHiddenLabel());
+    this._sizeObserver.observe(el);
   };
 
   setHiddenLabelRef: any = (ref) => {
@@ -493,6 +505,8 @@ export class RawChartAxes extends React.Component {
 
   componentWillUnmount() {
     unregisterMathCallback(this._onDocMutation);
+    this._sizeObserver?.disconnect();
+    this._sizedLabel = null;
     if (this._updateTimer) {
       clearTimeout(this._updateTimer);
     }
