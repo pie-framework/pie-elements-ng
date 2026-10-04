@@ -21,6 +21,7 @@ class ImageContainer extends Component {
       answers,
       canDrag,
       draggingElement,
+      getChoiceLabel,
       image: { height, src, width } = {},
       language,
       onAnswerSelect,
@@ -43,7 +44,16 @@ class ImageContainer extends Component {
         {/* the drop-target overlays below are pixel offsets against the image's native size, so the
             image must never shrink to fit (interactive-section scrolls instead). The inline style beats
             the global '& img' max-width:100%/height:auto rule (root.tsx) that keeps other images fluid */}
-        <img src={src} height={height} width={width} style={{ width, height, maxWidth: 'none' }} />
+        <img
+          alt={translator.t('imageClozeAssociation.image', {
+            lng: language,
+            count: (responseContainers || []).length,
+          })}
+          src={src}
+          height={height}
+          width={width}
+          style={{ width, height, maxWidth: 'none' }}
+        />
 
         {(responseContainers || []).map((r, i) => {
           const rHeight = (r.height.replace('%', '') / 100) * height;
@@ -64,6 +74,7 @@ class ImageContainer extends Component {
               }}
               key={r.id + i}
               draggingElement={draggingElement}
+              getChoiceLabel={getChoiceLabel}
               index={r.index}
               label={translator.t('imageClozeAssociation.responseArea', {
                 lng: language,
@@ -94,6 +105,7 @@ ImageContainer.propTypes = {
   answers: PropTypes.array.isRequired,
   canDrag: PropTypes.bool.isRequired,
   draggingElement: PropTypes.shape({}).isRequired,
+  getChoiceLabel: PropTypes.func,
   image: PropTypes.object.isRequired,
   language: PropTypes.string,
   onAnswerSelect: PropTypes.func.isRequired,

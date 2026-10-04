@@ -18,14 +18,13 @@ const log = debug('pie-lib:mask-markup:blank');
 
 const StyledContent: any = styled('span')(({ dragged, over, selected, showsPointerCursor }) => ({
   border: `solid 0px ${color.primary()}`,
-  minWidth: '200px',
-  overflow: 'hidden',
+  // The named target takes the chip's box (WCAG 2.5.8); as a plain inline span it measured one text line.
+  display: 'inline-flex',
   whiteSpace: 'nowrap',
   opacity: 1,
   cursor: 'default',
   ...(over && {
     whiteSpace: 'nowrap',
-    overflow: 'hidden',
   }),
   ...((dragged || selected) && {
     opacity: 0.5,

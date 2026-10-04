@@ -94,3 +94,17 @@ describe('ImageContainer drop targets', () => {
     expect(screen.getAllByRole('group', { name: /Response area/ })).toHaveLength(3);
   });
 });
+
+describe('ImageContainer image', () => {
+  it('describes the image by its number of response areas', () => {
+    renderImageContainer();
+
+    expect(screen.getByRole('img', { name: 'Image with 3 response areas' })).toHaveAttribute('src', 'planets.png');
+  });
+
+  it('describes the image in the item language', () => {
+    renderImageContainer({ language: 'es_ES', responseContainers: responseContainers.slice(0, 1) });
+
+    expect(screen.getByRole('img', { name: 'Imagen con 1 área de respuesta' })).toBeInTheDocument();
+  });
+});

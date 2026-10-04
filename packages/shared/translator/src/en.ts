@@ -24,9 +24,14 @@ export default {
       clearAll: 'Clear all',
     },
     hotspot: {
+      image_one: 'Image with {{count}} hotspot',
+      image_other: 'Image with {{count}} hotspots',
       shape: 'Hotspot {{index}} of {{total}}',
     },
     imageClozeAssociation: {
+      answerChoice: 'Answer choice {{index}} of {{total}}',
+      image_one: 'Image with {{count}} response area',
+      image_other: 'Image with {{count}} response areas',
       reachedLimit_one:
         'You’ve reached the limit of {{count}} response per area. To add another response, one must first be removed.',
       reachedLimit_other: 'Full',
@@ -54,6 +59,7 @@ export default {
       add: 'Add',
       delete: 'Delete',
       newLabel: 'New label',
+      categoryLabel: 'Category {{index}} label',
       reachedLimit_other: "There can't be more than {{count}} categories.",
       keyLegend: {
         incorrectAnswer: 'Student incorrect answer',
@@ -74,12 +80,17 @@ export default {
       sine: 'Sine',
       vector: 'Vector',
       label: 'Label',
+      markLabel: 'Label at ({{x}}, {{y}})',
+      correctMarkLabel: 'Correct label at ({{x}}, {{y}})',
       redo: 'Redo',
       reset: 'Reset',
     },
     mathInline: {
       primaryCorrectWithAlternates:
         'Note: The answer shown above is the primary correct answer specified by the author for this item, but other answers may also be recognized as correct.',
+    },
+    mathInput: {
+      enterAnswer: 'Enter answer',
     },
     mcPopulatedBlank: {
       answerChoices: 'Answer choices',

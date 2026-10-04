@@ -91,6 +91,7 @@ const RubricToggle: any = styled('h2')(({ theme }) => ({
   fontWeight: '500',
   color: color.tertiary(),
   margin: 0,
+  minHeight: 24,
 }));
 
 const ChevronStyle: any = styled('span')({

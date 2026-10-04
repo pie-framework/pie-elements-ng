@@ -24,9 +24,14 @@ export default {
       clearAll: 'Borrar todo',
     },
     hotspot: {
+      image_one: 'Imagen con {{count}} zona activa',
+      image_other: 'Imagen con {{count}} zonas activas',
       shape: 'Zona activa {{index}} de {{total}}',
     },
     imageClozeAssociation: {
+      answerChoice: 'Opción de respuesta {{index}} de {{total}}',
+      image_one: 'Imagen con {{count}} área de respuesta',
+      image_other: 'Imagen con {{count}} áreas de respuesta',
       reachedLimit_one:
         'Has alcanzado el límite de {{count}} respuesta por área. Para agregar otra respuesta, primero se debe eliminar una respuesta.',
       reachedLimit_other: 'Lleno',
@@ -55,6 +60,7 @@ export default {
       add: 'Añadir',
       delete: 'Eliminar',
       newLabel: 'Nueva etiqueta',
+      categoryLabel: 'Etiqueta de la categoría {{index}}',
       reachedLimit_other: 'No puede haber más de {{count}} categorías.',
       keyLegend: {
         incorrectAnswer: 'Respuesta incorrecta del estudiante',
@@ -75,12 +81,17 @@ export default {
       sine: 'Seno',
       vector: 'Vector',
       label: 'Etiqueta',
+      markLabel: 'Etiqueta en ({{x}}, {{y}})',
+      correctMarkLabel: 'Etiqueta correcta en ({{x}}, {{y}})',
       redo: 'Rehacer',
       reset: 'Reiniciar',
     },
     mathInline: {
       primaryCorrectWithAlternates:
         'Nota: La respuesta que se muestra arriba es la respuesta correcta principal especificada por el autor para esta pregunta, pero también se pueden reconocer otras respuestas como correctas.',
+    },
+    mathInput: {
+      enterAnswer: 'Escribe la respuesta',
     },
     mcPopulatedBlank: {
       answerChoices: 'Opciones de respuesta',

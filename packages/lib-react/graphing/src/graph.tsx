@@ -41,6 +41,7 @@ export const graphPropTypes = {
   title: PropTypes.string,
   tools: PropTypes.array,
   limitLabeling: PropTypes.bool,
+  language: PropTypes.string,
 };
 
 const getMaskSize = (size) => ({
@@ -208,13 +209,14 @@ export class Graph extends React.Component {
       mathMlOptions = {},
       onChangeMarks,
       removeIncompleteTool,
+      language,
     } = this.props;
     let { marks } = this.props;
 
     const graphProps = createGraphProps(domain, range, size, () => this.rootNode);
 
     const maskSize = getMaskSize(size);
-    const common = { graphProps, labelModeEnabled, limitLabeling };
+    const common = { graphProps, labelModeEnabled, limitLabeling, language };
 
     marks = removeBuildingToolIfCurrentToolDiffers({
       marks: marks || [],

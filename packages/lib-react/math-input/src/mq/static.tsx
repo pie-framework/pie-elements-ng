@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import debug from 'debug';
 import { updateSpans } from '../updateSpans.js';
+import { labelFieldTextareas } from './field-label.js';
 import { MQ } from './mathquill-instance.js';
 
 const log = debug('pie-lib:math-input:mq:static');
@@ -39,6 +40,7 @@ export default class Static extends React.Component {
     onSubFieldChange: PropTypes.func,
     onSubFieldFocus: PropTypes.func,
     setInput: PropTypes.func,
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -225,8 +227,10 @@ export default class Static extends React.Component {
     } finally {
       this._isProgrammaticUpdate = false;
     }
-  };
 
+    // Setting the latex rebuilds the response fields, and with them their textareas.
+    labelFieldTextareas(this.inputRef?.current, this.props.language);
+  };
 
   blur: any = () => {
     log('blur mathfield');

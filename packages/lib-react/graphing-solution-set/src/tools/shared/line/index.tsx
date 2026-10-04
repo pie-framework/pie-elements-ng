@@ -40,6 +40,7 @@ export const lineToolComponent = (Component) => {
     static propTypes = {
       ...types.ToolPropTypeFields,
       graphProps: types.GraphPropsType.isRequired,
+      language: PropTypes.string,
     };
 
     constructor(props) {
@@ -100,7 +101,8 @@ export const lineToolComponent = (Component) => {
     };
 
     render() {
-      const { graphProps, onClick, labelNode, labelModeEnabled, coordinatesOnHover, gssLineData } = this.props;
+      const { graphProps, onClick, labelNode, labelModeEnabled, coordinatesOnHover, gssLineData, language } =
+        this.props;
       const mark = this.state.mark ? this.state.mark : this.props.mark;
 
       const from = cloneDeep(mark.from);
@@ -139,6 +141,7 @@ export const lineToolComponent = (Component) => {
           onDragStop={this.stopDrag}
           labelNode={labelNode}
           labelModeEnabled={labelModeEnabled}
+          language={language}
         />
       );
     }
@@ -187,6 +190,7 @@ export const lineBase = (Comp, opts) => {
       labelNode: PropTypes.object,
       labelModeEnabled: PropTypes.bool,
       changeMarkProps: PropTypes.func,
+      language: PropTypes.string,
     };
 
     onChangePoint: any = (point) => {
@@ -300,6 +304,7 @@ export const lineBase = (Comp, opts) => {
         onClick,
         labelNode,
         labelModeEnabled,
+        language,
       } = this.props;
       let common = { graphProps, fill, onDragStart, onDragStop, disabled, correctness, onClick };
       if (gssLineData && gssLineData.selectedTool === 'solutionSet') {
@@ -320,6 +325,7 @@ export const lineBase = (Comp, opts) => {
               disabled={!labelModeEnabled}
               mark={from}
               graphProps={graphProps}
+              language={language}
               onChange={(label) => this.labelChange({ ...from, label }, 'from')}
             />,
             labelNode,
@@ -333,6 +339,7 @@ export const lineBase = (Comp, opts) => {
               disabled={!labelModeEnabled}
               mark={to}
               graphProps={graphProps}
+              language={language}
               onChange={(label) => this.labelChange({ ...to, label }, 'to')}
             />,
             labelNode,
@@ -346,6 +353,7 @@ export const lineBase = (Comp, opts) => {
               disabled={!labelModeEnabled}
               mark={middle}
               graphProps={graphProps}
+              language={language}
               onChange={(label) => this.labelChange({ ...middle, label }, 'middle')}
             />,
             labelNode,
