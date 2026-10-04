@@ -223,3 +223,11 @@ export const isSideLabel = (text) => text.length >= 20 || text.search(/\n|\r|\r\
 export const getAnnotationElements = (id) => Array.from(document.querySelectorAll(`[data-id='${id}']`));
 
 export const getLabelElement = (id) => document.querySelector(`[data-ann-id='${id}']`);
+
+/*
+ * The stroke that bounds the annotation menu and the freeform editor's type colour. It meets the
+ * fixed annotation fills as well as the themed surface, so it is a literal: under the dark preset
+ * `--pie-border-dark` is #9E9E9E, 2.2:1 against the green. #757575 clears 3:1 against both fills,
+ * white, and the dark preset's background (WCAG 1.4.11).
+ */
+export const ANNOTATION_STROKE = '#757575';
