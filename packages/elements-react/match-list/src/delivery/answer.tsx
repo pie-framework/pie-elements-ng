@@ -12,11 +12,11 @@ import { color } from '@pie-lib/render-ui';
 const log = debug('pie-elements:match-title:answer');
 const pieVar = color.v('pie');
 
-const HolderNumber: any = styled('div')(({ theme }) => ({
+const HolderNumber: any = styled('div')(() => ({
   width: '100%',
   fontSize: '18px',
   textAlign: 'center',
-  color: `rgba(${theme.palette.common.black}, 0.6)`,
+  color: 'inherit',
 }));
 
 const Holder = ({ index, isOver, disabled, type }) => (
