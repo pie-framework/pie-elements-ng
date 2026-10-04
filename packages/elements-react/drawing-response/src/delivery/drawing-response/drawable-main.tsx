@@ -33,10 +33,6 @@ const { translator } = Translator;
 import ImageBackground from './drawable-image.js';
 import Button from './button.js';
 import factory from './factory.js';
-import constants from './constants.js';
-import { labelCanvases, labelDrawingArea } from './drawing-area-label.js';
-
-const { tools: TOOLS } = constants;
 
 const Wrapper: any = styled('div')({
   display: 'flex',
@@ -243,16 +239,17 @@ export class DrawableMain extends React.Component {
   toggleTextSelected = (textIsSelected) => this.setState({ textIsSelected });
 
   labelStage: any = () => {
-    const { disabled, imageUrl, backgroundImageEnabled = true, language } = this.props;
-
-    labelCanvases(
-      this.stageContainer,
-      labelDrawingArea({
-        hasBackgroundImage: Boolean(backgroundImageEnabled && imageUrl),
-        toolTypes: disabled ? [] : TOOLS.map((tool) => tool.type),
-        language,
-      }),
+    const { imageUrl, backgroundImageEnabled = true, language } = this.props;
+    const label = translator.t(
+      backgroundImageEnabled && imageUrl ? 'drawingResponse.drawingAreaOverImage' : 'drawingResponse.drawingArea',
+      { lng: language },
     );
+
+    // Konva creates one canvas per layer
+    for (const canvas of this.stageContainer?.querySelectorAll('canvas') ?? []) {
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-label', label);
+    }
   };
 
   render() {

@@ -40,22 +40,18 @@ describe('drawing canvas name', () => {
     const canvas = container.querySelector('canvas');
 
     expect(canvas).toHaveAttribute('role', 'img');
-    expect(canvas).toHaveAccessibleName(
-      'Drawing area. Tools: Select, Free draw, Line, Rectangle, Circle, Text entry, Eraser.',
-    );
+    expect(canvas).toHaveAccessibleName('Drawing area');
 
-    const viewProps = { ...props, disabled: true, imageUrl: 'https://example.com/map.png' };
-    rerender(<DrawableMain {...viewProps} />);
+    const imageProps = { ...props, imageUrl: 'https://example.com/map.png' };
+    rerender(<DrawableMain {...imageProps} />);
 
-    expect(canvas).toHaveAccessibleName('Drawing area over a background image.');
+    expect(canvas).toHaveAccessibleName('Drawing area over a background image');
   });
 
   it('does not mention an image the item hides', () => {
     const hiddenImageProps = { ...props, imageUrl: 'https://example.com/map.png', backgroundImageEnabled: false };
     const { container } = render(<DrawableMain {...hiddenImageProps} />);
 
-    expect(container.querySelector('canvas')).toHaveAccessibleName(
-      'Drawing area. Tools: Select, Free draw, Line, Rectangle, Circle, Text entry, Eraser.',
-    );
+    expect(container.querySelector('canvas')).toHaveAccessibleName('Drawing area');
   });
 });

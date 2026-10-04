@@ -35,16 +35,8 @@ export default {
       black: 'Negro',
       onDoubleClick:
         'Haz doble clic para revisar este texto. Presiona el botón de ingreso para enviar',
-      drawingArea: 'Área de dibujo.',
-      drawingAreaOverImage: 'Área de dibujo sobre una imagen de fondo.',
-      drawingTools: 'Herramientas: {{tools}}.',
-      toolSelect: 'Seleccionar',
-      toolFreeDraw: 'Dibujo libre',
-      toolLine: 'Línea',
-      toolRectangle: 'Rectángulo',
-      toolCircle: 'Círculo',
-      toolTextEntry: 'Texto',
-      toolEraser: 'Borrador',
+      drawingArea: 'Área de dibujo',
+      drawingAreaOverImage: 'Área de dibujo sobre una imagen de fondo',
     },
     charting: {
       addCategory: 'Añadir categoría',
