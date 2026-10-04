@@ -66,9 +66,9 @@ image role still needs a name.
 they take no pointer input, so the size of what they stand for is a manual check.
 `math-alternative` evaluates each formula once, at its outermost MathJax or MathQuill node,
 and counts only text that assistive technology reads.
-`keyboard-tab-reach` is left off the drawing-response, likert and matrix evaluate scenarios:
-their evaluate views disable every control and render no other tab stop. Other evaluate
-scenarios keep it, because they render a show-correct-answer toggle, a Collapsible or another
+`keyboard-tab-reach` is left off the drawing-response, extended-text-entry, likert and matrix
+evaluate scenarios: their evaluate views disable every control and render no other tab stop.
+Other evaluate scenarios keep it, because they render a show-correct-answer toggle, a Collapsible or another
 enabled control. Rubric and complex-rubric scenarios run as instructor: for their simple-rubric
 samples, the controllers return an empty model to students.
 

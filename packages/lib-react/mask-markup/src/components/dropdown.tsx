@@ -389,8 +389,8 @@ class Dropdown extends React.Component {
           disabled={disabled}
           id={buttonId}
           role="combobox"
-          aria-label={`Select an option for ${labelText}`}
-          aria-labelledby={valueDisplayId}
+          // The query names the blank in every state; the value span follows it once there is one.
+          aria-labelledby={`${labelId} ${valueDisplayId}`}
         >
           {correctnessIcon}
           <StyledLabel
@@ -420,7 +420,7 @@ class Dropdown extends React.Component {
             paper: this.state.menuWidth ? { style: { minWidth: this.state.menuWidth, padding: '4px' } } : undefined,
             list: {
               id: listboxId,
-              'aria-labelledby': buttonId,
+              'aria-labelledby': labelId,
               role: 'listbox',
               disablePadding: true,
             },

@@ -12,10 +12,15 @@ export default {
     ebsr: {
       part: 'Part {{index}}',
     },
+    editableHtml: {
+      responseAreaToolbar: 'Response area',
+      toolbar: 'Editing tools',
+    },
     explicitConstructedResponse: {
       response: 'Response {{index}} of {{total}}',
     },
     extendedTextEntry: {
+      comment: 'Comment',
       response: 'Your response',
     },
     fractionModel: {
@@ -37,9 +42,12 @@ export default {
       rayRight: 'Ray from {{position}} ({{end}}) to the right.',
     },
     hotspot: {
+      correctlySelected: 'Correctly selected',
       image_one: 'Image with {{count}} hotspot',
       image_other: 'Image with {{count}} hotspots',
       shape: 'Hotspot {{index}} of {{total}}',
+      shouldHaveBeenSelected: 'Should have been selected',
+      shouldNotHaveBeenSelected: 'Should not have been selected',
     },
     imageClozeAssociation: {
       answerChoice: 'Answer choice {{index}} of {{total}}',

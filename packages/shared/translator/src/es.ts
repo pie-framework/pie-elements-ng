@@ -12,10 +12,15 @@ export default {
     ebsr: {
       part: 'Parte {{index}}',
     },
+    editableHtml: {
+      responseAreaToolbar: 'Área de respuesta',
+      toolbar: 'Herramientas de edición',
+    },
     explicitConstructedResponse: {
       response: 'Respuesta {{index}} de {{total}}',
     },
     extendedTextEntry: {
+      comment: 'Comentario',
       response: 'Tu respuesta',
     },
     fractionModel: {
@@ -38,9 +43,12 @@ export default {
       rayRight: 'Rayo desde {{position}} ({{end}}) hacia la derecha.',
     },
     hotspot: {
+      correctlySelected: 'Seleccionada correctamente',
       image_one: 'Imagen con {{count}} zona activa',
       image_other: 'Imagen con {{count}} zonas activas',
       shape: 'Zona activa {{index}} de {{total}}',
+      shouldHaveBeenSelected: 'Debía seleccionarse',
+      shouldNotHaveBeenSelected: 'No debía seleccionarse',
     },
     imageClozeAssociation: {
       answerChoice: 'Opción de respuesta {{index}} de {{total}}',
