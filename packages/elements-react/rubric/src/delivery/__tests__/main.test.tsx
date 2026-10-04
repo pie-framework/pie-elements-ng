@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import RubricComponent from '../main';
 
 const value = {
@@ -38,6 +38,16 @@ describe('Rubric toggle', () => {
     render(<Rubric model={{}} value={value} />);
 
     expect(screen.getByRole('heading', { name: 'Rubric' })).toBeInTheDocument();
+  });
+});
+
+describe('Rubric points', () => {
+  it('are a list, with no navigation landmark', () => {
+    render(<Rubric model={{}} value={value} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Show Rubric' }));
+
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(within(screen.getByRole('list')).getAllByRole('listitem')).toHaveLength(3);
   });
 });
 

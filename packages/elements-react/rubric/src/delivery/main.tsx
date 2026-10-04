@@ -170,7 +170,7 @@ class Rubric extends React.Component {
       const { points, sampleAnswers } = value;
 
       const rubricList = (
-        <List component="nav">
+        <List>
           {points
             .slice(0)
             .reverse()
