@@ -135,11 +135,11 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const id = e.target && e.target.getAttribute('id');
+    const rubricType = e.target && e.target.getAttribute('data-rubric-type');
 
-    if (id) {
+    if (rubricType) {
       if (e.update) {
-        this._model.rubrics[id] = e.update;
+        this._model.rubrics[rubricType] = e.update;
       }
 
       this.dispatchEvent(new ModelUpdatedEvent(this._model));

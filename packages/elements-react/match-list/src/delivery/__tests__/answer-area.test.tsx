@@ -101,6 +101,6 @@ describe('AnswerArea response areas', () => {
     const { container } = renderAnswerArea();
     const ids = [...container.querySelectorAll('[aria-labelledby]')].map((node) => node.getAttribute('aria-labelledby'));
 
-    expect(ids).toEqual(['match-list-1-prompt-label-1', 'match-list-1-prompt-label-2']);
+    expect(ids).toEqual(['1-prompt-label-1', '1-prompt-label-2']);
   });
 });

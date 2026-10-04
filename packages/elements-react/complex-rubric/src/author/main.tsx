@@ -96,7 +96,7 @@ export class Main extends React.Component {
         default:
           rubricTag = (
             <SimpleRubricConfigureElement
-              id="simpleRubric"
+              data-rubric-type="simpleRubric"
               key="simple-rubric"
               ref={(ref) => {
                 if (ref) {
@@ -112,7 +112,7 @@ export class Main extends React.Component {
         case RUBRIC_TYPES.MULTI_TRAIT_RUBRIC:
           rubricTag = (
             <MultiTraitRubricConfigureElement
-              id="multiTraitRubric"
+              data-rubric-type="multiTraitRubric"
               key="multi-trait-rubric"
               ref={(ref) => {
                 if (ref) {
@@ -129,7 +129,7 @@ export class Main extends React.Component {
         case RUBRIC_TYPES.RUBRICLESS:
           rubricTag = (
             <SimpleRubricConfigureElement
-              id="rubricless"
+              data-rubric-type="rubricless"
               key="rubricless"
               ref={(ref) => {
                 if (ref) {

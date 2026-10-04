@@ -8,6 +8,7 @@ import { cloneDeep } from '@pie-element/shared-lodash';
 
 import { createGraphProps, Root, utils as plotUtils } from '@pie-lib/plot';
 import { AlertDialog } from '@pie-lib/config-ui';
+import { createUniqueId } from '@pie-lib/render-ui';
 import ChartGrid from './grid.js';
 import ChartAxes from './axes.js';
 import { dataToXBand, getDomainAndRangeByChartType, getGridLinesAndAxisByChartType, getTopPadding } from './utils.js';
@@ -129,7 +130,7 @@ export class Chart extends React.Component {
   };
 
   generateMaskId() {
-    return 'chart-' + (Math.random() * 10000).toFixed();
+    return createUniqueId('chart');
   }
 
   handleAlertDialog = (open, callback) =>
@@ -364,7 +365,7 @@ export class Chart extends React.Component {
           <mask id={`${this.maskUid}`}>
             <rect {...maskSize} fill="white" />
           </mask>
-          <g id="marks" mask={`url('#${this.maskUid}')`}>
+          <g mask={`url('#${this.maskUid}')`}>
             {ChartComponent && (
               <ChartComponent
                 {...common}
