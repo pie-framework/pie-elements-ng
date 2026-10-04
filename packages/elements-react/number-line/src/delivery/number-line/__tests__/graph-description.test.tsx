@@ -1,8 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { describePlottedElements, labelNumberLine } from '../graph/description';
 import NumberLineGraph from '../graph/index';
+
+// Two element versions on a page each bundle their own lodash, whose uniqueId counters both
+// start at 1; a constant reproduces that within this one module graph.
+vi.mock('@pie-element/shared-lodash', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@pie-element/shared-lodash')>()),
+  uniqueId: (prefix = '') => `${prefix}1`,
+}));
 
 const noop = () => {};
 
@@ -54,6 +61,33 @@ describe('number line text alternative', () => {
     expect(new Set(graphs.map((graph) => graph.getAttribute('aria-describedby'))).size).toBe(2);
     expect(graphs[0]).toHaveAccessibleDescription('Nothing is plotted.');
     expect(graphs[1]).toHaveAccessibleDescription('Open point at 3.');
+  });
+
+  it('gives each graph its own drag instructions', () => {
+    const point = [{ type: 'point', pointType: 'empty', position: 3 }];
+    render(
+      <>
+        <NumberLineGraph {...graphProps} elements={point} />
+        <NumberLineGraph {...graphProps} elements={point} />
+      </>,
+    );
+
+    // dnd-kit's own `DndDescribedBy-<n>` counter restarts in each element bundle.
+    const instructions = screen
+      .getAllByRole('group')
+      .map((graph) => graph.querySelector('[aria-roledescription]')?.getAttribute('aria-describedby'));
+    expect(new Set(instructions).size).toBe(2);
+    expect(instructions[0]).not.toMatch(/^DndDescribedBy-\d+$/);
+  });
+
+  it('keeps its description id across re-renders', () => {
+    const { rerender } = render(<NumberLineGraph {...graphProps} elements={[]} />);
+    const before = screen.getByRole('group').getAttribute('aria-describedby');
+
+    rerender(<NumberLineGraph {...graphProps} elements={[{ type: 'point', pointType: 'full', position: 5 }]} />);
+
+    expect(screen.getByRole('group').getAttribute('aria-describedby')).toBe(before);
+    expect(screen.getByRole('group')).toHaveAccessibleDescription('Closed point at 5.');
   });
 
   it('states values as fractions in fraction mode', () => {

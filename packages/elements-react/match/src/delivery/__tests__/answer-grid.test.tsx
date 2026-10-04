@@ -4,6 +4,13 @@ import { render, screen, within } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AnswerGrid from '../answer-grid';
 
+// Two element versions on a page each bundle their own lodash, whose uniqueId counters both
+// start at 1; a constant reproduces that within this one module graph.
+vi.mock('@pie-element/shared-lodash', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@pie-element/shared-lodash')>()),
+  uniqueId: (prefix = '') => `${prefix}1`,
+}));
+
 const theme = createTheme();
 
 const rows = [
@@ -11,22 +18,25 @@ const rows = [
   { id: 2, title: 'Fish can fly' },
 ];
 
-const renderGrid = (choiceMode: 'radio' | 'checkbox') =>
-  render(
-    <ThemeProvider theme={theme}>
-      <AnswerGrid
-        answers={{ 1: [true, false], 2: [false, false] }}
-        choiceMode={choiceMode}
-        correctAnswers={{ 1: [true, false], 2: [false, true] }}
-        disabled={false}
-        headers={['Statement', 'True', '<strong>False</strong>']}
-        onAnswerChange={vi.fn()}
-        rows={rows}
-        showCorrect={false}
-        view={false}
-      />
-    </ThemeProvider>,
-  );
+const grid = (choiceMode: 'radio' | 'checkbox', answers = { 1: [true, false], 2: [false, false] }) => (
+  <ThemeProvider theme={theme}>
+    <AnswerGrid
+      answers={answers}
+      choiceMode={choiceMode}
+      correctAnswers={{ 1: [true, false], 2: [false, true] }}
+      disabled={false}
+      headers={['Statement', 'True', '<strong>False</strong>']}
+      onAnswerChange={vi.fn()}
+      rows={rows}
+      showCorrect={false}
+      view={false}
+    />
+  </ThemeProvider>
+);
+
+const renderGrid = (choiceMode: 'radio' | 'checkbox') => render(grid(choiceMode));
+
+const pageIds = () => [...document.querySelectorAll('[id]')].map((el) => el.id);
 
 describe('AnswerGrid accessible names', () => {
   it.each([
@@ -58,5 +68,25 @@ describe('AnswerGrid accessible names', () => {
       'True',
       'False',
     ]);
+  });
+});
+
+describe('AnswerGrid ids', () => {
+  it('stay unique when two items share a page', () => {
+    renderGrid('radio');
+    renderGrid('radio');
+
+    expect(screen.getAllByRole('radio', { name: 'Fish can fly False' })).toHaveLength(2);
+    expect(new Set(pageIds()).size).toBe(pageIds().length);
+  });
+
+  it('stay the same across re-renders', () => {
+    const { rerender } = render(grid('radio'));
+    const before = pageIds();
+
+    rerender(grid('radio', { 1: [true, false], 2: [false, true] }));
+
+    expect(screen.getByRole('radio', { name: 'Fish can fly False' })).toBeChecked();
+    expect(pageIds()).toEqual(before);
   });
 });

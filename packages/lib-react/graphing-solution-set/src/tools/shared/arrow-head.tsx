@@ -17,10 +17,6 @@ ArrowHead.defaultProps = {
   size: 10,
   transform: '',
 };
-export const genUid = () => {
-  const v = (Math.random() * 1000).toFixed(0);
-  return `arrow-${v}`;
-};
 export const ArrowMarker = ({ id, size, className }) => {
   return (
     <marker
