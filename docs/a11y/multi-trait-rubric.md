@@ -9,6 +9,8 @@ Instructors review and score multiple rubric traits, each with score points and 
 - `multi-trait-rubric-table-structure`: trait headings, score point descriptors, scoring controls, and programmatic relationships.
 - `multi-trait-rubric-evaluate-feedback`: evaluate-mode trait feedback, score controls, and status semantics.
 
+The Show Rubric toggle is a native button that reports its state through `aria-expanded` ([PIE-1166](https://illuminate.atlassian.net/browse/PIE-1166)).
+
 ## Not Covered / Manual
 
 - Confirm trait, score point, and descriptor relationships are announced clearly.
