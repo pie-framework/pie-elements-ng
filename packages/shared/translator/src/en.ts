@@ -6,6 +6,9 @@ export default {
       maxChoicesPerCategoryRestriction:
         'To change this value to {{maxChoicesPerCategory}}, each category must have {{maxChoicesPerCategory}} or fewer answer choice[s].',
     },
+    dragInTheBlank: {
+      blank: 'Blank {{index}}',
+    },
     ebsr: {
       part: 'Part {{index}}',
     },
@@ -23,10 +26,19 @@ export default {
       rayLeft: 'Ray from {{position}} ({{end}}) to the left.',
       rayRight: 'Ray from {{position}} ({{end}}) to the right.',
     },
+    hotspot: {
+      image_one: 'Image with {{count}} hotspot',
+      image_other: 'Image with {{count}} hotspots',
+      shape: 'Hotspot {{index}} of {{total}}',
+    },
     imageClozeAssociation: {
+      answerChoice: 'Answer choice {{index}} of {{total}}',
+      image_one: 'Image with {{count}} response area',
+      image_other: 'Image with {{count}} response areas',
       reachedLimit_one:
         'You’ve reached the limit of {{count}} response per area. To add another response, one must first be removed.',
       reachedLimit_other: 'Full',
+      responseArea: 'Response area {{index}} of {{total}}',
     },
     drawingResponse: {
       fillColor: 'Fill color',
@@ -50,6 +62,7 @@ export default {
       add: 'Add',
       delete: 'Delete',
       newLabel: 'New label',
+      categoryLabel: 'Category {{index}} label',
       reachedLimit_other: "There can't be more than {{count}} categories.",
       keyLegend: {
         incorrectAnswer: 'Student incorrect answer',
@@ -70,6 +83,8 @@ export default {
       sine: 'Sine',
       vector: 'Vector',
       label: 'Label',
+      markLabel: 'Label at ({{x}}, {{y}})',
+      correctMarkLabel: 'Correct label at ({{x}}, {{y}})',
       redo: 'Redo',
       reset: 'Reset',
     },

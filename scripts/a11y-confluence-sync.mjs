@@ -56,7 +56,7 @@ const groupDefinitions = {
     elements: [
       'graphing',
       'number-line',
-      'matrix',
+      'match',
       'select-text',
       'charting',
       'drawing-response',

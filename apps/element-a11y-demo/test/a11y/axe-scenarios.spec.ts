@@ -11,6 +11,7 @@ import type {
 } from '../../src/lib/a11y/scenarios/types';
 import { ELEMENT_REGISTRY, type ElementMetadata } from '../../src/lib/elements/registry';
 import { waitForMathRendering } from '../e2e/test-helpers';
+import { waitForRenderedScanSubject } from './scan-readiness';
 
 type ScanStatus = 'passed' | 'findings' | 'error';
 type CheckStatus = 'passed' | 'failed' | 'skipped';
@@ -137,9 +138,7 @@ async function runAxeScan(page: Page, target: ScanTarget, testInfo: TestInfo): P
   try {
     await page.goto(target.route);
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForSelector('[data-testid="a11y-scan-root"][data-a11y-ready="true"]', {
-      timeout: 30_000,
-    });
+    await waitForRenderedScanSubject(page);
     await waitForMathRendering(page);
 
     const results = await new AxeBuilder({ page })
@@ -319,6 +318,14 @@ async function checkInteractiveControlNames(page: Page): Promise<CheckResult> {
       );
     }
 
+    /**
+     * `aria-hidden` and `inert` take a control and its subtree out of the accessibility tree;
+     * MUI Select hides its native input this way.
+     */
+    function isExposed(element: Element) {
+      return !element.closest('[aria-hidden="true"], [inert]');
+    }
+
     function textFromIdRefs(ids: string | null) {
       if (!ids) {
         return '';
@@ -363,6 +370,7 @@ async function checkInteractiveControlNames(page: Page): Promise<CheckResult> {
     }
 
     return [...subject.querySelectorAll(interactiveSelector)]
+      .filter(isExposed)
       .filter(isVisible)
       .filter((element) => !controlName(element))
       .slice(0, 10)
@@ -417,7 +425,11 @@ async function checkKeyboardTabReach(page: Page): Promise<CheckResult> {
 
 async function checkMathAlternatives(page: Page): Promise<CheckResult> {
   const result = await page.locator('[data-testid="a11y-scan-subject"]').evaluate((subject) => {
-    const mathSelector = ['math', '.MathJax', '[data-latex]', '[data-math]'].join(',');
+    // `.mq-math-mode` is MathQuill's rendered math, static or editable, which the math input
+    // renders in place of MathJax.
+    const mathSelector = ['math', '.MathJax', '.mq-math-mode', '[data-latex]', '[data-math]'].join(
+      ','
+    );
 
     function isVisible(element: Element) {
       const rect = element.getBoundingClientRect();
@@ -441,14 +453,31 @@ async function checkMathAlternatives(page: Page): Promise<CheckResult> {
         .join(' ');
     }
 
-    const mathNodes = [...subject.querySelectorAll(mathSelector)].filter(isVisible);
+    // Text assistive technology reads: aria-hidden subtrees and zero-width characters, such as
+    // MathQuill's cursor, carry none.
+    function exposedText(element: Element) {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let text = '';
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.parentElement?.closest('[aria-hidden="true"]')) {
+          text += node.textContent ?? '';
+        }
+      }
+      return text.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+    }
+
+    // A formula is evaluated once, at its outermost node: MathJax's assistive `math` and the
+    // response slots nested in MathQuill static math belong to the formula around them.
+    const mathNodes = [...subject.querySelectorAll(mathSelector)]
+      .filter((element) => !element.parentElement?.closest(mathSelector))
+      .filter(isVisible);
     const missing = mathNodes
       .filter((element) => {
         const hasAccessibleName =
           !!element.getAttribute('aria-label')?.trim() ||
           !!textFromIdRefs(element.getAttribute('aria-labelledby'));
         const hasNativeAlternative = !!element.querySelector('annotation, annotation-xml, title');
-        const hasText = !!element.textContent?.trim();
+        const hasText = !!exposedText(element);
         return !hasAccessibleName && !hasNativeAlternative && !hasText;
       })
       .slice(0, 10)
@@ -494,20 +523,52 @@ async function checkMediaAlternatives(page: Page): Promise<CheckResult> {
         .join(' ');
     }
 
-    function hasNameOrDecorativeRole(element: Element) {
-      if (
-        element.getAttribute('aria-hidden') === 'true' ||
-        element.getAttribute('role') === 'presentation' ||
-        element.getAttribute('role') === 'none'
-      ) {
-        return true;
-      }
-
+    /** An svg's `<title>` names it only as a direct child. */
+    function hasAccessibleName(element: Element) {
       return (
         !!element.getAttribute('aria-label')?.trim() ||
         !!textFromIdRefs(element.getAttribute('aria-labelledby')) ||
-        !!element.querySelector('title')?.textContent?.trim()
+        !!element.querySelector(':scope > title')?.textContent?.trim()
       );
+    }
+
+    function hasNameOrDecorativeRole(element: Element) {
+      return (
+        element.getAttribute('aria-hidden') === 'true' ||
+        element.getAttribute('role') === 'presentation' ||
+        element.getAttribute('role') === 'none' ||
+        hasAccessibleName(element)
+      );
+    }
+
+    const imageRoles = ['img', 'image', 'graphics-document', 'graphics-symbol'];
+
+    /**
+     * A nested svg needs no alternative of its own when an svg around it is hidden or named, or
+     * when it has no role and holds text: Chrome then exposes it as a generic container whose
+     * text is read, which is what @visx/text renders around every tick label. A nested svg with
+     * an image role still needs a name, unless an svg around it is hidden.
+     */
+    function isCoveredNestedSvg(graphic: Element) {
+      const ancestors: Element[] = [];
+      for (
+        let svg = graphic.parentElement?.closest('svg');
+        svg;
+        svg = svg.parentElement?.closest('svg')
+      ) {
+        ancestors.push(svg);
+      }
+      if (ancestors.length === 0) {
+        return false;
+      }
+      if (ancestors.some((svg) => svg.getAttribute('aria-hidden') === 'true')) {
+        return true;
+      }
+      const role = graphic.getAttribute('role');
+      if (role && imageRoles.includes(role)) {
+        return false;
+      }
+      return ancestors.some(hasAccessibleName) || (!role && !!graphic.textContent?.trim());
     }
 
     const missing: string[] = [];
@@ -519,7 +580,7 @@ async function checkMediaAlternatives(page: Page): Promise<CheckResult> {
     }
 
     for (const graphic of [...subject.querySelectorAll('svg, canvas')].filter(isVisible)) {
-      if (!hasNameOrDecorativeRole(graphic)) {
+      if (!hasNameOrDecorativeRole(graphic) && !isCoveredNestedSvg(graphic)) {
         missing.push(graphic.outerHTML.slice(0, 300));
       }
     }
@@ -532,18 +593,19 @@ async function checkMediaAlternatives(page: Page): Promise<CheckResult> {
 
     return {
       count: subject.querySelectorAll('img, svg, canvas, audio, video').length,
+      missingCount: missing.length,
       missing: missing.slice(0, 10),
     };
   });
 
   return {
     check: 'media-alternative',
-    status: details.count === 0 || details.missing.length > 0 ? 'failed' : 'passed',
+    status: details.count === 0 || details.missingCount > 0 ? 'failed' : 'passed',
     message:
       details.count === 0
         ? 'No media or graphic nodes were found for this media-alternative scenario'
-        : details.missing.length > 0
-          ? `${details.missing.length} visible media/graphic node(s) appear to lack an alternative or decorative marker`
+        : details.missingCount > 0
+          ? `${details.missingCount} visible media/graphic node(s) appear to lack an alternative or decorative marker`
           : 'Visible media and graphics expose alternatives or decorative markers',
     details: details.missing,
   };
@@ -576,8 +638,26 @@ async function checkTargetSize(page: Page): Promise<CheckResult> {
       );
     }
 
+    // A visually hidden element, clipped to nothing, shows no region that accepts a pointer, so
+    // it is no pointer target. Hotspot's keyboard focus proxies are such elements.
+    function isClippedAway(element: Element) {
+      const style = window.getComputedStyle(element);
+      const clip =
+        style.position === 'absolute' || style.position === 'fixed'
+          ? /^rect\((-?[\d.]+)px,? (-?[\d.]+)px,? (-?[\d.]+)px,? (-?[\d.]+)px\)$/.exec(style.clip)
+          : null;
+      if (clip) {
+        const [top, right, bottom, left] = clip.slice(1).map(Number);
+        if (right <= left || bottom <= top) {
+          return true;
+        }
+      }
+      return style.clipPath === 'inset(50%)';
+    }
+
     return [...subject.querySelectorAll(selector)]
       .filter(isVisible)
+      .filter((element) => !isClippedAway(element))
       .map((element) => {
         const rect = element.getBoundingClientRect();
         return {
