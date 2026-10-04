@@ -56,6 +56,17 @@ Each finding includes:
   status-message presence when those checks apply.
 - Suggested Jira title for follow-up remediation work.
 
+`interactive-control-name` skips a control that is `aria-hidden` or `inert`, or sits inside
+an element that is: it is outside the accessibility tree, as MUI Select's native input is.
+`media-alternative` passes an svg nested in another svg when an svg around it is named or
+hidden, or when it has no role and holds text, which Chrome exposes as a generic container
+whose text is read; @visx/text renders one around every tick label. A nested svg with an
+image role still needs a name.
+`target-size` skips elements clipped to nothing, such as hotspot's keyboard focus proxies:
+they take no pointer input, so the size of what they stand for is a manual check.
+`math-alternative` evaluates each formula once, at its outermost MathJax or MathQuill node,
+and counts only text that assistive technology reads.
+
 ## A11y Mount
 
 Open `/a11y` in the demo app to browse the curated scenario suite. Individual scan routes look like:

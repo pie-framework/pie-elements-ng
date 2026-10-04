@@ -13,7 +13,8 @@
         type: "String",
         attribute: "element-version",
       },
-      role: { reflect: true, type: "String" },
+      // Not reflected: on the host, `role` is the ARIA attribute, and "student" is no ARIA role.
+      role: { reflect: false, type: "String" },
       cdnUrl: { reflect: true, type: "String", attribute: "cdn-url" },
       iifeBundleEndpoint: {
         reflect: true,
