@@ -13,7 +13,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
 
 import { TickCorrectnessIndicator } from './common/correctness-indicators.js';
-import { bandKey, getRotateAngle, getTickValues } from './utils.js';
+import { bandKey, getRotateAngle, getRotatedLabelOverhang, getTickValues } from './utils.js';
 import MarkLabel from './mark-label.js';
 
 const { translator } = Translator;
@@ -433,9 +433,43 @@ export class RawChartAxes extends React.Component {
     showCorrectness: PropTypes.bool,
     hiddenLabelRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
     language: PropTypes.string,
+    onLabelOverhang: PropTypes.func,
   };
 
   state = { height: 0, width: 0 };
+
+  reportedOverhang = 0;
+
+  // the bar width, and the angle the category labels are drawn at
+  labelLayout: any = () => {
+    const { graphProps, xBand, categories = [], theme } = this.props;
+    const { scale = {}, domain = {} } = graphProps || {};
+    const { height, width } = this.state;
+
+    const bandWidth = xBand && typeof xBand.bandwidth === 'function' && xBand.bandwidth();
+    // for chartType "line", bandWidth will be 0, so we have to calculate it
+    const barWidth = bandWidth || (scale.x && scale.x(domain.max) / categories.length);
+
+    const fontSize = theme && theme.typography ? theme.typography.fontSize : 14;
+    // this mostly applies for labels that are not editable
+    const rotateBecauseOfHeight = getRotateAngle(fontSize, height);
+    // this applies for labels that are editable
+    const rotateBecauseOfWidth = width > barWidth ? 25 : 0;
+
+    return { bandWidth, barWidth, rotate: rotateBecauseOfHeight || rotateBecauseOfWidth };
+  };
+
+  // tells the chart how much lower the longest label reaches rotated, so it reserves that room
+  reportLabelOverhang: any = () => {
+    const { onLabelOverhang } = this.props;
+    const { height, width } = this.state;
+    const overhang = getRotatedLabelOverhang(width, height, this.labelLayout().rotate);
+
+    if (onLabelOverhang && overhang !== this.reportedOverhang) {
+      this.reportedOverhang = overhang;
+      onLabelOverhang(overhang);
+    }
+  };
 
   measureHiddenLabel: any = () => {
     if (!this.hiddenLabelRef) return;
@@ -501,6 +535,7 @@ export class RawChartAxes extends React.Component {
     if (this.hiddenLabelRef) {
       this.observeHiddenLabel(this.hiddenLabelRef);
     }
+    this.reportLabelOverhang();
   }
 
   componentWillUnmount() {
@@ -517,6 +552,7 @@ export class RawChartAxes extends React.Component {
       if (this._updateTimer) clearTimeout(this._updateTimer);
       this._updateTimer = setTimeout(() => this.measureHiddenLabel(), 50);
     }
+    this.reportLabelOverhang();
   }
 
   render() {
@@ -532,7 +568,6 @@ export class RawChartAxes extends React.Component {
       chartingOptions,
       changeInteractiveEnabled,
       changeEditableEnabled,
-      theme,
       autoFocus,
       onAutoFocusUsed,
       error,
@@ -540,21 +575,12 @@ export class RawChartAxes extends React.Component {
       language,
     } = this.props;
 
-    const { scale = {}, range = {}, domain = {}, size = {} } = graphProps || {};
-    const { height, width } = this.state;
+    const { scale = {}, range = {}, size = {} } = graphProps || {};
 
     const bottomScale = xBand && typeof xBand.rangeRound === 'function' && xBand.rangeRound([0, size.width]);
-
-    const bandWidth = xBand && typeof xBand.bandwidth === 'function' && xBand.bandwidth();
-    // for chartType "line", bandWidth will be 0, so we have to calculate it
-    const barWidth = bandWidth || (scale.x && scale.x(domain.max) / categories.length);
+    const { bandWidth, barWidth, rotate } = this.labelLayout();
 
     const rowTickValues = getTickValues({ ...range, step: range.labelStep });
-    const fontSize = theme && theme.typography ? theme.typography.fontSize : 14;
-    // this mostly applies for labels that are not editable
-    const rotateBecauseOfHeight = getRotateAngle(fontSize, height);
-    // this applies for labels that are editable
-    const rotateBecauseOfWidth = width > barWidth ? 25 : 0;
 
     const getTickLabelProps = (value) => ({
       dy: 4,
@@ -568,7 +594,7 @@ export class RawChartAxes extends React.Component {
         xBand,
         bandWidth,
         barWidth,
-        rotate: rotateBecauseOfHeight || rotateBecauseOfWidth,
+        rotate,
         top,
         defineChart,
         chartingOptions,

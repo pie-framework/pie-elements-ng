@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 
 import Chart from '../chart';
+import { getRotatedLabelOverhang } from '../utils';
 
 type Category = { label: string; value: number; interactive: boolean; editable: boolean };
 
@@ -13,6 +14,7 @@ const categories = (labels: string[]): Category[] =>
 // characters does not fit
 const long = categories(['Chocolate chip', 'Oatmeal raisin', 'Peanut butter', 'Snickerdoodle', 'Double fudge']);
 const short = categories(['A', 'B', 'C', 'D', 'E']);
+const longer = categories(['Chocolate chip cookie', 'Oatmeal raisin', 'Peanut butter', 'Snickerdoodle', 'Double fudge']);
 
 // happy-dom does no layout: text is 8px a character, and an input is its style width
 const boxOf = (el: Element): { width: number; height: number } =>
@@ -77,6 +79,9 @@ const angles = () =>
   labelInputs().map((input) => Number(/rotate\((-?\d+)deg\)/.exec(input.parentElement?.style.transform || '')?.[1] ?? 0));
 
 // the chart edits its data in place, so each render gets its own copy and each change a new array
+// the height of the chart's svg, which holds the room reserved below the category axis
+const reservedHeight = (container: HTMLElement) => Number(container.querySelector('svg[role="group"]')?.getAttribute('height'));
+
 const EditableChart = ({ initial }: { initial: Category[] }) => {
   const [data, setData] = useState(() => initial.map((c) => ({ ...c })));
 
@@ -196,5 +201,76 @@ describe('charting category label rotation', () => {
     renderChart(long);
 
     expect(labelInputs()).toHaveLength(5);
+  });
+
+  describe('room below the axis', () => {
+    // the hidden label sizing the longest category is its text width plus AutosizeInput's 2px, and
+    // 24px tall; each bar is 46px wide, for which the chart reserves 15px below the axis
+    const overhangOf = (label: string) => getRotatedLabelOverhang(label.length * 8 + 2, 24, 25);
+
+    it.each([
+      ['read-only', false],
+      ['editable', true],
+    ])('grows by how much lower the rotated %s labels reach', (_, defineChart) => {
+      const { container } = renderChart(long, defineChart);
+      const unrotated = reservedHeight(container);
+
+      layout();
+
+      expect(reservedHeight(container)).toBe(unrotated - 15 + overhangOf('Chocolate chip'));
+    });
+
+    it('grows with the rotated label height', () => {
+      const first = renderChart(long);
+      layout();
+      const longHeight = reservedHeight(first.container);
+      first.unmount();
+
+      const second = renderChart(longer);
+      layout();
+
+      expect(reservedHeight(second.container) - longHeight).toBe(
+        overhangOf('Chocolate chip cookie') - overhangOf('Chocolate chip'),
+      );
+    });
+
+    it('stays the same when the labels fit', () => {
+      const { container } = renderChart(short);
+      const unrotated = reservedHeight(container);
+
+      layout();
+
+      expect(reservedHeight(container)).toBe(unrotated);
+    });
+
+    it('shrinks back when an edited label fits again', () => {
+      const { container } = renderChart(short, true);
+      layout();
+      const unrotated = reservedHeight(container);
+
+      editLabel(2, 'Peanut butter');
+      layout();
+
+      expect(reservedHeight(container)).toBeGreaterThan(unrotated);
+
+      editLabel(2, 'C');
+      layout();
+
+      expect(reservedHeight(container)).toBe(unrotated);
+    });
+  });
+});
+
+describe('getRotatedLabelOverhang', () => {
+  it('is nothing for a horizontal label', () => {
+    expect(getRotatedLabelOverhang(160, 24, 0)).toBe(0);
+  });
+
+  it('is how much lower the far bottom corner sits once rotated about the middle of the left edge', () => {
+    const radians = (25 * Math.PI) / 180;
+    // the bottom right corner, 160px along and 12px below the pivot, against the horizontal bottom edge
+    const lowered = 160 * Math.sin(radians) + 12 * Math.cos(radians) - 12;
+
+    expect(getRotatedLabelOverhang(160, 24, 25)).toBe(Math.ceil(lowered));
   });
 });

@@ -56,6 +56,8 @@ export class Chart extends React.Component {
         open: false,
       },
       actionsAnchorEl: null,
+      // how much lower the rotated category labels reach than horizontal ones
+      labelOverhang: 0,
     };
     this.maskUid = this.generateMaskId();
   }
@@ -132,6 +134,8 @@ export class Chart extends React.Component {
   generateMaskId() {
     return createUniqueId('chart');
   }
+
+  setLabelOverhang = (labelOverhang) => this.setState({ labelOverhang });
 
   handleAlertDialog = (open, callback) =>
     this.setState(
@@ -295,8 +299,8 @@ export class Chart extends React.Component {
     const increaseHeight = defineChart ? 160 : 60;
 
     // if there are many categories, we have to rotate their names in order to fit
-    // and we have to add extra value on top of some items
-    const top = getTopPadding(barWidth);
+    // and we have to add extra value on top of some items; rotated names need at least the room they reach down
+    const top = Math.max(getTopPadding(barWidth), this.state.labelOverhang);
     const rootCommon = cloneDeep(common);
     rootCommon.graphProps.size.height += top + increaseHeight;
 
@@ -349,6 +353,7 @@ export class Chart extends React.Component {
             error={error}
             showCorrectness={chartType === 'linePlot' || chartType === 'dotPlot'}
             language={language}
+            onLabelOverhang={this.setLabelOverhang}
           />
           {addCategoryEnabled ? (
             <foreignObject x={width} y={height - 16} width={width} height={height}>
