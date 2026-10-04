@@ -12,7 +12,10 @@ const StyledIconButton: any = styled(IconButton)(({ hideBackground }) => ({
   verticalAlign: 'top',
   width: '28px',
   height: '28px',
-  color: '#00bb00',
+  // The check sits on the editable-html toolbar's #efefef, which no theme changes, or on
+  // `--pie-background` when the background is hidden. #388E3C clears 3:1 against #efefef, white,
+  // both hover fills and the dark theme's background (WCAG 1.4.11).
+  color: '#388E3C',
   ...(hideBackground && {
     // `--pie-background` follows both the colour schemes and the dark theme; `--pie-white`
     // stays white under the dark theme. White keeps the button opaque when no theme is set.

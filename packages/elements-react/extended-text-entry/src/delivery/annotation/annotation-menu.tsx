@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { Popover } from '@mui/material';
 import { color } from '@pie-lib/render-ui';
+import { ANNOTATION_STROKE } from './annotation-utils.js';
 
 const StyledPopover: any = styled(Popover)({
   '& .MuiPaper-root': {
@@ -20,16 +21,17 @@ const StyledPopover: any = styled(Popover)({
       width: 0,
       pointerEvents: 'none',
       borderWidth: '7px',
-      borderTopColor: color.border(),
+      borderTopColor: ANNOTATION_STROKE,
     },
   },
 });
 
 /*
- * Surface, text and stroke move together. `--pie-background` and `--pie-text` follow both
- * the colour schemes and the dark theme; `--pie-white` stays white under the dark theme,
- * and the popover paper's own text stays near-black in every scheme. Without a theme the
- * fallbacks are the white and the paper text the menu has always had.
+ * Surface and text move together. `--pie-background` and `--pie-text` follow both the colour
+ * schemes and the dark theme; `--pie-white` stays white under the dark theme, and the popover
+ * paper's own text stays near-black in every scheme. Without a theme the fallbacks are the
+ * white and the paper text the menu has always had. The outline also meets the annotation
+ * fills, so it takes ANNOTATION_STROKE.
  */
 const MainWrapper: any = styled('div')(({ theme }) => ({
   width: '300px',
@@ -37,7 +39,7 @@ const MainWrapper: any = styled('div')(({ theme }) => ({
   borderRadius: '4px',
   backgroundColor: color.v('pie')('background', color.defaults.WHITE),
   color: color.v('pie')('text', theme.palette.text.primary),
-  border: `2px solid ${color.border()}`,
+  border: `2px solid ${ANNOTATION_STROKE}`,
 }));
 
 const AnnotationsWrapper: any = styled('div')({
