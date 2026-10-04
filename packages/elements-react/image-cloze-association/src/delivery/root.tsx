@@ -265,6 +265,22 @@ export class ImageClozeAssociationComponent extends React.Component {
     this.placeSelectedResponse(containerIndex);
   };
 
+  // Names a choice by its position among the model's choices, which holds in the pool and in an area.
+  getChoiceLabel: any = (value) => {
+    const {
+      model: { possibleResponses = [], language },
+    } = this.props;
+    const index = possibleResponses.indexOf(value);
+
+    return index === -1
+      ? undefined
+      : translator.t('imageClozeAssociation.answerChoice', {
+          lng: language,
+          index: index + 1,
+          total: possibleResponses.length,
+        });
+  };
+
   renderDragOverlay: any = () => {
     const { draggingElement } = this.state;
     const { model } = this.props;
@@ -280,6 +296,7 @@ export class ImageClozeAssociationComponent extends React.Component {
         key={draggingElement.id}
         canDrag={false}
         data={draggingElement}
+        getChoiceLabel={this.getChoiceLabel}
         onDragBegin={() => {}}
         isOverlay
         containerStyle={{
@@ -478,7 +495,9 @@ export class ImageClozeAssociationComponent extends React.Component {
     const sharedImageProps = {
       draggingElement,
       duplicateResponses,
+      getChoiceLabel: this.getChoiceLabel,
       image,
+      language,
       onAnswerSelect: this.handleOnAnswerSelect,
       onDragAnswerBegin: this.onDragStart,
       onDragAnswerEnd: this.onDragEnd,
@@ -511,6 +530,7 @@ export class ImageClozeAssociationComponent extends React.Component {
           <PossibleResponses
             canDrag={!disabled}
             data={possibleResponses}
+            getChoiceLabel={this.getChoiceLabel}
             onAnswerRemove={this.handleOnAnswerRemove}
             onDragBegin={this.onDragStart}
             answerChoiceTransparency={answerChoiceTransparency}

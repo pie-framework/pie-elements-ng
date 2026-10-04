@@ -235,6 +235,7 @@ export class GraphWithControls extends React.Component {
           gssLineData={gssLineData}
           onSolutionSetSelected={onSolutionSetSelected}
           disabled={!!disabled}
+          language={language}
         />
       </GraphWithControlsRoot>
     );

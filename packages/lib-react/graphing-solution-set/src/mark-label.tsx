@@ -7,6 +7,10 @@ import { AutosizeInput } from './autosize-input.js';
 import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+import { roundNumber } from './utils.js';
+
+const { translator } = Translator;
 
 const StyledAutosizeInput: any = styled(AutosizeInput, {
   shouldForwardProp: (prop) => !['disabled', 'markDisabled'].includes(prop),
@@ -68,7 +72,7 @@ export const MarkLabel = (props) => {
   const [input, setInput] = useState(null);
   const _ref = useCallback((node) => setInput(node));
 
-  const { mark, graphProps, disabled, inputRef: externalInputRef } = props;
+  const { mark, graphProps, disabled, inputRef: externalInputRef, language } = props;
 
   const [label, setLabel] = useState(mark.label);
 
@@ -99,6 +103,10 @@ export const MarkLabel = (props) => {
   };
 
   const disabledInput = disabled || mark.disabled;
+  const ariaLabel =
+    Number.isFinite(mark.x) && Number.isFinite(mark.y)
+      ? translator.t('graphing.markLabel', { lng: language, x: roundNumber(mark.x), y: roundNumber(mark.y) })
+      : translator.t('graphing.label', { lng: language });
 
   return (
     <StyledAutosizeInput
@@ -106,6 +114,7 @@ export const MarkLabel = (props) => {
         _ref(r);
         externalInputRef(r);
       }}
+      aria-label={ariaLabel}
       disabled={disabledInput}
       markDisabled={mark.disabled}
       value={label}
@@ -120,6 +129,7 @@ MarkLabel.propTypes = {
   onChange: PropTypes.func,
   graphProps: types.GraphPropsType,
   inputRef: PropTypes.func,
+  language: PropTypes.string,
   mark: PropTypes.object,
   theme: PropTypes.object,
 };
