@@ -40,6 +40,7 @@ export const graphPropTypes = {
   showTitle: PropTypes.bool,
   title: PropTypes.string,
   tools: PropTypes.array,
+  language: PropTypes.string,
 };
 
 const getMaskSize = (size) => ({
@@ -224,13 +225,14 @@ export class Graph extends React.Component {
       mathMlOptions = {},
       gssLineData,
       disabled,
+      language,
     } = this.props;
     let { marks } = this.props;
 
     const graphProps = createGraphProps(domain, range, size, () => this.rootNode);
 
     const maskSize = getMaskSize(size);
-    let common = { graphProps, labelModeEnabled, gssLineData };
+    let common = { graphProps, labelModeEnabled, gssLineData, language };
 
     marks = removeBuildingToolIfCurrentToolDiffers({ marks: marks || [], currentTool });
     let solutionSet = marks.filter((mark) => mark.type === 'polygon');

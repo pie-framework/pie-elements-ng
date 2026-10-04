@@ -84,6 +84,7 @@ export const lineToolComponent = (Component) => {
       to: types.PointType,
       labelModeEnabled: PropTypes.bool,
       onClick: PropTypes.func,
+      language: PropTypes.string,
     };
 
     constructor(props) {
@@ -149,7 +150,8 @@ export const lineToolComponent = (Component) => {
     };
 
     render() {
-      const { graphProps, onClick, labelNode, labelModeEnabled, coordinatesOnHover, limitLabeling } = this.props;
+      const { graphProps, onClick, labelNode, labelModeEnabled, coordinatesOnHover, limitLabeling, language } =
+        this.props;
       const mark = this.state.mark ? this.state.mark : this.props.mark;
 
       const from = cloneDeep(mark.from);
@@ -187,6 +189,7 @@ export const lineToolComponent = (Component) => {
           labelNode={labelNode}
           labelModeEnabled={labelModeEnabled}
           limitLabeling={limitLabeling}
+          language={language}
         />
       );
     }
@@ -234,6 +237,7 @@ export const lineBase = (Comp, opts) => {
       changeMarkProps: PropTypes.func,
       labelModeEnabled: PropTypes.bool,
       labelNode: PropTypes.object,
+      language: PropTypes.string,
     };
 
     // which of from/to/middle has its label edited, null if none
@@ -371,6 +375,7 @@ export const lineBase = (Comp, opts) => {
         onClick,
         labelNode,
         labelModeEnabled,
+        language,
       } = this.props;
       const { editingLabel } = this.state;
       const common = { graphProps, onDragStart, onDragStop, disabled, correctness, onClick };
@@ -389,6 +394,7 @@ export const lineBase = (Comp, opts) => {
               disabled={!labelModeEnabled}
               mark={from}
               graphProps={graphProps}
+              language={language}
               onBlur={this.stopEditingLabel}
               onChange={(label) => this.labelChange({ ...from, label }, 'from')}
             />,
@@ -404,6 +410,7 @@ export const lineBase = (Comp, opts) => {
               disabled={!labelModeEnabled}
               mark={to}
               graphProps={graphProps}
+              language={language}
               onBlur={this.stopEditingLabel}
               onChange={(label) => this.labelChange({ ...to, label }, 'to')}
             />,
@@ -419,6 +426,7 @@ export const lineBase = (Comp, opts) => {
               disabled={!labelModeEnabled}
               mark={middle}
               graphProps={graphProps}
+              language={language}
               onBlur={this.stopEditingLabel}
               onChange={(label) => this.labelChange({ ...middle, label }, 'middle')}
             />,

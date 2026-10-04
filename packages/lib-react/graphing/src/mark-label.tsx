@@ -7,7 +7,11 @@ import { AutosizeInput } from './autosize-input.js';
 import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
 import SvgIcon from './label-svg-icon.js';
+import { roundNumber } from './utils.js';
+
+const { translator } = Translator;
 
 const DEBOUNCE_DELAY = 500;
 // A new label insists on the focus and the caret for this long, and again on each of the ticks
@@ -138,12 +142,13 @@ const caretIsInside = (node) => {
   return anchor === node || anchor === node.parentNode || node.contains(anchor);
 };
 
-const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, minWidth, onChange, onBlur }) => (
+const LabelInput = ({ _ref, externalInputRef, ariaLabel, label, disabled, inputStyle, minWidth, onChange, onBlur }) => (
   <AutosizeInput
     inputRef={(r) => {
       _ref(r);
       externalInputRef(r);
     }}
+    aria-label={ariaLabel}
     disabled={disabled}
     inputStyle={inputStyle}
     minWidth={minWidth}
@@ -156,6 +161,7 @@ const LabelInput = ({ _ref, externalInputRef, label, disabled, inputStyle, minWi
 LabelInput.propTypes = {
   _ref: PropTypes.func,
   externalInputRef: PropTypes.func,
+  ariaLabel: PropTypes.string,
   label: PropTypes.string,
   disabled: PropTypes.bool,
   inputStyle: PropTypes.object,
@@ -174,7 +180,7 @@ export const MarkLabel = (props) => {
   }, []);
   const theme = useTheme();
 
-  const { mark, graphProps, disabled, autoFocus, inputRef: externalInputRef } = props;
+  const { mark, graphProps, disabled, autoFocus, inputRef: externalInputRef, language } = props;
 
   const [label, setLabel] = useState(mark.label);
   const { correctness, correctnesslabel, correctlabel } = mark;
@@ -369,10 +375,16 @@ export const MarkLabel = (props) => {
 
   const disabledInput = disabled || mark.disabled;
 
-  const renderInput = (inputStyle, labelValue) => (
+  const nameAt = (key) =>
+    Number.isFinite(mark.x) && Number.isFinite(mark.y)
+      ? translator.t(`graphing.${key}`, { lng: language, x: roundNumber(mark.x), y: roundNumber(mark.y) })
+      : translator.t('graphing.label', { lng: language });
+
+  const renderInput = (inputStyle, labelValue, ariaLabel = nameAt('markLabel')) => (
     <LabelInput
       _ref={_ref}
       externalInputRef={externalInputRef}
+      ariaLabel={ariaLabel}
       label={labelValue}
       disabled={disabledInput}
       inputStyle={inputStyle}
@@ -412,7 +424,9 @@ export const MarkLabel = (props) => {
             renderInput(studentInputStyle, label)
           )}
         </StyledInputIncorrect>
-        <StyledInputMissing style={secondLabelStyle}>{renderInput(studentInputStyle, correctlabel)}</StyledInputMissing>
+        <StyledInputMissing style={secondLabelStyle}>
+          {renderInput(studentInputStyle, correctlabel, nameAt('correctMarkLabel'))}
+        </StyledInputMissing>
       </>
     );
   }
@@ -441,6 +455,7 @@ MarkLabel.propTypes = {
   onChange: PropTypes.func,
   graphProps: types.GraphPropsType,
   inputRef: PropTypes.func,
+  language: PropTypes.string,
   mark: PropTypes.object,
 };
 
