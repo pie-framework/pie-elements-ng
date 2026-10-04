@@ -27,7 +27,7 @@ import Delete from '@mui/icons-material/Delete';
 
 import { useEditorState } from '@tiptap/react';
 
-import { PIE_TOOLBAR__CLASS } from '../constants.js';
+import { PIE_TOOLBAR__CLASS, TOOLBAR_BACKGROUND } from '../constants.js';
 import { ToolbarIcon } from './respArea/ToolbarIcon.js';
 import { spanishConfig, specialConfig } from './characters/characterUtils.js';
 import TextAlignIcon from './icons/TextAlign.js';
@@ -616,7 +616,7 @@ const StyledMenuBarRoot: any = styled('div')(() => ({
     zIndex: 20,
     cursor: 'pointer',
     justifyContent: 'space-between',
-    background: 'var(--editable-html-toolbar-bg, #efefef)',
+    background: TOOLBAR_BACKGROUND,
     minWidth: '280px',
     margin: 0,
     padding: '2px',

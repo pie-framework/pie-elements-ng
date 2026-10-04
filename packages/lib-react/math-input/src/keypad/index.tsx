@@ -202,6 +202,11 @@ const StyledButton: any = styled(Button)(({ category, isDelete, isComma, isDot }
         ? color.keypadButtonOperatorHover()
         : color.keypadButtonHover()
   },
+  // The press and focus ripples paint the ink at 30%, which lifts a key towards a light scheme
+  // ink. Folding each channel above 127 below it keeps the ripple dark; dark inks pass unchanged.
+  '& .MuiTouchRipple-root': {
+    color: `rgb(from ${color.text()} min(r, 255 - r) min(g, 255 - g) min(b, 255 - b))`,
+  },
   borderRadius: 0,
   ...(isDelete && {
     fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
