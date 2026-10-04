@@ -10,10 +10,13 @@ import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import Translator from '@pie-lib/translator';
 
 import { TickCorrectnessIndicator } from './common/correctness-indicators.js';
 import { bandKey, getRotateAngle, getTickValues } from './utils.js';
 import MarkLabel from './mark-label.js';
+
+const { translator } = Translator;
 
 // one document-level MutationObserver shared across all
 // RawChartAxes instances so that no chart misses a MathJax render batch
@@ -202,6 +205,7 @@ export class TickComponent extends React.Component {
       autoFocus,
       hiddenLabelRef,
       showCorrectness,
+      language,
     } = this.props;
 
     if (!formattedValue) {
@@ -263,6 +267,7 @@ export class TickComponent extends React.Component {
             rotate={rotate}
             correctness={correctness}
             error={error && error[index]}
+            ariaLabel={translator.t('charting.categoryLabel', { lng: language, index: index + 1 })}
             limitCharacters
             correctnessIndicator={
               showCorrectness &&
@@ -404,6 +409,7 @@ TickComponent.propTypes = {
   onAutoFocusUsed: PropTypes.func,
   showCorrectness: PropTypes.bool,
   hiddenLabelRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
+  language: PropTypes.string,
 };
 
 export class RawChartAxes extends React.Component {
@@ -426,6 +432,7 @@ export class RawChartAxes extends React.Component {
     onAutoFocusUsed: PropTypes.func,
     showCorrectness: PropTypes.bool,
     hiddenLabelRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
+    language: PropTypes.string,
   };
 
   state = { height: 0, width: 0 };
@@ -516,6 +523,7 @@ export class RawChartAxes extends React.Component {
       onAutoFocusUsed,
       error,
       showCorrectness,
+      language,
     } = this.props;
 
     const { scale = {}, range = {}, domain = {}, size = {} } = graphProps || {};
@@ -562,6 +570,7 @@ export class RawChartAxes extends React.Component {
         y: props.y,
         formattedValue: props.formattedValue,
         showCorrectness,
+        language,
       };
 
       return <TickComponent {...properties} />;

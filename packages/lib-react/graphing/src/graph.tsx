@@ -242,7 +242,7 @@ export class Graph extends React.Component {
     const graphProps = createGraphProps(domain, range, size, () => this.rootNode);
 
     const maskSize = getMaskSize(size);
-    const common = { graphProps, labelModeEnabled, limitLabeling };
+    const common = { graphProps, labelModeEnabled, limitLabeling, language };
 
     marks = removeBuildingToolIfCurrentToolDiffers({
       marks: marks || [],

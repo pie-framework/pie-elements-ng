@@ -259,7 +259,7 @@ export class Graph extends React.Component {
     const graphProps = createGraphProps(domain, range, size, () => this.rootNode);
 
     const maskSize = getMaskSize(size);
-    let common = { graphProps, labelModeEnabled, gssLineData };
+    let common = { graphProps, labelModeEnabled, gssLineData, language };
 
     marks = removeBuildingToolIfCurrentToolDiffers({ marks: marks || [], currentTool });
     let solutionSet = marks.filter((mark) => mark.type === 'polygon');

@@ -56,6 +56,22 @@ Each finding includes:
   status-message presence when those checks apply.
 - Suggested Jira title for follow-up remediation work.
 
+`interactive-control-name` skips a control that is `aria-hidden` or `inert`, or sits inside
+an element that is: it is outside the accessibility tree, as MUI Select's native input is.
+`media-alternative` passes an svg nested in another svg when an svg around it is named or
+hidden, or when it has no role and holds text, which Chrome exposes as a generic container
+whose text is read; @visx/text renders one around every tick label. A nested svg with an
+image role still needs a name.
+`target-size` skips elements clipped to nothing, such as hotspot's keyboard focus proxies:
+they take no pointer input, so the size of what they stand for is a manual check.
+`math-alternative` evaluates each formula once, at its outermost MathJax or MathQuill node,
+and counts only text that assistive technology reads.
+`keyboard-tab-reach` is left off the drawing-response, likert and matrix evaluate scenarios:
+their evaluate views disable every control and render no other tab stop. Other evaluate
+scenarios keep it, because they render a show-correct-answer toggle, a Collapsible or another
+enabled control. Rubric and complex-rubric scenarios run as instructor: for their simple-rubric
+samples, the controllers return an empty model to students.
+
 ## A11y Mount
 
 Open `/a11y` in the demo app to browse the curated scenario suite. Individual scan routes look like:
@@ -72,6 +88,12 @@ Open `/a11y/inventory` to browse the broad demo baseline. Inventory scan routes 
 ```
 
 These routes intentionally avoid the normal demo chrome so Axe scans focus on the mounted assessment element. Scans load elements through the ESM player.
+
+A scan starts once the element has rendered: after the player's `load-complete`, the route waits
+for text, a control or a media node in the mounted element, for its images to load, and for
+250 ms without DOM changes, and only then sets `data-a11y-ready`. An element that renders
+nothing within 15 s sets `data-a11y-render="not-rendered"`; the suite records that scenario as
+a harness error whose message starts with "Not rendered", and scans nothing.
 
 In local dev mode, `/a11y` includes a “Run full a11y suite” control. Individual scan
 pages include controls to run just that scenario or all scenarios for the element. These
