@@ -169,8 +169,13 @@ function MenuBar({
 
   const hasDoneButton = false;
   const autoWidth = !!autoWidthToolbar;
+  // A selected drag-in-the-blank area swaps the default toolbar for its own delete toolbar; the
+  // other nodes that hide the default toolbar bring a toolbar of their own.
+  const isDragInTheBlankSelected =
+    editorState.hideDefaultToolbar && editorState.currentNode?.type?.name === 'drag_in_the_blank';
   const shown =
-    toolbarOpts.alwaysVisible || (hasFocus && !editorState.toolbarOpened && !editorState.hideDefaultToolbar);
+    toolbarOpts.alwaysVisible ||
+    (hasFocus && !editorState.toolbarOpened && (!editorState.hideDefaultToolbar || isDragInTheBlankSelected));
 
   // Hidden, the toolbar is `inert`, which takes its buttons out of the tab order. Set on the node:
   // React 18 drops a boolean `inert` prop, and React 19 reads the empty-string workaround as false.
@@ -419,9 +424,6 @@ function MenuBar({
     ],
     [activePlugins, editor],
   );
-
-  const isDragInTheBlankSelected =
-    editorState.hideDefaultToolbar && editorState.currentNode?.type?.name === 'drag_in_the_blank';
 
   return (
     <div ref={toolbarRef} className={names} style={{ ...customStyles }} onMouseDown={handleMouseDown}>
