@@ -5,8 +5,14 @@ import { styled } from '@mui/material/styles';
 import classnames from 'clsx';
 
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
 import { withMask } from './with-mask.js';
 import EditableHtmlImport from '@pie-lib/editable-html-tip-tap';
+
+const { translator } = Translator;
+
+// Response ids in reading order, from the {{n}} placeholders componentize turns into inputs.
+const responseIds = (markup) => [...new Set(Array.from((markup || '').matchAll(/\{\{(\d+)\}\}/g), (m) => m[1]))];
 
 const EditableHtml = EditableHtmlImport;
 const StyledEditableHtml: any = styled(EditableHtml)(() => ({
@@ -28,6 +34,7 @@ const MaskedInput = (props) => (node, data) => {
   const dataset = node.data?.dataset || {};
 
   if (dataset.component === 'input') {
+    const ids = responseIds(props.markup);
     const correctAnswer = ((props.choices && dataset && props.choices[dataset.id]) || [])[0];
     const finalValue = showCorrectAnswer ? correctAnswer && correctAnswer.label : data[dataset.id] || '';
     const width = maxLength && maxLength[dataset.id];
@@ -74,6 +81,11 @@ const MaskedInput = (props) => (node, data) => {
         className={classnames({
           correct: isCorrect,
           incorrect: isIncorrect,
+        })}
+        ariaLabel={translator.t('explicitConstructedResponse.response', {
+          lng: props.language,
+          index: ids.indexOf(dataset.id) + 1,
+          total: ids.length,
         })}
       />
     );

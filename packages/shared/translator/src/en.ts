@@ -12,6 +12,12 @@ export default {
     ebsr: {
       part: 'Part {{index}}',
     },
+    explicitConstructedResponse: {
+      response: 'Response {{index}} of {{total}}',
+    },
+    extendedTextEntry: {
+      response: 'Your response',
+    },
     numberLine: {
       addElementLimit_one: 'You can only add {{count}} element',
       addElementLimit_other: 'You can only add {{count}} elements',

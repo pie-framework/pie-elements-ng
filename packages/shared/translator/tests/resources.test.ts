@@ -6,6 +6,8 @@ import es from '../src/es.js';
 const LOCALLY_OWNED = [
   'charting',
   'dragInTheBlank',
+  'explicitConstructedResponse',
+  'extendedTextEntry',
   'graphing',
   'hotspot',
   'imageClozeAssociation',
