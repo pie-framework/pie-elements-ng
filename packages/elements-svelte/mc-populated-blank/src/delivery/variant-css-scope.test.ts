@@ -92,4 +92,20 @@ describe('bundled CQT variant CSS', () => {
     }
     expect(unpaired).toEqual([]);
   });
+
+  // ChoiceRow sizes the radio to the 24x24 minimum target; a sheet that scales or
+  // resizes it takes it under that.
+  const SIZING = ['transform', 'scale', 'zoom', 'width', 'height', 'max-width', 'max-height'];
+
+  it.each(SHEETS)('%s leaves the radio size to ChoiceRow', (name) => {
+    const resizing: string[] = [];
+    const css = readFileSync(join(CQT_CSS_DIR, name), 'utf8');
+    for (const { prelude, declarations } of rulesOf(css)) {
+      if (!prelude.includes('pie-choice-radio')) continue;
+      for (const property of SIZING.filter((p) => declarations.has(p))) {
+        resizing.push(`${prelude} { ${property} }`);
+      }
+    }
+    expect(resizing).toEqual([]);
+  });
 });
