@@ -16,20 +16,23 @@ const FeedbackContainer: any = styled('div')({
   },
 });
 
+// The page's ink on tinted status surfaces: the theming contract holds --pie-text to 4.5:1 on
+// --pie-background-dark and --pie-incorrect-secondary, and --pie-correct-secondary clears it in
+// every shipped scheme. White on the saturated status fills stays below 4.5:1.
 const FeedbackContent: any = styled('div')({
   WebkitFontSmoothing: 'antialiased',
-  backgroundColor: `var(--feedback-bg-color, ${color.disabled()})`,
+  backgroundColor: `var(--feedback-bg-color, ${color.backgroundDark()})`,
   borderRadius: '4px',
   lineHeight: '25px',
   margin: '0px',
   padding: '10px',
   verticalAlign: 'middle',
-  color: 'var(--feedback-color, white)',
+  color: `var(--feedback-color, ${color.text()})`,
   '&.correct': {
-    backgroundColor: `var(--feedback-correct-bg-color, ${color.correct()})`,
+    backgroundColor: `var(--feedback-correct-bg-color, ${color.correctSecondary()})`,
   },
   '&.incorrect': {
-    backgroundColor: `var(--feedback-incorrect-bg-color, ${color.incorrect()})`,
+    backgroundColor: `var(--feedback-incorrect-bg-color, ${color.incorrectSecondary()})`,
   },
 });
 
