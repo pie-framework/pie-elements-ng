@@ -600,7 +600,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     mode: 'evaluate',
     wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
     concerns: ['status-feedback', 'input-assistance', 'semantics'],
-    automatedChecks: feedbackChecks,
+    automatedChecks: withoutTabReach(feedbackChecks),
   }),
   defineScenario({
     element: 'fraction-model',
