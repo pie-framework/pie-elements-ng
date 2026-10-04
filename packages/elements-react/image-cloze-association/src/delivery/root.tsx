@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { DragOverlay } from '@dnd-kit/core';
 import { DragProvider } from '@pie-lib/drag';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
+import { color, createUniqueId, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -77,6 +77,9 @@ const StyledRationale: any = styled(Collapsible)(({ theme }) => ({
 }));
 
 export class ImageClozeAssociationComponent extends React.Component {
+  // The delivery element finds the container by its class, which authored CSS may also target.
+  mainContainerId = createUniqueId('main-container');
+
   constructor(props) {
     super(props);
     const {
@@ -555,7 +558,7 @@ export class ImageClozeAssociationComponent extends React.Component {
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
       >
-        <StyledUiLayout extraCSSRules={extraCSSRules} id={'main-container'} fontSizeFactor={fontSizeFactor}>
+        <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
           {showTeacherInstructions && (
             <StyledTeacherInstructions
               labels={{

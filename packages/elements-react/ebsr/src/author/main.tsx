@@ -198,7 +198,7 @@ export class Main extends React.Component {
       >
         {model.partLabels && <PartLabel>{firstPart}</PartLabel>}
         <MultipleChoiceConfigureElement
-          id="A"
+          data-part="A"
           key="partA"
           ref={(ref) => {
             if (ref) {
@@ -220,7 +220,7 @@ export class Main extends React.Component {
 
         {model.partLabels && <PartLabel>{secondPart}</PartLabel>}
         <MultipleChoiceConfigureElement
-          id="B"
+          data-part="B"
           key="partB"
           ref={(ref) => {
             if (ref) {

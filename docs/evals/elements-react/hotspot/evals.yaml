@@ -44,7 +44,7 @@ evals:
       - action: observe
         target:
           description: "Main container"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -239,7 +239,7 @@ evals:
       - action: observe
         target:
           description: "Evaluation shows correct"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -286,7 +286,7 @@ evals:
       - action: observe
         target:
           description: "Element renders in evaluate mode"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -345,7 +345,7 @@ evals:
       - action: observe
         target:
           description: "Partial credit shown"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -478,7 +478,7 @@ evals:
       - action: observe
         target:
           description: "Element in view mode"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -533,7 +533,7 @@ evals:
       - action: observe
         target:
           description: "Evaluation display"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -718,7 +718,7 @@ evals:
       - action: observe
         target:
           description: "Element renders without error"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -784,7 +784,7 @@ evals:
       - action: observe
         target:
           description: "Element stable"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -852,7 +852,7 @@ evals:
       - action: observe
         target:
           description: "Element rendered"
-          hint: '#main-container'
+          hint: '.main-container'
         expected:
           exists: true
 
@@ -878,7 +878,7 @@ evals:
       - action: screenshot
         target:
           description: "Hotspot element in gather mode"
-          hint: '#main-container'
+          hint: '.main-container'
         name: "hotspot-react-simple-circle-gather"
 
     spiritChecks:

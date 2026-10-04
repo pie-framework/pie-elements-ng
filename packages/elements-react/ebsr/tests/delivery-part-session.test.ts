@@ -74,7 +74,7 @@ describe('ebsr part sessions', () => {
   it('holds a part answer from the moment the part records it', async () => {
     const { element } = await mount();
 
-    element.querySelector(`${EBSR_MULTIPLE_CHOICE_TAG}#a`).answer('a');
+    element.querySelector(`${EBSR_MULTIPLE_CHOICE_TAG}[data-part="a"]`).answer('a');
 
     expect(element.session.value.partA.value).toEqual(['a']);
   });
@@ -83,7 +83,7 @@ describe('ebsr part sessions', () => {
     vi.useFakeTimers();
     const { element, forwarded } = await mount();
 
-    element.querySelector(`${EBSR_MULTIPLE_CHOICE_TAG}#a`).answer('a');
+    element.querySelector(`${EBSR_MULTIPLE_CHOICE_TAG}[data-part="a"]`).answer('a');
     vi.advanceTimersByTime(10);
 
     expect(forwarded[0]).toMatchObject({ value: { partA: { value: ['a'] } } });

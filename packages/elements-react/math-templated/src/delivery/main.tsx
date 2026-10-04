@@ -399,11 +399,13 @@ export class Main extends React.Component {
   UNSAFE_componentWillMount() {
     if (typeof window !== 'undefined') {
       if (!registered) {
+        // The embed is registered once for every item on the page, so it marks each block by its
+        // response id in a data attribute; a DOM id would repeat in a second item.
         registerEmbed('answerBlock', (data) => ({
           htmlString: `<div class="block-container">
-              <div class="block-response" id="${data}Index">R</div>
+              <div class="block-response" data-answer-block-index="${data}">R</div>
               <div class="block-math">
-                <span id="${data}"></span>
+                <span data-answer-block="${data}"></span>
               </div>
             </div>`,
           text: () => 'text',
@@ -422,8 +424,8 @@ export class Main extends React.Component {
 
     if (this.root && model.disabled && !showCorrect) {
       Object.keys(answers).forEach((answerId) => {
-        const el = this.root.querySelector(`#${answerId}`);
-        const indexEl = this.root.querySelector(`#${answerId}Index`);
+        const el = this.root.querySelector(`[data-answer-block="${answerId}"]`);
+        const indexEl = this.root.querySelector(`[data-answer-block-index="${answerId}"]`);
 
         if (el) {
           const answer = answers[answerId];

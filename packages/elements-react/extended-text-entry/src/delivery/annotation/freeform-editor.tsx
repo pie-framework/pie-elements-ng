@@ -4,7 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Popover, TextField } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 
 const StyledPopover: any = styled(Popover)(({ annotationType }) => ({
   '& .MuiPaper-root': {
@@ -119,6 +119,7 @@ class FreeformEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = { value: props.value };
+    this.editorId = createUniqueId('annotation-editor');
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -185,7 +186,7 @@ class FreeformEditor extends React.Component {
       >
         <Wrapper annotationType={type}>
           <TextField
-            id="annotation-editor"
+            id={this.editorId}
             style={{
               padding: '2px 5px',
               width: '95%',
