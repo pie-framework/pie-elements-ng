@@ -12,10 +12,25 @@ export default {
     ebsr: {
       part: 'Part {{index}}',
     },
+    explicitConstructedResponse: {
+      response: 'Response {{index}} of {{total}}',
+    },
+    extendedTextEntry: {
+      response: 'Your response',
+    },
     numberLine: {
       addElementLimit_one: 'You can only add {{count}} element',
       addElementLimit_other: 'You can only add {{count}} elements',
       clearAll: 'Clear all',
+      closedEnd: 'closed',
+      graphLabel: 'Number line from {{min}} to {{max}}, with a tick every {{interval}}',
+      line: 'Line from {{left}} ({{leftEnd}}) to {{right}} ({{rightEnd}}).',
+      openEnd: 'open',
+      plottedNone: 'Nothing is plotted.',
+      pointClosed: 'Closed point at {{position}}.',
+      pointOpen: 'Open point at {{position}}.',
+      rayLeft: 'Ray from {{position}} ({{end}}) to the left.',
+      rayRight: 'Ray from {{position}} ({{end}}) to the right.',
     },
     hotspot: {
       image_one: 'Image with {{count}} hotspot',
@@ -62,8 +77,27 @@ export default {
         correctAnswer: 'Student correct answer',
         correctKeyAnswer: 'Answer key correct',
       },
+      chartTypes: {
+        bar: 'Bar chart',
+        histogram: 'Histogram',
+        lineDot: 'Line chart with dots',
+        lineCross: 'Line chart with crosses',
+        dotPlot: 'Dot plot',
+        linePlot: 'Line plot',
+      },
+      categories_zero: 'No categories.',
+      categories_one: '{{count}} category: {{categories}}.',
+      categories_other: '{{count}} categories: {{categories}}.',
+      valueRange: 'Values from {{min}} to {{max}}.',
+      labelledValueRange: '{{label}} from {{min}} to {{max}}.',
     },
     graphing: {
+      graph: 'Coordinate graph',
+      axisRange: '{{axis}} axis from {{min}} to {{max}}.',
+      plotted_zero: 'Nothing plotted.',
+      plotted_one: '{{count}} object plotted: {{marks}}.',
+      plotted_other: '{{count}} objects plotted: {{marks}}.',
+      shadedRegion: 'Shaded region',
       point: 'Point',
       circle: 'Circle',
       line: 'Line',
@@ -84,6 +118,9 @@ export default {
     mathInline: {
       primaryCorrectWithAlternates:
         'Note: The answer shown above is the primary correct answer specified by the author for this item, but other answers may also be recognized as correct.',
+    },
+    mathInput: {
+      enterAnswer: 'Enter answer',
     },
     mcPopulatedBlank: {
       answerChoices: 'Answer choices',

@@ -12,10 +12,25 @@ export default {
     ebsr: {
       part: 'Parte {{index}}',
     },
+    explicitConstructedResponse: {
+      response: 'Respuesta {{index}} de {{total}}',
+    },
+    extendedTextEntry: {
+      response: 'Tu respuesta',
+    },
     numberLine: {
       addElementLimit_one: 'Solo puedes agregar {{count}} elemento',
       addElementLimit_other: 'Solo puedes agregar {{count}} elementos',
       clearAll: 'Borrar todo',
+      closedEnd: 'cerrado',
+      graphLabel: 'Recta numérica de {{min}} a {{max}}, con una marca cada {{interval}}',
+      line: 'Línea de {{left}} ({{leftEnd}}) a {{right}} ({{rightEnd}}).',
+      openEnd: 'abierto',
+      plottedNone: 'No hay nada marcado en la recta.',
+      pointClosed: 'Punto cerrado en {{position}}.',
+      pointOpen: 'Punto abierto en {{position}}.',
+      rayLeft: 'Rayo desde {{position}} ({{end}}) hacia la izquierda.',
+      rayRight: 'Rayo desde {{position}} ({{end}}) hacia la derecha.',
     },
     hotspot: {
       image_one: 'Imagen con {{count}} zona activa',
@@ -63,8 +78,27 @@ export default {
         correctAnswer: 'Respuesta correcta del estudiante',
         correctKeyAnswer: 'Clave de respuesta correcta',
       },
+      chartTypes: {
+        bar: 'Gráfico de barras',
+        histogram: 'Histograma',
+        lineDot: 'Gráfico de líneas con puntos',
+        lineCross: 'Gráfico de líneas con cruces',
+        dotPlot: 'Diagrama de puntos',
+        linePlot: 'Diagrama de líneas',
+      },
+      categories_zero: 'Sin categorías.',
+      categories_one: '{{count}} categoría: {{categories}}.',
+      categories_other: '{{count}} categorías: {{categories}}.',
+      valueRange: 'Valores de {{min}} a {{max}}.',
+      labelledValueRange: '{{label}} de {{min}} a {{max}}.',
     },
     graphing: {
+      graph: 'Gráfica de coordenadas',
+      axisRange: 'Eje {{axis}} de {{min}} a {{max}}.',
+      plotted_zero: 'Nada trazado.',
+      plotted_one: '{{count}} objeto trazado: {{marks}}.',
+      plotted_other: '{{count}} objetos trazados: {{marks}}.',
+      shadedRegion: 'Región sombreada',
       point: 'Punto',
       circle: 'Circulo',
       line: 'Línea',
@@ -85,6 +119,9 @@ export default {
     mathInline: {
       primaryCorrectWithAlternates:
         'Nota: La respuesta que se muestra arriba es la respuesta correcta principal especificada por el autor para esta pregunta, pero también se pueden reconocer otras respuestas como correctas.',
+    },
+    mathInput: {
+      enterAnswer: 'Escribe la respuesta',
     },
     mcPopulatedBlank: {
       answerChoices: 'Opciones de respuesta',
