@@ -18,6 +18,8 @@ export default {
       clearAll: 'Borrar todo',
     },
     hotspot: {
+      image_one: 'Imagen con {{count}} zona activa',
+      image_other: 'Imagen con {{count}} zonas activas',
       shape: 'Zona activa {{index}} de {{total}}',
     },
     imageClozeAssociation: {
