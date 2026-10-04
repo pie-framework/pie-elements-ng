@@ -1,10 +1,11 @@
 // @ts-nocheck
 
-import React, { useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'clsx';
 import { styled, useTheme } from '@mui/material/styles';
 import { NodeSelection } from 'prosemirror-state';
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
 
 import Bold from '@mui/icons-material/FormatBold';
 import Italic from '@mui/icons-material/FormatItalic';
@@ -35,6 +36,8 @@ import { AddColumn, AddRow, RemoveColumn, RemoveRow, RemoveTable } from './icons
 
 import { CharacterIcon, CharacterPicker } from './CharacterPicker.js';
 import { DoneButton } from './common/done-button.js';
+
+const { translator } = Translator;
 
 const SuperscriptIcon = () => (
   <svg
@@ -96,8 +99,11 @@ function MenuBar({
   responseAreaProps,
   onChange,
   autoWidthToolbar,
+  hasFocus,
+  language,
 }) {
   const [showPicker, setShowPicker] = useState(false);
+  const toolbarRef = useRef(null);
   const toolbarOpts = toolOpts ?? {};
 
   const editorState = useEditorState({
@@ -127,7 +133,6 @@ function MenuBar({
         currentNode,
         hideDefaultToolbar,
         hasTextSelectionInTable,
-        isFocused: ctx.editor?.isFocused,
         toolbarOpened: ctx.editor?._toolbarOpened ?? false,
         isBold: ctx.editor.isActive('bold') ?? false,
         canBold: ctx.editor.can().chain().toggleBold().run() ?? false,
@@ -164,14 +169,20 @@ function MenuBar({
 
   const hasDoneButton = false;
   const autoWidth = !!autoWidthToolbar;
+  const shown =
+    toolbarOpts.alwaysVisible || (hasFocus && !editorState.toolbarOpened && !editorState.hideDefaultToolbar);
+
+  // Hidden, the toolbar is `inert`, which takes its buttons out of the tab order. Set on the node:
+  // React 18 drops a boolean `inert` prop, and React 19 reads the empty-string workaround as false.
+  useLayoutEffect(() => {
+    toolbarRef.current?.toggleAttribute('inert', !shown);
+  }, [shown]);
 
   const names = classNames(classes.toolbar, PIE_TOOLBAR__CLASS, {
     [classes.toolbarWithNoDone]: !hasDoneButton,
     [classes.toolbarTop]: toolbarOpts.position === 'top',
     [classes.toolbarRight]: toolbarOpts.alignment === 'right',
-    [classes.focused]:
-      toolbarOpts.alwaysVisible ||
-      (editorState.isFocused && !editorState.toolbarOpened && !editorState.hideDefaultToolbar),
+    [classes.focused]: shown,
     [classes.autoWidth]: autoWidth,
     [classes.fullWidth]: !autoWidth,
     [classes.hidden]: toolbarOpts.isHidden === true,
@@ -413,9 +424,14 @@ function MenuBar({
     editorState.hideDefaultToolbar && editorState.currentNode?.type?.name === 'drag_in_the_blank';
 
   return (
-    <div className={names} style={{ ...customStyles }} onMouseDown={handleMouseDown}>
+    <div ref={toolbarRef} className={names} style={{ ...customStyles }} onMouseDown={handleMouseDown}>
       {isDragInTheBlankSelected && (
-        <div className={classes.defaultToolbar} tabIndex="1">
+        <div
+          className={classes.defaultToolbar}
+          role="toolbar"
+          tabIndex={-1}
+          aria-label={translator.t('editableHtml.responseAreaToolbar', { lng: language })}
+        >
           <div className={classes.buttonsContainer}>
             <button
               type="button"
@@ -434,7 +450,12 @@ function MenuBar({
         </div>
       )}
       {!editorState.hideDefaultToolbar && (
-        <div className={classes.defaultToolbar} tabIndex="1">
+        <div
+          className={classes.defaultToolbar}
+          role="toolbar"
+          tabIndex={-1}
+          aria-label={translator.t('editableHtml.toolbar', { lng: language })}
+        >
           <div className={classes.buttonsContainer}>
             {toolbarButtons
               .filter((btn) => !btn.hidden?.(editorState))
