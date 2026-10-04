@@ -67,3 +67,42 @@ describe('Dropdown ids', () => {
     expect(ids()).toEqual(before);
   });
 });
+
+describe('Dropdown name', () => {
+  it('is the query before a choice is made', () => {
+    renderDropdown();
+
+    expect(screen.getByRole('combobox')).toHaveAccessibleName('Query 1');
+  });
+
+  it('is the query followed by the chosen value', () => {
+    const { rerender } = renderDropdown();
+    const combobox = screen.getByRole('combobox');
+
+    fireEvent.click(combobox);
+    fireEvent.click(screen.getByRole('option', { name: 'Saturn' }));
+    rerender(<Dropdown id="0" choices={choices} value="1" onChange={vi.fn()} />);
+
+    expect(combobox).toHaveAccessibleName('Query 1 Saturn');
+  });
+
+  it('is the query followed by the correct value in show-correct mode', () => {
+    render(<Dropdown id="1" choices={choices} value="0" correctValue="Saturn" correct showCorrectAnswer disabled onChange={vi.fn()} />);
+
+    expect(screen.getByRole('combobox')).toHaveAccessibleName('Query 2 Saturn');
+  });
+
+  it('is "Query" in a single-query item', () => {
+    render(<Dropdown id="0" singleQuery choices={choices} value="0" onChange={vi.fn()} />);
+
+    expect(screen.getByRole('combobox')).toHaveAccessibleName('Query Jupiter');
+  });
+
+  it('names the listbox by the query', () => {
+    renderDropdown();
+
+    fireEvent.click(screen.getByRole('combobox'));
+
+    expect(screen.getByRole('listbox')).toHaveAccessibleName('Query 1');
+  });
+});
