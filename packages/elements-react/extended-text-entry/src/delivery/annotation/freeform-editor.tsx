@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { Popover, TextField } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { color, createUniqueId } from '@pie-lib/render-ui';
+import { ANNOTATION_STROKE } from './annotation-utils.js';
 
 const StyledPopover: any = styled(Popover)(({ annotationType }) => ({
   '& .MuiPaper-root': {
@@ -36,8 +37,10 @@ const StyledPopover: any = styled(Popover)(({ annotationType }) => ({
   },
 }));
 
-// See annotation-menu: surface, text and stroke follow the theme together, and the text
-// field takes the same text colour as the buttons.
+// See annotation-menu: surface and text follow the theme together, and the text field takes
+// the same text colour as the buttons. The type colour is as light as the white fill, so a
+// 1px ANNOTATION_STROKE ring runs along both of its edges; the inner ring is drawn over the
+// content so a hovered button cannot cover it.
 const Wrapper: any = styled('div')(({ theme, annotationType }) => ({
   width: '200px',
   overflow: 'hidden',
@@ -48,6 +51,17 @@ const Wrapper: any = styled('div')(({ theme, annotationType }) => ({
   '& .MuiInputBase-root': {
     color: 'inherit',
   },
+  ...((annotationType === 'negative' || annotationType === 'positive') && {
+    position: 'relative',
+    boxShadow: `0 0 0 1px ${ANNOTATION_STROKE}`,
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      border: `1px solid ${ANNOTATION_STROKE}`,
+      pointerEvents: 'none',
+    },
+  }),
   ...(annotationType === 'negative' && {
     borderColor: 'rgb(255, 204, 238) !important',
   }),

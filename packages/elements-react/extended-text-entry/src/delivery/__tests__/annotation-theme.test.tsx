@@ -9,6 +9,8 @@ import FreeformEditor from '../annotation/freeform-editor';
 const DARK = { '--pie-background': '#1a202c', '--pie-text': '#e2e8f0', '--pie-white': '#ffffff' };
 // MUI's paper text, which the popovers keep when no theme is applied.
 const PAPER_TEXT = 'rgba(0, 0, 0, 0.87)';
+// Clears 3:1 against both annotation fills, white and the dark preset's background.
+const STROKE = '#757575';
 const noop = () => {};
 
 // The popovers portal into document.body, so the theme is applied there, as at document scope.
@@ -39,7 +41,7 @@ const renderMenu = (vars: Record<string, string>) => {
   };
 };
 
-const renderEditor = (vars: Record<string, string>) => {
+const renderEditor = (vars: Record<string, string>, type = 'positive') => {
   applyTheme(vars);
   render(
     <FreeformEditor
@@ -47,7 +49,7 @@ const renderEditor = (vars: Record<string, string>) => {
       anchorEl={document.body}
       offset={0}
       value="Nice choice"
-      type="positive"
+      type={type}
       onClose={noop}
       onDelete={noop}
       onSave={noop}
@@ -72,6 +74,17 @@ describe('annotation menu', () => {
     expect(menu.backgroundColor).toBe('#ffffff');
     expect(menu.color).toBe(PAPER_TEXT);
   });
+
+  it.each([
+    ['the dark theme', DARK],
+    ['no theme', {}],
+  ])('keeps the outline that meets the fills and the surface under %s', (_, vars) => {
+    const { menu } = renderMenu(vars);
+
+    expect(menu.borderTopStyle).toBe('solid');
+    expect(menu.borderTopWidth).toBe('2px');
+    expect(menu.borderTopColor).toBe(STROKE);
+  });
 });
 
 describe('freeform annotation editor', () => {
@@ -87,5 +100,17 @@ describe('freeform annotation editor', () => {
 
     expect(editor.backgroundColor).toBe('#ffffff');
     expect(editor.color).toBe(PAPER_TEXT);
+  });
+
+  it.each([
+    ['positive', 'rgb(153, 255, 153)'],
+    ['negative', 'rgb(255, 204, 238)'],
+  ])('bounds the %s type colour with the stroke on both edges', (type, band) => {
+    const editor = renderEditor({}, type);
+
+    expect(editor.borderTopColor).toBe(band);
+    expect(editor.borderTopWidth).toBe('4px');
+    expect(editor.boxShadow).toBe(`0 0 0 1px ${STROKE}`);
+    expect(editor.position).toBe('relative');
   });
 });

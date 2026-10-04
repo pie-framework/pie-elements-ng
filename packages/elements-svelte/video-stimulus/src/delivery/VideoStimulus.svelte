@@ -325,7 +325,8 @@ let instanceNumber = 0;
     flex: 0 0 auto;
     min-width: 44px;
     min-height: 44px;
-    border: 1px solid var(--pie-text);
+    /* Without a theme the border follows the inherited text. */
+    border: 1px solid var(--pie-text, currentColor);
     border-radius: 0.5rem;
     /* --pie-white stays white under a dark theme. Without a theme the text inherits, so the background does too. */
     background: var(--pie-background, transparent);
