@@ -15,10 +15,6 @@ Labels are disabled outside label mode, which this element never turns on, and a
 
 Each line-selection radio in the tool menu takes its accessible name from the visible line name beside it ([PIE-1161](https://illuminate.atlassian.net/browse/PIE-1161)).
 
-## Open Gaps
-
-- A label near the graph's right or bottom edge can be clipped: its position is computed from the input's width before the input sizes itself to its text. A polygon's label sits midway between its two rightmost points, so it is often clipped.
-
 ## Not Covered / Manual
 
 - Confirm solution regions are understandable without relying only on color, shading, or spatial position.

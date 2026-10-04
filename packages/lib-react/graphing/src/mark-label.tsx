@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
 import { AutosizeInput } from './autosize-input.js';
@@ -158,6 +158,36 @@ const LabelInput = ({ _ref, externalInputRef, ariaLabel, label, disabled, inputS
   />
 );
 
+// The node's size, measured again whenever it changes. AutosizeInput sets the input's width after
+// the label has rendered, so a size read during render is one width behind.
+const useSize = (node) => {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    if (!node) {
+      return undefined;
+    }
+
+    const measure = () => {
+      const { width, height } = node.getBoundingClientRect();
+      setSize((s) => (s.width === width && s.height === height ? s : { width, height }));
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [node]);
+
+  return size;
+};
+
 LabelInput.propTypes = {
   _ref: PropTypes.func,
   externalInputRef: PropTypes.func,
@@ -171,7 +201,7 @@ LabelInput.propTypes = {
 };
 
 export const MarkLabel = (props) => {
-  // the state repositions the label once the input has a size, the ref is never a render behind
+  // the state measures each new input, the ref is never a render behind
   const inputNode = useRef(null);
   const [input, setInput] = useState(null);
   const _ref = useCallback((node) => {
@@ -355,7 +385,7 @@ export const MarkLabel = (props) => {
     };
   }, [autoFocus]);
 
-  const rect = input ? input.getBoundingClientRect() : { width: 0, height: 0 };
+  const rect = useSize(input);
   const pos = position(graphProps, mark, rect);
   const leftTop = coordinates(graphProps, mark, rect, pos);
 
