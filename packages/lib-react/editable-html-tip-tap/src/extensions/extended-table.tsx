@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import { Table, TableView } from '@tiptap/extension-table';
+import { captionAttribute, captionParseRule, syncCaption, withCaption } from './table-semantics.js';
 
 const applyPresentationToTableElement = (table, attrs) => {
   const border = attrs?.border != null && attrs.border !== '' ? attrs.border : '1';
@@ -14,6 +15,7 @@ class ExtendedTableView extends TableView {
   constructor(node, cellMinWidth, view) {
     super(node, cellMinWidth, view);
     applyPresentationToTableElement(this.table, node.attrs);
+    syncCaption(this.table, node.attrs.caption);
   }
 
   update(node) {
@@ -21,6 +23,7 @@ class ExtendedTableView extends TableView {
 
     if (ok) {
       applyPresentationToTableElement(this.table, node.attrs);
+      syncCaption(this.table, node.attrs.caption);
     }
 
     return ok;
@@ -41,7 +44,11 @@ const ExtendedTable = Table.extend({
   addAttributes() {
     return {
       border: { default: '1' },
+      caption: captionAttribute,
     };
+  },
+  parseHTML() {
+    return [...this.parent(), captionParseRule];
   },
   renderHTML(props) {
     const originalTable = this.parent(props);
@@ -54,7 +61,7 @@ const ExtendedTable = Table.extend({
     background-color: var(--pie-background, rgba(255, 255, 255))`;
     originalTable[1].border = border ? border : '1';
 
-    return originalTable;
+    return withCaption(originalTable, props.node.attrs.caption);
   },
 });
 

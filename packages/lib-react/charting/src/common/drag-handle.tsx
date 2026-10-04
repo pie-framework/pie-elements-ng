@@ -64,19 +64,6 @@ const RawDragHandle = ({ x, y, width, graphProps, interactive, isHovered, correc
         />
       )}
 
-      <defs>
-        <filter id="bottomShadow" x="0" y="0" width="140%" height="140%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-          <feOffset dx="0" dy="5" result="offsetblur" />
-          <feFlood floodColor="#00000033" />
-          <feComposite in2="offsetblur" operator="in" />
-          <feMerge>
-            <feMergeNode />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
       {correctness && interactive && !isPlot && (
         <foreignObject x={width / 2 - 14} y={0} width={40} height={40}>
           {correctness.value === 'correct' ? (

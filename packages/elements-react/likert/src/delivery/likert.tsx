@@ -4,7 +4,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ChoiceInput from './choice-input.js';
 import { styled } from '@mui/material/styles';
-import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import {
+  color,
+  Collapsible as CollapsibleImport,
+  createUniqueId,
+  PreviewPrompt as PreviewPromptImport,
+} from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -70,6 +75,10 @@ export class Likert extends React.Component {
     likertOrientation: PropTypes.string.isRequired,
   };
 
+  // The radios share this name, so the browser gives the scale one tab stop and arrow-key selection.
+  groupName: string = createUniqueId('likert');
+  promptId: string = `${this.groupName}-prompt`;
+
   UNSAFE_componentWillReceiveProps() {}
 
   isSelected(value) {
@@ -103,17 +112,22 @@ export class Likert extends React.Component {
         )}
 
         {prompt && (
-          <Prompt>
+          <Prompt id={this.promptId}>
             <PreviewPrompt prompt={prompt} />
           </Prompt>
         )}
 
-        <ChoicesWrapper style={{ flexDirection }}>
+        <ChoicesWrapper
+          role="radiogroup"
+          aria-labelledby={prompt ? this.promptId : undefined}
+          style={{ flexDirection }}
+        >
           {choices.map((choice, index) => (
             <ChoiceInput
               key={`choice-${index}`}
               label={choice.label}
               value={choice.value}
+              name={this.groupName}
               index={index}
               disabled={disabled}
               onChange={onSessionChange}

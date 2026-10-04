@@ -4,6 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { TextField } from '@mui/material';
+import { createUniqueId } from '@pie-lib/render-ui';
 
 const GroupInline: any = styled('div')({
   alignItems: 'center',
@@ -38,6 +39,8 @@ export class AnswerFraction extends React.Component {
     answers: PropTypes.object.isRequired,
   };
 
+  idPrefix = createUniqueId('fraction-model');
+
   /**
    * Function to trigger when value change from number selection
    * @param {string} key contains event change object
@@ -66,11 +69,11 @@ export class AnswerFraction extends React.Component {
         {model.allowedStudentConfig && (
           <GroupInline>
             <Group>
-              <InputLabel htmlFor={'preview_number-of-models'}>
+              <InputLabel htmlFor={`${this.idPrefix}-number-of-models`}>
                 Number of Models
               </InputLabel>
               <StyledTextField
-                id="preview_number-of-models"
+                id={`${this.idPrefix}-number-of-models`}
                 inputProps={{ min: 1, max: model.maxModelSelected }}
                 name="preview_number-of-models"
                 onChange={this.onValueChange('noOfModel')}
@@ -81,11 +84,11 @@ export class AnswerFraction extends React.Component {
               />
             </Group>
             <Group>
-              <InputLabel htmlFor={'preview_parts-per-model'}>
+              <InputLabel htmlFor={`${this.idPrefix}-parts-per-model`}>
                 Parts per Model
               </InputLabel>
               <StyledTextField
-                id="preview_parts-per-model"
+                id={`${this.idPrefix}-parts-per-model`}
                 inputProps={{ min: 1, max: 9 }}
                 name="preview_parts-per-model"
                 onChange={this.onValueChange('partsPerModel')}

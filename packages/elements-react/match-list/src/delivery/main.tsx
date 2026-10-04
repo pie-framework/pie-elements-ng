@@ -2,12 +2,12 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { swap, uid } from '@pie-lib/drag';
+import { swap } from '@pie-lib/drag';
 import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode, rectIntersection } from '@dnd-kit/core';
 import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { color, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { color, createUniqueId, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -107,8 +107,9 @@ export class Main extends React.Component {
     super(props);
 
     // Random rather than a counter: two versions of this element on one page each count from 1, and
-    // tile focus and prompt label ids are looked up across the whole document.
-    this.instanceId = uid.generateId();
+    // tile focus, prompt label ids and dnd-kit's drag instructions are looked up across the whole
+    // document.
+    this.instanceId = createUniqueId('match-list');
     this.state = {
       showCorrectAnswer: false,
       draggingElement: null,
@@ -456,6 +457,7 @@ export class Main extends React.Component {
 
     return (
       <DndContext
+        id={this.instanceId}
         sensors={sensors}
         collisionDetection={rectIntersection}
         onDragStart={this.onDragStart}

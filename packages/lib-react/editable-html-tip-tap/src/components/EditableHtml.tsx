@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { debounce } from '@pie-element/shared-lodash';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import { styled } from '@mui/material/styles';
@@ -12,7 +12,7 @@ import SubScript from '@tiptap/extension-subscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { PlainTextPaste } from '../plain-text-paste.js';
+import { ExternalPaste } from '../external-paste.js';
 import { normalizeInitialMarkup } from '../utils/helper.js';
 
 import ExtendedTable from '../extensions/extended-table.js';
@@ -76,6 +76,20 @@ const DEFAULT_ACTIVE_PLUGINS = [
   'undo',
   'redo',
 ];
+
+// The formatting that content pasted from outside the editor keeps, by the toolbar plugin that
+// offers it, so a paste adds nothing the toolbar leaves out.
+const PASTED_FORMATTING_BY_PLUGIN = {
+  bold: 'bold',
+  italic: 'italic',
+  underline: 'underline',
+  strikethrough: 'strike',
+  superscript: 'superscript',
+  subscript: 'subscript',
+  'bulleted-list': 'bulletList',
+  'numbered-list': 'orderedList',
+  table: 'table',
+};
 
 const cssVariables = {
   '--white': '#fff',
@@ -209,13 +223,21 @@ export const EditableHtml = (props) => {
     });
   }, [props, responseAreaPropsToUse.type]);
 
+  // Read by ExternalPaste at each paste, since useEditor keeps the extensions it was created with.
+  // `pasteFormatting: { disabled: true }` makes pastes plain text.
+  const pasteSettings = useRef(null);
+  pasteSettings.current = {
+    plainText: props.pluginProps?.pasteFormatting?.disabled === true,
+    formatting: activePluginsToUse.map((name) => PASTED_FORMATTING_BY_PLUGIN[name]).filter(Boolean),
+  };
+
   const extensions = [
     TextAlign.configure({
       types: ['heading', 'paragraph', 'div', 'headingParagraph', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'td', 'th'],
       alignments: ['left', 'right', 'center', 'justify'],
     }),
     TextStyleKit,
-    PlainTextPaste,
+    ExternalPaste.configure({ settings: () => pasteSettings.current }),
     CharacterCount.configure({
       limit: props.charactersLimit || 1000000,
     }),
