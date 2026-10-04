@@ -8,6 +8,16 @@ import * as uid from './uid-context.js';
 import MatchDroppablePlaceholder from './match-list-dp.js';
 import DragDroppablePlaceholder from './drag-in-the-blank-dp.js';
 import ICADroppablePlaceholder from './ica-dp.js';
+import { useDraggableControl } from './draggable-control.js';
+import { useDropTarget } from './drop-target.js';
+
+export type {
+  ContentNamer,
+  DraggableControl,
+  DraggableControlOptions,
+  DraggableControlProps,
+} from './draggable-control.js';
+export type { DropTarget, DropTargetOptions, DropTargetProps } from './drop-target.js';
 
 export {
   PlaceHolder,
@@ -18,4 +28,6 @@ export {
   DraggableChoice,
   swap,
   uid,
+  useDraggableControl,
+  useDropTarget,
 };
