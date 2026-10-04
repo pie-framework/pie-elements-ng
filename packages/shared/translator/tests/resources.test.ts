@@ -13,6 +13,7 @@ const LOCALLY_OWNED = [
   'imageClozeAssociation',
   'mathInput',
   'mcPopulatedBlank',
+  'numberLine',
   'simpleCloze',
   'vennClassification',
 ] as const;

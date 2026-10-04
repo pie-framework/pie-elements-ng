@@ -12,9 +12,11 @@ import BaseLine from './line.js';
 import Arrow from './arrow.js';
 import Ticks from './ticks.js';
 import { snapTo } from './tick-utils.js';
+import { describePlottedElements, labelNumberLine } from './description.js';
 import Stacks from './stacks.js';
 import { TransitionGroup } from 'react-transition-group';
 import PropTypes from 'prop-types';
+import { uniqueId } from '@pie-element/shared-lodash';
 import { Fade } from '../transitions/index.js';
 
 const getXScale = (min, max, width, padding) => {
@@ -58,6 +60,7 @@ export class NumberLineGraph extends React.Component {
     disabled: PropTypes.bool,
     onDeselectElements: PropTypes.func,
     arrows: PropTypes.shape({ left: PropTypes.bool, right: PropTypes.bool }),
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -68,6 +71,8 @@ export class NumberLineGraph extends React.Component {
     super(props);
     this.state = {};
   }
+
+  descriptionId: string = uniqueId('number-line-description-');
 
   xScaleFn() {
     const { domain, width } = this.props;
@@ -128,7 +133,7 @@ export class NumberLineGraph extends React.Component {
   }
 
   render() {
-    const { domain, width, ticks, height, onToggleElement, onMoveElement, disabled, fraction } = this.props;
+    const { domain, width, ticks, height, onToggleElement, onMoveElement, disabled, fraction, language } = this.props;
     let { arrows } = this.props;
 
     arrows = arrows || { left: true, right: true };
@@ -222,7 +227,18 @@ export class NumberLineGraph extends React.Component {
           <div style={{ display: 'inline-block' }}>
             {/* touch-action must be on the outer svg: Chrome ignores it on inner svg elements (g, circle),
                 and without it the browser claims a touch on the drag handles as a pan and cancels dnd-kit's drag */}
-            <svg width={width} height={fraction ? height + 20 : height} style={{ touchAction: 'none' }}>
+            <svg
+              width={width}
+              height={fraction ? height + 20 : height}
+              style={{ touchAction: 'none' }}
+              // a group, because an img would hide the draggable points inside it
+              role="group"
+              aria-label={labelNumberLine({ domain, ticks, width, fraction, language })}
+              aria-describedby={this.descriptionId}
+            >
+              <desc id={this.descriptionId}>
+                {describePlottedElements(this.props.elements, { fraction, language })}
+              </desc>
               {false && <Debug domain={domain} ticks={ticks} />}
               <BaseLine y={lineY} width={width} />
               {arrows.left && <Arrow y={lineY} />}
