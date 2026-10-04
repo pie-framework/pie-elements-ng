@@ -16,22 +16,23 @@ const square = [
   { x: 1, y: 1 },
 ];
 
-const renderGraph = (props: object = {}) =>
-  render(
-    <Graph
-      domain={domain}
-      range={range}
-      size={size}
-      labels={{}}
-      tools={toolsArr}
-      marks={[
-        { type: 'line', from: { x: 0, y: 0 }, to: { x: 1, y: 1 } },
-        { type: 'polygon', closed: true, points: square, isSolution: true },
-        { type: 'polygon', closed: true, points: square, isSolution: false },
-      ]}
-      {...props}
-    />,
-  );
+const graph = (props: object = {}) => (
+  <Graph
+    domain={domain}
+    range={range}
+    size={size}
+    labels={{}}
+    tools={toolsArr}
+    marks={[
+      { type: 'line', from: { x: 0, y: 0 }, to: { x: 1, y: 1 } },
+      { type: 'polygon', closed: true, points: square, isSolution: true },
+      { type: 'polygon', closed: true, points: square, isSolution: false },
+    ]}
+    {...props}
+  />
+);
+
+const renderGraph = (props: object = {}) => render(graph(props));
 
 describe('graphing-solution-set text alternative', () => {
   it('describes the axes, the lines and the shaded solution regions', () => {
@@ -48,5 +49,25 @@ describe('graphing-solution-set text alternative', () => {
     expect(screen.getByRole('group', { name: 'Gráfica de coordenadas' })).toHaveAccessibleDescription(
       'Eje x de -10 a 10. Eje y de -10 a 10. Nada trazado.',
     );
+  });
+});
+
+describe('graphing-solution-set ids', () => {
+  const ids = () => [...document.querySelectorAll('[id]')].map((el) => el.id);
+
+  it('stay unique when two graphs share a page', () => {
+    renderGraph();
+    renderGraph();
+
+    expect(new Set(ids()).size).toBe(ids().length);
+  });
+
+  it('stay the same across re-renders', () => {
+    const { rerender } = renderGraph();
+    const before = ids();
+
+    rerender(graph({ title: 'Renamed' }));
+
+    expect(ids()).toEqual(before);
   });
 });

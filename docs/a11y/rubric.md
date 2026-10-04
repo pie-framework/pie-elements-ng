@@ -9,11 +9,11 @@ Instructors review rubric score levels and descriptors for scoring or reporting.
 - `rubric-score-structure`: score levels, descriptors, labels, headings, and programmatic structure.
 - `rubric-descriptor-reading-order`: descriptor reading order, group labels, and table-like relationships.
 
-The Show Rubric toggle is at least 24px tall ([PIE-1169](https://illuminate.atlassian.net/browse/PIE-1169)).
+The Show Rubric toggle is at least 24px tall ([PIE-1169](https://illuminate.atlassian.net/browse/PIE-1169)), and its id is unique per rubric on the page ([PIE-1188](https://illuminate.atlassian.net/browse/PIE-1188)).
 
 ## Open Gaps
 
-- The toggle is an `h2` with `role="button"`, which removes it from heading navigation, and its fixed `id="rubric-toggle"` repeats when a page renders more than one rubric.
+- The toggle is an `h2` with `role="button"`, which removes it from heading navigation.
 - The toggle handles Space on `keypress` without cancelling it, so Space can also scroll the page.
 
 ## Not Covered / Manual
