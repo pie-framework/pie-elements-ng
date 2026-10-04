@@ -26,7 +26,7 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
 const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
 import { styled } from '@mui/material/styles';
-import { uniqueId } from '@pie-element/shared-lodash';
+import { createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 
 import Rectangle from './rectangle.js';
@@ -87,7 +87,7 @@ export class Container extends React.Component {
 
   correctness = (isCorrect, isChecked) => (isCorrect ? isChecked : !isChecked);
 
-  descriptionId: string = uniqueId('hotspot-evaluation-');
+  descriptionId: string = createUniqueId('hotspot-evaluation');
 
   // The canvas tooltip and the shape button's description both carry this text.
   getEvaluateText: any = (isCorrect, selected) => {
