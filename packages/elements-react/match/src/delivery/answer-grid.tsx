@@ -6,7 +6,7 @@ import Radio from '@mui/material/Radio';
 import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 
 const ControlsContainer: any = styled('div')(({ theme }) => ({
   marginLeft: 'auto',
@@ -58,6 +58,9 @@ export class AnswerGrid extends React.Component {
     headers: PropTypes.array.isRequired,
     answers: PropTypes.object.isRequired,
   };
+
+  // Ids that tie each control to its row title and column header, and each row group to its title.
+  instanceId: string = createUniqueId('match-grid');
 
   onRowValueChange = (rowId, answerIndex) => (event) => {
     const { onAnswerChange, choiceMode, answers } = this.props;
@@ -117,6 +120,8 @@ export class AnswerGrid extends React.Component {
   render() {
     const { headers, rows, choiceMode, answers, disabled } = this.props;
     const Tag = choiceMode === 'radio' ? Radio : Checkbox;
+    const headerId = (idx) => `${this.instanceId}-header-${idx}`;
+    const rowTitleId = (idx) => `${this.instanceId}-row-${idx}`;
 
     if (!rows || rows.length === 0) {
       return (
@@ -140,7 +145,7 @@ export class AnswerGrid extends React.Component {
           <thead>
             <tr>
               {(headers || []).map((header, idx) => (
-                <RowHeader key={`th-${idx}`} data-colno={`${idx}`} scope="row">
+                <RowHeader key={`th-${idx}`} id={headerId(idx)} data-colno={`${idx}`} scope="col">
                   <RowItem
                     isQuestionText={idx === 0}
                     dangerouslySetInnerHTML={{ __html: header }}
@@ -151,9 +156,9 @@ export class AnswerGrid extends React.Component {
           </thead>
 
           {(rows || []).map((row, idx) => (
-            <tbody key={`row-${idx}`} role="group">
+            <tbody key={`row-${idx}`} role="group" aria-labelledby={rowTitleId(idx)}>
               <Separator>
-                <td key={`td-title-${idx}`} data-colno={'0'}>
+                <td key={`td-title-${idx}`} id={rowTitleId(idx)} data-colno={'0'}>
                   <RowItem
                     isQuestionText={true}
                     dangerouslySetInnerHTML={{ __html: row.title }}
@@ -190,6 +195,9 @@ export class AnswerGrid extends React.Component {
                             '&&:hover:not(.Mui-disabled)': {
                               color: color.primaryLight(),
                             },
+                          }}
+                          slotProps={{
+                            input: { 'aria-labelledby': `${rowTitleId(idx)} ${headerId(answerIndex + 1)}` },
                           }}
                           disabled={disabled}
                           onChange={this.onRowValueChange(row.id, answerIndex)}

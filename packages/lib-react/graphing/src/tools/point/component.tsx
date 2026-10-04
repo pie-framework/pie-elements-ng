@@ -95,7 +95,7 @@ export class Point extends React.Component {
   };
 
   render() {
-    const { coordinatesOnHover, graphProps, labelNode, labelModeEnabled } = this.props;
+    const { coordinatesOnHover, graphProps, labelNode, labelModeEnabled, language } = this.props;
     const { editingLabel } = this.state;
     const mark = this.state.mark ? this.state.mark : this.props.mark;
 
@@ -128,6 +128,7 @@ export class Point extends React.Component {
               disabled={!labelModeEnabled}
               mark={mark}
               graphProps={graphProps}
+              language={language}
               onBlur={this.stopEditingLabel}
               onChange={this.labelChange}
             />,

@@ -4,6 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Radio, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { createUniqueId } from '@pie-lib/render-ui';
 
 export class ToolMenu extends React.Component {
   static propTypes = {
@@ -11,6 +12,10 @@ export class ToolMenu extends React.Component {
     disabled: PropTypes.bool,
     onChange: PropTypes.func,
   };
+
+  // Each radio takes its accessible name from the visible line name beside it, and the radios
+  // share a group name of their own, so a second item's menu is a separate group.
+  idPrefix: string = createUniqueId('gss-tool-menu');
 
   onChangeRadioValue: any = (event) => {
     let { gssLineData, onChange } = this.props;
@@ -36,14 +41,17 @@ export class ToolMenu extends React.Component {
           <div className="radioFieldOuter">
             <div className="radioFieldInner">
               <Radio
-                name="select-line-radio-buttons"
+                name={`${this.idPrefix}-line`}
                 onChange={this.onChangeRadioValue}
                 value="lineA"
                 disabled={!!disabled}
                 checked={gssLineData.selectedTool === 'lineA'}
                 className="lineTypeRadio"
+                inputProps={{ 'aria-labelledby': `${this.idPrefix}-lineA` }}
               />
-              <Typography className="lineNameFont">Line A</Typography>
+              <Typography id={`${this.idPrefix}-lineA`} className="lineNameFont">
+                Line A
+              </Typography>
             </div>
             <div className="radioFieldButtons">
               <Button
@@ -91,14 +99,17 @@ export class ToolMenu extends React.Component {
             <div className="radioFieldOuter">
               <div className="radioFieldInner">
                 <Radio
-                  name="select-line-radio-buttons"
+                  name={`${this.idPrefix}-line`}
                   onChange={this.onChangeRadioValue}
                   value="lineB"
                   disabled={!!disabled}
                   checked={gssLineData.selectedTool === 'lineB'}
                   className="lineTypeRadio"
+                  inputProps={{ 'aria-labelledby': `${this.idPrefix}-lineB` }}
                 />
-                <Typography className="lineNameFont">Line B</Typography>
+                <Typography id={`${this.idPrefix}-lineB`} className="lineNameFont">
+                  Line B
+                </Typography>
               </div>
               <div className="radioFieldButtons">
                 <Button
@@ -146,14 +157,17 @@ export class ToolMenu extends React.Component {
           <div className="radioFieldOuter">
             <div className="radioFieldInner">
               <Radio
-                name="select-line-radio-buttons"
+                name={`${this.idPrefix}-line`}
                 onChange={this.onChangeRadioValue}
                 value="solutionSet"
                 disabled={!!disabled}
                 checked={gssLineData.selectedTool === 'solutionSet'}
                 className="lineTypeRadio"
+                inputProps={{ 'aria-labelledby': `${this.idPrefix}-solutionSet` }}
               />
-              <Typography className="lineNameFont">Solution Set</Typography>
+              <Typography id={`${this.idPrefix}-solutionSet`} className="lineNameFont">
+                Solution Set
+              </Typography>
             </div>
           </div>
         </div>

@@ -43,7 +43,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { ResponseTypes } from './utils.js';
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block.js';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
 const { translator } = Translator;
@@ -160,6 +160,7 @@ export class Main extends React.Component {
       showCorrect: this.props.model.config.alwaysShowCorrect || false,
       tooltipContainerRef: React.createRef(),
     };
+    this.instructionsIdPrefix = createUniqueId('math-inline-instructions');
   }
 
   UNSAFE_componentWillMount() {
@@ -329,13 +330,10 @@ export class Main extends React.Component {
       const selectableElements = this.root.querySelectorAll('.mq-selectable');
       selectableElements.forEach((elem) => elem.setAttribute('aria-hidden', 'true'));
 
-      // Update aria-label for textarea elements and add aria-describedby
+      // Describe the keypad shortcuts on each textarea; @pie-lib/math-input names it
       const textareaElements = this.root.querySelectorAll('textarea');
       textareaElements.forEach((elem, index) => {
-        elem.setAttribute('aria-label', 'Enter answer.');
-
-        // Create a unique id for each instructions element
-        const instructionsId = `instructions-${index}`;
+        const instructionsId = `${this.instructionsIdPrefix}-${index}`;
 
         // Find the parent element that contains the textarea
         const parent = elem.closest('.mq-textarea');
@@ -378,7 +376,7 @@ export class Main extends React.Component {
     const isAnswerInputFocused =
       this.mqStatic && this.mqStatic.inputRef?.current
         ? this.mqStatic.inputRef?.current.contains(document.activeElement)
-        : document.activeElement?.getAttribute('aria-label') === 'Enter answer.';
+        : !!document.activeElement?.closest('.mq-editable-field');
     const { key, type } = event;
     const isClickOrTouchEvent = type === 'click' || type === 'touchstart';
 
@@ -661,6 +659,7 @@ export class Main extends React.Component {
             if (mqStatic) this.mqStatic = mqStatic;
           }}
           latex={staticLatex}
+          language={language}
           onSubFieldChange={this.subFieldChanged}
           getFieldName={this.getFieldName}
           setInput={this.setInput}
@@ -800,6 +799,7 @@ export class Main extends React.Component {
                           if (mqStatic) this.mqStatic = mqStatic;
                         }}
                         latex={staticLatex}
+                        language={language}
                         onSubFieldChange={this.subFieldChanged}
                         getFieldName={this.getFieldName}
                         setInput={this.setInput}

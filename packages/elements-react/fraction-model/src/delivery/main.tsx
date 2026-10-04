@@ -210,6 +210,7 @@ export class Main extends React.Component {
             }
             showLabel={model.showGraphLabels}
             onChange={this.onResponseChange}
+            language={language}
           ></FractionModelChart>
 
           <AlertDialog

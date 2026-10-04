@@ -40,7 +40,7 @@ import Close from '@mui/icons-material/Close';
 import Check from '@mui/icons-material/Check';
 import { styled } from '@mui/material/styles';
 
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const pieVar = color.v('pie');
@@ -212,7 +212,11 @@ class Dropdown extends React.Component {
     this.buttonRef = React.createRef();
     this.previewRef = React.createRef();
     this.elementRefs = [];
+    // The response id repeats in every item on the page, so it only prefixes the instance's ids.
+    this.idPrefix = createUniqueId(`dropdown-${props.id}`);
   }
+
+  optionId = (index: number): string => `${this.idPrefix}-option-${index}`;
 
   componentDidMount() {
     // measure hidden menu width once
@@ -253,13 +257,13 @@ class Dropdown extends React.Component {
   }
 
   handleClick: any = (event) => {
-    const { id, value, choices } = this.props;
+    const { value, choices } = this.props;
     let highlightedOptionId = null;
 
     if (value) {
       const selectedIndex = (choices || []).findIndex((c) => c.value === value);
       if (selectedIndex >= 0) {
-        highlightedOptionId = `dropdown-option-${id}-${selectedIndex}`;
+        highlightedOptionId = this.optionId(selectedIndex);
       }
     }
 
@@ -276,7 +280,7 @@ class Dropdown extends React.Component {
   };
 
   handleHighlight: any = (index) => {
-    const highlightedOptionId = `dropdown-option-${this.props.id}-${index}`;
+    const highlightedOptionId = this.optionId(index);
 
     // preview on hover if nothing selected
     const stateUpdate = { highlightedOptionId };
@@ -297,7 +301,7 @@ class Dropdown extends React.Component {
 
     if (selectedValue) return;
 
-    const highlightedOptionId = `dropdown-option-${this.props.id}-${index}`;
+    const highlightedOptionId = this.optionId(index);
     const previewValue = this.state.previewValue;
 
     this.setState({ highlightedOptionId, previewValue }, () => {
@@ -321,9 +325,11 @@ class Dropdown extends React.Component {
     const { id, correct, disabled, value, choices, showCorrectAnswer, singleQuery, correctValue } = this.props;
     const { anchorEl } = this.state;
     const open = Boolean(anchorEl);
-    const buttonId = `dropdown-button-${id}`;
-    const menuId = `dropdown-menu-${id}`;
-    const valueDisplayId = `dropdown-value-${id}`;
+    const buttonId = `${this.idPrefix}-button`;
+    const menuId = `${this.idPrefix}-menu`;
+    // The combobox controls the listbox itself; menuId names MUI's popover root around it.
+    const listboxId = `${this.idPrefix}-listbox`;
+    const valueDisplayId = `${this.idPrefix}-value`;
 
     // Determine the class for disabled state, view mode and evaluate mode
     let disabledClass;
@@ -336,7 +342,7 @@ class Dropdown extends React.Component {
 
     // Create distinct, visually hidden labels for each dropdown
     const incrementedId = parseInt(id, 10) + 1;
-    const labelId = singleQuery ? 'Query-label' : `Query-label-${incrementedId}`;
+    const labelId = `${this.idPrefix}-query-label`;
     const labelText = singleQuery ? 'Query' : `Query ${incrementedId}`;
 
     // Changed from Select to Button for dropdown to enhance accessibility. This modification offers explicit control over aria attributes and focuses management, ensuring the dropdown is compliant with accessibility standards. The use of Button and Menu components allows for better handling of keyboard interactions and provides accessible labels and menus, aligning with WCAG guidelines and improving usability for assistive technology users.
@@ -374,9 +380,9 @@ class Dropdown extends React.Component {
             borderWidth: open ? '2px' : '1px',
             transition: 'border-width 0.2s ease-in-out',
           }}
-          aria-controls={open ? menuId : undefined}
+          aria-controls={open ? listboxId : undefined}
           aria-haspopup="listbox"
-          aria-expanded={open ? 'true' : undefined}
+          aria-expanded={open ? 'true' : 'false'}
           aria-activedescendant={this.state.highlightedOptionId}
           onClick={this.handleClick}
           className={disabledClass}
@@ -413,6 +419,7 @@ class Dropdown extends React.Component {
           slotProps={{
             paper: this.state.menuWidth ? { style: { minWidth: this.state.menuWidth, padding: '4px' } } : undefined,
             list: {
+              id: listboxId,
               'aria-labelledby': buttonId,
               role: 'listbox',
               disablePadding: true,
@@ -420,7 +427,7 @@ class Dropdown extends React.Component {
           }}
         >
           {(choices || []).map((c, index) => {
-            const optionId = `dropdown-option-${id}-${index}`;
+            const optionId = this.optionId(index);
 
             return (
               <StyledMenuItem

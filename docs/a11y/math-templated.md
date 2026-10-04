@@ -9,6 +9,8 @@ Students fill math response fields embedded in a math template.
 - `templated-math-response-fields`: response field labels, focus order, equation-editor affordances, and math alternatives.
 - `templated-math-evaluate-feedback`: evaluate-mode feedback, preserved field labels, math alternatives, and status semantics.
 
+Each response field's textarea is named "Enter answer" in the item language by `@pie-lib/math-input` ([PIE-1164](https://illuminate.atlassian.net/browse/PIE-1164)).
+
 ## Not Covered / Manual
 
 - Confirm each blank is announced with enough surrounding expression context.
