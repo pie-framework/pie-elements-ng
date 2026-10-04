@@ -314,6 +314,7 @@ export class Chart extends React.Component {
             top={top}
             error={error}
             showCorrectness={chartType === 'linePlot' || chartType === 'dotPlot'}
+            language={language}
           />
           {addCategoryEnabled ? (
             <foreignObject x={width} y={height - 16} width={width} height={height}>

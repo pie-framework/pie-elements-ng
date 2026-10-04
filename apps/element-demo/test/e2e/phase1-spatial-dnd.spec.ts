@@ -40,15 +40,17 @@ const CHOICE_DROP_ELEMENTS = new Set([
 ]);
 
 /**
- * Drag the first choice onto the first drop zone. A choice is an enabled dnd-kit draggable (match-list
- * renders its empty response areas as disabled draggables); a drop zone is a click-to-place
- * `role="button"` without the draggable roledescription, or a focusable `role="group"` where the
- * zone holds draggables (categorize).
+ * Drag the first choice onto the first drop zone. A choice is an enabled dnd-kit draggable; a drop
+ * zone is a click-to-place `role="button"` without the draggable roledescription, a focusable
+ * `role="group"` where the zone holds draggables (categorize), or a `role="group"` named by its label
+ * where the zone is not a tab stop (match-list's response areas).
  */
 async function dragFirstChoiceToFirstDropZone(page: Page, root: Locator) {
   const choice = root.locator('[aria-roledescription="draggable"][aria-disabled="false"]').first();
   const dropZone = root
-    .locator('[role="button"]:not([aria-roledescription]), [role="group"][tabindex="0"]')
+    .locator(
+      '[role="button"]:not([aria-roledescription]), [role="group"][tabindex="0"], [role="group"][aria-labelledby]'
+    )
     .first();
   await dragBetween(page, choice, dropZone);
   // dnd-kit swallows document clicks until a 50ms timer it sets on drop has fired, so an earlier
@@ -227,8 +229,7 @@ async function clickGridFraction(page: Page, graphRoot: Locator, fx: number, fy:
 async function interactGraphing(page: Page, element: string, root: Locator) {
   const graphRoot = root.locator(mountedElementSelector()).first();
   if (element === 'graphing') {
-    // The tool buttons sit inside a dnd-kit wrapper marked aria-disabled, hence force.
-    await graphRoot.locator('button[value="point"]').click({ force: true });
+    await graphRoot.locator('button[value="point"]').click();
     // (1, 1) on the demo's -5..5 grid.
     await clickGridFraction(page, graphRoot, 0.6, 0.4);
     return;

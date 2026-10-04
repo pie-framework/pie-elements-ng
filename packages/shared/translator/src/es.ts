@@ -6,6 +6,9 @@ export default {
       maxChoicesPerCategoryRestriction:
         'Para cambiar este valor a {{maxChoicesPerCategory}}, cada categoría debe tener {{maxChoicesPerCategory}} o menos opciones de respuesta',
     },
+    dragInTheBlank: {
+      blank: 'Espacio en blanco {{index}}',
+    },
     ebsr: {
       part: 'Parte {{index}}',
     },
@@ -14,10 +17,19 @@ export default {
       addElementLimit_other: 'Solo puedes agregar {{count}} elementos',
       clearAll: 'Borrar todo',
     },
+    hotspot: {
+      image_one: 'Imagen con {{count}} zona activa',
+      image_other: 'Imagen con {{count}} zonas activas',
+      shape: 'Zona activa {{index}} de {{total}}',
+    },
     imageClozeAssociation: {
+      answerChoice: 'Opción de respuesta {{index}} de {{total}}',
+      image_one: 'Imagen con {{count}} área de respuesta',
+      image_other: 'Imagen con {{count}} áreas de respuesta',
       reachedLimit_one:
         'Has alcanzado el límite de {{count}} respuesta por área. Para agregar otra respuesta, primero se debe eliminar una respuesta.',
       reachedLimit_other: 'Lleno',
+      responseArea: 'Área de respuesta {{index}} de {{total}}',
     },
     drawingResponse: {
       fillColor: 'Color de relleno',
@@ -42,6 +54,7 @@ export default {
       add: 'Añadir',
       delete: 'Eliminar',
       newLabel: 'Nueva etiqueta',
+      categoryLabel: 'Etiqueta de la categoría {{index}}',
       reachedLimit_other: 'No puede haber más de {{count}} categorías.',
       keyLegend: {
         incorrectAnswer: 'Respuesta incorrecta del estudiante',
@@ -62,6 +75,8 @@ export default {
       sine: 'Seno',
       vector: 'Vector',
       label: 'Etiqueta',
+      markLabel: 'Etiqueta en ({{x}}, {{y}})',
+      correctMarkLabel: 'Etiqueta correcta en ({{x}}, {{y}})',
       redo: 'Rehacer',
       reset: 'Reiniciar',
     },

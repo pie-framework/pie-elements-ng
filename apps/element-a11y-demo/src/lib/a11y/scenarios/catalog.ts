@@ -84,9 +84,23 @@ const feedbackChecks: A11yAutomatedCheck[] = [...interactiveChecks, 'status-mess
 const mediaChecks: A11yAutomatedCheck[] = [...interactiveChecks, 'media-alternative'];
 const mathChecks: A11yAutomatedCheck[] = [...interactiveChecks, 'math-alternative'];
 
+/**
+ * Checks for an evaluate view that disables every control and renders no Collapsible or
+ * show-correct-answer toggle, which leaves no tab stop to reach.
+ */
+function withoutTabReach(checks: A11yAutomatedCheck[]): A11yAutomatedCheck[] {
+  return checks.filter((check) => check !== 'keyboard-tab-reach');
+}
+
 function roleForMode(mode: A11yScanMode): A11yScanRole {
   return mode === 'evaluate' ? 'instructor' : 'student';
 }
+
+/**
+ * The rubric controller, and complex-rubric's for a simple rubric, return an empty model to every
+ * role but instructor.
+ */
+const rubricRole: A11yScanRole = 'instructor';
 
 function defineScenario(input: ScenarioInput): A11yScenarioDefinition {
   const sampleDemo = input.sample.demos[input.sampleIndex ?? 0];
@@ -154,6 +168,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     purpose:
       'Checks rubric scoring structure for headings, labels, table-like relationships, and readable long descriptors.',
     sample: complexRubricSamples,
+    role: rubricRole,
     wcagCriteria: ['1.3.1', '2.4.6', '3.3.2', '4.1.2'],
     concerns: ['semantics', 'table-structure', 'reading-structure'],
     automatedChecks: ['axe', 'interactive-control-name', 'keyboard-tab-reach'],
@@ -451,6 +466,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     purpose:
       'Checks rubric score levels and descriptors for labels, headings, and programmatic structure.',
     sample: rubricSamples,
+    role: rubricRole,
     wcagCriteria: ['1.3.1', '2.4.6', '3.3.2', '4.1.2'],
     concerns: ['semantics', 'table-structure', 'reading-structure'],
     automatedChecks: ['axe', 'interactive-control-name', 'keyboard-tab-reach'],
@@ -545,7 +561,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     mode: 'evaluate',
     wcagCriteria: ['1.1.1', '1.3.1', '3.3.1', '4.1.2', '4.1.3'],
     concerns: ['media-alternatives', 'status-feedback', 'semantics'],
-    automatedChecks: [...mediaChecks, 'status-message'],
+    automatedChecks: withoutTabReach([...mediaChecks, 'status-message']),
     manualReviewNotes: [
       'Automated checks cannot verify equivalence of a non-pointer drawing alternative.',
     ],
@@ -645,7 +661,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     mode: 'evaluate',
     wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
     concerns: ['status-feedback', 'semantics', 'input-assistance'],
-    automatedChecks: feedbackChecks,
+    automatedChecks: withoutTabReach(feedbackChecks),
   }),
   defineScenario({
     element: 'match',
@@ -705,7 +721,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     mode: 'evaluate',
     wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
     concerns: ['status-feedback', 'semantics', 'table-structure'],
-    automatedChecks: feedbackChecks,
+    automatedChecks: withoutTabReach(feedbackChecks),
   }),
   defineScenario({
     element: 'mc-populated-blank',
@@ -788,6 +804,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     purpose:
       'Checks score labels and descriptors for readable order, group labels, and table-like relationships.',
     sample: rubricSamples,
+    role: rubricRole,
     wcagCriteria: ['1.3.1', '1.3.2', '2.4.6', '4.1.2'],
     concerns: ['reading-structure', 'semantics', 'table-structure'],
     automatedChecks: ['axe', 'group-label'],

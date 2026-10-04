@@ -2,7 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { swap } from '@pie-lib/drag';
+import { swap, uid } from '@pie-lib/drag';
 import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode, rectIntersection } from '@dnd-kit/core';
 import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
@@ -38,7 +38,7 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
-import { findKey, isUndefined, uniqueId } from '@pie-element/shared-lodash';
+import { findKey, isUndefined } from '@pie-element/shared-lodash';
 import AnswerArea from './answer-area.js';
 import ChoicesList from './choices-list.js';
 import { Answer, buildDragId } from './answer.js';
@@ -106,7 +106,9 @@ export class Main extends React.Component {
   constructor(props) {
     super(props);
 
-    this.instanceId = uniqueId();
+    // Random rather than a counter: two versions of this element on one page each count from 1, and
+    // tile focus and prompt label ids are looked up across the whole document.
+    this.instanceId = uid.generateId();
     this.state = {
       showCorrectAnswer: false,
       draggingElement: null,
