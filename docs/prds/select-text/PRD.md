@@ -57,7 +57,7 @@ The student tabs in and hears "The storm hit at dawn., toggle button, not presse
 ## Accessibility
 
 - **Keyboard model**: the keys under Key delivery interactions, and no others. A screen reader in browse mode keeps its own keys: every token stays in the accessibility tree, reachable with the virtual cursor or button navigation, and Enter arrives as a click.
-- **Screen-reader model**: the state change on the focused token announces each toggle, so no live region is needed. With `maxSelections` = 1 the token losing its selection changes silently; the student hears the new one. Chrome leaves MathML out of a button's name, so tokens containing math depend on the shared math-in-controls naming from PIE-1146; images name from their `alt`.
+- **Screen-reader model**: the state change on the focused token announces each toggle, so no live region is needed. With `maxSelections` = 1 the token losing its selection changes silently; the student hears the new one. Chrome leaves MathML out of a button's name, so tokens containing math depend on the shared math-in-controls naming of [PIE-1153](https://illuminate.atlassian.net/browse/PIE-1153); images name from their `alt`.
 - **Focus visibility**: a focus ring distinct from the selected style (fill and solid border) and from `highlightChoices`' dashed outline, at 3:1 against both the page and the selected fill. With `highlightChoices` off, the ring is the only cue that the focused text is a token.
 - **Target size**: tokens are inline text, which the inline exception of WCAG 2.5.8 covers; their size is unchanged.
 

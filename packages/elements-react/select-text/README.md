@@ -15,6 +15,12 @@ One package serves every mode: delivery, authoring, the controller and print.
 | `@pie-element/select-text/print` | The print element |
 | `@pie-element/select-text/browser/*` | Browser builds of the above, for loading straight from a CDN |
 
+## Keyboard
+
+In `gather` the text is one tab stop. The arrow keys, Home and End move between tokens, and
+Space or Enter toggles the focused token under the same `maxSelections` rules as a click. The
+[PRD](../../../docs/prds/select-text/PRD.md) holds the full key and screen-reader model.
+
 ## Printing
 
 The print element renders the item read-only, with a dashed box around every token. For the
