@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useId } from 'react';
 import PropTypes from 'prop-types';
 import InputLabel from '@mui/material/InputLabel';
 import { styled } from '@mui/material/styles';
@@ -31,12 +31,17 @@ const StyledSwitch: any = styled(Switch)(({ checked }) => ({
   },
 }));
 
-const Toggle = ({ checked, disabled, label, toggle }) => (
-  <StyledToggle>
-    <StyledInputLabel>{label}</StyledInputLabel>
-    <StyledSwitch checked={checked} disabled={disabled} onChange={(e) => toggle(e.target.checked)} />
-  </StyledToggle>
-);
+const Toggle = ({ checked, disabled, label, toggle }) => {
+  // The label names the switch, which is otherwise announced with no name.
+  const id = useId();
+
+  return (
+    <StyledToggle>
+      <StyledInputLabel htmlFor={id}>{label}</StyledInputLabel>
+      <StyledSwitch id={id} checked={checked} disabled={disabled} onChange={(e) => toggle(e.target.checked)} />
+    </StyledToggle>
+  );
+};
 
 Toggle.propTypes = {
   checked: PropTypes.bool,

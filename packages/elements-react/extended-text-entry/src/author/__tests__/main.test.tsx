@@ -30,10 +30,10 @@ const LABEL = defaults.configuration.playerPasteFormatting.label;
 describe('Main settings', () => {
   it('turns paste formatting off for students', () => {
     const onModelChanged = renderMain();
-    const toggle = screen.getByText(LABEL).parentElement?.querySelector('input[type="checkbox"]');
+    const toggle = screen.getByRole('switch', { name: LABEL });
 
     expect(toggle).not.toBeChecked();
-    fireEvent.click(toggle as Element);
+    fireEvent.click(toggle);
 
     expect(onModelChanged).toHaveBeenCalledWith(expect.objectContaining({ playerPasteFormattingDisabled: true }));
   });
