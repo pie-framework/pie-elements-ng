@@ -3,10 +3,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { uniqueId } from '@pie-element/shared-lodash';
 
 import ChoiceInput from './ChoiceInput.js';
-import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, useUniqueId } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -65,7 +64,7 @@ const Matrix = (props) => {
     props;
 
   // The row and column labels are plain grid cells, so each radio references them by id for its name.
-  const [idPrefix] = React.useState(() => uniqueId('matrix-'));
+  const idPrefix = useUniqueId('matrix');
   const rowLabelId = (rowIndex) => `${idPrefix}-row-${rowIndex}`;
   const columnLabelId = (columnIndex) => `${idPrefix}-column-${columnIndex}`;
   const gridMatrixItems = [];

@@ -4,7 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Radio, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { uniqueId } from '@pie-element/shared-lodash';
+import { createUniqueId } from '@pie-lib/render-ui';
 
 export class ToolMenu extends React.Component {
   static propTypes = {
@@ -13,8 +13,9 @@ export class ToolMenu extends React.Component {
     onChange: PropTypes.func,
   };
 
-  // Each radio takes its accessible name from the visible line name beside it.
-  idPrefix: string = uniqueId('gss-tool-menu-');
+  // Each radio takes its accessible name from the visible line name beside it, and the radios
+  // share a group name of their own, so a second item's menu is a separate group.
+  idPrefix: string = createUniqueId('gss-tool-menu');
 
   onChangeRadioValue: any = (event) => {
     let { gssLineData, onChange } = this.props;
@@ -40,7 +41,7 @@ export class ToolMenu extends React.Component {
           <div className="radioFieldOuter">
             <div className="radioFieldInner">
               <Radio
-                name="select-line-radio-buttons"
+                name={`${this.idPrefix}-line`}
                 onChange={this.onChangeRadioValue}
                 value="lineA"
                 disabled={!!disabled}
@@ -98,7 +99,7 @@ export class ToolMenu extends React.Component {
             <div className="radioFieldOuter">
               <div className="radioFieldInner">
                 <Radio
-                  name="select-line-radio-buttons"
+                  name={`${this.idPrefix}-line`}
                   onChange={this.onChangeRadioValue}
                   value="lineB"
                   disabled={!!disabled}
@@ -156,7 +157,7 @@ export class ToolMenu extends React.Component {
           <div className="radioFieldOuter">
             <div className="radioFieldInner">
               <Radio
-                name="select-line-radio-buttons"
+                name={`${this.idPrefix}-line`}
                 onChange={this.onChangeRadioValue}
                 value="solutionSet"
                 disabled={!!disabled}

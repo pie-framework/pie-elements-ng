@@ -5,7 +5,7 @@ import { styled } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import List from '@mui/material/List';
 import Collapse from '@mui/material/Collapse';
-import { color, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+import { color, createUniqueId, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -122,6 +122,7 @@ export const RubricType = PropTypes.shape({
 
 class Rubric extends React.Component {
   dudUrl = 'javascript:;';
+  idPrefix = createUniqueId('rubric');
 
   constructor(props) {
     super(props);
@@ -199,7 +200,7 @@ class Rubric extends React.Component {
           {!animationsDisabled ? (
             <React.Fragment>
               <RubricToggle
-                id={'rubric-toggle'}
+                id={`${this.idPrefix}-toggle`}
                 tabIndex={0}
                 role="button"
                 aria-expanded={this.state.rubricOpen}
