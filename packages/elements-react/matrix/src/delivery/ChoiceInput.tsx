@@ -20,7 +20,7 @@ const StyledRadio: any = styled(Radio)({
 });
 
 const ChoiceInput = (props) => {
-  const { disabled, checked, matrixKey, matrixValue, onChange } = props;
+  const { disabled, checked, labelledBy, matrixKey, matrixValue, onChange } = props;
 
   const onChangeWrapper = () => {
     if (disabled) {
@@ -37,6 +37,7 @@ const ChoiceInput = (props) => {
       checked={checked}
       onChange={onChangeWrapper}
       disabled={disabled}
+      slotProps={{ input: { 'aria-labelledby': labelledBy } }}
     />
   );
 };
@@ -44,6 +45,7 @@ const ChoiceInput = (props) => {
 ChoiceInput.propTypes = {
   checked: PropTypes.bool.isRequired,
   disabled: PropTypes.bool.isRequired,
+  labelledBy: PropTypes.string,
   matrixValue: PropTypes.number.isRequired,
   matrixKey: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
