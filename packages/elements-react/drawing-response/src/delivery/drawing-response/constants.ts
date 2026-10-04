@@ -4,32 +4,32 @@ export default {
   tools: [
     {
       type: 'Select',
-      label: 'Select',
+      labelKey: 'select',
       icon: 'mdiCursorDefault',
     },
     {
       type: 'FreePathDrawable',
-      label: 'Free Draw',
+      labelKey: 'freeDraw',
       icon: 'mdiPencil',
     },
     {
       type: 'LineDrawable',
-      label: 'Line',
+      labelKey: 'line',
       icon: 'mdiMinus',
     },
     {
       type: 'RectangleDrawable',
-      label: 'Rectangle',
+      labelKey: 'rectangle',
       icon: 'mdiRectangle',
     },
     {
       type: 'CircleDrawable',
-      label: 'Circle',
+      labelKey: 'circle',
       icon: 'mdiCircle',
     },
     {
       type: 'Text',
-      label: 'Text Entry',
+      labelKey: 'textEntry',
       icon: 'mdiFormatColorText',
     },
     {
@@ -39,7 +39,7 @@ export default {
       //   icon: 'mdiFormatColorFill'
       // },
       type: 'EraserDrawable',
-      label: 'Eraser',
+      labelKey: 'eraser',
       icon: 'mdiEraser',
     },
   ],

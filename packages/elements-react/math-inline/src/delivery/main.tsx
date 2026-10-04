@@ -321,7 +321,7 @@ export class Main extends React.Component {
     const prevResponseType = prevProps.model?.config?.responseType;
     const currentResponseType = this.props.model?.config?.responseType;
 
-    if (prevResponseType !== currentResponseType) {
+    if (prevResponseType !== currentResponseType || prevProps.model?.language !== this.props.model?.language) {
       this.updateAria();
     }
   }
@@ -333,6 +333,7 @@ export class Main extends React.Component {
       selectableElements.forEach((elem) => elem.setAttribute('aria-hidden', 'true'));
 
       // Describe the keypad shortcuts on each textarea; @pie-lib/math-input names it
+      const instructions = translator.t('mathInline.keypadInstructions', { lng: this.props.model?.language });
       const textareaElements = this.root.querySelectorAll('textarea');
       textareaElements.forEach((elem, index) => {
         const instructionsId = `${this.instructionsIdPrefix}-${index}`;
@@ -348,11 +349,10 @@ export class Main extends React.Component {
             instructionsElement = document.createElement('span');
             instructionsElement.id = instructionsId;
             instructionsElement.className = 'sr-only';
-            instructionsElement.textContent =
-              'This field supports both keypad and keyboard input. Use the keyboard to access and interact with the on-screen math keypad, which accepts LaTeX markup. Use the down arrow key to open the keypad and navigate its buttons. Use the escape key to close the keypad and return to the input field.';
             parent.insertBefore(instructionsElement, elem);
           }
 
+          instructionsElement.textContent = instructions;
           elem.setAttribute('aria-describedby', instructionsId);
         }
       });
@@ -672,12 +672,14 @@ export class Main extends React.Component {
 
     const midContent = (
       <MainContent>
-        {mode === 'gather' && <SrOnly>Math Equation Response Question</SrOnly>}
+        {mode === 'gather' && (
+          <SrOnly>{translator.t('mathInline.mathEquationResponseQuestion', { lng: language })}</SrOnly>
+        )}
 
         {viewMode &&
           showTeacherInstructions &&
           (!animationsDisabled ? (
-            <StyledCollapsible labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}>
+            <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
               <div dangerouslySetInnerHTML={{ __html: teacherInstructions }} />
             </StyledCollapsible>
           ) : (
@@ -820,7 +822,7 @@ export class Main extends React.Component {
         {viewMode &&
           showRationale &&
           (!animationsDisabled ? (
-            <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+            <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
               <div dangerouslySetInnerHTML={{ __html: rationale }} />
             </Collapsible>
           ) : (
@@ -890,8 +892,8 @@ export class Main extends React.Component {
                   <StyledCollapsible
                     key="collapsible-teacher-instructions"
                     labels={{
-                      hidden: 'Show Teacher Instructions',
-                      visible: 'Hide Teacher Instructions',
+                      hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+                      visible: translator.t('common:hideTeacherInstructions', { lng: language }),
                     }}
                   >
                     <PreviewPrompt prompt={teacherInstructions} />
@@ -913,8 +915,8 @@ export class Main extends React.Component {
                   <StyledCollapsible
                     key="collapsible-rationale"
                     labels={{
-                      hidden: 'Show Rationale',
-                      visible: 'Hide Rationale',
+                      hidden: translator.t('common:showRationale', { lng: language }),
+                      visible: translator.t('common:hideRationale', { lng: language }),
                     }}
                   >
                     <PreviewPrompt prompt={rationale} />

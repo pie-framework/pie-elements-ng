@@ -9,6 +9,9 @@ import {
   createSessionNotifier,
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 // Inlined from the legacy configure/lib/defaults, which is ESM-incompatible and was not ported
 const defaults = {
@@ -52,10 +55,16 @@ export default class MathInline extends HTMLElement {
     }
   }
 
+  /** Names the region in the item language, which can change with any model set. */
+  setRegionLabel() {
+    this.setAttribute('aria-label', translator.t('mathInline.mathResponseQuestion', { lng: this._model?.language }));
+  }
+
   set model(m) {
     this._model = m;
     this.dispatchEvent(new ModelSetEvent(this._model, true, !!this._model));
     this.setLangAttribute();
+    this.setRegionLabel();
     this._render();
   }
 
@@ -83,7 +92,7 @@ export default class MathInline extends HTMLElement {
   }
 
   connectedCallback() {
-    this.setAttribute('aria-label', 'Math Response Question');
+    this.setRegionLabel();
     this.setAttribute('role', 'region');
 
     this._render();

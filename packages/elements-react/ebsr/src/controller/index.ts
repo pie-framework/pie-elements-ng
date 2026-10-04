@@ -62,6 +62,7 @@ const normalizePart = (model, base) => ({
 export const normalize = ({ partA = {}, partB = {}, language, ...question }) => ({
   ...defaults,
   ...question,
+  language,
   partA: normalizePart(partA, { ...defaults.partA, language }),
   partB: normalizePart(partB, { ...defaults.partB, language }),
 });
@@ -159,6 +160,7 @@ export async function model(question, session, env, updateSession) {
       disabled: env.mode !== 'gather',
       mode: env.mode,
       extraCSSRules: normalizedQuestion.extraCSSRules,
+      language: normalizedQuestion.language,
       partA,
       partB,
     });

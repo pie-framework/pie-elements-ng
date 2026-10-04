@@ -4,6 +4,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 // The label swatches below stay white: they match the graph's mark labels, which keep a fixed
 // light palette in both schemes. The legend itself follows the theme, opaque white without one.
@@ -35,13 +38,15 @@ const StyledText: any = styled('div')({
   fontSize: '15px',
 });
 
-const KeyLegend = ({ className, isLabelAvailable }) => {
+const KeyLegend = ({ className, isLabelAvailable, language }) => {
+  const t = (key) => translator.t(`graphing.keyLegend.${key}`, { lng: language });
+
   return (
     <StyledContainer className={className}>
-      <StyledTitle>Key</StyledTitle>
+      <StyledTitle>{translator.t('selectText.key', { lng: language })}</StyledTitle>
       {isLabelAvailable && (
         <StyledRow>
-          <StyledText> Missing Required Label </StyledText>
+          <StyledText>{t('missingRequiredLabel')}</StyledText>
           <svg width="34" height="16" viewBox="0 0 34 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="0.5" y="0.5" width="33" height="15" rx="3.5" fill="white" stroke="#BF0D00" />
             <path
@@ -56,7 +61,7 @@ const KeyLegend = ({ className, isLabelAvailable }) => {
         </StyledRow>
       )}
       <StyledRow>
-        <StyledText> Answer Key Correct </StyledText>
+        <StyledText>{t('answerKeyCorrect')}</StyledText>
         <svg width="75" height="15" viewBox="0 0 75 15" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="7.5" cy="7.5" r="7.5" fill="#6A78A1" />
           <path
@@ -68,7 +73,7 @@ const KeyLegend = ({ className, isLabelAvailable }) => {
       </StyledRow>
       {isLabelAvailable && (
         <StyledRow>
-          <StyledText> Answer Key Correct Label </StyledText>
+          <StyledText>{t('answerKeyCorrectLabel')}</StyledText>
           <svg width="30" height="16" viewBox="0 0 30 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="0.5" y="0.5" width="29" height="15" rx="3.5" fill="white" />
             <rect x="0.5" y="0.5" width="29" height="15" rx="3.5" stroke="#6A78A1" />
@@ -80,7 +85,7 @@ const KeyLegend = ({ className, isLabelAvailable }) => {
         </StyledRow>
       )}
       <StyledRow>
-        <StyledText> Student Incorrect </StyledText>
+        <StyledText>{t('studentIncorrect')}</StyledText>
         <svg width="77" height="16" viewBox="0 0 77 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="8" cy="8" r="8" fill="#BF0D00" />
           <path
@@ -92,7 +97,7 @@ const KeyLegend = ({ className, isLabelAvailable }) => {
       </StyledRow>
       {isLabelAvailable && (
         <StyledRow>
-          <StyledText> Incorrect Student Label </StyledText>
+          <StyledText>{t('incorrectStudentLabel')}</StyledText>
           <svg width="42" height="16" viewBox="0 0 42 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="0.5" y="0.5" width="41" height="15" rx="3.5" fill="white" />
             <rect x="0.5" y="0.5" width="41" height="15" rx="3.5" stroke="#BF0D00" />
@@ -108,7 +113,7 @@ const KeyLegend = ({ className, isLabelAvailable }) => {
         </StyledRow>
       )}
       <StyledRow>
-        <StyledText> Student Correct </StyledText>
+        <StyledText>{t('studentCorrect')}</StyledText>
         <svg width="76" height="16" viewBox="0 0 76 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M76 8L14 8" stroke="#0B7D38" strokeWidth="3" />
           <circle cx="8" cy="8" r="8" fill="#0B7D38" />
@@ -120,7 +125,7 @@ const KeyLegend = ({ className, isLabelAvailable }) => {
       </StyledRow>
       {isLabelAvailable && (
         <StyledRow>
-          <StyledText> Student Correct Label </StyledText>
+          <StyledText>{t('studentCorrectLabel')}</StyledText>
           <svg width="43" height="16" viewBox="0 0 43 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="0.5" y="0.5" width="42" height="15" rx="3.5" fill="white" />
             <rect x="0.5" y="0.5" width="42" height="15" rx="3.5" stroke="#0B7D38" />
@@ -142,6 +147,7 @@ const KeyLegend = ({ className, isLabelAvailable }) => {
 KeyLegend.propTypes = {
   className: PropTypes.string,
   isLabelAvailable: PropTypes.bool,
+  language: PropTypes.string,
 };
 
 export default KeyLegend;

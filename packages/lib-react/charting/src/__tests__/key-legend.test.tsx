@@ -32,4 +32,13 @@ describe('charting KeyLegend', () => {
   it('stays white when no theme is applied', () => {
     expect(renderLegend({}).backgroundColor).toBe('#ffffff');
   });
+
+  it.each([
+    ['en_US', 'Key'],
+    ['es_ES', 'Clave'],
+  ])('titles the legend in the %s item language', (language, title) => {
+    render(<KeyLegend language={language} />);
+
+    expect(screen.getByText(title)).toBeInTheDocument();
+  });
 });

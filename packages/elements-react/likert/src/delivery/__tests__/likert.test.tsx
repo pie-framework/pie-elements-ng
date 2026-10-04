@@ -71,6 +71,29 @@ describe('Likert ids', () => {
   });
 });
 
+describe('Likert teacher instructions', () => {
+  it.each([
+    ['en_US', 'Show Teacher Instructions'],
+    ['es_ES', 'Mostrar instrucciones para el maestro'],
+  ])('label their toggle in the %s item language', (language, label) => {
+    render(
+      <ThemeProvider theme={theme}>
+        <Likert
+          choices={choices}
+          disabled={false}
+          language={language}
+          likertOrientation="horizontal"
+          onSessionChange={vi.fn()}
+          session={{}}
+          teacherInstructions="Read aloud."
+        />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByRole('button', { name: label })).toHaveAttribute('aria-expanded', 'false');
+  });
+});
+
 customElements.define('likert-radio-group-test', LikertElement);
 
 const PROMPT = 'How likely are you to report a problem?';

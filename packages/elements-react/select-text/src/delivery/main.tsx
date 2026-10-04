@@ -42,6 +42,9 @@ import { styled } from '@mui/material/styles';
 import generateModel from './utils.js';
 
 import debug from 'debug';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const log = debug('@pie-ui:select-text');
 
@@ -134,7 +137,7 @@ export class Main extends React.Component {
         {showTeacherInstructions &&
           (!model.animationsDisabled ? (
             <StyledCollapsible
-              labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
+              labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model.language }) }}
             >
               <PreviewPrompt prompt={model.teacherInstructions} />
             </StyledCollapsible>
@@ -185,7 +188,7 @@ export class Main extends React.Component {
         {showRationale &&
           (!model.animationsDisabled ? (
             <StyledCollapsible
-              labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}
+              labels={{ hidden: translator.t('common:showRationale', { lng: model.language }), visible: translator.t('common:hideRationale', { lng: model.language }) }}
             >
               <PreviewPrompt prompt={model.rationale} />
             </StyledCollapsible>

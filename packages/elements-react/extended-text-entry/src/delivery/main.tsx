@@ -149,13 +149,13 @@ export class Main extends React.Component {
           this.containerRef = ref;
         }}
       >
-        <SrOnly>Constructed Response Question</SrOnly>
+        <SrOnly>{translator.t('extendedTextEntry.constructedResponseQuestion', { lng: model.language })}</SrOnly>
 
         {teacherInstructions && (
           <TeacherInstructions>
             {!animationsDisabled ? (
               <Collapsible
-                labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
+                labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model.language }) }}
               >
                 {teacherInstructionsDiv}
               </Collapsible>
