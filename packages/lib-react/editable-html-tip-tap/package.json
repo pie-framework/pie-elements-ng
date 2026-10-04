@@ -12,7 +12,7 @@
     "@dnd-kit/modifiers": "9.0.0",
     "@dnd-kit/utilities": "3.2.2",
     "@mui/icons-material": "^7.3.4",
-    "@mui/material": "^7.3.4",
+    "@mui/material": "^9.4.0",
     "@pie-lib/drag": "workspace:*",
     "@pie-lib/math-input": "workspace:*",
     "@pie-lib/math-toolbar": "workspace:*",

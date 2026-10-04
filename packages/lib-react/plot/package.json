@@ -12,7 +12,7 @@
     "@emotion/styled": "^11.14.1",
     "@mapbox/point-geometry": "^1.1.0",
     "@mui/icons-material": "^7.3.4",
-    "@mui/material": "^7.3.4",
+    "@mui/material": "^9.4.0",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
     "assert": "^1.4.1",
