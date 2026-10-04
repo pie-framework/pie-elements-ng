@@ -18,6 +18,10 @@ export default {
     extendedTextEntry: {
       response: 'Your response',
     },
+    fractionModel: {
+      modelLabel_one: 'Model {{index}} of {{total}}: {{selected}} of {{count}} part selected',
+      modelLabel_other: 'Model {{index}} of {{total}}: {{selected}} of {{count}} parts selected',
+    },
     numberLine: {
       addElementLimit_one: 'You can only add {{count}} element',
       addElementLimit_other: 'You can only add {{count}} elements',

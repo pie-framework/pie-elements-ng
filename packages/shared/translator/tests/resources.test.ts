@@ -9,6 +9,7 @@ const LOCALLY_OWNED = [
   'drawingResponse',
   'explicitConstructedResponse',
   'extendedTextEntry',
+  'fractionModel',
   'graphing',
   'hotspot',
   'imageClozeAssociation',

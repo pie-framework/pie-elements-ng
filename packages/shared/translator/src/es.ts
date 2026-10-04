@@ -18,6 +18,11 @@ export default {
     extendedTextEntry: {
       response: 'Tu respuesta',
     },
+    fractionModel: {
+      modelLabel_one: 'Modelo {{index}} de {{total}}: {{selected}} de {{count}} parte seleccionada',
+      modelLabel_other:
+        'Modelo {{index}} de {{total}}: {{selected}} de {{count}} partes seleccionadas',
+    },
     numberLine: {
       addElementLimit_one: 'Solo puedes agregar {{count}} elemento',
       addElementLimit_other: 'Solo puedes agregar {{count}} elementos',
