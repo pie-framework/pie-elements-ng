@@ -130,7 +130,7 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
   'secondary-dark': '#1E88E5',
 
   // Tertiary colors (indigo)
-  tertiary: '#5C6BC0',
+  tertiary: '#9FA8DA', // link text: 7.1:1 on base-100, and distinct from tertiary-light for hover states and two-tone icons
   'tertiary-light': '#7986CB',
 
   // Status colors - Correct (green)

@@ -4,12 +4,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import debug from 'debug';
-import { difference, isEqual, uniqueId } from '@pie-element/shared-lodash';
+import { difference, isEqual } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import { rectIntersection } from '@dnd-kit/core';
 import { restrictToParentElement } from '@dnd-kit/modifiers';
 
-import { Collapsible as CollapsibleImport, color, Feedback as FeedbackImport, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+import { Collapsible as CollapsibleImport, color, createUniqueId, Feedback as FeedbackImport, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -184,7 +184,8 @@ export class PlacementOrdering extends React.Component {
   constructor(props) {
     super(props);
 
-    this.instanceId = uniqueId();
+    // Page-unique: focusTile looks the destination up in the whole document.
+    this.instanceId = createUniqueId('placement-ordering');
 
     const { value, needsReset } = this.validateSession(props);
 

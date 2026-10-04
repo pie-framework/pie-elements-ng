@@ -36,3 +36,4 @@ export {
   transformDataHeadings,
 };
 export { InlineMenu } from './inline-menu.js';
+export { createUniqueId, useUniqueId } from './unique-id.js';

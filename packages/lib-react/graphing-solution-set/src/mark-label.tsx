@@ -1,15 +1,19 @@
 // @ts-nocheck
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { AutosizeInput } from './autosize-input.js';
 import { useDebounce } from './use-debounce.js';
 import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+import { roundNumber } from './utils.js';
+
+const { translator } = Translator;
 
 const StyledAutosizeInput: any = styled(AutosizeInput, {
-  shouldForwardProp: (prop) => !['disabled', 'markDisabled'].includes(prop),
+  shouldForwardProp: (prop) => prop !== 'markDisabled',
 })(({ theme, disabled, markDisabled }) => ({
   '& input': {
     float: 'right',
@@ -64,11 +68,41 @@ export const coordinates = (graphProps, mark, rect, position) => {
   }
 };
 
+// The node's size, measured again whenever it changes. AutosizeInput sets the input's width after
+// the label has rendered, so a size read during render is one width behind.
+const useSize = (node) => {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    if (!node) {
+      return undefined;
+    }
+
+    const measure = () => {
+      const { width, height } = node.getBoundingClientRect();
+      setSize((s) => (s.width === width && s.height === height ? s : { width, height }));
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [node]);
+
+  return size;
+};
+
 export const MarkLabel = (props) => {
   const [input, setInput] = useState(null);
   const _ref = useCallback((node) => setInput(node));
 
-  const { mark, graphProps, disabled, inputRef: externalInputRef } = props;
+  const { mark, graphProps, disabled, inputRef: externalInputRef, language } = props;
 
   const [label, setLabel] = useState(mark.label);
 
@@ -88,7 +122,7 @@ export const MarkLabel = (props) => {
     }
   }, [debouncedLabel]);
 
-  const rect = input ? input.getBoundingClientRect() : { width: 0, height: 0 };
+  const rect = useSize(input);
   const pos = position(graphProps, mark, rect);
   const leftTop = coordinates(graphProps, mark, rect, pos);
 
@@ -99,6 +133,10 @@ export const MarkLabel = (props) => {
   };
 
   const disabledInput = disabled || mark.disabled;
+  const ariaLabel =
+    Number.isFinite(mark.x) && Number.isFinite(mark.y)
+      ? translator.t('graphing.markLabel', { lng: language, x: roundNumber(mark.x), y: roundNumber(mark.y) })
+      : translator.t('graphing.label', { lng: language });
 
   return (
     <StyledAutosizeInput
@@ -106,6 +144,7 @@ export const MarkLabel = (props) => {
         _ref(r);
         externalInputRef(r);
       }}
+      aria-label={ariaLabel}
       disabled={disabledInput}
       markDisabled={mark.disabled}
       value={label}
@@ -120,6 +159,7 @@ MarkLabel.propTypes = {
   onChange: PropTypes.func,
   graphProps: types.GraphPropsType,
   inputRef: PropTypes.func,
+  language: PropTypes.string,
   mark: PropTypes.object,
   theme: PropTypes.object,
 };

@@ -10,12 +10,13 @@ import { isEmpty } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 
 const log = debug('pie-elements:match-title:answer');
+const pieVar = color.v('pie');
 
-const HolderNumber: any = styled('div')(({ theme }) => ({
+const HolderNumber: any = styled('div')(() => ({
   width: '100%',
   fontSize: '18px',
   textAlign: 'center',
-  color: `rgba(${theme.palette.common.black}, 0.6)`,
+  color: 'inherit',
 }));
 
 const Holder = ({ index, isOver, disabled, type }) => (
@@ -44,7 +45,8 @@ Holder.propTypes = {
 
 const AnswerContentContainer: any = styled('div')(({ isDragging, isSelected, isOver, disabled, outcome }) => ({
   color: color.text(),
-  backgroundColor: color.white(),
+  // --pie-white stays white under a dark theme; white keeps the chip opaque when no theme is set.
+  backgroundColor: pieVar('background', color.defaults.WHITE),
   border: `1px solid ${
     outcome === 'correct' ? color.correct() : outcome === 'incorrect' ? color.incorrect() : color.border()
   }`,
@@ -188,6 +190,7 @@ function DragAndDropAnswer(props) {
     id,
     instanceId,
     promptId,
+    labelId,
     draggable = true,
     disabled = false,
     type,
@@ -314,6 +317,11 @@ function DragAndDropAnswer(props) {
     // drag flow (Tab+Space/Enter on the choice, Tab-cycle to the occupied target,
     // Space/Enter to swap).
     const isNativeTabStop = !draggable && !disabled && hasSelection;
+    // A filled area holds a dnd-kit draggable, and a button's children are presentational to
+    // assistive technology, so the area is a button only while it is the tab stop and otherwise a
+    // group. Either way its prompt names it. The inner node takes dnd-kit's attributes only while it
+    // can be dragged: empty, it would be an unnamed disabled button inside this one, and disabled,
+    // it would announce pick-up instructions that do nothing.
 
     const handleResponseAreaKeyDown = (e) => {
       if (e.code === 'Space' || e.code === 'Enter') {
@@ -325,7 +333,8 @@ function DragAndDropAnswer(props) {
     return (
       <div
         ref={setDropRef}
-        role="button"
+        role={isNativeTabStop ? 'button' : 'group'}
+        aria-labelledby={labelId}
         tabIndex={isNativeTabStop ? 0 : -1}
         onClick={handleResponseAreaClick}
         onKeyDown={isNativeTabStop ? handleResponseAreaKeyDown : undefined}
@@ -344,7 +353,7 @@ function DragAndDropAnswer(props) {
         <div
           ref={setDragRef}
           {...listeners}
-          {...attributes}
+          {...(draggable && !disabled ? attributes : {})}
           data-tile-id={`${instanceId}:${dragId}`}
           style={{ transform: transformStyle, transition }}
         >
@@ -391,6 +400,7 @@ DragAndDropAnswer.propTypes = {
   id: PropTypes.any,
   instanceId: PropTypes.string,
   promptId: PropTypes.any,
+  labelId: PropTypes.string,
   title: PropTypes.string,
   draggable: PropTypes.bool,
   disabled: PropTypes.bool,

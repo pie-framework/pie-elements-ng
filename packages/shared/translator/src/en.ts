@@ -6,18 +6,57 @@ export default {
       maxChoicesPerCategoryRestriction:
         'To change this value to {{maxChoicesPerCategory}}, each category must have {{maxChoicesPerCategory}} or fewer answer choice[s].',
     },
+    dragInTheBlank: {
+      blank: 'Blank {{index}}',
+    },
     ebsr: {
       part: 'Part {{index}}',
+    },
+    editableHtml: {
+      responseAreaToolbar: 'Response area',
+      toolbar: 'Editing tools',
+    },
+    explicitConstructedResponse: {
+      response: 'Response {{index}} of {{total}}',
+    },
+    extendedTextEntry: {
+      comment: 'Comment',
+      response: 'Your response',
+    },
+    fractionModel: {
+      modelLabel_one: 'Model {{index}} of {{total}}: {{selected}} of {{count}} part selected',
+      modelLabel_other: 'Model {{index}} of {{total}}: {{selected}} of {{count}} parts selected',
     },
     numberLine: {
       addElementLimit_one: 'You can only add {{count}} element',
       addElementLimit_other: 'You can only add {{count}} elements',
       clearAll: 'Clear all',
+      closedEnd: 'closed',
+      graphLabel: 'Number line from {{min}} to {{max}}, with a tick every {{interval}}',
+      line: 'Line from {{left}} ({{leftEnd}}) to {{right}} ({{rightEnd}}).',
+      openEnd: 'open',
+      plottedNone: 'Nothing is plotted.',
+      pointClosed: 'Closed point at {{position}}.',
+      pointOpen: 'Open point at {{position}}.',
+      rayLeft: 'Ray from {{position}} ({{end}}) to the left.',
+      rayRight: 'Ray from {{position}} ({{end}}) to the right.',
+    },
+    hotspot: {
+      correctlySelected: 'Correctly selected',
+      image_one: 'Image with {{count}} hotspot',
+      image_other: 'Image with {{count}} hotspots',
+      shape: 'Hotspot {{index}} of {{total}}',
+      shouldHaveBeenSelected: 'Should have been selected',
+      shouldNotHaveBeenSelected: 'Should not have been selected',
     },
     imageClozeAssociation: {
+      answerChoice: 'Answer choice {{index}} of {{total}}',
+      image_one: 'Image with {{count}} response area',
+      image_other: 'Image with {{count}} response areas',
       reachedLimit_one:
         'You’ve reached the limit of {{count}} response per area. To add another response, one must first be removed.',
       reachedLimit_other: 'Full',
+      responseArea: 'Response area {{index}} of {{total}}',
     },
     drawingResponse: {
       fillColor: 'Fill color',
@@ -34,6 +73,8 @@ export default {
       white: 'White',
       black: 'Black',
       onDoubleClick: 'Double click to edit this text. Press Enter to submit.',
+      drawingArea: 'Drawing area',
+      drawingAreaOverImage: 'Drawing area over a background image',
     },
     charting: {
       addCategory: 'Add category',
@@ -41,14 +82,34 @@ export default {
       add: 'Add',
       delete: 'Delete',
       newLabel: 'New label',
+      categoryLabel: 'Category {{index}} label',
       reachedLimit_other: "There can't be more than {{count}} categories.",
       keyLegend: {
         incorrectAnswer: 'Student incorrect answer',
         correctAnswer: 'Student correct answer',
         correctKeyAnswer: 'Answer key correct',
       },
+      chartTypes: {
+        bar: 'Bar chart',
+        histogram: 'Histogram',
+        lineDot: 'Line chart with dots',
+        lineCross: 'Line chart with crosses',
+        dotPlot: 'Dot plot',
+        linePlot: 'Line plot',
+      },
+      categories_zero: 'No categories.',
+      categories_one: '{{count}} category: {{categories}}.',
+      categories_other: '{{count}} categories: {{categories}}.',
+      valueRange: 'Values from {{min}} to {{max}}.',
+      labelledValueRange: '{{label}} from {{min}} to {{max}}.',
     },
     graphing: {
+      graph: 'Coordinate graph',
+      axisRange: '{{axis}} axis from {{min}} to {{max}}.',
+      plotted_zero: 'Nothing plotted.',
+      plotted_one: '{{count}} object plotted: {{marks}}.',
+      plotted_other: '{{count}} objects plotted: {{marks}}.',
+      shadedRegion: 'Shaded region',
       point: 'Point',
       circle: 'Circle',
       line: 'Line',
@@ -61,12 +122,17 @@ export default {
       sine: 'Sine',
       vector: 'Vector',
       label: 'Label',
+      markLabel: 'Label at ({{x}}, {{y}})',
+      correctMarkLabel: 'Correct label at ({{x}}, {{y}})',
       redo: 'Redo',
       reset: 'Reset',
     },
     mathInline: {
       primaryCorrectWithAlternates:
         'Note: The answer shown above is the primary correct answer specified by the author for this item, but other answers may also be recognized as correct.',
+    },
+    mathInput: {
+      enterAnswer: 'Enter answer',
     },
     mcPopulatedBlank: {
       answerChoices: 'Answer choices',

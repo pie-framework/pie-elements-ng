@@ -19,6 +19,7 @@ const BaseContainer: any = styled('div')(({ theme }) => ({
 const PossibleResponses = ({
   canDrag,
   data,
+  getChoiceLabel,
   onDragBegin,
   answerChoiceTransparency,
   customStyle,
@@ -46,6 +47,7 @@ const PossibleResponses = ({
             canDrag={canDrag}
             key={item.id}
             data={item}
+            getChoiceLabel={getChoiceLabel}
             onDragBegin={onDragBegin}
             answerChoiceTransparency={answerChoiceTransparency}
             containerStyle={{ margin: '4px' }}
@@ -62,6 +64,7 @@ const PossibleResponses = ({
 PossibleResponses.propTypes = {
   canDrag: PropTypes.bool.isRequired,
   data: PropTypes.array.isRequired,
+  getChoiceLabel: PropTypes.func,
   onDragBegin: PropTypes.func.isRequired,
   answerChoiceTransparency: PropTypes.bool,
   customStyle: PropTypes.object,

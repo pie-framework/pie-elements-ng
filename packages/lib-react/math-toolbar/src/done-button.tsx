@@ -14,10 +14,9 @@ const StyledIconButton: any = styled(IconButton)(({ hideBackground }) => ({
   height: '28px',
   color: '#00bb00',
   ...(hideBackground && {
-    // `--pie-white` inverts with the scheme where `common.white` did not, so the
-    // button keeps reading as raised against the toolbar instead of staying a
-    // white chip on a dark surface.
-    backgroundColor: color.white(),
+    // `--pie-background` follows both the colour schemes and the dark theme; `--pie-white`
+    // stays white under the dark theme. White keeps the button opaque when no theme is set.
+    backgroundColor: color.v('pie')('background', color.defaults.WHITE),
     '&:hover': {
       backgroundColor: color.backgroundDark(),
     },

@@ -26,10 +26,14 @@ function unwrapReactInteropSymbol(maybeSymbol: any, namedExport?: string) {
 const Stage = unwrapReactInteropSymbol(StageImport, 'Stage');
 const Layer = unwrapReactInteropSymbol(LayerImport, 'Layer');
 import { styled } from '@mui/material/styles';
+import { createUniqueId } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
 
 import Rectangle from './rectangle.js';
 import Polygon from './polygon.js';
 import Circle from './circle.js';
+
+const { translator } = Translator;
 
 const BaseContainer: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -83,17 +87,22 @@ export class Container extends React.Component {
 
   correctness = (isCorrect, isChecked) => (isCorrect ? isChecked : !isChecked);
 
+  descriptionId: string = createUniqueId('hotspot-evaluation');
+
+  // The canvas tooltip and the shape button's description both carry this text.
   getEvaluateText: any = (isCorrect, selected) => {
+    const { language } = this.props;
+
     if (selected && isCorrect) {
-      return 'Correctly\nselected';
+      return translator.t('hotspot.correctlySelected', { lng: language });
     }
 
     if (selected && !isCorrect) {
-      return 'Should not have\nbeen selected';
+      return translator.t('hotspot.shouldNotHaveBeenSelected', { lng: language });
     }
 
     if (!selected && isCorrect) {
-      return 'Should have\nbeen selected';
+      return translator.t('hotspot.shouldHaveBeenSelected', { lng: language });
     }
 
     return null;
@@ -109,6 +118,11 @@ export class Container extends React.Component {
     allShapes.sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
 
     return allShapes;
+  };
+
+  // The canvas redraws the shapes that the focusables below expose, so assistive technology skips it.
+  hideCanvas: any = (layer) => {
+    layer?.getNativeCanvasElement().setAttribute('aria-hidden', 'true');
   };
 
   handleShapeFocus: any = (shapeId) => {
@@ -146,6 +160,7 @@ export class Container extends React.Component {
       selectedHotspotColor,
       imageUrl,
       isEvaluateMode,
+      language,
       outlineColor,
       onSelectChoice,
       shapes: { rectangles = [], polygons = [], circles = [] },
@@ -166,7 +181,7 @@ export class Container extends React.Component {
         {imageUrl ? (
           <ImageContainer>
             <Image
-              alt="hotspot-image"
+              alt={translator.t('hotspot.image', { lng: language, count: sortedShapes.length })}
               height="auto"
               src={imageUrl}
               style={{ width, height, maxWidth: width, maxHeight: height }}
@@ -180,7 +195,7 @@ export class Container extends React.Component {
           x={strokeWidth / 2}
           y={strokeWidth / 2}
         >
-          <Layer>
+          <Layer ref={this.hideCanvas}>
             {rectangles.map((shape) => {
               const selected = this.isSelected(shape);
               const isCorrect = isEvaluateMode ? this.correctness(shape.correct, selected) : undefined;
@@ -276,20 +291,32 @@ export class Container extends React.Component {
           </Layer>
         </StyledStage>
 
-        {sortedShapes.map((shape) => {
+        {sortedShapes.map((shape, index) => {
           const selected = this.isSelected(shape);
+          const name =
+            shape.ariaLabel?.trim() ||
+            translator.t('hotspot.shape', { lng: language, index: index + 1, total: sortedShapes.length });
+          const evaluateText = isEvaluateMode ? this.getEvaluateText(shape.correct, selected) : null;
+          const descriptionId = `${this.descriptionId}-${index}`;
 
           return (
-            <HiddenFocusable
-              key={`focus-${shape.id}`}
-              tabIndex={disabled ? -1 : 0}
-              role="button"
-              aria-label={shape.ariaLabel || ''}
-              aria-pressed={selected}
-              onFocus={() => this.handleShapeFocus(shape.id)}
-              onBlur={this.handleShapeBlur}
-              onKeyDown={(e) => this.handleShapeKeyDown(e, shape.id)}
-            />
+            <React.Fragment key={`focus-${shape.id}`}>
+              <HiddenFocusable
+                tabIndex={disabled ? -1 : 0}
+                role="button"
+                aria-label={name}
+                aria-pressed={selected}
+                aria-describedby={evaluateText ? descriptionId : undefined}
+                onFocus={() => this.handleShapeFocus(shape.id)}
+                onBlur={this.handleShapeBlur}
+                onKeyDown={(e) => this.handleShapeKeyDown(e, shape.id)}
+              />
+              {evaluateText && (
+                <span id={descriptionId} hidden>
+                  {evaluateText}
+                </span>
+              )}
+            </React.Fragment>
           );
         })}
       </BaseContainer>
@@ -304,6 +331,7 @@ Container.propTypes = {
   hoverOutlineColor: PropTypes.string,
   imageUrl: PropTypes.string.isRequired,
   isEvaluateMode: PropTypes.bool.isRequired,
+  language: PropTypes.string,
   onSelectChoice: PropTypes.func.isRequired,
   outlineColor: PropTypes.string.isRequired,
   selectedHotspotColor: PropTypes.string,

@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
@@ -12,12 +12,16 @@ import StaticHTMLSpan from './static-html-span.js';
 
 const BaseContainer: any = styled('div')(() => ({
   position: 'relative',
-  backgroundColor: color.white(),
+  // --pie-white stays white under a dark theme; white keeps the tile opaque when no theme is set.
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.text(),
   border: `1px solid ${color.borderDark()}`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '28px',
+  // A 24px target (WCAG 2.5.8) also while an image choice is still loading.
+  minWidth: '24px',
   width: 'fit-content',
   '& span img': {
     // Added for touch devices, for image content.
@@ -60,10 +64,18 @@ const StyledSpan: any = styled(StaticHTMLSpan)(() => ({
   },
 }));
 
+// Text, or an image with an `alt`, names the tile; an image with an empty `alt` leaves it unnamed.
+const hasTextAlternative = (html) => {
+  const content = new DOMParser().parseFromString(html || '', 'text/html').body;
+
+  return !!content.textContent.trim() || [...content.querySelectorAll('img')].some((img) => img.alt.trim());
+};
+
 const PossibleResponse = ({
   canDrag,
   containerStyle,
   data,
+  getChoiceLabel,
   onDragBegin,
   answerChoiceTransparency,
   isOverlay,
@@ -72,6 +84,10 @@ const PossibleResponse = ({
   onPlacementClick,
 }) => {
   const rootRef = useRef(null);
+  const label = useMemo(
+    () => (hasTextAlternative(data.value) ? undefined : getChoiceLabel?.(data.value)),
+    [data.value, getChoiceLabel],
+  );
   const longPressTimer = useRef(null);
 
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
@@ -172,6 +188,7 @@ const PossibleResponse = ({
         setNodeRef(ref);
       }}
       onClick={handleClick}
+      aria-label={label}
       {...listeners}
       {...attributes}
     >
@@ -185,6 +202,7 @@ PossibleResponse.propTypes = {
   canDrag: PropTypes.bool.isRequired,
   containerStyle: PropTypes.object,
   data: PropTypes.object.isRequired,
+  getChoiceLabel: PropTypes.func,
   onDragBegin: PropTypes.func.isRequired,
   answerChoiceTransparency: PropTypes.bool,
   isOverlay: PropTypes.bool,

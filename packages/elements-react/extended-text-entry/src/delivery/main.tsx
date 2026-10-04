@@ -40,7 +40,10 @@ const renderUi =
   renderUiDefaultMaybe && typeof renderUiDefaultMaybe === 'object'
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
+import Translator from '@pie-lib/translator';
 import AnnotationEditor from './annotation/annotation-editor.js';
+
+const { translator } = Translator;
 
 const log = debug('@pie-ui:extended-text-entry');
 
@@ -87,6 +90,9 @@ export class Main extends React.Component {
       comment: PropTypes.string,
     }).isRequired,
   };
+
+  // Random rather than a counter: two versions of this element on one page would each count from 1.
+  promptId = `ete-prompt-${Math.random().toString(36).slice(2, 10)}`;
 
   // The editor calls back on commit points (blur, `done` transactions), and the
   // custom element writes the session synchronously and defers only its
@@ -159,7 +165,7 @@ export class Main extends React.Component {
         )}
 
         {prompt && (
-          <StyledPrompt component={'span'}>
+          <StyledPrompt component={'span'} id={this.promptId}>
             <PreviewPrompt defaultClassName="prompt" prompt={model.prompt} />
           </StyledPrompt>
         )}
@@ -179,6 +185,7 @@ export class Main extends React.Component {
             disabledMath={!mathInput}
             customKeys={customKeys}
             keypadMode={equationEditor}
+            language={model.language}
           />
         ) : (
           <Editor
@@ -222,6 +229,10 @@ export class Main extends React.Component {
               ol_list: { disabled: true },
             }}
             languageCharactersProps={languageCharactersProps}
+            // The prompt names the response; the generic name covers no prompt, or one with no text.
+            ariaLabelledBy={prompt ? this.promptId : undefined}
+            ariaLabel={translator.t('extendedTextEntry.response', { lng: model.language })}
+            language={model.language}
           />
         )}
 
