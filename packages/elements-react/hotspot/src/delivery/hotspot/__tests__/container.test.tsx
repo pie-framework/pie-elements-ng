@@ -18,9 +18,15 @@ vi.mock('react-konva', () => ({
     );
   }),
 }));
-vi.mock('../rectangle.js', () => ({ default: () => null }));
-vi.mock('../polygon.js', () => ({ default: () => null }));
-vi.mock('../circle.js', () => ({ default: () => null }));
+// The canvas shapes record the evaluate text their tooltip shows.
+const tooltips = vi.hoisted(() => new Map<string, string | null>());
+const recordTooltip = vi.hoisted(() => (props: { id: string; evaluateText: string | null }) => {
+  tooltips.set(props.id, props.evaluateText);
+  return null;
+});
+vi.mock('../rectangle.js', () => ({ default: recordTooltip }));
+vi.mock('../polygon.js', () => ({ default: recordTooltip }));
+vi.mock('../circle.js', () => ({ default: recordTooltip }));
 
 const { Container } = await import('../container');
 
@@ -80,6 +86,70 @@ describe('Container hotspot focusables', () => {
 
     expect(onSelectChoice).toHaveBeenCalledTimes(2);
     expect(onSelectChoice).toHaveBeenCalledWith({ id: '3', selected: true, selector: 'Keyboard' });
+  });
+});
+
+describe('Container evaluate correctness', () => {
+  const evaluated = {
+    rectangles: [
+      { id: '1', x: 0, y: 0, width: 10, height: 10, correct: true },
+      { id: '3', x: 20, y: 0, width: 10, height: 10, correct: false },
+      { id: '4', x: 60, y: 0, width: 10, height: 10, correct: false },
+    ],
+    circles: [{ id: '2', x: 40, y: 0, radius: 5, correct: true }],
+  };
+  const renderEvaluated = (extras?: any) =>
+    renderContainer({
+      disabled: true,
+      isEvaluateMode: true,
+      session: { answers: [{ id: '1' }, { id: '3' }] },
+      shapes: evaluated,
+      ...extras,
+    });
+
+  it('describes each evaluated shape button by its correctness', () => {
+    renderEvaluated();
+
+    expect(screen.getByRole('button', { name: 'Hotspot 1 of 4' })).toHaveAccessibleDescription('Correctly selected');
+    expect(screen.getByRole('button', { name: 'Hotspot 2 of 4' })).toHaveAccessibleDescription(
+      'Should have been selected',
+    );
+    expect(screen.getByRole('button', { name: 'Hotspot 3 of 4' })).toHaveAccessibleDescription(
+      'Should not have been selected',
+    );
+    expect(screen.getByRole('button', { name: 'Hotspot 4 of 4' })).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('describes correctness in the item language', () => {
+    renderEvaluated({ language: 'es_ES' });
+
+    expect(screen.getByRole('button', { name: 'Zona activa 1 de 4' })).toHaveAccessibleDescription(
+      'Seleccionada correctamente',
+    );
+    expect(screen.getByRole('button', { name: 'Zona activa 2 de 4' })).toHaveAccessibleDescription('Debía seleccionarse');
+    expect(screen.getByRole('button', { name: 'Zona activa 3 de 4' })).toHaveAccessibleDescription(
+      'No debía seleccionarse',
+    );
+  });
+
+  it('shows the same text in the canvas tooltip', () => {
+    tooltips.clear();
+    renderEvaluated({ language: 'es_ES' });
+
+    expect(Object.fromEntries(tooltips)).toEqual({
+      '1': 'Seleccionada correctamente',
+      '2': 'Debía seleccionarse',
+      '3': 'No debía seleccionarse',
+      '4': null,
+    });
+  });
+
+  it('describes no correctness while gathering', () => {
+    renderContainer({ session: { answers: [{ id: '1' }] }, shapes: evaluated });
+
+    for (const button of screen.getAllByRole('button')) {
+      expect(button).not.toHaveAttribute('aria-describedby');
+    }
   });
 });
 
