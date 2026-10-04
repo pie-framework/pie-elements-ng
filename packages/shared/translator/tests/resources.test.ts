@@ -5,7 +5,10 @@ import es from '../src/es.js';
 /** Namespaces whose Spanish is maintained here rather than synced from upstream. */
 const LOCALLY_OWNED = [
   'charting',
+  'dragInTheBlank',
   'graphing',
+  'hotspot',
+  'imageClozeAssociation',
   'mcPopulatedBlank',
   'simpleCloze',
   'vennClassification',

@@ -6,6 +6,9 @@ export default {
       maxChoicesPerCategoryRestriction:
         'Para cambiar este valor a {{maxChoicesPerCategory}}, cada categoría debe tener {{maxChoicesPerCategory}} o menos opciones de respuesta',
     },
+    dragInTheBlank: {
+      blank: 'Espacio en blanco {{index}}',
+    },
     ebsr: {
       part: 'Parte {{index}}',
     },
@@ -14,10 +17,14 @@ export default {
       addElementLimit_other: 'Solo puedes agregar {{count}} elementos',
       clearAll: 'Borrar todo',
     },
+    hotspot: {
+      shape: 'Zona activa {{index}} de {{total}}',
+    },
     imageClozeAssociation: {
       reachedLimit_one:
         'Has alcanzado el límite de {{count}} respuesta por área. Para agregar otra respuesta, primero se debe eliminar una respuesta.',
       reachedLimit_other: 'Lleno',
+      responseArea: 'Área de respuesta {{index}} de {{total}}',
     },
     drawingResponse: {
       fillColor: 'Color de relleno',

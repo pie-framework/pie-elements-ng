@@ -9,7 +9,10 @@ import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import classnames from 'clsx';
 import { color } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
 import { grey } from '@mui/material/colors';
+
+const { translator } = Translator;
 
 const log = debug('pie-lib:mask-markup:blank');
 
@@ -352,6 +355,7 @@ function DragDropBlank({
   emptyResponseAreaWidth,
   emptyResponseAreaHeight,
   instanceId,
+  language,
   selectedItem,
   onSelectClick,
   onPlacementClick,
@@ -437,6 +441,9 @@ function DragDropBlank({
   // stop for the same visual chip would add an extra stop to the existing Tab order —
   // the same double-tab-stop bug already found and fixed once in match-list/image-
   // cloze-association's equivalent code.
+  // A group when it is no tab stop, named by its position in every state: a keyboard placement turns
+  // the focused button into a group, and focus stays on it. Blank ids are the authored {{n}}
+  // placeholders, numbered from 0.
   const isNativeTabStop = !choice && !disabled;
   const isInnerDraggable = !!choice && !disabled;
 
@@ -453,7 +460,8 @@ function DragDropBlank({
   return (
     <StyledContent
       ref={setDropNodeRef}
-      role={isNativeTabStop ? 'button' : undefined}
+      role={isNativeTabStop ? 'button' : 'group'}
+      aria-label={translator.t('dragInTheBlank.blank', { lng: language, index: Number(id) + 1 })}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleClick}
       onKeyDown={isNativeTabStop ? handleKeyDown : undefined}
@@ -498,6 +506,7 @@ DragDropBlank.propTypes = {
   emptyResponseAreaWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   emptyResponseAreaHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   instanceId: PropTypes.string,
+  language: PropTypes.string,
   selectedItem: PropTypes.object,
   onSelectClick: PropTypes.func,
   onPlacementClick: PropTypes.func,

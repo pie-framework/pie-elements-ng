@@ -11,6 +11,8 @@ Students or instructors inspect graphing solution regions, shaded inequalities, 
 
 A line end label input is named by the point it labels, "Label at (2, 3)" ([PIE-1155](https://illuminate.atlassian.net/browse/PIE-1155)). The scenarios render no labels; the package's unit tests cover the name.
 
+Each line-selection radio in the tool menu takes its accessible name from the visible line name beside it ([PIE-1161](https://illuminate.atlassian.net/browse/PIE-1161)).
+
 ## Open Gaps
 
 - A label input is never disabled, because its styled wrapper drops the `disabled` prop.

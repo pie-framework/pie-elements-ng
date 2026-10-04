@@ -479,6 +479,7 @@ export class ImageClozeAssociationComponent extends React.Component {
       draggingElement,
       duplicateResponses,
       image,
+      language,
       onAnswerSelect: this.handleOnAnswerSelect,
       onDragAnswerBegin: this.onDragStart,
       onDragAnswerEnd: this.onDragEnd,
