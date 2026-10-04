@@ -105,6 +105,7 @@ export const MarkLabel = (props) => {
     isHiddenLabel,
     limitCharacters,
     correctnessIndicator,
+    ariaLabel,
   } = props;
 
   const [label, setLabel] = useState(mark.label);
@@ -188,6 +189,7 @@ export const MarkLabel = (props) => {
             }
           }}
           name="mark-label-input"
+          aria-label={ariaLabel}
           autoFocus={isEditing || autoFocus}
           disabled={disabled}
           inputClassName={classNames(
@@ -243,6 +245,7 @@ MarkLabel.propTypes = {
   isHiddenLabel: PropTypes.bool,
   limitCharacters: PropTypes.bool,
   correctnessIndicator: PropTypes.node,
+  ariaLabel: PropTypes.string,
 };
 
 export default MarkLabel;

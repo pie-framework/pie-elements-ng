@@ -90,7 +90,13 @@ class Main extends React.Component {
 
     return (
       <UiLayout extraCSSRules={extraCSSRules} style={{ color: color.text(), backgroundColor: color.background() }}>
-        <Link style={{ backgroundColor: color.background() }} href={this.dudUrl} onClick={this.toggleRubric}>
+        <Link
+          component="button"
+          type="button"
+          aria-expanded={this.state.rubricOpen}
+          style={{ backgroundColor: color.background(), minHeight: '24px' }}
+          onClick={this.toggleRubric}
+        >
           {this.state.linkPrefix} Rubric
         </Link>
         <Collapse style={{ marginTop: '16px' }} in={this.state.rubricOpen} timeout={{ enter: 225, exit: 195 }}>

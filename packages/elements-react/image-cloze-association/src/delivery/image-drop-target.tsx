@@ -35,6 +35,7 @@ const ImageDropTarget = ({
   canDrag,
   containerStyle,
   draggingElement,
+  getChoiceLabel,
   onDragAnswerBegin,
   onDragAnswerEnd,
   showDashedBorder,
@@ -45,6 +46,7 @@ const ImageDropTarget = ({
   maxResponsePerZone,
   onDrop,
   index,
+  label,
   selectedResponse,
   onSelectClick,
   onPlacementClick,
@@ -111,6 +113,8 @@ const ImageDropTarget = ({
   // and adding a second stop for the same visual container would add an extra stop to
   // the existing Tab order (match-list's equivalent)
   const isNativeTabStop = answers.length === 0 && canDrag;
+  // A group when it is no tab stop, named in every state: a keyboard placement turns the focused
+  // button into a group, and focus stays on it.
 
   const handleContainerKeyDown = (e) => {
     if (e.code === 'Space' || e.code === 'Enter') {
@@ -127,7 +131,8 @@ const ImageDropTarget = ({
       }}
       className={containerClasses}
       style={updatedContainerStyle}
-      role={isNativeTabStop ? 'button' : undefined}
+      role={isNativeTabStop ? 'button' : 'group'}
+      aria-label={label}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleContainerClick}
       onKeyDown={isNativeTabStop ? handleContainerKeyDown : undefined}
@@ -145,6 +150,7 @@ const ImageDropTarget = ({
               key={answer.id}
               data={answer}
               canDrag={canDrag}
+              getChoiceLabel={getChoiceLabel}
               onDragBegin={() => onDragAnswerBegin(answer)}
               onDragEnd={onDragAnswerEnd}
               answerChoiceTransparency={answerChoiceTransparency}
@@ -168,6 +174,7 @@ ImageDropTarget.propTypes = {
   canDrag: PropTypes.bool.isRequired,
   containerStyle: PropTypes.object.isRequired,
   draggingElement: PropTypes.object.isRequired,
+  getChoiceLabel: PropTypes.func,
   onDragAnswerBegin: PropTypes.func.isRequired,
   onDragAnswerEnd: PropTypes.func.isRequired,
   onDrop: PropTypes.func.isRequired,
@@ -177,6 +184,7 @@ ImageDropTarget.propTypes = {
   responseContainerPadding: PropTypes.string,
   imageDropTargetPadding: PropTypes.string,
   maxResponsePerZone: PropTypes.number,
+  label: PropTypes.string,
   selectedResponse: PropTypes.object,
   onSelectClick: PropTypes.func,
   onPlacementClick: PropTypes.func,

@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 
 import { color } from '@pie-lib/render-ui';
+import { uniqueId } from '@pie-element/shared-lodash';
 import Radio from '@mui/material/Radio';
 import { LIKERT_ORIENTATION } from './likertEntities.js';
 
@@ -51,6 +52,9 @@ export class ChoiceInput extends React.Component {
     checked: false,
   };
 
+  // The visible label is a sibling of the radio, so the radio takes its name by reference.
+  labelId: string = uniqueId('likert-choice-label-');
+
   onToggleChoice: any = () => {
     this.props.onChange({
       value: this.props.value,
@@ -66,9 +70,16 @@ export class ChoiceInput extends React.Component {
       <CheckboxHolderRoot style={{ flexDirection }}>
         <StyledFormControlLabel
           disabled={disabled}
-          control={<RadioStyled checked={checked} onChange={this.onToggleChoice} disabled={disabled} />}
+          control={
+            <RadioStyled
+              checked={checked}
+              onChange={this.onToggleChoice}
+              disabled={disabled}
+              slotProps={{ input: { 'aria-labelledby': this.labelId } }}
+            />
+          }
         />
-        <LabelRoot onClick={this.onToggleChoice} dangerouslySetInnerHTML={{ __html: label }} />
+        <LabelRoot id={this.labelId} onClick={this.onToggleChoice} dangerouslySetInnerHTML={{ __html: label }} />
       </CheckboxHolderRoot>
     );
   }
