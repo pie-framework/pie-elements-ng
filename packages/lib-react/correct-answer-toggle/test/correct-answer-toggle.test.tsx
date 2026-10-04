@@ -64,7 +64,8 @@ describe('CorrectAnswerToggle', () => {
 
     expect(button.type).toBe('button');
     expect(button.textContent).toBe('Show correct answer');
-    expect(button.querySelector('[aria-hidden="true"]')).toBeNull();
+    // The icons are decorative and hidden; the label must not be.
+    expect(button.querySelector('[aria-hidden="true"]:not(svg)')).toBeNull();
   });
 
   it('reports whether the correct answer is showing through aria-pressed', () => {
