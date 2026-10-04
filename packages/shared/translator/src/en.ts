@@ -61,6 +61,8 @@ export default {
       white: 'White',
       black: 'Black',
       onDoubleClick: 'Double click to edit this text. Press Enter to submit.',
+      drawingArea: 'Drawing area',
+      drawingAreaOverImage: 'Drawing area over a background image',
     },
     charting: {
       addCategory: 'Add category',
