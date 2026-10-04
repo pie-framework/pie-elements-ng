@@ -14,7 +14,9 @@ const StyledIconButton: any = styled(IconButton)({
   verticalAlign: 'top',
   width: '28px',
   height: '28px',
-  color: 'var(--editable-html-toolbar-check, #00bb00)',
+  // The check sits on the toolbar's #efefef, which no theme changes. #388E3C clears 3:1 against it
+  // and the hover fill (WCAG 1.4.11); hosts can still set `--editable-html-toolbar-check`.
+  color: 'var(--editable-html-toolbar-check, #388E3C)',
   padding: '4px',
 });
 

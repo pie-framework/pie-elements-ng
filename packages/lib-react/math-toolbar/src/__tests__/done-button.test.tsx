@@ -25,4 +25,12 @@ describe('math toolbar Done button', () => {
   it('stays white when no theme is applied', () => {
     expect(renderButton({}).backgroundColor).toBe('#ffffff');
   });
+
+  // One green clears 3:1 against the toolbar grey, white, the hover fills and the dark background.
+  it.each([
+    ['the dark theme', DARK],
+    ['no theme', {}],
+  ])('draws the check in the same green under %s', (_, vars) => {
+    expect(renderButton(vars as CSSProperties).color).toBe('#388E3C');
+  });
 });
