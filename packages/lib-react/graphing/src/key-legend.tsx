@@ -5,8 +5,11 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 
+// The label swatches below stay white: they match the graph's mark labels, which keep a fixed
+// light palette in both schemes. The legend itself follows the theme, opaque white without one.
 const StyledContainer: any = styled('div')(() => ({
-  backgroundColor: color.defaults.WHITE,
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.text(),
   padding: '20px',
   width: '355px',
   boxShadow: '0px 1px 5px 0px #9297A6',

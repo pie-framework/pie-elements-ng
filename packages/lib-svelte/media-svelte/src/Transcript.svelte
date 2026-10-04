@@ -74,7 +74,8 @@ function toggleTranscript() {
     border: var(--media-control-border-width, 1px) solid var(--pie-border-light);
     border-radius: var(--media-control-border-radius, 0.25rem);
     color: var(--pie-text);
-    background: var(--pie-white);
+    /* --pie-white stays white under a dark theme. Without a theme the text inherits, so the background does too. */
+    background: var(--pie-background, transparent);
     font: inherit;
     font-weight: 600;
     cursor: pointer;
