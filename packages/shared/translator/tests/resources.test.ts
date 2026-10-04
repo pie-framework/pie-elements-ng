@@ -7,6 +7,7 @@ const LOCALLY_OWNED = [
   'charting',
   'dragInTheBlank',
   'drawingResponse',
+  'editableHtml',
   'explicitConstructedResponse',
   'extendedTextEntry',
   'fractionModel',

@@ -38,4 +38,18 @@ describe('Main', () => {
 
     expect(await waitFor(() => screen.getByRole('textbox'))).toHaveAccessibleName('Tu respuesta');
   });
+
+  it('names the annotation comment editor in the item language', async () => {
+    renderMain({ annotatorMode: true, disabledAnnotator: false, language: 'es_ES' });
+
+    expect(await waitFor(() => screen.getByRole('textbox'))).toHaveAccessibleName('Comentario');
+    expect(screen.getByText('Comentario', { selector: 'label' })).toBeInTheDocument();
+  });
+
+  it('names the editor toolbar in the item language', async () => {
+    renderMain({ language: 'es_ES' });
+    await waitFor(() => screen.getByRole('textbox'));
+
+    expect(document.querySelector('[role="toolbar"]')).toHaveAttribute('aria-label', 'Herramientas de edición');
+  });
 });
