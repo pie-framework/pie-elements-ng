@@ -44,3 +44,26 @@ describe('Dropdown', () => {
     expect(combobox).toHaveAttribute('aria-expanded', 'false');
   });
 });
+
+describe('Dropdown ids', () => {
+  const ids = () => [...document.querySelectorAll('[id]')].map((el) => el.id);
+
+  it('stay unique when two items render the same response on one page', () => {
+    render(<Dropdown id="0" choices={choices} value="0" onChange={vi.fn()} />);
+    render(<Dropdown id="0" choices={choices} value="1" onChange={vi.fn()} />);
+
+    expect(new Set(ids()).size).toBe(ids().length);
+    const [first, second] = screen.getAllByRole('combobox');
+    expect(first).toHaveAccessibleName(expect.stringContaining('Jupiter'));
+    expect(second).toHaveAccessibleName(expect.stringContaining('Saturn'));
+  });
+
+  it('stay the same across re-renders', () => {
+    const { rerender } = render(<Dropdown id="0" choices={choices} onChange={vi.fn()} />);
+    const before = ids();
+
+    rerender(<Dropdown id="0" choices={choices} value="1" onChange={vi.fn()} />);
+
+    expect(ids()).toEqual(before);
+  });
+});

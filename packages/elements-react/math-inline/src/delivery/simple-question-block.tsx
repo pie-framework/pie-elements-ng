@@ -5,7 +5,7 @@ import { MathToolbar } from '@pie-lib/math-toolbar';
 import { mq } from '@pie-lib/math-input';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 
 const Expression: any = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(2),
@@ -74,7 +74,9 @@ export class SimpleQuestionBlock extends React.Component {
   constructor(props) {
     super(props);
 
-    this.mathToolBarId = `math-toolbar-${new Date().getTime()}`;
+    // A timestamp repeats when two items construct in the same millisecond, and the toolbar is
+    // looked up in the whole document.
+    this.mathToolBarId = createUniqueId('math-toolbar');
   }
 
   mathToolBarContainsTarget = (e) => document.getElementById(this.mathToolBarId).contains(e.target);

@@ -43,7 +43,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { ResponseTypes } from './utils.js';
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block.js';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
 const { translator } = Translator;
@@ -160,6 +160,7 @@ export class Main extends React.Component {
       showCorrect: this.props.model.config.alwaysShowCorrect || false,
       tooltipContainerRef: React.createRef(),
     };
+    this.instructionsIdPrefix = createUniqueId('math-inline-instructions');
   }
 
   UNSAFE_componentWillMount() {
@@ -332,8 +333,7 @@ export class Main extends React.Component {
       // Describe the keypad shortcuts on each textarea; @pie-lib/math-input names it
       const textareaElements = this.root.querySelectorAll('textarea');
       textareaElements.forEach((elem, index) => {
-        // Create a unique id for each instructions element
-        const instructionsId = `instructions-${index}`;
+        const instructionsId = `${this.instructionsIdPrefix}-${index}`;
 
         // Find the parent element that contains the textarea
         const parent = elem.closest('.mq-textarea');
