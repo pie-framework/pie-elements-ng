@@ -6,6 +6,7 @@ export default {
   equationEditor: 'Grade 8 - HS',
   feedbackEnabled: false,
   mathInput: false,
+  playerPasteFormattingDisabled: false,
   playerSpellCheckDisabled: true,
   predefinedAnnotations: [
     { label: 'good', text: 'good', type: 'positive' },

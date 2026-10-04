@@ -112,6 +112,7 @@ export class Main extends React.Component {
       extraCSSRules,
       feedback,
       mathInput,
+      pasteFormattingDisabled,
       playersToolbarPosition,
       predefinedAnnotations,
       prompt,
@@ -227,6 +228,7 @@ export class Main extends React.Component {
               separateParagraphs: { disabled: false },
               ul_list: { disabled: true },
               ol_list: { disabled: true },
+              pasteFormatting: { disabled: pasteFormattingDisabled === true },
             }}
             languageCharactersProps={languageCharactersProps}
             // The prompt names the response; the generic name covers no prompt, or one with no text.

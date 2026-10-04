@@ -7,6 +7,7 @@ export default {
     equationEditor: 'Grade 8 - HS',
     feedbackEnabled: false,
     mathInput: false,
+    playerPasteFormattingDisabled: false,
     playerSpellCheckDisabled: true,
     predefinedAnnotations: [
       { label: 'good', text: 'good', type: 'positive' },
@@ -66,6 +67,10 @@ export default {
       label: 'Disable Student Spellcheck',
       settings: true,
       enabled: true,
+    },
+    playerPasteFormatting: {
+      label: 'Students paste plain text',
+      settings: true,
     },
     equationEditor: {
       settings: false,
