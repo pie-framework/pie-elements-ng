@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import RubricComponent from '../main';
 
 const value = {
@@ -17,6 +17,27 @@ describe('Rubric toggle', () => {
     render(<Rubric model={{}} value={value} />);
 
     expect(screen.getByRole('button', { name: 'Show Rubric' })).toHaveStyle({ minHeight: '24px' });
+  });
+
+  it('is a native button that discloses the rubric', () => {
+    render(<Rubric model={{}} value={value} />);
+    const toggle = screen.getByRole('button', { name: 'Show Rubric' });
+    const content = document.getElementById(toggle.getAttribute('aria-controls') ?? '');
+
+    expect(toggle.tagName).toBe('BUTTON');
+    expect(toggle).toHaveAttribute('type', 'button');
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(content).toHaveTextContent('Fully correct');
+
+    fireEvent.click(toggle);
+
+    expect(screen.getByRole('button', { name: 'Hide Rubric' })).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('leaves the rubric in the heading list', () => {
+    render(<Rubric model={{}} value={value} />);
+
+    expect(screen.getByRole('heading', { name: 'Rubric' })).toBeInTheDocument();
   });
 });
 
