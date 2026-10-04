@@ -9,13 +9,15 @@ import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
 
+const rule = `1px solid ${color.v('pie')('border-light', 'lightgrey')}`;
+
 const StyledFlexContainer: any = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
   gap: theme.spacing(2),
-  borderBottom: '1px solid lightgrey',
-  borderTop: '1px solid lightgrey',
+  borderBottom: rule,
+  borderTop: rule,
   paddingBottom: theme.spacing(1),
   paddingTop: theme.spacing(1),
   marginBottom: theme.spacing(1),
@@ -24,7 +26,7 @@ const StyledFlexContainer: any = styled('div')(({ theme }) => ({
 const StyledKey: any = styled('span')(({ theme }) => ({
   fontSize: '14px',
   fontWeight: 'bold',
-  color: color.black(),
+  color: color.text(),
   marginLeft: theme.spacing(1),
 }));
 

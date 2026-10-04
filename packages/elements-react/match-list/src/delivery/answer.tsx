@@ -10,12 +10,13 @@ import { isEmpty } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
 
 const log = debug('pie-elements:match-title:answer');
+const pieVar = color.v('pie');
 
-const HolderNumber: any = styled('div')(({ theme }) => ({
+const HolderNumber: any = styled('div')(() => ({
   width: '100%',
   fontSize: '18px',
   textAlign: 'center',
-  color: `rgba(${theme.palette.common.black}, 0.6)`,
+  color: 'inherit',
 }));
 
 const Holder = ({ index, isOver, disabled, type }) => (
@@ -44,7 +45,8 @@ Holder.propTypes = {
 
 const AnswerContentContainer: any = styled('div')(({ isDragging, isSelected, isOver, disabled, outcome }) => ({
   color: color.text(),
-  backgroundColor: color.white(),
+  // --pie-white stays white under a dark theme; white keeps the chip opaque when no theme is set.
+  backgroundColor: pieVar('background', color.defaults.WHITE),
   border: `1px solid ${
     outcome === 'correct' ? color.correct() : outcome === 'incorrect' ? color.incorrect() : color.border()
   }`,
