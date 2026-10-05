@@ -105,4 +105,16 @@ describe('Dropdown name', () => {
 
     expect(screen.getByRole('listbox')).toHaveAccessibleName('Query 1');
   });
+
+  it.each([
+    ['en_US', 'Query 2', 'Query'],
+    ['es_ES', 'Consulta 2', 'Consulta'],
+  ])('follows the %s item language', (language, numbered, single) => {
+    render(<Dropdown id="1" language={language} choices={choices} onChange={vi.fn()} />);
+    render(<Dropdown id="0" singleQuery language={language} choices={choices} onChange={vi.fn()} />);
+
+    const [first, second] = screen.getAllByRole('combobox');
+    expect(first).toHaveAccessibleName(numbered);
+    expect(second).toHaveAccessibleName(single);
+  });
 });

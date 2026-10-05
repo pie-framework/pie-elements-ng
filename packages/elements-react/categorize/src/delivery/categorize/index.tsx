@@ -298,8 +298,8 @@ export class Categorize extends React.Component {
           <React.Fragment>
             <StyledCollapsible
               labels={{
-                hidden: 'Show Teacher Instructions',
-                visible: 'Hide Teacher Instructions',
+                hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+                visible: translator.t('common:hideTeacherInstructions', { lng: language }),
               }}
             >
               <PreviewPrompt prompt={model.teacherInstructions} />
@@ -360,7 +360,7 @@ export class Categorize extends React.Component {
         )}
 
         {showRationale && (
-          <StyledCollapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <StyledCollapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt prompt={model.rationale} />
           </StyledCollapsible>
         )}

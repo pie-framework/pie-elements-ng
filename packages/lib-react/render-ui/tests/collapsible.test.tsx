@@ -69,6 +69,23 @@ describe('Collapsible', () => {
     expect(toggle.textContent).toBe('Show Rationale');
   });
 
+  it.each([
+    ['en_US', 'Show', 'Hide'],
+    ['es_ES', 'Mostrar', 'Ocultar'],
+    [undefined, 'Show', 'Hide'],
+  ])('defaults the labels to the %s item language', (language, show, hide) => {
+    const container = render(
+      <Collapsible language={language}>
+        <p>Because.</p>
+      </Collapsible>
+    );
+    const toggle = container.querySelector('button') as HTMLButtonElement;
+
+    expect(toggle.textContent).toBe(show);
+    act(() => toggle.click());
+    expect(toggle.textContent).toBe(hide);
+  });
+
   it('gives each instance its own panel id', () => {
     const container = render(
       <div>

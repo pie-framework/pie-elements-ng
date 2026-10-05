@@ -39,6 +39,17 @@ describe('Rubric toggle', () => {
 
     expect(screen.getByRole('heading', { name: 'Rubric' })).toBeInTheDocument();
   });
+
+  it.each([
+    ['en_US', 'Rubric', 'Show Rubric', 'Hide Rubric'],
+    ['es_ES', 'Rúbrica', 'Mostrar rúbrica', 'Ocultar rúbrica'],
+  ])('names the heading and toggle in the %s item language', (language, heading, show, hide) => {
+    render(<Rubric model={{}} value={{ ...value, language } as typeof value} />);
+
+    expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: show }));
+    expect(screen.getByRole('button', { name: hide })).toHaveAttribute('aria-expanded', 'true');
+  });
 });
 
 describe('Rubric points', () => {

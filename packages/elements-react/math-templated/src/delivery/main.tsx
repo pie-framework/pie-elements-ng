@@ -42,6 +42,9 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import ReactDOM from 'react-dom';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -723,7 +726,7 @@ export class Main extends React.Component {
       showTeacherInstructions && (
         <CollapsibleContainer>
           {!animationsDisabled ? (
-            <Collapsible labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}>
+            <Collapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model?.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model?.language }) }}>
               {teacherInstructionsDiv}
             </Collapsible>
           ) : (
@@ -744,7 +747,7 @@ export class Main extends React.Component {
       showRationale && (
         <CollapsibleContainer>
           {!animationsDisabled ? (
-            <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>{rationaleDiv}</Collapsible>
+            <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: model?.language }), visible: translator.t('common:hideRationale', { lng: model?.language }) }}>{rationaleDiv}</Collapsible>
           ) : (
             rationaleDiv
           )}
@@ -909,7 +912,9 @@ export class Main extends React.Component {
       >
         <MainContainer>
           {/* what is srOnly ? */}
-          {mode === 'gather' && <SrOnly>Math Equation Response Question</SrOnly>}
+          {mode === 'gather' && (
+            <SrOnly>{translator.t('mathInline.mathEquationResponseQuestion', { lng: language })}</SrOnly>
+          )}
 
           <MainContainer>
             {showCorrectAnswerToggle && (

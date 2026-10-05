@@ -595,7 +595,7 @@ export class PlacementOrdering extends React.Component {
           <UiLayout extraCSSRules={extraCSSRules} style={containerStyle}>
             {showTeacherInstructions && (
               <StyledCollapsible
-                labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
+                labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
                 className="collapsible"
               >
                 <PreviewPrompt prompt={teacherInstructions} />
@@ -635,7 +635,7 @@ export class PlacementOrdering extends React.Component {
 
             {showRationale && (
               <StyledCollapsible
-                labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}
+                labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}
                 className="collapsible"
               >
                 <PreviewPrompt prompt={rationale} />

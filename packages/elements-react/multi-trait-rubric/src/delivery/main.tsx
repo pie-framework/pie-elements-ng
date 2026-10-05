@@ -7,6 +7,9 @@ import Scale from './scale.js';
 import Link from '@mui/material/Link';
 import Collapse from '@mui/material/Collapse';
 import { color, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -40,14 +43,12 @@ class Main extends React.Component {
     super(props);
     this.state = {
       rubricOpen: false,
-      linkPrefix: 'Show',
     };
     this.toggleRubric = this.toggleRubric.bind(this);
   }
 
   toggleRubric() {
     this.setState({ rubricOpen: !this.state.rubricOpen });
-    this.setState({ linkPrefix: this.state.rubricOpen ? 'Show' : 'Hide' });
   }
 
   render() {
@@ -97,7 +98,7 @@ class Main extends React.Component {
           style={{ backgroundColor: color.background(), minHeight: '24px' }}
           onClick={this.toggleRubric}
         >
-          {this.state.linkPrefix} Rubric
+          {translator.t(this.state.rubricOpen ? 'rubric.hideRubric' : 'rubric.showRubric', { lng: model.language })}
         </Link>
         <Collapse style={{ marginTop: '16px' }} in={this.state.rubricOpen} timeout={{ enter: 225, exit: 195 }}>
           {rubricItem}

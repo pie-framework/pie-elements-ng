@@ -36,6 +36,9 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -105,7 +108,7 @@ export class Main extends React.Component {
       >
         {showTeacherInstructions && (
           <StyledCollapsible
-            labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
+            labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
           >
             <PreviewPrompt prompt={model.teacherInstructions} />
           </StyledCollapsible>
@@ -130,7 +133,7 @@ export class Main extends React.Component {
         <DragInTheBlank {...modelWithValue} onChange={onChange} showCorrectAnswer={showCorrectAnswer} />
 
         {showRationale && (
-          <StyledRationale labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <StyledRationale labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt prompt={model.rationale} />
           </StyledRationale>
         )}

@@ -6,6 +6,9 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { styled } from '@mui/material/styles';
 import { Collapsible as CollapsibleImport, color, PreviewPrompt as PreviewPromptImport, Purpose as PurposeImport, UiLayout as UiLayoutImport, transformDataHeadings } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -331,8 +334,8 @@ class StimulusTabs extends React.Component {
     return (
       <Collapsible
         labels={{
-          hidden: 'Show Teacher Instructions',
-          visible: 'Hide Teacher Instructions',
+          hidden: translator.t('common:showTeacherInstructions', { lng: this.props.model?.language }),
+          visible: translator.t('common:hideTeacherInstructions', { lng: this.props.model?.language }),
         }}
       >
         {teacherInstructionsDiv}

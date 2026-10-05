@@ -79,3 +79,21 @@ describe('PlacementOrdering ids', () => {
     expect(tile('target-0')).toHaveTextContent('Blueberry');
   });
 });
+
+describe('PlacementOrdering toggles', () => {
+  it.each([
+    ['en_US', 'Show Teacher Instructions', 'Show Rationale'],
+    ['es_ES', 'Mostrar instrucciones para el maestro', 'Mostrar justificación'],
+  ])('are named in the %s item language', (language, instructions, rationale) => {
+    const { getByRole } = render(
+      <PlacementOrdering
+        model={{ ...model, language, teacherInstructions: '<p>Read aloud.</p>', rationale: '<p>Because.</p>' }}
+        session={{}}
+        onSessionChange={vi.fn()}
+      />,
+    );
+
+    expect(getByRole('button', { name: instructions })).toBeInTheDocument();
+    expect(getByRole('button', { name: rationale })).toBeInTheDocument();
+  });
+});

@@ -271,7 +271,7 @@ export class MultipleChoice extends React.Component {
 
   // renderHeading function was added for accessibility.
   renderHeading() {
-    const { mode, choiceMode, includeSrHeading, baseHeadingLevel, partLabel } = this.props;
+    const { mode, choiceMode, includeSrHeading, baseHeadingLevel, partLabel, language } = this.props;
 
     // When a part label is present the item is an EBSR part — the SR heading
     // is provided by the EBSR element, not here.
@@ -283,7 +283,10 @@ export class MultipleChoice extends React.Component {
 
     const clampedLevel = baseHeadingLevel ? Math.min(6, baseHeadingLevel) : 2;
     const HeadingTag = SrOnly.withComponent(`h${clampedLevel}`);
-    const label = choiceMode === 'radio' ? 'Multiple Choice Question' : 'Multiple Select Question';
+    const label = translator.t(
+      choiceMode === 'radio' ? 'multipleChoice.multipleChoiceQuestion' : 'multipleChoice.multipleSelectQuestion',
+      { lng: language },
+    );
 
     return <HeadingTag>{label}</HeadingTag>;
   }
@@ -374,8 +377,8 @@ export class MultipleChoice extends React.Component {
             {!animationsDisabled ? (
               <Collapsible
                 labels={{
-                  hidden: 'Show Teacher Instructions',
-                  visible: 'Hide Teacher Instructions',
+                  hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+                  visible: translator.t('common:hideTeacherInstructions', { lng: language }),
                 }}
               >
                 {teacherInstructionsDiv}
