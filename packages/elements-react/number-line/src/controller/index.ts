@@ -271,9 +271,11 @@ export const getCorrectness = (corrected) => {
  * https://github.com/pie-framework/pie-elements/issues/21
  */
 export function normalize(question) {
-  const feedback = merge(defaults.feedback, question.feedback);
+  // A copy: merge and model()'s tick updates write into the objects they are given.
+  const base = cloneDeep(defaults);
+  const feedback = merge(base.feedback, question.feedback);
 
-  return { ...defaults, ...question, feedback };
+  return { ...base, ...question, feedback };
 }
 
 export function createDefaultModel(model = {}) {
@@ -281,7 +283,7 @@ export function createDefaultModel(model = {}) {
     const out = {
       ...model,
       graph: {
-        ...defaults.graph,
+        ...cloneDeep(defaults.graph),
         ...model.graph,
       },
       colorContrast: 'black_on_white',
