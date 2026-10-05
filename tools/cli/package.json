@@ -21,7 +21,7 @@
     "lint": "biome check ."
   },
   "dependencies": {
-    "@oclif/core": "^4.0.0",
+    "@oclif/core": "^5.1.2",
     "@oclif/plugin-help": "^6.2.0",
     "@pie-element/element-bundler": "workspace:*",
     "es-module-lexer": "^1.7.0",
