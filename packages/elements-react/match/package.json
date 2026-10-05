@@ -13,6 +13,7 @@
     "@mui/material": "^7.3.4",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
+    "@pie-lib/translator": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
     "clsx": "^2.1.1",

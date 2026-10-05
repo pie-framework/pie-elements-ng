@@ -92,4 +92,15 @@ describe('Main', () => {
 
     expect(document.querySelector('[role="toolbar"]')).toHaveAttribute('aria-label', 'Herramientas de edición');
   });
+
+  it.each([
+    ['en_US', 'Constructed Response Question', 'Show Teacher Instructions'],
+    ['es_ES', 'Pregunta de respuesta construida', 'Mostrar instrucciones para el maestro'],
+  ])('names its heading and teacher instructions in the %s item language', async (language, heading, toggle) => {
+    renderMain({ language, teacherInstructions: '<p>Read aloud.</p>' });
+    await waitFor(() => screen.getByRole('textbox'));
+
+    expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: toggle })).toHaveAttribute('aria-expanded', 'false');
+  });
 });

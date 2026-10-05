@@ -6,6 +6,9 @@ import styled from 'styled-components';
 
 import ChoiceInput from './ChoiceInput.js';
 import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, useUniqueId } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -67,8 +70,17 @@ const MatrixGridItem = styled.div`
 `;
 
 const Matrix = (props) => {
-  const { disabled, prompt, onSessionChange, columnLabels, matrixValues, rowLabels, session, teacherInstructions } =
-    props;
+  const {
+    disabled,
+    prompt,
+    onSessionChange,
+    columnLabels,
+    matrixValues,
+    rowLabels,
+    session,
+    teacherInstructions,
+    language,
+  } = props;
 
   // The row and column labels are plain grid cells, so each radio references them by id for its name.
   const idPrefix = useUniqueId('matrix');
@@ -84,8 +96,8 @@ const Matrix = (props) => {
         <TeacherInstructions
           className={teacherInstructions}
           labels={{
-            hidden: 'Show Teacher Instructions',
-            visible: 'Hide Teacher Instructions',
+            hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+            visible: translator.t('common:hideTeacherInstructions', { lng: language }),
           }}
         >
           <PreviewPrompt prompt={teacherInstructions} />
@@ -131,6 +143,7 @@ const Matrix = (props) => {
 Matrix.propTypes = {
   prompt: PropTypes.string,
   teacherInstructions: PropTypes.string,
+  language: PropTypes.string,
   session: PropTypes.object,
   matrixValues: PropTypes.object,
   rowLabels: PropTypes.arrayOf(PropTypes.string),

@@ -35,6 +35,9 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import PropTypes from 'prop-types';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -136,7 +139,6 @@ class Rubric extends React.Component {
     super(props);
     this.state = {
       rubricOpen: false,
-      linkPrefix: 'Show',
     };
     this.toggleRubric = this.toggleRubric.bind(this);
   }
@@ -149,7 +151,6 @@ class Rubric extends React.Component {
 
   toggleRubric() {
     this.setState({ rubricOpen: !this.state.rubricOpen });
-    this.setState({ linkPrefix: this.state.rubricOpen ? 'Show' : 'Hide' });
   }
 
   shouldRenderPoint: any = (index, value) => {
@@ -204,7 +205,7 @@ class Rubric extends React.Component {
       return (
         <StyledUiLayout extraCSSRules={extraCSSRules}>
           {/* screen reader only heading for navigation as per PD-5057 */}
-          <HiddenScreenReader>Rubric</HiddenScreenReader>
+          <HiddenScreenReader>{translator.t('rubric.rubric', { lng: value.language })}</HiddenScreenReader>
           {!animationsDisabled ? (
             <React.Fragment>
               <RubricToggle
@@ -214,7 +215,9 @@ class Rubric extends React.Component {
                 aria-controls={`${this.idPrefix}-content`}
                 onClick={this.toggleRubric}
               >
-                {this.state.linkPrefix} Rubric
+                {translator.t(this.state.rubricOpen ? 'rubric.hideRubric' : 'rubric.showRubric', {
+                  lng: value.language,
+                })}
                 <ChevronStyle aria-hidden="true">
                   {this.state.rubricOpen ? (
                     <svg

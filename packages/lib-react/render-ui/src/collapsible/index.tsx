@@ -4,9 +4,12 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 import Collapse from '@mui/material/Collapse';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import Translator from '@pie-lib/translator';
 import PropTypes from 'prop-types';
 import * as color from '../color.js';
 import { createUniqueId } from '../unique-id.js';
+
+const { translator } = Translator;
 
 // --pie-tertiary is the theming contract's link-text token, held to 4.5:1 against
 // --pie-background in every scheme; --pie-primary carries no text-contrast guarantee.
@@ -38,6 +41,8 @@ export class Collapsible extends React.Component {
       visible: PropTypes.string,
       hidden: PropTypes.string,
     }),
+    /** The item language, which the default "Show" and "Hide" labels follow. */
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -63,9 +68,11 @@ export class Collapsible extends React.Component {
   }
 
   render() {
-    const { labels, children, className } = this.props;
+    const { labels, children, className, language } = this.props;
     const { expanded } = this.state;
-    const title = expanded ? labels.visible || 'Hide' : labels.hidden || 'Show';
+    const title = expanded
+      ? labels.visible || translator.t('common:hide', { lng: language })
+      : labels.hidden || translator.t('common:show', { lng: language });
 
     return (
       <div className={className} ref={(r) => (this.root = r)}>

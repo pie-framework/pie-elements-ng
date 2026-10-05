@@ -42,6 +42,9 @@ import { styled } from '@mui/material/styles';
 
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const pieVar = color.v('pie');
 
@@ -197,6 +200,7 @@ class Dropdown extends React.Component {
     showCorrectAnswer: PropTypes.bool,
     singleQuery: PropTypes.bool,
     correctValue: PropTypes.string,
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -322,7 +326,7 @@ class Dropdown extends React.Component {
   }
 
   render() {
-    const { id, correct, disabled, value, choices, showCorrectAnswer, singleQuery, correctValue } = this.props;
+    const { id, correct, disabled, value, choices, showCorrectAnswer, singleQuery, correctValue, language } = this.props;
     const { anchorEl } = this.state;
     const open = Boolean(anchorEl);
     const buttonId = `${this.idPrefix}-button`;
@@ -343,7 +347,9 @@ class Dropdown extends React.Component {
     // Create distinct, visually hidden labels for each dropdown
     const incrementedId = parseInt(id, 10) + 1;
     const labelId = `${this.idPrefix}-query-label`;
-    const labelText = singleQuery ? 'Query' : `Query ${incrementedId}`;
+    const labelText = singleQuery
+      ? translator.t('inlineDropdown.query', { lng: language })
+      : translator.t('inlineDropdown.queryNumber', { lng: language, index: incrementedId });
 
     // Changed from Select to Button for dropdown to enhance accessibility. This modification offers explicit control over aria attributes and focuses management, ensuring the dropdown is compliant with accessibility standards. The use of Button and Menu components allows for better handling of keyboard interactions and provides accessible labels and menus, aligning with WCAG guidelines and improving usability for assistive technology users.
     let correctnessIcon = null;

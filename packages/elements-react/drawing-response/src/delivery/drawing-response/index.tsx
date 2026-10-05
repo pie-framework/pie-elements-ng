@@ -36,6 +36,9 @@ const renderUi =
 import { styled } from '@mui/material/styles';
 
 import Container from './container.js';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -90,8 +93,8 @@ class DrawingResponseComponent extends React.Component {
         {teacherInstructions && (
           <StyledCollapsible
             labels={{
-              hidden: 'Show Teacher Instructions',
-              visible: 'Hide Teacher Instructions',
+              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
             }}
           >
             <PreviewPrompt prompt={teacherInstructions} />

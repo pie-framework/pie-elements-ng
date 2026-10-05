@@ -178,12 +178,14 @@ export class Main extends React.Component {
         alwaysShowCorrect={alwaysShowCorrect}
         style={{ display: `${displayType}` }}
       >
-        {mode === 'gather' && <SrOnly>Fill in the Blank Question</SrOnly>}
+        {mode === 'gather' && (
+          <SrOnly>{translator.t('explicitConstructedResponse.fillInTheBlankQuestion', { lng: language })}</SrOnly>
+        )}
 
         {showTeacherInstructions && (
           <CollapsibleContainer>
             {!animationsDisabled ? (
-              <Collapsible labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}>
+              <Collapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
                 {teacherInstructionsDiv}
               </Collapsible>
             ) : (
@@ -219,7 +221,7 @@ export class Main extends React.Component {
         {showRationale && (
           <CollapsibleContainer>
             {!animationsDisabled ? (
-              <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>{rationaleDiv}</Collapsible>
+              <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>{rationaleDiv}</Collapsible>
             ) : (
               rationaleDiv
             )}
