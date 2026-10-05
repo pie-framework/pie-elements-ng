@@ -17,11 +17,12 @@ pre-commit:
       run: node scripts/type-check-staged.mjs
 
 pre-push:
-  parallel: false
-  commands:
-    dependency-integrity-full:
-      run: bun run verify:dependency-integrity --check-peer-gaps --fail-on-hoist --fail-on-peer
-    test:
-      run: bun run test
-    build:
-      run: bun run build
+  jobs:
+    # The gate (build, dependency integrity, tests) lives in scripts/pre-push-gate.mjs, which skips
+    # it for a push that adds no commits or changes documentation only; `use_stdin` hands it the
+    # pushed refs. A script job, because lefthook skips a pre-push `run:` command whose push-file
+    # list is empty, as for a push whose commits only delete files (evilmartians/lefthook#1191).
+    - name: gate
+      script: pre-push-gate.sh
+      runner: sh
+      use_stdin: true
