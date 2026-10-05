@@ -95,15 +95,15 @@ describe('annotation menu', () => {
     const { menuElement } = renderMenu({});
     const popover = menuElement.closest('.MuiPopover-root') as Element;
 
-    expect(ruleText(menuElement)).toContain('border:2px solid var(--pie-border-dark, #646464)');
+    expect(ruleText(menuElement)).toContain('border:2px solid var(--pie-border-dark, #66686A)');
     expect(ruleText(popover, ' .MuiPaper-root::after')).toContain(
-      'border-top-color:var(--pie-border-dark, #646464)',
+      'border-top-color:var(--pie-border-dark, #66686A)',
     );
   });
 
   it.each([
     ['the dark theme', DARK, '#9E9E9E'],
-    ['no theme', {}, '#646464'],
+    ['no theme', {}, '#66686A'],
   ])('draws the outline in the theme border under %s', (_, vars, outline) => {
     const { menu } = renderMenu(vars);
 
