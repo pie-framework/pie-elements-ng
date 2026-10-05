@@ -116,17 +116,17 @@ function toggleCorrectAnswer() {
       <span class="simple-cloze-toggle-icon" aria-hidden="true">
         {#if showingCorrectAnswer}
           <svg preserveAspectRatio="xMinYMin meet" version="1.1" viewBox="-283 359 34 35" focusable="false">
-            <circle cx="-266" cy="375.9" r="14" fill="#bce2ff" />
-            <path d="M-280.5,375.9c0-8,6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5s-6.5,14.5-14.5,14.5S-280.5,383.9-280.5,375.9z M-279.5,375.9c0,7.4,6.1,13.5,13.5,13.5c7.4,0,13.5-6.1,13.5-13.5s-6.1-13.5-13.5-13.5C-273.4,362.4-279.5,368.5-279.5,375.9z" fill="#bce2ff" />
-            <polygon points="-265.4,383.1 -258.6,377.2 -261.2,374.2 -264.3,376.9 -268.9,368.7 -272.4,370.6" fill="#1a9cff" />
+            <circle cx="-266" cy="375.9" r="14" fill="var(--pie-tertiary-light, #bce2ff)" />
+            <path d="M-280.5,375.9c0-8,6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5s-6.5,14.5-14.5,14.5S-280.5,383.9-280.5,375.9z M-279.5,375.9c0,7.4,6.1,13.5,13.5,13.5c7.4,0,13.5-6.1,13.5-13.5s-6.1-13.5-13.5-13.5C-273.4,362.4-279.5,368.5-279.5,375.9z" fill="var(--pie-tertiary-light, #bce2ff)" />
+            <polygon points="-265.4,383.1 -258.6,377.2 -261.2,374.2 -264.3,376.9 -268.9,368.7 -272.4,370.6" fill="var(--pie-tertiary, #1a9cff)" />
           </svg>
         {:else}
           <svg preserveAspectRatio="xMinYMin meet" version="1.1" viewBox="-129.5 127 34 35" focusable="false">
-            <path style="fill: #D0CAC5; stroke: #E6E3E0; stroke-width: 0.75; stroke-miterlimit: 10;" d="M-112.9,160.4c-8.5,0-15.5-6.9-15.5-15.5c0-8.5,6.9-15.5,15.5-15.5s15.5,6.9,15.5,15.5 C-97.4,153.5-104.3,160.4-112.9,160.4z" />
-            <path style="fill: #B3ABA4; stroke: #CDC7C2; stroke-width: 0.5; stroke-miterlimit: 10;" d="M-113.2,159c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-105.2,159-113.2,159z" />
-            <circle cx="-114.2" cy="143.5" r="14" fill="white" />
-            <path d="M-114.2,158c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-106.2,158-114.2,158z M-114.2,130c-7.4,0-13.5,6.1-13.5,13.5s6.1,13.5,13.5,13.5s13.5-6.1,13.5-13.5S-106.8,130-114.2,130z" fill="#bce2ff" />
-            <polygon points="-114.8,150.7 -121.6,144.8 -119,141.8 -115.9,144.5 -111.3,136.3 -107.8,138.2" fill="#1a9cff" />
+            <path style="fill: var(--pie-border-light, #D0CAC5); stroke: var(--pie-border-light, #E6E3E0); stroke-width: 0.75; stroke-miterlimit: 10;" d="M-112.9,160.4c-8.5,0-15.5-6.9-15.5-15.5c0-8.5,6.9-15.5,15.5-15.5s15.5,6.9,15.5,15.5 C-97.4,153.5-104.3,160.4-112.9,160.4z" />
+            <path style="fill: var(--pie-border-light, #B3ABA4); stroke: var(--pie-border-light, #CDC7C2); stroke-width: 0.5; stroke-miterlimit: 10;" d="M-113.2,159c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-105.2,159-113.2,159z" />
+            <circle cx="-114.2" cy="143.5" r="14" fill="var(--pie-background, white)" />
+            <path d="M-114.2,158c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-106.2,158-114.2,158z M-114.2,130c-7.4,0-13.5,6.1-13.5,13.5s6.1,13.5,13.5,13.5s13.5-6.1,13.5-13.5S-106.8,130-114.2,130z" fill="var(--pie-tertiary-light, #bce2ff)" />
+            <polygon points="-114.8,150.7 -121.6,144.8 -119,141.8 -115.9,144.5 -111.3,136.3 -107.8,138.2" fill="var(--pie-tertiary, #1a9cff)" />
           </svg>
         {/if}
       </span>
@@ -278,7 +278,7 @@ function toggleCorrectAnswer() {
     align-items: center;
     justify-content: center;
     padding: 2px;
-    color: var(--pie-white, #ffffff);
+    color: var(--pie-background, #ffffff);
   }
 
   .correctness-icon svg {

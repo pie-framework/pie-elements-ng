@@ -209,7 +209,11 @@ $effect(() => {
     height: var(--mpb-listen-button-size, 128px);
     border: 0;
     padding: 0;
-    background-color: transparent;
+    /*
+     * Fixed light plates, at rest and on hover: the artwork's outlines and baked "Listen" label are
+     * dark literals an <img> cannot theme, down to 1.2:1 on a dark scheme's page.
+     */
+    background-color: #ffffff;
     cursor: pointer;
     z-index: 1;
   }

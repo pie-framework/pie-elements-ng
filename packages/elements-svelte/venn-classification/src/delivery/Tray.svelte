@@ -34,16 +34,16 @@ let {
 
 <style>
   .venn-tray {
-    border: 1.5px dashed #94a3b8;
+    border: 1.5px dashed var(--pie-border-dark, #64748b);
     border-radius: 12px;
     padding: 14px 16px;
-    background: #f8fafc;
+    background: var(--pie-surface, #f8fafc);
     min-height: 120px;
     transition: background 120ms ease, border-color 120ms ease;
   }
   .venn-tray.drop-target {
-    background: #e0f2fe;
-    border-color: #0ea5e9;
+    background: var(--pie-faded-primary, #e0f2fe);
+    border-color: var(--pie-tertiary, #0284c7);
   }
   .venn-tray.focused {
     outline: 2px solid var(--vc-focus-ring, #1565c0);
@@ -52,7 +52,7 @@ let {
   .tray-label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--pie-text, #475569);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 8px;
