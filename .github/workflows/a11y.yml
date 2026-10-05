@@ -10,13 +10,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Skips the scan for a documentation-only or release pull request; see the same job in ci.yml.
+  change-scope:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_code: ${{ steps.scope.outputs.skip_code }}
+      skip_lint: ${{ steps.scope.outputs.skip_lint }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - id: scope
+        env:
+          SKIP_HEAVY: ${{ github.event_name == 'pull_request' && (startsWith(github.head_ref, 'changeset-release/') || contains(github.event.pull_request.title, '[skip-heavy-ci]') || contains(join(github.event.pull_request.labels.*.name, ','), 'skip-heavy-ci')) }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: node scripts/ci-change-scope.mjs
+
   axe-scenarios:
     name: Axe scenarios and inventory (non-blocking)
     # Non-blocking: this suite is informational while accessibility findings are
     # triaged. It must not fail the PR check. Skip on changeset-release branches
     # and when a PR opts out via the shared [skip-heavy-ci] label/title guard
-    # (same guard used by ci.yml).
-    if: ${{ !(github.event_name == 'pull_request' && (startsWith(github.head_ref, 'changeset-release/') || contains(github.event.pull_request.title, '[skip-heavy-ci]') || contains(join(github.event.pull_request.labels.*.name, ','), 'skip-heavy-ci'))) }}
+    # (same guard used by ci.yml), and for a documentation-only change.
+    needs: change-scope
+    if: ${{ !cancelled() && needs.change-scope.outputs.skip_code != 'true' }}
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:

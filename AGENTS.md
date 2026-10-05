@@ -27,7 +27,7 @@ This project uses lightweight PRDs (Product Requirements Documents) under [`docs
 
 **When a task does not need a PRD**:
 
-- Bug fixes, refactors with no behaviour change, demo-app or e2e-test tweaks, pure docs / README changes, version bumps and dependency updates. A PR description is enough.
+- Bug fixes, refactors with no behaviour change, demo-app or e2e-test tweaks, pure docs / README changes, version bumps and dependency updates. A PR description is enough, and a documentation-only change needs no PR (see [Documentation-only changes](#documentation-only-changes)).
 
 **PRD layout in this repo**:
 
@@ -169,6 +169,14 @@ No Svelte type check runs in the build, the hooks or CI; the `.ts` files of Svel
 4. All tests pass: `bun run test` (Vitest; `bun test` starts Bun's own test runner instead)
 5. E2E tests pass: `bun run test:e2e`. CI runs them only on manual dispatch.
 6. Accessibility tests pass: `bun run test:a11y`. CI runs them on every pull request without blocking the merge.
+
+### Documentation-only changes
+
+A change made only of documentation gets no Jira ticket and no branch or pull request of its own. `scripts/lib/change-scope.mjs` defines documentation: `docs/` except the files a test reads, Markdown at the root, `.claude/` and `.agents/`. Package READMEs and changesets are not documentation.
+
+- Commit it to `develop` and push. The pre-push gate skips such a push, and CI on `develop` runs only `lint` for it.
+- When a review is wanted, collect the pending documentation in one `docs/` branch and merge it as one pull request. CI runs only `lint` for it.
+- A documentation edit that belongs to a code change stays in that change's branch.
 
 ## Testing Strategy
 
