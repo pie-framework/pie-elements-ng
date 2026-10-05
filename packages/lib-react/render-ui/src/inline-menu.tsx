@@ -2,22 +2,22 @@
 /**
  * InlineMenu - A wrapper around MUI's Menu component for inline contexts
  *
- * This component fixes the issue where MUI's Menu creates a modal overlay
- * that covers the entire screen with a white background. It's designed for
- * use in inline contexts like dropdowns within text or other UI elements.
+ * MUI's Menu renders inside a modal root that covers the viewport, and
+ * `styled(Menu)` puts its class on that root, so a background styled onto the
+ * menu paints over the whole page. InlineMenu keeps the page visible under an
+ * open menu. It's designed for use in inline contexts like dropdowns within
+ * text or other UI elements.
  *
  * Key differences from standard MUI Menu:
- * - No backdrop (hideBackdrop)
- * - Transparent modal root (doesn't block UI)
+ * - Transparent modal root, whatever background the menu is styled with
  * - No scroll locking (disableScrollLock)
- * - Menu itself remains interactive
  */
 
 import React from 'react';
 import Menu, { MenuProps } from '@mui/material/Menu';
 
 /**
- * InlineMenu component that wraps MUI Menu without the blocking backdrop
+ * InlineMenu component that wraps MUI Menu without painting over the page
  *
  * @example
  * ```tsx
@@ -36,23 +36,20 @@ export const InlineMenu: React.FC<MenuProps> = ({ slotProps, ...props }) => {
     <Menu
       {...props}
       disableScrollLock
-      hideBackdrop
       slotProps={{
         ...slotProps,
         root: {
           ...slotProps?.root,
           style: {
             backgroundColor: 'transparent',
-            pointerEvents: 'none',
             ...slotProps?.root?.style,
           },
         },
-        paper: {
-          ...slotProps?.paper,
-          style: {
-            pointerEvents: 'auto',
-            ...slotProps?.paper?.style,
-          },
+        // MUI closes a menu on an outside click only through its backdrop: a click or tap on it
+        // calls onClose(event, 'backdropClick') and does not reach the page underneath.
+        backdrop: {
+          invisible: true,
+          ...slotProps?.backdrop,
         },
       }}
     />
