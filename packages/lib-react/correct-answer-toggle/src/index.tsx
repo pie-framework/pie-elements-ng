@@ -53,10 +53,23 @@ const StyledRoot: any = styled('div')(() => ({
   cursor: 'pointer',
 }));
 
-const StyledContent: any = styled('div')(() => ({
+const StyledContent: any = styled('button')(() => ({
   margin: '0 auto',
   textAlign: 'center',
   display: 'flex',
+  minWidth: '24px',
+  minHeight: '24px',
+  padding: 0,
+  border: 0,
+  background: 'none',
+  color: 'inherit',
+  font: 'inherit',
+  cursor: 'pointer',
+  '&:focus-visible': {
+    outline: `2px solid ${color.buttonFocusOutline()}`,
+    // Inset, because the expander around the button clips anything drawn outside it.
+    outlineOffset: '-2px',
+  },
 }));
 
 const StyledLabel: any = styled('div')(() => ({
@@ -159,7 +172,12 @@ export class CorrectAnswerToggle extends React.Component {
     return (
       <StyledRoot className={className}>
         <Expander show={this.state.show}>
-          <StyledContent onClick={this.onClick.bind(this)} onTouchEnd={this.onTouch.bind(this)}>
+          <StyledContent
+            type="button"
+            aria-pressed={!!toggled}
+            onClick={this.onClick.bind(this)}
+            onTouchEnd={this.onTouch.bind(this)}
+          >
             <StyledIconHolder>
               <CSSTransition
                 nodeRef={this.openIconRef}
