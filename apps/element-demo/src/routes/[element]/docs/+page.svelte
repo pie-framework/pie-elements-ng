@@ -1,10 +1,10 @@
 <script lang="ts">
-import { page } from '$app/stores';
+import { page } from '$app/state';
 
 let { data } = $props();
 
 const viewHref = (viewId: string): string => {
-  const params = new URLSearchParams($page.url.searchParams);
+  const params = new URLSearchParams(page.url.searchParams);
   params.set('view', viewId);
   const query = params.toString();
   return query.length ? `?${query}` : '';

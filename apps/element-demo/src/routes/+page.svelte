@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { PageData } from './$types';
-import { theme } from '$lib/stores/demo-state';
+import { theme } from '#lib/stores/demo-state.ts';
 
 let { data }: { data: PageData } = $props();
 

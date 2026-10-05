@@ -1,7 +1,7 @@
 <script lang="ts">
 import '../app.css';
 import { onMount } from 'svelte';
-import { theme } from '$lib/stores/demo-state';
+import { theme } from '#lib/stores/demo-state.ts';
 import '@pie-element/element-theme-daisyui';
 
 const { children } = $props();

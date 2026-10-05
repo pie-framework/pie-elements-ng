@@ -1,10 +1,10 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 import '@pie-element/element-player';
-import '$lib/element-player/configure-loader';
-import { theme } from '$lib/stores/demo-state';
-import { loadController } from '$lib/element-player/lib/demo-element-loader';
-import type { PieController } from '$lib/element-player/lib/types';
+import '#lib/element-player/configure-loader.ts';
+import { theme } from '#lib/stores/demo-state.ts';
+import { loadController } from '#lib/element-player/lib/demo-element-loader.ts';
+import type { PieController } from '#lib/element-player/lib/types.ts';
 import { RENDER_TIMEOUT_MS, type RenderOutcome, watchRender } from './render-readiness';
 import type { A11yScanMode, A11yScanRole } from './suite';
 

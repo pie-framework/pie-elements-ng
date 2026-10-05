@@ -3,15 +3,15 @@
  * Delivery Route
  * Shows the rendered PIE element for interaction
  */
-import { page } from '$app/stores';
-import DeliveryPlayerLayout from '$lib/element-player/components/DeliveryPlayerLayout.svelte';
-import '$lib/element-player/configure-loader';
+import { page } from '$app/state';
+import DeliveryPlayerLayout from '#lib/element-player/components/DeliveryPlayerLayout.svelte';
+import '#lib/element-player/configure-loader.ts';
 import {
   iifeBundleEndpoint,
   iifeBundleHost,
   parsePlayerType,
   type PlayerType,
-} from '$lib/config/player-runtime';
+} from '#lib/config/player-runtime.ts';
 import { get } from 'svelte/store';
 import '@pie-element/element-player';
 import {
@@ -28,7 +28,7 @@ import {
   iifeBuildLoading,
   iifeBuildRequestVersion,
   theme,
-} from '$lib/stores/demo-state';
+} from '#lib/stores/demo-state.ts';
 import type { LayoutData } from '../$types';
 
 let { data }: { data: LayoutData } = $props();
@@ -40,7 +40,7 @@ let modelError = $state<string | null>(null);
 let esmModelReady = $state(false);
 let modelRequestId = 0;
 const debug = false;
-const playerType = $derived<PlayerType>(parsePlayerType($page.url.searchParams.get('player')));
+const playerType = $derived<PlayerType>(parsePlayerType(page.url.searchParams.get('player')));
 
 // Normalize session - ensure it's an object without imposing specific structure
 const normalizeSession = (nextSession: any) => {

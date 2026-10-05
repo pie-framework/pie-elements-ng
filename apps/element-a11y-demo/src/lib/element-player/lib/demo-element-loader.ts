@@ -10,7 +10,7 @@
  * - This ensures we load DIST files (fully built) instead of source files
  */
 
-import { getControllerModule } from '$lib/element-imports';
+import { getControllerModule } from '#lib/element-imports.js';
 
 /**
  * Load a PIE controller
