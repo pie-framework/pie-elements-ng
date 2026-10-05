@@ -4,7 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { DragInTheBlank } from '@pie-lib/mask-markup';
-import { color, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+import { color, createUniqueId, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -69,6 +69,9 @@ export class Main extends React.Component {
     value: {},
   };
 
+  // The delivery element finds the container by its class, which authored CSS may also target.
+  mainContainerId = createUniqueId('main-container');
+
   state = {
     showCorrectAnswer: false,
   };
@@ -99,7 +102,8 @@ export class Main extends React.Component {
     return (
       <StyledUiLayout
         extraCSSRules={extraCSSRules}
-        id={'main-container'}
+        id={this.mainContainerId}
+        className="main-container"
         fontSizeFactor={fontSizeFactor}
       >
         {showTeacherInstructions && (

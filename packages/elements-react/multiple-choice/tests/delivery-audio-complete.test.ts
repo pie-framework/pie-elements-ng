@@ -5,6 +5,7 @@ vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () =>
 vi.mock('@pie-lib/render-ui', () => ({
   default: { EnableAudioAutoplayImage: () => null },
   EnableAudioAutoplayImage: () => null,
+  createUniqueId: (prefix: string) => `${prefix}-test`,
 }));
 vi.mock('react-dom/client', () => ({
   createRoot: () => ({ render: () => {}, unmount: () => {} }),
@@ -81,7 +82,7 @@ describe('multiple-choice prompt audio tracking', () => {
 
     // Main is mocked, so stand in for the markup it renders around the prompt.
     element.innerHTML =
-      '<div id="main-container"><div class="preview-prompt"><audio></audio></div></div>';
+      '<div class="main-container"><div class="preview-prompt"><audio></audio></div></div>';
     await Promise.resolve();
 
     const events: CustomEvent[] = [];
@@ -115,7 +116,7 @@ describe('multiple-choice prompt audio tracking', () => {
 
     vi.advanceTimersByTime(600);
 
-    expect(element.querySelector('#play-audio-info')).toBeNull();
+    expect(element.querySelector('.play-audio-info')).toBeNull();
   });
 
   it('does not track the audio when neither flag is on', async () => {

@@ -84,6 +84,7 @@ vi.mock('@pie-lib/render-ui', () => {
     hasText: vi.fn(() => false),
     hasMedia: vi.fn(() => false),
     PreviewPrompt: (props: any) => <div {...props} />,
+    createUniqueId: (prefix: string) => `${prefix}-test`,
     color: {
       text: () => '#000',
       background: () => '#fff',
