@@ -32,10 +32,10 @@ export const defaults = {
   // this is only used for multi-trait-rubric, we might want to use BACKGROUND_DARK instead
   SECONDARY_BACKGROUND: 'rgba(241,241,241,1)',
   // raised surface for cards, answer pools, and menus;
-  SURFACE: '#E0E1E6',
+  SURFACE: '#EBECF1',
   BORDER: '#9A9A9A',
   BORDER_LIGHT: '#D1D1D1',
-  BORDER_DARK: '#646464',
+  BORDER_DARK: '#66686A',
   BORDER_GRAY: '#7E8494',
   // these are used for authored tables
   TABLE_GRID: 'black',

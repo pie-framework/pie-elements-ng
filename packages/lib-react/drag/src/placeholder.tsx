@@ -26,7 +26,7 @@ const StyledPlaceholder: any = styled('div')(({ theme }) => ({
     gridRowGap: theme.spacing(1),
     gridColumnGap: theme.spacing(1),
     padding: theme.spacing(1),
-    border: `2px dashed ${color.text()}`,
+    border: `2px dashed ${color.borderDark()}`,
   },
   '&.placeholderDisabled': {
     boxShadow: 'none',
@@ -104,7 +104,7 @@ export const PlaceHolder = (props) => {
   // We apply a different style for the "choice" type
   // For any other type, use a dashed text-coloured border on the page background
   if (type === 'choice') {
-    style.border = `1px solid ${color.borderLight()}`;
+    style.border = `1px solid ${color.borderDark()}`;
     style.background = color.surface();
   }
 

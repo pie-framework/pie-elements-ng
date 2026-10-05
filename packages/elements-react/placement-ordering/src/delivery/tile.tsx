@@ -39,7 +39,7 @@ const StyledTileContent: any = styled('div')(
     padding: '10px',
     boxSizing: 'border-box',
     overflow: 'hidden',
-    border: type === 'choice' || type === 'target' ? `1px solid ${color.border()}` : '1px solid transparent',
+    border: type === 'choice' || type === 'target' ? `1px solid ${color.borderDark()}` : '1px solid transparent',
     backgroundColor: type === 'choice' || type === 'target' ? color.background() : 'transparent',
     transition:
       type === 'choice' || type === 'target'
