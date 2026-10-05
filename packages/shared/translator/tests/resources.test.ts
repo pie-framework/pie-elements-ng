@@ -22,6 +22,7 @@ const LOCALLY_OWNED = [
   'multipleChoice',
   'numberLine',
   'rubric',
+  'selectText',
   'simpleCloze',
   'vennClassification',
 ] as const;
