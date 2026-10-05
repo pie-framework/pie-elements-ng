@@ -15,7 +15,7 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/icons": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "assert": "^1.4.1",
+    "assert": "^2.1.0",
     "debug": "^4.1.1",
     "prop-types": "^15.6.2",
     "react-measure": "^2.2.2",
