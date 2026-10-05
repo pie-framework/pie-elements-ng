@@ -7,14 +7,18 @@ const { default: SimpleQuestionBlock } = await import('../simple-question-block'
 
 // The item's rendered MathQuill fields, reduced to what updateAria reads: each field's textarea
 // inside its .mq-textarea wrapper.
-const renderItem = () => {
+const renderItem = (language?: string) => {
   const root = document.createElement('div');
   root.innerHTML = [1, 2].map(() => '<span class="mq-textarea"><textarea></textarea></span>').join('');
   document.body.appendChild(root);
 
   // main.tsx is untyped, so its class declares no props.
-  const item = new (Main as unknown as new (props: object) => { root: HTMLElement; updateAria: () => void })({
-    model: { config: {} },
+  const item = new (Main as unknown as new (props: object) => {
+    root: HTMLElement;
+    props: { model: object };
+    updateAria: () => void;
+  })({
+    model: { config: {}, language },
     session: {},
   });
   item.root = root;
@@ -53,6 +57,30 @@ describe('math-inline keypad instructions', () => {
 
     expect(describedBy(root)).toEqual(before);
     expect(root.querySelectorAll('.sr-only')).toHaveLength(2);
+  });
+
+  it.each([
+    ['en_US', /^This field supports both keypad and keyboard input\./],
+    ['es_ES', /^Este campo admite la entrada con el teclado en pantalla y con el teclado físico\./],
+    [undefined, /^This field supports both keypad and keyboard input\./],
+  ])('are in the %s item language', (language, text) => {
+    const { root } = renderItem(language);
+
+    for (const id of describedBy(root)) {
+      expect(document.getElementById(id)?.textContent).toMatch(text);
+    }
+  });
+
+  it('follow a language change after the first render', () => {
+    const { root, item } = renderItem('en_US');
+
+    // The component re-runs updateAria when the model language changes.
+    (item as { props: object }).props = { model: { config: {}, language: 'es_ES' }, session: {} };
+    item.updateAria();
+
+    for (const id of describedBy(root)) {
+      expect(document.getElementById(id)?.textContent).toMatch(/^Este campo admite/);
+    }
   });
 });
 

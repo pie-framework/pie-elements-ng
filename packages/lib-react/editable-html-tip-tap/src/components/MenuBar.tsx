@@ -199,11 +199,13 @@ function MenuBar({
     e.preventDefault();
   };
 
+  const buttonLabel = (key) => translator.t(`editableHtml.buttons.${key}`, { lng: language });
+
   const toolbarButtons = useMemo(
     () => [
       {
         icon: <GridOn />,
-        label: 'Insert table',
+        label: buttonLabel('insertTable'),
         onClick: (editor) => editor.chain().focus().insertTable({ rows: 2, cols: 2, withHeaderRow: false }).run(),
         hidden: (state) => !activePlugins?.includes('table') || state.isTable,
         isActive: (state) => state.isTable,
@@ -211,7 +213,7 @@ function MenuBar({
       },
       {
         icon: <AddRow />,
-        label: 'Add table row',
+        label: buttonLabel('addTableRow'),
         onClick: (editor) => editor.chain().focus().addRowAfter().run(),
         hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
@@ -219,7 +221,7 @@ function MenuBar({
       },
       {
         icon: <RemoveRow />,
-        label: 'Remove table row',
+        label: buttonLabel('removeTableRow'),
         onClick: (editor) => editor.chain().focus().deleteRow().run(),
         hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
@@ -227,7 +229,7 @@ function MenuBar({
       },
       {
         icon: <AddColumn />,
-        label: 'Add table column',
+        label: buttonLabel('addTableColumn'),
         onClick: (editor) => editor.chain().focus().addColumnAfter().run(),
         hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
@@ -235,7 +237,7 @@ function MenuBar({
       },
       {
         icon: <RemoveColumn />,
-        label: 'Remove table column',
+        label: buttonLabel('removeTableColumn'),
         onClick: (editor) => editor.chain().focus().deleteColumn().run(),
         hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
@@ -243,7 +245,7 @@ function MenuBar({
       },
       {
         icon: <RemoveTable />,
-        label: 'Remove table',
+        label: buttonLabel('removeTable'),
         onClick: (editor) => editor.chain().focus().deleteTable().run(),
         hidden: (state) => !(state.isTable && !state.hasTextSelectionInTable),
         isActive: (state) => state.isTable,
@@ -251,7 +253,7 @@ function MenuBar({
       },
       {
         icon: <BorderAll />,
-        label: 'Table borders',
+        label: buttonLabel('tableBorders'),
         toggle: true,
         onClick: (editor) => {
           const tableAttrs = editor.getAttributes('table');
@@ -269,7 +271,7 @@ function MenuBar({
       },
       {
         icon: <Bold />,
-        label: 'Bold',
+        label: buttonLabel('bold'),
         toggle: true,
         onClick: (editor) => editor.chain().focus().toggleBold().run(),
         hidden: () => !activePlugins?.includes('bold'),
@@ -278,7 +280,7 @@ function MenuBar({
       },
       {
         icon: <Italic />,
-        label: 'Italic',
+        label: buttonLabel('italic'),
         toggle: true,
         onClick: (editor) => editor.chain().focus().toggleItalic().run(),
         hidden: () => !activePlugins?.includes('italic'),
@@ -287,7 +289,7 @@ function MenuBar({
       },
       {
         icon: <Strikethrough />,
-        label: 'Strikethrough',
+        label: buttonLabel('strikethrough'),
         toggle: true,
         onClick: (editor) => editor.chain().focus().toggleStrike().run(),
         hidden: () => !activePlugins?.includes('strikethrough'),
@@ -296,7 +298,7 @@ function MenuBar({
       },
       {
         icon: <Code />,
-        label: 'Code',
+        label: buttonLabel('code'),
         toggle: true,
         onClick: (editor) => editor.chain().focus().toggleCode().run(),
         hidden: () => !activePlugins?.includes('code'),
@@ -305,7 +307,7 @@ function MenuBar({
       },
       {
         icon: <Underline />,
-        label: 'Underline',
+        label: buttonLabel('underline'),
         toggle: true,
         onClick: (editor) => editor.chain().focus().toggleUnderline().run(),
         hidden: () => !activePlugins?.includes('underline'),
@@ -313,7 +315,7 @@ function MenuBar({
       },
       {
         icon: <SubscriptIcon />,
-        label: 'Subscript',
+        label: buttonLabel('subscript'),
         toggle: true,
         onClick: (editor) => editor.chain().focus().toggleSubscript().run(),
         hidden: () => !activePlugins?.includes('subscript'),
@@ -321,7 +323,7 @@ function MenuBar({
       },
       {
         icon: <SuperscriptIcon />,
-        label: 'Superscript',
+        label: buttonLabel('superscript'),
         toggle: true,
         onClick: (editor) => editor.chain().focus().toggleSuperscript().run(),
         hidden: () => !activePlugins?.includes('superscript'),
@@ -329,31 +331,31 @@ function MenuBar({
       },
       {
         icon: <ImageIcon />,
-        label: 'Insert image',
+        label: buttonLabel('insertImage'),
         hidden: () => !activePlugins?.includes('image'),
         onClick: (editor) => editor.chain().focus().setImageUploadNode().run(),
       },
       {
         icon: <TheatersIcon />,
-        label: 'Insert video',
+        label: buttonLabel('insertVideo'),
         hidden: () => !activePlugins?.includes('video'),
         onClick: (editor) => editor.chain().focus().insertMedia({ type: 'video' }).run(),
       },
       {
         icon: <VolumeUpIcon />,
-        label: 'Insert audio',
+        label: buttonLabel('insertAudio'),
         hidden: () => !activePlugins?.includes('audio'),
         onClick: (editor) => editor.chain().focus().insertMedia({ type: 'audio', tag: 'audio' }).run(),
       },
       {
         icon: <CSSIcon />,
-        label: 'CSS classes',
+        label: buttonLabel('cssClasses'),
         hidden: () => !activePlugins?.includes('css'),
         onClick: (editor) => editor.commands.openCSSClassDialog(),
       },
       {
         icon: <FormatQuote />,
-        label: 'Blockquote',
+        label: buttonLabel('blockquote'),
         toggle: true,
         hidden: () => !activePlugins?.includes('blockquote'),
         onClick: (editor) => editor.chain().focus().toggleBlockquote().run(),
@@ -361,7 +363,7 @@ function MenuBar({
       },
       {
         icon: <HeadingIcon />,
-        label: 'Heading',
+        label: buttonLabel('heading'),
         toggle: true,
         hidden: () => !activePlugins?.includes('h3'),
         onClick: (editor) => editor.chain().focus().toggleHeadingParagraph().run(),
@@ -369,31 +371,31 @@ function MenuBar({
       },
       {
         icon: <Functions />,
-        label: 'Insert math',
+        label: buttonLabel('insertMath'),
         hidden: () => !activePlugins?.includes('math'),
         onClick: (editor) => editor.chain().focus().insertMath('').run(),
       },
       {
         icon: <CharacterIcon letter="ñ" />,
-        label: 'Spanish characters (ñ)',
+        label: buttonLabel('spanishCharacters'),
         hidden: () => !activePlugins?.includes('languageCharacters'),
         onClick: () => setShowPicker(spanishConfig),
       },
       {
         icon: <CharacterIcon letter="€" />,
-        label: 'Special characters (€)',
+        label: buttonLabel('specialCharacters'),
         hidden: () => activePlugins?.filter((p) => p === 'languageCharacters').length !== 2,
         onClick: () => setShowPicker(specialConfig),
       },
       {
         icon: <TextAlignIcon editor={editor} />,
-        label: 'Text alignment',
+        label: buttonLabel('textAlignment'),
         hidden: () => !activePlugins?.includes('text-align'),
         onClick: () => {},
       },
       {
         icon: <BulletedListIcon />,
-        label: 'Bulleted list',
+        label: buttonLabel('bulletedList'),
         toggle: true,
         hidden: () => !activePlugins?.includes('bulleted-list'),
         onClick: (editor) => editor.chain().focus().toggleBulletList().run(),
@@ -401,7 +403,7 @@ function MenuBar({
       },
       {
         icon: <NumberedListIcon />,
-        label: 'Numbered list',
+        label: buttonLabel('numberedList'),
         toggle: true,
         hidden: () => !activePlugins?.includes('numbered-list'),
         onClick: (editor) => editor.chain().focus().toggleOrderedList().run(),
@@ -409,20 +411,20 @@ function MenuBar({
       },
       {
         icon: <Undo />,
-        label: 'Undo',
+        label: translator.t('common:undo', { lng: language }),
         hidden: () => !activePlugins?.includes('undo'),
         onClick: (editor) => editor.chain().focus().undo().run(),
         isDisabled: (state) => !state.canUndo,
       },
       {
         icon: <Redo />,
-        label: 'Redo',
+        label: translator.t('graphing.redo', { lng: language }),
         hidden: () => !activePlugins?.includes('redo'),
         onClick: (editor) => editor.chain().focus().redo().run(),
         isDisabled: (state) => !state.canRedo,
       },
     ],
-    [activePlugins, editor],
+    [activePlugins, editor, language],
   );
 
   return (
@@ -500,6 +502,7 @@ function MenuBar({
 
           {toolbarOpts.showDone && (
             <DoneButton
+              language={language}
               onClick={() => {
                 onChange?.(editor.getHTML());
                 editor.commands.blur();

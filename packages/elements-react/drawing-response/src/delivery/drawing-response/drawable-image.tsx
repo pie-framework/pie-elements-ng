@@ -18,7 +18,7 @@ const Image: any = styled('img')({
 const DrawableImage = ({ url, dimensions: { height, width } }) => (
   <ImageContainer>
     <Image
-      alt="drawing-response-image"
+      alt=""
       src={url}
       style={{
         height,

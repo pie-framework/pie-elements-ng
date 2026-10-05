@@ -259,11 +259,11 @@ export class Container extends Component {
         <Box>
           <Toolbar>
             {TOOLS.map((tool) => {
-              const { type, label, icon } = tool;
+              const { type, labelKey, icon } = tool;
 
               return (
                 <Button
-                  title={label}
+                  title={translator.t(`drawingResponse.tools.${labelKey}`, { lng: language })}
                   key={type}
                   disabled={this.checkIfToolIsDisabled(type)}
                   onClick={() => this.handleMakeToolActive(tool)}

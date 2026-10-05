@@ -62,3 +62,17 @@ describe('ImageClozeAssociationComponent answer choices', () => {
     expect(screen.getByRole('button', { name: 'Opción de respuesta 1 de 4' })).toBeInTheDocument();
   });
 });
+
+describe('ImageClozeAssociationComponent toggles', () => {
+  it.each([
+    ['en_US', 'Show Teacher Instructions', 'Show Rationale'],
+    ['es_ES', 'Mostrar instrucciones para el maestro', 'Mostrar justificación'],
+  ])('are named in the %s item language', (language, instructions, rationale) => {
+    renderRoot({
+      model: { language, teacherInstructions: '<p>Read aloud.</p>', rationale: '<p>Because.</p>' },
+    });
+
+    expect(screen.getByRole('button', { name: instructions })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: rationale })).toBeInTheDocument();
+  });
+});

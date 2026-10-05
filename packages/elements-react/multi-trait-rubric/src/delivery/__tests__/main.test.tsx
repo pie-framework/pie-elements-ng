@@ -44,6 +44,16 @@ describe('Multi-trait rubric toggle', () => {
     expect(screen.getByRole('button', { name: 'Show Rubric' })).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it.each([
+    ['en_US', 'Show Rubric', 'Hide Rubric'],
+    ['es_ES', 'Mostrar rúbrica', 'Ocultar rúbrica'],
+  ])('names the toggle in the %s item language', (language, show, hide) => {
+    render(<Main model={{ ...model, language } as typeof model} />);
+
+    fireEvent.click(screen.getByRole('button', { name: show }));
+    expect(screen.getByRole('button', { name: hide })).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('renders no toggle when animations are disabled', () => {
     render(<Main model={model} animationsDisabled />);
 

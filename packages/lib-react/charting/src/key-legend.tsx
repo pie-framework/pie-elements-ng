@@ -58,7 +58,7 @@ const { translator } = Translator;
 
 const KeyLegend = ({ language }) => (
   <StyledContainer>
-    <StyledTitle>Key</StyledTitle>
+    <StyledTitle>{translator.t('selectText.key', { lng: language })}</StyledTitle>
     <StyledRow>
       <StyledIncorrectIcon />
       <div>{translator.t('charting.keyLegend.incorrectAnswer', { lng: language })}</div>

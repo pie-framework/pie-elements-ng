@@ -29,6 +29,28 @@ const renderMatrix = () => render(matrix());
 
 const pageIds = () => [...document.querySelectorAll('[id]')].map((el) => el.id);
 
+describe('Matrix teacher instructions', () => {
+  it.each([
+    ['en_US', 'Show Teacher Instructions'],
+    ['es_ES', 'Mostrar instrucciones para el maestro'],
+  ])('label their toggle in the %s item language', (language, label) => {
+    render(
+      <Matrix
+        columnLabels={['Disagree', 'Agree']}
+        disabled={false}
+        language={language}
+        matrixValues={{ '0-0': 0, '0-1': 1 }}
+        onSessionChange={vi.fn()}
+        rowLabels={['Politics']}
+        session={{}}
+        teacherInstructions="Read aloud."
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: label })).toHaveAttribute('aria-expanded', 'false');
+  });
+});
+
 describe('Matrix radio names', () => {
   it('names each radio from its row and column labels', () => {
     renderMatrix();

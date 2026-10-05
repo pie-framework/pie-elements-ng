@@ -4,7 +4,10 @@ import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import MultipleChoice from '@pie-element/multiple-choice';
 import { get } from '@pie-element/shared-lodash';
 import debug from 'debug';
+import Translator from '@pie-lib/translator';
 import { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';
+
+const { translator } = Translator;
 
 const SESSION_CHANGED = SessionChangedEvent.TYPE;
 const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;
@@ -91,6 +94,7 @@ export default class Ebsr extends HTMLElement {
 
   set model(m) {
     this._model = m;
+    this._updateRegionName();
 
     customElements.whenDefined(MC_TAG_NAME).then(() => {
       this.setPartModel(this.partA, 'partA');
@@ -189,13 +193,34 @@ export default class Ebsr extends HTMLElement {
     }
   }
 
+  /** The item-level name in the item language, which the parts carry when the item sets none. */
+  get regionName() {
+    const language = this._model?.language ?? this._model?.partA?.language;
+
+    return translator.t('ebsr.twoPartQuestion', { lng: language });
+  }
+
+  /** A model set can change the language; the heading is renamed in place so the parts stay mounted. */
+  _updateRegionName() {
+    if (!this.isConnected) {
+      return;
+    }
+
+    this.setAttribute('aria-label', this.regionName);
+
+    const heading = this.querySelector(':scope > .srOnly');
+    if (heading) {
+      heading.textContent = this.regionName;
+    }
+  }
+
   _render() {
-    this.ariaLabel = 'Two-Part Question';
+    this.setAttribute('aria-label', this.regionName);
     this.role = 'region';
 
     const { baseHeadingLevel: ebsrLevel, includeSrHeading } = getPlayerAttributes(this);
     const headingTag = ebsrLevel ? `h${Math.min(6, ebsrLevel)}` : 'h2';
-    const srHeading = includeSrHeading ? `<${headingTag} class="srOnly">Two-Part Question</${headingTag}>` : '';
+    const srHeading = includeSrHeading ? `<${headingTag} class="srOnly">${this.regionName}</${headingTag}>` : '';
 
     this.innerHTML = `
       <style>
