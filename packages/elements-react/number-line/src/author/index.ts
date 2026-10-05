@@ -94,11 +94,12 @@ export default class NumberLine extends HTMLElement {
   };
 
   set configuration(c) {
-    // A copy: the language branch below adds the model's language to languageChoices.
-    const newConfiguration = {
-      ...cloneDeep(defaults.configuration),
+    // A copy of both: the language branch below writes into language and languageChoices,
+    // and hosts pass the same configuration object to every number-line in an item.
+    const newConfiguration = cloneDeep({
+      ...defaults.configuration,
       ...c,
-    };
+    });
 
     this._configuration = newConfiguration;
 

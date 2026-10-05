@@ -47,4 +47,19 @@ describe('number-line author defaults', () => {
 
     expect(lastProps().model.language).toBe('');
   });
+
+  it('leaves the next item without a language when the host shares one configuration', () => {
+    // pie-author and pie-players hand every number-line in an item the same configuration object.
+    const configuration = {
+      language: { settings: true, enabled: false },
+      languageChoices: { label: 'Language Choices', options: [] },
+    };
+    const pristine = structuredClone(configuration);
+
+    author({ language: 'es_ES' }, configuration);
+    author({}, configuration);
+
+    expect(lastProps().model.language).toBeUndefined();
+    expect(configuration).toEqual(pristine);
+  });
 });
