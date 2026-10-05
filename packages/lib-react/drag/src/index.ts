@@ -10,6 +10,7 @@ import DragDroppablePlaceholder from './drag-in-the-blank-dp.js';
 import ICADroppablePlaceholder from './ica-dp.js';
 import { useDraggableControl } from './draggable-control.js';
 import { useDropTarget } from './drop-target.js';
+import { createDragCollision } from './collision.js';
 
 export type {
   ContentNamer,
@@ -18,6 +19,7 @@ export type {
   DraggableControlProps,
 } from './draggable-control.js';
 export type { DropTarget, DropTargetOptions, DropTargetProps } from './drop-target.js';
+export type { DragCollision, DragCollisionOptions, PointerCoordinates } from './collision.js';
 
 export {
   PlaceHolder,
@@ -30,4 +32,5 @@ export {
   uid,
   useDraggableControl,
   useDropTarget,
+  createDragCollision,
 };

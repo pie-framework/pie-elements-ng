@@ -111,6 +111,10 @@ Each element test asserts:
 - Session mutation signal (when session-supported)
 - Evaluate-mode rendering/scoring/correctness signal
 
+### [dnd-release-outside.spec.ts](./dnd-release-outside.spec.ts)
+
+Drags released outside the element, by mouse and by touch. In `categorize`, a placed choice released above, below or beside the element goes back to the pool, and a release just outside a category with the choice overlapping it still lands there. Keyboard drags move a placed choice with Space, Tab, Space and leave it with Space, Space.
+
 ### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
 
 Dedicated interaction coverage for structured response and matching elements:
