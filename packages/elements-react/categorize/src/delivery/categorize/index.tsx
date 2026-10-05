@@ -610,6 +610,7 @@ class CategorizeProvider extends React.Component {
         onDragStart={this.onDragStart}
         onDragEnd={this.onDragEnd}
         onDragCancel={this.onDragCancel}
+        collisionDetection={categoriesFirst}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
         collisionDetection={this.dragCollision.collisionDetection}
