@@ -142,7 +142,7 @@ export default class NumberLine extends HTMLElement {
 
   onConfigurationChanged: any = (config) => {
     this._configuration = config;
-    this._render();
+    this._rerender();
   };
 
   insertImage(handler) {
