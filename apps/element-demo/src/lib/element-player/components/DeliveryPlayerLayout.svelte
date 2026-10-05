@@ -7,7 +7,7 @@
 import { onMount } from 'svelte';
 import { loadController } from '../lib/demo-element-loader';
 import type { PieController } from '../lib/types';
-import type { PlayerType } from '$lib/config/player-runtime';
+import type { PlayerType } from '#lib/config/player-runtime.ts';
 
 // Props
 let {

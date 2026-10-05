@@ -4,6 +4,9 @@
   "private": true,
   "description": "Shared SvelteKit demo app for any PIE element",
   "type": "module",
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "vite dev",
     "prepare": "svelte-kit sync",

@@ -17,7 +17,7 @@ let registryPromise: Promise<ElementImportRegistry | null> | null = null;
 
 function loadRegistry(): Promise<ElementImportRegistry | null> {
   if (!registryPromise) {
-    registryPromise = import('$lib/element-imports')
+    registryPromise = import('#lib/element-imports.js')
       .then((module) => module as ElementImportRegistry)
       .catch(() => null);
   }

@@ -1,6 +1,8 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 import { findWorkspaceRoot, workspaceResolver } from './src/vite-plugin-workspace-resolver';
 
@@ -45,7 +47,30 @@ export default defineConfig({
         /\/lib-react\/.*\.(jsx|tsx)(?:\?.*)?$/,
       ],
     }),
-    sveltekit(),
+    sveltekit({
+      preprocess: vitePreprocess(),
+      adapter: adapter({
+        fallback: 'index.html',
+        strict: false,
+      }),
+      // Do not process pre-compiled element packages
+      exclude: [
+        /\/dist\//, // Don't process anything in dist directories
+      ],
+      dynamicCompileOptions: ({ filename, compileOptions }) => {
+        // Workspace element entry components are authored as custom elements.
+        // When element-demo resolves package "development" exports to source,
+        // force CE compilation for those files only.
+        if (
+          /\/packages\/elements-svelte\/[^/]+\/src\/(delivery|author|print)\/.*\.svelte$/.test(
+            filename
+          )
+        ) {
+          return { ...compileOptions, customElement: true };
+        }
+        return compileOptions;
+      },
+    }),
   ],
 
   // IMPORTANT: DO NOT add resolve.conditions with 'development'

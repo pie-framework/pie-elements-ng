@@ -4,7 +4,7 @@
  * Initializes stores and provides common data to all player routes
  * Shows navbar and tab navigation for player views
  */
-import { page } from '$app/stores';
+import { page } from '$app/state';
 import { goto } from '$app/navigation';
 import { onMount } from 'svelte';
 import {
@@ -13,11 +13,11 @@ import {
   hasPrint,
   requestIifeRebuild,
   resetSession,
-} from '$lib/stores/demo-state';
-import DemoSelector from '$lib/components/DemoSelector.svelte';
-import IifeBuildPanel from '$lib/components/IifeBuildPanel.svelte';
-import { isIifePlayerAvailable, parsePlayerType } from '$lib/config/player-runtime';
-import { installIifeMathRenderer } from '$lib/config/iife-math-renderer';
+} from '#lib/stores/demo-state.ts';
+import DemoSelector from '#lib/components/DemoSelector.svelte';
+import IifeBuildPanel from '#lib/components/IifeBuildPanel.svelte';
+import { isIifePlayerAvailable, parsePlayerType } from '#lib/config/player-runtime.ts';
+import { installIifeMathRenderer } from '#lib/config/iife-math-renderer.ts';
 import type { LayoutData } from './$types';
 
 let { data, children }: { data: LayoutData; children: any } = $props();
@@ -62,10 +62,10 @@ function formatElementName(name: string): string {
 }
 
 // Tab configuration - paths are derived from element name and preserve demo/mode/role parameters
-const currentDemoParamRaw = $derived($page.url.searchParams.get('demo'));
-const currentModeParam = $derived($page.url.searchParams.get('mode'));
-const currentRoleParam = $derived($page.url.searchParams.get('role'));
-const currentPlayerType = $derived(parsePlayerType($page.url.searchParams.get('player')));
+const currentDemoParamRaw = $derived(page.url.searchParams.get('demo'));
+const currentModeParam = $derived(page.url.searchParams.get('mode'));
+const currentRoleParam = $derived(page.url.searchParams.get('role'));
+const currentPlayerType = $derived(parsePlayerType(page.url.searchParams.get('player')));
 const knownDemoIds = $derived(new Set((data.demos || []).map((d) => d.id)));
 const currentDemoParam = $derived.by(() => {
   if (!currentDemoParamRaw) {
@@ -160,15 +160,15 @@ const tabs = $derived.by(() => {
 });
 
 // Determine active tab from current path (use $derived in Svelte 5)
-const activeTab = $derived($page.url.pathname.split('/')[2] || 'deliver');
+const activeTab = $derived(page.url.pathname.split('/')[2] || 'deliver');
 const packageName = $derived(data.packageName || `@pie-element/${data.elementName}`);
 
 // Import stores for mode, role, and theme
-import { mode, role, theme } from '$lib/stores/demo-state';
+import { mode, role, theme } from '#lib/stores/demo-state.ts';
 
 // Sync URL parameters with stores for bookmarkability
 onMount(() => {
-  const url = new URL($page.url);
+  const url = new URL(page.url);
   let needsUpdate = false;
 
   // Recover from malformed query strings where the full query was encoded as a key, e.g.:
@@ -217,7 +217,7 @@ onMount(() => {
   }
 
   // Mode parameter (only for deliver route)
-  const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
+  const isDeliverRoute = page.url.pathname.endsWith('/deliver');
   const playerParam = url.searchParams.get('player');
 
   if (
@@ -261,7 +261,7 @@ onMount(() => {
 });
 
 function updatePlayerUrl(updates: { player?: 'esm' | 'iife' }) {
-  const url = new URL($page.url);
+  const url = new URL(page.url);
   const nextPlayer = updates.player || currentPlayerType;
   const switchedPlayerType = currentPlayerType !== nextPlayer;
   const switchingToIife = currentPlayerType !== 'iife' && nextPlayer === 'iife';
@@ -289,12 +289,12 @@ function resetDemoSessionFromToolbar() {
   if (typeof window !== 'undefined') {
     // Force a hard refresh so mounted custom elements and route state
     // immediately reflect cleared session input.
-    window.location.assign($page.url.toString());
+    window.location.assign(page.url.toString());
   }
 }
 
 function getDeliveryRoleModeUrl(viewMode: 'student' | 'scorer') {
-  const url = new URL($page.url);
+  const url = new URL(page.url);
   if (viewMode === 'student') {
     url.searchParams.set('role', 'student');
     url.searchParams.set('mode', 'gather');
@@ -307,10 +307,10 @@ function getDeliveryRoleModeUrl(viewMode: 'student' | 'scorer') {
 
 // Bidirectional sync: URL ↔ stores
 $effect(() => {
-  const isDeliverRoute = $page.url.pathname.endsWith('/deliver');
+  const isDeliverRoute = page.url.pathname.endsWith('/deliver');
   if (isDeliverRoute) {
-    const modeParam = $page.url.searchParams.get('mode');
-    const roleParam = $page.url.searchParams.get('role');
+    const modeParam = page.url.searchParams.get('mode');
+    const roleParam = page.url.searchParams.get('role');
 
     // Sync URL → stores (when URL changes from navigation)
     if (modeParam && ['gather', 'view', 'evaluate'].includes(modeParam)) {
@@ -328,7 +328,7 @@ $effect(() => {
     }
 
     // Sync stores → URL (when stores change programmatically)
-    const url = new URL($page.url);
+    const url = new URL(page.url);
     let needsUpdate = false;
 
     if (modeParam !== $mode) {

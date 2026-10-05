@@ -1,7 +1,7 @@
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getA11yRun } from '$lib/server/a11y-runner';
+import { getA11yRun } from '#lib/server/a11y-runner.ts';
 
 export const GET: RequestHandler = async ({ params }) => {
   if (!dev) {

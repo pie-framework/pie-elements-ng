@@ -3,7 +3,7 @@
  * SSR enabled for better initial load performance
  */
 import type { PageLoad } from './$types';
-import { getAllElements } from '$lib/elements/registry';
+import { getAllElements } from '#lib/elements/registry.ts';
 
 export const load: PageLoad = () => {
   const elements = getAllElements();

@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import { getA11yInventory } from '$lib/a11y/suite';
+import { getA11yInventory } from '#lib/a11y/suite.ts';
 
 export const load: PageLoad = async () => {
   const inventory = await getA11yInventory();

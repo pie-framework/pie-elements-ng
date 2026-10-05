@@ -4,6 +4,9 @@
   "private": true,
   "description": "Dedicated SvelteKit app for PIE accessibility scenario demos",
   "type": "module",
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "vite dev",
     "prepare": "svelte-kit sync",
