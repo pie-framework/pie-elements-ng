@@ -498,7 +498,7 @@ const hitLeftOnly = $derived(activeDropKey === '0');
 const hitRightOnly = $derived(activeDropKey === '1');
 const hitOverlap = $derived(activeDropKey === '0,1');
 const hitOutside = $derived(activeDropKey === '');
-const highlightFill = 'rgba(37, 99, 235, 0.18)';
+const highlightFill = 'color-mix(in srgb, var(--pie-primary, #2563eb) 18%, transparent)';
 
 const draggedTile = $derived<VennTile | null>(
   heldTileId !== null && dragPos !== null ? (findTile(heldTileId) as VennTile | null) : null
@@ -523,29 +523,29 @@ const draggedTile = $derived<VennTile | null>(
     >
       {#if showCorrect}
         <svg class="toggle-icon" preserveAspectRatio="xMinYMin meet" version="1.1" viewBox="-283 359 34 35" aria-hidden="true">
-          <circle cx="-266" cy="375.9" r="14" fill="#bce2ff" />
+          <circle cx="-266" cy="375.9" r="14" fill="var(--pie-tertiary-light, #bce2ff)" />
           <path
             d="M-280.5,375.9c0-8,6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5s-6.5,14.5-14.5,14.5S-280.5,383.9-280.5,375.9z M-279.5,375.9c0,7.4,6.1,13.5,13.5,13.5c7.4,0,13.5-6.1,13.5-13.5s-6.1-13.5-13.5-13.5C-273.4,362.4-279.5,368.5-279.5,375.9z"
-            fill="#bce2ff"
+            fill="var(--pie-tertiary-light, #bce2ff)"
           />
-          <polygon points="-265.4,383.1 -258.6,377.2 -261.2,374.2 -264.3,376.9 -268.9,368.7 -272.4,370.6" fill="#1a9cff" />
+          <polygon points="-265.4,383.1 -258.6,377.2 -261.2,374.2 -264.3,376.9 -268.9,368.7 -272.4,370.6" fill="var(--pie-tertiary, #1a9cff)" />
         </svg>
       {:else}
         <svg class="toggle-icon" preserveAspectRatio="xMinYMin meet" version="1.1" viewBox="-129.5 127 34 35" aria-hidden="true">
           <path
-            style="fill: #D0CAC5; stroke: #E6E3E0; stroke-width: 0.75; stroke-miterlimit: 10;"
+            style="fill: var(--pie-border-light, #D0CAC5); stroke: var(--pie-border-light, #E6E3E0); stroke-width: 0.75; stroke-miterlimit: 10;"
             d="M-112.9,160.4c-8.5,0-15.5-6.9-15.5-15.5c0-8.5,6.9-15.5,15.5-15.5s15.5,6.9,15.5,15.5 C-97.4,153.5-104.3,160.4-112.9,160.4z"
           />
           <path
-            style="fill: #B3ABA4; stroke: #CDC7C2; stroke-width: 0.5; stroke-miterlimit: 10;"
+            style="fill: var(--pie-border-light, #B3ABA4); stroke: var(--pie-border-light, #CDC7C2); stroke-width: 0.5; stroke-miterlimit: 10;"
             d="M-113.2,159c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-105.2,159-113.2,159z"
           />
-          <circle cx="-114.2" cy="143.5" r="14" fill="white" />
+          <circle cx="-114.2" cy="143.5" r="14" fill="var(--pie-background, white)" />
           <path
             d="M-114.2,158c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-106.2,158-114.2,158z M-114.2,130c-7.4,0-13.5,6.1-13.5,13.5s6.1,13.5,13.5,13.5s13.5-6.1,13.5-13.5S-106.8,130-114.2,130z"
-            fill="#bce2ff"
+            fill="var(--pie-tertiary-light, #bce2ff)"
           />
-          <polygon points="-114.8,150.7 -121.6,144.8 -119,141.8 -115.9,144.5 -111.3,136.3 -107.8,138.2" fill="#1a9cff" />
+          <polygon points="-114.8,150.7 -121.6,144.8 -119,141.8 -115.9,144.5 -111.3,136.3 -107.8,138.2" fill="var(--pie-tertiary, #1a9cff)" />
         </svg>
       {/if}
       <span class="toggle-label">
@@ -612,15 +612,15 @@ const draggedTile = $derived<VennTile | null>(
           y={geometry.scale}
           width={geometry.width - 2 * geometry.scale}
           height={geometry.height - 2 * geometry.scale}
-          fill="#ffffff"
-          stroke="#cbd5e1"
+          fill="var(--pie-background, #ffffff)"
+          stroke="var(--pie-border-light, #cbd5e1)"
           stroke-width={1.5 * geometry.scale}
           rx={12 * geometry.scale}
         />
 
         <!-- Circle fills (so overlap shows a darker shade) -->
         {#each geometry.circles as c}
-          <circle cx={c.cx} cy={c.cy} r={c.r} fill="rgba(14, 165, 233, 0.12)" />
+          <circle cx={c.cx} cy={c.cy} r={c.r} fill="color-mix(in srgb, var(--pie-primary, #0ea5e9) 12%, transparent)" />
         {/each}
 
         <!--
@@ -644,7 +644,7 @@ const draggedTile = $derived<VennTile | null>(
 
         <!-- Circle outlines -->
         {#each geometry.circles as c}
-          <circle cx={c.cx} cy={c.cy} r={c.r} fill="none" stroke="#1e293b" stroke-width={2 * geometry.scale} />
+          <circle cx={c.cx} cy={c.cy} r={c.r} fill="none" stroke="var(--pie-text, #1e293b)" stroke-width={2 * geometry.scale} />
         {/each}
 
         <!-- Circle labels -->
@@ -657,7 +657,7 @@ const draggedTile = $derived<VennTile | null>(
             text-anchor={idx === 0 ? 'start' : 'end'}
             font-size={18 * geometry.scale}
             font-weight="600"
-            fill="#0f172a"
+            fill="var(--pie-text, #0f172a)"
           >
             {(modelShape.circles[idx]?.label) ?? ''}
           </text>
@@ -676,7 +676,7 @@ const draggedTile = $derived<VennTile | null>(
           x2={geometry.width - 16 * geometry.scale}
           y1={layout.outsideStripTop}
           y2={layout.outsideStripTop}
-          stroke="#cbd5e1"
+          stroke="var(--pie-border, #64748b)"
           stroke-width={geometry.scale}
           stroke-dasharray="{4 * geometry.scale} {6 * geometry.scale}"
         />
@@ -789,7 +789,7 @@ const draggedTile = $derived<VennTile | null>(
     flex-direction: column;
     gap: 16px;
     padding: 16px;
-    color: #0f172a;
+    color: var(--pie-text, #0f172a);
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     --vc-focus-ring: var(
       --pie-focus-outline,
@@ -871,10 +871,10 @@ const draggedTile = $derived<VennTile | null>(
   }
   .venn-error {
     padding: 12px 16px;
-    border: 1.5px solid #bf0d00;
+    border: 1.5px solid var(--pie-incorrect-icon, #bf0d00);
     border-radius: 8px;
-    background: #fef2f2;
-    color: #7f1d1d;
+    background: var(--pie-incorrect-secondary, #fef2f2);
+    color: var(--pie-text, #7f1d1d);
     font-size: 14px;
   }
   /* Tailwind's `sr-only`, scoped: PIE players ship no Tailwind. */

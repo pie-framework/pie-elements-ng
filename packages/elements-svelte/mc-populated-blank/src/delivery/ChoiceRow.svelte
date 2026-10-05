@@ -217,7 +217,7 @@ let {
     font-size: 0.72rem;
     line-height: 1;
     font-weight: 700;
-    color: var(--pie-white, #ffffff);
+    color: var(--pie-background, #ffffff);
   }
 
   .pie-choice-feedback-correct {
