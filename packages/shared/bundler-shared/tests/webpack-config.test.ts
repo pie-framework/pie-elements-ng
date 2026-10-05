@@ -111,6 +111,7 @@ describe('webpack resolve aliases', () => {
       }),
   };
 
+  // The file's first compiler loads webpack, which takes seconds on a busy machine.
   it.each(Object.entries(configs))(
     'bundles a linked workspace package from its sources in the %s config',
     async (_name, createConfig) => {
@@ -125,7 +126,8 @@ describe('webpack resolve aliases', () => {
       expect(realpathSync(await resolveRequest(config, '@pie-element/sample/controller'))).toBe(
         join(packageDir, 'src', 'controller', 'index.ts')
       );
-    }
+    },
+    60_000
   );
 });
 

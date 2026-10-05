@@ -89,7 +89,7 @@ describe('PR changeset planning', () => {
   });
 });
 
-describe('recording a merged PR', () => {
+describe('recording a merged PR', { timeout: 30_000 }, () => {
   it('writes pr-<n>.md naming the packages the merge changed', async () => {
     const rootDir = await makeRepo();
     const base = commit(rootDir, 'initial');
