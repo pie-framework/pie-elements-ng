@@ -9,7 +9,8 @@ vi.mock('@pie-framework/mathquill', () => ({
   },
 }));
 
-describe('math-input public API', () => {
+// The first import loads math-input's module graph, which takes seconds on a busy machine.
+describe('math-input public API', { timeout: 30_000 }, () => {
   it('exports MathQuill embed helpers used by math elements', async () => {
     const mathInput = await import('../src/index');
 

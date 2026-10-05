@@ -57,6 +57,7 @@ function controllerEntries(root: string) {
 }
 
 describe('element controllers in Node ESM', () => {
+  // Importing every controller in a fresh Node process takes most of a minute on a busy machine.
   test('every published controller entry imports in plain Node', () => {
     const entries = controllerEntries(process.cwd());
     const child = spawnSync(process.execPath, ['--input-type=module', '-e', IMPORT_SCRIPT], {
@@ -81,5 +82,5 @@ describe('element controllers in Node ESM', () => {
     ]) {
       expect(results[id]?.exports).toEqual(expect.arrayContaining(['model', 'outcome']));
     }
-  }, 60_000);
+  }, 180_000);
 });

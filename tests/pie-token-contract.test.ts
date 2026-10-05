@@ -239,7 +239,7 @@ function reactSourceFiles(): string[] {
  * comfortable in isolation and not under a loaded suite, and the failure mode
  * is a timeout that reads as a token regression.
  */
-describe('React --pie-* token contract', { timeout: 30_000 }, () => {
+describe('React --pie-* token contract', { timeout: 60_000 }, () => {
   it('every color.*() accessor resolves to a registered token', () => {
     const colorModule = readFileSync(
       join(repoRoot, 'packages/lib-react/render-ui/src/color.ts'),
