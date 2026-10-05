@@ -166,6 +166,7 @@ class HotspotComponent extends React.Component {
             prompt={prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
         )}
 

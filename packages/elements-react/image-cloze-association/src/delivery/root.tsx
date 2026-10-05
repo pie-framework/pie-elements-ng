@@ -575,6 +575,7 @@ export class ImageClozeAssociationComponent extends React.Component {
             prompt={prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
 
           <PreviewPrompt prompt={stimulus} />

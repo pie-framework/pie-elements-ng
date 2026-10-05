@@ -292,5 +292,6 @@ export default {
     showNote: 'Show Note',
     hideNote: 'Hide Note',
     cancel: 'Cancel',
+    playAudio: 'Play audio',
   },
 };

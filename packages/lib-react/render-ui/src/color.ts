@@ -137,6 +137,10 @@ export const focusCheckedBorder = () => pv('focus-checked-border', defaults.FOCU
 export const focusUnchecked = () => pv('focus-unchecked', defaults.FOCUS_UNCHECKED);
 export const focusUncheckedBorder = () => pv('focus-unchecked-border', defaults.FOCUS_UNCHECKED_BORDER);
 export const buttonFocusOutline = () => pv('button-focus-outline', defaults.BUTTON_FOCUS_OUTLINE);
+// The focus ring chain from THEMING.md. Its first link, focus-outline, is planned and no scheme
+// defines it yet, so it falls through to the registered button and checked-border focus tokens. One
+// line, so tests/pie-token-contract.test.ts sees the tokens it reads.
+export const focusOutline = () => pv('focus-outline', 'button-focus-outline', 'focus-checked-border', defaults.FOCUS_CHECKED_BORDER);
 
 export const blueGrey100 = () => pv('blue-grey-100', defaults.BLUE_GREY100);
 export const blueGrey300 = () => pv('blue-grey-300', defaults.BLUE_GREY300);

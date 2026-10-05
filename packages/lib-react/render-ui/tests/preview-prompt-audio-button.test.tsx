@@ -8,6 +8,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { createRoot } from 'react-dom/client';
+import { getByRole } from '@testing-library/dom';
+import userEvent from '@testing-library/user-event';
 
 // The prompt renders math on mount, which pulls MathJax off a CDN - it has no
 // bearing on the audio button and only fails noisily under happy-dom.
@@ -43,7 +45,7 @@ function stubPlayback(impl: () => Promise<void>) {
   });
 }
 
-function render(autoplayAudioEnabled?: boolean) {
+function render(autoplayAudioEnabled?: boolean, language?: string) {
   const host = document.createElement('div');
   document.body.appendChild(host);
 
@@ -53,6 +55,7 @@ function render(autoplayAudioEnabled?: boolean) {
         prompt: PROMPT,
         autoplayAudioEnabled,
         customAudioButton: { playImage: PLAY_IMAGE, pauseImage: PAUSE_IMAGE },
+        language,
       }),
     );
   });
@@ -110,6 +113,38 @@ describe('preview prompt custom audio button', () => {
     button.dispatchEvent(new Event('click'));
 
     expect(play).not.toHaveBeenCalled();
+  });
+
+  it('is a named button in the tab order', async () => {
+    const button = render(false);
+
+    expect(getByRole(document.body, 'button', { name: 'Play audio' })).toBe(button);
+
+    await userEvent.setup().tab();
+
+    expect(document.activeElement).toBe(button);
+  });
+
+  it.each([
+    ['en_US', 'Play audio'],
+    ['es_ES', 'Reproducir audio'],
+  ])('names the button in the %s item language', (language, name) => {
+    const button = render(false, language);
+
+    expect(getByRole(document.body, 'button', { name })).toBe(button);
+  });
+
+  it.each([
+    ['Enter', '{Enter}'],
+    ['Space', ' '],
+  ])('plays on %s', async (_key, keys) => {
+    const user = userEvent.setup();
+    const button = render(false);
+
+    button.focus();
+    await user.keyboard(keys);
+
+    expect(play).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to the idle image and stays clickable when autoplay is blocked', async () => {

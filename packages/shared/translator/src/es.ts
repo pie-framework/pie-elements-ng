@@ -295,5 +295,6 @@ export default {
     showNote: 'Mostrar Nota',
     hideNote: 'Ocultar Nota',
     cancel: 'Cancelar',
+    playAudio: 'Reproducir audio',
   },
 };

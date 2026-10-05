@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
 import Paper from '@mui/material/Paper';
 
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
@@ -16,11 +16,23 @@ const StyledActions: any = styled('div')(() => ({
   alignSelf: 'flex-end',
 }));
 
-const StyledTrigger: any = styled('div')(({ theme }) => ({
+// A native button for the role, the tab stop and Enter/Space activation, reset to the plain text
+// the trigger was drawn as.
+const StyledTrigger: any = styled('button')(({ theme }) => ({
+  display: 'block',
+  margin: 0,
+  border: 0,
+  background: 'none',
+  font: 'inherit',
   cursor: 'pointer',
   fontSize: theme.typography.fontSize,
   color: color.tertiary(),
   padding: theme.spacing(1),
+  // Inset: the trigger sits at the top-left corner of a foreignObject, which clips an outer ring.
+  '&:focus-visible': {
+    outline: `2px solid ${color.focusOutline()}`,
+    outlineOffset: '-2px',
+  },
 }));
 
 const StyledActionsPaper: any = styled(Paper)(({ theme }) => ({
@@ -55,6 +67,9 @@ export class ActionsButton extends React.Component {
     categories: PropTypes.array,
   };
 
+  // names the popover after the trigger
+  triggerId = createUniqueId('chart-actions');
+
   handleActionsClick: any = (event) => {
     this.setState({ actionsAnchorEl: event.currentTarget });
   };
@@ -78,19 +93,29 @@ export class ActionsButton extends React.Component {
   render() {
     const { categories, language } = this.props;
     const { actionsAnchorEl } = this.state;
+    const open = Boolean(actionsAnchorEl);
 
     return (
       <StyledActions>
-        <StyledTrigger role="button" tabIndex={0} onClick={this.handleActionsClick}>
-          Actions
+        <StyledTrigger
+          type="button"
+          id={this.triggerId}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={this.handleActionsClick}
+        >
+          {translator.t('charting.actions', { lng: language })}
         </StyledTrigger>
         <Popover
           key={`actions-popover-${Math.random()}`}
-          open={Boolean(actionsAnchorEl)}
+          open={open}
           anchorEl={actionsAnchorEl}
           onClose={this.handleActionsClose}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          // The popover is modal - it traps focus, closes on Escape and returns focus to the
+          // trigger - so it is the dialog aria-haspopup announces.
+          slotProps={{ paper: { role: 'dialog', 'aria-labelledby': this.triggerId } }}
         >
           <StyledActionsPaper>
             <Button onClick={() => this.handleAddCategory()}>
