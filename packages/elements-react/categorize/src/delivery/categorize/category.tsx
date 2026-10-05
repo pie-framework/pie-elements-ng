@@ -45,7 +45,8 @@ export class Category extends React.Component {
     } = this.props;
 
     return (
-      <StyledDiv className={className} id={id}>
+      // Category ids come from the model and repeat across items, so they mark the element as data.
+      <StyledDiv className={className} data-category-id={id}>
         <PlaceHolder
           id={id}
           labelId={labelId}

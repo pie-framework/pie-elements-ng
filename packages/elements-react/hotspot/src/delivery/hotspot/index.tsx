@@ -4,7 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { color, Collapsible as CollapsibleImport, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasMedia } from '@pie-lib/render-ui';
+import { color, createUniqueId, Collapsible as CollapsibleImport, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasMedia } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -54,6 +54,9 @@ const StyledCollapsible: any = styled(Collapsible)(({ theme }) => ({
 }));
 
 class HotspotComponent extends React.Component {
+  // The delivery element finds the container by its class, which authored CSS may also target.
+  mainContainerId = createUniqueId('main-container');
+
   constructor(props) {
     super(props);
     this.state = {
@@ -150,7 +153,7 @@ class HotspotComponent extends React.Component {
       teacherInstructions && (hasText(teacherInstructions) || hasMedia(teacherInstructions));
 
     return (
-      <StyledUiLayout extraCSSRules={extraCSSRules} id={'main-container'} fontSizeFactor={fontSizeFactor}>
+      <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
         {showTeacherInstructions && (
           <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
             <PreviewPrompt className="prompt" prompt={teacherInstructions} />

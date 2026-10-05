@@ -182,6 +182,7 @@ export class Main extends React.Component {
           highlightChoices={model.highlightChoices}
           maxNoOfSelections={model.maxSelections}
           animationsDisabled={model.animationsDisabled}
+          language={model.language}
         />
         {mode === 'evaluate' && <Legend language={model.language} showOnlyCorrect={showCorrectAnswer} />}
 

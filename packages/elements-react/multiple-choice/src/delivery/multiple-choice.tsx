@@ -6,7 +6,7 @@ import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, transformDataHeadings } from '@pie-lib/render-ui';
+import { color, Collapsible as CollapsibleImport, createUniqueId, PreviewPrompt as PreviewPromptImport, transformDataHeadings } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -155,6 +155,8 @@ export class MultipleChoice extends React.Component {
     // page) are always treated as independent radio groups by the browser,
     // regardless of any label-related model settings or bundle deduplication.
     this.groupName = `mc-group-${Math.random().toString(36).slice(2, 10)}`;
+    // The delivery element finds the container by its class, which authored CSS may also target.
+    this.mainContainerId = createUniqueId('main-container');
   }
 
   isSelected(value) {
@@ -365,7 +367,7 @@ export class MultipleChoice extends React.Component {
         : Box;
 
     return (
-      <MainContainer id={'main-container'} className={classNames(className, 'multiple-choice')}>
+      <MainContainer id={this.mainContainerId} className={classNames(className, 'multiple-choice', 'main-container')}>
         {partLabel && <PartLabel as={baseHeadingLevel ? `h${Math.min(6, baseHeadingLevel + 1)}` : 'h2'}>{partLabel}</PartLabel>}
 
         {this.renderHeading()}

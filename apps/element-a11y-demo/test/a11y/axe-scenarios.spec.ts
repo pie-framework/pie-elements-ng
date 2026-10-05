@@ -655,9 +655,16 @@ async function checkTargetSize(page: Page): Promise<CheckResult> {
       return style.clipPath === 'inset(50%)';
     }
 
+    // WCAG 2.5.8 exempts a target in a sentence, whose size the line height of the text sets.
+    // select-text's tokens are such inline spans.
+    function isInline(element: Element) {
+      return window.getComputedStyle(element).display === 'inline';
+    }
+
     return [...subject.querySelectorAll(selector)]
       .filter(isVisible)
       .filter((element) => !isClippedAway(element))
+      .filter((element) => !isInline(element))
       .map((element) => {
         const rect = element.getBoundingClientRect();
         return {

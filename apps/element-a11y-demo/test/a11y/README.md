@@ -63,7 +63,9 @@ hidden, or when it has no role and holds text, which Chrome exposes as a generic
 whose text is read; @visx/text renders one around every tick label. A nested svg with an
 image role still needs a name.
 `target-size` skips elements clipped to nothing, such as hotspot's keyboard focus proxies:
-they take no pointer input, so the size of what they stand for is a manual check.
+they take no pointer input, so the size of what they stand for is a manual check. It also
+skips `display: inline` targets, such as select-text's tokens, which the inline exception of
+WCAG 2.5.8 covers.
 `math-alternative` evaluates each formula once, at its outermost MathJax or MathQuill node,
 and counts only text that assistive technology reads.
 `keyboard-tab-reach` is left off the drawing-response, extended-text-entry, likert and matrix

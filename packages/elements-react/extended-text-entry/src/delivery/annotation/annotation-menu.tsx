@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { Popover } from '@mui/material';
 import { color } from '@pie-lib/render-ui';
-import { ANNOTATION_STROKE } from './annotation-utils.js';
 
 const StyledPopover: any = styled(Popover)({
   '& .MuiPaper-root': {
@@ -21,7 +20,7 @@ const StyledPopover: any = styled(Popover)({
       width: 0,
       pointerEvents: 'none',
       borderWidth: '7px',
-      borderTopColor: ANNOTATION_STROKE,
+      borderTopColor: color.borderDark(),
     },
   },
 });
@@ -30,8 +29,10 @@ const StyledPopover: any = styled(Popover)({
  * Surface and text move together. `--pie-background` and `--pie-text` follow both the colour
  * schemes and the dark theme; `--pie-white` stays white under the dark theme, and the popover
  * paper's own text stays near-black in every scheme. Without a theme the fallbacks are the
- * white and the paper text the menu has always had. The outline also meets the annotation
- * fills, so it takes ANNOTATION_STROKE.
+ * white and the paper text the menu has always had. The outline and pointer bound the menu
+ * against its surface and the page, so they follow the theme's `--pie-border-dark`, which clears
+ * 3:1 against both in every scheme. The cells are text-labelled buttons, so WCAG 1.4.11 needs no
+ * contrasting boundary between the outline and the annotation fills.
  */
 const MainWrapper: any = styled('div')(({ theme }) => ({
   width: '300px',
@@ -39,7 +40,7 @@ const MainWrapper: any = styled('div')(({ theme }) => ({
   borderRadius: '4px',
   backgroundColor: color.v('pie')('background', color.defaults.WHITE),
   color: color.v('pie')('text', theme.palette.text.primary),
-  border: `2px solid ${ANNOTATION_STROKE}`,
+  border: `2px solid ${color.borderDark()}`,
 }));
 
 const AnnotationsWrapper: any = styled('div')({

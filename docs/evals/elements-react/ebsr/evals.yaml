@@ -329,14 +329,14 @@ evals:
       - action: observe
         target:
           description: "Part A container"
-          hint: '#a'
+          hint: '[data-part="a"]'
         expected:
           exists: true
 
       - action: observe
         target:
           description: "Part B container"
-          hint: '#b'
+          hint: '[data-part="b"]'
         expected:
           exists: true
 
@@ -459,7 +459,7 @@ evals:
       - action: observe
         target:
           description: "Parts visible"
-          hint: '#a, #b'
+          hint: '[data-part="a"], [data-part="b"]'
         expected:
           exists: true
 
@@ -506,6 +506,6 @@ evals:
       - action: observe
         target:
           description: "Both parts rendered"
-          hint: '#a, #b'
+          hint: '[data-part="a"], [data-part="b"]'
         expected:
           exists: true

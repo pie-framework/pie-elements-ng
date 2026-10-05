@@ -138,11 +138,11 @@ export default class EbsrConfigure extends HTMLElement {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const id = e.target && e.target.getAttribute('id');
+    const part = e.target && e.target.getAttribute('data-part');
 
-    if (id) {
+    if (part) {
       if (e.update) {
-        this._model[`part${id}`] = e.update;
+        this._model[`part${part}`] = e.update;
       }
 
       this.dispatchEvent(new ModelUpdatedEvent(this._model));

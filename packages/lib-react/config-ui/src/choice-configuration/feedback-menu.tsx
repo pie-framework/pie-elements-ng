@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { InlineMenu as MenuImport } from '@pie-lib/render-ui';
+import { createUniqueId, InlineMenu as MenuImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -48,6 +48,7 @@ export class IconMenu extends React.Component {
       anchorEl: undefined,
       open: false,
     };
+    this.menuId = createUniqueId('feedback-menu');
   }
 
   handleClick: any = (event) => {
@@ -71,7 +72,7 @@ export class IconMenu extends React.Component {
       <div>
         <div onClick={this.handleClick}>{this.props.iconButtonElement}</div>
         <Menu
-          id="simple-menu"
+          id={this.menuId}
           anchorEl={this.state.anchorEl}
           open={this.state.open}
           onClose={this.handleRequestClose}

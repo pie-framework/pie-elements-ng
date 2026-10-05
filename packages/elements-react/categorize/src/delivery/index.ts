@@ -3,7 +3,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
+import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -230,7 +230,9 @@ export default class Categorize extends HTMLElement {
 
   _createAudioInfoToast() {
     const info = document.createElement('div');
-    info.id = 'play-audio-info';
+    // Looked up by its class, which authored CSS may also target; a fixed id repeats when items share a page.
+    info.id = createUniqueId('play-audio-info');
+    info.className = 'play-audio-info';
 
     Object.assign(info.style, {
       position: 'absolute',
@@ -277,9 +279,9 @@ export default class Categorize extends HTMLElement {
           if (!audio) return;
 
           const info = this._createAudioInfoToast();
-          const container = this.querySelector('#main-container');
+          const container = this.querySelector('.main-container');
           const enableAudio = () => {
-            if (this.querySelector('#play-audio-info')) {
+            if (this.querySelector('.play-audio-info')) {
               audio.play();
               container.removeChild(info);
             }
@@ -291,7 +293,7 @@ export default class Categorize extends HTMLElement {
             // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
             // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
             setTimeout(() => {
-              if (audio.paused && !this.querySelector('#play-audio-info')) {
+              if (audio.paused && !this.querySelector('.play-audio-info')) {
                 // add info message as a toast to enable audio playback
                 container.appendChild(info);
                 document.addEventListener('click', enableAudio);
@@ -306,7 +308,7 @@ export default class Categorize extends HTMLElement {
             //timestamp when auto-played audio started playing
             this._session.audioStartTime = this._session.audioStartTime || new Date().getTime();
 
-            const info = this.querySelector('#play-audio-info');
+            const info = this.querySelector('.play-audio-info');
             if (info) {
               container.removeChild(info);
             }

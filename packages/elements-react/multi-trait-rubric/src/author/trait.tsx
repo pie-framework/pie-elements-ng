@@ -7,7 +7,7 @@ import { isEmpty } from '@pie-element/shared-lodash';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 
 import { styled } from '@mui/material/styles';
-import { color } from '@pie-lib/render-ui';
+import { color, useUniqueId } from '@pie-lib/render-ui';
 
 import { Block, BlockWidth, ExpandedInput, PrimaryBlock, Row, SecondaryBlock, UnderlinedInput } from './common.js';
 
@@ -76,6 +76,8 @@ function TraitTile({
   onTraitDropped,
 }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  // The menu stays mounted for every trait, so a fixed id would repeat.
+  const menuId = useUniqueId('trait-menu');
   const secondaryBlockRef = React.useRef(null);
 
   const {
@@ -155,7 +157,7 @@ function TraitTile({
 
             <Options
               aria-label="more"
-              aria-controls="long-menu"
+              aria-controls={menuId}
               aria-haspopup="true"
               onClick={handleClick}
               size="large"
@@ -164,7 +166,7 @@ function TraitTile({
             </Options>
 
             <Menu
-              id="long-menu"
+              id={menuId}
               anchorEl={anchorEl}
               keepMounted
               open={!!anchorEl}

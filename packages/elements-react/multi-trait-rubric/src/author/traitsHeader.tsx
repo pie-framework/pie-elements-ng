@@ -36,7 +36,7 @@ const renderUi =
     : renderUiNamespaceAny;
 import MenuItem from '@mui/material/MenuItem';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 
 import {
   Block,
@@ -96,6 +96,9 @@ export class TraitsHeaderTile extends React.Component {
   state = {
     anchorEl: null,
   };
+
+  // The menu stays mounted for every scale, so a fixed id would repeat.
+  menuId = createUniqueId('scale-menu');
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.currentPosition !== this.props.currentPosition) {
@@ -181,14 +184,14 @@ export class TraitsHeaderTile extends React.Component {
             <div>
               <IconButton
                 aria-label="more"
-                aria-controls="long-menu"
+                aria-controls={this.menuId}
                 aria-haspopup="true"
                 onClick={this.handleClick}
                 size="large">
                 <MoreVertIcon />
               </IconButton>
               <Menu
-                id="long-menu"
+                id={this.menuId}
                 anchorEl={anchorEl}
                 keepMounted
                 open={!!anchorEl}
