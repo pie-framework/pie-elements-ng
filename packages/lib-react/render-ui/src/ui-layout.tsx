@@ -3,6 +3,7 @@
 import React from 'react';
 import { createTheme, styled, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 import PropTypes from 'prop-types';
+import { createUniqueId } from './unique-id.js';
 
 const theme = createTheme({
   typography: {
@@ -61,6 +62,11 @@ class UiLayout extends React.Component {
     this.classesSheet = document.createElement('style');
   }
 
+  // Every layout carries `extraCSSRules`, so the authored rules nest under a class only this layout
+  // carries; one class keeps the specificity `.extraCSSRules` gave them. `extraCSSRules` stays as a
+  // hook for authored CSS.
+  scopeClass = createUniqueId('extra-css-rules');
+
   computeStyle(fontSizeFactor) {
     const getFontSize = (element) => parseFloat(getComputedStyle(element).fontSize);
 
@@ -83,10 +89,14 @@ class UiLayout extends React.Component {
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={theme}>
           {extraCSSRules?.rules ? (
-            <style dangerouslySetInnerHTML={{ __html: `.extraCSSRules { ${extraCSSRules.rules} }` }} />
+            <style dangerouslySetInnerHTML={{ __html: `.${this.scopeClass} { ${extraCSSRules.rules} }` }} />
           ) : null}
 
-          <StyledContainer className={`${className} extraCSSRules`} {...restProps} {...(style && { style })}>
+          <StyledContainer
+            className={`${className} extraCSSRules ${this.scopeClass}`}
+            {...restProps}
+            {...(style && { style })}
+          >
             {children}
           </StyledContainer>
         </ThemeProvider>

@@ -4,6 +4,7 @@ import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import MultipleChoice from '@pie-element/multiple-choice';
 import { get } from '@pie-element/shared-lodash';
 import debug from 'debug';
+import { createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';
 
@@ -71,6 +72,10 @@ export default class Ebsr extends HTMLElement {
     this._session = {};
   }
 
+  // The item-level rules nest under a class only this element carries, as each part's rules nest
+  // under its own layout, so they style this item and no other.
+  cssScope = createUniqueId('ebsr-extra-css-rules');
+
   onSessionUpdated: any = (e) => {
     if (e.target === this) {
       return;
@@ -95,6 +100,7 @@ export default class Ebsr extends HTMLElement {
   set model(m) {
     this._model = m;
     this._updateRegionName();
+    this._updateExtraCSSRules();
 
     customElements.whenDefined(MC_TAG_NAME).then(() => {
       this.setPartModel(this.partA, 'partA');
@@ -214,9 +220,21 @@ export default class Ebsr extends HTMLElement {
     }
   }
 
+  /** The model usually arrives after the element connects, so the rules are rewritten on every model set. */
+  _updateExtraCSSRules() {
+    const style = this.querySelector(':scope > style[data-extra-css-rules]');
+    if (!style) {
+      return;
+    }
+
+    const rules = this._model?.extraCSSRules?.rules;
+    style.textContent = rules ? `.${this.cssScope} { ${rules} }` : '';
+  }
+
   _render() {
     this.setAttribute('aria-label', this.regionName);
     this.role = 'region';
+    this.classList.add(this.cssScope);
 
     const { baseHeadingLevel: ebsrLevel, includeSrHeading } = getPlayerAttributes(this);
     const headingTag = ebsrLevel ? `h${Math.min(6, ebsrLevel)}` : 'h2';
@@ -234,12 +252,13 @@ export default class Ebsr extends HTMLElement {
         left: -10000px;
         top: auto;
       }
-      ${this._model?.extraCSSRules?.rules}
       </style>
+      <style data-extra-css-rules></style>
         ${srHeading}
         <${MC_TAG_NAME} data-part="a"></${MC_TAG_NAME}>
         <${MC_TAG_NAME} data-part="b"></${MC_TAG_NAME}>
     `;
+    this._updateExtraCSSRules();
 
     // when item is re-rendered (due to connectedCallback), if the custom element is already defined,
     // we need to set the model and session, otherwise the setters are not reached again
