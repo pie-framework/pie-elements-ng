@@ -346,17 +346,17 @@ $effect(() => {
                   >
                     <path
                       d="M-112.9,160.4c-8.5,0-15.5-6.9-15.5-15.5c0-8.5,6.9-15.5,15.5-15.5s15.5,6.9,15.5,15.5 C-97.4,153.5-104.3,160.4-112.9,160.4z"
-                      fill="#D0CAC5"
-                      stroke="#E6E3E0"
+                      fill="var(--pie-border-light, #D0CAC5)"
+                      stroke="var(--pie-border-light, #E6E3E0)"
                       stroke-width="0.75"
                     />
                     <path
                       d="M-113.2,159c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-105.2,159-113.2,159z"
-                      fill="#B3ABA4"
-                      stroke="#CDC7C2"
+                      fill="var(--pie-border-light, #B3ABA4)"
+                      stroke="var(--pie-border-light, #CDC7C2)"
                       stroke-width="0.5"
                     />
-                    <circle cx="-114.2" cy="143.5" r="14" fill="white" />
+                    <circle cx="-114.2" cy="143.5" r="14" fill="var(--pie-background, white)" />
                     <path
                       d="M-114.2,158c-8,0-14.5-6.5-14.5-14.5s6.5-14.5,14.5-14.5s14.5,6.5,14.5,14.5S-106.2,158-114.2,158z M-114.2,130c-7.4,0-13.5,6.1-13.5,13.5s6.1,13.5,13.5,13.5s13.5-6.1,13.5-13.5S-106.8,130-114.2,130z"
                       fill="var(--pie-background-dark, #ecedf1)"
