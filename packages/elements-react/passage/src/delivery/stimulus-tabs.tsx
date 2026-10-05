@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { styled } from '@mui/material/styles';
-import { Collapsible as CollapsibleImport, color, PreviewPrompt as PreviewPromptImport, Purpose as PurposeImport, UiLayout as UiLayoutImport, transformDataHeadings } from '@pie-lib/render-ui';
+import { Collapsible as CollapsibleImport, color, createUniqueId, PreviewPrompt as PreviewPromptImport, Purpose as PurposeImport, UiLayout as UiLayoutImport, transformDataHeadings } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 
 const { translator } = Translator;
@@ -196,6 +196,15 @@ class StimulusTabs extends React.Component {
 
   containerRef = React.createRef();
 
+  // Tab ids are model indexes, so DOM ids take a per-instance prefix and each passage's
+  // aria-controls / aria-labelledby pairs resolve inside that passage. `button-N` and
+  // `tabpanel-N` stay as class hooks.
+  idPrefix = createUniqueId('passage');
+
+  tabButtonId: any = (tabId) => `${this.idPrefix}-button-${tabId}`;
+
+  tabPanelId: any = (tabId) => `${this.idPrefix}-tabpanel-${tabId}`;
+
   componentDidMount() {
     if (typeof window === 'undefined') return;
     window.addEventListener('resize', this.updateZoomCompensation);
@@ -289,7 +298,7 @@ class StimulusTabs extends React.Component {
       event.preventDefault();
       event.stopPropagation();
       this.handleChange(event, tabs[newTabIndex].id);
-      document.getElementById(`button-${tabs[newTabIndex].id}`).focus();
+      this.containerRef.current?.querySelector(`[id="${this.tabButtonId(tabs[newTabIndex].id)}"]`)?.focus();
     }
   };
 
@@ -350,7 +359,13 @@ class StimulusTabs extends React.Component {
     const textLevel = baseHeadingLevel ? Math.min(6, Math.max(1, clampedLevel + 1)) : undefined; // promote text headings one level above title
 
     return (
-      <Passage key={tab.id} id={`tabpanel-${tab.id}`} role="tabpanel" aria-labelledby={`button-${tab.id}`}>
+      <Passage
+        key={tab.id}
+        id={this.tabPanelId(tab.id)}
+        className={`tabpanel-${tab.id}`}
+        role="tabpanel"
+        aria-labelledby={this.tabButtonId(tab.id)}
+      >
         {this.renderInstructions(tab.teacherInstructions, disabledTabs)}
 
         {tab.title && (
@@ -457,7 +472,8 @@ class StimulusTabs extends React.Component {
                 {tabs.map((tab, index) => (
                   <TabStyled
                     key={tab.id}
-                    id={`button-${tab.id}`}
+                    id={this.tabButtonId(tab.id)}
+                    className={`button-${tab.id}`}
                     sx={tabMaxWidth ? { maxWidth: `${tabMaxWidth}px` } : undefined}
                     label={
                       <>
@@ -476,7 +492,7 @@ class StimulusTabs extends React.Component {
                     }
                     value={tab.id}
                     tabIndex={activeTab === tab.id ? 0 : -1}
-                    aria-controls={`tabpanel-${tab.id}`}
+                    aria-controls={this.tabPanelId(tab.id)}
                     aria-selected={activeTab === tab.id}
                     onKeyDown={(event) => this.handleKeyDown(event, tab.id)}
                   />
