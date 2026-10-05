@@ -61,6 +61,20 @@ export const closestDroppableKeyboardCoordinates = (event, { active, context, cu
   const activeData = active?.data?.current;
   const ownDropId = activeData?.promptId != null ? `drop-${activeData.promptId}` : undefined;
 
+  // Land the dragged item's own left edge at the target's left edge, and vertically
+  // CENTER the item on the target's own center — not top-align it there. When the
+  // dragged item's rendered height differs from the target's (e.g. a compact tile
+  // landing in a taller/shorter row), top-aligning the item's edge to the target's
+  // center lets it bleed into a neighboring target, and dnd-kit's own area-based
+  // collision detection (rectIntersection) can then flag that neighbor as "over" even
+  // though the item visually landed on the intended target (confirmed live in the
+  // equivalent drag-in-the-blank bug this was ported from a fix for).
+  const itemHeight = collisionRect?.height ?? 0;
+  const dropPositionOf = (rect) => ({
+    x: rect.left,
+    y: rect.top + rect.height / 2 - itemHeight / 2,
+  });
+
   // Collect rect, top-left and center of all enabled droppable containers
   const targets = [];
 
@@ -75,7 +89,8 @@ export const closestDroppableKeyboardCoordinates = (event, { active, context, cu
     // remeasure). A container silently missing from that cache here would otherwise
     // drop out of `targets` entirely, corrupting the Tab cycle. Reading the container's
     // live node directly sidesteps that cache entirely.
-    const rect = container?.node?.current?.getBoundingClientRect() ?? droppableRects.get(id);
+    const node = container?.node?.current;
+    const rect = node?.getBoundingClientRect() ?? droppableRects.get(id);
 
     if (!rect) continue;
 
@@ -83,21 +98,8 @@ export const closestDroppableKeyboardCoordinates = (event, { active, context, cu
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
     };
-    // Land the dragged item's own left edge at the target's left edge, and vertically
-    // CENTER the item on the target's own center — not top-align it there. When the
-    // dragged item's rendered height differs from the target's (e.g. a compact tile
-    // landing in a taller/shorter row), top-aligning the item's edge to the target's
-    // center lets it bleed into a neighboring target, and dnd-kit's own area-based
-    // collision detection (rectIntersection) can then flag that neighbor as "over" even
-    // though the item visually landed on the intended target (confirmed live in the
-    // equivalent drag-in-the-blank bug this was ported from a fix for).
-    const itemHeight = collisionRect?.height ?? 0;
-    const dropPosition = {
-      x: rect.left,
-      y: rect.top + rect.height / 2 - itemHeight / 2,
-    };
 
-    targets.push({ id, rect, dropPosition, center });
+    targets.push({ id, node, rect, dropPosition: dropPositionOf(rect), center });
   }
 
   if (targets.length === 0) {
@@ -153,8 +155,19 @@ export const closestDroppableKeyboardCoordinates = (event, { active, context, cu
   const nextIndex = reverse
     ? (currentIndex - 1 + targets.length) % targets.length
     : (currentIndex + 1) % targets.length;
+  const target = targets[nextIndex];
 
-  return targets[nextIndex].dropPosition;
+  // restrictToFirstScrollableAncestor holds the dragged item inside the visible part of the
+  // horizontally scrolling interactive region, so a target scrolled out of that part is out of
+  // reach. Scroll it into view first and land where it then is; `instant`, so the rect read next
+  // is the post-scroll one.
+  if (target.node?.scrollIntoView) {
+    target.node.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+
+    return dropPositionOf(target.node.getBoundingClientRect());
+  }
+
+  return target.dropPosition;
 };
 
 const distance = (a, b) => Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
