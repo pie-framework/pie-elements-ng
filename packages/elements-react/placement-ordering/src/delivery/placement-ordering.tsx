@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import debug from 'debug';
 import { difference, isEqual } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
-import { rectIntersection } from '@dnd-kit/core';
 import { restrictToParentElement } from '@dnd-kit/modifiers';
 
 import { Collapsible as CollapsibleImport, color, createUniqueId, Feedback as FeedbackImport, hasMedia, hasText, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
@@ -44,7 +43,7 @@ const renderUi =
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
-import { DragProvider } from '@pie-lib/drag';
+import { createDragCollision, DragProvider } from '@pie-lib/drag';
 
 import { HorizontalTiler, VerticalTiler } from './tiler.js';
 import { buildState, reducer } from './ordering.js';
@@ -56,27 +55,19 @@ import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 // re-trigger a selection for a drag that just completed.
 const CLICK_AFTER_DRAG_GUARD_MS = 250;
 
-// Used by onDragEnd below to tell "dropped back on the exact slot the drag started
-// from" apart from "dropped somewhere with no valid target at all" — both leave
-// dnd-kit's own `over` null (tile.tsx disables a droppable for the whole duration of
-// its own drag, and dnd-kit excludes disabled droppables from collision detection
-// entirely, so the origin slot can never become `over` again — see
-// `enabledDroppableContainers` in dnd-kit's own DndContext), but only the first should
-// be a no-op rather than a removal.
-//
-// dnd-kit gives no id for "whatever the item is currently over" once that candidate is
-// disabled, so there's no droppable id to compare against directly. What IS available
-// is `active.rect.current.initial` — and because the draggable and its paired
-// droppable are the same DOM node (see tile.tsx), that rect IS the origin slot's own
-// bounds; nothing else could ever measure there. So checking whether the item's
-// current center still falls inside its own initial rect is exactly equivalent to
-// asking "does the slot here still hold the same choice id it was picked up from" —
-// just resolved geometrically, since that's the only id that rect could ever belong to.
-const isOverOwnOriginSlot = (initialRect, translatedRect) => {
-  if (!initialRect || !translatedRect) return false;
+// Used by onDragEnd below to tell a placed tile dropped back on the slot it was dragged
+// from, which stays, from one dropped where no slot takes it, which goes back to the
+// pool. dnd-kit reports `over` null for both: tile.tsx disables a tile's droppable while
+// that tile is dragged, and dnd-kit leaves disabled droppables out of collision
+// detection (`enabledDroppableContainers` in its DndContext), so it gives no id to
+// compare against. A tile and its slot are one DOM node (see tile.tsx), so
+// `active.rect.current.initial` is the slot's own rect, and the tile is back on its slot
+// when the released tile's centre is inside that rect.
+const isOverOwnOriginSlot = (initialRect, releasedRect) => {
+  if (!initialRect || !releasedRect) return false;
 
-  const centerX = translatedRect.left + translatedRect.width / 2;
-  const centerY = translatedRect.top + translatedRect.height / 2;
+  const centerX = releasedRect.left + releasedRect.width / 2;
+  const centerY = releasedRect.top + releasedRect.height / 2;
 
   return (
     centerX >= initialRect.left &&
@@ -84,6 +75,26 @@ const isOverOwnOriginSlot = (initialRect, translatedRect) => {
     centerY >= initialRect.top &&
     centerY <= initialRect.bottom
   );
+};
+
+// The released tile of a pointer drag is where the pointer took it: `restrictToParentElement`
+// holds the drawn tile, `active.rect.current.translated`, inside the tiler's grid, so a tile
+// released outside the grid can still be drawn over its own slot. A keyboard drag has no
+// pointer, and its released tile is the drawn one.
+const releasedTileRect = (rect, pointer, activatorEvent) => {
+  const { initial, translated } = rect || {};
+  if (!initial || !pointer || typeof activatorEvent?.clientX !== 'number') return translated;
+
+  const x = pointer.x - activatorEvent.clientX;
+  const y = pointer.y - activatorEvent.clientY;
+
+  return {
+    ...initial,
+    left: initial.left + x,
+    right: initial.right + x,
+    top: initial.top + y,
+    bottom: initial.bottom + y,
+  };
 };
 
 const getKeyboardDragOptions = (includeTargets) =>
@@ -194,6 +205,8 @@ export class PlacementOrdering extends React.Component {
       selectedChoice: null,
     };
     this.lastDragEndAt = 0;
+    // Records the pointer of the drag in progress, for onDragEnd.
+    this.dragCollision = createDragCollision();
 
     const { model } = props || {};
     const { env } = model || {};
@@ -368,7 +381,7 @@ export class PlacementOrdering extends React.Component {
   };
 
   onDragEnd: any = (event) => {
-    const { over, active } = event;
+    const { over, active, activatorEvent } = event;
     const ordering = this.createOrdering();
 
     // A real drag (pointer or keyboard) just ended — whatever mirrored selection it
@@ -393,7 +406,9 @@ export class PlacementOrdering extends React.Component {
       }
     } else if (!over && active) {
       const draggedItem = active.data.current;
-      const returnedToOwnSlot = isOverOwnOriginSlot(active.rect?.current?.initial, active.rect?.current?.translated);
+      const rect = active.rect?.current;
+      const releasedRect = releasedTileRect(rect, this.dragCollision.lastPointer(), activatorEvent);
+      const returnedToOwnSlot = isOverOwnOriginSlot(rect?.initial, releasedRect);
 
       if (draggedItem && draggedItem.type === 'target' && !returnedToOwnSlot) {
         this.onRemoveChoice(draggedItem, ordering);
@@ -406,6 +421,8 @@ export class PlacementOrdering extends React.Component {
 
   onDragStart: any = (event) => {
     const { active } = event;
+
+    this.dragCollision.reset();
 
     if (active?.data?.current) {
       // A real drag (pointer or keyboard) is itself a selection — mirror it into the
@@ -587,7 +604,7 @@ export class PlacementOrdering extends React.Component {
         onDragStart={this.onDragStart}
         onDragEnd={this.onDragEnd}
         onDragCancel={this.onDragCancel}
-        collisionDetection={rectIntersection}
+        collisionDetection={this.dragCollision.collisionDetection}
         modifiers={[restrictToParentElement]}
         {...getKeyboardDragOptions(includeTargets)}
       >

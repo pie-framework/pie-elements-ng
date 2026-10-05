@@ -113,7 +113,7 @@ Each element test asserts:
 
 ### [dnd-release-outside.spec.ts](./dnd-release-outside.spec.ts)
 
-Drags released outside the element, by mouse and by touch. In `categorize`, a placed choice released above, below or beside the element goes back to the pool, and a release just outside a category with the choice overlapping it still lands there. Keyboard drags move a placed choice with Space, Tab, Space and leave it with Space, Space.
+Drags released outside the element, by mouse and by touch. In `categorize`, a placed choice released above, below or beside the element goes back to the pool, and a release just outside a category with the choice overlapping it still lands there. In `placement-ordering`, with a placement area, a placed tile released above, below or beside the element goes back to the pool though the element holds the drawn tile over its own slot, and a release just outside a slot with the tile overlapping it still lands there. Keyboard drags move a placed choice or tile with Space, Tab, Space and leave it with Space, Space.
 
 ### [phase2-structured.spec.ts](./phase2-structured.spec.ts)
 
