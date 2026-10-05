@@ -57,7 +57,7 @@ function render(autoplayAudioEnabled?: boolean) {
     );
   });
 
-  return document.getElementById('play-audio-button') as HTMLElement;
+  return host.querySelector('.play-audio-button') as HTMLElement;
 }
 
 beforeEach(() => {

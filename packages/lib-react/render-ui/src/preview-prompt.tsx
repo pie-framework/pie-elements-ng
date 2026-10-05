@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import * as color from './color.js';
+import { createUniqueId } from './unique-id.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
@@ -78,6 +79,12 @@ const NEWLINE_LATEX = '\\newline ';
 // so it stays valid when a page renders more than one prompt
 const PROMPT_CLASS = 'preview-prompt';
 
+// Class hooks for the prompt's audio and its custom play button. Their ids are generated
+// per instance, and every lookup is scoped to this prompt's root, so each prompt on a
+// page drives only its own audio.
+const AUDIO_CLASS = 'pie-prompt-audio-player';
+const PLAY_BUTTON_CLASS = 'play-audio-button';
+
 export class PreviewPrompt extends Component {
   static propTypes = {
     prompt: PropTypes.string,
@@ -98,6 +105,10 @@ export class PreviewPrompt extends Component {
 
   promptRef = React.createRef();
 
+  // instance fields because parsedText runs on every render and the ids must not change
+  audioId = createUniqueId(AUDIO_CLASS);
+  playButtonId = createUniqueId(PLAY_BUTTON_CLASS);
+
   parsedText: any = (text) => {
     const { autoplayAudioEnabled, customAudioButton } = this.props;
     const div = document.createElement('div');
@@ -111,7 +122,8 @@ export class PreviewPrompt extends Component {
       source.setAttribute('src', audio.getAttribute('src'));
 
       audio.removeAttribute('src');
-      audio.setAttribute('id', 'pie-prompt-audio-player');
+      audio.id = this.audioId;
+      audio.classList.add(AUDIO_CLASS);
 
       audio.appendChild(source);
 
@@ -119,7 +131,8 @@ export class PreviewPrompt extends Component {
         audio.style.display = 'none';
 
         const playButton = document.createElement('div');
-        playButton.id = 'play-audio-button';
+        playButton.id = this.playButtonId;
+        playButton.className = PLAY_BUTTON_CLASS;
 
         Object.assign(playButton.style, {
           cursor: 'pointer',
@@ -144,8 +157,9 @@ export class PreviewPrompt extends Component {
 
   addCustomAudioButtonControls() {
     const { autoplayAudioEnabled, customAudioButton } = this.props;
-    const playButton = document.getElementById('play-audio-button');
-    const audio = document.getElementById('pie-prompt-audio-player');
+    const root = this.promptRef.current;
+    const playButton = root?.querySelector(`.${PLAY_BUTTON_CLASS}`);
+    const audio = root?.querySelector(`.${AUDIO_CLASS}`);
 
     if (autoplayAudioEnabled && audio) {
       audio
@@ -198,7 +212,9 @@ export class PreviewPrompt extends Component {
     audio.addEventListener('pause', handleAudioPause);
     audio.addEventListener('ended', handleAudioEnded);
 
-    // store event handler references so they can be removed later
+    // store the elements and handlers so unmount removes exactly what was attached
+    this._playButton = playButton;
+    this._audio = audio;
     this._handlePlayClick = handlePlayClick;
     this._handleAudioPlay = handleAudioPlay;
     this._handleAudioPause = handleAudioPause;
@@ -206,8 +222,8 @@ export class PreviewPrompt extends Component {
   }
 
   removeCustomAudioButtonListeners() {
-    const playButton = document.getElementById('play-audio-button');
-    const audio = document.querySelector('audio');
+    const playButton = this._playButton;
+    const audio = this._audio;
 
     if (!playButton || !audio) return;
 
