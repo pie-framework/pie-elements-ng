@@ -352,7 +352,9 @@ class StimulusTabs extends React.Component {
     );
   }
 
-  renderTab(tab, disabledTabs) {
+  // Outside a tab list (one passage, or print) no tab names the panel, so it renders without the
+  // tabpanel role and its title heading carries the structure.
+  renderTab(tab, disabledTabs, tabbed = true) {
     const { baseHeadingLevel } = this.props;
     const clampedLevel = baseHeadingLevel ? Math.min(6, Math.max(1, baseHeadingLevel)) : undefined;
     const TitleTag = baseHeadingLevel ? `h${clampedLevel}` : 'h2'; // default to h2 if no base level is provided - this was the previous behavior
@@ -363,8 +365,7 @@ class StimulusTabs extends React.Component {
         key={tab.id}
         id={this.tabPanelId(tab.id)}
         className={`tabpanel-${tab.id}`}
-        role="tabpanel"
-        aria-labelledby={this.tabButtonId(tab.id)}
+        {...(tabbed && { role: 'tabpanel', 'aria-labelledby': this.tabButtonId(tab.id) })}
       >
         {this.renderInstructions(tab.teacherInstructions, disabledTabs)}
 
@@ -423,7 +424,7 @@ class StimulusTabs extends React.Component {
       <UiLayout extraCSSRules={extraCSSRules}>
         <PassagesContainer className="passages" ref={this.containerRef}>
           {disabledTabs || tabs.length === 1 ? (
-            tabs.map((tab) => this.renderTab(tab, disabledTabs))
+            tabs.map((tab) => this.renderTab(tab, disabledTabs, false))
           ) : (
             <>
               <Tabs
