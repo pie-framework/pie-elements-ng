@@ -3,11 +3,25 @@
 import React, { Component } from 'react';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
+import Translator from '@pie-lib/translator';
 import * as color from './color.js';
 import { createUniqueId } from './unique-id.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
+const { translator } = Translator;
+
+// Class hooks for the prompt's audio and its custom play button. Their ids are generated
+// per instance, and every lookup is scoped to this prompt's root, so each prompt on a
+// page drives only its own audio.
+const AUDIO_CLASS = 'pie-prompt-audio-player';
+const PLAY_BUTTON_CLASS = 'play-audio-button';
+
 const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
+  // The play button is built as markup and styled inline, which cannot reach :focus-visible.
+  [`& .${PLAY_BUTTON_CLASS}:focus-visible`]: {
+    outline: `2px solid ${color.focusOutline()}`,
+    outlineOffset: '2px',
+  },
   // presentation tables should not have any custom style
   // Base promptTable styles
   '&:not(.MathJax) > table:not([role="presentation"])': {
@@ -79,12 +93,6 @@ const NEWLINE_LATEX = '\\newline ';
 // so it stays valid when a page renders more than one prompt
 const PROMPT_CLASS = 'preview-prompt';
 
-// Class hooks for the prompt's audio and its custom play button. Their ids are generated
-// per instance, and every lookup is scoped to this prompt's root, so each prompt on a
-// page drives only its own audio.
-const AUDIO_CLASS = 'pie-prompt-audio-player';
-const PLAY_BUTTON_CLASS = 'play-audio-button';
-
 export class PreviewPrompt extends Component {
   static propTypes = {
     prompt: PropTypes.string,
@@ -97,6 +105,8 @@ export class PreviewPrompt extends Component {
       playImage: PropTypes.string,
       pauseImage: PropTypes.string,
     }),
+    /** The item language, which the custom audio button's accessible name follows. */
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -110,7 +120,7 @@ export class PreviewPrompt extends Component {
   playButtonId = createUniqueId(PLAY_BUTTON_CLASS);
 
   parsedText: any = (text) => {
-    const { autoplayAudioEnabled, customAudioButton } = this.props;
+    const { autoplayAudioEnabled, customAudioButton, language } = this.props;
     const div = document.createElement('div');
     div.innerHTML = text;
 
@@ -130,7 +140,10 @@ export class PreviewPrompt extends Component {
       if (customAudioButton) {
         audio.style.display = 'none';
 
-        const playButton = document.createElement('div');
+        // A native button gives the control its role, a tab stop and Enter/Space activation.
+        const playButton = document.createElement('button');
+        playButton.setAttribute('type', 'button');
+        playButton.setAttribute('aria-label', translator.t('common:playAudio', { lng: language }));
         playButton.id = this.playButtonId;
         playButton.className = PLAY_BUTTON_CLASS;
 
@@ -139,6 +152,11 @@ export class PreviewPrompt extends Component {
           display: 'block',
           width: '128px',
           height: '128px',
+          // reset the UA button styles the div never had
+          margin: '0',
+          padding: '0',
+          font: 'inherit',
+          backgroundColor: 'transparent',
           // pauseImage is the playing state. Only autoplay starts in it - with
           // autoplay off the audio is paused, so the button has to show
           // playImage or it advertises a state the audio is not in.

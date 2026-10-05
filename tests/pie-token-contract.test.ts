@@ -253,7 +253,11 @@ describe('React --pie-* token contract', { timeout: 30_000 }, () => {
     )) {
       for (const [, token] of args.matchAll(/'([a-z0-9-]+)'/g)) {
         const name = `--pie-${token}`;
-        if (!REACT_ALLOWED_TOKENS.has(name) && !KNOWN_UNREGISTERED_TOKENS.has(name)) {
+        if (
+          !REACT_ALLOWED_TOKENS.has(name) &&
+          !REGISTERED_PLANNED_TOKENS.has(name) &&
+          !KNOWN_UNREGISTERED_TOKENS.has(name)
+        ) {
           emitted.push(`${name} (color.${accessor}())`);
         }
       }

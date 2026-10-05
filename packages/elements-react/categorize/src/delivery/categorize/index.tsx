@@ -312,6 +312,7 @@ export class Categorize extends React.Component {
             prompt={model.prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
         )}
 

@@ -397,6 +397,7 @@ export class MultipleChoice extends React.Component {
             tagName={'legend'}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
 
           {!(options && alwaysShowCorrect) && (
