@@ -454,7 +454,12 @@ function DragDropBlank({
   };
 
   const hasSelection = !!selectedItem;
-  const showsHoverEffect = isOver || (hasSelection && isHovered && !disabled);
+  // While a drag is live, dnd-kit's `isOver` is the only authority on which blank will receive the
+  // drop: it is picked by rectIntersection against the overlay, not by the pointer. A drag also sets
+  // a selection (see DragInTheBlank.handleDragStart), so letting pointer hover count here would
+  // light up the blank under the pointer as well as the one dnd-kit chose, and only one of them
+  // actually takes the drop. Pointer hover only signals receptiveness for click-to-place.
+  const showsHoverEffect = !!dragItem ? isOver : isOver || (hasSelection && isHovered && !disabled);
 
   return (
     <StyledContent
