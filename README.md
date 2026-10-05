@@ -53,13 +53,11 @@ That's it! All packages are in the repository, so you can get started immediatel
 
 ### Development Commands
 
-`bun run build` - Build all packages in the monorepo
+`bun run build` - Build all packages in the monorepo; each package's build type-checks it with `tsc`
 
 `bun run dev` - Start the demo application in development mode
 
 `bun run test` - Run all tests
-
-`bun run typecheck` - TypeScript type checking across all packages
 
 ### Controller And Configure Shim Compatibility
 

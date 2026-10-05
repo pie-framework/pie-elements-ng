@@ -150,26 +150,25 @@ pie-elements-ng/
 **After completing each feature or fix**:
 
 1. Run Biome with auto-fix: `bun run lint:fix` or `npx @biomejs/biome check --write .`
-2. Run TypeScript type checking: `bunx tsc --noEmit`
-3. Run Svelte type checking: `bunx svelte-check` (from `apps/element-demo`)
-4. Fix all errors and warnings before marking the task as complete
+2. Type-check each package you changed: `bunx tsc --noEmit -p packages/<group>/<name>`. The root `tsconfig.json` has no inputs, so `bunx tsc --noEmit` at the root checks nothing.
+3. Fix all errors and warnings before marking the task as complete
 
 These checks ensure:
 
 - Code follows project style standards
 - No type errors are introduced
-- Svelte components are valid and type-safe
 - Changes don't break existing functionality
+
+No Svelte type check runs in the build, the hooks or CI; the `.ts` files of Svelte packages are type-checked by their build's `tsc` step.
 
 **Before any merge request**:
 
-1. TypeScript compilation passes: `bun run typecheck`
-2. Svelte components validated: `bun run check`
-3. All tests pass: `bun test`
-4. E2E tests pass: `bun run test:e2e`
-5. Accessibility tests pass (axe-core)
-6. Biome linting clean: `bun run lint`
-7. Coverage meets thresholds (V8 provider)
+1. Biome linting and the element contracts pass: `bun run lint:all`
+2. Dependency integrity holds: `bun run verify:dependency-integrity --fail-on-hoist`
+3. The build passes: `bun run build`. Each package's build runs `tsc`, so this is the type check across all packages.
+4. All tests pass: `bun run test` (Vitest; `bun test` starts Bun's own test runner instead)
+5. E2E tests pass: `bun run test:e2e`. CI runs them only on manual dispatch.
+6. Accessibility tests pass: `bun run test:a11y`. CI runs them on every pull request without blocking the merge.
 
 ## Testing Strategy
 
@@ -233,10 +232,8 @@ Components handle multiple modes:
 **Build commands**:
 
 ```bash
-bun run build          # Build all packages (Turbo)
+bun run build          # Build all packages (Turbo); each package's tsc step type-checks it
 bun run dev            # Watch mode
-bun run typecheck      # Type checking
-bun run check          # Svelte component validation
 ```
 
 ## Special Patterns
