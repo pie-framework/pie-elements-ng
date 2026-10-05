@@ -64,12 +64,21 @@ describe('fills mixed into the scheme background', () => {
     expect(contrast([128, 128, 128], mixOver(editorToolbar(), DARK_BACKGROUND))).toBeGreaterThanOrEqual(3);
   });
 
-  // editable-html-tip-tap's Done check.
+  // editable-html-tip-tap's Done check, in each preset's correct-icon colour.
+  it.each([
+    ['the light preset', [46, 125, 50], WHITE],
+    ['the dark preset', [102, 187, 106], DARK_BACKGROUND],
+    ['no theme', channels(defaults.CORRECT_WITH_ICON), WHITE],
+  ])('keeps the editor toolbar Done check at 3:1 or more under %s', (_, check, background) => {
+    expect(contrast(check, mixOver(editorToolbar(), background))).toBeGreaterThanOrEqual(3);
+  });
+
+  // math-toolbar's Done check, which stays #388E3C: the authoring Correct Answer card stays white.
   it.each([
     ['the editor toolbar over white', mixOver(editorToolbar(), WHITE)],
     ['the editor toolbar under the dark preset', mixOver(editorToolbar(), DARK_BACKGROUND)],
     ['white', WHITE],
-  ])('keeps the #388E3C Done check at 3:1 or more on %s', (_, fill) => {
+  ])('keeps the #388E3C math-toolbar Done check at 3:1 or more on %s', (_, fill) => {
     expect(contrast([56, 142, 60], fill)).toBeGreaterThanOrEqual(3);
   });
 
