@@ -513,7 +513,6 @@ document.addEventListener('keydown', (e) => {
 
 ## See Also
 
-- [evals/STYLE-TESTING.md](./evals/STYLE-TESTING.md) - Evaluation system with accessibility actions
 - [README.md](../README.md) - Getting started guide
 
 ---
