@@ -51,8 +51,9 @@ export default class NumberLine extends HTMLElement {
       }
     }
 
+    // A copy: updateTicks and the graph edits in Main write into the graph in place.
     const normalizedModel = {
-      ...defaults.model,
+      ...cloneDeep(defaults.model),
       ...model,
       language,
     };
@@ -93,8 +94,9 @@ export default class NumberLine extends HTMLElement {
   };
 
   set configuration(c) {
+    // A copy: the language branch below adds the model's language to languageChoices.
     const newConfiguration = {
-      ...defaults.configuration,
+      ...cloneDeep(defaults.configuration),
       ...c,
     };
 
