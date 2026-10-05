@@ -18,7 +18,7 @@ const mount = async (name: string) => {
       { title: `${name} two`, text: `<p>${name} two text</p>` },
     ],
   };
-  await vi.waitFor(() => expect(el.querySelectorAll('[role="tabpanel"]')).toHaveLength(2));
+  await vi.waitFor(() => expect(el.querySelectorAll('[class*="tabpanel-"]')).toHaveLength(2));
   return el;
 };
 
@@ -35,5 +35,12 @@ describe('passage print panel ids', () => {
 
     expect(ids(document).length).toBeGreaterThan(0);
     expect(new Set(ids(document)).size).toBe(ids(document).length);
+  });
+
+  // Print renders no tab buttons, so no panel may claim to be a tab panel or point at one.
+  it('render the panels without the tabpanel role or a label reference', async () => {
+    const el = await mount('A');
+
+    expect(el.querySelector('[role="tabpanel"], [role="tab"], [aria-labelledby]')).toBeNull();
   });
 });
