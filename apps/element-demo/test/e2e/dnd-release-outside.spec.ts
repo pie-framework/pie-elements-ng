@@ -1,9 +1,12 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import {
   deliveryContainer,
+  getModelFromSource,
   getSessionState,
   mountedElement,
   openDeliverRoute,
+  switchTab,
+  updateModelInSource,
   waitForMathRendering,
 } from './test-helpers';
 
@@ -211,5 +214,118 @@ test.describe('categorize: releasing a choice outside the element', () => {
     await choiceIn(category(root, 'False')).focus();
     await pressInTurn(page, ['Space', 'Space']);
     expect(await placements(page)).toEqual({ 1: ['0'] });
+  });
+});
+
+test.describe('placement-ordering: releasing a tile outside the element', () => {
+  // The demo with a placement area and no column labels, so the tiles' grid starts at the first
+  // slot: Blueberry (c1), Lemon (c2), Melon (c3) and Pear (c4) in the pool, beside four slots.
+  async function open(page: Page) {
+    await page.goto('/placement-ordering/source?demo=default');
+    await page.locator('[data-testid="source-editor"]').waitFor({ timeout: 60_000 });
+    const model = await getModelFromSource(page);
+    await updateModelInSource(page, {
+      ...model,
+      placementArea: true,
+      choiceLabel: '',
+      targetLabel: '',
+    });
+    await switchTab(page, 'deliver');
+    const root = deliveryContainer(page);
+    await expect(root.locator(DRAGGABLE).first()).toBeVisible();
+    return root;
+  }
+
+  /** A pool tile by choice id, `choice-c1`, or a slot by index, `target-0`. */
+  const tile = (root: Locator, name: string) => root.locator(`[data-tile-id$=":${name}"]`);
+
+  /** The choice id in each slot, null for an empty one. */
+  async function slots(page: Page): Promise<(string | null)[]> {
+    const value = (await getSessionState(page))?.value ?? [];
+    return [0, 1, 2, 3].map((index) => value[index] ?? null);
+  }
+
+  /** Drags a pool tile into a slot with the mouse. */
+  async function place(page: Page, root: Locator, choice: string, slot: number) {
+    await drag(
+      page,
+      'mouse',
+      centreOf(await boxOf(tile(root, `choice-${choice}`))),
+      centreOf(await boxOf(tile(root, `target-${slot}`)))
+    );
+    await expect.poll(async () => (await slots(page))[slot]).toBe(choice);
+  }
+
+  const EMPTY = [null, null, null, null];
+
+  for (const input of INPUTS) {
+    test.describe(input, () => {
+      test.use({ hasTouch: input === 'touch' });
+
+      test('a first-slot tile released above the element goes back to the pool', async ({
+        page,
+      }) => {
+        const root = await open(page);
+        await place(page, root, 'c1', 0);
+
+        const element = await boxOf(mountedElement(page));
+        const first = centreOf(await boxOf(tile(root, 'target-0')));
+        await drag(page, input, first, { x: first.x, y: element.y - 30 });
+        await expect.poll(() => slots(page)).toEqual(EMPTY);
+      });
+
+      test('a last-slot tile released below the element goes back to the pool', async ({
+        page,
+      }) => {
+        const root = await open(page);
+        await place(page, root, 'c4', 3);
+
+        const element = await boxOf(mountedElement(page));
+        const last = centreOf(await boxOf(tile(root, 'target-3')));
+        await drag(page, input, last, { x: last.x, y: element.y + element.height + 80 });
+        await expect.poll(() => slots(page)).toEqual(EMPTY);
+      });
+
+      test('a placed tile released beside the element goes back to the pool', async ({ page }) => {
+        const root = await open(page);
+        // Narrows the element, an inline custom element by default, so the page has room beside it.
+        await mountedElement(page).evaluate((node) => {
+          Object.assign((node as HTMLElement).style, { display: 'block', maxWidth: '900px' });
+        });
+        const element = await boxOf(mountedElement(page));
+        expect(element.x + element.width).toBeLessThan(1000);
+        await place(page, root, 'c1', 0);
+
+        const first = centreOf(await boxOf(tile(root, 'target-0')));
+        await drag(page, input, first, { x: element.x + element.width + 300, y: first.y });
+        await expect.poll(() => slots(page)).toEqual(EMPTY);
+      });
+
+      test('a tile released just outside a slot, overlapping it, lands there', async ({ page }) => {
+        const root = await open(page);
+        const first = await boxOf(tile(root, 'target-0'));
+
+        await drag(page, input, centreOf(await boxOf(tile(root, 'choice-c1'))), {
+          x: first.x + first.width + 4,
+          y: first.y + first.height / 2,
+        });
+        await expect.poll(() => slots(page)).toEqual(['c1', null, null, null]);
+      });
+    });
+  }
+
+  test('keyboard: Space, Tab, Space moves a placed tile to the next slot; Space, Space leaves it', async ({
+    page,
+  }) => {
+    const root = await open(page);
+    await place(page, root, 'c1', 0);
+
+    await tile(root, 'target-0').focus();
+    await pressInTurn(page, ['Space', 'Tab', 'Space']);
+    await expect.poll(() => slots(page)).toEqual([null, 'c1', null, null]);
+
+    await tile(root, 'target-1').focus();
+    await pressInTurn(page, ['Space', 'Space']);
+    expect(await slots(page)).toEqual([null, 'c1', null, null]);
   });
 });
