@@ -5,8 +5,8 @@ import { render, screen } from '@testing-library/react';
 
 import { RawDoneButton } from '../done-button';
 
-// The dark preset redefines --pie-background but keeps --pie-white absolute.
-const DARK = { '--pie-background': '#1a202c', '--pie-white': '#ffffff' } as CSSProperties;
+// The dark preset redefines --pie-background and --pie-correct-icon but keeps --pie-white absolute.
+const DARK = { '--pie-background': '#1a202c', '--pie-white': '#ffffff', '--pie-correct-icon': '#66BB6A' } as CSSProperties;
 
 const renderButton = (vars: CSSProperties) => {
   render(
@@ -26,7 +26,7 @@ describe('math toolbar Done button', () => {
     expect(renderButton({}).backgroundColor).toBe('#ffffff');
   });
 
-  // One green clears 3:1 against the toolbar grey, white, the hover fills and the dark background.
+  // One green clears 3:1 on every surface the check sits on, including the authoring card that stays white.
   it.each([
     ['the dark theme', DARK],
     ['no theme', {}],

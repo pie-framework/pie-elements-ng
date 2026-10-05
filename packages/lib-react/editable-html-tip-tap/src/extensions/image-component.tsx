@@ -12,6 +12,7 @@ import InsertImageHandler from '../components/image/InsertImageHandler.js';
 import { findImageNodeByKey } from '../components/image/findImageNode.js';
 import ImageToolbar from '../components/image/ImageToolbar.js';
 import CustomToolbarWrapper from './custom-toolbar-wrapper.js';
+import { TOOLBAR_BACKGROUND } from '../constants.js';
 
 const log = debug('@pie-lib:editable-html:plugins:image:component');
 
@@ -281,7 +282,7 @@ function ImageComponent(props) {
             ref={toolbarRef}
             style={{
               zIndex: 20,
-              background: 'var(--editable-html-toolbar-bg, #efefef)',
+              background: TOOLBAR_BACKGROUND,
               boxShadow:
                 '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
               width: '100%',

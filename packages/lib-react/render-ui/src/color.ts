@@ -65,6 +65,8 @@ export const defaults = {
   KEYPAD_BUTTON_HOVER: 'rgb(214, 218, 239)',
   KEYPAD_BUTTON_OPERATOR_HOVER: 'rgb(255, 197, 217)',
   KEY_BOARD_FOCUS_INDICATOR: '#2B87FF',
+  // the editable-html formatting toolbar
+  EDITOR_TOOLBAR: '#efefef',
   // these are used for graphing UI elements
   BUTTON_BORDER: 'rgba(0, 0, 0, 0.23)',
   BUTTON_HOVER_BG: 'rgba(0, 0, 0, 0.08)',
@@ -141,12 +143,32 @@ export const blueGrey300 = () => pv('blue-grey-300', defaults.BLUE_GREY300);
 export const blueGrey600 = () => pv('blue-grey-600', defaults.BLUE_GREY600);
 export const blueGrey900 = () => pv('blue-grey-900', defaults.BLUE_GREY900);
 
-export const keypadButton = () => pv('keypad-button', defaults.KEYPAD_BUTTON);
-export const keypadButtonOperator = () => pv('keypad-button-operator', defaults.KEYPAD_BUTTON_OPERATOR);
+const channels = (literal) => {
+  const hex = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(literal);
+  return hex ? hex.slice(1).map((h) => parseInt(h, 16)) : literal.match(/\d+/g).slice(0, 3).map(Number);
+};
+
+/**
+ * A fill authored for a white page, re-expressed as `share` of a hue mixed into --pie-background.
+ * The hue is solved so that the mix over white is `literal` exactly: a white or absent background
+ * renders `literal`, and a dark scheme darkens the fill along with its background, so the scheme's
+ * light ink stays legible on it. `share` is a power of two so the solved hue is whole.
+ */
+const overBackground = (literal, share) => {
+  const hue = channels(literal).map((c) => (c - 255 * (1 - share)) / share);
+  return `color-mix(in srgb, rgb(${hue.join(' ')}) ${share * 100}%, ${pv('background', defaults.WHITE)})`;
+};
+
+// Hover keeps half the rest share, so it moves towards the background under every scheme.
+export const keypadButton = () => pv('keypad-button', overBackground(defaults.KEYPAD_BUTTON, 0.5));
+export const keypadButtonOperator = () =>
+  pv('keypad-button-operator', overBackground(defaults.KEYPAD_BUTTON_OPERATOR, 0.5));
 export const keypadEmptyPlaceholder = () => pv('keypad-empty-placeholder', defaults.KEYPAD_EMPTY_PLACEHOLDER);
-export const keypadButtonHover = () => pv('keypad-button-hover', defaults.KEYPAD_BUTTON_HOVER);
+export const keypadButtonHover = () => pv('keypad-button-hover', overBackground(defaults.KEYPAD_BUTTON_HOVER, 0.25));
 export const keypadButtonOperatorHover = () =>
-  pv('keypad-button-operator-hover', defaults.KEYPAD_BUTTON_OPERATOR_HOVER);
+  pv('keypad-button-operator-hover', overBackground(defaults.KEYPAD_BUTTON_OPERATOR_HOVER, 0.25));
+// 12.5% keeps the toolbar's grey rest icons above 3:1 under a dark background.
+export const editorToolbar = () => overBackground(defaults.EDITOR_TOOLBAR, 0.125);
 export const keyBoardFocusIndicator = () => pv('keyboard-focus-indicator', defaults.KEY_BOARD_FOCUS_INDICATOR);
 export const buttonBorder = () => pv('button-border', defaults.BUTTON_BORDER);
 export const buttonHoverBg = () => pv('button-hover-bg', defaults.BUTTON_HOVER_BG);

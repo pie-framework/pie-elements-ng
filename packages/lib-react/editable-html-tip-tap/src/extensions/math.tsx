@@ -8,6 +8,7 @@ import { NodeSelection, Plugin, PluginKey, TextSelection } from 'prosemirror-sta
 import { MathPreview, MathToolbar } from '@pie-lib/math-toolbar';
 import { unWrapMath, wrapMath } from '@pie-element/shared-math-rendering-mathjax';
 import { setToolbarOpened } from '../utils/toolbar.js';
+import { TOOLBAR_BACKGROUND } from '../constants.js';
 
 const ensureTextAfterMathPluginKey = new PluginKey('ensureTextAfterMath');
 
@@ -435,7 +436,7 @@ export const MathNodeView = (props) => {
               top: `${position.top}px`,
               left: `${position.left}px`,
               zIndex: 1000,
-              background: 'var(--editable-html-toolbar-bg, #efefef)',
+              background: TOOLBAR_BACKGROUND,
               boxShadow:
                 '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
             }}

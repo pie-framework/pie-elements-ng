@@ -12,9 +12,10 @@ const StyledIconButton: any = styled(IconButton)(({ hideBackground }) => ({
   verticalAlign: 'top',
   width: '28px',
   height: '28px',
-  // The check sits on the editable-html toolbar's #efefef, which no theme changes, or on
-  // `--pie-background` when the background is hidden. #388E3C clears 3:1 against #efefef, white,
-  // both hover fills and the dark theme's background (WCAG 1.4.11).
+  // A literal: the math-inline and math-templated authoring Correct Answer card stays white under
+  // every scheme, where `--pie-correct-icon` drops to 2.36:1 under dark. #388E3C clears 3:1 there,
+  // on the editable-html toolbar fill (3.40:1 under dark) and on `--pie-background` when the
+  // background is hidden (WCAG 1.4.11). It moves to the token once that card follows the scheme.
   color: '#388E3C',
   ...(hideBackground && {
     // `--pie-background` follows both the colour schemes and the dark theme; `--pie-white`
