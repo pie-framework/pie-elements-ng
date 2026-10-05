@@ -66,12 +66,12 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   'background-dark': '#F5F5F5',
   'secondary-background': '#FAFAFA',
   'dropdown-background': '#ffffff',
-  surface: '#E0E1E6',
+  surface: '#EBECF1',
 
   // Borders
   border: '#BDBDBD',
   'border-light': '#E0E0E0',
-  'border-dark': '#757575',
+  'border-dark': '#66686A',
   'border-gray': '#9E9E9E',
 
   // Focus states
