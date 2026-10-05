@@ -5,13 +5,27 @@ import { render, screen } from '@testing-library/react';
 import AnnotationMenu from '../annotation/annotation-menu';
 import FreeformEditor from '../annotation/freeform-editor';
 
-// The dark preset redefines --pie-background and --pie-text but keeps --pie-white absolute.
-const DARK = { '--pie-background': '#1a202c', '--pie-text': '#e2e8f0', '--pie-white': '#ffffff' };
+// The dark preset redefines --pie-background, --pie-text and --pie-border-dark but keeps
+// --pie-white absolute.
+const DARK = {
+  '--pie-background': '#1a202c',
+  '--pie-text': '#e2e8f0',
+  '--pie-border-dark': '#9E9E9E',
+  '--pie-white': '#ffffff',
+};
 // MUI's paper text, which the popovers keep when no theme is applied.
 const PAPER_TEXT = 'rgba(0, 0, 0, 0.87)';
-// Clears 3:1 against both annotation fills, white and the dark preset's background.
+// The type-band rings: clear 3:1 against both annotation fills, white and the dark preset's background.
 const STROKE = '#757575';
 const noop = () => {};
+
+// The rule emotion writes for one of an element's classes, before its custom properties resolve.
+// Read from the style text: happy-dom's CSSOM drops a `var()` inside a shorthand.
+const ruleText = (element: Element, selectorSuffix = '') =>
+  [...document.querySelectorAll('style')]
+    .map((style) => style.textContent ?? '')
+    .filter((text) => [...element.classList].some((name) => text.startsWith(`.${name}${selectorSuffix}{`)))
+    .join('\n');
 
 // The popovers portal into document.body, so the theme is applied there, as at document scope.
 const applyTheme = (vars: Record<string, string>) => {
@@ -35,8 +49,10 @@ const renderMenu = (vars: Record<string, string>) => {
       onWrite={noop}
     />,
   );
+  const menuElement = screen.getByText('Cancel').parentElement?.parentElement as HTMLElement;
   return {
-    menu: getComputedStyle(screen.getByText('Cancel').parentElement?.parentElement as HTMLElement),
+    menuElement,
+    menu: getComputedStyle(menuElement),
     annotation: getComputedStyle(screen.getByText('good')),
   };
 };
@@ -75,15 +91,25 @@ describe('annotation menu', () => {
     expect(menu.color).toBe(PAPER_TEXT);
   });
 
+  it('takes its outline and pointer from the theme border, falling back to the render-ui default', () => {
+    const { menuElement } = renderMenu({});
+    const popover = menuElement.closest('.MuiPopover-root') as Element;
+
+    expect(ruleText(menuElement)).toContain('border:2px solid var(--pie-border-dark, #646464)');
+    expect(ruleText(popover, ' .MuiPaper-root::after')).toContain(
+      'border-top-color:var(--pie-border-dark, #646464)',
+    );
+  });
+
   it.each([
-    ['the dark theme', DARK],
-    ['no theme', {}],
-  ])('keeps the outline that meets the fills and the surface under %s', (_, vars) => {
+    ['the dark theme', DARK, '#9E9E9E'],
+    ['no theme', {}, '#646464'],
+  ])('draws the outline in the theme border under %s', (_, vars, outline) => {
     const { menu } = renderMenu(vars);
 
     expect(menu.borderTopStyle).toBe('solid');
     expect(menu.borderTopWidth).toBe('2px');
-    expect(menu.borderTopColor).toBe(STROKE);
+    expect(menu.borderTopColor).toBe(outline);
   });
 });
 
