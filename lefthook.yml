@@ -11,9 +11,10 @@ pre-commit:
     lint:
       glob: "*.{js,ts,svelte}"
       run: bun run lint:fix {staged_files}
+    # No glob: the script reads the staged paths itself, so that a commit deleting a .ts file
+    # still type-checks the package it leaves behind.
     types:
-      glob: "*.{ts,tsx}"
-      run: bunx tsc --noEmit
+      run: node scripts/type-check-staged.mjs
 
 pre-push:
   parallel: false
