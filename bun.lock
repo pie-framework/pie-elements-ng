@@ -1401,7 +1401,7 @@
         "@types/react-dom": "^18.2.0",
         "clsx": "^2.1.1",
         "debug": "^4.1.1",
-        "immutable": "^4.0.0-rc.12",
+        "immutable": "^5.1.9",
         "keycode": "^2.2.0",
         "prop-types": "^15.6.2",
         "prosemirror-state": "^1.4.4",
@@ -3411,7 +3411,7 @@
 
     "immer": ["immer@11.1.8", "", {}, "sha512-/tbkHMW7y10Lx6i1crLjD4/OhNkRG+Fo7byZHtah0547nIeXYcpIXaUh0IAQY6gO5459qpGGYapcEOHtFXkIuA=="],
 
-    "immutable": ["immutable@4.3.8", "", {}, "sha512-d/Ld9aLbKpNwyl0KiM2CT1WYvkitQ1TSvmRtkcV8FKStiDoA7Slzgjmb/1G2yhKM1p0XeNOieaTbFZmU1d3Xuw=="],
+    "immutable": ["immutable@5.1.9", "", {}, "sha512-m8nVez3rwrgmWxtLMt1ZYXB2Lv7OKYn/disyxAlSDYAlKSlFoPPfIAmAM/M5xqL4m4C/wAPw7S2/CNaUii1Hxg=="],
 
     "import-fresh": ["import-fresh@3.3.1", "", { "dependencies": { "parent-module": "^1.0.0", "resolve-from": "^4.0.0" } }, "sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ=="],
 
