@@ -40,6 +40,9 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import { LIKERT_ORIENTATION } from './likertEntities.js';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const Main: any = styled('div')({
   color: color.text(),
@@ -69,6 +72,7 @@ export class Likert extends React.Component {
     choices: PropTypes.array,
     prompt: PropTypes.string,
     teacherInstructions: PropTypes.string,
+    language: PropTypes.string,
     session: PropTypes.object,
     disabled: PropTypes.bool.isRequired,
     onSessionChange: PropTypes.func.isRequired,
@@ -94,6 +98,7 @@ export class Likert extends React.Component {
       teacherInstructions,
       className,
       likertOrientation,
+      language,
     } = this.props;
 
     const flexDirection = likertOrientation === LIKERT_ORIENTATION.vertical ? 'column' : 'row';
@@ -103,8 +108,8 @@ export class Likert extends React.Component {
         {teacherInstructions && (
           <StyledCollapsible
             labels={{
-              hidden: 'Show Teacher Instructions',
-              visible: 'Hide Teacher Instructions',
+              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
             }}
           >
             <PreviewPrompt prompt={teacherInstructions} />

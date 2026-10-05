@@ -39,6 +39,9 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 
 import Container from './container.js';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -149,7 +152,7 @@ class HotspotComponent extends React.Component {
     return (
       <StyledUiLayout extraCSSRules={extraCSSRules} id={'main-container'} fontSizeFactor={fontSizeFactor}>
         {showTeacherInstructions && (
-          <StyledCollapsible labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}>
+          <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
             <PreviewPrompt className="prompt" prompt={teacherInstructions} />
           </StyledCollapsible>
         )}
@@ -194,7 +197,7 @@ class HotspotComponent extends React.Component {
         ) : null}
 
         {showRationale && (
-          <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt className="prompt" prompt={rationale} />
           </Collapsible>
         )}

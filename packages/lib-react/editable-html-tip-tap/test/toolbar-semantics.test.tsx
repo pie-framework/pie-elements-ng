@@ -42,6 +42,19 @@ describe('EditableHtml toolbar', () => {
     expect(toolbar()).toHaveAttribute('aria-label', 'Herramientas de edición');
   });
 
+  it.each([
+    ['en_US', ['Bold', 'Italic', 'Bulleted list', 'Undo', 'Redo'], 'Done'],
+    ['es_ES', ['Negrita', 'Cursiva', 'Lista con viñetas', 'Deshacer', 'Rehacer'], 'Listo'],
+  ])('names its buttons in the %s item language', async (language, names, done) => {
+    render(editor({ language, activePlugins: ['bold', 'italic', 'bulleted-list', 'undo', 'redo'] }));
+    await textbox();
+
+    const buttons = [...toolbar().querySelectorAll('button')];
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([...names, done]);
+    // The done button is an icon with no tooltip.
+    expect(buttons.map((b) => b.getAttribute('title'))).toEqual([...names, null]);
+  });
+
   it('is inert while the editor lacks focus, and open while focus is anywhere in the editor', async () => {
     render(editor({}));
     const box = await textbox();

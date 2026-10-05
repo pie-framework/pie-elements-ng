@@ -12,6 +12,7 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@pie-lib/render-ui": "workspace:*",
+    "@pie-lib/translator": "workspace:*",
     "clsx": "^2.1.1",
     "prop-types": "^15.8.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

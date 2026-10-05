@@ -37,6 +37,9 @@ const renderUi =
 import { Chart, chartTypes, KeyLegend } from '@pie-lib/charting';
 import { isEqual } from '@pie-element/shared-lodash';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -127,8 +130,8 @@ export class Main extends React.Component {
         {showTeacherInstructions && (
           <StyledCollapsible
             labels={{
-              hidden: 'Show Teacher Instructions',
-              visible: 'Hide Teacher Instructions',
+              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
             }}
           >
             <PreviewPrompt prompt={teacherInstructions} />
@@ -192,7 +195,7 @@ export class Main extends React.Component {
         )}
         {!showingCorrect && showKeyLegend && <KeyLegend language={language}></KeyLegend>}
         {showRationale && (
-          <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt prompt={rationale} />
           </Collapsible>
         )}

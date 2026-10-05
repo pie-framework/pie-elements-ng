@@ -559,8 +559,8 @@ export class ImageClozeAssociationComponent extends React.Component {
           {showTeacherInstructions && (
             <StyledTeacherInstructions
               labels={{
-                hidden: 'Show Teacher Instructions',
-                visible: 'Hide Teacher Instructions',
+                hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+                visible: translator.t('common:hideTeacherInstructions', { lng: language }),
               }}
             >
               <PreviewPrompt prompt={teacherInstructions} />
@@ -591,8 +591,8 @@ export class ImageClozeAssociationComponent extends React.Component {
           {showRationale && (
             <StyledRationale
               labels={{
-                hidden: 'Show Rationale',
-                visible: 'Hide Rationale',
+                hidden: translator.t('common:showRationale', { lng: language }),
+                visible: translator.t('common:hideRationale', { lng: language }),
               }}
             >
               <PreviewPrompt prompt={rationale} />

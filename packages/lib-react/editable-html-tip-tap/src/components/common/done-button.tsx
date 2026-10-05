@@ -6,17 +6,26 @@ import IconButton from '@mui/material/IconButton';
 import Check from '@mui/icons-material/Check';
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledIconButton: any = styled(IconButton)({
   verticalAlign: 'top',
   width: '28px',
   height: '28px',
-  color: 'var(--editable-html-toolbar-check, #00bb00)',
+  // The check sits on the toolbar's #efefef, which no theme changes. #388E3C clears 3:1 against it
+  // and the hover fill (WCAG 1.4.11); hosts can still set `--editable-html-toolbar-check`.
+  color: 'var(--editable-html-toolbar-check, #388E3C)',
   padding: '4px',
 });
 
-export const RawDoneButton = ({ onClick, doneButtonRef }) => (
-  <StyledIconButton aria-label="Done" buttonRef={doneButtonRef} onClick={onClick}>
+export const RawDoneButton = ({ onClick, doneButtonRef, language }) => (
+  <StyledIconButton
+    aria-label={translator.t('editableHtml.buttons.done', { lng: language })}
+    buttonRef={doneButtonRef}
+    onClick={onClick}
+  >
     <Check />
   </StyledIconButton>
 );
@@ -24,6 +33,8 @@ export const RawDoneButton = ({ onClick, doneButtonRef }) => (
 RawDoneButton.propTypes = {
   onClick: PropTypes.func,
   doneButtonRef: PropTypes.func,
+  /** The item language, which the button's name follows. */
+  language: PropTypes.string,
 };
 
 export const DoneButton = RawDoneButton;

@@ -14,6 +14,7 @@
     "@pie-lib/charting": "workspace:*",
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
+    "@pie-lib/translator": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
     "@pie-lib/config-ui": "workspace:*",
