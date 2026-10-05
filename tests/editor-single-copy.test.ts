@@ -14,7 +14,7 @@ import { glob } from 'glob';
 import { describe, expect, it } from 'vitest';
 
 const REPO_ROOT = join(import.meta.dirname, '..');
-const EXPECTED_TIPTAP = '3.31.3';
+const EXPECTED_TIPTAP = '3.31.4';
 const SINGLE_COPY_PROSEMIRROR = ['prosemirror-model', 'prosemirror-view'];
 
 function resolvedVersions(lockfile: string, packageName: string): Set<string> {
