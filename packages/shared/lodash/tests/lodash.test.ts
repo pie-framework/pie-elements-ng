@@ -220,6 +220,15 @@ describe('vendored lodash helpers', () => {
   });
 });
 
+// lodash-es captures Math.random when it loads, so the draws the shuffle test sets are installed
+// before any import.
+const random = vi.hoisted(() => {
+  const native = Math.random;
+  const state = { draws: [] as number[] };
+  Math.random = () => state.draws.shift() ?? native();
+  return state;
+});
+
 type AnyFunction = (...args: any[]) => any;
 type Case = [label: string, args: () => unknown[]];
 
@@ -233,42 +242,127 @@ class Point {
   ) {}
 }
 
+// The tag comes from a getter, which lodash cannot unmask.
+class Tagged {
+  get [Symbol.toStringTag]() {
+    return 'Tagged';
+  }
+}
+
+const sym = Symbol('s');
+const noop = () => {};
+
+const indexes = (length: number) => Array.from({ length }, (_, index) => index);
+
 const holes = (length: number, entries: Record<number, unknown>): unknown[] =>
   Object.assign(new Array(length), entries);
 
+function argsOf(..._values: unknown[]): IArguments {
+  // biome-ignore lint/complexity/noArguments: lodash handles arguments objects as their own kind.
+  return arguments;
+}
+
+// What `map` and `reduce` pass a callback: lodash detects this shape and drops the extra arguments.
+const iterateeCall = (collection: unknown[], index: number) => [
+  collection[index],
+  index,
+  collection,
+];
+
 // A recording iteratee keeps its calls on itself, where the argument comparison after each case
-// reads them.
-const recorder = () => {
+// reads them. `returns` computes what it returns.
+const recorder = (returns?: (...args: any[]) => unknown) => {
   const calls: unknown[][] = [];
-  return Object.assign((...args: unknown[]) => void calls.push(args), { calls });
+  return Object.assign(
+    (...args: unknown[]) => {
+      calls.push(args);
+      return returns?.(...args);
+    },
+    { calls }
+  );
 };
 
-// Inputs follow the call shapes in packages/elements-react and packages/lib-react, plus the edge
-// values lodash defines: -0, NaN, holes, string and zero steps, descending ranges and the array
-// shorthand for predicates.
+// isEqualWith passes its stack last, and lodash's stack is its own class, so the recording stops
+// at the fifth argument.
+const customizerRecorder = () => {
+  const calls: unknown[][] = [];
+  return Object.assign(
+    (...args: unknown[]) => void calls.push([args.length, ...args.slice(0, 5)]),
+    { calls }
+  );
+};
+
+// Inputs follow the call shapes in packages/elements-react and packages/lib-react, plus the inputs
+// lodash defines behaviour for: -0, NaN, holes, string and zero steps, descending ranges, predicate
+// shorthands, iteratee calls, and each kind of value its clone and equality code branch on.
 const conformance: Record<string, Case[]> = {
   assign: [
     ['sources', () => [{ a: 1 }, { b: 2 }, { a: 3 }]],
     ['nullish sources', () => [{ a: 1 }, null, undefined, { b: 2 }]],
     ['undefined overwrites', () => [{ a: 1 }, { a: undefined }]],
+    ['0 over -0', () => [{ a: -0 }, { a: 0 }]],
+    ['inherited keys', () => [{}, Object.create({ inh: 1 })]],
+    ['array source', () => [{}, [1, 2]]],
+    ['string source', () => [{}, 'ab']],
+    ['primitive target', () => [1, { a: 1 }]],
+    ['undefined target', () => [undefined, { a: 1 }]],
+    ['iteratee call', () => [{}, ...iterateeCall([{ a: 1 }, { b: 2 }], 1)]],
   ],
   chunk: [
     ['pairs', () => [[1, 2, 3, 4, 5], 2]],
     ['default size', () => [[1, 2, 3]]],
     ['zero size', () => [[1, 2, 3], 0]],
+    ['fractional size', () => [[1, 2, 3, 4], 1.5]],
+    ['string size', () => [[1, 2, 3, 4], '2']],
+    ['string', () => ['abc', 2]],
     ['null', () => [null, 2]],
+    ['iteratee call', () => iterateeCall([[0], [9], [1, 2, 3]], 2)],
   ],
   clone: [
     ['array', () => [[1, { a: 1 }]]],
     ['object', () => [{ a: { b: 1 } }]],
     ['-0', () => [-0]],
+    ['date', () => [new Date(5)]],
+    ['instance', () => [new Point(1, 2)]],
+    ['map', () => [new Map([[1, { a: 1 }]])]],
+    ['set', () => [new Set([1, 2])]],
+    ['regexp', () => [/a/g]],
+    ['exec result', () => [/a(b)/.exec('xab')]],
+    ['symbol key', () => [{ [sym]: 1, a: 2 }]],
+    ['arguments', () => [argsOf(1, 2)]],
+    ['boxed number', () => [Object(1)]],
+    ['null prototype', () => [Object.assign(Object.create(null), { a: 1 })]],
+    ['typed array', () => [new Uint8Array([1, 2])]],
+    ['function', () => [Math.max]],
+    ['error', () => [new Error('x')]],
+    ['custom toStringTag', () => [new Tagged()]],
   ],
   cloneDeep: [
     ['nested', () => [{ a: [1, { b: -0 }], c: Number.NaN, d: undefined, e: null }]],
     ['date', () => [{ d: new Date(5) }]],
+    ['instance', () => [{ p: new Point(1, 2) }]],
+    ['map and set', () => [{ m: new Map([[1, { a: 1 }]]), s: new Set([{ b: 1 }]) }]],
+    ['regexp', () => [{ r: /a/g }]],
+    ['sparse', () => [holes(3, { 0: 1, 2: 3 })]],
+    ['symbol key', () => [{ [sym]: { a: 1 }, b: 2 }]],
+    ['arguments', () => [{ args: argsOf(1, { a: 2 }) }]],
+    ['boxed values', () => [{ n: Object(1), s: Object('a'), b: Object(false) }]],
+    ['typed array', () => [{ t: new Uint8Array([1, 2]) }]],
+    ['function and error', () => [{ f: Math.max, e: new Error('x') }]],
+    ['null prototype', () => [{ o: Object.assign(Object.create(null), { a: 1 }) }]],
+    [
+      'cycle',
+      () => {
+        const value: Record<string, unknown> = { a: 1 };
+        value.self = value;
+        return [value];
+      },
+    ],
   ],
   compact: [
     ['falsy values', () => [[0, -0, 1, false, 2, '', 3, null, undefined, Number.NaN]]],
+    ['object', () => [{ a: 1 }]],
+    ['string', () => ['a0']],
     ['null', () => [null]],
   ],
   concat: [
@@ -280,6 +374,10 @@ const conformance: Record<string, Case[]> = {
         [0.5, 1],
       ],
     ],
+    ['non-array first', () => [1, 2]],
+    ['null first', () => [null, [1]]],
+    ['arguments value', () => [[1], argsOf(2, 3)]],
+    ['no arguments', () => []],
   ],
   defaults: [
     ['missing keys', () => [{ a: 1 }, { a: 2, b: 3 }]],
@@ -287,6 +385,10 @@ const conformance: Record<string, Case[]> = {
     ['null existing', () => [{ a: null }, { a: 2 }]],
     ['shallow', () => [{ a: { x: 1 } }, { a: { y: 2 }, b: 1 }]],
     ['several sources', () => [{ a: 1 }, { b: 2 }, { b: 3, c: 4 }]],
+    ['Object.prototype keys', () => [{}, { toString: 1, constructor: 2 }]],
+    ['inherited source keys', () => [{}, Object.create({ inh: 1 })]],
+    ['undefined target', () => [undefined, { a: 1 }]],
+    ['iteratee call', () => [{}, ...iterateeCall([{ a: 1 }, { b: 2 }], 1)]],
   ],
   difference: [
     ['values', () => [[1, 2, 3], [2]]],
@@ -298,15 +400,24 @@ const conformance: Record<string, Case[]> = {
       ],
     ],
     ['several', () => [[1, 2, 3, 4], [1], [4]]],
+    ['non-array values', () => [[1, 2], 1, [2]]],
+    ['string', () => ['ab', ['a']]],
+    ['arguments', () => [argsOf(1, 2), [1]]],
+    ['large values', () => [[1, 2, 300, -0], indexes(250)]],
   ],
   differenceWith: [
     ['isEqual', () => [[{ x: 1 }, { x: 2 }], [{ x: 2 }], lodashEs.isEqual]],
     ['comparator arguments', () => [[1, 2], [3], recorder()]],
+    ['without comparator', () => [[1, 2], [2]]],
   ],
   escape: [
     ['html', () => ['<a href="x">&\'</a>']],
     ['number', () => [5]],
     ['array', () => [[1, '<']]],
+    ['null', () => [null]],
+    ['undefined', () => [undefined]],
+    ['-0', () => [-0]],
+    ['symbol', () => [sym]],
   ],
   every: [
     ['function', () => [[2, 4], (value: number) => value % 2 === 0]],
@@ -322,11 +433,16 @@ const conformance: Record<string, Case[]> = {
         ['a', 1],
       ],
     ],
+    ['string', () => ['ab', (char: string) => char < 'c']],
+    ['arguments', () => [argsOf(1, 0), Boolean]],
+    ['iteratee arguments', () => [{ a: 1 }, recorder(() => true)]],
     ['null', () => [null, Boolean]],
+    ['iteratee call', () => iterateeCall([[1, 2], [0]], 0)],
   ],
   find: [
     ['function', () => [[1, 2, 3], (value: number) => value > 1]],
     ['iteratee arguments', () => [['a', 'b'], recorder()]],
+    ['object iteratee arguments', () => [{ a: 1 }, recorder()]],
     ['matches', () => [[{ id: 1 }, { id: 2 }], { id: 2 }]],
     ['matches nested subset', () => [[{ a: { b: 1, c: 2 } }], { a: { b: 1 } }]],
     ['matches array subset', () => [[{ a: [{ x: 1, y: 2 }, { z: 3 }] }], { a: [{ z: 3 }] }]],
@@ -382,14 +498,19 @@ const conformance: Record<string, Case[]> = {
   ],
   findKey: [
     ['function', () => [{ a: 1, b: 2 }, (value: number) => value === 2]],
+    ['iteratee arguments', () => [{ a: 1, b: 2 }, recorder()]],
     ['matches', () => [{ a: { active: false }, b: { active: true } }, { active: true }]],
     ['matchesProperty', () => [{ a: { active: false }, b: { active: true } }, ['active', true]]],
     ['property', () => [{ a: { active: false }, b: { active: true } }, 'active']],
     ['array', () => [['x', 'y'], (value: string) => value === 'y']],
+    ['string', () => ['ab', (char: string) => char === 'b']],
     ['null', () => [null, Boolean]],
   ],
   flatten: [
     ['one level', () => [[1, [2, [3]]]]],
+    ['arguments', () => [[1, argsOf(2, 3)]]],
+    ['string', () => ['ab']],
+    ['holes', () => [holes(3, { 0: [1], 2: 3 })]],
     ['null', () => [null]],
   ],
   flatMap: [
@@ -397,10 +518,16 @@ const conformance: Record<string, Case[]> = {
     ['object', () => [{ a: [1, 2], b: [3] }, (group: number[]) => group.slice(-1)]],
     ['one level', () => [[1], (value: number) => [[value]]]],
     ['property', () => [[{ a: [1] }, { a: [2] }], 'a']],
+    ['iteratee arguments', () => [['a', 'b'], recorder((value: string) => [value])]],
   ],
   forEach: [
     ['array', () => [[1, 2], recorder()]],
     ['object', () => [{ a: 1, b: 2 }, recorder()]],
+    ['early exit', () => [[1, 2, 3], recorder((value: number) => value !== 2)]],
+    ['object early exit', () => [{ a: 1, b: 2 }, recorder(() => false)]],
+    ['string', () => ['ab', recorder()]],
+    ['null', () => [null, recorder()]],
+    ['non-function iteratee', () => [[1, 2], 'a']],
   ],
   get: [
     ['path', () => [{ a: { b: [{ c: 1 }] } }, 'a.b[0].c']],
@@ -412,6 +539,14 @@ const conformance: Record<string, Case[]> = {
     ['string', () => ['abc', 'length']],
     ['null object', () => [null, 'a', 'd']],
     ['number path', () => [[1, 2], 1]],
+    ['empty path', () => [{ '': 1 }, '']],
+    ['empty array path', () => [{ a: 1 }, [], 'd']],
+    ['quoted key', () => [{ a: { 'b.c': 1 } }, 'a["b.c"]']],
+    ['unquoted bracket key', () => [{ a: { b: 1 } }, 'a[b]']],
+    ['leading dot', () => [{ '': { a: 1 } }, '.a']],
+    ['symbol', () => [{ [sym]: 1 }, sym]],
+    ['inherited', () => [Object.create({ inh: 1 }), 'inh']],
+    ['-0 key', () => [{ '-0': 'negative', 0: 'zero' }, -0]],
   ],
   groupBy: [
     [
@@ -423,10 +558,15 @@ const conformance: Record<string, Case[]> = {
     ],
     ['function', () => [[1.2, 1.5, 2.1], Math.floor]],
     ['length', () => [['one', 'two', 'three'], 'length']],
+    ['single argument', () => [['1', '2', '3'], Number.parseInt]],
+    ['iteratee arguments', () => [['a', 'b'], recorder()]],
+    ['object collection', () => [{ a: 1, b: 2, c: 3 }, (value: number) => value % 2]],
+    ['__proto__ key', () => [['a'], () => '__proto__']],
   ],
   head: [
     ['values', () => [[1, 2]]],
     ['empty', () => [[]]],
+    ['string', () => ['ab']],
     ['null', () => [null]],
   ],
   includes: [
@@ -435,9 +575,17 @@ const conformance: Record<string, Case[]> = {
     ['-0', () => [[-0], 0]],
     ['string', () => ['abc', 'b']],
     ['object values', () => [{ a: 1 }, 1]],
+    ['fromIndex', () => [[1, 2, 1], 1, 1]],
+    ['negative fromIndex', () => [[1, 2, 3], 1, -2]],
+    ['string fromIndex', () => ['abc', 'a', 1]],
+    ['empty string at the end', () => ['abc', '', 3]],
+    ['empty string past the end', () => ['abc', '', 4]],
+    ['guard', () => [[1, 2], 1, 1, true]],
+    ['null', () => [null, 1]],
   ],
   initial: [
     ['values', () => [[1, 2, 3]]],
+    ['string', () => ['abc']],
     ['null', () => [null]],
   ],
   intersection: [
@@ -458,6 +606,10 @@ const conformance: Record<string, Case[]> = {
     ['-0', () => [[-0], [0]]],
     ['NaN', () => [[Number.NaN], [Number.NaN]]],
     ['three', () => [['a', 'b'], ['b', 'a'], ['b']]],
+    ['non-array argument', () => [[1, 2], 1]],
+    ['string first', () => ['ab', ['a']]],
+    ['single array', () => [[1, 1, 2]]],
+    ['large arrays', () => [indexes(150), indexes(250).slice(100)]],
   ],
   isArray: [
     ['array', () => [[]]],
@@ -476,6 +628,11 @@ const conformance: Record<string, Case[]> = {
     ['length object', () => [{ length: 0 }]],
     ['null', () => [null]],
     ['date', () => [new Date(0)]],
+    ['arguments', () => [argsOf()]],
+    ['typed array', () => [new Uint8Array(0)]],
+    ['prototype', () => [Point.prototype]],
+    ['String object', () => [Object('a')]],
+    ['splice object', () => [{ length: 0, splice: noop }]],
   ],
   isEqual: [
     ['-0 and 0', () => [-0, 0]],
@@ -507,6 +664,52 @@ const conformance: Record<string, Case[]> = {
         { x: 4, y: 0 },
       ],
     ],
+    ['wrapped number', () => [Object(1), 1]],
+    ['string and String', () => ['a', Object('a')]],
+    ['instances', () => [new Point(1, 2), new Point(1, 2)]],
+    ['instance and plain object', () => [new Point(1, 2), { x: 1, y: 2 }]],
+    ['null prototype and plain object', () => [Object.create(null), {}]],
+    [
+      'maps in any order',
+      () => [
+        new Map([
+          [1, 'a'],
+          [2, 'b'],
+        ]),
+        new Map([
+          [2, 'b'],
+          [1, 'a'],
+        ]),
+      ],
+    ],
+    ['map difference', () => [new Map([[1, 'a']]), new Map([[1, 'b']])]],
+    ['sets of objects', () => [new Set([{ a: 1 }, { b: 2 }]), new Set([{ b: 2 }, { a: 1 }])]],
+    ['set difference', () => [new Set([1]), new Set([2])]],
+    ['regexps', () => [/a/g, /a/g]],
+    ['regexp flags', () => [/a/g, /a/i]],
+    ['symbol keys', () => [{ [sym]: 1 }, { [sym]: 1 }]],
+    ['symbol key difference', () => [{ [sym]: 1 }, { [sym]: 2 }]],
+    ['arguments and object', () => [argsOf(1, 2), { 0: 1, 1: 2 }]],
+    ['typed arrays', () => [new Uint8Array([1, 2]), new Uint8Array([1, 2])]],
+    ['typed array kinds', () => [new Uint8Array([1]), new Int8Array([1])]],
+    ['array buffers', () => [new Uint8Array([1, 2]).buffer, new Uint8Array([1, 2]).buffer]],
+    ['data views', () => [new DataView(new ArrayBuffer(2)), new DataView(new ArrayBuffer(2))]],
+    ['errors', () => [new Error('x'), new Error('x')]],
+    ['error types', () => [new Error('x'), new TypeError('x')]],
+    ['boxed booleans', () => [Object(true), Object(true)]],
+    ['array with an extra key', () => [Object.assign([1], { x: 1 }), [1]]],
+    [
+      'cycles',
+      () => {
+        const value: Record<string, unknown> = { x: 1 };
+        const other: Record<string, unknown> = { x: 1 };
+        value.self = value;
+        other.self = other;
+        return [value, other];
+      },
+    ],
+    ['own toStringTag', () => [{ [Symbol.toStringTag]: 'Map' }, { [Symbol.toStringTag]: 'Map' }]],
+    ['custom toStringTag', () => [new Tagged(), new Tagged()]],
   ],
   isEqualWith: [
     ['custom', () => [1, '1', (a: unknown, b: unknown) => String(a) === String(b)]],
@@ -520,6 +723,15 @@ const conformance: Record<string, Case[]> = {
       ],
     ],
     ['-0 without customizer result', () => [{ v: -0 }, { v: 0 }, () => undefined]],
+    [
+      'customizer arguments',
+      () => [{ a: [1, { b: 2 }] }, { a: [1, { b: 2 }] }, customizerRecorder()],
+    ],
+    [
+      'customizer arguments for maps',
+      () => [new Map([[1, 'a']]), new Map([[1, 'a']]), customizerRecorder()],
+    ],
+    ['non-function customizer', () => [{ a: 1 }, { a: 1 }, 'x']],
   ],
   isFinite: [
     ['3', () => [3]],
@@ -530,11 +742,22 @@ const conformance: Record<string, Case[]> = {
   isFunction: [
     ['function', () => [() => 1]],
     ['class', () => [Point]],
+    ['async function', () => [async () => 1]],
+    [
+      'generator function',
+      () => [
+        function* () {
+          yield 1;
+        },
+      ],
+    ],
+    ['proxy', () => [new Proxy(() => 1, {})]],
     ['object', () => [{}]],
   ],
   isNumber: [
     ['3', () => [3]],
     ['NaN', () => [Number.NaN]],
+    ['Infinity', () => [Infinity]],
     ['Number', () => [Object(3)]],
     ['"3"', () => ['3']],
   ],
@@ -547,6 +770,7 @@ const conformance: Record<string, Case[]> = {
   isString: [
     ['s', () => ['s']],
     ['String', () => [Object('s')]],
+    ['array of strings', () => [['a']]],
     ['1', () => [1]],
   ],
   isUndefined: [
@@ -557,6 +781,10 @@ const conformance: Record<string, Case[]> = {
     ['function', () => [[1, 2], (value: number) => value * 2]],
     ['object', () => [{ a: 1, b: 2 }, (value: number, key: string) => `${key}${value}`]],
     ['iteratee arguments', () => [['a', 'b'], recorder()]],
+    ['object iteratee arguments', () => [{ a: 1, b: 2 }, recorder()]],
+    ['array-like', () => [{ length: 2, 0: 'a', 1: 'b' }, recorder()]],
+    ['string', () => ['ab', (char: string) => char.toUpperCase()]],
+    ['map collection', () => [new Map([[1, 2]]), recorder()]],
     ['property', () => [[{ id: 1 }, { id: 2 }], 'id']],
     ['matches', () => [[{ id: 1 }, { id: 2 }], { id: 2 }]],
     [
@@ -584,6 +812,7 @@ const conformance: Record<string, Case[]> = {
     ['0 first', () => [[0, -0]]],
     ['infinities', () => [[-Infinity, Infinity]]],
     ['holes', () => [holes(4, { 1: 1, 3: 3 })]],
+    ['symbol first', () => [[sym, 1]]],
   ],
   merge: [
     ['nested objects', () => [{ a: { b: 1 } }, { a: { c: 2 } }]],
@@ -624,12 +853,18 @@ const conformance: Record<string, Case[]> = {
     ],
     ['date by reference', () => [{}, { d: new Date(5) }]],
     ['instance by reference', () => [{}, { p: new Point(1, 2) }]],
+    ['map by reference', () => [{}, { m: new Map([[1, 2]]) }]],
     ['object into instance', () => [{ p: new Point(1, 2) }, { p: { z: 3 } }]],
     ['function by reference', () => [{}, { f: Math.max }]],
+    ['object onto function', () => [{ f: Math.max }, { f: { k: 1 } }]],
     ['typed array copy', () => [{}, { t: new Uint8Array([1, 2]) }]],
+    ['typed array into array', () => [{ t: [9, 9, 9] }, { t: new Uint8Array([1, 2]) }]],
+    ['arguments source', () => [{}, { a: argsOf(1, 2) }]],
+    ['object into arguments', () => [{ a: argsOf(1) }, { a: { k: 1 } }]],
     ['array into object', () => [{ a: { 0: 'x', k: 1 } }, { a: [1] }]],
     ['object into array', () => [{ a: [1, 2] }, { a: { k: 1 } }]],
     ['object onto primitive', () => [{ a: 1 }, { a: { k: 1 } }]],
+    ['inherited source keys', () => [{}, Object.create({ inh: 1 })]],
     [
       'shared source object',
       () => {
@@ -647,6 +882,7 @@ const conformance: Record<string, Case[]> = {
     ],
     ['undefined target', () => [undefined, { a: 1 }]],
     ['null source', () => [{ a: 1 }, null]],
+    ['iteratee call', () => [{}, ...iterateeCall([{ a: 1 }, { b: 2 }], 1)]],
     [
       'placement-ordering question',
       () => [
@@ -659,6 +895,12 @@ const conformance: Record<string, Case[]> = {
     ['key', () => [{ a: 1, b: 2 }, 'a']],
     ['keys', () => [{ value: 1, id: 2, x: 3 }, ['value', 'id']]],
     ['empty label', () => [{ x: 1, y: 2, label: '' }, 'label']],
+    ['deep path', () => [{ a: { b: 1, c: 2 } }, 'a.b']],
+    ['array path', () => [{ 'a.b': 1, a: { b: 2 } }, [['a', 'b']]]],
+    ['nested path lists', () => [{ a: 1, b: 2, c: 3 }, ['a', ['b']]]],
+    ['symbol key', () => [{ [sym]: 1, a: 2 }, 'a']],
+    ['inherited', () => [Object.create({ inh: 1 }), 'x']],
+    ['instance by reference', () => [{ p: new Point(1, 2), q: 1 }, 'p.x']],
     ['null', () => [null, 'a']],
   ],
   omitBy: [
@@ -666,6 +908,10 @@ const conformance: Record<string, Case[]> = {
       'falsy values',
       () => [{ a: 0, b: 1, c: '', d: 'x', e: undefined }, (value: unknown) => !value],
     ],
+    ['predicate arguments', () => [{ a: 1, b: 2 }, recorder()]],
+    ['matches', () => [{ a: { x: 1 }, b: { x: 2 } }, { x: 1 }]],
+    ['inherited', () => [Object.create({ inh: 1 }), () => false]],
+    ['symbol key', () => [{ [sym]: 1, a: 2 }, (value: number) => value === 2]],
     ['null', () => [null, Boolean]],
   ],
   pick: [
@@ -674,6 +920,12 @@ const conformance: Record<string, Case[]> = {
     ['number key', () => [{ 0: 'a', 1: 'b' }, 0]],
     ['missing key', () => [{ a: 1 }, 'z']],
     ['undefined value', () => [{ a: undefined }, 'a']],
+    ['deep path', () => [{ a: { b: 1, c: 2 } }, 'a.b']],
+    ['quoted path', () => [{ a: { 'b.c': 1 } }, 'a["b.c"]']],
+    ['path lists', () => [{ a: 1, b: 2, c: 3 }, [['a'], 'b']]],
+    ['inherited', () => [Object.create({ inh: 1 }), 'inh']],
+    ['symbol', () => [{ [sym]: 1, a: 2 }, sym]],
+    ['array source', () => [[1, 2, 3], '1']],
     ['null', () => [null, 'a']],
   ],
   range: [
@@ -701,6 +953,7 @@ const conformance: Record<string, Case[]> = {
     ['plot ticks', () => [-5, 5, 0.5]],
     ['protractor', () => [0, 181, 10]],
     ['xPoints right', () => [0.785 + 0.5, 10 + 0.5, 0.5]],
+    ['iteratee call', () => iterateeCall([1, 2, 3], 1)],
   ],
   rangeRight: [
     ['end', () => [4]],
@@ -711,6 +964,7 @@ const conformance: Record<string, Case[]> = {
     ['NaN', () => [Number.NaN]],
     ['xPoints left', () => [0, -10 - 0.5, -0.5]],
     ['xPoints left tenth', () => [0, -1 - 0.1, -0.1]],
+    ['iteratee call', () => iterateeCall([1, 2, 3], 1)],
   ],
   reduce: [
     ['sum', () => [[1, 2, 3], (sum: number, value: number) => sum + value, 0]],
@@ -723,10 +977,21 @@ const conformance: Record<string, Case[]> = {
       ],
     ],
     ['iteratee arguments', () => [['a', 'b'], recorder(), 0]],
+    ['no accumulator', () => [[1, 2, 3], (sum: number, value: number) => sum + value]],
+    [
+      'no accumulator over an object',
+      () => [{ a: 1, b: 2 }, (sum: number, value: number) => sum + value],
+    ],
+    ['no accumulator over nothing', () => [[], (sum: number, value: number) => sum + value]],
+    ['undefined accumulator', () => [[1, 2], recorder(), undefined]],
+    ['iteratee arguments without accumulator', () => [['a', 'b', 'c'], recorder()]],
+    ['string', () => ['abc', (reversed: string, char: string) => char + reversed, '']],
     ['null', () => [null, (acc: unknown) => acc, 5]],
   ],
   remove: [
     ['function', () => [[1, 2, 3, 4], (value: number) => value % 2 === 0]],
+    ['predicate arguments', () => [['a', 'b', 'a'], recorder((value: string) => value === 'a')]],
+    ['property', () => [[{ a: 0 }, { a: 1 }], 'a']],
     ['matches', () => [[{ a: 1 }, { a: 2 }], { a: 1 }]],
     [
       'matchesProperty',
@@ -744,11 +1009,19 @@ const conformance: Record<string, Case[]> = {
     ],
     ['array path', () => [{}, ['a', '0'], 1]],
     ['numeric key', () => [{}, 'a.0', 1]],
+    ['leading zero key', () => [{}, 'a.01', 1]],
     ['null in path', () => [{ a: null }, 'a.b', 1]],
+    ['primitive in path', () => [{ a: 1 }, 'a.b', 2]],
     ['template key', () => [{ answers: {} }, 'answers.alternate1', { marks: [] }]],
+    ['quoted key', () => [{}, 'a["b.c"]', 1]],
+    ['symbol', () => [{}, sym, 1]],
+    ['-0 over 0', () => [{ a: 0 }, 'a', -0]],
+    ['undefined into missing key', () => [{}, 'a', undefined]],
+    ['null object', () => [null, 'a', 1]],
   ],
   tail: [
     ['values', () => [[1, 2, 3]]],
+    ['string', () => ['abc']],
     ['null', () => [null]],
   ],
   takeRight: [
@@ -756,13 +1029,21 @@ const conformance: Record<string, Case[]> = {
     ['default', () => [[1, 2, 3]]],
     ['more than length', () => [[1, 2, 3], 5]],
     ['0', () => [[1, 2, 3], 0]],
+    ['fraction', () => [[1, 2, 3], 1.5]],
+    ['undefined', () => [[1, 2, 3], undefined]],
+    ['negative', () => [[1, 2, 3], -1]],
+    ['string', () => ['abc', 2]],
     ['null', () => [null, 1]],
+    ['iteratee call', () => iterateeCall([[0], [0], [1, 2, 3]], 2)],
   ],
   times: [
     ['3', () => [3]],
     ['String', () => [3, String]],
     ['negative', () => [-2]],
     ['fraction', () => [2.5]],
+    ['string count', () => ['3']],
+    ['NaN', () => [Number.NaN]],
+    ['non-function iteratee', () => [2, 'a']],
     ['iteratee arguments', () => [2, recorder()]],
   ],
   uniq: [
@@ -772,11 +1053,14 @@ const conformance: Record<string, Case[]> = {
     ['NaN', () => [[Number.NaN, Number.NaN, 1]]],
     ['string', () => ['aab']],
     ['object', () => [{ foo: true }]],
+    ['large', () => [indexes(250).map((index) => index % 10)]],
+    ['large with -0', () => [[-0, ...indexes(250)]]],
     ['null', () => [null]],
   ],
   uniqWith: [
     ['isEqual', () => [[{ x: 1 }, { x: 1 }, { x: 2 }], lodashEs.isEqual]],
     ['comparator arguments', () => [[1, 2, 3], recorder()]],
+    ['non-function comparator', () => [[1, 1, 2], 'x']],
   ],
   zip: [
     [
@@ -787,6 +1071,7 @@ const conformance: Record<string, Case[]> = {
       ],
     ],
     ['uneven', () => [['a'], [1, 2]]],
+    ['non-array arguments', () => [[1, 2], 'ab', null]],
     ['none', () => []],
   ],
 };
@@ -808,6 +1093,37 @@ const comparableArgs = (args: unknown[]) =>
     typeof arg === 'function' ? ((arg as { calls?: unknown }).calls ?? 'function') : arg
   );
 
+// Where a clone holds one of the input's objects, or holds one object at two paths.
+const references = (result: unknown, input: unknown) => {
+  const found: string[] = [];
+  const first = new Map<unknown, string>();
+  const walk = (value: any, source: any, path: string) => {
+    if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return;
+    if (value === source) found.push(`${path} is the input's`);
+    if (first.has(value)) {
+      found.push(`${path} is ${first.get(value)}`);
+      return;
+    }
+    first.set(value, path);
+    if (ArrayBuffer.isView(value) && ArrayBuffer.isView(source) && value.buffer === source.buffer) {
+      found.push(`${path}.buffer is the input's`);
+    }
+    if (value instanceof Map) {
+      for (const [key, entry] of value) {
+        walk(key, source instanceof Map && source.has(key) ? key : undefined, `${path}<key>`);
+        walk(entry, source instanceof Map ? source.get(key) : undefined, `${path}<${key}>`);
+      }
+    }
+    if (typeof value === 'object') {
+      for (const key of Reflect.ownKeys(value)) {
+        walk(value[key], source?.[key], `${path}.${String(key)}`);
+      }
+    }
+  };
+  walk(result, input, 'result');
+  return found;
+};
+
 describe('lodash 4.17 conformance', () => {
   it('has cases for every export', () => {
     const exported = Object.keys(vendored).filter((name) => name !== 'default');
@@ -826,23 +1142,113 @@ describe('lodash 4.17 conformance', () => {
     });
   }
 
-  // Authored JSON reaches merge with an own `__proto__` key, at the top level or under a key the
-  // target already holds.
   it.each([
-    ['top level', () => [{}, JSON.parse('{"__proto__": {"polluted": true}, "a": 1}')]],
+    ['clone', 'nested object', () => ({ a: { b: 1 } })],
+    ['clone', 'map values', () => new Map([[1, { a: 1 }]])],
+    ['clone', 'typed array', () => new Uint8Array([1, 2])],
     [
+      'cloneDeep',
+      'shared object',
+      () => {
+        const shared = { k: 1 };
+        return { a: shared, b: [shared] };
+      },
+    ],
+    [
+      'cloneDeep',
+      'cycle',
+      () => {
+        const value: Record<string, unknown> = { a: 1 };
+        value.self = value;
+        return value;
+      },
+    ],
+    [
+      'cloneDeep',
+      'map keys',
+      () => {
+        const key = { k: 1 };
+        return new Map([[key, key]]);
+      },
+    ],
+    ['cloneDeep', 'function and error', () => ({ f: Math.max, e: new Error('x') })],
+    ['cloneDeep', 'typed array', () => ({ t: new Uint8Array([1, 2]) })],
+  ])('%s shares what lodash shares: %s', (name, _label, makeInput) => {
+    const shared = (cloneFn: AnyFunction) => {
+      const input = makeInput();
+      return references(cloneFn(input), input);
+    };
+    expect(shared(subject[name])).toStrictEqual(shared(reference[name]));
+  });
+
+  // Authored JSON reaches these helpers with an own `__proto__` key, and authored keys become
+  // paths.
+  it.each([
+    ['merge', 'top level', () => [{}, JSON.parse('{"__proto__": {"polluted": true}, "a": 1}')]],
+    [
+      'merge',
       'nested',
       () => [{ correct: {} }, JSON.parse('{"correct": {"__proto__": {"polluted": true}}}')],
     ],
-  ])('merge leaves Object.prototype alone: %s', (_label, makeArgs) => {
+    ['assign', 'own __proto__ key', () => [{}, JSON.parse('{"__proto__": {"polluted": true}}')]],
+    ['defaults', 'own __proto__ key', () => [{}, JSON.parse('{"__proto__": {"polluted": true}}')]],
+    [
+      'cloneDeep',
+      'own __proto__ key',
+      () => [JSON.parse('{"a": {"__proto__": {"polluted": true}}}')],
+    ],
+    ['set', '__proto__ path', () => [{}, '__proto__.polluted', true]],
+    ['set', 'constructor.prototype path', () => [{}, 'constructor.prototype.polluted', true]],
+    ['set', '__proto__ array path', () => [{}, ['__proto__', 'polluted'], true]],
+  ])('%s leaves Object.prototype alone: %s', (name, _label, makeArgs) => {
     try {
-      expect(vendored.merge(...(makeArgs() as [object]))).toStrictEqual(
-        lodashEs.merge(...(makeArgs() as [object]))
+      expect(outcome(() => subject[name](...makeArgs()))).toStrictEqual(
+        outcome(() => reference[name](...makeArgs()))
       );
       expect(({} as Record<string, unknown>).polluted).toBeUndefined();
     } finally {
       delete (Object.prototype as Record<string, unknown>).polluted;
     }
+  });
+
+  // lodash 4.17.21's omit deletes from Object.prototype through these paths. 4.17.23 refuses them,
+  // and so does this package.
+  it.each([
+    '__proto__.sacrificial',
+    'constructor.prototype.sacrificial',
+    ['__proto__', 'sacrificial'],
+  ])('omit leaves Object.prototype alone: %j', (path) => {
+    Object.defineProperty(Object.prototype, 'sacrificial', {
+      configurable: true,
+      value: 1,
+      writable: true,
+    });
+    try {
+      expect(vendored.omit({ a: 1 }, path)).toStrictEqual({ a: 1 });
+      expect((Object.prototype as Record<string, unknown>).sacrificial).toBe(1);
+    } finally {
+      delete (Object.prototype as Record<string, unknown>).sacrificial;
+    }
+  });
+
+  // An own `constructor` key defeats toStrictEqual's type check, so these compare entries.
+  it.each([
+    ['groupBy', () => [['a', 'b'], () => 'constructor']],
+    ['merge', () => [{}, { constructor: { a: 1 } }]],
+  ])('%s writes an own constructor key', (name, makeArgs) => {
+    const entries = (fn: AnyFunction) => {
+      const result = fn(...makeArgs());
+      return [Object.getPrototypeOf(result) === Object.prototype, Object.entries(result)];
+    };
+    expect(entries(subject[name])).toStrictEqual(entries(reference[name]));
+  });
+
+  // lodash takes an object with an own `__wrapped__` key for its chain wrapper and calls its
+  // `value` method. This package has no chain wrapper and compares such an object by its keys.
+  it('isEqual compares an object with a __wrapped__ key by its keys', () => {
+    expect(isEqual({ __wrapped__: 1 }, { __wrapped__: 1 })).toBe(true);
+    expect(isEqual({ __wrapped__: 1 }, { __wrapped__: 2 })).toBe(false);
+    expect(() => lodashEs.isEqual({ __wrapped__: 1 }, { __wrapped__: 1 })).toThrow(TypeError);
   });
 
   it('uniqueId counts up from a prefix', () => {
@@ -852,6 +1258,7 @@ describe('lodash 4.17 conformance', () => {
         /^x-\d+$/.test(first),
         Number(second.slice(2)) - Number(first.slice(2)),
         typeof uniqueId(),
+        /^\d+$/.test(uniqueId(null)),
       ];
     };
     expect(ids(vendored.uniqueId)).toEqual(ids(lodashEs.uniqueId));
@@ -866,18 +1273,58 @@ describe('lodash 4.17 conformance', () => {
     expect(shuffled(vendored.shuffle)).toStrictEqual(shuffled(lodashEs.shuffle));
   });
 
+  it('shuffle orders as lodash does for the same draws', () => {
+    const shuffled = (shuffle: AnyFunction) => {
+      random.draws = [0.9, 0.1, 0.5, 0.3, 0.7, 0.2, 0.8, 0.4];
+      return [shuffle([1, 2, 3, 4, 5]), shuffle({ a: 1, b: 2, c: 3 })];
+    };
+    expect(shuffled(vendored.shuffle)).toStrictEqual(shuffled(lodashEs.shuffle));
+  });
+
+  it.each(['debounce', 'throttle'])('%s throws for a non-function', (name) => {
+    expect(outcome(() => subject[name](null))).toStrictEqual(outcome(() => reference[name](null)));
+  });
+
+  it.each(['debounce', 'throttle'])("%s calls with the last call's this and arguments", (name) => {
+    const calls = (limit: AnyFunction) => {
+      vi.useFakeTimers({ now: 0 });
+      try {
+        const seen: unknown[] = [];
+        const limited = limit(function (this: unknown, ...args: unknown[]) {
+          seen.push([this, args]);
+        }, 50);
+        limited.call({ id: 'a' }, 1, 2);
+        limited.call({ id: 'b' }, 3);
+        vi.advanceTimersByTime(100);
+        return seen;
+      } finally {
+        vi.useRealTimers();
+      }
+    };
+    expect(calls(subject[name])).toStrictEqual(calls(reference[name]));
+  });
+
   // [wait, options, script]: a number calls the function at that time with the time as its
   // argument; 'flush' and 'cancel' call those methods at the time of the step before.
-  const timings: Array<[string, number, object | undefined, Array<number | 'flush' | 'cancel'>]> = [
+  const timings: Array<
+    [string, number | string, object | undefined, Array<number | 'flush' | 'cancel'>]
+  > = [
     ['debounce', 100, undefined, [0, 50, 120, 400]],
     ['debounce', 50, { leading: false, trailing: true }, [0, 20, 40, 200, 230]],
     ['debounce', 100, { leading: true, trailing: false }, [0, 50, 120, 300, 350]],
+    ['debounce', 100, { leading: true }, [0, 50, 300]],
+    ['debounce', 100, { maxWait: 150 }, [0, 50, 100, 150, 200, 250, 600]],
     ['debounce', 300, undefined, [0, 100, 'flush', 200, 'cancel', 700]],
+    ['debounce', 100, undefined, ['flush', 0, 'flush', 'cancel', 'flush']],
+    ['debounce', '100', undefined, [0, 50, 200]],
     ['throttle', 100, undefined, [0, 30, 60, 90, 400]],
+    ['throttle', 100, undefined, [0, 30, 60, 90, 150, 400]],
+    ['throttle', 100, { trailing: undefined }, [0, 30, 150]],
+    ['throttle', 0, undefined, [0, 0, 10]],
     ['throttle', 500, { leading: true, trailing: false }, [0, 100, 450, 520, 1100]],
   ];
 
-  it.each(timings)('%s(%i, %j) over %j', (name, wait, options, script) => {
+  it.each(timings)('%s(%j, %j) over %j', (name, wait, options, script) => {
     const timeline = (limit: AnyFunction) => {
       vi.useFakeTimers({ now: 0 });
       try {
