@@ -10,6 +10,7 @@
   "dependencies": {
     "@pie-element/multiple-choice": "workspace:*",
     "@pie-lib/translator": "workspace:*",
+    "@pie-lib/render-ui": "workspace:*",
     "debug": "^4.1.1",
     "@pie-element/shared-lodash": "workspace:*",
     "@pie-element/shared-configure-events": "workspace:*",

@@ -334,6 +334,7 @@
         "@pie-element/shared-lodash": "workspace:*",
         "@pie-element/shared-player-events": "workspace:*",
         "@pie-lib/config-ui": "workspace:*",
+        "@pie-lib/render-ui": "workspace:*",
         "@pie-lib/translator": "workspace:*",
         "clsx": "^2.1.1",
         "debug": "^4.1.1",

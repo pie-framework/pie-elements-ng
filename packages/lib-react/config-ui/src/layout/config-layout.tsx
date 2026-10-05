@@ -4,6 +4,7 @@ import React from 'react';
 import Measure, { withContentRect } from 'react-measure';
 import { createTheme, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 import PropTypes from 'prop-types';
+import { createUniqueId } from '@pie-lib/render-ui';
 import LayoutContents from './layout-contents.js';
 import SettingsBox from './settings-box.js';
 
@@ -51,6 +52,9 @@ class MeasuredConfigLayout extends React.Component {
     this.state = { layoutMode: undefined };
   }
 
+  // Scoped as in `UiLayout`: the rules nest under a class only this layout carries.
+  scopeClass = createUniqueId('extra-css-rules');
+
   onResize: any = (contentRect) => {
     const { bounds } = contentRect;
     const { sidePanelMinWidth, dimensions } = this.props;
@@ -79,12 +83,12 @@ class MeasuredConfigLayout extends React.Component {
               const settingsPanel =
                 layoutMode === 'inline' ? <SettingsBox className="settings-box">{settings}</SettingsBox> : settings;
               const secondaryContent = hideSettings ? null : settingsPanel;
-              const finalClass = 'main-container extraCSSRules';
+              const finalClass = `main-container extraCSSRules ${this.scopeClass}`;
 
               return (
                 <div ref={measureRef} className={finalClass}>
                   {extraCSSRules?.rules ? (
-                    <style dangerouslySetInnerHTML={{ __html: `.extraCSSRules { ${extraCSSRules.rules} }` }} />
+                    <style dangerouslySetInnerHTML={{ __html: `.${this.scopeClass} { ${extraCSSRules.rules} }` }} />
                   ) : null}
 
                   <LayoutContents mode={layoutMode} secondary={secondaryContent} dimensions={dimensions}>
