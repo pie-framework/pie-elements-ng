@@ -34,7 +34,7 @@ const HiddenCssPrimer: any = styled('div')(() => ({
   pointerEvents: 'none',
 }));
 
-const normalizeCommonEntities = (text = '') => text.replace(/&nbsp;/gi, ' ');
+const normalizeCommonEntities = (text = '') => text.replace(/&nbsp;/gi, '\u00a0');
 
 const normalizeSelectableText = (text = '') =>
   normalizeCommonEntities(text)
