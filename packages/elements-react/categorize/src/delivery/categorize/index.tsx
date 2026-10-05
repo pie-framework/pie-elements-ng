@@ -8,7 +8,7 @@ import { DragOverlay } from '@dnd-kit/core';
 import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { buildState, removeChoiceFromCategory, moveChoiceToCategory } from '@pie-lib/categorize';
-import { DragProvider, uid } from '@pie-lib/drag';
+import { createDragCollision, DragProvider, uid } from '@pie-lib/drag';
 import { color, createUniqueId, Feedback as FeedbackImport, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
@@ -408,6 +408,9 @@ class CategorizeProvider extends React.Component {
     };
     this.lastDragEndAt = 0;
     this.isInternalDragCancel = false;
+    // The modifier holds the dragged choice inside the region, which scrolls. A pointer drag collides
+    // where the pointer put the choice, so a choice released outside the region finds no category.
+    this.dragCollision = createDragCollision({ modifiers: [restrictToFirstScrollableAncestor] });
   }
 
   onDragStart: any = (event) => {
@@ -607,7 +610,8 @@ class CategorizeProvider extends React.Component {
         onDragCancel={this.onDragCancel}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
-        modifiers={[restrictToFirstScrollableAncestor]}
+        collisionDetection={this.dragCollision.collisionDetection}
+        modifiers={this.dragCollision.modifiers}
       >
         <uid.Provider value={this.uid}>
           <Categorize
