@@ -41,6 +41,7 @@ export class RawLine extends React.Component {
     index: PropTypes.number.isRequired,
     graphProps: types.GraphPropsType.isRequired,
     defineChart: PropTypes.bool,
+    disabled: PropTypes.bool,
     data: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.string,
@@ -87,7 +88,7 @@ export class RawLine extends React.Component {
   };
 
   render() {
-    const { graphProps, data, CustomDraggableComponent, defineChart, correctData } = this.props;
+    const { graphProps, data, CustomDraggableComponent, defineChart, correctData, disabled } = this.props;
     const { line: lineState, dragging } = this.state;
     const { scale } = graphProps;
     const lineToUse = dragging ? lineState : getData(data, graphProps.domain);
@@ -112,6 +113,7 @@ export class RawLine extends React.Component {
                 x={point.x}
                 y={point.dragValue !== undefined ? point.dragValue : point.y}
                 interactive={enableDraggable}
+                disabled={disabled}
                 r={r}
                 onDragStart={() => this.setState({ dragging: true })}
                 onDrag={(v) => this.dragValue(i, point.dragValue !== undefined ? point.dragValue : point.y, v)}
