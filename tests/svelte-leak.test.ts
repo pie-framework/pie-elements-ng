@@ -26,6 +26,7 @@ function shippedJsFiles(dir: string, entries: string[] = []): string[] {
 }
 
 describe('Svelte as an implementation detail', () => {
+  // Reading every shipped JS file takes seconds on CI and over a minute on a busy machine.
   it('no publishable package asks its client for svelte', () => {
     const packages = createPackageSnapshots({ root: REPO_ROOT }).map(
       ({ dir, relativeDir, pkg }) => ({
@@ -43,5 +44,5 @@ describe('Svelte as an implementation detail', () => {
         collectSvelteLeakViolations(snapshot).map((violation) => `${relativeDir}: ${violation}`)
       )
     ).toEqual([]);
-  }, 60_000);
+  }, 180_000);
 });
