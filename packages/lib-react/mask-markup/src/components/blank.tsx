@@ -47,6 +47,8 @@ const StyledChip: any = styled(Chip)(() => ({
   touchAction: 'none',
   color: color.text(),
   fontSize: 'inherit',
+  // MUI 7's Chip sets a 1.5 line height; the legacy blank inherited normal, as its choices do.
+  lineHeight: 'normal',
   maxWidth: '374px',
   position: 'relative',
   borderRadius: '3px',
