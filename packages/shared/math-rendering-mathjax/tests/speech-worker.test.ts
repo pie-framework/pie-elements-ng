@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { endSpeechOnWorkerFailure, type SpeechDocument } from '../src/speech-worker.js';
+import {
+  endSpeechOnWorkerFailure,
+  type SpeechDocument,
+  speechWorkerScript,
+} from '../src/speech-worker.js';
 
 const WARNED = Symbol.for('@pie-element/shared-math-rendering-mathjax/speech-worker-failed');
 
@@ -56,5 +60,54 @@ describe('a speech worker that fails', () => {
     expect(handler.Terminate).not.toHaveBeenCalled();
     expect(mathDocument.options?.enableSpeech).toBe(true);
     expect(console.warn).not.toHaveBeenCalled();
+  });
+});
+
+/** Runs a worker script against a global that records what it imports and fetches. */
+function runWorkerScript(script: string) {
+  const imported: string[] = [];
+  const fetched: unknown[] = [];
+  const global = {
+    maps: undefined as string | undefined,
+    fetch(input: unknown) {
+      fetched.push(input);
+      return Promise.resolve(new Response('{}'));
+    },
+  };
+  new Function('self', 'importScripts', script)(global, (url: string) => imported.push(url));
+  return { global, imported, fetched };
+}
+
+describe('the speech worker script', () => {
+  const SRE = 'https://assets.test/npm/mathjax@4.1.3/sre';
+
+  it('imports the worker from the speech path, and fetches mathmaps from there', async () => {
+    const script = speechWorkerScript({ speechPath: SRE }) ?? '';
+    const { global, imported, fetched } = runWorkerScript(script);
+
+    expect(global.maps).toBe(`${SRE}/mathmaps`);
+    expect(imported).toEqual([`${SRE}/speech-worker.js`]);
+    await global.fetch(`${SRE}/mathmaps/en.json`);
+    expect(fetched).toEqual([`${SRE}/mathmaps/en.json`]);
+  });
+
+  it('takes the worker and each mathmap the assets list from its URL', async () => {
+    const urls = new Map([
+      ['mathjax@4.1.3/sre/speech-worker.js', 'https://host.test/speech-worker-1a.js'],
+      ['mathjax@4.1.3/sre/mathmaps/en.json', 'https://host.test/en-2b.json'],
+    ]);
+    const { global, imported, fetched } = runWorkerScript(speechWorkerScript({ urls }) ?? '');
+
+    expect(imported).toEqual(['https://host.test/speech-worker-1a.js']);
+    await global.fetch(`${global.maps}/en.json`);
+    await global.fetch(`${global.maps}/de.json`);
+    expect(fetched).toEqual(['https://host.test/en-2b.json', `${global.maps}/de.json`]);
+  });
+
+  it('is undefined without a speech worker', () => {
+    expect(speechWorkerScript({})).toBeUndefined();
+    expect(
+      speechWorkerScript({ urls: new Map([['mathjax@4.1.3/sre/mathmaps/en.json', 'x']]) })
+    ).toBeUndefined();
   });
 });

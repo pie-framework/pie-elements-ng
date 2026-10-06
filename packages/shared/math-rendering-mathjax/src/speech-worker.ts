@@ -5,8 +5,11 @@
  * and with them the typeset that asked for speech and every typeset after it. A document whose
  * worker fails before it is ready ends speech instead: the waiting tasks fail, later ones fail at
  * once, and math goes on rendering without speech, braille or the explorer.
+ *
+ * The browser build starts the worker itself, from the speech directory or the URLs a bundle lists
+ * for its files.
  */
-import { ASSETS_DOCS_URL } from './assets.js';
+import { ASSETS_DOCS_URL, type MathjaxAssets, SRE_PATH, speechFileUrl } from './assets.js';
 
 /** The parts of MathJax's `WorkerHandler` this module uses. */
 interface WorkerHandler {
@@ -70,4 +73,47 @@ export function endSpeechOnWorkerFailure(mathDocument: SpeechDocument | undefine
     worker.addEventListener('error', () => endSpeech(mathDocument), { once: true });
     return worker;
   };
+}
+
+const MAPS_PATH = `${SRE_PATH}/mathmaps/`;
+
+/**
+ * The `blob:` script of the speech worker for `assets`. As MathJax's adaptor writes it, it sets the
+ * mathmaps directory and imports `speech-worker.js`, which fetches each mathmap as
+ * `<self.maps>/<file>`; a mathmap `assets.urls` lists is fetched from its URL. Undefined without a
+ * speech worker.
+ */
+export function speechWorkerScript(assets: MathjaxAssets): string | undefined {
+  const worker = speechFileUrl(assets, 'speech-worker.js');
+  if (!worker) return undefined;
+  const maps = assets.speechPath ? `${assets.speechPath}/mathmaps` : 'mathmaps';
+  const mapped: Record<string, string> = {};
+  for (const [path, url] of assets.urls ?? []) {
+    if (path.startsWith(MAPS_PATH)) mapped[`${maps}/${path.slice(MAPS_PATH.length)}`] = url;
+  }
+  const lines = [`self.maps = ${JSON.stringify(maps)};`];
+  if (Object.keys(mapped).length) {
+    // A block, so its names stay out of the scope `speech-worker.js` declares its own in.
+    lines.push(
+      '{',
+      `  const urls = new Map(Object.entries(${JSON.stringify(mapped)}));`,
+      '  const fetchFile = self.fetch.bind(self);',
+      '  self.fetch = (input, init) => fetchFile(urls.get(input) ?? input, init);',
+      '}'
+    );
+  }
+  lines.push(`importScripts(${JSON.stringify(worker)});`);
+  return lines.join('\n');
+}
+
+/** Starts a worker running `script` from a `blob:` URL, as MathJax's adaptor does. */
+export function startWorker(script: string, listener: (event: MessageEvent) => void): Worker {
+  const url = URL.createObjectURL(new Blob([script], { type: 'text/javascript' }));
+  try {
+    const worker = new Worker(url);
+    worker.onmessage = listener;
+    return worker;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

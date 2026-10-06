@@ -70,6 +70,7 @@ A relative root resolves against the page's base URL. A copy reads its assets wh
 ```
 
 - `assetRoot`: the npm root.
+- `assetUrls`: the URL of individual files, keyed by npm path (`'mathjax@4.1.3/sre/mathmaps/en.json': url`). A listed file loads from its URL, the others from the root and `speechPath`. The browser build reads it for its fonts, speech worker and mathmaps; the npm build ignores it.
 - `speechPath`: the directory of `speech-worker.js` and its `mathmaps/`, by default `mathjax@4.1.3/sre` under the root.
 - `speechLocales`: the locales the menu's speech language submenu lists, by id (`['en', 'de']`), or by id with the label it shows (`{ en: 'English', cy: 'Cymraeg' }`). Unset, it lists SRE's 13 locales. When English is not listed, speech starts in the first listed locale, and a stored menu locale that is not listed is dropped.
 
@@ -86,13 +87,13 @@ The renderer options of the same names take precedence over the page's.
 | `mathjax@4.1.3/sre/speech-worker.js` | the speech worker | both |
 | `mathjax@4.1.3/sre/mathmaps/` | `base.json`, one file per locale, and `nemeth.json` and `euro.json` for braille | both |
 
-A self-hosted root holds those paths, and only the mathmaps of the listed locales. The adapter's manifest lists the three packages and their version under `pie.assetPackages`, which `pie-players`' preloaded-player build reads to ship them. A locale SRE does not ship needs a speech worker built with it and its `mathmaps/<locale>.json` at `speechPath`, and a `speechLocales` entry giving its label.
+A self-hosted root holds those paths, and only the mathmaps of the listed locales. A bundle that carries the browser build's files lists them in `assetUrls` instead, each as a `new URL('./…', import.meta.url)`: a host bundler emits each file so referenced into its own output under a hashed name, and copies nothing a directory URL names. A bundle listing the fonts needs no root. The adapter's manifest lists the three packages and their version under `pie.assetPackages`, which `pie-players`' preloaded-player build reads to ship them. A locale SRE does not ship needs a speech worker built with it and its `mathmaps/<locale>.json` at `speechPath`, and a `speechLocales` entry giving its label.
 
 `srcUrl` replaces the npm build's MathJax script only; its fonts and speech still load from the root.
 
 **Without a root**, each build reports it once per page: the npm build with `console.error`, the browser build with `console.warn`, each beginning `[math-rendering] No asset root for MathJax`. Each report also dispatches `pie-mathjax-no-asset-root` (`NO_ASSET_ROOT_EVENT`) on `window`, whose `detail` carries the `effect` (`untypeset`, `no-web-fonts` or `no-web-fonts-or-speech`), the `message` and the `docsUrl`; `@pie-players` forward it to their instrumentation.
 
-- The browser build typesets without web fonts, so glyphs fall back to the system's fonts. Without a `speechPath` either, Semantic Enrichment is disabled in the menu, and with it speech, braille and the explorer.
+- The browser build, with no fonts in `assetUrls` either, typesets without web fonts, so glyphs fall back to the system's fonts. Without a speech worker from `speechPath` or `assetUrls`, Semantic Enrichment is disabled in the menu, and with it speech, braille and the explorer.
 - The npm build loads no MathJax, and math stays untypeset. Given a `srcUrl`, it loads that script with MathJax's own defaults for fonts and speech, which for MathJax 4's component builds are on jsDelivr.
 
 ## Content

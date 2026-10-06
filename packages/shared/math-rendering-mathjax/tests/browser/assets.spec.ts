@@ -1,12 +1,14 @@
 /**
- * Where MathJax's files load from, in a real browser: the npm root of the URL the adapter loaded
- * from, the root the page sets, or none.
+ * Where MathJax's files load from, in a real browser: the URLs the page lists for them, the npm
+ * root of the URL the adapter loaded from, the root the page sets, or none.
  */
 import { expect, type Page, test } from '@playwright/test';
 import {
   ADAPTER_URL,
   type Build,
   copyUrl,
+  emittedAssetUrls,
+  emittedUrl,
   NPM_ROOT,
   ORIGIN,
   openMenu,
@@ -113,6 +115,61 @@ test('the root the page sets wins over the one the adapter loaded from', async (
     expect.arrayContaining(['/mirror/npm/mathjax@4.1.3/sre/speech-worker.js'])
   );
   expect(assets.filter((path) => !path.startsWith('/mirror/npm/'))).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(unserved).toEqual([]);
+});
+
+test('a bundle that lists each file the browser build loads needs no root', async ({ page }) => {
+  await setPageOptions(page, { assetUrls: emittedAssetUrls() });
+  await storeSettings(page, { enrich: true });
+  const warned = warnings(page);
+  const { unserved, errors, served } = await openPage(page, BODY, 'browser');
+
+  await renderWithAdapter(page, 'v4', UNROOTED_ADAPTER_URL);
+  await speechReady(page);
+  await page.evaluate(() => document.fonts.ready);
+
+  expect(served).toEqual(
+    expect.arrayContaining([
+      expect.stringMatching(/\/emitted\/%40mathjax%2Fmathjax-newcm-font%404\.1\.3%2F.+\.woff2$/),
+      expect.stringMatching(
+        /\/emitted\/%40mathjax%2Fmathjax-mhchem-font-extension%404\.1\.3%2F.+\.woff2$/
+      ),
+      emittedUrl('mathjax@4.1.3/sre/speech-worker.js'),
+      emittedUrl('mathjax@4.1.3/sre/mathmaps/en.json'),
+    ])
+  );
+  expect(served.filter((url) => !url.startsWith(`${ORIGIN}/emitted/`))).toEqual([]);
+  expect(warned).toEqual([]);
+  expect(await noAssetRootEffects(page)).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(unserved).toEqual([]);
+});
+
+test('a file the page lists loads from its URL, and the rest from the root', async ({ page }) => {
+  const listed = [
+    'mathjax@4.1.3/sre/mathmaps/en.json',
+    '@mathjax/mathjax-newcm-font@4.1.3/chtml/woff2/mjx-ncm-n.woff2',
+  ];
+  await setPageOptions(page, {
+    assetUrls: Object.fromEntries(listed.map((path) => [path, emittedUrl(path)])),
+  });
+  await storeSettings(page, { enrich: true });
+  const { unserved, errors, served } = await openPage(page, BODY, 'browser');
+
+  await renderWithAdapter(page, 'v4');
+  await speechReady(page);
+  await page.evaluate(() => document.fonts.ready);
+
+  const assets = assetPaths(served);
+  expect(assets).toEqual(
+    expect.arrayContaining([
+      ...listed.map((path) => emittedUrl(path).slice(ORIGIN.length)),
+      '/npm/mathjax@4.1.3/sre/speech-worker.js',
+      '/npm/mathjax@4.1.3/sre/mathmaps/base.json',
+    ])
+  );
+  for (const path of listed) expect(assets).not.toContain(`/npm/${path}`);
   expect(errors).toEqual([]);
   expect(unserved).toEqual([]);
 });

@@ -7,7 +7,8 @@
  * page's MathJax, or the browser ESM build, which bundles its own. Under `/copy-<n>/npm/` the
  * browser build is a separate set of modules, as each element that bundles the adapter has its
  * own. Under `/assets/` it is served as a host's bundle would be, with no asset root to find.
- * `ASSET_ORIGIN` serves the same files from another origin, as a CDN does.
+ * `ASSET_ORIGIN` serves the same files from another origin, as a CDN does. Under `/emitted/` each
+ * file of the npm layout has a flat name, as a bundler emits the files a module names.
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -57,6 +58,28 @@ const NPM_PACKAGES: Record<string, string> = {
     require.resolve('@mathjax/mathjax-mhchem-font-extension/package.json')
   ),
 };
+
+/** A URL outside the npm layout serving the file at npm path `path`, as a bundler emits it. */
+export const emittedUrl = (path: string) => `${ORIGIN}/emitted/${encodeURIComponent(path)}`;
+
+/**
+ * `assetUrls` giving every file the browser build loads, with English speech, its emitted URL: the
+ * fonts, the speech worker and its mathmaps.
+ */
+export function emittedAssetUrls(): Record<string, string> {
+  const fontFiles = (name: string) =>
+    readdirSync(join(NPM_PACKAGES[name], 'chtml', 'woff2')).map(
+      (file) => `${name}@${versionOf(NPM_PACKAGES[name])}/chtml/woff2/${file}`
+    );
+  const sre = `mathjax@${versionOf(mathjaxDir)}/sre`;
+  const paths = [
+    ...fontFiles('@mathjax/mathjax-newcm-font'),
+    ...fontFiles('@mathjax/mathjax-mhchem-font-extension'),
+    `${sre}/speech-worker.js`,
+    ...['base', 'en', 'nemeth', 'euro'].map((map) => `${sre}/mathmaps/${map}.json`),
+  ];
+  return Object.fromEntries(paths.map((path) => [path, emittedUrl(path)]));
+}
 
 /** Which build of the adapter `ADAPTER_URL` serves. */
 export type Build = 'npm' | 'browser';
@@ -155,8 +178,11 @@ export async function openPage(
       });
     }
     const unrooted = pathname.match(/^\/assets\/([\w.-]+\.js)$/)?.[1];
-    if (!unrooted && !NPM_PATH.test(pathname)) return route.fulfill({ status: 404 });
-    const file = unrooted ? adapterFile(unrooted, build) : npmFile(pathname, build);
+    const emitted = pathname.match(/^\/emitted\/([^/]+)$/)?.[1];
+    if (!unrooted && !emitted && !NPM_PATH.test(pathname)) return route.fulfill({ status: 404 });
+    const file = unrooted
+      ? adapterFile(unrooted, build)
+      : npmFile(emitted ? `/npm/${decodeURIComponent(emitted)}` : pathname, build);
     if (!file || !existsSync(file)) {
       unserved.push(url);
       return route.fulfill({ status: 404 });

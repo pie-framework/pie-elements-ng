@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import packageJson from '../package.json';
 import { createMathjaxRenderer } from '../src/adapter.js';
-import { ASSETS_DOCS_URL, MATHJAX_VERSION, NO_ASSET_ROOT_EVENT, npmRoot } from '../src/assets.js';
+import {
+  ASSETS_DOCS_URL,
+  MATHJAX_VERSION,
+  NO_ASSET_ROOT_EVENT,
+  npmRoot,
+  resolveAssets,
+} from '../src/assets.js';
 import { mmlToLatex, renderMath, wrapMath } from '../src/render-math.js';
 import { MATHJAX_CONFLICT_EVENT, UNSUPPORTED_PAGE_DOCS_URL } from '../src/unsupported-page.js';
 
@@ -233,6 +239,26 @@ describe('npmRoot', () => {
     expect(npmRoot('file:///repo/@pie-element/categorize@14.0.1/index.js')).toBeUndefined();
     expect(npmRoot('not a url')).toBeUndefined();
     expect(npmRoot(undefined)).toBeUndefined();
+  });
+});
+
+describe('resolveAssets', () => {
+  afterEach(() => {
+    delete (globalThis as any)['@pie-lib/math-rendering@2'];
+  });
+
+  it('lists the URLs the options give, over the page, made absolute against the page', () => {
+    (globalThis as any)['@pie-lib/math-rendering@2'] = {
+      opts: { assetUrls: { 'mathjax@4.1.3/sre/speech-worker.js': 'https://page.test/w.js' } },
+    };
+    const path = '@mathjax/mathjax-newcm-font@4.1.3/chtml/woff2/mjx-ncm-n.woff2';
+
+    expect(resolveAssets({}).urls).toEqual(
+      new Map([['mathjax@4.1.3/sre/speech-worker.js', 'https://page.test/w.js']])
+    );
+    expect(resolveAssets({ assetUrls: { [path]: '/static/n-3c.woff2' } }).urls).toEqual(
+      new Map([[path, new URL('/static/n-3c.woff2', document.baseURI).href]])
+    );
   });
 });
 

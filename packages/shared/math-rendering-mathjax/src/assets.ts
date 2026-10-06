@@ -18,11 +18,16 @@ export const PAGE_OPTIONS_KEY = '@pie-lib/math-rendering@2';
 /** SRE's braille codes, which it lists with its locales; the language menu leaves them out. */
 const BRAILLE_CODES = ['nemeth', 'euro'];
 
+/** The npm path of the directory holding SRE's speech worker and its `mathmaps/`. */
+export const SRE_PATH = `mathjax@${MATHJAX_VERSION}/sre`;
+
 export interface MathjaxAssets {
   /** The npm root MathJax's files load from. */
   root?: string;
   /** The directory of `speech-worker.js` and its `mathmaps/`. */
   speechPath?: string;
+  /** The URL of each file listed by npm path, `<package>@<version>/<path>`. */
+  urls?: Map<string, string>;
   /** The speech locales the menu lists, by id, with any label to show; undefined lists SRE's. */
   speechLocales?: Map<string, string | undefined>;
 }
@@ -72,6 +77,16 @@ function absolute(url: unknown): string | undefined {
   }
 }
 
+function urlList(urls: unknown): Map<string, string> | undefined {
+  if (!urls || typeof urls !== 'object') return undefined;
+  const list = new Map<string, string>();
+  for (const [path, url] of Object.entries(urls)) {
+    const href = absolute(url);
+    if (href) list.set(path, href);
+  }
+  return list.size ? list : undefined;
+}
+
 function localeList(locales: unknown): Map<string, string | undefined> | undefined {
   if (Array.isArray(locales)) {
     return new Map(locales.filter((id) => typeof id === 'string').map((id) => [id, undefined]));
@@ -97,10 +112,23 @@ export function resolveAssets(options: MathjaxOptions, moduleUrl?: string): Math
   return {
     root,
     speechPath:
-      absolute(options.speechPath ?? page.speechPath) ??
-      (root ? `${root}/mathjax@${MATHJAX_VERSION}/sre` : undefined),
+      absolute(options.speechPath ?? page.speechPath) ?? (root ? `${root}/${SRE_PATH}` : undefined),
     speechLocales: localeList(options.speechLocales ?? page.speechLocales),
+    urls: urlList(options.assetUrls ?? page.assetUrls),
   };
+}
+
+/** The URL of the file at npm path `path`: the one `urls` lists, else under the root. */
+export function assetUrl({ root, urls }: MathjaxAssets, path: string): string | undefined {
+  return urls?.get(path) ?? (root ? `${root}/${path}` : undefined);
+}
+
+/** The URL of `file` in the speech directory: the one `urls` lists, else under `speechPath`. */
+export function speechFileUrl(
+  { speechPath, urls }: MathjaxAssets,
+  file: string
+): string | undefined {
+  return urls?.get(`${SRE_PATH}/${file}`) ?? (speechPath ? `${speechPath}/${file}` : undefined);
 }
 
 /** The menu lists SRE's `locales`; this leaves the listed locales in it, braille codes kept. */

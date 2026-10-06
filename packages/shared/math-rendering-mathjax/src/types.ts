@@ -37,6 +37,16 @@ export interface MathjaxOptions {
   assetRoot?: string;
 
   /**
+   * The URL of individual files, by npm path: `{ '@mathjax/mathjax-newcm-font@4.1.3/chtml/woff2/
+   * mjx-ncm-n.woff2': url }`. A listed file loads from its URL, others from the asset root and
+   * `speechPath`. Defaults to the page's `opts.assetUrls`. A bundle gives each file a
+   * `new URL('./…', import.meta.url)` here, which its host's bundler emits. Read by the browser ESM
+   * build, for its fonts, speech worker and mathmaps; the npm build's MathJax loads its files
+   * itself and ignores it.
+   */
+  assetUrls?: Readonly<Record<string, string>>;
+
+  /**
    * The directory of the speech worker, `speech-worker.js`, and its rule files, `mathmaps/`.
    * Defaults to the page's `opts.speechPath`, then to `mathjax@4.1.3/sre` under the asset root.
    */
