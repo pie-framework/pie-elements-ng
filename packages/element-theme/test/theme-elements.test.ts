@@ -39,17 +39,24 @@ describe('pie-element-theme', () => {
     expect(wrapper.style.getPropertyValue('--pie-primary').trim()).toBe('#123456');
   });
 
-  it.each(['light', 'dark'])('keeps --pie-missing text at 4.5:1 on the %s page and panel backgrounds', (theme) => {
-    definePieElementTheme();
+  it.each(['light', 'dark'])(
+    'keeps --pie-missing text at 4.5:1 on the %s page and panel backgrounds',
+    (theme) => {
+      definePieElementTheme();
 
-    const wrapper = document.createElement('pie-element-theme');
-    wrapper.setAttribute('theme', theme);
-    appendAndConnect(wrapper);
-    const value = (name: string) => wrapper.style.getPropertyValue(name).trim();
+      const wrapper = document.createElement('pie-element-theme');
+      wrapper.setAttribute('theme', theme);
+      appendAndConnect(wrapper);
+      const value = (name: string) => wrapper.style.getPropertyValue(name).trim();
 
-    expect(contrast(value('--pie-missing'), value('--pie-background'))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(value('--pie-missing'), value('--pie-background-dark'))).toBeGreaterThanOrEqual(4.5);
-  });
+      expect(contrast(value('--pie-missing'), value('--pie-background'))).toBeGreaterThanOrEqual(
+        4.5
+      );
+      expect(
+        contrast(value('--pie-missing'), value('--pie-background-dark'))
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  );
 
   it('supports wrapping unified player tags', () => {
     definePieElementTheme();
