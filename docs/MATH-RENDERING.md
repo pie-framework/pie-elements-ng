@@ -88,6 +88,8 @@ Each typeset expression carries hidden MathML (`mjx-assistive-mml`) for screen r
 
 A student's menu choices are saved in localStorage under `PIE-MathJax-Menu-Settings`, a key MathJax 3 does not share, and apply on later loads. Hidden MathML is exempt: the renderer's configuration sets it on every load.
 
+Turning on speech, braille or the magnifier from the menu starts MathJax's explorer. Its highlight, selection outline and speech, braille, magnifier and tooltip regions take `--pie-text`, `--pie-background`, `--pie-border-dark` and the [THEMING.md](./THEMING.md) focus chain from `src/explorer-styles.ts`, which the first render that typesets math adds to `<head>` once per document. The regions are appended to `document.body`, so they take the fallbacks under a theme scoped to an element, and the theme colours replace any highlight colours a student picks in the menu.
+
 ## Usage
 
 ### Element Developers
