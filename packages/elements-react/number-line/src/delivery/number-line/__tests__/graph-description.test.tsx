@@ -122,4 +122,35 @@ describe('number line text alternative', () => {
       ),
     ).toBe('Punto abierto en 4. Línea de 2 (abierto) a 6 (cerrado).');
   });
+
+  it('states the correctness of each evaluated element in the description and marks it without colour', () => {
+    const { container } = render(
+      <NumberLineGraph
+        {...graphProps}
+        disabled
+        elements={[
+          { type: 'point', pointType: 'full', position: 2, correct: true },
+          { type: 'line', leftPoint: 'full', rightPoint: 'empty', position: { left: 4, right: 6 }, correct: false },
+          { type: 'ray', direction: 'positive', pointType: 'empty', position: 8 },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole('group')).toHaveAccessibleDescription(
+      'Closed point at 2. Correct. Line from 4 (closed) to 6 (open). Incorrect. Ray from 8 (open) to the right.',
+    );
+    // one mark per judged element, none for the unjudged ray, none doubled on a line's two ends
+    expect([...container.querySelectorAll('[data-correctness]')].map((m) => m.getAttribute('data-correctness'))).toEqual(
+      ['correct', 'incorrect'],
+    );
+    expect(container.querySelectorAll('[data-correctness]')[0].closest('[aria-hidden="true"]')).not.toBeNull();
+  });
+
+  it('states correctness in the item language', () => {
+    expect(
+      describePlottedElements([{ type: 'point', pointType: 'full', position: 1, correct: false }], {
+        language: 'es_ES',
+      }),
+    ).toBe('Punto cerrado en 1. Incorrecto.');
+  });
 });

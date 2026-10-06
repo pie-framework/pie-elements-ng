@@ -6,10 +6,12 @@ const { translator } = Translator;
 
 type EndPoint = 'full' | 'empty';
 
-export type PlottedElement =
+/** `correct` is set in evaluate mode only. */
+export type PlottedElement = { correct?: boolean } & (
   | { type: 'point'; pointType: EndPoint; position: number }
   | { type: 'line'; leftPoint: EndPoint; rightPoint: EndPoint; position: { left: number; right: number } }
-  | { type: 'ray'; direction: 'positive' | 'negative'; pointType: EndPoint; position: number };
+  | { type: 'ray'; direction: 'positive' | 'negative'; pointType: EndPoint; position: number }
+);
 
 interface DescriptionContext {
   fraction?: boolean;
@@ -48,7 +50,7 @@ export function labelNumberLine({ domain, ticks, width, fraction = false, langua
   });
 }
 
-/** Describes each plotted element: its position, whether each endpoint is included, and a ray's direction. */
+/** Describes each plotted element: its position, whether each endpoint is included, a ray's direction and, in evaluate mode, its correctness. */
 export function describePlottedElements(
   elements: readonly PlottedElement[],
   { fraction = false, language }: DescriptionContext = {},
@@ -58,7 +60,12 @@ export function describePlottedElements(
   const end = (point: EndPoint) =>
     translator.t(point === 'empty' ? 'numberLine.openEnd' : 'numberLine.closedEnd', options);
 
-  const sentences = elements.map((element) => {
+  const verdict = (element: PlottedElement) =>
+    element.correct === true || element.correct === false
+      ? ` ${translator.t(element.correct ? 'numberLine.elementCorrect' : 'numberLine.elementIncorrect', options)}`
+      : '';
+
+  const describeElement = (element: PlottedElement): string => {
     switch (element.type) {
       case 'point':
         return translator.t(element.pointType === 'empty' ? 'numberLine.pointOpen' : 'numberLine.pointClosed', {
@@ -82,6 +89,11 @@ export function describePlottedElements(
       default:
         return '';
     }
+  };
+
+  const sentences = elements.map((element) => {
+    const sentence = describeElement(element);
+    return sentence ? `${sentence}${verdict(element)}` : sentence;
   });
 
   const described = sentences.filter(Boolean);
