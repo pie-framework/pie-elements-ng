@@ -70,10 +70,15 @@ const StyledButton: any = styled(Button)(() => ({
     color: color.text(),
     marginLeft: '5px',
   },
-  '&.Mui-focused': {
+  // ButtonBase marks keyboard focus with Mui-focusVisible.
+  '&.Mui-focusVisible': {
     outline: `3px solid ${color.tertiary()}`,
     outlineOffset: '2px',
     borderWidth: '3px',
+  },
+  // View mode, replacing MUI's disabled ink: the UiLayout palette's unthemed rgba(0, 0, 0, 0.54).
+  '&.Mui-disabled': {
+    color: color.disabledText(),
   },
   '&.disabledCorrect': {
     borderWidth: '2px',
