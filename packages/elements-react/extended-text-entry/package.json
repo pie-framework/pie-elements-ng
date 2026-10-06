@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/extended-text-entry",
-  "version": "16.0.0",
+  "version": "16.0.1",
   "description": "",
   "repository": {
     "type": "git",
@@ -121,7 +121,7 @@
     },
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

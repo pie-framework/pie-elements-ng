@@ -1,5 +1,13 @@
 # @pie-element/element-bundler
 
+## 0.1.3
+
+### Patch Changes
+
+- [#346](https://github.com/pie-framework/pie-elements-ng/pull/346) [`ae2012f`](https://github.com/pie-framework/pie-elements-ng/commit/ae2012f2dae12fa6324aa0e0f78ea3e024c81142) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the dev-dependencies group across 1 directory with 3 updates
+
+- [#368](https://github.com/pie-framework/pie-elements-ng/pull/368) [`56c8b29`](https://github.com/pie-framework/pie-elements-ng/commit/56c8b290be64f5d38d8b34fb39962d85f03e624e) Thanks [@chillenious](https://github.com/chillenious)! - docs: remove the finished PIE-753 plan, the unused eval specs and a stale test snapshot
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @pie-element/venn-classification
 
+## 0.1.2
+
+### Patch Changes
+
+- [#322](https://github.com/pie-framework/pie-elements-ng/pull/322) [`a7f1bd9`](https://github.com/pie-framework/pie-elements-ng/commit/a7f1bd98f8d9e8ee018aa4b9441158650dd6c2b6) Thanks [@chillenious](https://github.com/chillenious)! - Content pasted or dropped from outside a PIE editor, such as from Word, Google Docs or a web page, keeps its paragraphs and line breaks and the formatting the editor's toolbar offers: bold, italics, underline, strikethrough, superscript and subscript, bulleted and numbered lists with their numbering, and tables with their captions and header scopes. Its fonts, sizes, colours, alignment, headings and links are dropped, and a list or table the toolbar does not offer pastes as lines of text. A host that wants plain-text pastes, as in the Slate editor, sets `pasteFormatting: { disabled: true }` in the React editor's `pluginProps`. Tables keep a `<caption>` and a header cell's `scope` through an edit. A spreadsheet range pasted over selected table cells fills them cell by cell. Content copied from a PIE editor keeps its formatting, math and response areas, and math copied from rendered PIE content stays math (PIE-1145).
+
+- [#341](https://github.com/pie-framework/pie-elements-ng/pull/341) [`4f881e3`](https://github.com/pie-framework/pie-elements-ng/commit/4f881e3247d930284a790b149d01a6c766eeac40) Thanks [@chillenious](https://github.com/chillenious)! - The delivery views of mc-populated-blank, simple-cloze and venn-classification take their surfaces, ink, borders, show-correct-answer icon and feedback glyphs from the `--pie-*` theme, keeping the old colours as fallbacks. With no theme, the venn outside-region divider and tile tray border darken to #64748b and the tray's drop outline to #0284c7 to clear 3:1, and the mc-populated-blank listen button sits on a fixed white plate so its artwork stays legible on a dark page.
+
+- [#347](https://github.com/pie-framework/pie-elements-ng/pull/347) [`f816178`](https://github.com/pie-framework/pie-elements-ng/commit/f81617840eb3e0d7b86c464df610e02bf834f7c5) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump the tiptap group across 1 directory with 25 updates
+
 ## 0.1.1
 
 ### Patch Changes

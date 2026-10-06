@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-math-rendering-mathjax",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MathJax adapter for PIE math rendering",
   "type": "module",
   "main": "./dist/index.js",

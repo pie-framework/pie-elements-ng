@@ -1,5 +1,20 @@
 # @pie-element/complex-rubric
 
+## 8.0.1
+
+### Patch Changes
+
+- [#268](https://github.com/pie-framework/pie-elements-ng/pull/268) [`cf1ccc0`](https://github.com/pie-framework/pie-elements-ng/commit/cf1ccc0d25c0c136dc01dab014c68a083ed595ed) Thanks [@chillenious](https://github.com/chillenious)! - chore: remove upstream sync tooling (PIE-1144)
+
+- [#325](https://github.com/pie-framework/pie-elements-ng/pull/325) [`56a9e32`](https://github.com/pie-framework/pie-elements-ng/commit/56a9e32e5852cc23929369da487ee250084c2d89) Thanks [@chillenious](https://github.com/chillenious)! - fix: take the remaining element DOM ids from the shared unique-id helper
+- Updated dependencies [[`199ae92`](https://github.com/pie-framework/pie-elements-ng/commit/199ae92c9ca6fda549936306a82036dd770f619a), [`cbe9fc0`](https://github.com/pie-framework/pie-elements-ng/commit/cbe9fc064c206d098af6f4151d5cf30288b1736f), [`38284bc`](https://github.com/pie-framework/pie-elements-ng/commit/38284bc1aecd6fd6cc88a01226840887c0d27975), [`f7646b3`](https://github.com/pie-framework/pie-elements-ng/commit/f7646b345e9bda9918a94c7baf26fa9ef18b168d), [`8170ce7`](https://github.com/pie-framework/pie-elements-ng/commit/8170ce7efe7a13675b914e8d187df23022bff8ab), [`338861f`](https://github.com/pie-framework/pie-elements-ng/commit/338861f5ff91ec4d46b567cf0c3ecafa8b2ac467), [`aa5e733`](https://github.com/pie-framework/pie-elements-ng/commit/aa5e73381ee663671154b113d4cdd2b17f0fb06e), [`852dfe3`](https://github.com/pie-framework/pie-elements-ng/commit/852dfe3d20c85c32996b986b6b20b0347896ee6e), [`5b59ed8`](https://github.com/pie-framework/pie-elements-ng/commit/5b59ed851bef7689a172cbb9ac2df6661e5950fc), [`4386fb2`](https://github.com/pie-framework/pie-elements-ng/commit/4386fb25129ab02d1b75aa97c7ede9ee06b758c4), [`c9e4781`](https://github.com/pie-framework/pie-elements-ng/commit/c9e47812260dfba8e0b4b0538eab78efad4e86ef), [`1b2ec1c`](https://github.com/pie-framework/pie-elements-ng/commit/1b2ec1c438358572a538f2d889c6d0dcdb7383ee), [`4040dce`](https://github.com/pie-framework/pie-elements-ng/commit/4040dceb127baa72b124a964e580db7e52e06023), [`7dfa941`](https://github.com/pie-framework/pie-elements-ng/commit/7dfa941f4d8ef46c8625157739f72ae0d6d33983), [`216ac0f`](https://github.com/pie-framework/pie-elements-ng/commit/216ac0f5591417cd7d1a83fbde0b4b724a97eb44), [`1f3e39d`](https://github.com/pie-framework/pie-elements-ng/commit/1f3e39d1fdce82f05ba14a3a7bb724cedc9958cc), [`c0d98a0`](https://github.com/pie-framework/pie-elements-ng/commit/c0d98a0cb2bf1d8c5e6237d8861aa7c9615b5c01), [`32b1c5b`](https://github.com/pie-framework/pie-elements-ng/commit/32b1c5b5997002eb7c7909c22f21bdaf67a268db), [`ebab8a6`](https://github.com/pie-framework/pie-elements-ng/commit/ebab8a69c0d3cea39f83f5d7dcc4818ffc2981e7), [`39d0980`](https://github.com/pie-framework/pie-elements-ng/commit/39d098078ba330bc71c76f453a3b526d3cfab86c), [`15c6bf5`](https://github.com/pie-framework/pie-elements-ng/commit/15c6bf5fbb1bbfc6c663ec71bc96d90d2d1813b5)]:
+  - @pie-lib/config-ui@14.0.1
+  - @pie-lib/render-ui@8.0.1
+  - @pie-element/multi-trait-rubric@9.0.1
+  - @pie-element/rubric@9.0.1
+  - @pie-element/shared-lodash@0.1.2
+  - @pie-lib/rubric@3.0.1
+
 ## 8.0.0
 
 ### Major Changes
