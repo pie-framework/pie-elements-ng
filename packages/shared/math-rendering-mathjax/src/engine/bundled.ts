@@ -5,6 +5,7 @@
  * every other copy of this engine run beside it untouched.
  */
 import type { MathJaxGlobal } from '../adapter.js';
+import type { MathjaxAssets } from '../assets.js';
 
 let mathJax: MathJaxGlobal | undefined;
 
@@ -23,13 +24,14 @@ engine.catch(() => {});
 
 /**
  * Starts this copy's MathJax from `config`, the configuration the page engine installs as
- * `window.MathJax`.
+ * `window.MathJax`, with its files from `assets`. It always starts; `srcUrl` is the page engine's.
  */
-export async function loadMathJax(config: MathJaxGlobal, _srcUrl: string): Promise<void> {
+export async function loadMathJax(config: MathJaxGlobal, assets: MathjaxAssets): Promise<boolean> {
   const { createMathJax } = await engine;
-  mathJax = createMathJax(config);
+  mathJax = createMathJax(config, assets);
   const ready = config.startup?.ready ?? mathJax.startup?.defaultReady;
   ready?.();
+  return true;
 }
 
 /** Each copy of this engine is its own MathJax, so its load is its own too. */

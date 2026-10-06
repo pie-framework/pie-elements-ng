@@ -22,10 +22,32 @@ export interface MathjaxOptions {
   loadFonts?: boolean;
 
   /**
-   * Override the MathJax script URL. Defaults to MathJax 4.1.3 `tex-mml-chtml.js` on jsDelivr.
-   * The browser ESM build bundles its MathJax and ignores it.
+   * Override the MathJax script URL, which defaults to `mathjax@4.1.3/tex-mml-chtml.js` under the
+   * asset root. The browser ESM build bundles its MathJax and ignores it.
    */
   srcUrl?: string;
+
+  /**
+   * The npm root MathJax's files load from: a URL under which `<package>@<version>/<path>` serves
+   * that file of the package, such as `https://cdn.jsdelivr.net/npm`. Defaults to the page's
+   * `window['@pie-lib/math-rendering@2'].opts.assetRoot`, then to the npm root of the URL this
+   * module loaded from. With none, the browser ESM build renders without web fonts and speech, and
+   * the npm build loads no MathJax unless `srcUrl` names one.
+   */
+  assetRoot?: string;
+
+  /**
+   * The directory of the speech worker, `speech-worker.js`, and its rule files, `mathmaps/`.
+   * Defaults to the page's `opts.speechPath`, then to `mathjax@4.1.3/sre` under the asset root.
+   */
+  speechPath?: string;
+
+  /**
+   * The speech locales the MathJax menu lists, by locale id, with a menu label for each when given
+   * as an object. A locale SRE does not ship needs a speech worker built with it. Defaults to the
+   * page's `opts.speechLocales`, then to every locale SRE ships.
+   */
+  speechLocales?: readonly string[] | Readonly<Record<string, string>>;
 }
 
 /**

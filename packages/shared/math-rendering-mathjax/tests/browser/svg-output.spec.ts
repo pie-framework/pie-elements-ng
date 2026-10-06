@@ -4,21 +4,21 @@
  * MathJax's, and another MathJax's SVG stylesheet is still reported.
  */
 import { expect, type Page, test } from '@playwright/test';
-import { openPage } from './harness';
-
-const SVG_BUILD = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-svg.js';
+import { ADAPTER_URL, openPage, SVG_BUILD_URL as SVG_BUILD } from './harness';
 
 const BODY = `<body><div id="v4">\\(\\frac{1}{2} + x^2\\)</div></body>`;
 
 /** Renders `#v4` and waits for what the menu queued at startup, a renderer switch included. */
 async function render(page: Page, srcUrl?: string) {
-  await page.evaluate(async (src) => {
-    const url = '/adapter.js';
-    const adapter = await import(url);
-    await adapter.createMathjaxRenderer({ srcUrl: src })(document.getElementById('v4'));
-    const mathJax = (window as { MathJax?: any }).MathJax;
-    await mathJax.startup.document.whenReady(() => {});
-  }, srcUrl);
+  await page.evaluate(
+    async ([url, src]) => {
+      const adapter = await import(url);
+      await adapter.createMathjaxRenderer({ srcUrl: src })(document.getElementById('v4'));
+      const mathJax = (window as { MathJax?: any }).MathJax;
+      await mathJax.startup.document.whenReady(() => {});
+    },
+    [ADAPTER_URL, srcUrl] as const
+  );
 }
 
 const headStylesheetIds = (page: Page) =>

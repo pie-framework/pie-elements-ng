@@ -7,8 +7,8 @@
  * What `tex-mml-chtml.js` loads on demand is bundled: the TeX packages its autoload fetches, with
  * the font extension mhchem loads, the dynamic ranges of its font, chunks of this build requested
  * as this module evaluates, and the menu's accessibility extensions. Its font files and speech
- * worker load from jsDelivr, as they do for the component build. SVG output and collapsing math
- * are not bundled, and their menu items are disabled.
+ * worker load from the asset root, at the npm paths the component build loads them from. SVG
+ * output and collapsing math are not bundled, and their menu items are disabled.
  */
 import { AssistiveMmlHandler } from '@mathjax/src/js/a11y/assistive-mml.js';
 import * as assistiveMml from '@mathjax/src/js/a11y/assistive-mml.js';
@@ -17,6 +17,7 @@ import { ExplorerHandler } from '@mathjax/src/js/a11y/explorer.js';
 import * as Region from '@mathjax/src/js/a11y/explorer/Region.js';
 import { EnrichHandler } from '@mathjax/src/js/a11y/semantic-enrich.js';
 import { SpeechHandler } from '@mathjax/src/js/a11y/speech.js';
+import * as Sre from '@mathjax/src/js/a11y/sre.js';
 import { browserAdaptor } from '@mathjax/src/js/adaptors/browserAdaptor.js';
 import { HTMLHandler } from '@mathjax/src/js/handlers/html/HTMLHandler.js';
 import { MathML } from '@mathjax/src/js/input/mathml.js';
@@ -27,8 +28,9 @@ import { Menu } from '@mathjax/src/js/ui/menu/Menu.js';
 import { MenuHandler } from '@mathjax/src/js/ui/menu/MenuHandler.js';
 import { MathJaxMhchemFontExtension } from '@mathjax/mathjax-mhchem-font-extension/js/chtml.js';
 import { MathJaxNewcmFont } from '@mathjax/mathjax-newcm-font/js/chtml.js';
-import { dynamicFonts, FONT_URL, MHCHEM_FONT_URL, SRE_URL } from 'virtual:bundled-mathjax-assets';
+import { dynamicFonts } from 'virtual:bundled-mathjax-assets';
 import type { MathJaxGlobal } from '../../adapter.js';
+import { MATHJAX_VERSION, type MathjaxAssets, reportNoAssetRoot } from '../../assets.js';
 import { combineDefaults, MathJax } from './global.js';
 
 // The TeX packages `input/tex` preloads, less require and autoload, which load packages through
@@ -139,16 +141,21 @@ function loadFromBundle(name: string): Promise<unknown> {
     : Promise.reject(new Error(`[math-rendering] The bundled MathJax has no module '${name}'`));
 }
 
+/** Whether this copy has a speech worker; without one, enrichment and what needs it stay off. */
+let hasSpeech = true;
+
 /**
  * The menu without the items this engine cannot honour. Settings another MathJax stored under the
  * same key may name SVG output or collapsing math; the menu would load each through the component
- * loader, and a renderer it cannot load stalls every later typeset.
+ * loader, and a renderer it cannot load stalls every later typeset. Without a speech worker,
+ * enrichment would start one, so it is off too, and with it speech, braille and the explorer.
  */
 class BundledMenu extends Menu {
   protected mergeUserSettings(): void {
     super.mergeUserSettings();
     this.settings.renderer = this.document.outputJax.name;
     this.settings.collapsible = false;
+    if (!hasSpeech) this.settings.enrich = false;
   }
 
   protected checkLoadableItems(): void {
@@ -157,7 +164,26 @@ class BundledMenu extends Menu {
     }
     this.menu.findID('Options', 'Collapsible').disable();
     this.menu.findID('Options', 'AutoCollapse').disable();
+    if (!hasSpeech) this.menu.findID('Options', 'Enrich').disable();
   }
+}
+
+/** The woff2 directory of a MathJax font package under the asset root. */
+function fontUrl(root: string, font: string): string {
+  return `${root}/@mathjax/${font}@${MATHJAX_VERSION}/chtml/woff2`;
+}
+
+/**
+ * Without an asset root the font's `@font-face` rules are left out, so no font file is requested
+ * and math draws in the page's fonts. Every copy of this engine has its own font class.
+ */
+function useAssets({ root, speechPath }: MathjaxAssets): string | undefined {
+  hasSpeech = Boolean(speechPath);
+  if (!root) {
+    MathJaxNewcmFont.addFontURLs = () => {};
+    reportNoAssetRoot(speechPath ? 'no-web-fonts' : 'no-web-fonts-or-speech');
+  }
+  return root;
 }
 
 /** Resolves once the page's DOM is parsed, as the component startup waits for it. */
@@ -176,10 +202,12 @@ function whenPageReady(): Promise<void> {
  * This copy's MathJax, configured by `config`. Its `startup.defaultReady` builds the document, as
  * the component startup's does; until then `_` holds the classes `startup.ready` may adjust.
  */
-export function createMathJax(config: MathJaxGlobal): MathJaxGlobal {
+export function createMathJax(config: MathJaxGlobal, assets: MathjaxAssets): MathJaxGlobal {
   if (MathJax.startup) throw new Error('[math-rendering] The bundled MathJax starts once');
   checkConfig(config);
   mathjax.asyncLoad = loadFromBundle;
+  const root = useAssets(assets);
+  const { speechPath } = assets;
 
   const accessibility = config.loader?.load?.includes('a11y/assistive-mml') ?? false;
   MathJax.config = config;
@@ -187,6 +215,7 @@ export function createMathJax(config: MathJaxGlobal): MathJaxGlobal {
     a11y: {
       explorer: { Region },
       explorer_ts: explorer,
+      sre_ts: Sre,
       ...(accessibility ? { 'assistive-mml': assistiveMml } : {}),
     },
     output: { chtml_ts: { CHTML } },
@@ -206,14 +235,17 @@ export function createMathJax(config: MathJaxGlobal): MathJaxGlobal {
     hasTypeset: false,
     defaultReady() {
       // The mhchem component adds this extension to the font class as it loads.
-      MathJaxNewcmFont.addExtension({ ...MathJaxMhchemFontExtension, fontURL: MHCHEM_FONT_URL });
+      MathJaxNewcmFont.addExtension({
+        ...MathJaxMhchemFontExtension,
+        fontURL: root ? fontUrl(root, 'mathjax-mhchem-font-extension') : '',
+      });
       const tex = new TeX({ packages: TEX_PACKAGES, ...config.tex });
       const mml = new MathML();
       const chtml = new CHTML(
         combineDefaults({ chtml: { ...config.chtml } }, 'chtml', {
           ...config.output,
           fontData: MathJaxNewcmFont,
-          fontURL: FONT_URL,
+          fontURL: root ? fontUrl(root, 'mathjax-newcm-font') : '',
         })
       );
 
@@ -228,9 +260,14 @@ export function createMathJax(config: MathJaxGlobal): MathJaxGlobal {
       handler = MenuHandler(handler);
       mathjax.handlers.register(handler);
 
+      const options: Record<string, any> = { ...config.options };
+      if (speechPath) {
+        options.worker = { path: speechPath, maps: `${speechPath}/mathmaps`, ...options.worker };
+      } else {
+        options.enableEnrichment = false;
+      }
       const mathDocument: any = mathjax.document(document, {
-        ...config.options,
-        worker: { path: SRE_URL, maps: `${SRE_URL}/mathmaps`, ...(config.options as any)?.worker },
+        ...options,
         MenuClass: BundledMenu,
         InputJax: [tex, mml],
         OutputJax: chtml,

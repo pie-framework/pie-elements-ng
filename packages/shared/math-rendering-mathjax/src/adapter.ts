@@ -6,9 +6,11 @@ import {
   loadMathJax,
   OWN_STYLESHEET_ID,
 } from './engine/page.js';
+import { defaultSpeechLocale, listSpeechLocales, resolveAssets } from './assets.js';
 import { rewriteElementaryMath } from './elementary-math.js';
 import { injectExplorerStyles } from './explorer-styles.js';
 import { unprefixMathml } from './mathml.js';
+import { endSpeechOnWorkerFailure, type SpeechDocument } from './speech-worker.js';
 import type { MathjaxOptions } from './types.js';
 import { reportUnsupportedPage } from './unsupported-page.js';
 
@@ -42,6 +44,7 @@ export interface MathJaxGlobal {
   version?: string;
   loader?: {
     load?: string[];
+    paths?: Record<string, string>;
     failed?: (error: Error) => void;
     'output/svg'?: { ready?: (name: string) => string };
   };
@@ -61,6 +64,8 @@ export interface MathJaxGlobal {
     enableMenu?: boolean;
     menuOptions?: { settings?: Record<string, boolean> };
     a11y?: { inTabOrder?: boolean };
+    sre?: { locale?: string };
+    worker?: { path?: string; maps?: string };
   };
   output?: { displayOverflow?: string };
   chtml?: { fontURL?: string };
@@ -68,6 +73,7 @@ export interface MathJaxGlobal {
   typesetClear?: (elements?: Element[]) => void;
   /** The component build's module tree. */
   _?: {
+    a11y?: { sre_ts?: { locales?: Map<string, string> } };
     output?: {
       chtml_ts?: { CHTML?: { STYLESHEETID?: string } };
       svg_ts?: { SVG?: { STYLESHEETID?: string } };
@@ -75,9 +81,6 @@ export interface MathJaxGlobal {
     ui?: { menu?: { Menu?: { Menu?: { MENU_STORAGE?: string } } } };
   };
 }
-
-/** TeX and MathML input, as the legacy renderer reads. `srcUrl` overrides it. */
-const DEFAULT_MATHJAX_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js';
 
 /** The macros the legacy renderer defines, which authored content relies on. */
 const LEGACY_MACROS: Record<string, MathJaxMacro> = {
@@ -244,6 +247,7 @@ function containsMath(root: Element, useSingleDollar: boolean): boolean {
 function injectMathjax(options: MathjaxOptions): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const { useSingleDollar = false, accessibility = true, loadFonts = true, srcUrl } = options;
+    const assets = resolveAssets(options, import.meta.url);
 
     const config: MathJaxGlobal = {
       loader: {
@@ -267,12 +271,14 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
           const isolate = isMathjax4(mathJax);
           if (isolate) {
             useOwnStylesheetIds(mathJax);
-            useOwnMenuStorage(mathJax);
+            useOwnMenuStorage(mathJax, assets.speechLocales);
+            listSpeechLocales(mathJax?._?.a11y?.sre_ts?.locales, assets.speechLocales);
           }
           startup?.defaultReady?.();
           if (isolate) {
             isolateOutput(startup?.document);
             startup?.document?.addStyles?.(LINEBREAK_FALLBACK_STYLES);
+            endSpeechOnWorkerFailure(startup?.document as SpeechDocument | undefined);
           }
           Promise.resolve(startup?.promise).then(() => resolve(), reject);
         },
@@ -285,8 +291,8 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         // renderer's: hidden MathML for screen readers, math outside the tab order, and no
         // generated speech. The legacy renderer configures SRE speech, but it treats MathJax's
         // first enrichment retry as a failure and turns enrichment off for the page. With
-        // enrichment off MathJax starts no speech web worker, which a CSP can block; a blocked
-        // worker or speech-rule fetch stalls typesetting for the rest of the page.
+        // enrichment off MathJax starts no speech web worker, which a CSP can block; once a
+        // student turns it on, a worker that fails to start ends speech for the page.
         menuOptions: {
           settings: { assistiveMml: accessibility, enrich: false, inTabOrder: false },
         },
@@ -309,7 +315,12 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
       config.chtml = { fontURL: '' };
     }
 
-    loadMathJax(config, srcUrl || DEFAULT_MATHJAX_SRC).catch(reject);
+    const locale = defaultSpeechLocale(assets.speechLocales);
+    if (locale && config.options) config.options.sre = { locale };
+
+    loadMathJax(config, { ...assets, srcUrl }).then((started) => {
+      if (!started) resolve();
+    }, reject);
   });
 }
 
@@ -328,18 +339,24 @@ function useOwnStylesheetIds(mathJax: MathJaxGlobal | undefined): void {
 }
 
 /**
- * Stores the menu settings of the MathJax this adapter loaded under their own key, and drops a
- * stored `assistiveMml` so the configuration decides hidden MathML on every load.
+ * Stores the menu settings of the MathJax this adapter loaded under their own key. Drops a stored
+ * `assistiveMml`, so the configuration decides hidden MathML on every load, and a stored speech
+ * locale the menu does not list, which cannot load.
  */
-function useOwnMenuStorage(mathJax: MathJaxGlobal | undefined): void {
+function useOwnMenuStorage(
+  mathJax: MathJaxGlobal | undefined,
+  locales: Map<string, string | undefined> | undefined
+): void {
   const menu = mathJax?._?.ui?.menu?.Menu?.Menu;
   if (!menu) return;
   menu.MENU_STORAGE = OWN_MENU_STORAGE;
   try {
     const stored = localStorage.getItem(OWN_MENU_STORAGE);
     if (!stored) return;
-    const { assistiveMml, ...settings } = JSON.parse(stored);
-    if (assistiveMml === undefined) return;
+    const { assistiveMml, locale, ...settings } = JSON.parse(stored);
+    const keepLocale = locale === undefined || !locales || locales.has(locale);
+    if (assistiveMml === undefined && keepLocale) return;
+    if (keepLocale && locale !== undefined) settings.locale = locale;
     if (Object.keys(settings).length) {
       localStorage.setItem(OWN_MENU_STORAGE, JSON.stringify(settings));
     } else {
@@ -468,7 +485,9 @@ function whenMathjaxStarted(options: MathjaxOptions): Promise<void> {
 
 function startMathjax(options: MathjaxOptions): Promise<void> {
   return whenMathjaxStarted(options).then(() => {
-    if (typeof engineMathJax()?.typesetPromise !== 'function') {
+    // No MathJax at all is reported where the load was skipped.
+    const mathJax = engineMathJax();
+    if (mathJax && typeof mathJax.typesetPromise !== 'function') {
       console.warn(
         '[mathjax-renderer] MathJax on this page has no typesetPromise; math stays untypeset.'
       );
@@ -489,9 +508,9 @@ function ensureMathjax(options: MathjaxOptions): Promise<void> {
 /**
  * Create a MathJax renderer function.
  *
- * MathJax loads once per page, on the first render, from `srcUrl` or MathJax 4.1.3 on jsDelivr.
- * A MathJax the page already has, or is loading, is used instead. A render waits on the load only
- * when its element holds math.
+ * MathJax loads once per page, on the first render, from `srcUrl` or the asset root (see
+ * {@link MathjaxOptions.assetRoot}). A MathJax the page already has, or is loading, is used
+ * instead. A render waits on the load only when its element holds math.
  *
  * @param options - Renderer options
  * @returns Renderer function that typesets math in an element

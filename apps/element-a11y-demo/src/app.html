@@ -4,6 +4,13 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/pie-logo-orange.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      The npm build of the math adapter, which the demos bundle, finds no asset root in its own
+      URL, so the demos set one as a host does (docs/MATH-RENDERING.md#assets).
+    -->
+    <script>
+      window['@pie-lib/math-rendering@2'] = { opts: { assetRoot: 'https://cdn.jsdelivr.net/npm' } };
+    </script>
     <script type="module">
       import RefreshRuntime from '/@react-refresh';
       RefreshRuntime.injectIntoGlobalHook(window);

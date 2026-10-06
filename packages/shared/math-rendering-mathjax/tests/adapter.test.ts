@@ -1,12 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import packageJson from '../package.json';
 import { createMathjaxRenderer } from '../src/adapter.js';
+import { ASSETS_DOCS_URL, MATHJAX_VERSION, NO_ASSET_ROOT_EVENT, npmRoot } from '../src/assets.js';
 import { mmlToLatex, renderMath, wrapMath } from '../src/render-math.js';
 import { MATHJAX_CONFLICT_EVENT, UNSUPPORTED_PAGE_DOCS_URL } from '../src/unsupported-page.js';
 
 const MATHJAX_LOADING = Symbol.for('@pie-element/shared-math-rendering-mathjax/loading');
 const UNSUPPORTED_PAGE = Symbol.for('@pie-element/shared-math-rendering-mathjax/unsupported-page');
-const PINNED_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js';
+const NO_ASSETS_WARNED = Symbol.for('@pie-element/shared-math-rendering-mathjax/no-assets');
+/** The asset root every test page sets, unless the test is about asset roots. */
+const ASSET_ROOT = 'https://assets.test/npm';
+const PINNED_SRC = `${ASSET_ROOT}/mathjax@4.1.3/tex-mml-chtml.js`;
+const SPEECH_PATH = `${ASSET_ROOT}/mathjax@4.1.3/sre`;
 const SINGLE_DOLLAR_WARNING =
   '[math-rendering] using $ is not advisable, please use $$..$$ or \\(...\\)';
 
@@ -55,7 +60,12 @@ function interceptScripts(): HTMLScriptElement[] {
  */
 function runMathjaxScript(
   typesetPromise = vi.fn<TypesetPromise>(async () => {}),
-  { version = '4.1.3', chtmlStyles = null as HTMLStyleElement | null, svg = false } = {}
+  {
+    version = '4.1.3',
+    chtmlStyles = null as HTMLStyleElement | null,
+    svg = false,
+    locales = undefined as Map<string, string> | undefined,
+  } = {}
 ) {
   const config = page.MathJax ?? {};
   let finishStartup!: () => void;
@@ -75,6 +85,7 @@ function runMathjaxScript(
     version,
     config,
     _: {
+      ...(locales && { a11y: { sre_ts: { locales } } }),
       output: { chtml_ts: { CHTML }, ...(svg && { svg_ts: { SVG } }) },
       ui: { menu: { Menu: { Menu } } },
     },
@@ -85,6 +96,7 @@ function runMathjaxScript(
         mathJax.svgStylesheetIdAtStartup = SVG.STYLESHEETID;
         // The menu, created with the document, reads the settings stored under its key.
         mathJax.menuSettingsAtStartup = localStorage.getItem(Menu.MENU_STORAGE);
+        mathJax.localesAtStartup = locales && [...locales];
         mathJax.typesetPromise = typesetPromise;
         mathJax.typesetClear = vi.fn();
         mathJax.startup.document = mathDocument;
@@ -154,6 +166,7 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
   stubLocalStorage();
+  page['@pie-lib/math-rendering@2'] = { opts: { assetRoot: ASSET_ROOT } };
 });
 
 afterEach(() => {
@@ -165,6 +178,7 @@ afterEach(() => {
   delete page.renderMath;
   delete (globalThis as any)[MATHJAX_LOADING];
   delete (globalThis as any)[UNSUPPORTED_PAGE];
+  delete (globalThis as any)[NO_ASSETS_WARNED];
   for (const style of document.head.querySelectorAll('style')) style.remove();
   vi.unstubAllGlobals();
 });
@@ -177,7 +191,212 @@ describe('MathJax version', () => {
     expect(devDependencies['@mathjax/src']).toBe(version);
     expect(devDependencies['@mathjax/mathjax-newcm-font']).toBe(version);
     expect(devDependencies['@mathjax/mathjax-mhchem-font-extension']).toBe(version);
-    expect(PINNED_SRC).toContain(`/mathjax@${version}/`);
+    expect(MATHJAX_VERSION).toBe(version);
+  });
+
+  it('is the version of every package the manifest lists for asset roots to serve', () => {
+    const { devDependencies, pie } = packageJson;
+    const assetPackages = Object.entries(pie.assetPackages);
+
+    expect(assetPackages.map(([name]) => name).sort()).toEqual([
+      '@mathjax/mathjax-mhchem-font-extension',
+      '@mathjax/mathjax-newcm-font',
+      'mathjax',
+    ]);
+    for (const [name, version] of assetPackages) {
+      expect(version).toBe(MATHJAX_VERSION);
+      expect(devDependencies[name as keyof typeof devDependencies]).toBe(version);
+    }
+  });
+});
+
+describe('npmRoot', () => {
+  it('is the URL before the package segment, scope included', () => {
+    expect(
+      npmRoot(
+        'https://cdn.jsdelivr.net/npm/@pie-element/categorize@14.0.1/dist/browser/delivery/index.js'
+      )
+    ).toBe('https://cdn.jsdelivr.net/npm');
+    expect(npmRoot('https://raw.esm.sh/@pie-element/categorize@14.0.1/dist/browser/index.js')).toBe(
+      'https://raw.esm.sh'
+    );
+    expect(npmRoot('https://proxy.test/npm/mathjax@4.1.3/tex-mml-chtml.js?v=1')).toBe(
+      'https://proxy.test/npm'
+    );
+  });
+
+  it('is undefined without a package segment, under node_modules, or without an origin', () => {
+    expect(npmRoot('https://app.test/assets/index-Ab12.js')).toBeUndefined();
+    expect(
+      npmRoot('https://app.test/node_modules/.pnpm/mathjax@4.1.3/node_modules/x/index.js')
+    ).toBeUndefined();
+    expect(npmRoot('file:///repo/@pie-element/categorize@14.0.1/index.js')).toBeUndefined();
+    expect(npmRoot('not a url')).toBeUndefined();
+    expect(npmRoot(undefined)).toBeUndefined();
+  });
+});
+
+describe('assets', () => {
+  it('load from the root the options set, over the page option', async () => {
+    const scripts = interceptScripts();
+
+    const rendering = createMathjaxRenderer({ assetRoot: 'https://mirror.test/npm/' })(
+      elementWith('\\(x\\)')
+    );
+
+    expect(scripts.map((script) => script.src)).toEqual([
+      'https://mirror.test/npm/mathjax@4.1.3/tex-mml-chtml.js',
+    ]);
+    expect(page.MathJax.loader.paths['mathjax-newcm']).toBe(
+      'https://mirror.test/npm/@mathjax/mathjax-newcm-font@4.1.3'
+    );
+    expect(page.MathJax.options.worker.path).toBe('https://mirror.test/npm/mathjax@4.1.3/sre');
+    runMathjaxScript().finishStartup();
+    await rendering;
+  });
+
+  it('resolve a relative root against the page', async () => {
+    const scripts = interceptScripts();
+    page['@pie-lib/math-rendering@2'] = { opts: { assetRoot: '/static/npm' } };
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+
+    expect(scripts[0].src).toBe(
+      new URL('/static/npm/mathjax@4.1.3/tex-mml-chtml.js', document.baseURI).href
+    );
+    runMathjaxScript().finishStartup();
+    await rendering;
+  });
+
+  it('take speech from speechPath', async () => {
+    interceptScripts();
+    page['@pie-lib/math-rendering@2'] = {
+      opts: { assetRoot: ASSET_ROOT, speechPath: 'https://speech.test/sre/' },
+    };
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+
+    expect(page.MathJax.options.worker).toEqual({
+      path: 'https://speech.test/sre',
+      maps: 'https://speech.test/sre/mathmaps',
+    });
+    runMathjaxScript().finishStartup();
+    await rendering;
+  });
+
+  it('leave the paths of a srcUrl build without a root to that build', async () => {
+    const scripts = interceptScripts();
+    delete page['@pie-lib/math-rendering@2'];
+
+    const rendering = createMathjaxRenderer({ srcUrl: 'https://example.test/tex-mml-chtml.js' })(
+      elementWith('\\(x\\)')
+    );
+
+    expect(scripts.map((script) => script.src)).toEqual(['https://example.test/tex-mml-chtml.js']);
+    expect(page.MathJax.loader.paths).toBeUndefined();
+    expect(page.MathJax.options.worker).toBeUndefined();
+    runMathjaxScript().finishStartup();
+    await rendering;
+    expect(console.warn).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('without a root or srcUrl load no MathJax, and report it once per page', async () => {
+    const scripts = interceptScripts();
+    delete page['@pie-lib/math-rendering@2'];
+    const target = elementWith('\\(x\\)');
+    const reports: unknown[] = [];
+    const record = (event: Event) => reports.push((event as CustomEvent).detail);
+    window.addEventListener(NO_ASSET_ROOT_EVENT, record);
+
+    await createMathjaxRenderer()(target);
+    vi.resetModules();
+    const { createMathjaxRenderer: fromOtherBundle } = await import('../src/adapter.js');
+    delete (globalThis as any)[MATHJAX_LOADING];
+    await fromOtherBundle()(elementWith('\\(y\\)'));
+
+    expect(scripts).toEqual([]);
+    expect(page.MathJax).toBeUndefined();
+    expect(target.textContent).toBe('\\(x\\)');
+    window.removeEventListener(NO_ASSET_ROOT_EVENT, record);
+    expect(console.warn).not.toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining(ASSETS_DOCS_URL));
+    expect(reports).toEqual([
+      {
+        effect: 'untypeset',
+        message: expect.stringContaining('math stays untypeset'),
+        docsUrl: ASSETS_DOCS_URL,
+      },
+    ]);
+  });
+
+  it('list only the speech locales the page names, braille codes kept', async () => {
+    interceptScripts();
+    page['@pie-lib/math-rendering@2'] = {
+      opts: { assetRoot: ASSET_ROOT, speechLocales: { en: 'English', xx: 'Example' } },
+    };
+    const locales = new Map([
+      ['de', 'German'],
+      ['en', 'English'],
+      ['euro', 'Euro'],
+      ['nemeth', 'Nemeth'],
+    ]);
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+    const { mathJax, finishStartup } = runMathjaxScript(undefined, { locales });
+    finishStartup();
+    await rendering;
+
+    expect(mathJax.localesAtStartup).toEqual([
+      ['en', 'English'],
+      ['euro', 'Euro'],
+      ['nemeth', 'Nemeth'],
+      ['xx', 'Example'],
+    ]);
+    expect(page.MathJax.config.options.sre).toBeUndefined();
+  });
+
+  it('start speech in the first listed locale when English is not listed', async () => {
+    interceptScripts();
+    page['@pie-lib/math-rendering@2'] = {
+      opts: { assetRoot: ASSET_ROOT, speechLocales: ['nemeth', 'de'] },
+    };
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+
+    expect(page.MathJax.options.sre).toEqual({ locale: 'de' });
+    runMathjaxScript().finishStartup();
+    await rendering;
+  });
+
+  it('drop a stored speech locale the menu does not list', async () => {
+    interceptScripts();
+    page['@pie-lib/math-rendering@2'] = { opts: { assetRoot: ASSET_ROOT, speechLocales: ['en'] } };
+    localStorage.setItem(
+      'PIE-MathJax-Menu-Settings',
+      JSON.stringify({ locale: 'de', zoom: 'Click' })
+    );
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+    const { mathJax, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(JSON.parse(mathJax.menuSettingsAtStartup)).toEqual({ zoom: 'Click' });
+  });
+
+  it('keep a stored speech locale the menu lists', async () => {
+    interceptScripts();
+    page['@pie-lib/math-rendering@2'] = { opts: { assetRoot: ASSET_ROOT, speechLocales: ['de'] } };
+    localStorage.setItem('PIE-MathJax-Menu-Settings', JSON.stringify({ locale: 'de' }));
+
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+    const { mathJax, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    expect(JSON.parse(mathJax.menuSettingsAtStartup)).toEqual({ locale: 'de' });
   });
 });
 
@@ -208,6 +427,12 @@ describe('createMathjaxRenderer', () => {
       enableMenu: true,
       menuOptions: { settings: { assistiveMml: true, enrich: false, inTabOrder: false } },
       a11y: { inTabOrder: false },
+      worker: { path: SPEECH_PATH, maps: `${SPEECH_PATH}/mathmaps` },
+    });
+    expect(config.loader.paths).toEqual({
+      fonts: `${ASSET_ROOT}/@mathjax`,
+      'mathjax-newcm': `${ASSET_ROOT}/@mathjax/mathjax-newcm-font@4.1.3`,
+      'mathjax-mhchem-extension': `${ASSET_ROOT}/@mathjax/mathjax-mhchem-font-extension@4.1.3`,
     });
 
     runMathjaxScript().finishStartup();
@@ -864,7 +1089,7 @@ describe('renderMath', () => {
 
   it('treats single dollars as math when the page sets the legacy opt-in', async () => {
     const scripts = interceptScripts();
-    page['@pie-lib/math-rendering@2'] = { opts: { useSingleDollar: true } };
+    page['@pie-lib/math-rendering@2'] = { opts: { assetRoot: ASSET_ROOT, useSingleDollar: true } };
     vi.resetModules();
     const { renderMath: render } = await import('../src/render-math.js');
     const target = elementWith('$x^2$');
