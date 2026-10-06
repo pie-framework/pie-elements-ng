@@ -9,6 +9,18 @@ export const point = utils.point;
 
 export const bandKey = (d, index) => `${index}-${d.label || '-'}`;
 
+// Author text as plain text for an accessible name or description: markup is dropped, LaTeX
+// delimiters are removed, and a LaTeX fraction reads as a/b.
+export const textOf = (html) =>
+  html
+    ? utils
+        .extractTextFromHTML(html)
+        .replace(/\\[()[\]]/g, '')
+        .replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, ' $1/$2')
+        .replace(/\s+/g, ' ')
+        .trim()
+    : '';
+
 export const dataToXBand: any = (scaleX, data, width, type) => {
   const chartWidth = width || 400; // fallback
   const domain = data && data.length ? data.map(bandKey) : ['default'];

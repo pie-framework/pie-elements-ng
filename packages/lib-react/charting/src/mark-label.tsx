@@ -58,6 +58,10 @@ const StyledMathInput: any = styled('div')(({ theme }) => ({
   '&.incorrect': {
     ...incorrect('color'),
   },
+  '&:focus-visible': {
+    outline: `2px solid ${color.focusOutline()}`,
+    outlineOffset: '2px',
+  },
 }));
 
 function isFractionFormat(label) {
@@ -106,6 +110,7 @@ export const MarkLabel = (props) => {
     limitCharacters,
     correctnessIndicator,
     ariaLabel,
+    mathAriaLabel,
   } = props;
 
   const [label, setLabel] = useState(mark.label);
@@ -123,6 +128,15 @@ export const MarkLabel = (props) => {
 
   const isMathRendering = () => {
     return isEditing === false && mathLabel !== undefined;
+  };
+
+  const openEditing = () => setIsEditing(true);
+
+  const onMathKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openEditing();
+    }
   };
 
   const onChangeProp = (e) => {
@@ -170,7 +184,14 @@ export const MarkLabel = (props) => {
             correct: mark.editable && correctness?.label === 'correct',
             incorrect: mark.editable && correctness?.label === 'incorrect',
           })}
-          onClick={() => setIsEditing(true)}
+          // an editable label in math form is a button that opens the input
+          {...(!disabled && {
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': mathAriaLabel || ariaLabel,
+            onClick: openEditing,
+            onKeyDown: onMathKeyDown,
+          })}
           style={{
             minWidth: barWidth,
             position: 'fixed',
@@ -246,6 +267,8 @@ MarkLabel.propTypes = {
   limitCharacters: PropTypes.bool,
   correctnessIndicator: PropTypes.node,
   ariaLabel: PropTypes.string,
+  // names the label while it renders as math, as a button; ariaLabel names the input
+  mathAriaLabel: PropTypes.string,
 };
 
 export default MarkLabel;

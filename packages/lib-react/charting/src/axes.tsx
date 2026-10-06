@@ -13,7 +13,7 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
 
 import { TickCorrectnessIndicator } from './common/correctness-indicators.js';
-import { bandKey, getRotateAngle, getRotatedLabelOverhang, getTickValues } from './utils.js';
+import { bandKey, getRotateAngle, getRotatedLabelOverhang, getTickValues, textOf } from './utils.js';
 import MarkLabel from './mark-label.js';
 
 const { translator } = Translator;
@@ -268,6 +268,12 @@ export class TickComponent extends React.Component {
             correctness={correctness}
             error={error && error[index]}
             ariaLabel={translator.t('charting.categoryLabel', { lng: language, index: index + 1 })}
+            mathAriaLabel={translator.t('charting.categoryLabelValue', {
+              lng: language,
+              index: index + 1,
+              label: textOf(label),
+              interpolation: { escapeValue: false },
+            })}
             limitCharacters
             correctnessIndicator={
               showCorrectness &&
