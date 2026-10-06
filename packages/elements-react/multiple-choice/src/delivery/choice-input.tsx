@@ -126,11 +126,11 @@ const getInputStyles = (correctness) => {
       pointerEvents: 'initial !important',
     },
     focusVisibleUnchecked: {
-      outline: `2px solid ${color.keyBoardFocusIndicator()}`,
+      outline: `2px solid ${color.focusOutline()}`,
       backgroundColor: 'transparent',
     },
     focusVisibleChecked: {
-      outline: `2px solid ${color.keyBoardFocusIndicator()}`,
+      outline: `2px solid ${color.focusOutline()}`,
       backgroundColor: 'transparent',
     },
   };
@@ -148,7 +148,7 @@ const StyledCheckboxBase: any = styled(Checkbox, {
       '&.Mui-checked': styles[key('checked')],
       '&.Mui-disabled': correctness ? {} : styles[key('disabled')],
       '&:hover:not(.Mui-disabled) svg': {
-        boxShadow: `0px 0px 0px 2px ${color.keyBoardFocusIndicator()}`,
+        boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
         borderRadius: '4px',
       },
     },
@@ -191,7 +191,7 @@ const StyledRadioBase: any = styled(Radio, {
       '&.Mui-focusVisible:not(.Mui-checked)': styles.focusVisibleUnchecked,
       '&.Mui-focusVisible.Mui-checked': styles.focusVisibleChecked,
       '&:hover:not(.Mui-disabled) svg': {
-        boxShadow: `0px 0px 0px 2px ${color.keyBoardFocusIndicator()}`,
+        boxShadow: `0px 0px 0px 2px ${color.focusOutline()}`,
         borderRadius: '50%',
       },
     },
