@@ -60,6 +60,7 @@ export class AnswerGrid extends React.Component {
   };
 
   // Ids that tie each control to its row title and column header, and each row group to its title.
+  // The same prefix makes each row's radio name unique on the page, so a row is one tab stop.
   instanceId: string = createUniqueId('match-grid');
 
   onRowValueChange = (rowId, answerIndex) => (event) => {
@@ -122,6 +123,7 @@ export class AnswerGrid extends React.Component {
     const Tag = choiceMode === 'radio' ? Radio : Checkbox;
     const headerId = (idx) => `${this.instanceId}-header-${idx}`;
     const rowTitleId = (idx) => `${this.instanceId}-row-${idx}`;
+    const rowGroupName = (idx) => (choiceMode === 'radio' ? `${this.instanceId}-row-${idx}-choice` : undefined);
 
     if (!rows || rows.length === 0) {
       return (
@@ -156,7 +158,11 @@ export class AnswerGrid extends React.Component {
           </thead>
 
           {(rows || []).map((row, idx) => (
-            <tbody key={`row-${idx}`} role="group" aria-labelledby={rowTitleId(idx)}>
+            <tbody
+              key={`row-${idx}`}
+              role={choiceMode === 'radio' ? 'radiogroup' : 'group'}
+              aria-labelledby={rowTitleId(idx)}
+            >
               <Separator>
                 <td key={`td-title-${idx}`} id={rowTitleId(idx)} data-colno={'0'}>
                   <RowItem
@@ -199,6 +205,7 @@ export class AnswerGrid extends React.Component {
                           slotProps={{
                             input: { 'aria-labelledby': `${rowTitleId(idx)} ${headerId(answerIndex + 1)}` },
                           }}
+                          name={rowGroupName(idx)}
                           disabled={disabled}
                           onChange={this.onRowValueChange(row.id, answerIndex)}
                           checked={rowItem === true}

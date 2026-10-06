@@ -52,12 +52,28 @@ describe('AnswerGrid accessible names', () => {
     expect(screen.getByRole(role, { name: 'Fish can fly False' })).not.toBeChecked();
   });
 
-  it('names each row group from its row title', () => {
-    renderGrid('radio');
+  it.each([
+    ['radio', 'radiogroup'],
+    ['checkbox', 'group'],
+  ] as const)('names each %s row group from its row title', (choiceMode, groupRole) => {
+    renderGrid(choiceMode);
 
-    const group = screen.getByRole('group', { name: 'Fish can fly' });
-    expect(within(group).getAllByRole('radio')).toHaveLength(2);
-    expect(screen.getByRole('group', { name: 'The sky is blue' })).toBeInTheDocument();
+    const group = screen.getByRole(groupRole, { name: 'Fish can fly' });
+    expect(within(group).getAllByRole(choiceMode)).toHaveLength(2);
+    expect(screen.getByRole(groupRole, { name: 'The sky is blue' })).toBeInTheDocument();
+  });
+
+  it('gives the radios of each row one name of their own, and checkboxes none', () => {
+    renderGrid('radio');
+    const names = (row: string) =>
+      new Set(within(screen.getByRole('radiogroup', { name: row })).getAllByRole('radio').map((r) => r.getAttribute('name')));
+
+    expect(names('The sky is blue').size).toBe(1);
+    expect(names('Fish can fly').size).toBe(1);
+    expect([...names('The sky is blue')]).not.toEqual([...names('Fish can fly')]);
+
+    renderGrid('checkbox');
+    expect(screen.getAllByRole('checkbox').map((box) => box.getAttribute('name'))).toEqual([null, null, null, null]);
   });
 
   it('marks the header cells as column headers', () => {
