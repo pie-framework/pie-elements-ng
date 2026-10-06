@@ -9,6 +9,7 @@ import type {
   McpbEnv,
   McpbCorrectness,
 } from '../shared/types.js';
+import { selectedChoiceId } from '../shared/session.js';
 
 const isEmptyObject = (value: unknown): boolean =>
   !!value &&
@@ -23,11 +24,12 @@ export function countBlankTokens(template: string): number {
 }
 
 export const getCorrectness = (question: McpbQuestion, session: McpbSession): McpbCorrectness => {
-  if (!session?.choiceId) {
+  const picked = selectedChoiceId(session);
+  if (!picked) {
     return 'unanswered';
   }
   const correct = question?.correctChoiceId || '';
-  if (session.choiceId === correct) {
+  if (picked === correct) {
     return 'correct';
   }
   return 'incorrect';
@@ -64,7 +66,7 @@ export const outcome = (question: McpbQuestion, session: McpbSession, env: McpbE
     const score = getPartialScore(normalizedQuestion, session);
     const traceLog = [
       `Mode: ${env?.mode || 'unknown'}.`,
-      `Student selected choice: ${session.choiceId}.`,
+      `Student selected choice: ${selectedChoiceId(session)}.`,
       `Correct choice: ${normalizedQuestion.correctChoiceId || 'none'}.`,
       `Final score: ${score}.`,
     ];
@@ -199,7 +201,7 @@ export const createCorrectResponseSession = (question: McpbQuestion, env: McpbEn
       // The player sets `id` and `element` on the entry from the item config.
       resolve({
         id: '1',
-        choiceId: question?.correctChoiceId || '',
+        value: question?.correctChoiceId ? [question.correctChoiceId] : [],
       });
     } else {
       resolve(null);

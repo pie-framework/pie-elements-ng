@@ -5,21 +5,23 @@
  *
  * getCorrectness
  *   G1. No session → unanswered
- *   G2. No choiceId → unanswered
+ *   G2. No value → unanswered
  *   G3. Correct choice selected → correct
  *   G4. Wrong choice selected → incorrect
+ *   G5. An older session's `choiceId` is read when `value` is absent
  *
  * outcome
  *   O1. Empty session → score 0, empty: true
- *   O2. No choiceId → score 0, empty: true
+ *   O2. No value → score 0, empty: true
  *   O3. Correct choice → score 1, empty: false
  *   O4. Wrong choice → score 0, empty: false
  *   O5. traceLog includes mode, selected id, correct id, final score
+ *   O6. An older session's `choiceId` scores
  *
  * getPartialScore
  *   P1. Correct choice → 1
  *   P2. Wrong choice → 0
- *   P3. No choiceId → 0
+ *   P3. No value → 0
  *
  * model — choice ordering
  *   M1. Neither flag set → original order preserved
@@ -76,7 +78,7 @@
  *   V21. No correctChoiceId → correctResponse error
  *
  * createCorrectResponseSession
- *   CR1. Instructor + mode≠evaluate → session with correct choiceId
+ *   CR1. Instructor + mode≠evaluate → session with the correct choice in `value`
  *   CR2. Student role → null
  *   CR3. Evaluate mode → null
  */
@@ -127,16 +129,21 @@ describe('getCorrectness', () => {
     expect(getCorrectness(BASE_QUESTION, null as any)).toBe('unanswered');
   });
 
-  it('G2: session with no choiceId → unanswered', () => {
+  it('G2: session with no value → unanswered', () => {
     expect(getCorrectness(BASE_QUESTION, {})).toBe('unanswered');
   });
 
   it('G3: correct choice selected → correct', () => {
-    expect(getCorrectness(BASE_QUESTION, { choiceId: 'b' })).toBe('correct');
+    expect(getCorrectness(BASE_QUESTION, { value: ['b'] })).toBe('correct');
   });
 
   it('G4: wrong choice selected → incorrect', () => {
-    expect(getCorrectness(BASE_QUESTION, { choiceId: 'a' })).toBe('incorrect');
+    expect(getCorrectness(BASE_QUESTION, { value: ['a'] })).toBe('incorrect');
+  });
+
+  it("G5: an older session's `choiceId` is read when `value` is absent", () => {
+    expect(getCorrectness(BASE_QUESTION, { choiceId: 'b' })).toBe('correct');
+    expect(getCorrectness(BASE_QUESTION, { value: ['a'], choiceId: 'b' })).toBe('incorrect');
   });
 });
 
@@ -150,28 +157,33 @@ describe('outcome', () => {
     expect(result).toMatchObject({ score: 0, empty: true });
   });
 
-  it('O2: session with no choiceId → score 0, empty: true', async () => {
-    const result = await outcome(BASE_QUESTION, { choiceId: '' }, GATHER_ENV);
+  it('O2: session with no value → score 0, empty: true', async () => {
+    const result = await outcome(BASE_QUESTION, { value: [] }, GATHER_ENV);
     expect(result).toMatchObject({ score: 0, empty: true });
   });
 
   it('O3: correct choice → score 1, empty: false', async () => {
-    const result = await outcome(BASE_QUESTION, { choiceId: 'b' }, EVALUATE_ENV);
+    const result = await outcome(BASE_QUESTION, { value: ['b'] }, EVALUATE_ENV);
     expect(result).toMatchObject({ score: 1, empty: false });
   });
 
   it('O4: wrong choice → score 0, empty: false', async () => {
-    const result = await outcome(BASE_QUESTION, { choiceId: 'a' }, EVALUATE_ENV);
+    const result = await outcome(BASE_QUESTION, { value: ['a'] }, EVALUATE_ENV);
     expect(result).toMatchObject({ score: 0, empty: false });
   });
 
   it('O5: traceLog includes mode, selected id, correct id, final score', async () => {
-    const result = (await outcome(BASE_QUESTION, { choiceId: 'a' }, EVALUATE_ENV)) as any;
+    const result = (await outcome(BASE_QUESTION, { value: ['a'] }, EVALUATE_ENV)) as any;
     const log = result.traceLog.join('\n');
     expect(log).toContain('evaluate');
     expect(log).toContain('a');
     expect(log).toContain('b');
     expect(log).toContain('0');
+  });
+
+  it("O6: an older session's `choiceId` scores", async () => {
+    const result = await outcome(BASE_QUESTION, { choiceId: 'b' }, EVALUATE_ENV);
+    expect(result).toMatchObject({ score: 1, empty: false });
   });
 });
 
@@ -181,14 +193,14 @@ describe('outcome', () => {
 
 describe('getPartialScore', () => {
   it('P1: correct choice → 1', () => {
-    expect(getPartialScore(BASE_QUESTION, { choiceId: 'b' })).toBe(1);
+    expect(getPartialScore(BASE_QUESTION, { value: ['b'] })).toBe(1);
   });
 
   it('P2: wrong choice → 0', () => {
-    expect(getPartialScore(BASE_QUESTION, { choiceId: 'a' })).toBe(0);
+    expect(getPartialScore(BASE_QUESTION, { value: ['a'] })).toBe(0);
   });
 
-  it('P3: no choiceId → 0', () => {
+  it('P3: no value → 0', () => {
     expect(getPartialScore(BASE_QUESTION, {})).toBe(0);
   });
 });
@@ -280,14 +292,14 @@ describe('model — choice ordering', () => {
 
 describe('model — output fields', () => {
   it('M9: evaluate mode → correctness, responseCorrect, correctChoiceId in output', async () => {
-    const result = await model(BASE_QUESTION, { choiceId: 'b' }, EVALUATE_ENV);
+    const result = await model(BASE_QUESTION, { value: ['b'] }, EVALUATE_ENV);
     expect(result.correctness).toBe('correct');
     expect(result.responseCorrect).toBe(true);
     expect(result.correctChoiceId).toBe('b');
   });
 
   it('M10: gather mode → correctness fields absent', async () => {
-    const result = await model(BASE_QUESTION, { choiceId: 'b' }, GATHER_ENV);
+    const result = await model(BASE_QUESTION, { value: ['b'] }, GATHER_ENV);
     expect(result.correctness).toBeUndefined();
     expect(result.responseCorrect).toBeUndefined();
     expect(result.correctChoiceId).toBeUndefined();
@@ -573,13 +585,13 @@ describe('validate', () => {
 // ---------------------------------------------------------------------------
 
 describe('createCorrectResponseSession', () => {
-  it('CR1: instructor + mode≠evaluate → session with correct choiceId', async () => {
+  it('CR1: instructor + mode≠evaluate → session with the correct choice in `value`', async () => {
     const result = await createCorrectResponseSession(BASE_QUESTION, {
       mode: 'view',
       role: 'instructor',
     });
     // `element` is the player's: it stamps the tag it registered the element under.
-    expect(result).toEqual({ id: '1', choiceId: 'b' });
+    expect(result).toEqual({ id: '1', value: ['b'] });
   });
 
   it('CR2: student role → null', async () => {
