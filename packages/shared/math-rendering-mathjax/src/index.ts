@@ -1,7 +1,7 @@
 /**
  * @pie-element/math-rendering-mathjax
  *
- * MathJax adapter for PIE math rendering (~2.7MB)
+ * MathJax adapter for PIE math rendering.
  * Full-featured LaTeX and MathML rendering with accessibility support.
  *
  * It also implements the legacy @pie-lib/math-rendering API (renderMath, wrapMath,
