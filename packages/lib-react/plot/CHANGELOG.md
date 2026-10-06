@@ -1,5 +1,23 @@
 # @pie-lib/plot
 
+## 5.0.1
+
+### Patch Changes
+
+- [#268](https://github.com/pie-framework/pie-elements-ng/pull/268) [`cf1ccc0`](https://github.com/pie-framework/pie-elements-ng/commit/cf1ccc0d25c0c136dc01dab014c68a083ed595ed) Thanks [@chillenious](https://github.com/chillenious)! - chore: remove upstream sync tooling (PIE-1144)
+
+- [#301](https://github.com/pie-framework/pie-elements-ng/pull/301) [`9b72376`](https://github.com/pie-framework/pie-elements-ng/commit/9b72376f6055ba629a913c9a0739623aa6f45e49) Thanks [@chillenious](https://github.com/chillenious)! - fix(plot): name and describe the chart and graph svg
+
+- [#316](https://github.com/pie-framework/pie-elements-ng/pull/316) [`c1ce388`](https://github.com/pie-framework/pie-elements-ng/commit/c1ce388d0736ba88302157936f7808783d6f0ced) Thanks [@chillenious](https://github.com/chillenious)! - fix(theming): follow the theme background on answer slots, legends and media buttons
+
+- [#349](https://github.com/pie-framework/pie-elements-ng/pull/349) [`621fd93`](https://github.com/pie-framework/pie-elements-ng/commit/621fd9339235fa55e1291f6a65dc1d94abb9abb4) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump assert from 1.5.1 to 2.1.0
+
+- [#375](https://github.com/pie-framework/pie-elements-ng/pull/375) [`da07902`](https://github.com/pie-framework/pie-elements-ng/commit/da07902fc5db2179a8911ce67df0b8eba2ca5c88) Thanks [@chillenious](https://github.com/chillenious)! - fix(charting): make bars, columns and drag handles keyboard-operable sliders
+- Updated dependencies [[`a7f1bd9`](https://github.com/pie-framework/pie-elements-ng/commit/a7f1bd98f8d9e8ee018aa4b9441158650dd6c2b6), [`8ed81f0`](https://github.com/pie-framework/pie-elements-ng/commit/8ed81f087285f51ac4e4ebbc9a1e14d6cd26233a), [`cbe9fc0`](https://github.com/pie-framework/pie-elements-ng/commit/cbe9fc064c206d098af6f4151d5cf30288b1736f), [`2405ee9`](https://github.com/pie-framework/pie-elements-ng/commit/2405ee9b4c97246caf8c8df342b7639fe789de5c), [`38284bc`](https://github.com/pie-framework/pie-elements-ng/commit/38284bc1aecd6fd6cc88a01226840887c0d27975), [`f7646b3`](https://github.com/pie-framework/pie-elements-ng/commit/f7646b345e9bda9918a94c7baf26fa9ef18b168d), [`8170ce7`](https://github.com/pie-framework/pie-elements-ng/commit/8170ce7efe7a13675b914e8d187df23022bff8ab), [`aa5e733`](https://github.com/pie-framework/pie-elements-ng/commit/aa5e73381ee663671154b113d4cdd2b17f0fb06e), [`852dfe3`](https://github.com/pie-framework/pie-elements-ng/commit/852dfe3d20c85c32996b986b6b20b0347896ee6e), [`5b59ed8`](https://github.com/pie-framework/pie-elements-ng/commit/5b59ed851bef7689a172cbb9ac2df6661e5950fc), [`4386fb2`](https://github.com/pie-framework/pie-elements-ng/commit/4386fb25129ab02d1b75aa97c7ede9ee06b758c4), [`c9e4781`](https://github.com/pie-framework/pie-elements-ng/commit/c9e47812260dfba8e0b4b0538eab78efad4e86ef), [`7c077c7`](https://github.com/pie-framework/pie-elements-ng/commit/7c077c76a684118cc2b6b9e2482974bab9078b07), [`7dfa941`](https://github.com/pie-framework/pie-elements-ng/commit/7dfa941f4d8ef46c8625157739f72ae0d6d33983), [`2e5cb09`](https://github.com/pie-framework/pie-elements-ng/commit/2e5cb09a131875b67cb7b845b141a52ff6597164), [`216ac0f`](https://github.com/pie-framework/pie-elements-ng/commit/216ac0f5591417cd7d1a83fbde0b4b724a97eb44), [`c0d98a0`](https://github.com/pie-framework/pie-elements-ng/commit/c0d98a0cb2bf1d8c5e6237d8861aa7c9615b5c01), [`a55702d`](https://github.com/pie-framework/pie-elements-ng/commit/a55702db7c90c59539050699b3799f1e1feac929), [`22b651b`](https://github.com/pie-framework/pie-elements-ng/commit/22b651b8147af690ffa77019665d93048f25b225), [`ebab8a6`](https://github.com/pie-framework/pie-elements-ng/commit/ebab8a69c0d3cea39f83f5d7dcc4818ffc2981e7), [`39d0980`](https://github.com/pie-framework/pie-elements-ng/commit/39d098078ba330bc71c76f453a3b526d3cfab86c), [`15c6bf5`](https://github.com/pie-framework/pie-elements-ng/commit/15c6bf5fbb1bbfc6c663ec71bc96d90d2d1813b5)]:
+  - @pie-lib/editable-html-tip-tap@3.0.1
+  - @pie-lib/render-ui@8.0.1
+  - @pie-element/shared-lodash@0.1.2
+
 ## 5.0.0
 
 ### Major Changes

@@ -1,5 +1,11 @@
 # @pie-element/shared-feedback
 
+## 0.1.2
+
+### Patch Changes
+
+- [#355](https://github.com/pie-framework/pie-elements-ng/pull/355) [`4283762`](https://github.com/pie-framework/pie-elements-ng/commit/4283762e143206aa654bfa5effd8409ab40276c5) Thanks [@chillenious](https://github.com/chillenious)! - fix(feedback): stop throwing when a correctness level has no feedback (PIE-1208)
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.1
+
+### Patch Changes
+
+- [#341](https://github.com/pie-framework/pie-elements-ng/pull/341) [`4f881e3`](https://github.com/pie-framework/pie-elements-ng/commit/4f881e3247d930284a790b149d01a6c766eeac40) Thanks [@chillenious](https://github.com/chillenious)! - The delivery views of mc-populated-blank, simple-cloze and venn-classification take their surfaces, ink, borders, show-correct-answer icon and feedback glyphs from the `--pie-*` theme, keeping the old colours as fallbacks. With no theme, the venn outside-region divider and tile tray border darken to #64748b and the tray's drop outline to #0284c7 to clear 3:1, and the mc-populated-blank listen button sits on a fixed white plate so its artwork stays legible on a dark page.
+
+- [#377](https://github.com/pie-framework/pie-elements-ng/pull/377) [`60460ab`](https://github.com/pie-framework/pie-elements-ng/commit/60460ab627460c556f0333897a38916f73689456) Thanks [@chillenious](https://github.com/chillenious)! - mc-populated-blank stores the learner's pick as `value`, a one-entry array of choice ids as in multiple-choice, in place of `choiceId` (PIE-1218). Hosts that read the response from `value` now get it. Sessions holding `choiceId` still score and render, and the next pick replaces it.
+
+- [#310](https://github.com/pie-framework/pie-elements-ng/pull/310) [`b717f8f`](https://github.com/pie-framework/pie-elements-ng/commit/b717f8f957eaebcf28238a2ceb8e9dedf21fdbbd) Thanks [@chillenious](https://github.com/chillenious)! - fix(mc-populated-blank): render the radios at 24x24
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/simple-cloze",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Simple cloze (text entry) demo/template PIE element built with Svelte 5",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
     "configure": "@pie-element/simple-cloze/configure",
     "browserEditorRuntime": {
       "name": "@pie-element/shared-editor-runtime",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "views": {
         "delivery": "editor-runtime/delivery",
         "author": "editor-runtime/author",

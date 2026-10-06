@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-editor-runtime",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Browser ESM build of the tiptap editor engine that PIE element editor-runtime variants share",
   "type": "module",
   "exports": {

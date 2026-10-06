@@ -1,5 +1,13 @@
 # @pie-element/shared-lodash
 
+## 0.1.2
+
+### Patch Changes
+
+- [#364](https://github.com/pie-framework/pie-elements-ng/pull/364) [`852dfe3`](https://github.com/pie-framework/pie-elements-ng/commit/852dfe3d20c85c32996b986b6b20b0347896ee6e) Thanks [@chillenious](https://github.com/chillenious)! - `isEqual`, `range`, `rangeRight`, `merge`, `max` and `find` behave as in lodash 4.17. `isEqual` treats -0 as equal to 0, so graphing and graphing-solution-set score a correct answer with a -0 coordinate as correct before the session is stored as well as after. `range` and `rangeRight` coerce string arguments (a string step used to loop forever), count down when the end is below the start, repeat the start for a zero step and no longer add a value past the end through float drift. `merge` merges arrays by index, keeps a value when the source holds `undefined`, assigns class instances by reference and never writes through `__proto__`. `max` skips `NaN`, and `find` takes the `[path, value]` and partial-object shorthands and a `fromIndex`.
+
+- [#367](https://github.com/pie-framework/pie-elements-ng/pull/367) [`5b59ed8`](https://github.com/pie-framework/pie-elements-ng/commit/5b59ed851bef7689a172cbb9ac2df6661e5950fc) Thanks [@chillenious](https://github.com/chillenious)! - Every helper now follows lodash 4.17, and `omit` refuses prototype paths as lodash 4.17.23 does. `clone` and `cloneDeep` keep prototypes, `Map`, `Set`, `RegExp`, symbol keys and shared or circular references. `get` and `set` parse paths as lodash does, including quoted brackets, empty segments and a key that contains a dot; `pick` and `omit` take deep paths, and `omit` copies inherited keys. `escape` returns `''` for `null` and `undefined`, `defaults` returns a new object for a missing target, `reduce` without an accumulator starts from the first element, `groupBy` passes its iteratee the value alone, `remove` tests every element before it splices, `debounce` and `throttle` throw a `TypeError` for a non-function, and `shuffle` draws its swaps in lodash's order.
+
 ## 0.1.1
 
 ### Patch Changes

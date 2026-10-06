@@ -1,5 +1,19 @@
 # @pie-element/cli
 
+## 0.1.3
+
+### Patch Changes
+
+- [#268](https://github.com/pie-framework/pie-elements-ng/pull/268) [`cf1ccc0`](https://github.com/pie-framework/pie-elements-ng/commit/cf1ccc0d25c0c136dc01dab014c68a083ed595ed) Thanks [@chillenious](https://github.com/chillenious)! - chore: remove upstream sync tooling (PIE-1144)
+
+- [#269](https://github.com/pie-framework/pie-elements-ng/pull/269) [`1462bca`](https://github.com/pie-framework/pie-elements-ng/commit/1462bca685db8352a2e00fa25f5d1acce07a8ab4) Thanks [@chillenious](https://github.com/chillenious)! - fix(editable-html-tip-tap): paste rich text from outside the editor as plain text (PIE-1145)
+
+- [#346](https://github.com/pie-framework/pie-elements-ng/pull/346) [`ae2012f`](https://github.com/pie-framework/pie-elements-ng/commit/ae2012f2dae12fa6324aa0e0f78ea3e024c81142) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps-dev): bump the dev-dependencies group across 1 directory with 3 updates
+
+- [#354](https://github.com/pie-framework/pie-elements-ng/pull/354) [`61f2129`](https://github.com/pie-framework/pie-elements-ng/commit/61f2129c2f37fb1c5740381a79245850e529537c) Thanks [@dependabot](https://github.com/apps/dependabot)! - chore(deps)(deps): bump @oclif/core from 4.11.4 to 5.1.2
+- Updated dependencies [[`2265dfc`](https://github.com/pie-framework/pie-elements-ng/commit/2265dfc5cf97e7485b0a90476f0233438c7df98a), [`2cf661c`](https://github.com/pie-framework/pie-elements-ng/commit/2cf661cf27cd6b6732667db14f4c0a9113ae541c)]:
+  - @pie-element/element-bundler@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes
