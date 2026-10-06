@@ -7,11 +7,11 @@ export const PIE_COLOR_DEFAULTS = {
   DISABLED: 'grey',
   DISABLED_SECONDARY: '#ABABAB',
   DISABLED_TEXT: '#545454',
-  CORRECT: '#4CAF50',
+  CORRECT: '#208537',
   CORRECT_SECONDARY: '#E8F5E9',
   CORRECT_TERTIARY: '#0EA449',
   CORRECT_WITH_ICON: '#087D38',
-  INCORRECT: '#FF9800',
+  INCORRECT: '#a65f00',
   INCORRECT_SECONDARY: '#FFEBEE',
   INCORRECT_WITH_ICON: '#BF0D00',
   MISSING: '#D32F2F',
@@ -318,7 +318,7 @@ export const DEFAULT_CSS_MAPPINGS = [
     fallback: PIE_COLOR_DEFAULTS.CHOICE_INPUT_DISABLED_COLOR,
   },
 
-  // Feedback (multiple-choice, match-list)
+  // Feedback panel fills (render-ui Feedback)
   {
     variableName: '--feedback-correct-bg-color',
     themeKey: 'feedback-correct-bg' as const,

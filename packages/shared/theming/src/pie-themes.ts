@@ -54,7 +54,7 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   'incorrect-icon': '#C62828',
 
   // Status colors - Missing/Warning (amber)
-  warning: '#F57C00',
+  warning: '#B45309', // --pie-missing, read as text: 5.0:1 on base-100 and 4.6:1 on background-dark
   'missing-icon': '#757575',
 
   // Disabled states

@@ -8,13 +8,7 @@ import {
   keypadButtonOperatorHover,
   keypadInk,
 } from '../src/color';
-
-type RGB = number[];
-
-const channels = (literal: string): RGB => {
-  const hex = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(literal);
-  return hex ? hex.slice(1).map((h) => parseInt(h, 16)) : literal.match(/\d+/g)!.slice(0, 3).map(Number);
-};
+import { channels, contrast, type RGB } from './contrast';
 
 // What the browser paints for the helper's color-mix over a given --pie-background.
 const mixOver = (css: string, background: RGB): RGB => {
@@ -28,18 +22,6 @@ const shadeInk = (css: string, ink: RGB): RGB => {
   const [, floor, sum] = /clamp\(([\d.]+), \(r \+ g \+ b\) \/ (\d+), 1\)/.exec(css)!;
   const f = Math.min(1, Math.max(Number(floor), (ink[0] + ink[1] + ink[2]) / Number(sum)));
   return ink.map((c) => Math.round(c * f));
-};
-
-const luminance = (rgb: RGB) => {
-  const [r, g, b] = rgb.map((c) => {
-    const s = c / 255;
-    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-};
-const contrast = (a: RGB, b: RGB) => {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
 };
 
 const WHITE = [255, 255, 255];
