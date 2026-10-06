@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
 
 import { Draggable } from '../../../draggable/index.js';
+import CorrectnessMark from './correctness-mark.js';
 
 const duration = '150ms';
 
@@ -54,6 +55,7 @@ export class Point extends React.Component {
     empty: false,
     disabled: false,
     correct: undefined,
+    showCorrectness: true,
   };
 
   static propTypes = {
@@ -66,6 +68,7 @@ export class Point extends React.Component {
     selected: PropTypes.bool,
     disabled: PropTypes.bool,
     correct: PropTypes.bool,
+    showCorrectness: PropTypes.bool,
     empty: PropTypes.bool,
     y: PropTypes.number,
     onMove: PropTypes.func.isRequired,
@@ -94,6 +97,7 @@ export class Point extends React.Component {
       position,
       disabled,
       correct,
+      showCorrectness,
       empty,
     } = this.props;
 
@@ -201,6 +205,7 @@ export class Point extends React.Component {
               $empty={empty}
               className={isDragging ? 'dnd-kit-dragging' : undefined}
             />
+            {showCorrectness && <CorrectnessMark x={xScale(position) + 16} y={y} correct={correct} />}
           </g>
         )}
       </ Draggable>

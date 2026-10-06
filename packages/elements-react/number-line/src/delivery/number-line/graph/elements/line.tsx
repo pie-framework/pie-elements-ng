@@ -8,6 +8,7 @@ import { color } from '@pie-lib/render-ui';
 import { Draggable } from '../../../draggable/index.js';
 
 import Point from './point.js';
+import CorrectnessMark from './correctness-mark.js';
 import { basePropTypes } from './base.js';
 
 const duration = '150ms';
@@ -174,6 +175,7 @@ export class Line extends React.Component {
       selected,
       disabled,
       correct,
+      showCorrectness: false,
     };
 
     // unique-ish id for this line; if you already have an id prop, use that instead
@@ -240,6 +242,7 @@ export class Line extends React.Component {
                 onMove={onMoveRight}
                 onClick={onRectClick}
               />
+              <CorrectnessMark x={Math.max(xScale(left), xScale(right)) + 16} correct={correct} />
             </g>
           </StyledLineGroup>
         )}

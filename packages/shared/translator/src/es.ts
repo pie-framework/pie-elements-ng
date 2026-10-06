@@ -66,6 +66,8 @@ export default {
       addElementLimit_other: 'Solo puedes agregar {{count}} elementos',
       clearAll: 'Borrar todo',
       closedEnd: 'cerrado',
+      elementCorrect: 'Correcto.',
+      elementIncorrect: 'Incorrecto.',
       graphLabel: 'Recta numérica de {{min}} a {{max}}, con una marca cada {{interval}}',
       line: 'Línea de {{left}} ({{leftEnd}}) a {{right}} ({{rightEnd}}).',
       openEnd: 'abierto',
