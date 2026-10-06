@@ -6,12 +6,18 @@ import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import { cloneDeep } from '@pie-element/shared-lodash';
 
-import { createGraphProps, Root, utils as plotUtils } from '@pie-lib/plot';
+import { createGraphProps, Root } from '@pie-lib/plot';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { createUniqueId } from '@pie-lib/render-ui';
 import ChartGrid from './grid.js';
 import ChartAxes from './axes.js';
-import { dataToXBand, getDomainAndRangeByChartType, getGridLinesAndAxisByChartType, getTopPadding } from './utils.js';
+import {
+  dataToXBand,
+  getDomainAndRangeByChartType,
+  getGridLinesAndAxisByChartType,
+  getTopPadding,
+  textOf,
+} from './utils.js';
 import chartTypes from './chart-types.js';
 import ActionsButton from './actions-button.js';
 import Translator from '@pie-lib/translator';
@@ -23,8 +29,6 @@ const log = debug('pie-lib:charts:chart');
 const StyledChartContainer: any = styled('div')(() => ({
   width: 'min-content',
 }));
-
-const textOf = (html) => (html ? plotUtils.extractTextFromHTML(html).trim() : '');
 
 // the chart svg's name and description, generated from the model: the title names the chart when
 // there is one, and the description gives its type, its categories and the range of its values
@@ -383,6 +387,7 @@ export class Chart extends React.Component {
                 onChangeCategory={this.changeCategory}
                 correctData={correctData}
                 disabled={disabled}
+                language={language}
               />
             )}
           </g>

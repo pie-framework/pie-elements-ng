@@ -132,6 +132,8 @@ export default {
       delete: 'Delete',
       newLabel: 'New label',
       categoryLabel: 'Category {{index}} label',
+      categoryLabelValue: 'Category {{index}} label: {{label}}',
+      category: 'Category {{index}}',
       reachedLimit_other: "There can't be more than {{count}} categories.",
       keyLegend: {
         incorrectAnswer: 'Student incorrect answer',

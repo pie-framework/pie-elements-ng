@@ -6,6 +6,7 @@ import { LinePath } from '@visx/shape';
 import PropTypes from 'prop-types';
 import { types } from '@pie-lib/plot';
 import DraggableHandle, { DragHandle } from './drag-handle.js';
+import MarkSlider from '../../common/mark-slider.js';
 import { styled } from '@mui/material/styles';
 import { isEqual } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
@@ -50,6 +51,7 @@ export class RawLine extends React.Component {
     ),
     CustomDraggableComponent: PropTypes.func,
     correctData: PropTypes.array,
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -81,6 +83,13 @@ export class RawLine extends React.Component {
     });
   };
 
+  // a key's change, committed through the same onChange as a drag's
+  changeValue: any = (index, point, value) => {
+    const { onChange } = this.props;
+
+    onChange(index, { ...point, dragValue: value });
+  };
+
   dragValue: any = (index, existing, next) => {
     const newLine = [...this.state.line];
     newLine[index].dragValue = next;
@@ -88,7 +97,7 @@ export class RawLine extends React.Component {
   };
 
   render() {
-    const { graphProps, data, CustomDraggableComponent, defineChart, correctData, disabled } = this.props;
+    const { graphProps, data, CustomDraggableComponent, defineChart, correctData, disabled, language } = this.props;
     const { line: lineState, dragging } = this.state;
     const { scale } = graphProps;
     const lineToUse = dragging ? lineState : getData(data, graphProps.domain);
@@ -106,24 +115,38 @@ export class RawLine extends React.Component {
             const r = 6;
             const enableDraggable = defineChart || point.interactive;
             const Component = enableDraggable ? DraggableHandle : DragHandle;
+            const y = point.dragValue !== undefined ? point.dragValue : point.y;
+            // the focus ring sits just outside the hover square
+            const half = r * 2 + 2;
 
             return (
-              <Component
+              <MarkSlider
                 key={`point-${point.x}-${i}`}
-                x={point.x}
-                y={point.dragValue !== undefined ? point.dragValue : point.y}
-                interactive={enableDraggable}
-                disabled={disabled}
-                r={r}
-                onDragStart={() => this.setState({ dragging: true })}
-                onDrag={(v) => this.dragValue(i, point.dragValue !== undefined ? point.dragValue : point.y, v)}
-                onDragStop={() => this.dragStop(i)}
-                graphProps={graphProps}
-                CustomDraggableComponent={CustomDraggableComponent}
-                correctness={point.correctness}
-                correctData={correctData}
+                enabled={enableDraggable && !disabled}
                 label={point.label}
-              />
+                index={i}
+                value={y}
+                graphProps={graphProps}
+                language={language}
+                focusBox={{ x: scale.x(point.x) - half, y: scale.y(y) - half, width: half * 2, height: half * 2 }}
+                onChange={(value) => this.changeValue(i, point, value)}
+              >
+                <Component
+                  x={point.x}
+                  y={y}
+                  interactive={enableDraggable}
+                  disabled={disabled}
+                  r={r}
+                  onDragStart={() => this.setState({ dragging: true })}
+                  onDrag={(v) => this.dragValue(i, y, v)}
+                  onDragStop={() => this.dragStop(i)}
+                  graphProps={graphProps}
+                  CustomDraggableComponent={CustomDraggableComponent}
+                  correctness={point.correctness}
+                  correctData={correctData}
+                  label={point.label}
+                />
+              </MarkSlider>
             );
           })}
       </React.Fragment>

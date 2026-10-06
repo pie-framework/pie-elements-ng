@@ -9,12 +9,15 @@ import debug from 'debug';
 
 import { types } from '@pie-lib/plot';
 import DraggableHandle, { DragHandle } from '../../common/drag-handle.js';
+import MarkSlider from '../../common/mark-slider.js';
 import { color } from '@pie-lib/render-ui';
 import { bandKey } from '../../utils.js';
 import { correct, incorrect } from '../../common/styles.js';
 
 const log = debug('pie-lib:chart:bars');
 const ICON_SIZE = 16; // 10px icon + 2px padding on all sides + 1px border
+// how far above the column's top its focus ring reaches, so an empty column still shows one
+const FOCUS_HEADROOM = 10;
 
 export class RawPlot extends React.Component {
   static propTypes = {
@@ -39,6 +42,7 @@ export class RawPlot extends React.Component {
       }),
     ),
     className: PropTypes.string,
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -59,13 +63,19 @@ export class RawPlot extends React.Component {
 
   setDragValue = (dragValue) => this.setState({ dragValue });
 
-  dragStop: any = () => {
+  // the change a drag and a key both commit through
+  changeValue: any = (value) => {
     const { label, onChangeCategory } = this.props;
+
+    onChangeCategory({ label, value });
+  };
+
+  dragStop: any = () => {
     const { dragValue } = this.state;
     log('[dragStop]', dragValue);
 
     if (dragValue !== undefined) {
-      onChangeCategory({ label, value: dragValue });
+      this.changeValue(dragValue);
     }
 
     this.setDragValue(undefined);
@@ -110,6 +120,7 @@ export class RawPlot extends React.Component {
       defineChart,
       correctData,
       className,
+      language,
     } = this.props;
 
     const { scale, range, size } = graphProps;
@@ -136,12 +147,25 @@ export class RawPlot extends React.Component {
 
     return (
       <React.Fragment>
-        <g
+        <MarkSlider
           className={className}
           onMouseEnter={this.handleMouseEnter}
           onMouseLeave={this.handleMouseLeave}
           onTouchStart={this.handleMouseEnter}
           onTouchEnd={this.handleMouseLeave}
+          enabled={interactive && !disabled}
+          label={label}
+          index={index}
+          value={v}
+          graphProps={graphProps}
+          language={language}
+          focusBox={{
+            x: barX,
+            y: scale.y(v) - FOCUS_HEADROOM,
+            width: barWidth,
+            height: pointHeight * values.length + FOCUS_HEADROOM,
+          }}
+          onChange={this.changeValue}
         >
           {isHovered && allowRolloverEvent && (
             <rect
@@ -270,7 +294,7 @@ export class RawPlot extends React.Component {
             color={color.primaryDark()}
             isPlot
           />
-        </g>
+        </MarkSlider>
       </React.Fragment>
     );
   }
@@ -332,6 +356,7 @@ export class Plot extends React.Component {
       }),
     ),
     className: PropTypes.string,
+    language: PropTypes.string,
   };
 
   render() {
@@ -344,6 +369,7 @@ export class Plot extends React.Component {
       defineChart,
       correctData,
       disabled,
+      language,
     } = this.props;
 
     return (
@@ -357,12 +383,14 @@ export class Plot extends React.Component {
             disabled={disabled}
             xBand={xBand}
             index={index}
-            key={`bar-${d.label}-${d.value}-${index}`}
+            // the value stays out of the key, so a change keeps the column mounted and focused
+            key={`bar-${d.label}-${index}`}
             onChangeCategory={(category) => onChangeCategory(index, category)}
             graphProps={graphProps}
             CustomBarElement={CustomBarElement}
             correctness={d.correctness}
             correctData={correctData}
+            language={language}
           />
         ))}
       </Group>

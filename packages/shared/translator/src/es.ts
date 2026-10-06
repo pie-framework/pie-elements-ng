@@ -134,6 +134,8 @@ export default {
       delete: 'Eliminar',
       newLabel: 'Nueva etiqueta',
       categoryLabel: 'Etiqueta de la categoría {{index}}',
+      categoryLabelValue: 'Etiqueta de la categoría {{index}}: {{label}}',
+      category: 'Categoría {{index}}',
       reachedLimit_other: 'No puede haber más de {{count}} categorías.',
       keyLegend: {
         incorrectAnswer: 'Respuesta incorrecta del estudiante',
