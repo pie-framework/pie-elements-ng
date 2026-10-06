@@ -1,5 +1,12 @@
 # @pie-element/element-theme
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`c9e4781`](https://github.com/pie-framework/pie-elements-ng/commit/c9e47812260dfba8e0b4b0538eab78efad4e86ef), [`c0d98a0`](https://github.com/pie-framework/pie-elements-ng/commit/c0d98a0cb2bf1d8c5e6237d8861aa7c9615b5c01), [`39d0980`](https://github.com/pie-framework/pie-elements-ng/commit/39d098078ba330bc71c76f453a3b526d3cfab86c)]:
+  - @pie-element/shared-theming@0.2.1
+
 ## 0.1.1
 
 ### Patch Changes

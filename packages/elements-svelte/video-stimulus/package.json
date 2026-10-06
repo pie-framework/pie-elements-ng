@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/video-stimulus",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Accessible native-video stimulus PIE element with captions, transcript, authoring, and timed-media discovery support",
   "repository": {
     "type": "git",

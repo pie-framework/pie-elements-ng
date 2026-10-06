@@ -1,5 +1,23 @@
 # @pie-element/shared-math-rendering-mathjax
 
+## 0.1.2
+
+### Patch Changes
+
+- [#276](https://github.com/pie-framework/pie-elements-ng/pull/276) [`89241c4`](https://github.com/pie-framework/pie-elements-ng/commit/89241c4bfbc91b4d53ec9c6652990d046350bbf7) Thanks [@chillenious](https://github.com/chillenious)! - MathJax 4 renders MathML as the legacy renderer did: vertical arithmetic and long division (`mstack`, `mlongdiv`) typeset as tables where they showed "Math input error", prefixed MathML such as `<mml:math>` typesets, and inline MathML fractions, sums and limits keep display size. Displayed math wider than its container breaks across lines, and scrolls inside its own container where MathJax did not break it.
+
+- [#277](https://github.com/pie-framework/pie-elements-ng/pull/277) [`022488e`](https://github.com/pie-framework/pie-elements-ng/commit/022488e4766ef96ffdfdb73840235d6acc5a439f) Thanks [@chillenious](https://github.com/chillenious)! - Element browser builds typeset math on a MathJax 4.1.3 of their own, bundled through the new `pie-browser-esm` export condition, and leave `window.MathJax` to the host page, so a host's MathJax of any version runs beside them. Their menu leaves out SVG output and collapsible math, `\require` is unsupported, and `srcUrl` is ignored. Element npm entries keep loading MathJax into the page.
+
+- [#268](https://github.com/pie-framework/pie-elements-ng/pull/268) [`cf1ccc0`](https://github.com/pie-framework/pie-elements-ng/commit/cf1ccc0d25c0c136dc01dab014c68a083ed595ed) Thanks [@chillenious](https://github.com/chillenious)! - chore: remove upstream sync tooling (PIE-1144)
+
+- [#270](https://github.com/pie-framework/pie-elements-ng/pull/270) [`aac3b26`](https://github.com/pie-framework/pie-elements-ng/commit/aac3b262b84128468ff409c0e02abb7d0f4634fb) Thanks [@chillenious](https://github.com/chillenious)! - fix(math-rendering-mathjax): drop removed math from MathJax's list and clear failed typesets
+
+- [#271](https://github.com/pie-framework/pie-elements-ng/pull/271) [`a36b60d`](https://github.com/pie-framework/pie-elements-ng/commit/a36b60d870affd07081e14b1f3d6b2199cc63eac) Thanks [@chillenious](https://github.com/chillenious)! - fix(math-rendering-mathjax): keep MathJax 4 menu settings and SVG styles apart from MathJax 3
+
+- [#376](https://github.com/pie-framework/pie-elements-ng/pull/376) [`dbaf591`](https://github.com/pie-framework/pie-elements-ng/commit/dbaf5918e41c3aec101037e521972de636a74251) Thanks [@chillenious](https://github.com/chillenious)! - fix: theme the focus rings on choices, the inline dropdown, the math keypad and the MathJax explorer
+
+- [#379](https://github.com/pie-framework/pie-elements-ng/pull/379) [`ed0cdbe`](https://github.com/pie-framework/pie-elements-ng/commit/ed0cdbe0121972aa64de7ea810728520bcaa26a2) Thanks [@chillenious](https://github.com/chillenious)! - docs(math-rendering): describe the per-element MathJax that browser builds bundle
+
 ## 0.1.1
 
 ### Patch Changes

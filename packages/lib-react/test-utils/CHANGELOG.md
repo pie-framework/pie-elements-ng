@@ -1,5 +1,11 @@
 # @pie-lib/test-utils
 
+## 3.0.1
+
+### Patch Changes
+
+- [#268](https://github.com/pie-framework/pie-elements-ng/pull/268) [`cf1ccc0`](https://github.com/pie-framework/pie-elements-ng/commit/cf1ccc0d25c0c136dc01dab014c68a083ed595ed) Thanks [@chillenious](https://github.com/chillenious)! - chore: remove upstream sync tooling (PIE-1144)
+
 ## 3.0.0
 
 ### Major Changes

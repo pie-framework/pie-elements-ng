@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/shared-feedback",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Feedback utilities for PIE elements",
   "type": "module",
   "main": "./dist/index.js",

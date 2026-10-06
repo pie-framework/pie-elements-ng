@@ -1,6 +1,6 @@
 {
   "name": "@pie-element/element-theme-daisyui",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "DaisyUI-powered web component theme wrapper for PIE players",
   "type": "module",
   "main": "./dist/pie-element-theme-daisyui.js",

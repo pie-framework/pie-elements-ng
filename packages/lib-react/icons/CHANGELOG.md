@@ -1,5 +1,13 @@
 # @pie-lib/icons
 
+## 5.0.1
+
+### Patch Changes
+
+- [#268](https://github.com/pie-framework/pie-elements-ng/pull/268) [`cf1ccc0`](https://github.com/pie-framework/pie-elements-ng/commit/cf1ccc0d25c0c136dc01dab014c68a083ed595ed) Thanks [@chillenious](https://github.com/chillenious)! - chore: remove upstream sync tooling (PIE-1144)
+
+- [#313](https://github.com/pie-framework/pie-elements-ng/pull/313) [`e87fe85`](https://github.com/pie-framework/pie-elements-ng/commit/e87fe8524ee0a057e1f60f3dc94c120572e754bd) Thanks [@chillenious](https://github.com/chillenious)! - fix(icons): hide the correct-response icon from assistive technology
+
 ## 5.0.0
 
 ### Major Changes

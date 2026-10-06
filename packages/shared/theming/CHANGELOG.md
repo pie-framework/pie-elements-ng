@@ -1,5 +1,15 @@
 # @pie-element/shared-theming
 
+## 0.2.1
+
+### Patch Changes
+
+- [#285](https://github.com/pie-framework/pie-elements-ng/pull/285) [`484e54d`](https://github.com/pie-framework/pie-elements-ng/commit/484e54db45cd13778de739cbc293e4f43f7cf938) Thanks [@chillenious](https://github.com/chillenious)! - fix(render-ui): render the Collapsible header as a disclosure button
+
+- [#344](https://github.com/pie-framework/pie-elements-ng/pull/344) [`925bef9`](https://github.com/pie-framework/pie-elements-ng/commit/925bef92b459dbb0a9932501e1ddfb7cb07f2cca) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(render-ui): update color-contrast especially for placement-ordering PIE-821
+
+- [#374](https://github.com/pie-framework/pie-elements-ng/pull/374) [`c71aac6`](https://github.com/pie-framework/pie-elements-ng/commit/c71aac64875677926e30a7c4271c33b2ded5606f) Thanks [@chillenious](https://github.com/chillenious)! - fix(render-ui, theming): make feedback and correctness colours readable under every scheme
+
 ## 0.2.0
 
 ### Minor Changes

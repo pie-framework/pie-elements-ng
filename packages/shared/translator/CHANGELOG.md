@@ -1,5 +1,43 @@
 # @pie-lib/translator
 
+## 5.0.1
+
+### Patch Changes
+
+- [#308](https://github.com/pie-framework/pie-elements-ng/pull/308) [`eccf20a`](https://github.com/pie-framework/pie-elements-ng/commit/eccf20af3fd0b5b63830ac0ab3b89ee2cecbfaa5) Thanks [@chillenious](https://github.com/chillenious)! - Adds English and Spanish names for drag-in-the-blank blanks, hotspot shapes and image cloze association response areas.
+
+- [#331](https://github.com/pie-framework/pie-elements-ng/pull/331) [`260da48`](https://github.com/pie-framework/pie-elements-ng/commit/260da48c8db25fa0da4380d5bf8f26875c5da87b) Thanks [@chillenious](https://github.com/chillenious)! - Students can select select-text tokens from the keyboard. The text is one tab stop: the arrow keys, Home and End move between tokens, and Space or Enter toggles the focused token, writing the session as a click does. Screen readers hear each token as a toggle button with its pressed state and position, inside a group named "Selectable text" that adds "select up to N" when the item sets a limit; evaluate describes each marked token by its Legend label, in English or Spanish. At the selection limit, unselected tokens stay in the sequence as unavailable tokens instead of becoming plain text, and look as before.
+
+- [#330](https://github.com/pie-framework/pie-elements-ng/pull/330) [`8170ce7`](https://github.com/pie-framework/pie-elements-ng/commit/8170ce7efe7a13675b914e8d187df23022bff8ab) Thanks [@chillenious](https://github.com/chillenious)! - Region names, screen-reader headings, the teacher instructions, rationale and rubric toggles, the drawing-response tool names, the inline dropdown names, the math keypad instructions, the editor toolbar buttons and the chart and graph key legends follow the item language, in English and Spanish, and follow a language change after the first render. A two-part question also labels its parts in the item language. The drawing-response background image is decorative, so screen readers skip it.
+
+- [#342](https://github.com/pie-framework/pie-elements-ng/pull/342) [`aa5e733`](https://github.com/pie-framework/pie-elements-ng/commit/aa5e73381ee663671154b113d4cdd2b17f0fb06e) Thanks [@chillenious](https://github.com/chillenious)! - The custom audio play button on a prompt and the chart's Actions control are buttons a keyboard can reach and press with Enter or Space, with a visible focus ring and an accessible name in the item language ("Play audio", "Actions"). The Actions control tells screen readers whether its popover is open.
+
+- [#281](https://github.com/pie-framework/pie-elements-ng/pull/281) [`9d5457e`](https://github.com/pie-framework/pie-elements-ng/commit/9d5457e831bd03e1e77f5cc9b34d004a02363fac) Thanks [@chillenious](https://github.com/chillenious)! - fix(hotspot): describe the image by its hotspot count and hide the shape canvas
+
+- [#284](https://github.com/pie-framework/pie-elements-ng/pull/284) [`7cfd697`](https://github.com/pie-framework/pie-elements-ng/commit/7cfd697e9a74e3e0dba5cea6776a55d28cc706f1) Thanks [@chillenious](https://github.com/chillenious)! - fix(image-cloze-association): generate image alternatives and enlarge answer tiles to 24px
+
+- [#296](https://github.com/pie-framework/pie-elements-ng/pull/296) [`fb0ac81`](https://github.com/pie-framework/pie-elements-ng/commit/fb0ac815b0b0fa3fd44e9986460aaffa8e7f3504) Thanks [@chillenious](https://github.com/chillenious)! - fix(charting, graphing): name the category and mark label inputs
+
+- [#301](https://github.com/pie-framework/pie-elements-ng/pull/301) [`9b72376`](https://github.com/pie-framework/pie-elements-ng/commit/9b72376f6055ba629a913c9a0739623aa6f45e49) Thanks [@chillenious](https://github.com/chillenious)! - fix(plot): name and describe the chart and graph svg
+
+- [#303](https://github.com/pie-framework/pie-elements-ng/pull/303) [`78f05ca`](https://github.com/pie-framework/pie-elements-ng/commit/78f05ca7479e27cb42e5b3ec182a5141e55e131c) Thanks [@chillenious](https://github.com/chillenious)! - fix(math-input): name each response field's textarea in the item language
+
+- [#304](https://github.com/pie-framework/pie-elements-ng/pull/304) [`9fb74e3`](https://github.com/pie-framework/pie-elements-ng/commit/9fb74e35c92368732712f5752be4af7cd62525ec) Thanks [@chillenious](https://github.com/chillenious)! - fix(editable-html-tip-tap): name the text box in explicit-constructed-response and extended-text-entry
+
+- [#305](https://github.com/pie-framework/pie-elements-ng/pull/305) [`41bebc6`](https://github.com/pie-framework/pie-elements-ng/commit/41bebc60b82bcf3f142d73aa359ac08bece0aff5) Thanks [@chillenious](https://github.com/chillenious)! - fix(number-line): describe the graph from its range, ticks and plotted elements
+
+- [#307](https://github.com/pie-framework/pie-elements-ng/pull/307) [`2e5f44d`](https://github.com/pie-framework/pie-elements-ng/commit/2e5f44d95495eacf75ef5f7db7b8f3e69731732f) Thanks [@chillenious](https://github.com/chillenious)! - fix(drawing-response): name the color selects and the drawing canvas
+
+- [#312](https://github.com/pie-framework/pie-elements-ng/pull/312) [`931cbae`](https://github.com/pie-framework/pie-elements-ng/commit/931cbaef25b10d1d5b68b35f51883b544f939c17) Thanks [@chillenious](https://github.com/chillenious)! - fix(fraction-model): name each model from its parts and selection
+
+- [#317](https://github.com/pie-framework/pie-elements-ng/pull/317) [`69f45cd`](https://github.com/pie-framework/pie-elements-ng/commit/69f45cd6e1b08ca92164583b03ffdc150ca8dedc) Thanks [@chillenious](https://github.com/chillenious)! - fix(editable-html-tip-tap): make the toolbar a named toolbar, inert while hidden
+
+- [#320](https://github.com/pie-framework/pie-elements-ng/pull/320) [`f367c5c`](https://github.com/pie-framework/pie-elements-ng/commit/f367c5c24bec97e4513106cb9d58af614226b77d) Thanks [@chillenious](https://github.com/chillenious)! - fix(hotspot): describe each evaluated shape by its correctness
+
+- [#373](https://github.com/pie-framework/pie-elements-ng/pull/373) [`c64a668`](https://github.com/pie-framework/pie-elements-ng/commit/c64a668127a4165e708a28c2475659624b8f65fd) Thanks [@chillenious](https://github.com/chillenious)! - fix(number-line): show and announce each evaluated element's correctness
+
+- [#375](https://github.com/pie-framework/pie-elements-ng/pull/375) [`da07902`](https://github.com/pie-framework/pie-elements-ng/commit/da07902fc5db2179a8911ce67df0b8eba2ca5c88) Thanks [@chillenious](https://github.com/chillenious)! - fix(charting): make bars, columns and drag handles keyboard-operable sliders
+
 ## 5.0.0
 
 ### Major Changes

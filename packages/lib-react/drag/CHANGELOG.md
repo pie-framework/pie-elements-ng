@@ -1,5 +1,25 @@
 # @pie-lib/drag
 
+## 5.0.1
+
+### Patch Changes
+
+- [#268](https://github.com/pie-framework/pie-elements-ng/pull/268) [`cf1ccc0`](https://github.com/pie-framework/pie-elements-ng/commit/cf1ccc0d25c0c136dc01dab014c68a083ed595ed) Thanks [@chillenious](https://github.com/chillenious)! - chore: remove upstream sync tooling (PIE-1144)
+
+- [#293](https://github.com/pie-framework/pie-elements-ng/pull/293) [`4400768`](https://github.com/pie-framework/pie-elements-ng/commit/4400768e4f3419aa60a7dfa107e62b9762abda88) Thanks [@chillenious](https://github.com/chillenious)! - feat(drag): add a draggable and a drop target that own role, tab stop and name
+
+- [#316](https://github.com/pie-framework/pie-elements-ng/pull/316) [`c1ce388`](https://github.com/pie-framework/pie-elements-ng/commit/c1ce388d0736ba88302157936f7808783d6f0ced) Thanks [@chillenious](https://github.com/chillenious)! - fix(theming): follow the theme background on answer slots, legends and media buttons
+
+- [#318](https://github.com/pie-framework/pie-elements-ng/pull/318) [`7bbe5ef`](https://github.com/pie-framework/pie-elements-ng/commit/7bbe5eff1c9915e0c44f47830ede0ee9da53450a) Thanks [@chillenious](https://github.com/chillenious)! - fix(render-ui): create page-unique ids for delivery components
+
+- [#344](https://github.com/pie-framework/pie-elements-ng/pull/344) [`925bef9`](https://github.com/pie-framework/pie-elements-ng/commit/925bef92b459dbb0a9932501e1ddfb7cb07f2cca) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(render-ui): update color-contrast especially for placement-ordering PIE-821
+
+- [#358](https://github.com/pie-framework/pie-elements-ng/pull/358) [`a5cd642`](https://github.com/pie-framework/pie-elements-ng/commit/a5cd642ddfe1e282cf26b61c266e2d8d2d2c3293) Thanks [@chillenious](https://github.com/chillenious)! - fix(categorize): remove a placed choice released outside the region (PIE-1211)
+- Updated dependencies [[`89241c4`](https://github.com/pie-framework/pie-elements-ng/commit/89241c4bfbc91b4d53ec9c6652990d046350bbf7), [`022488e`](https://github.com/pie-framework/pie-elements-ng/commit/022488e4766ef96ffdfdb73840235d6acc5a439f), [`cbe9fc0`](https://github.com/pie-framework/pie-elements-ng/commit/cbe9fc064c206d098af6f4151d5cf30288b1736f), [`38284bc`](https://github.com/pie-framework/pie-elements-ng/commit/38284bc1aecd6fd6cc88a01226840887c0d27975), [`f7646b3`](https://github.com/pie-framework/pie-elements-ng/commit/f7646b345e9bda9918a94c7baf26fa9ef18b168d), [`8170ce7`](https://github.com/pie-framework/pie-elements-ng/commit/8170ce7efe7a13675b914e8d187df23022bff8ab), [`aa5e733`](https://github.com/pie-framework/pie-elements-ng/commit/aa5e73381ee663671154b113d4cdd2b17f0fb06e), [`852dfe3`](https://github.com/pie-framework/pie-elements-ng/commit/852dfe3d20c85c32996b986b6b20b0347896ee6e), [`5b59ed8`](https://github.com/pie-framework/pie-elements-ng/commit/5b59ed851bef7689a172cbb9ac2df6661e5950fc), [`4386fb2`](https://github.com/pie-framework/pie-elements-ng/commit/4386fb25129ab02d1b75aa97c7ede9ee06b758c4), [`b7ddb94`](https://github.com/pie-framework/pie-elements-ng/commit/b7ddb943f1b3191e1c42e138b7e4b25a1423f4ef), [`204385a`](https://github.com/pie-framework/pie-elements-ng/commit/204385af8ff6ca3511a06b0011c9917f615c9cec), [`c9e4781`](https://github.com/pie-framework/pie-elements-ng/commit/c9e47812260dfba8e0b4b0538eab78efad4e86ef), [`7dfa941`](https://github.com/pie-framework/pie-elements-ng/commit/7dfa941f4d8ef46c8625157739f72ae0d6d33983), [`216ac0f`](https://github.com/pie-framework/pie-elements-ng/commit/216ac0f5591417cd7d1a83fbde0b4b724a97eb44), [`c0d98a0`](https://github.com/pie-framework/pie-elements-ng/commit/c0d98a0cb2bf1d8c5e6237d8861aa7c9615b5c01), [`ebab8a6`](https://github.com/pie-framework/pie-elements-ng/commit/ebab8a69c0d3cea39f83f5d7dcc4818ffc2981e7), [`39d0980`](https://github.com/pie-framework/pie-elements-ng/commit/39d098078ba330bc71c76f453a3b526d3cfab86c), [`15c6bf5`](https://github.com/pie-framework/pie-elements-ng/commit/15c6bf5fbb1bbfc6c663ec71bc96d90d2d1813b5), [`2f66905`](https://github.com/pie-framework/pie-elements-ng/commit/2f6690526248104b3ffe83fe77b61c723f35ca9d)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.2
+  - @pie-lib/render-ui@8.0.1
+  - @pie-element/shared-lodash@0.1.2
+
 ## 5.0.0
 
 ### Major Changes

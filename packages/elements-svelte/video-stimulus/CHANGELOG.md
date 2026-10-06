@@ -1,5 +1,15 @@
 # @pie-element/video-stimulus
 
+## 0.1.2
+
+### Patch Changes
+
+- [#328](https://github.com/pie-framework/pie-elements-ng/pull/328) [`2405ee9`](https://github.com/pie-framework/pie-elements-ng/commit/2405ee9b4c97246caf8c8df342b7639fe789de5c) Thanks [@chillenious](https://github.com/chillenious)! - The extended-text-entry annotation menu has a [#757575](https://github.com/pie-framework/pie-elements-ng/issues/757575) outline and pointer, and the freeform annotation editor keeps its green or pink band between two [#757575](https://github.com/pie-framework/pie-elements-ng/issues/757575) rings, so both meet 3:1 against the annotation colours, the page and the menu in every theme. The math toolbar's Done check is a darker green (#388E3C) that meets 3:1 on the toolbar, on white and under the dark theme, and the editor toolbar's Done check takes the same green unless a host sets `--editable-html-toolbar-check`. The video transcript toggle's border takes the text colour, and with no theme applied the toggle and the video retry button now show a border in the surrounding text colour.
+
+- [#272](https://github.com/pie-framework/pie-elements-ng/pull/272) [`5a2ad38`](https://github.com/pie-framework/pie-elements-ng/commit/5a2ad382a7e1b91be55210bb607488c01d6bb840) Thanks [@chillenious](https://github.com/chillenious)! - fix(video-stimulus): drop the assessment toolkit dependency
+
+- [#316](https://github.com/pie-framework/pie-elements-ng/pull/316) [`c1ce388`](https://github.com/pie-framework/pie-elements-ng/commit/c1ce388d0736ba88302157936f7808783d6f0ced) Thanks [@chillenious](https://github.com/chillenious)! - fix(theming): follow the theme background on answer slots, legends and media buttons
+
 ## 0.1.1
 
 ### Patch Changes
