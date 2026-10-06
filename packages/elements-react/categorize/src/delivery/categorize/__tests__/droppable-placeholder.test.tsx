@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
@@ -9,10 +9,14 @@ vi.mock('../grid-content', () => ({
   GridContent: (props: any) => <div {...props} />,
 }));
 
+// What dnd-kit reports for this droppable; `active` is the choice being dragged, if a drag is live.
+const droppable = vi.hoisted(() => ({ isOver: false, active: null as any }));
+
 vi.mock('@dnd-kit/core', () => ({
   useDroppable: () => ({
     setNodeRef: vi.fn(),
-    isOver: false,
+    isOver: droppable.isOver,
+    active: droppable.active,
   }),
 }));
 
@@ -27,6 +31,11 @@ vi.mock('@pie-lib/drag', () => ({
 const theme = createTheme();
 
 describe('DroppablePlaceholder', () => {
+  beforeEach(() => {
+    droppable.isOver = false;
+    droppable.active = null;
+  });
+
   const renderPlaceholder = (extras?: any) => {
     const defaults = {
       id: 'test-placeholder',
@@ -256,6 +265,58 @@ describe('DroppablePlaceholder', () => {
       const { container } = renderPlaceholder({ selectedItem: selection, disabled: true });
 
       expect((container.firstChild as HTMLElement).style.cursor).toBe('');
+    });
+  });
+  // A drag also sets a selection (see CategorizeProvider.onDragStart), so the click-to-place hover
+  // above must not apply: the category under the pointer is not necessarily the one dnd-kit will
+  // drop into, and lighting both makes the drop target impossible to tell.
+  describe('while a choice is being dragged', () => {
+    const dragged = (categoryId?: string) => ({ data: { current: { type: 'choice', categoryId } } });
+    const isOver = () => screen.getByTestId('placeholder').getAttribute('data-is-over');
+
+    it('does not light up because the pointer is over it', () => {
+      droppable.active = dragged('other-category');
+      const { container } = renderPlaceholder({ id: 'cat-1', selectedItem: { id: 'c1', type: 'choice' } });
+
+      fireEvent.mouseEnter(container.firstChild as Element);
+
+      expect(isOver()).toBe('false');
+    });
+
+    it('lights up when dnd-kit says it is the drop target', () => {
+      droppable.active = dragged('other-category');
+      droppable.isOver = true;
+      renderPlaceholder({ id: 'cat-1', selectedItem: { id: 'c1', type: 'choice' } });
+
+      expect(isOver()).toBe('true');
+    });
+
+    // Releasing there keeps the choice where it is, so dnd-kit only reports it as the target while the
+    // choice touches nothing else (see categoriesFirst) — and then it should show as the target.
+    it('lights up the category the choice was picked up from while it is still the drop target', () => {
+      droppable.active = dragged('cat-1');
+      droppable.isOver = true;
+      renderPlaceholder({ id: 'cat-1', selectedItem: { id: 'c1', type: 'choice' } });
+
+      expect(isOver()).toBe('true');
+    });
+
+    it('does not light up the category the choice was picked up from once something else is the target', () => {
+      droppable.active = dragged('cat-1');
+      droppable.isOver = false;
+      const { container } = renderPlaceholder({ id: 'cat-1', selectedItem: { id: 'c1', type: 'choice' } });
+
+      fireEvent.mouseEnter(container.firstChild as Element);
+
+      expect(isOver()).toBe('false');
+    });
+
+    it('lights up for a choice picked up from the pool', () => {
+      droppable.active = dragged(undefined);
+      droppable.isOver = true;
+      renderPlaceholder({ id: 'cat-1', selectedItem: { id: 'c1', type: 'choice' } });
+
+      expect(isOver()).toBe('true');
     });
   });
 });

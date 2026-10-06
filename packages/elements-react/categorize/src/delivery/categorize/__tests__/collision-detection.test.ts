@@ -10,11 +10,13 @@ const rect = (left: number, top: number, width: number, height: number) => ({
   bottom: top + height,
 });
 
-function collide(rects: Record<string, any>, collisionRect: any) {
+// `categoryId` is the category the dragged choice was picked up from; a choice picked up from the pool has none.
+function collide(rects: Record<string, any>, collisionRect: any, categoryId?: string) {
   const droppableRects = new Map(Object.entries(rects));
   const droppableContainers = Object.keys(rects).map((id) => ({ id, disabled: false }));
+  const active = { data: { current: { type: 'choice', categoryId } } };
 
-  return categoriesFirst({ collisionRect, droppableRects, droppableContainers, active: null, pointerCoordinates: null } as any);
+  return categoriesFirst({ collisionRect, droppableRects, droppableContainers, active, pointerCoordinates: null } as any);
 }
 
 // A 100px-tall category with the choices pool directly below it — the default `choicesPosition`.
@@ -41,6 +43,32 @@ describe('categoriesFirst', () => {
     const item = rect(60, 20, 100, 50); // 40px in `left`, 50px in `right`
 
     expect(collide({ left, right, 'choices-board': pool }, item).map((c) => c.id)).toEqual(['right', 'left']);
+  });
+
+  describe('a choice picked up from a category', () => {
+    // A 600px-tall category with the pool below it, and a 250px-tall image placed in the category.
+    const tall = rect(0, 0, 300, 600);
+    const poolBelow = rect(0, 600, 300, 100);
+
+    it('can be put back in the pool though it still overlaps the category it came from', () => {
+      const item = rect(30, 400, 240, 250); // 200px inside its own category, 50px into the pool
+
+      expect(collide({ tall, 'choices-board': poolBelow }, item, 'tall').map((c) => c.id)).toEqual(['choices-board']);
+    });
+
+    it('prefers another category it touches over the pool and over its own category', () => {
+      const other = rect(310, 0, 300, 600);
+      const item = rect(250, 400, 240, 250); // across the gap: 50px in `tall`, 180px in `other`, and in the pool
+
+      // dnd-kit drops into the first collision.
+      expect(collide({ tall, other, 'choices-board': poolBelow }, item, 'tall')[0].id).toBe('other');
+    });
+
+    it('is still dropped back where it came from while it touches nothing else', () => {
+      const item = rect(30, 100, 240, 250);
+
+      expect(collide({ tall, 'choices-board': poolBelow }, item, 'tall').map((c) => c.id)).toEqual(['tall']);
+    });
   });
 
   it('finds nothing when the item overlaps no droppable', () => {
