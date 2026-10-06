@@ -256,7 +256,7 @@ onMount(() => {
   }
 
   if (needsUpdate) {
-    goto(url.toString(), { replaceState: true, noScroll: true });
+    goto(url.toString(), { replace: true, reset: false });
   }
 });
 
@@ -277,11 +277,7 @@ function updatePlayerUrl(updates: { player?: 'esm' | 'iife' }) {
     window.location.assign(url.toString());
     return;
   }
-  void goto(url.toString(), {
-    invalidateAll: true,
-    noScroll: true,
-    replaceState: false,
-  });
+  void goto(url.toString(), { refreshAll: true, reset: false });
 }
 
 function resetDemoSessionFromToolbar() {
@@ -342,7 +338,7 @@ $effect(() => {
     }
 
     if (needsUpdate) {
-      goto(url.toString(), { replaceState: true, noScroll: true });
+      goto(url.toString(), { replace: true, reset: false });
     }
   }
 });

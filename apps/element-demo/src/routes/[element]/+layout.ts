@@ -97,7 +97,7 @@ export const load: LayoutLoad = async ({
 
   // Load sample config from JSON file
   try {
-    const configModule = await import(`#lib/samples/${elementName}.json`);
+    const configModule = await import(`../../lib/samples/${elementName}.json`);
 
     if (configModule.default?.demos && Array.isArray(configModule.default.demos)) {
       demos = configModule.default.demos;
