@@ -13,6 +13,8 @@ Each response field is named by its position in reading order, such as "Response
 
 Each field's toolbar is a `role="toolbar"` named "Editing tools" in the item's language, and is `inert` while its field lacks focus ([PIE-1180](https://illuminate.atlassian.net/browse/PIE-1180)).
 
+The special-character picker keys draw the [THEMING.md](../THEMING.md) focus chain on keyboard focus ([PIE-1200](https://illuminate.atlassian.net/browse/PIE-1200)).
+
 ## Not Covered / Manual
 
 - Confirm each blank remains understandable in the surrounding sentence or rich text.

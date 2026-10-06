@@ -118,3 +118,30 @@ describe('Dropdown name', () => {
     expect(second).toHaveAccessibleName(single);
   });
 });
+
+describe('Dropdown combobox styles', () => {
+  // The rules emotion emits for the combobox's own class, in source order.
+  const rulesFor = (el: Element) => {
+    const [cls] = [...el.classList].filter((c) => c.startsWith('css-'));
+    const css = [...document.querySelectorAll('style')].map((s) => s.textContent).join('\n');
+    return css.split('}').filter((r) => r.includes(`.${cls}`));
+  };
+  const lastRule = (rules: string[], selector: string) => rules.filter((r) => r.includes(selector)).at(-1);
+
+  it('outlines keyboard focus on Mui-focusVisible, the class ButtonBase sets', () => {
+    renderDropdown();
+    const rules = rulesFor(screen.getByRole('combobox'));
+
+    expect(lastRule(rules, '.Mui-focusVisible{')).toContain('outline:3px solid var(--pie-tertiary, #146EB3);');
+    expect(rules.some((r) => r.includes('.Mui-focused'))).toBe(false);
+  });
+
+  it('inks the view-mode answer in the disabled text colour', () => {
+    render(<Dropdown id="0" choices={choices} value="0" disabled onChange={vi.fn()} />);
+    const rules = rulesFor(screen.getByRole('combobox'));
+
+    expect(lastRule(rules, '.Mui-disabled{color:')).toContain(
+      'color:var(--pie-disabled-text, var(--pie-text, #545454));',
+    );
+  });
+});

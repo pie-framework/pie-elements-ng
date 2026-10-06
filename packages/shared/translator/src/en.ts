@@ -65,6 +65,8 @@ export default {
       addElementLimit_other: 'You can only add {{count}} elements',
       clearAll: 'Clear all',
       closedEnd: 'closed',
+      elementCorrect: 'Correct.',
+      elementIncorrect: 'Incorrect.',
       graphLabel: 'Number line from {{min}} to {{max}}, with a tick every {{interval}}',
       line: 'Line from {{left}} ({{leftEnd}}) to {{right}} ({{rightEnd}}).',
       openEnd: 'open',
@@ -132,6 +134,8 @@ export default {
       delete: 'Delete',
       newLabel: 'New label',
       categoryLabel: 'Category {{index}} label',
+      categoryLabelValue: 'Category {{index}} label: {{label}}',
+      category: 'Category {{index}}',
       reachedLimit_other: "There can't be more than {{count}} categories.",
       keyLegend: {
         incorrectAnswer: 'Student incorrect answer',

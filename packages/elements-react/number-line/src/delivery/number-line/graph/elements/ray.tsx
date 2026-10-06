@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Arrow from '../arrow.js';
 import Point from './point.js';
+import CorrectnessMark from './correctness-mark.js';
 import { basePropTypes } from './base.js';
 import { isNumber } from '@pie-element/shared-lodash';
 
@@ -141,6 +142,7 @@ export class Ray extends React.Component {
         <Point
           disabled={disabled}
           correct={correct}
+          showCorrectness={false}
           selected={selected}
           empty={empty}
           interval={interval}
@@ -152,6 +154,7 @@ export class Ray extends React.Component {
           onClick={this.props.onToggleSelect}
         />
         <StyledArrow x={arrowX} $correct={correct} $selected={selected} direction={arrowDirection} />
+        <CorrectnessMark x={xScale(finalPosition) + (positive ? -16 : 16)} correct={correct} />
       </StyledRayGroup>
     );
   }

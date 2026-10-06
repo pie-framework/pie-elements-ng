@@ -16,11 +16,34 @@ import { sortKeys } from './keys-layout.js';
 
 const log = debug('pie-lib:math-inline:keypad');
 
+const pieVar = color.v('pie');
+
+// Key label ink, after a --pie-text declaration that browsers without relative colour syntax keep.
+const keyInk = [color.text(), color.keypadInk()];
+
+// The press and focus ripples paint the ink at 30%, which lifts a key towards a light scheme ink.
+// Folding each channel above 127 below it keeps the ripple dark; dark inks pass unchanged.
+const keyRipple = {
+  '& .MuiTouchRipple-root': {
+    color: `rgb(from ${color.text()} min(r, 255 - r) min(g, 255 - g) min(b, 255 - b))`,
+  },
+};
+
+// Keyboard focus: the THEMING.md focus ring on the key's edge. The chain holds 3:1 on the scheme
+// background and can fall under it on a key fill, so a 2px --pie-background ring backs it inside.
+const keyFocus = {
+  '&.Mui-focusVisible': {
+    outline: `2px solid ${color.focusOutline()}`,
+    outlineOffset: '-2px',
+    boxShadow: `inset 0 0 0 4px ${pieVar('background', color.defaults.WHITE)}`,
+  },
+};
+
 const LatexButtonContent: any = styled(mq.Static)(({ latex }) => {
   const baseStyles = {
     pointerEvents: 'none',
     textTransform: 'none !important',
-    color: color.text(),
+    color: keyInk,
     '& .mq-scaled.mq-sqrt-prefix': {
       transform: 'scale(1, 0.9) !important',
     },
@@ -31,7 +54,7 @@ const LatexButtonContent: any = styled(mq.Static)(({ latex }) => {
       backgroundColor: `${color.keypadEmptyPlaceholder()} !important`,
     },
     '& .mq-overline .mq-overline-inner': {
-      borderTop: '2px solid black',
+      borderTop: '2px solid currentColor',
     },
     '& .mq-non-leaf.mq-overline': {
       borderTop: 'none !important',
@@ -39,7 +62,7 @@ const LatexButtonContent: any = styled(mq.Static)(({ latex }) => {
     '& .mq-overarrow': {
       width: '30px',
       marginTop: '0 !important',
-      borderTop: '2px solid black',
+      borderTop: '2px solid currentColor',
       fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
       '&.mq-arrow-both': {
         top: '0px !important',
@@ -109,7 +132,7 @@ const LatexButtonContent: any = styled(mq.Static)(({ latex }) => {
       lineHeight: 0.85,
     },
     '& .mq-overarc': {
-      borderTop: '2px solid black !important',
+      borderTop: '2px solid currentColor !important',
       '& .mq-overline': {
         borderTop: 'none !important',
       },
@@ -190,7 +213,7 @@ const StyledButton: any = styled(Button)(({ category, isDelete, isComma, isDot }
   textTransform: 'none',
   fontSize: isComma || isDot ? '200% !important' : '140% !important',
   lineHeight: isComma || isDot ? '100%' : 'normal',
-  color: color.text(),
+  color: keyInk,
 
   backgroundColor:
     category === 'operators'
@@ -202,11 +225,8 @@ const StyledButton: any = styled(Button)(({ category, isDelete, isComma, isDot }
         ? color.keypadButtonOperatorHover()
         : color.keypadButtonHover()
   },
-  // The press and focus ripples paint the ink at 30%, which lifts a key towards a light scheme
-  // ink. Folding each channel above 127 below it keeps the ripple dark; dark inks pass unchanged.
-  '& .MuiTouchRipple-root': {
-    color: `rgb(from ${color.text()} min(r, 255 - r) min(g, 255 - g) min(b, 255 - b))`,
-  },
+  ...keyRipple,
+  ...keyFocus,
   borderRadius: 0,
   ...(isDelete && {
     fontFamily: 'Roboto, Helvetica, Arial, sans-serif !important',
@@ -230,6 +250,8 @@ const StyledLatexButtonWrapper: any = styled(Button)(({ category }) => ({
         ? color.keypadButtonOperatorHover()
         : color.keypadButtonHover(),
   },
+  ...keyRipple,
+  ...keyFocus,
 }));
 
 const StyledIconButton: any = styled(IconButton)(({ category }) => ({
