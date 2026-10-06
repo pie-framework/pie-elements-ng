@@ -1,17 +1,19 @@
 // @ts-nocheck
 
-import { green, indigo, orange, pink, red } from '@mui/material/colors';
+import { green, indigo, pink, red } from '@mui/material/colors';
 
 export const defaults = {
   TEXT: 'black',
   DISABLED: 'grey',
   DISABLED_SECONDARY: '#ABABAB',
   DISABLED_TEXT: '#545454', // for text that is disabled but still has to be read - a non-editable label
-  CORRECT: green[500],
+  // CORRECT and INCORRECT are the pie-players base light values. They hold 4.70:1 and 4.93:1
+  // against white, so the borders, text and white-glyph badges that read them pass with no theme.
+  CORRECT: '#208537',
   CORRECT_SECONDARY: green[50],
   CORRECT_TERTIARY: '#0EA449',
   CORRECT_WITH_ICON: '#087D38',
-  INCORRECT: orange[500],
+  INCORRECT: '#a65f00',
   INCORRECT_SECONDARY: red[50],
   INCORRECT_WITH_ICON: '#BF0D00',
   MISSING: red[700],

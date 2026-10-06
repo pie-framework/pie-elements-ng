@@ -94,9 +94,11 @@ const SrOnly: any = styled('h3')({
   overflow: 'hidden',
 });
 
+// --pie-missing holds 4.5:1 on the page in every pie-players scheme; the layout theme's error red
+// falls to 1.59:1 under yellow-on-navy.
 const ErrorText: any = styled('div')(({ theme }) => ({
   fontSize: theme.typography.fontSize - 2,
-  color: theme.palette.error.main,
+  color: color.missing(),
   paddingTop: theme.spacing(1),
 }));
 
