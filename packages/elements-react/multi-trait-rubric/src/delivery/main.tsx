@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/multi-trait-rubric/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -15,6 +7,9 @@ import Scale from './scale.js';
 import Link from '@mui/material/Link';
 import Collapse from '@mui/material/Collapse';
 import { color, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -48,14 +43,12 @@ class Main extends React.Component {
     super(props);
     this.state = {
       rubricOpen: false,
-      linkPrefix: 'Show',
     };
     this.toggleRubric = this.toggleRubric.bind(this);
   }
 
   toggleRubric() {
     this.setState({ rubricOpen: !this.state.rubricOpen });
-    this.setState({ linkPrefix: this.state.rubricOpen ? 'Show' : 'Hide' });
   }
 
   render() {
@@ -98,8 +91,14 @@ class Main extends React.Component {
 
     return (
       <UiLayout extraCSSRules={extraCSSRules} style={{ color: color.text(), backgroundColor: color.background() }}>
-        <Link style={{ backgroundColor: color.background() }} href={this.dudUrl} onClick={this.toggleRubric}>
-          {this.state.linkPrefix} Rubric
+        <Link
+          component="button"
+          type="button"
+          aria-expanded={this.state.rubricOpen}
+          style={{ backgroundColor: color.background(), minHeight: '24px' }}
+          onClick={this.toggleRubric}
+        >
+          {translator.t(this.state.rubricOpen ? 'rubric.hideRubric' : 'rubric.showRubric', { lng: model.language })}
         </Link>
         <Collapse style={{ marginTop: '16px' }} in={this.state.rubricOpen} timeout={{ enter: 225, exit: 195 }}>
           {rubricItem}

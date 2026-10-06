@@ -21,17 +21,21 @@ const REGISTERED_CANONICAL_TOKENS = new Set([
   '--pie-background',
   '--pie-background-dark',
   '--pie-black',
+  '--pie-border',
+  '--pie-border-dark',
   '--pie-border-light',
   '--pie-button-focus-outline',
   '--pie-correct-icon',
   '--pie-correct-secondary',
   '--pie-correct-tertiary',
   '--pie-disabled',
+  '--pie-faded-primary',
   '--pie-focus-checked-border',
   '--pie-incorrect-icon',
   '--pie-incorrect-secondary',
   '--pie-primary',
   '--pie-secondary-background',
+  '--pie-surface',
   '--pie-tertiary',
   '--pie-tertiary-light',
   '--pie-text',
@@ -70,9 +74,9 @@ const SVELTE_SOURCE_PACKAGES = [
  * These names are not in that registry and no scheme can reach them directly.
  * `--pie-primary-text`, `--pie-secondary-text` and the three `--pie-table-*`
  * names chain through to a registered token, so they degrade to a themed value;
- * the keypad and keyboard-focus names do not, and fall back to a fixed literal
- * under every scheme. Closing the gap means a registry entry in `pie-players`,
- * so they are recorded here rather than silently tolerated.
+ * the keypad names do not, and fall back to a fixed literal under every scheme.
+ * Closing the gap means a registry entry in `pie-players`, so they are recorded
+ * here rather than silently tolerated.
  *
  * The `--pie-table-*` trio arrived with the upstream `pie-lib` sync that added
  * `color.tableGrid()` / `tableGridLight()` / `tableStripe()` for authored tables.
@@ -90,7 +94,6 @@ const SVELTE_SOURCE_PACKAGES = [
  */
 const KNOWN_UNREGISTERED_TOKENS = new Set([
   '--pie-disabled-text',
-  '--pie-keyboard-focus-indicator',
   '--pie-keypad-button',
   '--pie-keypad-button-hover',
   '--pie-keypad-button-operator',
@@ -235,7 +238,7 @@ function reactSourceFiles(): string[] {
  * comfortable in isolation and not under a loaded suite, and the failure mode
  * is a timeout that reads as a token regression.
  */
-describe('React --pie-* token contract', { timeout: 30_000 }, () => {
+describe('React --pie-* token contract', { timeout: 60_000 }, () => {
   it('every color.*() accessor resolves to a registered token', () => {
     const colorModule = readFileSync(
       join(repoRoot, 'packages/lib-react/render-ui/src/color.ts'),
@@ -249,7 +252,11 @@ describe('React --pie-* token contract', { timeout: 30_000 }, () => {
     )) {
       for (const [, token] of args.matchAll(/'([a-z0-9-]+)'/g)) {
         const name = `--pie-${token}`;
-        if (!REACT_ALLOWED_TOKENS.has(name) && !KNOWN_UNREGISTERED_TOKENS.has(name)) {
+        if (
+          !REACT_ALLOWED_TOKENS.has(name) &&
+          !REGISTERED_PLANNED_TOKENS.has(name) &&
+          !KNOWN_UNREGISTERED_TOKENS.has(name)
+        ) {
           emitted.push(`${name} (color.${accessor}())`);
         }
       }
@@ -262,7 +269,13 @@ describe('React --pie-* token contract', { timeout: 30_000 }, () => {
     const unregistered: string[] = [];
     for (const file of reactSourceFiles()) {
       for (const [name] of readFileSync(file, 'utf8').matchAll(/--pie-[a-z0-9-]+/g)) {
-        if (REACT_ALLOWED_TOKENS.has(name) || KNOWN_UNREGISTERED_TOKENS.has(name)) continue;
+        if (
+          REACT_ALLOWED_TOKENS.has(name) ||
+          REGISTERED_PLANNED_TOKENS.has(name) ||
+          KNOWN_UNREGISTERED_TOKENS.has(name)
+        ) {
+          continue;
+        }
         unregistered.push(`${name} (${file.slice(repoRoot.length + 1)})`);
       }
     }

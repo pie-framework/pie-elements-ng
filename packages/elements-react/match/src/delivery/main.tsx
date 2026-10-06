@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/match/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -45,6 +37,9 @@ const renderUi =
     : renderUiNamespaceAny;
 import AnswerGrid from './answer-grid.js';
 import { styled } from '@mui/material/styles';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledPrompt: any = styled('div')({
   verticalAlign: 'middle',
@@ -166,8 +161,8 @@ export class Main extends React.Component {
         {showTeacherInstructions && (
           <StyledCollapsible
             labels={{
-              hidden: 'Show Teacher Instructions',
-              visible: 'Hide Teacher Instructions',
+              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
             }}
           >
             <PreviewPrompt prompt={model.teacherInstructions} />
@@ -200,7 +195,7 @@ export class Main extends React.Component {
         />
 
         {showRationale && (
-          <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt prompt={model.rationale} />
           </Collapsible>
         )}

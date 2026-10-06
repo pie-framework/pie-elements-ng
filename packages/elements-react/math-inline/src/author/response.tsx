@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/math-inline/configure/src/response.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
@@ -27,6 +19,7 @@ import { color } from '@pie-lib/render-ui';
 // TODO once we support individual response correctness, we need to remove this constant
 const INDIVIDUAL_RESPONSE_CORRECTNESS_SUPPORTED = false;
 
+// Follows the scheme; white with no theme, where `color.background()` would be transparent.
 const ResponseContainer: any = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
   width: '100%',
@@ -35,6 +28,15 @@ const ResponseContainer: any = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.text(),
+  '& .MuiInputLabel-root:not(.Mui-focused):not(.Mui-error), & .MuiInputBase-root, & .MuiSelect-icon': {
+    color: color.text(),
+  },
+  // MUI's outline is below 3:1 (WCAG 1.4.11).
+  '& .MuiOutlinedInput-root:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline': {
+    borderColor: color.borderDark(),
+  },
 
   '.response-editor': {
     display: 'flex',
@@ -92,7 +94,8 @@ const AlternateBar: any = styled('div')({
 
 const ErrorText: any = styled('div')(({ theme }) => ({
   fontSize: theme.typography.fontSize - 2,
-  color: theme.palette.error.main,
+  // MUI's fixed red is below 4.5:1 on dark schemes.
+  color: color.incorrectWithIcon(),
   paddingTop: theme.spacing(1),
 }));
 

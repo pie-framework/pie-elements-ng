@@ -70,8 +70,7 @@
   },
   "dependencies": {
     "@pie-element/shared-types": "workspace:*",
-    "@pie-lib/delivery-events-svelte": "workspace:*",
-    "@pie-players/pie-assessment-toolkit": "^0.3.68"
+    "@pie-lib/delivery-events-svelte": "workspace:*"
   },
   "devDependencies": {
     "@pie-element/shared-configure-events": "workspace:*",

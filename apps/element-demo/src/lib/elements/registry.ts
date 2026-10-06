@@ -226,7 +226,7 @@ export const ELEMENT_REGISTRY: readonly ElementMetadata[] = [
     "hasPrint": true,
     "hasConfig": true,
     "hasSession": true,
-    "demoCount": 26
+    "demoCount": 27
   },
   {
     "name": "multi-trait-rubric",

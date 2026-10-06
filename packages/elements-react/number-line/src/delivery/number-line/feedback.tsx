@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/src/number-line/feedback.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { Correct, Incorrect, NothingSubmitted, PartiallyCorrect, ShowRationale } from '@pie-lib/icons';
 import PropTypes from 'prop-types';
@@ -33,17 +25,18 @@ let getIcon = (t) => {
   }
 };
 
+// Tinted status surfaces under the inherited page ink, the same pairs render-ui's Feedback uses.
 const FeedbackContainer: any = styled('div')(({ $type }) => ({
   marginTop: '10px',
-  backgroundColor: '#dddddd',
+  backgroundColor: color.backgroundDark(),
   padding: '10px',
   display: 'flex',
   alignItems: 'center',
   ...($type === 'correct' && {
-    backgroundColor: color.correct(),
+    backgroundColor: color.correctSecondary(),
   }),
   ...($type === 'incorrect' && {
-    backgroundColor: color.incorrect(),
+    backgroundColor: color.incorrectSecondary(),
   }),
   '& svg': {
     height: '30px',

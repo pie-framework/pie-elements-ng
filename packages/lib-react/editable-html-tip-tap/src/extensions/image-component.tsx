@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/extensions/image-component.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -20,6 +12,7 @@ import InsertImageHandler from '../components/image/InsertImageHandler.js';
 import { findImageNodeByKey } from '../components/image/findImageNode.js';
 import ImageToolbar from '../components/image/ImageToolbar.js';
 import CustomToolbarWrapper from './custom-toolbar-wrapper.js';
+import { TOOLBAR_BACKGROUND } from '../constants.js';
 
 const log = debug('@pie-lib:editable-html:plugins:image:component');
 
@@ -289,7 +282,7 @@ function ImageComponent(props) {
             ref={toolbarRef}
             style={{
               zIndex: 20,
-              background: 'var(--editable-html-toolbar-bg, #efefef)',
+              background: TOOLBAR_BACKGROUND,
               boxShadow:
                 '0px 1px 5px 0px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)',
               width: '100%',

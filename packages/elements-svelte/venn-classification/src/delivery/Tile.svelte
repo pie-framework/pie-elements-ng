@@ -112,10 +112,10 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
     min-width: 64px;
     min-height: 44px;
     padding: 8px 14px;
-    border: 1.5px solid #334155;
+    border: 1.5px solid var(--pie-border-dark, #334155);
     border-radius: 10px;
-    background: #ffffff;
-    color: #0f172a;
+    background: var(--pie-background, #ffffff);
+    color: var(--pie-text, #0f172a);
     font-size: 14px;
     font-weight: 500;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
@@ -130,13 +130,13 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
     outline-offset: 2px;
   }
   .venn-tile:hover:not(:disabled) {
-    background: #f8fafc;
+    background: var(--pie-background-dark, #f8fafc);
   }
   .venn-tile.held {
     cursor: grabbing;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
     transform: translateY(-1px);
-    background: #eef2ff;
+    background: var(--pie-faded-primary, #eef2ff);
   }
   .venn-tile.invisible {
     visibility: hidden;
@@ -146,14 +146,14 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
     cursor: grabbing;
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
     transform: rotate(-1.5deg);
-    background: #ffffff;
+    background: var(--pie-background, #ffffff);
     opacity: 0.96;
   }
   .venn-tile.correct {
-    border-color: #0ea449;
+    border-color: var(--pie-correct-tertiary, #0ea449);
   }
   .venn-tile.incorrect {
-    border-color: #bf0d00;
+    border-color: var(--pie-incorrect-icon, #bf0d00);
   }
   .venn-tile:disabled {
     cursor: default;
@@ -221,13 +221,13 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: var(--pie-background, #ffffff);
   }
   .venn-badge-correct {
-    background: #0ea449;
+    background: var(--pie-correct-tertiary, #0ea449);
   }
   .venn-badge-incorrect {
-    background: #bf0d00;
+    background: var(--pie-incorrect-icon, #bf0d00);
   }
   @media (prefers-reduced-motion: reduce) {
     .venn-tile {

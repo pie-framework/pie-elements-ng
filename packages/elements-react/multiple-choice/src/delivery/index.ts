@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/multiple-choice/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import Main from './main.js';
 import React from 'react';
@@ -20,7 +12,7 @@ import {
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
+import { createUniqueId, EnableAudioAutoplayImage as EnableAudioAutoplayImageImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -51,6 +43,9 @@ const renderUi =
     : renderUiNamespaceAny;
 import { updateSessionValue, updateSessionMetadata } from './session-updater.js';
 import { exceedsMaxSelections } from './utils.js';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const log = debug('pie-ui:multiple-choice');
 
@@ -161,7 +156,12 @@ export default class MultipleChoice extends HTMLElement {
           //TODO: aria-label is set in the _rerender because we need to change it when the model.choiceMode is updated. Consider revisiting the placement of the aria-label setting in the _rerender
           this.setAttribute(
             'aria-label',
-            this._model.choiceMode === 'radio' ? 'Multiple Choice Question' : 'Multiple Correct Answer Question',
+            translator.t(
+              this._model.choiceMode === 'radio'
+                ? 'multipleChoice.multipleChoiceQuestion'
+                : 'multipleChoice.multipleCorrectAnswerQuestion',
+              { lng: this._model.language },
+            ),
           );
           this.setAttribute('role', 'region');
           this.setLangAttribute();
@@ -297,7 +297,9 @@ export default class MultipleChoice extends HTMLElement {
 
   _createAudioInfoToast() {
     const info = document.createElement('div');
-    info.id = 'play-audio-info';
+    // Looked up by its class, which authored CSS may also target; a fixed id repeats when items share a page.
+    info.id = createUniqueId('play-audio-info');
+    info.className = 'play-audio-info';
 
     Object.assign(info.style, {
       position: 'absolute',
@@ -347,9 +349,9 @@ export default class MultipleChoice extends HTMLElement {
           if (!audio) return;
 
           const info = this._createAudioInfoToast();
-          const container = this.querySelector('#main-container');
+          const container = this.querySelector('.main-container');
           const enableAudio = () => {
-            if (this.querySelector('#play-audio-info')) {
+            if (this.querySelector('.play-audio-info')) {
               audio.play();
               container.removeChild(info);
             }
@@ -361,7 +363,7 @@ export default class MultipleChoice extends HTMLElement {
             // if the audio is paused, it means the user has not interacted with the page yet and the audio will not play
             // FIX FOR SAFARI: play with a slight delay to check if autoplay was blocked
             setTimeout(() => {
-              if (audio.paused && !this.querySelector('#play-audio-info')) {
+              if (audio.paused && !this.querySelector('.play-audio-info')) {
                 // add info message as a toast to enable audio playback
                 container.appendChild(info);
                 document.addEventListener('click', enableAudio);
@@ -375,7 +377,7 @@ export default class MultipleChoice extends HTMLElement {
           const handlePlaying = () => {
             updateSessionMetadata(this._session, { audioStartTime: new Date().getTime() });
 
-            const info = this.querySelector('#play-audio-info');
+            const info = this.querySelector('.play-audio-info');
             if (info) {
               container.removeChild(info);
             }

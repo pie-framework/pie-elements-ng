@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/placement-ordering/src/tile.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -23,7 +15,7 @@ const StyledNumberContainer: any = styled('div')(({ theme }) => ({
   width: '100%',
   fontSize: theme.typography.fontSize + 4,
   textAlign: 'center',
-  color: `rgba(${theme.palette.common.black}, 0.6)`,
+  color: 'inherit',
 }));
 
 const Holder = ({ type, index, isOver, disabled }) => (
@@ -47,7 +39,7 @@ const StyledTileContent: any = styled('div')(
     padding: '10px',
     boxSizing: 'border-box',
     overflow: 'hidden',
-    border: type === 'choice' || type === 'target' ? `1px solid ${color.border()}` : '1px solid transparent',
+    border: type === 'choice' || type === 'target' ? `1px solid ${color.borderDark()}` : '1px solid transparent',
     backgroundColor: type === 'choice' || type === 'target' ? color.background() : 'transparent',
     transition:
       type === 'choice' || type === 'target'

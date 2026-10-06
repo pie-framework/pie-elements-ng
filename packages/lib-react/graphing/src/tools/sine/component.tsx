@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing/src/tools/sine/component.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import debug from 'debug';
 import { buildDataPoints, FREQ_DIVIDER, getAmplitudeAndFreq, sinY } from '@pie-lib/graphing-utils';

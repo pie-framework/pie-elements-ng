@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/categorize/src/categorize/choice.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -54,7 +46,8 @@ const StyledCard: any = styled(Card, {
 
 const StyledCardContent: any = styled(CardContent)(({ theme }) => ({
   color: color.text(),
-  backgroundColor: color.white(),
+  // --pie-white stays white under a dark theme; white keeps the card opaque when no theme is set.
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
   '&:last-child': {
     paddingBottom: theme.spacing(2),
   },

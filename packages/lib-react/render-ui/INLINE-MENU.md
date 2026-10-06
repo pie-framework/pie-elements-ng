@@ -1,166 +1,82 @@
-# InlineMenu Component
+# InlineMenu
 
-## Problem
+`InlineMenu` is MUI's `Menu` with a transparent modal root and no scroll lock, keeping MUI's invisible backdrop. It serves menus anchored inside item content: an open menu leaves the page visible under it, and a click or tap anywhere outside the menu closes it.
 
-When using MUI's `Menu` component in inline contexts (like dropdowns within text or form elements), the default behavior creates a modal overlay that covers the entire screen with a white/semi-transparent background. This blocks the rest of the UI and creates a poor user experience for inline interactions.
+## Mechanism
 
-## Solution
+MUI renders a `Menu` inside a `Modal`. The modal root is fixed over the whole viewport (`position: fixed; inset: 0; z-index: 1300`) and holds the backdrop and the menu paper.
 
-The `InlineMenu` component is a drop-in replacement for MUI's `Menu` that fixes this issue by:
+### Transparent root
 
-1. **Removing the backdrop** (`hideBackdrop`)
-2. **Making the modal root transparent** and non-interactive (`pointerEvents: 'none'`)
-3. **Preventing scroll locking** (`disableScrollLock`)
-4. **Keeping the menu itself interactive** (`pointerEvents: 'auto'` on paper)
+`styled(Menu)` and `styled(InlineMenu)` attach their class to the modal root, so a background styled onto the menu paints over the whole page. `InlineMenu` sets an inline `backgroundColor: 'transparent'` on the root, which overrides any class background. Styles meant for the menu go under `& .MuiPaper-root`.
+
+### Invisible backdrop
+
+The backdrop is MUI's only outside-click close path: a click or tap on it calls `onClose(event, 'backdropClick')`. `InlineMenu` passes `invisible: true`, so the backdrop does not dim the page. It covers the page behind the paper, so the click that closes the menu ends on it and the control underneath responds to the next click, as under a stock MUI `Menu`.
+
+`hideBackdrop` with a click-through root is the alternative, and it loses: no outside click or tap closes the menu, and while the menu stays open MUI keeps focus trapped in it and the rest of the page `aria-hidden`, so typing anywhere else goes nowhere.
+
+### Scrolling
+
+`disableScrollLock` keeps the page scrollable while a menu is open, and MUI repositions the menu on window scroll so it stays on its anchor. A wheel over the backdrop does not reach an inner scroll container; that container scrolls again once the menu closes.
+
+### Keyboard
+
+Escape and Tab close the menu through MUI (`'escapeKeyDown'`, `'tabKeyDown'`), and focus returns to the element that held it when the menu opened.
 
 ## Usage
 
-### Basic Usage
-
-Replace `Menu` imports with `InlineMenu`:
-
 ```tsx
-// Before
-import Menu from '@mui/material/Menu';
-import { color } from '@pie-lib/render-ui';
+import MenuItem from '@mui/material/MenuItem';
+import { InlineMenu } from '@pie-lib/render-ui';
 
-// After
-import { color, InlineMenu } from '@pie-lib/render-ui';
-```
-
-Then use it exactly like you would use `Menu`:
-
-```tsx
 <InlineMenu
   anchorEl={anchorEl}
-  open={open}
+  open={Boolean(anchorEl)}
   onClose={handleClose}
   anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
   transformOrigin={{ vertical: 'top', horizontal: 'left' }}
 >
   <MenuItem onClick={handleOption1}>Option 1</MenuItem>
   <MenuItem onClick={handleOption2}>Option 2</MenuItem>
-  <MenuItem onClick={handleOption3}>Option 3</MenuItem>
 </InlineMenu>
 ```
 
-### With Styled Components
-
-You can wrap `InlineMenu` with MUI's `styled` utility:
+A styled menu puts its rules on the paper and the list:
 
 ```tsx
 import { styled } from '@mui/material/styles';
-import { InlineMenu } from '@pie-lib/render-ui';
+import { color, InlineMenu } from '@pie-lib/render-ui';
 
 const StyledMenu = styled(InlineMenu)(() => ({
-  backgroundColor: color.background(),
-  border: `1px solid ${color.borderGray()}`,
+  '& .MuiPaper-root': {
+    border: `1px solid ${color.borderGray()}`,
+  },
   '& .MuiList-root': {
     padding: 0,
   },
 }));
 ```
 
-## When to Use
+## Props
 
-Use `InlineMenu` for:
+`InlineMenu` takes every MUI `MenuProps` and always sets `disableScrollLock`. Caller `slotProps` merge as follows:
 
-- ✅ **Inline dropdowns** within text or sentences
-- ✅ **Form field dropdowns** where the menu should overlay content
-- ✅ **Context menus** that appear on right-click
-- ✅ **Small option pickers** that shouldn't block the page
+- `root`: the caller's props pass through, and its `style` keys override the transparent background.
+- `backdrop`: the caller's props override `invisible`.
+- Every other slot (`paper`, `list`, `transition`) reaches MUI unchanged.
 
-**Don't use** `InlineMenu` for:
+`root` and `backdrop` take objects; the function form MUI also accepts for slot props is not supported on those two.
 
-- ❌ **Full-page modals** that should block interaction
-- ❌ **Dialog menus** where you want the backdrop to dim other content
-- ❌ **Navigation menus** that benefit from backdrop for focus
+## Scope
 
-## Migration Guide
+`InlineMenu` fits menus anchored inside content: dropdowns within text, option pickers beside a field, action menus on authoring controls. A stock `Menu` locks page scroll while it is open, and a `Dialog` dims the page and blocks it; use those where that is the intent.
 
-### Existing Components Using MUI Menu
+Current consumers:
 
-The following components in the project use MUI `Menu` and could benefit from `InlineMenu`:
-
-1. **`packages/lib-react/mask-markup/src/components/dropdown.tsx`** ✅ Already migrated
-2. `packages/lib-react/rubric/src/point-menu.tsx` - Context menu for rubric points
-3. `packages/lib-react/config-ui/src/choice-configuration/feedback-menu.tsx` - Feedback options menu
-4. `packages/elements-react/multi-trait-rubric/src/author/traitsHeader.tsx` - Traits header menu
-5. `packages/elements-react/multi-trait-rubric/src/author/trait.tsx` - Individual trait menu
-6. `packages/elements-react/matrix/src/author/MatrixLabelEditableButton.tsx` - Matrix label menu
-
-### Migration Steps
-
-For each component:
-
-1. Import `InlineMenu` from `@pie-lib/render-ui`
-2. Replace `<Menu` with `<InlineMenu`
-3. Test that the menu appears correctly without covering the page
-4. If needed, adjust `slotProps` (though `InlineMenu` already sets sensible defaults)
-
-## Technical Details
-
-### How It Works
-
-The issue occurs because MUI's `Menu` component uses a `Modal` wrapper that:
-- Creates a fixed-position root container (`position: fixed; inset: 0`)
-- By default has a white background
-- Renders with `z-index: 1300`
-- Blocks pointer events across the entire viewport
-
-`InlineMenu` fixes this by:
-
-```tsx
-<Menu
-  disableScrollLock  // Don't lock page scroll
-  hideBackdrop       // Remove the backdrop element
-  slotProps={{
-    root: {
-      style: {
-        backgroundColor: 'transparent',  // Make modal root transparent
-        pointerEvents: 'none',           // Allow clicks to pass through
-      },
-    },
-    paper: {
-      style: {
-        pointerEvents: 'auto',           // Make menu itself clickable
-      },
-    },
-  }}
-/>
-```
-
-### Props
-
-`InlineMenu` accepts all standard `MenuProps` from MUI. You can override any of the built-in configurations by passing your own `slotProps`:
-
-```tsx
-<InlineMenu
-  anchorEl={anchorEl}
-  open={open}
-  slotProps={{
-    paper: {
-      style: {
-        minWidth: '200px',
-        padding: '8px',
-        // pointerEvents: 'auto' is already set, but you can override
-      },
-    },
-  }}
->
-  {/* menu items */}
-</InlineMenu>
-```
-
-## Upstream Sync
-
-**Note:** Since this is a pie-elements-ng specific component, it lives in a non-synced file (`inline-menu.tsx`) and is exported separately in `index.ts`. It won't be overwritten by upstream syncs from pie-lib.
-
-The export in `index.ts` includes a comment marking it as non-synced:
-
-```ts
-// Non-synced pie-elements-ng exports
-export { InlineMenu } from './inline-menu';
-```
-
-If you need to apply this fix to the upstream pie-lib repository, copy the `inline-menu.tsx` file there as well.
+- `packages/lib-react/mask-markup/src/components/dropdown.tsx`: inline dropdown choices
+- `packages/lib-react/config-ui/src/choice-configuration/feedback-menu.tsx`: feedback type per choice
+- `packages/lib-react/rubric/src/point-menu.tsx`: rubric point actions
+- `packages/elements-react/multi-trait-rubric/src/author/traitsHeader.tsx`: remove-scale menu
+- `packages/elements-react/multi-trait-rubric/src/author/trait.tsx`: remove-trait menu
+- `packages/elements-react/matrix/src/author/MatrixLabelEditableButton.tsx`: row and column score actions

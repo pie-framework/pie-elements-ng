@@ -1,11 +1,11 @@
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import {
   assertReportPathWithinApp,
   getA11yReportFile,
   type A11yReportFileKey,
-} from '$lib/server/a11y-runner';
+} from '#lib/server/a11y-runner.ts';
 import { readFileSync } from 'node:fs';
 
 function isReportFileKey(value: string): value is A11yReportFileKey {

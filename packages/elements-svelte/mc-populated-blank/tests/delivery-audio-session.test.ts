@@ -121,7 +121,7 @@ describe('mc-populated-blank audio session', () => {
   it('reports a pick incomplete until the audio it must wait for has ended', () => {
     const { element, atDocument } = mount(undefined, AUDIO_MODEL);
 
-    element.onSessionChange({ id: '1', element: TAG, choiceId: 'a' });
+    element.onSessionChange({ id: '1', element: TAG, value: ['a'] });
     expect(atDocument.at(-1)?.detail.complete).toBe(false);
 
     element.onAudioEnded();
@@ -136,7 +136,7 @@ describe('mc-populated-blank audio session', () => {
       autoplayAudioEnabled: false,
     });
 
-    element.onSessionChange({ id: '1', element: TAG, choiceId: 'a' });
+    element.onSessionChange({ id: '1', element: TAG, value: ['a'] });
     expect(atDocument.at(-1)?.detail.complete).toBe(false);
 
     element.onAudioEnded();
@@ -149,7 +149,7 @@ describe('mc-populated-blank audio session', () => {
       completeAudioEnabled: false,
     });
 
-    element.onSessionChange({ id: '1', element: TAG, choiceId: 'a' });
+    element.onSessionChange({ id: '1', element: TAG, value: ['a'] });
 
     expect(atDocument.at(-1)?.detail.complete).toBe(true);
   });
@@ -158,11 +158,11 @@ describe('mc-populated-blank audio session', () => {
     // Autoplay re-fires only for a new `audioUrl`, so the finished playback
     // must survive a re-set of the same model.
     const { element, atDocument } = mount(undefined, AUDIO_MODEL);
-    element.onSessionChange({ id: '1', element: TAG, choiceId: 'a' });
+    element.onSessionChange({ id: '1', element: TAG, value: ['a'] });
 
     element.onAudioEnded();
     element.model = { ...AUDIO_MODEL };
-    element.onSessionChange({ id: '1', element: TAG, choiceId: 'b' });
+    element.onSessionChange({ id: '1', element: TAG, value: ['b'] });
 
     expect(atDocument.at(-1)?.detail.complete).toBe(true);
   });
@@ -172,7 +172,7 @@ describe('mc-populated-blank audio session', () => {
     element.onAudioEnded();
 
     element.model = { ...AUDIO_MODEL, audioUrl: 'https://example.com/b.mp3' };
-    element.onSessionChange({ id: '1', element: TAG, choiceId: 'b' });
+    element.onSessionChange({ id: '1', element: TAG, value: ['b'] });
 
     expect(atDocument.at(-1)?.detail.complete).toBe(false);
   });
@@ -193,7 +193,7 @@ describe('mc-populated-blank audio session, through the rendered component', () 
     expect(playerSession).toEqual({
       id: '1',
       element: TAG,
-      choiceId: 'b',
+      value: ['b'],
       audioStartTime: 1000,
       audioEndTime: 4000,
       waitTime: 3000,

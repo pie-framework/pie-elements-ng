@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/match-list/src/answer-area.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -143,19 +135,28 @@ export class AnswerArea extends React.Component {
   };
 
   render() {
-    const { disabled, instanceId, onRemoveAnswer, selectedAnswer, onChoiceClick, onPlacementClick } = this.props;
+    const {
+      disabled,
+      instanceId,
+      onRemoveAnswer,
+      selectedAnswer,
+      onChoiceClick,
+      onPlacementClick,
+    } = this.props;
     const rows = this.buildRows();
     const correctnessMap = this.getCorrectOrIncorrectMap();
 
     return (
       <ItemList>
         {rows.map(({ sessionAnswer, title, id }, index) => {
+          const labelId = `${instanceId}-prompt-label-${id}`;
+
           return (
             // Keyed by prompt id, not row index: each row owns a dnd-kit draggable/droppable
             // registration derived from its promptId, so React must not reuse one row's
             // instance for a different prompt.
             <Row key={id}>
-              <PromptEntry dangerouslySetInnerHTML={{ __html: title }} />
+              <PromptEntry id={labelId} dangerouslySetInnerHTML={{ __html: title }} />
 
               <ArrowEntry>
                 <Arrow direction="left" />
@@ -166,6 +167,7 @@ export class AnswerArea extends React.Component {
                 className="answer"
                 index={index}
                 promptId={id}
+                labelId={labelId}
                 correct={correctnessMap[id]}
                 draggable={!isEmpty(sessionAnswer)}
                 disabled={disabled}

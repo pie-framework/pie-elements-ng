@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/math-inline/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -51,7 +43,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { ResponseTypes } from './utils.js';
 import { isEmpty, isEqual } from '@pie-element/shared-lodash';
 import SimpleQuestionBlock from './simple-question-block.js';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
 const { translator } = Translator;
@@ -168,18 +160,21 @@ export class Main extends React.Component {
       showCorrect: this.props.model.config.alwaysShowCorrect || false,
       tooltipContainerRef: React.createRef(),
     };
+    this.instructionsIdPrefix = createUniqueId('math-inline-instructions');
   }
 
   UNSAFE_componentWillMount() {
     if (typeof window !== 'undefined') {
       if (!registered) {
+        // The embed is registered once for every item on the page, so it marks each block by its
+        // response id rather than taking it as a DOM id, which a second item would repeat.
         registerEmbed('answerBlock', (data) => {
           const classNames = getBlockClassNames();
           return {
             htmlString: `<div class="${classNames.blockContainer}">
-                <div class="${classNames.blockResponse}" id="${data}Index">R</div>
+                <div class="${classNames.blockResponse}" data-answer-block-index="${data}">R</div>
                 <div class="${classNames.blockMath}">
-                  <span id="${data}"></span>
+                  <span data-answer-block="${data}"></span>
                 </div>
               </div>`,
             text: () => 'text',
@@ -199,8 +194,8 @@ export class Main extends React.Component {
 
     if (this.root && model.disabled && !showCorrect) {
       Object.keys(answers).forEach((answerId) => {
-        const el = this.root.querySelector(`#${answerId}`);
-        const indexEl = this.root.querySelector(`#${answerId}Index`);
+        const el = this.root.querySelector(`[data-answer-block="${answerId}"]`);
+        const indexEl = this.root.querySelector(`[data-answer-block-index="${answerId}"]`);
         // const correct = model.correctness && model.correctness.correct;
 
         if (el) {
@@ -326,7 +321,7 @@ export class Main extends React.Component {
     const prevResponseType = prevProps.model?.config?.responseType;
     const currentResponseType = this.props.model?.config?.responseType;
 
-    if (prevResponseType !== currentResponseType) {
+    if (prevResponseType !== currentResponseType || prevProps.model?.language !== this.props.model?.language) {
       this.updateAria();
     }
   }
@@ -337,13 +332,11 @@ export class Main extends React.Component {
       const selectableElements = this.root.querySelectorAll('.mq-selectable');
       selectableElements.forEach((elem) => elem.setAttribute('aria-hidden', 'true'));
 
-      // Update aria-label for textarea elements and add aria-describedby
+      // Describe the keypad shortcuts on each textarea; @pie-lib/math-input names it
+      const instructions = translator.t('mathInline.keypadInstructions', { lng: this.props.model?.language });
       const textareaElements = this.root.querySelectorAll('textarea');
       textareaElements.forEach((elem, index) => {
-        elem.setAttribute('aria-label', 'Enter answer.');
-
-        // Create a unique id for each instructions element
-        const instructionsId = `instructions-${index}`;
+        const instructionsId = `${this.instructionsIdPrefix}-${index}`;
 
         // Find the parent element that contains the textarea
         const parent = elem.closest('.mq-textarea');
@@ -356,11 +349,10 @@ export class Main extends React.Component {
             instructionsElement = document.createElement('span');
             instructionsElement.id = instructionsId;
             instructionsElement.className = 'sr-only';
-            instructionsElement.textContent =
-              'This field supports both keypad and keyboard input. Use the keyboard to access and interact with the on-screen math keypad, which accepts LaTeX markup. Use the down arrow key to open the keypad and navigate its buttons. Use the escape key to close the keypad and return to the input field.';
             parent.insertBefore(instructionsElement, elem);
           }
 
+          instructionsElement.textContent = instructions;
           elem.setAttribute('aria-describedby', instructionsId);
         }
       });
@@ -386,7 +378,7 @@ export class Main extends React.Component {
     const isAnswerInputFocused =
       this.mqStatic && this.mqStatic.inputRef?.current
         ? this.mqStatic.inputRef?.current.contains(document.activeElement)
-        : document.activeElement?.getAttribute('aria-label') === 'Enter answer.';
+        : !!document.activeElement?.closest('.mq-editable-field');
     const { key, type } = event;
     const isClickOrTouchEvent = type === 'click' || type === 'touchstart';
 
@@ -645,7 +637,6 @@ export class Main extends React.Component {
       responseType,
       equationEditor,
       customKeys,
-      id,
       env: { mode, role } = {},
     } = config || {};
     const displayNote = (showCorrect || (mode === 'view' && role === 'instructor')) && showNote && note;
@@ -669,6 +660,7 @@ export class Main extends React.Component {
             if (mqStatic) this.mqStatic = mqStatic;
           }}
           latex={staticLatex}
+          language={language}
           onSubFieldChange={this.subFieldChanged}
           getFieldName={this.getFieldName}
           setInput={this.setInput}
@@ -680,12 +672,14 @@ export class Main extends React.Component {
 
     const midContent = (
       <MainContent>
-        {mode === 'gather' && <SrOnly>Math Equation Response Question</SrOnly>}
+        {mode === 'gather' && (
+          <SrOnly>{translator.t('mathInline.mathEquationResponseQuestion', { lng: language })}</SrOnly>
+        )}
 
         {viewMode &&
           showTeacherInstructions &&
           (!animationsDisabled ? (
-            <StyledCollapsible labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}>
+            <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
               <div dangerouslySetInnerHTML={{ __html: teacherInstructions }} />
             </StyledCollapsible>
           ) : (
@@ -808,6 +802,7 @@ export class Main extends React.Component {
                           if (mqStatic) this.mqStatic = mqStatic;
                         }}
                         latex={staticLatex}
+                        language={language}
                         onSubFieldChange={this.subFieldChanged}
                         getFieldName={this.getFieldName}
                         setInput={this.setInput}
@@ -827,7 +822,7 @@ export class Main extends React.Component {
         {viewMode &&
           showRationale &&
           (!animationsDisabled ? (
-            <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+            <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
               <div dangerouslySetInnerHTML={{ __html: rationale }} />
             </Collapsible>
           ) : (
@@ -897,8 +892,8 @@ export class Main extends React.Component {
                   <StyledCollapsible
                     key="collapsible-teacher-instructions"
                     labels={{
-                      hidden: 'Show Teacher Instructions',
-                      visible: 'Hide Teacher Instructions',
+                      hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+                      visible: translator.t('common:hideTeacherInstructions', { lng: language }),
                     }}
                   >
                     <PreviewPrompt prompt={teacherInstructions} />
@@ -920,8 +915,8 @@ export class Main extends React.Component {
                   <StyledCollapsible
                     key="collapsible-rationale"
                     labels={{
-                      hidden: 'Show Rationale',
-                      visible: 'Hide Rationale',
+                      hidden: translator.t('common:showRationale', { lng: language }),
+                      visible: translator.t('common:hideRationale', { lng: language }),
                     }}
                   >
                     <PreviewPrompt prompt={rationale} />
@@ -940,7 +935,6 @@ export class Main extends React.Component {
 
     return (
       <StyledUiLayout
-        id={id}
         extraCSSRules={extraCSSRules}
         ref={(r) => {
           // eslint-disable-next-line react/no-find-dom-node

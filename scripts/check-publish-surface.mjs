@@ -971,14 +971,26 @@ const findEditorRuntime = (snapshots, root) => {
  * A peer lets pnpm and yarn bind the element to the host's React, so a React 19 host runs
  * the element's React 18 build on React 19.
  *
- * Scope: element packages only, identified by pie.controller. Library packages
- * (@pie-lib/*, @pie-element/shared-*) are correct to declare React peer-only - the element
- * that consumes them owns the installable pin. Svelte elements declare no React and are
- * exempt automatically.
+ * Scope: element packages, identified by pie.controller. Svelte elements declare no React and
+ * are exempt automatically. Library packages (@pie-lib/*, @pie-element/shared-*) get the
+ * inverse rule: React peer-only, because the element that consumes them owns the installable
+ * pin. A library that installs its own React can resolve a second copy beside the element's.
  */
 export const collectSharedRuntimeDependencyViolations = (pkg) => {
   const violations = [];
-  if (!pkg.pie?.controller) return violations;
+  if (!pkg.pie?.controller) {
+    if (!/^@pie-(?:lib\/|element\/shared-)/.test(pkg.name || '')) return violations;
+    for (const dependencyName of Object.keys(expectedBrowserSharedDependencies)) {
+      for (const field of ['dependencies', 'optionalDependencies']) {
+        if (dependencyName in (pkg[field] || {})) {
+          violations.push(
+            `${field}.${dependencyName} is not allowed in a library: the consuming element owns the installable ${dependencyName}; declare it in peerDependencies only`
+          );
+        }
+      }
+    }
+    return violations;
+  }
 
   const dependencies = pkg.dependencies || {};
   const peerDependencies = pkg.peerDependencies || {};

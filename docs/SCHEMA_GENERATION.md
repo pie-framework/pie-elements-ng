@@ -32,7 +32,7 @@ Minimal shape:
 
 `file` is relative to the element package root. `path` is an optional dot-path inside the exported object.
 
-### Optional rich metadata (upstream-level richness)
+### Optional rich metadata
 
 Contracts can optionally include per-path metadata to enrich docs with descriptions, enums, required flags, and constraints.
 This is optional for new components; if omitted, generation still works from inferred defaults.
@@ -73,10 +73,11 @@ Generate docs manually:
 bun run cli docs:generate
 ```
 
-Generate with contract seeding (useful after sync):
+Create missing contract descriptors with `--seed-contracts`. `--refresh-contracts` rewrites existing descriptors' `views` from inferred defaults after a package or view changes, which drops any per-view `description` and `metadata`:
 
 ```bash
 bun run cli docs:generate --seed-contracts
+bun run cli docs:generate --refresh-contracts
 ```
 
 Verify contracts and docs drift:
@@ -98,10 +99,6 @@ Each generated element folder contains:
 Generated HTML is a build artifact. It is written into `apps/element-demo/static/element-docs/`
 by the element-demo `prebuild`/`predev` scripts so SvelteKit can serve it from
 `/element-docs/<element>/`, but the generated directory is not committed.
-
-## Upstream Sync Integration
-
-`upstream:update` and `upstream:sync` run through the React sync strategy, which refreshes docs contracts for synced React elements. This keeps descriptors aligned with package/view changes during sync.
 
 ## Build Integration
 

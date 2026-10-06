@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/matrix/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -42,9 +34,10 @@ export default class Matrix extends HTMLElement {
   }
 
   sessionChanged({ matrixKey, matrixValue }) {
-    const matrixRowKey = matrixKey.split('-')[0];
+    // keys are `row-column`: the separator keeps row 1 from matching rows 10 to 19
+    const matrixRowPrefix = `${matrixKey.split('-')[0]}-`;
     const sessionValueClone = Object.keys(this._session.value || {}).reduce((acc, key) => {
-      if (!key.startsWith(matrixRowKey)) {
+      if (!key.startsWith(matrixRowPrefix)) {
         acc[key] = this._session.value[key];
       }
       return acc;

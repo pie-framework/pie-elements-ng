@@ -1,16 +1,30 @@
+import {
+  conflictingMathjax3Version,
+  engineMathJax,
+  FOREIGN_OUTPUT_STYLESHEETS,
+  loadingRegistry,
+  loadMathJax,
+  OWN_STYLESHEET_ID,
+} from './engine/page.js';
+import { rewriteElementaryMath } from './elementary-math.js';
+import { injectExplorerStyles } from './explorer-styles.js';
+import { unprefixMathml } from './mathml.js';
 import type { MathjaxOptions } from './types.js';
-import { mathjax3Version, reportUnsupportedPage } from './unsupported-page.js';
+import { reportUnsupportedPage } from './unsupported-page.js';
 
-type MathJaxMacro = string | [string, number];
+export type MathJaxMacro = string | [string, number];
 
-interface MathItem {
+export interface MathItem {
   typesetRoot?: Element | null;
+  state?: () => number;
+  clear?: () => void;
 }
 
 /** The parts of MathJax's `startup.document` this adapter uses. */
-interface MathDocument {
-  math?: Iterable<MathItem>;
+export interface MathDocument {
+  math?: Iterable<MathItem> & { remove?: (...items: MathItem[]) => unknown };
   outputJax?: { chtmlStyles?: Element | null };
+  addStyles?: (styles: Record<string, Record<string, string>>) => void;
   addRenderAction?: (
     id: string,
     priority: number,
@@ -24,9 +38,13 @@ interface MathDocument {
  * script runs, the MathJax global afterwards, or a global without the component startup
  * (MathJax 2, or the MathJax 3 that the legacy @pie-lib/math-rendering renderer bundles).
  */
-interface MathJaxGlobal {
+export interface MathJaxGlobal {
   version?: string;
-  loader?: { load?: string[]; failed?: (error: Error) => void };
+  loader?: {
+    load?: string[];
+    failed?: (error: Error) => void;
+    'output/svg'?: { ready?: (name: string) => string };
+  };
   startup?: {
     typeset?: boolean;
     ready?: () => void;
@@ -42,11 +60,20 @@ interface MathJaxGlobal {
   options?: {
     enableMenu?: boolean;
     menuOptions?: { settings?: Record<string, boolean> };
+    a11y?: { inTabOrder?: boolean };
   };
+  output?: { displayOverflow?: string };
   chtml?: { fontURL?: string };
   typesetPromise?: (elements?: Element[]) => Promise<void>;
+  typesetClear?: (elements?: Element[]) => void;
   /** The component build's module tree. */
-  _?: { output?: { chtml_ts?: { CHTML?: { STYLESHEETID?: string } } } };
+  _?: {
+    output?: {
+      chtml_ts?: { CHTML?: { STYLESHEETID?: string } };
+      svg_ts?: { SVG?: { STYLESHEETID?: string } };
+    };
+    ui?: { menu?: { Menu?: { Menu?: { MENU_STORAGE?: string } } } };
+  };
 }
 
 /** TeX and MathML input, as the legacy renderer reads. `srcUrl` overrides it. */
@@ -80,9 +107,8 @@ const LEGACY_DELIMITERS: [string, string][] = [
   ['\\(', '\\)'],
 ];
 
-// Every element bundles its own copy of this module, so the load in flight is kept on the page
-// rather than in the module: a second MathJax startup on one page throws "State ASSISTIVEMML
-// already exists".
+// Where the load in flight is kept is the engine's: on the page for the page's MathJax, in the
+// module for a bundled one.
 const MATHJAX_LOADING: unique symbol = Symbol.for(
   '@pie-element/shared-math-rendering-mathjax/loading'
 );
@@ -91,17 +117,39 @@ type LoadingRegistry = { [MATHJAX_LOADING]?: Promise<void> };
 
 /**
  * MathJax 3 and 4 both replace any `<style id="MJX-CHTML-styles">` in `<head>` with their own, so
- * whichever engine renders second deletes the other's styles. The MathJax this adapter loads uses
- * its own id instead.
+ * whichever engine renders second deletes the other's styles; the same holds for SVG output's
+ * `MJX-SVG-styles`. The MathJax this adapter uses takes its own ids instead: the engine's for
+ * CHTML, and this one for the SVG output the page's MathJax loads from its menu.
  */
-const OWN_STYLESHEET_ID = 'PIE-MJX-CHTML-styles';
 const SHARED_STYLESHEET_ID = 'MJX-CHTML-styles';
+const OWN_SVG_STYLESHEET_ID = 'PIE-MJX-SVG-styles';
 
-/** Output stylesheets of another MathJax. MathJax 4's menu and explorer sheets are not among them. */
-const FOREIGN_OUTPUT_STYLESHEETS = [SHARED_STYLESHEET_ID, 'MJX-SVG-styles'];
+/**
+ * MathJax 3 and 4 both save a student's menu settings under `MathJax-Menu-Settings` in
+ * localStorage, and read them back on the next load, so settings MathJax 3 saved change MathJax 4's
+ * output: a stored SVG renderer switches it to SVG, a stored `assistiveMml: false` removes its
+ * hidden MathML. The MathJax this adapter loads uses its own key instead.
+ */
+const OWN_MENU_STORAGE = 'PIE-MathJax-Menu-Settings';
 
-/** After MathJax's own `update` action, at STATE.INSERTED (200). */
-const STRIP_LATEX_PRIORITY = 201;
+/**
+ * MathJax breaks displayed math to the width its container has at typeset, and does not break it
+ * again: math typeset while hidden is not broken, and math the page later narrows, on zoom for one,
+ * is not broken to the new width. Displayed math that does not fit scrolls in its own container,
+ * under the rule MathJax's `displayOverflow: 'scroll'` applies to all of it.
+ */
+const LINEBREAK_FALLBACK_STYLES = {
+  'mjx-container[overflow="linebreak"][display]': {
+    overflow: 'auto clip',
+    'min-width': 'initial !important',
+  },
+};
+
+/** MathJax's STATE.INSERTED: the item's output is in the document. */
+const STATE_INSERTED = 200;
+
+/** After MathJax's own `update` action, at STATE.INSERTED. */
+const STRIP_LATEX_PRIORITY = STATE_INSERTED + 1;
 
 /**
  * MathJax 4 records each node's TeX source in `data-latex` and `data-latex-item`, and carries them
@@ -123,10 +171,6 @@ function stripLatexAttributes(root: Element): void {
       node.removeAttribute('data-latex-item');
     }
   }
-}
-
-function pageMathJax(): MathJaxGlobal | undefined {
-  return (window as { MathJax?: MathJaxGlobal }).MathJax;
 }
 
 /** `latex` without the pair of legacy delimiters around all of it, if it has one. */
@@ -179,6 +223,16 @@ function wrapLatexElements(root: Element): void {
   }
 }
 
+/**
+ * Sets `displaystyle="true"` on each authored `<math>`, as the legacy renderer does, so MathML
+ * fractions, sums and limits keep display size in running text. MathJax's own output is left alone.
+ */
+function useDisplayStyle(root: Element): void {
+  for (const math of root.querySelectorAll('math')) {
+    if (!math.closest('mjx-container')) math.setAttribute('displaystyle', 'true');
+  }
+}
+
 function containsMath(root: Element, useSingleDollar: boolean): boolean {
   for (const math of root.querySelectorAll('math')) {
     if (!math.closest('mjx-assistive-mml')) return true;
@@ -195,22 +249,36 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
       loader: {
         load: accessibility ? ['a11y/assistive-mml'] : [],
         failed: (error) => reject(error),
+        // The menu loads SVG output when a student picks it as the renderer.
+        'output/svg': {
+          ready: (name) => {
+            const mathJax = engineMathJax();
+            if (isMathjax4(mathJax)) useOwnStylesheetIds(mathJax);
+            return name;
+          },
+        },
       },
       startup: {
         // Typeset only the elements the renderer is given, never the host page.
         typeset: false,
         ready: () => {
-          const mathJax = pageMathJax();
+          const mathJax = engineMathJax();
           const startup = mathJax?.startup;
-          // `srcUrl` may name another MathJax; only a 4.x build is known to take these changes.
-          const isolate = Boolean(mathJax?.version?.startsWith('4.'));
-          if (isolate) useOwnStylesheetId(mathJax);
+          const isolate = isMathjax4(mathJax);
+          if (isolate) {
+            useOwnStylesheetIds(mathJax);
+            useOwnMenuStorage(mathJax);
+          }
           startup?.defaultReady?.();
-          if (isolate) isolateOutput(startup?.document);
+          if (isolate) {
+            isolateOutput(startup?.document);
+            startup?.document?.addStyles?.(LINEBREAK_FALLBACK_STYLES);
+          }
           Promise.resolve(startup?.promise).then(() => resolve(), reject);
         },
       },
       tex: { macros: { ...LEGACY_MACROS } },
+      output: { displayOverflow: 'linebreak' },
       options: {
         enableMenu: accessibility,
         // The menu settings decide MathJax 4's accessibility output. These reproduce the legacy
@@ -222,6 +290,9 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
         menuOptions: {
           settings: { assistiveMml: accessibility, enrich: false, inTabOrder: false },
         },
+        // The explorer, which attaches once a student turns on speech or braille, takes its tab
+        // order from here; the menu setting does not reach it.
+        a11y: { inTabOrder: false },
       },
     };
 
@@ -238,19 +309,45 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
       config.chtml = { fontURL: '' };
     }
 
-    (window as { MathJax?: MathJaxGlobal }).MathJax = config;
-
-    const script = document.createElement('script');
-    script.src = srcUrl || DEFAULT_MATHJAX_SRC;
-    script.async = true;
-    script.onerror = () => reject(new Error('Failed to load MathJax'));
-    document.head.appendChild(script);
+    loadMathJax(config, srcUrl || DEFAULT_MATHJAX_SRC).catch(reject);
   });
 }
 
-function useOwnStylesheetId(mathJax: MathJaxGlobal | undefined): void {
-  const chtml = mathJax?._?.output?.chtml_ts?.CHTML;
+/** `srcUrl` may name another MathJax; only a 4.x build is known to take the isolating changes. */
+function isMathjax4(mathJax: MathJaxGlobal | undefined): boolean {
+  return Boolean(mathJax?.version?.startsWith('4.'));
+}
+
+/** Gives each output the MathJax build holds its own stylesheet id. */
+function useOwnStylesheetIds(mathJax: MathJaxGlobal | undefined): void {
+  const output = mathJax?._?.output;
+  const chtml = output?.chtml_ts?.CHTML;
   if (chtml) chtml.STYLESHEETID = OWN_STYLESHEET_ID;
+  const svg = output?.svg_ts?.SVG;
+  if (svg) svg.STYLESHEETID = OWN_SVG_STYLESHEET_ID;
+}
+
+/**
+ * Stores the menu settings of the MathJax this adapter loaded under their own key, and drops a
+ * stored `assistiveMml` so the configuration decides hidden MathML on every load.
+ */
+function useOwnMenuStorage(mathJax: MathJaxGlobal | undefined): void {
+  const menu = mathJax?._?.ui?.menu?.Menu?.Menu;
+  if (!menu) return;
+  menu.MENU_STORAGE = OWN_MENU_STORAGE;
+  try {
+    const stored = localStorage.getItem(OWN_MENU_STORAGE);
+    if (!stored) return;
+    const { assistiveMml, ...settings } = JSON.parse(stored);
+    if (assistiveMml === undefined) return;
+    if (Object.keys(settings).length) {
+      localStorage.setItem(OWN_MENU_STORAGE, JSON.stringify(settings));
+    } else {
+      localStorage.removeItem(OWN_MENU_STORAGE);
+    }
+  } catch {
+    // Storage is unavailable or holds something unreadable; MathJax handles either itself.
+  }
 }
 
 /**
@@ -319,6 +416,24 @@ function watchForForeignStylesheets(): void {
   observer.observe(head, { childList: true });
 }
 
+/**
+ * Removes from MathJax's list the math whose output has left the page. MathJax keeps every item it
+ * typesets until it is cleared, and a menu setting change rerenders them all. Math still on the
+ * page stays listed, so menu changes keep reaching it. Output MathJax has not inserted yet, in a
+ * typeset or rerender waiting on a font file, is detached too, so only inserted items qualify.
+ * Each is cleared and removed as MathJax's own `clearMathItemsWithin` does.
+ */
+function clearRemovedMath(mathDocument: MathDocument | undefined): void {
+  const list = mathDocument?.math;
+  if (!list?.remove) return;
+  const removed = [...list].filter(
+    (item) => (item.state?.() ?? 0) >= STATE_INSERTED && item.typesetRoot?.isConnected === false
+  );
+  if (removed.length === 0) return;
+  for (const item of [...removed].reverse()) item.clear?.();
+  list.remove(...removed);
+}
+
 /** Resolves once the MathJax the page configured itself has started. */
 function awaitPageMathjax(config: MathJaxGlobal): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -326,7 +441,7 @@ function awaitPageMathjax(config: MathJaxGlobal): Promise<void> {
     config.startup = startupConfig;
     const pageReady = startupConfig.ready;
     startupConfig.ready = () => {
-      const startup = pageMathJax()?.startup;
+      const startup = engineMathJax()?.startup;
       if (pageReady) {
         pageReady.call(startupConfig);
       } else {
@@ -338,7 +453,7 @@ function awaitPageMathjax(config: MathJaxGlobal): Promise<void> {
 }
 
 function whenMathjaxStarted(options: MathjaxOptions): Promise<void> {
-  const existing = pageMathJax();
+  const existing = engineMathJax();
   if (!existing) return injectMathjax(options);
   // A configuration object: the page loads MathJax itself.
   if (!existing.version) return awaitPageMathjax(existing);
@@ -353,7 +468,7 @@ function whenMathjaxStarted(options: MathjaxOptions): Promise<void> {
 
 function startMathjax(options: MathjaxOptions): Promise<void> {
   return whenMathjaxStarted(options).then(() => {
-    if (typeof pageMathJax()?.typesetPromise !== 'function') {
+    if (typeof engineMathJax()?.typesetPromise !== 'function') {
       console.warn(
         '[mathjax-renderer] MathJax on this page has no typesetPromise; math stays untypeset.'
       );
@@ -362,7 +477,7 @@ function startMathjax(options: MathjaxOptions): Promise<void> {
 }
 
 function ensureMathjax(options: MathjaxOptions): Promise<void> {
-  const registry = globalThis as LoadingRegistry;
+  const registry = loadingRegistry as LoadingRegistry;
   let loading = registry[MATHJAX_LOADING];
   if (!loading) {
     loading = startMathjax(options);
@@ -389,10 +504,13 @@ export function createMathjaxRenderer(
   return async (element: HTMLElement) => {
     if (typeof window === 'undefined') return;
 
-    const mathjax3 = mathjax3Version();
+    const mathjax3 = conflictingMathjax3Version();
     if (mathjax3)
       reportUnsupportedPage('mathjax-3-global', `window.MathJax is MathJax ${mathjax3}`);
     wrapLatexElements(element);
+    unprefixMathml(element);
+    useDisplayStyle(element);
+    rewriteElementaryMath(element);
     // Whether any content on the page holds math is unknown up front, so the first render starts
     // the load and later math is typeset without waiting on the download.
     const loading = ensureMathjax(options);
@@ -403,12 +521,22 @@ export function createMathjaxRenderer(
     }
 
     await loading;
-    const mathJax = pageMathJax();
+    const mathJax = engineMathJax();
     // A copy of the adapter from an earlier release may have resolved before startup finished.
     await mathJax?.startup?.promise;
     if (typeof mathJax?.typesetPromise !== 'function') return;
 
-    await mathJax.typesetPromise([element]);
+    injectExplorerStyles();
+    clearRemovedMath(mathJax.startup?.document);
+    try {
+      await mathJax.typesetPromise([element]);
+    } catch (error) {
+      // MathJax keeps the math that failed listed and typesets it again with every later element.
+      // MathJax 4.1.3 then fails it again when the failure was a font file, rejecting the typeset
+      // of unrelated math (fixed upstream in mathjax/MathJax-src#1545).
+      mathJax.typesetClear?.([element]);
+      throw error;
+    }
     // Also covers a MathJax 4 the page loaded itself, which has no render action from this adapter.
     stripLatexAttributes(element);
   };

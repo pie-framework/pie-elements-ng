@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing/src/tools/polygon/component.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -91,6 +83,7 @@ export class RawBaseComponent extends React.Component {
     labelNode: PropTypes.object,
     labelModeEnabled: PropTypes.bool,
     limitLabeling: PropTypes.bool,
+    language: PropTypes.string,
     onChangeLabelProps: PropTypes.func,
     onSetMiddleLabel: PropTypes.func,
     onChangeProps: PropTypes.func,
@@ -252,6 +245,7 @@ export class RawBaseComponent extends React.Component {
       middle,
       labelNode,
       labelModeEnabled,
+      language,
     } = this.props;
     const { editingLabel } = this.state;
     const lines = buildLines(points, closed);
@@ -267,6 +261,7 @@ export class RawBaseComponent extends React.Component {
           disabled={disabled || !labelModeEnabled}
           mark={middle}
           graphProps={graphProps}
+          language={language}
           onBlur={this.stopEditingLabel}
           onChange={(label) => onChangeLabelProps({ ...middle, label })}
         />,
@@ -321,6 +316,7 @@ export class RawBaseComponent extends React.Component {
                     disabled={disabled || !labelModeEnabled}
                     mark={p}
                     graphProps={graphProps}
+                    language={language}
                     onBlur={this.stopEditingLabel}
                     onChange={(label) => this.labelChange({ ...p, label }, index)}
                   />,
@@ -410,8 +406,17 @@ export default class Component extends React.Component {
   };
 
   render() {
-    const { coordinatesOnHover, mark, graphProps, onClick, isToolActive, labelNode, labelModeEnabled, limitLabeling } =
-      this.props;
+    const {
+      coordinatesOnHover,
+      mark,
+      graphProps,
+      onClick,
+      isToolActive,
+      labelNode,
+      labelModeEnabled,
+      limitLabeling,
+      language,
+    } = this.props;
     const { mark: stateMark } = this.state;
 
     return (
@@ -431,6 +436,7 @@ export default class Component extends React.Component {
         labelNode={labelNode}
         labelModeEnabled={labelModeEnabled}
         limitLabeling={limitLabeling}
+        language={language}
       />
     );
   }

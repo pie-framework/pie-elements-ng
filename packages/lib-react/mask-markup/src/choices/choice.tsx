@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/mask-markup/src/choices/choice.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
@@ -27,7 +19,8 @@ const StyledChoice: any = styled('span')(({ theme, disabled }) => ({
 }));
 
 const StyledChip: any = styled(Chip)(({selected}) => ({
-  backgroundColor: color.white(),
+  // --pie-white stays white under a dark theme; white keeps the chip opaque when no theme is set.
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
   border: selected ? `solid 2px ${color.buttonFocusOutline()}` : `1px solid ${color.text()}`,
   opacity: selected ? 0.7 : 1,
   color: color.text(),

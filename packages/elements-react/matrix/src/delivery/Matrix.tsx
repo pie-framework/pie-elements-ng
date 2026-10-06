@@ -1,19 +1,14 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/matrix/src/Matrix.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import ChoiceInput from './ChoiceInput.js';
-import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, useUniqueId } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -57,6 +52,13 @@ const MatrixGridWrapper = styled.div`
   margin-top: 20px;
 `;
 
+// A subgrid keeps the row's cells in the matrix columns while the row is its own radio group.
+const MatrixRow = styled.div`
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+`;
+
 const TeacherInstructions: any = styled(Collapsible)`
   margin-bottom: 16px;
 `;
@@ -68,39 +70,24 @@ const MatrixGridItem = styled.div`
 `;
 
 const Matrix = (props) => {
-  const { disabled, prompt, onSessionChange, columnLabels, matrixValues, rowLabels, session, teacherInstructions } =
-    props;
+  const {
+    disabled,
+    prompt,
+    onSessionChange,
+    columnLabels,
+    matrixValues,
+    rowLabels,
+    session,
+    teacherInstructions,
+    language,
+  } = props;
 
-  const gridMatrixItems = [];
-
-  for (let rowIndex = 0; rowIndex < rowLabels.length + 1; rowIndex++) {
-    for (let columnIndex = 0; columnIndex < columnLabels.length + 1; columnIndex++) {
-      let gridMatrixItem;
-
-      if (rowIndex === 0 && columnIndex === 0) {
-        gridMatrixItem = null;
-      } else if (rowIndex === 0) {
-        gridMatrixItem = columnLabels[columnIndex - 1];
-      } else if (columnIndex === 0) {
-        gridMatrixItem = rowLabels[rowIndex - 1];
-      } else {
-        const matrixKey = `${rowIndex - 1}-${columnIndex - 1}`;
-        const matrixValue = matrixValues[matrixKey];
-
-        gridMatrixItem = (
-          <ChoiceInput
-            matrixKey={matrixKey}
-            matrixValue={matrixValue || 0}
-            disabled={disabled}
-            onChange={onSessionChange}
-            checked={session.value && Object.prototype.hasOwnProperty.call(session.value, matrixKey)}
-          />
-        );
-      }
-
-      gridMatrixItems.push(gridMatrixItem);
-    }
-  }
+  // The row and column labels are plain grid cells, so each radio references them by id for its name.
+  const idPrefix = useUniqueId('matrix');
+  const rowLabelId = (rowIndex) => `${idPrefix}-row-${rowIndex}`;
+  const columnLabelId = (columnIndex) => `${idPrefix}-column-${columnIndex}`;
+  // A row's radios share a name, so the browser gives the row one tab stop and arrow-key selection.
+  const rowGroupName = (rowIndex) => `${idPrefix}-row-${rowIndex}-choice`;
   const gridTemplateColumns = [...columnLabels, {}].map(() => 'min-content').join(' ');
 
   return (
@@ -109,8 +96,8 @@ const Matrix = (props) => {
         <TeacherInstructions
           className={teacherInstructions}
           labels={{
-            hidden: 'Show Teacher Instructions',
-            visible: 'Hide Teacher Instructions',
+            hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+            visible: translator.t('common:hideTeacherInstructions', { lng: language }),
           }}
         >
           <PreviewPrompt prompt={teacherInstructions} />
@@ -120,9 +107,34 @@ const Matrix = (props) => {
       <PreviewPrompt className="prompt" prompt={prompt} />
 
       <MatrixGridWrapper gridTemplateColumns={gridTemplateColumns}>
-        {gridMatrixItems.map((gridMatrixItem, gridMatrixIndex) => {
-          return <MatrixGridItem key={`${gridMatrixIndex}`}>{gridMatrixItem}</MatrixGridItem>;
-        })}
+        <MatrixGridItem />
+        {columnLabels.map((columnLabel, columnIndex) => (
+          <MatrixGridItem key={`column-${columnIndex}`} id={columnLabelId(columnIndex)}>
+            {columnLabel}
+          </MatrixGridItem>
+        ))}
+        {rowLabels.map((rowLabel, rowIndex) => (
+          <MatrixRow key={`row-${rowIndex}`} role="radiogroup" aria-labelledby={rowLabelId(rowIndex)}>
+            <MatrixGridItem id={rowLabelId(rowIndex)}>{rowLabel}</MatrixGridItem>
+            {columnLabels.map((_, columnIndex) => {
+              const matrixKey = `${rowIndex}-${columnIndex}`;
+
+              return (
+                <MatrixGridItem key={matrixKey}>
+                  <ChoiceInput
+                    matrixKey={matrixKey}
+                    matrixValue={matrixValues[matrixKey] || 0}
+                    disabled={disabled}
+                    name={rowGroupName(rowIndex)}
+                    labelledBy={`${rowLabelId(rowIndex)} ${columnLabelId(columnIndex)}`}
+                    onChange={onSessionChange}
+                    checked={session.value && Object.prototype.hasOwnProperty.call(session.value, matrixKey)}
+                  />
+                </MatrixGridItem>
+              );
+            })}
+          </MatrixRow>
+        ))}
       </MatrixGridWrapper>
     </MatrixWrapper>
   );
@@ -131,6 +143,7 @@ const Matrix = (props) => {
 Matrix.propTypes = {
   prompt: PropTypes.string,
   teacherInstructions: PropTypes.string,
+  language: PropTypes.string,
   session: PropTypes.object,
   matrixValues: PropTypes.object,
   rowLabels: PropTypes.arrayOf(PropTypes.string),

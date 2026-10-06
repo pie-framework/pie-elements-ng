@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/extended-text-entry/src/annotation/annotation-menu.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -28,23 +20,27 @@ const StyledPopover: any = styled(Popover)({
       width: 0,
       pointerEvents: 'none',
       borderWidth: '7px',
-      borderTopColor: color.border(),
+      borderTopColor: color.borderDark(),
     },
   },
 });
 
 /*
- * Surface and stroke move together. Tokenising the border alone would put a scheme's
- * border colour on a fixed white popover -- under white-on-black, `--pie-border` is
- * #ffffff, so the outline would vanish. `--pie-white` inverts with the scheme, which
- * is what `common.white` was standing in for.
+ * Surface and text move together. `--pie-background` and `--pie-text` follow both the colour
+ * schemes and the dark theme; `--pie-white` stays white under the dark theme, and the popover
+ * paper's own text stays near-black in every scheme. Without a theme the fallbacks are the
+ * white and the paper text the menu has always had. The outline and pointer bound the menu
+ * against its surface and the page, so they follow the theme's `--pie-border-dark`, which clears
+ * 3:1 against both in every scheme. The cells are text-labelled buttons, so WCAG 1.4.11 needs no
+ * contrasting boundary between the outline and the annotation fills.
  */
-const MainWrapper: any = styled('div')(() => ({
+const MainWrapper: any = styled('div')(({ theme }) => ({
   width: '300px',
   overflow: 'hidden',
   borderRadius: '4px',
-  backgroundColor: color.white(),
-  border: `2px solid ${color.border()}`,
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.v('pie')('text', theme.palette.text.primary),
+  border: `2px solid ${color.borderDark()}`,
 }));
 
 const AnnotationsWrapper: any = styled('div')({
@@ -58,7 +54,8 @@ const ControlsWrapper: any = styled('div')(() => ({
   borderTop: `2px solid ${color.border()}`,
 }));
 
-const Button: any = styled('div')(({ variant }) => ({
+// The annotation fills stay light in every scheme, so their labels keep the paper's dark text.
+const Button: any = styled('div')(({ theme, variant }) => ({
   width: '22%',
   textAlign: 'center',
   padding: '4px',
@@ -75,12 +72,14 @@ const Button: any = styled('div')(({ variant }) => ({
   },
   ...(variant === 'positive' && {
     backgroundColor: 'rgb(153, 255, 153) !important',
+    color: theme.palette.text.primary,
     '&:hover': {
       filter: 'brightness(85%)',
     },
   }),
   ...(variant === 'negative' && {
     backgroundColor: 'rgb(255, 204, 238) !important',
+    color: theme.palette.text.primary,
     '&:hover': {
       filter: 'brightness(85%)',
     },

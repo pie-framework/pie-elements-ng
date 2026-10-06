@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/categorize/src/categorize/droppable-placeholder.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
@@ -25,6 +17,7 @@ const DroppablePlaceholder = ({
   choiceBoard,
   minRowHeight,
   id,
+  labelId,
   correct,
   selectedItem,
   onPlacementClick,
@@ -50,7 +43,9 @@ const DroppablePlaceholder = ({
 
   // A category is always a valid drop target (it holds 0..N choices), so it is always a
   // tab stop unless disabled — that's what makes "select a choice, Tab to a category,
-  // press Enter" work. The choices inside it keep their own dnd-kit tab stops for pick-up.
+  // press Enter" work. The choices inside it keep their own dnd-kit tab stops for pick-up,
+  // so the target is a group named by its label: a button would nest those choices, and
+  // a button's children are presentational to assistive technology.
   const isNativeTabStop = !disabled;
 
   const handleClick = () => {
@@ -103,7 +98,8 @@ const DroppablePlaceholder = ({
   return (
     <div
       ref={setNodeRef}
-      role={isNativeTabStop ? 'button' : undefined}
+      role="group"
+      aria-labelledby={labelId}
       tabIndex={isNativeTabStop ? 0 : -1}
       onClick={handleClick}
       onKeyDown={isNativeTabStop ? handleKeyDown : undefined}
@@ -141,6 +137,7 @@ DroppablePlaceholder.propTypes = {
   minRowHeight: PropTypes.string,
   onDropChoice: PropTypes.func,
   id: PropTypes.string.isRequired,
+  labelId: PropTypes.string,
   correct: PropTypes.bool,
   selectedItem: PropTypes.object,
   onPlacementClick: PropTypes.func,

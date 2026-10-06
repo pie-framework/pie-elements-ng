@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/math-inline/configure/src/general-config-block.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
@@ -235,7 +227,7 @@ class GeneralConfigBlock extends React.Component {
         registerEmbed('answerBlock', (data) => {
           const genericAnswerBlock = `
             <div class="block-container block-container-generic">
-              <div class="block-response block-response-generic" id="${data}Index">Response</div>
+              <div class="block-response block-response-generic" data-answer-block-index="${data}">Response</div>
             </div>`;
 
           return {
@@ -282,8 +274,8 @@ class GeneralConfigBlock extends React.Component {
         () => {
           if (this.root && Object.keys(responseAreas).length) {
             Object.keys(responseAreas).forEach((responseId, idx) => {
-              const el = this.root.querySelector(`#${responseId}`);
-              const indexEl = this.root.querySelector(`#${responseId}Index`);
+              const el = this.root.querySelector(`[data-answer-block="${responseId}"]`);
+              const indexEl = this.root.querySelector(`[data-answer-block-index="${responseId}"]`);
 
               if (el) {
                 applyStaticMath(el);

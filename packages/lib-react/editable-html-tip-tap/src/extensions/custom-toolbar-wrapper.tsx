@@ -1,17 +1,9 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/extensions/custom-toolbar-wrapper.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import IconButton from '@mui/material/IconButton';
 import Delete from '@mui/icons-material/Delete';
-import { PIE_TOOLBAR__CLASS } from '../constants.js';
+import { PIE_TOOLBAR__CLASS, TOOLBAR_BACKGROUND } from '../constants.js';
 import { styled } from '@mui/material/styles';
 import { DoneButton } from '../components/common/done-button.js';
 
@@ -22,7 +14,7 @@ const StyledToolbar: any = styled('div', {
   zIndex: 10,
   cursor: 'pointer',
   justifyContent: 'space-between',
-  background: 'var(--editable-html-toolbar-bg, #efefef)',
+  background: TOOLBAR_BACKGROUND,
   minWidth: showDone ? '280px' : '265px',
   margin: '5px 0 0 0',
   padding: '2px',

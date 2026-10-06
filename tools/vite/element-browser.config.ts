@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
-import { defineConfig, esmExternalRequirePlugin } from 'vite';
+import { defaultClientConditions, defineConfig, esmExternalRequirePlugin } from 'vite';
 import { browserCjsRequireInteropPlugin } from './browser-cjs-require-interop.ts';
 import { browserCssLoaderPlugin } from './browser-css-loader.ts';
 
@@ -50,6 +50,10 @@ export default defineConfig({
     react(),
     browserCssLoaderPlugin(),
   ],
+  resolve: {
+    // A shared package exports its build for element browser bundles under this condition.
+    conditions: ['pie-browser-esm', ...defaultClientConditions],
+  },
   define: {
     __PIE_PACKAGE_NAME__: JSON.stringify(packageJson.name ?? ''),
     __PIE_PACKAGE_VERSION__: JSON.stringify(packageJson.version ?? 'local'),

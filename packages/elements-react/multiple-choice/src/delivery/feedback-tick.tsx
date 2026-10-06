@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/multiple-choice/src/feedback-tick.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
@@ -30,12 +22,13 @@ const FeedbackTickContainer: any = styled(Box)({
   },
 });
 
+// The marks take the status colours: the --feedback-*-bg-color hooks hold the pale panel fills.
 const StyledSVG: any = styled('svg')({
   '& .incorrect-fill': {
-    fill: `var(--feedback-incorrect-bg-color, ${color.incorrect()})`,
+    fill: color.incorrect(),
   },
   '& .correct-fill': {
-    fill: `var(--feedback-correct-bg-color, ${color.correct()})`,
+    fill: color.correct(),
   },
 });
 

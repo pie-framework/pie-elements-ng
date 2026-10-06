@@ -86,7 +86,7 @@ describe('McPopulatedBlank — header', () => {
   it('holds the show-correct-answer toggle for an incorrect response', () => {
     const { root, header } = render(
       { prompt: EMPTY_WRAPPER, mode: 'evaluate', correctness: 'incorrect' },
-      { choiceId: 'A' }
+      { value: ['A'] }
     );
     expect(root.classList.contains('has-header')).toBe(true);
     expect(header?.querySelector('[data-testid="show-correct-answer"]')).not.toBeNull();

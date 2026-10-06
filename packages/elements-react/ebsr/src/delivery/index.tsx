@@ -1,18 +1,14 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/ebsr/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { SessionChangedEvent } from '@pie-element/shared-player-events';
 import MultipleChoice from '@pie-element/multiple-choice';
 import { get } from '@pie-element/shared-lodash';
 import debug from 'debug';
+import { createUniqueId } from '@pie-lib/render-ui';
+import Translator from '@pie-lib/translator';
 import { EBSR_MULTIPLE_CHOICE_TAG } from '../private-tags.js';
+
+const { translator } = Translator;
 
 const SESSION_CHANGED = SessionChangedEvent.TYPE;
 const MC_TAG_NAME = EBSR_MULTIPLE_CHOICE_TAG;
@@ -76,6 +72,10 @@ export default class Ebsr extends HTMLElement {
     this._session = {};
   }
 
+  // The item-level rules nest under a class only this element carries, as each part's rules nest
+  // under its own layout, so they style this item and no other.
+  cssScope = createUniqueId('ebsr-extra-css-rules');
+
   onSessionUpdated: any = (e) => {
     if (e.target === this) {
       return;
@@ -84,10 +84,10 @@ export default class Ebsr extends HTMLElement {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const id = e.target.getAttribute('id');
+    const part = e.target.getAttribute('data-part');
 
-    if (id) {
-      const key = `part${id.toUpperCase()}`;
+    if (part) {
+      const key = `part${part.toUpperCase()}`;
 
       if (e.update) {
         this._model[key] = e.update;
@@ -99,6 +99,8 @@ export default class Ebsr extends HTMLElement {
 
   set model(m) {
     this._model = m;
+    this._updateRegionName();
+    this._updateExtraCSSRules();
 
     customElements.whenDefined(MC_TAG_NAME).then(() => {
       this.setPartModel(this.partA, 'partA');
@@ -159,11 +161,11 @@ export default class Ebsr extends HTMLElement {
   }
 
   get partA() {
-    return this.querySelector(`${MC_TAG_NAME}#a`);
+    return this.querySelector(`${MC_TAG_NAME}[data-part="a"]`);
   }
 
   get partB() {
-    return this.querySelector(`${MC_TAG_NAME}#b`);
+    return this.querySelector(`${MC_TAG_NAME}[data-part="b"]`);
   }
 
   connectedCallback() {
@@ -197,13 +199,46 @@ export default class Ebsr extends HTMLElement {
     }
   }
 
+  /** The item-level name in the item language, which the parts carry when the item sets none. */
+  get regionName() {
+    const language = this._model?.language ?? this._model?.partA?.language;
+
+    return translator.t('ebsr.twoPartQuestion', { lng: language });
+  }
+
+  /** A model set can change the language; the heading is renamed in place so the parts stay mounted. */
+  _updateRegionName() {
+    if (!this.isConnected) {
+      return;
+    }
+
+    this.setAttribute('aria-label', this.regionName);
+
+    const heading = this.querySelector(':scope > .srOnly');
+    if (heading) {
+      heading.textContent = this.regionName;
+    }
+  }
+
+  /** The model usually arrives after the element connects, so the rules are rewritten on every model set. */
+  _updateExtraCSSRules() {
+    const style = this.querySelector(':scope > style[data-extra-css-rules]');
+    if (!style) {
+      return;
+    }
+
+    const rules = this._model?.extraCSSRules?.rules;
+    style.textContent = rules ? `.${this.cssScope} { ${rules} }` : '';
+  }
+
   _render() {
-    this.ariaLabel = 'Two-Part Question';
+    this.setAttribute('aria-label', this.regionName);
     this.role = 'region';
+    this.classList.add(this.cssScope);
 
     const { baseHeadingLevel: ebsrLevel, includeSrHeading } = getPlayerAttributes(this);
     const headingTag = ebsrLevel ? `h${Math.min(6, ebsrLevel)}` : 'h2';
-    const srHeading = includeSrHeading ? `<${headingTag} class="srOnly">Two-Part Question</${headingTag}>` : '';
+    const srHeading = includeSrHeading ? `<${headingTag} class="srOnly">${this.regionName}</${headingTag}>` : '';
 
     this.innerHTML = `
       <style>
@@ -217,12 +252,13 @@ export default class Ebsr extends HTMLElement {
         left: -10000px;
         top: auto;
       }
-      ${this._model?.extraCSSRules?.rules}
       </style>
+      <style data-extra-css-rules></style>
         ${srHeading}
-        <${MC_TAG_NAME} id="a"></${MC_TAG_NAME}>
-        <${MC_TAG_NAME} id="b"></${MC_TAG_NAME}>
+        <${MC_TAG_NAME} data-part="a"></${MC_TAG_NAME}>
+        <${MC_TAG_NAME} data-part="b"></${MC_TAG_NAME}>
     `;
+    this._updateExtraCSSRules();
 
     // when item is re-rendered (due to connectedCallback), if the custom element is already defined,
     // we need to set the model and session, otherwise the setters are not reached again

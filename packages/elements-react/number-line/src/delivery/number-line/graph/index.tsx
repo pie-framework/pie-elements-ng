@@ -1,17 +1,9 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/src/number-line/graph/index.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { scaleLinear } from 'd3-scale';
 import { select, pointer } from 'd3-selection';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import { DndContext } from '@dnd-kit/core';
 import Point from './elements/point.js';
 import Line from './elements/line.js';
@@ -20,6 +12,7 @@ import BaseLine from './line.js';
 import Arrow from './arrow.js';
 import Ticks from './ticks.js';
 import { snapTo } from './tick-utils.js';
+import { describePlottedElements, labelNumberLine } from './description.js';
 import Stacks from './stacks.js';
 import { TransitionGroup } from 'react-transition-group';
 import PropTypes from 'prop-types';
@@ -66,6 +59,7 @@ export class NumberLineGraph extends React.Component {
     disabled: PropTypes.bool,
     onDeselectElements: PropTypes.func,
     arrows: PropTypes.shape({ left: PropTypes.bool, right: PropTypes.bool }),
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -76,6 +70,11 @@ export class NumberLineGraph extends React.Component {
     super(props);
     this.state = {};
   }
+
+  descriptionId: string = createUniqueId('number-line-description');
+  // dnd-kit numbers the drag instructions each point references from a counter that restarts
+  // in every element bundle, so two element versions on a page would share the id.
+  dragInstructionsId: string = createUniqueId('number-line-drag-instructions');
 
   xScaleFn() {
     const { domain, width } = this.props;
@@ -136,7 +135,7 @@ export class NumberLineGraph extends React.Component {
   }
 
   render() {
-    const { domain, width, ticks, height, onToggleElement, onMoveElement, disabled, fraction } = this.props;
+    const { domain, width, ticks, height, onToggleElement, onMoveElement, disabled, fraction, language } = this.props;
     let { arrows } = this.props;
 
     arrows = arrows || { left: true, right: true };
@@ -226,11 +225,22 @@ export class NumberLineGraph extends React.Component {
       });
 
       return (
-        <DndContext>
+        <DndContext id={this.dragInstructionsId}>
           <div style={{ display: 'inline-block' }}>
             {/* touch-action must be on the outer svg: Chrome ignores it on inner svg elements (g, circle),
                 and without it the browser claims a touch on the drag handles as a pan and cancels dnd-kit's drag */}
-            <svg width={width} height={fraction ? height + 20 : height} style={{ touchAction: 'none' }}>
+            <svg
+              width={width}
+              height={fraction ? height + 20 : height}
+              style={{ touchAction: 'none' }}
+              // a group, because an img would hide the draggable points inside it
+              role="group"
+              aria-label={labelNumberLine({ domain, ticks, width, fraction, language })}
+              aria-describedby={this.descriptionId}
+            >
+              <desc id={this.descriptionId}>
+                {describePlottedElements(this.props.elements, { fraction, language })}
+              </desc>
               {false && <Debug domain={domain} ticks={ticks} />}
               <BaseLine y={lineY} width={width} />
               {arrows.left && <Arrow y={lineY} />}

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/extended-text-entry/src/annotation/annotation-editor.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { styled } from '@mui/material/styles';
@@ -26,6 +18,9 @@ import FreeformEditor from './freeform-editor.js';
 import AnnotationMenu from './annotation-menu.js';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer } from '@pie-lib/config-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const TextContainer: any = styled('div')({
   padding: '10px 120px 10px 16px',
@@ -103,6 +98,7 @@ class AnnotationEditor extends React.Component {
     disabledMath: PropTypes.bool,
     customKeys: PropTypes.array,
     keypadMode: PropTypes.string,
+    language: PropTypes.string,
   };
 
   constructor(props) {
@@ -553,6 +549,7 @@ class AnnotationEditor extends React.Component {
       disabledMath,
       keypadMode,
       height,
+      language,
       width,
       maxHeight,
       onCommentChange,
@@ -563,6 +560,7 @@ class AnnotationEditor extends React.Component {
 
     const anchorOffset = anchorEl && (anchorEl.offsetTop ? anchorEl.offsetTop : anchorEl.offsetParent.offsetTop);
     const topOffset = this.textRef && anchorOffset ? anchorOffset - this.textRef.scrollTop - 8 : 0;
+    const commentLabel = translator.t('extendedTextEntry.comment', { lng: language });
 
     return (
       <div>
@@ -577,13 +575,15 @@ class AnnotationEditor extends React.Component {
           <LabelsContainer ref={(r) => (this.labelsRef = r)} />
         </Wrapper>
 
-        <CommentContainer label={'Comment'}>
+        <CommentContainer label={commentLabel}>
           <EditableHtml
             className="prompt"
             markup={comment || ''}
             onChange={onCommentChange}
             width={width && (width + 104).toString()}
             disabled={disabled}
+            ariaLabel={commentLabel}
+            language={language}
             pluginProps={{
               math: {
                 disabled: disabledMath,

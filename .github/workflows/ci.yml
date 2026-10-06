@@ -6,13 +6,37 @@ on:
   pull_request:
     branches: [master, develop]
 
+# A pull request's newer push cancels its older run. Each push to a branch gets its own group: a
+# later push, a documentation-only one included, must not cancel the run validating an earlier one.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
 
 jobs:
+  # Decides which jobs this run skips: all but lint for a documentation-only change, all of them for
+  # a release or `skip-heavy-ci` pull request. See scripts/lib/change-scope.mjs. The other jobs run
+  # on `!cancelled()` and skip only on an explicit 'true', so a broken classifier runs them.
+  change-scope:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_code: ${{ steps.scope.outputs.skip_code }}
+      skip_lint: ${{ steps.scope.outputs.skip_lint }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - id: scope
+        env:
+          SKIP_HEAVY: ${{ github.event_name == 'pull_request' && (startsWith(github.head_ref, 'changeset-release/') || contains(github.event.pull_request.title, '[skip-heavy-ci]') || contains(join(github.event.pull_request.labels.*.name, ','), 'skip-heavy-ci')) }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: node scripts/ci-change-scope.mjs
+
   lint:
-    if: ${{ !(github.event_name == 'pull_request' && (startsWith(github.head_ref, 'changeset-release/') || contains(github.event.pull_request.title, '[skip-heavy-ci]') || contains(join(github.event.pull_request.labels.*.name, ','), 'skip-heavy-ci'))) }}
+    needs: change-scope
+    if: ${{ !cancelled() && needs.change-scope.outputs.skip_lint != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -30,7 +54,8 @@ jobs:
       - run: bun run lint
 
   dependency-integrity:
-    if: ${{ !(github.event_name == 'pull_request' && (startsWith(github.head_ref, 'changeset-release/') || contains(github.event.pull_request.title, '[skip-heavy-ci]') || contains(join(github.event.pull_request.labels.*.name, ','), 'skip-heavy-ci'))) }}
+    needs: change-scope
+    if: ${{ !cancelled() && needs.change-scope.outputs.skip_code != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -44,7 +69,8 @@ jobs:
       - run: bun run verify:dependency-integrity --fail-on-hoist
 
   build:
-    if: ${{ !(github.event_name == 'pull_request' && (startsWith(github.head_ref, 'changeset-release/') || contains(github.event.pull_request.title, '[skip-heavy-ci]') || contains(join(github.event.pull_request.labels.*.name, ','), 'skip-heavy-ci'))) }}
+    needs: change-scope
+    if: ${{ !cancelled() && needs.change-scope.outputs.skip_code != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -66,7 +92,8 @@ jobs:
           if-no-files-found: warn
 
   test:
-    if: ${{ !(github.event_name == 'pull_request' && (startsWith(github.head_ref, 'changeset-release/') || contains(github.event.pull_request.title, '[skip-heavy-ci]') || contains(join(github.event.pull_request.labels.*.name, ','), 'skip-heavy-ci'))) }}
+    needs: change-scope
+    if: ${{ !cancelled() && needs.change-scope.outputs.skip_code != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

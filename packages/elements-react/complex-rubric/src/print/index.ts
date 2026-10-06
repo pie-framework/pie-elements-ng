@@ -1,18 +1,11 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/complex-rubric/src/print.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 // here it is actually using rubric/src/index.js, instead of using rubric/src/print.js
 import Rubric from '@pie-element/rubric';
 // here it is actually using multi-trait-rubric/src/index.js, instead of using multi-trait-rubric/src/print.js
 import MultiTraitRubric from '@pie-element/multi-trait-rubric';
 import { RUBRIC_TYPES } from '@pie-lib/rubric';
+import { createUniqueId } from '@pie-lib/render-ui';
 import { COMPLEX_RUBRIC_MULTI_TRAIT_TAG, COMPLEX_RUBRIC_SIMPLE_TAG } from '../private-tags.js';
 
 const RUBRIC_TAG_NAME = COMPLEX_RUBRIC_SIMPLE_TAG;
@@ -22,9 +15,9 @@ class ComplexRubricSimple extends Rubric {}
 class ComplexRubricMultiTrait extends MultiTraitRubric {}
 
 const rubricTags = {
-  [RUBRIC_TYPES.SIMPLE_RUBRIC]: `<${RUBRIC_TAG_NAME} id="simpleRubric" />`,
-  [RUBRIC_TYPES.RUBRICLESS]: `<${RUBRIC_TAG_NAME} id="rubricless" />`,
-  [RUBRIC_TYPES.MULTI_TRAIT_RUBRIC]: `<${MULTI_TRAIT_RUBRIC_TAG_NAME} id="multiTraitRubric" />`,
+  [RUBRIC_TYPES.SIMPLE_RUBRIC]: (idPrefix) => `<${RUBRIC_TAG_NAME} id="${idPrefix}-simpleRubric" />`,
+  [RUBRIC_TYPES.RUBRICLESS]: (idPrefix) => `<${RUBRIC_TAG_NAME} id="${idPrefix}-rubricless" />`,
+  [RUBRIC_TYPES.MULTI_TRAIT_RUBRIC]: (idPrefix) => `<${MULTI_TRAIT_RUBRIC_TAG_NAME} id="${idPrefix}-multiTraitRubric" />`,
 };
 
 const preparePrintModel = (model, opts) => {
@@ -58,6 +51,8 @@ class ComplexRubricPrint extends HTMLElement {
     this._model = {};
     this._type = RUBRIC_TYPES.SIMPLE_RUBRIC;
     this._options = null;
+    // The rubric is looked up by id, and a fixed id repeats when two items share a page.
+    this._idPrefix = createUniqueId('complex-rubric');
   }
 
   set type(t) {
@@ -128,15 +123,15 @@ class ComplexRubricPrint extends HTMLElement {
   }
 
   get multiTraitRubric() {
-    return this.querySelector(`${MULTI_TRAIT_RUBRIC_TAG_NAME}#multiTraitRubric`);
+    return this.querySelector(`${MULTI_TRAIT_RUBRIC_TAG_NAME}#${this._idPrefix}-multiTraitRubric`);
   }
 
   get simpleRubric() {
-    return this.querySelector(`${RUBRIC_TAG_NAME}#simpleRubric`);
+    return this.querySelector(`${RUBRIC_TAG_NAME}#${this._idPrefix}-simpleRubric`);
   }
 
   get rubricless() {
-    return this.querySelector(`${RUBRIC_TAG_NAME}#rubricless`);
+    return this.querySelector(`${RUBRIC_TAG_NAME}#${this._idPrefix}-rubricless`);
   }
 
   connectedCallback() {
@@ -144,7 +139,7 @@ class ComplexRubricPrint extends HTMLElement {
   }
 
   _render() {
-    this.innerHTML = rubricTags[this._type] || '';
+    this.innerHTML = rubricTags[this._type]?.(this._idPrefix) || '';
   }
 }
 

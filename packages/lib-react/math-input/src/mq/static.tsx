@@ -1,18 +1,13 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/math-input/src/mq/static.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import PropTypes from 'prop-types';
 import React from 'react';
 import debug from 'debug';
+import { styled } from '@mui/material/styles';
 import { updateSpans } from '../updateSpans.js';
+import { labelFieldTextareas } from './field-label.js';
 import { MQ } from './mathquill-instance.js';
+import { mqInkStyles } from './common-mq-styles.js';
 
 const log = debug('pie-lib:math-input:mq:static');
 const REGEX = /\\MathQuillMathField\[r\d*\]\{(.*?)\}/g;
@@ -34,6 +29,8 @@ function countBraces(latex) {
   return count;
 }
 
+const StyledSpan: any = styled('span')(mqInkStyles);
+
 /**
  * Wrapper for MathQuill MQ.MathField.
  */
@@ -47,6 +44,7 @@ export default class Static extends React.Component {
     onSubFieldChange: PropTypes.func,
     onSubFieldFocus: PropTypes.func,
     setInput: PropTypes.func,
+    language: PropTypes.string,
   };
 
   static defaultProps = {
@@ -233,8 +231,10 @@ export default class Static extends React.Component {
     } finally {
       this._isProgrammaticUpdate = false;
     }
-  };
 
+    // Setting the latex rebuilds the response fields, and with them their textareas.
+    labelFieldTextareas(this.inputRef?.current, this.props.language);
+  };
 
   blur: any = () => {
     log('blur mathfield');
@@ -295,6 +295,6 @@ export default class Static extends React.Component {
   render() {
     const { onBlur, className } = this.props;
 
-    return <span className={className} onFocus={this.onFocus} onBlur={onBlur} ref={this.inputRef} />;
+    return <StyledSpan className={className} onFocus={this.onFocus} onBlur={onBlur} ref={this.inputRef} />;
   }
 }

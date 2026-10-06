@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/charting/src/axes.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -18,10 +10,13 @@ import { types } from '@pie-lib/plot';
 import { color } from '@pie-lib/render-ui';
 import { AlertDialog } from '@pie-lib/config-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import Translator from '@pie-lib/translator';
 
 import { TickCorrectnessIndicator } from './common/correctness-indicators.js';
-import { bandKey, getRotateAngle, getTickValues } from './utils.js';
+import { bandKey, getRotateAngle, getRotatedLabelOverhang, getTickValues, textOf } from './utils.js';
 import MarkLabel from './mark-label.js';
+
+const { translator } = Translator;
 
 // one document-level MutationObserver shared across all
 // RawChartAxes instances so that no chart misses a MathJax render batch
@@ -210,6 +205,7 @@ export class TickComponent extends React.Component {
       autoFocus,
       hiddenLabelRef,
       showCorrectness,
+      language,
     } = this.props;
 
     if (!formattedValue) {
@@ -271,6 +267,13 @@ export class TickComponent extends React.Component {
             rotate={rotate}
             correctness={correctness}
             error={error && error[index]}
+            ariaLabel={translator.t('charting.categoryLabel', { lng: language, index: index + 1 })}
+            mathAriaLabel={translator.t('charting.categoryLabelValue', {
+              lng: language,
+              index: index + 1,
+              label: textOf(label),
+              interpolation: { escapeValue: false },
+            })}
             limitCharacters
             correctnessIndicator={
               showCorrectness &&
@@ -412,6 +415,7 @@ TickComponent.propTypes = {
   onAutoFocusUsed: PropTypes.func,
   showCorrectness: PropTypes.bool,
   hiddenLabelRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
+  language: PropTypes.string,
 };
 
 export class RawChartAxes extends React.Component {
@@ -434,9 +438,44 @@ export class RawChartAxes extends React.Component {
     onAutoFocusUsed: PropTypes.func,
     showCorrectness: PropTypes.bool,
     hiddenLabelRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(Element) })]),
+    language: PropTypes.string,
+    onLabelOverhang: PropTypes.func,
   };
 
   state = { height: 0, width: 0 };
+
+  reportedOverhang = 0;
+
+  // the bar width, and the angle the category labels are drawn at
+  labelLayout: any = () => {
+    const { graphProps, xBand, categories = [], theme } = this.props;
+    const { scale = {}, domain = {} } = graphProps || {};
+    const { height, width } = this.state;
+
+    const bandWidth = xBand && typeof xBand.bandwidth === 'function' && xBand.bandwidth();
+    // for chartType "line", bandWidth will be 0, so we have to calculate it
+    const barWidth = bandWidth || (scale.x && scale.x(domain.max) / categories.length);
+
+    const fontSize = theme && theme.typography ? theme.typography.fontSize : 14;
+    // this mostly applies for labels that are not editable
+    const rotateBecauseOfHeight = getRotateAngle(fontSize, height);
+    // this applies for labels that are editable
+    const rotateBecauseOfWidth = width > barWidth ? 25 : 0;
+
+    return { bandWidth, barWidth, rotate: rotateBecauseOfHeight || rotateBecauseOfWidth };
+  };
+
+  // tells the chart how much lower the longest label reaches rotated, so it reserves that room
+  reportLabelOverhang: any = () => {
+    const { onLabelOverhang } = this.props;
+    const { height, width } = this.state;
+    const overhang = getRotatedLabelOverhang(width, height, this.labelLayout().rotate);
+
+    if (onLabelOverhang && overhang !== this.reportedOverhang) {
+      this.reportedOverhang = overhang;
+      onLabelOverhang(overhang);
+    }
+  };
 
   measureHiddenLabel: any = () => {
     if (!this.hiddenLabelRef) return;
@@ -477,6 +516,18 @@ export class RawChartAxes extends React.Component {
     // always register: if mjx-container isn't there yet, the doc observer will
     // call _onDocMutation when MathJax finishes rendering any element on the page.
     registerMathCallback(this._onDocMutation);
+    this.observeHiddenLabelSize(el);
+  };
+
+  // AutosizeInput sizes the input after the label mounts, so the width read on mount is the unsized
+  // one; measure again whenever the label's size changes
+  observeHiddenLabelSize: any = (el) => {
+    if (el === this._sizedLabel || typeof ResizeObserver === 'undefined') return;
+
+    this._sizeObserver?.disconnect();
+    this._sizedLabel = el;
+    this._sizeObserver = new ResizeObserver(() => this.measureHiddenLabel());
+    this._sizeObserver.observe(el);
   };
 
   setHiddenLabelRef: any = (ref) => {
@@ -490,10 +541,13 @@ export class RawChartAxes extends React.Component {
     if (this.hiddenLabelRef) {
       this.observeHiddenLabel(this.hiddenLabelRef);
     }
+    this.reportLabelOverhang();
   }
 
   componentWillUnmount() {
     unregisterMathCallback(this._onDocMutation);
+    this._sizeObserver?.disconnect();
+    this._sizedLabel = null;
     if (this._updateTimer) {
       clearTimeout(this._updateTimer);
     }
@@ -504,6 +558,7 @@ export class RawChartAxes extends React.Component {
       if (this._updateTimer) clearTimeout(this._updateTimer);
       this._updateTimer = setTimeout(() => this.measureHiddenLabel(), 50);
     }
+    this.reportLabelOverhang();
   }
 
   render() {
@@ -519,28 +574,19 @@ export class RawChartAxes extends React.Component {
       chartingOptions,
       changeInteractiveEnabled,
       changeEditableEnabled,
-      theme,
       autoFocus,
       onAutoFocusUsed,
       error,
       showCorrectness,
+      language,
     } = this.props;
 
-    const { scale = {}, range = {}, domain = {}, size = {} } = graphProps || {};
-    const { height, width } = this.state;
+    const { scale = {}, range = {}, size = {} } = graphProps || {};
 
     const bottomScale = xBand && typeof xBand.rangeRound === 'function' && xBand.rangeRound([0, size.width]);
-
-    const bandWidth = xBand && typeof xBand.bandwidth === 'function' && xBand.bandwidth();
-    // for chartType "line", bandWidth will be 0, so we have to calculate it
-    const barWidth = bandWidth || (scale.x && scale.x(domain.max) / categories.length);
+    const { bandWidth, barWidth, rotate } = this.labelLayout();
 
     const rowTickValues = getTickValues({ ...range, step: range.labelStep });
-    const fontSize = theme && theme.typography ? theme.typography.fontSize : 14;
-    // this mostly applies for labels that are not editable
-    const rotateBecauseOfHeight = getRotateAngle(fontSize, height);
-    // this applies for labels that are editable
-    const rotateBecauseOfWidth = width > barWidth ? 25 : 0;
 
     const getTickLabelProps = (value) => ({
       dy: 4,
@@ -554,7 +600,7 @@ export class RawChartAxes extends React.Component {
         xBand,
         bandWidth,
         barWidth,
-        rotate: rotateBecauseOfHeight || rotateBecauseOfWidth,
+        rotate,
         top,
         defineChart,
         chartingOptions,
@@ -570,6 +616,7 @@ export class RawChartAxes extends React.Component {
         y: props.y,
         formattedValue: props.formattedValue,
         showCorrectness,
+        language,
       };
 
       return <TickComponent {...properties} />;

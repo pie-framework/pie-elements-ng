@@ -1,25 +1,19 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/render-ui/src/color.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
-import { green, indigo, orange, pink, red } from '@mui/material/colors';
+import { green, indigo, pink, red } from '@mui/material/colors';
 
 export const defaults = {
   TEXT: 'black',
   DISABLED: 'grey',
   DISABLED_SECONDARY: '#ABABAB',
   DISABLED_TEXT: '#545454', // for text that is disabled but still has to be read - a non-editable label
-  CORRECT: green[500],
+  // CORRECT and INCORRECT are the pie-players base light values. They hold 4.70:1 and 4.93:1
+  // against white, so the borders, text and white-glyph badges that read them pass with no theme.
+  CORRECT: '#208537',
   CORRECT_SECONDARY: green[50],
   CORRECT_TERTIARY: '#0EA449',
   CORRECT_WITH_ICON: '#087D38',
-  INCORRECT: orange[500],
+  INCORRECT: '#a65f00',
   INCORRECT_SECONDARY: red[50],
   INCORRECT_WITH_ICON: '#BF0D00',
   MISSING: red[700],
@@ -40,10 +34,10 @@ export const defaults = {
   // this is only used for multi-trait-rubric, we might want to use BACKGROUND_DARK instead
   SECONDARY_BACKGROUND: 'rgba(241,241,241,1)',
   // raised surface for cards, answer pools, and menus;
-  SURFACE: '#E0E1E6',
+  SURFACE: '#EBECF1',
   BORDER: '#9A9A9A',
   BORDER_LIGHT: '#D1D1D1',
-  BORDER_DARK: '#646464',
+  BORDER_DARK: '#66686A',
   BORDER_GRAY: '#7E8494',
   // these are used for authored tables
   TABLE_GRID: 'black',
@@ -72,7 +66,8 @@ export const defaults = {
   KEYPAD_EMPTY_PLACEHOLDER: 'rgba(245, 0, 87, 0.4)',
   KEYPAD_BUTTON_HOVER: 'rgb(214, 218, 239)',
   KEYPAD_BUTTON_OPERATOR_HOVER: 'rgb(255, 197, 217)',
-  KEY_BOARD_FOCUS_INDICATOR: '#2B87FF',
+  // the editable-html formatting toolbar
+  EDITOR_TOOLBAR: '#efefef',
   // these are used for graphing UI elements
   BUTTON_BORDER: 'rgba(0, 0, 0, 0.23)',
   BUTTON_HOVER_BG: 'rgba(0, 0, 0, 0.08)',
@@ -143,19 +138,50 @@ export const focusCheckedBorder = () => pv('focus-checked-border', defaults.FOCU
 export const focusUnchecked = () => pv('focus-unchecked', defaults.FOCUS_UNCHECKED);
 export const focusUncheckedBorder = () => pv('focus-unchecked-border', defaults.FOCUS_UNCHECKED_BORDER);
 export const buttonFocusOutline = () => pv('button-focus-outline', defaults.BUTTON_FOCUS_OUTLINE);
+// The focus ring chain from THEMING.md. Its first link, focus-outline, is planned and no scheme
+// defines it yet, so it falls through to the registered button and checked-border focus tokens. One
+// line, so tests/pie-token-contract.test.ts sees the tokens it reads.
+export const focusOutline = () => pv('focus-outline', 'button-focus-outline', 'focus-checked-border', defaults.FOCUS_CHECKED_BORDER);
+/** @deprecated The keyboard focus ring is {@link focusOutline}. */
+export const keyBoardFocusIndicator = focusOutline;
 
 export const blueGrey100 = () => pv('blue-grey-100', defaults.BLUE_GREY100);
 export const blueGrey300 = () => pv('blue-grey-300', defaults.BLUE_GREY300);
 export const blueGrey600 = () => pv('blue-grey-600', defaults.BLUE_GREY600);
 export const blueGrey900 = () => pv('blue-grey-900', defaults.BLUE_GREY900);
 
-export const keypadButton = () => pv('keypad-button', defaults.KEYPAD_BUTTON);
-export const keypadButtonOperator = () => pv('keypad-button-operator', defaults.KEYPAD_BUTTON_OPERATOR);
+const channels = (literal) => {
+  const hex = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(literal);
+  return hex ? hex.slice(1).map((h) => parseInt(h, 16)) : literal.match(/\d+/g).slice(0, 3).map(Number);
+};
+
+/**
+ * A fill authored for a white page, re-expressed as `share` of a hue mixed into --pie-background.
+ * The hue is solved so that the mix over white is `literal` exactly: a white or absent background
+ * renders `literal`, and a dark scheme darkens the fill along with its background, so the scheme's
+ * light ink stays legible on it. `share` is a power of two so the solved hue is whole.
+ */
+const overBackground = (literal, share) => {
+  const hue = channels(literal).map((c) => (c - 255 * (1 - share)) / share);
+  return `color-mix(in srgb, rgb(${hue.join(' ')}) ${share * 100}%, ${pv('background', defaults.WHITE)})`;
+};
+
+// Hover keeps half the rest share, so it moves towards the background under every scheme.
+export const keypadButton = () => pv('keypad-button', overBackground(defaults.KEYPAD_BUTTON, 0.5));
+export const keypadButtonOperator = () =>
+  pv('keypad-button-operator', overBackground(defaults.KEYPAD_BUTTON_OPERATOR, 0.5));
 export const keypadEmptyPlaceholder = () => pv('keypad-empty-placeholder', defaults.KEYPAD_EMPTY_PLACEHOLDER);
-export const keypadButtonHover = () => pv('keypad-button-hover', defaults.KEYPAD_BUTTON_HOVER);
+export const keypadButtonHover = () => pv('keypad-button-hover', overBackground(defaults.KEYPAD_BUTTON_HOVER, 0.25));
 export const keypadButtonOperatorHover = () =>
-  pv('keypad-button-operator-hover', defaults.KEYPAD_BUTTON_OPERATOR_HOVER);
-export const keyBoardFocusIndicator = () => pv('keyboard-focus-indicator', defaults.KEY_BOARD_FOCUS_INDICATOR);
+  pv('keypad-button-operator-hover', overBackground(defaults.KEYPAD_BUTTON_OPERATOR_HOVER, 0.25));
+// Key label ink. Under a light scheme the key fills sit darker than the background, so an ink whose
+// channels sum under 450 scales towards black, by up to 40%: that holds grey-on-light-grey and
+// purple-on-light-green labels at 4.5:1. Every dark scheme's ink sums higher and passes unchanged.
+const inkShade = 'clamp(0.6, (r + g + b) / 450, 1)';
+export const keypadInk = () =>
+  `rgb(from ${text()} calc(r * ${inkShade}) calc(g * ${inkShade}) calc(b * ${inkShade}))`;
+// 12.5% keeps the toolbar's grey rest icons above 3:1 under a dark background.
+export const editorToolbar = () => overBackground(defaults.EDITOR_TOOLBAR, 0.125);
 export const buttonBorder = () => pv('button-border', defaults.BUTTON_BORDER);
 export const buttonHoverBg = () => pv('button-hover-bg', defaults.BUTTON_HOVER_BG);
 

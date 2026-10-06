@@ -23,6 +23,7 @@ export interface MathjaxOptions {
 
   /**
    * Override the MathJax script URL. Defaults to MathJax 4.1.3 `tex-mml-chtml.js` on jsDelivr.
+   * The browser ESM build bundles its MathJax and ignores it.
    */
   srcUrl?: string;
 }

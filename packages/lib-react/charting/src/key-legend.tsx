@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/charting/src/key-legend.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -17,7 +9,9 @@ import { color } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 
 const StyledContainer: any = styled('div')(({ theme }) => ({
-  backgroundColor: color.defaults.WHITE,
+  // White keeps the legend opaque when no theme is set.
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.text(),
   padding: theme.spacing(2),
   width: '355px',
   boxShadow: 'inset 0px 1px 5px 0px #9297A6',
@@ -64,7 +58,7 @@ const { translator } = Translator;
 
 const KeyLegend = ({ language }) => (
   <StyledContainer>
-    <StyledTitle>Key</StyledTitle>
+    <StyledTitle>{translator.t('selectText.key', { lng: language })}</StyledTitle>
     <StyledRow>
       <StyledIncorrectIcon />
       <div>{translator.t('charting.keyLegend.incorrectAnswer', { lng: language })}</div>

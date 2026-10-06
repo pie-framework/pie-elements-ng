@@ -1,14 +1,6 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/components/EditableHtml.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { debounce } from '@pie-element/shared-lodash';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import { styled } from '@mui/material/styles';
@@ -20,6 +12,7 @@ import SubScript from '@tiptap/extension-subscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import { ExternalPaste } from '../external-paste.js';
 import { normalizeInitialMarkup } from '../utils/helper.js';
 
 import ExtendedTable from '../extensions/extended-table.js';
@@ -84,6 +77,20 @@ const DEFAULT_ACTIVE_PLUGINS = [
   'redo',
 ];
 
+// The formatting that content pasted from outside the editor keeps, by the toolbar plugin that
+// offers it, so a paste adds nothing the toolbar leaves out.
+const PASTED_FORMATTING_BY_PLUGIN = {
+  bold: 'bold',
+  italic: 'italic',
+  underline: 'underline',
+  strikethrough: 'strike',
+  superscript: 'superscript',
+  subscript: 'subscript',
+  'bulleted-list': 'bulletList',
+  'numbered-list': 'orderedList',
+  table: 'table',
+};
+
 const cssVariables = {
   '--white': '#fff',
   '--black': '#2e2b29',
@@ -112,7 +119,7 @@ const cssVariables = {
 // update and removes anything no longer listed, and Tiptap merges its own role="textbox" only in
 // createView - not into editor.options, which is what setOptions re-pushes. So every attribute we
 // want to survive has to be listed here. See PIE-1015.
-const editorAttributes = (spellCheckEnabled) => ({
+const editorAttributes = (spellCheckEnabled, ariaLabel, ariaLabelledBy) => ({
   // Tiptap's own attribute, re-declared so it survives setOptions. setEditable alone re-pushes
   // editorProps on every mount, which is what removed it in 2.1.17.
   role: 'textbox',
@@ -126,7 +133,15 @@ const editorAttributes = (spellCheckEnabled) => ({
   spellcheck: spellCheckEnabled ? 'true' : 'false',
   autocorrect: spellCheckEnabled ? 'on' : 'off',
   autocapitalize: spellCheckEnabled ? 'on' : 'off',
+  // The text box's accessible name, from the caller - see PIE-1154. Left out when unset, since
+  // ProseMirror writes an undefined value as the string "undefined".
+  ...(ariaLabel && { 'aria-label': ariaLabel }),
+  ...(ariaLabelledBy && { 'aria-labelledby': ariaLabelledBy }),
 });
+
+// The attributes editorAttributes sets only when given a value, which a merge would otherwise keep
+// after the caller drops them.
+const OPTIONAL_EDITOR_ATTRIBUTES = ['aria-label', 'aria-labelledby'];
 
 export const EditableHtml = (props) => {
   const { showParagraphs, separateParagraphs } = props.pluginProps || {};
@@ -208,12 +223,21 @@ export const EditableHtml = (props) => {
     });
   }, [props, responseAreaPropsToUse.type]);
 
+  // Read by ExternalPaste at each paste, since useEditor keeps the extensions it was created with.
+  // `pasteFormatting: { disabled: true }` makes pastes plain text.
+  const pasteSettings = useRef(null);
+  pasteSettings.current = {
+    plainText: props.pluginProps?.pasteFormatting?.disabled === true,
+    formatting: activePluginsToUse.map((name) => PASTED_FORMATTING_BY_PLUGIN[name]).filter(Boolean),
+  };
+
   const extensions = [
     TextAlign.configure({
       types: ['heading', 'paragraph', 'div', 'headingParagraph', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'td', 'th'],
       alignments: ['left', 'right', 'center', 'justify'],
     }),
     TextStyleKit,
+    ExternalPaste.configure({ settings: () => pasteSettings.current }),
     CharacterCount.configure({
       limit: props.charactersLimit || 1000000,
     }),
@@ -338,13 +362,14 @@ export const EditableHtml = (props) => {
   // slate-based editor. Players that have to default to off - extended-text-entry, see
   // PIE-978 - resolve that in their controller and pass an explicit false.
   const spellCheckEnabled = props.spellCheck !== false;
+  const { ariaLabel, ariaLabelledBy } = props;
 
   const editor = useEditor(
     {
       extensions,
       immediatelyRender: false,
       editorProps: {
-        attributes: editorAttributes(spellCheckEnabled),
+        attributes: editorAttributes(spellCheckEnabled, ariaLabel, ariaLabelledBy),
         handleKeyDown(view, event) {
           if (props.onKeyDown) {
             return props.onKeyDown(event);
@@ -389,9 +414,9 @@ export const EditableHtml = (props) => {
   }, [props.disabled, editor]);
 
   // useEditor only re-applies options on its own when it is called with an empty dependency
-  // array, and this call site depends on charactersLimit, so a spellCheck change on a mounted
-  // editor has to be pushed in. The rest of editorProps stays as the editor already has it, and
-  // the attributes are merged rather than replaced so an attribute contributed by Tiptap or an
+  // array, and this call site depends on charactersLimit, so a spellCheck or name change on a
+  // mounted editor has to be pushed in. The rest of editorProps stays as the editor already has it,
+  // and the attributes are merged rather than replaced so an attribute contributed by Tiptap or an
   // extension can't be dropped the way role="textbox" was - see PIE-1015.
   useEffect(() => {
     if (!editor) {
@@ -399,14 +424,21 @@ export const EditableHtml = (props) => {
     }
 
     const currentEditorProps = editor.options?.editorProps;
-    const attributes = { ...currentEditorProps?.attributes, ...editorAttributes(spellCheckEnabled) };
+    const currentAttributes = currentEditorProps?.attributes || {};
+    const pieAttributes = editorAttributes(spellCheckEnabled, ariaLabel, ariaLabelledBy);
 
-    if (currentEditorProps?.attributes?.spellcheck === attributes.spellcheck) {
+    if (
+      ['spellcheck', ...OPTIONAL_EDITOR_ATTRIBUTES].every((name) => currentAttributes[name] === pieAttributes[name])
+    ) {
       return;
     }
 
-    editor.setOptions({ editorProps: { ...currentEditorProps, attributes } });
-  }, [spellCheckEnabled, editor]);
+    const kept = Object.fromEntries(
+      Object.entries(currentAttributes).filter(([name]) => !OPTIONAL_EDITOR_ATTRIBUTES.includes(name)),
+    );
+
+    editor.setOptions({ editorProps: { ...currentEditorProps, attributes: { ...kept, ...pieAttributes } } });
+  }, [spellCheckEnabled, ariaLabel, ariaLabelledBy, editor]);
 
   useEffect(() => {
     if (!editor) {

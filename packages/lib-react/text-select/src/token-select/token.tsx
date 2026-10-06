@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/text-select/src/token-select/token.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -23,10 +15,28 @@ const LINE_HEIGHT_MULTIPLIER = 3.2;
 const CORRECTNESS_LINE_HEIGHT_MULTIPLIER = 3.4;
 const CORRECTNESS_PADDING = 2;
 
+// The focus ring token chain the Svelte elements use. It sits outside the token, clear of the
+// selected border and the highlightChoices dashed border; under the dark preset it measures 3.09:1
+// on the selected fill and 5.22:1 on the page.
+const focusRing = () =>
+  color.v('pie')('focus-outline', 'button-focus-outline', 'focus-checked-border', color.defaults.FOCUS_CHECKED_BORDER);
+
 // Styled components for different token states
 const StyledToken: any = styled('span')(({ theme }) => ({
   cursor: 'pointer',
   textIndent: 0,
+  '&:focus:not(:focus-visible)': {
+    outline: 'none',
+  },
+  '&:focus-visible': {
+    outline: `3px solid ${focusRing()}`,
+    outlineOffset: '2px',
+    borderRadius: '4px',
+  },
+  // An unselected token at the selection limit looks like the text around it.
+  '&.unavailable': {
+    cursor: 'inherit',
+  },
   '&.disabled': {
     cursor: 'inherit',
     color: color.disabled(),
@@ -148,10 +158,14 @@ export class Token extends React.Component {
     disabled: PropTypes.bool,
     highlight: PropTypes.bool,
     correct: PropTypes.bool,
+    // In the keyboard sequence of an operable text: the token takes focus.
+    operable: PropTypes.bool,
+    describedBy: PropTypes.string,
   };
 
   static defaultProps = {
     selectable: false,
+    operable: false,
     text: '',
   };
 
@@ -165,6 +179,7 @@ export class Token extends React.Component {
       correct,
       animationsDisabled,
       isMissing,
+      operable,
     } = this.props;
     const isTouchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     const baseClassName = Token.rootClassName;
@@ -205,6 +220,7 @@ export class Token extends React.Component {
         selected && !disabled && 'selectedToken',
         selected && disabled && 'disabledAndSelected',
         highlight && selectable && !disabled && !selected && 'highlight',
+        operable && !selectable && !selected && 'unavailable',
         animationsDisabled && 'print',
         classNameProp,
       ),
@@ -215,17 +231,25 @@ export class Token extends React.Component {
   };
 
   render() {
-    const { text, index, correct, isMissing } = this.props;
+    const { text, index, correct, isMissing, selected, selectable, operable, describedBy } = this.props;
     const { className, Component, Container, Icon } = this.getClassAndIconConfig();
 
     const TokenComponent = Component || StyledToken;
+    const available = operable && (selectable || selected);
 
+    // A toggle button that stays an inline span, so a sentence token keeps wrapping with its line.
+    // TokenSelect moves the single tab stop between operable tokens.
     return (
       <Wrapper useWrapper={correct !== undefined || isMissing} Container={Container} Icon={Icon}>
         <TokenComponent
           className={className}
           dangerouslySetInnerHTML={{ __html: (text || '').replace(/\n/g, '<br>') }}
           data-indexkey={index}
+          role="button"
+          aria-pressed={!!selected}
+          aria-disabled={available ? undefined : true}
+          aria-describedby={describedBy || undefined}
+          tabIndex={operable ? -1 : undefined}
         />
       </Wrapper>
     );

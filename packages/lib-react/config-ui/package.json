@@ -1,7 +1,7 @@
 {
   "name": "@pie-lib/config-ui",
   "version": "14.0.0",
-  "description": "React implementation of @pie-lib/config-ui synced from pie-lib",
+  "description": "React implementation of @pie-lib/config-ui",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -15,7 +15,7 @@
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/icons": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
-    "assert": "^1.4.1",
+    "assert": "^2.1.0",
     "debug": "^4.1.1",
     "prop-types": "^15.6.2",
     "react-measure": "^2.2.2",
@@ -44,7 +44,12 @@
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
+    "@types/react-dom": "^18.2.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/dom": "^10.4.2",
+    "vitest": "^4.1.11",
+    "happy-dom": "^20.14.5"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

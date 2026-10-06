@@ -71,6 +71,9 @@ export interface McpbQuestion {
 export interface McpbSession {
   id?: string;
   element?: string;
+  /** The picked choice id in a one-entry array, as multiple-choice stores it. */
+  value?: string[];
+  /** Where older sessions hold the pick; read, never written. */
   choiceId?: string;
   audioStartTime?: number;
   audioEndTime?: number;

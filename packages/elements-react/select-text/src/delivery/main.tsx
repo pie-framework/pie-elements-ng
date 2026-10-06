@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/select-text/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -50,6 +42,9 @@ import { styled } from '@mui/material/styles';
 import generateModel from './utils.js';
 
 import debug from 'debug';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const log = debug('@pie-ui:select-text');
 
@@ -142,7 +137,7 @@ export class Main extends React.Component {
         {showTeacherInstructions &&
           (!model.animationsDisabled ? (
             <StyledCollapsible
-              labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
+              labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model.language }) }}
             >
               <PreviewPrompt prompt={model.teacherInstructions} />
             </StyledCollapsible>
@@ -187,13 +182,14 @@ export class Main extends React.Component {
           highlightChoices={model.highlightChoices}
           maxNoOfSelections={model.maxSelections}
           animationsDisabled={model.animationsDisabled}
+          language={model.language}
         />
         {mode === 'evaluate' && <Legend language={model.language} showOnlyCorrect={showCorrectAnswer} />}
 
         {showRationale &&
           (!model.animationsDisabled ? (
             <StyledCollapsible
-              labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}
+              labels={{ hidden: translator.t('common:showRationale', { lng: model.language }), visible: translator.t('common:hideRationale', { lng: model.language }) }}
             >
               <PreviewPrompt prompt={model.rationale} />
             </StyledCollapsible>

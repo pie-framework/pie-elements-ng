@@ -52,6 +52,7 @@ describe('ESM build outputs', () => {
     ignore: ['**/node_modules/**', '**/dist/**', '**/esm/**'],
   });
 
+  // Reading every package's built entry points takes over ten seconds on a busy machine.
   test('workspace packages expose ESM outputs after build', async () => {
     const failures: string[] = [];
 
@@ -106,5 +107,5 @@ describe('ESM build outputs', () => {
     }
 
     expect(failures).toEqual([]);
-  }, 15_000);
+  }, 60_000);
 });

@@ -1,10 +1,11 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 import '@pie-element/element-player';
-import '$lib/element-player/configure-loader';
-import { theme } from '$lib/stores/demo-state';
-import { loadController } from '$lib/element-player/lib/demo-element-loader';
-import type { PieController } from '$lib/element-player/lib/types';
+import '#lib/element-player/configure-loader.ts';
+import { theme } from '#lib/stores/demo-state.ts';
+import { loadController } from '#lib/element-player/lib/demo-element-loader.ts';
+import type { PieController } from '#lib/element-player/lib/types.ts';
+import { RENDER_TIMEOUT_MS, type RenderOutcome, watchRender } from './render-readiness';
 import type { A11yScanMode, A11yScanRole } from './suite';
 
 let {
@@ -29,9 +30,19 @@ let controller = $state<PieController | null>(null);
 let elementModel = $state<any>(null);
 let elementSession = $state<any>({});
 let loading = $state(true);
-let ready = $state(false);
+let modelReady = $state(false);
 let error = $state<string | null>(null);
 let buildRequestId = 0;
+
+/**
+ * The scan runs once the element has rendered its delivery DOM. The view model is ready earlier:
+ * the player still has to load the element, and the element renders after it is mounted.
+ */
+let renderState = $state<'pending' | RenderOutcome>('pending');
+let renderIssue = $state<string | null>(null);
+let renderDeadline = 0;
+let stopRenderWatch: (() => void) | null = null;
+const renderTimeoutSeconds = RENDER_TIMEOUT_MS / 1000;
 
 function cloneValue<T>(value: T): T {
   if (value === null || typeof value !== 'object') {
@@ -70,7 +81,7 @@ async function buildViewModel(requestId: number) {
     return;
   }
 
-  ready = false;
+  modelReady = false;
   error = null;
 
   try {
@@ -92,13 +103,13 @@ async function buildViewModel(requestId: number) {
 
     elementModel = { ...nextModel, mode };
     elementSession = cloneValue(sessionForController);
-    ready = true;
+    modelReady = true;
   } catch (err) {
     if (requestId !== buildRequestId) {
       return;
     }
     error = err instanceof Error ? err.message : String(err);
-    ready = false;
+    modelReady = false;
   }
 }
 
@@ -122,6 +133,64 @@ $effect(() => {
   void buildViewModel(buildRequestId);
 });
 
+function markNotRendered(issue: string) {
+  stopRenderWatch?.();
+  stopRenderWatch = null;
+  renderState = 'not-rendered';
+  renderIssue = issue;
+}
+
+$effect(() => {
+  if (!modelReady) {
+    return;
+  }
+  renderState = 'pending';
+  renderIssue = null;
+  renderDeadline = Date.now() + RENDER_TIMEOUT_MS;
+  const loadDeadline = setTimeout(() => {
+    if (renderState === 'pending' && !stopRenderWatch) {
+      markNotRendered(
+        `Not rendered: ${elementName} did not load within ${renderTimeoutSeconds} s.`
+      );
+    }
+  }, RENDER_TIMEOUT_MS);
+
+  return () => {
+    clearTimeout(loadDeadline);
+    stopRenderWatch?.();
+    stopRenderWatch = null;
+  };
+});
+
+function handleLoadComplete(event: CustomEvent<{ tagName?: string }>) {
+  const player = event.currentTarget as HTMLElement;
+  const tagName = event.detail?.tagName;
+  const instance = tagName ? player.getElementsByTagName(tagName)[0] : undefined;
+  if (!instance) {
+    markNotRendered(`Not rendered: the player mounted no ${tagName ?? elementName} element.`);
+    return;
+  }
+  stopRenderWatch?.();
+  stopRenderWatch = watchRender(
+    instance,
+    (outcome) => {
+      stopRenderWatch = null;
+      if (outcome === 'rendered') {
+        renderState = 'rendered';
+      } else {
+        markNotRendered(
+          `Not rendered: ${elementName} rendered no delivery DOM within ${renderTimeoutSeconds} s.`
+        );
+      }
+    },
+    { timeoutMs: Math.max(0, renderDeadline - Date.now()) }
+  );
+}
+
+function handlePlayerError(event: CustomEvent<{ error?: string }>) {
+  markNotRendered(`Not rendered: the player failed: ${event.detail?.error ?? 'unknown error'}`);
+}
+
 function handleSessionChanged(event: CustomEvent) {
   const detail = event.detail;
   if (detail && typeof detail === 'object' && 'session' in detail) {
@@ -135,7 +204,9 @@ function handleSessionChanged(event: CustomEvent) {
 <div
   class="a11y-scan-root"
   data-testid="a11y-scan-root"
-  data-a11y-ready={ready && !error ? 'true' : 'false'}
+  data-a11y-ready={modelReady && !error && renderState === 'rendered' ? 'true' : 'false'}
+  data-a11y-render={error ? 'not-rendered' : renderState}
+  data-a11y-render-issue={error ?? renderIssue ?? undefined}
   data-a11y-loading={loading ? 'true' : 'false'}
   data-element={elementName}
   data-mode={mode}
@@ -145,7 +216,7 @@ function handleSessionChanged(event: CustomEvent) {
     <div class="a11y-scan-status" data-testid="a11y-scan-status">Loading controller...</div>
   {:else if error}
     <div class="a11y-scan-error" data-testid="a11y-scan-error">{error}</div>
-  {:else if !ready}
+  {:else if !modelReady}
     <div class="a11y-scan-status" data-testid="a11y-scan-status">Preparing view model...</div>
   {:else}
     <pie-element-theme-daisyui theme={$theme}>
@@ -164,8 +235,13 @@ function handleSessionChanged(event: CustomEvent) {
           model={elementModel}
           session={elementSession}
           onsession-changed={handleSessionChanged}
+          onload-complete={handleLoadComplete}
+          onplayer-error={handlePlayerError}
         ></pie-element-player>
       </main>
+      {#if renderIssue}
+        <div class="a11y-scan-status" data-testid="a11y-scan-render-issue">{renderIssue}</div>
+      {/if}
     </pie-element-theme-daisyui>
   {/if}
 </div>

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/src/number-line/index.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import Toggle from '@pie-lib/correct-answer-toggle';
@@ -325,8 +317,8 @@ export class NumberLine extends React.Component {
         {showTeacherInstructions && (
           <StyledCollapsible
             labels={{
-              hidden: 'Show Teacher Instructions',
-              visible: 'Hide Teacher Instructions',
+              hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+              visible: translator.t('common:hideTeacherInstructions', { lng: language }),
             }}
           >
             <PreviewPrompt prompt={teacherInstructions} />
@@ -371,6 +363,7 @@ export class NumberLine extends React.Component {
             onToggleElement={this.toggleElement.bind(this)}
             onDeselectElements={this.deselectElements.bind(this)}
             debug={false}
+            language={language}
           />
           {title && <GraphTitle dangerouslySetInnerHTML={{ __html: title }} />}
 

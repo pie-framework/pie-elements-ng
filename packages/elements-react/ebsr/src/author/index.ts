@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/ebsr/configure/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -146,11 +138,11 @@ export default class EbsrConfigure extends HTMLElement {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const id = e.target && e.target.getAttribute('id');
+    const part = e.target && e.target.getAttribute('data-part');
 
-    if (id) {
+    if (part) {
       if (e.update) {
-        this._model[`part${id}`] = e.update;
+        this._model[`part${part}`] = e.update;
       }
 
       this.dispatchEvent(new ModelUpdatedEvent(this._model));

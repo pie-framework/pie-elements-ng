@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/extended-text-entry/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import Main from './main.js';
 import React from 'react';
@@ -20,6 +12,9 @@ import {
   createSessionNotifier,
   flushSessionNotifiers,
 } from '@pie-element/shared-player-events';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const log = debug('@pie-elements:extended-text-entry');
 
@@ -89,6 +84,11 @@ export default class RootExtendedTextEntry extends HTMLElement {
     this.setAttribute('lang', lang);
   }
 
+  /** Names the region in the item language, which can change with any model set. */
+  setRegionLabel() {
+    this.setAttribute('aria-label', translator.t('extendedTextEntry.writtenResponseQuestion', { lng: this._model?.language }));
+  }
+
   set model(m) {
     this._model = m;
     this.dispatchEvent(new ModelSetEvent(this.tagName.toLowerCase(), false, !!this._model));
@@ -130,7 +130,7 @@ export default class RootExtendedTextEntry extends HTMLElement {
   }
 
   connectedCallback() {
-    this.setAttribute('aria-label', 'Written Response Question');
+    this.setRegionLabel();
     this.setAttribute('role', 'region');
 
     this.render();
@@ -147,6 +147,7 @@ export default class RootExtendedTextEntry extends HTMLElement {
       });
 
       this.setLangAttribute();
+      this.setRegionLabel();
 
       if (!this._root) {
         this._root = createRoot(this);

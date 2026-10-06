@@ -378,8 +378,9 @@ describe('published gitHead lookup', () => {
 // `collectUnreleasedFiles` is the part PIE-1073 replaced: release intent used to be the range of
 // one push, which a cancelled or failed run took to the grave. These exercise real git history,
 // because the whole question is what git reports about commits that have been rebased,
-// reordered, or never released.
-describe('unreleased-file collection', () => {
+// reordered, or never released. Each runs git dozens of times, which takes seconds on a busy
+// machine.
+describe('unreleased-file collection', { timeout: 30_000 }, () => {
   const MC = 'packages/elements-svelte/mc-populated-blank';
   const CHOICE = 'packages/elements-react/multiple-choice';
 

@@ -1,16 +1,9 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/drag/src/drag-provider.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { useUniqueId } from '@pie-lib/render-ui';
 
 export function DragProvider({
   children,
@@ -25,6 +18,9 @@ export function DragProvider({
   accessibility,
 }) {
   const [activeId, setActiveId] = useState(null);
+  // dnd-kit numbers the drag instructions each draggable references from a counter that
+  // restarts in every element bundle, so two element versions on a page would share the id.
+  const dragInstructionsId = useUniqueId('drag-instructions');
 
   // Only build a keyboard sensor options object when a consumer actually customizes
   // it, so consumers that don't pass these props get dnd-kit's own defaults exactly
@@ -60,6 +56,7 @@ export function DragProvider({
 
   return (
     <DndContext
+      id={dragInstructionsId}
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}

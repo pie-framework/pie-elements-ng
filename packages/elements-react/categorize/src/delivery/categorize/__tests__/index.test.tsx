@@ -2,11 +2,17 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
+import { createDragCollision } from '@pie-lib/drag';
 import { Categorize } from '../index';
 import CategorizeProvider from '../index';
 import { closestDroppableKeyboardCoordinates } from '../keyboard-coordinates';
 
 let capturedDragProviderProps: any;
+
+const { dragCollision } = vi.hoisted(() => ({
+  dragCollision: { collisionDetection: () => [], modifiers: [], lastPointer: () => null, reset: () => {} },
+}));
 
 vi.mock('@pie-lib/drag', () => ({
   uid: {
@@ -19,6 +25,7 @@ vi.mock('@pie-lib/drag', () => ({
     capturedDragProviderProps = props;
     return <div>{props.children}</div>;
   },
+  createDragCollision: vi.fn(() => dragCollision),
 }));
 
 vi.mock('@dnd-kit/core', () => ({
@@ -84,6 +91,7 @@ vi.mock('@pie-lib/render-ui', () => {
     hasText: vi.fn(() => false),
     hasMedia: vi.fn(() => false),
     PreviewPrompt: (props: any) => <div {...props} />,
+    createUniqueId: (prefix: string) => `${prefix}-test`,
     color: {
       text: () => '#000',
       background: () => '#fff',
@@ -484,6 +492,14 @@ describe('categorize', () => {
       renderProvider();
 
       expect(typeof capturedDragProviderProps.onDragCancel).toBe('function');
+    });
+
+    it('collides through the drag collision helper, which keeps the modifier holding the choice in the region', () => {
+      renderProvider();
+
+      expect(createDragCollision).toHaveBeenCalledWith({ modifiers: [restrictToFirstScrollableAncestor] });
+      expect(capturedDragProviderProps.collisionDetection).toBe(dragCollision.collisionDetection);
+      expect(capturedDragProviderProps.modifiers).toBe(dragCollision.modifiers);
     });
   });
 });

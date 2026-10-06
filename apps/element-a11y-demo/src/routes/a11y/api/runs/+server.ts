@@ -1,8 +1,8 @@
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { startA11yRun } from '$lib/server/a11y-runner';
-import type { A11yRunRequest } from '$lib/a11y/run-types';
+import { startA11yRun } from '#lib/server/a11y-runner.ts';
+import type { A11yRunRequest } from '#lib/a11y/run-types.ts';
 
 export const POST: RequestHandler = async ({ request }) => {
   if (!dev) {

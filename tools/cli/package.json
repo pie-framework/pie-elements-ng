@@ -21,7 +21,7 @@
     "lint": "biome check ."
   },
   "dependencies": {
-    "@oclif/core": "^4.0.0",
+    "@oclif/core": "^5.1.2",
     "@oclif/plugin-help": "^6.2.0",
     "@pie-element/element-bundler": "workspace:*",
     "es-module-lexer": "^1.7.0",
@@ -30,7 +30,7 @@
     "webpack": "^5.104.1"
   },
   "devDependencies": {
-    "@types/node": "^26.6.2",
+    "@types/node": "^26.6.4",
     "bun-types": "^1.4.2",
     "typescript": "^5.9.3"
   },
@@ -43,11 +43,8 @@
       "dev": {
         "description": "Development server and tools"
       },
-      "upstream": {
-        "description": "Manage synchronization with upstream pie-elements repository"
-      },
       "packages": {
-        "description": "Generate and manage package configurations"
+        "description": "Package publishing settings"
       },
       "docs": {
         "description": "Generate and verify framework-agnostic element documentation"

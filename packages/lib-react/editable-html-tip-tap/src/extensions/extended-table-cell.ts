@@ -1,15 +1,8 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/extensions/extended-table-cell.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
+import { scopeAttribute } from './table-semantics.js';
 
 /**
  * Default table cells use ProseMirror `createAndFill()`, which prefers the first
@@ -26,4 +19,10 @@ export const ExtendedTableCell = TableCell.extend({
 
 export const ExtendedTableHeader = TableHeader.extend({
   content: TABLE_CELL_BLOCK_CONTENT,
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      scope: scopeAttribute,
+    };
+  },
 });

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/charting/src/common/drag-handle.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -71,19 +63,6 @@ const RawDragHandle = ({ x, y, width, graphProps, interactive, isHovered, correc
           {...rest}
         />
       )}
-
-      <defs>
-        <filter id="bottomShadow" x="0" y="0" width="140%" height="140%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-          <feOffset dx="0" dy="5" result="offsetblur" />
-          <feFlood floodColor="#00000033" />
-          <feComposite in2="offsetblur" operator="in" />
-          <feMerge>
-            <feMergeNode />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
 
       {correctness && interactive && !isPlot && (
         <foreignObject x={width / 2 - 14} y={0} width={40} height={40}>

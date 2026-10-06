@@ -1,24 +1,16 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/math-input/src/mq/input.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import debug from 'debug';
+import { labelFieldTextareas } from './field-label.js';
 import { MQ } from './mathquill-instance.js';
+import { mqInkStyles } from './common-mq-styles.js';
 
 const log = debug('math-input:mq:input');
 
-const StyledSpan: any = styled('span')({
-  // No specific styles needed, but component is available for future styling
-});
+const StyledSpan: any = styled('span')(mqInkStyles);
 
 /**
  * Wrapper for MathQuill MQ.MathField.
@@ -31,6 +23,7 @@ export class Input extends React.Component {
     latex: PropTypes.string,
     onFocus: PropTypes.func,
     onBlur: PropTypes.func,
+    language: PropTypes.string,
   };
 
   componentDidMount() {
@@ -45,10 +38,12 @@ export class Input extends React.Component {
     });
 
     this.updateLatex();
+    labelFieldTextareas(this.input, this.props.language);
   }
 
   componentDidUpdate() {
     this.updateLatex();
+    labelFieldTextareas(this.input, this.props.language);
   }
 
   updateLatex() {

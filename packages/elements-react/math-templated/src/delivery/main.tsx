@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/math-templated/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -50,6 +42,9 @@ import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import ReactDOM from 'react-dom';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -407,11 +402,13 @@ export class Main extends React.Component {
   UNSAFE_componentWillMount() {
     if (typeof window !== 'undefined') {
       if (!registered) {
+        // The embed is registered once for every item on the page, so it marks each block by its
+        // response id in a data attribute; a DOM id would repeat in a second item.
         registerEmbed('answerBlock', (data) => ({
           htmlString: `<div class="block-container">
-              <div class="block-response" id="${data}Index">R</div>
+              <div class="block-response" data-answer-block-index="${data}">R</div>
               <div class="block-math">
-                <span id="${data}"></span>
+                <span data-answer-block="${data}"></span>
               </div>
             </div>`,
           text: () => 'text',
@@ -430,8 +427,8 @@ export class Main extends React.Component {
 
     if (this.root && model.disabled && !showCorrect) {
       Object.keys(answers).forEach((answerId) => {
-        const el = this.root.querySelector(`#${answerId}`);
-        const indexEl = this.root.querySelector(`#${answerId}Index`);
+        const el = this.root.querySelector(`[data-answer-block="${answerId}"]`);
+        const indexEl = this.root.querySelector(`[data-answer-block-index="${answerId}"]`);
 
         if (el) {
           const answer = answers[answerId];
@@ -729,7 +726,7 @@ export class Main extends React.Component {
       showTeacherInstructions && (
         <CollapsibleContainer>
           {!animationsDisabled ? (
-            <Collapsible labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}>
+            <Collapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: model?.language }), visible: translator.t('common:hideTeacherInstructions', { lng: model?.language }) }}>
               {teacherInstructionsDiv}
             </Collapsible>
           ) : (
@@ -750,7 +747,7 @@ export class Main extends React.Component {
       showRationale && (
         <CollapsibleContainer>
           {!animationsDisabled ? (
-            <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>{rationaleDiv}</Collapsible>
+            <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: model?.language }), visible: translator.t('common:hideRationale', { lng: model?.language }) }}>{rationaleDiv}</Collapsible>
           ) : (
             rationaleDiv
           )}
@@ -773,6 +770,7 @@ export class Main extends React.Component {
       env: { mode } = {},
       printMode,
       alwaysShowCorrect,
+      language,
     } = model || {};
 
     const emptyResponse = isEmpty(responses);
@@ -796,6 +794,7 @@ export class Main extends React.Component {
                   this.mqStatic = mqStatic || this.mqStatic;
                 }}
                 latex={statics[id]}
+                language={language}
                 onSubFieldChange={this.subFieldChanged}
                 getFieldName={this.getFieldName}
                 setInput={this.setInput}
@@ -913,7 +912,9 @@ export class Main extends React.Component {
       >
         <MainContainer>
           {/* what is srOnly ? */}
-          {mode === 'gather' && <SrOnly>Math Equation Response Question</SrOnly>}
+          {mode === 'gather' && (
+            <SrOnly>{translator.t('mathInline.mathEquationResponseQuestion', { lng: language })}</SrOnly>
+          )}
 
           <MainContainer>
             {showCorrectAnswerToggle && (

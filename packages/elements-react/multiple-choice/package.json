@@ -1,7 +1,7 @@
 {
   "name": "@pie-element/multiple-choice",
   "version": "14.0.0",
-  "description": "React implementation of multiple-choice element synced from pie-elements",
+  "description": "React implementation of multiple-choice element",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pie-framework/pie-elements-ng.git",
@@ -100,7 +100,12 @@
     "typescript": "^5.9.3",
     "@vitejs/plugin-react": "^6.1.1",
     "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
+    "@types/react-dom": "^18.2.0",
+    "vitest": "^4.1.11",
+    "happy-dom": "^20.14.5",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/dom": "^10.4.2"
   },
   "scripts": {
     "build": "bun x vite build && bun x vite build --config ../../../tools/vite/element-browser.config.ts && bun x vite build --config ../../../tools/vite/element-browser-editor-runtime.config.ts && bun x vite build --config ../../../tools/vite/element-legacy-print.config.ts && bun x vite build --config vite.config.iife.ts && bun x tsc --emitDeclarationOnly",

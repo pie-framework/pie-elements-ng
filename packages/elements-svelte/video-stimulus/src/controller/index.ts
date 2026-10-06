@@ -1,11 +1,11 @@
 import type { MediaSource, TextTrackRef, TranscriptRef } from '@pie-element/shared-types';
-import { isSafeMediaSrc, normalizeMediaSources } from '@pie-players/pie-assessment-toolkit';
 import { resolveVideoStimulusUiText, VIDEO_STIMULUS_UI_TEXT_KEYS } from '../i18n.js';
 import {
   accessibilityProfile as DEFAULT_ACCESSIBILITY_PROFILE,
   model as DEFAULT_MODEL,
   presentation as DEFAULT_PRESENTATION,
 } from './defaults.js';
+import { isSafeMediaSrc, normalizeMediaSources } from './media-sources.js';
 import { CONTROLLER_MESSAGES } from './messages.js';
 import type {
   AccessibilityFinding,

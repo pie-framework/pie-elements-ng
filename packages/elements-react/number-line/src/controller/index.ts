@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/controller/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { cloneDeep, find, isEmpty, isEqualWith, merge, omitBy } from '@pie-element/shared-lodash';
 import { getFeedbackForCorrectness } from '@pie-element/shared-feedback';
@@ -279,9 +271,11 @@ export const getCorrectness = (corrected) => {
  * https://github.com/pie-framework/pie-elements/issues/21
  */
 export function normalize(question) {
-  const feedback = merge(defaults.feedback, question.feedback);
+  // A copy: merge and model()'s tick updates write into the objects they are given.
+  const base = cloneDeep(defaults);
+  const feedback = merge(base.feedback, question.feedback);
 
-  return { ...defaults, ...question, feedback };
+  return { ...base, ...question, feedback };
 }
 
 export function createDefaultModel(model = {}) {
@@ -289,7 +283,7 @@ export function createDefaultModel(model = {}) {
     const out = {
       ...model,
       graph: {
-        ...defaults.graph,
+        ...cloneDeep(defaults.graph),
         ...model.graph,
       },
       colorContrast: 'black_on_white',

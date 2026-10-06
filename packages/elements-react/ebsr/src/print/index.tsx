@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/ebsr/src/print.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { cloneDeep, get } from '@pie-element/shared-lodash';
 import MultipleChoice from '@pie-element/multiple-choice';
@@ -92,10 +84,10 @@ export default class Ebsr extends HTMLElement {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const id = e.target.getAttribute('id');
+    const part = e.target.getAttribute('data-part');
 
-    if (id) {
-      const key = `part${id.toUpperCase()}`;
+    if (part) {
+      const key = `part${part.toUpperCase()}`;
 
       if (e.update) {
         this._model[key] = e.update;
@@ -191,11 +183,11 @@ export default class Ebsr extends HTMLElement {
   }
 
   get partA() {
-    return this.querySelector(`${MC_TAG_NAME}#a`);
+    return this.querySelector(`${MC_TAG_NAME}[data-part="a"]`);
   }
 
   get partB() {
-    return this.querySelector(`${MC_TAG_NAME}#b`);
+    return this.querySelector(`${MC_TAG_NAME}[data-part="b"]`);
   }
 
   connectedCallback() {
@@ -210,8 +202,8 @@ export default class Ebsr extends HTMLElement {
   _render() {
     this.innerHTML = `
       <div>
-        <${MC_TAG_NAME} id="a"></${MC_TAG_NAME}>
-        <${MC_TAG_NAME} id="b"></${MC_TAG_NAME}>
+        <${MC_TAG_NAME} data-part="a"></${MC_TAG_NAME}>
+        <${MC_TAG_NAME} data-part="b"></${MC_TAG_NAME}>
       </div>
     `;
   }

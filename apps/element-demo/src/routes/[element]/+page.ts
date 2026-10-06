@@ -26,7 +26,7 @@ export const load: PageLoad = async ({ params }) => {
   let demoCount = 0;
 
   try {
-    const registry = await import('$lib/elements/registry');
+    const registry = await import('#lib/elements/registry.ts');
     const elementInfo = registry.getElement(elementName);
 
     if (elementInfo) {
@@ -44,7 +44,7 @@ export const load: PageLoad = async ({ params }) => {
       // Load demos if available
       if (demoCount > 0) {
         try {
-          const configModule = await import(`$lib/samples/${elementName}.json`);
+          const configModule = await import(`../../lib/samples/${elementName}.json`);
           if (configModule.default?.demos && Array.isArray(configModule.default.demos)) {
             demos = configModule.default.demos.map((demo: any) => ({
               id: demo.id,

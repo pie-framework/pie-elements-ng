@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing/src/tools/shared/arrow-head.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -66,10 +58,6 @@ ArrowHead.defaultProps = {
   points: '',
   size: 10,
   transform: '',
-};
-export const genUid = () => {
-  const v = (Math.random() * 1000).toFixed(0);
-  return `arrow-${v}`;
 };
 export const ArrowMarker = ({ id, size, className, disabled, correctness }) => {
   // Parse styling info from className if provided (for backward compatibility)

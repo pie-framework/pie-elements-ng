@@ -71,10 +71,13 @@ function toggleTranscript() {
     inline-size: fit-content;
     min-block-size: var(--media-control-min-size, 44px);
     padding: var(--media-control-padding, 0.625rem 0.875rem);
-    border: var(--media-control-border-width, 1px) solid var(--pie-border-light);
+    /* The text colour clears 3:1 against the button and the page in every theme; --pie-border-light
+       falls short. Without a theme the border follows the inherited text. */
+    border: var(--media-control-border-width, 1px) solid var(--pie-text, currentColor);
     border-radius: var(--media-control-border-radius, 0.25rem);
     color: var(--pie-text);
-    background: var(--pie-white);
+    /* --pie-white stays white under a dark theme. Without a theme the text inherits, so the background does too. */
+    background: var(--pie-background, transparent);
     font: inherit;
     font-weight: 600;
     cursor: pointer;

@@ -1,16 +1,11 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/fraction-model/src/fraction-model-chart.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Bar, BarChart, Cell, LabelList, Pie, PieChart, YAxis } from 'recharts';
 import { styled } from '@mui/material/styles';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const PieChartParentDiv: any = styled('div')({
   display: 'grid',
@@ -143,9 +138,25 @@ const FractionModelChart = (props) => {
     showLabel = false,
     disabled = false,
     onChange,
+    language,
   } = props;
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [clickedIndexArray, setClickedIndexArray] = useState(value);
+
+  /*
+   * Names a model from its position, its parts and how many of them are selected. Each model is
+   * an image: selection is pointer-only, and recharts' keyboard layer only moves a tooltip this
+   * chart does not render, so the application role recharts defaults to does not apply.
+   * @param chartIndex: 1-based index of the model
+   * */
+  const modelLabel = (chartIndex) =>
+    translator.t('fractionModel.modelLabel', {
+      lng: language,
+      index: chartIndex,
+      total: noOfModels,
+      selected: clickedIndexArray.find((item) => item.id === chartIndex)?.value ?? 0,
+      count: partsPerModel,
+    });
 
   /*
    * Function to create and return bar fraction model
@@ -163,7 +174,14 @@ const FractionModelChart = (props) => {
     let barItems = [];
     parentData.forEach((data, chartIndex) => {
       barItems.push(
-        <BarChart width={200} height={30 * partsPerModel} data={data} key={`bar-chart-${chartIndex + 1}`}>
+        <BarChart
+          width={200}
+          height={30 * partsPerModel}
+          data={data}
+          key={`bar-chart-${chartIndex + 1}`}
+          role="img"
+          aria-label={modelLabel(chartIndex + 1)}
+        >
           <YAxis hide={true} type="number" domain={[0, partsPerModel]} />
           {Object.keys(data[0]).map((key, index) => {
             if (key !== 'name') {
@@ -208,9 +226,16 @@ const FractionModelChart = (props) => {
     let pieItems = [];
     parentData.forEach((data, chartIndex) => {
       pieItems.push(
-        <StyledPieChart width={200} height={200} key={`pie-chart-${chartIndex}`}>
+        <StyledPieChart
+          width={200}
+          height={200}
+          key={`pie-chart-${chartIndex}`}
+          role="img"
+          aria-label={modelLabel(chartIndex + 1)}
+        >
           <Pie
             data={data}
+            rootTabIndex={-1}
             key={`pie-${chartIndex + 1}`}
             fill="#FFFFFF"
             stroke="#000000"

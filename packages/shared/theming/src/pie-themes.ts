@@ -54,7 +54,7 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   'incorrect-icon': '#C62828',
 
   // Status colors - Missing/Warning (amber)
-  warning: '#F57C00',
+  warning: '#B45309', // --pie-missing, read as text: 5.0:1 on base-100 and 4.6:1 on background-dark
   'missing-icon': '#757575',
 
   // Disabled states
@@ -66,12 +66,12 @@ export const PIE_LIGHT_THEME: Partial<PieThemeExtended> = {
   'background-dark': '#F5F5F5',
   'secondary-background': '#FAFAFA',
   'dropdown-background': '#ffffff',
-  surface: '#E0E1E6',
+  surface: '#EBECF1',
 
   // Borders
   border: '#BDBDBD',
   'border-light': '#E0E0E0',
-  'border-dark': '#757575',
+  'border-dark': '#66686A',
   'border-gray': '#9E9E9E',
 
   // Focus states
@@ -130,7 +130,7 @@ export const PIE_DARK_THEME: Partial<PieThemeExtended> = {
   'secondary-dark': '#1E88E5',
 
   // Tertiary colors (indigo)
-  tertiary: '#5C6BC0',
+  tertiary: '#9FA8DA', // link text: 7.1:1 on base-100, and distinct from tertiary-light for hover states and two-tone icons
   'tertiary-light': '#7986CB',
 
   // Status colors - Correct (green)

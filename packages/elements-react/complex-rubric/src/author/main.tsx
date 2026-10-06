@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/complex-rubric/configure/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -104,7 +96,7 @@ export class Main extends React.Component {
         default:
           rubricTag = (
             <SimpleRubricConfigureElement
-              id="simpleRubric"
+              data-rubric-type="simpleRubric"
               key="simple-rubric"
               ref={(ref) => {
                 if (ref) {
@@ -120,7 +112,7 @@ export class Main extends React.Component {
         case RUBRIC_TYPES.MULTI_TRAIT_RUBRIC:
           rubricTag = (
             <MultiTraitRubricConfigureElement
-              id="multiTraitRubric"
+              data-rubric-type="multiTraitRubric"
               key="multi-trait-rubric"
               ref={(ref) => {
                 if (ref) {
@@ -137,7 +129,7 @@ export class Main extends React.Component {
         case RUBRIC_TYPES.RUBRICLESS:
           rubricTag = (
             <SimpleRubricConfigureElement
-              id="rubricless"
+              data-rubric-type="rubricless"
               key="rubricless"
               ref={(ref) => {
                 if (ref) {

@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/drawing-response/src/drawing-response/drawable-image.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -26,7 +18,7 @@ const Image: any = styled('img')({
 const DrawableImage = ({ url, dimensions: { height, width } }) => (
   <ImageContainer>
     <Image
-      alt="drawing-response-image"
+      alt=""
       src={url}
       style={{
         height,

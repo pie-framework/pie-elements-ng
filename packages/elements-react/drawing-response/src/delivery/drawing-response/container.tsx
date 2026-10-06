@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/drawing-response/src/drawing-response/container.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
@@ -34,6 +26,8 @@ const Box: any = styled('div')(({ theme }) => ({
   backgroundColor: '#ECEDF1',
 }));
 
+// The canvas stays white in every scheme: students pick fill, outline and paint colours,
+// white and black among them, against it, and a scorer reviews the drawing on the same white.
 const DrawableHeight: any = styled('div')({
   minHeight: 350,
   backgroundColor: '#fff',
@@ -265,11 +259,11 @@ export class Container extends Component {
         <Box>
           <Toolbar>
             {TOOLS.map((tool) => {
-              const { type, label, icon } = tool;
+              const { type, labelKey, icon } = tool;
 
               return (
                 <Button
-                  title={label}
+                  title={translator.t(`drawingResponse.tools.${labelKey}`, { lng: language })}
                   key={type}
                   disabled={this.checkIfToolIsDisabled(type)}
                   onClick={() => this.handleMakeToolActive(tool)}

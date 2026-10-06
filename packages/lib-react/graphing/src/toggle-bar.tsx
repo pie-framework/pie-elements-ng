@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/graphing/src/toggle-bar.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -14,8 +6,8 @@ import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import { color } from '@pie-lib/render-ui';
 import { allTools } from './tools/index.js';
-import { DragProvider } from '@pie-lib/drag';
-import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { DragProvider, useDraggableControl } from '@pie-lib/drag';
+import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { arrayMove } from '@dnd-kit/sortable';
 import Translator from '@pie-lib/translator';
@@ -48,11 +40,12 @@ const StyledMiniButton: any = styled(Button, {
 }));
 
 export const MiniButton = (props) => {
-  const { disabled, className, selected, value, onClick, language } = props;
+  const { disabled, className, selected, value, onClick, language, dragProps } = props;
   const translatorKey = value.toLowerCase();
 
   return (
     <StyledMiniButton
+      {...dragProps}
       size="small"
       disabled={disabled}
       className={className}
@@ -75,6 +68,8 @@ MiniButton.propTypes = {
   value: PropTypes.string,
   onClick: PropTypes.func,
   language: PropTypes.string,
+  // The draggable's role, tab stop, drag instructions and listeners while the tool can be reordered.
+  dragProps: PropTypes.object,
 };
 
 const StyledToolsContainer: any = styled('div')(() => ({
@@ -152,14 +147,17 @@ export class ToggleBar extends React.Component {
                   moveTool={this.moveTool}
                   toolRef={toolRef}
                 >
-                  <StyledButton
-                    disabled={disabled}
-                    disableRipple={true}
-                    onClick={this.select}
-                    value={option}
-                    selected={isSelected}
-                    language={language}
-                  />
+                  {(dragProps) => (
+                    <StyledButton
+                      disabled={disabled}
+                      disableRipple={true}
+                      onClick={this.select}
+                      value={option}
+                      selected={isSelected}
+                      language={language}
+                      dragProps={dragProps}
+                    />
+                  )}
                 </DragTool>
               );
             }
@@ -170,16 +168,15 @@ export class ToggleBar extends React.Component {
   }
 }
 
-// DragTool functional component using @dnd-kit hooks
+// The tool's button is the draggable, so the wrapper adds no role or tab stop around it.
 function DragTool({ children, index, draggable, toolRef, value }) {
   const {
-    attributes,
-    listeners,
+    controlProps,
     setNodeRef: setDragNodeRef,
     transform,
     transition,
     isDragging,
-  } = useDraggable({
+  } = useDraggableControl({
     id: `tool-${value}-${index}`,
     disabled: !draggable,
     data: {
@@ -215,15 +212,13 @@ function DragTool({ children, index, draggable, toolRef, value }) {
 
   return (
     <StyledWrapper ref={setNodeRef} style={style}>
-      <div {...attributes} {...listeners}>
-        {children}
-      </div>
+      {children(controlProps)}
     </StyledWrapper>
   );
 }
 
 DragTool.propTypes = {
-  children: PropTypes.node,
+  children: PropTypes.func,
   index: PropTypes.number,
   draggable: PropTypes.bool,
   moveTool: PropTypes.func,

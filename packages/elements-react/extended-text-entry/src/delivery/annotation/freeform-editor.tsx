@@ -1,18 +1,11 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/extended-text-entry/src/annotation/freeform-editor.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Popover, TextField } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
+import { ANNOTATION_STROKE } from './annotation-utils.js';
 
 const StyledPopover: any = styled(Popover)(({ annotationType }) => ({
   '& .MuiPaper-root': {
@@ -44,14 +37,31 @@ const StyledPopover: any = styled(Popover)(({ annotationType }) => ({
   },
 }));
 
-// See annotation-menu: the popover surface has to follow the scheme alongside its
-// stroke, or a scheme's border colour lands on a permanently white card.
-const Wrapper: any = styled('div')(({ annotationType }) => ({
+// See annotation-menu: surface and text follow the theme together, and the text field takes
+// the same text colour as the buttons. The type colour is as light as the white fill, so a
+// 1px ANNOTATION_STROKE ring runs along both of its edges; the inner ring is drawn over the
+// content so a hovered button cannot cover it.
+const Wrapper: any = styled('div')(({ theme, annotationType }) => ({
   width: '200px',
   overflow: 'hidden',
   borderRadius: '4px',
-  backgroundColor: color.white(),
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.v('pie')('text', theme.palette.text.primary),
   border: `4px solid ${color.border()}`,
+  '& .MuiInputBase-root': {
+    color: 'inherit',
+  },
+  ...((annotationType === 'negative' || annotationType === 'positive') && {
+    position: 'relative',
+    boxShadow: `0 0 0 1px ${ANNOTATION_STROKE}`,
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      border: `1px solid ${ANNOTATION_STROKE}`,
+      pointerEvents: 'none',
+    },
+  }),
   ...(annotationType === 'negative' && {
     borderColor: 'rgb(255, 204, 238) !important',
   }),
@@ -66,7 +76,8 @@ const Holder: any = styled('div')(() => ({
   borderTop: `2px solid ${color.border()}`,
 }));
 
-const Button: any = styled('div')(({ variant, annotationType }) => ({
+// The annotation fills stay light in every scheme, so text on them keeps the paper's dark text.
+const Button: any = styled('div')(({ theme, variant, annotationType }) => ({
   flexGrow: 1,
   width: '28%',
   textAlign: 'center',
@@ -80,12 +91,14 @@ const Button: any = styled('div')(({ variant, annotationType }) => ({
   },
   ...(variant === 'positive' && {
     backgroundColor: 'rgb(153, 255, 153) !important',
+    color: theme.palette.text.primary,
     '&:hover': {
       filter: 'brightness(85%)',
     },
   }),
   ...(variant === 'negative' && {
     backgroundColor: 'rgb(255, 204, 238) !important',
+    color: theme.palette.text.primary,
     '&:hover': {
       filter: 'brightness(85%)',
     },
@@ -93,11 +106,13 @@ const Button: any = styled('div')(({ variant, annotationType }) => ({
   ...(variant === 'typeChange' && annotationType === 'negative' && {
     '&:hover': {
       backgroundColor: 'rgb(153, 255, 153) !important',
+      color: theme.palette.text.primary,
     },
   }),
   ...(variant === 'typeChange' && annotationType === 'positive' && {
     '&:hover': {
       backgroundColor: 'rgb(255, 204, 238) !important',
+      color: theme.palette.text.primary,
     },
   }),
 }));
@@ -118,6 +133,7 @@ class FreeformEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = { value: props.value };
+    this.editorId = createUniqueId('annotation-editor');
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -184,7 +200,7 @@ class FreeformEditor extends React.Component {
       >
         <Wrapper annotationType={type}>
           <TextField
-            id="annotation-editor"
+            id={this.editorId}
             style={{
               padding: '2px 5px',
               width: '95%',

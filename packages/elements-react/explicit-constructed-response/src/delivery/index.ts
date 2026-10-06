@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/explicit-constructed-response/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -19,6 +11,9 @@ import {
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 
 import Main from './main.js';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const SESSION_NOTIFY_DELAY_MS = 200;
 
@@ -58,12 +53,18 @@ export default class InlineDropdown extends HTMLElement {
     this.setAttribute('lang', lang);
   }
 
+  /** Names the region in the item language, which can change with any model set. */
+  setRegionLabel() {
+    this.setAttribute('aria-label', translator.t('explicitConstructedResponse.fillInTheBlankQuestion', { lng: this._model?.language }));
+  }
+
   set model(m) {
     this._model = m;
     this.dispatchEvent(
       new ModelSetEvent(this.tagName.toLowerCase(), this.session && !!this.session.value, !!this._model),
     );
     this.setLangAttribute();
+    this.setRegionLabel();
 
     this._render();
   }
@@ -121,7 +122,7 @@ export default class InlineDropdown extends HTMLElement {
   };
 
   connectedCallback() {
-    this.setAttribute('aria-label', 'Fill in the Blank Question');
+    this.setRegionLabel();
     this.setAttribute('role', 'region');
 
     this._render();

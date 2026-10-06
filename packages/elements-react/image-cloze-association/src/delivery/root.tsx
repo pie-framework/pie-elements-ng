@@ -1,20 +1,11 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/image-cloze-association/src/root.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
 import { DragOverlay } from '@dnd-kit/core';
-import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
 import { DragProvider } from '@pie-lib/drag';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { color, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
+import { color, createUniqueId, Collapsible as CollapsibleImport, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport, hasText, hasMedia } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -86,6 +77,9 @@ const StyledRationale: any = styled(Collapsible)(({ theme }) => ({
 }));
 
 export class ImageClozeAssociationComponent extends React.Component {
+  // The delivery element finds the container by its class, which authored CSS may also target.
+  mainContainerId = createUniqueId('main-container');
+
   constructor(props) {
     super(props);
     const {
@@ -274,6 +268,22 @@ export class ImageClozeAssociationComponent extends React.Component {
     this.placeSelectedResponse(containerIndex);
   };
 
+  // Names a choice by its position among the model's choices, which holds in the pool and in an area.
+  getChoiceLabel: any = (value) => {
+    const {
+      model: { possibleResponses = [], language },
+    } = this.props;
+    const index = possibleResponses.indexOf(value);
+
+    return index === -1
+      ? undefined
+      : translator.t('imageClozeAssociation.answerChoice', {
+          lng: language,
+          index: index + 1,
+          total: possibleResponses.length,
+        });
+  };
+
   renderDragOverlay: any = () => {
     const { draggingElement } = this.state;
     const { model } = this.props;
@@ -289,6 +299,7 @@ export class ImageClozeAssociationComponent extends React.Component {
         key={draggingElement.id}
         canDrag={false}
         data={draggingElement}
+        getChoiceLabel={this.getChoiceLabel}
         onDragBegin={() => {}}
         isOverlay
         containerStyle={{
@@ -487,7 +498,9 @@ export class ImageClozeAssociationComponent extends React.Component {
     const sharedImageProps = {
       draggingElement,
       duplicateResponses,
+      getChoiceLabel: this.getChoiceLabel,
       image,
+      language,
       onAnswerSelect: this.handleOnAnswerSelect,
       onDragAnswerBegin: this.onDragStart,
       onDragAnswerEnd: this.onDragEnd,
@@ -520,6 +533,7 @@ export class ImageClozeAssociationComponent extends React.Component {
           <PossibleResponses
             canDrag={!disabled}
             data={possibleResponses}
+            getChoiceLabel={this.getChoiceLabel}
             onAnswerRemove={this.handleOnAnswerRemove}
             onDragBegin={this.onDragStart}
             answerChoiceTransparency={answerChoiceTransparency}
@@ -543,14 +557,13 @@ export class ImageClozeAssociationComponent extends React.Component {
         onDragCancel={this.onDragCancel}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
-        modifiers={[restrictToFirstScrollableAncestor]}
       >
-        <StyledUiLayout extraCSSRules={extraCSSRules} id={'main-container'} fontSizeFactor={fontSizeFactor}>
+        <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
           {showTeacherInstructions && (
             <StyledTeacherInstructions
               labels={{
-                hidden: 'Show Teacher Instructions',
-                visible: 'Hide Teacher Instructions',
+                hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+                visible: translator.t('common:hideTeacherInstructions', { lng: language }),
               }}
             >
               <PreviewPrompt prompt={teacherInstructions} />
@@ -562,6 +575,7 @@ export class ImageClozeAssociationComponent extends React.Component {
             prompt={prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
 
           <PreviewPrompt prompt={stimulus} />
@@ -581,8 +595,8 @@ export class ImageClozeAssociationComponent extends React.Component {
           {showRationale && (
             <StyledRationale
               labels={{
-                hidden: 'Show Rationale',
-                visible: 'Hide Rationale',
+                hidden: translator.t('common:showRationale', { lng: language }),
+                visible: translator.t('common:hideRationale', { lng: language }),
               }}
             >
               <PreviewPrompt prompt={rationale} />

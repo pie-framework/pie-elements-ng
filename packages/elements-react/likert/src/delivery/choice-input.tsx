@@ -1,19 +1,11 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/likert/src/choice-input.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 
-import { color } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import Radio from '@mui/material/Radio';
 import { LIKERT_ORIENTATION } from './likertEntities.js';
 
@@ -51,6 +43,7 @@ export class ChoiceInput extends React.Component {
     disabled: PropTypes.bool.isRequired,
     label: PropTypes.string.isRequired,
     likertOrientation: PropTypes.string.isRequired,
+    name: PropTypes.string,
     onChange: PropTypes.func.isRequired,
     value: PropTypes.number.isRequired,
   };
@@ -58,6 +51,9 @@ export class ChoiceInput extends React.Component {
   static defaultProps = {
     checked: false,
   };
+
+  // The visible label is a sibling of the radio, so the radio takes its name by reference.
+  labelId: string = createUniqueId('likert-choice-label');
 
   onToggleChoice: any = () => {
     this.props.onChange({
@@ -67,16 +63,24 @@ export class ChoiceInput extends React.Component {
   };
 
   render() {
-    const { disabled, label, checked, likertOrientation } = this.props;
+    const { disabled, label, checked, likertOrientation, name } = this.props;
     const flexDirection = likertOrientation === LIKERT_ORIENTATION.vertical ? 'row' : 'column';
 
     return (
       <CheckboxHolderRoot style={{ flexDirection }}>
         <StyledFormControlLabel
           disabled={disabled}
-          control={<RadioStyled checked={checked} onChange={this.onToggleChoice} disabled={disabled} />}
+          control={
+            <RadioStyled
+              checked={checked}
+              name={name}
+              onChange={this.onToggleChoice}
+              disabled={disabled}
+              slotProps={{ input: { 'aria-labelledby': this.labelId } }}
+            />
+          }
         />
-        <LabelRoot onClick={this.onToggleChoice} dangerouslySetInnerHTML={{ __html: label }} />
+        <LabelRoot id={this.labelId} onClick={this.onToggleChoice} dangerouslySetInnerHTML={{ __html: label }} />
       </CheckboxHolderRoot>
     );
   }

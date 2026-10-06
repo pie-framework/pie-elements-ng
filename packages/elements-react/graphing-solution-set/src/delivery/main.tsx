@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/graphing-solution-set/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -46,6 +38,9 @@ const renderUi =
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { findSectionsInSolutionSet, pointInsidePolygon, checkIfLinesAreAdded } from './utils.js';
 import { AlertDialog } from '@pie-lib/config-ui';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const MainContainer: any = styled(UiLayout)({
   color: color.text(),
@@ -281,7 +276,7 @@ export class Main extends React.Component {
       <MainContainer extraCSSRules={extraCSSRules}>
         {showTeacherInstructions && (
           <TeacherInstructions
-            labels={{ hidden: 'Show Teacher Instructions', visible: 'Hide Teacher Instructions' }}
+            labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}
           >
             <PreviewPrompt prompt={teacherInstructions} />
           </TeacherInstructions>
@@ -341,7 +336,7 @@ export class Main extends React.Component {
           />
         )}
         {showRationale && (
-          <Collapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt prompt={rationale} />
           </Collapsible>
         )}

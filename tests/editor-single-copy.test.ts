@@ -6,16 +6,15 @@
 // same problem one layer down: the sibling prosemirror-* packages depend on them by caret, and
 // two copies make tiptap warn "prosemirror-model is loaded more than once. Wrapping and
 // splitting nodes will fail." Neither failure shows up as a build or type error — the editor
-// just misbehaves at runtime — and packages/lib-react/** is excluded from this suite, so the
-// React editor has no tests of its own to catch it. Asserted against the lockfile and the
-// manifests instead. See the `overrides` note in the root package.json. PIE-1042.
+// just misbehaves at runtime — so it is asserted against the lockfile and the manifests. See
+// the `overrides` note in the root package.json. PIE-1042.
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { glob } from 'glob';
 import { describe, expect, it } from 'vitest';
 
 const REPO_ROOT = join(import.meta.dirname, '..');
-const EXPECTED_TIPTAP = '3.31.3';
+const EXPECTED_TIPTAP = '3.31.4';
 const SINGLE_COPY_PROSEMIRROR = ['prosemirror-model', 'prosemirror-view'];
 
 function resolvedVersions(lockfile: string, packageName: string): Set<string> {

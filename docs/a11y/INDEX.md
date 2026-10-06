@@ -24,9 +24,10 @@ Confluence pages use managed sections generated from this repo and PM-editable s
 
 - Start with [`TRACKING.md`](./TRACKING.md) for the full element matrix.
 - Use [`INITIATIVE-MAP.md`](./INITIATIVE-MAP.md) to understand how repo elements map to Confluence initiative groups.
+- Use [`theme-gap-inventory.md`](./theme-gap-inventory.md) for the styling the `--pie-*` theme does not control in this repo and `pie-players`, and the follow-up each gap belongs to.
 - Use each `docs/a11y/<element>.md` file when adding or reviewing a11y scenarios.
 - Treat generated Confluence pages as a publishing surface, not as the canonical source for scenario definitions.
-- When implementation changes require synced React packages, follow the upstream sync policy instead of editing generated outputs directly.
+- Fix issues in React packages directly in `packages/elements-react/*` and `packages/lib-react/*`.
 
 ## How Product Managers Use This
 

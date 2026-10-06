@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/image-cloze-association/src/possible-responses.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -27,6 +19,7 @@ const BaseContainer: any = styled('div')(({ theme }) => ({
 const PossibleResponses = ({
   canDrag,
   data,
+  getChoiceLabel,
   onDragBegin,
   answerChoiceTransparency,
   customStyle,
@@ -54,6 +47,7 @@ const PossibleResponses = ({
             canDrag={canDrag}
             key={item.id}
             data={item}
+            getChoiceLabel={getChoiceLabel}
             onDragBegin={onDragBegin}
             answerChoiceTransparency={answerChoiceTransparency}
             containerStyle={{ margin: '4px' }}
@@ -70,6 +64,7 @@ const PossibleResponses = ({
 PossibleResponses.propTypes = {
   canDrag: PropTypes.bool.isRequired,
   data: PropTypes.array.isRequired,
+  getChoiceLabel: PropTypes.func,
   onDragBegin: PropTypes.func.isRequired,
   answerChoiceTransparency: PropTypes.bool,
   customStyle: PropTypes.object,

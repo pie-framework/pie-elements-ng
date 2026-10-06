@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/categorize/src/categorize/category.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -28,6 +20,7 @@ export class Category extends React.Component {
     onDropChoice: PropTypes.func,
     onRemoveChoice: PropTypes.func,
     minRowHeight: PropTypes.string,
+    labelId: PropTypes.string,
     selectedItem: PropTypes.object,
     onSelectClick: PropTypes.func,
     onPlacementClick: PropTypes.func,
@@ -45,15 +38,18 @@ export class Category extends React.Component {
       id,
       correct,
       minRowHeight,
+      labelId,
       selectedItem,
       onSelectClick,
       onPlacementClick,
     } = this.props;
 
     return (
-      <StyledDiv className={className} id={id}>
+      // Category ids come from the model and repeat across items, so they mark the element as data.
+      <StyledDiv className={className} data-category-id={id}>
         <PlaceHolder
           id={id}
+          labelId={labelId}
           onDropChoice={onDropChoice}
           disabled={disabled}
           correct={correct}

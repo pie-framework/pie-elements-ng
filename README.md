@@ -2,15 +2,15 @@
 
 A modern, ESM-first implementation of the PIE (Platform Independent Elements) specification. This is a **new project** (not a refactor) that provides a clean foundation for future PIE development while maintaining backwards compatibility through the legacy pie-elements project.
 
-**Current Status**: Early development (v0.1.0) - 28 React-based elements synced from upstream, core infrastructure in place.
+**Current Status**: Early development (v0.1.0) - 27 React-based elements ported from the legacy `pie-elements`, core infrastructure in place.
 
 ## Why a New Project?
 
-The PIE team's work on upstream library modernization (React 18, MUI 7, Tiptap editor) now enables full ESM adoption and modern tooling. This new project takes advantage of those improvements while keeping the legacy pie-elements available for existing consumers.
+The PIE team's work on library modernization (React 18, MUI 7, Tiptap editor) now enables full ESM adoption and modern tooling. This new project takes advantage of those improvements while keeping the legacy pie-elements available for existing consumers.
 
 ## Key Improvements Over Legacy pie-elements
 
-1. **Framework-agnostic architecture** - Architecture designed to support multiple frameworks (React, Svelte, future Vue/Angular) via web components. Currently: React implementations synced from upstream.
+1. **Framework-agnostic architecture** - Architecture designed to support multiple frameworks (React, Svelte, future Vue/Angular) via web components. Currently: React implementations ported from the legacy `pie-elements`.
 2. **ESM-first build system** - Static browser ESM entries for players, standard ESM exports for tooling, and legacy IIFE compatibility where needed
 3. **Unified player approach** - Element-level players for development (interactive + print), item-level players in pie-players for production
 4. **Symmetric package organization** - Peer folders (delivery/author/controller/print) vs asymmetric legacy structure
@@ -31,7 +31,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed explanations of ea
 
 ### Initial Setup (First Time)
 
-**Note:** `packages/elements-react` and `packages/lib-react` are synced from the upstream `pie-elements` repository and **committed to git**. You don't need to check out the upstream repositories unless you're a maintainer syncing new changes.
+**Note:** `pie-elements` and `pie-lib` are legacy. `packages/elements-react` and `packages/lib-react` live in this repository; you don't need the legacy repositories checked out.
 
 ```bash
 # 1. Clone the repository
@@ -49,50 +49,15 @@ bun run hooks:install
 bun run build
 ```
 
-That's it! All packages are already in the repository, so you can get started immediately.
-
-### Syncing from Upstream (Maintainers Only)
-
-**Note:** Only maintainers need to sync from upstream. Regular developers can just `git pull` to get updated packages.
-
-If you're a maintainer and need to sync changes from the upstream `pie-elements` repository:
-
-```bash
-# 1. Clone upstream repositories as siblings (one-time setup)
-cd ..
-git clone https://github.com/pie-framework/pie-elements.git
-git clone https://github.com/pie-framework/pie-lib.git
-cd pie-elements-ng
-
-# 2. Pull latest upstream changes
-cd ../pie-elements && git pull && cd -
-cd ../pie-lib && git pull && cd -
-
-# 3. Sync packages (dry run first to see changes)
-bun cli upstream:sync --dry-run --verbose
-
-# 4. Sync for real
-bun cli upstream:sync
-
-# 5. Review changes, test, and commit
-git diff
-bun test
-git add packages/elements-react packages/lib-react
-git commit -m "sync: update from upstream"
-git push
-```
-
-**Important:** See [upstream-sync-commit-guide.md](docs/upstream-sync-commit-guide.md) for details on what gets committed vs gitignored.
+That's it! All packages are in the repository, so you can get started immediately.
 
 ### Development Commands
 
-`bun run build` - Build all packages in the monorepo
+`bun run build` - Build all packages in the monorepo; each package's build type-checks it with `tsc`
 
 `bun run dev` - Start the demo application in development mode
 
 `bun run test` - Run all tests
-
-`bun run typecheck` - TypeScript type checking across all packages
 
 ### Controller And Configure Shim Compatibility
 
@@ -127,7 +92,7 @@ The canonical JavaScript and npm packaging contract is
 [`docs/PIE_ELEMENT_CONTRACT.md`](docs/PIE_ELEMENT_CONTRACT.md). The summary below
 calls out the browser ESM package surface.
 
-Player-facing ESM does not use CDN package transforms for element packages such as jsDelivr `+esm`. Synced React packages that support browser ESM publish static files under:
+Player-facing ESM does not use CDN package transforms for element packages such as jsDelivr `+esm`. React packages that support browser ESM publish static files under:
 
 - `dist/browser/delivery/index.js`
 - `dist/browser/author/index.js`
@@ -193,10 +158,6 @@ bun run release:publish
 
 See [Release Flow](docs/PUBLISHING.md#release-flow).
 
-### Maintainer Commands
-
-`bun cli upstream:sync` - (Maintainers only) Syncs packages from the upstream pie-elements project. Requires pie-elements and pie-lib checked out as sibling directories. Analyzes the current state of those projects and copies over what is ready for ESM packaging, including rewrites and restructuring to fit the new project layout.
-
 ## Print Support
 
 PIE elements include print views for generating paper-based assessments and answer keys. Two complementary players serve different use cases:
@@ -213,7 +174,7 @@ For development and testing of individual elements:
 - **Use for:** Element development, testing, documentation, and optional composable embedding
 - **Location:** `packages/element-player/src/players/PieElementPlayer.svelte`
 
-For most production app flows, prefer the standard upstream player stacks in `../pie-elements` and `../pie-players`.
+For most production app flows, prefer the standard player stacks from the `pie-elements` and `pie-players` projects.
 
 ### Item-Level Print Player (pie-players)
 
@@ -233,4 +194,3 @@ See [docs/PRINT_SUPPORT.md](docs/PRINT_SUPPORT.md) for complete documentation.
 
 - [Architecture](docs/ARCHITECTURE.md) - Detailed architecture and design decisions
 - [Print Support](docs/PRINT_SUPPORT.md) - Print architecture and usage
-- [Upstream Sync Guide](docs/migration/UPSTREAM_SYNC_GUIDE.md) - Syncing from pie-elements

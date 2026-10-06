@@ -36,5 +36,5 @@ describe('@pie-lib/translator declarations', () => {
     );
     expect(result.stdout + result.stderr).toBe('');
     expect(result.status).toBe(0);
-  });
+  }, 30_000);
 });

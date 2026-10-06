@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/charting/src/chart.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -16,9 +8,16 @@ import { cloneDeep } from '@pie-element/shared-lodash';
 
 import { createGraphProps, Root } from '@pie-lib/plot';
 import { AlertDialog } from '@pie-lib/config-ui';
+import { createUniqueId } from '@pie-lib/render-ui';
 import ChartGrid from './grid.js';
 import ChartAxes from './axes.js';
-import { dataToXBand, getDomainAndRangeByChartType, getGridLinesAndAxisByChartType, getTopPadding } from './utils.js';
+import {
+  dataToXBand,
+  getDomainAndRangeByChartType,
+  getGridLinesAndAxisByChartType,
+  getTopPadding,
+  textOf,
+} from './utils.js';
 import chartTypes from './chart-types.js';
 import ActionsButton from './actions-button.js';
 import Translator from '@pie-lib/translator';
@@ -31,6 +30,28 @@ const StyledChartContainer: any = styled('div')(() => ({
   width: 'min-content',
 }));
 
+// the chart svg's name and description, generated from the model: the title names the chart when
+// there is one, and the description gives its type, its categories and the range of its values
+export const chartAlternative = ({ title, chartType, categories, range, language }) => {
+  // category labels and titles are author text, which React escapes
+  const options = { lng: language, interpolation: { escapeValue: false } };
+  const type = translator.t(`charting.chartTypes.${chartType}`, options);
+  const valueLabel = textOf(range.label);
+  const values = valueLabel
+    ? translator.t('charting.labelledValueRange', { ...options, label: valueLabel, min: range.min, max: range.max })
+    : translator.t('charting.valueRange', { ...options, min: range.min, max: range.max });
+  const categoryList = translator.t('charting.categories', {
+    ...options,
+    count: categories.length,
+    categories: categories.map((c) => textOf(c.label)).join(', '),
+  });
+
+  return {
+    ariaLabel: textOf(title) || type,
+    ariaDescription: `${type}. ${categoryList} ${values}`,
+  };
+};
+
 export class Chart extends React.Component {
   constructor(props) {
     super(props);
@@ -39,6 +60,8 @@ export class Chart extends React.Component {
         open: false,
       },
       actionsAnchorEl: null,
+      // how much lower the rotated category labels reach than horizontal ones
+      labelOverhang: 0,
     };
     this.maskUid = this.generateMaskId();
   }
@@ -78,6 +101,7 @@ export class Chart extends React.Component {
     categoryDefaultLabel: PropTypes.string,
     categoryDefaults: PropTypes.object,
     defineChart: PropTypes.bool,
+    disabled: PropTypes.bool,
     theme: PropTypes.object,
     chartingOptions: PropTypes.object,
     changeInteractiveEnabled: PropTypes.bool,
@@ -113,8 +137,10 @@ export class Chart extends React.Component {
   };
 
   generateMaskId() {
-    return 'chart-' + (Math.random() * 10000).toFixed();
+    return createUniqueId('chart');
   }
+
+  setLabelOverhang = (labelOverhang) => this.setState({ labelOverhang });
 
   handleAlertDialog = (open, callback) =>
     this.setState(
@@ -240,6 +266,7 @@ export class Chart extends React.Component {
       language,
       labelsCharactersLimit,
       correctData,
+      disabled,
     } = this.props;
     let { chartType } = this.props;
 
@@ -249,10 +276,17 @@ export class Chart extends React.Component {
     const { width, height } = size || {};
     const labels = { left: range?.label || '', bottom: domain?.label || '' };
 
-    const { ChartComponent } = this.getChart();
+    const { type, ChartComponent } = this.getChart();
     const categories = this.getFilteredCategories();
 
     const correctValues = getDomainAndRangeByChartType(domain, range, chartType);
+    const { ariaLabel, ariaDescription } = chartAlternative({
+      title,
+      chartType: type,
+      categories,
+      range: { ...correctValues.range, label: range.label },
+      language,
+    });
 
     const { verticalLines, horizontalLines, leftAxis } = getGridLinesAndAxisByChartType(correctValues.range, chartType);
     const common = {
@@ -271,8 +305,8 @@ export class Chart extends React.Component {
     const increaseHeight = defineChart ? 160 : 60;
 
     // if there are many categories, we have to rotate their names in order to fit
-    // and we have to add extra value on top of some items
-    const top = getTopPadding(barWidth);
+    // and we have to add extra value on top of some items; rotated names need at least the room they reach down
+    const top = Math.max(getTopPadding(barWidth), this.state.labelOverhang);
     const rootCommon = cloneDeep(common);
     rootCommon.graphProps.size.height += top + increaseHeight;
 
@@ -303,6 +337,8 @@ export class Chart extends React.Component {
           rootRef={(r) => (this.rootNode = r)}
           mathMlOptions={mathMlOptions}
           labelsCharactersLimit={labelsCharactersLimit}
+          ariaLabel={ariaLabel}
+          ariaDescription={ariaDescription}
           {...rootCommon}
         >
           <ChartGrid {...common} xBand={xBand} rowTickValues={horizontalLines} columnTickValues={verticalLines} />
@@ -322,6 +358,8 @@ export class Chart extends React.Component {
             top={top}
             error={error}
             showCorrectness={chartType === 'linePlot' || chartType === 'dotPlot'}
+            language={language}
+            onLabelOverhang={this.setLabelOverhang}
           />
           {addCategoryEnabled ? (
             <foreignObject x={width} y={height - 16} width={width} height={height}>
@@ -338,7 +376,7 @@ export class Chart extends React.Component {
           <mask id={`${this.maskUid}`}>
             <rect {...maskSize} fill="white" />
           </mask>
-          <g id="marks" mask={`url('#${this.maskUid}')`}>
+          <g mask={`url('#${this.maskUid}')`}>
             {ChartComponent && (
               <ChartComponent
                 {...common}
@@ -348,6 +386,8 @@ export class Chart extends React.Component {
                 onChange={this.changeData}
                 onChangeCategory={this.changeCategory}
                 correctData={correctData}
+                disabled={disabled}
+                language={language}
               />
             )}
           </g>

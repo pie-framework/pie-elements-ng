@@ -1,19 +1,11 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/rubric/src/main.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import List from '@mui/material/List';
 import Collapse from '@mui/material/Collapse';
-import { color, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+import { color, createUniqueId, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -43,6 +35,9 @@ const renderUi =
     ? renderUiDefaultMaybe
     : renderUiNamespaceAny;
 import PropTypes from 'prop-types';
+import Translator from '@pie-lib/translator';
+
+const { translator } = Translator;
 
 const StyledUiLayout: any = styled(UiLayout)({
   color: color.text(),
@@ -90,15 +85,24 @@ const SampleTitleText: any = styled('h4')({
   paddingBottom: '6px',
 });
 
-const RubricToggle: any = styled('h2')(({ theme }) => ({
+// A native button handles Enter and Space without scrolling the page; the resets drop the
+// browser's button chrome and keep it full width.
+const RubricToggle: any = styled('button')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  width: '100%',
+  padding: 0,
+  border: 0,
+  background: 'transparent',
+  font: 'inherit',
+  textAlign: 'inherit',
   cursor: 'pointer',
   userSelect: 'none',
   fontSize: theme.typography.fontSize,
   fontWeight: '500',
   color: color.tertiary(),
   margin: 0,
+  minHeight: 24,
 }));
 
 const ChevronStyle: any = styled('span')({
@@ -129,12 +133,12 @@ export const RubricType = PropTypes.shape({
 
 class Rubric extends React.Component {
   dudUrl = 'javascript:;';
+  idPrefix = createUniqueId('rubric');
 
   constructor(props) {
     super(props);
     this.state = {
       rubricOpen: false,
-      linkPrefix: 'Show',
     };
     this.toggleRubric = this.toggleRubric.bind(this);
   }
@@ -147,7 +151,6 @@ class Rubric extends React.Component {
 
   toggleRubric() {
     this.setState({ rubricOpen: !this.state.rubricOpen });
-    this.setState({ linkPrefix: this.state.rubricOpen ? 'Show' : 'Hide' });
   }
 
   shouldRenderPoint: any = (index, value) => {
@@ -168,7 +171,7 @@ class Rubric extends React.Component {
       const { points, sampleAnswers } = value;
 
       const rubricList = (
-        <List component="nav">
+        <List>
           {points
             .slice(0)
             .reverse()
@@ -202,20 +205,19 @@ class Rubric extends React.Component {
       return (
         <StyledUiLayout extraCSSRules={extraCSSRules}>
           {/* screen reader only heading for navigation as per PD-5057 */}
-          <HiddenScreenReader>Rubric</HiddenScreenReader>
+          <HiddenScreenReader>{translator.t('rubric.rubric', { lng: value.language })}</HiddenScreenReader>
           {!animationsDisabled ? (
             <React.Fragment>
               <RubricToggle
-                id={'rubric-toggle'}
-                tabIndex={0}
-                role="button"
+                type="button"
+                id={`${this.idPrefix}-toggle`}
                 aria-expanded={this.state.rubricOpen}
+                aria-controls={`${this.idPrefix}-content`}
                 onClick={this.toggleRubric}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') this.toggleRubric();
-                }}
               >
-                {this.state.linkPrefix} Rubric
+                {translator.t(this.state.rubricOpen ? 'rubric.hideRubric' : 'rubric.showRubric', {
+                  lng: value.language,
+                })}
                 <ChevronStyle aria-hidden="true">
                   {this.state.rubricOpen ? (
                     <svg
@@ -246,7 +248,11 @@ class Rubric extends React.Component {
                   )}
                 </ChevronStyle>
               </RubricToggle>
-              <Collapse in={this.state.rubricOpen} timeout={{ enter: 225, exit: 195 }}>
+              <Collapse
+                id={`${this.idPrefix}-content`}
+                in={this.state.rubricOpen}
+                timeout={{ enter: 225, exit: 195 }}
+              >
                 {rubricList}
               </Collapse>
             </React.Fragment>

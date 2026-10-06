@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/icons/src/correct-response-icon.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -15,6 +7,8 @@ import { styled } from '@mui/material/styles';
 // Open Icon
 const OpenIcon = ({ bgFill, fgFill }) => (
   <svg
+    aria-hidden="true"
+    focusable="false"
     preserveAspectRatio="xMinYMin meet"
     version="1.1"
     viewBox="-283 359 34 35"
@@ -38,6 +32,8 @@ OpenIcon.propTypes = {
 // Close Icon
 const CloseIcon = ({ bgFill, fgFill, borderFill }) => (
   <svg
+    aria-hidden="true"
+    focusable="false"
     preserveAspectRatio="xMinYMin meet"
     version="1.1"
     viewBox="-129.5 127 34 35"
@@ -84,7 +80,7 @@ const CorrectResponseContainer: any = styled('div')(({ size }) => ({
   height: size || '25px',
 }));
 
-// Main component
+// Main component. The icon repeats the toggle's visible label, so it is hidden from assistive technology.
 const CorrectResponse = ({ open, size }) => {
   // Colors can be customized or pulled from theme
   const openBg = '#bce2ff';

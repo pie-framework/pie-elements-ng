@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/extended-text-entry/src/annotation/annotation-utils.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 // returns DOM Nodes before the stopOffset
 const getAllTextNodesBeforePosition = (node, stopOffset, nodeArray) => {
@@ -231,3 +223,13 @@ export const isSideLabel = (text) => text.length >= 20 || text.search(/\n|\r|\r\
 export const getAnnotationElements = (id) => Array.from(document.querySelectorAll(`[data-id='${id}']`));
 
 export const getLabelElement = (id) => document.querySelector(`[data-ann-id='${id}']`);
+
+/*
+ * The rings either side of the freeform editor's type band. The band's colour is the
+ * annotation's type, information with no text label, so it needs 3:1 against what bounds it
+ * (WCAG 1.4.11). The rings meet the fixed annotation fills as well as the themed surface, so they
+ * are a literal: under the dark preset `--pie-border-dark` is #9E9E9E, 2.18:1 against the green.
+ * #757575 clears 3:1 against both fills, white, and the dark preset's background. It stays fixed
+ * until the annotation colours themselves follow the theme.
+ */
+export const ANNOTATION_STROKE = '#757575';

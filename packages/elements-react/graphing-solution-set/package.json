@@ -15,6 +15,7 @@
     "@pie-lib/correct-answer-toggle": "workspace:*",
     "@pie-lib/graphing-solution-set": "workspace:*",
     "@pie-lib/render-ui": "workspace:*",
+    "@pie-lib/translator": "workspace:*",
     "debug": "^4.1.1",
     "prop-types": "^15.8.1",
     "@pie-lib/editable-html-tip-tap": "workspace:*",

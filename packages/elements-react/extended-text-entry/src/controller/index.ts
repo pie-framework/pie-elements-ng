@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/extended-text-entry/controller/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import debug from 'debug';
 import { getFeedback } from '@pie-element/shared-feedback';
@@ -75,6 +67,7 @@ export async function model(question, session, env) {
     // Spellcheck is off unless the author explicitly opted in: normalize's defaults cover a
     // missing key, but a key present as undefined/null overwrites them. See PIE-978.
     spellCheckEnabled: normalizedQuestion.playerSpellCheckDisabled === false,
+    pasteFormattingDisabled: normalizedQuestion.playerPasteFormattingDisabled === true,
     playersToolbarPosition: normalizedQuestion.playersToolbarPosition || 'bottom',
     annotatorMode,
     disabledAnnotator: normalizedQuestion.annotationsEnabled ? env.role !== 'instructor' : true,

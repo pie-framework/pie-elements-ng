@@ -1,18 +1,13 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/drag/src/placeholder.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import classNames from 'clsx';
 import PropTypes from 'prop-types';
 import { color } from '@pie-lib/render-ui';
+
+// --pie-white stays white under a dark theme; white keeps an answer slot opaque when no theme is set.
+const slotBackground = color.v('pie')('background', color.defaults.WHITE);
 
 const StyledPlaceholder: any = styled('div')(({ theme }) => ({
   '&.placeholder': {
@@ -24,18 +19,18 @@ const StyledPlaceholder: any = styled('div')(({ theme }) => ({
     userSelect: 'none',
     width: '100%',
     height: '100%',
-    background: color.white(),
+    background: slotBackground,
     transition: 'background-color 200ms linear, border-color 200ms linear',
     boxSizing: 'border-box',
     display: 'grid',
     gridRowGap: theme.spacing(1),
     gridColumnGap: theme.spacing(1),
     padding: theme.spacing(1),
-    border: `2px dashed ${color.black()}`,
+    border: `2px dashed ${color.borderDark()}`,
   },
   '&.placeholderDisabled': {
     boxShadow: 'none',
-    background: color.white(),
+    background: slotBackground,
   },
   '&.over': {
     border: `1px solid ${color.border()}`,
@@ -107,9 +102,9 @@ export const PlaceHolder = (props) => {
   // The "type" is only sent through placement-ordering / placeholder
   // It can be "choice" or "target"
   // We apply a different style for the "choice" type
-  // For any other type, use a dashed black border and a white fill
+  // For any other type, use a dashed text-coloured border on the page background
   if (type === 'choice') {
-    style.border = `1px solid ${color.borderLight()}`;
+    style.border = `1px solid ${color.borderDark()}`;
     style.background = color.surface();
   }
 

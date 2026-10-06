@@ -28,9 +28,9 @@ const AUDIO_DEMO = 'variant-sel-vic';
 const GRAPHIC_DEMO = 'variant-sel-r1-plusggg-graphic';
 // vertical text choices, no audio
 const VERTICAL_DEMO = 'variant-sr-vic';
-// Pre-seeded evaluate fixtures (session has choiceId already set)
-const EVALUATE_CORRECT_DEMO = 'evaluate-correct'; // choiceId=distractor_1 (correct)
-const EVALUATE_WRONG_DEMO = 'evaluate-wrong'; // choiceId=distractor_2 (wrong)
+// Pre-seeded evaluate fixtures (session has `value` already set)
+const EVALUATE_CORRECT_DEMO = 'evaluate-correct'; // value=distractor_1 (correct)
+const EVALUATE_WRONG_DEMO = 'evaluate-wrong'; // value=distractor_2 (wrong)
 
 // sr-vic: choices=[distractor_1, distractor_2, distractor_3, distractor_4], correctChoiceId=distractor_1
 const CORRECT_INDEX = 0; // distractor_1 — correct
@@ -122,17 +122,17 @@ test('selected choice text appears in the blank slot', async ({ page }) => {
 // Session emission
 // ---------------------------------------------------------------------------
 
-test('selecting a choice emits session with the correct choiceId', async ({ page }) => {
+test('selecting a choice emits session with the correct choice in `value`', async ({ page }) => {
   await openNoAudioRoute(page);
 
   await selectChoice(page, CORRECT_INDEX);
   await page.waitForTimeout(200);
 
   const session = await getSessionState(page);
-  expect(session?.choiceId).toBe(CORRECT_VALUE);
+  expect(session?.value).toEqual([CORRECT_VALUE]);
 });
 
-test('selecting a different choice updates session choiceId', async ({ page }) => {
+test('selecting a different choice updates session `value`', async ({ page }) => {
   await openNoAudioRoute(page);
 
   await selectChoice(page, CORRECT_INDEX);
@@ -141,7 +141,7 @@ test('selecting a different choice updates session choiceId', async ({ page }) =
   await page.waitForTimeout(200);
 
   const session = await getSessionState(page);
-  expect(session?.choiceId).toBe(WRONG_VALUE);
+  expect(session?.value).toEqual([WRONG_VALUE]);
 });
 
 // ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ test('audio-gated variant: isComplete is false when choice selected but audio no
   await page.waitForTimeout(300);
 
   const session = await getSessionState(page);
-  expect(session?.choiceId).toBeDefined();
+  expect(session?.value?.[0]).toBeDefined();
 
   const isComplete = await mountedElement(page).evaluate((el: any) => el.isComplete?.() ?? null);
   expect(isComplete).toBe(false);
@@ -417,7 +417,7 @@ test('selected answer is visible in blank slot in evaluate mode (correct answer)
   await openEvaluateRoute(page, EVALUATE_CORRECT_DEMO);
   const root = deliveryContainer(page);
 
-  // evaluate-correct has choiceId=distractor_1 pre-seeded; blank should show the answer
+  // evaluate-correct has value=distractor_1 pre-seeded; blank should show the answer
   const blankValue = root.locator('.pie-blank-value');
   await expect(blankValue).toBeVisible();
   await expect(blankValue).not.toBeEmpty();

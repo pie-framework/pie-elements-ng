@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/complex-rubric/configure/src/index.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { ModelUpdatedEvent } from '@pie-element/shared-configure-events';
 import React from 'react';
@@ -143,11 +135,11 @@ export default class ComplexRubricConfigureElement extends HTMLElement {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    const id = e.target && e.target.getAttribute('id');
+    const rubricType = e.target && e.target.getAttribute('data-rubric-type');
 
-    if (id) {
+    if (rubricType) {
       if (e.update) {
-        this._model.rubrics[id] = e.update;
+        this._model.rubrics[rubricType] = e.update;
       }
 
       this.dispatchEvent(new ModelUpdatedEvent(this._model));

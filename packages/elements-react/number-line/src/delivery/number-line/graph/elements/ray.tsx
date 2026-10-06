@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/number-line/src/number-line/graph/elements/ray.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import * as colors from '../../colors.js';
 import { color } from '@pie-lib/render-ui';
@@ -15,6 +7,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Arrow from '../arrow.js';
 import Point from './point.js';
+import CorrectnessMark from './correctness-mark.js';
 import { basePropTypes } from './base.js';
 import { isNumber } from '@pie-element/shared-lodash';
 
@@ -149,6 +142,7 @@ export class Ray extends React.Component {
         <Point
           disabled={disabled}
           correct={correct}
+          showCorrectness={false}
           selected={selected}
           empty={empty}
           interval={interval}
@@ -160,6 +154,7 @@ export class Ray extends React.Component {
           onClick={this.props.onToggleSelect}
         />
         <StyledArrow x={arrowX} $correct={correct} $selected={selected} direction={arrowDirection} />
+        <CorrectnessMark x={xScale(finalPosition) + (positive ? -16 : 16)} correct={correct} />
       </StyledRayGroup>
     );
   }

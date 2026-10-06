@@ -1,43 +1,35 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/drawing-response/src/drawing-response/constants.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 export default {
   tools: [
     {
       type: 'Select',
-      label: 'Select',
+      labelKey: 'select',
       icon: 'mdiCursorDefault',
     },
     {
       type: 'FreePathDrawable',
-      label: 'Free Draw',
+      labelKey: 'freeDraw',
       icon: 'mdiPencil',
     },
     {
       type: 'LineDrawable',
-      label: 'Line',
+      labelKey: 'line',
       icon: 'mdiMinus',
     },
     {
       type: 'RectangleDrawable',
-      label: 'Rectangle',
+      labelKey: 'rectangle',
       icon: 'mdiRectangle',
     },
     {
       type: 'CircleDrawable',
-      label: 'Circle',
+      labelKey: 'circle',
       icon: 'mdiCircle',
     },
     {
       type: 'Text',
-      label: 'Text Entry',
+      labelKey: 'textEntry',
       icon: 'mdiFormatColorText',
     },
     {
@@ -47,7 +39,7 @@ export default {
       //   icon: 'mdiFormatColorFill'
       // },
       type: 'EraserDrawable',
-      label: 'Eraser',
+      labelKey: 'eraser',
       icon: 'mdiEraser',
     },
   ],

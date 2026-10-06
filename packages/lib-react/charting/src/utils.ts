@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/charting/src/utils.js
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import { scaleBand, scalePoint } from '@visx/scale';
 import { utils } from '@pie-lib/plot';
@@ -16,6 +8,18 @@ export const bounds = utils.bounds;
 export const point = utils.point;
 
 export const bandKey = (d, index) => `${index}-${d.label || '-'}`;
+
+// Author text as plain text for an accessible name or description: markup is dropped, LaTeX
+// delimiters are removed, and a LaTeX fraction reads as a/b.
+export const textOf = (html) =>
+  html
+    ? utils
+        .extractTextFromHTML(html)
+        .replace(/\\[()[\]]/g, '')
+        .replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, ' $1/$2')
+        .replace(/\s+/g, ' ')
+        .trim()
+    : '';
 
 export const dataToXBand: any = (scaleX, data, width, type) => {
   const chartWidth = width || 400; // fallback
@@ -162,6 +166,18 @@ export const getRotateAngle = (fontSize, height) => {
   }
 
   return 0;
+};
+
+// How much lower than a horizontal label a `width` by `height` label reaches once rotated `angle`
+// degrees about the middle of its left edge, as the category labels are
+export const getRotatedLabelOverhang = (width, height, angle) => {
+  if (!angle) {
+    return 0;
+  }
+
+  const radians = (angle * Math.PI) / 180;
+
+  return Math.max(0, Math.ceil(width * Math.sin(radians) - (height / 2) * (1 - Math.cos(radians))));
 };
 
 export const getTopPadding = (barWidth) => {

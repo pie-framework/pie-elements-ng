@@ -269,6 +269,100 @@ describe('EditableHtml links', () => {
   });
 });
 
+describe('EditableHtml paste', () => {
+  function paste(editor: Editor, flavours: Record<string, string>) {
+    const clipboardData = {
+      types: Object.keys(flavours),
+      items: Object.keys(flavours).map((type) => ({ kind: 'string', type })),
+      getData: (type: string) => flavours[type] ?? '',
+    };
+    const event = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'clipboardData', { value: clipboardData });
+    editor.view.dom.dispatchEvent(event);
+  }
+
+  it("keeps Word's bold and lists, and drops its fonts and alignment", () => {
+    const { editor } = mountEditor({ markup: '' });
+
+    paste(editor, {
+      'text/html':
+        `<p class=MsoNormal style='text-align:center'><span style='font-family:"Calibri",sans-serif;` +
+        `font-weight:bold'>Read the passage.</span></p><p class=MsoListParagraph style='mso-list:l0 level1 lfo1'>` +
+        `<span style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp; </span></span>` +
+        `Second line</p>`,
+      'text/plain': 'Read the passage.\r\n1. Second line',
+      'text/rtf': '{\\rtf1 }',
+    });
+
+    expect(editor.getHTML()).toBe(
+      '<p><strong>Read the passage.</strong></p><ol><li><p>Second line</p></li></ol><p></p>'
+    );
+  });
+
+  it("keeps a pasted table's caption and header scopes", () => {
+    const { editor } = mountEditor({ markup: '' });
+
+    paste(editor, {
+      'text/html':
+        '<table style="width:100%"><caption>Prices</caption><tr><th scope="col">Item</th>' +
+        '<th scope="col">Cost</th></tr><tr><th scope="row">Pen</th><td>$1</td></tr></table>',
+      'text/plain': 'Prices\nItem\tCost\nPen\t$1',
+    });
+
+    const html = editor.getHTML();
+    expect(html).toContain('<caption>Prices</caption>');
+    expect(html.match(/scope="(col|row)"/g)).toEqual(['scope="col"', 'scope="col"', 'scope="row"']);
+    expect(html).not.toContain('100%');
+  });
+
+  it('keeps the formatting of content copied from a PIE editor', () => {
+    const { editor } = mountEditor({ markup: '' });
+
+    paste(editor, {
+      'text/html': '<p data-pm-slice="1 1 []">Copied <strong>bold</strong></p>',
+      'text/plain': 'Copied bold',
+    });
+
+    expect(editor.getHTML()).toBe('<p>Copied <strong>bold</strong></p>');
+  });
+});
+
+describe('EditableHtml tables', () => {
+  const TABLE =
+    '<table><caption>Prices</caption><tbody><tr><th scope="col">Item</th><th scope="col">Cost</th></tr>' +
+    '<tr><th scope="row">Pen</th><td>$1</td></tr></tbody></table>';
+
+  it("keeps a table's caption and header scopes", () => {
+    const { editor } = mountEditor({ markup: TABLE });
+    const html = editor.getHTML();
+
+    expect(html).toMatch(/^<table[^>]*><caption>Prices<\/caption><colgroup>/);
+    expect(html.match(/<th[^>]*>/g)?.map((cell) => /scope="(\w+)"/.exec(cell)?.[1])).toEqual([
+      'col',
+      'col',
+      'row',
+    ]);
+  });
+
+  it('shows the caption above the table, outside the text the author edits', () => {
+    const { target } = mountEditor({ markup: TABLE });
+    const caption = target.querySelector('.ProseMirror table > caption') as HTMLElement;
+
+    expect(caption.textContent).toBe('Prices');
+    expect(caption.getAttribute('contenteditable')).toBe('false');
+    expect(caption.parentElement?.firstElementChild).toBe(caption);
+  });
+
+  it('leaves out a caption the markup does not have', () => {
+    const { editor, target } = mountEditor({
+      markup: '<table><tbody><tr><td><p>Pen</p></td></tr></tbody></table>',
+    });
+
+    expect(editor.getHTML()).not.toContain('<caption');
+    expect(target.querySelector('caption')).toBeNull();
+  });
+});
+
 describe('EditableHtml styles', () => {
   function compiledCss(cssHash?: string) {
     const { css } = compile(readFileSync(SOURCE_PATH, 'utf8'), {

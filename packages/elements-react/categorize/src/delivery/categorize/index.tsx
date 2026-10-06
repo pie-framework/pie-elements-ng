@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-elements/packages/categorize/src/categorize/index.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -16,8 +8,8 @@ import { DragOverlay } from '@dnd-kit/core';
 import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { buildState, removeChoiceFromCategory, moveChoiceToCategory } from '@pie-lib/categorize';
-import { DragProvider, uid } from '@pie-lib/drag';
-import { color, Feedback as FeedbackImport, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
+import { createDragCollision, DragProvider, uid } from '@pie-lib/drag';
+import { color, createUniqueId, Feedback as FeedbackImport, Collapsible as CollapsibleImport, hasText, hasMedia, PreviewPrompt as PreviewPromptImport, UiLayout as UiLayoutImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -110,6 +102,9 @@ export class Categorize extends React.Component {
   static defaultProps = {
     disabled: false,
   };
+
+  // The delivery element finds the container by its class, which authored CSS may also target.
+  mainContainerId = createUniqueId('main-container');
 
   constructor(props) {
     super(props);
@@ -298,13 +293,13 @@ export class Categorize extends React.Component {
       model.teacherInstructions && (hasText(model.teacherInstructions) || hasMedia(model.teacherInstructions));
 
     return (
-      <StyledUiLayout extraCSSRules={extraCSSRules} id={'main-container'} fontSizeFactor={fontSizeFactor}>
+      <StyledUiLayout extraCSSRules={extraCSSRules} id={this.mainContainerId} className="main-container" fontSizeFactor={fontSizeFactor}>
         {showTeacherInstructions && (
           <React.Fragment>
             <StyledCollapsible
               labels={{
-                hidden: 'Show Teacher Instructions',
-                visible: 'Hide Teacher Instructions',
+                hidden: translator.t('common:showTeacherInstructions', { lng: language }),
+                visible: translator.t('common:hideTeacherInstructions', { lng: language }),
               }}
             >
               <PreviewPrompt prompt={model.teacherInstructions} />
@@ -317,6 +312,7 @@ export class Categorize extends React.Component {
             prompt={model.prompt}
             autoplayAudioEnabled={autoplayAudioEnabled}
             customAudioButton={customAudioButton}
+            language={language}
           />
         )}
 
@@ -365,7 +361,7 @@ export class Categorize extends React.Component {
         )}
 
         {showRationale && (
-          <StyledCollapsible labels={{ hidden: 'Show Rationale', visible: 'Hide Rationale' }}>
+          <StyledCollapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
             <PreviewPrompt prompt={model.rationale} />
           </StyledCollapsible>
         )}
@@ -412,6 +408,9 @@ class CategorizeProvider extends React.Component {
     };
     this.lastDragEndAt = 0;
     this.isInternalDragCancel = false;
+    // The modifier holds the dragged choice inside the region, which scrolls. A pointer drag collides
+    // where the pointer put the choice, so a choice released outside the region finds no category.
+    this.dragCollision = createDragCollision({ modifiers: [restrictToFirstScrollableAncestor] });
   }
 
   onDragStart: any = (event) => {
@@ -611,7 +610,8 @@ class CategorizeProvider extends React.Component {
         onDragCancel={this.onDragCancel}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
-        modifiers={[restrictToFirstScrollableAncestor]}
+        collisionDetection={this.dragCollision.collisionDetection}
+        modifiers={this.dragCollision.modifiers}
       >
         <uid.Provider value={this.uid}>
           <Categorize

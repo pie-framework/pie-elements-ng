@@ -1,12 +1,4 @@
 // @ts-nocheck
-/**
- * @synced-from pie-lib/packages/editable-html-tip-tap/src/components/TiptapContainer.jsx
- * @auto-generated
- *
- * This file is automatically synced from pie-elements and converted to TypeScript.
- * Manual edits will be overwritten on next sync.
- * To make changes, edit the upstream JavaScript file and run sync again.
- */
 
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { styled } from '@mui/material/styles';
@@ -138,6 +130,7 @@ const StyledChildren: any = styled('div', {
 
 function TiptapContainer(props) {
   const [adjustedWidth, setAdjustedWidth] = useState(null);
+  const [hasFocus, setHasFocus] = useState(false);
   const rootRef = useRef(null);
   const {
     editor,
@@ -216,6 +209,20 @@ function TiptapContainer(props) {
     [adjustedWidth, minWidth, width, maxWidth, minHeight, height, maxHeight],
   );
 
+  // The toolbar shows while focus is anywhere in the editor, so Tab can move from the text into it.
+  // React also bubbles focus events out of portals; focus in a portalled picker is outside the editor.
+  const handleFocus = (e) => {
+    if (e.currentTarget.contains(e.target)) {
+      setHasFocus(true);
+    }
+  };
+
+  const handleBlur = (e) => {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setHasFocus(false);
+    }
+  };
+
   return (
     <StyledRoot
       noBorder={toolbarOpts && toolbarOpts.noBorder}
@@ -223,6 +230,8 @@ function TiptapContainer(props) {
       className={props.className}
       style={{ width: sizeStyle.width, minWidth: sizeStyle.minWidth, maxWidth: sizeStyle.maxWidth }}
       ref={rootRef}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
     >
       <StyledEditorHolder disableScrollbar={disableScrollbar} highlightShape={highlightShape}>
         <StyledChildren noPadding={toolbarOpts && toolbarOpts.noPadding}>{children}</StyledChildren>
@@ -236,6 +245,8 @@ function TiptapContainer(props) {
           activePlugins={activePlugins}
           onChange={props.onChange}
           autoWidthToolbar={props.autoWidthToolbar}
+          hasFocus={hasFocus}
+          language={props.language}
         />
       )}
     </StyledRoot>
