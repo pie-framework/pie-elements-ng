@@ -193,4 +193,4 @@ bun run dev
 - **2026-02-01**: Switched to MathJax v4
 - **2026-02-09**: Simplified to MathJax-only (removed abstraction layer)
 - **2026-09-27**: Pinned MathJax 4.1.3 and matched the legacy renderer's delimiters, macros and typesetting scope
-- **2026-10-02**: Element browser builds bundle a module-private MathJax 4.1.3
+- **2026-10-03**: Element browser builds bundle a module-private MathJax 4.1.3
