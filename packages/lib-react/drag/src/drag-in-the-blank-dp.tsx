@@ -44,7 +44,9 @@ export function DragInTheBlankDroppable({
           className={classes}
           isVerticalPool={isVerticalPool}
           extraStyles={{
-            width: '100%',
+            // The board is padded: a 100% width overflows its column by the padding, and
+            // border-box would take the padding out of the minimum height instead.
+            width: 'auto',
             minHeight: minHeight || 100,
             height: 'auto',
           }}
