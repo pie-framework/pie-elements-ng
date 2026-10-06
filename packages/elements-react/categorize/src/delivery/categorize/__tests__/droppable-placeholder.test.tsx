@@ -17,8 +17,8 @@ vi.mock('@dnd-kit/core', () => ({
 }));
 
 vi.mock('@pie-lib/drag', () => ({
-  PlaceHolder: ({ children, isOver, disabled }: any) => (
-    <div data-testid="placeholder" data-is-over={isOver} data-disabled={disabled}>
+  PlaceHolder: ({ children, isOver, disabled, extraStyles }: any) => (
+    <div data-testid="placeholder" data-is-over={isOver} data-disabled={disabled} style={extraStyles}>
       {children}
     </div>
   ),
@@ -70,6 +70,18 @@ describe('DroppablePlaceholder', () => {
       renderPlaceholder({ disabled: false });
       const placeholder = screen.getByTestId('placeholder');
       expect(placeholder).toHaveAttribute('data-disabled', 'false');
+    });
+  });
+
+  describe('layout', () => {
+    it('lays out a category from the top', () => {
+      renderPlaceholder();
+      expect(screen.getByTestId('placeholder')).toHaveStyle({ alignContent: 'flex-start' });
+    });
+
+    it('leaves the choice board to its own board styles', () => {
+      renderPlaceholder({ choiceBoard: true, correct: false });
+      expect(screen.getByTestId('placeholder').getAttribute('style')).toBeNull();
     });
   });
 
