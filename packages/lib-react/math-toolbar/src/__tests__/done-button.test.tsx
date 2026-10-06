@@ -26,11 +26,10 @@ describe('math toolbar Done button', () => {
     expect(renderButton({}).backgroundColor).toBe('#ffffff');
   });
 
-  // One green clears 3:1 on every surface the check sits on, including the authoring card that stays white.
   it.each([
-    ['the dark theme', DARK],
-    ['no theme', {}],
-  ])('draws the check in the same green under %s', (_, vars) => {
-    expect(renderButton(vars as CSSProperties).color).toBe('#388E3C');
+    ['the dark theme', DARK, '#66BB6A'],
+    ['no theme', {}, '#087D38'],
+  ])("draws the check in the scheme's correct-icon colour under %s", (_, vars, expected) => {
+    expect(renderButton(vars as CSSProperties).color).toBe(expected);
   });
 });

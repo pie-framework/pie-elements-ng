@@ -12,11 +12,8 @@ const StyledIconButton: any = styled(IconButton)(({ hideBackground }) => ({
   verticalAlign: 'top',
   width: '28px',
   height: '28px',
-  // A literal: the math-inline and math-templated authoring Correct Answer card stays white under
-  // every scheme, where `--pie-correct-icon` drops to 2.36:1 under dark. #388E3C clears 3:1 there,
-  // on the editable-html toolbar fill (3.40:1 under dark) and on `--pie-background` when the
-  // background is hidden (WCAG 1.4.11). It moves to the token once that card follows the scheme.
-  color: '#388E3C',
+  // Clears 3:1 on the editable-html toolbar and the math Correct Answer card in every scheme (WCAG 1.4.11).
+  color: color.correctWithIcon(),
   ...(hideBackground && {
     // `--pie-background` follows both the colour schemes and the dark theme; `--pie-white`
     // stays white under the dark theme. White keeps the button opaque when no theme is set.

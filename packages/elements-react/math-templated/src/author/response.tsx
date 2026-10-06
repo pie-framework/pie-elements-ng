@@ -18,6 +18,7 @@ import IconButton from '@mui/material/IconButton';
 import Delete from '@mui/icons-material/Delete';
 import { color } from '@pie-lib/render-ui';
 
+// Follows the scheme; white with no theme, where `color.background()` would be transparent.
 const ResponseContainer: any = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
   width: '100%',
@@ -26,6 +27,15 @@ const ResponseContainer: any = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
+  backgroundColor: color.v('pie')('background', color.defaults.WHITE),
+  color: color.text(),
+  '& .MuiInputLabel-root:not(.Mui-focused):not(.Mui-error), & .MuiInputBase-root, & .MuiSelect-icon': {
+    color: color.text(),
+  },
+  // MUI's outline is below 3:1 (WCAG 1.4.11).
+  '& .MuiOutlinedInput-root:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline': {
+    borderColor: color.borderDark(),
+  },
 }));
 
 const StyledCardContent: any = styled(CardContent)(({ theme }) => ({
@@ -70,7 +80,8 @@ const RemoveAlternateButton: any = styled(IconButton)(({ theme }) => ({
 
 const ErrorText: any = styled('div')(({ theme }) => ({
   fontSize: theme.typography.fontSize - 2,
-  color: theme.palette.error.main,
+  // MUI's fixed red is below 4.5:1 on dark schemes.
+  color: color.incorrectWithIcon(),
   paddingTop: theme.spacing(1),
 }));
 
