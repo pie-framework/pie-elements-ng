@@ -134,7 +134,9 @@ The figures are wireframes: colour marks a region, a dashed region renders only 
 
 ## Session
 
-- **`choiceId`**: selected choice id
+- **`value`**: the selected choice id in a one-entry array, as multiple-choice stores it.
+  Sessions written before `value` hold the id as `choiceId`, which the controller and
+  delivery still read.
 
 ## Implementation hints
 

@@ -33,6 +33,7 @@ import {
   VARIANT_CSS_KEY,
 } from './variant-css-map';
 import { t as translate, tCommon } from './i18n';
+import { selectedChoiceId } from '../shared/session';
 
 const BLANK_TOKEN = '{{blank}}';
 
@@ -110,7 +111,7 @@ const layout = $derived(
 // ---------------------------------------------------------------------------
 const choices = $derived(Array.isArray(model?.choices) ? model.choices : []);
 const choiceMode = $derived(model?.choiceMode || 'text');
-const selectedId = $derived(session?.choiceId || localChoiceId || '');
+const selectedId = $derived(selectedChoiceId(session) || localChoiceId || '');
 const radioGroupName = $derived(`${instanceId}-choice-group-${model?.id || '1'}`);
 const displayChoiceId = $derived(
   computeDisplayChoiceId({
@@ -210,8 +211,10 @@ function onRadioChange(e: Event) {
   const choiceId = input.value;
   localChoiceId = choiceId;
   // The player owns the session's `id` and `element` (the versioned tag it
-  // registered this element under), so neither is written here.
-  onSessionChange?.({ ...session, choiceId });
+  // registered this element under), so neither is written here. A pick
+  // drops an older session's `choiceId`.
+  const { choiceId: _legacyChoiceId, ...rest } = session || {};
+  onSessionChange?.({ ...rest, value: [choiceId] });
 }
 
 function toggleCorrectAnswer() {
@@ -258,7 +261,7 @@ const featureAudioSkin = $derived(
 // Follows the session both ways: a player that resets or replaces the session
 // clears the selection instead of leaving the previous pick on screen.
 $effect(() => {
-  localChoiceId = session?.choiceId || '';
+  localChoiceId = selectedChoiceId(session);
 });
 
 $effect(() => {
