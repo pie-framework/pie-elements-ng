@@ -13,6 +13,8 @@ The response editor is named by the visible prompt, or "Your response" in the it
 
 The editor toolbar is a `role="toolbar"` named "Editing tools" in the item's language, with no tab stop of its own. It is `inert` while the editor lacks focus, so Tab skips its hidden buttons, and stays open while focus is anywhere in the editor ([PIE-1180](https://illuminate.atlassian.net/browse/PIE-1180)).
 
+The math and special-character keypad keys draw the [THEMING.md](../THEMING.md) focus chain on keyboard focus, and math fields take the MathQuill caret, bar and border colours of `@pie-lib/math-input` ([PIE-1200](https://illuminate.atlassian.net/browse/PIE-1200)).
+
 ## Not Covered / Manual
 
 - Confirm rich-text editor keyboard shortcuts, focus mode, and announcement behavior with screen readers.

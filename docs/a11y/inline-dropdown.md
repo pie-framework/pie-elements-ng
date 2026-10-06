@@ -15,6 +15,8 @@ Each combobox is named by its query followed by its value, "Query 1 Saturn", so 
 
 The combobox, listbox, option and label ids are unique per blank instance, so on a page with several inline-dropdown items `aria-labelledby` and `aria-controls` resolve inside their own item ([PIE-1188](https://illuminate.atlassian.net/browse/PIE-1188)).
 
+Keyboard focus draws a 3px `--pie-tertiary` outline on the combobox, and in view mode the selected answer takes `--pie-disabled-text` ([PIE-1200](https://illuminate.atlassian.net/browse/PIE-1200)). The mask-markup unit tests pin both.
+
 ## Not Covered / Manual
 
 - Confirm screen readers announce the surrounding sentence context for each blank.

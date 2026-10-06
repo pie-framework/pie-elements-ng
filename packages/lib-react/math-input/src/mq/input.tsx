@@ -6,12 +6,11 @@ import { styled } from '@mui/material/styles';
 import debug from 'debug';
 import { labelFieldTextareas } from './field-label.js';
 import { MQ } from './mathquill-instance.js';
+import { mqInkStyles } from './common-mq-styles.js';
 
 const log = debug('math-input:mq:input');
 
-const StyledSpan: any = styled('span')({
-  // No specific styles needed, but component is available for future styling
-});
+const StyledSpan: any = styled('span')(mqInkStyles);
 
 /**
  * Wrapper for MathQuill MQ.MathField.

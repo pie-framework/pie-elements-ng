@@ -6,6 +6,7 @@ import {
   keypadButtonHover,
   keypadButtonOperator,
   keypadButtonOperatorHover,
+  keypadInk,
 } from '../src/color';
 
 type RGB = number[];
@@ -20,6 +21,13 @@ const mixOver = (css: string, background: RGB): RGB => {
   const [, hue, share] = /color-mix\(in srgb, rgb\(([\d. ]+)\) ([\d.]+)%/.exec(css)!;
   const p = Number(share) / 100;
   return hue.split(' ').map((c, i) => Math.round(Number(c) * p + background[i] * (1 - p)));
+};
+
+// What the browser paints for keypadInk() from a given --pie-text.
+const shadeInk = (css: string, ink: RGB): RGB => {
+  const [, floor, sum] = /clamp\(([\d.]+), \(r \+ g \+ b\) \/ (\d+), 1\)/.exec(css)!;
+  const f = Math.min(1, Math.max(Number(floor), (ink[0] + ink[1] + ink[2]) / Number(sum)));
+  return ink.map((c) => Math.round(c * f));
 };
 
 const luminance = (rgb: RGB) => {
@@ -91,5 +99,32 @@ describe('fills mixed into the scheme background', () => {
   it('lets a host keypad token win over the mix', () => {
     expect(keypadButton()).toMatch(/^var\(--pie-keypad-button, color-mix\(/);
     expect(keypadButtonHover()).toMatch(/^var\(--pie-keypad-button-hover, color-mix\(/);
+  });
+});
+
+// pie-players schemes whose ink sits close to the key fills, plus the extremes.
+const schemes = [
+  ['no theme', [0, 0, 0], WHITE],
+  ['grey-on-light-grey', [74, 74, 74], [235, 235, 235]],
+  ['purple-on-light-green', [142, 36, 100], [204, 232, 212]],
+  ['light-gray-on-dark-gray', [224, 224, 224], [51, 51, 51]],
+  ['yellow-on-navy', [255, 255, 85], [51, 80, 138]],
+  ['the dark preset', DARK_INK, DARK_BACKGROUND],
+] as const;
+
+describe('keypad key ink', () => {
+  it('reads --pie-text', () => {
+    expect(keypadInk()).toMatch(/^rgb\(from var\(--pie-text, black\) /);
+  });
+
+  it.each(schemes)('keeps key labels at 4.5:1 or more on every key fill under %s', (_, text, background) => {
+    const ink = shadeInk(keypadInk(), [...text]);
+    for (const [, fill] of fills.slice(0, 4)) {
+      expect(contrast(ink, mixOver(fill(), [...background]))).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it.each(schemes.slice(3))('passes the %s ink unchanged', (_, text) => {
+    expect(shadeInk(keypadInk(), [...text])).toEqual([...text]);
   });
 });

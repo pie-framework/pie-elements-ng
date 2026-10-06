@@ -3,9 +3,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import debug from 'debug';
+import { styled } from '@mui/material/styles';
 import { updateSpans } from '../updateSpans.js';
 import { labelFieldTextareas } from './field-label.js';
 import { MQ } from './mathquill-instance.js';
+import { mqInkStyles } from './common-mq-styles.js';
 
 const log = debug('pie-lib:math-input:mq:static');
 const REGEX = /\\MathQuillMathField\[r\d*\]\{(.*?)\}/g;
@@ -26,6 +28,8 @@ function countBraces(latex) {
 
   return count;
 }
+
+const StyledSpan: any = styled('span')(mqInkStyles);
 
 /**
  * Wrapper for MathQuill MQ.MathField.
@@ -291,6 +295,6 @@ export default class Static extends React.Component {
   render() {
     const { onBlur, className } = this.props;
 
-    return <span className={className} onFocus={this.onFocus} onBlur={onBlur} ref={this.inputRef} />;
+    return <StyledSpan className={className} onFocus={this.onFocus} onBlur={onBlur} ref={this.inputRef} />;
   }
 }

@@ -64,7 +64,6 @@ export const defaults = {
   KEYPAD_EMPTY_PLACEHOLDER: 'rgba(245, 0, 87, 0.4)',
   KEYPAD_BUTTON_HOVER: 'rgb(214, 218, 239)',
   KEYPAD_BUTTON_OPERATOR_HOVER: 'rgb(255, 197, 217)',
-  KEY_BOARD_FOCUS_INDICATOR: '#2B87FF',
   // the editable-html formatting toolbar
   EDITOR_TOOLBAR: '#efefef',
   // these are used for graphing UI elements
@@ -141,6 +140,8 @@ export const buttonFocusOutline = () => pv('button-focus-outline', defaults.BUTT
 // defines it yet, so it falls through to the registered button and checked-border focus tokens. One
 // line, so tests/pie-token-contract.test.ts sees the tokens it reads.
 export const focusOutline = () => pv('focus-outline', 'button-focus-outline', 'focus-checked-border', defaults.FOCUS_CHECKED_BORDER);
+/** @deprecated The keyboard focus ring is {@link focusOutline}. */
+export const keyBoardFocusIndicator = focusOutline;
 
 export const blueGrey100 = () => pv('blue-grey-100', defaults.BLUE_GREY100);
 export const blueGrey300 = () => pv('blue-grey-300', defaults.BLUE_GREY300);
@@ -171,9 +172,14 @@ export const keypadEmptyPlaceholder = () => pv('keypad-empty-placeholder', defau
 export const keypadButtonHover = () => pv('keypad-button-hover', overBackground(defaults.KEYPAD_BUTTON_HOVER, 0.25));
 export const keypadButtonOperatorHover = () =>
   pv('keypad-button-operator-hover', overBackground(defaults.KEYPAD_BUTTON_OPERATOR_HOVER, 0.25));
+// Key label ink. Under a light scheme the key fills sit darker than the background, so an ink whose
+// channels sum under 450 scales towards black, by up to 40%: that holds grey-on-light-grey and
+// purple-on-light-green labels at 4.5:1. Every dark scheme's ink sums higher and passes unchanged.
+const inkShade = 'clamp(0.6, (r + g + b) / 450, 1)';
+export const keypadInk = () =>
+  `rgb(from ${text()} calc(r * ${inkShade}) calc(g * ${inkShade}) calc(b * ${inkShade}))`;
 // 12.5% keeps the toolbar's grey rest icons above 3:1 under a dark background.
 export const editorToolbar = () => overBackground(defaults.EDITOR_TOOLBAR, 0.125);
-export const keyBoardFocusIndicator = () => pv('keyboard-focus-indicator', defaults.KEY_BOARD_FOCUS_INDICATOR);
 export const buttonBorder = () => pv('button-border', defaults.BUTTON_BORDER);
 export const buttonHoverBg = () => pv('button-hover-bg', defaults.BUTTON_HOVER_BG);
 
