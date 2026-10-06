@@ -7,6 +7,7 @@ import {
   OWN_STYLESHEET_ID,
 } from './engine/page.js';
 import { rewriteElementaryMath } from './elementary-math.js';
+import { injectExplorerStyles } from './explorer-styles.js';
 import { unprefixMathml } from './mathml.js';
 import type { MathjaxOptions } from './types.js';
 import { reportUnsupportedPage } from './unsupported-page.js';
@@ -525,6 +526,7 @@ export function createMathjaxRenderer(
     await mathJax?.startup?.promise;
     if (typeof mathJax?.typesetPromise !== 'function') return;
 
+    injectExplorerStyles();
     clearRemovedMath(mathJax.startup?.document);
     try {
       await mathJax.typesetPromise([element]);
