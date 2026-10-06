@@ -318,7 +318,7 @@ export const DEFAULT_CSS_MAPPINGS = [
     fallback: PIE_COLOR_DEFAULTS.CHOICE_INPUT_DISABLED_COLOR,
   },
 
-  // Feedback (multiple-choice, match-list)
+  // Feedback panel fills (render-ui Feedback)
   {
     variableName: '--feedback-correct-bg-color',
     themeKey: 'feedback-correct-bg' as const,

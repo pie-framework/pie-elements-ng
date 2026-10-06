@@ -89,11 +89,12 @@ const AnswerContainer: any = styled('div')(({ correct, isSelected, isDragging, t
   padding: '0px',
   textAlign: 'center',
   height: 'initial',
+  // The status colours: the --feedback-*-bg-color hooks hold the pale panel fills.
   border:
     correct === true
-      ? `1px solid var(--feedback-correct-bg-color, ${color.correct()})`
+      ? `1px solid ${color.correct()}`
       : correct === false
-        ? `1px solid var(--feedback-incorrect-bg-color, ${color.incorrect()})`
+        ? `1px solid ${color.incorrect()}`
         : isSelected && !isDragging
           ? `2px solid ${color.buttonFocusOutline()}`
           : 'none',

@@ -22,12 +22,13 @@ const FeedbackTickContainer: any = styled(Box)({
   },
 });
 
+// The marks take the status colours: the --feedback-*-bg-color hooks hold the pale panel fills.
 const StyledSVG: any = styled('svg')({
   '& .incorrect-fill': {
-    fill: `var(--feedback-incorrect-bg-color, ${color.incorrect()})`,
+    fill: color.incorrect(),
   },
   '& .correct-fill': {
-    fill: `var(--feedback-correct-bg-color, ${color.correct()})`,
+    fill: color.correct(),
   },
 });
 
