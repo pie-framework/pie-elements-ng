@@ -172,6 +172,12 @@ export const keypadEmptyPlaceholder = () => pv('keypad-empty-placeholder', defau
 export const keypadButtonHover = () => pv('keypad-button-hover', overBackground(defaults.KEYPAD_BUTTON_HOVER, 0.25));
 export const keypadButtonOperatorHover = () =>
   pv('keypad-button-operator-hover', overBackground(defaults.KEYPAD_BUTTON_OPERATOR_HOVER, 0.25));
+// Key label ink. Under a light scheme the key fills sit darker than the background, so an ink whose
+// channels sum under 450 scales towards black, by up to 40%: that holds grey-on-light-grey and
+// purple-on-light-green labels at 4.5:1. Every dark scheme's ink sums higher and passes unchanged.
+const inkShade = 'clamp(0.6, (r + g + b) / 450, 1)';
+export const keypadInk = () =>
+  `rgb(from ${text()} calc(r * ${inkShade}) calc(g * ${inkShade}) calc(b * ${inkShade}))`;
 // 12.5% keeps the toolbar's grey rest icons above 3:1 under a dark background.
 export const editorToolbar = () => overBackground(defaults.EDITOR_TOOLBAR, 0.125);
 export const buttonBorder = () => pv('button-border', defaults.BUTTON_BORDER);
