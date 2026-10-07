@@ -47,13 +47,11 @@ import { AlertDialog } from '@pie-lib/config-ui';
 import Choices from './choices.js';
 import Choice from './choice.js';
 import Categories from './categories.js';
+import { categoriesFirst, CHOICES_BOARD_ID } from './collision-detection.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 
 const { translator } = Translator;
 const log = debug('@pie-ui:categorize');
-
-// Matches the id `choices.jsx` gives the choice pool's DroppablePlaceholder.
-const CHOICES_BOARD_ID = 'choices-board';
 
 // A click that lands right after a real drag gesture ends (a pointer drag-and-drop, or
 // the browser's own synthetic click following a keyboard Space/Enter drop) must be ignored
@@ -608,6 +606,7 @@ class CategorizeProvider extends React.Component {
         onDragStart={this.onDragStart}
         onDragEnd={this.onDragEnd}
         onDragCancel={this.onDragCancel}
+        collisionDetection={categoriesFirst}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
         collisionDetection={this.dragCollision.collisionDetection}

@@ -24,7 +24,7 @@ const DroppablePlaceholder = ({
 }) => {
   const theme = useTheme();
   const [isHovered, setIsHovered] = useState(false);
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef, isOver, active } = useDroppable({
     id,
     data: {
       itemType: 'categorize',
@@ -39,7 +39,15 @@ const DroppablePlaceholder = ({
   // it into the same isOver signal PlaceHolder already consumes, so hovering a drop target
   // while something is selected gets the exact same treatment as hovering it mid-drag —
   // one visual code path, no duplicated styling.
-  const showsHoverEffect = isOver || (hasSelection && isHovered && !disabled);
+  //
+  // While a drag is live that does not apply: a drag sets a selection too, and the category under the
+  // pointer is not necessarily the one dnd-kit will drop into (it is picked from the overlay's rect,
+  // not the pointer), so only dnd-kit's own answer counts — otherwise two categories light up at once.
+  // That includes the category the choice was picked up from: it is the target only while the choice
+  // touches nothing else (see categoriesFirst), and then it lights up to show that releasing keeps the
+  // choice where it is.
+  const isDragLive = !!active;
+  const showsHoverEffect = isDragLive ? isOver : isOver || (hasSelection && isHovered && !disabled);
 
   // A category is always a valid drop target (it holds 0..N choices), so it is always a
   // tab stop unless disabled — that's what makes "select a choice, Tab to a category,
