@@ -29,7 +29,7 @@ import {
   ResponseAreaExtension,
 } from '../extensions/responseArea.js';
 import { MathNode } from '../extensions/math.js';
-import { ImageUploadNode } from '../extensions/image.js';
+import { ImageUploadNode, uploadPastedImage } from '../extensions/image.js';
 import { Media } from '../extensions/media.js';
 import { CSSMark } from '../extensions/css.js';
 import { ExtendedListItem } from '../extensions/extended-list-item.js';
@@ -89,6 +89,7 @@ const PASTED_FORMATTING_BY_PLUGIN = {
   'bulleted-list': 'bulletList',
   'numbered-list': 'orderedList',
   table: 'table',
+  image: 'image',
 };
 
 const cssVariables = {
@@ -237,7 +238,10 @@ export const EditableHtml = (props) => {
       alignments: ['left', 'right', 'center', 'justify'],
     }),
     TextStyleKit,
-    ExternalPaste.configure({ settings: () => pasteSettings.current }),
+    ExternalPaste.configure({
+      settings: () => pasteSettings.current,
+      uploadImage: props.imageSupport && uploadPastedImage,
+    }),
     CharacterCount.configure({
       limit: props.charactersLimit || 1000000,
     }),
