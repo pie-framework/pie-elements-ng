@@ -13,6 +13,7 @@
  */
 
 import DOMPurify, { type Config } from 'dompurify';
+import { markAuthoredColors } from './authored-colors.js';
 
 export const MODEL_HTML_FORBIDDEN_TAGS = [
   'script',
@@ -131,7 +132,7 @@ function playAudioFromLink(event: MouseEvent) {
 
 let purifier: typeof DOMPurify | null = null;
 
-// A purifier of its own, so the hook stays off the default instance other code shares.
+// A purifier of its own, so the hooks stay off the default instance other code shares.
 function getPurifier(): typeof DOMPurify {
   if (purifier) return purifier;
   purifier = DOMPurify(window);
@@ -146,6 +147,7 @@ function getPurifier(): typeof DOMPurify {
       playListenerInstalled = true;
     }
   });
+  purifier.addHook('afterSanitizeAttributes', markAuthoredColors);
   return purifier;
 }
 
@@ -159,6 +161,8 @@ let cachedChars = 0;
 /**
  * Returns `html` with scripts, event handlers, `javascript:` URLs and the forbidden tags and
  * attributes removed. A link that only plays an `<audio>` keeps working; see `PLAY_AUDIO_ATTR`.
+ * Elements with an authored color carry the markers a color scheme overrides them by; see
+ * `markAuthoredColors`.
  * Returns an empty string where there is no DOM to sanitize against.
  *
  * Takes any value because model fields are not always strings: a number renders as its text,
