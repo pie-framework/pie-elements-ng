@@ -7,7 +7,7 @@
 import { type Page, expect, test } from '@playwright/test';
 import { waitForMathRendering } from './test-helpers';
 
-async function stemBox(page: Page, demoId: string) {
+async function openDemo(page: Page, demoId: string) {
   await page.goto(
     `/mc-populated-blank/deliver?mode=gather&role=student&demo=${encodeURIComponent(demoId)}&player=esm`
   );
@@ -15,6 +15,10 @@ async function stemBox(page: Page, demoId: string) {
   await page.waitForLoadState('networkidle');
   await page.waitForSelector('[data-testid="role-student"]', { timeout: 20_000 });
   await waitForMathRendering(page);
+}
+
+async function stemBox(page: Page, demoId: string) {
+  await openDemo(page, demoId);
   return page.evaluate(() => {
     const line = document.querySelector('.pie-template-line') as HTMLElement;
     const slot = line.querySelector('.pie-blank-slot');
@@ -38,4 +42,26 @@ test('a token_sequence r1 stem keeps the 150px token box', async ({ page }) => {
   const stem = await stemBox(page, 'variant-sel-r1-g-stem');
   expect(stem.width).toBe(150);
   expect(stem.lineHeight).toBe(89);
+});
+
+// The demo's choices differ in width, and an inline_sentence blank has no fixed size.
+test('an inline_sentence blank and the choices below it hold still as choices fill it', async ({
+  page,
+}) => {
+  await openDemo(page, 'variant-sel-r1-g-inline-sentence');
+  const boxes = () =>
+    page.evaluate(() =>
+      ['.pie-blank-slot', '.pie-choices'].map((selector) => {
+        const { x, y, width, height } = (
+          document.querySelector(selector) as HTMLElement
+        ).getBoundingClientRect();
+        return [x, y, width, height].map(Math.round);
+      })
+    );
+  const empty = await boxes();
+  const radios = page.locator('.pie-choices input[type="radio"]');
+  for (let i = 0; i < (await radios.count()); i++) {
+    await radios.nth(i).check();
+    expect(await boxes()).toEqual(empty);
+  }
 });

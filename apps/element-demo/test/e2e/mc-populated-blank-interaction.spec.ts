@@ -113,7 +113,7 @@ test('selected choice text appears in the blank slot', async ({ page }) => {
 
   await selectChoice(page, CORRECT_INDEX);
 
-  const blankValue = root.locator('.pie-blank-value');
+  const blankValue = root.locator('.pie-blank-slot > .pie-blank-value');
   await expect(blankValue).toBeVisible();
   await expect(blankValue).not.toBeEmpty();
 });
@@ -357,7 +357,7 @@ test('selecting an image choice populates the blank slot with the choice content
   await radio.check();
 
   // Graphic choices use labelHtml with embedded <img> — blank value span appears
-  const blankValue = root.locator('.pie-blank-value');
+  const blankValue = root.locator('.pie-blank-slot > .pie-blank-value');
   await expect(blankValue).toBeVisible();
   // The labelHtml contains an <img> element
   const blankImg = blankValue.locator('img');
@@ -418,7 +418,7 @@ test('selected answer is visible in blank slot in evaluate mode (correct answer)
   const root = deliveryContainer(page);
 
   // evaluate-correct has value=distractor_1 pre-seeded; blank should show the answer
-  const blankValue = root.locator('.pie-blank-value');
+  const blankValue = root.locator('.pie-blank-slot > .pie-blank-value');
   await expect(blankValue).toBeVisible();
   await expect(blankValue).not.toBeEmpty();
 });
@@ -429,7 +429,7 @@ test('selected answer is visible in blank slot in evaluate mode (wrong answer)',
   await openEvaluateRoute(page, EVALUATE_WRONG_DEMO);
   const root = deliveryContainer(page);
 
-  const blankValue = root.locator('.pie-blank-value');
+  const blankValue = root.locator('.pie-blank-slot > .pie-blank-value');
   await expect(blankValue).toBeVisible();
   await expect(blankValue).not.toBeEmpty();
 });

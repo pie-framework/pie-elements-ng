@@ -137,3 +137,51 @@ describe('ClozeMarker — content modes', () => {
     expect(target.querySelector('.pie-blank-value')).toBeNull();
   });
 });
+
+describe('ClozeMarker — reserved size', () => {
+  const sizers = (target: HTMLElement) =>
+    target.querySelector('.pie-blank-sizers') as HTMLElement | null;
+  const copies = (target: HTMLElement) => [...(sizers(target)?.children ?? [])];
+
+  it('holds a hidden copy of every text choice beside the empty placeholder', () => {
+    const target = mountSlot({
+      ...BASE,
+      choices: [{ labelHtml: '<p>brown</p>' }, { labelHtml: '<p>ran</p>' }],
+    });
+    const slot = target.querySelector('.pie-blank-slot') as HTMLElement;
+    expect(slot.firstElementChild?.classList.contains('cloze-marker-empty')).toBe(true);
+    expect(sizers(target)?.getAttribute('aria-hidden')).toBe('true');
+    expect(copies(target).map((c) => c.textContent)).toEqual(['brown', 'ran']);
+  });
+
+  it('keeps the answer first, ahead of the copies', () => {
+    const target = mountSlot({
+      ...BASE,
+      choices: [{ labelHtml: '<p>brown</p>' }, { labelHtml: '<p>ran</p>' }],
+      displayChoiceLabelHtml: '<p>ran</p>',
+    });
+    const slot = target.querySelector('.pie-blank-slot') as HTMLElement;
+    expect(slot.firstElementChild?.matches('.pie-blank-value')).toBe(true);
+    expect(slot.lastElementChild).toBe(sizers(target));
+  });
+
+  it('copies image choices as images with no alt text', () => {
+    const target = mountSlot({
+      ...BASE,
+      choiceMode: 'image',
+      choices: [
+        { imageUrl: 'https://example.com/a.png', imageAlt: 'A cat' },
+        { labelHtml: '<p>dog</p>' },
+      ],
+    });
+    const [img, text] = copies(target);
+    expect(img.matches('img.pie-blank-image')).toBe(true);
+    expect(img.getAttribute('alt')).toBe('');
+    expect(text.textContent).toBe('dog');
+  });
+
+  it('copies no choice that has nothing to show', () => {
+    const target = mountSlot({ ...BASE, choiceMode: 'text', choices: [{ imageUrl: 'a.png' }] });
+    expect(sizers(target)).toBeNull();
+  });
+});

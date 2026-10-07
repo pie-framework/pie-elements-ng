@@ -10,6 +10,7 @@ interface DisplayChoice {
 
 let {
   choiceMode = 'text',
+  choices = [],
   displayChoice = undefined,
   displayChoiceLabelHtml = '',
   isStandalone = false,
@@ -19,6 +20,7 @@ let {
   language,
 }: {
   choiceMode?: 'text' | 'image';
+  choices?: DisplayChoice[];
   displayChoice?: DisplayChoice;
   displayChoiceLabelHtml?: string;
   isStandalone?: boolean;
@@ -27,6 +29,9 @@ let {
   ariaLabel: string;
   language?: string;
 } = $props();
+
+const isImage = (c: DisplayChoice | undefined) => choiceMode === 'image' && !!c?.imageUrl;
+const sizers = $derived(choices.filter((c) => isImage(c) || !!c?.labelHtml));
 </script>
 
 <span
@@ -37,10 +42,10 @@ let {
   aria-atomic="true"
   aria-label={ariaLabel}
 >
-  {#if choiceMode === 'image' && displayChoice?.imageUrl}
+  {#if isImage(displayChoice)}
     <img
-      src={displayChoice.imageUrl}
-      alt={displayChoice.imageAlt || t('selectedAnswerImage', language)}
+      src={displayChoice?.imageUrl}
+      alt={displayChoice?.imageAlt || t('selectedAnswerImage', language)}
       class="cloze-marker-image pie-blank-image"
       style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
     />
@@ -52,15 +57,38 @@ let {
       <span class="sr-only">{t('emptyBlank', language)}</span>
     </span>
   {/if}
+  {#if sizers.length}
+    <span class="cloze-marker-sizers pie-blank-sizers" aria-hidden="true">
+      {#each sizers as c}
+        {#if isImage(c)}
+          <img
+            src={c.imageUrl}
+            alt=""
+            class="cloze-marker-image pie-blank-image"
+            style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
+          />
+        {:else}
+          <span class="cloze-marker-value pie-blank-value">{@html sanitizeModelHtml(c.labelHtml || '')}</span>
+        {/if}
+      {/each}
+    </span>
+  {/if}
 </span>
 
 <style>
   /* The underline width comes from the inline style (layoutLimits); the colour
-     follows the text. */
+     follows the text. The answer and a hidden copy of every choice share one grid
+     cell, so the blank holds the largest choice's box from the start and nothing
+     around it moves on selection; the copies keep the empty placeholder's 4ch
+     minimum too. The answer comes first: it gives the blank its baseline. The
+     minmax(0, 1fr) tracks keep a fixed-size blank at its size, so an answer
+     taller than it overflows evenly, as in a flex box (sel-r1-base.css). */
   .cloze-marker {
-    display: inline-flex;
+    display: inline-grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
     align-items: center;
-    justify-content: center;
+    justify-items: center;
     text-align: center;
     vertical-align: baseline;
     padding-inline: 0.5rem;
@@ -70,6 +98,23 @@ let {
   .cloze-marker:focus-within {
     outline: 2px solid var(--mpb-focus-ring, #1565c0);
     outline-offset: 2px;
+  }
+
+  /* :global, because a host may wrap an answer image in its own element. */
+  .cloze-marker > :global(*),
+  .cloze-marker-sizers > :global(*) {
+    grid-area: 1 / 1;
+  }
+
+  .cloze-marker-sizers {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    align-self: stretch;
+    justify-self: stretch;
+    min-width: 4ch;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .cloze-marker-standalone {
