@@ -1,5 +1,23 @@
 # @pie-element/drag-in-the-blank
 
+## 11.0.2
+
+### Patch Changes
+
+- [#388](https://github.com/pie-framework/pie-elements-ng/pull/388) [`2cb9d7a`](https://github.com/pie-framework/pie-elements-ng/commit/2cb9d7ab7fe2cae03bc2188c8f5ca5985a549b15) Thanks [@chillenious](https://github.com/chillenious)! - Choice tiles and filled blanks take the line height they inherit again, as the legacy chips did: MUI 7's 1.5 made text tiles taller, and the blanks sized from them.
+
+- [#387](https://github.com/pie-framework/pie-elements-ng/pull/387) [`bead077`](https://github.com/pie-framework/pie-elements-ng/commit/bead077eb36ca57a584248c3f7817fe4fc850785) Thanks [@chillenious](https://github.com/chillenious)! - The drag-in-the-blank choice board no longer runs 16px past its column, which shifted the tiles right of where the legacy tray put them.
+
+- [#386](https://github.com/pie-framework/pie-elements-ng/pull/386) [`f43a89c`](https://github.com/pie-framework/pie-elements-ng/commit/f43a89cf643881faed4673fb41b8727c210324a6) Thanks [@chillenious](https://github.com/chillenious)! - A blank inside a table cell no longer gets the `.75em` spacers before and after it, restoring the cell spacing from PD-4704. In items that lay out one tile per cell, the spacers widened every cell, the table grew past the legacy layout, and the token tray shifted further when a tile was dropped.
+- Updated dependencies [[`2cb9d7a`](https://github.com/pie-framework/pie-elements-ng/commit/2cb9d7ab7fe2cae03bc2188c8f5ca5985a549b15), [`bead077`](https://github.com/pie-framework/pie-elements-ng/commit/bead077eb36ca57a584248c3f7817fe4fc850785), [`f43a89c`](https://github.com/pie-framework/pie-elements-ng/commit/f43a89cf643881faed4673fb41b8727c210324a6), [`e06ec61`](https://github.com/pie-framework/pie-elements-ng/commit/e06ec6184b64e0355763dcdb6256d77cc7cc1351), [`336223e`](https://github.com/pie-framework/pie-elements-ng/commit/336223e9efda67723a644b007cf5aad7dd72e221), [`7fc3257`](https://github.com/pie-framework/pie-elements-ng/commit/7fc32575d09e7ed3aa6252ad0a0bc21a4b7f6437), [`dbcfb0a`](https://github.com/pie-framework/pie-elements-ng/commit/dbcfb0a07ae275e865d035961c7ebfe176f26ad1)]:
+  - @pie-lib/mask-markup@4.0.2
+  - @pie-lib/drag@5.0.2
+  - @pie-lib/render-ui@8.0.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.3
+  - @pie-lib/editable-html-tip-tap@3.0.2
+  - @pie-lib/config-ui@14.0.2
+  - @pie-lib/correct-answer-toggle@5.0.2
+
 ## 11.0.1
 
 ### Patch Changes

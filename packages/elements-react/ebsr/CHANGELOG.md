@@ -1,5 +1,14 @@
 # @pie-element/ebsr
 
+## 15.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`e06ec61`](https://github.com/pie-framework/pie-elements-ng/commit/e06ec6184b64e0355763dcdb6256d77cc7cc1351), [`dbcfb0a`](https://github.com/pie-framework/pie-elements-ng/commit/dbcfb0a07ae275e865d035961c7ebfe176f26ad1)]:
+  - @pie-lib/render-ui@8.0.2
+  - @pie-element/multiple-choice@14.0.2
+  - @pie-lib/config-ui@14.0.2
+
 ## 15.0.1
 
 ### Patch Changes

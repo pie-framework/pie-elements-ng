@@ -1,5 +1,13 @@
 # @pie-element/shared-math-rendering-mathjax
 
+## 0.1.3
+
+### Patch Changes
+
+- [#385](https://github.com/pie-framework/pie-elements-ng/pull/385) [`336223e`](https://github.com/pie-framework/pie-elements-ng/commit/336223e9efda67723a644b007cf5aad7dd72e221) Thanks [@chillenious](https://github.com/chillenious)! - Each copy of the browser build's MathJax gives its explorer regions stylesheet ids of its own. MathJax ids them by class name, which minifiers rename, so two copies on one page, such as an element's and the item player's, could give different regions one id; with enrichment on, the copy that started second threw as its explorer started and lost its highlighting and speech regions.
+
+- [#385](https://github.com/pie-framework/pie-elements-ng/pull/385) [`7fc3257`](https://github.com/pie-framework/pie-elements-ng/commit/7fc32575d09e7ed3aa6252ad0a0bc21a4b7f6437) Thanks [@chillenious](https://github.com/chillenious)! - MathJax's fonts, speech worker and, in the npm build, MathJax itself load from an asset root, an npm root under which `<package>@<version>/<path>` serves each file, and neither build names a CDN host. The root is the renderer's `assetRoot` option, then `window['@pie-lib/math-rendering@2'].opts.assetRoot`, then the npm root of the URL the adapter loaded from, so an element browser build loaded from jsDelivr, raw.esm.sh or an npm mirror loads MathJax's files from there. `speechPath` sets the speech worker's directory, `speechLocales` the locales the speech language menu lists, and `assetUrls` the URL of individual files, which lets a bundle carry the browser build's fonts and speech through its host's bundler. Hosts that bundle the npm build, and `preloaded` hosts, must set the asset root: without one the npm build loads no MathJax and logs an error, and the browser build renders without web fonts and speech and warns, each once per page and with a `pie-mathjax-no-asset-root` event on `window`. A speech worker that fails to start, as under a content security policy that refuses `blob:` workers, now ends speech for the page; math rendering no longer stalls behind it.
+
 ## 0.1.2
 
 ### Patch Changes

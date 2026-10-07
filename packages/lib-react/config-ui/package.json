@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/config-ui",
-  "version": "14.0.1",
+  "version": "14.0.2",
   "description": "React implementation of @pie-lib/config-ui",
   "repository": {
     "type": "git",
