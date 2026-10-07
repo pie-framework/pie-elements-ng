@@ -136,6 +136,12 @@ A student's menu choices are saved in localStorage under `PIE-MathJax-Menu-Setti
 
 Turning on speech, braille or the magnifier from the menu starts MathJax's explorer. Its highlight, selection outline and speech, braille, magnifier and tooltip regions take `--pie-text`, `--pie-background`, `--pie-border-dark` and the [THEMING.md](./THEMING.md) focus chain from `src/explorer-styles.ts`, which the first render that typesets math adds to `<head>` once per document. The regions are appended to `document.body`, so they take the fallbacks under a theme scoped to an element, and the theme colours replace any highlight colours a student picks in the menu.
 
+### Control names
+
+Chrome leaves MathML out of the name a control takes from its content, so a button, option or draggable that holds only math has no name. `mathContentName(control)` returns the name: the control's text and math in order, each expression spoken from its hidden MathML, or `undefined` when the control holds no math, which leaves the name to the browser. It reads the MathML MathJax already emits, so it needs neither semantic enrichment nor the speech worker and works under `worker-src 'self'`. Call it after typesetting; `useDraggableControl` takes it as `contentName` and renames the control when typesetting changes its content.
+
+The built-in speaker, `speakMathml`, speaks school math in English: numbers, signs and operators, fences, fractions, roots, scripts, sums, integrals and limits, accents and tables. The trade is deliberate: no dependency and no worker, at the cost of diverging from SRE's ClearSpeak rules. A host that wants SRE or another locale passes its own `speak`. An element with `role="button"` presents its children as text, so math inside it cannot be explored character by character; the name is the only access to it there.
+
 ## Usage
 
 ### Element Developers

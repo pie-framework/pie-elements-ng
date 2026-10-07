@@ -4,4 +4,11 @@
  * The actual implementation is in packages/shared/math-rendering-mathjax.
  */
 
-export { renderMath, wrapMath, unWrapMath, mmlToLatex } from '@pie-element/shared-math-rendering-mathjax';
+export {
+  renderMath,
+  wrapMath,
+  unWrapMath,
+  mmlToLatex,
+  mathContentName,
+  speakMathml,
+} from '@pie-element/shared-math-rendering-mathjax';
