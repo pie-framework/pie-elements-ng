@@ -10,6 +10,7 @@ import debug from 'debug';
 import { noSelect } from '@pie-lib/style-utils';
 import { createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -434,7 +435,7 @@ export class TokenSelect extends React.Component {
           onClick={this.toggleToken}
           onKeyDown={this.onKeyDown}
           onFocus={this.onFocus}
-          dangerouslySetInnerHTML={{ __html: html }}
+          dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(html) }}
         />
 
         {Object.keys(descriptions).length > 0 && (

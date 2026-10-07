@@ -48,6 +48,7 @@ import Choices from './choices.js';
 import Choice from './choice.js';
 import Categories from './categories.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 const log = debug('@pie-ui:categorize');
@@ -355,7 +356,7 @@ export class Categorize extends React.Component {
         {displayNote && (
           <StyledNote
             dangerouslySetInnerHTML={{
-              __html: note,
+              __html: sanitizeModelHtml(note),
             }}
           />
         )}

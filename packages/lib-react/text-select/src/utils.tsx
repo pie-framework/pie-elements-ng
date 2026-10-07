@@ -1,9 +1,11 @@
 // @ts-nocheck
 
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
+
 const createElementFromHTML = (htmlString = '') => {
   const div = document.createElement('div');
 
-  div.innerHTML = htmlString.trim();
+  div.innerHTML = sanitizeModelHtml(htmlString).trim();
 
   return div;
 };

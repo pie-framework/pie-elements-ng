@@ -10,6 +10,7 @@
 />
 
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { onDestroy, onMount, tick, untrack } from 'svelte';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Tile from './Tile.svelte';
@@ -511,7 +512,7 @@ const draggedTile = $derived<VennTile | null>(
   {/if}
 
   {#if prompt}
-    <div class="venn-prompt">{@html prompt}</div>
+    <div class="venn-prompt">{@html sanitizeModelHtml(prompt)}</div>
   {/if}
 
   {#if isEvaluate && incorrectCount > 0}

@@ -6,6 +6,7 @@ import { get } from '@pie-element/shared-lodash';
 import { styled } from '@mui/material/styles';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { MARK_TAGS } from './serialization.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const Paragraph: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(0.5),
@@ -54,7 +55,7 @@ export const renderChildren = (layout, value, onChange, rootRenderChildren, pare
       children.push(
         <span
           dangerouslySetInnerHTML={{
-            __html: `<math displaystyle="true">${n.nodes[0].innerHTML}</math>`,
+            __html: sanitizeModelHtml(`<math displaystyle="true">${n.nodes[0].innerHTML}</math>`),
           }}
         />,
       );

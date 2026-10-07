@@ -34,6 +34,7 @@ const renderUi =
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import PropTypes from 'prop-types';
 import { extractTextFromHTML, isEmptyString } from './utils.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const styles = {
   axisLabel: {
@@ -186,7 +187,7 @@ const LabelComponent = (props) => {
         }}
       >
         {disabledLabel ? (
-          <LabelContent dangerouslySetInnerHTML={{ __html: text || '' }} />
+          <LabelContent dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(text) }} />
         ) : (
           <EditableHtml
             markup={text || ''}

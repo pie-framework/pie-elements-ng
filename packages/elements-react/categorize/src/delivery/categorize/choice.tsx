@@ -9,6 +9,7 @@ import { uid } from '@pie-lib/drag';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { color } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const log = debug('@pie-ui:categorize:choice');
 
@@ -78,7 +79,7 @@ export class Layout extends React.Component {
         isSelected={isSelected}
       >
         <StyledCard isSelected={isSelected}>
-          <StyledCardContent dangerouslySetInnerHTML={{ __html: content }} />
+          <StyledCardContent dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(content) }} />
         </StyledCard>
       </ChoiceContainer>
     );

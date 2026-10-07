@@ -5,3 +5,4 @@
  */
 
 export * from './utils.js';
+export * from './sanitize-model-html.js';

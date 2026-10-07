@@ -14,6 +14,7 @@
     "@mapbox/point-geometry": "^1.1.0",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@pie-element/shared-utils": "workspace:*",
     "@pie-lib/drag": "workspace:*",
     "@pie-lib/editable-html-tip-tap": "workspace:*",
     "@pie-lib/graphing-utils": "workspace:*",

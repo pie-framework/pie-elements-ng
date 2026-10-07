@@ -49,6 +49,7 @@ import { HorizontalTiler, VerticalTiler } from './tiler.js';
 import { buildState, reducer } from './ordering.js';
 import { haveSameValuesButDifferentOrder } from './utils.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 // A click that lands right after a real drag gesture ends must be ignored by the
 // click-to-select/click-to-place handlers below, or it would immediately reopen or
@@ -648,7 +649,7 @@ export class PlacementOrdering extends React.Component {
               </InteractiveRegionContent>
             </InteractiveRegion>
 
-            {displayNote && <StyledNote dangerouslySetInnerHTML={{ __html: note }} />}
+            {displayNote && <StyledNote dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(note) }} />}
 
             {showRationale && (
               <StyledCollapsible

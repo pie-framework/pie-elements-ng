@@ -8,6 +8,7 @@ import { isEmpty, isUndefined, reduce } from '@pie-element/shared-lodash';
 import Arrow from './arrow.js';
 import DragAndDropAnswer from './answer.js';
 import { color } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 // matches the min width of the answer entries (see AnswerContainer in ./answer), so the two columns
 // give the row an intrinsic min width that the horizontal scroll container can overflow.
@@ -156,7 +157,7 @@ export class AnswerArea extends React.Component {
             // registration derived from its promptId, so React must not reuse one row's
             // instance for a different prompt.
             <Row key={id}>
-              <PromptEntry id={labelId} dangerouslySetInnerHTML={{ __html: title }} />
+              <PromptEntry id={labelId} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(title) }} />
 
               <ArrowEntry>
                 <Arrow direction="left" />

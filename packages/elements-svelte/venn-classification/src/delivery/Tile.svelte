@@ -1,4 +1,5 @@
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { tileAccessibleName } from './tile-accessible-name.js';
 
 let {
@@ -89,7 +90,7 @@ const showText = $derived(!!(label ?? '').replace(/<[^>]*>/g, '').trim());
       />
     {/if}
     {#if showText}
-      <span class="tile-label" class:tile-label-below={hasImage}>{@html label}</span>
+      <span class="tile-label" class:tile-label-below={hasImage}>{@html sanitizeModelHtml(label)}</span>
     {/if}
   </span>
   {#if correctness === 'correct'}

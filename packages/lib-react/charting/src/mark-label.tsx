@@ -10,6 +10,7 @@ import { types } from '@pie-lib/plot';
 import { correct, disabled, incorrect } from './common/styles.js';
 import { color } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const StyledContainer: any = styled('div')({
   display: 'flex',
@@ -162,7 +163,7 @@ export const MarkLabel = (props) => {
     const el = rootRef.current;
 
     if (el && mathLabel) {
-      el.innerHTML = mathLabel;
+      el.innerHTML = sanitizeModelHtml(mathLabel);
       renderMath(el);
     }
   }, [label, mathLabel]);

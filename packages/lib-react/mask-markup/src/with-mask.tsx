@@ -5,10 +5,11 @@ import PropTypes from 'prop-types';
 import Mask from './mask.js';
 import componentize from './componentize.js';
 import { deserialize } from './serialization.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 export const buildLayoutFromMarkup = (markup, type) => {
   const { markup: processed } = componentize(markup, type);
-  const value = deserialize(processed);
+  const value = deserialize(sanitizeModelHtml(processed));
   return value.document;
 };
 
@@ -48,9 +49,9 @@ export const withMask = (type, renderChildren) => {
             el.removeChild(mjxContainer);
           }
 
-          // Update the innerHTML to match the raw LaTeX data, ensuring it is reprocessed correctly
+          // Restore the raw LaTeX as text, ensuring it is reprocessed correctly
           const latexCode = el.getAttribute('data-raw');
-          el.innerHTML = latexCode;
+          el.textContent = latexCode;
 
           // Remove the attribute to signal that MathJax should reprocess this element
           el.removeAttribute('data-math-handled');

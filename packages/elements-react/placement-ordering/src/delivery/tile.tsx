@@ -8,6 +8,7 @@ import { styled } from '@mui/material/styles';
 
 import { PlaceHolder } from '@pie-lib/drag';
 import { color } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const log = debug('pie-elements:placement-ordering:tile');
 
@@ -122,7 +123,7 @@ const TileContent = (props) => {
         disabled={disabled}
         outcome={outcome}
         label={label}
-        dangerouslySetInnerHTML={{ __html: label }}
+        dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(label) }}
       />
     );
   }

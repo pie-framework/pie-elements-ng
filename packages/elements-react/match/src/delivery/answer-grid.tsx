@@ -7,6 +7,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import { color, createUniqueId } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const ControlsContainer: any = styled('div')(({ theme }) => ({
   marginLeft: 'auto',
@@ -150,7 +151,7 @@ export class AnswerGrid extends React.Component {
                 <RowHeader key={`th-${idx}`} id={headerId(idx)} data-colno={`${idx}`} scope="col">
                   <RowItem
                     isQuestionText={idx === 0}
-                    dangerouslySetInnerHTML={{ __html: header }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(header) }}
                   />
                 </RowHeader>
               ))}
@@ -167,7 +168,7 @@ export class AnswerGrid extends React.Component {
                 <td key={`td-title-${idx}`} id={rowTitleId(idx)} data-colno={'0'}>
                   <RowItem
                     isQuestionText={true}
-                    dangerouslySetInnerHTML={{ __html: row.title }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(row.title) }}
                   />
                 </td>
 

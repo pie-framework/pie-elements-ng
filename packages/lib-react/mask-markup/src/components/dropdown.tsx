@@ -43,6 +43,7 @@ import { styled } from '@mui/material/styles';
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -377,7 +378,7 @@ class Dropdown extends React.Component {
         >
           {(choices || []).map((c, index) => (
             <StyledMenuItem key={index} tabIndex={-1} aria-hidden="true">
-              <StyledLabel dangerouslySetInnerHTML={{ __html: c.label }} />
+              <StyledLabel dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(c.label) }} />
             </StyledMenuItem>
           ))}
         </div>
@@ -408,11 +409,13 @@ class Dropdown extends React.Component {
             id={valueDisplayId}
             ref={this.previewRef}
             dangerouslySetInnerHTML={{
-              __html: correctValue
-                ? correctValue
-                : open && this.state.previewValue
-                  ? this.getLabel(choices, this.state.previewValue)
-                  : this.getLabel(choices, value) || '',
+              __html: sanitizeModelHtml(
+                correctValue
+                  ? correctValue
+                  : open && this.state.previewValue
+                    ? this.getLabel(choices, this.state.previewValue)
+                    : this.getLabel(choices, value) || '',
+              ),
             }}
           />
           {open ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
@@ -454,7 +457,7 @@ class Dropdown extends React.Component {
               >
                 <StyledLabel
                   ref={(ref) => (this.elementRefs[index] = ref)}
-                  dangerouslySetInnerHTML={{ __html: c.label }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(c.label) }}
                 />
                 <StyledSelectedIndicator dangerouslySetInnerHTML={{ __html: c.value === value ? ' &check;' : '' }} />
               </StyledMenuItem>

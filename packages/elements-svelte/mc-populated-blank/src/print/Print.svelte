@@ -9,6 +9,7 @@
 />
 
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import McPopulatedBlank from '../delivery/McPopulatedBlank.svelte';
 import { t as translate } from '../delivery/i18n';
 import { preparePrint, type PrintView } from './preparePrint';
@@ -39,7 +40,7 @@ const t = (key: string) => translate(key, (view?.model.language as string) || un
 {#if view}
   <div class="mpb-print">
     {#if view.teacherInstructions}
-      <div class="mpb-print-block mpb-print-teacher-instructions">{@html view.teacherInstructions}</div>
+      <div class="mpb-print-block mpb-print-teacher-instructions">{@html sanitizeModelHtml(view.teacherInstructions)}</div>
     {/if}
 
     {#if view.audioUrl || view.audioTranscript}

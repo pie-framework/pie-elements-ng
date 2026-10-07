@@ -34,6 +34,7 @@ const Purpose = unwrapReactInteropSymbol(PurposeImport, 'Purpose') || unwrapReac
 const PreviewPrompt = unwrapReactInteropSymbol(PreviewPromptImport, 'PreviewPrompt') || unwrapReactInteropSymbol(renderUi.PreviewPrompt, 'PreviewPrompt');
 const Collapsible = unwrapReactInteropSymbol(CollapsibleImport, 'Collapsible') || unwrapReactInteropSymbol(renderUi.Collapsible, 'Collapsible');
 import * as RenderUiNamespace from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 const renderUiNamespaceAny = RenderUiNamespace as any;
 const renderUiDefaultMaybe = renderUiNamespaceAny['default'];
 const renderUi =
@@ -305,7 +306,7 @@ class StimulusTabs extends React.Component {
   parsedText: any = (text = '') => {
     // fix imported audio content for Safari PD-1391
     const div = document.createElement('div');
-    div.innerHTML = text.replace(/(<br\/>\n)/g, '<br/>');
+    div.innerHTML = sanitizeModelHtml(text.replace(/(<br\/>\n)/g, '<br/>'));
 
     const audio = div.querySelector('audio');
 
@@ -391,7 +392,7 @@ class StimulusTabs extends React.Component {
 
         {tab.text && (
           <Purpose purpose="passage-text">
-            <div key={tab.id} className="text" dangerouslySetInnerHTML={{ __html: baseHeadingLevel ? transformDataHeadings(tab.text, textLevel) : tab.text }} />
+            <div key={tab.id} className="text" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(baseHeadingLevel ? transformDataHeadings(tab.text, textLevel) : tab.text) }} />
           </Purpose>
         )}
       </Passage>

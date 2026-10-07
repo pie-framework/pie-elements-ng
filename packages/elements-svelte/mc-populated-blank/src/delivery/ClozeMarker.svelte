@@ -1,4 +1,5 @@
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { t } from './i18n';
 
 interface DisplayChoice {
@@ -44,7 +45,7 @@ let {
       style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
     />
   {:else if displayChoiceLabelHtml}
-    <span class="cloze-marker-value pie-blank-value">{@html displayChoiceLabelHtml}</span>
+    <span class="cloze-marker-value pie-blank-value">{@html sanitizeModelHtml(displayChoiceLabelHtml)}</span>
   {:else}
     <span class="cloze-marker-empty">
       <span aria-hidden="true">&nbsp;</span>

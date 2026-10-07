@@ -36,6 +36,7 @@ const renderUi =
     : renderUiNamespaceAny;
 import PropTypes from 'prop-types';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -185,7 +186,7 @@ class Rubric extends React.Component {
                     <TitleText>
                       {pointsLabel === 1 ? `${pointsLabel} PT` : `${pointsLabel} PTS`}
                     </TitleText>
-                    <Text dangerouslySetInnerHTML={{ __html: desc }} />
+                    <Text dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(desc) }} />
                   </StyledListItem>
 
                   {sampleAnswers && sampleAnswers[index] && (
@@ -193,7 +194,7 @@ class Rubric extends React.Component {
                       <SampleTitleText>
                         Sample Answer
                       </SampleTitleText>
-                      <Text dangerouslySetInnerHTML={{ __html: sampleAnswers[index] }} />
+                      <Text dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(sampleAnswers[index]) }} />
                     </StyledListItem>
                   )}
                 </React.Fragment>
