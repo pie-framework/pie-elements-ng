@@ -1,6 +1,7 @@
 /**
  * Feedback text sits in the page's ink on a tinted status surface, and a host's
- * `--feedback-*` custom properties still take precedence.
+ * `--feedback-*` custom properties still take precedence. Feedback that appears
+ * on evaluate is an alert, so screen readers announce it on insertion.
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import React from 'react';
@@ -38,6 +39,14 @@ describe('Feedback', () => {
   it('renders nothing without both correctness and feedback', () => {
     const container = render(<Feedback correctness="correct" />);
     expect(container.textContent).toBe('');
+  });
+
+  it('announces feedback as an alert only while it is shown', () => {
+    const container = render(<Feedback correctness="correct" />);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+
+    act(() => root?.render(<Feedback correctness="incorrect" feedback="<p>Try again.</p>" />));
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe('Try again.');
   });
 
   it.each([
