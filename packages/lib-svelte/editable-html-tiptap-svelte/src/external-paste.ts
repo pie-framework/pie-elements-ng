@@ -1,4 +1,4 @@
-import { Extension } from '@tiptap/core';
+import { type Editor, Extension } from '@tiptap/core';
 import type { Mark, Node as ProseMirrorNode, Schema, Slice } from '@tiptap/pm/model';
 import { type EditorState, Plugin, PluginKey, TextSelection } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
@@ -15,6 +15,7 @@ export const PASTED_FORMATTING = [
   'bulletList',
   'orderedList',
   'table',
+  'image',
 ] as const;
 
 export type PastedFormatting = (typeof PASTED_FORMATTING)[number];
@@ -22,13 +23,22 @@ export type PastedFormatting = (typeof PASTED_FORMATTING)[number];
 export type ExternalPasteSettings = {
   /** Paste as plain text, as the Slate editor did. Math copied from rendered PIE content stays math. */
   plainText: boolean;
-  /** The formatting a paste keeps. The rest becomes text: a list its items, a table its rows. */
+  /**
+   * The formatting a paste keeps. The rest becomes text: a list its items, a table its rows.
+   * `image` keeps the pictures Word puts in its HTML as data URLs, in an editor with image upload
+   * nodes. Other images go.
+   */
   formatting: readonly PastedFormatting[];
 };
 
 export type ExternalPasteOptions = {
   /** Read at each paste and drop, so a mounted editor follows a change of toolbar or setting. */
   settings: () => ExternalPasteSettings;
+  /**
+   * Uploads the picture pasted as the image upload node with `nodeKey`, which shows its data URL
+   * until the upload replaces it. Without it, the data URL is the picture's src.
+   */
+  uploadImage?: (editor: Editor, nodeKey: string) => void;
 };
 
 type SliceFilter = (slice: Slice, state: EditorState) => Slice;
@@ -52,6 +62,30 @@ const hasMath = (html: string) =>
 
 // Set while pasteHTML parses content from outside a PIE editor, for transformPasted to apply.
 let filtering: SliceFilter | null = null;
+
+// The pictures a browser shows, as Word for Windows and Mac copies them beside their VML.
+const PICTURE = /^data:image\/(?:png|jpeg|gif|webp);base64,/i;
+
+// Unique in the document: an upload finds its picture by it once the author has edited on.
+const imageKey = () => `img-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+/**
+ * `html` with its pictures marked as image upload nodes, which parse from that mark alone. The
+ * Image extension leaves out a data URL.
+ */
+function markPictures(html: string): string {
+  if (!html.includes('data:image/')) {
+    return html;
+  }
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  for (const img of Array.from(doc.body.querySelectorAll('img'))) {
+    if (PICTURE.test(img.getAttribute('src') ?? '')) {
+      img.setAttribute('data-type', 'image-upload-node');
+    }
+  }
+  return doc.body.innerHTML;
+}
 
 const escapeHtml = (text: string) =>
   text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -145,17 +179,21 @@ function externalContentOf(data: DataTransfer | null): { text: string; html: str
   return { text, html };
 }
 
+/** The pictures a paste keeps: the keys of the nodes it makes, and whether they upload. */
+type PastedPictures = { keys: string[]; upload: boolean };
+
 /**
  * A parsed slice cut down to paragraphs, line breaks and math, plus the marks, lists and tables in
- * `kept`. Attributes go, except an ordered list's numbering, a cell's spans, a header cell's scope
- * and a table's caption. A list or table not kept becomes paragraphs, as a plain-text copy of it
- * reads: an item behind its bullet or number, a row with tabs between its cells.
+ * `kept` and, with `pictures`, the pictures markPictures marked. Attributes go, except an ordered
+ * list's numbering, a cell's spans, a header cell's scope, a table's caption and a picture's size
+ * and alt text. A list or table not kept becomes paragraphs, as a plain-text copy of it reads: an
+ * item behind its bullet or number, a row with tabs between its cells.
  */
 const keepFormatting =
-  (kept: ReadonlySet<string>): SliceFilter =>
+  (kept: ReadonlySet<string>, pictures: PastedPictures | null = null): SliceFilter =>
   (slice, state) => {
     const { schema } = state;
-    const { paragraph, hardBreak, math } = schema.nodes;
+    const { paragraph, hardBreak, math, imageUploadNode } = schema.nodes;
     const line = (content: ProseMirrorNode[]) => paragraph.create(null, content);
     const keptMarks = (marks: readonly Mark[]) =>
       marks.filter((mark) => kept.has(mark.type.name)).map((mark) => mark.type.create());
@@ -178,6 +216,14 @@ const keepFormatting =
         // Images, response areas and other inline atoms go.
         return child.isLeaf ? [] : inline(child);
       });
+
+    const picture = (node: ProseMirrorNode): ProseMirrorNode[] => {
+      const { src, width, height, alt } = node.attrs;
+      if (!pictures || !PICTURE.test(src ?? '')) return [];
+      const nodeKey = imageKey();
+      pictures.keys.push(nodeKey);
+      return [node.type.create({ src, width, height, alt, nodeKey, loaded: !pictures.upload })];
+    };
 
     const cellText = (cell: ProseMirrorNode) => {
       const content: ProseMirrorNode[] = [];
@@ -237,13 +283,26 @@ const keepFormatting =
       ];
     };
 
+    const isPicture = (node?: ProseMirrorNode) =>
+      !!pictures && !!node && node.type === imageUploadNode;
+
     const blocks = (node: Pick<ProseMirrorNode, 'forEach'>): ProseMirrorNode[] =>
-      childrenOf(node).flatMap((child) => {
+      childrenOf(node).flatMap((child, i, children) => {
+        // ProseMirror lifts a picture out of its paragraph and leaves the paragraph empty. Word's
+        // blank lines hold a space.
+        if (
+          child.isTextblock &&
+          !child.content.size &&
+          (isPicture(children[i - 1]) || isPicture(children[i + 1]))
+        ) {
+          return [];
+        }
         if (child.isTextblock) return [line(inline(child))];
         if (child.type.spec.tableRole === 'table') return table(child);
         if (child.type.name === 'bulletList' || child.type.name === 'orderedList')
           return list(child);
-        // Blockquotes and other containers give up their content. Rules, images and media go.
+        if (isPicture(child)) return picture(child);
+        // Blockquotes and other containers give up their content. Rules, other images and media go.
         return child.isLeaf ? [] : blocks(child);
       });
 
@@ -310,7 +369,8 @@ function pasteFiltered(view: EditorView, html: string, filter: SliceFilter) {
 function insertExternal(
   view: EditorView,
   { text, html }: { text: string; html: string },
-  settings: ExternalPasteSettings
+  settings: ExternalPasteSettings,
+  uploadImage: ((nodeKey: string) => void) | null
 ) {
   const { selection, schema } = view.state;
   const kept = new Set<string>(settings.plainText ? [] : settings.formatting);
@@ -332,7 +392,18 @@ function insertExternal(
   }
 
   if (!settings.plainText) {
-    pasteFiltered(view, rebuildWordLists(html), keepFormatting(kept));
+    const pictures: PastedPictures | null =
+      kept.has('image') && schema.nodes.imageUploadNode
+        ? { keys: [], upload: !!uploadImage }
+        : null;
+    pasteFiltered(
+      view,
+      rebuildWordLists(pictures ? markPictures(html) : html),
+      keepFormatting(kept, pictures)
+    );
+    for (const nodeKey of pictures?.keys ?? []) {
+      uploadImage?.(nodeKey);
+    }
     return;
   }
 
@@ -356,9 +427,10 @@ function insertExternal(
  * superscript, subscript, lists and tables in `formatting`. Its fonts, sizes, colours, alignment,
  * headings, links and class names go, which TextStyleKit, TextAlign and CSSMark would otherwise keep
  * (PIE-1145). Word for Windows and Mac copies lists as styled paragraphs, which are rebuilt as
- * lists first. With `plainText` set it pastes plain text. Copies from a PIE editor and pasted
- * images are left to ProseMirror and the image upload handler. This editor has no math node, so
- * the React editor's math handling never runs here.
+ * lists first. Word's pictures paste as image upload nodes when `formatting` has `image`, and
+ * upload through `uploadImage`. With `plainText` set it pastes plain text. Copies from a PIE editor
+ * and pasted image files are left to ProseMirror and the image upload handler. This editor has no
+ * math node or image upload node, so the React editor's math and picture handling never runs here.
  *
  * Mirrors `packages/lib-react/editable-html-tip-tap/src/external-paste.ts`.
  */
@@ -371,11 +443,14 @@ export const ExternalPaste = Extension.create<ExternalPasteOptions>({
   addOptions() {
     return {
       settings: () => ({ plainText: false, formatting: PASTED_FORMATTING }),
+      uploadImage: undefined,
     };
   },
 
   addProseMirrorPlugins() {
-    const { settings } = this.options;
+    const { settings, uploadImage } = this.options;
+    const { editor } = this;
+    const upload = uploadImage ? (nodeKey: string) => uploadImage(editor, nodeKey) : null;
 
     return [
       new Plugin({
@@ -394,7 +469,7 @@ export const ExternalPaste = Extension.create<ExternalPasteOptions>({
               return false;
             }
 
-            insertExternal(view, content, settings());
+            insertExternal(view, content, settings(), upload);
 
             return true;
           },
@@ -414,7 +489,7 @@ export const ExternalPaste = Extension.create<ExternalPasteOptions>({
             view.dispatch(
               view.state.tr.setSelection(TextSelection.near(view.state.doc.resolve(target.pos)))
             );
-            insertExternal(view, content, settings());
+            insertExternal(view, content, settings(), upload);
             view.focus();
 
             return true;

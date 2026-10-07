@@ -18,6 +18,31 @@ const TABLE =
   '<table><caption>Prices</caption><tbody><tr><th scope="col">Item</th><th scope="col">Cost</th></tr>' +
   '<tr><th scope="row">Pen</th><td>$1</td></tr></tbody></table>';
 
+const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
+// As Word for Mac copies a picture in a paragraph: VML for Office, an `<img>` for everything else.
+const PICTURE = {
+  'text/html':
+    '<p class=MsoNormal>Label the diagram.</p>' +
+    '<p class=MsoNormal><span style="mso-no-proof:yes"><!--[if gte vml 1]><v:shape id="_x0000_i1027" ' +
+    'style="width:259pt;height:79pt"><v:imagedata src="file:///tmp/msohtmlclip/clip_image001.png"/>' +
+    `</v:shape><![endif]--><![if !vml]><img width=259 height=79 src="${PNG}" v:shapes="_x0000_i1027">` +
+    '<![endif]></span></p><p class=MsoNormal>Drag each label.</p>',
+  'text/plain': 'Label the diagram.\n\nDrag each label.',
+  'text/rtf': '{\\rtf1}',
+};
+
+// The picture of the copied text that Word puts on the clipboard beside it.
+const textPicture = () => new File([new Uint8Array([1])], 'image.png', { type: 'image/png' });
+
+const pictures = (editor: any) => {
+  const found: any[] = [];
+  editor.state.doc.descendants((node: any) => {
+    if (node.type.name === 'imageUploadNode') found.push(node.attrs);
+  });
+  return found;
+};
+
 const element = (props: Record<string, unknown>, onEditor: (editor: any) => void) => (
   <EditableHtml markup="" onChange={vi.fn()} editorRef={onEditor} {...props} />
 );
@@ -37,11 +62,14 @@ async function mountEditor(props: Record<string, unknown> = {}) {
   };
 }
 
-function paste(editor: any, flavours: Record<string, string>) {
+function paste(editor: any, flavours: Record<string, string>, files: File[] = []) {
   const clipboardData = {
-    types: Object.keys(flavours),
-    items: Object.keys(flavours).map((type) => ({ kind: 'string', type })),
-    files: [],
+    types: [...Object.keys(flavours), ...(files.length ? ['Files'] : [])],
+    items: [
+      ...Object.keys(flavours).map((type) => ({ kind: 'string', type })),
+      ...files.map((file) => ({ kind: 'file', type: file.type, getAsFile: () => file })),
+    ],
+    files,
     getData: (type: string) => flavours[type] ?? '',
   };
   const event = new Event('paste', { bubbles: true, cancelable: true });
@@ -100,6 +128,65 @@ describe('EditableHtml paste', () => {
     paste(editor, { 'text/html': '<p><b>Bold</b> <i>italic</i></p>', 'text/plain': 'Bold italic' });
 
     expect(editor.getHTML()).toBe('<div>Bold <em>italic</em></div>');
+  });
+});
+
+describe('EditableHtml pasted pictures', () => {
+  const upload = () => ({ add: vi.fn(), delete: vi.fn() });
+
+  it("uploads Word's picture through the host, as a pasted image file", async () => {
+    const imageSupport = upload();
+    const { editor } = await mountEditor({ imageSupport });
+
+    paste(editor, PICTURE, [textPicture()]);
+
+    expect(pictures(editor)).toEqual([
+      expect.objectContaining({ src: PNG, width: 259, height: 79, loaded: false, nodeKey: expect.any(String) }),
+    ]);
+    expect(editor.getText({ blockSeparator: '|' })).toBe('Label the diagram.||Drag each label.');
+    expect(imageSupport.add).toHaveBeenCalledTimes(1);
+
+    const handler = imageSupport.add.mock.calls[0][0];
+    expect(handler.isPasted).toBe(true);
+    expect(handler.getChosenFile()).toMatchObject({ name: 'image.png', type: 'image/png', size: 68 });
+
+    handler.done(null, 'https://cdn.example.com/diagram.png');
+
+    expect(pictures(editor)).toEqual([
+      expect.objectContaining({ src: 'https://cdn.example.com/diagram.png', loaded: true }),
+    ]);
+  });
+
+  it('drops the picture in an editor with no image upload', async () => {
+    const { editor } = await mountEditor();
+
+    paste(editor, PICTURE, [textPicture()]);
+
+    expect(pictures(editor)).toEqual([]);
+    expect(editor.getHTML()).not.toContain('<img');
+  });
+
+  it('drops the picture when the toolbar has no image button', async () => {
+    const imageSupport = upload();
+    const { editor } = await mountEditor({ activePlugins: ['bold'], imageSupport });
+
+    paste(editor, PICTURE, [textPicture()]);
+
+    expect(pictures(editor)).toEqual([]);
+    expect(imageSupport.add).not.toHaveBeenCalled();
+  });
+
+  it('drops a picture that is a link to another site', async () => {
+    const imageSupport = upload();
+    const { editor } = await mountEditor({ imageSupport });
+
+    paste(editor, {
+      'text/html': '<p>Before</p><p><img src="https://example.com/diagram.png"></p><p>After</p>',
+      'text/plain': 'Before\nAfter',
+    });
+
+    expect(editor.getHTML()).not.toContain('<img');
+    expect(imageSupport.add).not.toHaveBeenCalled();
   });
 });
 

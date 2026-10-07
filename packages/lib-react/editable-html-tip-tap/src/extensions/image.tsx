@@ -8,6 +8,57 @@ import ImageComponent from './image-component.js';
 import InsertImageHandler from '../components/image/InsertImageHandler.js';
 import { findImageNodeByKey, newImageNodeKey } from '../components/image/findImageNode.js';
 
+// The file a data URL encodes, named as a browser names a pasted image.
+const fileOf = (dataUrl) => {
+  const [header, base64] = dataUrl.split(',');
+  const type = /^data:([^;,]+)/.exec(header)?.[1] ?? 'image/png';
+  const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+
+  return new File([bytes], `image.${type.split('/')[1]}`, { type });
+};
+
+// Hands `file`, pasted as the image with `nodeKey`, to the host to upload, the path the toolbar
+// button takes, so the markup stores the uploaded URL rather than base64.
+function requestUpload(editor, insertImageRequested, nodeKey, file) {
+  const nodeInfo = findImageNodeByKey(editor, nodeKey);
+
+  if (!nodeInfo) {
+    return;
+  }
+
+  insertImageRequested(editor, nodeInfo, (onFinish) => {
+    let handler;
+
+    const finish = (result) => {
+      // Upload failed - show the data URL rather than leave the node behind a progress bar.
+      if (!result) {
+        handler?.updateNode({ loaded: true });
+      }
+
+      onFinish(result);
+    };
+
+    handler = new InsertImageHandler(editor, nodeInfo, finish, true);
+
+    // Sets getChosenFile(), which is how a host spots a pasted file and skips the picker.
+    handler.fileChosen(file);
+
+    return handler;
+  });
+}
+
+/** Uploads the image pasted with `nodeKey` and a data URL src, as a pasted image file uploads. */
+export function uploadPastedImage(editor, nodeKey) {
+  const insertImageRequested = editor.extensionManager.extensions.find(
+    (extension) => extension.name === 'imageUploadNode',
+  )?.options.imageHandling?.insertImageRequested;
+  const src = findImageNodeByKey(editor, nodeKey)?.[0].attrs.src;
+
+  if (insertImageRequested && src) {
+    requestUpload(editor, insertImageRequested, nodeKey, fileOf(src));
+  }
+}
+
 export const ImageUploadNode = Node.create({
   name: 'imageUploadNode',
 
@@ -108,32 +159,7 @@ export const ImageUploadNode = Node.create({
                 return;
               }
 
-              const nodeInfo = findImageNodeByKey(editor, nodeKey);
-
-              if (!nodeInfo) {
-                return;
-              }
-
-              // Same path as the toolbar button, so the markup stores the uploaded URL, not base64.
-              insertImageRequested(editor, nodeInfo, (onFinish) => {
-                let handler;
-
-                const finish = (result) => {
-                  // Upload failed - show the data URL rather than leave the node behind a progress bar.
-                  if (!result) {
-                    handler?.updateNode({ loaded: true });
-                  }
-
-                  onFinish(result);
-                };
-
-                handler = new InsertImageHandler(editor, nodeInfo, finish, true);
-
-                // Sets getChosenFile(), which is how a host spots a pasted file and skips the picker.
-                handler.fileChosen(file);
-
-                return handler;
-              });
+              requestUpload(editor, insertImageRequested, nodeKey, file);
             };
 
             reader.readAsDataURL(file);
