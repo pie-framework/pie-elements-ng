@@ -3,7 +3,16 @@
  * black-box, since that MathJax is reachable from the page only through its output and its menu.
  */
 import { type Browser, expect, type Page, test } from '@playwright/test';
-import { type Build, browserChunks, openPage, renderWithAdapter } from './harness';
+import {
+  ADAPTER_URL,
+  type Build,
+  browserChunks,
+  copyUrl,
+  openMenu,
+  openPage,
+  renderWithAdapter,
+  SVG_BUILD_URL,
+} from './harness';
 
 const OWN_KEY = 'PIE-MathJax-Menu-Settings';
 
@@ -21,30 +30,6 @@ function storeSettings(page: Page, settings: Record<string, unknown>) {
     ([name, value]) => localStorage.setItem(name, value),
     [OWN_KEY, JSON.stringify(settings)]
   );
-}
-
-/** The items of each open menu, `[disabled]` marking those that are. */
-function openMenus(page: Page) {
-  return page.evaluate(() =>
-    [...document.querySelectorAll('.CtxtMenu_Menu')].map((menu) =>
-      [...menu.querySelectorAll(':scope > .CtxtMenu_MenuItem')]
-        .map((item) => {
-          const label = (item.textContent ?? '').replace(/[✓►]/g, '').trim();
-          return item.getAttribute('aria-disabled') === 'true' ? `${label} [disabled]` : label;
-        })
-        .filter(Boolean)
-    )
-  );
-}
-
-/** Opens the context menu of `selector`'s math and the submenus `path` names, in turn. */
-async function openMenu(page: Page, selector: string, path: string[]) {
-  await page.locator(`${selector} mjx-container`).click({ button: 'right' });
-  for (const label of path) {
-    await page.locator('.CtxtMenu_MenuItem', { hasText: label }).first().hover();
-    await expect(page.locator('.CtxtMenu_Menu')).toHaveCount(path.indexOf(label) + 2);
-  }
-  return openMenus(page);
 }
 
 test('renders TeX and MathML on a MathJax of its own', async ({ page }) => {
@@ -238,15 +223,16 @@ test("runs beside the page's own MathJax 4 SVG build, which it leaves alone", as
     'browser'
   );
   await page.evaluate(
-    () =>
+    (src) =>
       new Promise<void>((resolve, reject) => {
         Object.assign(window, { MathJax: { startup: { elements: ['#host'] } } });
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-svg.js';
+        script.src = src;
         script.onload = () => (window as any).MathJax.startup.promise.then(() => resolve(), reject);
         script.onerror = () => reject(new Error('tex-svg.js did not load'));
         document.head.appendChild(script);
-      })
+      }),
+    SVG_BUILD_URL
   );
   const hostMathJax = await page.evaluateHandle(() => (window as any).MathJax);
 
@@ -306,7 +292,9 @@ test('requests its engine and font ranges as it loads, and changes the page only
   const scripts: string[] = [];
   page.on('request', (request) => {
     const { pathname } = new URL(request.url());
-    if (pathname.endsWith('.js') && pathname !== '/adapter.js') scripts.push(pathname.slice(1));
+    if (pathname.endsWith('.js') && pathname !== ADAPTER_URL) {
+      scripts.push(pathname.slice(pathname.lastIndexOf('/') + 1));
+    }
   });
   const { unserved, errors } = await openPage(
     page,
@@ -316,13 +304,13 @@ test('requests its engine and font ranges as it loads, and changes the page only
   const globals = () => page.evaluate(() => Object.keys(window).sort());
   const before = await globals();
 
-  await page.evaluate(() => import('/adapter.js'));
+  await page.evaluate((url) => import(url), ADAPTER_URL);
   const chunks = browserChunks();
   await expect.poll(() => [...scripts].sort()).toEqual(chunks);
   // The adapter's own request, so this resolves once the engine has evaluated.
   await page.evaluate(
     (url) => import(url),
-    `/${chunks.find((file) => file.startsWith('mathjax-'))}`
+    ADAPTER_URL.replace('adapter.js', chunks.find((file) => file.startsWith('mathjax-')) ?? '')
   );
 
   expect(await globals()).toEqual(before);
@@ -345,8 +333,8 @@ test('two copies on one page each run their own MathJax', async ({ page }) => {
     'browser'
   );
 
-  await renderWithAdapter(page, 'a', '/copy-1/index.js');
-  await renderWithAdapter(page, 'b', '/copy-2/index.js');
+  await renderWithAdapter(page, 'a', copyUrl(1));
+  await renderWithAdapter(page, 'b', copyUrl(2));
 
   await expect(page.locator('#a mjx-container')).toHaveAttribute('jax', 'CHTML');
   await expect(page.locator('#b mjx-container')).toHaveAttribute('jax', 'CHTML');
@@ -356,6 +344,32 @@ test('two copies on one page each run their own MathJax', async ({ page }) => {
   expect(await pageMathJax(page)).toBeNull();
   expect(errors).toEqual([]);
   expect(await conflicts(page)).toEqual([]);
+  expect(unserved).toEqual([]);
+});
+
+// MathJax ids these stylesheets by class name, which a host's minifier renames per copy.
+test("two copies' explorers each style their regions with their own stylesheets", async ({
+  page,
+}) => {
+  await storeSettings(page, { enrich: true });
+  const { unserved, errors } = await openPage(
+    page,
+    `<body><div id="a">\\(\\frac{1}{2}\\)</div><div id="b">\\(x^2\\)</div></body>`,
+    'browser'
+  );
+
+  await renderWithAdapter(page, 'a', copyUrl(1));
+  await renderWithAdapter(page, 'b', copyUrl(2));
+
+  await expect(page.locator('#b mjx-container')).toHaveAttribute('data-semantic-speech-none', /.+/);
+  expect(await headStylesheetIds(page)).toEqual(
+    expect.arrayContaining(
+      [1, 2].flatMap((copy) =>
+        ['ToolTip', 'LiveRegion', 'HoverRegion'].map((region) => `PIE-MJX-${region}-styles-${copy}`)
+      )
+    )
+  );
+  expect(errors).toEqual([]);
   expect(unserved).toEqual([]);
 });
 
@@ -370,15 +384,14 @@ test('starts with every option the adapter takes', async ({ page }) => {
     'browser'
   );
 
-  await page.evaluate(async () => {
-    const url = '/adapter.js';
+  await page.evaluate(async (url) => {
     const adapter = await import(url);
     await adapter.createMathjaxRenderer({
       accessibility: false,
       loadFonts: false,
       useSingleDollar: true,
     })(document.getElementById('v4'));
-  });
+  }, ADAPTER_URL);
 
   await expect(page.locator('#v4 mjx-container')).toHaveAttribute('jax', 'CHTML');
   await expect(page.locator('#v4 mjx-assistive-mml')).toHaveCount(0);

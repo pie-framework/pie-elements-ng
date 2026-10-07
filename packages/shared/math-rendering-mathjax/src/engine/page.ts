@@ -4,20 +4,59 @@
  * the same names.
  */
 import type { MathJaxGlobal } from '../adapter.js';
+import { MATHJAX_VERSION, type MathjaxAssets, reportNoAssetRoot } from '../assets.js';
 import { mathjax3Version } from '../unsupported-page.js';
 
 export function engineMathJax(): MathJaxGlobal | undefined {
   return (window as { MathJax?: MathJaxGlobal }).MathJax;
 }
 
-/** Installs `config` as `window.MathJax` and loads the MathJax script, which reads it. */
-export function loadMathJax(config: MathJaxGlobal, srcUrl: string): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
+/**
+ * Points the component build's font and speech paths at the asset root. MathJax names a font's
+ * version in its path only on jsDelivr, so the paths are set per font.
+ */
+function assetConfig(config: MathJaxGlobal, { root, speechPath }: MathjaxAssets): void {
+  if (root) {
+    config.loader = {
+      ...config.loader,
+      paths: {
+        fonts: `${root}/@mathjax`,
+        'mathjax-newcm': `${root}/@mathjax/mathjax-newcm-font@${MATHJAX_VERSION}`,
+        'mathjax-mhchem-extension': `${root}/@mathjax/mathjax-mhchem-font-extension@${MATHJAX_VERSION}`,
+      },
+    };
+  }
+  if (speechPath) {
+    config.options = {
+      ...config.options,
+      worker: { path: speechPath, maps: `${speechPath}/mathmaps` },
+    };
+  }
+}
+
+/**
+ * Installs `config` as `window.MathJax` and loads the MathJax script, which reads it: `srcUrl`, or
+ * the component build under the asset root. Resolves to false when there is neither, and no
+ * MathJax loads.
+ */
+export function loadMathJax(
+  config: MathJaxGlobal,
+  assets: MathjaxAssets & { srcUrl?: string }
+): Promise<boolean> {
+  const src =
+    assets.srcUrl ||
+    (assets.root ? `${assets.root}/mathjax@${MATHJAX_VERSION}/tex-mml-chtml.js` : undefined);
+  if (!src) {
+    reportNoAssetRoot('untypeset');
+    return Promise.resolve(false);
+  }
+  assetConfig(config, assets);
+  return new Promise<boolean>((resolve, reject) => {
     (window as { MathJax?: MathJaxGlobal }).MathJax = config;
     const script = document.createElement('script');
-    script.src = srcUrl;
+    script.src = src;
     script.async = true;
-    script.onload = () => resolve();
+    script.onload = () => resolve(true);
     script.onerror = () => reject(new Error('Failed to load MathJax'));
     document.head.appendChild(script);
   });

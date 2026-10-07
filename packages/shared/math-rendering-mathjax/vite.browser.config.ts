@@ -3,19 +3,29 @@
  * engine, `src/engine/bundled.ts`, in place of the page's. Element browser builds take it through
  * the `pie-browser-esm` export condition; every other consumer resolves `dist/index.js`.
  */
-import { readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { readdirSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
+import { noCdnHosts } from './vite.no-cdn';
 
 const require = createRequire(join(__dirname, 'package.json'));
 const packageDir = (name: string) => realpathSync(dirname(require.resolve(`${name}/package.json`)));
-const versionOf = (dir: string): string =>
-  JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).version;
 
 const MATHJAX_DIR = packageDir('@mathjax/src');
 const FONT_DIR = packageDir('@mathjax/mathjax-newcm-font');
 const MHCHEM_FONT_DIR = packageDir('@mathjax/mathjax-mhchem-font-extension');
+/** SRE's settings module, which names jsDelivr as where its rule files load from. */
+const SRE_VARIABLES = join(
+  realpathSync(
+    dirname(
+      createRequire(join(MATHJAX_DIR, 'package.json')).resolve('speech-rule-engine/package.json')
+    )
+  ),
+  'js',
+  'common',
+  'variables.js'
+);
 
 const PAGE_ENGINE = resolve(__dirname, 'src/engine/page.ts');
 const BUNDLED_ENGINE = resolve(__dirname, 'src/engine/bundled.ts');
@@ -34,7 +44,6 @@ const ASSETS = 'virtual:bundled-mathjax-assets';
 const DYNAMIC_FONTS = join(FONT_DIR, 'mjs', 'chtml', 'dynamic');
 
 function assetsModule(): string {
-  const cdn = 'https://cdn.jsdelivr.net/npm';
   const loaders = readdirSync(DYNAMIC_FONTS)
     .filter((file) => file.endsWith('.js'))
     .sort()
@@ -42,14 +51,7 @@ function assetsModule(): string {
       const name = JSON.stringify(file.slice(0, -'.js'.length));
       return `  ${name}: () => import(${JSON.stringify(join(DYNAMIC_FONTS, file))}),`;
     });
-  return [
-    `export const FONT_URL = '${cdn}/@mathjax/mathjax-newcm-font@${versionOf(FONT_DIR)}/chtml/woff2';`,
-    `export const MHCHEM_FONT_URL = '${cdn}/@mathjax/mathjax-mhchem-font-extension@${versionOf(MHCHEM_FONT_DIR)}/chtml/woff2';`,
-    `export const SRE_URL = '${cdn}/@mathjax/src@${versionOf(MATHJAX_DIR)}/bundle/sre';`,
-    'export const dynamicFonts = {',
-    ...loaders,
-    '};',
-  ].join('\n');
+  return ['export const dynamicFonts = {', ...loaders, '};'].join('\n');
 }
 
 const realpath = (id: string) => {
@@ -64,7 +66,8 @@ const realpath = (id: string) => {
  * Builds the engine from `@mathjax/src` without the component machinery: swaps the page engine
  * for the bundled one and `components/global.js` for `src/engine/bundled/global.ts`, fails on the
  * component loader and startup, and fails when a second copy of either MathJax package, or the
- * CommonJS build of `@mathjax/src` beside its ES modules, is bundled.
+ * CommonJS build of `@mathjax/src` beside its ES modules, is bundled. SRE's default rule-file URL
+ * is emptied: the engine gives the speech worker its own, and SRE in the page loads no rules.
  */
 function bundledMathjax(): Plugin {
   return {
@@ -85,6 +88,12 @@ function bundledMathjax(): Plugin {
     },
     load(id) {
       return id === `\0${ASSETS}` ? assetsModule() : null;
+    },
+    transform(code, id) {
+      if (realpath(id) !== SRE_VARIABLES) return null;
+      const emptied = code.replace(/Variables\.url\s*=[^;]*;/, "Variables.url = '';");
+      if (emptied === code) this.error(`SRE's Variables.url is not where the build expects: ${id}`);
+      return emptied;
     },
     buildEnd(error) {
       if (error) return;
@@ -109,7 +118,7 @@ function bundledMathjax(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [bundledMathjax()],
+  plugins: [bundledMathjax(), noCdnHosts()],
   // The fonts import @mathjax/src without declaring it.
   resolve: { dedupe: ['@mathjax/src', '@mathjax/mathjax-newcm-font'] },
   build: {
