@@ -1,5 +1,11 @@
 # @pie-element/shared-utils
 
+## 0.1.2
+
+### Patch Changes
+
+- [#392](https://github.com/pie-framework/pie-elements-ng/pull/392) [`0804268`](https://github.com/pie-framework/pie-elements-ng/commit/080426876dda8057c150dd4b2e08f5e0f00c45ec) Thanks [@chillenious](https://github.com/chillenious)! - Add `sanitizeModelHtml`, which elements run model rich text through before writing it into the DOM: scripts, inline event handlers and `javascript:` URLs are removed.
+
 ## 0.1.1
 
 ### Patch Changes
