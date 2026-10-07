@@ -17,6 +17,7 @@ vi.mock('@pie-lib/render-ui', () => ({
     v: () => (name: string, fallback: string) => `var(--pie-${name}, ${fallback})`,
     defaults: { WHITE: '#ffffff' },
   },
+  useMathName: () => undefined,
 }));
 
 vi.mock('@dnd-kit/core', () => ({

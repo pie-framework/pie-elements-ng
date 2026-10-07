@@ -2,12 +2,12 @@
 
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import debug from 'debug';
 import { styled } from '@mui/material/styles';
 import { PlaceHolder } from '@pie-lib/drag';
 import { isEmpty } from '@pie-element/shared-lodash';
-import { color } from '@pie-lib/render-ui';
+import { color, useMathName } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const log = debug('pie-elements:match-title:answer');
@@ -244,6 +244,14 @@ function DragAndDropAnswer(props) {
     attributes: { tabIndex: draggable && !disabled ? 0 : -1 },
   });
 
+  // Chrome leaves MathML out of a button's name from content, so a math answer names its draggable.
+  const dragNode = useRef(null);
+  const answerName = useMathName(dragNode);
+  const setDragNode = (node) => {
+    dragNode.current = node;
+    setDragRef(node);
+  };
+
   const droppable = useDroppable({
     id: dropId,
     data: dropZoneData,
@@ -353,9 +361,9 @@ function DragAndDropAnswer(props) {
         }}
       >
         <div
-          ref={setDragRef}
+          ref={setDragNode}
           {...listeners}
-          {...(draggable && !disabled ? attributes : {})}
+          {...(draggable && !disabled ? { ...attributes, 'aria-label': answerName } : {})}
           data-tile-id={`${instanceId}:${dragId}`}
           style={{ transform: transformStyle, transition }}
         >
@@ -377,9 +385,10 @@ function DragAndDropAnswer(props) {
   // if there is NO dropId (this is a choice / draggable-only), render only draggable node and apply transform to it.
   return (
     <div
-      ref={setDragRef}
+      ref={setDragNode}
       {...listeners}
       {...attributes}
+      aria-label={answerName}
       data-tile-id={`${instanceId}:${dragId}`}
       onClick={handleChoiceClick}
       style={{
