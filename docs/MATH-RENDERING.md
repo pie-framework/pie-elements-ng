@@ -142,6 +142,8 @@ Chrome leaves MathML out of the name a control takes from its content, so a butt
 
 The built-in speaker, `speakMathml`, speaks school math in English: numbers, signs and operators, fences, fractions, roots, scripts, sums, integrals and limits, accents and tables. The trade is deliberate: no dependency and no worker, at the cost of diverging from SRE's ClearSpeak rules. A host that wants SRE or another locale passes its own `speak`. An element with `role="button"` presents its children as text, so math inside it cannot be explored character by character; the name is the only access to it there.
 
+`useMathName(ref)` and the render-prop `MathName` in `@pie-lib/render-ui` apply it to a React control: `ref` points at the element whose children hold the content, and the returned name follows that content as MathJax typesets or the model changes. The name goes in `aria-label` on a role that takes one, or in a hidden span the control references with `aria-labelledby` where the host element has no such role (the inline dropdown's combobox value). The delivery controls that hold authored content use it: multiple-choice inputs, categorize and placement-ordering tiles, match-list and image-cloze-association answers, and the drag-in-the-blank choices, blanks, and inline-dropdown values and options. A control without math is left alone, so its name stays whatever the browser computes. `aria-label` replaces the visible glyphs in the name, so a voice-control user says the spoken form ("x squared") where the screen shows `x²`.
+
 ## Usage
 
 ### Element Developers

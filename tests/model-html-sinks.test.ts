@@ -43,7 +43,7 @@ const ELEMENT_BUILT: [string, string][] = [
   ],
   [
     'packages/lib-react/mask-markup/src/components/dropdown.tsx',
-    "<StyledSelectedIndicator dangerouslySetInnerHTML={{ __html: c.value === value ? ' &check;' : '' }} />",
+    "<StyledSelectedIndicator dangerouslySetInnerHTML={{ __html: selected ? ' &check;' : '' }} />",
   ],
   // Copies a label this dropdown rendered sanitized.
   [

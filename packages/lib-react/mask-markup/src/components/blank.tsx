@@ -8,7 +8,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import classnames from 'clsx';
-import { color } from '@pie-lib/render-ui';
+import { color, useMathName } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { grey } from '@mui/material/colors';
@@ -363,6 +363,9 @@ function DragDropBlank({
   onPlacementClick,
 }) {
   const [isHovered, setIsHovered] = useState(false);
+  const dragHandle = useRef(null);
+  // Chrome leaves MathML out of a button's name from content, so a math answer names the handle itself.
+  const answerName = useMathName(dragHandle);
 
   const dragData = {
     id,
@@ -479,7 +482,14 @@ function DragDropBlank({
       selected={isSelected}
       showsPointerCursor={hasSelection && !disabled}
     >
-      <StyledDragHandle ref={setDragNodeRef} {...(isInnerDraggable ? dragAttributes : {})} {...dragListeners}>
+      <StyledDragHandle
+        ref={(node) => {
+          dragHandle.current = node;
+          setDragNodeRef(node);
+        }}
+        {...(isInnerDraggable ? { ...dragAttributes, 'aria-label': answerName } : {})}
+        {...dragListeners}
+      >
         <BlankContent
           id={id}
           disabled={disabled}

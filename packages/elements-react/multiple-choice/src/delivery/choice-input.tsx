@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
-import { Feedback as FeedbackImport, color, createUniqueId, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
+import { Feedback as FeedbackImport, MathName, color, createUniqueId, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
 
 function isRenderableReactInteropType(value: any) {
   return (
@@ -160,14 +160,14 @@ const StyledCheckboxBase: any = styled(Checkbox, {
 });
 
 export const StyledCheckbox = (props) => {
-  const { correctness, checked, onChange, disabled, value, id, onKeyDown, inputRef } = props;
+  const { correctness, checked, onChange, disabled, value, id, onKeyDown, inputRef, ariaLabel } = props;
 
   const miniProps = { checked, onChange, disabled, value };
 
   return (
     <StyledCheckboxBase
       id={id}
-      slotProps={{ input: { ref: inputRef } }}
+      slotProps={{ input: { ref: inputRef, 'aria-label': ariaLabel } }}
       onKeyDown={onKeyDown}
       disableRipple
       {...miniProps}
@@ -203,14 +203,14 @@ const StyledRadioBase: any = styled(Radio, {
 });
 
 export const StyledRadio = (props) => {
-  const { correctness, checked, onChange, disabled, value, id, tagName, inputRef } = props;
+  const { correctness, checked, onChange, disabled, value, id, tagName, inputRef, ariaLabel } = props;
 
   const miniProps = { checked, onChange, disabled, value };
 
   return (
     <StyledRadioBase
       id={id}
-      slotProps={{ input: { ref: inputRef } }}
+      slotProps={{ input: { ref: inputRef, 'aria-label': ariaLabel } }}
       disableRipple
       {...miniProps}
       correctness={correctness}
@@ -371,31 +371,42 @@ export class ChoiceInput extends React.Component {
       ...(screenReaderLabel ? { 'aria-describedby': this.descId } : {}),
     };
 
-    const control = isSelectionButtonBelow ? (
-      <BelowSelectionComponent>
-        {screenReaderLabel}
-        <Tag {...tagProps} style={{ padding: 0 }} />
-        <span aria-hidden="true">{displayKey ? `${displayKey}.` : ''}</span>
-      </BelowSelectionComponent>
-    ) : (
-      <>
-        {screenReaderLabel}
-        <Tag {...tagProps} />
-      </>
-    );
+    // Chrome leaves MathML out of a label's text, so a choice that holds math names its input.
+    const control = (ariaLabel) =>
+      isSelectionButtonBelow ? (
+        <BelowSelectionComponent>
+          {screenReaderLabel}
+          <Tag {...tagProps} ariaLabel={ariaLabel} style={{ padding: 0 }} />
+          <span aria-hidden="true">{displayKey ? `${displayKey}.` : ''}</span>
+        </BelowSelectionComponent>
+      ) : (
+        <>
+          {screenReaderLabel}
+          <Tag {...tagProps} ariaLabel={ariaLabel} />
+        </>
+      );
 
     return (
       <div className={classNames(className, 'corespring-' + classSuffix, 'choice-input')}>
         <Row>
           {!hideTick && isEvaluateMode && <FeedbackTick correctness={correctness} />}
           <CheckboxHolder className="checkbox-holder" sx={holderSx}>
-            <StyledFormControlLabel
-              label={choicelabel}
-              value={value}
-              htmlFor={this.choiceId}
-              labelPlacement={isSelectionButtonBelow ? 'top' : undefined}
-              control={control}
-            />
+            <MathName>
+              {(mathName, nameRef) => (
+                <StyledFormControlLabel
+                  // `contents` keeps the wrapper out of the layout.
+                  label={
+                    <span ref={nameRef} style={{ display: 'contents' }}>
+                      {choicelabel}
+                    </span>
+                  }
+                  value={value}
+                  htmlFor={this.choiceId}
+                  labelPlacement={isSelectionButtonBelow ? 'top' : undefined}
+                  control={control(mathName)}
+                />
+              )}
+            </MathName>
           </CheckboxHolder>
         </Row>
         {rationale && <PreviewPrompt className="rationale" defaultClassName="rationale" prompt={rationale} />}
