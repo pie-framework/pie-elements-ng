@@ -42,7 +42,7 @@ describe('sanitizeModelHtml', () => {
 
   it.each([
     ['runs more than the play', "document.getElementById('a.mp3').play(); alert(1)"],
-    ['plays something other than an element by id', "window.audio.play(); return false;"],
+    ['plays something other than an element by id', 'window.audio.play(); return false;'],
     ['is any other script', 'alert(1)'],
   ])('drops a link handler that %s', (_, handler) => {
     const out = parse(sanitizeModelHtml(`<a href="#" onclick="${handler}">x</a>`));
