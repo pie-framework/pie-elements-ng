@@ -1,5 +1,16 @@
 # @pie-lib/render-ui
 
+## 8.0.2
+
+### Patch Changes
+
+- [#390](https://github.com/pie-framework/pie-elements-ng/pull/390) [`e06ec61`](https://github.com/pie-framework/pie-elements-ng/commit/e06ec6184b64e0355763dcdb6256d77cc7cc1351) Thanks [@chillenious](https://github.com/chillenious)! - A prompt's table keeps its striped rows, collapsed borders and indented paragraphs inside the player's scroll wrapper, as it does in the legacy player, which does not wrap tables.
+
+- [#392](https://github.com/pie-framework/pie-elements-ng/pull/392) [`600bb62`](https://github.com/pie-framework/pie-elements-ng/commit/600bb62bb6913a232361372b84352e7623b08102) Thanks [@chillenious](https://github.com/chillenious)! - fix: sanitize element model HTML before it reaches the DOM
+- Updated dependencies [[`336223e`](https://github.com/pie-framework/pie-elements-ng/commit/336223e9efda67723a644b007cf5aad7dd72e221), [`7fc3257`](https://github.com/pie-framework/pie-elements-ng/commit/7fc32575d09e7ed3aa6252ad0a0bc21a4b7f6437), [`0804268`](https://github.com/pie-framework/pie-elements-ng/commit/080426876dda8057c150dd4b2e08f5e0f00c45ec)]:
+  - @pie-element/shared-math-rendering-mathjax@0.1.3
+  - @pie-element/shared-utils@0.1.2
+
 ## 8.0.1
 
 ### Patch Changes

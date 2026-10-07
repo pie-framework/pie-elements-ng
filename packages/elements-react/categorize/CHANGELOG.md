@@ -1,5 +1,23 @@
 # @pie-element/categorize
 
+## 14.0.2
+
+### Patch Changes
+
+- [#389](https://github.com/pie-framework/pie-elements-ng/pull/389) [`77fbfde`](https://github.com/pie-framework/pie-elements-ng/commit/77fbfde0a33a9a1784c7d2aee66e580a12d7437e) Thanks [@chillenious](https://github.com/chillenious)! - The choice board centres its tiles vertically again, as the legacy element did. The category layout styles moved onto the shared drop placeholder in PD-5494 reached the board too, and put its tiles at the top.
+
+- [#384](https://github.com/pie-framework/pie-elements-ng/pull/384) [`b288b5c`](https://github.com/pie-framework/pie-elements-ng/commit/b288b5c307f46439f2bebc38696547fdc209d75a) Thanks [@andreeimiron](https://github.com/andreeimiron)! - fix(categorize): rank the source category last and light only the real drop target while dragging PIE-1103
+
+- [#392](https://github.com/pie-framework/pie-elements-ng/pull/392) [`600bb62`](https://github.com/pie-framework/pie-elements-ng/commit/600bb62bb6913a232361372b84352e7623b08102) Thanks [@chillenious](https://github.com/chillenious)! - fix: sanitize element model HTML before it reaches the DOM
+- Updated dependencies [[`bead077`](https://github.com/pie-framework/pie-elements-ng/commit/bead077eb36ca57a584248c3f7817fe4fc850785), [`e06ec61`](https://github.com/pie-framework/pie-elements-ng/commit/e06ec6184b64e0355763dcdb6256d77cc7cc1351), [`336223e`](https://github.com/pie-framework/pie-elements-ng/commit/336223e9efda67723a644b007cf5aad7dd72e221), [`7fc3257`](https://github.com/pie-framework/pie-elements-ng/commit/7fc32575d09e7ed3aa6252ad0a0bc21a4b7f6437), [`dbcfb0a`](https://github.com/pie-framework/pie-elements-ng/commit/dbcfb0a07ae275e865d035961c7ebfe176f26ad1), [`0804268`](https://github.com/pie-framework/pie-elements-ng/commit/080426876dda8057c150dd4b2e08f5e0f00c45ec)]:
+  - @pie-lib/drag@5.0.2
+  - @pie-lib/render-ui@8.0.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.3
+  - @pie-element/shared-utils@0.1.2
+  - @pie-lib/editable-html-tip-tap@3.0.2
+  - @pie-lib/config-ui@14.0.2
+  - @pie-lib/correct-answer-toggle@5.0.2
+
 ## 14.0.1
 
 ### Patch Changes

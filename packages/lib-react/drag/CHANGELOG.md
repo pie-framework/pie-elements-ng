@@ -1,5 +1,14 @@
 # @pie-lib/drag
 
+## 5.0.2
+
+### Patch Changes
+
+- [#387](https://github.com/pie-framework/pie-elements-ng/pull/387) [`bead077`](https://github.com/pie-framework/pie-elements-ng/commit/bead077eb36ca57a584248c3f7817fe4fc850785) Thanks [@chillenious](https://github.com/chillenious)! - The drag-in-the-blank choice board no longer runs 16px past its column, which shifted the tiles right of where the legacy tray put them.
+- Updated dependencies [[`e06ec61`](https://github.com/pie-framework/pie-elements-ng/commit/e06ec6184b64e0355763dcdb6256d77cc7cc1351), [`336223e`](https://github.com/pie-framework/pie-elements-ng/commit/336223e9efda67723a644b007cf5aad7dd72e221), [`7fc3257`](https://github.com/pie-framework/pie-elements-ng/commit/7fc32575d09e7ed3aa6252ad0a0bc21a4b7f6437), [`dbcfb0a`](https://github.com/pie-framework/pie-elements-ng/commit/dbcfb0a07ae275e865d035961c7ebfe176f26ad1)]:
+  - @pie-lib/render-ui@8.0.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.3
+
 ## 5.0.1
 
 ### Patch Changes

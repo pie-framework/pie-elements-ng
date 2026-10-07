@@ -1,5 +1,19 @@
 # @pie-element/explicit-constructed-response
 
+## 12.0.2
+
+### Patch Changes
+
+- [#392](https://github.com/pie-framework/pie-elements-ng/pull/392) [`600bb62`](https://github.com/pie-framework/pie-elements-ng/commit/600bb62bb6913a232361372b84352e7623b08102) Thanks [@chillenious](https://github.com/chillenious)! - fix: sanitize element model HTML before it reaches the DOM
+- Updated dependencies [[`2cb9d7a`](https://github.com/pie-framework/pie-elements-ng/commit/2cb9d7ab7fe2cae03bc2188c8f5ca5985a549b15), [`f43a89c`](https://github.com/pie-framework/pie-elements-ng/commit/f43a89cf643881faed4673fb41b8727c210324a6), [`e06ec61`](https://github.com/pie-framework/pie-elements-ng/commit/e06ec6184b64e0355763dcdb6256d77cc7cc1351), [`336223e`](https://github.com/pie-framework/pie-elements-ng/commit/336223e9efda67723a644b007cf5aad7dd72e221), [`7fc3257`](https://github.com/pie-framework/pie-elements-ng/commit/7fc32575d09e7ed3aa6252ad0a0bc21a4b7f6437), [`dbcfb0a`](https://github.com/pie-framework/pie-elements-ng/commit/dbcfb0a07ae275e865d035961c7ebfe176f26ad1), [`0804268`](https://github.com/pie-framework/pie-elements-ng/commit/080426876dda8057c150dd4b2e08f5e0f00c45ec)]:
+  - @pie-lib/mask-markup@4.0.2
+  - @pie-lib/render-ui@8.0.2
+  - @pie-element/shared-math-rendering-mathjax@0.1.3
+  - @pie-element/shared-utils@0.1.2
+  - @pie-lib/editable-html-tip-tap@3.0.2
+  - @pie-lib/config-ui@14.0.2
+  - @pie-lib/correct-answer-toggle@5.0.2
+
 ## 12.0.1
 
 ### Patch Changes

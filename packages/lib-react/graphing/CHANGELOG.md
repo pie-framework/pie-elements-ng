@@ -1,5 +1,18 @@
 # @pie-lib/graphing
 
+## 5.0.2
+
+### Patch Changes
+
+- [#392](https://github.com/pie-framework/pie-elements-ng/pull/392) [`600bb62`](https://github.com/pie-framework/pie-elements-ng/commit/600bb62bb6913a232361372b84352e7623b08102) Thanks [@chillenious](https://github.com/chillenious)! - fix: sanitize element model HTML before it reaches the DOM
+- Updated dependencies [[`bead077`](https://github.com/pie-framework/pie-elements-ng/commit/bead077eb36ca57a584248c3f7817fe4fc850785), [`e06ec61`](https://github.com/pie-framework/pie-elements-ng/commit/e06ec6184b64e0355763dcdb6256d77cc7cc1351), [`dbcfb0a`](https://github.com/pie-framework/pie-elements-ng/commit/dbcfb0a07ae275e865d035961c7ebfe176f26ad1), [`0804268`](https://github.com/pie-framework/pie-elements-ng/commit/080426876dda8057c150dd4b2e08f5e0f00c45ec)]:
+  - @pie-lib/drag@5.0.2
+  - @pie-lib/render-ui@8.0.2
+  - @pie-lib/plot@5.0.2
+  - @pie-element/shared-utils@0.1.2
+  - @pie-lib/editable-html-tip-tap@3.0.2
+  - @pie-lib/config-ui@14.0.2
+
 ## 5.0.1
 
 ### Patch Changes

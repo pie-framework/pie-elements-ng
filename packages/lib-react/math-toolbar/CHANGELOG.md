@@ -1,5 +1,13 @@
 # @pie-lib/math-toolbar
 
+## 4.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`e06ec61`](https://github.com/pie-framework/pie-elements-ng/commit/e06ec6184b64e0355763dcdb6256d77cc7cc1351), [`dbcfb0a`](https://github.com/pie-framework/pie-elements-ng/commit/dbcfb0a07ae275e865d035961c7ebfe176f26ad1)]:
+  - @pie-lib/render-ui@8.0.2
+  - @pie-lib/math-input@9.0.2
+
 ## 4.0.1
 
 ### Patch Changes

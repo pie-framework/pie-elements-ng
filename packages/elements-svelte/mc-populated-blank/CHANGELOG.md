@@ -1,5 +1,13 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.2
+
+### Patch Changes
+
+- [#392](https://github.com/pie-framework/pie-elements-ng/pull/392) [`600bb62`](https://github.com/pie-framework/pie-elements-ng/commit/600bb62bb6913a232361372b84352e7623b08102) Thanks [@chillenious](https://github.com/chillenious)! - fix: sanitize element model HTML before it reaches the DOM
+- Updated dependencies [[`0804268`](https://github.com/pie-framework/pie-elements-ng/commit/080426876dda8057c150dd4b2e08f5e0f00c45ec)]:
+  - @pie-element/shared-utils@0.1.2
+
 ## 0.3.1
 
 ### Patch Changes
