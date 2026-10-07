@@ -68,8 +68,10 @@ skips `display: inline` targets, such as select-text's tokens, which the inline 
 WCAG 2.5.8 covers.
 `math-alternative` evaluates each formula once, at its outermost MathJax or MathQuill node,
 and counts only text that assistive technology reads.
-`keyboard-tab-reach` is left off the drawing-response, extended-text-entry, likert and matrix
-evaluate scenarios: their evaluate views disable every control and render no other tab stop.
+`keyboard-tab-reach` is left off the drawing-response, extended-text-entry, likert, math-inline
+and matrix evaluate scenarios: their evaluate views disable every control and render no other tab
+stop. math-inline shows its show-correct-answer toggle only for a wrong answer, and its sample's
+answer is empty.
 Other evaluate scenarios keep it, because they render a show-correct-answer toggle, a Collapsible or another
 enabled control. Rubric and complex-rubric scenarios run as instructor: for their simple-rubric
 samples, the controllers return an empty model to students.

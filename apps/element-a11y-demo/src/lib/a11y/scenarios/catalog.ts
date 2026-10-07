@@ -697,7 +697,7 @@ export const A11Y_SCENARIOS: readonly A11yScenarioDefinition[] = [
     mode: 'evaluate',
     wcagCriteria: ['1.3.1', '3.3.1', '3.3.3', '4.1.2', '4.1.3'],
     concerns: ['math-accessibility', 'status-feedback', 'input-assistance', 'semantics'],
-    automatedChecks: [...mathChecks, 'status-message'],
+    automatedChecks: withoutTabReach([...mathChecks, 'status-message']),
   }),
   defineScenario({
     element: 'math-templated',
