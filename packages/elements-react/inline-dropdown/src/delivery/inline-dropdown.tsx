@@ -40,6 +40,7 @@ const renderUi =
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { styled } from '@mui/material/styles';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -183,7 +184,7 @@ export class InlineDropdown extends React.Component {
                     <ChoiceRationale key={choice.label}>
                       <ChoiceRationaleLabel
                         correct={choice.correct}
-                        dangerouslySetInnerHTML={{ __html: `${choice.label}: ` }}
+                        dangerouslySetInnerHTML={{ __html: `${sanitizeModelHtml(choice.label)}: ` }}
                       />
                       <PreviewPrompt prompt={choice.rationale} />
                     </ChoiceRationale>

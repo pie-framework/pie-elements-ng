@@ -4,6 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { color } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const TraitName: any = styled('td')({
   color: color.primaryDark(),
@@ -22,18 +23,18 @@ const Trait = (props) => {
   return (
     <tr key={`scale-${scaleIndex}-trait-${traitIndex}`}>
       <TraitName>
-        <div dangerouslySetInnerHTML={{ __html: name }} />
+        <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(name) }} />
       </TraitName>
 
       {showStandards ? (
         <td>
-          <div dangerouslySetInnerHTML={{ __html: standards.join(',') }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(standards.join(',')) }} />
         </td>
       ) : null}
 
       {showDescription ? (
         <td>
-          <div dangerouslySetInnerHTML={{ __html: description }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(description) }} />
         </td>
       ) : null}
 
@@ -52,7 +53,7 @@ const Trait = (props) => {
               {!scoreDescriptor ? (
                 <NoDescription dangerouslySetInnerHTML={{ __html: 'No Description' }} />
               ) : (
-                <div dangerouslySetInnerHTML={{ __html: scoreDescriptor }} />
+                <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(scoreDescriptor) }} />
               )}
             </td>
           );

@@ -4,7 +4,7 @@
  * to stay in it, and a typeset that fails must not fail the typesets after it.
  */
 import { expect, type Page, test } from '@playwright/test';
-import { openPage } from './harness';
+import { ADAPTER_URL, openPage } from './harness';
 
 const BODY = `<body style="font: 20px serif">
   <div id="item"></div>
@@ -18,23 +18,25 @@ type RenderWindow = { renders?: Promise<string>[] };
 
 /** Starts rendering each element with the adapter, adding the renders to `window.renders`. */
 function startRenders(page: Page, ...ids: string[]) {
-  return page.evaluate(async (targets) => {
-    const url = '/adapter.js';
-    const { createMathjaxRenderer } = await import(url);
-    const render = createMathjaxRenderer();
-    const pageWindow = window as RenderWindow;
-    pageWindow.renders ??= [];
-    for (const id of targets) {
-      pageWindow.renders.push(
-        render(document.getElementById(id)).then(
-          () => 'typeset',
-          (error: Error) => `rejected: ${error.message}`
-        )
-      );
-    }
-    // Lets each render reach MathJax before the caller goes on.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  }, ids);
+  return page.evaluate(
+    async ([url, ...targets]) => {
+      const { createMathjaxRenderer } = await import(url);
+      const render = createMathjaxRenderer();
+      const pageWindow = window as RenderWindow;
+      pageWindow.renders ??= [];
+      for (const id of targets) {
+        pageWindow.renders.push(
+          render(document.getElementById(id)).then(
+            () => 'typeset',
+            (error: Error) => `rejected: ${error.message}`
+          )
+        );
+      }
+      // Lets each render reach MathJax before the caller goes on.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    },
+    [ADAPTER_URL, ...ids]
+  );
 }
 
 /** Waits for the renders started so far and takes them off `window.renders`. */
@@ -52,8 +54,7 @@ const containers = (page: Page, id: string) => page.locator(`#${id} mjx-containe
 test('re-rendering an element keeps only its current math listed', async ({ page }) => {
   const { unserved, errors } = await openPage(page, BODY);
 
-  const listed = await page.evaluate(async () => {
-    const url = '/adapter.js';
+  const listed = await page.evaluate(async (url) => {
     const { createMathjaxRenderer } = await import(url);
     const render = createMathjaxRenderer();
     const element = document.getElementById('item') as HTMLElement;
@@ -67,7 +68,7 @@ test('re-rendering an element keeps only its current math listed', async ({ page
       items: items.length,
       detached: items.filter((item) => !item.typesetRoot.isConnected).length,
     };
-  });
+  }, ADAPTER_URL);
 
   expect(listed).toEqual({ items: 2, detached: 0 });
   expect(await containers(page, 'item').count()).toBe(2);

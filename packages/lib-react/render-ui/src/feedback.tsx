@@ -4,6 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import * as color from './color.js';
 
 const FeedbackContainer: any = styled('div')({
@@ -70,7 +71,7 @@ export class Feedback extends React.Component {
       <CSSTransition key="hasFeedback" nodeRef={this.nodeRef} timeout={{ enter: 500, exit: 200 }} classNames="feedback">
         <TransitionWrapper ref={this.nodeRef}>
           <FeedbackContainer>
-            <FeedbackContent className={correctness} dangerouslySetInnerHTML={{ __html: feedback }} />
+            <FeedbackContent className={correctness} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(feedback) }} />
           </FeedbackContainer>
         </TransitionWrapper>
       </CSSTransition>

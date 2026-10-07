@@ -20,6 +20,8 @@ export { createMathjaxRenderer, getMathjaxCssUrls } from './adapter.js';
 export type { MathRenderer, MathRenderingAPI, MathjaxOptions } from './types.js';
 export { MATHJAX_CONFLICT_EVENT, UNSUPPORTED_PAGE_DOCS_URL } from './unsupported-page.js';
 export type { MathjaxConflictCondition, MathjaxConflictDetail } from './unsupported-page.js';
+export { NO_ASSET_ROOT_EVENT } from './assets.js';
+export type { NoAssetRootDetail, NoAssetRootEffect } from './assets.js';
 
 // Legacy @pie-lib/math-rendering API for backward compatibility
 export { renderMath, wrapMath, unWrapMath, mmlToLatex } from './render-math.js';

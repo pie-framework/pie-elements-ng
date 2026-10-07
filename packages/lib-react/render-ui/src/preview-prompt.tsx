@@ -7,6 +7,7 @@ import Translator from '@pie-lib/translator';
 import * as color from './color.js';
 import { createUniqueId } from './unique-id.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -16,6 +17,12 @@ const { translator } = Translator;
 const AUDIO_CLASS = 'pie-prompt-audio-player';
 const PLAY_BUTTON_CLASS = 'play-audio-button';
 
+// A table in the prompt's own markup, `rest` continuing the selector from it. The player
+// wraps a table in `.pie-table-scroll` so it scrolls instead of overflowing, which takes
+// it out of reach of a plain child selector.
+const promptTable = (rest: string) =>
+  `&:not(.MathJax) > table${rest}, &:not(.MathJax) > .pie-table-scroll > table${rest}`;
+
 const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
   // The play button is built as markup and styled inline, which cannot reach :focus-visible.
   [`& .${PLAY_BUTTON_CLASS}:focus-visible`]: {
@@ -24,7 +31,7 @@ const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
   },
   // presentation tables should not have any custom style
   // Base promptTable styles
-  '&:not(.MathJax) > table:not([role="presentation"])': {
+  [promptTable(':not([role="presentation"])')]: {
     borderCollapse: 'collapse',
   },
   /*
@@ -42,12 +49,13 @@ const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
   // Apply vertical striping when first column is a header (th) and NOT mixed with td.
   // Ink stays at 5.44:1 or better on tableStripe in every scheme, so the cell inherits
   // its text colour rather than pinning the `color: black` this used to carry.
-  '&:not(.MathJax) > table:not([role="presentation"]):has(tbody tr > th:first-child):not(:has(tbody tr > td:first-child)) tbody td:nth-child(even)':
-    {
-      backgroundColor: color.tableStripe(),
-    },
+  [promptTable(
+    ':not([role="presentation"]):has(tbody tr > th:first-child):not(:has(tbody tr > td:first-child)) tbody td:nth-child(even)',
+  )]: {
+    backgroundColor: color.tableStripe(),
+  },
   // Apply horizontal striping for tables where first element is a data cell (td)
-  '&:not(.MathJax) > table:not([role="presentation"]):has(tbody tr > td:first-child) tbody tr:nth-child(even) td': {
+  [promptTable(':not([role="presentation"]):has(tbody tr > td:first-child) tbody tr:nth-child(even) td')]: {
     backgroundColor: color.tableStripe(),
   },
   // align table content to left as per STAR requirement PD-3687
@@ -56,7 +64,7 @@ const StyledPromptContainer: any = styled('div')(({ theme, tagName }) => ({
     textAlign: 'left',
   },
   // added this to fix alignment of text in prompt imported from studio (PD-3423)
-  '&:not(.MathJax) > table td > p.kds-indent': {
+  [promptTable(' td > p.kds-indent')]: {
     textAlign: 'initial',
   },
 
@@ -122,7 +130,9 @@ export class PreviewPrompt extends Component {
   parsedText: any = (text) => {
     const { autoplayAudioEnabled, customAudioButton, language } = this.props;
     const div = document.createElement('div');
-    div.innerHTML = text;
+    // A detached div still loads its images and fires their handlers, so the prompt is
+    // sanitized before it is parsed here.
+    div.innerHTML = sanitizeModelHtml(text);
 
     const audio = div.querySelector('audio');
     if (audio) {

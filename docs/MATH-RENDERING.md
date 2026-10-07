@@ -1,6 +1,6 @@
 # Math Rendering in pie-elements-ng
 
-**Last Updated:** 2026-10-05
+**Last Updated:** 2026-10-06
 
 ## Overview
 
@@ -26,7 +26,6 @@ The browser build's engine is a chunk the adapter requests as its module loads a
 
 - SVG output and collapsible math are not bundled. Their menu items are disabled, and a stored menu setting that names either is overridden.
 - `\require` is unsupported. The packages `tex-mml-chtml.js` autoloads are bundled, mhchem with its font extension.
-- The font files and the speech worker load from jsDelivr at pinned versions: `@mathjax/mathjax-newcm-font@4.1.3`, `@mathjax/mathjax-mhchem-font-extension@4.1.3` and `@mathjax/src@4.1.3/bundle/sre`.
 - `srcUrl` is ignored.
 - Each copy's CHTML stylesheet has its own id, `PIE-MJX-CHTML-styles-<n>`. Another MathJax's `MJX-CHTML-styles` stylesheet matches every CHTML container, this build's included, so the adapter reports it as `foreign-output-stylesheet`.
 
@@ -42,13 +41,60 @@ Both builds pin one MathJax version: `mathjax`, `@mathjax/src` and the font pack
 
 ## Loading
 
-- MathJax loads on the first render, whatever the element holds, so later math does not wait on the download: the npm build loads `https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js`; the browser build starts its engine chunk, requested as the adapter module loaded, so a player that imports elements ahead of rendering them, as the section player does for a whole section, has it before the first render. A render waits on the load only when its element holds a TeX delimiter or a `<math>` element.
+- MathJax loads on the first render, whatever the element holds, so later math does not wait on the download: the npm build loads `mathjax@4.1.3/tex-mml-chtml.js` from the [asset root](#assets); the browser build starts its engine chunk, requested as the adapter module loaded, so a player that imports elements ahead of rendering them, as the section player does for a whole section, has it before the first render. A render waits on the load only when its element holds a TeX delimiter or a `<math>` element.
 - Element IIFE bundles each bundle their own copy of the npm build. The copies share one load per page, because a second MathJax startup on one page throws. Each element browser build starts its own MathJax.
 - `startup.typeset` is `false`: MathJax typesets only the elements the renderer is given, never the host page's own text.
 - On the npm build, a MathJax the page already has is used as the page configured it, and the adapter loads no copy of its own. A configuration object at `window.MathJax`, for a page that loads MathJax itself, is awaited through its `startup.ready`; a MathJax 3 or 4 build is used once its startup completes. The legacy macros and delimiters then apply only where the page's configuration defines them.
 - On the npm build, a page runs one MathJax major version. MathJax 3 on the same page, from a host or from IIFE element bundles, is unsupported: the adapter still attempts to render and guarantees nothing. See [One MathJax version per page](https://github.com/pie-framework/pie-players/blob/develop/docs/item-player/loading-strategies.md#one-mathjax-version-per-page) for the failures observed.
 - On the npm build, a MathJax global without `typesetPromise`, such as MathJax 2, leaves math untypeset and logs `[mathjax-renderer] MathJax on this page has no typesetPromise; math stays untypeset.`
 - The first renderer to start MathJax on a page configures it, and every later renderer shares that instance. On the browser build this holds per copy.
+
+## Assets
+
+Neither build names a host. MathJax's fonts, its speech worker and, on the npm build, MathJax itself load from an npm root: a URL under which `<package>@<version>/<path>` serves that file of the package. `https://cdn.jsdelivr.net/npm`, `https://raw.esm.sh`, `https://unpkg.com` and npm-mirroring proxies are npm roots. `https://esm.sh` is not one: it serves a JavaScript file as an ES module wrapper, which neither the speech worker nor MathJax's script loads.
+
+Each adapter copy takes the first root it finds:
+
+1. The renderer's `assetRoot` option.
+2. `window['@pie-lib/math-rendering@2'].opts.assetRoot`, the legacy renderer's page options.
+3. The npm root of the URL the adapter module loaded from, the part before its last `<package>@<version>` segment: an element browser build loaded from `https://cdn.jsdelivr.net/npm/@pie-element/multiple-choice@12.0.0/dist/browser/delivery/index.js` takes `https://cdn.jsdelivr.net/npm`. A bundled adapter has none: bundlers give the module a `file:` URL or a path on the host's own server, and the search stops at `node_modules`.
+
+A relative root resolves against the page's base URL. A copy reads its assets when it starts MathJax, at its first render, so a host sets the page options before any element renders. `@pie-players` hosts pass them to `registerPreloadedElements` ([preloaded player](https://github.com/pie-framework/pie-players/blob/develop/docs/preloaded-player/readme.md)); other hosts set them on the page:
+
+```html
+<script>
+  window['@pie-lib/math-rendering@2'] = {
+    opts: { assetRoot: 'https://assets.example.com/npm', speechLocales: ['en'] },
+  };
+</script>
+```
+
+- `assetRoot`: the npm root.
+- `assetUrls`: the URL of individual files, keyed by npm path (`'mathjax@4.1.3/sre/mathmaps/en.json': url`). A listed file loads from its URL, the others from the root and `speechPath`. The browser build reads it for its fonts, speech worker and mathmaps; the npm build ignores it.
+- `speechPath`: the directory of `speech-worker.js` and its `mathmaps/`, by default `mathjax@4.1.3/sre` under the root.
+- `speechLocales`: the locales the menu's speech language submenu lists, by id (`['en', 'de']`), or by id with the label it shows (`{ en: 'English', cy: 'Cymraeg' }`). Unset, it lists SRE's 13 locales. When English is not listed, speech starts in the first listed locale, and a stored menu locale that is not listed is dropped.
+
+The renderer options of the same names take precedence over the page's.
+
+**Files**, every package at 4.1.3:
+
+| Under the root | Holds | Build |
+| --- | --- | --- |
+| `mathjax@4.1.3/tex-mml-chtml.js` | MathJax, and beside it the TeX extensions it autoloads | npm |
+| `@mathjax/mathjax-newcm-font@4.1.3/chtml/woff2/` | the fonts | both |
+| `@mathjax/mathjax-newcm-font@4.1.3/chtml/dynamic/` | the font's dynamic ranges | npm |
+| `@mathjax/mathjax-mhchem-font-extension@4.1.3/chtml/woff2/` | the mhchem fonts | both |
+| `mathjax@4.1.3/sre/speech-worker.js` | the speech worker | both |
+| `mathjax@4.1.3/sre/mathmaps/` | `base.json`, one file per locale, and `nemeth.json` and `euro.json` for braille | both |
+
+A self-hosted root holds those paths, and only the mathmaps of the listed locales. A bundle that carries the browser build's files lists them in `assetUrls` instead, each as a `new URL('./…', import.meta.url)`: a host bundler emits each file so referenced into its own output under a hashed name, and copies nothing a directory URL names. A bundle listing the fonts needs no root. The adapter's manifest lists the three packages and their version under `pie.assetPackages`, which `pie-players`' preloaded-player build reads to ship them. A locale SRE does not ship needs a speech worker built with it and its `mathmaps/<locale>.json` at `speechPath`, and a `speechLocales` entry giving its label.
+
+`srcUrl` replaces the npm build's MathJax script only; its fonts and speech still load from the root.
+
+**Without a root**, each build reports it once per page: the npm build with `console.error`, the browser build with `console.warn`, each beginning `[math-rendering] No asset root for MathJax`. Each report also dispatches `pie-mathjax-no-asset-root` (`NO_ASSET_ROOT_EVENT`) on `window`, whose `detail` carries the `effect` (`untypeset`, `no-web-fonts` or `no-web-fonts-or-speech`), the `message` and the `docsUrl`; `@pie-players` forward it to their instrumentation.
+
+- The browser build, with no fonts in `assetUrls` either, typesets without web fonts, so glyphs fall back to the system's fonts. Without a speech worker from `speechPath` or `assetUrls`, Semantic Enrichment is disabled in the menu, and with it speech, braille and the explorer.
+- The npm build loads no MathJax, and math stays untypeset. Given a `srcUrl`, it loads that script with MathJax's own defaults for fonts and speech, which for MathJax 4's component builds are on jsDelivr.
 
 ## Content
 
@@ -84,7 +130,7 @@ Both builds pin one MathJax version: `mathjax`, `@mathjax/src` and the font pack
 
 ## Accessibility
 
-Each typeset expression carries hidden MathML (`mjx-assistive-mml`) for screen readers, and the MathJax context menu. The speech-rule-engine output is off: no semantic enrichment, no generated speech and no speech web worker, so no `worker-src blob:` CSP entry is needed. Math stays out of the tab order, so it offers no Tab or arrow-key exploration.
+Each typeset expression carries hidden MathML (`mjx-assistive-mml`) for screen readers, and the MathJax context menu. The speech-rule-engine output is off by default: no semantic enrichment, no generated speech and no speech web worker, so no `worker-src blob:` CSP entry is needed. A student who turns on Semantic Enrichment from the menu starts the speech worker, a `blob:` worker that imports `speech-worker.js` from the [asset root](#assets). A worker that fails to start, because a content security policy refuses `blob:` workers or the root's script, ends speech, braille and the explorer for the page and logs one warning; math goes on typesetting with its hidden MathML. Math stays out of the tab order, so it offers no Tab or arrow-key exploration.
 
 A student's menu choices are saved in localStorage under `PIE-MathJax-Menu-Settings`, a key MathJax 3 does not share, and apply on later loads. Hidden MathML is exempt: the renderer's configuration sets it on every load.
 
@@ -111,7 +157,7 @@ A player that installs its own renderer creates it with `createMathjaxRenderer`:
 import { createMathjaxRenderer } from '@pie-element/shared-math-rendering-mathjax';
 
 const renderMath = createMathjaxRenderer({
-  srcUrl: 'https://assets.example.com/mathjax/4.1.3/tex-mml-chtml.js',
+  assetRoot: 'https://assets.example.com/npm',
 });
 
 window['@pie-lib/math-rendering'] = { renderMath };
@@ -123,7 +169,8 @@ Options, which apply only when this renderer is the one that loads MathJax:
 - `useSingleDollar` (default `false`): treat `$...$` as inline math.
 - `accessibility` (default `true`): add the hidden MathML and the context menu.
 - `loadFonts` (default `true`): load MathJax's fonts.
-- `srcUrl`: the MathJax script URL, by default MathJax 4.1.3 `tex-mml-chtml.js` on jsDelivr. The browser build ignores it.
+- `assetRoot`, `speechPath`, `speechLocales`: where MathJax's files load from and which speech locales the menu lists ([Assets](#assets)).
+- `srcUrl`: the MathJax script URL, by default `mathjax@4.1.3/tex-mml-chtml.js` under the asset root. The browser build ignores it.
 
 ## Authoring Tools
 
@@ -136,7 +183,7 @@ Svelte author views use `@pie-lib/editable-html-tiptap-svelte`, which has no mat
 
 ### Math Not Rendering
 
-1. **Console**: a `Failed to load MathJax` error means the script URL did not load. The `no typesetPromise` warning means an older MathJax is already on the page.
+1. **Console**: a `Failed to load MathJax` error means the script URL did not load. `No asset root for MathJax` means the adapter found no root ([Assets](#assets)). The `no typesetPromise` warning means an older MathJax is already on the page.
 2. **Delimiters**: `$...$` stays text unless the page sets the legacy opt-in.
 3. **Timing**: call `renderMath()` once the DOM holds the content.
 
@@ -172,6 +219,7 @@ bun run dev
 ### Code Locations
 
 - Adapter: `packages/shared/math-rendering-mathjax/`
+- Asset resolution: `packages/shared/math-rendering-mathjax/src/assets.ts`
 - npm build engine: `packages/shared/math-rendering-mathjax/src/engine/page.ts`
 - Browser build engine: `packages/shared/math-rendering-mathjax/src/engine/bundled.ts` and `src/engine/bundled/`, built by `vite.browser.config.ts`
 - Wrapper package: `packages/lib-react/math-rendering/`
@@ -194,3 +242,4 @@ bun run dev
 - **2026-02-09**: Simplified to MathJax-only (removed abstraction layer)
 - **2026-09-27**: Pinned MathJax 4.1.3 and matched the legacy renderer's delimiters, macros and typesetting scope
 - **2026-10-03**: Element browser builds bundle a module-private MathJax 4.1.3
+- **2026-10-06**: MathJax's files load from an asset root; neither build names a CDN host

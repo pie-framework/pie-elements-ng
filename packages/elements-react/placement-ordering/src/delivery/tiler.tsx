@@ -5,6 +5,7 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 
 import Tile from './tile.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const types = {
   choiceLabel: PropTypes.string,
@@ -105,10 +106,10 @@ export class HorizontalTiler extends React.Component {
       <StyledHTilerContainer includeTargets={includeTargets} style={style}>
         <StyledChoiceLabel
           style={labelStyle}
-          dangerouslySetInnerHTML={{ __html: choiceLabelEnabled ? choiceLabel : '' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choiceLabelEnabled ? choiceLabel : '') }}
         />
         {includeTargets && (
-          <StyledTargetLabel style={labelStyle} dangerouslySetInnerHTML={{ __html: targetLabel }} />
+          <StyledTargetLabel style={labelStyle} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(targetLabel) }} />
         )}
         {tiles.map(buildTiles(this.props))}
       </StyledHTilerContainer>
@@ -135,10 +136,10 @@ export class VerticalTiler extends React.Component {
     return (
       <StyledVTilerContainer includeTargets={includeTargets} style={style}>
         <StyledVChoiceLabel
-          dangerouslySetInnerHTML={{ __html: choiceLabelEnabled ? choiceLabel : '' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choiceLabelEnabled ? choiceLabel : '') }}
         />
 
-        {includeTargets && <StyledVTargetLabel dangerouslySetInnerHTML={{ __html: targetLabel }} />}
+        {includeTargets && <StyledVTargetLabel dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(targetLabel) }} />}
         {tiles.map(buildTiles(this.props))}
       </StyledVTilerContainer>
     );

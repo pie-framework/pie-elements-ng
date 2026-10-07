@@ -38,6 +38,7 @@ const renderUi =
     : renderUiNamespaceAny;
 import { styled } from '@mui/material/styles';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -216,7 +217,7 @@ export class Main extends React.Component {
           pluginProps={responseAreaInputConfiguration}
         />
 
-        {displayNote && <NoteContainer dangerouslySetInnerHTML={{ __html: note }} />}
+        {displayNote && <NoteContainer dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(note) }} />}
 
         {showRationale && (
           <CollapsibleContainer>

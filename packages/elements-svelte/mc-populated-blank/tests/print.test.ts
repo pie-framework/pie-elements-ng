@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+// DOMPurify needs jsdom here; vitest.setup.ts says why.
 /**
  * The print view. `pie-print` sets `options` and then the item's raw model on
  * each element; print renders delivery as a player shows that role in `view`

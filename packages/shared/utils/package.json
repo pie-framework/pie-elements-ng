@@ -21,7 +21,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@pie-element/shared-types": "workspace:*"
+    "@pie-element/shared-types": "workspace:*",
+    "dompurify": "^3.4.16"
   },
   "devDependencies": {
     "@types/bun": "latest",

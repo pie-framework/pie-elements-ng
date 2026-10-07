@@ -38,6 +38,7 @@ import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { ChildrenType, GraphPropsType } from './types.js';
 import Label from './label.js';
 import { extractTextFromHTML, isEmptyObject, isEmptyString } from './utils.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const centerPlaceholder = {
   '& .ProseMirror p.is-editor-empty::before, & .ProseMirror div.is-editor-empty::before': {
@@ -368,9 +369,9 @@ export class Root extends React.Component {
               }}
             >
               {isChart ? (
-                <ChartTitle className="disabledTitle" dangerouslySetInnerHTML={{ __html: title || '' }} />
+                <ChartTitle className="disabledTitle" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(title) }} />
               ) : (
-                <GraphTitle className="disabledTitle" dangerouslySetInnerHTML={{ __html: title || '' }} />
+                <GraphTitle className="disabledTitle" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(title) }} />
               )}
             </div>
           ) : (

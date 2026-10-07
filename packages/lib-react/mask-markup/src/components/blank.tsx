@@ -10,6 +10,7 @@ import Chip from '@mui/material/Chip';
 import classnames from 'clsx';
 import { color } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { grey } from '@mui/material/colors';
 
 const { translator } = Translator;
@@ -47,6 +48,8 @@ const StyledChip: any = styled(Chip)(() => ({
   touchAction: 'none',
   color: color.text(),
   fontSize: 'inherit',
+  // MUI 7's Chip sets a 1.5 line height; the legacy blank inherited normal, as its choices do.
+  lineHeight: 'normal',
   maxWidth: '374px',
   position: 'relative',
   borderRadius: '3px',
@@ -298,7 +301,7 @@ function BlankContent({
               over: isOver,
               hidden: draggedLabel,
             })}
-            dangerouslySetInnerHTML={{ __html: label || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(label) }}
           />
           {draggedLabel && (
             <StyledChipLabel
@@ -307,7 +310,7 @@ function BlankContent({
                 over: isOver,
                 dragged: true,
               })}
-              dangerouslySetInnerHTML={{ __html: draggedLabel || '' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(draggedLabel) }}
             />
           )}
         </React.Fragment>

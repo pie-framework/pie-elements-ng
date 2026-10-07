@@ -1,4 +1,5 @@
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { tCommon } from '../i18n.js';
 
 let { html, language }: { html: string; language?: string } = $props();
@@ -19,7 +20,7 @@ const panelId = `venn-teacher-instructions-${Math.random().toString(36).slice(2,
     {tCommon(expanded ? 'hideTeacherInstructions' : 'showTeacherInstructions', language)}
   </button>
   <div id={panelId} class="teacher-instructions-content pie-teacher-instructions-content" hidden={!expanded}>
-    {@html html}
+    {@html sanitizeModelHtml(html)}
   </div>
 </div>
 

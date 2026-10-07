@@ -1,11 +1,11 @@
 // @ts-nocheck
 
-
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 var createElementFromHTML = function createElementFromHTML() {
   var htmlString = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
   var div = document.createElement('div');
-  div.innerHTML = htmlString.trim();
+  div.innerHTML = sanitizeModelHtml(htmlString).trim();
   return div;
 };
 

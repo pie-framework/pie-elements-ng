@@ -38,4 +38,8 @@ describe('drag-in-the-blank choice chip', () => {
   it('stays white when no theme is applied', () => {
     expect(renderChip({}).backgroundColor).toBe('#ffffff');
   });
+
+  it('keeps the line height it inherits, as the legacy tile did', () => {
+    expect(renderChip({}).lineHeight).toBe('normal');
+  });
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { t } from './i18n';
 
 interface Choice {
@@ -51,7 +52,7 @@ let {
             style="max-width:var(--mpb-choice-image-max-width, 9.375rem);max-height:var(--mpb-choice-image-max-height, 9.375rem);"
           />
         {:else}
-          <span class="choice-html pie-choice-label">{@html choice.labelHtml || ''}</span>
+          <span class="choice-html pie-choice-label">{@html sanitizeModelHtml(choice.labelHtml)}</span>
         {/if}
       </span>
       <input
@@ -83,7 +84,7 @@ let {
           style="max-height:var(--mpb-choice-image-max-height, 5rem);"
         />
       {:else}
-        <span class="choice-html pie-choice-label">{@html choice.labelHtml || ''}</span>
+        <span class="choice-html pie-choice-label">{@html sanitizeModelHtml(choice.labelHtml)}</span>
       {/if}
     </label>
   {/if}

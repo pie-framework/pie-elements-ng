@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { color } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 export const DRAG_TYPE = 'MaskBlank';
 
@@ -29,6 +30,8 @@ const StyledChip: any = styled(Chip)(({selected}) => ({
   height: 'initial',
   minHeight: '32px',
   fontSize: 'inherit',
+  // MUI 7's Chip sets a 1.5 line height; the legacy tile inherited normal, and text tiles grew.
+  lineHeight: 'normal',
   whiteSpace: 'pre-wrap',
   maxWidth: '374px',
   // Added for touch devices, for image content.
@@ -102,7 +105,7 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
         disabled={disabled}
         selected={isSelected}
         ref={rootRef}
-        label={<StyledChipLabel dangerouslySetInnerHTML={{ __html: choice.value }} />}
+        label={<StyledChipLabel dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choice.value) }} />}
       />
     </StyledChoice>
   );
