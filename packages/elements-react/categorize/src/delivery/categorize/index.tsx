@@ -409,7 +409,10 @@ class CategorizeProvider extends React.Component {
     this.isInternalDragCancel = false;
     // The modifier holds the dragged choice inside the region, which scrolls. A pointer drag collides
     // where the pointer put the choice, so a choice released outside the region finds no category.
-    this.dragCollision = createDragCollision({ modifiers: [restrictToFirstScrollableAncestor] });
+    this.dragCollision = createDragCollision({
+      detect: categoriesFirst,
+      modifiers: [restrictToFirstScrollableAncestor],
+    });
   }
 
   onDragStart: any = (event) => {
@@ -607,7 +610,6 @@ class CategorizeProvider extends React.Component {
         onDragStart={this.onDragStart}
         onDragEnd={this.onDragEnd}
         onDragCancel={this.onDragCancel}
-        collisionDetection={categoriesFirst}
         keyboardCoordinateGetter={closestDroppableKeyboardCoordinates}
         keyboardCodes={{ start: ['Space', 'Enter'], cancel: ['Escape'], end: ['Space', 'Enter'] }}
         collisionDetection={this.dragCollision.collisionDetection}
