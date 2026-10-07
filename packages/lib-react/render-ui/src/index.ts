@@ -37,4 +37,3 @@ export {
 };
 export { InlineMenu } from './inline-menu.js';
 export { createUniqueId, useUniqueId } from './unique-id.js';
-export { MathName, useMathName } from './math-name.js';

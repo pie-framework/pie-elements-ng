@@ -3,8 +3,8 @@
  * hidden MathML both MathJax versions emit, so it runs without MathJax's speech engine and its
  * worker, which a strict CSP blocks. Coverage is the school-math core: numbers, identifiers,
  * operators, fences, fractions, roots, scripts, limits on sums and integrals, accents and tables.
- * An element outside it speaks its children in order. A host that wants SRE or another engine
- * passes its own speaker to `mathContentName`.
+ * An element outside it speaks its children in order. A host that wants SRE, another locale or
+ * ClearSpeak's full rule set replaces the `aria-label` it puts on each `mjx-container`.
  */
 
 const SILENT = /[⁡-⁤]/g;
@@ -140,18 +140,6 @@ const ACCENTS: Record<string, string> = {
   '˙': 'dot',
 };
 
-const DENOMINATORS: Record<number, [string, string]> = {
-  2: ['half', 'halves'],
-  3: ['third', 'thirds'],
-  4: ['quarter', 'quarters'],
-  5: ['fifth', 'fifths'],
-  6: ['sixth', 'sixths'],
-  7: ['seventh', 'sevenths'],
-  8: ['eighth', 'eighths'],
-  9: ['ninth', 'ninths'],
-  10: ['tenth', 'tenths'],
-};
-
 const text = (element: Element) =>
   (element.textContent ?? '').replace(SILENT, '').replace(/\s+/g, ' ').trim();
 
@@ -231,12 +219,11 @@ function row(children: Element[]): string {
   return sequence(children);
 }
 
+/**
+ * A fraction of two atoms reads "4 over 12", the formula as the student sees it. Fraction words
+ * ("4 twelfths") are left out: they replace the formula in the name, and 4/1 has none.
+ */
 function fraction(numerator: Element | undefined, denominator: Element | undefined): string {
-  const n = integer(numerator);
-  const d = integer(denominator);
-  const names = d === undefined ? undefined : DENOMINATORS[d];
-  if (n !== undefined && names) return `${n} ${n === 1 ? names[0] : names[1]}`;
-
   const top = numerator ? speak(numerator) : '';
   const bottom = denominator ? speak(denominator) : '';
   return isAtom(numerator) && isAtom(denominator)

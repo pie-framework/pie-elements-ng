@@ -1,78 +1,61 @@
 import { describe, expect, it } from 'vitest';
-import { mathContentName } from '../src/math-name.js';
+import { nameMathInControls } from '../src/math-name.js';
 
-const MML = '<math><mfrac><mn>1</mn><mn>2</mn></mfrac></math>';
+const FRACTION = '<math><mfrac><mn>4</mn><mn>12</mn></mfrac></math>';
 
 /** MathJax's output: hidden MathML for assistive technology beside aria-hidden glyphs. */
-const typeset = (mathml = MML) =>
+const typeset = (mathml = FRACTION) =>
   `<mjx-container class="MathJax"><mjx-math aria-hidden="true">glyphs</mjx-math><mjx-assistive-mml>${mathml}</mjx-assistive-mml></mjx-container>`;
 
-function control(html: string, attributes: Record<string, string> = {}): HTMLElement {
-  const element = document.createElement('div');
-  for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value);
-  element.innerHTML = html;
-  return element;
+function render(html: string): HTMLElement {
+  const root = document.createElement('div');
+  root.innerHTML = html;
+  document.body.replaceChildren(root);
+  return root;
 }
 
-describe('mathContentName', () => {
-  it('names a control that holds only math from its hidden MathML', () => {
-    expect(mathContentName(control(typeset()))).toBe('1 half');
-  });
+const labels = (root: Element) =>
+  [...root.querySelectorAll('mjx-container')].map((c) => c.getAttribute('aria-label'));
 
-  it('keeps text and math in order', () => {
-    const content = control(
-      `<p>Walk ${typeset('<math><mn>9.7</mn><mo>+</mo><msqrt><mn>25</mn></msqrt></math>')} <span>feet</span></p>`
+describe('nameMathInControls', () => {
+  it('labels math inside controls with its speech', () => {
+    const root = render(
+      [
+        `<button>${typeset()}</button>`,
+        `<label><input type="radio">${typeset()}</label>`,
+        `<ul role="listbox"><li role="option">${typeset()}</li></ul>`,
+        `<div role="button" tabindex="0"><p>${typeset()} feet</p></div>`,
+      ].join('')
     );
-    expect(mathContentName(content)).toBe('Walk 9.7 plus square root of 25 feet');
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['4 over 12', '4 over 12', '4 over 12', '4 over 12']);
   });
 
-  it('speaks MathML that is not typeset yet', () => {
-    expect(mathContentName(control(`<span>Half: </span>${MML}`))).toBe('Half: 1 half');
+  it('leaves math outside controls to its MathML', () => {
+    const root = render(`<p>Simplify ${typeset()}.</p><div role="listbox">${typeset()}</div>`);
+    nameMathInControls(root);
+    expect(labels(root)).toEqual([null, null]);
   });
 
-  it('leaves the name to the browser when the content has no math', () => {
-    expect(mathContentName(control('<p>Antigone</p>'))).toBeUndefined();
+  it('labels math in a control around the rendered element', () => {
+    const root = render(`<button><span id="content">${typeset()}</span></button>`);
+    nameMathInControls(root.querySelector('#content') as Element);
+    expect(labels(root)).toEqual(['4 over 12']);
   });
 
-  it('leaves the name to the browser when typesetting left no MathML', () => {
-    expect(
-      mathContentName(
-        control('<mjx-container><mjx-math aria-hidden="true">glyphs</mjx-math></mjx-container>')
-      )
-    ).toBeUndefined();
-  });
-
-  it('ignores the control own label, which an earlier run set', () => {
-    expect(mathContentName(control(typeset(), { 'aria-label': '1 half' }))).toBe('1 half');
-    expect(mathContentName(control(typeset(), { 'aria-label': 'stale' }))).toBe('1 half');
-  });
-
-  it('skips hidden content and honours nested labels and image alternatives', () => {
-    const content = control(
-      `<span aria-hidden="true">decoy</span><span hidden>decoy</span><span style="display:none">decoy</span><span aria-label="Point A"></span><img alt="graph" src="x.png">${typeset()}`
+  it('keeps a label already on the container', () => {
+    const root = render(
+      `<button>${typeset().replace('class', 'aria-label="four twelfths" class')}</button>`
     );
-    expect(mathContentName(content)).toBe('Point A graph 1 half');
+    nameMathInControls(root);
+    expect(labels(root)).toEqual(['four twelfths']);
   });
 
-  it('keeps words in block elements apart', () => {
-    expect(mathContentName(control(`<p>Choose</p><p>${typeset()}</p>`))).toBe('Choose 1 half');
-  });
-
-  it('names several expressions in one control', () => {
-    const content = control(
-      `${typeset('<math><mi>x</mi></math>')} or ${typeset('<math><mi>y</mi></math>')}`
+  it('leaves a container without hidden MathML unlabelled', () => {
+    const root = render(
+      '<button><mjx-container><mjx-math>glyphs</mjx-math></mjx-container></button>'
     );
-    expect(mathContentName(content)).toBe('x or y');
-  });
-
-  it('takes the host speaker over the built-in one', () => {
-    const speak = (math: Element) => `spoken ${math.localName}`;
-    expect(mathContentName(control(typeset()), { speak })).toBe('spoken math');
-  });
-
-  it('falls back to the MathML text when the speaker returns nothing', () => {
-    expect(
-      mathContentName(control(typeset('<math><mi>x</mi></math>')), { speak: () => undefined })
-    ).toBe('x');
+    nameMathInControls(root);
+    expect(labels(root)).toEqual([null]);
   });
 });

@@ -6,7 +6,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
-import { color, useMathName } from '@pie-lib/render-ui';
+import { color } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 export const DRAG_TYPE = 'MaskBlank';
@@ -63,8 +63,6 @@ const StyledChipLabel: any = styled('span')(() => ({
 
 export default function Choice({ choice, disabled, instanceId, selectedItem, onSelectClick }) {
   const rootRef = useRef(null);
-  // Chrome leaves MathML out of a button's name from content, so a math choice names itself.
-  const name = useMathName(rootRef);
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `choice-${choice.id}`,
@@ -101,7 +99,6 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
       onClick={handleClick}
       {...listeners}
       {...attributes}
-      aria-label={name}
     >
       <StyledChip
         clickable={false}

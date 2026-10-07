@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useRef } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import InputLabel from '@mui/material/InputLabel';
@@ -40,7 +40,7 @@ import Close from '@mui/icons-material/Close';
 import Check from '@mui/icons-material/Check';
 import { styled } from '@mui/material/styles';
 
-import { MathName, color, createUniqueId, useMathName } from '@pie-lib/render-ui';
+import { color, createUniqueId } from '@pie-lib/render-ui';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import Translator from '@pie-lib/translator';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
@@ -195,25 +195,6 @@ const StyledIncorrectnessIcon: any = styled(Close)(() => ({
   },
 }));
 
-// An option that holds math names itself: Chrome leaves MathML out of a button's name from content.
-const DropdownOption = ({ label, selected, labelRef, ...itemProps }) => {
-  const content = useRef(null);
-  const name = useMathName(content);
-
-  return (
-    <StyledMenuItem {...itemProps} selected={selected} aria-label={name}>
-      <StyledLabel
-        ref={(node) => {
-          content.current = node;
-          labelRef(node);
-        }}
-        dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(label) }}
-      />
-      <StyledSelectedIndicator dangerouslySetInnerHTML={{ __html: selected ? ' &check;' : '' }} />
-    </StyledMenuItem>
-  );
-};
-
 class Dropdown extends React.Component {
   static propTypes = {
     id: PropTypes.string,
@@ -359,7 +340,6 @@ class Dropdown extends React.Component {
     // The combobox controls the listbox itself; menuId names MUI's popover root around it.
     const listboxId = `${this.idPrefix}-listbox`;
     const valueDisplayId = `${this.idPrefix}-value`;
-    const valueNameId = `${this.idPrefix}-value-name`;
 
     // Determine the class for disabled state, view mode and evaluate mode
     let disabledClass;
@@ -405,9 +385,6 @@ class Dropdown extends React.Component {
         <StyledInputLabel id={labelId} tabIndex={-1} aria-hidden="true">
           {labelText}
         </StyledInputLabel>
-        <MathName>
-          {(valueName, valueRef) => (
-            <>
         <StyledButton
           ref={this.buttonRef}
           style={{
@@ -424,17 +401,13 @@ class Dropdown extends React.Component {
           disabled={disabled}
           id={buttonId}
           role="combobox"
-          // The query names the blank in every state; the value follows it once there is one. A math
-          // value is named by the hidden span below, because Chrome leaves MathML out of the span's text.
-          aria-labelledby={`${labelId} ${valueName ? valueNameId : valueDisplayId}`}
+          // The query names the blank in every state; the value span follows it once there is one.
+          aria-labelledby={`${labelId} ${valueDisplayId}`}
         >
           {correctnessIcon}
           <StyledLabel
             id={valueDisplayId}
-            ref={(node) => {
-              this.previewRef.current = node;
-              valueRef.current = node;
-            }}
+            ref={this.previewRef}
             dangerouslySetInnerHTML={{
               __html: sanitizeModelHtml(
                 correctValue
@@ -447,14 +420,6 @@ class Dropdown extends React.Component {
           />
           {open ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
         </StyledButton>
-        {valueName ? (
-          <span id={valueNameId} hidden>
-            {valueName}
-          </span>
-        ) : null}
-            </>
-          )}
-        </MathName>
         <StyledMenu
           id={menuId}
           anchorEl={anchorEl}
@@ -479,7 +444,7 @@ class Dropdown extends React.Component {
             const optionId = this.optionId(index);
 
             return (
-              <DropdownOption
+              <StyledMenuItem
                 id={optionId}
                 className={c.value === value ? 'selected' : ''}
                 selected={c.value === value}
@@ -489,9 +454,13 @@ class Dropdown extends React.Component {
                 role="option"
                 aria-selected={this.state.highlightedOptionId === optionId ? 'true' : undefined}
                 onMouseOver={() => this.handleHover(index)}
-                label={c.label}
-                labelRef={(ref) => (this.elementRefs[index] = ref)}
-              />
+              >
+                <StyledLabel
+                  ref={(ref) => (this.elementRefs[index] = ref)}
+                  dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(c.label) }}
+                />
+                <StyledSelectedIndicator dangerouslySetInnerHTML={{ __html: c.value === value ? ' &check;' : '' }} />
+              </StyledMenuItem>
             );
           })}
         </StyledMenu>

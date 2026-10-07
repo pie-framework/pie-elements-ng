@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import classNames from 'clsx';
 import { styled } from '@mui/material/styles';
 import { useDraggable } from '@dnd-kit/core';
-import { color, useMathName } from '@pie-lib/render-ui';
+import { color } from '@pie-lib/render-ui';
 
 import EvaluationIcon from './evaluation-icon.js';
 import StaticHTMLSpan from './static-html-span.js';
@@ -89,8 +89,6 @@ const PossibleResponse = ({
     [data.value, getChoiceLabel],
   );
   const longPressTimer = useRef(null);
-  // Chrome leaves MathML out of a button's name from content, so a math response names itself.
-  const mathName = useMathName(rootRef);
 
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
     id: `possible-response-${data.id}`,
@@ -190,7 +188,7 @@ const PossibleResponse = ({
         setNodeRef(ref);
       }}
       onClick={handleClick}
-      aria-label={label ?? mathName}
+      aria-label={label}
       {...listeners}
       {...attributes}
     >

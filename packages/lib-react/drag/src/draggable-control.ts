@@ -5,9 +5,7 @@ import type { Data, DraggableAttributes, UniqueIdentifier } from '@dnd-kit/core'
 
 /**
  * Reads a control's accessible name from its rendered content. Returning undefined leaves the name
- * to the browser, which computes it from the same content. It runs again whenever the content
- * changes, as MathJax's typesetting does; `mathContentName` in
- * `@pie-element/shared-math-rendering-mathjax` names a control that holds math.
+ * to the browser, which computes it from the same content.
  */
 export type ContentNamer = (content: HTMLElement) => string | undefined;
 
@@ -59,15 +57,6 @@ export function useDraggableControl({
   // Runs after every render: the content can change without any of these options changing.
   useLayoutEffect(() => {
     setContentLabel(namesFromContent && node.current ? contentName?.(node.current) : undefined);
-  });
-
-  // Typesetting fills the content after the render that mounted it, and nothing renders again then.
-  useLayoutEffect(() => {
-    const content = node.current;
-    if (!namesFromContent || !content || typeof MutationObserver === 'undefined') return;
-    const observer = new MutationObserver(() => setContentLabel(contentName?.(content)));
-    observer.observe(content, { childList: true, subtree: true, characterData: true });
-    return () => observer.disconnect();
   });
 
   if (disabled) {
