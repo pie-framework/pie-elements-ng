@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
@@ -198,6 +199,44 @@ describe('EditableHtml pasted pictures', () => {
 
     expect(editor.getHTML()).not.toContain('<img');
     expect(imageSupport.add).not.toHaveBeenCalled();
+  });
+});
+
+describe('EditableHtml paste from Word for Mac', () => {
+  // ProseMirror reads `rules`, which browsers alias to `cssRules` and happy-dom lacks, to inline the
+  // stylesheet Word puts in its HTML.
+  if (!('rules' in CSSStyleSheet.prototype)) {
+    Object.defineProperty(CSSStyleSheet.prototype, 'rules', {
+      get(this: CSSStyleSheet) {
+        return this.cssRules;
+      },
+    });
+  }
+
+  // A reduced copy from Word for Mac 16, with Word's markup and invented text.
+  const WORD = {
+    'text/html': readFileSync(`${import.meta.dirname}/fixtures/word-for-mac.html`, 'utf8'),
+    'text/plain':
+      'Garden plan\nNote for review:\nA bed is 2 yards long → 6 feet. Find the area in square feet, as the ' +
+      'unit guide shows.\n\nThe beds are\n●\ttomatoes, 18 ft2\n●\tbeans, 12 ft2\n',
+    'text/rtf': '{\\rtf1}',
+  };
+
+  it('keeps the text, bold, italics, superscript, list and picture, and nothing else', async () => {
+    const imageSupport = { add: vi.fn(), delete: vi.fn() };
+    const { editor } = await mountEditor({ imageSupport });
+
+    paste(editor, WORD, [textPicture()]);
+
+    expect(editor.getHTML().replace(/nodekey="[^"]+"/, 'nodekey="…"')).toBe(
+      '<div><strong>Garden plan</strong></div><p><strong>Note for review:</strong></p>' +
+        '<p>A bed is 2 yards long → 6 feet. Find the area in <em>square</em> feet, as the unit guide shows.</p>' +
+        '<p>&nbsp;</p>' +
+        `<img nodekey="…" loaded="false" width="259" height="79" src="${PNG}" data-type="image-upload-node">` +
+        '<p>The beds are</p>' +
+        '<ul><li><div>tomatoes, 18 ft<sup>2</sup></div></li><li><div>beans, 12 ft<sup>2</sup></div></li></ul><p></p>',
+    );
+    expect(imageSupport.add).toHaveBeenCalledTimes(1);
   });
 });
 
