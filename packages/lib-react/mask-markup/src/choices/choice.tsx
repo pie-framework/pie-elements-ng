@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { color } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 export const DRAG_TYPE = 'MaskBlank';
 
@@ -104,7 +105,7 @@ export default function Choice({ choice, disabled, instanceId, selectedItem, onS
         disabled={disabled}
         selected={isSelected}
         ref={rootRef}
-        label={<StyledChipLabel dangerouslySetInnerHTML={{ __html: choice.value }} />}
+        label={<StyledChipLabel dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(choice.value) }} />}
       />
     </StyledChoice>
   );

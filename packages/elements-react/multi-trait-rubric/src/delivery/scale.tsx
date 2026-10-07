@@ -7,6 +7,7 @@ import { color } from '@pie-lib/render-ui';
 import Trait from './trait.js';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const Wrapper: any = styled('div')({
   display: 'flex',
@@ -195,7 +196,7 @@ class Scale extends React.Component {
             <thead>
               <tr>
                 <th>
-                  <div dangerouslySetInnerHTML={{ __html: traitLabel }} />
+                  <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(traitLabel) }} />
                 </th>
 
                 {standards ? (
@@ -229,7 +230,7 @@ class Scale extends React.Component {
                               <tr>
                                 <td>
                                   <PointLabel
-                                    dangerouslySetInnerHTML={{ __html: pointLabel }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(pointLabel) }}
                                   />
                                 </td>
                               </tr>

@@ -13,6 +13,7 @@
 />
 
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import AudioPlayer from './AudioPlayer.svelte';
 import ClozeMarker from './ClozeMarker.svelte';
 import ChoiceRow from './ChoiceRow.svelte';
@@ -308,7 +309,7 @@ $effect(() => {
       {/if}
 
       {#if hasVisiblePrompt}
-        <div class="pie-prompt" id={promptId}>{@html model.prompt}</div>
+        <div class="pie-prompt" id={promptId}>{@html sanitizeModelHtml(model.prompt)}</div>
       {/if}
 
       {#if shouldShowCorrectAnswerToggle}
@@ -394,13 +395,13 @@ $effect(() => {
 
   {#if model?.sentenceHtml}
     <div class="sentence-line pie-sentence-line" aria-describedby={templateDescribedBy}>
-      {@html model.sentenceHtml}
+      {@html sanitizeModelHtml(model.sentenceHtml)}
     </div>
   {/if}
 
   {#if !isAudioOnlyMode}
     <div class="template-line pie-template-line" aria-describedby={templateDescribedBy}
-      >{@html templateParts.before}<ClozeMarker
+      >{@html sanitizeModelHtml(templateParts.before)}<ClozeMarker
         {choiceMode}
         displayChoice={displayChoice}
         {displayChoiceLabelHtml}
@@ -409,7 +410,7 @@ $effect(() => {
         blankBorderWidth={layout.blankBorderWidth}
         ariaLabel={t('blankLabel')}
         language={model?.language}
-      />{@html templateParts.after}</div>
+      />{@html sanitizeModelHtml(templateParts.after)}</div>
   {/if}
 
   {#if resultText}

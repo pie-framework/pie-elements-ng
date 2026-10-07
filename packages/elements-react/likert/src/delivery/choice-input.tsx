@@ -8,6 +8,7 @@ import { styled } from '@mui/material/styles';
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import Radio from '@mui/material/Radio';
 import { LIKERT_ORIENTATION } from './likertEntities.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 export const RadioStyled: any = styled(Radio)({
   color: `var(--choice-input-color, ${color.text()})`,
@@ -80,7 +81,7 @@ export class ChoiceInput extends React.Component {
             />
           }
         />
-        <LabelRoot id={this.labelId} onClick={this.onToggleChoice} dangerouslySetInnerHTML={{ __html: label }} />
+        <LabelRoot id={this.labelId} onClick={this.onToggleChoice} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(label) }} />
       </CheckboxHolderRoot>
     );
   }

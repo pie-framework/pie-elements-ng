@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles';
 import { uid } from '@pie-lib/drag';
 import Choice, { ChoiceType } from './choice.js';
 import DroppablePlaceholder from './droppable-placeholder.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 export { ChoiceType };
 
 const Wrapper: any = styled('div')({
@@ -85,7 +86,7 @@ export class Choices extends React.Component {
           selectedItem={selectedItem}
           onPlacementClick={onPlacementClick}
         >
-          {hasLabel && <LabelHolder id={labelId} dangerouslySetInnerHTML={{ __html: model.choicesLabel }} />}
+          {hasLabel && <LabelHolder id={labelId} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(model.choicesLabel) }} />}
           {choices.map((c, index) => {
             return c.empty ? (
               <div key={index} />

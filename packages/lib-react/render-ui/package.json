@@ -18,7 +18,8 @@
     "prop-types": "^15.7.2",
     "react-transition-group": "^4.4.5",
     "@pie-element/shared-math-rendering-mathjax": "workspace:*",
-    "@pie-element/shared-lodash": "workspace:*"
+    "@pie-element/shared-lodash": "workspace:*",
+    "@pie-element/shared-utils": "workspace:*"
   },
   "type": "module",
   "main": "./dist/index.js",

@@ -7,6 +7,7 @@ import { color } from '@pie-lib/render-ui';
 import React, { useRef } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { styled } from '@mui/material/styles';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 let getIcon = (t) => {
   switch (t) {
@@ -62,7 +63,7 @@ const Feedback = (props) => {
       <CSSTransition classNames={'fb'} key="fb" timeout={300} nodeRef={nodeRef}>
         <FeedbackContainer ref={nodeRef} key="panel" $type={type} style={{ width }}>
           <Icon iconSet="emoji" shape="square" />
-          <Message dangerouslySetInnerHTML={{ __html: message }} />
+          <Message dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(message) }} />
         </FeedbackContainer>
       </CSSTransition>
     </TransitionGroup>

@@ -42,6 +42,7 @@ import Graph from './graph/index.js';
 import PropTypes from 'prop-types';
 import PointChooser from './point-chooser/index.js';
 import { buildElementModel } from './graph/elements/builder.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -365,7 +366,7 @@ export class NumberLine extends React.Component {
             debug={false}
             language={language}
           />
-          {title && <GraphTitle dangerouslySetInnerHTML={{ __html: title }} />}
+          {title && <GraphTitle dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(title) }} />}
 
           {showMaxPointsWarning && <Feedback type="info" width={adjustedWidth} message={maxPointsMessage()} />}
           {feedback && !showCorrectAnswer && <Feedback {...feedback} width={adjustedWidth} />}

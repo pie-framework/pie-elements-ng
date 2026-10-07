@@ -2,6 +2,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 class StaticHTMLSpan extends React.PureComponent {
   shouldComponentUpdate() {
@@ -14,7 +15,7 @@ class StaticHTMLSpan extends React.PureComponent {
     return (
       <span
         className={className}
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(html) }}
       />
     );
   }

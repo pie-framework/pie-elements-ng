@@ -19,6 +19,7 @@ import AnnotationMenu from './annotation-menu.js';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
 import { InputContainer } from '@pie-lib/config-ui';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -348,7 +349,7 @@ class AnnotationEditor extends React.Component {
     const labelElem = document.createElement('SPAN');
 
     labelElem.dataset.annId = id;
-    labelElem.innerHTML = label;
+    labelElem.innerHTML = sanitizeModelHtml(label);
     labelElem.onclick = !disabled && this.handleClick;
     labelElem.onmouseover = this.handleHover;
     labelElem.onmouseout = this.handleCancelHover;
@@ -487,7 +488,7 @@ class AnnotationEditor extends React.Component {
     const { label, type } = annotation;
 
     if ((isSideLabel(label) && isSideLabel(oldLabel)) || (!isSideLabel(label) && !isSideLabel(oldLabel))) {
-      labelElem.innerHTML = label;
+      labelElem.innerHTML = sanitizeModelHtml(label);
 
       if (oldType) {
         labelElem.classList.remove(oldType);
@@ -570,7 +571,7 @@ class AnnotationEditor extends React.Component {
             ref={(r) => (this.textRef = r)}
             onMouseDown={!disabled ? clearSelection : () => {}}
             onMouseUp={!disabled ? this.handleSelection : () => {}}
-            dangerouslySetInnerHTML={{ __html: text }}
+            dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(text) }}
           />
           <LabelsContainer ref={(r) => (this.labelsRef = r)} />
         </Wrapper>

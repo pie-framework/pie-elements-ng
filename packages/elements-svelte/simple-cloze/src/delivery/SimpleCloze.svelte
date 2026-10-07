@@ -10,6 +10,7 @@
 />
 
 <script lang="ts">
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
 import { t, tCommon } from '../i18n';
 import TeacherInstructions from './TeacherInstructions.svelte';
@@ -103,7 +104,7 @@ function toggleCorrectAnswer() {
   {/if}
 
   {#if prompt}
-    <div bind:this={promptElement} id={promptId} class="simple-cloze-prompt">{@html prompt}</div>
+    <div bind:this={promptElement} id={promptId} class="simple-cloze-prompt">{@html sanitizeModelHtml(prompt)}</div>
   {/if}
 
   {#if canShowCorrectAnswer}

@@ -8,6 +8,7 @@ import { styled } from '@mui/material/styles';
 import { PlaceHolder } from '@pie-lib/drag';
 import { isEmpty } from '@pie-element/shared-lodash';
 import { color } from '@pie-lib/render-ui';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const log = debug('pie-elements:match-title:answer');
 const pieVar = color.v('pie');
@@ -74,7 +75,7 @@ const AnswerContent = (props) => {
         isOver={isOver}
         disabled={disabled}
         outcome={outcome}
-        dangerouslySetInnerHTML={{ __html: title }}
+        dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(title) }}
       />
     );
   }

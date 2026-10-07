@@ -46,6 +46,7 @@ import SimpleQuestionBlock from './simple-question-block.js';
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
 import ReactDOM from 'react-dom';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 const { translator } = Translator;
 let registered = false;
 
@@ -680,10 +681,10 @@ export class Main extends React.Component {
           showTeacherInstructions &&
           (!animationsDisabled ? (
             <StyledCollapsible labels={{ hidden: translator.t('common:showTeacherInstructions', { lng: language }), visible: translator.t('common:hideTeacherInstructions', { lng: language }) }}>
-              <div dangerouslySetInnerHTML={{ __html: teacherInstructions }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(teacherInstructions) }} />
             </StyledCollapsible>
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: teacherInstructions }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(teacherInstructions) }} />
           ))}
 
         {prompt && (
@@ -817,16 +818,16 @@ export class Main extends React.Component {
           </Readable>
         )}
 
-        {viewMode && displayNote && <Note dangerouslySetInnerHTML={{ __html: `<strong>Note:</strong> ${note}` }} />}
+        {viewMode && displayNote && <Note dangerouslySetInnerHTML={{ __html: `<strong>Note:</strong> ${sanitizeModelHtml(note)}` }} />}
 
         {viewMode &&
           showRationale &&
           (!animationsDisabled ? (
             <Collapsible labels={{ hidden: translator.t('common:showRationale', { lng: language }), visible: translator.t('common:hideRationale', { lng: language }) }}>
-              <div dangerouslySetInnerHTML={{ __html: rationale }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(rationale) }} />
             </Collapsible>
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: rationale }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(rationale) }} />
           ))}
       </MainContent>
     );

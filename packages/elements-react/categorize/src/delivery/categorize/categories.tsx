@@ -8,6 +8,7 @@ import { color } from '@pie-lib/render-ui';
 
 import GridContent from './grid-content.js';
 import Category, { CategoryType } from './category.js';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 export { CategoryType };
 
@@ -88,7 +89,7 @@ export class Categories extends React.Component {
                   <StyledRowLabel
                     key={rowIndex}
                     dangerouslySetInnerHTML={{
-                      __html: rowLabels[rowIndex] || '',
+                      __html: sanitizeModelHtml(rowLabels[rowIndex]),
                     }}
                   />
                 ) : null}
@@ -96,7 +97,7 @@ export class Categories extends React.Component {
                   <StyledLabel
                     key={`category-label-${rowIndex}-${columnIndex}`}
                     id={labelId}
-                    dangerouslySetInnerHTML={{ __html: c.label }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(c.label) }}
                   />
 
                   <Category

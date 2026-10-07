@@ -10,6 +10,7 @@ import Chip from '@mui/material/Chip';
 import classnames from 'clsx';
 import { color } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 import { grey } from '@mui/material/colors';
 
 const { translator } = Translator;
@@ -300,7 +301,7 @@ function BlankContent({
               over: isOver,
               hidden: draggedLabel,
             })}
-            dangerouslySetInnerHTML={{ __html: label || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(label) }}
           />
           {draggedLabel && (
             <StyledChipLabel
@@ -309,7 +310,7 @@ function BlankContent({
                 over: isOver,
                 dragged: true,
               })}
-              dangerouslySetInnerHTML={{ __html: draggedLabel || '' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(draggedLabel) }}
             />
           )}
         </React.Fragment>

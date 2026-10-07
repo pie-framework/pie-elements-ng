@@ -7,6 +7,7 @@ import Translator from '@pie-lib/translator';
 import * as color from './color.js';
 import { createUniqueId } from './unique-id.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -129,7 +130,9 @@ export class PreviewPrompt extends Component {
   parsedText: any = (text) => {
     const { autoplayAudioEnabled, customAudioButton, language } = this.props;
     const div = document.createElement('div');
-    div.innerHTML = text;
+    // A detached div still loads its images and fires their handlers, so the prompt is
+    // sanitized before it is parsed here.
+    div.innerHTML = sanitizeModelHtml(text);
 
     const audio = div.querySelector('audio');
     if (audio) {

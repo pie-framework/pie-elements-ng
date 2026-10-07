@@ -43,6 +43,7 @@ import { Customizable } from '@pie-lib/mask-markup';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import ReactDOM from 'react-dom';
 import Translator from '@pie-lib/translator';
+import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const { translator } = Translator;
 
@@ -932,7 +933,7 @@ export class Main extends React.Component {
 
           <Readable false>{this.renderPlayerContent()}</Readable>
 
-          {displayNote && <Note className="note" dangerouslySetInnerHTML={{ __html: note }} />}
+          {displayNote && <Note className="note" dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(note) }} />}
 
           {this.renderRationale()}
         </MainContainer>
