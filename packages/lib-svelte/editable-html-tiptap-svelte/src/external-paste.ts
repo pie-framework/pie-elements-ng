@@ -283,6 +283,9 @@ const keepFormatting =
       ];
     };
 
+    const blank = (node: ProseMirrorNode) =>
+      /^\s+$/.test(node.textContent) && childrenOf(node).every((child) => child.isText);
+
     const isPicture = (node?: ProseMirrorNode) =>
       !!pictures && !!node && node.type === imageUploadNode;
 
@@ -297,6 +300,9 @@ const keepFormatting =
         ) {
           return [];
         }
+        // Word's blank lines are a space, often in the formatting of the text before them, which
+        // would carry into what the author types there.
+        if (child.isTextblock && blank(child)) return [line([schema.text(child.textContent)])];
         if (child.isTextblock) return [line(inline(child))];
         if (child.type.spec.tableRole === 'table') return table(child);
         if (child.type.name === 'bulletList' || child.type.name === 'orderedList')

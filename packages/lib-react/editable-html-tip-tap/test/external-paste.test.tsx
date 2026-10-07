@@ -121,6 +121,17 @@ describe('EditableHtml paste', () => {
     expect(editor.getHTML()).toBe('<div>Bold, italic, underlined, struck, H2O and x2</div><p>a. Item</p>');
   });
 
+  it("pastes Word's blank lines without the formatting around them", async () => {
+    const { editor } = await mountEditor();
+
+    paste(editor, {
+      'text/html': '<p><b>Bold</b></p><p><b><span>&nbsp;</span></b></p><p>and <i>italic</i></p>',
+      'text/plain': 'Bold\n\nand italic',
+    });
+
+    expect(editor.getHTML()).toBe('<div><strong>Bold</strong></div><p>&nbsp;</p><p>and <em>italic</em></p>');
+  });
+
   it('follows a change of toolbar', async () => {
     const { editor, rerender } = await mountEditor({ activePlugins: ['bold'] });
 
