@@ -56,8 +56,12 @@ Each finding includes:
   status-message presence when those checks apply.
 - Suggested Jira title for follow-up remediation work.
 
-`interactive-control-name` skips a control that is `aria-hidden` or `inert`, or sits inside
-an element that is: it is outside the accessibility tree, as MUI Select's native input is.
+`interactive-control-name` reads each control's name from Chrome's accessibility tree, so every
+source the accessible-name computation allows counts, an image's `alt` inside the control among
+them, and text inside `aria-hidden` does not. A focusable element with no role is a `generic`,
+which takes no name from its content, so it fails unless it is labelled. The check skips a control
+that is `aria-hidden` or `inert`, or sits inside an element that is: it is outside the
+accessibility tree, as MUI Select's native input is. `control-names.spec.ts` covers these rules.
 `media-alternative` passes an svg nested in another svg when an svg around it is named or
 hidden, or when it has no role and holds text, which Chrome exposes as a generic container
 whose text is read; @visx/text renders one around every tick label. A nested svg with an
