@@ -18,11 +18,13 @@ const fileOf = (dataUrl) => {
 };
 
 // Hands `file`, pasted as the image with `nodeKey`, to the host to upload, the path the toolbar
-// button takes, so the markup stores the uploaded URL rather than base64.
-function requestUpload(editor, insertImageRequested, nodeKey, file) {
+// button takes, so the markup stores the uploaded URL rather than base64. `finished` runs once the
+// upload succeeds or fails, or at once when the node is gone.
+function requestUpload(editor, insertImageRequested, nodeKey, file, finished = () => {}) {
   const nodeInfo = findImageNodeByKey(editor, nodeKey);
 
   if (!nodeInfo) {
+    finished();
     return;
   }
 
@@ -36,6 +38,7 @@ function requestUpload(editor, insertImageRequested, nodeKey, file) {
       }
 
       onFinish(result);
+      finished();
     };
 
     handler = new InsertImageHandler(editor, nodeInfo, finish, true);
@@ -47,16 +50,23 @@ function requestUpload(editor, insertImageRequested, nodeKey, file) {
   });
 }
 
-/** Uploads the image pasted with `nodeKey` and a data URL src, as a pasted image file uploads. */
+/**
+ * Uploads the image pasted with `nodeKey` and a data URL src, as a pasted image file uploads.
+ * Resolves once the upload succeeds or fails.
+ */
 export function uploadPastedImage(editor, nodeKey) {
   const insertImageRequested = editor.extensionManager.extensions.find(
     (extension) => extension.name === 'imageUploadNode',
   )?.options.imageHandling?.insertImageRequested;
   const src = findImageNodeByKey(editor, nodeKey)?.[0].attrs.src;
 
-  if (insertImageRequested && src) {
-    requestUpload(editor, insertImageRequested, nodeKey, fileOf(src));
-  }
+  return new Promise((resolve) => {
+    if (insertImageRequested && src) {
+      requestUpload(editor, insertImageRequested, nodeKey, fileOf(src), resolve);
+    } else {
+      resolve();
+    }
+  });
 }
 
 export const ImageUploadNode = Node.create({

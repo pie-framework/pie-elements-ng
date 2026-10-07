@@ -156,7 +156,7 @@ describe('EditableHtml pasted pictures', () => {
       expect.objectContaining({ src: PNG, width: 259, height: 79, loaded: false, nodeKey: expect.any(String) }),
     ]);
     expect(editor.getText({ blockSeparator: '|' })).toBe('Label the diagram.||Drag each label.');
-    expect(imageSupport.add).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(imageSupport.add).toHaveBeenCalledTimes(1));
 
     const handler = imageSupport.add.mock.calls[0][0];
     expect(handler.isPasted).toBe(true);
@@ -166,6 +166,26 @@ describe('EditableHtml pasted pictures', () => {
 
     expect(pictures(editor)).toEqual([
       expect.objectContaining({ src: 'https://cdn.example.com/diagram.png', loaded: true }),
+    ]);
+  });
+
+  it('uploads pictures one at a time, as pie-player-components serves them', async () => {
+    const imageSupport = upload();
+    const { editor } = await mountEditor({ imageSupport });
+
+    paste(editor, { ...PICTURE, 'text/html': PICTURE['text/html'].repeat(2) }, [textPicture()]);
+
+    expect(pictures(editor)).toHaveLength(2);
+    await vi.waitFor(() => expect(imageSupport.add).toHaveBeenCalledTimes(1));
+
+    imageSupport.add.mock.calls[0][0].done(null, 'https://cdn.example.com/first.png');
+    await vi.waitFor(() => expect(imageSupport.add).toHaveBeenCalledTimes(2));
+
+    imageSupport.add.mock.calls[1][0].done(new Error('Upload failed'));
+
+    expect(pictures(editor)).toEqual([
+      expect.objectContaining({ src: 'https://cdn.example.com/first.png', loaded: true }),
+      expect.objectContaining({ src: PNG, loaded: true }),
     ]);
   });
 
@@ -236,7 +256,7 @@ describe('EditableHtml paste from Word for Mac', () => {
         '<p>The beds are</p>' +
         '<ul><li><div>tomatoes, 18 ft<sup>2</sup></div></li><li><div>beans, 12 ft<sup>2</sup></div></li></ul><p></p>',
     );
-    expect(imageSupport.add).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(imageSupport.add).toHaveBeenCalledTimes(1));
   });
 });
 

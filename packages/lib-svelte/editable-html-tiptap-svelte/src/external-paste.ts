@@ -36,9 +36,11 @@ export type ExternalPasteOptions = {
   settings: () => ExternalPasteSettings;
   /**
    * Uploads the picture pasted as the image upload node with `nodeKey`, which shows its data URL
-   * until the upload replaces it. Without it, the data URL is the picture's src.
+   * until the upload replaces it, and resolves once the upload finishes. Pictures upload one at a
+   * time, as a host on pie-player-components serves one upload at a time. Without it, the data
+   * URL is the picture's src.
    */
-  uploadImage?: (editor: Editor, nodeKey: string) => void;
+  uploadImage?: (editor: Editor, nodeKey: string) => Promise<void>;
 };
 
 type SliceFilter = (slice: Slice, state: EditorState) => Slice;
@@ -376,7 +378,7 @@ function insertExternal(
   view: EditorView,
   { text, html }: { text: string; html: string },
   settings: ExternalPasteSettings,
-  uploadImage: ((nodeKey: string) => void) | null
+  uploadImage: ((nodeKey: string) => Promise<void>) | null
 ) {
   const { selection, schema } = view.state;
   const kept = new Set<string>(settings.plainText ? [] : settings.formatting);
@@ -407,8 +409,9 @@ function insertExternal(
       rebuildWordLists(pictures ? markPictures(html) : html),
       keepFormatting(kept, pictures)
     );
+    let uploads = Promise.resolve();
     for (const nodeKey of pictures?.keys ?? []) {
-      uploadImage?.(nodeKey);
+      uploads = uploads.then(() => uploadImage?.(nodeKey));
     }
     return;
   }
