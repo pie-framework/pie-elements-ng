@@ -403,6 +403,7 @@ $effect(() => {
     <div class="template-line pie-template-line" aria-describedby={templateDescribedBy}
       >{@html sanitizeModelHtml(templateParts.before)}<ClozeMarker
         {choiceMode}
+        {choices}
         displayChoice={displayChoice}
         {displayChoiceLabelHtml}
         isStandalone={isBlankOnlyTemplate}

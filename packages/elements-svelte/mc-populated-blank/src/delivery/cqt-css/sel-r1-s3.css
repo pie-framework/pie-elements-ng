@@ -142,7 +142,7 @@
 
   .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-slot {
     flex-grow: 1;
-    justify-content: flex-start;
+    justify-items: start;
   }
 
   .mc-populated-blank-root.variant-sel-r1-s3.layout-stimulus_image_blank .pie-blank-value {

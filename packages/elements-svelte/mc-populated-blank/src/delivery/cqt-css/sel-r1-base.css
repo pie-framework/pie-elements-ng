@@ -208,9 +208,11 @@
    the content box to 150×150. The CQT host also rewrites <img width/height>
    to 150 server-side. PIE keeps the authored attributes (typically 108×108),
    so without an explicit override images render ~28% smaller than in the CQT.
-   See CONTOOL-2570. */
+   See CONTOOL-2570. An imageUrl distractor in its tile takes the same box: the
+   blank, in the template line, already shows it at 150×150 once picked. */
 .mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-template-line img,
-.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-choice-label img {
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-choice-label img,
+.mc-populated-blank-root:where([class*="variant-sel-r1-"]) .pie-choice-tile .pie-choice-image {
   width: 150px;
   height: 150px;
 }
