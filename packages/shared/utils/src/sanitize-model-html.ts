@@ -48,10 +48,25 @@ export const MODEL_HTML_FORBIDDEN_ATTRS = [
   'xlink:href',
 ];
 
-// Tags authored content uses beyond DOMPurify's defaults. `semantics`, `annotation` and `none`
-// are MathML that DOMPurify drops; `annotation-xml` stays out because it is an HTML
-// integration point.
-const EXTRA_TAGS = new Set(['iframe', 'object', 'semantics', 'annotation', 'none']);
+// Tags authored content uses beyond DOMPurify's defaults. The rest are MathML that DOMPurify
+// drops: elementary math, which `@pie-element/shared-math-rendering-mathjax` rewrites as a table
+// before MathJax reads it, and `semantics`, `annotation` and `none`.
+// `annotation-xml` stays out because it is an HTML integration point. pie-players' item markup
+// sanitizer keeps the same MathML.
+const EXTRA_TAGS = new Set([
+  'iframe',
+  'object',
+  'mstack',
+  'mlongdiv',
+  'msgroup',
+  'msrow',
+  'msline',
+  'mscarries',
+  'mscarry',
+  'semantics',
+  'annotation',
+  'none',
+]);
 
 // Prefixed MathML such as `<m:math>`, which the HTML parser reads as unknown HTML elements and
 // `@pie-element/shared-math-rendering-mathjax` re-creates as MathML.
@@ -67,7 +82,28 @@ const EXTRA_ATTRS = [
   'scrolling',
   // <object data>, validated as a URI.
   'data',
+  // Elementary math and `<mspace linebreak>`.
+  'stackalign',
+  'charalign',
+  'charspacing',
+  'longdivstyle',
+  'position',
+  'shift',
+  'location',
+  'crossout',
+  'leftoverhang',
+  'rightoverhang',
+  'mslinethickness',
+  'linebreak',
 ];
+
+// The one inline handler authored content relies on: Star's listening prompts play an `<audio>`
+// that has no controls from an image link. Such a link keeps the audio's id in `PLAY_AUDIO_ATTR`
+// instead, and one document listener plays it, so the prompt still plays and no authored script
+// runs.
+const PLAY_AUDIO_HANDLER =
+  /^\s*document\.getElementById\((['"])([^'"]+)\1\)\.play\(\)\s*;?\s*(?:return\s+false\s*;?\s*)?$/;
+export const PLAY_AUDIO_ATTR = 'data-pie-play-audio';
 
 const CONFIG: Config = {
   ADD_TAGS: (tagName: string) => EXTRA_TAGS.has(tagName) || PREFIXED_TAG.test(tagName),
@@ -78,6 +114,41 @@ const CONFIG: Config = {
   RETURN_TRUSTED_TYPE: false,
 };
 
+let playListenerInstalled = false;
+
+function playAudioFromLink(event: MouseEvent) {
+  for (const target of event.composedPath()) {
+    if (!(target instanceof Element)) continue;
+    const id = target.getAttribute(PLAY_AUDIO_ATTR);
+    if (id === null) continue;
+    event.preventDefault();
+    const root = target.getRootNode() as Document | ShadowRoot;
+    const audio = root.getElementById?.(id) ?? document.getElementById(id);
+    if (audio instanceof HTMLMediaElement) void audio.play()?.catch(() => undefined);
+    return;
+  }
+}
+
+let purifier: typeof DOMPurify | null = null;
+
+// A purifier of its own, so the hook stays off the default instance other code shares.
+function getPurifier(): typeof DOMPurify {
+  if (purifier) return purifier;
+  purifier = DOMPurify(window);
+  purifier.addHook('beforeSanitizeAttributes', (node) => {
+    if (node.nodeName !== 'A') return;
+    const id = PLAY_AUDIO_HANDLER.exec(node.getAttribute('onclick') ?? '')?.[2];
+    if (id === undefined) return;
+    node.removeAttribute('onclick');
+    node.setAttribute(PLAY_AUDIO_ATTR, id);
+    if (!playListenerInstalled) {
+      document.addEventListener('click', playAudioFromLink);
+      playListenerInstalled = true;
+    }
+  });
+  return purifier;
+}
+
 // Components re-render the same fields many times, so results are cached per input. The budget
 // is in characters, inputs and outputs together, because a passage or a select-text body is
 // orders of magnitude longer than a choice label.
@@ -87,7 +158,8 @@ let cachedChars = 0;
 
 /**
  * Returns `html` with scripts, event handlers, `javascript:` URLs and the forbidden tags and
- * attributes removed. Returns an empty string where there is no DOM to sanitize against.
+ * attributes removed. A link that only plays an `<audio>` keeps working; see `PLAY_AUDIO_ATTR`.
+ * Returns an empty string where there is no DOM to sanitize against.
  *
  * Takes any value because model fields are not always strings: a number renders as its text,
  * as it did when passed to `innerHTML` directly.
@@ -100,7 +172,7 @@ export function sanitizeModelHtml(value: unknown): string {
   const hit = cache.get(html);
   if (hit !== undefined) return hit;
 
-  const sanitized = String(DOMPurify.sanitize(html, CONFIG));
+  const sanitized = String(getPurifier().sanitize(html, CONFIG));
   const size = html.length + sanitized.length;
   if (size > CACHE_BUDGET) return sanitized;
 

@@ -7,6 +7,7 @@ import { createDragCollision } from '@pie-lib/drag';
 import { Categorize } from '../index';
 import CategorizeProvider from '../index';
 import { closestDroppableKeyboardCoordinates } from '../keyboard-coordinates';
+import { categoriesFirst } from '../collision-detection';
 
 let capturedDragProviderProps: any;
 
@@ -494,10 +495,13 @@ describe('categorize', () => {
       expect(typeof capturedDragProviderProps.onDragCancel).toBe('function');
     });
 
-    it('collides through the drag collision helper, which keeps the modifier holding the choice in the region', () => {
+    it('collides categories first through the drag collision helper, which keeps the modifier holding the choice in the region', () => {
       renderProvider();
 
-      expect(createDragCollision).toHaveBeenCalledWith({ modifiers: [restrictToFirstScrollableAncestor] });
+      expect(createDragCollision).toHaveBeenCalledWith({
+        detect: categoriesFirst,
+        modifiers: [restrictToFirstScrollableAncestor],
+      });
       expect(capturedDragProviderProps.collisionDetection).toBe(dragCollision.collisionDetection);
       expect(capturedDragProviderProps.modifiers).toBe(dragCollision.modifiers);
     });
