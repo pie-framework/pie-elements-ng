@@ -347,6 +347,32 @@ test('two copies on one page each run their own MathJax', async ({ page }) => {
   expect(unserved).toEqual([]);
 });
 
+// MathJax ids these stylesheets by class name, which a host's minifier renames per copy.
+test("two copies' explorers each style their regions with their own stylesheets", async ({
+  page,
+}) => {
+  await storeSettings(page, { enrich: true });
+  const { unserved, errors } = await openPage(
+    page,
+    `<body><div id="a">\\(\\frac{1}{2}\\)</div><div id="b">\\(x^2\\)</div></body>`,
+    'browser'
+  );
+
+  await renderWithAdapter(page, 'a', copyUrl(1));
+  await renderWithAdapter(page, 'b', copyUrl(2));
+
+  await expect(page.locator('#b mjx-container')).toHaveAttribute('data-semantic-speech-none', /.+/);
+  expect(await headStylesheetIds(page)).toEqual(
+    expect.arrayContaining(
+      [1, 2].flatMap((copy) =>
+        ['ToolTip', 'LiveRegion', 'HoverRegion'].map((region) => `PIE-MJX-${region}-styles-${copy}`)
+      )
+    )
+  );
+  expect(errors).toEqual([]);
+  expect(unserved).toEqual([]);
+});
+
 test('starts with every option the adapter takes', async ({ page }) => {
   const fonts: string[] = [];
   page.on('request', (request) => {

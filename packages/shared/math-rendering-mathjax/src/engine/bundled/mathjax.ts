@@ -224,13 +224,32 @@ function whenPageReady(): Promise<void> {
 }
 
 /**
- * This copy's MathJax, configured by `config`. Its `startup.defaultReady` builds the document, as
- * the component startup's does; until then `_` holds the classes `startup.ready` may adjust.
+ * MathJax ids each explorer region's stylesheet by its class name, which minifiers rename, so two
+ * copies on a page can give different regions one id, and a region then reads the other's sheet
+ * and throws. Each region takes an id from its export name and this copy's number.
  */
-export function createMathJax(config: MathJaxGlobal, assets: MathjaxAssets): MathJaxGlobal {
+function useOwnRegionStylesheetIds(copy: number): void {
+  for (const [name, region] of Object.entries(Region)) {
+    if (region === Region.AbstractRegion || region.prototype instanceof Region.AbstractRegion) {
+      Object.defineProperty(region, 'sheetId', { value: `PIE-MJX-${name}-styles-${copy}` });
+    }
+  }
+}
+
+/**
+ * This copy's MathJax, configured by `config`, its stylesheet ids carrying `copy`. Its
+ * `startup.defaultReady` builds the document, as the component startup's does; until then `_`
+ * holds the classes `startup.ready` may adjust.
+ */
+export function createMathJax(
+  config: MathJaxGlobal,
+  assets: MathjaxAssets,
+  copy: number
+): MathJaxGlobal {
   if (MathJax.startup) throw new Error('[math-rendering] The bundled MathJax starts once');
   checkConfig(config);
   mathjax.asyncLoad = loadFromBundle;
+  useOwnRegionStylesheetIds(copy);
   const workerScript = useAssets(assets);
 
   const accessibility = config.loader?.load?.includes('a11y/assistive-mml') ?? false;

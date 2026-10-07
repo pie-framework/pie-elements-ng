@@ -28,7 +28,7 @@ engine.catch(() => {});
  */
 export async function loadMathJax(config: MathJaxGlobal, assets: MathjaxAssets): Promise<boolean> {
   const { createMathJax } = await engine;
-  mathJax = createMathJax(config, assets);
+  mathJax = createMathJax(config, assets, COPY);
   const ready = config.startup?.ready ?? mathJax.startup?.defaultReady;
   ready?.();
   return true;
@@ -42,16 +42,18 @@ const COPIES: unique symbol = Symbol.for('@pie-element/shared-math-rendering-mat
 type CopyRegistry = { [COPIES]?: number };
 
 /**
- * A MathJax replaces the `<style>` in `<head>` that has its stylesheet id with its own, so every
- * copy of this engine on a page takes a different one.
+ * This copy's number on the page. A MathJax replaces the `<style>` in `<head>` that has its
+ * stylesheet id with its own, so every copy of this engine takes stylesheet ids that carry it.
  */
-function nextStylesheetId(): string {
+function nextCopy(): number {
   const registry = globalThis as CopyRegistry;
   registry[COPIES] = (registry[COPIES] ?? 0) + 1;
-  return `PIE-MJX-CHTML-styles-${registry[COPIES]}`;
+  return registry[COPIES];
 }
 
-export const OWN_STYLESHEET_ID = nextStylesheetId();
+const COPY = nextCopy();
+
+export const OWN_STYLESHEET_ID = `PIE-MJX-CHTML-styles-${COPY}`;
 
 /**
  * Another MathJax's CHTML stylesheet styles every `mjx-container[jax="CHTML"]`, this engine's
