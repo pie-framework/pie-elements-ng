@@ -179,6 +179,7 @@ export const MarkLabel = (props) => {
               externalInputRef(r);
             }
           }}
+          data-math-label
           className={classNames({
             disabledMarkLabel: disabled,
             error: error,
