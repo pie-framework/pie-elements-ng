@@ -11,9 +11,7 @@ Students select tokens or spans of text in a passage-like interaction.
 
 Each token is a toggle button (`role="button"` with `aria-pressed`) inside a `role="group"` named "Selectable text", or "Selectable text, select up to N" when `maxSelections` is set. In gather the text is one tab stop: the arrow keys, Home and End move between tokens, Space and Enter toggle the focused token, and each token is described by its position ("2 of 4"). At the selection limit, unselected tokens stay in the sequence as unavailable (`aria-disabled`). In view, evaluate and print the text has no tab stop; evaluate describes each marked token by its Legend label, in the item language ([PIE-1165](https://illuminate.atlassian.net/browse/PIE-1165), [PRD](../prds/select-text/PRD.md)).
 
-## Open Gaps
-
-- Chrome leaves MathML out of a button's name, so a token holding math is named without it until the shared math-in-controls naming lands ([PIE-1153](https://illuminate.atlassian.net/browse/PIE-1153)).
+A token holding math takes the math's speech in its name from the shared renderer ([PIE-1153](https://illuminate.atlassian.net/browse/PIE-1153), [MATH-RENDERING.md](../MATH-RENDERING.md#control-names)).
 
 ## Not Covered / Manual
 

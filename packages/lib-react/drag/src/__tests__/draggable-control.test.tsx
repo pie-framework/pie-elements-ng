@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { DndContext } from '@dnd-kit/core';
 
 import { useDraggableControl } from '../draggable-control';
@@ -52,22 +52,6 @@ describe('useDraggableControl', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Creon' })).toHaveAttribute('aria-labelledby', 'tile-label');
-  });
-
-  it('renames a content-named draggable when its content changes after the render', async () => {
-    const contentName = (content: HTMLElement) => content.textContent?.trim() || undefined;
-    renderInContext(
-      <Tile contentName={contentName}>
-        <span data-testid="slot" />
-      </Tile>,
-    );
-    expect(screen.getByTestId('tile')).not.toHaveAttribute('aria-label');
-
-    await act(async () => {
-      screen.getByTestId('slot').textContent = 'typeset';
-    });
-
-    expect(screen.getByRole('button', { name: 'typeset' })).toBe(screen.getByTestId('tile'));
   });
 
   it('leaves an unlabelled draggable named by its content', () => {

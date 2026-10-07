@@ -7,7 +7,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { styled } from '@mui/material/styles';
 
 import { PlaceHolder } from '@pie-lib/drag';
-import { color, useMathName } from '@pie-lib/render-ui';
+import { color } from '@pie-lib/render-ui';
 import { sanitizeModelHtml } from '@pie-element/shared-utils';
 
 const log = debug('pie-elements:placement-ordering:tile');
@@ -238,8 +238,7 @@ export const Tile = (props) => {
   // landing only on draggable choice/target tiles (PIE-997). Once a choice is selected,
   // it becomes tabbable again so "select a choice, then Tab to an empty tile and press
   // Space/Enter" still works.
-  const isDraggable = draggable && !disabled;
-  const isNativeTabStop = !isDraggable && !disabled && hasSelection;
+  const isNativeTabStop = !(draggable && !disabled) && !disabled && hasSelection;
 
   const handleKeyDown = (e) => {
     if (e.code === 'Space' || e.code === 'Enter') {
@@ -249,8 +248,6 @@ export const Tile = (props) => {
   };
 
   const ref = React.useRef(null);
-  // Chrome leaves MathML out of a button's name from content, so a math tile names itself.
-  const mathName = useMathName(ref);
 
   React.useEffect(() => {
     const currentRef = ref.current;
@@ -314,8 +311,7 @@ export const Tile = (props) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       data-tile-id={dataTileId}
-      aria-label={isDraggable || isNativeTabStop ? mathName : undefined}
-      {...(isDraggable ? { ...listeners, ...attributes } : {})}
+      {...(draggable && !disabled ? { ...listeners, ...attributes } : {})}
     >
       <TileContent
         label={label}

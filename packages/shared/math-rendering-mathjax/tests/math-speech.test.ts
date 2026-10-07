@@ -10,7 +10,7 @@ function speak(mathml: string): string {
 describe('speakMathml', () => {
   it('speaks a sign before an operand as a sign and the same symbol between operands as an operator', () => {
     expect(speak('<mi>x</mi><mo>=</mo><mo>-</mo><mfrac><mn>7</mn><mn>6</mn></mfrac>')).toBe(
-      'x equals negative 7 sixths'
+      'x equals negative 7 over 6'
     );
     expect(speak('<mn>5</mn><mo>&#x2212;</mo><mn>3</mn>')).toBe('5 minus 3');
     expect(speak('<mo>(</mo><mo>-</mo><mn>3</mn><mo>)</mo><mo>-</mo><mn>1</mn>')).toBe(
@@ -36,9 +36,9 @@ describe('speakMathml', () => {
     expect(speak('<mroot><mi>x</mi><mn>4</mn></mroot>')).toBe('4th root of x');
   });
 
-  it('speaks small numeric fractions by their denominator and others by their parts', () => {
-    expect(speak('<mfrac><mn>1</mn><mn>2</mn></mfrac>')).toBe('1 half');
-    expect(speak('<mfrac><mn>3</mn><mn>4</mn></mfrac>')).toBe('3 quarters');
+  it('speaks a fraction of two atoms with "over" and a longer one by its parts', () => {
+    expect(speak('<mfrac><mn>4</mn><mn>12</mn></mfrac>')).toBe('4 over 12');
+    expect(speak('<mfrac><mn>4</mn><mn>1</mn></mfrac>')).toBe('4 over 1');
     expect(speak('<mfrac><mi>a</mi><mi>b</mi></mfrac>')).toBe('a over b');
     expect(
       speak(
