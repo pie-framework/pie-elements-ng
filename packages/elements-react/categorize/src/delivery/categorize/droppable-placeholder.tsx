@@ -73,27 +73,29 @@ const DroppablePlaceholder = ({
     }
   };
 
-  const extraStyles = {
-    padding: theme.spacing(0.5),
-    borderRadius: theme.spacing(0.5),
-    gridColumnGap: 0,
-    gridRowGap: 0,
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignContent: 'flex-start',
-    width: '100%',
-    height: '100%',
-    ...(correct === false &&
-      !choiceBoard && {
-        border: `solid 2px ${color.incorrect()}`,
-      }),
-    ...(correct === true &&
-      !choiceBoard && {
-        border: `solid 2px ${color.correct()}`,
-      }),
-  };
+  // These lay out a category. The choice board keeps PlaceHolder's board styles: given
+  // these, its tiles sat at the top of the board instead of its middle.
+  const extraStyles = choiceBoard
+    ? undefined
+    : {
+        padding: theme.spacing(0.5),
+        borderRadius: theme.spacing(0.5),
+        gridColumnGap: 0,
+        gridRowGap: 0,
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignContent: 'flex-start',
+        width: '100%',
+        height: '100%',
+        ...(correct === false && {
+          border: `solid 2px ${color.incorrect()}`,
+        }),
+        ...(correct === true && {
+          border: `solid 2px ${color.correct()}`,
+        }),
+      };
 
   return (
     <div

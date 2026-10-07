@@ -37,6 +37,12 @@ describe('Blank', () => {
     expect(getComputedStyle(screen.getByRole('button', { name: 'Blank 2' })).display).toBe('inline-flex');
   });
 
+  it('keeps the line height it inherits, as the legacy blank did', () => {
+    renderBlank();
+
+    expect(getComputedStyle(screen.getByRole('button', { name: 'Blank 2' })).lineHeight).toBe('normal');
+  });
+
   it('names an empty blank in the item language', () => {
     renderBlank({ language: 'es_ES' });
 

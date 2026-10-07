@@ -64,15 +64,17 @@ export const renderChildren = (layout, value, onChange, rootRenderChildren, pare
     if (rootRenderChildren) {
       const c = rootRenderChildren(n, value, onChange);
       if (c) {
-        const isDndComponent = n.data?.dataset?.component === 'blank';
+        // A table cell's padding already separates its blank; spacers there push apart
+        // items that lay out one letter tile per cell (PD-4704).
+        const isSpacedBlank = n.data?.dataset?.component === 'blank' && parentNode?.type !== 'td';
 
-        if (isDndComponent) {
+        if (isSpacedBlank) {
           children.push(<Spacer key={`spacer-${index}-before`} />);
         }
 
         children.push(c);
 
-        if (isDndComponent) {
+        if (isSpacedBlank) {
           children.push(<Spacer key={`spacer-${index}-after`} />);
         }
         return;
