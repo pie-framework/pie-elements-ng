@@ -1,5 +1,13 @@
 # @pie-element/shared-utils
 
+## 0.1.3
+
+### Patch Changes
+
+- [#397](https://github.com/pie-framework/pie-elements-ng/pull/397) [`b0fd8ee`](https://github.com/pie-framework/pie-elements-ng/commit/b0fd8ee4fd76fd3c3bd4c02276673e05965a5184) Thanks [@chillenious](https://github.com/chillenious)! - `sanitizeModelHtml` keeps elementary math (`mstack`, `mlongdiv` and their groups, rows, lines and carries, with their attributes) and `mspace`'s `linebreak`, which it reduced to a row of digits. A link whose handler only plays an `<audio>` by id, as Star's listening prompts do, plays it again: the sanitizer moves the id to `data-pie-play-audio`, and one document listener plays it.
+
+- [#403](https://github.com/pie-framework/pie-elements-ng/pull/403) [`0526cf9`](https://github.com/pie-framework/pie-elements-ng/commit/0526cf9527c94fc7a3bc994a25de250a6cd75dc9) Thanks [@chillenious](https://github.com/chillenious)! - feat(shared-utils): mark authored colors in model HTML (PIE-1119)
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @pie-lib/charting
 
+## 8.0.3
+
+### Patch Changes
+
+- [#399](https://github.com/pie-framework/pie-elements-ng/pull/399) [`3f6c08f`](https://github.com/pie-framework/pie-elements-ng/commit/3f6c08f6e99814146ebe38597acfd752004c3191) Thanks [@PatriciaRomaniuc](https://github.com/PatriciaRomaniuc)! - fix(charting): reserve room below the axis for fraction category labe…
+- Updated dependencies [[`b0fd8ee`](https://github.com/pie-framework/pie-elements-ng/commit/b0fd8ee4fd76fd3c3bd4c02276673e05965a5184), [`35004e8`](https://github.com/pie-framework/pie-elements-ng/commit/35004e8ed034f485a43eb2d643012a37358296e5), [`57a3019`](https://github.com/pie-framework/pie-elements-ng/commit/57a30197da6afc8188887a818f9d59e351ef650e), [`d73581c`](https://github.com/pie-framework/pie-elements-ng/commit/d73581cc64bf4e90f85347d9b43d129bca546ae4), [`df25564`](https://github.com/pie-framework/pie-elements-ng/commit/df25564aa0a53f3f47b23a620a5fe4ab91c3f9f5), [`80fd457`](https://github.com/pie-framework/pie-elements-ng/commit/80fd457cf60e576ab8567904649aacd3c7a2243f)]:
+  - @pie-element/shared-utils@0.1.3
+  - @pie-lib/plot@5.0.3
+  - @pie-lib/render-ui@8.0.3
+  - @pie-element/shared-math-rendering-mathjax@0.1.4
+  - @pie-lib/config-ui@14.0.3
+
 ## 8.0.2
 
 ### Patch Changes
