@@ -44,7 +44,6 @@ const StyledMathInput: any = styled('div')(({ theme }) => ({
   fontSize: theme.typography.fontSize + 2,
   fontFamily: theme.typography.fontFamily,
   color: color.primaryDark(),
-  paddingTop: theme.typography.fontSize / 2,
   '&.disabledMarkLabel': {
     ...disabled('color'),
     color: disabledLabelColor,
@@ -114,9 +113,15 @@ export const MarkLabel = (props) => {
     mathAriaLabel,
   } = props;
 
+  // what the input holds while it is being typed into
   const [label, setLabel] = useState(mark.label);
-  const [mathLabel, setMathLabel] = useState(getLabelMathFormat(mark.label));
+  // what was last left in the input, or came in from the chart; this is what is shown once typing stops
+  const [committedLabel, setCommittedLabel] = useState(mark.label);
   const [isEditing, setIsEditing] = useState(false);
+  // a fraction is shown typeset, any other label as the input. Derived from the committed label — not from
+  // what is being typed, or the input would turn into a fraction in the middle of typing "1/2" — and
+  // not kept as state, where it would go stale.
+  const mathLabel = getLabelMathFormat(committedLabel);
   const rootRef = useRef(null);
 
   const onChange = (e) => {
@@ -141,7 +146,7 @@ export const MarkLabel = (props) => {
   };
 
   const onChangeProp = (e) => {
-    setMathLabel(getLabelMathFormat(mark.label));
+    setCommittedLabel(e.target.value);
     setIsEditing(false);
     props.onChange(e.target.value);
   };
@@ -157,16 +162,20 @@ export const MarkLabel = (props) => {
   // useState only sets the value once, to synch props to state need useEffect
   useEffect(() => {
     setLabel(mark.label);
+    setCommittedLabel(mark.label);
   }, [mark.label]);
 
+  // The fraction is written into its element here, and that element is a new one each time the input is
+  // swapped for it: clicking into the fraction and leaving it puts back an empty element, with `mathLabel`
+  // unchanged. So this has to run whenever the element has been put back, not only when the label changes.
   useEffect(() => {
     const el = rootRef.current;
 
-    if (el && mathLabel) {
+    if (el && mathLabel && !isEditing) {
       el.innerHTML = sanitizeModelHtml(mathLabel);
       renderMath(el);
     }
-  }, [label, mathLabel]);
+  }, [mathLabel, isEditing]);
 
   return (
     <StyledContainer>

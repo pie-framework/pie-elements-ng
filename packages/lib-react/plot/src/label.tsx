@@ -132,14 +132,13 @@ const LabelComponent = (props) => {
       chartValue ||
       (isChartLeftLabel && `${graphHeight - 70}px`) ||
       (side === 'left' && `${graphHeight - 8}px`) ||
-      (isChartBottomLabel && `${graphHeight - 60 + titleHeight}px`) ||
-      // as far below the category labels as in delivery: the pixel guides above the chart leave it 14px higher
-      (side === 'bottom' && `${graphHeight - 106 + titleHeight}px`) ||
+      (isChartBottomLabel && `${graphHeight - 50 + titleHeight}px`) ||
+      // as far below the category labels as in delivery: the pixel guides above the chart leave it 20px higher
+      (side === 'bottom' && `${graphHeight - 100 + titleHeight}px`) ||
       0,
     left:
       (side === 'right' && `${graphWidth - 8}px`) ||
       ((isDefineChartLeftLabel || isDefineChartBottomLabel) && '40px') ||
-      (isChartBottomLabel && '-10px') ||
       0,
   };
 
