@@ -1,5 +1,18 @@
 # @pie-lib/render-ui
 
+## 8.0.3
+
+### Patch Changes
+
+- [#400](https://github.com/pie-framework/pie-elements-ng/pull/400) [`d5a6844`](https://github.com/pie-framework/pie-elements-ng/commit/d5a6844d56a8909c60051569e032aa41493cc6fb) Thanks [@chillenious](https://github.com/chillenious)! - fix(render-ui): announce evaluate feedback to screen readers (PIE-1151)
+
+- [#402](https://github.com/pie-framework/pie-elements-ng/pull/402) [`add92b7`](https://github.com/pie-framework/pie-elements-ng/commit/add92b764fdc3776bb2fd75487a7af12a7408ea9) Thanks [@chillenious](https://github.com/chillenious)! - feat(render-ui): name math-only controls from their MathML (PIE-1153)
+
+- [#404](https://github.com/pie-framework/pie-elements-ng/pull/404) [`d1250d8`](https://github.com/pie-framework/pie-elements-ng/commit/d1250d87125a003405eaed70cb606d88a9b98f20) Thanks [@chillenious](https://github.com/chillenious)! - feat(math-rendering): label math in controls as it is typeset (PIE-1153)
+- Updated dependencies [[`b0fd8ee`](https://github.com/pie-framework/pie-elements-ng/commit/b0fd8ee4fd76fd3c3bd4c02276673e05965a5184), [`d73581c`](https://github.com/pie-framework/pie-elements-ng/commit/d73581cc64bf4e90f85347d9b43d129bca546ae4), [`df25564`](https://github.com/pie-framework/pie-elements-ng/commit/df25564aa0a53f3f47b23a620a5fe4ab91c3f9f5), [`80fd457`](https://github.com/pie-framework/pie-elements-ng/commit/80fd457cf60e576ab8567904649aacd3c7a2243f)]:
+  - @pie-element/shared-utils@0.1.3
+  - @pie-element/shared-math-rendering-mathjax@0.1.4
+
 ## 8.0.2
 
 ### Patch Changes

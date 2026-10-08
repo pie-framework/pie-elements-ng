@@ -1,5 +1,13 @@
 # @pie-element/mc-populated-blank
 
+## 0.3.3
+
+### Patch Changes
+
+- [#405](https://github.com/pie-framework/pie-elements-ng/pull/405) [`a75c837`](https://github.com/pie-framework/pie-elements-ng/commit/a75c83724bee761c6a2776393375add83b36d613) Thanks [@chillenious](https://github.com/chillenious)! - The blank holds the size of its largest choice from the start, so filling it no longer moves the stem or the choices; inline-sentence items, whose blank had no set size, grew and shifted on every selection. Picture choices show and fit their tiles: in pie-players an SVG with no width or height of its own left its tile empty, and a 150px picture overflowed its 149px tile into a scroll bar. In the r1 variants a picture choice fills the CQT's 150px box in its tile, as it already did in the blank, where a smaller picture showed at its own size (PIE-1247).
+- Updated dependencies [[`b0fd8ee`](https://github.com/pie-framework/pie-elements-ng/commit/b0fd8ee4fd76fd3c3bd4c02276673e05965a5184), [`df25564`](https://github.com/pie-framework/pie-elements-ng/commit/df25564aa0a53f3f47b23a620a5fe4ab91c3f9f5)]:
+  - @pie-element/shared-utils@0.1.3
+
 ## 0.3.2
 
 ### Patch Changes
