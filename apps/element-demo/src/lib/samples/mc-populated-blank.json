@@ -1019,6 +1019,51 @@
       }
     },
     {
+      "id": "variant-sel-r1-plusggg-image-url",
+      "title": "sel_r1-_plusggg \u2014 imageUrl picture choices",
+      "description": "Picture choices on the imageUrl field, as the Star Math items carry them: an SVG with a viewBox and no width or height, a 150px SVG and a 100px SVG, each shown in the CQT's 150px box.",
+      "tags": ["mc-populated-blank", "sel_r1-_plusggg", "graphic"],
+      "model": {
+        "id": "29",
+        "element": "mc-populated-blank",
+        "prompt": "",
+        "promptEnabled": false,
+        "template": "<p>{{blank}}</p>",
+        "choiceMode": "image",
+        "choices": [
+          {
+            "id": "distractor_1",
+            "imageUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Crect x='4' y='4' width='142' height='142' rx='16' fill='%23f3ff6b' stroke='%23000' stroke-width='4'/%3E%3C/svg%3E",
+            "imageAlt": "Yellow square"
+          },
+          {
+            "id": "distractor_2",
+            "imageUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect x='4' y='4' width='142' height='142' rx='16' fill='%238fb8ff' stroke='%23000' stroke-width='4'/%3E%3C/svg%3E",
+            "imageAlt": "Blue square"
+          },
+          {
+            "id": "distractor_3",
+            "imageUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 150 150'%3E%3Crect x='4' y='4' width='142' height='142' rx='16' fill='%238fe0a8' stroke='%23000' stroke-width='4'/%3E%3C/svg%3E",
+            "imageAlt": "Small green square"
+          }
+        ],
+        "correctChoiceId": "distractor_2",
+        "hasAudio": false,
+        "interactionMode": "populate_blank",
+        "sentenceHtml": "",
+        "layoutProfile": "audio_blank_only",
+        "customType": "sel_r1-_plusggg",
+        "useFeatureButtonAudio": false,
+        "choiceLayout": "horizontal",
+        "locale": ""
+      },
+      "session": {
+        "id": "29",
+        "element": "mc-populated-blank",
+        "value": []
+      }
+    },
+    {
       "id": "variant-sel-r1-gplusggg-graphic",
       "title": "sel_r1-_gplusggg \u2014 graphic choices English (a0c05ca1)",
       "description": "Graphic choice variant from item a0c05ca1-127d-49eb-bb05-8ea7b5c1834f.",

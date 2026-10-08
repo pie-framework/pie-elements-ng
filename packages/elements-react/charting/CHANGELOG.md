@@ -1,5 +1,17 @@
 # @pie-element/charting
 
+## 13.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`35004e8`](https://github.com/pie-framework/pie-elements-ng/commit/35004e8ed034f485a43eb2d643012a37358296e5), [`57a3019`](https://github.com/pie-framework/pie-elements-ng/commit/57a30197da6afc8188887a818f9d59e351ef650e), [`d73581c`](https://github.com/pie-framework/pie-elements-ng/commit/d73581cc64bf4e90f85347d9b43d129bca546ae4), [`80fd457`](https://github.com/pie-framework/pie-elements-ng/commit/80fd457cf60e576ab8567904649aacd3c7a2243f), [`1ca4060`](https://github.com/pie-framework/pie-elements-ng/commit/1ca406079d309580f266033a9c9de7e2627c6a09)]:
+  - @pie-lib/charting@8.0.3
+  - @pie-lib/render-ui@8.0.3
+  - @pie-element/shared-math-rendering-mathjax@0.1.4
+  - @pie-lib/editable-html-tip-tap@3.0.3
+  - @pie-lib/config-ui@14.0.3
+  - @pie-lib/correct-answer-toggle@5.0.3
+
 ## 13.0.2
 
 ### Patch Changes

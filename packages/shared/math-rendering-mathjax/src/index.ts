@@ -23,5 +23,7 @@ export type { MathjaxConflictCondition, MathjaxConflictDetail } from './unsuppor
 export { NO_ASSET_ROOT_EVENT } from './assets.js';
 export type { NoAssetRootDetail, NoAssetRootEffect } from './assets.js';
 
+export { speakMathml } from './math-speech.js';
+
 // Legacy @pie-lib/math-rendering API for backward compatibility
 export { renderMath, wrapMath, unWrapMath, mmlToLatex } from './render-math.js';

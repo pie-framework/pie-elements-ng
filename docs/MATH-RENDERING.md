@@ -136,6 +136,12 @@ A student's menu choices are saved in localStorage under `PIE-MathJax-Menu-Setti
 
 Turning on speech, braille or the magnifier from the menu starts MathJax's explorer. Its highlight, selection outline and speech, braille, magnifier and tooltip regions take `--pie-text`, `--pie-background`, `--pie-border-dark` and the [THEMING.md](./THEMING.md) focus chain from `src/explorer-styles.ts`, which the first render that typesets math adds to `<head>` once per document. The regions are appended to `document.body`, so they take the fallbacks under a theme scoped to an element, and the theme colours replace any highlight colours a student picks in the menu.
 
+### Control names
+
+Browsers leave MathML out of the name a control takes from its content, so a button or option holding only math has no name, and a radio or checkbox labelled with math is named from its bare symbols (4/12 reads "4 12", "412" in Firefox). After typesetting, the adapter puts an `aria-label` holding the expression's speech on each `mjx-container` inside a control: a button, link, `label` or `summary`, or an element with a button, link, option, radio, checkbox, switch, tab, menu item, tree item or combobox role. `renderMath` does the same after delegating to the page's renderer. Chromium, Firefox and WebKit then name the control from that speech among its other text, so `(9.7 + √25) feet` reads as one phrase. The speech comes from the hidden MathML, so it needs neither semantic enrichment nor the speech worker and works under `worker-src 'self'`. Math outside controls stays unlabelled for screen readers to navigate, and a container that already has a label keeps it.
+
+The built-in speaker, `speakMathml`, speaks school math in English: numbers, signs and operators, fences, fractions, roots, scripts, sums, integrals and limits, accents and tables. A fraction of two atoms reads "4 over 12", the formula as written. The trade is deliberate: no dependency and no worker, at the cost of English in every locale and of diverging from SRE's ClearSpeak rules. A host that wants SRE, another locale or ClearSpeak replaces the label on each container. An element with `role="button"` presents its children as text, so math inside it cannot be explored character by character; the name is the only access to it there.
+
 ## Usage
 
 ### Element Developers

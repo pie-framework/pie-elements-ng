@@ -3,8 +3,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { swap } from '@pie-lib/drag';
-import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode, rectIntersection } from '@dnd-kit/core';
-import { restrictToFirstScrollableAncestor } from '@dnd-kit/modifiers';
+import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, KeyboardCode } from '@dnd-kit/core';
+import { restrictToWindowEdges  } from '@dnd-kit/modifiers';
+import { closestResponseArea } from './collision-detection.js';
 import { closestDroppableKeyboardCoordinates } from './keyboard-coordinates.js';
 import CorrectAnswerToggle from '@pie-lib/correct-answer-toggle';
 import { color, createUniqueId, Feedback as FeedbackImport, PreviewPrompt as PreviewPromptImport } from '@pie-lib/render-ui';
@@ -459,11 +460,11 @@ export class Main extends React.Component {
       <DndContext
         id={this.instanceId}
         sensors={sensors}
-        collisionDetection={rectIntersection}
+        collisionDetection={closestResponseArea}
         onDragStart={this.onDragStart}
         onDragEnd={this.onPlaceAnswer}
         onDragCancel={this.onDragCancel}
-        modifiers={[restrictToFirstScrollableAncestor]}
+        modifiers={[restrictToWindowEdges]}
         accessibility={{
           screenReaderInstructions: {
             draggable:

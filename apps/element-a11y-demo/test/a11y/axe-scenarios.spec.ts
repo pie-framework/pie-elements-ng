@@ -11,6 +11,7 @@ import type {
 } from '../../src/lib/a11y/scenarios/types';
 import { ELEMENT_REGISTRY, type ElementMetadata } from '../../src/lib/elements/registry';
 import { waitForMathRendering } from '../e2e/test-helpers';
+import { findUnnamedControls } from './control-names';
 import { waitForRenderedScanSubject } from './scan-readiness';
 
 type ScanStatus = 'passed' | 'findings' | 'error';
@@ -286,104 +287,15 @@ async function checkGroupLabels(page: Page): Promise<CheckResult> {
 }
 
 async function checkInteractiveControlNames(page: Page): Promise<CheckResult> {
-  const details = await page.locator('[data-testid="a11y-scan-subject"]').evaluate((subject) => {
-    const interactiveSelector = [
-      'button',
-      'input',
-      'select',
-      'textarea',
-      'summary',
-      'a[href]',
-      '[role="button"]',
-      '[role="checkbox"]',
-      '[role="combobox"]',
-      '[role="listbox"]',
-      '[role="menuitem"]',
-      '[role="option"]',
-      '[role="radio"]',
-      '[role="slider"]',
-      '[role="switch"]',
-      '[role="tab"]',
-      '[tabindex]:not([tabindex="-1"])',
-    ].join(',');
-
-    function isVisible(element: Element) {
-      const rect = element.getBoundingClientRect();
-      const style = window.getComputedStyle(element);
-      return (
-        rect.width > 0 &&
-        rect.height > 0 &&
-        style.visibility !== 'hidden' &&
-        style.display !== 'none'
-      );
-    }
-
-    /**
-     * `aria-hidden` and `inert` take a control and its subtree out of the accessibility tree;
-     * MUI Select hides its native input this way.
-     */
-    function isExposed(element: Element) {
-      return !element.closest('[aria-hidden="true"], [inert]');
-    }
-
-    function textFromIdRefs(ids: string | null) {
-      if (!ids) {
-        return '';
-      }
-      return ids
-        .split(/\s+/)
-        .map((id) => document.getElementById(id)?.textContent?.trim() ?? '')
-        .filter(Boolean)
-        .join(' ');
-    }
-
-    function controlName(element: Element) {
-      const ariaLabel = element.getAttribute('aria-label')?.trim();
-      if (ariaLabel) {
-        return ariaLabel;
-      }
-
-      const labelledBy = textFromIdRefs(element.getAttribute('aria-labelledby'));
-      if (labelledBy) {
-        return labelledBy;
-      }
-
-      if (
-        element instanceof HTMLInputElement ||
-        element instanceof HTMLTextAreaElement ||
-        element instanceof HTMLSelectElement
-      ) {
-        const label = [...document.querySelectorAll('label')].find(
-          (candidate) => candidate.control === element
-        );
-        if (label?.textContent?.trim()) {
-          return label.textContent.trim();
-        }
-      }
-
-      const closestLabel = element.closest('label')?.textContent?.trim();
-      if (closestLabel) {
-        return closestLabel;
-      }
-
-      return element.getAttribute('title')?.trim() || element.textContent?.trim() || '';
-    }
-
-    return [...subject.querySelectorAll(interactiveSelector)]
-      .filter(isExposed)
-      .filter(isVisible)
-      .filter((element) => !controlName(element))
-      .slice(0, 10)
-      .map((element) => element.outerHTML.slice(0, 300));
-  });
+  const details = await findUnnamedControls(page, '[data-testid="a11y-scan-subject"]');
 
   return {
     check: 'interactive-control-name',
     status: details.length > 0 ? 'failed' : 'passed',
     message:
       details.length > 0
-        ? `${details.length} visible interactive control(s) appear to lack an accessible name`
-        : 'Visible interactive controls have accessible-name signals',
+        ? `${details.length} visible interactive control(s) lack an accessible name`
+        : 'Visible interactive controls have accessible names',
     details,
   };
 }

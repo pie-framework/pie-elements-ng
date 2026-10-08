@@ -697,7 +697,7 @@ export class Main extends React.Component {
           printView
         ) : (
           <Readable false>
-            <InputAndKeypadContainer tabIndex={0}>
+            <InputAndKeypadContainer>
               {responseType === ResponseTypes.simple && (
                 <SimpleQuestionBlock
                   onSimpleResponseChange={this.onSimpleResponseChange}

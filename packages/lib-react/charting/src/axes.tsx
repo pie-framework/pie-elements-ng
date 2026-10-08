@@ -18,6 +18,10 @@ import MarkLabel from './mark-label.js';
 
 const { translator } = Translator;
 
+// how tall a category label can be before it reaches the axis label below it: a one line input fits,
+// a fraction does not
+const LABEL_ROOM = 24;
+
 // one document-level MutationObserver shared across all
 // RawChartAxes instances so that no chart misses a MathJax render batch
 const _mathCallbacks = new Set();
@@ -442,7 +446,7 @@ export class RawChartAxes extends React.Component {
     onLabelOverhang: PropTypes.func,
   };
 
-  state = { height: 0, width: 0 };
+  state = { height: 0, width: 0, labelHeight: 0 };
 
   reportedOverhang = 0;
 
@@ -465,11 +469,13 @@ export class RawChartAxes extends React.Component {
     return { bandWidth, barWidth, rotate: rotateBecauseOfHeight || rotateBecauseOfWidth };
   };
 
-  // tells the chart how much lower the longest label reaches rotated, so it reserves that room
+  // tells the chart how much lower the longest label reaches rotated, and the tallest label reaches
+  // past its room, so it reserves that room
   reportLabelOverhang: any = () => {
     const { onLabelOverhang } = this.props;
-    const { height, width } = this.state;
-    const overhang = getRotatedLabelOverhang(width, height, this.labelLayout().rotate);
+    const { height, width, labelHeight } = this.state;
+    const overhang =
+      getRotatedLabelOverhang(width, height, this.labelLayout().rotate) + Math.max(0, labelHeight - LABEL_ROOM);
 
     if (onLabelOverhang && overhang !== this.reportedOverhang) {
       this.reportedOverhang = overhang;
@@ -486,17 +492,22 @@ export class RawChartAxes extends React.Component {
     const rect = target.getBoundingClientRect();
     const height = Math.floor(rect.height);
     const width = Math.floor(rect.width);
+    // the unrotated height of the tallest label rendered as math; MathJax sizes these after it renders,
+    // so their size is observed too
+    const mathLabels = this.axesNode ? [...this.axesNode.querySelectorAll('[data-math-label]')] : [];
+    mathLabels.forEach((label) => this._sizeObserver?.observe(label));
+    const labelHeight = Math.max(0, ...mathLabels.map((label) => label.offsetHeight));
 
-    if (height !== this.state.height || width !== this.state.width) {
-      this.setState({ height, width });
+    if (height !== this.state.height || width !== this.state.width || labelHeight !== this.state.labelHeight) {
+      this.setState({ height, width, labelHeight });
     }
   };
 
   // called by the document-level observer on every DOM mutation.
-  // only re-measures once mjx-container is present in our hidden label.
+  // only re-measures once mjx-container is present in our labels.
   _onDocMutation: any = () => {
     if (!this.hiddenLabelRef) return;
-    if (this.hiddenLabelRef.querySelector('mjx-container')) {
+    if (this.axesNode?.querySelector('mjx-container')) {
       this.measureHiddenLabel();
     }
   };
@@ -623,7 +634,7 @@ export class RawChartAxes extends React.Component {
     };
 
     return (
-      <StyledAxesGroup>
+      <StyledAxesGroup ref={(r) => (this.axesNode = r)}>
         {leftAxis && (
           <AxisLeft
             scale={scale.y}

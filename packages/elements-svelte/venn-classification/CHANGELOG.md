@@ -1,5 +1,12 @@
 # @pie-element/venn-classification
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [[`b0fd8ee`](https://github.com/pie-framework/pie-elements-ng/commit/b0fd8ee4fd76fd3c3bd4c02276673e05965a5184), [`df25564`](https://github.com/pie-framework/pie-elements-ng/commit/df25564aa0a53f3f47b23a620a5fe4ab91c3f9f5)]:
+  - @pie-element/shared-utils@0.1.3
+
 ## 0.1.3
 
 ### Patch Changes

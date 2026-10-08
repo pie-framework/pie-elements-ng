@@ -1,5 +1,12 @@
 # @pie-element/element-a11y-demo
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @pie-element/element-player@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

@@ -118,6 +118,16 @@ function runMathjaxScript(
   return { mathJax, typesetPromise, finishStartup, CHTML, SVG, Menu, mathDocument };
 }
 
+/** The arguments the adapter registered render action `id` with. */
+function renderAction(
+  mathDocument: ReturnType<typeof runMathjaxScript>['mathDocument'],
+  id: string
+) {
+  const call = mathDocument.addRenderAction.mock.calls.find(([name]) => name === id);
+  if (!call) throw new Error(`No render action ${id}`);
+  return call;
+}
+
 /** Output as MathJax 4 produces it: every node records its TeX source. */
 const TYPESET_OUTPUT =
   '<mjx-container data-latex="x^2"><mjx-math data-latex="x^2">' +
@@ -977,9 +987,7 @@ describe('createMathjaxRenderer', () => {
     finishStartup();
     await rendering;
 
-    expect(mathDocument.addRenderAction).toHaveBeenCalledTimes(1);
-    const [id, priority, renderDoc, renderMathItem] = mathDocument.addRenderAction.mock.calls[0];
-    expect(id).toBe('pie-strip-latex');
+    const [, priority, renderDoc, renderMathItem] = renderAction(mathDocument, 'pie-strip-latex');
     // After MathJax inserts its output, at STATE.INSERTED.
     expect(priority).toBeGreaterThan(200);
 
@@ -991,6 +999,33 @@ describe('createMathjaxRenderer', () => {
     const toggled = elementWith(TYPESET_OUTPUT).firstElementChild as Element;
     expect(renderMathItem({ typesetRoot: toggled }, mathDocument)).toBe(false);
     expect(toggled.outerHTML).not.toContain('data-latex');
+  });
+
+  it('names the math in a control on every MathJax render, rerenders included', async () => {
+    interceptScripts();
+    const rendering = createMathjaxRenderer()(elementWith('\\(x\\)'));
+    const { mathDocument, finishStartup } = runMathjaxScript();
+    finishStartup();
+    await rendering;
+
+    const [, priority, renderDoc, renderMathItem] = renderAction(mathDocument, 'pie-name-math');
+    // Once the output is in the document.
+    expect(priority).toBeGreaterThan(200);
+
+    const output =
+      '<mjx-container><mjx-assistive-mml><math><mi>x</mi></math></mjx-assistive-mml></mjx-container>';
+    const inControl = () =>
+      elementWith(`<button>${output}</button>`).querySelector('mjx-container') as Element;
+    const rerendered = inControl();
+    const inProse = elementWith(output).firstElementChild as Element;
+    mathDocument.math.push({ typesetRoot: rerendered }, { typesetRoot: inProse });
+    expect(renderDoc(mathDocument)).toBe(false);
+    expect(rerendered.getAttribute('aria-label')).toBe('x');
+    expect(inProse.hasAttribute('aria-label')).toBe(false);
+
+    const toggled = inControl();
+    expect(renderMathItem({ typesetRoot: toggled }, mathDocument)).toBe(false);
+    expect(toggled.getAttribute('aria-label')).toBe('x');
   });
 
   it('removes the math whose output has left the page before each typeset', async () => {
