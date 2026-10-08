@@ -1,6 +1,6 @@
 {
   "name": "@pie-lib/math-input",
-  "version": "9.0.2",
+  "version": "9.0.3",
   "description": "React implementation of @pie-lib/math-input",
   "repository": {
     "type": "git",

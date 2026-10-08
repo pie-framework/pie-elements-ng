@@ -1,5 +1,19 @@
 # @pie-lib/editable-html-tip-tap
 
+## 3.0.3
+
+### Patch Changes
+
+- [#401](https://github.com/pie-framework/pie-elements-ng/pull/401) [`1ca4060`](https://github.com/pie-framework/pie-elements-ng/commit/1ca406079d309580f266033a9c9de7e2627c6a09) Thanks [@chillenious](https://github.com/chillenious)! - Pictures in text pasted from Word for Windows or Mac paste in place at their Word size, in an editor whose toolbar has the image button, and upload through the host as a pasted image file does. Before, they were dropped and left empty lines (PIE-1145).
+  
+  A blank line pasted from Word no longer keeps the bold or italics around it, which carried into text typed on that line.
+- Updated dependencies [[`57a3019`](https://github.com/pie-framework/pie-elements-ng/commit/57a30197da6afc8188887a818f9d59e351ef650e), [`d73581c`](https://github.com/pie-framework/pie-elements-ng/commit/d73581cc64bf4e90f85347d9b43d129bca546ae4), [`80fd457`](https://github.com/pie-framework/pie-elements-ng/commit/80fd457cf60e576ab8567904649aacd3c7a2243f)]:
+  - @pie-lib/render-ui@8.0.3
+  - @pie-element/shared-math-rendering-mathjax@0.1.4
+  - @pie-lib/drag@5.0.3
+  - @pie-lib/math-input@9.0.3
+  - @pie-lib/math-toolbar@4.0.3
+
 ## 3.0.2
 
 ### Patch Changes

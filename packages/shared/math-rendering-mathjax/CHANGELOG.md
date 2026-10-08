@@ -1,5 +1,13 @@
 # @pie-element/shared-math-rendering-mathjax
 
+## 0.1.4
+
+### Patch Changes
+
+- [#402](https://github.com/pie-framework/pie-elements-ng/pull/402) [`add92b7`](https://github.com/pie-framework/pie-elements-ng/commit/add92b764fdc3776bb2fd75487a7af12a7408ea9) Thanks [@chillenious](https://github.com/chillenious)! - feat(render-ui): name math-only controls from their MathML (PIE-1153)
+
+- [#404](https://github.com/pie-framework/pie-elements-ng/pull/404) [`d1250d8`](https://github.com/pie-framework/pie-elements-ng/commit/d1250d87125a003405eaed70cb606d88a9b98f20) Thanks [@chillenious](https://github.com/chillenious)! - feat(math-rendering): label math in controls as it is typeset (PIE-1153)
+
 ## 0.1.3
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # @pie-element/placement-ordering
 
+## 15.0.3
+
+### Patch Changes
+
+- [#402](https://github.com/pie-framework/pie-elements-ng/pull/402) [`add92b7`](https://github.com/pie-framework/pie-elements-ng/commit/add92b764fdc3776bb2fd75487a7af12a7408ea9) Thanks [@chillenious](https://github.com/chillenious)! - feat(render-ui): name math-only controls from their MathML (PIE-1153)
+
+- [#404](https://github.com/pie-framework/pie-elements-ng/pull/404) [`d1250d8`](https://github.com/pie-framework/pie-elements-ng/commit/d1250d87125a003405eaed70cb606d88a9b98f20) Thanks [@chillenious](https://github.com/chillenious)! - feat(math-rendering): label math in controls as it is typeset (PIE-1153)
+- Updated dependencies [[`b0fd8ee`](https://github.com/pie-framework/pie-elements-ng/commit/b0fd8ee4fd76fd3c3bd4c02276673e05965a5184), [`57a3019`](https://github.com/pie-framework/pie-elements-ng/commit/57a30197da6afc8188887a818f9d59e351ef650e), [`d73581c`](https://github.com/pie-framework/pie-elements-ng/commit/d73581cc64bf4e90f85347d9b43d129bca546ae4), [`df25564`](https://github.com/pie-framework/pie-elements-ng/commit/df25564aa0a53f3f47b23a620a5fe4ab91c3f9f5), [`80fd457`](https://github.com/pie-framework/pie-elements-ng/commit/80fd457cf60e576ab8567904649aacd3c7a2243f), [`1ca4060`](https://github.com/pie-framework/pie-elements-ng/commit/1ca406079d309580f266033a9c9de7e2627c6a09)]:
+  - @pie-element/shared-utils@0.1.3
+  - @pie-lib/render-ui@8.0.3
+  - @pie-element/shared-math-rendering-mathjax@0.1.4
+  - @pie-lib/drag@5.0.3
+  - @pie-lib/editable-html-tip-tap@3.0.3
+  - @pie-lib/config-ui@14.0.3
+  - @pie-lib/correct-answer-toggle@5.0.3
+
 ## 15.0.2
 
 ### Patch Changes
