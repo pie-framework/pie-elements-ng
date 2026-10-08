@@ -71,7 +71,12 @@ export class Feedback extends React.Component {
       <CSSTransition key="hasFeedback" nodeRef={this.nodeRef} timeout={{ enter: 500, exit: 200 }} classNames="feedback">
         <TransitionWrapper ref={this.nodeRef}>
           <FeedbackContainer>
-            <FeedbackContent className={correctness} dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(feedback) }} />
+            {/* An alert is announced when inserted with its text, which is how feedback mounts on evaluate; a status region would have to be on the page beforehand. */}
+            <FeedbackContent
+              role="alert"
+              className={correctness}
+              dangerouslySetInnerHTML={{ __html: sanitizeModelHtml(feedback) }}
+            />
           </FeedbackContainer>
         </TransitionWrapper>
       </CSSTransition>

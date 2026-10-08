@@ -158,7 +158,7 @@ Delivery now exposes stable `pie-*` classes so hosts can theme this element with
 - Root/container: `pie-element`, `pie-element-mc-populated-blank`, `pie-delivery-root`
 - Header, holding teacher instructions, the prompt and the show-correct-answer toggle ahead of the stem: `pie-header`
 - Prompt/audio/template: `pie-prompt`, `pie-audio-container`, `pie-audio-player`, `pie-template-line`, `pie-sentence-line`
-- Blank display: `pie-blank-slot`, `pie-blank-slot-standalone`, `pie-blank-value`, `pie-blank-image`
+- Blank display: `pie-blank-slot`, `pie-blank-slot-standalone`, `pie-blank-value`, `pie-blank-image`. The slot's first child is the answer; `pie-blank-sizers` follows it with a hidden `pie-blank-value` or `pie-blank-image` per choice, so the blank holds the largest choice's size and styles on those hooks size both. Select the answer as `.pie-blank-slot > .pie-blank-value`.
 - Choice group: `pie-choices-fieldset`, `pie-choices-legend`, `pie-choices`
 - Choice rows/items: `pie-choice`, `pie-choice-horizontal`, `pie-choice-selected`, `pie-choice-label`, `pie-choice-image`
 - Choice controls: `pie-choice-radio`, `pie-choice-radio-inline`, `pie-choice-radio-bottom`

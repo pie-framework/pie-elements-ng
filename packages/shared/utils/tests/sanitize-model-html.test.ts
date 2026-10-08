@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // DOMPurify needs jsdom here; vitest.setup.ts says why.
-import { describe, expect, it } from 'vitest';
-import { sanitizeModelHtml } from '../src/sanitize-model-html';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { PLAY_AUDIO_ATTR, sanitizeModelHtml } from '../src/sanitize-model-html';
 
 const parse = (html: string) => {
   const template = document.createElement('template');
@@ -10,22 +10,59 @@ const parse = (html: string) => {
 };
 
 describe('sanitizeModelHtml', () => {
-  it('strips the inline play handler from a Star audio prompt and keeps the link and image', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    document.body.replaceChildren();
+  });
+
+  it('plays a Star audio prompt from its link without running the inline handler', () => {
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
     const prompt =
       '<audio id="a.mp3"><source src="https://assets.learnosity.com/a.mp3" type="audio/mpeg"></audio>' +
       '<a href="#" onclick="document.getElementById(\'a.mp3\').play(); return false;">' +
       '<img src="https://assets.learnosity.com/listen.svg" height="128" width="128"></a>';
 
-    const out = parse(sanitizeModelHtml(prompt));
+    document.body.innerHTML = sanitizeModelHtml(prompt);
+    const link = document.querySelector('a') as HTMLAnchorElement;
 
-    expect(out.querySelector('a')?.getAttribute('onclick')).toBeNull();
-    expect(out.querySelector('a')?.getAttribute('href')).toBe('#');
-    expect(out.querySelector('img')?.getAttribute('src')).toBe(
-      'https://assets.learnosity.com/listen.svg'
-    );
-    expect(out.querySelector('audio source')?.getAttribute('src')).toBe(
+    expect(link.getAttribute('onclick')).toBeNull();
+    expect(link.getAttribute(PLAY_AUDIO_ATTR)).toBe('a.mp3');
+    expect(link.getAttribute('href')).toBe('#');
+    expect(document.querySelector('audio source')?.getAttribute('src')).toBe(
       'https://assets.learnosity.com/a.mp3'
     );
+
+    const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+    (link.querySelector('img') as HTMLElement).dispatchEvent(click);
+
+    expect(play).toHaveBeenCalledTimes(1);
+    expect(play.mock.contexts[0]).toBe(document.getElementById('a.mp3'));
+    expect(click.defaultPrevented).toBe(true);
+  });
+
+  it.each([
+    ['runs more than the play', "document.getElementById('a.mp3').play(); alert(1)"],
+    ['plays something other than an element by id', 'window.audio.play(); return false;'],
+    ['is any other script', 'alert(1)'],
+  ])('drops a link handler that %s', (_, handler) => {
+    const out = parse(sanitizeModelHtml(`<a href="#" onclick="${handler}">x</a>`));
+
+    expect(out.querySelector('a')?.hasAttribute('onclick')).toBe(false);
+    expect(out.querySelector('a')?.hasAttribute(PLAY_AUDIO_ATTR)).toBe(false);
+  });
+
+  it.each([
+    [
+      'a stack with carries',
+      '<math><mstack stackalign="right" charalign="center" charspacing="loose"><mscarries location="n" crossout="updiagonalstrike" position="1"><mscarry location="nw" crossout="none"><mn>1</mn></mscarry><none></none></mscarries><mn>19</mn><msgroup position="0" shift="1"><msrow position="0"><mo>+</mo><mn>3</mn></msrow></msgroup><msline position="0" length="2" leftoverhang="1" rightoverhang="1" mslinethickness="thin"></msline><mn>22</mn></mstack></math>',
+    ],
+    [
+      'a long division',
+      '<math><mlongdiv longdivstyle="lefttop"><mn>4</mn><mn>12</mn><mn>48</mn><msline length="1"></msline><mn>8</mn></mlongdiv></math>',
+    ],
+    ['a line break', '<math><mi>a</mi><mspace linebreak="newline"></mspace><mi>b</mi></math>'],
+  ])('keeps elementary math and line breaks: %s', (_, html) => {
+    expect(sanitizeModelHtml(html)).toBe(html);
   });
 
   it.each([

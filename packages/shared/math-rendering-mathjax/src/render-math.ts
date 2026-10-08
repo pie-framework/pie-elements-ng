@@ -6,6 +6,7 @@
  */
 
 import { createMathjaxRenderer, stripLegacyDelimiters } from './adapter.js';
+import { nameMathInControls } from './math-name.js';
 
 const PLAYER_MATH_RENDERING_KEY = '@pie-lib/math-rendering';
 
@@ -111,10 +112,13 @@ export const renderMath = async (el?: Element | string): Promise<string | undefi
   // Delegating adds no MathJax to the page; the adapter reports MathJax 4 meeting MathJax 3.
   const playerRenderer = getPlayerMathRenderer();
   const printRenderMath = playerRenderer || isString ? null : await legacyPrintRenderMath(target);
+  // A delegated renderer typesets without naming the math in controls, so it is named here.
   if (playerRenderer) {
     await playerRenderer.renderMath?.(target);
+    nameMathInControls(target);
   } else if (printRenderMath && printRenderMath !== renderMath) {
     await printRenderMath(target);
+    nameMathInControls(target);
   } else {
     await getRenderer()(target);
   }

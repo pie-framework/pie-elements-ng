@@ -52,6 +52,8 @@ async function mount(
 }
 
 const blank = (el: HTMLElement) => el.querySelector('.pie-blank-slot') as HTMLElement;
+// The blank's first child is the answer; the rest are hidden copies of every choice.
+const answer = (el: HTMLElement) => blank(el).firstElementChild as HTMLElement;
 const radios = (el: HTMLElement) =>
   [...el.querySelectorAll('input[type="radio"]')] as HTMLInputElement[];
 const checkedValues = (el: HTMLElement) =>
@@ -69,7 +71,7 @@ describe('mc-populated-blank print', () => {
     const el = await mount({ role: 'student' });
     expect(el.textContent).toContain('Pick one');
     expect(el.textContent).not.toContain('Read aloud.');
-    expect(blank(el).querySelector('.cloze-marker-value')).toBeNull();
+    expect(answer(el).matches('.cloze-marker-value')).toBe(false);
     expect(checkedValues(el)).toEqual([]);
   });
 
@@ -77,7 +79,7 @@ describe('mc-populated-blank print', () => {
     const el = await mount({ role: 'instructor' });
     expect(el.textContent).toContain('Read aloud.');
     expect(el.querySelector('.teacher-instructions-toggle')).toBeNull();
-    expect(blank(el).textContent?.trim()).toBe('look');
+    expect(answer(el).textContent?.trim()).toBe('look');
     expect(checkedValues(el)).toEqual(['b']);
   });
 
@@ -91,13 +93,13 @@ describe('mc-populated-blank print', () => {
     const el = await mount({ role: 'student' });
     element.options = { role: 'instructor' };
     await settle();
-    expect(blank(el).textContent?.trim()).toBe('look');
+    expect(answer(el).textContent?.trim()).toBe('look');
   });
 
   it('leaves the key out for an instructor when printAnswerKey is false', async () => {
     const el = await mount({ role: 'instructor' }, { ...MODEL, printAnswerKey: false });
     expect(el.textContent).toContain('Read aloud.');
-    expect(blank(el).querySelector('.cloze-marker-value')).toBeNull();
+    expect(answer(el).matches('.cloze-marker-value')).toBe(false);
     expect(checkedValues(el)).toEqual([]);
   });
 
@@ -127,7 +129,7 @@ describe('mc-populated-blank print', () => {
     );
     const alts = [...el.querySelectorAll('.pie-choices img')].map((img) => img.getAttribute('alt'));
     expect(alts).toEqual(['A cat', 'A dog']);
-    expect(blank(el).querySelector('img')?.getAttribute('alt')).toBe('A dog');
+    expect(answer(el).getAttribute('alt')).toBe('A dog');
   });
 
   it('keeps the blank glued to its neighbours in an inline sentence', async () => {

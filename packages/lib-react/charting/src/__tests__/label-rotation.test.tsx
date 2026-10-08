@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import Chart from '../chart';
 import { getRotatedLabelOverhang } from '../utils';
+
+// a fraction label renders through MathJax, which does not load here
+vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
 type Category = { label: string; value: number; interactive: boolean; editable: boolean };
 
@@ -257,6 +260,28 @@ describe('charting category label rotation', () => {
       layout();
 
       expect(reservedHeight(container)).toBe(unrotated);
+    });
+
+    // two 115px bars, for which the chart reserves nothing below the axis
+    const wide = categories(['Apple', 'B']);
+
+    it('grows by how much taller than the room for a label a fraction is, and shrinks back', async () => {
+      // MathJax draws a fraction label 36px tall, 12px more than the room left for a label
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (this: HTMLElement) {
+        return this.hasAttribute('data-math-label') ? 36 : 0;
+      });
+      const { container } = renderChart(wide, true);
+      layout();
+      const plain = reservedHeight(container);
+
+      editLabel(1, '1/2');
+
+      await waitFor(() => expect(reservedHeight(container)).toBe(plain + 12));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Category 2 label: 1/2' }));
+      editLabel(1, 'B');
+
+      await waitFor(() => expect(reservedHeight(container)).toBe(plain));
     });
   });
 });

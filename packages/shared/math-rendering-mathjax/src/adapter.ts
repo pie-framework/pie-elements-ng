@@ -9,6 +9,7 @@ import {
 import { defaultSpeechLocale, listSpeechLocales, resolveAssets } from './assets.js';
 import { rewriteElementaryMath } from './elementary-math.js';
 import { injectExplorerStyles } from './explorer-styles.js';
+import { nameMathInControl, nameMathInControls } from './math-name.js';
 import { unprefixMathml } from './mathml.js';
 import { endSpeechOnWorkerFailure, type SpeechDocument } from './speech-worker.js';
 import type { MathjaxOptions } from './types.js';
@@ -154,6 +155,9 @@ const STATE_INSERTED = 200;
 /** After MathJax's own `update` action, at STATE.INSERTED. */
 const STRIP_LATEX_PRIORITY = STATE_INSERTED + 1;
 
+/** Once the output is in the document, where the control around it can be found. */
+const NAME_MATH_PRIORITY = STATE_INSERTED + 2;
+
 /**
  * MathJax 4 records each node's TeX source in `data-latex` and `data-latex-item`, and carries them
  * into its output. The legacy MathJax 3 renderer rewrites the text of every `[data-latex]` element
@@ -277,6 +281,7 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
           startup?.defaultReady?.();
           if (isolate) {
             isolateOutput(startup?.document);
+            nameMathOnRender(startup?.document);
             startup?.document?.addStyles?.(LINEBREAK_FALLBACK_STYLES);
             endSpeechOnWorkerFailure(startup?.document as SpeechDocument | undefined);
           }
@@ -400,6 +405,28 @@ function isolateOutput(mathDocument: MathDocument | undefined): void {
   if (sheet?.id === SHARED_STYLESHEET_ID) sheet.id = OWN_STYLESHEET_ID;
 
   watchForForeignStylesheets();
+}
+
+/**
+ * Names the math in controls on every render. A rerender from the menu or the explorer replaces
+ * each `mjx-container`, and the label with it.
+ */
+function nameMathOnRender(mathDocument: MathDocument | undefined): void {
+  const name = (math: MathItem) => {
+    if (math.typesetRoot) nameMathInControl(math.typesetRoot);
+  };
+  mathDocument?.addRenderAction?.(
+    'pie-name-math',
+    NAME_MATH_PRIORITY,
+    (doc) => {
+      for (const math of doc.math ?? []) name(math);
+      return false;
+    },
+    (math) => {
+      name(math);
+      return false;
+    }
+  );
 }
 
 function isForeignStylesheet(node: Node): boolean {
@@ -558,6 +585,7 @@ export function createMathjaxRenderer(
     }
     // Also covers a MathJax 4 the page loaded itself, which has no render action from this adapter.
     stripLatexAttributes(element);
+    nameMathInControls(element);
   };
 }
 
