@@ -80,6 +80,8 @@ See [`docs/prds/README.md`](docs/prds/README.md) for the full conventions and [`
 
 `pie-elements` and `pie-lib` are legacy. This repo is the source of truth for `packages/elements-react/*` and `packages/lib-react/*`: fixes are made and published here, and no tooling copies code in from the legacy repos. A fix that exists only in a legacy repo is ported by hand.
 
+The legacy repos take no further work. A defect that also lives in a legacy copy is fixed here only: do not change the legacy repo, and do not propose a follow-up, task or ticket for it.
+
 ### React package invariants
 
 - Every `packages/elements-react/*` package declares `react` and `react-dom` in
