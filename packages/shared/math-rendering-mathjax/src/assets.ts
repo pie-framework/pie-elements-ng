@@ -66,6 +66,11 @@ function pageOptions(): Record<string, unknown> {
   return opts && typeof opts === 'object' ? (opts as Record<string, unknown>) : {};
 }
 
+/** Whether the page puts typeset math in the tab order: `opts.inTabOrder` true, else false. */
+export function pageInTabOrder(): boolean {
+  return pageOptions().inTabOrder === true;
+}
+
 /** `url` made absolute against the page, without a trailing slash: the speech worker needs both. */
 function absolute(url: unknown): string | undefined {
   if (typeof url !== 'string' || !url) return undefined;
