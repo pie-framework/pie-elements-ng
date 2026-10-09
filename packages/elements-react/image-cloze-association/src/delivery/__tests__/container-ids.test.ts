@@ -25,7 +25,7 @@ const question = (extra: object = {}) => ({
 });
 
 const viewModel = async (extra: object = {}) =>
-  (await buildModel(question(extra), { answers: [] }, { mode: 'gather' })) as object;
+  (await buildModel(question(extra), { answers: [] }, { mode: 'gather' }, vi.fn())) as object;
 
 const mount = async (extra: object = {}) => {
   const el = document.createElement('test-ica-container-ids') as Host;
