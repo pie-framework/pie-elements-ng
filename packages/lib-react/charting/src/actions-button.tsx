@@ -26,7 +26,8 @@ const StyledTrigger: any = styled('button')(({ theme }) => ({
   font: 'inherit',
   cursor: 'pointer',
   fontSize: theme.typography.fontSize,
-  color: color.tertiary(),
+  // on the chart's white background whatever the theme, so its color does not follow it
+  color: color.defaults.TERTIARY,
   padding: theme.spacing(1),
   // Inset: the trigger sits at the top-left corner of a foreignObject, which clips an outer ring.
   '&:focus-visible': {
