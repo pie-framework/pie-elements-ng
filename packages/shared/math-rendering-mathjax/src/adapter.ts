@@ -6,7 +6,7 @@ import {
   loadMathJax,
   OWN_STYLESHEET_ID,
 } from './engine/page.js';
-import { defaultSpeechLocale, listSpeechLocales, resolveAssets } from './assets.js';
+import { defaultSpeechLocale, listSpeechLocales, pageInTabOrder, resolveAssets } from './assets.js';
 import { rewriteElementaryMath } from './elementary-math.js';
 import { injectExplorerStyles } from './explorer-styles.js';
 import { nameMathInControl, nameMathInControls } from './math-name.js';
@@ -252,6 +252,7 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const { useSingleDollar = false, accessibility = true, loadFonts = true, srcUrl } = options;
     const assets = resolveAssets(options, import.meta.url);
+    const inTabOrder = pageInTabOrder();
 
     const config: MathJaxGlobal = {
       loader: {
@@ -293,17 +294,18 @@ function injectMathjax(options: MathjaxOptions): Promise<void> {
       options: {
         enableMenu: accessibility,
         // The menu settings decide MathJax 4's accessibility output. These reproduce the legacy
-        // renderer's: hidden MathML for screen readers, math outside the tab order, and no
-        // generated speech. The legacy renderer configures SRE speech, but it treats MathJax's
-        // first enrichment retry as a failure and turns enrichment off for the page. With
-        // enrichment off MathJax starts no speech web worker, which a CSP can block; once a
-        // student turns it on, a worker that fails to start ends speech for the page.
+        // renderer's: hidden MathML for screen readers, math outside the tab order unless the
+        // page's `opts.inTabOrder` puts it there, and no generated speech. The legacy renderer
+        // configures SRE speech, but it treats MathJax's first enrichment retry as a failure and
+        // turns enrichment off for the page. With enrichment off MathJax starts no speech web
+        // worker, which a CSP can block; once a student turns it on, a worker that fails to start
+        // ends speech for the page.
         menuOptions: {
-          settings: { assistiveMml: accessibility, enrich: false, inTabOrder: false },
+          settings: { assistiveMml: accessibility, enrich: false, inTabOrder },
         },
         // The explorer, which attaches once a student turns on speech or braille, takes its tab
         // order from here; the menu setting does not reach it.
-        a11y: { inTabOrder: false },
+        a11y: { inTabOrder },
       },
     };
 
