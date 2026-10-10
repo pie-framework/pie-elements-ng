@@ -3,8 +3,8 @@
 import debug from 'debug';
 import humps from 'humps';
 const { camelizeKeys } = humps;
-import { partialScoring } from '@pie-element/shared-controller-utils';
-import { cloneDeep, isEmpty, shuffle } from '@pie-element/shared-lodash';
+import { getShuffledChoices, lockChoices, partialScoring } from '@pie-element/shared-controller-utils';
+import { cloneDeep, isEmpty } from '@pie-element/shared-lodash';
 
 import defaults from './defaults.js';
 import { getAllUniqueCorrectness, getCompleteResponseDetails } from './utils.js';
@@ -13,46 +13,59 @@ const log = debug('pie-elements:image-cloze-association:controller');
 
 export const normalize = (question) => ({ ...defaults, ...question });
 
-export const model = (question, session, env) => {
+/**
+ * @param {*} question
+ * @param {*} session
+ * @param {*} env
+ * @param {*} updateSession - optional - a function that will set the properties passed into it on the session.
+ */
+export const model = async (question, session, env, updateSession) => {
   const questionNormalized = normalize(question);
   const questionCamelized = camelizeKeys(questionNormalized);
+  const shouldIncludeCorrectResponse = env.mode === 'evaluate';
 
-  return new Promise((resolve) => {
-    const shouldIncludeCorrectResponse = env.mode === 'evaluate';
+  const {
+    responseAreasToBeFilled,
+    possibleResponses: completeResponses,
+    hasUnplacedChoices,
+  } = getCompleteResponseDetails(questionCamelized.validation, questionCamelized.possibleResponses);
 
-    const {
-      responseAreasToBeFilled,
-      possibleResponses: completeResponses,
-      hasUnplacedChoices,
-    } = getCompleteResponseDetails(questionCamelized.validation, questionCamelized.possibleResponses);
+  const out = {
+    disabled: env.mode !== 'gather',
+    mode: env.mode,
+    ...questionCamelized,
+    responseCorrect: shouldIncludeCorrectResponse ? getScore(questionCamelized, session) === 1 : undefined,
+    validation: shouldIncludeCorrectResponse ? questionCamelized.validation : undefined,
+    responseAreasToBeFilled,
+    completeResponses,
+    hasUnplacedChoices,
+  };
 
-    const out = {
-      disabled: env.mode !== 'gather',
-      mode: env.mode,
-      ...questionCamelized,
-      responseCorrect: shouldIncludeCorrectResponse ? getScore(questionCamelized, session) === 1 : undefined,
-      validation: shouldIncludeCorrectResponse ? questionCamelized.validation : undefined,
-      responseAreasToBeFilled,
-      completeResponses,
-      hasUnplacedChoices,
-    };
+  if (questionNormalized.shuffle && !lockChoices(questionCamelized, session, env)) {
+    // Possible responses are HTML strings, which the session's answers already identify them by.
+    const shuffled = await getShuffledChoices(
+      (questionCamelized.possibleResponses || []).map((value) => ({ value })),
+      session,
+      updateSession,
+      'value',
+    );
 
-    if (questionNormalized.shuffle) {
-      out.possibleResponses = shuffle(questionNormalized.possible_responses);
+    if (shuffled) {
+      out.possibleResponses = shuffled.map((choice) => choice.value);
     }
+  }
 
-    if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
-      out.teacherInstructions = questionCamelized.teacherInstructionsEnabled
-        ? questionCamelized.teacherInstructions
-        : null;
-      out.rationale = questionCamelized.rationale ? questionCamelized.rationale : null;
-    } else {
-      out.teacherInstructions = null;
-      out.rationale = null;
-    }
+  if (env.role === 'instructor' && (env.mode === 'view' || env.mode === 'evaluate')) {
+    out.teacherInstructions = questionCamelized.teacherInstructionsEnabled
+      ? questionCamelized.teacherInstructions
+      : null;
+    out.rationale = questionCamelized.rationale ? questionCamelized.rationale : null;
+  } else {
+    out.teacherInstructions = null;
+    out.rationale = null;
+  }
 
-    resolve(out);
-  });
+  return out;
 };
 
 export const isResponseCorrect = (correctResponses, session) => {
