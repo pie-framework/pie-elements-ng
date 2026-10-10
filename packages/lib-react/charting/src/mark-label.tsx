@@ -19,10 +19,11 @@ const StyledContainer: any = styled('div')({
 });
 
 // Both disabled label variants share one color so a fraction and a whole number
-// read the same. `disabledText` rather than the `disabled` the marks use: a
+// read the same. `DISABLED_TEXT` rather than the `disabled` the marks use: a
 // non-editable tick label still has to be read, and fraction numerals render
-// smaller than ordinary text, so it needs text-grade contrast.
-const disabledLabelColor = color.disabledText();
+// smaller than ordinary text, so it needs text-grade contrast. The labels sit on the
+// chart's white background whatever the theme, so their colors do not follow it.
+const disabledLabelColor = color.defaults.DISABLED_TEXT;
 
 // eslint-disable-next-line no-unused-vars
 const StyledInput: any = styled('input')(({ theme }) => ({
@@ -43,7 +44,7 @@ const StyledMathInput: any = styled('div')(({ theme }) => ({
   textAlign: 'center',
   fontSize: theme.typography.fontSize + 2,
   fontFamily: theme.typography.fontFamily,
-  color: color.primaryDark(),
+  color: color.defaults.PRIMARY_DARK,
   paddingTop: theme.typography.fontSize / 2,
   '&.disabledMarkLabel': {
     ...disabled('color'),
