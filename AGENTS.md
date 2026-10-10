@@ -80,6 +80,8 @@ See [`docs/prds/README.md`](docs/prds/README.md) for the full conventions and [`
 
 `pie-elements` and `pie-lib` are legacy. This repo is the source of truth for `packages/elements-react/*` and `packages/lib-react/*`: fixes are made and published here, and no tooling copies code in from the legacy repos. A fix that exists only in a legacy repo is ported by hand.
 
+The legacy repos take no further work. A defect that also lives in a legacy copy is fixed here only: do not change the legacy repo, and do not propose a follow-up, task or ticket for it.
+
 ### React package invariants
 
 - Every `packages/elements-react/*` package declares `react` and `react-dom` in
@@ -289,18 +291,20 @@ bun run dev            # Watch mode
 ### Host Accessibility Settings
 
 Elements, and the modules they run such as the MathJax adapter, follow pie-players
-[ADR 0003](https://github.com/pie-framework/pie-players/blob/develop/docs/adr/0003-elements-read-accessibility-settings-from-a-host-neutral-context.md):
+[ADR 0003](https://github.com/pie-framework/pie-players/blob/develop/docs/adr/0003-elements-read-accessibility-settings-from-a-host-neutral-context.md)
+when they read the student's accessibility settings. No element does yet: the accessibility review
+of 2026-10-05 kept `mathml` for every student, and the provider ships with its first consumer.
 
-- No element imports `@pie-players/pie-assessment-toolkit`. The toolkit is one host among
-  several; an element that needs host settings requests them.
-- Accessibility settings that change rendering come from the `Symbol.for("pie.accessibility")`
-  context, requested through the `context-request` protocol with `subscribe: true`. Settings that
-  change the model arrive through `env`.
-- An unanswered request means the host provides no accessibility context: use the element's
-  defaults and never wait for a provider.
-- Map a fixed support id to a fixed behaviour, and ignore ids you do not recognize. The mapping
-  from a profile to ids belongs to the host, because items pin element versions and a rule inside
-  an element is frozen into each of them.
+- An element learns the student's accessibility settings only from the
+  `Symbol.for("pie.accessibility")` context, whose key and type `@pie-players/pie-context` exports
+  with the first consumer, and never imports `@pie-players/pie-assessment-toolkit`. A setting that
+  changes rendering travels through that context; `env` keeps the settings that change the model.
+- The mapping from a profile to support ids lives in the host. An element maps a fixed support id
+  to a fixed behaviour, because item configs pin element versions and a rule inside an element is
+  frozen into each of them.
+- The context value only grows: fields are added, never removed or redefined. Consumers ignore
+  support ids they do not recognize, and an unanswered request means defaults, never a wait for a
+  provider.
 
 ### Accessibility Scenario Suite
 
