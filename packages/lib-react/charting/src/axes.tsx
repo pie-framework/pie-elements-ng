@@ -296,7 +296,7 @@ export class TickComponent extends React.Component {
 
         {defineChart && index === 0 && (
           <svg
-            x={-55}
+            x={-100}
             style={{
               overflow: 'visible',
             }}
