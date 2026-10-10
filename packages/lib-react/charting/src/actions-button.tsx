@@ -3,9 +3,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import Button from '@mui/material/Button';
-import Popover from '@mui/material/Popover';
-import Paper from '@mui/material/Paper';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 import { color, createUniqueId } from '@pie-lib/render-ui';
 import Translator from '@pie-lib/translator';
@@ -36,17 +35,9 @@ const StyledTrigger: any = styled('button')(({ theme }) => ({
   },
 }));
 
-const StyledActionsPaper: any = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(1),
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(1),
-  '& button': {
-    textTransform: 'none',
-    fontSize: theme.typography.fontSize,
-    color: color.text(),
-    justifyContent: 'flex-start',
-  },
+const StyledMenuItem: any = styled(MenuItem)(({ theme }) => ({
+  fontSize: theme.typography.fontSize,
+  color: color.text(),
 }));
 
 export class ActionsButton extends React.Component {
@@ -68,8 +59,10 @@ export class ActionsButton extends React.Component {
     categories: PropTypes.array,
   };
 
-  // names the popover after the trigger
+  // names the menu after the trigger
   triggerId = createUniqueId('chart-actions');
+
+  menuId = createUniqueId('chart-actions-menu');
 
   handleActionsClick: any = (event) => {
     this.setState({ actionsAnchorEl: event.currentTarget });
@@ -96,45 +89,42 @@ export class ActionsButton extends React.Component {
     const { actionsAnchorEl } = this.state;
     const open = Boolean(actionsAnchorEl);
 
+    const deletable = (categories || [])
+      .map((category, index) => ({ category, index }))
+      .filter(({ category }) => category.deletable && !category.correctness);
+
     return (
       <StyledActions>
         <StyledTrigger
           type="button"
           id={this.triggerId}
-          aria-haspopup="dialog"
+          aria-haspopup="menu"
           aria-expanded={open}
+          aria-controls={open ? this.menuId : undefined}
           onClick={this.handleActionsClick}
         >
           {translator.t('charting.actions', { lng: language })}
         </StyledTrigger>
-        <Popover
-          key={`actions-popover-${Math.random()}`}
+       <Menu
+          id={this.menuId}
           open={open}
           anchorEl={actionsAnchorEl}
           onClose={this.handleActionsClose}
+          variant="menu"
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          // The popover is modal - it traps focus, closes on Escape and returns focus to the
-          // trigger - so it is the dialog aria-haspopup announces.
-          slotProps={{ paper: { role: 'dialog', 'aria-labelledby': this.triggerId } }}
+          slotProps={{ list: { 'aria-labelledby': this.triggerId } }}
         >
-          <StyledActionsPaper>
-            <Button onClick={() => this.handleAddCategory()}>
-              + {translator.t('charting.add', { lng: language })}
-            </Button>
-            {categories.length > 0 &&
-              categories.map(
-                (category, index) =>
-                  category.deletable &&
-                  !category.correctness && (
-                    <Button key={index} onClick={() => this.handleDeleteCategory(index)}>
-                      {`${translator.t('charting.delete', { lng: language })} <${category.label ||
-                        translator.t('charting.newLabel', { lng: language })}>`}
-                    </Button>
-                  ),
-              )}
-          </StyledActionsPaper>
-        </Popover>
+          <StyledMenuItem onClick={() => this.handleAddCategory()}>
+            + {translator.t('charting.add', { lng: language })}
+          </StyledMenuItem>
+          {deletable.map(({ category, index }) => (
+            <StyledMenuItem key={index} onClick={() => this.handleDeleteCategory(index)}>
+              {`${translator.t('charting.delete', { lng: language })} <${category.label ||
+                translator.t('charting.newLabel', { lng: language })}>`}
+            </StyledMenuItem>
+          ))}
+        </Menu>
       </StyledActions>
     );
   }
