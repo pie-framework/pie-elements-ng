@@ -1,4 +1,5 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type { MathTemplatedConfiguration, MathTemplatedModel, MathTemplatedResponse } from '../types.js';
 
 // Should be exactly the same as controller/defaults.js
 export default {
@@ -12,7 +13,7 @@ export default {
     promptEnabled: true,
     rationale: '',
     rationaleEnabled: true,
-    responses: {},
+    responses: {} as Record<string, MathTemplatedResponse>,
     spellCheckEnabled: true,
     teacherInstructions: '',
     teacherInstructionsEnabled: true,
@@ -118,8 +119,8 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
     maxResponseAreas: 10,
   },
-};
+} satisfies { model: Omit<MathTemplatedModel, 'id' | 'element'>; configuration: MathTemplatedConfiguration };

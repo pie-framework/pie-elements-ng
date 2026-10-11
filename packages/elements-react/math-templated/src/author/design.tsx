@@ -1,10 +1,7 @@
-// @ts-nocheck
-
 import React from 'react';
-import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import Select from '@mui/material/Select';
+import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Info from '@mui/icons-material/Info';
 import Tooltip from '@mui/material/Tooltip';
@@ -16,6 +13,47 @@ const { dropdown } = settings;
 import Response from './response.js';
 import { processMarkup, createSlateMarkup } from './markupUtils.js';
 import { generateValidationMessage } from './utils.js';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions } from '@pie-element/shared-types';
+import type { MathTemplatedValidationErrors } from '../controller/index.js';
+import type {
+  EquationEditor,
+  MathTemplatedConfiguration,
+  MathTemplatedModel,
+  MathTemplatedResponse,
+} from '../types.js';
+
+/** The model the author edits; the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<MathTemplatedModel> & {
+  errors?: MathTemplatedValidationErrors;
+};
+
+type Responses = Record<string, MathTemplatedResponse>;
+
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type DesignProps = {
+  model: AuthorModel;
+  configuration: MathTemplatedConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: MathTemplatedConfiguration) => void;
+  /** Not read: the settings panel shows regardless */
+  disableSidePanel?: boolean;
+  imageSupport?: MediaSupport<ImageHandler>;
+  uploadSoundSupport?: MediaSupport<SoundHandler>;
+};
+
+type DesignState = {
+  markup?: string;
+  cachedResponses?: Responses;
+  activeAnswerBlock?: string;
+};
+
+/** A response area the editor removed, as `onHandleAreaChange` reports it */
+type RemovedArea = { index: string };
 
 const { Panel, toggle } = settings;
 
@@ -79,27 +117,15 @@ const StyledTooltip: any = styled(Tooltip)(({ theme }) => ({
   },
 }));
 
-const createElementFromHTML = (htmlString) => {
+const createElementFromHTML = (htmlString: string) => {
   const div = document.createElement('div');
   div.innerHTML = htmlString.trim();
 
   return div;
 };
 
-export class Design extends React.Component {
-  static propTypes = {
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    onModelChanged: PropTypes.func.isRequired,
-    onConfigurationChanged: PropTypes.func.isRequired,
-    imageSupport: PropTypes.shape({
-      add: PropTypes.func.isRequired,
-      delete: PropTypes.func.isRequired,
-    }),
-    uploadSoundSupport: PropTypes.object,
-  };
-
-  state = {};
+export class Design extends React.Component<DesignProps, DesignState> {
+  state: DesignState = {};
 
   componentDidMount() {
     const {
@@ -109,22 +135,22 @@ export class Design extends React.Component {
     this.setState({ markup: slateMarkup });
   }
 
-  handleChange: any = (key, value) => {
+  handleChange = <K extends keyof AuthorModel>(key: K, value: AuthorModel[K]) => {
     const { onModelChanged, model } = this.props;
     const updatedModel = cloneDeep(model);
     updatedModel[key] = value;
     onModelChanged(updatedModel);
   };
 
-  onResponseChange: any = (response, index) => {
+  onResponseChange = (response: MathTemplatedResponse, index: number) => {
     const { model, onModelChanged } = this.props;
     const newModel = { ...model };
 
-    newModel.responses[index] = response;
+    (newModel.responses as Responses)[index] = response;
     onModelChanged(newModel);
   };
 
-  onResponseDone: any = () => {
+  onResponseDone = () => {
     const { model, onModelChanged } = this.props;
 
     onModelChanged({
@@ -133,9 +159,10 @@ export class Design extends React.Component {
     });
   };
 
-  onChangeResponse: any = (index, newVal) => {
+  onChangeResponse = (index: number, newVal: string) => {
     const { model, onModelChanged } = this.props;
-    const { responses } = model;
+    // Writes an array of responses per response area, the shape `prepareModel()` repairs.
+    const responses = model.responses as unknown as Record<number, Array<Partial<MathTemplatedResponse>>>;
 
     if (!responses[index]) {
       responses[index] = [{ answer: newVal || '', id: 'response' + index, allowSpaces: true }];
@@ -143,21 +170,21 @@ export class Design extends React.Component {
       responses[index][0].answer = newVal || '';
     }
 
-    onModelChanged({ ...model, responses });
+    onModelChanged({ ...model, responses: responses as unknown as Responses });
   };
 
-  onResponsesChanged: any = (responses) => {
+  onResponsesChanged = (responses: Responses) => {
     this.props.onModelChanged({ ...this.props.model, responses });
   };
 
-  onChange: any = (markup) => {
+  onChange = (markup: string) => {
     const {
       model: { responses, validationDefault, allowTrailingZerosDefault, ignoreOrderDefault },
       onModelChanged,
     } = this.props;
-    const newResponses = {};
+    const newResponses: Responses = {};
     const domMarkup = createElementFromHTML(markup);
-    const responseAreas = domMarkup.querySelectorAll('[data-type="math_templated"]');
+    const responseAreas = domMarkup.querySelectorAll<HTMLElement>('[data-type="math_templated"]');
 
     responseAreas.forEach((element, index) => {
       const { value, index: dataIndex } = element.dataset;
@@ -166,7 +193,7 @@ export class Design extends React.Component {
         element.dataset.value = '';
       }
 
-      newResponses[index] = responses[dataIndex] || {
+      newResponses[index] = (responses as Responses)[dataIndex as string] || {
         allowSpaces: true,
         validation: validationDefault || 'symbolic',
         allowTrailingZeros: allowTrailingZerosDefault || false,
@@ -192,7 +219,7 @@ export class Design extends React.Component {
   };
 
   onHandleAreaChange = throttle(
-    (nodes) => {
+    (nodes: RemovedArea[] | null | undefined) => {
       const {
         model: { responses },
         onModelChanged,
@@ -203,8 +230,8 @@ export class Design extends React.Component {
         return;
       }
 
-      const newChoices = responses ? cloneDeep(responses) : {};
-      const newCachedResponses = cachedResponses ? cloneDeep(cachedResponses) : {};
+      const newChoices: Responses = responses ? cloneDeep(responses) : {};
+      const newCachedResponses: Responses = cachedResponses ? cloneDeep(cachedResponses) : {};
 
       nodes.forEach((node) => {
         const keyForNode = node.index;
@@ -232,14 +259,14 @@ export class Design extends React.Component {
     { trailing: false, leading: true },
   );
 
-  onBlur: any = (e) => {
-    const { relatedTarget, currentTarget } = e || {};
+  onBlur = (e: React.FocusEvent<HTMLElement> | undefined) => {
+    const { relatedTarget, currentTarget } = e || ({} as Partial<React.FocusEvent<HTMLElement>>);
 
-    function getParentWithRoleTooltip(element, depth = 0) {
+    function getParentWithRoleTooltip(element: HTMLElement | null | undefined, depth = 0): HTMLElement | null {
       // only run this max 16 times
       if (!element || depth >= 16) return null;
 
-      const parent = element.offsetParent;
+      const parent = element.offsetParent as HTMLElement | null;
 
       if (!parent) return null;
 
@@ -250,7 +277,7 @@ export class Design extends React.Component {
       return getParentWithRoleTooltip(parent, depth + 1);
     }
 
-    function getDeepChildDataKeypad(element, depth = 0) {
+    function getDeepChildDataKeypad(element: Element | null | undefined, depth = 0): Element | null {
       // only run this max 4 times
       if (!element || depth >= 4) return null;
 
@@ -258,17 +285,17 @@ export class Design extends React.Component {
 
       if (!child) return null;
 
-      if (child.attributes && child.attributes['data-keypad']) {
+      if (child.attributes && child.attributes.getNamedItem('data-keypad')) {
         return child;
       }
 
       return getDeepChildDataKeypad(child, depth + 1);
     }
 
-    const parentWithTooltipRole = getParentWithRoleTooltip(relatedTarget);
+    const parentWithTooltipRole = getParentWithRoleTooltip(relatedTarget as HTMLElement | null | undefined);
     const childWithDataKeypad = parentWithTooltipRole ? getDeepChildDataKeypad(parentWithTooltipRole) : null;
 
-    if (!relatedTarget || !currentTarget || !childWithDataKeypad?.attributes['data-keypad']) {
+    if (!relatedTarget || !currentTarget || !childWithDataKeypad?.attributes.getNamedItem('data-keypad')) {
       this.setState({ activeAnswerBlock: '' });
     }
   };
@@ -285,7 +312,7 @@ export class Design extends React.Component {
       settingsPanelDisabled,
       teacherInstructions = {},
       language = {},
-      languageChoices = {},
+      languageChoices = {} as Partial<ConfigureLanguageOptions>,
       spellCheck = {},
       playerSpellCheck = {},
       maxImageWidth = {},
@@ -356,7 +383,7 @@ export class Design extends React.Component {
           <Panel
             model={model}
             configuration={configuration}
-            onChangeModel={(updatedModel) => onModelChanged(updatedModel)}
+            onChangeModel={(updatedModel: AuthorModel) => onModelChanged(updatedModel)}
             onChangeConfiguration={onConfigurationChanged}
             groups={{
               Settings: panelSettings,
@@ -369,7 +396,7 @@ export class Design extends React.Component {
           <StyledInputContainer label={teacherInstructions.label}>
             <StyledEditableHtml
               markup={model.teacherInstructions || ''}
-              onChange={(value) => this.handleChange('teacherInstructions', value)}
+              onChange={(value: string) => this.handleChange('teacherInstructions', value)}
               imageSupport={imageSupport}
               nonEmpty={false}
               error={teacherInstructionsError}
@@ -390,7 +417,7 @@ export class Design extends React.Component {
           <StyledInputContainer label={prompt.label}>
             <StyledEditableHtml
               markup={model.prompt}
-              onChange={(value) => this.handleChange('prompt', value)}
+              onChange={(value: string) => this.handleChange('prompt', value)}
               imageSupport={imageSupport}
               nonEmpty={false}
               disableUnderline
@@ -444,7 +471,9 @@ export class Design extends React.Component {
         <StyledSelectContainer label="Response Template Equation Editor">
           <StyledSelect
             MenuProps={{ transitionDuration: { enter: 225, exit: 195 } }}
-            onChange={(event) => this.handleChange('equationEditor', event.target.value)}
+            onChange={(event: SelectChangeEvent<EquationEditor>) =>
+              this.handleChange('equationEditor', event.target.value as EquationEditor)
+            }
             value={equationEditor}
           >
             <MenuItem value="non-negative-integers">Numeric - Non-Negative Integers</MenuItem>
@@ -462,8 +491,8 @@ export class Design extends React.Component {
           </StyledSelect>
         </StyledSelectContainer>
 
-        {Object.keys(responses || {}).map((responseKey, idx) => {
-          const response = responses[idx];
+        {Object.keys(responses || {}).map((_responseKey, idx) => {
+          const response = (responses as Responses)[idx];
 
           if (response) {
             return (
@@ -474,7 +503,6 @@ export class Design extends React.Component {
                 response={response}
                 onResponseChange={this.onResponseChange}
                 onResponseDone={this.onResponseDone}
-                index={idx}
                 cIgnoreOrder={cIgnoreOrder}
                 cAllowTrailingZeros={cAllowTrailingZeros}
                 error={responsesErrors && responsesErrors[idx]}
@@ -489,7 +517,7 @@ export class Design extends React.Component {
           <StyledInputContainer label={rationale.label}>
             <StyledEditableHtml
               markup={model.rationale || ''}
-              onChange={(value) => this.handleChange('rationale', value)}
+              onChange={(value: string) => this.handleChange('rationale', value)}
               imageSupport={imageSupport}
               nonEmpty={false}
               error={rationaleError}

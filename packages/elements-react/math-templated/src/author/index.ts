@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import debug from 'debug';
 import { defaults, isArray } from '@pie-element/shared-lodash';
 import {
@@ -10,20 +8,29 @@ import {
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
-import Main from './design.js';
+import Main, { type AuthorModel } from './design.js';
 
 import sensibleDefaults from './defaults.js';
 import { processMarkup, createSlateMarkup } from './markupUtils.js';
+import type { MathTemplatedConfiguration, MathTemplatedResponse } from '../types.js';
 
 const log = debug('math-templated:configure');
 
 export default class MathTemplateConfigure extends HTMLElement {
-  static prepareModel = (model = {}) => {
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: MathTemplatedConfiguration;
+  private _disableSidePanel?: boolean;
+
+  static prepareModel = (model: AuthorModel = {}): AuthorModel => {
     const { validationDefault, allowTrailingZerosDefault, ignoreOrderDefault, responses = {} } = model;
 
-    const updatedResponses = Object.keys(responses).reduce((acc, responseId) => {
+    const updatedResponses = Object.keys(responses).reduce<Record<string, MathTemplatedResponse>>((acc, responseId) => {
       const correctResponse = responses[responseId];
 
       acc[responseId] = {
@@ -48,15 +55,18 @@ export default class MathTemplateConfigure extends HTMLElement {
     // this was added to treat an exception, when the model has responses without the "answer" property
     if (joinedObj.responses) {
       Object.keys(joinedObj.responses).forEach((key) => {
-        if (isArray(joinedObj.responses[key])) {
-          joinedObj.responses[key] = (joinedObj.responses[key] || []).map((item, index) => {
+        // Older models can hold an array of responses per response area.
+        const legacyResponses = joinedObj.responses[key] as unknown as Array<Partial<MathTemplatedResponse>>;
+
+        if (isArray(legacyResponses)) {
+          joinedObj.responses[key] = (legacyResponses || []).map((item, index) => {
             if (!item.answer) {
               log('Choice does not contain "answer" property, which is required.', item);
               return { answer: `${index}`, ...item };
             }
 
             return item;
-          });
+          }) as unknown as MathTemplatedResponse;
         }
       });
     }
@@ -77,12 +87,12 @@ export default class MathTemplateConfigure extends HTMLElement {
     this.onConfigurationChanged = this.onConfigurationChanged.bind(this);
   }
 
-  set model(s) {
+  set model(s: AuthorModel) {
     this._model = MathTemplateConfigure.prepareModel(s);
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: MathTemplatedConfiguration) {
     this._configuration = defaults(c, sensibleDefaults.configuration);
 
     // if language:enabled is true, then the corresponding default item model should include a language value;
@@ -93,19 +103,26 @@ export default class MathTemplateConfigure extends HTMLElement {
       if (c.languageChoices?.options?.length) {
         this._model.language = c.languageChoices.options[0].value;
       }
-    } else if (c.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+    } else if ((c.language as NonNullable<MathTemplatedConfiguration['language']>).settings && this._model.language) {
+      // `defaults()` fills `c` in place, so `language` and `languageChoices` are set here.
+      const language = this._configuration.language as NonNullable<MathTemplatedConfiguration['language']>;
+      const languageChoices = this._configuration.languageChoices as NonNullable<
+        MathTemplatedConfiguration['languageChoices']
+      >;
+      const modelLanguage = this._model.language;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      language.enabled = true;
+
+      if (!languageChoices.options || !languageChoices.options.length) {
+        languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
-          value: this._model.language,
-          label: this._model.language,
+      if (!languageChoices.options.find((option) => option.value === modelLanguage)) {
+        languageChoices.options.push({
+          value: modelLanguage,
+          label: modelLanguage,
         });
       }
     } else {
@@ -115,42 +132,42 @@ export default class MathTemplateConfigure extends HTMLElement {
     this._render();
   }
 
-  set disableSidePanel(s) {
+  set disableSidePanel(s: boolean) {
     this._disableSidePanel = s;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
+  onModelChanged(m: AuthorModel, reset?: boolean) {
     this._model = MathTemplateConfigure.prepareModel(m);
     this._render();
     this.dispatchModelUpdated(reset);
   }
 
-  onConfigurationChanged(c) {
+  onConfigurationChanged(c: MathTemplatedConfiguration) {
     this._configuration = c;
     this._render();
   }
 
   /** @param {done, progress, file} handler */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

@@ -1,9 +1,16 @@
-// @ts-nocheck
-
 import debug from 'debug';
 import { isEmpty } from '@pie-element/shared-lodash';
 import Translator from '@pie-lib/translator';
 import * as mv from '@pie-framework/math-validation';
+import type { ExtraCSSRules, PieEnvironment } from '@pie-element/shared-types';
+import type {
+  EquationEditor,
+  MathTemplatedAnswer,
+  MathTemplatedConfiguration,
+  MathTemplatedModel,
+  MathTemplatedResponse,
+  MathTemplatedSession,
+} from '../types.js';
 
 import defaults from './defaults.js';
 import { partialScoring } from '@pie-element/shared-controller-utils';
@@ -11,14 +18,70 @@ import { partialScoring } from '@pie-element/shared-controller-utils';
 const { translator } = Translator;
 const log = debug('@pie-element:math-templated:controller');
 
-const getFeedback = (value) => (value ? 'correct' : 'incorrect');
-const getContent = (html) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+/** The learner's answers, keyed `r<index>` by response area index. */
+type Answers = Record<string, MathTemplatedAnswer>;
 
-const getIsAnswerCorrect = (correctResponse, answerItem) => {
+/** Correctness of the learner's answers across every response area. */
+type ResponseCorrectness = {
+  correctness: 'unanswered' | 'correct' | 'incorrect';
+  score: number;
+  correct: boolean;
+};
+
+/** Options `latexEqual()` reads; the published `Opts` type leaves out `literal`. */
+type LatexEqualOpts = mv.Opts & {
+  literal?: { allowTrailingZeros: boolean; ignoreOrder: boolean };
+};
+
+/** The model as the delivery view receives it. */
+type MathTemplatedViewModel = {
+  prompt: string | null;
+  markup?: string;
+  responses: Record<string, MathTemplatedResponse> | null;
+  language?: string;
+  equationEditor?: EquationEditor;
+  customKeys?: string[];
+  disabled: boolean;
+  view: boolean;
+  correctness?: ResponseCorrectness;
+  env: PieEnvironment;
+  extraCSSRules?: ExtraCSSRules;
+  correctResponse?: Record<string, never>;
+  showNote?: boolean;
+  note?: string;
+  feedback?: Record<string, boolean>;
+  rationale?: string | null;
+  teacherInstructions?: string | null;
+};
+
+type MathTemplatedOutcome = {
+  score: number | undefined;
+  completed?: undefined;
+  empty?: boolean;
+  logTrace: string[];
+};
+
+/** Errors `validate()` reports, keyed by field; `responses` is keyed by response index, then by `answer` or alternate id. */
+export type MathTemplatedValidationErrors = {
+  teacherInstructions?: string;
+  prompt?: string;
+  rationale?: string;
+  responseAreas?: string;
+  responses?: Record<number, Record<string, string>>;
+};
+
+const getFeedback = (value: boolean) => (value ? 'correct' : 'incorrect');
+const getContent = (html: string | undefined) => (html || '').replace(/(<(?!img|iframe|source)([^>]+)>)/gi, '');
+
+const getIsAnswerCorrect = (
+  correctResponse: Partial<MathTemplatedResponse>,
+  answerItem: MathTemplatedAnswer | undefined,
+) => {
   let answerCorrect = false;
 
-  const opts = {
-    mode: correctResponse.validation || defaults.validationDefault,
+  const opts: LatexEqualOpts = {
+    // `defaults` holds `model` and `configuration`, so `defaults.validationDefault` is always undefined.
+    mode: correctResponse.validation || (defaults as { validationDefault?: 'literal' | 'symbolic' }).validationDefault,
     ...(correctResponse.validation === 'literal' && {
       literal: {
         allowTrailingZeros: correctResponse.allowTrailingZeros || false,
@@ -32,7 +95,7 @@ const getIsAnswerCorrect = (correctResponse, answerItem) => {
 
     try {
       for (const value of acceptedValues) {
-        answerCorrect = mv.latexEqual(answerItem.value, value, opts);
+        answerCorrect = mv.latexEqual((answerItem as MathTemplatedAnswer).value, value as string, opts);
         if (answerCorrect) break;
       }
     } catch (e) {
@@ -44,8 +107,11 @@ const getIsAnswerCorrect = (correctResponse, answerItem) => {
   return answerCorrect;
 };
 
-const getResponseCorrectness = (question, sessionResponse) => {
-  const correctResponses = question.responses;
+const getResponseCorrectness = (
+  question: MathTemplatedModel,
+  sessionResponse: Answers | null | undefined,
+): ResponseCorrectness => {
+  const correctResponses = question.responses as Record<string, MathTemplatedResponse>;
 
   if (!sessionResponse) {
     return {
@@ -82,13 +148,17 @@ const getResponseCorrectness = (question, sessionResponse) => {
   }
 };
 
-export const getCorrectness = (question, env, session) => {
+export const getCorrectness = (
+  question: MathTemplatedModel,
+  env: PieEnvironment,
+  session: MathTemplatedSession | null | undefined,
+): ResponseCorrectness | undefined => {
   if (env.mode === 'evaluate') {
     return getResponseCorrectness(question, session && session.answers);
   }
 };
 
-export const getPartialScore = (question, session) => {
+export const getPartialScore = (_question: MathTemplatedModel, session: MathTemplatedSession | null | undefined) => {
   if (!session || isEmpty(session)) {
     return 0;
   }
@@ -103,8 +173,12 @@ export const getPartialScore = (question, session) => {
  * @param {Object} env
  * @returns {Array<string>} traceLog
  */
-export const getLogTrace = (question, session, env) => {
-  const traceLog = [];
+export const getLogTrace = (
+  question: MathTemplatedModel,
+  session: MathTemplatedSession | null | undefined,
+  env: PieEnvironment,
+): string[] => {
+  const traceLog: string[] = [];
 
   if (!session || !session.answers || Object.keys(session.answers).length === 0) {
     traceLog.push('Student did not enter a response.');
@@ -123,7 +197,8 @@ export const getLogTrace = (question, session, env) => {
   responseIds.forEach((responseId, index) => {
     const answerItem = answers[`r${responseId}`];
     const studentValue = answerItem?.value?.trim();
-    const correctResponse = question.responses[responseId] || {};
+    const correctResponse: Partial<MathTemplatedResponse> =
+      (question.responses as Record<string, MathTemplatedResponse>)[responseId] || {};
 
     const cleanStudentAnswer = studentValue ? studentValue.replace(/\\/g, '') : '';
 
@@ -177,15 +252,19 @@ export const getLogTrace = (question, session, env) => {
     traceLog.push('Student must answer all response areas correctly to receive full credit.');
   }
 
-  const correctness = getCorrectness(question, env, session);
+  const correctness = getCorrectness(question, env, session) as ResponseCorrectness;
   traceLog.push(`Overall correctness: ${correctness.correctness}.`);
   traceLog.push(`Final score: ${correctness.score}.`);
 
   return traceLog;
 };
 
-export const outcome = (question, session, env) =>
-  new Promise((resolve) => {
+export const outcome = (
+  question: MathTemplatedModel,
+  session: MathTemplatedSession | null | undefined,
+  env: PieEnvironment,
+) =>
+  new Promise<MathTemplatedOutcome>((resolve) => {
     if (!session || isEmpty(session)) {
       resolve({ 
         score: 0, 
@@ -201,7 +280,7 @@ export const outcome = (question, session, env) =>
     if (env.mode !== 'evaluate') {
       resolve({ score: undefined, completed: undefined, logTrace: [] });
     } else {
-      const correctness = getCorrectness(question, env, session, true);
+      const correctness = getCorrectness(question, env, session) as ResponseCorrectness;
       const score = correctness.score;
 
       resolve({ 
@@ -211,10 +290,10 @@ export const outcome = (question, session, env) =>
     }
   });
 
-export const createDefaultModel = (model = {}) => {
+export const createDefaultModel = (model: Partial<MathTemplatedModel> = {}) => {
   const { validationDefault, allowTrailingZerosDefault, ignoreOrderDefault, responses = {} } = model;
 
-  const updatedResponses = Object.keys(responses).reduce((acc, responseId) => {
+  const updatedResponses = Object.keys(responses).reduce<Record<string, MathTemplatedResponse>>((acc, responseId) => {
     const correctResponse = responses[responseId];
 
     acc[responseId] = {
@@ -234,24 +313,28 @@ export const createDefaultModel = (model = {}) => {
   };
 };
 
-export const normalizeSession = (s) => ({ ...s });
+export const normalizeSession = (s: MathTemplatedSession): MathTemplatedSession => ({ ...s });
 
-const getTextFromHTML = (html) => (html || '').replace(/<\/?[^>]+(>|$)/g, '');
+const getTextFromHTML = (html: string | undefined) => (html || '').replace(/<\/?[^>]+(>|$)/g, '');
 
-export const prepareVal = (html) => getTextFromHTML(html).trim();
+export const prepareVal = (html: string | undefined) => getTextFromHTML(html).trim();
 
-export const model = (question, session, env) => {
-  return new Promise((resolve) => {
+export const model = (
+  question: Partial<MathTemplatedModel>,
+  session: MathTemplatedSession | null | undefined,
+  env: PieEnvironment,
+) => {
+  return new Promise<MathTemplatedViewModel>((resolve) => {
     session = session || {};
     const normalizedQuestion = createDefaultModel(question);
-    const correctness = getCorrectness(normalizedQuestion, env, session);
+    const correctness = getCorrectness(normalizedQuestion as MathTemplatedModel, env, session);
     const { responses, language } = normalizedQuestion;
     let { note } = normalizedQuestion;
     let showNote = false;
 
     // check if there is at least one alternate response or if the validation for at least one response is not literal
     Object.keys(responses).forEach((responseId) => {
-      const correctResponse = responses[responseId] || {};
+      const correctResponse: Partial<MathTemplatedResponse> = responses[responseId] || {};
       if (correctResponse.alternates && Object.keys(correctResponse.alternates).length > 0) {
         showNote = true;
       } else if (correctResponse.validation !== 'literal') {
@@ -263,7 +346,7 @@ export const model = (question, session, env) => {
       note = translator.t('mathInline.primaryCorrectWithAlternates', { lng: language });
     }
 
-    const out = {
+    const out: MathTemplatedViewModel = {
       prompt: normalizedQuestion.promptEnabled ? normalizedQuestion.prompt : null,
       markup: normalizedQuestion.markup,
       responses: env.mode === 'gather' ? null : normalizedQuestion.responses,
@@ -277,8 +360,8 @@ export const model = (question, session, env) => {
       extraCSSRules: normalizedQuestion.extraCSSRules,
     };
 
-    const { answers = {} } = session || {};
-    let feedback = {};
+    const { answers = {} as Answers } = session || {};
+    let feedback: Record<string, boolean> = {};
 
     if (env.mode === 'evaluate') {
       Object.keys(responses).forEach((responseId) => {
@@ -313,11 +396,12 @@ export const model = (question, session, env) => {
   });
 };
 
-export const createCorrectResponseSession = (question, env) =>
-  new Promise((resolve) => {
+export const createCorrectResponseSession = (question: MathTemplatedModel, env: PieEnvironment) =>
+  new Promise<MathTemplatedSession | null>((resolve) => {
     if (env.mode !== 'evaluate' && env.role === 'instructor') {
-      const correctResponse = Object.keys(question.responses).reduce((acc, responseId) => {
-        acc['r' + responseId] = { value: question.responses[responseId].answer };
+      const responses = question.responses as Record<string, MathTemplatedResponse>;
+      const correctResponse = Object.keys(responses).reduce<Answers>((acc, responseId) => {
+        acc['r' + responseId] = { value: responses[responseId].answer };
         return acc;
       }, {});
 
@@ -327,23 +411,26 @@ export const createCorrectResponseSession = (question, env) =>
     }
   });
 
-export const validate = (model = {}, config = {}) => {
+export const validate = (
+  model: Partial<MathTemplatedModel> = {},
+  config: MathTemplatedConfiguration = {},
+): MathTemplatedValidationErrors => {
   const { responses, markup } = model;
   const { maxResponseAreas } = config;
-  const responsesErrors = {};
-  const errors = {};
+  const responsesErrors: Record<number, Record<string, string>> = {};
+  const errors: MathTemplatedValidationErrors = {};
 
-  ['teacherInstructions', 'prompt', 'rationale'].forEach((field) => {
+  (['teacherInstructions', 'prompt', 'rationale'] as const).forEach((field) => {
     if (config[field]?.required && !getContent(model[field])) {
       errors[field] = 'This field is required.';
     }
   });
 
-  Object.entries(responses || {}).forEach(([key, response], index) => {
+  Object.entries(responses || {}).forEach(([, response], index) => {
     const { answer } = response;
     const reversedAlternates = [...Object.entries(response.alternates || {})].reverse();
-    const alternatesErrors = {};
-    const responseError = {};
+    const alternatesErrors: Record<string, string> = {};
+    const responseError: Record<string, string> = {};
 
     if (answer === '') {
       responseError.answer = 'Content should not be empty.';
@@ -367,9 +454,10 @@ export const validate = (model = {}, config = {}) => {
     }
   });
 
-  const nbOfResponseAreas = (markup.match(/\{\{(\d+)\}\}/g) || []).length;
+  const nbOfResponseAreas = ((markup as string).match(/\{\{(\d+)\}\}/g) || []).length;
 
-  if (nbOfResponseAreas > maxResponseAreas) {
+  // `undefined > n` is false, so an absent `maxResponseAreas` sets no upper bound.
+  if (nbOfResponseAreas > (maxResponseAreas as number)) {
     errors.responseAreas = `No more than ${maxResponseAreas} response areas should be defined.`;
   } else if (nbOfResponseAreas < 1) {
     errors.responseAreas = 'There should be at least 1 response area defined.';
