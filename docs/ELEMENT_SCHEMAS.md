@@ -18,7 +18,7 @@ The decision record is the [Element JSON Schemas PRD](prds/element-json-schemas/
 
 The controller's `model(model, session, env)` turns the model into the view model the delivery view renders. The view model is internal to the element, has no schema, and is never stored.
 
-A closed root rejects an undeclared top-level key, so a model carrying a misspelled `choicePrefx` fails validation. Nested objects stay open, so a misspelling inside a choice passes. The session root stays open because players and controllers write extra state into the session.
+A closed root reports an undeclared top-level key, so validating a model that carries a misspelled `choicePrefx` returns an error. Nested objects stay open, so a misspelling inside a choice passes. The session root stays open because players and controllers write extra state into the session.
 
 ## Declaring the Contract
 
@@ -161,10 +161,19 @@ The `$id` carries the package version, so a schema names the exact element relea
 import Ajv from 'ajv';
 import schema from '@pie-element/multiple-choice/schemas/model.schema.json' with { type: 'json' };
 
-const validate = new Ajv({ allowUnionTypes: true }).compile(schema);
-validate({ id: '1', element: 'multiple-choice', choices: [], choicePrefx: 'letters' });
-// false: validate.errors[0].params.additionalProperty is "choicePrefx"
+const validate = new Ajv({ allowUnionTypes: true, allErrors: true }).compile(schema);
+
+function checkModel(model, { strict = false } = {}) {
+  if (validate(model)) return;
+  if (strict) throw new Error(`invalid multiple-choice model: ${JSON.stringify(validate.errors)}`);
+  console.warn('multiple-choice model', validate.errors);
+}
+
+checkModel({ id: '1', element: 'multiple-choice', choices: [], choicePrefx: 'letters' });
+// warns: validate.errors[0].params.additionalProperty is "choicePrefx"
 ```
+
+Both modes run the same validator; the host decides what an error means. Validate leniently by default, so content an element renders is never denied, and use the warnings to find unknown keys and unexpected values. Validate strictly where the host controls what it accepts, such as an authoring tool saving a new model. `allErrors` makes a lenient run report every failure, where Ajv otherwise stops at the first.
 
 `allowUnionTypes` keeps Ajv's strict mode quiet about multi-type keywords such as `"type": ["string", "number"]`, which 39 of the 92 published schemas contain.
 
@@ -172,7 +181,7 @@ Validate a model against the schema of the element version that renders it. A ke
 
 Validation is structural. Whether a model is authorable, for example whether a correct answer is marked, is the controller's `validate(model, config)`, which returns authoring errors.
 
-Elements, players and `pie-api-aws` do not validate against the schemas: a host validates where it accepts or stores content. `pie-api-aws` stores models as given and checks only request envelopes. Content it serves today predates the schemas and is not expected to validate: its Learnosity transform writes keys no ng schema declares, such as `weights` on multiple-choice and `published` on extended-text-entry, and authored items carry other value shapes, such as an empty `alternateResponse` array on inline-dropdown.
+Elements, players and `pie-api-aws` do not validate against the schemas: a host validates where it accepts or stores content. `pie-api-aws` stores models as given and checks only request envelopes. Content it serves today predates the schemas and fails strict validation, so validate it leniently: its Learnosity transform writes keys no ng schema declares, such as `weights` on multiple-choice and `published` on extended-text-entry, and authored items carry other value shapes, such as an empty `alternateResponse` array on inline-dropdown.
 
 ### TypeScript
 

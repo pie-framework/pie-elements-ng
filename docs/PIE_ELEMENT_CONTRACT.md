@@ -323,7 +323,7 @@ Every element package publishes JSON Schemas for its model and session, and for 
 | `./schemas/session.schema.json` | `./dist/schemas/session.schema.json` |
 | `./schemas/configuration.schema.json` | `./dist/schemas/configuration.schema.json` |
 
-The build generates them from `<Name>Model`, `<Name>Session` and `<Name>Configuration` in the package's `src/types.ts`, where `<Name>` is the PascalCase package name, and the root entry re-exports those types. Each schema is draft-07 with `$id` set to its versioned jsDelivr URL. Model and configuration roots reject unknown top-level keys, as the legacy schemas do. Nested objects and the session accept them, because players and controllers write extra state into the session. [`docs/ELEMENT_SCHEMAS.md`](ELEMENT_SCHEMAS.md) covers declaring the types and using the schemas; [`docs/prds/element-json-schemas/PRD.md`](prds/element-json-schemas/PRD.md) is the decision record.
+The build generates them from `<Name>Model`, `<Name>Session` and `<Name>Configuration` in the package's `src/types.ts`, where `<Name>` is the PascalCase package name, and the root entry re-exports those types. Each schema is draft-07 with `$id` set to its versioned jsDelivr URL. Model and configuration roots reject unknown top-level keys, as the legacy schemas do. Nested objects and the session accept them, because players and controllers write extra state into the session. Hosts validate leniently by default, logging errors as warnings, and strictly by choice. [`docs/ELEMENT_SCHEMAS.md`](ELEMENT_SCHEMAS.md) covers declaring the types and using the schemas; [`docs/prds/element-json-schemas/PRD.md`](prds/element-json-schemas/PRD.md) is the decision record.
 
 ## Runtime Strategy Contract
 
