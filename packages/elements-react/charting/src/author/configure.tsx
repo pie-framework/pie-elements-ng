@@ -1,17 +1,18 @@
-// @ts-nocheck
-
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { chartTypes, ConfigureChartPanel } from '@pie-lib/charting';
 import { settings, layout, InputContainer } from '@pie-lib/config-ui';
-import PropTypes from 'prop-types';
 import debug from 'debug';
 import Typography from '@mui/material/Typography';
 import EditableHtml from '@pie-lib/editable-html-tip-tap';
+import type { DeleteDone, ImageHandler, SoundHandler } from '@pie-element/shared-configure-events';
+import type { ConfigureLanguageOptions, EditableHtmlConfigureProp } from '@pie-element/shared-types';
 
 import ChartingConfig from './charting-config.js';
 import CorrectResponse from './correct-response.js';
 import { applyConstraints, getGridValues, getLabelValues } from './utils.js';
+import type { ChartingValidationErrors } from '../controller/index.js';
+import type { ChartingConfiguration, ChartingGraph, ChartingModel, ChartingRange } from '../types.js';
 
 const log = debug('@pie-element:graphing:configure');
 const { Panel, toggle, radio, dropdown, textField } = settings;
@@ -32,7 +33,10 @@ const ErrorText: any = styled('div')(({ theme }) => ({
   paddingTop: theme.spacing(1),
 }));
 
-const charts = [
+/** A chart type the author offers: its id, label and the component that draws it */
+export type ChartDefinition = ReturnType<(typeof chartTypes)['Bar']>;
+
+const charts: ChartDefinition[] = [
   chartTypes.Bar(),
   chartTypes.Histogram(),
   chartTypes.LineDot(),
@@ -41,47 +45,62 @@ const charts = [
   chartTypes.LinePlot(),
 ];
 
-export class Configure extends React.Component {
-  static propTypes = {
-    onModelChanged: PropTypes.func,
-    onConfigurationChanged: PropTypes.func,
-    imageSupport: PropTypes.object,
-    uploadSoundSupport: PropTypes.object,
-    model: PropTypes.object.isRequired,
-    configuration: PropTypes.object.isRequired,
-    chartingOptions: PropTypes.object,
-  };
+/** The model the author edits; `createDefaultModel()` fills it from the defaults, and the host sets `errors` from the controller's `validate()`. */
+export type AuthorModel = Partial<ChartingModel> & {
+  graph: ChartingGraph;
+  errors?: ChartingValidationErrors;
+};
 
-  constructor(props) {
+type MediaSupport<Handler> = {
+  add: (handler: Handler) => void;
+  delete: (src: string, done: DeleteDone) => void;
+};
+
+export type ConfigureProps = {
+  model: AuthorModel;
+  configuration: ChartingConfiguration;
+  onModelChanged: (model: AuthorModel) => void;
+  onConfigurationChanged: (configuration: ChartingConfiguration) => void;
+  imageSupport: MediaSupport<ImageHandler>;
+  uploadSoundSupport: MediaSupport<SoundHandler>;
+};
+
+type State = {
+  /** Steps the range can take at the chart's height */
+  gridValues: { range: number[] };
+  /** Label steps the range's step allows */
+  labelValues: { range: number[] };
+};
+
+export class Configure extends React.Component<ConfigureProps, State> {
+  constructor(props: ConfigureProps) {
     super(props);
-    const { range = {}, graph } = props.model || {};
+    const { range = {} as ChartingRange, graph } = props.model || {};
     const gridValues = { range: getGridValues(range, graph.height, true) };
     const labelValues = { range: getLabelValues(range.step || 1) };
 
     this.state = { gridValues, labelValues };
   }
 
-  onRationaleChange = (rationale) => this.props.onModelChanged({ ...this.props.model, rationale });
+  onRationaleChange = (rationale: string) => this.props.onModelChanged({ ...this.props.model, rationale });
 
-  onPromptChange = (prompt) => this.props.onModelChanged({ ...this.props.model, prompt });
+  onPromptChange = (prompt: string) => this.props.onModelChanged({ ...this.props.model, prompt });
 
-  onTeacherInstructionsChange = (teacherInstructions) =>
+  onTeacherInstructionsChange = (teacherInstructions: string) =>
     this.props.onModelChanged({ ...this.props.model, teacherInstructions });
 
-  onChartTypeChange = (chartType) => this.props.onModelChanged({ ...this.props.model, chartType });
+  onChartTypeChange = (chartType: ChartingModel['chartType']) => this.props.onModelChanged({ ...this.props.model, chartType });
 
-  onConfigChange: any = (config) => {
+  onConfigChange = (config: Partial<AuthorModel>) => {
     const { model, onModelChanged } = this.props;
     const { gridValues: oldGridValues, labelValues: oldLabelValues } = this.state;
     const updatedModel = { ...model, ...config };
     const { graph, range } = updatedModel;
-    const gridValues = {};
-    const labelValues = {};
 
     const rangeConstraints = applyConstraints(range, graph.height, oldGridValues.range, oldLabelValues.range);
 
-    gridValues.range = rangeConstraints.gridValues;
-    labelValues.range = rangeConstraints.labelValues;
+    const gridValues = { range: rangeConstraints.gridValues };
+    const labelValues = { range: rangeConstraints.labelValues };
 
     this.setState({ gridValues, labelValues });
     onModelChanged(updatedModel);
@@ -117,7 +136,7 @@ export class Configure extends React.Component {
       mathMlOptions = {},
       chartTypeLabel,
       language = {},
-      languageChoices = {},
+      languageChoices = {} as ConfigureLanguageOptions,
       labelsCharactersLimit,
     } = configuration || {};
     const {
@@ -164,7 +183,7 @@ export class Configure extends React.Component {
       instruction: instruction.settings && textField(instruction.label),
     };
 
-    const getPluginProps = (props = {}) => ({
+    const getPluginProps = (props: EditableHtmlConfigureProp = {}) => ({
       ...baseInputConfiguration,
       ...props,
     });
@@ -238,8 +257,8 @@ export class Configure extends React.Component {
           gridValues={gridValues}
           labelValues={labelValues}
           chartDimensions={chartDimensions}
-          charts={charts}
-          studentNewCategoryDefaultLabel={studentNewCategoryDefaultLabel}
+          // The panel declares an object and reads its `label`; the model's string reaches it unchanged.
+          studentNewCategoryDefaultLabel={studentNewCategoryDefaultLabel as { label?: string } | undefined}
           availableChartTypes={availableChartTypes}
           chartTypeLabel={chartTypeLabel}
         />

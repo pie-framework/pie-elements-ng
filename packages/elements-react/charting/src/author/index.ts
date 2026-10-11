@@ -1,23 +1,32 @@
-// @ts-nocheck
-
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 import debug from 'debug';
-import Configure from './configure.js';
+import Configure, { type AuthorModel } from './configure.js';
 import defaultValues from './defaults.js';
 import { renderMath } from '@pie-element/shared-math-rendering-mathjax';
+import type { ChartingConfiguration, ChartingModel } from '../types.js';
 
 const log = debug('pie-elements:graphing:configure');
 
 export default class GraphLinesConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => ({ ...defaultValues.model, ...model });
+  private _root: Root | null;
+  private _model: AuthorModel;
+  private _configuration: ChartingConfiguration;
+
+  static createDefaultModel = (model: Partial<ChartingModel> = {}): AuthorModel => ({
+    ...defaultValues.model,
+    ...model,
+  });
 
   constructor() {
     super();
@@ -26,13 +35,13 @@ export default class GraphLinesConfigure extends HTMLElement {
     this._configuration = defaultValues.configuration;
   }
 
-  set model(m) {
+  set model(m: Partial<ChartingModel>) {
     this._model = GraphLinesConfigure.createDefaultModel(m);
     this._render();
   }
 
-  set configuration(c) {
-    const newConfiguration = {
+  set configuration(c: ChartingConfiguration) {
+    const newConfiguration: ChartingConfiguration = {
       ...defaultValues.configuration,
       ...c,
     };
@@ -43,23 +52,28 @@ export default class GraphLinesConfigure extends HTMLElement {
     // if it is false, then the language field should be omitted from the item model.
     // if a default item model includes a language value (e.g., en_US) and the corresponding authoring view settings have language:settings = true,
     // then (a) language:enabled should also be true, and (b) that default language value should be represented in languageChoices[] (as a key).
+    // newConfiguration is this._configuration. Its `language` throws when absent, and `languageChoices` is
+    // assumed present, as untyped.
     if (newConfiguration?.language?.enabled) {
       if (newConfiguration?.languageChoices?.options?.length) {
         this._model.language = newConfiguration?.languageChoices.options[0].value;
       }
-    } else if (newConfiguration.language.settings && this._model.language) {
-      this._configuration.language.enabled = true;
+    } else if (newConfiguration.language!.settings && this._model.language) {
+      const language = this._model.language;
+      const languageChoices = newConfiguration.languageChoices!;
 
-      if (!this._configuration.languageChoices.options || !this._configuration.languageChoices.options.length) {
-        this._configuration.languageChoices.options = [];
+      newConfiguration.language!.enabled = true;
+
+      if (!languageChoices.options || !languageChoices.options.length) {
+        languageChoices.options = [];
       }
 
       // check if the language is already included in the languageChoices.options array
       // and if not, then add it.
-      if (!this._configuration.languageChoices.options.find((option) => option.value === this._model.language)) {
-        this._configuration.languageChoices.options.push({
-          value: this._model.language,
-          label: this._model.language,
+      if (!languageChoices.options.find((option) => option.value === language)) {
+        languageChoices.options.push({
+          value: language,
+          label: language,
         });
       }
     } else {
@@ -69,7 +83,7 @@ export default class GraphLinesConfigure extends HTMLElement {
     this._render();
   }
 
-  onModelChanged(model) {
+  onModelChanged(model: AuthorModel) {
     this._model = model;
     this._render();
 
@@ -78,24 +92,24 @@ export default class GraphLinesConfigure extends HTMLElement {
     this.dispatchEvent(new ModelUpdatedEvent(this._model));
   }
 
-  onConfigurationChanged(config) {
+  onConfigurationChanged(config: ChartingConfiguration) {
     this._configuration = config;
     this._render();
   }
 
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

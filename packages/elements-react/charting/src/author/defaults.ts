@@ -1,4 +1,11 @@
-// @ts-nocheck
+import type { ConfigureLanguageOptionsProp } from '@pie-element/shared-types';
+import type {
+  ChartingCategory,
+  ChartingConfiguration,
+  ChartingCorrectAnswer,
+  ChartingDomain,
+  ChartingModel,
+} from '../types.js';
 
 /**
  * NOTE: There's no functionality described for graphTitle,
@@ -20,9 +27,9 @@ export default {
     changeEditableEnabled: false,
     changeInteractiveEnabled: false,
     chartType: 'lineCross',
-    correctAnswer: {},
-    data: [],
-    domain: {},
+    correctAnswer: {} as ChartingCorrectAnswer,
+    data: [] as ChartingCategory[],
+    domain: {} as ChartingDomain,
     graph: { width: 480, height: 480 },
     prompt: '',
     promptEnabled: true,
@@ -166,7 +173,7 @@ export default {
     },
     languageChoices: {
       label: 'Language Choices',
-      options: [],
+      options: [] as ConfigureLanguageOptionsProp[],
     },
     chartingOptions: {
       changeInteractive: {
@@ -190,4 +197,4 @@ export default {
       },
     },
   },
-};
+} satisfies { model: Omit<ChartingModel, 'id' | 'element'>; configuration: ChartingConfiguration };
