@@ -38,7 +38,7 @@ Feature branch: `feat/PIE-1255-element-json-schemas`. Each batch is a branch `fe
 
 ## Finishing (feature branch)
 
-- [ ] `check-publish-surface`: schema exports required on element packages
-- [ ] `PIE_ELEMENT_CONTRACT.md` packaging section for schemas
-- [ ] Changeset (patch) for every element package and `@pie-element/shared-types`
+- [x] `check-publish-surface`: schema exports required on element packages
+- [x] `PIE_ELEMENT_CONTRACT.md` packaging section for schemas
+- [x] Changeset (patch) for every element package and `@pie-element/shared-types`
 - [ ] Remove this plan; PR into `develop`

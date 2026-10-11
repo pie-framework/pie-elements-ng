@@ -1204,6 +1204,21 @@ const collectManifestExportViolations = (pkg) =>
     ? ['exports["./package.json"] must be "./package.json" for element packages']
     : [];
 
+/**
+ * An element package publishes the JSON Schemas `tools/schemas` generates: model and session, and
+ * configuration when it has an authoring view. `pie.controller` marks an element: the shared
+ * packages that carry `pie` metadata have none.
+ */
+const collectSchemaExportViolations = (pkg) => {
+  if (!pkg.pie?.controller) return [];
+  const kinds = ['model', 'session', ...(pkg.exports?.['./author'] ? ['configuration'] : [])];
+  return kinds.flatMap((kind) => {
+    const key = `./schemas/${kind}.schema.json`;
+    const target = `./dist/schemas/${kind}.schema.json`;
+    return pkg.exports?.[key] === target ? [] : [`exports["${key}"] must be "${target}"`];
+  });
+};
+
 export const collectManifestViolations = (
   dir,
   pkg,
@@ -1227,6 +1242,7 @@ export const collectManifestViolations = (
 
   collectExportKeyViolations(pkg, violations);
   violations.push(...collectManifestExportViolations(pkg));
+  violations.push(...collectSchemaExportViolations(pkg));
   violations.push(...collectControllerContractViolations(dir, pkg));
   violations.push(...collectBrowserEsmViolations(dir, pkg, context));
   violations.push(...collectEditorRuntimePackageViolations(dir, pkg));
