@@ -55,7 +55,7 @@ export interface RubricModel extends PieModel {
   extraCSSRules?: ExtraCSSRules;
 }
 
-/** Config Object for @pie-element/rubric */
+/** Config Object for `@pie-element/rubric` */
 export interface RubricConfiguration {
   /**
    * Base editable html input configuration regarding plugins that are enabled/disabled
