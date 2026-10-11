@@ -1,24 +1,31 @@
-// @ts-nocheck
-
 import {
   ModelUpdatedEvent,
   DeleteImageEvent,
   InsertImageEvent,
   InsertSoundEvent,
   DeleteSoundEvent,
+  type DeleteDone,
+  type ImageHandler,
+  type SoundHandler,
 } from '@pie-element/shared-configure-events';
 
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root as ReactRoot } from 'react-dom/client';
 import debug from 'debug';
 
-import Root from './root.js';
+import Root, { type AuthorModel } from './root.js';
 import sensibleDefaults from './defaults.js';
+import type { ImageClozeAssociationConfiguration } from '../types.js';
 
 const log = debug('image-cloze-association:configure');
 
 export default class ImageClozeAssociationConfigure extends HTMLElement {
-  static createDefaultModel = (model = {}) => ({
+  private _root: ReactRoot | null;
+  private _model: AuthorModel;
+  private _configuration: ImageClozeAssociationConfiguration;
+  private _disableSidePanel?: boolean;
+
+  static createDefaultModel = (model: AuthorModel = {}): AuthorModel => ({
     ...sensibleDefaults.model,
     ...model,
   });
@@ -31,34 +38,34 @@ export default class ImageClozeAssociationConfigure extends HTMLElement {
     this._configuration = sensibleDefaults.configuration;
   }
 
-  set model(s) {
+  set model(s: AuthorModel) {
     this._model = ImageClozeAssociationConfigure.createDefaultModel(s);
     this._render();
   }
 
-  set configuration(c) {
+  set configuration(c: ImageClozeAssociationConfiguration) {
     this._configuration = c;
     this._render();
   }
 
-  set disableSidePanel(s) {
+  set disableSidePanel(s: boolean) {
     this._disableSidePanel = s;
     this._render();
   }
 
-  dispatchModelUpdated(reset) {
+  dispatchModelUpdated(reset?: boolean) {
     const resetValue = !!reset;
 
     this.dispatchEvent(new ModelUpdatedEvent(this._model, resetValue));
   }
 
-  onModelChanged(m, reset) {
+  onModelChanged(m: AuthorModel, reset?: boolean) {
     this._model = m;
     this.dispatchModelUpdated(reset);
     this._render();
   }
 
-  onConfigurationChanged(config) {
+  onConfigurationChanged(config: ImageClozeAssociationConfiguration) {
     this._configuration = config;
     this._render();
   }
@@ -67,19 +74,19 @@ export default class ImageClozeAssociationConfigure extends HTMLElement {
    *
    * @param {done, progress, file} handler
    */
-  insertImage(handler) {
+  insertImage(handler: ImageHandler) {
     this.dispatchEvent(new InsertImageEvent(handler));
   }
 
-  onDeleteImage(src, done) {
+  onDeleteImage(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteImageEvent(src, done));
   }
 
-  insertSound(handler) {
+  insertSound(handler: SoundHandler) {
     this.dispatchEvent(new InsertSoundEvent(handler));
   }
 
-  onDeleteSound(src, done) {
+  onDeleteSound(src: string, done: DeleteDone) {
     this.dispatchEvent(new DeleteSoundEvent(src, done));
   }
 

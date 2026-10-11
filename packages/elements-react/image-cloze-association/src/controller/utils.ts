@@ -1,8 +1,19 @@
-// @ts-nocheck
+import type {
+  ImageClozeAssociationAnswer,
+  ImageClozeAssociationContainerResponse,
+  ImageClozeAssociationValidation,
+  ImageClozeAssociationValidResponse,
+} from '../types.js';
 
 // functions also used in src/utils-correctness.js
 
-const getAllCorrectness = (answers, responses) =>
+/** A placed image with whether its response container accepts it */
+export type ImageClozeAssociationAnswerCorrectness = ImageClozeAssociationAnswer & { isCorrect: boolean };
+
+const getAllCorrectness = (
+  answers: ImageClozeAssociationAnswer[] | undefined,
+  responses: ImageClozeAssociationContainerResponse[],
+): ImageClozeAssociationAnswerCorrectness[] =>
   (answers || []).map((answer) => ({
     ...answer,
     isCorrect: ((responses[answer.containerIndex] && responses[answer.containerIndex].images) || []).includes(
@@ -10,12 +21,15 @@ const getAllCorrectness = (answers, responses) =>
     ),
   }));
 
-const getValidAnswer = (answer, response) =>
+const getValidAnswer = (answer: ImageClozeAssociationAnswer, response: ImageClozeAssociationContainerResponse[]) =>
   ((response[answer.containerIndex] && response[answer.containerIndex].images) || []).filter(
     (res) => res === answer.value,
   );
 
-export const getAllUniqueCorrectness = (answers, validResponses) => {
+export const getAllUniqueCorrectness = (
+  answers: ImageClozeAssociationAnswer[],
+  validResponses: ImageClozeAssociationContainerResponse[],
+) => {
   let allCorrectness = getAllCorrectness(answers, validResponses);
 
   answers.forEach((answer1) => {
@@ -46,9 +60,14 @@ export const getAllUniqueCorrectness = (answers, validResponses) => {
 
 // calculate the minimum number of populated response areas (categories) in the correct answer or alternates
 // and create an array with the possible responses ids
-export const getCompleteResponseDetails = (validation, allChoices) => {
-  const extractImages = (response) => (response?.value || []).map((container) => container.images);
-  const countFilledResponseAreas = (container) => (container || []).filter((images) => images.length).length;
+export const getCompleteResponseDetails = (
+  validation: ImageClozeAssociationValidation | undefined,
+  allChoices: string[],
+) => {
+  const extractImages = (response: ImageClozeAssociationValidResponse | undefined) =>
+    (response?.value || []).map((container) => container.images as string[]);
+  const countFilledResponseAreas = (container: string[][]) =>
+    (container || []).filter((images) => images.length).length;
 
   const { validResponse, altResponses } = validation || {};
   const imagesPerContainer = extractImages(validResponse);

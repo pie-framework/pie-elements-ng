@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import ImageClozeAssociation from '../index';
 import { model as buildModel } from '../../controller/index';
+import type { PieEnvironment } from '@pie-element/shared-types';
 
 vi.mock('@pie-element/shared-math-rendering-mathjax', () => ({ renderMath: () => {} }));
 
@@ -10,6 +11,8 @@ type Host = HTMLElement & { model: object; session: object };
 customElements.define('test-ica-container-ids', ImageClozeAssociation as unknown as CustomElementConstructor);
 
 const question = (extra: object = {}) => ({
+  id: '1',
+  element: 'image-cloze-association',
   prompt: '<p>Place the sun.</p>',
   image: { src: 'sky.png', width: 400, height: 200 },
   possible_responses: ['<p>Sun</p>', '<p>Moon</p>'],
@@ -25,7 +28,12 @@ const question = (extra: object = {}) => ({
 });
 
 const viewModel = async (extra: object = {}) =>
-  (await buildModel(question(extra), { answers: [] }, { mode: 'gather' }, vi.fn())) as object;
+  (await buildModel(
+    question(extra),
+    { answers: [] },
+    { mode: 'gather' } as PieEnvironment,
+    vi.fn(),
+  )) as object;
 
 const mount = async (extra: object = {}) => {
   const el = document.createElement('test-ica-container-ids') as Host;
