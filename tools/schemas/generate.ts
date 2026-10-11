@@ -79,6 +79,17 @@ const normalizeDeprecated = (node: unknown): void => {
   for (const value of Object.values(schema)) normalizeDeprecated(value);
 };
 
+// TypeScript reads `@scope/name` in a JSDoc comment as a tag and drops the description from there
+// on, so a package name in a comment sits in backticks.
+const assertNoBarePackageNames = (typesPath: string): void => {
+  for (const [comment] of readFileSync(typesPath, 'utf-8').matchAll(/\/\*\*[\s\S]*?\*\//g)) {
+    const bare = comment.replace(/`[^`]*`/g, '').match(/(?:^|\s)(@[\w-]+\/[\w-]+)/);
+    if (bare) {
+      throw new Error(`${typesPath}: wrap ${bare[1]} in backticks; JSDoc reads it as a tag`);
+    }
+  }
+};
+
 /** Generates every schema the package at `packageDir` declares, keyed by kind. */
 export const generateElementSchemas = (
   packageDir: string
@@ -91,6 +102,7 @@ export const generateElementSchemas = (
   if (!existsSync(typesPath)) {
     throw new Error(`${manifest.name} declares schema exports but has no src/types.ts`);
   }
+  assertNoBarePackageNames(typesPath);
 
   const generator = createGenerator({
     path: typesPath,
